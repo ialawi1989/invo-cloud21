@@ -1,0 +1,424 @@
+// ==========================================
+// Sales by Category Styles - Brand Teal Theme
+// ==========================================
+
+:host {
+  display: block;
+
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #fbfbfb;
+  --bg-card: #ffffff;
+  --bg-hover: rgba(0, 170, 179, 0.04);
+  --border-color: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --brand-teal: #00aab3;
+  --brand-teal-dark: #00949c;
+  --brand-teal-light: rgba(0, 170, 179, 0.1);
+  --brand-teal-border: rgba(0, 170, 179, 0.3);
+
+  --emerald: #10b981;
+  --emerald-light: rgba(16, 185, 129, 0.15);
+
+  --amber: #f59e0b;
+  --amber-light: rgba(245, 158, 11, 0.15);
+
+  --slate: #64748b;
+  --slate-light: rgba(100, 116, 139, 0.15);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-card);
+}
+
+.card-body {
+  padding: 24px;
+}
+
+// ==========================================
+// Header Row
+// ==========================================
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+}
+
+// ==========================================
+// Top Category Highlight
+// ==========================================
+.top-category {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--brand-teal-light) 0%, rgba(0, 170, 179, 0.05) 100%);
+  border: 1px solid var(--brand-teal-border);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.top-category-icon {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 170, 179, 0.15);
+  color: var(--brand-teal-dark);
+
+  svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.top-category-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.top-category-label {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--brand-teal-dark);
+}
+
+.top-category-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--brand-teal-dark);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.top-category-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+// ==========================================
+// Categories Table
+// ==========================================
+.categories-table {
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead {
+    tr {
+      background: var(--bg-tertiary);
+    }
+
+    th {
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+
+      &:first-child {
+        border-radius: 8px 0 0 8px;
+      }
+
+      &:last-child {
+        border-radius: 0 8px 8px 0;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid var(--border-color);
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background: var(--bg-hover);
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      padding: 14px 16px;
+      vertical-align: middle;
+    }
+  }
+}
+
+// ==========================================
+// Category Name Cell
+// ==========================================
+.category-name-cell {
+  width: 35%;
+}
+
+.category-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.category-rank {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--slate-light);
+  color: var(--slate);
+
+  &.top-rank {
+    background: var(--brand-teal-light);
+    color: var(--brand-teal-dark);
+  }
+}
+
+.category-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+// ==========================================
+// Sales Cell
+// ==========================================
+.sales-cell {
+  width: 30%;
+}
+
+.sales-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+// ==========================================
+// Percentage Cell
+// ==========================================
+.percentage-cell {
+  width: 35%;
+}
+
+.percentage-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.percentage-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+
+  &.high {
+    background: linear-gradient(90deg, var(--brand-teal) 0%, var(--brand-teal-dark) 100%);
+  }
+
+  &.medium {
+    background: linear-gradient(90deg, var(--emerald) 0%, #059669 100%);
+  }
+
+  &.low {
+    background: linear-gradient(90deg, var(--amber) 0%, #d97706 100%);
+  }
+}
+
+// ==========================================
+// Empty State
+// ==========================================
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+
+  .empty-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    svg {
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+  }
+}
+
+// ==========================================
+// Responsive
+// ==========================================
+@media (max-width: 768px) {
+  .card-body {
+    padding: 16px;
+  }
+
+  .top-category {
+    padding: 16px;
+  }
+
+  .top-category-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .top-category-value {
+    font-size: 24px;
+  }
+
+  .categories-table {
+    thead th,
+    tbody td {
+      padding: 12px;
+    }
+  }
+
+  .category-rank {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    font-size: 11px;
+  }
+
+  .category-name {
+    font-size: 13px;
+  }
+
+  .sales-value {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 576px) {
+  .categories-table {
+    thead th:first-child,
+    tbody td:first-child {
+      padding-left: 8px;
+    }
+
+    thead th:last-child,
+    tbody td:last-child {
+      padding-right: 8px;
+    }
+  }
+
+  .category-name-cell {
+    width: 40%;
+  }
+
+  .sales-cell {
+    width: 30%;
+  }
+
+  .percentage-cell {
+    width: 30%;
+  }
+
+  .percentage-value {
+    font-size: 12px;
+  }
+}
+
+// ==========================================
+// RTL Support
+// ==========================================
+[dir="rtl"] {
+  .top-category {
+    flex-direction: row-reverse;
+  }
+
+  .top-category-content {
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .category-info {
+    flex-direction: row-reverse;
+  }
+
+  .categories-table {
+    thead th,
+    tbody td {
+      text-align: right;
+    }
+
+    thead th:first-child {
+      border-radius: 0 8px 8px 0;
+    }
+
+    thead th:last-child {
+      border-radius: 8px 0 0 8px;
+    }
+  }
+
+  .percentage-wrapper {
+    align-items: flex-end;
+  }
+
+  .progress-bar-fill {
+    margin-left: auto;
+    margin-right: 0;
+  }
+}

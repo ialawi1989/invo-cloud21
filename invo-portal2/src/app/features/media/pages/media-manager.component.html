@@ -1,0 +1,421 @@
+<!-- Media Manager — main-layout already provides background + padding -->
+<div class="max-w-7xl mx-auto">
+
+    <!-- Header Section -->
+    <div class="mb-6">
+      <app-breadcrumbs [items]="breadcrumbs" navClass="mb-2" />
+
+      <div class="flex items-center justify-between mb-2">
+        <h1 class="text-4xl font-bold text-slate-900">Media Manager</h1>
+        <button
+          (click)="openUploadPanel()"
+          class="flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-700 text-white px-6 py-3 rounded-lg hover:from-brand-600 hover:to-brand-800 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          Upload Media
+        </button>
+      </div>
+      <p class="text-slate-600">Manage and organize your media assets</p>
+    </div>
+
+    <!-- Media Type Tabs -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 overflow-hidden">
+      <div class="flex flex-wrap gap-1 p-2 border-b border-slate-200">
+
+        <!-- All Media Tab -->
+        <button
+          (click)="setTab('all')"
+          [class]="'flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all ' +
+            (currentTab() === 'all' ? 'bg-brand-50 text-brand-700 font-medium shadow-sm' : 'text-slate-600 hover:bg-slate-50')">
+          <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect width="18" height="18" x="3" y="3" rx="2"/>
+            <path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>
+          </svg>
+          <span>All Media</span>
+          <span [class]="'text-xs px-2 py-0.5 rounded-full ' +
+            (currentTab() === 'all' ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600')">
+            {{ tabCount('all') }}
+          </span>
+        </button>
+
+        <!-- Images Tab -->
+        <button
+          (click)="setTab('images')"
+          [class]="'flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all ' +
+            (currentTab() === 'images' ? 'bg-brand-50 text-brand-700 font-medium shadow-sm' : 'text-slate-600 hover:bg-slate-50')">
+          <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+            <circle cx="9" cy="9" r="2"/>
+            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+          </svg>
+          <span>Images</span>
+          <span [class]="'text-xs px-2 py-0.5 rounded-full ' +
+            (currentTab() === 'images' ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600')">
+            {{ tabCount('images') }}
+          </span>
+        </button>
+
+        <!-- Documents Tab -->
+        <button
+          (click)="setTab('documents')"
+          [class]="'flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all ' +
+            (currentTab() === 'documents' ? 'bg-brand-50 text-brand-700 font-medium shadow-sm' : 'text-slate-600 hover:bg-slate-50')">
+          <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/>
+            <path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>
+          </svg>
+          <span>Documents</span>
+          <span [class]="'text-xs px-2 py-0.5 rounded-full ' +
+            (currentTab() === 'documents' ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600')">
+            {{ tabCount('documents') }}
+          </span>
+        </button>
+
+        <!-- Videos Tab -->
+        <button
+          (click)="setTab('videos')"
+          [class]="'flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all ' +
+            (currentTab() === 'videos' ? 'bg-brand-50 text-brand-700 font-medium shadow-sm' : 'text-slate-600 hover:bg-slate-50')">
+          <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="m22 8-6 4 6 4V8Z"/>
+            <rect width="14" height="12" x="2" y="6" rx="2" ry="2"/>
+          </svg>
+          <span>Videos</span>
+          <span [class]="'text-xs px-2 py-0.5 rounded-full ' +
+            (currentTab() === 'videos' ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600')">
+            {{ tabCount('videos') }}
+          </span>
+        </button>
+
+        <!-- Audio Tab -->
+        <button
+          (click)="setTab('audio')"
+          [class]="'flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all ' +
+            (currentTab() === 'audio' ? 'bg-brand-50 text-brand-700 font-medium shadow-sm' : 'text-slate-600 hover:bg-slate-50')">
+          <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M9 18V5l12-2v13"/>
+            <circle cx="6" cy="18" r="3"/>
+            <circle cx="18" cy="16" r="3"/>
+          </svg>
+          <span>Audio</span>
+          <span [class]="'text-xs px-2 py-0.5 rounded-full ' +
+            (currentTab() === 'audio' ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600')">
+            {{ tabCount('audio') }}
+          </span>
+        </button>
+
+        <!-- 3D Models Tab -->
+        <button
+          (click)="setTab('models')"
+          [class]="'flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all ' +
+            (currentTab() === 'models' ? 'bg-brand-50 text-brand-700 font-medium shadow-sm' : 'text-slate-600 hover:bg-slate-50')">
+          <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+            <path d="m3.3 7 8.7 5 8.7-5M12 22V12"/>
+          </svg>
+          <span>3D Models</span>
+          <span [class]="'text-xs px-2 py-0.5 rounded-full ' +
+            (currentTab() === 'models' ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600')">
+            {{ tabCount('models') }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Search and Controls Bar -->
+      <div class="bg-slate-50 border-b border-slate-200">
+        <div class="flex flex-wrap gap-3 items-center justify-between p-4">
+
+          <!-- Search Input -->
+          <div class="relative flex-1 min-w-[240px] max-w-md">
+            <div class="absolute inset-y-0 start-3 flex items-center pointer-events-none">
+              <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.3-4.3"/>
+              </svg>
+            </div>
+            <input
+              type="text"
+              autocomplete="off"
+              spellcheck="false"
+              name="media-search"
+              placeholder="Search media..."
+              [value]="searchQuery()"
+              (input)="onSearchInput($event)"
+              class="w-full ps-10 pe-9 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white">
+            @if (searchQuery()) {
+              <button
+                (click)="clearSearch()"
+                class="absolute inset-y-0 end-2 flex items-center p-1 text-slate-400 hover:text-slate-700 rounded"
+                aria-label="Clear search">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            }
+          </div>
+
+          <!-- Action Controls -->
+          <div class="flex items-center gap-2">
+
+            <!-- Selection Actions (shown when items selected) -->
+            @if (selectedItems().length > 0) {
+              <div class="flex items-center gap-2 me-2">
+                <span class="text-sm text-brand-600 font-medium">{{ selectedItems().length }} selected</span>
+                <button
+                  (click)="downloadSelected()"
+                  class="p-2 text-slate-600 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
+                  title="Download selected">
+                  <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                  </svg>
+                </button>
+                <button
+                  (click)="deleteSelected()"
+                  [disabled]="deleting()"
+                  class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Delete selected">
+                  @if (deleting()) {
+                    <app-spinner size="sm" />
+                  } @else {
+                    <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                      <line x1="10" x2="10" y1="11" y2="17"/>
+                      <line x1="14" x2="14" y1="11" y2="17"/>
+                    </svg>
+                  }
+                </button>
+                <button
+                  (click)="clearSelection()"
+                  class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                  title="Clear selection">
+                  <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            }
+
+            <!-- Filter Button -->
+            <button
+              type="button"
+              (click)="toggleFilters()"
+              [class]="'relative p-2 rounded-lg transition-colors ' +
+                (showFilters() || hasActiveFilters() ? 'text-brand-600 bg-brand-50' : 'text-slate-600 hover:text-brand-600 hover:bg-brand-50')"
+              title="Filters">
+              <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+              </svg>
+              @if (hasActiveFilters()) {
+                <span class="absolute top-1 end-1 w-2 h-2 bg-brand-600 rounded-full"></span>
+              }
+            </button>
+
+            <!-- Refresh Button -->
+            <button
+              type="button"
+              (click)="refresh()"
+              [disabled]="loading()"
+              class="p-2 rounded-lg text-slate-600 hover:text-brand-600 hover:bg-brand-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Refresh">
+              @if (loading()) {
+                <app-spinner [size]="18" class="text-brand-600" />
+              } @else {
+                <svg class="w-[18px] h-[18px]"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <polyline points="23 4 23 10 17 10"/>
+                  <polyline points="1 20 1 14 7 14"/>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+              }
+            </button>
+
+            <!-- View Mode Toggle -->
+            <div class="flex gap-1 bg-slate-200 rounded-lg p-1">
+              <button
+                (click)="setViewMode('grid')"
+                [class]="'p-2 rounded transition-colors ' +
+                  (viewMode() === 'grid' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-600 hover:text-slate-900')">
+                <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect width="18" height="18" x="3" y="3" rx="2"/>
+                  <path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>
+                </svg>
+              </button>
+              <button
+                (click)="setViewMode('list')"
+                [class]="'p-2 rounded transition-colors ' +
+                  (viewMode() === 'list' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-600 hover:text-slate-900')">
+                <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <line x1="8" x2="21" y1="6" y2="6"/>
+                  <line x1="8" x2="21" y1="12" y2="12"/>
+                  <line x1="8" x2="21" y1="18" y2="18"/>
+                  <line x1="3" x2="3.01" y1="6" y2="6"/>
+                  <line x1="3" x2="3.01" y1="12" y2="12"/>
+                  <line x1="3" x2="3.01" y1="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Panel -->
+        @if (showFilters()) {
+          <div class="px-4 pb-4">
+            <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+              <!-- Body — fields grid -->
+              <div class="px-4 pt-4 pb-4 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-4">
+
+                <!-- Sort by -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Sort by</label>
+                  <div class="flex items-stretch gap-2">
+                    <div class="flex-1 min-w-0">
+                      <app-search-dropdown
+                        [items]="sortOptions"
+                        [displayWith]="sortOptionLabel"
+                        [compareWith]="sortOptionEq"
+                        [value]="selectedSortOption()"
+                        (valueChange)="onSortOptionChange($any($event))"
+                        [searchable]="false"
+                        [clearable]="false"
+                        placeholder="Sort by" />
+                    </div>
+                    <button
+                      type="button"
+                      (click)="setSort(sortField())"
+                      class="shrink-0 w-9 flex items-center justify-center border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-brand-600 transition-colors"
+                      [title]="sortDirection() === 'ASC' ? 'Ascending' : 'Descending'">
+                      <svg
+                        [class]="'w-4 h-4 transition-transform duration-200 ' + (sortDirection() === 'ASC' ? 'rotate-180' : '')"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M12 5v14M19 12l-7 7-7-7"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Date from -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">From date</label>
+                  <app-date-picker
+                    [value]="dateFromValue()"
+                    (valueChange)="onDateFromChange($any($event))"
+                    [max]="dateToValue()"
+                    placeholder="From date"
+                    displayFormat="yyyy-MM-dd" />
+                </div>
+
+                <!-- Date to -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">To date</label>
+                  <app-date-picker
+                    [value]="dateToValue()"
+                    (valueChange)="onDateToChange($any($event))"
+                    [min]="dateFromValue()"
+                    placeholder="To date"
+                    displayFormat="yyyy-MM-dd" />
+                </div>
+
+                <!-- Size range -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">Size</label>
+                  <app-range-slider
+                    [value]="sizeRange()"
+                    (valueChange)="onSizeRangeChange($any($event))"
+                    [floor]="0"
+                    [ceiling]="sizeCeilingKb"
+                    [step]="10"
+                    unit="KB"
+                    labelPosition="bottom"
+                    [showBounds]="false" />
+                </div>
+              </div>
+
+              <!-- Footer — runs edge-to-edge thanks to parent overflow-hidden -->
+              <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-slate-100 bg-slate-50/40">
+                <button
+                  type="button"
+                  (click)="clearFilters()"
+                  class="px-4 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  (click)="applyFilters()"
+                  class="px-4 py-2 text-sm font-medium bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors">
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Media Library -->
+    <div class="relative bg-white rounded-xl shadow-sm border border-slate-200 p-6 overflow-hidden">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-slate-900">
+          Media Library
+          <span class="text-sm font-normal text-slate-500 ms-2">
+            {{ count() }} {{ count() === 1 ? 'item' : 'items' }}
+          </span>
+        </h2>
+      </div>
+
+      <!-- Backdrop overlay during fetches — container mode (covers only this card) -->
+      <app-loading-overlay [show]="loading()" message="Loading media…" />
+
+      <!-- Empty State -->
+      @if (!loading() && mediaData().length === 0) {
+        <div class="text-center py-16">
+          <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+              <circle cx="9" cy="9" r="2"/>
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-slate-900 mb-1">No media found</h3>
+          <p class="text-slate-600">Try adjusting your filters or search query</p>
+        </div>
+      }
+
+      <!-- Media Gallery Component -->
+      @if (mediaData().length > 0) {
+        <app-media-gallery
+          [media]="mediaData()"
+          [viewMode]="viewMode()"
+          [selectedItems]="selectedItems()"
+          (mediaEdit)="onMediaEdit($event)"
+          (mediaDetach)="openDetachModal($event)"
+          (selectionChange)="onMediaSelected($event)">
+        </app-media-gallery>
+      }
+
+      <!-- Pagination -->
+      @if (pageCount() > 1) {
+        <div class="mt-6 pt-4 border-t border-slate-200">
+          <app-pagination
+            [page]="page()"
+            [pageSize]="pageSize()"
+            [count]="count()"
+            [pageCount]="pageCount()"
+            [disabled]="loading()"
+            (pageChange)="goToPage($event)"
+            (pageSizeChange)="setPageSize($event)" />
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Detach modal (renders only when a media item is being detached) -->
+  @if (detachTarget()) {
+    <app-detach-media
+      [media]="detachTarget()"
+      (confirmed)="onDetachConfirmed($any($event))"
+      (cancelled)="closeDetachModal()" />
+  }
+
+  <!-- Full-screen overlay during destructive saves (detach in flight) -->
+  <app-loading-overlay [show]="detaching()" message="Detaching…" />

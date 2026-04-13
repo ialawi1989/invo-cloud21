@@ -1,0 +1,120 @@
+<div class="card">
+  <div class="card-body">
+
+    <!-- Header Row -->
+    <div class="header-row">
+      <h4 class="card-title mb-0">{{ "DASHBOARD.PAYMENTS_FLOW" | translate }}</h4>
+      <div class="filter-buttons">
+        <button type="button" class="filter-btn"
+          (click)="updatePayableOptions('all')"
+          [class.active]="activeOptionPaymentButton == 'all'">
+          {{ "GENERAL.ALL" | translate }}
+        </button>
+        <button type="button" class="filter-btn filter-btn--cash"
+          (click)="updatePayableOptions('cash')"
+          [class.active]="activeOptionPaymentButton == 'cash'">
+          {{ "DASHBOARD.CASH" | translate }}
+        </button>
+        <button type="button" class="filter-btn filter-btn--bank"
+          (click)="updatePayableOptions('bank')"
+          [class.active]="activeOptionPaymentButton == 'bank'">
+          {{ "DASHBOARD.BANK" | translate }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="flow-stats">
+      <!-- Opening -->
+      <div class="flow-stat">
+        <div class="flow-stat-icon flow-stat-icon--neutral">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="flow-stat-content">
+          <span class="flow-stat-label">{{ "DASHBOARD.OPENING_AS_ON" | translate }} {{ from | date : "dd MMM YYYY" }}</span>
+          <span class="flow-stat-value">{{ getOpeningForCurrentPeriod | mycurrency }}</span>
+        </div>
+      </div>
+
+      <!-- Incoming -->
+      <div class="flow-stat">
+        <div class="flow-stat-icon flow-stat-icon--success">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+            <polyline points="17 6 23 6 23 12"></polyline>
+          </svg>
+        </div>
+        <div class="flow-stat-content">
+          <span class="flow-stat-label flow-stat-label--success">{{ "DASHBOARD.INCOMING" | translate }}</span>
+          <span class="flow-stat-value flow-stat-value--success">{{ getIncomingForCurrentPeriod | mycurrency }}</span>
+        </div>
+      </div>
+
+      <!-- Outgoing -->
+      <div class="flow-stat">
+        <div class="flow-stat-icon flow-stat-icon--danger">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+            <polyline points="17 18 23 18 23 12"></polyline>
+          </svg>
+        </div>
+        <div class="flow-stat-content">
+          <span class="flow-stat-label flow-stat-label--danger">{{ "DASHBOARD.OUTGOING" | translate }}</span>
+          <span class="flow-stat-value flow-stat-value--danger">{{ getOutgoingForCurrentPeriod | mycurrency }}</span>
+        </div>
+      </div>
+
+      <!-- Closing -->
+      <div class="flow-stat">
+        <div class="flow-stat-icon flow-stat-icon--neutral">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div class="flow-stat-content">
+          <span class="flow-stat-label">{{ "DASHBOARD.CLOSING_AS_ON" | translate }} {{ to | date : "dd MMM YYYY" }}</span>
+          <span class="flow-stat-value">{{ getClosingForCurrentPeriod | mycurrency }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-row">
+      <div class="legend-wrapper">
+        <div class="legend-item legend-item--cash" *ngIf="activeOptionPaymentButton === 'all' || activeOptionPaymentButton === 'cash'">
+          <span class="legend-dot"></span>
+          <span class="legend-label">{{ "DASHBOARD.CASH" | translate }}</span>
+        </div>
+        <div class="legend-item legend-item--bank" *ngIf="activeOptionPaymentButton === 'all' || activeOptionPaymentButton === 'bank'">
+          <span class="legend-dot"></span>
+          <span class="legend-label">{{ "DASHBOARD.BANK" | translate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+      <apx-chart
+        #chartPayment
+        class="apex-charts"
+        [chart]="paymentsChart.chart"
+        [series]="paymentsChart.series"
+        [legend]="paymentsChart.legend"
+        [colors]="paymentsChart.colors"
+        [fill]="paymentsChart.fill"
+        [dataLabels]="paymentsChart.dataLabels"
+        [xaxis]="paymentsChart.xaxis"
+        [stroke]="paymentsChart.stroke">
+      </apx-chart>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,272 @@
+@use 'tailwindcss';
+@use 'styles/content-library-design-system';
+
+// ── Brand color palette (#32acc1 spectrum) ───────────────────────────────────
+// Tailwind v4 reads `@theme` to register custom design tokens. Once defined
+// here, the utilities `bg-brand-50` … `bg-brand-950`, `text-brand-*`,
+// `ring-brand-*`, `border-brand-*`, etc. become available everywhere.
+//
+// All shades are tuned around HSL(190°, ~60%) — the family of #32acc1.
+// Change ONE value here and the entire app's brand color updates.
+@theme {
+  --color-brand-50:  #effbfd;
+  --color-brand-100: #d6f4f8;
+  --color-brand-200: #afe7ef;
+  --color-brand-300: #7ad3df;
+  --color-brand-400: #43b9c9;
+  --color-brand-500: #32acc1;
+  --color-brand-600: #2691a4;
+  --color-brand-700: #207484;
+  --color-brand-800: #1d5d6b;
+  --color-brand-900: #1a4e5a;
+  --color-brand-950: #0c343d;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+// Tailwind v4 removed `cursor: pointer` from `<button>` in its preflight
+// (HTML's actual default is `default`). Restore the v3 behavior project-wide
+// so every button still feels clickable. Disabled buttons keep whatever
+// cursor the consumer specified (typically `not-allowed`).
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+// Keep `html` at the browser default of 16px so Tailwind's rem-based scale
+// (text-sm = 14px, text-base = 16px, etc.) renders at the sizes its authors
+// designed. Page content can still feel compact via `body` overrides.
+html {
+  font-size: 16px;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: #f8fafc;
+  color: #111827;
+}
+
+// Comfortable base reading size for body copy in this admin app.
+// Tailwind utilities use rem so they stay independent of this value —
+// `text-sm` is always 14px, `text-base` is always 16px, etc.
+body {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+a { color: inherit; }
+button { font-family: inherit; }
+
+// ── Custom scrollbar (thin, subtle, matches the brand) ───────────────────────
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+// Hide native number-input spinners (Chrome / Edge / Safari + Firefox).
+// Apply via the `.no-spinner` class on `<input type="number">` to keep them
+// visually consistent with text inputs and styled controls.
+.no-spinner {
+  -moz-appearance: textfield;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+// ── CDK Modal ────────────────────────────────────────────────────────────────
+@import '@angular/cdk/overlay-prebuilt.css';
+
+.invo-modal-backdrop {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+/* Lock page scroll for full-height pages (e.g. CMS collection) */
+body:has(.main-content.no-padding) {
+  overflow: hidden;
+  height: 100vh;
+}
+
+.invo-modal-panel {
+  border-radius: 16px;
+  overflow: visible !important;
+}
+
+// On small screens, modals go full-screen — no margins, no rounding.
+// Uses !important to override CDK's inline styles on the overlay pane.
+@media (max-width: 640px) {
+  .cdk-global-overlay-wrapper {
+    padding: 0 !important;
+  }
+  .invo-modal-panel {
+    width: 100vw !important;
+    min-width: 100vw !important;
+    max-width: none !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+  }
+  .invo-modal-panel .modal-panel,
+  .invo-modal-panel app-modal-container,
+  .invo-modal-panel app-modal-container .modal-panel {
+    border-radius: 0 !important;
+    max-height: 100vh !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    box-shadow: none !important;
+  }
+}
+
+
+// Upload toast overlay pane — rendered via CDK Overlay inside the global
+// cdk-overlay-container. Needs higher z-index than modal panes (1000)
+// and must not be blocked by the modal backdrop.
+.cdk-overlay-pane.upload-toast-pane {
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+  position: fixed !important;
+}
+
+// Animation — open
+// IMPORTANT: only animate opacity on the pane itself.
+// Do NOT use `transform` here — it conflicts with CDK's inline
+// `transform: translate()` that handles centering.
+// Scale/translate animations go on the inner .modal-panel instead.
+.cdk-overlay-pane.invo-modal-panel {
+  animation: modal-pane-in 0.12s ease-out both;
+}
+@keyframes modal-pane-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.invo-modal-panel .modal-panel {
+  animation: modal-content-in 0.12s ease-out both;
+}
+@keyframes modal-content-in {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+// Animation — close (triggered by ModalRef adding .modal-closing)
+.cdk-overlay-pane.modal-closing {
+  animation: modal-pane-out 0.2s ease-in both;
+}
+.modal-closing .modal-panel {
+  animation: modal-content-out 0.2s cubic-bezier(0.4, 0, 1, 1) both;
+}
+@keyframes modal-pane-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes modal-content-out {
+  from { transform: scale(1) translateY(0); }
+  to   { transform: scale(0.96) translateY(8px); }
+}
+
+// ── Drawer (slide panel) ─────────────────────────────────────────────────────
+
+// LTR: slides in from the right
+.invo-drawer-panel--ltr {
+  animation: drawer-in-ltr 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes drawer-in-ltr {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+// Mobile: slides up from bottom
+.invo-drawer-panel--bottom {
+  animation: drawer-in-bottom 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes drawer-in-bottom {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+// RTL: slides in from the left
+.invo-drawer-panel--rtl {
+  animation: drawer-in-rtl 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes drawer-in-rtl {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+// ── Drawer flush-edge fix ────────────────────────────────────────────────────
+// CDK overlay container adds padding — override so drawer is edge-to-edge
+.cdk-overlay-container {
+  .invo-drawer-panel--ltr,
+  .invo-drawer-panel--rtl {
+    margin: 0 !important;
+    padding: 0 !important;
+    // No border-radius on the screen edge
+    app-drawer-container .drawer-panel {
+      height: 100vh;
+      max-height: 100vh;
+      overflow-y: auto;
+    }
+  }
+}
+
+// Panel itself gets no margin from CDK
+.invo-drawer-panel--ltr {
+  margin-right: 0 !important;
+}
+.invo-drawer-panel--rtl {
+  margin-left: 0 !important;
+}
+
+// ── Global tooltip ────────────────────────────────────────────────────────────
+// Appended to body by TooltipDirective — works inside fixed/sticky containers
+.invo-tooltip {
+  position: fixed;
+  background: #111827; color: #fff;
+  font-size: 12px; font-weight: 500; white-space: nowrap;
+  padding: 5px 10px; border-radius: 6px;
+  pointer-events: none; z-index: 99999;
+  opacity: 0; transition: opacity .15s ease;
+}
+.invo-tooltip.invo-tooltip--visible { opacity: 1; }
+
+// Arrow — below element (default): arrow points up
+// --arrow-left is set by the directive to point at the host element center
+.invo-tooltip::before {
+  content: '';
+  position: absolute; bottom: 100%;
+  left: var(--arrow-left, 50%);
+  transform: translateX(-50%);
+  border: 5px solid transparent; border-bottom-color: #111827;
+}
+
+// Arrow — above element: arrow points down
+.invo-tooltip.invo-tooltip--above::before {
+  bottom: auto; top: 100%;
+  border-bottom-color: transparent; border-top-color: #111827;
+}

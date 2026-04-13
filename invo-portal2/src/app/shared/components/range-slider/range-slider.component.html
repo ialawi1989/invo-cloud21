@@ -1,0 +1,154 @@
+<!--
+  Layout adapts based on [labelPosition]:
+    'top'     → labels above track (stacked)
+    'bottom'  → labels below track (stacked) ← default
+    'inline'  → labels left/right of track (single row)
+    'tooltip' → labels only while dragging, as floating tooltips
+-->
+
+<!-- ═══ TOP LABELS ════════════════════════════════════════════════════════ -->
+@if (showLabels() && labelPosition() === 'top') {
+  <div class="flex items-center justify-between mb-1.5">
+    <span class="text-sm font-medium text-slate-700 tabular-nums">{{ range() ? minLabel() : singleLabel() }}</span>
+    @if (range()) {
+      <span class="text-sm font-medium text-slate-700 tabular-nums">{{ maxLabel() }}</span>
+    }
+  </div>
+}
+
+<!-- ═══ INLINE WRAPPER (labels + track in one row) ═════════════════════ -->
+@if (labelPosition() === 'inline') {
+  <div class="flex items-center gap-3">
+    @if (showLabels()) {
+      <span class="shrink-0 text-sm font-medium text-slate-700 tabular-nums min-w-[3rem] text-end">
+        {{ range() ? minLabel() : singleLabel() }}
+      </span>
+    }
+    <ng-container [ngTemplateOutlet]="trackTpl" />
+    @if (showLabels() && range()) {
+      <span class="shrink-0 text-sm font-medium text-slate-700 tabular-nums min-w-[3rem] text-start">
+        {{ maxLabel() }}
+      </span>
+    }
+  </div>
+}
+
+<!-- ═══ STACKED TRACK (top / bottom / tooltip layouts) ═════════════════ -->
+@if (labelPosition() !== 'inline') {
+  <ng-container [ngTemplateOutlet]="trackTpl" />
+}
+
+<!-- ═══ BOTTOM LABELS ═════════════════════════════════════════════════════ -->
+@if (showLabels() && labelPosition() === 'bottom') {
+  <div class="flex items-center justify-between mt-0.5">
+    <span class="text-xs text-slate-500 tabular-nums">{{ range() ? minLabel() : singleLabel() }}</span>
+    @if (range()) {
+      <span class="text-xs text-slate-500 tabular-nums">{{ maxLabel() }}</span>
+    }
+  </div>
+}
+
+<!-- ═══ BOUNDS (floor / ceiling) ═══════════════════════════════════════ -->
+@if (showBounds() && labelPosition() !== 'inline') {
+  <div class="flex items-center justify-between mt-0.5 text-xs text-slate-400">
+    <span>{{ floorLabel() }}</span>
+    <span>{{ ceilingLabel() }}</span>
+  </div>
+}
+
+<!--
+  ─────────────────────────────────────────────────────────────────────────
+  Track template (shared across all layout modes)
+  ─────────────────────────────────────────────────────────────────────────
+-->
+<ng-template #trackTpl>
+  <div
+    #track
+    class="relative w-full h-5 flex items-center select-none touch-none"
+    [class.opacity-50]="isDisabled()"
+    [class.cursor-not-allowed]="isDisabled()"
+    (pointerdown)="onTrackPointerDown($event)"
+    (pointermove)="onTrackPointerMove($event)"
+    (pointerup)="onTrackPointerUp()"
+    (pointercancel)="onTrackPointerUp()">
+
+    <!-- Rail -->
+    <div class="absolute inset-x-0 h-1 rounded-full bg-slate-200"></div>
+
+    <!-- Filled track -->
+    @if (range()) {
+      <div
+        class="absolute h-1 rounded-full bg-brand-500 transition-[left,right,width] duration-75"
+        [style.inset-inline-start.%]="pctMin()"
+        [style.width.%]="pctMax() - pctMin()">
+      </div>
+    } @else {
+      <div
+        class="absolute h-1 rounded-full bg-brand-500 transition-[width] duration-75"
+        [style.inset-inline-start.%]="0"
+        [style.width.%]="pctMin()">
+      </div>
+    }
+
+    <!-- Min thumb -->
+    <div
+      class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10"
+      [style.inset-inline-start.%]="pctMin()">
+      <button
+        type="button"
+        [disabled]="isDisabled()"
+        (keydown)="onThumbKeydown($event, 'min')"
+        [attr.aria-valuenow]="_min()"
+        [attr.aria-valuemin]="floor()"
+        [attr.aria-valuemax]="range() ? _max() : ceiling()"
+        [attr.aria-label]="range() ? 'Minimum value' : 'Value'"
+        role="slider"
+        [class]="
+          'w-4 h-4 rounded-full border-2 border-brand-500 bg-white shadow-sm ' +
+          'focus:outline-none focus:ring-2 focus:ring-brand-300 focus:ring-offset-1 ' +
+          'hover:scale-110 active:scale-95 transition-transform ' +
+          (activeThumb() === 'min' ? 'scale-110 ring-2 ring-brand-300 ring-offset-1' : '')
+        ">
+      </button>
+
+      <!-- Tooltip (only in tooltip mode, while dragging) -->
+      @if (labelPosition() === 'tooltip' && activeThumb() === 'min') {
+        <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-0.5 text-xs font-semibold text-white bg-brand-600 rounded shadow whitespace-nowrap pointer-events-none">
+          {{ range() ? minLabel() : singleLabel() }}
+          <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-brand-600"></div>
+        </div>
+      }
+    </div>
+
+    <!-- Max thumb (range only) -->
+    @if (range()) {
+      <div
+        class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10"
+        [style.inset-inline-start.%]="pctMax()">
+        <button
+          type="button"
+          [disabled]="isDisabled()"
+          (keydown)="onThumbKeydown($event, 'max')"
+          [attr.aria-valuenow]="_max()"
+          [attr.aria-valuemin]="_min()"
+          [attr.aria-valuemax]="ceiling()"
+          aria-label="Maximum value"
+          role="slider"
+          [class]="
+            'w-4 h-4 rounded-full border-2 border-brand-500 bg-white shadow-sm ' +
+            'focus:outline-none focus:ring-2 focus:ring-brand-300 focus:ring-offset-1 ' +
+            'hover:scale-110 active:scale-95 transition-transform ' +
+            (activeThumb() === 'max' ? 'scale-110 ring-2 ring-brand-300 ring-offset-1' : '')
+          ">
+        </button>
+
+        @if (labelPosition() === 'tooltip' && activeThumb() === 'max') {
+          <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-0.5 text-xs font-semibold text-white bg-brand-600 rounded shadow whitespace-nowrap pointer-events-none">
+            {{ maxLabel() }}
+            <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-brand-600"></div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</ng-template>

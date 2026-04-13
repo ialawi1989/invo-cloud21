@@ -1,0 +1,403 @@
+// ==========================================
+// Sales by Employee Styles - Emerald Theme
+// ==========================================
+
+:host {
+  display: block;
+
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #fbfbfb;
+  --bg-card: #ffffff;
+  --bg-hover: rgba(16, 185, 129, 0.04);
+  --border-color: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --emerald: #10b981;
+  --emerald-dark: #059669;
+  --emerald-light: rgba(16, 185, 129, 0.1);
+  --emerald-border: rgba(16, 185, 129, 0.3);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-card);
+}
+
+.card-body {
+  padding: 24px;
+}
+
+// ==========================================
+// Header Row
+// ==========================================
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+}
+
+// ==========================================
+// Employees Table
+// ==========================================
+.employees-table {
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead {
+    tr {
+      background: var(--bg-tertiary);
+    }
+
+    th {
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+
+      &:first-child {
+        border-radius: 8px 0 0 8px;
+      }
+
+      &:last-child {
+        border-radius: 0 8px 8px 0;
+      }
+
+      &.sortable {
+        cursor: pointer;
+        user-select: none;
+        transition: color 0.15s ease;
+
+        &:hover {
+          color: var(--emerald-dark);
+        }
+
+        .sort-icon {
+          display: inline-flex;
+          margin-left: 4px;
+          opacity: 0.3;
+          transition: opacity 0.15s ease;
+
+          svg {
+            width: 14px;
+            height: 14px;
+          }
+        }
+
+        &.asc,
+        &.desc {
+          color: var(--emerald-dark);
+
+          .sort-icon {
+            opacity: 1;
+            color: var(--emerald);
+          }
+        }
+
+        &.asc .sort-icon svg path:last-child {
+          opacity: 0.3;
+        }
+
+        &.desc .sort-icon svg path:first-child {
+          opacity: 0.3;
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid var(--border-color);
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background: var(--bg-hover);
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      padding: 14px 16px;
+      vertical-align: middle;
+    }
+  }
+}
+
+// ==========================================
+// Employee Name Cell
+// ==========================================
+.employee-name-cell {
+  width: 30%;
+}
+
+.employee-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.employee-avatar {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.employee-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+// ==========================================
+// Qty Cell
+// ==========================================
+.qty-cell {
+  width: 15%;
+}
+
+.qty-badge {
+  display: inline-flex;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+}
+
+// ==========================================
+// Sales Cell
+// ==========================================
+.sales-cell {
+  width: 25%;
+}
+
+.sales-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+// ==========================================
+// Percentage Cell
+// ==========================================
+.percentage-cell {
+  width: 30%;
+}
+
+.percentage-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.percentage-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 50px;
+}
+
+// ==========================================
+// Empty State
+// ==========================================
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+
+  .empty-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    svg {
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+  }
+}
+
+// ==========================================
+// Responsive
+// ==========================================
+@media (max-width: 768px) {
+  .card-body {
+    padding: 16px;
+  }
+
+  .employees-table {
+    thead th,
+    tbody td {
+      padding: 12px;
+    }
+
+    // Hide table header on mobile
+    thead {
+      display: none;
+    }
+
+    tbody {
+      tr {
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        gap: 12px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        margin-bottom: 12px;
+
+        &:hover {
+          background: var(--bg-hover);
+        }
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0;
+        width: 100% !important;
+
+        &::before {
+          content: attr(data-label);
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--text-muted);
+          text-transform: uppercase;
+        }
+      }
+    }
+  }
+
+  .employee-name-cell {
+    order: -1;
+    padding-bottom: 12px !important;
+    border-bottom: 1px solid var(--border-color);
+
+    &::before {
+      display: none !important;
+    }
+  }
+
+  .employee-info {
+    width: 100%;
+  }
+
+  .percentage-wrapper {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .employee-avatar {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    font-size: 12px;
+  }
+
+  .employee-name {
+    font-size: 13px;
+  }
+
+  .sales-value {
+    font-size: 14px;
+  }
+
+  .qty-badge {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
+}
+
+// ==========================================
+// RTL Support
+// ==========================================
+[dir="rtl"] {
+  .employees-table {
+    thead th,
+    tbody td {
+      text-align: right;
+    }
+
+    thead th:first-child {
+      border-radius: 0 8px 8px 0;
+    }
+
+    thead th:last-child {
+      border-radius: 8px 0 0 8px;
+    }
+
+    th.sortable .sort-icon {
+      margin-left: 0;
+      margin-right: 4px;
+    }
+  }
+
+  .employee-info {
+    flex-direction: row-reverse;
+  }
+
+  .percentage-wrapper {
+    flex-direction: row-reverse;
+  }
+
+  .percentage-value {
+    text-align: left;
+  }
+
+  @media (max-width: 768px) {
+    .employees-table tbody td {
+      flex-direction: row-reverse;
+    }
+  }
+}

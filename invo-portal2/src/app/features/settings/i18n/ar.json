@@ -1,0 +1,92 @@
+{
+  "SETTINGS": {
+    "TITLE": "الإعدادات",
+    "SUBTITLE": "إدارة جميع إعداداتك في مكان واحد.",
+    "SEARCH_PLACEHOLDER": "البحث في الإعدادات…",
+
+    "GROUPS": {
+      "COMPANY":   "إعداد الشركة",
+      "POS":       "إعدادات نقطة البيع",
+      "INVOICE":   "إعدادات الفاتورة",
+      "ESTIMATE":  "إعدادات عرض السعر",
+      "EXPENSE":   "إعدادات المصروفات",
+      "PURCHASE":  "إعدادات أوامر الشراء",
+      "BILL":      "إعدادات الفواتير",
+      "TAX":       "إعداد الضريبة",
+      "PRICING":   "إعدادات التسعير",
+      "SHIPPING":  "الشحن والتوصيل",
+      "PROMOTION": "العروض والترقيات",
+      "OTHER":     "إعدادات أخرى"
+    },
+
+    "ITEMS": {
+      "BUSINESS_SETTINGS":         "إعدادات الأعمال",
+      "BUSINESS_SETTINGS_DESC":    "تخصيص تفاصيل الأعمال وإدارة الفروع والعناوين وغيرها.",
+      "ROUNDING_SETTINGS":         "إعدادات التقريب",
+      "ROUNDING_SETTINGS_DESC":    "تهيئة طريقة تقريب الأرقام إلى مستوى دقة معين.",
+      "BRANCH_SETTINGS":           "إعدادات الفرع",
+      "BRANCH_SETTINGS_DESC":      "إدارة تفاصيل الفرع والعناوين وساعات العمل والإعدادات التشغيلية.",
+      "CUSTOM_FIELDS":             "الحقول المخصصة",
+      "CUSTOM_FIELDS_DESC":        "أضف حقولك الخاصة وحدد قواعد الموقع.",
+      "PREFIX_SETTINGS":           "إعدادات البادئة",
+      "PREFIX_SETTINGS_DESC":      "تخصيص بادئات أنواع المستندات المختلفة.",
+
+      "POS_OPTIONS":               "خيارات نقطة البيع",
+      "POS_OPTIONS_DESC":          "تهيئة وإدارة خيارات نقطة البيع وإعدادات أمين الصندوق وقيود المبيعات وتفضيلات الطباعة.",
+      "KITCHEN_SECTION":           "قسم المطبخ",
+      "KITCHEN_SECTION_DESC":      "إدارة قسم المطبخ",
+      "TABLE_MANAGEMENT":          "إدارة الطاولات",
+      "TABLE_MANAGEMENT_DESC":     "إدارة أقسام الطاولات",
+      "MENU_BUILDER":              "منشئ القائمة",
+      "MENU_BUILDER_DESC":         "بناء شبكة القائمة الخاصة بك",
+      "RECEIPT_BUILDER":           "منشئ الإيصال",
+      "RECEIPT_BUILDER_DESC":      "بناء قوالب الإيصالات",
+
+      "INVOICE_BUILDER":           "منشئ الفاتورة",
+      "INVOICE_BUILDER_DESC":      "بناء قالب الفاتورة الخاص بك.",
+      "INVOICE_OPTIONS":           "خيارات الفاتورة",
+      "INVOICE_OPTIONS_DESC":      "تهيئة خيارات الفاتورة والملاحظات الافتراضية والشروط والأحكام.",
+
+      "ESTIMATE_BUILDER":          "منشئ عرض السعر",
+      "ESTIMATE_BUILDER_DESC":     "بناء قالب عرض السعر الخاص بك.",
+
+      "EXPENSE_BUILDER":           "منشئ المصروفات",
+      "EXPENSE_BUILDER_DESC":      "بناء قالب المصروفات الخاص بك.",
+
+      "PURCHASE_ORDER_BUILDER":    "منشئ أمر الشراء",
+      "PURCHASE_ORDER_BUILDER_DESC":"بناء قالب أمر الشراء الخاص بك.",
+
+      "BILL_BUILDER":              "منشئ الفاتورة الواردة",
+      "BILL_BUILDER_DESC":         "بناء قالب الفاتورة الواردة.",
+
+      "MANAGE_TAX":                "إدارة الضريبة",
+      "MANAGE_TAX_DESC":           "تهيئة معدلات الضريبة ومجموعات الضريبة وقواعد الضريبة لمعاملات أعمالك.",
+
+      "LABEL_BUILDER":             "منشئ التسمية",
+      "LABEL_BUILDER_DESC":        "تصميم وإدارة قوالب تسميات مخصصة لمنتجاتك.",
+      "PRICE_LABEL":               "تسمية السعر",
+      "PRICE_LABEL_DESC":          "إنشاء وإدارة قوالب تسميات الأسعار لمنتجاتك.",
+      "SURCHARGE":                 "إعداد الرسوم الإضافية",
+      "SURCHARGE_DESC":            "تهيئة قواعد الرسوم الإضافية والمبالغ وطرق التطبيق.",
+
+      "COVERED_ADDRESS":           "العناوين المشمولة",
+      "COVERED_ADDRESS_DESC":      "تحديد وإدارة العناوين التي تقدم فيها أعمالك خدمات التوصيل.",
+      "COVERED_ZONE":              "المناطق المشمولة",
+      "COVERED_ZONE_DESC":         "إعداد وإدارة مناطق جغرافية محددة للتوصيل أو الخدمة.",
+      "SHIPPING":                  "الشحن",
+      "SHIPPING_DESC":             "إعداد وإدارة طرق وأسعار الشحن.",
+      "SHIPPING_OPTIONS":          "خيارات الشحن",
+      "SHIPPING_OPTIONS_DESC":     "تهيئة خيارات وتفضيلات الشحن الإضافية.",
+
+      "DISCOUNT":                  "الخصومات",
+      "DISCOUNT_DESC":             "تهيئة قواعد الخصومات والحملات.",
+
+      "PAYMENT_METHODS":           "طرق الدفع",
+      "PAYMENT_METHODS_DESC":      "طرق الدفع والعملات والتهيئة للربط مع نقطة البيع والموقع.",
+      "SERVICE_MANAGEMENT":        "إدارة الخدمات",
+      "SERVICE_MANAGEMENT_DESC":   "تهيئة الخدمات التي تقدمها أعمالك بما في ذلك أنواع الخدمات والتسعير.",
+      "IMPORT_FROM_INVO":          "استيراد من إنفو",
+      "IMPORT_FROM_INVO_DESC":     "استيراد بيانات الشركة من حساب إنفو آخر."
+    }
+  }
+}

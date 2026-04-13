@@ -1,0 +1,165 @@
+<div class="media-upload-container">
+  <!-- Upload Area -->
+  <div 
+    class="upload-area"
+    [class.dragging]="isDragging()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+  >
+    <div class="upload-content">
+      <div class="upload-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      
+      <h3 class="upload-title">Drag & drop files here</h3>
+      <p class="upload-subtitle">or</p>
+      
+      <label for="file-input" class="upload-button">
+        <span>Browse Files</span>
+        <input
+          id="file-input"
+          type="file"
+          [multiple]="allowMultiple"
+          (change)="onFileInputChange($event)"
+          hidden
+        />
+      </label>
+      
+      <p class="upload-info">
+        Maximum file size: {{ formatFileSize(config.maxFileSize || 0) }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Selected Files Preview -->
+  @if (selectedFiles().length > 0 && showPreview) {
+    <div class="selected-files">
+      <div class="selected-files-header">
+        <h4>Selected Files ({{ selectedFiles().length }})</h4>
+        @if (!autoUpload && !isUploading()) {
+          <button class="btn-primary" (click)="uploadFiles()">
+            Upload All
+          </button>
+        }
+      </div>
+      
+      <div class="files-list">
+        @for (file of selectedFiles(); track file.name; let i = $index) {
+          <div class="file-item">
+            <div class="file-preview">
+              @if (mediaService.isImageFile(file)) {
+                <img [src]="getFilePreview(file)" alt="{{ file.name }}" />
+              } @else {
+                <div class="file-icon">
+                  @switch (getFileIconKind(file)) {
+                    @case ('pdf') {
+                      <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <path d="M9 13h1.5a1.5 1.5 0 0 1 0 3H9v-3zm0 0v5M14 13h2v5m-2-2.5h2"/>
+                      </svg>
+                    }
+                    @case ('doc') {
+                      <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="8" y1="13" x2="16" y2="13"/>
+                        <line x1="8" y1="17" x2="16" y2="17"/>
+                        <line x1="8" y1="9" x2="10" y2="9"/>
+                      </svg>
+                    }
+                    @case ('sheet') {
+                      <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="8" y1="13" x2="16" y2="13"/>
+                        <line x1="8" y1="17" x2="16" y2="17"/>
+                        <line x1="12" y1="13" x2="12" y2="19"/>
+                      </svg>
+                    }
+                    @case ('archive') {
+                      <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="4" rx="1"/>
+                        <path d="M5 7v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7"/>
+                        <line x1="10" y1="12" x2="14" y2="12"/>
+                      </svg>
+                    }
+                    @default {
+                      <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                      </svg>
+                    }
+                  }
+                </div>
+              }
+            </div>
+            
+            <div class="file-info">
+              <div class="file-name">{{ file.name }}</div>
+              <div class="file-size">{{ formatFileSize(file.size) }}</div>
+            </div>
+            
+            @if (!isUploading()) {
+              <button class="btn-remove" (click)="removeFile(i)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Upload Progress (hidden when showProgress=false, e.g. inside picker modal) -->
+  @if (showProgress && uploadItems().length > 0) {
+    <div class="upload-progress">
+      <div class="upload-progress-header">
+        <h4>Upload Progress</h4>
+        <button class="btn-link" (click)="mediaService.clearCompletedUploads()">
+          Clear Completed
+        </button>
+      </div>
+      
+      <div class="progress-list">
+        @for (item of uploadItems(); track item.id) {
+          <div class="progress-item" [class]="item.status">
+            <div class="progress-info">
+              <div class="progress-name">{{ item.name }}</div>
+              <div class="progress-stats">
+                <span class="progress-status">{{ getUploadStatus(item) }}</span>
+                @if (item.status === 'uploading') {
+                  <span class="progress-speed">{{ item.uploadSpeed }}</span>
+                  <span class="progress-time">{{ item.remainingTime }}</span>
+                }
+              </div>
+            </div>
+            
+            <div class="progress-bar-container">
+              <div 
+                class="progress-bar" 
+                [style.width.%]="item.progress"
+                [class.completed]="item.status === 'completed'"
+                [class.failed]="item.status === 'failed'"
+              ></div>
+            </div>
+            
+            @if (item.status === 'uploading') {
+              <button class="btn-cancel" (click)="cancelUpload(item.id)">
+                Cancel
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

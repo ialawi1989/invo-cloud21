@@ -1,0 +1,92 @@
+{
+  "SETTINGS": {
+    "TITLE": "Settings",
+    "SUBTITLE": "Manage all your settings in one place.",
+    "SEARCH_PLACEHOLDER": "Search settings…",
+
+    "GROUPS": {
+      "COMPANY":   "Company Setup",
+      "POS":       "POS Settings",
+      "INVOICE":   "Invoice Settings",
+      "ESTIMATE":  "Estimate Settings",
+      "EXPENSE":   "Expense Settings",
+      "PURCHASE":  "Purchase Order Settings",
+      "BILL":      "Bill Settings",
+      "TAX":       "Tax Setting",
+      "PRICING":   "Pricing Settings",
+      "SHIPPING":  "Shipping & Delivery",
+      "PROMOTION": "Promotion",
+      "OTHER":     "Other Settings"
+    },
+
+    "ITEMS": {
+      "BUSINESS_SETTINGS":         "Business Settings",
+      "BUSINESS_SETTINGS_DESC":    "Customise business details, manage branches, covered addresses and etc.",
+      "ROUNDING_SETTINGS":         "Rounding Settings",
+      "ROUNDING_SETTINGS_DESC":    "Configure how numbers are adjusted to a specific level of precision.",
+      "BRANCH_SETTINGS":           "Branch Settings",
+      "BRANCH_SETTINGS_DESC":      "Manage your branch details, addresses, working hours, and operational settings.",
+      "CUSTOM_FIELDS":             "Custom Fields",
+      "CUSTOM_FIELDS_DESC":        "Add your fields and define the location rules.",
+      "PREFIX_SETTINGS":           "Prefix Settings",
+      "PREFIX_SETTINGS_DESC":      "Customize the prefixes for various document types.",
+
+      "POS_OPTIONS":               "POS Options",
+      "POS_OPTIONS_DESC":          "Configure and manage point of sale options, including cashier settings, sales restrictions, printing preferences.",
+      "KITCHEN_SECTION":           "Kitchen Section",
+      "KITCHEN_SECTION_DESC":      "Manage Kitchen Section",
+      "TABLE_MANAGEMENT":          "Table Management",
+      "TABLE_MANAGEMENT_DESC":     "Manage Table Sections",
+      "MENU_BUILDER":              "Menu Builder",
+      "MENU_BUILDER_DESC":         "Build your menu grid",
+      "RECEIPT_BUILDER":           "Receipt Builder",
+      "RECEIPT_BUILDER_DESC":      "Build templates for the receipts",
+
+      "INVOICE_BUILDER":           "Invoice Builder",
+      "INVOICE_BUILDER_DESC":      "Build your invoice template.",
+      "INVOICE_OPTIONS":           "Invoice Options",
+      "INVOICE_OPTIONS_DESC":      "Configure invoice options, default notes, terms and conditions.",
+
+      "ESTIMATE_BUILDER":          "Estimate Builder",
+      "ESTIMATE_BUILDER_DESC":     "Build your estimate template.",
+
+      "EXPENSE_BUILDER":           "Expense Builder",
+      "EXPENSE_BUILDER_DESC":      "Build your expense template.",
+
+      "PURCHASE_ORDER_BUILDER":    "Purchase Order Builder",
+      "PURCHASE_ORDER_BUILDER_DESC":"Build your purchase order template.",
+
+      "BILL_BUILDER":              "Bill Builder",
+      "BILL_BUILDER_DESC":         "Build your bill template.",
+
+      "MANAGE_TAX":                "Manage Tax",
+      "MANAGE_TAX_DESC":           "Configure tax rates, tax groups, and tax rules for your business transactions.",
+
+      "LABEL_BUILDER":             "Label Builder",
+      "LABEL_BUILDER_DESC":        "Design and manage custom label templates for your products.",
+      "PRICE_LABEL":               "Price Label",
+      "PRICE_LABEL_DESC":          "Create and manage price label templates for your products.",
+      "SURCHARGE":                 "Surcharge Setting",
+      "SURCHARGE_DESC":            "Configure surcharge rules, amounts, and application methods.",
+
+      "COVERED_ADDRESS":           "Covered Address",
+      "COVERED_ADDRESS_DESC":      "Define and manage addresses where your business provides delivery or service.",
+      "COVERED_ZONE":              "Covered Zone",
+      "COVERED_ZONE_DESC":         "Set up and manage specific geographic zones for delivery or service.",
+      "SHIPPING":                  "Shipping",
+      "SHIPPING_DESC":             "Set up and manage shipping methods and rates.",
+      "SHIPPING_OPTIONS":          "Shipping Options",
+      "SHIPPING_OPTIONS_DESC":     "Configure additional shipping options and preferences.",
+
+      "DISCOUNT":                  "Discount",
+      "DISCOUNT_DESC":             "Configure discount rules and campaigns.",
+
+      "PAYMENT_METHODS":           "Payments Method",
+      "PAYMENT_METHODS_DESC":      "Payment methods, currencies, and configuration for linking to POS and website.",
+      "SERVICE_MANAGEMENT":        "Service Management",
+      "SERVICE_MANAGEMENT_DESC":   "Configure the services your business offers, including service types and pricing.",
+      "IMPORT_FROM_INVO":          "Import from Invo",
+      "IMPORT_FROM_INVO_DESC":     "Import company data from another Invo account."
+    }
+  }
+}

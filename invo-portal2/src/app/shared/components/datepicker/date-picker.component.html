@@ -1,0 +1,258 @@
+<!--
+  ─────────────────────────────────────────────────────────────────────────────
+  DatePickerComponent template
+  Two layouts (inline / popover) share a single calendar template.
+  ─────────────────────────────────────────────────────────────────────────────
+-->
+
+<!-- Inline layout: render the calendar directly. -->
+@if (inline()) {
+  <ng-container [ngTemplateOutlet]="calendarTpl" />
+}
+
+<!-- Popover layout: trigger button + body-mounted (or inline) overlay panel. -->
+@if (!inline()) {
+  <div class="relative inline-block w-full">
+    <button
+      #trigger
+      type="button"
+      cdkOverlayOrigin
+      #triggerOrigin="cdkOverlayOrigin"
+      [disabled]="isDisabled()"
+      (click)="toggle()"
+      [attr.aria-expanded]="isOpen()"
+      [attr.aria-haspopup]="'dialog'"
+      [class]="
+        'group w-full flex items-center justify-between gap-2 px-3 py-2 text-start text-sm ' +
+        'border rounded-lg bg-white transition-colors ' +
+        (isDisabled()
+          ? 'border-slate-200 text-slate-400 cursor-not-allowed bg-slate-50'
+          : isOpen()
+            ? 'border-brand-500 ring-2 ring-brand-100'
+            : 'border-slate-300 hover:border-slate-400 text-slate-700') +
+        ' ' + triggerClass()
+      ">
+
+      <span class="truncate flex-1">
+        @if (hasValue()) {
+          {{ displayLabel() }}
+        } @else {
+          <span class="text-slate-400">{{ placeholder() }}</span>
+        }
+      </span>
+
+      <span class="flex items-center gap-1 shrink-0">
+        @if (hasValue() && !isDisabled()) {
+          <button
+            type="button"
+            (click)="clear($event)"
+            class="p-0.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+            aria-label="Clear date">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        }
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+      </span>
+    </button>
+
+    <!-- Inline-mode panel (rare) -->
+    @if (!attachToBody() && isOpen()) {
+      <div
+        class="absolute start-0 top-full mt-1 z-50"
+        (click)="$event.stopPropagation()">
+        <ng-container [ngTemplateOutlet]="calendarTpl" />
+      </div>
+      <div class="fixed inset-0 z-40" (click)="close()"></div>
+    }
+  </div>
+
+  <!-- Body-mounted popover (default) -->
+  @if (attachToBody()) {
+    <ng-template
+      cdkConnectedOverlay
+      [cdkConnectedOverlayOrigin]="triggerOrigin"
+      [cdkConnectedOverlayOpen]="isOpen()"
+      [cdkConnectedOverlayHasBackdrop]="true"
+      cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+      [cdkConnectedOverlayPanelClass]="panelClass()"
+      [cdkConnectedOverlayMinWidth]="triggerWidth()"
+      [cdkConnectedOverlayFlexibleDimensions]="true"
+      [cdkConnectedOverlayPositions]="[
+        { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top',    offsetY: 4 },
+        { originX: 'start', originY: 'top',    overlayX: 'start', overlayY: 'bottom', offsetY: -4 }
+      ]"
+      (backdropClick)="close()"
+      (detach)="close()">
+      <ng-container [ngTemplateOutlet]="calendarTpl" />
+    </ng-template>
+  }
+}
+
+<!--
+  ─────────────────────────────────────────────────────────────────────────────
+  Calendar (shared between inline and popover layouts)
+  ─────────────────────────────────────────────────────────────────────────────
+-->
+<ng-template #calendarTpl>
+  <div
+    [class]="
+      'w-[280px] bg-white rounded-xl border border-slate-200 shadow-lg p-3 select-none ' +
+      panelClass()
+    "
+    role="dialog">
+
+    <!-- Header: prev / label / next -->
+    <div class="flex items-center justify-between mb-3">
+      <button
+        type="button"
+        (click)="prev()"
+        class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+        aria-label="Previous">
+        <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+
+      <button
+        type="button"
+        (click)="cycleView()"
+        class="px-3 py-1 rounded-lg text-sm font-semibold text-slate-800 hover:bg-slate-100 transition-colors">
+        {{ headerLabel() }}
+      </button>
+
+      <button
+        type="button"
+        (click)="next()"
+        class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+        aria-label="Next">
+        <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Days view -->
+    @if (view() === 'days') {
+      <!-- Weekday header -->
+      <div class="grid grid-cols-7 mb-1">
+        @for (label of weekdayLabels(); track $index) {
+          <div class="text-center text-xs font-medium text-slate-400 py-1">
+            {{ label }}
+          </div>
+        }
+      </div>
+
+      <!-- 6×7 day grid -->
+      <div class="grid grid-cols-7 gap-y-0.5">
+        @for (cell of dayCells(); track $index) {
+          <button
+            type="button"
+            [disabled]="cell.disabled"
+            (click)="selectDay(cell.date, cell.disabled)"
+            (mouseenter)="onDayHover(cell.date)"
+            [class]="
+              'relative h-9 flex items-center justify-center text-sm transition-colors ' +
+
+              (cell.disabled
+                ? 'text-slate-300 cursor-not-allowed '
+                : cell.inMonth
+                  ? 'text-slate-700 '
+                  : 'text-slate-300 ') +
+
+              (cell.inRange && !cell.rangeStart && !cell.rangeEnd
+                ? 'bg-brand-50 '
+                : '') +
+
+              (cell.rangeStart && !cell.rangeEnd
+                ? 'rounded-l-lg '
+                : cell.rangeEnd && !cell.rangeStart
+                  ? 'rounded-r-lg '
+                  : cell.inRange && !cell.rangeStart && !cell.rangeEnd
+                    ? ''
+                    : 'rounded-lg ') +
+
+              (cell.selected
+                ? 'bg-brand-600 text-white font-semibold shadow-sm hover:bg-brand-700 '
+                : !cell.disabled
+                  ? 'hover:bg-slate-100 '
+                  : '') +
+
+              (cell.isToday && !cell.selected
+                ? 'font-semibold text-brand-600 '
+                : '')
+            ">
+            {{ cell.date.getDate() }}
+            @if (cell.isToday && !cell.selected) {
+              <span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-brand-600 rounded-full"></span>
+            }
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Months view -->
+    @if (view() === 'months') {
+      <div class="grid grid-cols-3 gap-2">
+        @for (m of monthCells(); track m.idx) {
+          <button
+            type="button"
+            [disabled]="m.disabled"
+            (click)="selectMonth(m.idx, m.disabled)"
+            [class]="
+              'h-12 flex items-center justify-center text-sm rounded-lg transition-colors ' +
+              (m.disabled
+                ? 'text-slate-300 cursor-not-allowed '
+                : 'text-slate-700 hover:bg-slate-100 ') +
+              (m.isCurrent ? 'bg-brand-600 text-white font-semibold hover:bg-brand-700 ' : '')
+            ">
+            {{ m.name }}
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Years view -->
+    @if (view() === 'years') {
+      <div class="grid grid-cols-3 gap-2">
+        @for (y of yearCells(); track y.year) {
+          <button
+            type="button"
+            [disabled]="y.disabled"
+            (click)="selectYear(y.year, y.disabled)"
+            [class]="
+              'h-12 flex items-center justify-center text-sm rounded-lg transition-colors ' +
+              (y.disabled
+                ? 'text-slate-300 cursor-not-allowed '
+                : 'text-slate-700 hover:bg-slate-100 ') +
+              (y.isCurrent ? 'bg-brand-600 text-white font-semibold hover:bg-brand-700 ' : '')
+            ">
+            {{ y.year }}
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Footer -->
+    @if (showFooter()) {
+      <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+        <button
+          type="button"
+          (click)="clear()"
+          class="text-sm text-slate-500 hover:text-slate-700 transition-colors">
+          Clear
+        </button>
+        <button
+          type="button"
+          (click)="goToToday()"
+          class="text-sm text-brand-600 font-medium hover:text-brand-700 transition-colors">
+          Today
+        </button>
+      </div>
+    }
+  </div>
+</ng-template>

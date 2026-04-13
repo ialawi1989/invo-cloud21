@@ -1,0 +1,10 @@
+/* Media Manager Page
+   Tailwind utilities are loaded globally from src/styles.scss.
+   This file is intentionally empty — every layout, spacing, color, and
+   typography rule lives in the template as Tailwind classes.
+   Add styles here only if Tailwind genuinely can't express them
+   (e.g. component-specific keyframes or deeply-nested selectors). */
+
+:host {
+  display: block;
+}

@@ -1,0 +1,595 @@
+// ==========================================
+// Dashboard Event Styles - Brand Teal Theme
+// ==========================================
+
+:host {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #fbfbfb;
+  --bg-card: #ffffff;
+  --bg-hover: rgba(0, 170, 179, 0.04);
+  --border-color: #e2e8f0;
+  --border-light: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --brand-teal: #00aab3;
+  --brand-teal-dark: #00949c;
+  --brand-teal-light: rgba(0, 170, 179, 0.1);
+  --brand-teal-border: rgba(0, 170, 179, 0.3);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+}
+
+// ==========================================
+// Header Row
+// ==========================================
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-tertiary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+
+  .toggle-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .form-check {
+    padding: 0;
+    min-height: auto;
+  }
+
+  .form-check-input {
+    margin: 0;
+    cursor: pointer;
+  }
+}
+
+// ==========================================
+// Stats Grid
+// ==========================================
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+
+  &--secondary {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 50%;
+
+    @media (max-width: 992px) {
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ==========================================
+// Stat Widgets
+// ==========================================
+.stat-widget {
+  padding: 20px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  // Teal (Brand)
+  &--teal {
+    background: rgba(0, 170, 179, 0.08);
+    border: 1px solid rgba(0, 170, 179, 0.25);
+    .stat-label,
+    .stat-value,
+    svg {
+      color: #00949c;
+    }
+    &:hover {
+      background: rgba(0, 170, 179, 0.12);
+      border-color: rgba(0, 170, 179, 0.4);
+    }
+  }
+
+  // Navy
+  &--navy {
+    background: rgba(30, 58, 95, 0.08);
+    border: 1px solid rgba(30, 58, 95, 0.25);
+    .stat-label,
+    .stat-value,
+    svg {
+      color: #1e3a5f;
+    }
+    &:hover {
+      background: rgba(30, 58, 95, 0.12);
+      border-color: rgba(30, 58, 95, 0.4);
+    }
+  }
+
+  // Coral
+  &--coral {
+    background: rgba(224, 122, 95, 0.08);
+    border: 1px solid rgba(224, 122, 95, 0.25);
+    .stat-label,
+    .stat-value,
+    svg {
+      color: #c96a52;
+    }
+    &:hover {
+      background: rgba(224, 122, 95, 0.12);
+      border-color: rgba(224, 122, 95, 0.4);
+    }
+  }
+
+  // Emerald
+  &--emerald {
+    background: rgba(5, 150, 105, 0.08);
+    border: 1px solid rgba(5, 150, 105, 0.25);
+    .stat-label,
+    .stat-value,
+    svg {
+      color: #047857;
+    }
+    &:hover {
+      background: rgba(5, 150, 105, 0.12);
+      border-color: rgba(5, 150, 105, 0.4);
+    }
+  }
+}
+
+// ==========================================
+// Section Header
+// ==========================================
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+  margin: 0;
+
+  .count {
+    background: var(--brand-teal-light);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--brand-teal-dark);
+    font-weight: 500;
+    border: 1px solid var(--brand-teal-border);
+  }
+}
+
+// ==========================================
+// Search Input
+// ==========================================
+.search-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  min-width: 220px;
+  transition: all 0.2s;
+
+  &:focus-within {
+    border-color: var(--brand-teal);
+    box-shadow: 0 0 0 3px var(--brand-teal-light);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 13px;
+    width: 100%;
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+  }
+}
+
+// ==========================================
+// Table
+// ==========================================
+.table-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+
+  thead {
+    background: var(--bg-tertiary);
+
+    th {
+      padding: 14px 12px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+
+      &.col-company {
+        padding-left: 20px;
+        width: 180px;
+      }
+
+      &.col-number {
+        text-align: center;
+        width: 80px;
+      }
+
+      &.col-money {
+        text-align: right;
+        width: 100px;
+      }
+
+      &.col-percentage {
+        text-align: center;
+        width: 120px;
+      }
+
+      &.sortable {
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        padding-right: 20px;
+        transition: color 0.2s;
+
+        &:hover {
+          color: var(--brand-teal);
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          right: 6px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 0;
+          height: 0;
+          border-left: 4px solid transparent;
+          border-right: 4px solid transparent;
+          opacity: 0.3;
+        }
+
+        &.asc {
+          color: var(--brand-teal);
+          &::after {
+            border-bottom: 5px solid var(--brand-teal);
+            opacity: 1;
+          }
+        }
+
+        &.desc {
+          color: var(--brand-teal);
+          &::after {
+            border-top: 5px solid var(--brand-teal);
+            opacity: 1;
+          }
+        }
+      }
+
+      .th-with-tooltip {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background 0.15s ease;
+
+      &:hover {
+        background: var(--bg-hover);
+      }
+
+      td {
+        padding: 14px 12px;
+        font-size: 13px;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+        color: var(--text-primary);
+
+        &.col-company {
+          padding-left: 20px;
+        }
+
+        &.col-number {
+          text-align: center;
+        }
+
+        &.col-money {
+          text-align: right;
+        }
+
+        &.col-percentage {
+          text-align: center;
+        }
+      }
+
+      &:last-child td {
+        border-bottom: none;
+      }
+    }
+  }
+}
+
+// ==========================================
+// Company Cell
+// ==========================================
+.company-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .company-name {
+    font-weight: 500;
+    color: var(--text-primary);
+
+    &.link {
+      color: var(--brand-teal);
+      text-decoration: none;
+      transition: color 0.2s;
+
+      &:hover {
+        color: var(--brand-teal-dark);
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// ==========================================
+// Links
+// ==========================================
+.link {
+  color: var(--brand-teal);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+
+  &:hover {
+    color: var(--brand-teal-dark);
+    text-decoration: underline;
+  }
+}
+
+// ==========================================
+// Money Cell
+// ==========================================
+.money {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+// ==========================================
+// Percentage Cell
+// ==========================================
+.percentage-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  .percentage-value {
+    font-weight: 500;
+    color: var(--text-secondary);
+    min-width: 45px;
+    text-align: right;
+  }
+}
+
+// ==========================================
+// Totals Row
+// ==========================================
+.totals-row {
+  background: var(--brand-teal-light) !important;
+
+  &:hover {
+    background: var(--brand-teal-light) !important;
+  }
+
+  td {
+    font-weight: 600;
+    color: var(--brand-teal-dark) !important;
+    border-top: 2px solid var(--brand-teal-border) !important;
+
+    strong {
+      color: var(--brand-teal-dark);
+    }
+  }
+}
+
+// ==========================================
+// Responsive
+// ==========================================
+@media (max-width: 768px) {
+  .header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-input {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .stats-grid--secondary {
+    max-width: 100%;
+  }
+}
+
+// ==========================================
+// RTL Support
+// ==========================================
+[dir="rtl"] {
+  .company-cell {
+    flex-direction: row-reverse;
+  }
+
+  .search-input {
+    input {
+      text-align: right;
+    }
+  }
+
+  table {
+    thead th {
+      text-align: right;
+
+      &.col-company {
+        padding-left: 12px;
+        padding-right: 20px;
+      }
+
+      &.col-number {
+        text-align: center;
+      }
+
+      &.col-money {
+        text-align: left;
+      }
+
+      &.sortable {
+        padding-left: 20px;
+        padding-right: 12px;
+
+        &::after {
+          right: auto;
+          left: 6px;
+        }
+      }
+
+      .th-with-tooltip {
+        justify-content: flex-start;
+      }
+    }
+
+    tbody td {
+      text-align: right;
+
+      &.col-company {
+        padding-left: 12px;
+        padding-right: 20px;
+      }
+
+      &.col-number {
+        text-align: center;
+      }
+
+      &.col-money {
+        text-align: left;
+      }
+
+      &.col-percentage {
+        text-align: center;
+      }
+    }
+  }
+
+  .percentage-cell {
+    flex-direction: row-reverse;
+
+    .percentage-value {
+      text-align: left;
+    }
+  }
+}

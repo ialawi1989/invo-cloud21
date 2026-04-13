@@ -1,0 +1,37 @@
+<div class="card">
+  <div class="card-body">
+
+    <!-- Header Row -->
+    <div class="header-row">
+      <h4 class="card-title mb-0">
+        {{ "DASHBOARD.PAYMENT_METHOD_OVERVIEW" | translate }}
+      </h4>
+      <div class="legend-wrapper">
+        <div class="legend-item legend-item--total">
+          <span class="legend-dot"></span>
+          <span class="legend-label">{{ "DASHBOARD.TOTAL" | translate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+      <apx-chart
+        #paymentMethodChart
+        class="apex-charts"
+        [chart]="paymentMethodOverview.chart"
+        [series]="paymentMethodOverview.series"
+        [legend]="paymentMethodOverview.legend"
+        [colors]="paymentMethodOverview.colors"
+        [fill]="paymentMethodOverview.fill"
+        [dataLabels]="paymentMethodOverview.dataLabels"
+        [xaxis]="paymentMethodOverview.xaxis"
+        [stroke]="paymentMethodOverview.stroke"
+        [plotOptions]="paymentMethodOverview.plotOptions"
+        [grid]="paymentMethodOverview.grid"
+        [tooltip]="paymentMethodOverview.tooltip">
+      </apx-chart>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,369 @@
+// ==========================================
+// Payment Flow Styles - Brand Teal Theme
+// ==========================================
+
+:host {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #fbfbfb;
+  --bg-card: #ffffff;
+  --border-color: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --brand-teal: #00aab3;
+  --brand-teal-dark: #00949c;
+  --brand-teal-light: rgba(0, 170, 179, 0.1);
+  --brand-teal-border: rgba(0, 170, 179, 0.3);
+
+  --cash-color: #32acc1;
+  --cash-light: rgba(50, 172, 193, 0.1);
+
+  --bank-color: #f1b44c;
+  --bank-light: rgba(241, 180, 76, 0.1);
+
+  --success: #10b981;
+  --success-light: rgba(16, 185, 129, 0.1);
+  --success-border: rgba(16, 185, 129, 0.3);
+
+  --danger: #ef4444;
+  --danger-light: rgba(239, 68, 68, 0.1);
+  --danger-border: rgba(239, 68, 68, 0.3);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-card);
+}
+
+.card-body {
+  padding: 24px;
+}
+
+// ==========================================
+// Header Row
+// ==========================================
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+}
+
+// ==========================================
+// Filter Buttons
+// ==========================================
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  background: var(--bg-tertiary);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+
+  &.active {
+    background: var(--bg-secondary);
+    color: var(--brand-teal);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &--cash.active {
+    color: var(--cash-color);
+  }
+
+  &--bank.active {
+    color: var(--bank-color);
+  }
+}
+
+// ==========================================
+// Flow Stats
+// ==========================================
+.flow-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.flow-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.flow-stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &--neutral {
+    background: var(--brand-teal-light);
+    color: var(--brand-teal-dark);
+  }
+
+  &--success {
+    background: var(--success-light);
+    color: var(--success);
+  }
+
+  &--danger {
+    background: var(--danger-light);
+    color: var(--danger);
+  }
+}
+
+.flow-stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.flow-stat-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &--success {
+    color: var(--success);
+  }
+
+  &--danger {
+    color: var(--danger);
+  }
+}
+
+.flow-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+
+  &--success {
+    color: var(--success);
+  }
+
+  &--danger {
+    color: var(--danger);
+  }
+}
+
+// ==========================================
+// Legend Row
+// ==========================================
+.legend-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.legend-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .legend-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  &--cash .legend-dot {
+    background-color: var(--cash-color);
+  }
+
+  &--bank .legend-dot {
+    background-color: var(--bank-color);
+  }
+}
+
+// ==========================================
+// Chart Container
+// ==========================================
+.chart-container {
+  background:#fbfbfb;
+  border-radius: 12px;
+  padding: 20px;
+  min-height: 350px;
+
+  .apex-charts {
+    width: 100%;
+  }
+}
+
+// ==========================================
+// ApexCharts Customization
+// ==========================================
+::ng-deep {
+  .apexcharts-canvas {
+    width: 100% !important;
+  }
+
+  .apexcharts-legend {
+    display: none !important; // Using custom legend
+  }
+
+  .apexcharts-tooltip {
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+
+    .apexcharts-tooltip-title {
+      background: var(--bg-tertiary) !important;
+      border-bottom: 1px solid var(--border-color) !important;
+      font-weight: 600;
+    }
+
+    .apexcharts-tooltip-series-group {
+      padding: 8px 12px;
+    }
+  }
+
+  .apexcharts-xaxis-label {
+    font-weight: 500;
+    fill: var(--text-secondary);
+  }
+
+  .apexcharts-yaxis-label {
+    fill: var(--text-muted);
+  }
+
+  .apexcharts-gridline {
+    stroke: var(--border-color);
+  }
+
+  .apexcharts-area {
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+  }
+}
+
+// ==========================================
+// Responsive
+// ==========================================
+@media (max-width: 768px) {
+  .card-body {
+    padding: 16px;
+  }
+
+  .header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .legend-row {
+    justify-content: center;
+  }
+
+  .chart-container {
+    padding: 12px;
+    min-height: 280px;
+  }
+}
+
+// ==========================================
+// RTL Support
+// ==========================================
+[dir="rtl"] {
+  .header-row {
+    flex-direction: row-reverse;
+  }
+
+  .filter-buttons {
+    flex-direction: row-reverse;
+  }
+
+  .flow-stat {
+    flex-direction: row-reverse;
+  }
+
+  .flow-stat-content {
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .legend-row {
+    justify-content: flex-start;
+  }
+
+  .legend-wrapper {
+    flex-direction: row-reverse;
+  }
+
+  .legend-item {
+    flex-direction: row-reverse;
+  }
+}

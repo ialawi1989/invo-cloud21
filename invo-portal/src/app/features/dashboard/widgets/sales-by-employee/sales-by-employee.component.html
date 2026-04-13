@@ -1,0 +1,101 @@
+<div class="card">
+  <div class="card-body">
+
+    <!-- Header Row -->
+    <div class="header-row">
+      <h4 class="card-title mb-0">{{ "DASHBOARD.SALES_BY_EMPLOYEE" | translate }}</h4>
+    </div>
+
+    <!-- Employees Table -->
+    <div class="employees-table" *ngIf="resultData?.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th class="no-sort">{{ "DASHBOARD.EMPLOYEE_NAME" | translate }}</th>
+            <th class="sortable"
+              (click)="onSort('productQty')"
+              [class.asc]="sortBy.sortValue == 'productQty' && sortBy.sortDirection == 'asc'"
+              [class.desc]="sortBy.sortValue == 'productQty' && sortBy.sortDirection == 'desc'">
+              {{ "DASHBOARD.PRODUCT_QTY" | translate }}
+              <span class="sort-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 15l5 5 5-5"></path>
+                  <path d="M7 9l5-5 5 5"></path>
+                </svg>
+              </span>
+            </th>
+            <th class="sortable"
+              (click)="onSort('salestotal')"
+              [class.asc]="sortBy.sortValue == 'salestotal' && sortBy.sortDirection == 'asc'"
+              [class.desc]="sortBy.sortValue == 'salestotal' && sortBy.sortDirection == 'desc'">
+              {{ "DASHBOARD.SALES_TOTAL" | translate }}
+              <span class="sort-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 15l5 5 5-5"></path>
+                  <path d="M7 9l5-5 5 5"></path>
+                </svg>
+              </span>
+            </th>
+            <th class="sortable"
+              (click)="onSort('percentage')"
+              [class.asc]="sortBy.sortValue == 'percentage' && sortBy.sortDirection == 'asc'"
+              [class.desc]="sortBy.sortValue == 'percentage' && sortBy.sortDirection == 'desc'">
+              {{ "DASHBOARD.PERCENTAGE" | translate }}
+              <span class="sort-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 15l5 5 5-5"></path>
+                  <path d="M7 9l5-5 5 5"></path>
+                </svg>
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of resultData; let i = index">
+            <td class="employee-name-cell">
+              <div class="employee-info">
+                <span class="employee-avatar" [style.background-color]="row.chartVariant">
+                  {{ row.employeeName?.charAt(0)?.toUpperCase() }}
+                </span>
+                <span class="employee-name">{{ row.employeeName }}</span>
+              </div>
+            </td>
+            <td class="qty-cell">
+              <span class="qty-badge">{{ row.productQty | mynumber }}</span>
+            </td>
+            <td class="sales-cell">
+              <span class="sales-value">{{ row.salestotal | mycurrency }}</span>
+            </td>
+            <td class="percentage-cell">
+              <div class="percentage-wrapper">
+                <app-sellingchart
+                  [value]="row.percentage"
+                  [Chartcolor]="row.chartVariant">
+                </app-sellingchart>
+                <span class="percentage-value">{{ row.percentage | mynumber : '2' }}%</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!resultData?.length">
+      <div class="empty-content">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <p>{{ "DASHBOARD.NO_DATA_AVAILABLE" | translate }}</p>
+      </div>
+    </div>
+
+  </div>
+</div>

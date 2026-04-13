@@ -1,0 +1,71 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// RTL Support
+// ─────────────────────────────────────────────────────────────────────────────
+
+[dir='rtl'] {
+  font-family: 'Cairo', 'Tajawal', 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+
+  // ── Topbar padding flip ──────────────────────────────────────────────────
+  app-topbar .topbar { padding: 0 0 0 20px !important; }
+
+  // ── Sidebar position ──────────────────────────────────────────────────────
+  app-sidebar aside.sidebar {
+    left: auto !important;
+    right: 0 !important;
+  }
+
+  // ── Mobile: hide sidebar to the RIGHT in RTL ──────────────────────────────
+  @media (max-width: 991px) {
+    app-sidebar aside.sidebar {
+      transform: translateX(100%) !important;
+    }
+    app-sidebar aside.sidebar.mobile-open {
+      transform: translateX(0) !important;
+    }
+  }
+
+  // ── Main content — shift left instead of right ───────────────────────────
+  .main-content {
+    margin-left: 0 !important;
+    margin-right: 240px !important;
+  }
+  .main-content.collapsed {
+    margin-right: 56px !important;
+    margin-left: 0 !important;
+  }
+
+  @media (max-width: 991px) {
+    .main-content,
+    .main-content.collapsed {
+      margin-right: 0 !important;
+      margin-left: 0 !important;
+    }
+  }
+
+  // ── Sidebar menu text ─────────────────────────────────────────────────────
+  .menu-label  { text-align: right !important; }
+  .sub-row     { text-align: right !important; padding-right: 44px !important; padding-left: 14px !important; }
+  .menu-arrow  { transform: rotate(180deg) !important; }
+  .menu-arrow.open { transform: rotate(-90deg) !important; }
+  .company-arrow { transform: rotate(180deg) !important; }
+
+  // ── Company switcher drawer ───────────────────────────────────────────────
+  .sw { direction: rtl; text-align: right; }
+
+  // ── Utility overrides ─────────────────────────────────────────────────────
+  .ml-auto, .ms-auto { margin-left: unset !important; margin-right: auto !important; }
+  .mr-auto, .me-auto { margin-right: unset !important; margin-left: auto !important; }
+  .text-left,  .text-start { text-align: right !important; }
+  .text-right, .text-end   { text-align: left !important; }
+  .border-left,  .border-start { border-left: none !important; border-right: 1px solid #e9ecef !important; }
+  .border-right, .border-end   { border-right: none !important; border-left: 1px solid #e9ecef !important; }
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(16px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}

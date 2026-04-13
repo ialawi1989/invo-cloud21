@@ -1,0 +1,202 @@
+<!-- ── Trigger button ───────────────────────────────────────────────────── -->
+<div class="relative inline-block w-full">
+  <button
+    #trigger
+    type="button"
+    cdkOverlayOrigin
+    #triggerOrigin="cdkOverlayOrigin"
+    [disabled]="isDisabled()"
+    (click)="toggle()"
+    [attr.aria-expanded]="isOpen()"
+    [attr.aria-haspopup]="'listbox'"
+    [class]="
+      'group w-full flex items-center justify-between gap-2 px-3 py-2 text-start text-sm ' +
+      'border rounded-lg bg-white transition-colors ' +
+      (isDisabled()
+        ? 'border-slate-200 text-slate-400 cursor-not-allowed bg-slate-50'
+        : isOpen()
+          ? 'border-brand-500 ring-2 ring-brand-100'
+          : 'border-slate-300 hover:border-slate-400 text-slate-700') +
+      ' ' + triggerClass()
+    ">
+
+    <span class="truncate flex-1">
+      @if (hasValue()) {
+        {{ displayLabel() }}
+      } @else {
+        <span class="text-slate-400">{{ placeholder() }}</span>
+      }
+    </span>
+
+    <span class="flex items-center gap-1 shrink-0">
+      @if (clearable() && hasValue() && !isDisabled()) {
+        <button
+          type="button"
+          (click)="clear($event)"
+          class="p-0.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+          aria-label="Clear selection">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      }
+      <svg
+        [class]="'w-4 h-4 text-slate-400 transition-transform duration-200 ' + (isOpen() ? 'rotate-180' : '')"
+        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </span>
+  </button>
+
+  <!-- ── Inline mode: absolute panel anchored to the trigger ──────────── -->
+  @if (!attachToBody() && isOpen()) {
+    <div
+      class="absolute start-0 end-0 top-full mt-1 z-50"
+      (click)="$event.stopPropagation()">
+      <ng-container [ngTemplateOutlet]="panelTpl" />
+    </div>
+    <!-- Outside-click backdrop for inline mode -->
+    <div
+      class="fixed inset-0 z-40"
+      (click)="close()"></div>
+  }
+</div>
+
+<!-- ── Body mode (default): floating panel via CDK overlay ──────────────── -->
+@if (attachToBody()) {
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="triggerOrigin"
+    [cdkConnectedOverlayOpen]="isOpen()"
+    [cdkConnectedOverlayHasBackdrop]="true"
+    cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+    [cdkConnectedOverlayPanelClass]="panelClass()"
+    [cdkConnectedOverlayMinWidth]="panelWidth() ?? triggerWidth()"
+    [cdkConnectedOverlayFlexibleDimensions]="true"
+    [cdkConnectedOverlayPositions]="[
+      { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top',    offsetY: 4 },
+      { originX: 'start', originY: 'top',    overlayX: 'start', overlayY: 'bottom', offsetY: -4 }
+    ]"
+    (backdropClick)="close()"
+    (detach)="close()">
+    <ng-container [ngTemplateOutlet]="panelTpl" />
+  </ng-template>
+}
+
+<!-- ── Panel content (shared between body and inline modes) ─────────────── -->
+<ng-template #panelTpl>
+  <div
+    #panel
+    [class]="
+      'w-full bg-white rounded-lg border border-slate-200 shadow-lg overflow-hidden flex flex-col ' +
+      panelClass()
+    "
+    [style.max-height]="panelMaxHeight()"
+    role="listbox">
+
+    <!-- Optional projected header -->
+    @if (headerTpl()) {
+      <div class="border-b border-slate-100">
+        <ng-container [ngTemplateOutlet]="headerTpl()!" />
+      </div>
+    }
+
+    <!-- Search box -->
+    @if (searchable()) {
+      <div class="p-3 border-b border-slate-100">
+        <div class="relative">
+          <div class="absolute inset-y-0 start-3 flex items-center pointer-events-none">
+            <svg class="w-[18px] h-[18px] text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.3-4.3"/>
+            </svg>
+          </div>
+          <input
+            #searchInput
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            [placeholder]="searchPlaceholder()"
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+            (keydown.enter)="$event.preventDefault()"
+            class="w-full ps-10 pe-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+        </div>
+      </div>
+    }
+
+    <!-- Items list (scroll container) -->
+    <div
+      class="flex-1 overflow-y-auto py-1"
+      (scroll)="onPanelScroll($event)">
+
+      @if (effectiveItems().length === 0 && !isLoading()) {
+        <div class="px-3 py-6 text-center text-sm text-slate-500">
+          {{ noResultsText() }}
+        </div>
+      }
+
+      @for (item of effectiveItems(); track $index) {
+        <button
+          type="button"
+          role="option"
+          [attr.aria-selected]="isSelected(item)"
+          [attr.data-idx]="$index"
+          (click)="selectItem(item)"
+          (mouseenter)="highlightIndex.set($index)"
+          [class]="
+            'w-full flex items-center gap-2 px-3 py-2 text-start text-sm transition-colors ' +
+            (highlightIndex() === $index ? 'bg-brand-50 ' : 'hover:bg-slate-50 ') +
+            (isSelected(item) ? 'text-brand-700 font-medium ' : 'text-slate-700 ')
+          ">
+
+          @if (multiple()) {
+            <span [class]="
+              'shrink-0 w-4 h-4 rounded border flex items-center justify-center ' +
+              (isSelected(item) ? 'bg-brand-600 border-brand-600' : 'border-slate-300')">
+              @if (isSelected(item)) {
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                </svg>
+              }
+            </span>
+          }
+
+          <span class="flex-1 truncate">
+            @if (itemTpl()) {
+              <ng-container
+                [ngTemplateOutlet]="itemTpl()!"
+                [ngTemplateOutletContext]="{ $implicit: item, selected: isSelected(item) }" />
+            } @else {
+              {{ displayWith()(item) }}
+            }
+          </span>
+
+          @if (!multiple() && isSelected(item)) {
+            <svg class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          }
+        </button>
+      }
+
+      <!-- Loading row (initial fetch and pagination) -->
+      @if (isLoading()) {
+        <div class="flex items-center justify-center gap-2 px-3 py-3 text-sm text-slate-500">
+          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          Loading…
+        </div>
+      }
+    </div>
+
+    <!-- Optional projected footer -->
+    @if (footerTpl()) {
+      <div class="border-t border-slate-100">
+        <ng-container [ngTemplateOutlet]="footerTpl()!" />
+      </div>
+    }
+  </div>
+</ng-template>

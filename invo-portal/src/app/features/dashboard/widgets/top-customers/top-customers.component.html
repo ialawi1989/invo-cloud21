@@ -1,0 +1,40 @@
+<div class="card">
+  <div class="card-body">
+
+    <!-- Header Row -->
+    <div class="header-row">
+      <h4 class="card-title mb-0">{{ "DASHBOARD.TOP_CUSTOMERS" | translate }}</h4>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-row">
+      <div class="legend-wrapper">
+        <div class="legend-item legend-item--sales">
+          <span class="legend-dot"></span>
+          <span class="legend-label">{{ "DASHBOARD.SALES" | translate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+      <apx-chart
+        #topCustomersChart
+        class="apex-charts"
+        [chart]="topCustomers.chart"
+        [series]="topCustomers.series"
+        [legend]="topCustomers.legend"
+        [colors]="topCustomers.colors"
+        [fill]="topCustomers.fill"
+        [dataLabels]="topCustomers.dataLabels"
+        [xaxis]="topCustomers.xaxis"
+        [yaxis]="topCustomers.yaxis"
+        [stroke]="topCustomers.stroke"
+        [plotOptions]="topCustomers.plotOptions"
+        [grid]="topCustomers.grid"
+        [tooltip]="topCustomers.tooltip">
+      </apx-chart>
+    </div>
+
+  </div>
+</div>

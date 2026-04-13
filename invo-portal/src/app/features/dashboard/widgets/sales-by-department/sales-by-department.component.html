@@ -1,0 +1,89 @@
+<div class="card">
+  <div class="card-body">
+
+    <!-- Header Row -->
+    <div class="header-row">
+      <h4 class="card-title mb-0">{{ "DASHBOARD.SALES_BY_DEPARTMENTS" | translate }}</h4>
+    </div>
+
+    <!-- Top Department Highlight -->
+    <div class="top-department" *ngIf="resultData[0]">
+      <div class="top-department-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </div>
+      <div class="top-department-content">
+        <span class="top-department-label">{{ "DASHBOARD.TOP_DEPARTMENT" | translate }}</span>
+        <h3 class="top-department-value">{{ resultData[0]?.sales | mycurrency }}</h3>
+        <span class="top-department-name">
+          <ng-container *ngIf="(resultData[0].translation && resultData[0].translation.name && resultData[0].translation.name.ar == '') || resultData[0].translation == null">
+            {{ resultData[0].departmentName }}
+          </ng-container>
+          <ng-container *ngIf="resultData[0].translation && resultData[0].translation.name && resultData[0].translation.name.ar != ''">
+            {{ resultData[0].translation.name.ar }}
+          </ng-container>
+        </span>
+      </div>
+    </div>
+
+    <!-- Departments Table -->
+    <div class="departments-table" *ngIf="resultData?.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ "DASHBOARD.DEPARTMENT" | translate }}</th>
+            <th>{{ "DASHBOARD.SALES" | translate }}</th>
+            <th>{{ "DASHBOARD.PERCENTAGE" | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let dep of resultData; let i = index">
+            <td class="department-name-cell">
+              <div class="department-info">
+                <span class="department-rank" [class.top-rank]="i === 0">{{ i + 1 }}</span>
+                <span class="department-name">
+                  <ng-container *ngIf="(dep.translation && dep.translation.name && dep.translation.name.ar == '') || dep.translation == null">
+                    {{ dep.departmentName }}
+                  </ng-container>
+                  <ng-container *ngIf="dep.translation && dep.translation.name && dep.translation.name.ar != ''">
+                    {{ dep.translation.name.ar }}
+                  </ng-container>
+                </span>
+              </div>
+            </td>
+            <td class="sales-cell">
+              <span class="sales-value">{{ dep.sales | mycurrency }}</span>
+            </td>
+            <td class="percentage-cell">
+              <div class="percentage-wrapper">
+                <span class="percentage-value">{{ dep.percentage }}%</span>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill"
+                    [style.width.%]="dep.percentage"
+                    [class.high]="dep.percentage >= 30"
+                    [class.medium]="dep.percentage >= 15 && dep.percentage < 30"
+                    [class.low]="dep.percentage < 15">
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!resultData?.length">
+      <div class="empty-content">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <p>{{ "DASHBOARD.NO_DATA_AVAILABLE" | translate }}</p>
+      </div>
+    </div>
+
+  </div>
+</div>

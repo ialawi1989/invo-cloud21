@@ -1,0 +1,433 @@
+<div class="db-shell">
+
+  <!-- ── Top bar ──────────────────────────────────────────────────────────── -->
+  <header class="db-header">
+    <div class="db-greeting">
+      <div class="db-avatar">{{ initials(currentEmp?.name) }}</div>
+      <div>
+        <h2>Hello, {{ currentEmp?.name || 'there' }}</h2>
+        <p>Here's what's happening in your store.</p>
+      </div>
+    </div>
+    <div class="db-actions">
+      <div class="date-dropdown">
+        <button class="btn-pill" (click)="toggleDropdown()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          {{ selected().label }}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="dropdown-menu" *ngIf="dropdownOpen()">
+          <button *ngFor="let p of presets()" class="dropdown-item" [class.active]="p.selected" (click)="selectPreset(p)">{{ p.label }}</button>
+        </div>
+      </div>
+      <button class="btn-pill btn-outline" data-customize-btn (click)="openCustomize()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Customize
+      </button>
+    </div>
+  </header>
+
+  <div class="db-loading" *ngIf="loading()"><div class="spinner"></div><p>Loading dashboard…</p></div>
+
+  <main class="db-grid" *ngIf="!loading()">
+    <ng-container *ngFor="let w of addedWidgets(); trackBy: trackBySlug">
+
+      <!-- Summary Blocks -->
+      <div class="widget col-12" *ngIf="w.slug==='summary-blocks'">
+        <div class="widget-header"><h3>Summary</h3></div>
+        <ng-container *ngIf="!isLoading('summary-blocks'); else spinner">
+          <div class="summary-cards">
+            <div class="sum-card teal">
+              <div class="sum-label">Cost of Goods Sold</div>
+              <div class="sum-value">{{ fmt(cogsTotal) }}</div>
+              <div class="sum-bars">
+                <div *ngFor="let m of (summaryData()?.costOfGoodsSold?.lastSixMonthsSummary||[])" class="sum-bar"
+                     [style.height.%]="maxOf(summaryData()?.costOfGoodsSold?.lastSixMonthsSummary||[],'total') > 0 ? m.total/maxOf(summaryData()?.costOfGoodsSold?.lastSixMonthsSummary||[],'total')*80+20 : 20"></div>
+              </div>
+            </div>
+            <div class="sum-card amber">
+              <div class="sum-label">Payable</div>
+              <div class="sum-value">{{ fmt(payableTotal) }}</div>
+              <div class="sum-bars">
+                <div *ngFor="let m of (summaryData()?.payable?.lastSixMonthsSummary||[])" class="sum-bar"
+                     [style.height.%]="maxOf(summaryData()?.payable?.lastSixMonthsSummary||[],'total') > 0 ? m.total/maxOf(summaryData()?.payable?.lastSixMonthsSummary||[],'total')*80+20 : 20"></div>
+              </div>
+            </div>
+            <div class="sum-card green">
+              <div class="sum-label">Receivable</div>
+              <div class="sum-value">{{ fmt(receivableTotal) }}</div>
+              <div class="sum-bars">
+                <div *ngFor="let m of (summaryData()?.receivable?.lastSixMonthsSummary||[])" class="sum-bar"
+                     [style.height.%]="maxOf(summaryData()?.receivable?.lastSixMonthsSummary||[],'total') > 0 ? m.total/maxOf(summaryData()?.receivable?.lastSixMonthsSummary||[],'total')*80+20 : 20"></div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Business Summary -->
+      <div class="widget col-12" *ngIf="w.slug==='business-summary'">
+        <div class="widget-header"><h3>Business Summary</h3></div>
+        <ng-container *ngIf="!isLoading('business-summary'); else spinner">
+          <div class="empty-state" *ngIf="!branchSales().length">No data for selected period</div>
+          <div class="table-scroll" *ngIf="branchSales().length">
+            <table class="db-table">
+              <thead><tr><th>Branch</th><th class="num">Sales</th><th class="num">Invoices</th><th class="num">Discount</th><th class="num">Tax</th><th class="num">Total</th><th class="num">Net Sales</th><th class="num">%</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let r of branchSales()">
+                  <td><span class="dot" [style.background]="r.color"></span>{{ r.branchName }}</td>
+                  <td class="num">{{ fmt(r.sales) }}</td><td class="num">{{ r.numberOfInvoices }}</td>
+                  <td class="num">{{ fmt(r.discountTotal) }}</td><td class="num">{{ fmt(r.taxTotal) }}</td>
+                  <td class="num">{{ fmt(r.total) }}</td><td class="num">{{ fmt(r.netSales) }}</td>
+                  <td class="num"><span class="badge-pct">{{ r.percentage }}%</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Payment Flow -->
+      <div class="widget col-12" *ngIf="w.slug==='payments-flow'">
+        <div class="widget-header">
+          <h3>Payment Flow</h3>
+          <div class="toggle-group">
+            <button [class.active]="paymentMode==='all'"  (click)="changePaymentMode('all')">All</button>
+            <button [class.active]="paymentMode==='cash'" (click)="changePaymentMode('cash')">Cash</button>
+            <button [class.active]="paymentMode==='bank'" (click)="changePaymentMode('bank')">Bank</button>
+          </div>
+        </div>
+        <ng-container *ngIf="!isLoading('payments-flow'); else spinner">
+          <div class="flow-stats">
+            <div class="flow-stat teal"><div class="flow-label">Incoming</div><div class="flow-val">{{ fmt(paymentIncoming) }}</div></div>
+            <div class="flow-stat red"><div class="flow-label">Outgoing</div><div class="flow-val">{{ fmt(paymentOutgoing) }}</div></div>
+          </div>
+          <ng-container *ngIf="paymentMode!=='bank'">
+            <div class="sub-heading" *ngIf="paymentFlow()?.cash?.transactions?.length">Cash</div>
+            <div class="bar-chart" *ngIf="paymentFlow()?.cash?.transactions?.length">
+              <div *ngFor="let tx of (paymentFlow()?.cash?.transactions||[])" class="bar-row">
+                <span class="bar-label">{{ tx.createdAt | date:'MMM d' }}</span>
+                <div class="bar-track"><div class="bar-fill teal" [style.width]="barWidth(tx.incoming, maxOf(paymentFlow()?.cash?.transactions||[],'incoming'))"></div></div>
+                <span class="bar-val">{{ fmt(tx.incoming) }}</span>
+              </div>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="paymentMode!=='cash'">
+            <div class="sub-heading" *ngIf="paymentFlow()?.bank?.transactions?.length">Bank</div>
+            <div class="bar-chart" *ngIf="paymentFlow()?.bank?.transactions?.length">
+              <div *ngFor="let tx of (paymentFlow()?.bank?.transactions||[])" class="bar-row">
+                <span class="bar-label">{{ tx.createdAt | date:'MMM d' }}</span>
+                <div class="bar-track"><div class="bar-fill amber" [style.width]="barWidth(tx.incoming, maxOf(paymentFlow()?.bank?.transactions||[],'incoming'))"></div></div>
+                <span class="bar-val">{{ fmt(tx.incoming) }}</span>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+
+      <!-- Income / Expense -->
+      <div class="widget col-12" *ngIf="w.slug==='expense-income'">
+        <div class="widget-header"><h3>Income &amp; Expense</h3></div>
+        <ng-container *ngIf="!isLoading('expense-income'); else spinner">
+          <div class="ie-totals">
+            <div class="ie-total teal"><div class="ie-label">Total Income</div><div class="ie-val">{{ fmt(totalIncome) }}</div></div>
+            <div class="ie-total red"><div class="ie-label">Total Expense</div><div class="ie-val">{{ fmt(totalExpense) }}</div></div>
+          </div>
+          <div class="bar-chart" *ngIf="incomeExpense()?.income?.length">
+            <div *ngFor="let row of (incomeExpense()?.income||[])" class="bar-row">
+              <span class="bar-label">{{ row.createdAt | date:'MMM' }}</span>
+              <div class="bar-track"><div class="bar-fill teal" [style.width]="barWidth(row.amount, maxOf(incomeExpense()?.income||[],'amount'))"></div></div>
+              <span class="bar-val">{{ fmt(row.amount) }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Sales by Day -->
+      <div class="widget col-12" *ngIf="w.slug==='sales-by-day'">
+        <div class="widget-header">
+          <h3>Sales by Day</h3>
+          <div class="toggle-group">
+            <button [class.active]="salesByDayPeriod==='week'"      (click)="changeDayPeriod('week')">Week</button>
+            <button [class.active]="salesByDayPeriod==='today'"     (click)="changeDayPeriod('today')">Today</button>
+            <button [class.active]="salesByDayPeriod==='yesterday'" (click)="changeDayPeriod('yesterday')">Yesterday</button>
+          </div>
+        </div>
+        <ng-container *ngIf="!isLoading('sales-by-day'); else spinner">
+          <div class="empty-state" *ngIf="!salesByDay().length">No data</div>
+          <div class="vbar-chart" *ngIf="salesByDay().length">
+            <div *ngFor="let row of salesByDay()" class="vbar-col">
+              <span class="vbar-val">{{ fmt(+row.totalSales) }}</span>
+              <div class="vbar-track"><div class="vbar-fill teal" [style.height]="barWidth(+row.totalSales, maxOf(salesByDay(),'totalSales'))"></div></div>
+              <span class="vbar-label">{{ row.date | date:'EEE' }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Sales by Time -->
+      <div class="widget col-12" *ngIf="w.slug==='sales-by-time'">
+        <div class="widget-header">
+          <h3>Sales by Time</h3>
+          <div class="toggle-group">
+            <button [class.active]="salesByTimeMode==='byCount'" (click)="changeTimeMode('byCount')">Count</button>
+            <button [class.active]="salesByTimeMode==='bySales'" (click)="changeTimeMode('bySales')">Sales</button>
+          </div>
+        </div>
+        <ng-container *ngIf="!isLoading('sales-by-time'); else spinner">
+          <div class="empty-state" *ngIf="!salesByTime().length">No data</div>
+          <div class="vbar-chart" *ngIf="salesByTime().length">
+            <div *ngFor="let row of salesByTime()" class="vbar-col">
+              <div class="vbar-track"><div class="vbar-fill violet" [style.height]="barWidth(timeValue(row), maxOf(salesByTime(), salesByTimeMode==='bySales'?'totalSales':'invoiceTotal'))"></div></div>
+              <span class="vbar-label">{{ row.hour }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Sales by Employee -->
+      <div class="widget col-12" *ngIf="w.slug==='sales-by-employee'">
+        <div class="widget-header"><h3>Sales by Employee</h3></div>
+        <ng-container *ngIf="!isLoading('sales-by-employee'); else spinner">
+          <div class="empty-state" *ngIf="!salesByEmployee().length">No data</div>
+          <div class="rank-list" *ngIf="salesByEmployee().length">
+            <div *ngFor="let r of salesByEmployee(); let i=index" class="rank-row">
+              <span class="rank-num" [style.background]="r.color">{{ i+1 }}</span>
+              <span class="rank-name">{{ r.employeeName }}</span>
+              <div class="rank-bar-wrap"><div class="rank-bar" [style.width]="barWidth(+r.salestotal, maxOf(salesByEmployee(),'salestotal'))" [style.background]="r.color"></div></div>
+              <span class="rank-val">{{ fmt(r.salestotal) }}</span>
+              <span class="rank-pct">{{ r.pct }}%</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Sales by Category -->
+      <div class="widget col-12" *ngIf="w.slug==='sales-by-category'">
+        <div class="widget-header"><h3>Sales by Category</h3></div>
+        <ng-container *ngIf="!isLoading('sales-by-category'); else spinner">
+          <div class="empty-state" *ngIf="!salesByCategory().length">No data</div>
+          <div class="rank-list" *ngIf="salesByCategory().length">
+            <div *ngFor="let r of salesByCategory(); let i=index" class="rank-row">
+              <span class="dot" [style.background]="r.color"></span>
+              <span class="rank-name">{{ r.categoryName }}</span>
+              <div class="rank-bar-wrap"><div class="rank-bar" [style.width]="barWidth(+r.sales, maxOf(salesByCategory(),'sales'))" [style.background]="r.color"></div></div>
+              <span class="rank-val">{{ fmt(r.sales) }}</span>
+              <span class="rank-pct">{{ r.pct }}%</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Sales by Department -->
+      <div class="widget col-12" *ngIf="w.slug==='sales-by-departments'">
+        <div class="widget-header"><h3>Sales by Department</h3></div>
+        <ng-container *ngIf="!isLoading('sales-by-departments'); else spinner">
+          <div class="empty-state" *ngIf="!salesByDept().length">No data</div>
+          <div class="rank-list" *ngIf="salesByDept().length">
+            <div *ngFor="let r of salesByDept(); let i=index" class="rank-row">
+              <span class="dot" [style.background]="r.color"></span>
+              <span class="rank-name">{{ r.departmentName }}</span>
+              <div class="rank-bar-wrap"><div class="rank-bar" [style.width]="barWidth(+r.sales, maxOf(salesByDept(),'sales'))" [style.background]="r.color"></div></div>
+              <span class="rank-val">{{ fmt(r.sales) }}</span>
+              <span class="rank-pct">{{ r.pct }}%</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Top Brand by Sales -->
+      <div class="widget col-12" *ngIf="w.slug==='top-brand-by-sales'">
+        <div class="widget-header"><h3>Sales by Brand</h3></div>
+        <ng-container *ngIf="!isLoading('top-brand-by-sales'); else spinner">
+          <div class="empty-state" *ngIf="!salesByBrand().length">No data</div>
+          <div class="rank-list" *ngIf="salesByBrand().length">
+            <div *ngFor="let r of salesByBrand(); let i=index" class="rank-row">
+              <span class="dot-lg" [style.background]="color(i)"></span>
+              <span class="rank-name">{{ r.brandName }}</span>
+              <div class="rank-bar-wrap"><div class="rank-bar" [style.width]="barWidth(+r.sales, maxOf(salesByBrand(),'sales'))" [style.background]="color(i)"></div></div>
+              <span class="rank-val">{{ fmt(r.sales) }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Payment Method Overview -->
+      <div class="widget col-12" *ngIf="w.slug==='payment-method-overview'">
+        <div class="widget-header"><h3>Payment Methods</h3></div>
+        <ng-container *ngIf="!isLoading('payment-method-overview'); else spinner">
+          <div class="empty-state" *ngIf="!branchSales().length">No data</div>
+          <div class="bar-chart" *ngIf="branchSales().length">
+            <div *ngFor="let r of branchSales(); let i=index" class="bar-row">
+              <span class="bar-label">{{ r.branchName }}</span>
+              <div class="bar-track"><div class="bar-fill" [style.background]="color(i)" [style.width]="barWidth(+r.total, maxOf(branchSales(),'total'))"></div></div>
+              <span class="bar-val">{{ fmt(r.total) }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Sales by Source -->
+      <div class="widget col-12" *ngIf="w.slug==='sales-by-source'">
+        <div class="widget-header"><h3>Sales by Source</h3></div>
+        <ng-container *ngIf="!isLoading('sales-by-source'); else spinner">
+          <div class="empty-state" *ngIf="!salesBySource().length">No data</div>
+          <div class="rank-list" *ngIf="salesBySource().length">
+            <div *ngFor="let r of salesBySource(); let i=index" class="rank-row">
+              <span class="dot-lg" [style.background]="color(i)"></span>
+              <span class="rank-name">{{ r.sourceName }}</span>
+              <div class="rank-bar-wrap"><div class="rank-bar" [style.width]="barWidth(+r.sales, maxOf(salesBySource(),'sales'))" [style.background]="color(i)"></div></div>
+              <span class="rank-val">{{ fmt(r.sales) }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Sales by Service -->
+      <div class="widget col-12" *ngIf="w.slug==='sales-by-service'">
+        <div class="widget-header"><h3>Sales by Service</h3></div>
+        <ng-container *ngIf="!isLoading('sales-by-service'); else spinner">
+          <div class="empty-state" *ngIf="!salesByService().length">No data</div>
+          <div class="rank-list" *ngIf="salesByService().length">
+            <div *ngFor="let r of salesByService(); let i=index" class="rank-row">
+              <span class="dot-lg" [style.background]="color(i)"></span>
+              <span class="rank-name">{{ r.serviceName }}</span>
+              <div class="rank-bar-wrap"><div class="rank-bar" [style.width]="barWidth(+r.sales, maxOf(salesByService(),'sales'))" [style.background]="color(i)"></div></div>
+              <span class="rank-val">{{ fmt(r.sales) }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Top 10 Items by Sales -->
+      <div class="widget col-12" *ngIf="w.slug==='top-10-item-by-sales'">
+        <div class="widget-header"><h3>Top Items by Sales</h3></div>
+        <ng-container *ngIf="!isLoading('top-10-item-by-sales'); else spinner">
+          <div class="empty-state" *ngIf="!topItems().length">No data</div>
+          <div class="rank-list" *ngIf="topItems().length">
+            <div *ngFor="let r of topItems(); let i=index" class="rank-row">
+              <span class="rank-num" [style.background]="color(i)">{{ i+1 }}</span>
+              <span class="rank-name">{{ r.productName }}</span>
+              <div class="rank-bar-wrap"><div class="rank-bar" [style.width]="barWidth(+r.sales, maxOf(topItems(),'sales'))" [style.background]="color(i)"></div></div>
+              <span class="rank-val">{{ fmt(r.sales) }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Top Customers -->
+      <div class="widget col-12" *ngIf="w.slug==='top-customers'">
+        <div class="widget-header"><h3>Top Customers</h3></div>
+        <ng-container *ngIf="!isLoading('top-customers'); else spinner">
+          <div class="empty-state" *ngIf="!topCustomers().length">No data</div>
+          <div class="rank-list" *ngIf="topCustomers().length">
+            <div *ngFor="let r of topCustomers(); let i=index" class="rank-row">
+              <span class="avatar-sm" [style.background]="color(i)">{{ initials(r.customerName) }}</span>
+              <span class="rank-name">{{ r.customerName }}</span>
+              <div class="rank-bar-wrap"><div class="rank-bar" [style.width]="barWidth(+r.total, maxOf(topCustomers(),'total'))" [style.background]="color(i)"></div></div>
+              <span class="rank-val">{{ fmt(r.total) }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- New Customers -->
+      <div class="widget col-12" *ngIf="w.slug==='new-customers'">
+        <div class="widget-header"><h3>New Customers</h3></div>
+        <ng-container *ngIf="!isLoading('new-customers'); else spinner">
+          <div class="empty-state" *ngIf="!newCustomers().length">No new customers</div>
+          <div class="customer-list" *ngIf="newCustomers().length">
+            <div *ngFor="let c of newCustomers(); let i=index" class="cust-row">
+              <span class="avatar-sm" [style.background]="color(i)">{{ initials(c.name) }}</span>
+              <div class="cust-info"><div class="cust-name">{{ c.name }}</div><div class="cust-email">{{ c.email || c.phone }}</div></div>
+              <span class="cust-ago">{{ c.createdAt | date:'MMM d' }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Online Invoices -->
+      <div class="widget col-12" *ngIf="w.slug==='online-invoices'">
+        <div class="widget-header"><h3>Online Invoices</h3></div>
+        <ng-container *ngIf="!isLoading('online-invoices'); else spinner">
+          <div class="empty-state" *ngIf="!onlineInvoices().length">No data</div>
+          <div class="bar-chart" *ngIf="onlineInvoices().length">
+            <div *ngFor="let r of onlineInvoices(); let i=index" class="bar-row">
+              <span class="bar-label">{{ r['?column?'] || r.source }}</span>
+              <div class="bar-track"><div class="bar-fill" [style.background]="color(i)" [style.width]="barWidth(+r.numberOfInvoices, maxOf(onlineInvoices(),'numberOfInvoices'))"></div></div>
+              <span class="bar-val">{{ r.numberOfInvoices }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Low Quantity Products -->
+      <div class="widget col-12" *ngIf="w.slug==='low-quantity-products'">
+        <div class="widget-header"><h3>Low Stock Products</h3></div>
+        <ng-container *ngIf="!isLoading('low-quantity-products'); else spinner">
+          <div class="empty-state" *ngIf="!lowQtyProducts().length">All stock levels OK ✓</div>
+          <div class="table-scroll" *ngIf="lowQtyProducts().length">
+            <table class="db-table">
+              <thead><tr><th>Product</th><th class="num">Stock</th><th class="num">Reorder At</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let r of lowQtyProducts()">
+                  <td>{{ r.name || r.productName }}</td>
+                  <td class="num warn">{{ r.quantity ?? r.onHand }}</td>
+                  <td class="num">{{ r.reorderPoint ?? r.minQuantity }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Expiry Products -->
+      <div class="widget col-12" *ngIf="w.slug==='expiry-date-products'">
+        <div class="widget-header"><h3>Expiring Products</h3></div>
+        <ng-container *ngIf="!isLoading('expiry-date-products'); else spinner">
+          <div class="empty-state" *ngIf="!expireProducts().length">No expiring products ✓</div>
+          <div class="table-scroll" *ngIf="expireProducts().length">
+            <table class="db-table">
+              <thead><tr><th>Product</th><th>Batch</th><th class="num">Qty</th><th>Expires</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let r of expireProducts()">
+                  <td>{{ r.name || r.productName }}</td>
+                  <td>{{ r.batchNumber || '—' }}</td>
+                  <td class="num">{{ r.quantity }}</td>
+                  <td class="warn">{{ r.expiryDate | date:'MMM d, y' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </div>
+
+    </ng-container>
+  </main>
+
+  <ng-template #spinner>
+    <div class="widget-spinner"><div class="spinner sm"></div></div>
+  </ng-template>
+
+  <!-- Customize slide-in panel -->
+  <div class="customize-overlay" *ngIf="customizeOpen()" (click)="customizeOpen.set(false)"></div>
+  <aside class="customize-panel" [class.open]="customizeOpen()">
+    <div class="cp-header">
+      <h3>Customize Dashboard</h3>
+      <button class="cp-close" (click)="customizeOpen.set(false)">✕</button>
+    </div>
+    <input class="cp-search" type="text" placeholder="Search widgets…" [(ngModel)]="customizeSearch" />
+    <div class="cp-list">
+      <label *ngFor="let ew of filteredCustomizeWidgets()" class="cp-item">
+        <input type="checkbox" [checked]="ew.isAdded" (change)="toggleWidgetAdded(ew)" />
+        <span class="cp-dot" [class.added]="ew.isAdded"></span>
+        <span class="cp-title">{{ ew.title }}</span>
+      </label>
+    </div>
+    <div class="cp-footer">
+      <button class="btn-pill" (click)="saveCustomize()">Save</button>
+      <button class="btn-pill btn-outline" (click)="customizeOpen.set(false)">Cancel</button>
+    </div>
+  </aside>
+
+</div>

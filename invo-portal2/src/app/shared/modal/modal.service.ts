@@ -1,0 +1,217 @@
+import {
+  Injectable, inject, Injector, Type, ComponentRef, StaticProvider,
+} from '@angular/core';
+import { Overlay, OverlayRef, OverlayConfig } from '@angular/cdk/overlay';
+import { ComponentPortal } from '@angular/cdk/portal';
+import { ModalContainerComponent } from './modal-container.component';
+import { DrawerContainerComponent } from './drawer-container.component';
+import { MODAL_DATA, MODAL_REF } from './modal.tokens';
+
+export interface ModalConfig<D = any> {
+  data?:            D;
+  size?:            'sm' | 'md' | 'lg' | 'xl' | 'fullscreen';
+  closeable?:       boolean;
+  closeOnBackdrop?: boolean;
+  panelClass?:      string | string[];
+  /** Open as a side drawer instead of a centered modal */
+  drawer?:          boolean;
+  /** Drawer width, default 340px */
+  drawerWidth?:     string;
+  /** Extra providers to inject into the modal component */
+  providers?:       StaticProvider[];
+}
+
+export class ModalRef<R = any> {
+  private _result: R | undefined;
+  private _closing = false;
+
+  constructor(private overlayRef: OverlayRef) {}
+
+  close(result?: R): void {
+    this._result = result;
+    this._animateOut();
+  }
+
+  /** Set the result without closing — useful in ngOnDestroy to pass data back when dismissed via backdrop. */
+  setResult(result: R): void {
+    this._result = result;
+  }
+
+  dismiss(): void {
+    this._animateOut();
+  }
+
+  get result(): R | undefined { return this._result; }
+
+  afterClosed(): Promise<R | undefined> {
+    return new Promise(resolve => {
+      this.overlayRef.detachments().subscribe(() => resolve(this._result));
+    });
+  }
+
+  /**
+   * Plays the `modal-out` CSS animation on the overlay pane, then disposes.
+   * If the pane can't be found or the animation doesn't fire within 300ms,
+   * it falls back to an instant dispose.
+   */
+  private _animateOut(): void {
+    if (this._closing) return;
+    this._closing = true;
+
+    const pane = this.overlayRef.overlayElement;
+    if (!pane) {
+      this.overlayRef.dispose();
+      return;
+    }
+
+    // Add the closing class that triggers the CSS exit animation.
+    pane.classList.add('modal-closing');
+
+    // Also fade the backdrop.
+    const backdrop = this.overlayRef.backdropElement;
+    if (backdrop) {
+      backdrop.style.transition = 'opacity 0.2s ease';
+      backdrop.style.opacity = '0';
+    }
+
+    // Wait for the animation to end, then dispose.
+    const onDone = () => {
+      pane.removeEventListener('animationend', onDone);
+      clearTimeout(fallback);
+      this.overlayRef.dispose();
+    };
+
+    pane.addEventListener('animationend', onDone, { once: true });
+
+    // Fallback in case animationend doesn't fire (detached element, etc.)
+    const fallback = setTimeout(onDone, 300);
+  }
+}
+
+@Injectable({ providedIn: 'root' })
+export class ModalService {
+  private overlay  = inject(Overlay);
+  private injector = inject(Injector);
+
+  open<C, D = any, R = any>(
+    component: Type<C>,
+    config: ModalConfig<D> = {},
+  ): ModalRef<R> {
+    const {
+      size            = 'md',
+      closeable       = true,
+      closeOnBackdrop = true,
+      data,
+      panelClass,
+      drawer          = false,
+      drawerWidth     = '340px',
+    } = config;
+
+    const isRtl = document.documentElement.dir === 'rtl' ||
+                  document.body.dir === 'rtl';
+
+    const overlayRef = this.overlay.create(
+      drawer
+        ? this.buildDrawerConfig(drawerWidth, isRtl, panelClass)
+        : this.buildModalConfig(size, panelClass)
+    );
+
+    const modalRef = new ModalRef<R>(overlayRef);
+
+    if (closeOnBackdrop) overlayRef.backdropClick().subscribe(() => modalRef.dismiss());
+    overlayRef.keydownEvents().subscribe(e => {
+      if (e.key === 'Escape' && closeable) modalRef.dismiss();
+    });
+
+    const contentInjector = Injector.create({
+      parent: this.injector,
+      providers: [
+        { provide: MODAL_REF,  useValue: modalRef },
+        { provide: MODAL_DATA, useValue: data ?? null },
+        ...(config.providers ?? []),
+      ],
+    });
+
+    if (drawer) {
+      const portal = new ComponentPortal(DrawerContainerComponent, null, this.injector);
+      const ref: ComponentRef<DrawerContainerComponent> = overlayRef.attach(portal);
+      ref.instance.closeable         = closeable;
+      ref.instance.modalRef          = modalRef;
+      ref.instance.contentComponent  = component as Type<any>;
+      ref.instance.contentInjector   = contentInjector;
+      ref.instance.isRtl             = isRtl;
+      ref.changeDetectorRef.detectChanges();
+    } else {
+      const portal = new ComponentPortal(ModalContainerComponent, null, this.injector);
+      const ref: ComponentRef<ModalContainerComponent> = overlayRef.attach(portal);
+      ref.instance.closeable         = closeable;
+      ref.instance.size              = size ?? 'md';
+      ref.instance.modalRef          = modalRef;
+      ref.instance.contentComponent  = component as Type<any>;
+      ref.instance.contentInjector   = contentInjector;
+      ref.changeDetectorRef.detectChanges();
+    }
+
+    return modalRef;
+  }
+
+  // ─── Centered modal config ────────────────────────────────────────────────
+  private buildModalConfig(
+    size?:       ModalConfig['size'],
+    panelClass?: string | string[],
+  ): OverlayConfig {
+    const widthMap: Record<string, string> = {
+      sm: '400px', md: '560px', lg: '720px', xl: '1100px', fullscreen: '100vw',
+    };
+    return new OverlayConfig({
+      hasBackdrop:      true,
+      backdropClass:    'invo-modal-backdrop',
+      panelClass:       [
+        'invo-modal-panel',
+        ...(Array.isArray(panelClass) ? panelClass : panelClass ? [panelClass] : []),
+      ],
+      scrollStrategy:   this.overlay.scrollStrategies.block(),
+      positionStrategy: this.overlay.position().global()
+        .centerHorizontally().centerVertically(),
+      width:    widthMap[size ?? 'md'],
+      maxWidth: 'calc(100vw - 48px)',
+      height:   size === 'fullscreen' ? 'calc(100vh - 48px)' : size === 'xl' ? 'min(680px, calc(100vh - 48px))' : undefined,
+      maxHeight: 'calc(100vh - 48px)',
+    });
+  }
+
+  // ─── Drawer (slide from right / left in RTL) config ───────────────────────
+  private buildDrawerConfig(
+    width:      string,
+    isRtl:      boolean,
+    panelClass?: string | string[],
+  ): OverlayConfig {
+    const isMobile = window.innerWidth <= 991;
+    const position = this.overlay.position().global();
+
+    if (isMobile) {
+      // Bottom sheet on mobile
+      position.bottom('0').left('0').right('0');
+    } else {
+      isRtl
+        ? position.left('0').top('0').bottom('0')
+        : position.right('0').top('0').bottom('0');
+    }
+
+    return new OverlayConfig({
+      hasBackdrop:      true,
+      backdropClass:    'invo-modal-backdrop',
+      panelClass:       [
+        'invo-drawer-panel',
+        isMobile ? 'invo-drawer-panel--bottom' :
+          (isRtl ? 'invo-drawer-panel--rtl' : 'invo-drawer-panel--ltr'),
+        ...(Array.isArray(panelClass) ? panelClass : panelClass ? [panelClass] : []),
+      ],
+      scrollStrategy:   this.overlay.scrollStrategies.block(),
+      positionStrategy: position,
+      width:  isMobile ? '100%' : width,
+      maxWidth: '100%',
+      height: isMobile ? 'auto' : '100vh',
+    });
+  }
+}

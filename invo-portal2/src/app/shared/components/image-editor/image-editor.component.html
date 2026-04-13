@@ -1,0 +1,197 @@
+<div class="editor">
+  <!-- ── Header ───────────────────────────────────────────────────────────── -->
+  <div class="header">
+    <div class="header-left">
+      <button class="hdr-btn" (click)="onCancel()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <span class="header-title">Photo Editor</span>
+    </div>
+    <div class="header-right">
+      <button class="hdr-btn" [disabled]="!canUndo()" (click)="undo()" title="Undo">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h10a5 5 0 010 10H9M3 10l4-4M3 10l4 4"/></svg>
+      </button>
+      <button class="hdr-btn" [disabled]="!canRedo()" (click)="redo()" title="Redo">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10H11a5 5 0 000 10h4M21 10l-4-4M21 10l-4 4"/></svg>
+      </button>
+      <button class="btn-cancel" (click)="onCancel()">Cancel</button>
+      <button class="btn-save" [disabled]="saving()" (click)="onSave()">Save</button>
+    </div>
+  </div>
+
+  <div class="body-row">
+    <!-- ── Left toolbar ─────────────────────────────────────────────────── -->
+    <div class="toolbar">
+      @for (tool of TOOLS; track tool.key) {
+        <button
+          [class]="'tool-btn ' + (activeTool() === tool.key ? 'tool-btn--active' : '')"
+          (click)="activeTool.set(tool.key)">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path [attr.d]="tool.icon"/>
+          </svg>
+          <span>{{ tool.label }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- ── Tool panel (controls for active tool) ────────────────────────── -->
+    <div class="tool-panel">
+      <!-- Crop controls -->
+      @if (activeTool() === 'crop') {
+        <h3 class="panel-title">Crop</h3>
+        <div class="presets">
+          @for (p of CROP_PRESETS; track p.label) {
+            <button
+              [class]="'preset-btn ' + (cropPreset().label === p.label ? 'preset-btn--active' : '')"
+              (click)="cropPreset.set(p)">
+              {{ p.label }}
+            </button>
+          }
+        </div>
+        @if (!cropActive()) {
+          <button class="action-btn" (click)="startCrop()">Start Crop</button>
+        } @else {
+          <button class="action-btn action-btn--primary" (click)="applyCrop()">Apply Crop</button>
+          <button class="action-btn" (click)="cancelCrop()">Cancel</button>
+        }
+      }
+
+      <!-- Rotate controls -->
+      @if (activeTool() === 'rotate') {
+        <h3 class="panel-title">Rotate & Flip</h3>
+        <div class="rotate-btns">
+          <button class="action-btn" (click)="rotate90(-1)">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h10a5 5 0 010 10H9M3 10l4-4M3 10l4 4"/></svg>
+            Rotate Left
+          </button>
+          <button class="action-btn" (click)="rotate90(1)">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10H11a5 5 0 000 10h4M21 10l-4-4M21 10l-4 4"/></svg>
+            Rotate Right
+          </button>
+          <button class="action-btn" (click)="flip('h')">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v18M16 7l4 5-4 5M8 7L4 12l4 5"/></svg>
+            Flip H
+          </button>
+          <button class="action-btn" (click)="flip('v')">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12h18M7 8L12 4l5 4M7 16l5 4 5-4"/></svg>
+            Flip V
+          </button>
+        </div>
+      }
+
+      <!-- Adjust controls -->
+      @if (activeTool() === 'adjust') {
+        <h3 class="panel-title">Adjust</h3>
+        @for (adj of ADJUSTMENTS; track adj.key) {
+          <div class="adj-row">
+            <label class="adj-label">{{ adj.label }}</label>
+            <input
+              type="range"
+              [min]="adj.min"
+              [max]="adj.max"
+              [value]="adjustments()[adj.key]"
+              (input)="updateAdjustment(adj.key, +$any($event.target).value)"
+              class="adj-slider" />
+            <span class="adj-value">{{ adjustments()[adj.key] }}{{ adj.unit }}</span>
+          </div>
+        }
+        <div class="adj-actions">
+          <button class="action-btn" (click)="resetAdjustments()">Reset</button>
+          <button class="action-btn action-btn--primary" (click)="applyAdjustments()">Apply</button>
+        </div>
+      }
+
+      <!-- Filters -->
+      @if (activeTool() === 'filters') {
+        <h3 class="panel-title">Filters</h3>
+        <div class="filter-grid">
+          @for (f of FILTER_PRESETS; track f.label) {
+            <button
+              [class]="'filter-btn ' + (activeFilter() === f.css ? 'filter-btn--active' : '')"
+              (click)="setFilter(f)">
+              <div class="filter-preview" [style.filter]="f.css || 'none'">
+                <img [src]="imageUrl()" alt="" />
+              </div>
+              <span>{{ f.label }}</span>
+            </button>
+          }
+        </div>
+        <button class="action-btn action-btn--primary" (click)="applyAdjustments()">Apply Filter</button>
+      }
+
+      <!-- Draw -->
+      @if (activeTool() === 'draw') {
+        <h3 class="panel-title">Draw</h3>
+        <div class="draw-controls">
+          <label class="adj-label">Color</label>
+          <input type="color" [value]="drawColor()" (input)="drawColor.set($any($event.target).value)" class="color-input" />
+          <label class="adj-label">Size</label>
+          <input type="range" min="1" max="20" [value]="drawSize()" (input)="drawSize.set(+$any($event.target).value)" class="adj-slider" />
+          <span class="adj-value">{{ drawSize() }}px</span>
+        </div>
+        <p class="hint">Draw directly on the image with your mouse.</p>
+      }
+
+      <!-- Resize -->
+      @if (activeTool() === 'resize') {
+        <h3 class="panel-title">Resize</h3>
+        <div class="resize-inputs">
+          <div class="resize-field">
+            <label>Width (px)</label>
+            <input type="number" min="1" [value]="resizeW()" (input)="onResizeW(+$any($event.target).value)" class="resize-input" />
+          </div>
+          <button class="lock-btn" [class.active]="resizeLock()" (click)="resizeLock.set(!resizeLock())" title="Lock aspect ratio">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              @if (resizeLock()) {
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+              } @else {
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 019.9-1"/>
+              }
+            </svg>
+          </button>
+          <div class="resize-field">
+            <label>Height (px)</label>
+            <input type="number" min="1" [value]="resizeH()" (input)="onResizeH(+$any($event.target).value)" class="resize-input" />
+          </div>
+        </div>
+        <button class="action-btn action-btn--primary" (click)="applyResize()">Apply Resize</button>
+      }
+    </div>
+
+    <!-- ── Canvas area ──────────────────────────────────────────────────── -->
+    <div class="canvas-area">
+      @if (loading()) {
+        <div class="canvas-loading">Loading image…</div>
+      }
+      <canvas
+        #mainCanvas
+        [style.filter]="cssFilter()"
+        [class]="'main-canvas ' + (activeTool() === 'draw' ? 'drawing-cursor' : '')"
+        (mousedown)="onDrawStart($event)"
+        (mousemove)="onDrawMove($event)"
+        (mouseup)="onDrawEnd()"
+        (mouseleave)="onDrawEnd()"
+        (touchstart)="onDrawStart($event)"
+        (touchmove)="onDrawMove($event)"
+        (touchend)="onDrawEnd()">
+      </canvas>
+
+      <!-- Crop overlay -->
+      @if (cropActive()) {
+        <div class="crop-mask"></div>
+        <div
+          #cropOverlay
+          class="crop-box"
+          [style.left.px]="cropRect().x"
+          [style.top.px]="cropRect().y"
+          [style.width.px]="cropRect().w"
+          [style.height.px]="cropRect().h">
+          <div class="crop-handle nw"></div>
+          <div class="crop-handle ne"></div>
+          <div class="crop-handle sw"></div>
+          <div class="crop-handle se"></div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

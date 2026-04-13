@@ -1,0 +1,127 @@
+<div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+
+  <!-- ── Left: info text + page-size selector ─────────────────────────── -->
+  <div class="flex items-center gap-4 text-sm text-slate-600">
+    @if (showInfo()) {
+      <span>{{ infoText() }}</span>
+    }
+
+    @if (showPageSize()) {
+      <div class="flex items-center gap-2">
+        <label>Per page:</label>
+        <div class="w-20">
+          <app-search-dropdown
+            [items]="pageSizeOptions()"
+            [displayWith]="pageSizeLabel"
+            [compareWith]="pageSizeCompare"
+            [value]="pageSize()"
+            [searchable]="false"
+            [clearable]="false"
+            [disabled]="disabled()"
+            (valueChange)="onPageSizeChange($any($event))" />
+        </div>
+      </div>
+    }
+
+    @if (showJumpToPage() && hasTotal()) {
+      <div class="flex items-center gap-2">
+        <label for="paginationJump">Go to:</label>
+        <input
+          id="paginationJump"
+          type="number"
+          min="1"
+          [max]="totalPages()"
+          [value]="jumpInput()"
+          [disabled]="disabled()"
+          (input)="onJumpInput($event)"
+          (keydown)="onJumpKeydown($event)"
+          class="w-16 px-2 py-1 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+      </div>
+    }
+  </div>
+
+  <!-- ── Right: page navigation ──────────────────────────────────────── -->
+  <div class="flex items-center gap-1">
+
+    <!-- First page -->
+    @if (showFirstLast() && hasTotal()) {
+      <button
+        type="button"
+        (click)="first()"
+        [disabled]="!canPrev()"
+        class="p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        aria-label="First page">
+        <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+        </svg>
+      </button>
+    }
+
+    <!-- Previous page -->
+    <button
+      type="button"
+      (click)="prev()"
+      [disabled]="!canPrev()"
+      class="p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+      aria-label="Previous page">
+      <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+
+    <!-- Full mode: page numbers -->
+    @if (hasTotal()) {
+      @for (entry of pages(); track $index) {
+        @if (entry === 'gap') {
+          <span class="px-2 text-slate-400 select-none">…</span>
+        } @else {
+          <button
+            type="button"
+            (click)="goToPage(entry)"
+            [disabled]="disabled()"
+            [attr.aria-current]="entry === page() ? 'page' : null"
+            [class]="
+              'min-w-[36px] h-9 px-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ' +
+              (entry === page()
+                ? 'bg-brand-600 text-white shadow-sm'
+                : 'text-slate-700 hover:bg-slate-100 border border-slate-300')">
+            {{ entry }}
+          </button>
+        }
+      }
+    }
+
+    <!-- Compact mode: just the current page label -->
+    @if (!hasTotal()) {
+      <span class="px-3 py-1.5 text-sm text-slate-600">
+        {{ infoText() }}
+      </span>
+    }
+
+    <!-- Next page -->
+    <button
+      type="button"
+      (click)="next()"
+      [disabled]="!canNext()"
+      class="p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+      aria-label="Next page">
+      <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+    </button>
+
+    <!-- Last page -->
+    @if (showFirstLast() && hasTotal()) {
+      <button
+        type="button"
+        (click)="last()"
+        [disabled]="!canNext()"
+        class="p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        aria-label="Last page">
+        <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+        </svg>
+      </button>
+    }
+  </div>
+</div>

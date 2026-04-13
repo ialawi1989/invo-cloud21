@@ -1,0 +1,104 @@
+<ng-container *ngIf="summray">
+  <!-- First Row -->
+  <div class="stats-grid">
+    <!-- Costs Of Goods Sold -->
+    <div class="stat-card stat-card--coral">
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">{{ "DASHBOARD.COSTS_OF_GOODS_SOLD" | translate }}</div>
+        <div class="stat-value">{{ summray?.costOfGoodsSold?.balance | mycurrency }}</div>
+      </div>
+      <div class="stat-chart">
+        <apx-chart #chartCostOfGoodsSold class="apex-charts"
+          [series]="costOfGoodsSoldChart.series"
+          [chart]="costOfGoodsSoldChart.chart"
+          [stroke]="costOfGoodsSoldChart.stroke"
+          [colors]="costOfGoodsSoldChart.colors"
+          [fill]="costOfGoodsSoldChart.fill"
+          [tooltip]="costOfGoodsSoldChart.tooltip">
+        </apx-chart>
+      </div>
+    </div>
+
+    <!-- Payable -->
+    <div class="stat-card stat-card--purple">
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+          <line x1="1" y1="10" x2="23" y2="10"></line>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">{{ "DASHBOARD.PAYABLE" | translate }}</div>
+        <div class="stat-value">{{ summray?.payable?.balance | mycurrency }}</div>
+      </div>
+      <div class="stat-chart">
+        <apx-chart #chartPayable class="apex-charts"
+          [series]="payableChart.series"
+          [chart]="payableChart.chart"
+          [stroke]="payableChart.stroke"
+          [colors]="payableChart.colors"
+          [fill]="payableChart.fill"
+          [tooltip]="payableChart.tooltip">
+        </apx-chart>
+      </div>
+    </div>
+
+    <!-- Receivable -->
+    <div class="stat-card stat-card--emerald">
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">{{ "DASHBOARD.RECIEVABLE" | translate }}</div>
+        <div class="stat-value">{{ summray?.receivable?.balance | mycurrency }}</div>
+      </div>
+      <div class="stat-chart">
+        <apx-chart #chartReceivable class="apex-charts" dir="ltr"
+          [series]="receivableChart.series"
+          [chart]="receivableChart.chart"
+          [stroke]="receivableChart.stroke"
+          [colors]="receivableChart.colors"
+          [fill]="receivableChart.fill"
+          [tooltip]="receivableChart.tooltip">
+        </apx-chart>
+      </div>
+    </div>
+  </div>
+
+  <!-- Second Row -->
+  <div class="stats-grid">
+    <!-- Net Profit / Loss -->
+    <div class="stat-card" [ngClass]="{'stat-card--emerald': summray?.netProfit >= 0, 'stat-card--danger': summray?.netProfit < 0}">
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+          <polyline points="17 6 23 6 23 12"></polyline>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">{{ "DASHBOARD.NET_PROFIT_LOSS" | translate }}</div>
+        <div class="stat-value">{{ summray?.netProfit | mycurrency }}</div>
+      </div>
+    </div>
+
+    <!-- Open Invoices -->
+    <open-Invioces #openInvoices [currentBranch]="currentBranch"></open-Invioces>
+
+    <!-- Number Of Open Cashiers -->
+    <number-of-open-cashiers #noOfOpenCashiers [currentBranch]="currentBranch"></number-of-open-cashiers>
+  </div>
+</ng-container>

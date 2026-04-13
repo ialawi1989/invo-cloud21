@@ -1,0 +1,92 @@
+<div class="card">
+  <div class="card-body">
+
+    <!-- Header Row -->
+    <div class="header-row">
+      <h4 class="card-title mb-0">{{ "DASHBOARD.SALES_BY_CATEGORY" | translate }}</h4>
+    </div>
+
+    <!-- Top Category Highlight -->
+    <div class="top-category" *ngIf="resultData[0]">
+      <div class="top-category-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+        </svg>
+      </div>
+      <div class="top-category-content">
+        <span class="top-category-label">{{ "DASHBOARD.TOP_CATEGORY" | translate }}</span>
+        <h3 class="top-category-value">{{ resultData[0]?.sales | mycurrency }}</h3>
+        <span class="top-category-name">
+          <ng-container *ngIf="(resultData[0].translation && resultData[0].translation.name && resultData[0].translation.name.ar == '') || resultData[0].translation == null">
+            {{ resultData[0].categoryName }}
+          </ng-container>
+          <ng-container *ngIf="resultData[0].translation && resultData[0].translation.name && resultData[0].translation.name.ar != ''">
+            {{ resultData[0].translation.name.ar }}
+          </ng-container>
+        </span>
+      </div>
+    </div>
+
+    <!-- Categories Table -->
+    <div class="categories-table" *ngIf="resultData?.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ "DASHBOARD.CATEGORY" | translate }}</th>
+            <th>{{ "DASHBOARD.SALES" | translate }}</th>
+            <th>{{ "DASHBOARD.PERCENTAGE" | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cat of resultData; let i = index">
+            <td class="category-name-cell">
+              <div class="category-info">
+                <span class="category-rank" [class.top-rank]="i === 0">{{ i + 1 }}</span>
+                <span class="category-name">
+                  <ng-container *ngIf="(cat.translation && cat.translation.name && cat.translation.name.ar == '') || cat.translation == null">
+                    {{ cat.categoryName }}
+                  </ng-container>
+                  <ng-container *ngIf="cat.translation && cat.translation.name && cat.translation.name.ar != ''">
+                    {{ cat.translation.name.ar }}
+                  </ng-container>
+                </span>
+              </div>
+            </td>
+            <td class="sales-cell">
+              <span class="sales-value">{{ cat.sales | mycurrency }}</span>
+            </td>
+            <td class="percentage-cell">
+              <div class="percentage-wrapper">
+                <span class="percentage-value">{{ cat.percentage }}%</span>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill"
+                    [style.width.%]="cat.percentage"
+                    [class.high]="cat.percentage >= 30"
+                    [class.medium]="cat.percentage >= 15 && cat.percentage < 30"
+                    [class.low]="cat.percentage < 15">
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!resultData?.length">
+      <div class="empty-content">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <p>{{ "DASHBOARD.NO_DATA_AVAILABLE" | translate }}</p>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,192 @@
+// ==========================================
+// Payment Method Overview Styles - Brand Teal Theme
+// ==========================================
+
+:host {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #fbfbfb;
+  --bg-card: #ffffff;
+  --border-color: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --brand-teal: #00aab3;
+  --brand-teal-dark: #00949c;
+  --brand-teal-light: rgba(0, 170, 179, 0.1);
+
+  --bar-color: #32acc1;
+  --bar-light: rgba(50, 172, 193, 0.1);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-card);
+}
+
+.card-body {
+  padding: 24px;
+}
+
+// ==========================================
+// Header Row
+// ==========================================
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+}
+
+// ==========================================
+// Legend
+// ==========================================
+.legend-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+  }
+
+  .legend-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  &--total .legend-dot {
+    background-color: var(--bar-color);
+  }
+}
+
+// ==========================================
+// Chart Container
+// ==========================================
+.chart-container {
+  background:#fbfbfb;
+  border-radius: 12px;
+  padding: 20px;
+  min-height: 430px;
+
+  .apex-charts {
+    width: 100%;
+  }
+}
+
+// ==========================================
+// ApexCharts Customization
+// ==========================================
+::ng-deep {
+  .apexcharts-canvas {
+    width: 100% !important;
+  }
+
+  .apexcharts-legend {
+    display: none !important; // Using custom legend
+  }
+
+  .apexcharts-bar-area {
+    filter: drop-shadow(0 2px 4px rgba(50, 172, 193, 0.2));
+  }
+
+  .apexcharts-tooltip {
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+
+    .apexcharts-tooltip-title {
+      background: var(--bg-tertiary) !important;
+      border-bottom: 1px solid var(--border-color) !important;
+      font-weight: 600;
+    }
+
+    .apexcharts-tooltip-series-group {
+      padding: 8px 12px;
+    }
+  }
+
+  .apexcharts-xaxis-label {
+    font-weight: 500;
+    fill: var(--text-secondary);
+  }
+
+  .apexcharts-yaxis-label {
+    fill: var(--text-muted);
+  }
+
+  .apexcharts-gridline {
+    stroke: var(--border-color);
+  }
+
+  .apexcharts-data-labels {
+    text {
+      font-weight: 600 !important;
+    }
+  }
+}
+
+// ==========================================
+// Responsive
+// ==========================================
+@media (max-width: 576px) {
+  .card-body {
+    padding: 16px;
+  }
+
+  .header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .legend-wrapper {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .chart-container {
+    padding: 12px;
+    min-height: 350px;
+  }
+}
+
+// ==========================================
+// RTL Support
+// ==========================================
+[dir="rtl"] {
+  .header-row {
+    flex-direction: row-reverse;
+  }
+
+  .legend-wrapper {
+    flex-direction: row-reverse;
+  }
+
+  .legend-item {
+    flex-direction: row-reverse;
+  }
+}
