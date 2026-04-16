@@ -1,0 +1,170 @@
+<app-list-page
+  [pageTitle]="'PRODUCTS.TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="loadProducts"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="filters"
+  [headerActions]="[]"
+  [bulkActions]="bulkActions"
+  [selectable]="true"
+  [expandedRowIds]="expandedProductIds"
+  [emptyState]="emptyState"
+  [entityType]="'product'"
+  [loadCustomFieldsFn]="loadCustomFieldsFn"
+  (rowClicked)="onRowClick($event)">
+
+  <!-- ═══ Header Action Buttons ═══ -->
+  <div listHeaderActions class="flex items-center gap-3">
+    <!-- Add New dropdown -->
+    <div class="relative" (click)="$event.stopPropagation()">
+      <button type="button" (click)="addNewOpen.set(!addNewOpen()); moreMenuOpen.set(false)"
+        class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        {{ 'PRODUCTS.ACTIONS.NEW_PRODUCT' | translate }}
+        <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      @if (addNewOpen()) {
+      <div class="absolute right-0 top-full mt-1 w-52 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1">
+        @for (action of addNewActions; track action.id) {
+        <button type="button" (click)="action.handler!(); addNewOpen.set(false)"
+          class="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+          {{ action.label }}
+        </button>
+        }
+      </div>
+      }
+    </div>
+
+    <!-- More actions "..." button (hidden entirely if the user has permission for none of the items inside) -->
+    @if (moreActions.length > 0 || bulkOperationActions.length > 0) {
+    <div class="relative" (click)="$event.stopPropagation()">
+      <button type="button" (click)="moreMenuOpen.set(!moreMenuOpen()); addNewOpen.set(false)"
+        class="flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+        </svg>
+      </button>
+      @if (moreMenuOpen()) {
+      <div class="absolute right-0 top-full mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1">
+        <!-- General actions -->
+        @for (action of moreActions; track action.id) {
+        <button type="button" (click)="action.handler!(); moreMenuOpen.set(false)"
+          class="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+          {{ action.label }}
+        </button>
+        }
+        <!-- Bulk operations section — divider only if there were general actions above -->
+        @if (bulkOperationActions.length > 0) {
+          <div [class.mt-1]="moreActions.length > 0"
+               [class.pt-1]="moreActions.length > 0"
+               [class.border-t]="moreActions.length > 0"
+               [class.border-slate-100]="moreActions.length > 0">
+            <div class="px-4 py-1.5 text-[10.5px] font-semibold tracking-wider uppercase text-slate-400">
+              {{ 'MENU.SUB.BULK_OPERATIONS' | translate }}
+            </div>
+            @for (action of bulkOperationActions; track action.id) {
+            <button type="button" (click)="action.handler!(); moreMenuOpen.set(false)"
+              class="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+              {{ action.label }}
+            </button>
+            }
+          </div>
+        }
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <!-- Custom Name Template (with matrix expand). Barcode is rendered as a
+       grouped sibling column, not inside this template. -->
+  <ng-template listCellTemplate="name" let-row>
+    <div class="flex items-center gap-2">
+      @if (row.type === 'matrix') {
+        <button
+          type="button"
+          (click)="toggleProductExpansion(row, $event)"
+          class="p-1 rounded hover:bg-slate-100 transition-colors flex-shrink-0"
+          [title]="expandedProductIds().has(row.id) ? ('PRODUCTS.ACTIONS.COLLAPSE' | translate) : ('PRODUCTS.ACTIONS.EXPAND' | translate)">
+          <svg class="w-4 h-4 text-slate-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            [class.rotate-90]="expandedProductIds().has(row.id)">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      }
+      <span class="font-medium text-slate-900 truncate min-w-0">{{ row.name }}</span>
+    </div>
+  </ng-template>
+
+  <!-- Barcode badge (grouped under the same cell as the product name) -->
+  <ng-template listCellTemplate="barcode" let-row>
+    @if (row.barcode) {
+      <span class="inline-flex px-2 py-0.5 rounded text-xs font-mono bg-teal-100 text-teal-700 w-fit">
+        {{ row.barcode }}
+      </span>
+    }
+  </ng-template>
+
+  <!-- Custom Qty Template -->
+  <ng-template listCellTemplate="qtySum" let-row>
+    <span class="inline-flex px-2 py-1 rounded-lg text-sm font-medium bg-blue-50 text-blue-700">
+      {{ row.inventorySummary?.qtySum || 0 }}
+    </span>
+  </ng-template>
+
+  <!-- Custom Type Badge -->
+  <ng-template listCellTemplate="type" let-row>
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap"
+      [ngStyle]="getTypeBadgeStyle(row.type)">
+      {{ 'PRODUCTS.TYPES.' + getTypeKey(row.type) | translate }}
+    </span>
+  </ng-template>
+
+  <!-- Row Actions Dropdown -->
+  <ng-template listRowActions let-row>
+    <div class="relative" (click)="$event.stopPropagation()">
+      <button type="button" (click)="toggleRowMenu(row, $event)"
+        class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+        </svg>
+      </button>
+      @if (openMenuRowId() === (row.id || row._id)) {
+        <div class="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1 animate-in fade-in slide-in-from-top-1 duration-100">
+          <button type="button" (click)="editProduct(row, $event); closeRowMenu()"
+            class="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            {{ 'COMMON.ACTIONS.EDIT' | translate }}
+          </button>
+          <button type="button" (click)="printLabel(row, $event); closeRowMenu()"
+            class="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+            </svg>
+            {{ 'PRODUCTS.ACTIONS.PRINT_LABEL' | translate }}
+          </button>
+          <button type="button" (click)="copyProduct(row, $event); closeRowMenu()"
+            class="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            {{ 'COMMON.ACTIONS.COPY' | translate }}
+          </button>
+          <div class="my-1 border-t border-slate-100"></div>
+          <button type="button" (click)="deleteProduct(row, $event); closeRowMenu()"
+            class="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            {{ 'COMMON.ACTIONS.DELETE' | translate }}
+          </button>
+        </div>
+      }
+    </div>
+  </ng-template>
+</app-list-page>

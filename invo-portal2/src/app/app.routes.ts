@@ -60,6 +60,11 @@ export const routes: Routes = [
       {
         path: 'media',
         loadChildren: () => import('./features/media').then(m => m.MEDIA_ROUTES)
+      },
+      {
+        path: 'products',
+        loadChildren: () =>
+          import('./features/products/products.routes').then(m => m.PRODUCTS_ROUTES)
       }
       // ── Add features here as you build them ──────────────────────────────
     ],

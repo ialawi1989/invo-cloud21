@@ -93,6 +93,37 @@ export class ModalService {
   private overlay  = inject(Overlay);
   private injector = inject(Injector);
 
+  /**
+   * All currently-open modals. Tracked so the browser back button can close
+   * them all at once instead of navigating back through the app.
+   */
+  private openModals: ModalRef<any>[] = [];
+  /**
+   * Whether we've already pushed a sentinel history entry for the current
+   * "modal session". We only push once per session (on the first open) so a
+   * single browser-back press pops all stacked modals together.
+   */
+  private historyPushed = false;
+  /**
+   * Whether we're currently dismissing modals because the user pressed back.
+   * Prevents the normal close path from pushing/popping history again.
+   */
+  private dismissingFromPopstate = false;
+
+  constructor() {
+    // Single global listener — on back, dismiss every open modal.
+    window.addEventListener('popstate', () => {
+      if (this.openModals.length === 0) return;
+      this.dismissingFromPopstate = true;
+      // Snapshot so dismissals mutating the array during iteration are safe.
+      const snapshot = [...this.openModals];
+      this.openModals = [];
+      this.historyPushed = false;
+      snapshot.forEach(m => m.dismiss());
+      this.dismissingFromPopstate = false;
+    });
+  }
+
   open<C, D = any, R = any>(
     component: Type<C>,
     config: ModalConfig<D> = {},
@@ -117,6 +148,27 @@ export class ModalService {
     );
 
     const modalRef = new ModalRef<R>(overlayRef);
+
+    // Track for back-button handling. Push a single sentinel history entry
+    // on the first modal open — subsequent opens don't push again, so one
+    // back press closes the entire stack.
+    this.openModals.push(modalRef);
+    if (!this.historyPushed) {
+      history.pushState({ invoModal: true }, '');
+      this.historyPushed = true;
+    }
+
+    overlayRef.detachments().subscribe(() => {
+      const idx = this.openModals.indexOf(modalRef);
+      if (idx >= 0) this.openModals.splice(idx, 1);
+      // When the last modal closes via normal means (not back-button), we
+      // need to consume the sentinel history entry so a future back press
+      // actually navigates rather than being eaten by nothing.
+      if (this.openModals.length === 0 && this.historyPushed && !this.dismissingFromPopstate) {
+        this.historyPushed = false;
+        history.back();
+      }
+    });
 
     if (closeOnBackdrop) overlayRef.backdropClick().subscribe(() => modalRef.dismiss());
     overlayRef.keydownEvents().subscribe(e => {

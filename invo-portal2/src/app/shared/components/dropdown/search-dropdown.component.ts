@@ -147,6 +147,15 @@ export class SearchDropdownComponent<T = any> implements OnDestroy, ControlValue
    */
   attachToBody = input<boolean>(true);
 
+  /** Preferred panel position: 'bottom' (default) or 'top'. */
+  preferPosition = input<'bottom' | 'top'>('bottom');
+
+  overlayPositions = computed(() => {
+    const bottom = { originX: 'start' as const, originY: 'bottom' as const, overlayX: 'start' as const, overlayY: 'top' as const, offsetY: 4 };
+    const top = { originX: 'start' as const, originY: 'top' as const, overlayX: 'start' as const, overlayY: 'bottom' as const, offsetY: -4 };
+    return this.preferPosition() === 'top' ? [top, bottom] : [bottom, top];
+  });
+
   /** External loading flag — useful when the parent owns the data. */
   loading = input<boolean>(false);
 

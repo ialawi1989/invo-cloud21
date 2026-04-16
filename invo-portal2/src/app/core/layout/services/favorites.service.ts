@@ -23,7 +23,7 @@ export class FavoritesService {
   }
 
   async save(): Promise<void> {
-    await this.optionsService.set({
+    await this.optionsService.patch({
       sidebar: {
         favorites:   this.favorites(),
         recentPages: this.recentPages(),
@@ -50,10 +50,11 @@ export class FavoritesService {
   }
 
   addRecent(page: FavPage): void {
-    this.recentPages.update(pages => {
-      const filtered = pages.filter(p => p.link !== page.link);
-      return [page, ...filtered].slice(0, 10);
-    });
+    const current = this.recentPages();
+    if (current[0]?.link === page.link) return;
+    this.recentPages.set(
+      [page, ...current.filter(p => p.link !== page.link)].slice(0, 10)
+    );
     this.save();
   }
 

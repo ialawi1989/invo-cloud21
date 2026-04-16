@@ -8,6 +8,8 @@ import { ModalFooterComponent } from '../modal-footer.component';
 export interface ConfirmModalData {
   title:    string;
   message:  string;
+  /** Optional callout rendered below the message (e.g. a warning about side-effects). */
+  note?:    string;
   confirm?: string;  // button label, default 'Confirm'
   danger?:  boolean; // red confirm button
 }
@@ -29,6 +31,16 @@ export interface ConfirmModalData {
 
     <div class="body">
       <p class="message">{{ data.message }}</p>
+      @if (data.note) {
+        <div class="note" [class.note--danger]="data.danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>{{ data.note }}</span>
+        </div>
+      }
     </div>
 
     <app-modal-footer>
@@ -44,6 +56,18 @@ export interface ConfirmModalData {
   styles: [`
     .body    { padding: 20px 24px; }
     .message { font-size: 14px; color: #374151; margin: 0; line-height: 1.6; }
+
+    .note {
+      display: flex; align-items: flex-start; gap: 8px;
+      margin-top: 14px; padding: 10px 12px;
+      background: #fef3c7; border: 1px solid #fcd34d;
+      border-radius: 8px;
+      font-size: 13px; color: #92400e; line-height: 1.5;
+    }
+    .note svg { flex-shrink: 0; margin-top: 1px; }
+    .note--danger {
+      background: #fef2f2; border-color: #fecaca; color: #991b1b;
+    }
 
     .btn-cancel {
       padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb;

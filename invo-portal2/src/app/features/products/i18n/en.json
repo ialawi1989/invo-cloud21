@@ -1,0 +1,77 @@
+{
+  "PRODUCTS": {
+    "TITLE": "Products",
+    "FIELDS": {
+      "NAME": "Product Name",
+      "TYPE": "Type",
+      "SKU": "SKU",
+      "BARCODE": "Barcode",
+      "CATEGORY": "Category",
+      "DEPARTMENT": "Department",
+      "PRICE": "Price",
+      "COST": "Cost",
+      "QTY": "Qty",
+      "STOCK": "Stock",
+      "STOCK_VALUE": "Stock Value"
+    },
+    "TYPES": {
+      "INVENTORY": "Inventory",
+      "SERIALIZED": "Serialized",
+      "BATCH": "Batched",
+      "KIT": "Kit",
+      "SERVICE": "Service",
+      "PACKAGE": "Package",
+      "MENU_ITEM": "Menu Item",
+      "MENU_SELECTION": "Menu Selection",
+      "TAILORING": "Tailoring",
+      "MATRIX": "Matrix"
+    },
+    "ACTIONS": {
+      "NEW_PRODUCT": "Add New",
+      "DELETE_SELECTED": "Delete Selected",
+      "PRINT_LABEL": "Print Label",
+      "IMPORT_EXPORT": "Import/Export",
+      "LABEL_PRINT_BARCODES": "Label Print Barcodes",
+      "BULK_IMAGE": "Bulk Image",
+      "PRICE_CHANGE": "Price Change",
+      "TRANSLATION": "Translation",
+      "PRODUCTS_AVAILABILITY": "Products Availability",
+      "SHOW_LOGS": "Show Logs",
+      "EXPAND": "Expand Children",
+      "COLLAPSE": "Collapse Children"
+    },
+    "FILTERS": {
+      "TYPE": "Product Type",
+      "CATEGORY": "Category",
+      "DEPARTMENT": "Department",
+      "TAGS": "Tags"
+    },
+    "SEARCH_PLACEHOLDER": "Search products by name, SKU, barcode...",
+    "EMPTY_STATE": {
+      "TITLE": "No products found",
+      "MESSAGE": "Try adjusting your filters or search query",
+      "ACTION": "Add New Product"
+    },
+    "MESSAGES": {
+      "CONFIRM_DELETE": "Are you sure you want to delete {{name}}?",
+      "CONFIRM_DELETE_SELECTED": "Are you sure you want to delete the selected products? This action cannot be undone.",
+      "DELETE_STOCK_WARNING": "This product's stock will be brought down to zero. Are you sure?",
+      "DELETE_STOCK_WARNING_BULK": "The stock of all selected products will be brought down to zero. Are you sure?",
+      "DELETE_SUCCESS": "Product deleted successfully",
+      "BULK_DELETE_SUCCESS": "{{count}} products deleted successfully"
+    }
+  },
+  "COMMON": {
+    "ACTIONS": {
+      "EDIT": "Edit",
+      "DELETE": "Delete",
+      "SAVE": "Save",
+      "CANCEL": "Cancel",
+      "IMPORT": "Import",
+      "EXPORT": "Export",
+      "REFRESH": "Refresh",
+      "COPY": "Copy",
+      "VIEW": "View"
+    }
+  }
+}

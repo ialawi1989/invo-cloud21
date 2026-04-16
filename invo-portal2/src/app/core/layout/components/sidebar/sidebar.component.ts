@@ -34,6 +34,10 @@ interface SideMenuItem {
   expanded?: boolean;
   requiredPermission?: string;
   feature?: string;
+  /** Optional translation key rendered as a subtle heading *above* this
+   *  sub-item. Used to visually group a run of related sub-items (e.g. all
+   *  bulk-operation pages under Products). Only honoured inside a submenu. */
+  section?: string;
 }
 
 export const SIDE_MENU: SideMenuItem[] = [
@@ -43,25 +47,31 @@ export const SIDE_MENU: SideMenuItem[] = [
     link: '/dashboard',
   },
   // ── Products ───────────────────────────────────────────────────────
+  // Sub-items grouped by concern. Bulk-operation pages (price change,
+  // availability, bulk image, translation, label print) are intentionally
+  // NOT listed here — they're reachable from the Products List "More" menu,
+  // where they live alongside the selection/filter context needed to use
+  // them effectively.
   {
     id: 3, label: 'MENU.PRODUCTS', icon: 'product',
     requiredPermission: '',
     subItems: [
+      // — Catalog —
       { id: 31, label: 'MENU.SUB.PRODUCT_LIST', link: '/products', requiredPermission: 'productSecurity.action.view.access' },
       { id: 32, label: 'MENU.SUB.MATRIX_ITEMS', link: '/matrix-item', requiredPermission: 'matrixItemSecurity.action.view.access' },
-      { id: 33, label: 'MENU.SUB.DIMENSIONS', link: '/products/dimension', requiredPermission: 'dimensionSecurity.action.view.access' },
+      { id: 313, label: 'MENU.SUB.COLLECTIONS', link: '/products/products-collections', requiredPermission: 'productsCollectionsSecurity.action.view.access' },
+
+      // — Classifications —
       { id: 34, label: 'MENU.SUB.DEPARTMENTS', link: '/products/department', requiredPermission: 'departmentSecurity.action.view.access' },
       { id: 35, label: 'MENU.SUB.CATEGORIES', link: '/products/category', requiredPermission: 'categorySecurity.action.view.access' },
       { id: 36, label: 'MENU.SUB.BRANDS', link: '/products/brands', requiredPermission: 'brandSecurity.action.view.access' },
+      { id: 33, label: 'MENU.SUB.DIMENSIONS', link: '/products/dimension', requiredPermission: 'dimensionSecurity.action.view.access' },
+
+      // — Options & Recipes —
       { id: 37, label: 'MENU.SUB.OPTION_GROUPS', link: '/products/optionGroup', requiredPermission: 'optionGroupSecurity.action.view.access' },
       { id: 38, label: 'MENU.SUB.OPTIONS', link: '/products/option', requiredPermission: 'optionSecurity.action.view.access' },
       { id: 39, label: 'MENU.SUB.RECIPES', link: '/products/recipe', requiredPermission: 'recipeSecurity.action.view.access' },
       { id: 310, label: 'MENU.SUB.PRODUCT_RECIPES', link: '/products/productRecipe', requiredPermission: 'productRecipeSecurity.action.view.access' },
-      { id: 311, label: 'MENU.SUB.PRICE_CHANGE', link: '/products/priceChange', requiredPermission: 'priceChangeSecurity.action.view.access' },
-      { id: 312, label: 'MENU.SUB.TRANSLATION', link: '/products/translation', requiredPermission: 'productSecurity.actions.translation.access' },
-      { id: 313, label: 'MENU.SUB.COLLECTIONS', link: '/products/products-collections', requiredPermission: 'productsCollectionsSecurity.action.view.access' },
-      { id: 314, label: 'MENU.SUB.PRODUCTS_AVAILABILITY', link: '/products/products-availability', requiredPermission: 'productsAvailabilitySecurity.action.view.access' },
-      { id: 315, label: 'MENU.SUB.LABEL_PRINT', link: '/products/label-print', requiredPermission: 'productSecurity.actions.labelPrint.access' },
     ],
   },
   // ── Employees ──────────────────────────────────────────────────────
@@ -236,7 +246,7 @@ interface FavoritePage { label: string; link: string; }
                 <button class="menu-row"
                         [class.active]="isParentActive(item)"
                         [class.open]="item.expanded"
-                        (click)="handleParentClick(item)"
+                        (click)="handleParentClick(item, $event)"
                         [title]="collapsed ? item.label : ''">
                   <span class="menu-icon" [innerHTML]="getIcon(item.icon) | safeHtml"></span>
                   @if (!collapsed) {
@@ -254,6 +264,9 @@ interface FavoritePage { label: string; link: string; }
                 @if (!collapsed && item.expanded) {
                   <ul class="submenu">
                     @for (sub of item.subItems!; track sub.id) {
+                      @if (sub.section) {
+                        <li class="sub-section">{{ sub.section | translate }}</li>
+                      }
                       <li>
                         <a [routerLink]="sub.link"
                            routerLinkActive="active"
@@ -545,6 +558,20 @@ interface FavoritePage { label: string; link: string; }
     .sub-row:hover { background: var(--bg-hover); color: var(--text-on); }
     .sub-row.active { background: rgba(85,110,230,.14); color: var(--text-on); }
 
+    /* Section heading inside a submenu (e.g. "Bulk operations") */
+    .sub-section {
+      padding: 10px 14px 4px 20px;
+      margin-top: 6px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: .6;
+      border-top: 1px solid var(--border);
+    }
+    .sub-section + li .sub-row { padding-top: 6px; }
+
     /* Footer */
     .sidebar-footer { flex-shrink: 0; border-top: 1px solid var(--border); padding: 8px 10px; }
     .design-site-btn {
@@ -714,13 +741,41 @@ export class SidebarComponent implements OnInit {
 
   toggleSub(item: SideMenuItem): void { item.expanded = !item.expanded; }
 
-  handleParentClick(item: SideMenuItem): void {
+  handleParentClick(item: SideMenuItem, event: MouseEvent): void {
     if (this.collapsed) {
       this.collapsed = false;
       this.collapsedChange.emit(false);
       item.expanded = true;
     } else {
       item.expanded = !item.expanded;
+    }
+
+    // When expanding, scroll the parent + its submenu into view so the user
+    // can see everything that just appeared (useful for parents near the
+    // bottom of the sidebar like "Website Content").
+    if (item.expanded) {
+      const button = event.currentTarget as HTMLElement | null;
+      if (!button) return;
+      // Two RAFs: first to let Angular apply the @if change, second to
+      // measure after the submenu has laid out.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const li = button.closest('li.menu-item') as HTMLElement | null;
+          const container = button.closest('.nav-scroll') as HTMLElement | null;
+          if (!li || !container) return;
+
+          const liRect = li.getBoundingClientRect();
+          const cRect  = container.getBoundingClientRect();
+          const padding = 12;
+
+          // If the li's bottom extends past the container's bottom, scroll
+          // down by the overflow amount so the whole submenu is visible.
+          if (liRect.bottom > cRect.bottom - padding) {
+            const delta = liRect.bottom - cRect.bottom + padding;
+            container.scrollBy({ top: delta, behavior: 'smooth' });
+          }
+        });
+      });
     }
   }
 

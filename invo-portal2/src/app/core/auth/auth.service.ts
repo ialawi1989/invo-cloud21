@@ -32,6 +32,19 @@ export class AuthService {
 
   isLoggingOut = false;
 
+  constructor() {
+    // On page reload, re-hydrate the privilege/permission services from the
+    // stored employee. Without this, `storeSession` only fires at login time
+    // and every permission check on a refreshed page returns false.
+    const stored = this.currentEmployee$.value;
+    if (stored) {
+      this.permissionService.setPermissions((stored.permissions as Permission[]) ?? []);
+      if ((stored as any)['privileges']) {
+        this.privilegeService.setPrivileges((stored as any)['privileges']);
+      }
+    }
+  }
+
   // ─── Getters ──────────────────────────────────────────────────────────────
   get currentEmployee(): Employee | null { return this.currentEmployee$.value; }
   get currentToken(): string | null      { return this.currentToken$.value; }

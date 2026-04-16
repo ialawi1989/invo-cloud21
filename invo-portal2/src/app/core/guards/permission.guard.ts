@@ -3,7 +3,7 @@ import { CanActivateFn, Router } from '@angular/router';
 import { PermissionService } from '../auth/permission.service';
 import { Permission } from '../auth/auth.models';
 
-export const permissionGuard: CanActivateFn = (route) => {
+export const PermissionGuard: CanActivateFn = (route) => {
   const permissionService = inject(PermissionService);
   const router            = inject(Router);
   const permission        = route.data['permission'] as Permission | Permission[] | undefined;

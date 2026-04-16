@@ -1,0 +1,594 @@
+<div class="list-page-container">
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- PAGE HEADER -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  @if (pageTitle || breadcrumbs.length > 0) {
+  <div class="mb-6">
+    @if (breadcrumbs.length > 0) {
+      <app-breadcrumbs [items]="breadcrumbs" navClass="mb-2" />
+    }
+    <div class="flex items-center justify-between">
+      <div>
+        @if (pageTitle) {
+          <h1 class="text-4xl font-bold text-slate-900">{{ pageTitle }}</h1>
+        }
+        @if (pageSubtitle) {
+          <p class="text-slate-600 mt-1">{{ pageSubtitle }}</p>
+        }
+      </div>
+      <div class="flex items-center gap-3">
+        <ng-content select="[listHeaderActions]"></ng-content>
+        @for (action of enabledHeaderActions(); track action.id) {
+        <button type="button" (click)="onHeaderAction(action)" [disabled]="isActionDisabled(action)" [class]="
+              'flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ' +
+              (action.color === 'primary' ? 'bg-gradient-to-r from-brand-500 to-brand-700 text-white hover:from-brand-600 hover:to-brand-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5' :
+               action.color === 'danger' ? 'bg-red-600 text-white hover:bg-red-700' :
+               'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50')">
+          {{ action.label }}
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- SEARCH & TOOLBAR -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
+
+    <!-- Search & Controls Bar -->
+    <div class="bg-slate-50 border-b border-slate-200">
+      <div class="flex flex-wrap gap-3 items-center justify-between p-4">
+
+        <!-- Search Input -->
+        @if (search.enabled) {
+        <div class="relative flex-1 min-w-[240px] max-w-md">
+          <div class="absolute inset-y-0 start-3 flex items-center pointer-events-none">
+            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.3-4.3" />
+            </svg>
+          </div>
+          <input type="text" autocomplete="off" spellcheck="false" [placeholder]="search.placeholder || 'Search...'"
+            [value]="searchTerm()" (input)="onSearchInput($event)"
+            class="w-full ps-10 pe-9 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white">
+          @if (searchTerm()) {
+          <button (click)="clearSearch()"
+            class="absolute inset-y-0 end-2 flex items-center p-1 text-slate-400 hover:text-slate-700 rounded"
+            aria-label="Clear search">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          }
+        </div>
+        }
+
+        <!-- Action Controls -->
+        <div class="flex items-center gap-2">
+
+          <!-- Header Actions (only shown in toolbar when no page header) -->
+          @if (!pageTitle && breadcrumbs.length === 0) {
+            @for (action of enabledHeaderActions(); track action.id) {
+            <button type="button" (click)="onHeaderAction(action)" [disabled]="isActionDisabled(action)" [class]="
+                  'flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ' +
+                  (action.color === 'primary' ? 'bg-gradient-to-r from-brand-500 to-brand-700 text-white hover:from-brand-600 hover:to-brand-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5' :
+                   action.color === 'danger' ? 'bg-red-600 text-white hover:bg-red-700' :
+                   'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50')">
+              {{ action.label }}
+            </button>
+            }
+          }
+
+          <!-- Bulk selection actions moved to floating bar below -->
+
+          <!-- Filter Button -->
+          @if (filters.length > 0) {
+          <button type="button" (click)="openFilterModal()"
+            [class]="
+                'relative p-2 rounded-lg transition-colors ' +
+                (hasActiveFilters() ? 'text-brand-600 bg-brand-50' : 'text-slate-600 hover:text-brand-600 hover:bg-brand-50')" [appTooltip]="'COMMON.FILTERS' | translate">
+            <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+            @if (hasActiveFilters()) {
+            <span class="absolute top-1 end-1 w-2 h-2 bg-brand-600 rounded-full"></span>
+            }
+          </button>
+          }
+
+          <!-- Refresh Button -->
+          <button type="button" (click)="refresh()" [disabled]="isLoading()"
+            class="p-2 rounded-lg text-slate-600 hover:text-brand-600 hover:bg-brand-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            [appTooltip]="'COMMON.REFRESH' | translate">
+            @if (isLoading()) {
+            <svg class="w-[18px] h-[18px] animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            } @else {
+            <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="23 4 23 10 17 10" />
+              <polyline points="1 20 1 14 7 14" />
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            </svg>
+            }
+          </button>
+
+          <!-- Column Customization -->
+          <button type="button" (click)="openColumnCustomization()"
+            class="p-2 rounded-lg text-slate-600 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+            [appTooltip]="'COMMON.MANAGE_FIELDS' | translate">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+            </svg>
+          </button>
+
+          <!-- View Mode Toggle (hide on mobile) -->
+          @if (!isMobile()) {
+          <div class="flex gap-1 bg-slate-200 rounded-lg p-1">
+            <button (click)="setViewMode('table')"
+              [appTooltip]="'COMMON.TABLE_VIEW' | translate"
+              [class]="
+                  'p-2 rounded transition-colors ' +
+                  (viewMode() === 'table' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-600 hover:text-slate-900')">
+              <svg viewBox="0 0 18 18" fill="currentColor" width="24" height="24">
+                <path d="M14,11 L7,11 L7,13 L14,13 L14,11 Z M14,8 L7,8 L7,10 L14,10 L14,8 Z M4,11 L4,13 L6,13 L6,11 L4,11 Z M4,10 L6,10 L6,8 L4,8 L4,10 Z M7,5 L7,7 L14,7 L14,5 L7,5 Z M6,5 L4,5 L4,7 L6,7 L6,5 Z M4,4 L14,4 C14.5522847,4 15,4.44771525 15,5 L15,13 C15,13.5522847 14.5522847,14 14,14 L4,14 C3.44771525,14 3,13.5522847 3,13 L3,5 C3,4.44771525 3.44771525,4 4,4 Z"/>
+              </svg>
+            </button>
+            <button (click)="setViewMode('grid')"
+              [appTooltip]="'COMMON.GRID_VIEW' | translate"
+              [class]="
+                  'p-2 rounded transition-colors ' +
+                  (viewMode() === 'grid' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-600 hover:text-slate-900')">
+              <svg viewBox="0 0 18 18" fill="currentColor" width="24" height="24">
+                <path d="M4,5 L4,8 L7,8 L7,5 L4,5 Z M4,4 L8,4 L8,9 L3,9 L3,5 C3,4.44771525 3.44771525,4 4,4 Z M10,5 L10,8 L13,8 L13,5 L10,5 Z M9,4 L13,4 C13.5522847,4 14,4.44771525 14,5 L14,9 L9,9 L9,4 Z M10,11 L10,14 L13,14 L13,11 L10,11 Z M9,10 L14,10 L14,14 C14,14.5522847 13.5522847,15 13,15 L9,15 L9,10 Z M4,11 L4,14 L7,14 L7,11 L4,11 Z M3,10 L8,10 L8,15 L4,15 C3.44771525,15 3,14.5522847 3,14 L3,10 Z"/>
+              </svg>
+            </button>
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Active Filters Chips -->
+      @if (hasActiveFilters()) {
+      <div class="px-4 pb-4 flex flex-wrap gap-2 items-center">
+        <span class="text-sm text-slate-600">{{ 'COMMON.ACTIVE_FILTERS' | translate }}:</span>
+        @for (key of Object.keys(activeFilters()); track key) {
+        @if (activeFilters()[key]) {
+        <button (click)="removeFilter(key)"
+          class="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-50 text-brand-700 rounded-full text-sm hover:bg-brand-100 transition-colors">
+          {{ getFilterDisplayValue(key) }}
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        }
+        }
+        <button (click)="clearAllFilters()" class="text-sm text-slate-500 hover:text-slate-700 underline">
+          {{ 'COMMON.CLEAR_ALL' | translate }}
+        </button>
+      </div>
+      }
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- TABLE VIEW -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    @if (viewMode() === 'table') {
+    <div class="overflow-x-auto">
+
+      <!-- Loading Skeleton -->
+      @if (isLoading()) {
+      <table class="min-w-full">
+        <thead>
+          <tr class="border-b border-slate-200">
+            @if (selectable) {
+            <th class="w-12 px-6 py-3"><div class="h-4 w-4 rounded bg-slate-200 animate-pulse"></div></th>
+            }
+            @for (col of displayColumns(); track col.key) {
+            <th class="px-6 py-3 text-start"><div class="h-3.5 rounded bg-slate-200 animate-pulse" [style.width.px]="60 + (col.label?.length || 5) * 6"></div></th>
+            }
+            <th class="w-24 px-6 py-3"><div class="h-3.5 w-12 rounded bg-slate-200 animate-pulse ms-auto"></div></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of [1,2,3,4,5,6,7,8]; track r) {
+          <tr class="border-b border-slate-100">
+            @if (selectable) {
+            <td class="px-6 py-4"><div class="h-4 w-4 rounded bg-slate-100 animate-pulse"></div></td>
+            }
+            @for (col of displayColumns(); track col.key; let i = $index) {
+            <td class="px-6 py-4">
+              @if (i === 0) {
+              <div class="flex flex-col gap-1.5">
+                <div class="h-4 rounded bg-slate-100 animate-pulse" [style.width.px]="100 + (r % 3) * 50"></div>
+                <div class="h-3 w-20 rounded bg-slate-50 animate-pulse"></div>
+              </div>
+              } @else {
+              <div class="h-4 rounded bg-slate-100 animate-pulse" [style.width.px]="50 + (r * i % 5) * 20"></div>
+              }
+            </td>
+            }
+            <td class="px-6 py-4"><div class="flex gap-1.5 justify-end"><div class="h-7 w-7 rounded-md bg-slate-100 animate-pulse"></div><div class="h-7 w-7 rounded-md bg-slate-100 animate-pulse"></div></div></td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      }
+
+      <!-- Empty State -->
+      @else if (data().length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 px-6">
+        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+          @if (emptyState.icon) {
+          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Custom icon -->
+          </svg>
+          } @else {
+          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+          }
+        </div>
+        <h3 class="text-lg font-medium text-slate-900 mb-2">{{ emptyState.title }}</h3>
+        @if (emptyState.message) {
+        <p class="text-sm text-slate-500 mb-6">{{ emptyState.message }}</p>
+        }
+        @if (emptyState.actionLabel && emptyState.actionHandler) {
+        <button (click)="emptyState.actionHandler!()"
+          class="px-6 py-3 bg-gradient-to-r from-brand-500 to-brand-700 text-white rounded-lg font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+          {{ emptyState.actionLabel }}
+        </button>
+        }
+      </div>
+      }
+
+      <!-- Table Data -->
+      @else {
+      <table class="w-full">
+        <thead class="bg-white border-b border-slate-200">
+          <tr>
+            <!-- Selection Checkbox -->
+            @if (selectable) {
+            <th class="px-6 py-3 text-start w-12">
+              <input type="checkbox" [checked]="allSelected()" [indeterminate]="someSelected()"
+                (change)="toggleAllSelection()"
+                class="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500">
+            </th>
+            }
+
+            <!-- Column Headers -->
+            @for (column of displayColumns(); track column.key) {
+            <th [class]="
+                      'px-6 py-3 text-start text-sm font-medium text-slate-500 ' +
+                      (column.sortable ? 'cursor-pointer hover:text-brand-600 transition-colors select-none' : '')"
+              [style.width]="column.width" (click)="column.sortable ? onColumnSort(column) : null">
+              <div class="flex items-center gap-2">
+                {{ column.label }}
+                @if (column.primary || (column.groupedItems && hasPrimaryItem(column))) {
+                  <span class="inline-flex flex-shrink-0" [appTooltip]="'COMMON.PRIMARY_COLUMN' | translate">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-slate-400">
+                      <path d="M6,5 L17.5,5 C17.5776225,5 17.6541791,5.01807255 17.7236068,5.0527864 C17.970596,5.17628103 18.0707082,5.47661755 17.9472136,5.7236068 L16.059017,9.5 L17.9472136,13.2763932 C17.9819275,13.3458209 18,13.4223775 18,13.5 C18,13.7761424 17.7761424,14 17.5,14 L7,14 L7,20 L6,20 L6,5 Z M7,6 L7,13 L16.690983,13 L14.940983,9.5 L16.690983,6 L7,6 Z"/>
+                    </svg>
+                  </span>
+                }
+                @if (column.sortable && getSortIcon(column)) {
+                <span class="text-brand-600">{{ getSortIcon(column) }}</span>
+                }
+              </div>
+            </th>
+            }
+
+            <!-- Actions Column -->
+            @if (rowActions.length > 0 || getRowActionsTemplate()) {
+            <th class="px-6 py-3 text-end text-sm font-medium text-slate-500">{{ 'COMMON.ACTIONS_LABEL' | translate }}</th>
+            }
+          </tr>
+        </thead>
+
+        <tbody class="bg-white divide-y divide-slate-100">
+          @for (row of data(); track trackByFn($index, row)) {
+          <tr [class]="
+                    'hover:bg-slate-50 transition-colors cursor-pointer ' +
+                    getRowClass(row)" (click)="onRowClick(row, undefined, $event)">
+
+            <!-- Selection Checkbox -->
+            @if (selectable) {
+            <td class="px-6 py-4" (click)="$event.stopPropagation()">
+              <input type="checkbox" [checked]="isRowSelected(row)" (change)="toggleRowSelection(row)"
+                class="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500">
+            </td>
+            }
+
+            <!-- Data Cells -->
+            @for (column of displayColumns(); track column.key) {
+            <td [class]="'px-6 py-4 text-sm text-slate-900 ' + getCellClass(row, column)"
+              (click)="onRowClick(row, column, $event)">
+
+              <!-- Grouped columns (multiple columns sharing a label) → stacked rows
+                   of inline-joined items inside one cell. -->
+              @if (column.groupedRows) {
+                @for (groupRow of column.groupedRows; track $index; let firstRow = $first) {
+                  <div class="flex flex-wrap items-center gap-x-2" [class.mt-1]="!firstRow">
+                    @for (item of groupRow; track item.key) {
+                      <ng-container [ngTemplateOutlet]="cellContent"
+                        [ngTemplateOutletContext]="{ row: row, col: item }"></ng-container>
+                    }
+                  </div>
+                }
+              } @else {
+                <ng-container [ngTemplateOutlet]="cellContent"
+                  [ngTemplateOutletContext]="{ row: row, col: column }"></ng-container>
+              }
+            </td>
+            }
+
+            <!-- Actions Cell -->
+            @if (rowActions.length > 0 || getRowActionsTemplate()) {
+            <td class="px-6 py-4 text-end" (click)="$event.stopPropagation()">
+              @if (getRowActionsTemplate()) {
+              <ng-container [ngTemplateOutlet]="$any(getRowActionsTemplate())"
+                [ngTemplateOutletContext]="{ $implicit: row }">
+              </ng-container>
+              }
+              @else {
+              <div class="flex items-center justify-end gap-1">
+                @for (action of rowActions; track action.id) {
+                <button type="button" (click)="onRowAction(action, row, $event)" [disabled]="isActionDisabled(action)"
+                  [class]="
+              'p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ' +
+              (action.color === 'danger' ? 'text-slate-400 hover:text-red-600 hover:bg-red-50' : 'text-slate-400 hover:text-brand-600 hover:bg-brand-50')"
+                  [appTooltip]="action.label">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <!-- Icon -->
+                  </svg>
+                </button>
+                }
+              </div>
+              }
+            </td>
+            }
+          </tr>
+
+          <!-- Expanded child rows -->
+          @if (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length) {
+            @for (child of $any(row)[childrenKey]; track $index) {
+            <tr class="bg-slate-50/60 border-b border-slate-100">
+              @if (selectable) {
+              <td class="px-6 py-3"></td>
+              }
+              @for (column of displayColumns(); track column.key; let ci = $index) {
+              <td class="px-6 py-3 text-sm text-slate-600">
+                @if (ci === 0) {
+                  <div class="flex items-start gap-2 ps-6">
+                    <span class="w-4 border-l-2 border-b-2 border-slate-300 h-3 rounded-bl-sm flex-shrink-0 mt-2"></span>
+                    <div class="flex-1 min-w-0">
+                      @if (column.groupedRows) {
+                        @for (groupRow of column.groupedRows; track $index; let firstRow = $first) {
+                          <div class="flex flex-wrap items-center gap-x-2" [class.mt-1]="!firstRow">
+                            @for (item of groupRow; track item.key) {
+                              <ng-container [ngTemplateOutlet]="cellContent"
+                                [ngTemplateOutletContext]="{ row: child, col: item }"></ng-container>
+                            }
+                          </div>
+                        }
+                      } @else {
+                        <ng-container [ngTemplateOutlet]="cellContent"
+                          [ngTemplateOutletContext]="{ row: child, col: column }"></ng-container>
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  @if (column.groupedRows) {
+                    @for (groupRow of column.groupedRows; track $index; let firstRow = $first) {
+                      <div class="flex flex-wrap items-center gap-x-2" [class.mt-1]="!firstRow">
+                        @for (item of groupRow; track item.key) {
+                          <ng-container [ngTemplateOutlet]="cellContent"
+                            [ngTemplateOutletContext]="{ row: child, col: item }"></ng-container>
+                        }
+                      </div>
+                    }
+                  } @else {
+                    <ng-container [ngTemplateOutlet]="cellContent"
+                      [ngTemplateOutletContext]="{ row: child, col: column }"></ng-container>
+                  }
+                }
+              </td>
+              }
+              @if (rowActions.length > 0 || getRowActionsTemplate()) {
+              <td class="px-6 py-3"></td>
+              }
+            </tr>
+            }
+          }
+          }
+        </tbody>
+      </table>
+      }
+    </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- GRID VIEW -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    @if (viewMode() === 'grid') {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-6">
+      @for (row of data(); track trackByFn($index, row)) {
+      <div
+        class="bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-brand-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
+        (click)="onRowClick(row, undefined, $event)">
+        <div class="p-4">
+          <!-- Title (first column) — renders grouped items (name + barcode etc.) using the same stacked/inline logic as the table. -->
+          <div class="text-sm font-medium text-slate-900 min-w-0">
+            @if (displayColumns()[0].groupedRows) {
+              @for (groupRow of displayColumns()[0].groupedRows; track $index; let firstRow = $first) {
+                <div class="flex flex-wrap items-center gap-x-2" [class.mt-1]="!firstRow">
+                  @for (item of groupRow; track item.key) {
+                    <ng-container [ngTemplateOutlet]="cellContent"
+                      [ngTemplateOutletContext]="{ row: row, col: item }"></ng-container>
+                  }
+                </div>
+              }
+            } @else {
+              <h3 class="truncate">{{ getCellValue(row, displayColumns()[0]) }}</h3>
+            }
+          </div>
+
+          <!-- Remaining columns as key-value rows (all visible cols, not just first 3) -->
+          @for (col of displayColumns(); track col.key; let i = $index) {
+            @if (i > 0) {
+            <div class="flex items-center justify-between mt-2 gap-2">
+              <span class="text-xs text-slate-400 flex-shrink-0">{{ col.label }}</span>
+              <div class="text-xs font-medium text-slate-700 truncate text-end min-w-0">
+                @if (col.groupedRows) {
+                  @for (groupRow of col.groupedRows; track $index; let firstRow = $first) {
+                    <div class="flex flex-wrap items-center justify-end gap-x-2" [class.mt-1]="!firstRow">
+                      @for (item of groupRow; track item.key) {
+                        <ng-container [ngTemplateOutlet]="cellContent"
+                          [ngTemplateOutletContext]="{ row: row, col: item }"></ng-container>
+                      }
+                    </div>
+                  }
+                } @else if (col.customTemplate && getCellTemplate()(col.key)) {
+                  <ng-container [ngTemplateOutlet]="getCellTemplate()(col.key)!"
+                    [ngTemplateOutletContext]="{ $implicit: row, col: col }">
+                  </ng-container>
+                } @else {
+                  <span>{{ getFormattedCellValue(row, col) || '—' }}</span>
+                }
+              </div>
+            </div>
+            }
+          }
+        </div>
+
+        <!-- Row actions -->
+        @if (rowActions.length > 0 || getRowActionsTemplate()) {
+        <div class="border-t border-slate-100 px-4 py-2 opacity-0 group-hover:opacity-100 transition-opacity" (click)="$event.stopPropagation()">
+          @if (getRowActionsTemplate()) {
+            <ng-container [ngTemplateOutlet]="$any(getRowActionsTemplate())"
+              [ngTemplateOutletContext]="{ $implicit: row }">
+            </ng-container>
+          }
+        </div>
+        }
+      </div>
+      }
+    </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- PAGINATION -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    @if (pagination.enabled && data().length > 0) {
+    <div class="border-t border-slate-200 bg-white rounded-b-xl px-6 py-4">
+      <app-pagination
+        [page]="currentPage()"
+        [pageSize]="pageSize()"
+        [count]="totalCount()"
+        [pageCount]="pageCount()"
+        [disabled]="isLoading()"
+        (pageChange)="goToPage($event)"
+        (pageSizeChange)="setPageSize($event)" />
+    </div>
+    }
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- BULK SELECTION BAR (floating) -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+@if (selectable && selectedRows().length > 0) {
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50
+            flex items-center gap-3 px-5 py-3
+            bg-slate-900 text-white rounded-xl shadow-2xl
+            animate-[slideUp_.2s_ease-out]">
+  <span class="text-sm font-medium">{{ 'COMMON.SELECTED_COUNT' | translate:{ count: selectedRows().length } }}</span>
+  <div class="w-px h-5 bg-slate-600"></div>
+  @for (action of enabledBulkActions(); track action.id) {
+  <button type="button" (click)="onBulkAction(action)" [disabled]="isActionDisabled(action)"
+    [class]="
+      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ' +
+      (action.color === 'danger'
+        ? 'text-red-300 hover:bg-red-500/20 hover:text-red-200'
+        : 'text-slate-300 hover:bg-white/10 hover:text-white')">
+    @if (action.color === 'danger') {
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+    </svg>
+    }
+    {{ action.label }}
+  </button>
+  }
+  <div class="w-px h-5 bg-slate-600"></div>
+  <button (click)="clearSelection()"
+    class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+    [title]="'COMMON.CLEAR_ALL' | translate">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+    </svg>
+  </button>
+</div>
+}
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SHARED CELL CONTENT TEMPLATE                                    -->
+<!-- Renders a single column's value for a row. Used both for plain  -->
+<!-- single-column cells and each item inside a grouped cell so the  -->
+<!-- rendering logic (custom template / badge / link / plain value)  -->
+<!-- lives in one place.                                             -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ng-template #cellContent let-row="row" let-col="col">
+  <!-- Custom Template -->
+  @if (col.customTemplate && getCellTemplate()(col.key)) {
+    <ng-container [ngTemplateOutlet]="getCellTemplate()(col.key)!"
+      [ngTemplateOutletContext]="{ $implicit: row, col: col }">
+    </ng-container>
+  }
+
+  <!-- Badge -->
+  @else if (col.badge?.enabled) {
+    <span [class]="
+      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' +
+      'bg-' + ((col.badge?.colorMap)?.[getCellValue(row, col)] || 'slate') + '-100 ' +
+      'text-' + ((col.badge?.colorMap)?.[getCellValue(row, col)] || 'slate') + '-700'">
+      {{ (col.badge?.textMap)?.[getCellValue(row, col)] || getCellValue(row, col) }}
+    </span>
+  }
+
+  <!-- Clickable Link -->
+  @else if (col.clickable?.enabled) {
+    <a href="javascript:void(0)" class="text-brand-600 hover:underline font-medium"
+      (click)="$event.stopPropagation()">
+      <span [innerHTML]="highlightSearchTerm(getFormattedCellValue(row, col))"></span>
+    </a>
+  }
+
+  <!-- Regular Cell -->
+  @else {
+    <span [innerHTML]="highlightSearchTerm(getFormattedCellValue(row, col))"></span>
+
+    <!-- Sub-fields -->
+    @if (col.subFields) {
+      @for (subField of col.subFields; track subField.key) {
+        <div [class]="'mt-1 ' + (subField.class || 'text-xs text-slate-500')">
+          @if (subField.label) {
+            <span class="font-medium">{{ subField.label }}:</span>
+          }
+          {{ $any(row)[subField.key] || '' }}
+        </div>
+      }
+    }
+  }
+</ng-template>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- FILTER MODAL -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- Filter modal is opened via ModalService -->

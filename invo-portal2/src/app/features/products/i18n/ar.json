@@ -1,0 +1,77 @@
+{
+  "PRODUCTS": {
+    "TITLE": "المنتجات",
+    "FIELDS": {
+      "NAME": "اسم المنتج",
+      "TYPE": "النوع",
+      "SKU": "رمز التخزين",
+      "BARCODE": "الباركود",
+      "CATEGORY": "الفئة",
+      "DEPARTMENT": "القسم",
+      "PRICE": "السعر",
+      "COST": "التكلفة",
+      "QTY": "الكمية",
+      "STOCK": "المخزون",
+      "STOCK_VALUE": "قيمة المخزون"
+    },
+    "TYPES": {
+      "INVENTORY": "مخزون",
+      "SERIALIZED": "مسلسل",
+      "BATCH": "دفعات",
+      "KIT": "طقم",
+      "SERVICE": "خدمة",
+      "PACKAGE": "باقة",
+      "MENU_ITEM": "عنصر قائمة",
+      "MENU_SELECTION": "اختيار القائمة",
+      "TAILORING": "تفصيل",
+      "MATRIX": "مصفوفة"
+    },
+    "ACTIONS": {
+      "NEW_PRODUCT": "إضافة جديد",
+      "DELETE_SELECTED": "حذف المحدد",
+      "PRINT_LABEL": "طباعة الملصق",
+      "IMPORT_EXPORT": "استيراد/تصدير",
+      "LABEL_PRINT_BARCODES": "طباعة ملصقات الباركود",
+      "BULK_IMAGE": "صور جماعية",
+      "PRICE_CHANGE": "تغيير السعر",
+      "TRANSLATION": "الترجمة",
+      "PRODUCTS_AVAILABILITY": "توافر المنتجات",
+      "SHOW_LOGS": "عرض السجلات",
+      "EXPAND": "توسيع الأطفال",
+      "COLLAPSE": "طي الأطفال"
+    },
+    "FILTERS": {
+      "TYPE": "نوع المنتج",
+      "CATEGORY": "الفئة",
+      "DEPARTMENT": "القسم",
+      "TAGS": "الوسوم"
+    },
+    "SEARCH_PLACEHOLDER": "ابحث عن المنتجات بالاسم أو الباركود أو رمز التخزين...",
+    "EMPTY_STATE": {
+      "TITLE": "لا توجد منتجات",
+      "MESSAGE": "حاول تعديل الفلاتر أو البحث",
+      "ACTION": "إضافة منتج جديد"
+    },
+    "MESSAGES": {
+      "CONFIRM_DELETE": "هل أنت متأكد من حذف {{name}}؟",
+      "CONFIRM_DELETE_SELECTED": "هل أنت متأكد من حذف المنتجات المحددة؟ لا يمكن التراجع عن هذا الإجراء.",
+      "DELETE_STOCK_WARNING": "سيتم تخفيض مخزون هذا المنتج إلى صفر. هل أنت متأكد؟",
+      "DELETE_STOCK_WARNING_BULK": "سيتم تخفيض مخزون جميع المنتجات المحددة إلى صفر. هل أنت متأكد؟",
+      "DELETE_SUCCESS": "تم حذف المنتج بنجاح",
+      "BULK_DELETE_SUCCESS": "تم حذف {{count}} منتج بنجاح"
+    }
+  },
+  "COMMON": {
+    "ACTIONS": {
+      "EDIT": "تعديل",
+      "DELETE": "حذف",
+      "SAVE": "حفظ",
+      "CANCEL": "إلغاء",
+      "IMPORT": "استيراد",
+      "EXPORT": "تصدير",
+      "REFRESH": "تحديث",
+      "COPY": "نسخ",
+      "VIEW": "عرض"
+    }
+  }
+}

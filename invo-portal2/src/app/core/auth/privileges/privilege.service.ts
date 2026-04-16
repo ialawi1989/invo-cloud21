@@ -58,19 +58,23 @@ export class PrivilegeService {
 
     const parts = permissionPath.split('.');
 
+    // Semantics: only an explicit `access === false` denies. Anything else
+    // (null, undefined, missing section/action entry) means "not restricted"
+    // and is treated as allowed. Matches how the backend models permissions —
+    // a missing record = inherit / allow rather than implicit deny.
+
     // Format: "key.access"
     if (parts[1] === 'access') {
       const section = this._privileges[parts[0]];
-      return section ? (section.access ?? false) : false;
+      return section?.access !== false;
     }
 
     // Format: "key.actions.actionKey" or "key.actions.actionKey.access"
     const actionKey = parts[2];
-    if (!actionKey) return false;
+    if (!actionKey) return true;
 
     const section = this._privileges[parts[0]];
-    if (!section?.actions?.[actionKey]) return false;
-    return section.actions[actionKey].access ?? false;
+    return section?.actions?.[actionKey]?.access !== false;
   }
 
   // ─── CRUD for privilege records ──────────────────────────────────────────
