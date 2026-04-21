@@ -27,6 +27,12 @@ export class LanguageService {
   /** Tracks which feature namespaces have been loaded per lang */
   private loaded = new Map<string, Set<string>>();
 
+  /** Promise that resolves when the base `i18n/<lang>.json` is loaded.
+   *  Feature loads wait for this — otherwise ngx-translate's `use(lang)`
+   *  fetch would land AFTER feature translations and overwrite them
+   *  (default `setTranslation` replaces; it does not merge). */
+  private baseLoaded!: Promise<void>;
+
   constructor() {
     this.translate.addLangs(this.available.map(l => l.code));
     this.translate.setDefaultLang('en');
@@ -39,11 +45,15 @@ export class LanguageService {
     this.current.set(lang);
     this.apply(lang);
     localStorage.setItem(STORAGE_KEY, lang);
-    // Reload all previously loaded feature namespaces for the new lang
+    // Reload all previously loaded feature namespaces for the new lang —
+    // wait for the base load to finish first so the feature JSON isn't
+    // overwritten when ngx-translate's loader returns.
+    await this.baseLoaded;
     await Promise.all(this.allLoadedNamespaces().map(ns => this.load(ns, lang, true)));
   }
 
   async loadFeature(feature: string): Promise<void> {
+    await this.baseLoaded;
     await this.load(feature, this.current());
   }
 
@@ -56,10 +66,17 @@ export class LanguageService {
   private async load(feature: string, lang: Lang, force = false): Promise<void> {
     if (!force && this.loaded.get(lang)?.has(feature)) return;
 
+    const url = `i18n/features/${feature}/i18n/${lang}.json`;
+    const t0 = performance.now();
+    console.info(`[i18n] → loading feature "${feature}" for "${lang}" (${url})`);
     try {
-      const url = `i18n/features/${feature}/i18n/${lang}.json`;
       const incoming = await firstValueFrom(
         this.http.get<Record<string, unknown>>(url)
+      );
+      const incomingKeys = Object.keys(incoming ?? {});
+      console.info(
+        `[i18n] ← fetched "${feature}" (${(performance.now() - t0).toFixed(0)}ms) — top-level keys:`,
+        incomingKeys,
       );
 
       // Merge into local cache
@@ -67,10 +84,15 @@ export class LanguageService {
       const merged   = this.deepMerge(existing, incoming);
       this.translationCache.set(lang, merged);
 
-      // Push to TranslateService — true = merge with existing translations
+      // Push to TranslateService — true = merge with existing translations.
       this.translate.setTranslation(lang, merged as any, true);
-    } catch {
-      // Feature file missing — silently fall back to base translations
+
+      // Verify the merge stuck (helps catch race where base overwrites).
+      const stored = (this.translate as any).translations?.[lang] ?? {};
+      const storedKeys = Object.keys(stored);
+      console.info(`[i18n] ✓ merged "${feature}"; translations[${lang}] top-level keys now:`, storedKeys);
+    } catch (err) {
+      console.warn(`[i18n] ✗ failed to load "${url}":`, err);
     }
 
     if (!this.loaded.has(lang)) this.loaded.set(lang, new Set());
@@ -105,7 +127,24 @@ export class LanguageService {
   }
 
   private apply(lang: Lang): void {
-    this.translate.use(lang);
+    // Kick off the base fetch via ngx-translate's loader and expose a
+    // promise that resolves once it lands, so `loadFeature()` can hold
+    // until then.
+    console.info(`[i18n] apply(${lang}) — triggering base load…`);
+    this.baseLoaded = new Promise<void>((resolve) => {
+      const sub = this.translate.onLangChange.subscribe((e) => {
+        console.info(`[i18n] onLangChange fired for "${e.lang}"`);
+        if (e.lang === lang) {
+          sub.unsubscribe();
+          resolve();
+        }
+      });
+      this.translate.use(lang).subscribe({
+        next: () => console.info(`[i18n] use("${lang}") observable emitted`),
+        error: (err) => console.warn(`[i18n] use("${lang}") error:`, err),
+      });
+    });
+
     const dir = RTL_LANGS.has(lang) ? 'rtl' : 'ltr';
     document.documentElement.setAttribute('lang', lang);
     document.documentElement.setAttribute('dir', dir);

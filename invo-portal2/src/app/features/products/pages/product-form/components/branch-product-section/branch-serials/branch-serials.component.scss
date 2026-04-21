@@ -1,0 +1,96 @@
+@use '../../../_shared-form.scss' as *;
+@include pfCard;
+
+.bs {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+  }
+  &__count { color: #94a3b8; font-weight: 500; margin-inline-start: 4px; }
+
+  &__controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__add {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+
+  &__add-btn {
+    padding: 0 14px;
+    background: #d9f2f6;
+    color: #143742;
+    border: 1px solid #a5dde6;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    &:hover:not(:disabled) { background: #c1e9ef; }
+    &:disabled { opacity: 0.55; cursor: not-allowed; }
+  }
+
+  &__search { max-width: 100%; }
+
+  &__empty {
+    margin: 4px 0 0;
+    padding: 16px;
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: center;
+    font-style: italic;
+  }
+
+  &__head,
+  &__row {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1.2fr 36px;
+    gap: 8px;
+    align-items: center;
+  }
+
+  &__head {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 0 2px;
+  }
+
+  &__remove {
+    padding: 6px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    color: #64748b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    &:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+  }
+}

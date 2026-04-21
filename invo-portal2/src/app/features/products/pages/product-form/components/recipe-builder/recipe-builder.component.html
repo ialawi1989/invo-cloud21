@@ -1,0 +1,66 @@
+<section class="pf-card">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 11V7a3 3 0 0 1 6 0v4"/><path d="M5 11h14l-1 10H6L5 11z"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.RECIPE' | translate }}</h2>
+    <div class="pf-rb-total">
+      {{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}:
+      <strong>{{ totalCost() | number:'1.0-3' }}</strong>
+    </div>
+  </header>
+
+  <div class="pf-card__body">
+    <button type="button" class="pf-btn pf-btn--outline" (click)="openPicker()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      {{ 'PRODUCTS.FORM.ADD_INGREDIENTS' | translate }}
+    </button>
+
+    @if (rows.length === 0) {
+      <p class="pf-hint">{{ 'PRODUCTS.FORM.NO_INGREDIENTS_YET' | translate }}</p>
+    } @else {
+      <div class="pf-rb-head">
+        <span>{{ 'PRODUCTS.FORM.INGREDIENT' | translate }}</span>
+        <span>{{ 'PRODUCTS.FORM.USAGE' | translate }}</span>
+        <span>{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</span>
+        <span>{{ 'PRODUCTS.FORM.LINE_TOTAL' | translate }}</span>
+        <span></span>
+      </div>
+
+      @for (row of rows.controls; track $index; let i = $index) {
+        <div class="pf-rb-row" [formGroup]="rowAt(i)">
+          <div class="pf-rb-name">
+            <div class="pf-rb-name__title">{{ row.value['name'] }}</div>
+            @if (row.value['UOM']) { <div class="pf-rb-name__uom">{{ row.value['UOM'] }}</div> }
+          </div>
+          <input
+            type="number"
+            class="pf-input"
+            formControlName="usages"
+            min="0"
+            [class.pf-input--invalid]="rowAt(i).controls['usages'].touched && rowAt(i).controls['usages'].invalid"
+          />
+          <div class="pf-readonly">{{ row.value['unitCost'] | number:'1.0-3' }}</div>
+          <div class="pf-readonly">
+            {{ ((row.value['unitCost'] ?? 0) * (row.value['usages'] ?? 0)) | number:'1.0-3' }}
+          </div>
+          <button
+            type="button"
+            class="pf-rb-remove"
+            (click)="removeRow(i)"
+            [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+        </div>
+      }
+    }
+  </div>
+</section>

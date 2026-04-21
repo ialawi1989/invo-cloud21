@@ -1,6 +1,7 @@
 {
   "COMMON": {
     "SAVE": "Save",
+    "SAVING": "Saving…",
     "CANCEL": "Cancel",
     "DELETE": "Delete",
     "EDIT": "Edit",
@@ -46,7 +47,9 @@
     "GRID_VIEW": "Grid view",
     "NO_ITEMS_TITLE": "No items found",
     "NO_ITEMS_MESSAGE": "Try adjusting your filters or search query",
-    "SELECT_PLACEHOLDER": "Select..."
+    "SELECT_PLACEHOLDER": "Select...",
+    "REQUIRED": "This field is required",
+    "LOAD_MORE": "Load more"
   },
   "AUTH": {
     "WELCOME_BACK": "Welcome back",
@@ -375,5 +378,123 @@
     "SWITCH": "Language",
     "EN": "English",
     "AR": "العربية"
+  },
+  "TAB_BUILDER": {
+    "TAB_TEMPLATES": "Tab Templates",
+    "NO_TEMPLATES": "No templates yet.",
+    "ADD_FIRST_TEMPLATE": "Add your first template",
+    "ADD_TEMPLATE": "Add Tab Template",
+    "CREATE_TEMPLATE": "Create Template",
+    "TEMPLATE_NAME": "Template Name",
+    "TEMPLATE_NAME_PLACEHOLDER": "e.g. Specifications, Size Guide…",
+    "TAB_TYPE": "Tab Type",
+    "ERR_DUPLICATE_NAME": "A template with this name already exists.",
+    "ACTIVE": "Active",
+    "SELECT_TEMPLATE_HINT": "Select a template to edit or add a new one.",
+    "APPLIES_TO": "Applies to product types",
+    "APPLIES_TO_HINT": "Pick the product types this template should appear on. Leave as \"All\" to show it on every product.",
+    "ALL_TYPES": "All",
+
+    "SETTINGS_BANNER_TITLE": "Tab Templates (Settings Level)",
+    "SETTINGS_BANNER_SUB": "Define tab structures here. These templates are saved in company customization settings and can be used across all products.",
+
+    "TYPES": {
+      "SPECS": "Specifications",
+      "SPECS_DESC": "Key-value fields",
+      "VEHICLE": "Vehicle Fitment",
+      "VEHICLE_DESC": "Make / Model / Year / Engine",
+      "TABLE": "Table",
+      "TABLE_DESC": "Rows and columns",
+      "RICHTEXT": "Rich Text",
+      "RICHTEXT_DESC": "HTML content",
+      "FAQ": "FAQ",
+      "FAQ_DESC": "Questions & Answers",
+      "CUSTOM": "Custom HTML",
+      "CUSTOM_DESC": "Raw HTML",
+      "REVIEW": "Reviews",
+      "REVIEW_DESC": "Customer reviews with ratings"
+    },
+
+    "SPEC_FIELDS": "Specification Fields",
+    "ADD_FIELD": "Add Field",
+    "ADD_FIRST_FIELD": "Add first field",
+    "NO_FIELDS": "No fields defined yet.",
+    "LABEL": "Label",
+    "KEY_ABBR": "Key (abbr)",
+    "TYPE": "Type",
+    "OPTIONS": "Options (comma separated)",
+    "OPTIONS_PLACEHOLDER": "Option 1, Option 2, Option 3",
+    "REQUIRED": "Required",
+    "FIELD_LABEL_PLACEHOLDER": "Field label",
+    "FIELD_KEY_PLACEHOLDER": "field_key",
+    "SPEC_TYPES": {
+      "TEXT": "Text",
+      "NUMBER": "Number",
+      "SELECT": "Select",
+      "MULTISELECT": "Multi-Select"
+    },
+
+    "VEHICLE_CONFIG": "Vehicle Fitment Configuration",
+    "ALLOW_UNIVERSAL": "Allow Universal Fit",
+    "ALLOW_UNIVERSAL_DESC": "Products can be marked as fitting all vehicles",
+    "ALLOW_YEAR_RANGE": "Allow Year Range",
+    "ALLOW_YEAR_RANGE_DESC": "Support year ranges (e.g., 2018-2025)",
+    "REQUIRE_ENGINE": "Require Engine Size",
+    "REQUIRE_ENGINE_DESC": "Engine size is mandatory for compatibility",
+
+    "CONTENT_SETTINGS": "Content Settings",
+    "PLACEHOLDER_TEXT": "Placeholder Text",
+    "PLACEHOLDER_HINT": "Enter placeholder text for this content area…",
+
+    "PREDEFINED_FAQ": "Predefined FAQ Questions",
+    "PREDEFINED_FAQ_HINT": "Define common questions. Users can also add custom Q&A on products.",
+    "ADD_QUESTION": "Add Question",
+    "QUESTION_TEMPLATE": "Question template…",
+
+    "TABLE_TEMPLATE": "Table",
+    "TABLE_TEMPLATE_HINT": "The table structure is defined on each product (headers + rows).",
+
+    "PRODUCT_TABS": "Product Tabs",
+    "PRODUCT_TABS_HINT": "Based on templates from Settings",
+    "NO_ACTIVE_TABS": "No active tabs defined.",
+    "NO_ACTIVE_TABS_HINT": "Activate tabs in Settings → Product Tabs Template first.",
+    "NO_SPEC_FIELDS_PROD": "No specification fields defined on this template.",
+    "SELECT_PLACEHOLDER": "Select…",
+    "ENTER": "Enter {{value}}…",
+    "ENTER_CONTENT": "Enter content…",
+    "RICHTEXT_HINT": "HTML tags are allowed and will be rendered when the product is displayed.",
+    "CUSTOM_HINT": "Raw HTML block — will be rendered as-is.",
+
+    "UNIVERSAL_FIT": "Universal Fit",
+    "UNIVERSAL_FIT_DESC": "This part fits all vehicles",
+    "COMPATIBLE_VEHICLES": "Compatible Vehicles",
+    "ADD_VEHICLE": "Add Vehicle",
+    "NO_VEHICLES": "No vehicles added.",
+    "ALL_ENGINES": "All Engines",
+    "MAKE": "Make",
+    "MODEL": "Model",
+    "YEAR": "Year",
+    "YEAR_RANGE": "Year Range",
+    "FROM": "From",
+    "TO": "To",
+    "ENGINE_SIZE": "Engine Size",
+    "ENGINE_PLACEHOLDER": "e.g. 2.4L, V6…",
+
+    "FAQ_TITLE": "Questions & Answers",
+    "ADD_FAQ": "Add Q&A",
+    "QUESTION": "Question",
+    "ANSWER": "Answer",
+
+    "TABLE_TITLE": "Table",
+    "ADD_ROW": "Add Row",
+    "ADD_COLUMN": "Add Column",
+
+    "REVIEWS": "Reviews",
+    "ADD_REVIEW": "Add Review",
+    "NO_REVIEWS": "No reviews yet. Add one to highlight on the product page.",
+    "REVIEWER_NAME": "Reviewer name",
+    "REVIEW_TITLE": "Short title (optional)",
+    "REVIEW_COMMENT": "Review comment",
+    "STARS": "stars"
   }
 }

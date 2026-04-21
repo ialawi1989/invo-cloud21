@@ -1,0 +1,73 @@
+<section class="pf-card" [formGroup]="group">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/>
+        <rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.CATEGORY_OPTIONS' | translate }}</h2>
+  </header>
+
+  <div class="pf-card__body">
+    @if (fieldsOptions()?.department?.isVisible) {
+      <div class="pf-field">
+        <label class="pf-label">
+          {{ 'PRODUCTS.FIELDS.DEPARTMENT' | translate }}
+          @if (fieldsOptions()?.department?.isRequired) { <span class="pf-required">*</span> }
+        </label>
+        <app-search-dropdown
+          formControlName="departmentId"
+          [loadFn]="loadDepartments"
+          [displayWith]="displayLabel"
+          [compareWith]="compareByValue"
+          [placeholder]="'PRODUCTS.FORM.SELECT_DEPARTMENT' | translate"
+        />
+        @if (c('departmentId').touched && c('departmentId').errors?.['required']) {
+          <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+        }
+      </div>
+    }
+
+    @if (fieldsOptions()?.category?.isVisible) {
+      <div class="pf-field" [hidden]="!departmentId()">
+        <label class="pf-label">
+          {{ 'PRODUCTS.FIELDS.CATEGORY' | translate }}
+          @if (fieldsOptions()?.category?.isRequired) { <span class="pf-required">*</span> }
+        </label>
+        <app-search-dropdown
+          #categoryDropdown
+          formControlName="categoryId"
+          [loadFn]="loadCategories"
+          [displayWith]="displayLabel"
+          [compareWith]="compareByValue"
+          [placeholder]="'PRODUCTS.FORM.SELECT_CATEGORY' | translate"
+        />
+        @if (c('categoryId').touched && c('categoryId').errors?.['required']) {
+          <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+        }
+      </div>
+    }
+
+    @if (fieldsOptions()?.brand?.isVisible) {
+      <div class="pf-field">
+        <label class="pf-label">
+          {{ 'PRODUCTS.FORM.BRAND' | translate }}
+          @if (fieldsOptions()?.brand?.isRequired) { <span class="pf-required">*</span> }
+        </label>
+        <app-search-dropdown
+          formControlName="brandId"
+          [loadFn]="loadBrands"
+          [displayWith]="displayLabel"
+          [compareWith]="compareByValue"
+          [placeholder]="'PRODUCTS.FORM.SELECT_BRAND' | translate"
+        />
+        @if (c('brandId').touched && c('brandId').errors?.['required']) {
+          <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+        }
+      </div>
+    }
+  </div>
+</section>

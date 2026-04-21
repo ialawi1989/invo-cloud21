@@ -1,0 +1,116 @@
+@use '../../_shared-form.scss' as *;
+@include pfCard;
+
+.pf-card__header { flex-wrap: wrap; }
+
+.pf-bp-summary {
+  margin-inline-start: auto;
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #64748b;
+
+  &__item strong { color: #0f172a; margin-inline-start: 4px; }
+}
+
+// Tabs ─────────────────────────────────────────────────────────────────────
+.pf-bp-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fafbfc;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.pf-bp-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  &:hover { background: #f8fafc; }
+  &--active {
+    background: #d9f2f6;
+    color: #143742;
+    border-color: #a5dde6;
+  }
+
+  &__badge {
+    display: inline-flex;
+    min-width: 22px;
+    justify-content: center;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.2px;
+
+    &--good { background: #16a34a; }
+    &--warn { background: #f59e0b; }
+    &--bad  { background: #dc2626; }
+  }
+}
+
+// Panel ───────────────────────────────────────────────────────────────────
+.pf-bp-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pf-bp-empty {
+  text-align: center;
+  padding: 36px 16px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.pf-row--thirds {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  @media (max-width: 720px) { grid-template-columns: 1fr; }
+}
+
+.pf-field--inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+// Pricing-type chip group ───────────────────────────────────────────────────
+.pf-chip-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pf-chip {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  color: #475569;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  &:hover { background: #f8fafc; }
+  &--active {
+    background: #143742;
+    color: #fff;
+    border-color: #143742;
+  }
+}

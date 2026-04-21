@@ -1,0 +1,15 @@
+@use '../../_shared-form.scss' as *;
+@include pfCard;
+
+.pf-service-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input { max-width: 140px; }
+
+  &__suffix {
+    font-size: 13px;
+    color: #64748b;
+  }
+}

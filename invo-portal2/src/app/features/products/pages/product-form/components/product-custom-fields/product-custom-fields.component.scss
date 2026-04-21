@@ -1,0 +1,9 @@
+@use '../../_shared-form.scss' as *;
+@include pfCard;
+
+.pf-field--inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}

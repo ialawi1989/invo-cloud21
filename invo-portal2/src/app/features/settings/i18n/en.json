@@ -6,6 +6,7 @@
 
     "GROUPS": {
       "COMPANY":   "Company Setup",
+      "PRODUCTS":  "Products",
       "POS":       "POS Settings",
       "INVOICE":   "Invoice Settings",
       "ESTIMATE":  "Estimate Settings",
@@ -28,6 +29,8 @@
       "BRANCH_SETTINGS_DESC":      "Manage your branch details, addresses, working hours, and operational settings.",
       "CUSTOM_FIELDS":             "Custom Fields",
       "CUSTOM_FIELDS_DESC":        "Add your fields and define the location rules.",
+      "PRODUCTS_TAB_BUILDER":      "Product Tabs Template",
+      "PRODUCTS_TAB_BUILDER_DESC": "Define the default content tabs shown on every product.",
       "PREFIX_SETTINGS":           "Prefix Settings",
       "PREFIX_SETTINGS_DESC":      "Customize the prefixes for various document types.",
 

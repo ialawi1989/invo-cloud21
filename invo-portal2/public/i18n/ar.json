@@ -1,6 +1,7 @@
 {
   "COMMON": {
     "SAVE": "حفظ",
+    "SAVING": "جاري الحفظ…",
     "CANCEL": "إلغاء",
     "DELETE": "حذف",
     "EDIT": "تعديل",
@@ -46,7 +47,9 @@
     "GRID_VIEW": "عرض البطاقات",
     "NO_ITEMS_TITLE": "لم يتم العثور على عناصر",
     "NO_ITEMS_MESSAGE": "حاول تعديل الفلاتر أو مصطلح البحث",
-    "SELECT_PLACEHOLDER": "اختر..."
+    "SELECT_PLACEHOLDER": "اختر...",
+    "REQUIRED": "هذا الحقل مطلوب",
+    "LOAD_MORE": "تحميل المزيد"
   },
   "AUTH": {
     "WELCOME_BACK": "مرحباً بعودتك",
@@ -375,5 +378,123 @@
     "SWITCH": "اللغة",
     "EN": "English",
     "AR": "العربية"
+  },
+  "TAB_BUILDER": {
+    "TAB_TEMPLATES": "قوالب التبويبات",
+    "NO_TEMPLATES": "لا توجد قوالب بعد.",
+    "ADD_FIRST_TEMPLATE": "أضف أول قالب",
+    "ADD_TEMPLATE": "إضافة قالب تبويب",
+    "CREATE_TEMPLATE": "إنشاء قالب",
+    "TEMPLATE_NAME": "اسم القالب",
+    "TEMPLATE_NAME_PLACEHOLDER": "مثال: المواصفات، دليل المقاسات…",
+    "TAB_TYPE": "نوع التبويب",
+    "ERR_DUPLICATE_NAME": "يوجد قالب بهذا الاسم بالفعل.",
+    "ACTIVE": "مُفعّل",
+    "SELECT_TEMPLATE_HINT": "اختر قالباً للتعديل أو أضف قالباً جديداً.",
+    "APPLIES_TO": "يُطبَّق على أنواع المنتجات",
+    "APPLIES_TO_HINT": "اختر أنواع المنتجات التي يظهر فيها هذا القالب. اتركه على \"الكل\" ليظهر في جميع المنتجات.",
+    "ALL_TYPES": "الكل",
+
+    "SETTINGS_BANNER_TITLE": "قوالب التبويبات (على مستوى الإعدادات)",
+    "SETTINGS_BANNER_SUB": "حدد هيكل التبويبات هنا. هذه القوالب تُحفظ في إعدادات تخصيص الشركة ويمكن استخدامها لجميع المنتجات.",
+
+    "TYPES": {
+      "SPECS": "المواصفات",
+      "SPECS_DESC": "حقول مفتاح-قيمة",
+      "VEHICLE": "توافق المركبات",
+      "VEHICLE_DESC": "الصنع / الموديل / السنة / المحرك",
+      "TABLE": "جدول",
+      "TABLE_DESC": "صفوف وأعمدة",
+      "RICHTEXT": "نص منسق",
+      "RICHTEXT_DESC": "محتوى HTML",
+      "FAQ": "أسئلة وأجوبة",
+      "FAQ_DESC": "أسئلة وإجاباتها",
+      "CUSTOM": "HTML مخصص",
+      "CUSTOM_DESC": "HTML خام",
+      "REVIEW": "تقييمات",
+      "REVIEW_DESC": "تقييمات العملاء مع نجوم"
+    },
+
+    "SPEC_FIELDS": "حقول المواصفات",
+    "ADD_FIELD": "إضافة حقل",
+    "ADD_FIRST_FIELD": "أضف أول حقل",
+    "NO_FIELDS": "لا توجد حقول معرّفة بعد.",
+    "LABEL": "التسمية",
+    "KEY_ABBR": "المفتاح (abbr)",
+    "TYPE": "النوع",
+    "OPTIONS": "الخيارات (مفصولة بفواصل)",
+    "OPTIONS_PLACEHOLDER": "خيار 1, خيار 2, خيار 3",
+    "REQUIRED": "إلزامي",
+    "FIELD_LABEL_PLACEHOLDER": "تسمية الحقل",
+    "FIELD_KEY_PLACEHOLDER": "field_key",
+    "SPEC_TYPES": {
+      "TEXT": "نص",
+      "NUMBER": "رقم",
+      "SELECT": "اختيار",
+      "MULTISELECT": "اختيار متعدد"
+    },
+
+    "VEHICLE_CONFIG": "إعدادات توافق المركبات",
+    "ALLOW_UNIVERSAL": "السماح بالتوافق الشامل",
+    "ALLOW_UNIVERSAL_DESC": "يمكن تعليم المنتجات كمتوافقة مع جميع المركبات",
+    "ALLOW_YEAR_RANGE": "السماح بنطاق سنوات",
+    "ALLOW_YEAR_RANGE_DESC": "دعم نطاقات السنوات (مثال: 2018-2025)",
+    "REQUIRE_ENGINE": "إلزام حجم المحرك",
+    "REQUIRE_ENGINE_DESC": "حجم المحرك إلزامي للتوافق",
+
+    "CONTENT_SETTINGS": "إعدادات المحتوى",
+    "PLACEHOLDER_TEXT": "نص العنصر النائب",
+    "PLACEHOLDER_HINT": "أدخل نصاً مؤقتاً لهذه المنطقة…",
+
+    "PREDEFINED_FAQ": "الأسئلة الشائعة المعرّفة مسبقاً",
+    "PREDEFINED_FAQ_HINT": "عرّف الأسئلة الشائعة. يمكن للمستخدمين أيضاً إضافة أسئلة مخصصة داخل المنتجات.",
+    "ADD_QUESTION": "إضافة سؤال",
+    "QUESTION_TEMPLATE": "قالب السؤال…",
+
+    "TABLE_TEMPLATE": "جدول",
+    "TABLE_TEMPLATE_HINT": "يتم تعريف هيكل الجدول على كل منتج (الأعمدة والصفوف).",
+
+    "PRODUCT_TABS": "تبويبات المنتج",
+    "PRODUCT_TABS_HINT": "مستندة إلى القوالب من الإعدادات",
+    "NO_ACTIVE_TABS": "لا توجد تبويبات مُفعّلة.",
+    "NO_ACTIVE_TABS_HINT": "قم بتفعيل التبويبات في الإعدادات → قالب تبويبات المنتج أولاً.",
+    "NO_SPEC_FIELDS_PROD": "لا توجد حقول مواصفات معرّفة في هذا القالب.",
+    "SELECT_PLACEHOLDER": "اختر…",
+    "ENTER": "أدخل {{value}}…",
+    "ENTER_CONTENT": "أدخل المحتوى…",
+    "RICHTEXT_HINT": "يُسمح بوسوم HTML وسيتم عرضها عند ظهور المنتج.",
+    "CUSTOM_HINT": "كتلة HTML خام — سيتم عرضها كما هي.",
+
+    "UNIVERSAL_FIT": "توافق شامل",
+    "UNIVERSAL_FIT_DESC": "هذه القطعة متوافقة مع جميع المركبات",
+    "COMPATIBLE_VEHICLES": "المركبات المتوافقة",
+    "ADD_VEHICLE": "إضافة مركبة",
+    "NO_VEHICLES": "لم تتم إضافة أي مركبة.",
+    "ALL_ENGINES": "جميع المحركات",
+    "MAKE": "الصنع",
+    "MODEL": "الموديل",
+    "YEAR": "السنة",
+    "YEAR_RANGE": "نطاق السنوات",
+    "FROM": "من",
+    "TO": "إلى",
+    "ENGINE_SIZE": "حجم المحرك",
+    "ENGINE_PLACEHOLDER": "مثال: 2.4L, V6…",
+
+    "FAQ_TITLE": "الأسئلة والأجوبة",
+    "ADD_FAQ": "إضافة سؤال/إجابة",
+    "QUESTION": "السؤال",
+    "ANSWER": "الإجابة",
+
+    "TABLE_TITLE": "جدول",
+    "ADD_ROW": "إضافة صف",
+    "ADD_COLUMN": "إضافة عمود",
+
+    "REVIEWS": "التقييمات",
+    "ADD_REVIEW": "إضافة تقييم",
+    "NO_REVIEWS": "لا توجد تقييمات بعد. أضف تقييماً لإبرازه على صفحة المنتج.",
+    "REVIEWER_NAME": "اسم المراجع",
+    "REVIEW_TITLE": "عنوان قصير (اختياري)",
+    "REVIEW_COMMENT": "نص التقييم",
+    "STARS": "نجوم"
   }
 }

@@ -33,6 +33,84 @@ button:not(:disabled) {
   cursor: pointer;
 }
 
+// ── Interactive list cell ────────────────────────────────────────────────────
+// Applied to table cells (or inner elements inside custom templates) when a
+// column is marked `interactive: true`. Gives the value a link-like hover
+// affordance without forcing an actual navigation — the list-page still emits
+// `rowClicked` with the column info so the consumer can decide what happens.
+.list-interactive-cell {
+  cursor: pointer;
+  transition: color .15s;
+}
+.list-interactive-cell:hover,
+tr:hover .list-interactive-cell {
+  color: var(--color-brand-700);
+}
+
+// ── Global checkbox style ────────────────────────────────────────────────────
+// Matches the brand-filled checkbox used in the Manage Fields drawer so every
+// native <input type="checkbox"> across the app looks the same: rounded square,
+// slate border when unchecked, solid brand fill with a white tick when checked,
+// and a small indeterminate bar for tri-state (table "select all" with partial
+// selection). Opt out by adding the `no-custom` class on the input.
+input[type="checkbox"]:not(.no-custom) {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid #cbd5e1;           // slate-300
+  background: #ffffff;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color .15s, border-color .15s, box-shadow .15s;
+  vertical-align: middle;
+  position: relative;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-brand-500);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, .25);
+  }
+
+  // Checked state: solid brand fill + white tick drawn as a background SVG so
+  // it scales crisply and doesn't need a separate DOM node.
+  &:checked {
+    background-color: var(--color-brand-600);
+    border-color: var(--color-brand-600);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 12px 12px;
+  }
+  &:checked:hover:not(:disabled) {
+    background-color: var(--color-brand-700);
+    border-color: var(--color-brand-700);
+  }
+
+  // Indeterminate (tri-state) state: horizontal bar centered in the filled
+  // square. Used by the list-page "select all" header when some rows are picked.
+  &:indeterminate {
+    background-color: var(--color-brand-600);
+    border-color: var(--color-brand-600);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 12px 12px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+  }
+}
+
 // Keep `html` at the browser default of 16px so Tailwind's rem-based scale
 // (text-sm = 14px, text-base = 16px, etc.) renders at the sizes its authors
 // designed. Page content can still feel compact via `body` overrides.
@@ -114,6 +192,10 @@ body:has(.main-content.no-padding) {
 
 // On small screens, modals go full-screen — no margins, no rounding.
 // Uses !important to override CDK's inline styles on the overlay pane.
+// iOS Safari: 100vh includes the area BEHIND the URL bar and bottom toolbar,
+// so the modal's header/footer end up clipped. 100dvh tracks the visible
+// viewport and keeps both edges inside the browser chrome. 100vh stays as a
+// fallback for older browsers that don't support dvh.
 @media (max-width: 640px) {
   .cdk-global-overlay-wrapper {
     padding: 0 !important;
@@ -123,21 +205,28 @@ body:has(.main-content.no-padding) {
     min-width: 100vw !important;
     max-width: none !important;
     height: 100vh !important;
+    height: 100dvh !important;
     min-height: 100vh !important;
-    max-height: none !important;
+    min-height: 100dvh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
     border-radius: 0 !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
     margin: 0 !important;
+    // Respect the iPhone home-indicator strip so the footer stays tappable.
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
   }
   .invo-modal-panel .modal-panel,
   .invo-modal-panel app-modal-container,
   .invo-modal-panel app-modal-container .modal-panel {
     border-radius: 0 !important;
     max-height: 100vh !important;
+    max-height: 100dvh !important;
     height: 100vh !important;
+    height: 100dvh !important;
     width: 100vw !important;
     max-width: 100vw !important;
     box-shadow: none !important;

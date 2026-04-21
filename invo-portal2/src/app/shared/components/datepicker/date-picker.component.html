@@ -25,6 +25,7 @@
       [class]="
         'group w-full flex items-center justify-between gap-2 px-3 py-2 text-start text-sm ' +
         'border rounded-lg bg-white transition-colors ' +
+        'outline-none focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-brand-100 ' +
         (isDisabled()
           ? 'border-slate-200 text-slate-400 cursor-not-allowed bg-slate-50'
           : isOpen()
@@ -101,141 +102,258 @@
 <ng-template #calendarTpl>
   <div
     [class]="
-      'w-[280px] bg-white rounded-xl border border-slate-200 shadow-lg p-3 select-none ' +
+      'bg-white rounded-xl border border-slate-200 shadow-lg p-2 sm:p-3 select-none ' +
+      'flex flex-col gap-3 max-w-[calc(100vw-16px)] ' +
       panelClass()
     "
     role="dialog">
 
-    <!-- Header: prev / label / next -->
-    <div class="flex items-center justify-between mb-3">
-      <button
-        type="button"
-        (click)="prev()"
-        class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
-        aria-label="Previous">
-        <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-        </svg>
-      </button>
+    <!-- Top row: presets + calendar columns -->
+    <div class="flex flex-col sm:flex-row gap-3">
 
-      <button
-        type="button"
-        (click)="cycleView()"
-        class="px-3 py-1 rounded-lg text-sm font-semibold text-slate-800 hover:bg-slate-100 transition-colors">
-        {{ headerLabel() }}
-      </button>
+    <!-- ─── Presets (range mode only) ────────────────────────────────────── -->
+    <!-- Mobile: 2-column grid above the calendar (no horizontal scroll).    -->
+    <!-- Desktop: vertical sidebar to the left of the calendar.              -->
+    @if (isRangeMode() && presets().length > 0) {
+      <div
+        class="
+          grid grid-cols-2 gap-1
+          sm:flex sm:flex-col sm:gap-1 sm:shrink-0
+          sm:border-e sm:border-slate-200 sm:pe-3
+          sm:min-w-[130px] sm:max-w-[160px]
+        ">
+        @for (p of presets(); track p.label) {
+          <button
+            type="button"
+            (click)="applyPreset(p)"
+            class="
+              text-start text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 rounded-md
+              text-slate-600 hover:bg-slate-100 hover:text-slate-900
+              transition-colors whitespace-nowrap
+            ">
+            {{ p.label }}
+          </button>
+        }
+      </div>
+    }
 
-      <button
-        type="button"
-        (click)="next()"
-        class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
-        aria-label="Next">
-        <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-        </svg>
-      </button>
-    </div>
+    <!-- ─── Calendar columns ─────────────────────────────────────────────── -->
+    <div class="flex flex-col sm:flex-row gap-3 min-w-0">
+      <!-- Calendar 1 (always shown) -->
+      <div class="w-[280px] shrink-0">
+        <!-- Header: prev / label / (next when single month) -->
+        <div class="flex items-center justify-between mb-3">
+          <button
+            type="button"
+            (click)="prev()"
+            class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+            aria-label="Previous">
+            <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
 
-    <!-- Days view -->
-    @if (view() === 'days') {
-      <!-- Weekday header -->
-      <div class="grid grid-cols-7 mb-1">
-        @for (label of weekdayLabels(); track $index) {
-          <div class="text-center text-xs font-medium text-slate-400 py-1">
-            {{ label }}
+          <button
+            type="button"
+            (click)="cycleView()"
+            class="px-3 py-1 rounded-lg text-sm font-semibold text-slate-800 hover:bg-slate-100 transition-colors">
+            {{ headerLabel() }}
+          </button>
+
+          @if (monthsShown() === 1 || view() !== 'days') {
+            <button
+              type="button"
+              (click)="next()"
+              class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+              aria-label="Next">
+              <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          } @else {
+            <span class="w-7 h-7"></span>
+          }
+        </div>
+
+        <!-- Days view -->
+        @if (view() === 'days') {
+          <!-- Weekday header -->
+          <div class="grid grid-cols-7 mb-1">
+            @for (label of weekdayLabels(); track $index) {
+              <div class="text-center text-xs font-medium text-slate-400 py-1">
+                {{ label }}
+              </div>
+            }
+          </div>
+
+          <!-- 6×7 day grid -->
+          <div class="grid grid-cols-7 gap-y-0.5">
+            @for (cell of dayCells(); track $index) {
+              <button
+                type="button"
+                [disabled]="cell.disabled"
+                (click)="selectDay(cell.date, cell.disabled)"
+                (mouseenter)="onDayHover(cell.date)"
+                [class]="
+                  'relative h-9 flex items-center justify-center text-sm transition-colors ' +
+
+                  (cell.disabled
+                    ? 'text-slate-300 cursor-not-allowed '
+                    : cell.inMonth
+                      ? 'text-slate-700 '
+                      : 'text-slate-300 ') +
+
+                  (cell.inRange && !cell.rangeStart && !cell.rangeEnd
+                    ? 'bg-brand-50 '
+                    : '') +
+
+                  (cell.rangeStart && !cell.rangeEnd
+                    ? 'rounded-l-lg '
+                    : cell.rangeEnd && !cell.rangeStart
+                      ? 'rounded-r-lg '
+                      : cell.inRange && !cell.rangeStart && !cell.rangeEnd
+                        ? ''
+                        : 'rounded-lg ') +
+
+                  (cell.selected
+                    ? 'bg-brand-600 text-white font-semibold shadow-sm hover:bg-brand-700 '
+                    : !cell.disabled
+                      ? 'hover:bg-slate-100 '
+                      : '') +
+
+                  (cell.isToday && !cell.selected
+                    ? 'font-semibold text-brand-600 '
+                    : '')
+                ">
+                {{ cell.date.getDate() }}
+                @if (cell.isToday && !cell.selected) {
+                  <span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-brand-600 rounded-full"></span>
+                }
+              </button>
+            }
+          </div>
+        }
+
+        <!-- Months view -->
+        @if (view() === 'months') {
+          <div class="grid grid-cols-3 gap-2">
+            @for (m of monthCells(); track m.idx) {
+              <button
+                type="button"
+                [disabled]="m.disabled"
+                (click)="selectMonth(m.idx, m.disabled)"
+                [class]="
+                  'h-12 flex items-center justify-center text-sm rounded-lg transition-colors ' +
+                  (m.disabled
+                    ? 'text-slate-300 cursor-not-allowed '
+                    : 'text-slate-700 hover:bg-slate-100 ') +
+                  (m.isCurrent ? 'bg-brand-600 text-white font-semibold hover:bg-brand-700 ' : '')
+                ">
+                {{ m.name }}
+              </button>
+            }
+          </div>
+        }
+
+        <!-- Years view -->
+        @if (view() === 'years') {
+          <div class="grid grid-cols-3 gap-2">
+            @for (y of yearCells(); track y.year) {
+              <button
+                type="button"
+                [disabled]="y.disabled"
+                (click)="selectYear(y.year, y.disabled)"
+                [class]="
+                  'h-12 flex items-center justify-center text-sm rounded-lg transition-colors ' +
+                  (y.disabled
+                    ? 'text-slate-300 cursor-not-allowed '
+                    : 'text-slate-700 hover:bg-slate-100 ') +
+                  (y.isCurrent ? 'bg-brand-600 text-white font-semibold hover:bg-brand-700 ' : '')
+                ">
+                {{ y.year }}
+              </button>
+            }
           </div>
         }
       </div>
 
-      <!-- 6×7 day grid -->
-      <div class="grid grid-cols-7 gap-y-0.5">
-        @for (cell of dayCells(); track $index) {
-          <button
-            type="button"
-            [disabled]="cell.disabled"
-            (click)="selectDay(cell.date, cell.disabled)"
-            (mouseenter)="onDayHover(cell.date)"
-            [class]="
-              'relative h-9 flex items-center justify-center text-sm transition-colors ' +
+      <!-- Calendar 2 (shown when monthsShown=2 in days view; hidden on mobile) -->
+      @if (monthsShown() === 2 && view() === 'days') {
+        <div class="w-[280px] shrink-0 hidden sm:block">
+          <!-- Header for second month: label + next -->
+          <div class="flex items-center justify-between mb-3">
+            <span class="w-7 h-7"></span>
+            <span class="px-3 py-1 text-sm font-semibold text-slate-800">
+              {{ secondHeaderLabel() }}
+            </span>
+            <button
+              type="button"
+              (click)="next()"
+              class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+              aria-label="Next">
+              <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
 
-              (cell.disabled
-                ? 'text-slate-300 cursor-not-allowed '
-                : cell.inMonth
-                  ? 'text-slate-700 '
-                  : 'text-slate-300 ') +
-
-              (cell.inRange && !cell.rangeStart && !cell.rangeEnd
-                ? 'bg-brand-50 '
-                : '') +
-
-              (cell.rangeStart && !cell.rangeEnd
-                ? 'rounded-l-lg '
-                : cell.rangeEnd && !cell.rangeStart
-                  ? 'rounded-r-lg '
-                  : cell.inRange && !cell.rangeStart && !cell.rangeEnd
-                    ? ''
-                    : 'rounded-lg ') +
-
-              (cell.selected
-                ? 'bg-brand-600 text-white font-semibold shadow-sm hover:bg-brand-700 '
-                : !cell.disabled
-                  ? 'hover:bg-slate-100 '
-                  : '') +
-
-              (cell.isToday && !cell.selected
-                ? 'font-semibold text-brand-600 '
-                : '')
-            ">
-            {{ cell.date.getDate() }}
-            @if (cell.isToday && !cell.selected) {
-              <span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-brand-600 rounded-full"></span>
+          <div class="grid grid-cols-7 mb-1">
+            @for (label of weekdayLabels(); track $index) {
+              <div class="text-center text-xs font-medium text-slate-400 py-1">
+                {{ label }}
+              </div>
             }
-          </button>
-        }
-      </div>
-    }
+          </div>
 
-    <!-- Months view -->
-    @if (view() === 'months') {
-      <div class="grid grid-cols-3 gap-2">
-        @for (m of monthCells(); track m.idx) {
-          <button
-            type="button"
-            [disabled]="m.disabled"
-            (click)="selectMonth(m.idx, m.disabled)"
-            [class]="
-              'h-12 flex items-center justify-center text-sm rounded-lg transition-colors ' +
-              (m.disabled
-                ? 'text-slate-300 cursor-not-allowed '
-                : 'text-slate-700 hover:bg-slate-100 ') +
-              (m.isCurrent ? 'bg-brand-600 text-white font-semibold hover:bg-brand-700 ' : '')
-            ">
-            {{ m.name }}
-          </button>
-        }
-      </div>
-    }
+          <div class="grid grid-cols-7 gap-y-0.5">
+            @for (cell of secondDayCells(); track $index) {
+              <button
+                type="button"
+                [disabled]="cell.disabled"
+                (click)="selectDay(cell.date, cell.disabled)"
+                (mouseenter)="onDayHover(cell.date)"
+                [class]="
+                  'relative h-9 flex items-center justify-center text-sm transition-colors ' +
 
-    <!-- Years view -->
-    @if (view() === 'years') {
-      <div class="grid grid-cols-3 gap-2">
-        @for (y of yearCells(); track y.year) {
-          <button
-            type="button"
-            [disabled]="y.disabled"
-            (click)="selectYear(y.year, y.disabled)"
-            [class]="
-              'h-12 flex items-center justify-center text-sm rounded-lg transition-colors ' +
-              (y.disabled
-                ? 'text-slate-300 cursor-not-allowed '
-                : 'text-slate-700 hover:bg-slate-100 ') +
-              (y.isCurrent ? 'bg-brand-600 text-white font-semibold hover:bg-brand-700 ' : '')
-            ">
-            {{ y.year }}
-          </button>
-        }
-      </div>
-    }
+                  (cell.disabled
+                    ? 'text-slate-300 cursor-not-allowed '
+                    : cell.inMonth
+                      ? 'text-slate-700 '
+                      : 'text-slate-300 ') +
+
+                  (cell.inRange && !cell.rangeStart && !cell.rangeEnd
+                    ? 'bg-brand-50 '
+                    : '') +
+
+                  (cell.rangeStart && !cell.rangeEnd
+                    ? 'rounded-l-lg '
+                    : cell.rangeEnd && !cell.rangeStart
+                      ? 'rounded-r-lg '
+                      : cell.inRange && !cell.rangeStart && !cell.rangeEnd
+                        ? ''
+                        : 'rounded-lg ') +
+
+                  (cell.selected
+                    ? 'bg-brand-600 text-white font-semibold shadow-sm hover:bg-brand-700 '
+                    : !cell.disabled
+                      ? 'hover:bg-slate-100 '
+                      : '') +
+
+                  (cell.isToday && !cell.selected
+                    ? 'font-semibold text-brand-600 '
+                    : '')
+                ">
+                {{ cell.date.getDate() }}
+                @if (cell.isToday && !cell.selected) {
+                  <span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-brand-600 rounded-full"></span>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+    </div>
 
     <!-- Footer -->
     @if (showFooter()) {

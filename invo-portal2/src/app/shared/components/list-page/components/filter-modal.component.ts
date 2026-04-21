@@ -22,15 +22,27 @@ export interface FilterModalResult {
   selector: 'app-filter-modal',
   standalone: true,
   imports: [CommonModule, FormsModule, SearchDropdownComponent, TranslateModule],
+  styles: [`
+    /* Make the modal a flex column that fills its parent so the body can
+       grow and push the footer to the bottom edge. Works for both the
+       centered modal layout and the bottom-sheet drawer layout. */
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      height: 100%;
+    }
+  `],
   template: `
     <!-- Header -->
-    <div class="px-6 py-5 border-b border-slate-100">
+    <div class="px-6 py-5 border-b border-slate-100 shrink-0">
       <h2 class="text-lg font-semibold text-slate-900">{{ 'COMMON.FILTERS' | translate }}</h2>
       <p class="text-sm text-slate-500 mt-0.5">{{ 'COMMON.FILTER_SUBTITLE' | translate }}</p>
     </div>
 
-    <!-- Body -->
-    <div class="px-6 py-5 space-y-5 max-h-[60vh] overflow-y-auto">
+    <!-- Body (grows to fill, scrolls when overflowing) -->
+    <div class="px-6 py-5 space-y-5 flex-1 min-h-0 overflow-y-auto">
       @for (filter of filters; track filter.label) {
         <div>
           <label class="block text-sm font-semibold text-slate-800 mb-2.5">
@@ -75,12 +87,14 @@ export interface FilterModalResult {
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-slate-500 mb-1">From</label>
-                <input type="date" [(ngModel)]="localFilters()[filter.keyFrom]"
+                <input type="date" [ngModel]="localFilters()[filter.keyFrom]"
+                  (ngModelChange)="setRawFilter(filter.keyFrom, $event)"
                   class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
               </div>
               <div>
                 <label class="block text-xs font-medium text-slate-500 mb-1">To</label>
-                <input type="date" [(ngModel)]="localFilters()[filter.keyTo]"
+                <input type="date" [ngModel]="localFilters()[filter.keyTo]"
+                  (ngModelChange)="setRawFilter(filter.keyTo, $event)"
                   class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
               </div>
             </div>
@@ -96,8 +110,8 @@ export interface FilterModalResult {
       }
     </div>
 
-    <!-- Footer -->
-    <div class="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+    <!-- Footer (pinned to the bottom) -->
+    <div class="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50 shrink-0">
       <button type="button" (click)="onClear()"
         class="text-sm text-slate-500 hover:text-slate-700 font-medium transition-colors">
         {{ 'COMMON.CLEAR_ALL' | translate }}
@@ -154,9 +168,13 @@ export class FilterModalComponent {
       const newValue = current.includes(value)
         ? current.filter((v: any) => v !== value)
         : [...current, value];
-      
+
       return { ...filters, [key]: newValue.length > 0 ? newValue : undefined };
     });
+  }
+
+  setRawFilter(key: string, value: any): void {
+    this.localFilters.update(f => ({ ...f, [key]: value }));
   }
 
   isCheckboxChecked(key: string, value: any): boolean {

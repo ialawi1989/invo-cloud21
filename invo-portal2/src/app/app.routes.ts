@@ -41,6 +41,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/settings/settings.component').then(m => m.SettingsComponent),
       },
+      {
+        path: 'settings/tab-builder',
+        loadComponent: () =>
+          import('./features/settings/pages/tab-builder-settings/tab-builder-settings.component')
+            .then(m => m.TabBuilderSettingsComponent),
+      },
       // ── Content Library ─────────────────────────────────────────────────
       {
         path: 'website/content-library',

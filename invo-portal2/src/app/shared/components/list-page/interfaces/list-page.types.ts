@@ -63,6 +63,19 @@ export interface TableColumn<T = any> {
   primary?: boolean;
 
   /**
+   * Marks the cell value in this column as interactive (pointer cursor +
+   * hover color/underline). Purely visual — the click still bubbles to
+   * `rowClicked` where the consumer can read `event.column.key` to decide
+   * what to do (drawer, modal, navigation, etc). Defaults to `false`.
+   *
+   * For columns that use a custom template, add the shared
+   * `list-interactive-cell` class on your template's leaf element (or bind
+   * `[class.list-interactive-cell]="col.interactive"`) to get the same
+   * styling while keeping the custom markup.
+   */
+  interactive?: boolean;
+
+  /**
    * Rendering style when this column is grouped with siblings (i.e. another
    * column shares its `label`). `'newLine'` stacks vertically (default);
    * `'inline'` renders side-by-side within the same cell.

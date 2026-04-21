@@ -1,0 +1,240 @@
+<div class="product-form-page">
+  <!-- ═══ Header (back + breadcrumbs + page title + save toolbar) ═══ -->
+  <header class="page-header">
+    <div class="page-header__top">
+      <button
+        type="button"
+        class="btn-back"
+        (click)="backPage()"
+        [attr.aria-label]="'COMMON.BACK' | translate"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+      </button>
+
+      <div class="page-header__titles">
+        <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+        <h1 class="page-title">
+          @if (formStatus() === 'new') {
+            {{ 'PRODUCTS.FORM.ADD_TITLE' | translate: { value: productType() } }}
+          } @else {
+            {{ 'PRODUCTS.FORM.EDIT_TITLE' | translate: { value: productType() } }}
+            @if (productInfo().name) { : {{ productInfo().name }} }
+          }
+        </h1>
+      </div>
+    </div>
+
+    <div class="page-header__actions">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="backPage()"
+        [disabled]="saving()"
+      >
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="saveProduct()"
+        [disabled]="saving() || loading()"
+      >
+        @if (saving()) {
+          <span class="spinner" aria-hidden="true"></span>
+        }
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══ Body ═══ -->
+  @if (loading()) {
+    <div class="form-loading">
+      <div class="spinner spinner--lg"></div>
+    </div>
+  } @else {
+    <form
+      [formGroup]="productForm"
+      class="product-form"
+      (keydown.enter)="$event.preventDefault()"
+    >
+      <div class="form-grid">
+        <!-- Main column -->
+        <section class="form-col form-col--main">
+          <app-pf-common-fields
+            [productInfo]="productInfo()"
+            [productForm]="productForm"
+            [fieldsOptions]="fieldsOptions()"
+          />
+
+          <app-pf-tab-builder
+            [productInfo]="productInfo()"
+            [productForm]="productForm"
+            [fieldsOptions]="fieldsOptions()"
+          />
+
+          @if (fieldsOptions()?.pricing) {
+            <app-pf-product-pricing
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.inventory) {
+            <app-pf-inventory-details
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.suppliers?.isVisible && privileges.check('productSecurity.actions.supplierSection.access')) {
+            <app-pf-supplier-list-product
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          <!-- Type-specific sections (Phase 4) -->
+          @if (productType() === 'service' && fieldsOptions()?.serviceTime?.isVisible) {
+            <app-pf-service-duration
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.kitBuilder?.isVisible) {
+            <app-pf-kit-builder
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.recipe?.isVisible) {
+            <app-pf-recipe-builder
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.packageBuilder?.isVisible) {
+            <app-pf-package-builder
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.menuSelection?.isVisible) {
+            <app-pf-menu-selection
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          <app-pf-branch-product-section
+            [productInfo]="productInfo()"
+            [productForm]="productForm"
+            [fieldsOptions]="fieldsOptions()"
+          />
+        </section>
+
+        <!-- Side column -->
+        <aside class="form-col form-col--side">
+          @if (fieldsOptions()?.image) {
+            <app-pf-product-image
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.department?.isVisible || fieldsOptions()?.category?.isVisible || fieldsOptions()?.brand?.isVisible) {
+            <app-pf-category-options
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.measurements?.isVisible) {
+            <app-pf-measurements
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.productAttributes?.isVisible) {
+            <app-pf-product-attributes
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.shippingOptions?.isVisible) {
+            <app-pf-shipping-options
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.nutrition?.isVisible) {
+            <app-pf-food-nutrition
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.aliasBarcodes?.isVisible) {
+            <app-pf-alias-barcodes
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.altProduct?.isVisible) {
+            <app-pf-alt-product
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.customFields?.isVisible) {
+            <app-pf-product-custom-fields
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.image) {
+            <app-pf-product-gallery
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+            <app-pf-product-3dmodel
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+        </aside>
+      </div>
+    </form>
+  }
+</div>

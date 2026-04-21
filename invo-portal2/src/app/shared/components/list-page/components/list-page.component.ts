@@ -103,7 +103,55 @@ import {
     TooltipDirective
   ],
   templateUrl: './list-page.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    /* ── Sticky columns (checkbox + primary on the start edge, actions
+       on the end edge) ─────────────────────────────────────────────────
+       Keep the sticky cells opaque so rows underneath don't bleed through
+       when the user scrolls horizontally, and match the row hover colour
+       so the sticky cells don't look out of place on hover. */
+    .list-sticky-cell {
+      background-color: #ffffff;
+      transition: background-color 150ms ease;
+    }
+    tr.list-row:hover .list-sticky-cell { background-color: #f8fafc; }
+    tr.list-row-expanded .list-sticky-cell { background-color: #ecfafd; }
+
+    /* Drop shadow on the right edge of the last start-side sticky column
+       so horizontally-scrolled content visibly tucks underneath. */
+    .list-sticky-col {
+      box-shadow: 6px 0 8px -4px rgba(15, 23, 42, 0.08);
+    }
+    :host-context([dir="rtl"]) .list-sticky-col {
+      box-shadow: -6px 0 8px -4px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Transparent sticky cell for the actions column — only the buttons
+       inside carry visible styling so they appear to float over scrolled
+       content rather than sitting in a solid cell. */
+    .list-floating-actions {
+      background: transparent;
+    }
+
+    /* ── Horizontal-scroll affordance ───────────────────────────────────
+       Absolute-positioned overlay pinned to the end edge of the table
+       wrapper. Shows a fading shadow so the user can see that scrolled-away
+       columns exist. pointer-events: none so clicks fall through to whatever
+       is below (the sticky action buttons, typically). */
+    .list-scroll-fade-end {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      inset-inline-end: 0;
+      width: 28px;
+      pointer-events: none;
+      z-index: 1;
+      background: linear-gradient(to left, rgba(15, 23, 42, 0.12), rgba(15, 23, 42, 0));
+    }
+    :host-context([dir="rtl"]) .list-scroll-fade-end {
+      background: linear-gradient(to right, rgba(15, 23, 42, 0.12), rgba(15, 23, 42, 0));
+    }
+  `]
 })
 export class ListPageComponent<T = any> implements OnInit, OnDestroy {
   // ══════════════════════════════════════════════════════════════
@@ -1161,6 +1209,9 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
       {
         drawer: true,
         drawerWidth: '420px',
+        drawerResizable: true,
+        // Desktop width is fixed; only the mobile bottom-sheet can be resized.
+        drawerResizableWidth: false,
         data: { columns: columnsWithState }
       }
     );

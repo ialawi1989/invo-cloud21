@@ -271,7 +271,8 @@ interface FavoritePage { label: string; link: string; }
                         <a [routerLink]="sub.link"
                            routerLinkActive="active"
                            [routerLinkActiveOptions]="{ exact: false }"
-                           class="sub-row">{{ sub.label | translate }}</a>
+                           class="sub-row"
+                           (click)="onSubLinkClick()">{{ sub.label | translate }}</a>
                       </li>
                     }
                   </ul>
@@ -322,12 +323,12 @@ interface FavoritePage { label: string; link: string; }
     :host {
       --bg:         #2a3042;
       --bg-hover:   rgba(255,255,255,.055);
-      --bg-active:  rgba(255,255,255,.09);
+      --bg-active:  rgba(50, 172, 193, .10);   /* parent active — subtle brand tint */
       --border:     rgba(255,255,255,.08);
       --text:       #c3cbe4;
       --text-muted: #74788d;
       --text-on:    #f0f2f8;
-      --accent:     #556ee6;
+      --accent:     #32acc1;                   /* brand-500 */
       --w:          240px;
       --w-col:      56px;
     }
@@ -429,7 +430,7 @@ interface FavoritePage { label: string; link: string; }
       color: var(--accent); font-size: 13px; cursor: pointer;
       transition: background .12s; font-family: inherit;
     }
-    .add-page-btn:hover { background: rgba(85,110,230,.1); }
+    .add-page-btn:hover { background: rgba(50, 172, 193, .12); }
 
     .recent-label { font-size: 11px; color: var(--text-muted); margin: 14px 0 8px 4px; }
     .recent-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
@@ -543,7 +544,7 @@ interface FavoritePage { label: string; link: string; }
 
     /* Badges */
     .badge { padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
-    .badge--primary { background: rgba(85,110,230,.2);  color: #7d94f0; }
+    .badge--primary { background: rgba(50, 172, 193, .22); color: #7ad3df; }
     .badge--success { background: rgba(52,195,143,.2);  color: #34c38f; }
     .badge--danger  { background: rgba(244,106,106,.2); color: #f46a6a; }
     .badge--warning { background: rgba(241,180,76,.2);  color: #f1b44c; }
@@ -556,7 +557,16 @@ interface FavoritePage { label: string; link: string; }
       transition: all .12s;
     }
     .sub-row:hover { background: var(--bg-hover); color: var(--text-on); }
-    .sub-row.active { background: rgba(85,110,230,.14); color: var(--text-on); }
+    /* Sub-item active — stronger brand fill + a left stripe so the
+       "current page" reads louder than its parent group. */
+    .sub-row.active {
+      background: rgba(50, 172, 193, .25);
+      color: var(--text-on);
+      box-shadow: inset 3px 0 0 var(--accent);
+      font-weight: 600;
+    }
+    /* In RTL the stripe should be on the right edge instead. */
+    [dir="rtl"] .sub-row.active { box-shadow: inset -3px 0 0 var(--accent); }
 
     /* Section heading inside a submenu (e.g. "Bulk operations") */
     .sub-section {
@@ -670,11 +680,14 @@ export class SidebarComponent implements OnInit {
     const flat  = SIDE_MENU.flatMap(m => m.subItems ?? [m]);
     const found = flat.find(i => i.link && url.startsWith(i.link));
     if (!found?.label) return;
-    const key   = found.label;
-    const label = this.translateService.instant(key) !== key
-      ? this.translateService.instant(key)
-      : key;
-    this.favsService.addRecent({ label, link: url });
+    const key        = found.label;
+    const translated = this.translateService.instant(key);
+    const hasKey     = translated !== key;
+    this.favsService.addRecent({
+      label: hasKey ? translated : key,
+      labelKey: hasKey ? key : undefined,
+      link: url,
+    });
   }
 
   private canShow(item: SideMenuItem): boolean {
@@ -784,6 +797,14 @@ export class SidebarComponent implements OnInit {
       this.collapsed = false;
       this.collapsedChange.emit(false);
     }
+    // On mobile the menu is an overlay — auto-dismiss on navigation so the
+    // user lands directly on the destination page.
+    if (this.mobileOpen) this.closeMobile();
+  }
+
+  /** Same auto-close behavior for nested sub-item links. */
+  onSubLinkClick(): void {
+    if (this.mobileOpen) this.closeMobile();
   }
 
   isParentActive(item: SideMenuItem): boolean {

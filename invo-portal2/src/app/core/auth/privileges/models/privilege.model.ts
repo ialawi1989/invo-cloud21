@@ -90,6 +90,7 @@ import { shippingSecurity } from '../definitions/shippingSecurity';
 import { supplierCredit } from '../definitions/supplierCredit';
 import { supplierSecurity } from '../definitions/supplierSecurity';
 import { surchargeSecurity } from '../definitions/surchargeSecurity';
+import { tabBuilderSecurity } from '../definitions/tabBuilderSecurity';
 import { tableManagmentSecurity } from '../definitions/tableManagmentSecurity';
 import { taxSecurity } from '../definitions/taxSecurity';
 import { terminalSecurity } from '../definitions/terminalSecurity';
@@ -125,6 +126,7 @@ export class Privilege {
   budgetSecurity                 = budgetSecurity();
   taxSecurity                    = taxSecurity();
   surchargeSecurity              = surchargeSecurity();
+  tabBuilderSecurity             = tabBuilderSecurity();
   paymentMethodSecurity          = paymentMethodSecurity();
   priceLabelSecurity             = priceLabelSecurity();
   priceManagementSecurity        = priceManagementSecurity();

@@ -24,6 +24,7 @@ import {
   DatePickerMode,
   DatePickerView,
   DateDisabledPredicate,
+  DatePreset,
 } from './date-picker.types';
 import {
   DEFAULT_DAY_NAMES,
@@ -129,6 +130,20 @@ export class DatePickerComponent implements ControlValueAccessor {
   /** Show the Clear / Today footer. */
   showFooter = input<boolean>(true);
 
+  /**
+   * Optional quick-pick preset list (e.g. "Today", "Last 7 days"). Rendered
+   * as a left sidebar inside the panel when non-empty. Range-mode only —
+   * presets are ignored in single mode.
+   */
+  presets = input<DatePreset[]>([]);
+
+  /**
+   * Number of months rendered side-by-side. Defaults to `1`. Useful in range
+   * mode to make selecting cross-month spans easier. Mobile (< 640px)
+   * automatically collapses to 1 month via CSS.
+   */
+  monthsShown = input<1 | 2>(1);
+
   /** Disable trigger interaction. Also set automatically by `setDisabledState` (forms). */
   disabled = input<boolean>(false);
 
@@ -226,11 +241,23 @@ export class DatePickerComponent implements ControlValueAccessor {
   );
 
   /**
-   * 42 cells = 6 rows × 7 columns.
-   * Each cell carries everything the template needs to render it.
+   * 42 cells = 6 rows × 7 columns for the primary cursor's month.
    */
-  dayCells = computed(() => {
-    const c = this.cursor();
+  dayCells = computed(() => this.buildDayCells(this.cursor()));
+
+  /** Second month's cursor — used when `monthsShown() === 2`. */
+  secondCursor = computed<Date>(() => addMonths(this.cursor(), 1));
+
+  /** Second month's day grid (same shape as `dayCells`). */
+  secondDayCells = computed(() => this.buildDayCells(this.secondCursor()));
+
+  /** Header label for the second month (always day-view formatting). */
+  secondHeaderLabel = computed<string>(() => {
+    const c = this.secondCursor();
+    return `${this.monthNames()[c.getMonth()]} ${c.getFullYear()}`;
+  });
+
+  private buildDayCells(c: Date) {
     const grid = buildCalendarGrid(c.getFullYear(), c.getMonth(), this.firstDayOfWeek());
     const today = new Date();
     const min   = this.min();
@@ -286,7 +313,7 @@ export class DatePickerComponent implements ControlValueAccessor {
         rangeEnd,
       };
     });
-  });
+  }
 
   // ── Months view data ───────────────────────────────────────────────────────
   monthCells = computed(() => {
@@ -469,6 +496,21 @@ export class DatePickerComponent implements ControlValueAccessor {
       this._onChange(day);
       if (!this.inline()) this.close();
     }
+  }
+
+  /**
+   * Apply a quick-pick preset. Range-mode only — in single mode this is a no-op
+   * because presets describe a `{ start, end }` range.
+   */
+  applyPreset(preset: DatePreset): void {
+    if (!this.isRangeMode()) return;
+    const r = preset.range();
+    this.value.set(r);
+    this._onChange(r);
+    this.rangeAnchor.set(null);
+    this.rangeHover.set(null);
+    if (r.start) this.cursor.set(r.start);
+    if (!this.inline()) this.close();
   }
 
   // ── ControlValueAccessor ───────────────────────────────────────────────────

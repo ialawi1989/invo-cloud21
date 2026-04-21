@@ -1,0 +1,41 @@
+<section class="pf-card" [formGroup]="group">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+        <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.SHIPPING' | translate }}</h2>
+  </header>
+
+  <div class="pf-card__body">
+    <div class="pf-field pf-field--inline">
+      <span class="pf-label">{{ 'PRODUCTS.FORM.SHIPPING_ENABLED' | translate }}</span>
+      <label class="pf-switch">
+        <input type="checkbox" formControlName="shippingEnabled"/>
+        <span class="pf-switch__track"></span>
+      </label>
+    </div>
+
+    @if (fieldsOptions()?.shippingOptions?.weight?.isVisible || fieldsOptions()?.shippingOptions?.weightUOM?.isVisible) {
+      <div class="pf-row">
+        <div class="pf-field pf-field--half">
+          <label class="pf-label">{{ 'PRODUCTS.FORM.WEIGHT' | translate }}</label>
+          <input type="number" class="pf-input" formControlName="weight" min="0"/>
+        </div>
+        <div class="pf-field pf-field--half">
+          <label class="pf-label">{{ 'PRODUCTS.FORM.WEIGHT_UOM' | translate }}</label>
+          <app-search-dropdown
+            formControlName="weightUOM"
+            [items]="weightUoms"
+            [displayWith]="displayLabel"
+            [compareWith]="compareByValue"
+            [searchable]="false"
+            [clearable]="false"
+          />
+        </div>
+      </div>
+    }
+  </div>
+</section>

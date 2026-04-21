@@ -1,0 +1,30 @@
+@use '../../_shared-form.scss' as *;
+@include pfCard;
+
+.pf-ms-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+.pf-ms-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #0f172a;
+  cursor: pointer;
+  padding: 4px 2px;
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #32acc1;
+    cursor: pointer;
+  }
+}
+
+.pf-ms-warn {
+  grid-column: 1 / -1;
+  margin: 6px 0 0;
+}

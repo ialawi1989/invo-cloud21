@@ -180,6 +180,7 @@
     <!-- TABLE VIEW -->
     <!-- ══════════════════════════════════════════════════════════════ -->
     @if (viewMode() === 'table') {
+    <div class="relative">
     <div class="overflow-x-auto">
 
       <!-- Loading Skeleton -->
@@ -256,19 +257,20 @@
           <tr>
             <!-- Selection Checkbox -->
             @if (selectable) {
-            <th class="px-6 py-3 text-start w-12">
+            <th class="px-6 py-3 text-start w-12 sticky start-0 z-20 bg-white">
               <input type="checkbox" [checked]="allSelected()" [indeterminate]="someSelected()"
-                (change)="toggleAllSelection()"
-                class="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500">
+                (change)="toggleAllSelection()">
             </th>
             }
 
             <!-- Column Headers -->
-            @for (column of displayColumns(); track column.key) {
+            @for (column of displayColumns(); track column.key; let colIdx = $index) {
             <th [class]="
                       'px-6 py-3 text-start text-sm font-medium text-slate-500 ' +
-                      (column.sortable ? 'cursor-pointer hover:text-brand-600 transition-colors select-none' : '')"
-              [style.width]="column.width" (click)="column.sortable ? onColumnSort(column) : null">
+                      (column.sortable ? 'cursor-pointer hover:text-brand-600 transition-colors select-none ' : '') +
+                      (colIdx === 0 ? (selectable ? 'sticky start-12 z-20 bg-white list-sticky-col' : 'sticky start-0 z-20 bg-white list-sticky-col') : '')"
+              [style.min-width]="column.width"
+              (click)="column.sortable ? onColumnSort(column) : null">
               <div class="flex items-center gap-2">
                 {{ column.label }}
                 @if (column.primary || (column.groupedItems && hasPrimaryItem(column))) {
@@ -285,7 +287,8 @@
             </th>
             }
 
-            <!-- Actions Column -->
+            <!-- Actions Column — header label scrolls with the table; the
+                 body-cell buttons float sticky to the end edge. -->
             @if (rowActions.length > 0 || getRowActionsTemplate()) {
             <th class="px-6 py-3 text-end text-sm font-medium text-slate-500">{{ 'COMMON.ACTIONS_LABEL' | translate }}</th>
             }
@@ -295,21 +298,32 @@
         <tbody class="bg-white divide-y divide-slate-100">
           @for (row of data(); track trackByFn($index, row)) {
           <tr [class]="
-                    'hover:bg-slate-50 transition-colors cursor-pointer ' +
-                    getRowClass(row)" (click)="onRowClick(row, undefined, $event)">
+                    'group transition-colors ' +
+                    (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length
+                      ? 'list-row-expanded bg-brand-50/60 border-s-4 border-s-brand-500 cursor-default'
+                      : 'list-row hover:bg-slate-50 cursor-pointer') + ' ' +
+                    getRowClass(row)"
+              (click)="
+                (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length)
+                  ? $event.stopPropagation()
+                  : onRowClick(row, undefined, $event)
+              ">
 
             <!-- Selection Checkbox -->
             @if (selectable) {
-            <td class="px-6 py-4" (click)="$event.stopPropagation()">
-              <input type="checkbox" [checked]="isRowSelected(row)" (change)="toggleRowSelection(row)"
-                class="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500">
+            <td class="px-6 py-4 sticky start-0 z-10 list-sticky-cell" (click)="$event.stopPropagation()">
+              <input type="checkbox" [checked]="isRowSelected(row)" (change)="toggleRowSelection(row)">
             </td>
             }
 
-            <!-- Data Cells -->
-            @for (column of displayColumns(); track column.key) {
-            <td [class]="'px-6 py-4 text-sm text-slate-900 ' + getCellClass(row, column)"
-              (click)="onRowClick(row, column, $event)">
+            <!-- Data Cells. Cell-level click wins (so per-column `clickable`
+                 configs know which column was hit) and stops propagation so
+                 the row-level click doesn't fire a second time. -->
+            @for (column of displayColumns(); track column.key; let colIdx = $index) {
+            <td [class]="'px-6 py-4 text-sm text-slate-900 ' + getCellClass(row, column) +
+                        (colIdx === 0 ? (selectable ? ' sticky start-12 z-10 list-sticky-cell list-sticky-col' : ' sticky start-0 z-10 list-sticky-cell list-sticky-col') : '')"
+              [style.min-width]="column.width"
+              (click)="onRowClick(row, column, $event); $event.stopPropagation()">
 
               <!-- Grouped columns (multiple columns sharing a label) → stacked rows
                    of inline-joined items inside one cell. -->
@@ -329,9 +343,10 @@
             </td>
             }
 
-            <!-- Actions Cell -->
+            <!-- Actions Cell — transparent sticky cell so only the buttons
+                 inside float to the end edge (with their own shadow). -->
             @if (rowActions.length > 0 || getRowActionsTemplate()) {
-            <td class="px-6 py-4 text-end" (click)="$event.stopPropagation()">
+            <td class="px-6 py-4 text-end sticky end-0 z-10 list-floating-actions" (click)="$event.stopPropagation()">
               @if (getRowActionsTemplate()) {
               <ng-container [ngTemplateOutlet]="$any(getRowActionsTemplate())"
                 [ngTemplateOutletContext]="{ $implicit: row }">
@@ -359,12 +374,13 @@
           <!-- Expanded child rows -->
           @if (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length) {
             @for (child of $any(row)[childrenKey]; track $index) {
-            <tr class="bg-slate-50/60 border-b border-slate-100">
+            <tr class="bg-brand-50/30 border-s-4 border-s-brand-500 border-b border-brand-100 hover:bg-brand-50/60 transition-colors cursor-pointer"
+                (click)="onRowClick(child, undefined, $event)">
               @if (selectable) {
               <td class="px-6 py-3"></td>
               }
               @for (column of displayColumns(); track column.key; let ci = $index) {
-              <td class="px-6 py-3 text-sm text-slate-600">
+              <td class="px-6 py-3 text-sm text-slate-600" [style.min-width]="column.width">
                 @if (ci === 0) {
                   <div class="flex items-start gap-2 ps-6">
                     <span class="w-4 border-l-2 border-b-2 border-slate-300 h-3 rounded-bl-sm flex-shrink-0 mt-2"></span>
@@ -412,20 +428,79 @@
       </table>
       }
     </div>
+      <!-- End-edge scroll fade: sits above scrolled content but below the
+           sticky Actions buttons (z-1 vs the buttons' z-10). -->
+      <div class="list-scroll-fade-end" aria-hidden="true"></div>
+    </div>
     }
 
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- GRID VIEW -->
     <!-- ══════════════════════════════════════════════════════════════ -->
     @if (viewMode() === 'grid') {
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-6">
+
+      <!-- Loading Skeleton -->
+      @if (isLoading()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-6">
+        @for (r of [1,2,3,4,5,6,7,8]; track r) {
+        <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+          <div class="p-4 space-y-2.5">
+            <div class="h-4 rounded bg-slate-100 animate-pulse" [style.width.%]="55 + (r % 3) * 10"></div>
+            <div class="h-3 w-24 rounded bg-slate-50 animate-pulse"></div>
+            <div class="h-3 w-32 rounded bg-slate-50 animate-pulse"></div>
+            <div class="h-3 w-20 rounded bg-slate-50 animate-pulse"></div>
+          </div>
+        </div>
+        }
+      </div>
+      }
+
+      <!-- Empty State -->
+      @else if (data().length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 px-6">
+        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-slate-900 mb-2">{{ emptyState.title }}</h3>
+        @if (emptyState.message) {
+        <p class="text-sm text-slate-500 mb-6">{{ emptyState.message }}</p>
+        }
+        @if (emptyState.actionLabel && emptyState.actionHandler) {
+        <button (click)="emptyState.actionHandler!()"
+          class="px-6 py-3 bg-gradient-to-r from-brand-500 to-brand-700 text-white rounded-lg font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+          {{ emptyState.actionLabel }}
+        </button>
+        }
+      </div>
+      }
+
+      <!-- Grid Data -->
+      @else {
+    <!-- `grid-flow-row-dense`: when a mid-row card is expanded, the children
+         strip (col-span-full) drops to the next row, and the next sibling
+         cards backfill the gap left in the parent's row instead of shifting
+         down. On mobile (1 column) the strip naturally lands right below the
+         expanded card, so this has no visible effect there. -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-flow-row-dense gap-4 p-6">
       @for (row of data(); track trackByFn($index, row)) {
       <div
-        class="bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-brand-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
-        (click)="onRowClick(row, undefined, $event)">
+        [class]="
+          'rounded-xl overflow-hidden transition-all duration-200 group ' +
+          (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length
+            ? 'bg-brand-50/60 border-2 border-brand-500 shadow-md cursor-default'
+            : 'bg-white border border-slate-200 cursor-pointer hover:border-brand-300 hover:shadow-lg hover:-translate-y-0.5')
+        "
+        (click)="
+          (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length)
+            ? $event.stopPropagation()
+            : onRowClick(row, undefined, $event)
+        ">
         <div class="p-4">
-          <!-- Title (first column) — renders grouped items (name + barcode etc.) using the same stacked/inline logic as the table. -->
-          <div class="text-sm font-medium text-slate-900 min-w-0">
+          <!-- Title (first column) — wraps; never truncated. -->
+          <div class="text-sm font-medium text-slate-900 min-w-0 break-words">
             @if (displayColumns()[0].groupedRows) {
               @for (groupRow of displayColumns()[0].groupedRows; track $index; let firstRow = $first) {
                 <div class="flex flex-wrap items-center gap-x-2" [class.mt-1]="!firstRow">
@@ -436,7 +511,7 @@
                 </div>
               }
             } @else {
-              <h3 class="truncate">{{ getCellValue(row, displayColumns()[0]) }}</h3>
+              <h3 class="break-words">{{ getCellValue(row, displayColumns()[0]) }}</h3>
             }
           </div>
 
@@ -479,8 +554,67 @@
         </div>
         }
       </div>
+
+      <!-- ─── Expanded children — full-width sub-grid below the parent's row ─── -->
+      @if (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length) {
+        <div class="col-span-full bg-brand-50/40 border-2 border-brand-300 rounded-xl p-3"
+             (click)="$event.stopPropagation()">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            @for (child of $any(row)[childrenKey]; track $index) {
+              <div
+                class="bg-white border border-slate-200 rounded-lg p-3 cursor-pointer
+                       hover:border-brand-300 hover:shadow-sm transition-all"
+                (click)="onRowClick(child, undefined, $event)">
+                <!-- Title (first column) — wraps; never truncated -->
+                <div class="text-sm font-medium text-slate-900 min-w-0 break-words">
+                  @if (displayColumns()[0].groupedRows) {
+                    @for (groupRow of displayColumns()[0].groupedRows; track $index; let firstRow = $first) {
+                      <div class="flex flex-wrap items-center gap-x-2" [class.mt-1]="!firstRow">
+                        @for (item of groupRow; track item.key) {
+                          <ng-container [ngTemplateOutlet]="cellContent"
+                            [ngTemplateOutletContext]="{ row: child, col: item }"></ng-container>
+                        }
+                      </div>
+                    }
+                  } @else {
+                    <span class="block break-words">{{ getCellValue(child, displayColumns()[0]) }}</span>
+                  }
+                </div>
+
+                <!-- Remaining columns as key-value rows -->
+                @for (col of displayColumns(); track col.key; let i = $index) {
+                  @if (i > 0) {
+                    <div class="flex items-center justify-between mt-1.5 gap-2">
+                      <span class="text-xs text-slate-400 flex-shrink-0">{{ col.label }}</span>
+                      <div class="text-xs font-medium text-slate-700 truncate text-end min-w-0">
+                        @if (col.groupedRows) {
+                          @for (groupRow of col.groupedRows; track $index; let firstRow = $first) {
+                            <div class="flex flex-wrap items-center justify-end gap-x-2" [class.mt-1]="!firstRow">
+                              @for (item of groupRow; track item.key) {
+                                <ng-container [ngTemplateOutlet]="cellContent"
+                                  [ngTemplateOutletContext]="{ row: child, col: item }"></ng-container>
+                              }
+                            </div>
+                          }
+                        } @else if (col.customTemplate && getCellTemplate()(col.key)) {
+                          <ng-container [ngTemplateOutlet]="getCellTemplate()(col.key)!"
+                            [ngTemplateOutletContext]="{ $implicit: child, col: col }">
+                          </ng-container>
+                        } @else {
+                          <span>{{ getFormattedCellValue(child, col) || '—' }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
       }
     </div>
+      }
     }
 
     <!-- ══════════════════════════════════════════════════════════════ -->
@@ -570,9 +704,11 @@
     </a>
   }
 
-  <!-- Regular Cell -->
+  <!-- Regular Cell. `interactive` columns get the link-like hover affordance
+       via the `list-interactive-cell` utility class. -->
   @else {
-    <span [innerHTML]="highlightSearchTerm(getFormattedCellValue(row, col))"></span>
+    <span [class.list-interactive-cell]="col.interactive"
+      [innerHTML]="highlightSearchTerm(getFormattedCellValue(row, col))"></span>
 
     <!-- Sub-fields -->
     @if (col.subFields) {

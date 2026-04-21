@@ -1,0 +1,29 @@
+<section class="pf-card" [formGroup]="group">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a10 10 0 1 0 10 10"/><path d="M22 2L12 12"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.NUTRITION' | translate }}</h2>
+  </header>
+
+  <div class="pf-card__body pf-nut-grid">
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PRODUCTS.FORM.KCAL' | translate }}</label>
+      <input type="number" class="pf-input" formControlName="kcal" min="0"/>
+    </div>
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PRODUCTS.FORM.FAT' | translate }}</label>
+      <input type="number" class="pf-input" formControlName="fat" min="0"/>
+    </div>
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PRODUCTS.FORM.CARB' | translate }}</label>
+      <input type="number" class="pf-input" formControlName="carb" min="0"/>
+    </div>
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PRODUCTS.FORM.PROTEIN' | translate }}</label>
+      <input type="number" class="pf-input" formControlName="protien" min="0"/>
+    </div>
+  </div>
+</section>

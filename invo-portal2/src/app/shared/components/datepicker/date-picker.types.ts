@@ -27,3 +27,13 @@ export interface CompleteDateRange {
 export function isCompleteRange(r: DateRange | null): r is CompleteDateRange {
   return !!r && r.start != null && r.end != null;
 }
+
+/**
+ * Quick-pick preset for the range mode (e.g. "Today", "Last 7 days").
+ * `range` is a thunk so values like "Today" stay accurate every time the
+ * panel opens.
+ */
+export interface DatePreset {
+  label: string;
+  range: () => DateRange;
+}

@@ -4,17 +4,13 @@ import {
 } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import {
-  Observable, throwError, defer, of,
-  Subject, BehaviorSubject,
-} from 'rxjs';
-import {
-  catchError, filter, finalize,
-  switchMap, take, timeout,
-} from 'rxjs/operators';
+import { Observable, throwError, defer, of } from 'rxjs';
+import { catchError, finalize, switchMap, take, timeout } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
 import { AuthTabSyncService } from '../auth/auth-tab-sync.service';
 import { CrossTabRefreshLockService } from '../auth/cross-tab-refresh-lock.service';
+import { ModalService } from '../../shared/modal/modal.service';
+import { SessionExpiredModalComponent } from '../auth/session-expired-modal.component';
 
 // ─── Module-level singletons (shared across all interceptor calls) ────────────
 // Using module scope instead of service state keeps the functional interceptor
@@ -58,6 +54,7 @@ export const authInterceptor: HttpInterceptorFn = (
   const tabSync = inject(AuthTabSyncService);
   const lock    = inject(CrossTabRefreshLockService);
   const router  = inject(Router);
+  const modal   = inject(ModalService);
 
   // Always send cookies for refresh-token flow
   let request = req.clone({ withCredentials: true });
@@ -93,7 +90,7 @@ export const authInterceptor: HttpInterceptorFn = (
         }),
         catchError((refreshErr) => {
           if (auth.isLoggingOut) return throwError(() => refreshErr);
-          handleSessionExpired(auth, tabSync, lock, router);
+          handleSessionExpired(auth, tabSync, lock, router, modal);
           return throwError(() => refreshErr);
         }),
       );
@@ -157,6 +154,7 @@ function handleSessionExpired(
   tabSync: AuthTabSyncService,
   lock:    CrossTabRefreshLockService,
   router:  Router,
+  modal:   ModalService,
 ): void {
   if (auth.isLoggingOut) return;
 
@@ -177,12 +175,23 @@ function handleSessionExpired(
   if (sessionExpiredShown) return;
   sessionExpiredShown = true;
 
-  // Native browser dialog — replace with your preferred toast/modal if available
-  alert('Your session has expired. Please log in again.');
-
-  sessionExpiredShown = false;
-  router.navigate(
-    ['/login'],
-    returnUrl ? { queryParams: { returnUrl } } : {}
+  // Styled in-app modal (replaces the native browser alert). The modal
+  // renders a single OK button — close handler routes to /login.
+  const ref = modal.open<SessionExpiredModalComponent, void, void>(
+    SessionExpiredModalComponent,
+    {
+      size: 'sm',
+      closeable: false,
+      closeOnBackdrop: false,
+      panelClass: 'session-expired-modal',
+    },
   );
+
+  ref.afterClosed().then(() => {
+    sessionExpiredShown = false;
+    router.navigate(
+      ['/login'],
+      returnUrl ? { queryParams: { returnUrl } } : {}
+    );
+  });
 }

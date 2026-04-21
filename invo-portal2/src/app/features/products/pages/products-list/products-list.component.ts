@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, HostListener, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { OverlayModule } from '@angular/cdk/overlay';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
@@ -14,17 +15,19 @@ import {
 } from '@shared/components/list-page/interfaces/list-page.types';
 
 import { ProductsService } from '../../services/products.service';
-import { ProductsSidePanelService } from '../../services/products-side-panel.service';
 import { ProductsListStateService } from '../../state/products-list.state';
 import { LanguageService } from '@core/i18n/language.service';
+import { withTranslations } from '@core/i18n/with-translations';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
+import { ProductDetailDrawerComponent, ProductDetailDrawerData } from '../../components/product-detail-drawer/product-detail-drawer.component';
+import { ProductStockModalComponent, ProductStockModalData } from '../../components/product-stock-modal/product-stock-modal.component';
 
 @Component({
   selector: 'app-products-list',
   standalone: true,
-  imports: [CommonModule, ListPageComponent, TranslateModule, ListCellTemplateDirective, ListRowActionsDirective],
+  imports: [CommonModule, OverlayModule, ListPageComponent, TranslateModule, ListCellTemplateDirective, ListRowActionsDirective],
   providers: [ProductsListStateService],
   templateUrl: './products-list.component.html',
   styleUrl: './products-list.component.scss'
@@ -32,7 +35,6 @@ import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/conf
 export class ProductsListComponent implements OnInit {
   private router = inject(Router);
   private productsService = inject(ProductsService);
-  private sidePanel = inject(ProductsSidePanelService);
   private state = inject(ProductsListStateService);
   private lang = inject(LanguageService);
   private privileges = inject(PrivilegeService);
@@ -104,8 +106,6 @@ export class ProductsListComponent implements OnInit {
   emptyState = {
     title: '',
     message: '',
-    actionLabel: '',
-    actionHandler: () => this.addNewProduct('inventory')
   };
 
   async ngOnInit(): Promise<void> {
@@ -126,6 +126,7 @@ export class ProductsListComponent implements OnInit {
         customTemplate: true,
         locked: true,
         primary: true,
+        interactive: true,
         visible: true,
         order: 0
       },
@@ -159,7 +160,8 @@ export class ProductsListComponent implements OnInit {
         label: this.lang.instant('PRODUCTS.FIELDS.QTY'),
         sortable: true,
         width: '100px',
-        customTemplate: true
+        customTemplate: true,
+        interactive: true,
       },
       // Stock Value - conditional on permission
       ...(this.privileges.check('productSecurity.actions.viewStockValue.access') ? [{
@@ -184,7 +186,6 @@ export class ProductsListComponent implements OnInit {
         sortable: true,
         customTemplate: true,
         width: '120px',
-        locked: true,
         primary: true,
         visible: true
       }
@@ -400,8 +401,6 @@ export class ProductsListComponent implements OnInit {
     this.emptyState = {
       title: this.lang.instant('PRODUCTS.EMPTY_STATE.TITLE'),
       message: this.lang.instant('PRODUCTS.EMPTY_STATE.MESSAGE'),
-      actionLabel: this.lang.instant('PRODUCTS.EMPTY_STATE.ACTION'),
-      actionHandler: () => this.addNewProduct('inventory')
     };
   }
 
@@ -427,13 +426,22 @@ export class ProductsListComponent implements OnInit {
   };
 
   private transformFilters(filters: any): any {
-    const tags = filters.tags;
+    // `types` is a checkbox-group filter — always serialize as an array. When
+    // the URL restore sees a single value it hands back a bare string
+    // (`filter_types=kit` → `"kit"`), so coerce here.
     return {
-      type: filters.types || [],
+      type:        this.toArray(filters.types),
       departments: filters.departmentId ? [filters.departmentId] : [],
-      categories: filters.categoryId ? [filters.categoryId] : [],
-      tags: Array.isArray(tags) ? tags : (tags ? [tags] : [])
+      categories:  filters.categoryId   ? [filters.categoryId]   : [],
+      tags:        this.toArray(filters.tags),
     };
+  }
+
+  /** Accepts array / scalar / nullish and returns a clean string array. */
+  private toArray(value: unknown): string[] {
+    if (Array.isArray(value)) return value as string[];
+    if (value === null || value === undefined || value === '') return [];
+    return [String(value)];
   }
 
   getTypeKey(type: string): string {
@@ -458,9 +466,59 @@ export class ProductsListComponent implements OnInit {
   }
 
   onRowClick(event: any): void {
-    if (event.row.type !== 'matrix') {
-      this.openSidePanel(event.row);
+    // Matrix parents toggle their expansion via the chevron in the `name`
+    // column template, so a click on the row body itself should do nothing.
+    if (event.row?.type === 'matrix') return;
+
+    // Route by column: the Qty badge opens the stock breakdown modal; every
+    // other column (or a click outside a column) opens the details drawer.
+    if (event.column?.key === 'qtySum') {
+      this.openStockModal(event.row);
+      return;
     }
+    this.openProductDrawer(event.row);
+  }
+
+  private openStockModal(row: any): void {
+    if (!row) return;
+    const productId = row.id ?? row._id;
+    if (!productId) return;
+    this.modalService.open<ProductStockModalComponent, ProductStockModalData, any>(
+      ProductStockModalComponent,
+      {
+        // Wider modal for the kit build/break flow which has a nested table.
+        size: row.type === 'kit' ? 'lg' : 'md',
+        data: {
+          productId,
+          productName: row.name,
+          productType: row.type,
+          qtySum: row.inventorySummary?.qtySum ?? 0,
+        },
+      },
+    );
+  }
+
+  private openProductDrawer(row: any): void {
+    if (!row) return;
+    // Parent rows carry `id`; child rows (matrix variants loaded lazily) may
+    // carry `id` or `_id` depending on the API shape.
+    const productId = row.id ?? row._id;
+    if (!productId) return;
+
+    this.modalService.open<ProductDetailDrawerComponent, ProductDetailDrawerData, void>(
+      ProductDetailDrawerComponent,
+      {
+        drawer: true,
+        drawerWidth: '905px',
+        drawerResizable: true,
+        drawerMinWidth: 905,
+        data: {
+          productId,
+          isChild: !!row.parentId || !!row.parent_id,
+          row,
+        },
+      }
+    );
   }
 
   @HostListener('document:click')
@@ -487,7 +545,9 @@ export class ProductsListComponent implements OnInit {
 
   editProduct(row: any, event: Event): void {
     event.stopPropagation();
-    this.router.navigate(['/products/form', row.id]);
+    // Route pattern: /products/form/:type/:id
+    const type = row.type || 'inventory';
+    this.router.navigate(['/products/form', type, row.id]);
   }
 
   async printLabel(row: any, event: Event): Promise<void> {
@@ -580,7 +640,8 @@ export class ProductsListComponent implements OnInit {
   }
 
   addNewProduct(type: string): void {
-    this.router.navigate(['/products/form/0'], { queryParams: { type } });
+    // Route pattern: /products/form/:type/:id (id = 'new' to create)
+    this.router.navigate(['/products/form', type, 'new']);
   }
 
   openImportExport(): void {
@@ -635,17 +696,4 @@ export class ProductsListComponent implements OnInit {
     return params;
   }
 
-  private openSidePanel(product: any): void {
-    if (product.type !== 'matrix') {
-      const showHistory = ['batch', 'serialized', 'inventory', 'kit'].includes(product.type);
-
-      // Signal service - NO Store!
-      this.sidePanel.open({
-        productId: product.id,
-        showHistory,
-        supplierName: '',
-        supplierId: ''
-      });
-    }
-  }
 }

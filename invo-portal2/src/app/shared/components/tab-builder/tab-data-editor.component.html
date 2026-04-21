@@ -1,0 +1,309 @@
+<div class="td-grid">
+  <!-- ═══ Left column: active tabs list ═══════════════════════════════════ -->
+  <aside class="td-list">
+    @if (activeTemplates().length === 0) {
+      <div class="td-empty">
+        <p>{{ 'TAB_BUILDER.NO_ACTIVE_TABS' | translate }}</p>
+      </div>
+    } @else {
+      <ul class="td-list__body">
+        @for (tpl of activeTemplates(); track tpl.id) {
+          <li
+            class="td-row"
+            [class.td-row--selected]="activeTemplate()?.abbr === tpl.abbr"
+            (click)="select(tpl.abbr)"
+          >
+            <span class="td-row__icon">
+              <app-tab-type-icon [type]="tpl.type" [size]="16"/>
+            </span>
+            <div class="td-row__text">
+              <p class="td-row__name">{{ tpl.name }}</p>
+              <p class="td-row__meta">{{ typeKey(tpl.type) | translate }}</p>
+            </div>
+            @if (hasData(tpl.abbr)) {
+              <svg class="td-row__check" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </aside>
+
+  <!-- ═══ Right column: data editor ═══════════════════════════════════════ -->
+  @if (activeTemplate(); as tpl) {
+    <section class="td-editor">
+      <header class="td-editor__header">
+        <h3 class="td-editor__title">{{ tpl.name }}</h3>
+        <span class="chip chip--slate">tabs.{{ tpl.abbr }}</span>
+      </header>
+
+      <div class="td-editor__body">
+        <!-- ─── Specs ─────────────────────────────────────────────── -->
+        @if (tpl.type === 'specs') {
+          @if (!tpl.specFields || tpl.specFields.length === 0) {
+            <p class="muted">{{ 'TAB_BUILDER.NO_SPEC_FIELDS_PROD' | translate }}</p>
+          }
+          @for (f of tpl.specFields; track f.id) {
+            <div class="field">
+              <label class="field__label">
+                {{ f.label }}
+                @if (f.required) { <span class="req">*</span> }
+              </label>
+
+              @switch (f.type) {
+                @case ('select') {
+                  <app-search-dropdown
+                    [items]="f.options || []"
+                    [searchable]="(f.options?.length || 0) > 8"
+                    [value]="specValue(tpl.abbr, f) || null"
+                    (valueChange)="updateSpec(tpl.abbr, f.abbr, $event)"
+                    [placeholder]="'TAB_BUILDER.SELECT_PLACEHOLDER' | translate"
+                  />
+                }
+                @case ('multiselect') {
+                  <div class="multi">
+                    @for (opt of f.options; track opt) {
+                      <label class="multi__opt">
+                        <input type="checkbox"
+                          [checked]="isOptionSelected(tpl.abbr, f, opt)"
+                          (change)="toggleMulti(tpl.abbr, f, opt, $any($event.target).checked)"/>
+                        <span>{{ opt }}</span>
+                      </label>
+                    }
+                  </div>
+                }
+                @case ('number') {
+                  <input class="input" type="number"
+                    [ngModel]="specValue(tpl.abbr, f)"
+                    (ngModelChange)="updateSpec(tpl.abbr, f.abbr, $event)"
+                    [placeholder]="'TAB_BUILDER.ENTER' | translate: { value: f.label }"/>
+                }
+                @default {
+                  <input class="input" type="text"
+                    [ngModel]="specValue(tpl.abbr, f)"
+                    (ngModelChange)="updateSpec(tpl.abbr, f.abbr, $event)"
+                    [placeholder]="'TAB_BUILDER.ENTER' | translate: { value: f.label }"/>
+                }
+              }
+            </div>
+          }
+        }
+
+        <!-- ─── Vehicle ───────────────────────────────────────────── -->
+        @if (tpl.type === 'vehicle') {
+          @if (tpl.vehicleConfig?.allowUniversal) {
+            <label class="toggle-card">
+              <div class="toggle-card__body">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                     [attr.stroke]="vehicleData(tpl).isUniversal ? '#22c55e' : '#94a3b8'"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="22 4 12 14.01 9 11.01"/><circle cx="12" cy="12" r="10"/>
+                </svg>
+                <div>
+                  <p class="toggle-card__name">{{ 'TAB_BUILDER.UNIVERSAL_FIT' | translate }}</p>
+                  <p class="toggle-card__desc">{{ 'TAB_BUILDER.UNIVERSAL_FIT_DESC' | translate }}</p>
+                </div>
+              </div>
+              <button type="button" class="switch-btn"
+                [class.switch-btn--on]="vehicleData(tpl).isUniversal"
+                (click)="toggleUniversal(tpl)">
+                <span class="switch-btn__thumb"></span>
+              </button>
+            </label>
+          }
+
+          @if (!vehicleData(tpl).isUniversal) {
+            <div class="section__header">
+              <h4>{{ 'TAB_BUILDER.COMPATIBLE_VEHICLES' | translate }} ({{ vehicleData(tpl).vehicles.length }})</h4>
+              <button type="button" class="btn btn-primary btn-sm" (click)="openAddVehicle(tpl)">
+                + {{ 'TAB_BUILDER.ADD_VEHICLE' | translate }}
+              </button>
+            </div>
+
+            @if (vehicleData(tpl).vehicles.length === 0) {
+              <div class="dashed-empty">
+                <p>{{ 'TAB_BUILDER.NO_VEHICLES' | translate }}</p>
+              </div>
+            } @else {
+              <ul class="veh-list">
+                @for (v of vehicleData(tpl).vehicles; track v.id; let i = $index) {
+                  <li class="veh-row">
+                    <div class="veh-row__info">
+                      <p class="veh-row__name">{{ v.makeName }} {{ v.modelName }}</p>
+                      <p class="veh-row__meta">{{ vehicleYears(v) }} · {{ v.engineSize || ('TAB_BUILDER.ALL_ENGINES' | translate) }}</p>
+                    </div>
+                    <button type="button" class="icon-btn icon-btn--danger" (click)="removeVehicle(tpl, i)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      </svg>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          }
+        }
+
+        <!-- ─── Richtext / Custom ─────────────────────────────────── -->
+        @if (tpl.type === 'richtext' || tpl.type === 'custom') {
+          <textarea class="input input--textarea"
+                    rows="10"
+                    [ngModel]="textValue(tpl.abbr)"
+                    (ngModelChange)="updateText(tpl.abbr, $event)"
+                    [placeholder]="tpl.placeholder || ('TAB_BUILDER.ENTER_CONTENT' | translate)"></textarea>
+          <p class="hint">
+            @if (tpl.type === 'custom') { {{ 'TAB_BUILDER.CUSTOM_HINT' | translate }} }
+            @else { {{ 'TAB_BUILDER.RICHTEXT_HINT' | translate }} }
+          </p>
+        }
+
+        <!-- ─── FAQ ───────────────────────────────────────────────── -->
+        @if (tpl.type === 'faq') {
+          <div class="section__header">
+            <h4>{{ 'TAB_BUILDER.FAQ_TITLE' | translate }}</h4>
+            <button type="button" class="btn btn-primary btn-sm" (click)="addFaqEntry(tpl)">
+              + {{ 'TAB_BUILDER.ADD_FAQ' | translate }}
+            </button>
+          </div>
+          @for (entry of faqValue(tpl); track $index; let i = $index) {
+            <div class="faq-card">
+              <input class="input" type="text"
+                     [ngModel]="entry.question"
+                     (ngModelChange)="updateFaq(tpl.abbr, i, { question: $event })"
+                     [placeholder]="'TAB_BUILDER.QUESTION' | translate"/>
+              <textarea class="input input--textarea" rows="2"
+                        [ngModel]="entry.answer"
+                        (ngModelChange)="updateFaq(tpl.abbr, i, { answer: $event })"
+                        [placeholder]="'TAB_BUILDER.ANSWER' | translate"></textarea>
+              <div class="faq-card__footer">
+                <button type="button" class="link-btn link-btn--danger" (click)="removeFaqEntry(tpl, i)">
+                  {{ 'COMMON.DELETE' | translate }}
+                </button>
+              </div>
+            </div>
+          }
+        }
+
+        <!-- ─── Reviews ───────────────────────────────────────────── -->
+        @if (tpl.type === 'review') {
+          <div class="section__header">
+            <h4>
+              {{ 'TAB_BUILDER.REVIEWS' | translate }}
+              @if (reviewValue(tpl).length) {
+                <span class="review-summary">
+                  {{ averageRating(tpl) }} ★ · {{ reviewValue(tpl).length }}
+                </span>
+              }
+            </h4>
+            <button type="button" class="btn btn-primary btn-sm" (click)="addReview(tpl)">
+              + {{ 'TAB_BUILDER.ADD_REVIEW' | translate }}
+            </button>
+          </div>
+
+          @if (reviewValue(tpl).length === 0) {
+            <p class="muted">{{ 'TAB_BUILDER.NO_REVIEWS' | translate }}</p>
+          }
+
+          @for (r of reviewValue(tpl); track $index; let i = $index) {
+            <div class="review-card">
+              <div class="review-card__row">
+                <input class="input" type="text"
+                       [ngModel]="r.author"
+                       (ngModelChange)="updateReview(tpl, i, { author: $event })"
+                       [placeholder]="'TAB_BUILDER.REVIEWER_NAME' | translate"/>
+                <input class="input input--date" type="date"
+                       [ngModel]="r.date"
+                       (ngModelChange)="updateReview(tpl, i, { date: $event })"/>
+              </div>
+
+              <div class="stars">
+                @for (s of REVIEW_STARS; track s) {
+                  <button type="button" class="star-btn"
+                          [class.star-btn--on]="r.rating >= s"
+                          (click)="updateReview(tpl, i, { rating: s })"
+                          [attr.aria-label]="s + ' ' + ('TAB_BUILDER.STARS' | translate)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+
+              <input class="input" type="text"
+                     [ngModel]="r.title"
+                     (ngModelChange)="updateReview(tpl, i, { title: $event })"
+                     [placeholder]="'TAB_BUILDER.REVIEW_TITLE' | translate"/>
+
+              <textarea class="input input--textarea" rows="2"
+                        [ngModel]="r.comment"
+                        (ngModelChange)="updateReview(tpl, i, { comment: $event })"
+                        [placeholder]="'TAB_BUILDER.REVIEW_COMMENT' | translate"></textarea>
+
+              <div class="review-card__footer">
+                <button type="button" class="link-btn link-btn--danger" (click)="removeReview(tpl, i)">
+                  {{ 'COMMON.DELETE' | translate }}
+                </button>
+              </div>
+            </div>
+          }
+        }
+
+        <!-- ─── Table ─────────────────────────────────────────────── -->
+        @if (tpl.type === 'table') {
+          <div class="section__header">
+            <h4>{{ 'TAB_BUILDER.TABLE_TITLE' | translate }}</h4>
+            <div class="btn-group">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="addRow(tpl)">
+                + {{ 'TAB_BUILDER.ADD_ROW' | translate }}
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm" (click)="addColumn(tpl)">
+                + {{ 'TAB_BUILDER.ADD_COLUMN' | translate }}
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  @for (h of tableValue(tpl).headers; track $index; let i = $index) {
+                    <th>
+                      <input class="input input--header" type="text"
+                             [ngModel]="h" (ngModelChange)="updateHeader(tpl, i, $event)"/>
+                      <button type="button" class="icon-btn icon-btn--xs icon-btn--danger"
+                              (click)="removeColumn(tpl, i)">×</button>
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of tableValue(tpl).rows; track $index; let r = $index) {
+                  <tr>
+                    @for (cell of row; track $index; let c = $index) {
+                      <td>
+                        <input class="input input--cell" type="text"
+                               [ngModel]="cell" (ngModelChange)="updateCell(tpl, r, c, $event)"/>
+                      </td>
+                    }
+                    <td class="row-actions">
+                      <button type="button" class="icon-btn icon-btn--xs icon-btn--danger"
+                              (click)="removeRow(tpl, r)">×</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </section>
+  } @else {
+    <section class="td-editor td-editor--empty">
+      <p>{{ 'TAB_BUILDER.NO_ACTIVE_TABS_HINT' | translate }}</p>
+    </section>
+  }
+</div>

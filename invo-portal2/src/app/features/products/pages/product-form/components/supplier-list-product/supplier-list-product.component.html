@@ -1,0 +1,115 @@
+<section class="pf-card">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="8.5" cy="7" r="4"/>
+        <path d="M20 8v6m3-3l-3 3-3-3"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">
+      {{ 'PRODUCTS.FORM.SUPPLIERS' | translate }}
+      @if (fieldsOptions()?.suppliers?.isRequired && selectedCount() === 0) {
+        <span class="pf-required">*</span>
+      }
+    </h2>
+  </header>
+
+  <div class="pf-card__body">
+    <!-- Search + Select button -->
+    <div class="pf-sl-toolbar">
+      @if (productInfo().suppliers.length) {
+        <label class="pf-sl-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            [value]="searchTerm()"
+            (input)="onSearchInput($any($event.target).value)"
+            [placeholder]="'COMMON.SEARCH' | translate"
+          />
+          @if (searchTerm()) {
+            <button type="button" class="pf-sl-clear" (click)="clearSearch()" [attr.aria-label]="'COMMON.CLEAR_ALL' | translate">✕</button>
+          }
+        </label>
+      } @else {
+        <span class="pf-sl-empty">{{ 'PRODUCTS.FORM.NO_SUPPLIERS_YET' | translate }}</span>
+      }
+      <button
+        type="button"
+        class="pf-btn pf-btn--outline"
+        (click)="openPickSupplier()"
+        [disabled]="fieldsOptions()?.suppliers?.isDisabled"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        {{ 'PRODUCTS.FORM.SELECT_SUPPLIERS' | translate }}
+      </button>
+    </div>
+
+    <!-- Rows -->
+    @if (visible().length > 0) {
+      <div class="pf-sl-table">
+        <div class="pf-sl-row pf-sl-row--head">
+          <div class="pf-sl-col pf-sl-col--name">{{ 'PRODUCTS.FORM.SUPPLIER_NAME' | translate }}</div>
+          <div class="pf-sl-col">{{ 'PRODUCTS.FORM.SUPPLIER_CODE' | translate }}</div>
+          <div class="pf-sl-col">{{ 'PRODUCTS.FORM.MIN_ORDER' | translate }}</div>
+          <div class="pf-sl-col">{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</div>
+          <div class="pf-sl-col pf-sl-col--action"></div>
+        </div>
+
+        @for (entry of visible(); track entry.s.supplierId; let i = $index) {
+          @let group = rowForAbs(entry.absIdx);
+          @if (group) {
+            <div class="pf-sl-row" [formGroup]="group">
+              <div class="pf-sl-col pf-sl-col--name">
+                <div class="pf-sl-name">{{ entry.s.supplierName }}</div>
+              </div>
+              <div class="pf-sl-col">
+                <input
+                  type="text"
+                  class="pf-input"
+                  formControlName="code"
+                  [class.pf-input--invalid]="group.controls['code'].touched && group.controls['code'].invalid"
+                />
+              </div>
+              <div class="pf-sl-col">
+                <input
+                  type="number"
+                  class="pf-input"
+                  formControlName="minimumOrder"
+                  min="0"
+                  [class.pf-input--invalid]="group.controls['minimumOrder'].touched && group.controls['minimumOrder'].invalid"
+                />
+              </div>
+              <div class="pf-sl-col">
+                <input
+                  type="number"
+                  class="pf-input"
+                  formControlName="cost"
+                  min="0"
+                  [class.pf-input--invalid]="group.controls['cost'].touched && group.controls['cost'].invalid"
+                />
+              </div>
+              <div class="pf-sl-col pf-sl-col--action">
+                <button
+                  type="button"
+                  class="pf-sl-delete"
+                  (click)="removeSupplier(entry.absIdx)"
+                  [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+</section>

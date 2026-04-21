@@ -211,7 +211,7 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
                 <svg class="fav-item-star" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
-                <a [routerLink]="fav.link" class="fav-item-label" (click)="favOpen.set(false)">{{ fav.label }}</a>
+                <a [routerLink]="fav.link" class="fav-item-label" (click)="favOpen.set(false)">{{ fav.labelKey ? (fav.labelKey | translate) : fav.label }}</a>
                 <button class="fav-item-edit" (click)="startEdit(fav)" title="Rename">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -242,7 +242,7 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                   </svg>
-                  {{ r.label }}
+                  {{ r.labelKey ? (r.labelKey | translate) : r.label }}
                 </button>
               }
             </div>
@@ -285,7 +285,7 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
                  fill="currentColor" stroke="currentColor" stroke-width="2">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
             </svg>
-            <span class="mobile-sheet-label">{{ fav.label }}</span>
+            <span class="mobile-sheet-label">{{ fav.labelKey ? (fav.labelKey | translate) : fav.label }}</span>
             <button class="mobile-sheet-remove" (click)="removeFavMobile(fav.link, $event)">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -622,7 +622,18 @@ export class TopbarComponent {
   });
 
   favTabs     = computed(() => this.favsService.favorites());
-  recentPages = computed(() => this.favsService.recentPages());
+  // Different routes can share the same menu label (e.g. multiple list pages
+  // translated as "Product List"). Collapse same-named entries to the most
+  // recent one so the dropdown doesn't repeat identical-looking chips.
+  recentPages = computed(() => {
+    const seen = new Set<string>();
+    return this.favsService.recentPages().filter(p => {
+      const key = p.labelKey || p.label;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  });
   isCurrentPageFavorited = computed(() => this.favsService.isFavorite(this.router.url));
 
   constructor() {
@@ -671,8 +682,13 @@ export class TopbarComponent {
     const flat  = SIDE_MENU.flatMap((m: any) => m.subItems ?? [m]);
     const found = flat.find((i: any) => i.link === url);
     const key   = found?.label ?? url.split('/').pop() ?? url;
-    const label = this.translateSvc.instant(key) !== key ? this.translateSvc.instant(key) : key;
-    this.favsService.addFavorite({ label, link: url });
+    const translated = this.translateSvc.instant(key);
+    const hasKey = translated !== key;
+    this.favsService.addFavorite({
+      label: hasKey ? translated : key,
+      labelKey: hasKey ? key : undefined,
+      link: url,
+    });
   }
 
   addFavFromRecent(r: FavTab): void { this.favsService.addFavorite(r); }

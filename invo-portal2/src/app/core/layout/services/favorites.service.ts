@@ -1,7 +1,16 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { EmployeeOptionsService } from './employee-options.service';
 
-export interface FavPage { label: string; link: string; }
+export interface FavPage {
+  /** Fallback label (plain text) for when no translation key is available or
+   *  the user has renamed the favorite. */
+  label: string;
+  /** i18n key for the page's name. Preferred over `label` at render time so
+   *  the favorite re-translates when the UI language changes. Absent on
+   *  user-renamed favorites. */
+  labelKey?: string;
+  link: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class FavoritesService {
@@ -43,8 +52,9 @@ export class FavoritesService {
   }
 
   updateFavorite(link: string, label: string): void {
+    // User-provided rename → drop the i18n key so the custom text sticks.
     this.favorites.update(fs =>
-      fs.map(f => f.link === link ? { ...f, label } : f)
+      fs.map(f => f.link === link ? { ...f, label, labelKey: undefined } : f)
     );
     this.save();
   }

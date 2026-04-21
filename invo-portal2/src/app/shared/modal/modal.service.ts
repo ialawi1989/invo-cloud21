@@ -17,6 +17,18 @@ export interface ModalConfig<D = any> {
   drawer?:          boolean;
   /** Drawer width, default 340px */
   drawerWidth?:     string;
+  /** Allow the user to resize the drawer. Only has effect when `drawer: true`.
+   *  Master toggle for both axes — can be overridden per axis via
+   *  `drawerResizableWidth` (desktop) and `drawerResizableHeight` (mobile). */
+  drawerResizable?: boolean;
+  /** Desktop-only resize override. Defaults to `drawerResizable`. */
+  drawerResizableWidth?:  boolean;
+  /** Mobile-only resize override. Defaults to `drawerResizable`. */
+  drawerResizableHeight?: boolean;
+  /** Minimum drawer width while resizing, in px (default 280). */
+  drawerMinWidth?:  number;
+  /** Maximum drawer width while resizing, in px (default: min(viewport - 40, 1200)). */
+  drawerMaxWidth?:  number;
   /** Extra providers to inject into the modal component */
   providers?:       StaticProvider[];
 }
@@ -136,6 +148,11 @@ export class ModalService {
       panelClass,
       drawer          = false,
       drawerWidth     = '340px',
+      drawerResizable = false,
+      drawerResizableWidth,
+      drawerResizableHeight,
+      drawerMinWidth,
+      drawerMaxWidth,
     } = config;
 
     const isRtl = document.documentElement.dir === 'rtl' ||
@@ -161,12 +178,31 @@ export class ModalService {
     overlayRef.detachments().subscribe(() => {
       const idx = this.openModals.indexOf(modalRef);
       if (idx >= 0) this.openModals.splice(idx, 1);
-      // When the last modal closes via normal means (not back-button), we
-      // need to consume the sentinel history entry so a future back press
-      // actually navigates rather than being eaten by nothing.
       if (this.openModals.length === 0 && this.historyPushed && !this.dismissingFromPopstate) {
         this.historyPushed = false;
-        history.back();
+        // IMPORTANT: defer to a macrotask.
+        //
+        // Subscriptions to `detachments()` fire in subscription order, so
+        // this cleanup runs BEFORE the consumer's `afterClosed().then(...)`
+        // handler. If that handler calls `router.navigate(...)` (e.g. the
+        // filter modal's Apply path calls `applyFilters` → `syncStateToUrl`),
+        // the router hasn't pushed its new history entry yet — so a sync
+        // `history.back()` here would rewind to the sentinel before the
+        // new URL ever lands, and Angular Router's popstate listener would
+        // then navigate back to the original URL. That's the "address bar
+        // flashes and reverts" bug.
+        //
+        // By deferring with setTimeout(0) we let the afterClosed handler run
+        // and the router complete its pushState. Then we re-check whether
+        // the top of the history stack is still our sentinel — if yes,
+        // nothing else navigated and it's safe to consume it; if no, an
+        // app-initiated navigation pushed a new entry and we leave history
+        // alone.
+        setTimeout(() => {
+          if (history.state && history.state.invoModal) {
+            history.back();
+          }
+        }, 0);
       }
     });
 
@@ -192,6 +228,11 @@ export class ModalService {
       ref.instance.contentComponent  = component as Type<any>;
       ref.instance.contentInjector   = contentInjector;
       ref.instance.isRtl             = isRtl;
+      ref.instance.resizable         = drawerResizable;
+      if (drawerResizableWidth  !== undefined) ref.instance.resizableWidth  = drawerResizableWidth;
+      if (drawerResizableHeight !== undefined) ref.instance.resizableHeight = drawerResizableHeight;
+      if (drawerMinWidth !== undefined) ref.instance.minWidth = drawerMinWidth;
+      if (drawerMaxWidth !== undefined) ref.instance.maxWidth = drawerMaxWidth;
       ref.changeDetectorRef.detectChanges();
     } else {
       const portal = new ComponentPortal(ModalContainerComponent, null, this.injector);

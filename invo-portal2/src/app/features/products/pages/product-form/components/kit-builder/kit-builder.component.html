@@ -1,0 +1,67 @@
+<section class="pf-card">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.KIT_BUILDER' | translate }}</h2>
+    <div class="pf-kb-total">
+      {{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}:
+      <strong>{{ totalCost() | number:'1.0-3' }}</strong>
+    </div>
+  </header>
+
+  <div class="pf-card__body">
+    <button type="button" class="pf-btn pf-btn--outline" (click)="openPicker()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      {{ 'PRODUCTS.FORM.ADD_KIT_ITEMS' | translate }}
+    </button>
+
+    @if (rows.length === 0) {
+      <p class="pf-hint pf-kb-empty">{{ 'PRODUCTS.FORM.NO_KIT_ITEMS_YET' | translate }}</p>
+    } @else {
+      <div class="pf-kb-head">
+        <span>{{ 'PRODUCTS.FORM.COMPONENT' | translate }}</span>
+        <span>{{ 'PRODUCTS.FIELDS.QTY' | translate }}</span>
+        <span>{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</span>
+        <span>{{ 'PRODUCTS.FORM.LINE_TOTAL' | translate }}</span>
+        <span></span>
+      </div>
+
+      @for (row of rows.controls; track row.value['id']; let i = $index) {
+        <div class="pf-kb-row" [formGroup]="rowAt(i)">
+          <div class="pf-kb-name">
+            <div class="pf-kb-name__title">{{ row.value['name'] }}</div>
+            @if (row.value['UOM']) { <div class="pf-kb-name__uom">{{ row.value['UOM'] }}</div> }
+          </div>
+          <input
+            type="number"
+            class="pf-input"
+            formControlName="qty"
+            min="0"
+            [class.pf-input--invalid]="rowAt(i).controls['qty'].touched && rowAt(i).controls['qty'].invalid"
+          />
+          <div class="pf-readonly">{{ row.value['unitCost'] | number:'1.0-3' }}</div>
+          <div class="pf-readonly">
+            {{ ((row.value['unitCost'] ?? 0) * (row.value['qty'] ?? 0)) | number:'1.0-3' }}
+          </div>
+          <button
+            type="button"
+            class="pf-kb-remove"
+            (click)="removeRow(i)"
+            [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+        </div>
+      }
+    }
+  </div>
+</section>

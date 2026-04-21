@@ -1,0 +1,25 @@
+<section class="pf-card" [formGroup]="group">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.MEASUREMENTS' | translate }}</h2>
+  </header>
+
+  <div class="pf-card__body pf-ms-grid">
+    @for (key of keys; track key) {
+      @if (isVisible(key)) {
+        <label class="pf-ms-row">
+          <input type="checkbox" [formControlName]="key"/>
+          <span>{{ labelKey(key) | translate }}</span>
+        </label>
+      }
+    }
+
+    @if (!atLeastOne()) {
+      <p class="pf-error pf-ms-warn">{{ 'PRODUCTS.FORM.AT_LEAST_ONE_MEASUREMENT' | translate }}</p>
+    }
+  </div>
+</section>

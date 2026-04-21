@@ -95,7 +95,12 @@
           </svg>
         </button>
       }
-      <span class="font-medium text-slate-900 truncate min-w-0">{{ row.name }}</span>
+      <!-- `list-interactive-cell` mirrors the column-level `interactive` flag
+           for custom templates — keeps hover styling consistent with the
+           shared cellContent renderer.
+           Table view truncates via the `<td>`'s `truncate` style; grid view
+           lets the name wrap to multiple lines (`break-words`). -->
+      <span class="font-medium text-slate-900 min-w-0 break-words list-interactive-cell">{{ row.name }}</span>
     </div>
   </ng-template>
 
@@ -108,9 +113,9 @@
     }
   </ng-template>
 
-  <!-- Custom Qty Template -->
+  <!-- Custom Qty Template — badge is clickable (opens stock breakdown modal). -->
   <ng-template listCellTemplate="qtySum" let-row>
-    <span class="inline-flex px-2 py-1 rounded-lg text-sm font-medium bg-blue-50 text-blue-700">
+    <span class="inline-flex px-2 py-1 rounded-lg text-sm font-medium bg-brand-50 text-brand-700 list-interactive-cell">
       {{ row.inventorySummary?.qtySum || 0 }}
     </span>
   </ng-template>
@@ -123,24 +128,49 @@
     </span>
   </ng-template>
 
-  <!-- Row Actions Dropdown -->
+  <!-- Row Actions — Edit pill (hover-only on desktop, always on mobile) +
+       overflow menu that holds the rest. CDK overlay portals the menu out
+       of the enclosing card so `overflow-hidden` (used by grid cards for
+       rounded corners) doesn't clip it. -->
   <ng-template listRowActions let-row>
-    <div class="relative" (click)="$event.stopPropagation()">
-      <button type="button" (click)="toggleRowMenu(row, $event)"
-        class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="inline-flex items-center gap-2" (click)="$event.stopPropagation()">
+      <!-- Inline Edit — pill button. Opacity 1 on mobile; hover-reveal on md+. -->
+      <button type="button"
+        (click)="editProduct(row, $event)"
+        style="box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.25), 0 2px 6px -2px rgba(15, 23, 42, 0.12);"
+        class="px-4 py-1.5 rounded-full bg-brand-600 text-white text-xs font-semibold
+               hover:bg-brand-700 transition-all
+               md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100">
+        {{ 'COMMON.ACTIONS.EDIT' | translate }}
+      </button>
+
+      <!-- Overflow menu (⋯) — circular floating button, always visible -->
+      <button type="button"
+        cdkOverlayOrigin
+        #menuOrigin="cdkOverlayOrigin"
+        (click)="toggleRowMenu(row, $event)"
+        style="box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.2), 0 2px 6px -2px rgba(15, 23, 42, 0.1);"
+        class="w-9 h-9 inline-flex items-center justify-center rounded-full
+               bg-white text-slate-500 border border-slate-200
+               hover:text-brand-600 hover:border-brand-300 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
         </svg>
       </button>
-      @if (openMenuRowId() === (row.id || row._id)) {
-        <div class="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1 animate-in fade-in slide-in-from-top-1 duration-100">
-          <button type="button" (click)="editProduct(row, $event); closeRowMenu()"
-            class="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-            </svg>
-            {{ 'COMMON.ACTIONS.EDIT' | translate }}
-          </button>
+
+      <ng-template
+        cdkConnectedOverlay
+        [cdkConnectedOverlayOrigin]="menuOrigin"
+        [cdkConnectedOverlayOpen]="openMenuRowId() === (row.id || row._id)"
+        [cdkConnectedOverlayHasBackdrop]="true"
+        cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+        [cdkConnectedOverlayPositions]="[
+          { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top',    offsetY: 4 },
+          { originX: 'end', originY: 'top',    overlayX: 'end', overlayY: 'bottom', offsetY: -4 }
+        ]"
+        (backdropClick)="closeRowMenu()"
+        (detach)="closeRowMenu()">
+        <div class="w-44 bg-white border border-slate-200 rounded-xl shadow-lg py-1 animate-in fade-in slide-in-from-top-1 duration-100">
           <button type="button" (click)="printLabel(row, $event); closeRowMenu()"
             class="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,7 +194,7 @@
             {{ 'COMMON.ACTIONS.DELETE' | translate }}
           </button>
         </div>
-      }
+      </ng-template>
     </div>
   </ng-template>
 </app-list-page>

@@ -1,0 +1,71 @@
+<app-modal-header [title]="data.title ?? ('PRODUCTS.FORM.PICK_PRODUCTS' | translate)"/>
+
+<div class="ppm-body">
+  <label class="ppm-search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input
+      type="text"
+      [value]="search()"
+      (input)="onSearchInput($any($event.target).value)"
+      [placeholder]="'COMMON.SEARCH' | translate"
+    />
+  </label>
+
+  <div class="ppm-list">
+    @if (visible().length === 0 && !loading()) {
+      <div class="ppm-empty">{{ 'COMMON.NO_DATA' | translate }}</div>
+    }
+
+    @for (row of visible(); track row.id) {
+      <label class="ppm-row" [class.ppm-row--selected]="isSelected(row.id)">
+        <input
+          [type]="multiple() ? 'checkbox' : 'radio'"
+          name="pickProductRow"
+          [checked]="isSelected(row.id)"
+          (change)="toggle(row.id)"
+        />
+        <div class="ppm-row__main">
+          <div class="ppm-row__name">{{ row.name }}</div>
+          <div class="ppm-row__meta">
+            @if (row.barcode) { <span>{{ row.barcode }}</span> }
+            @if (row.sku)     { <span>· {{ row.sku }}</span> }
+            @if (row.UOM)     { <span>· {{ row.UOM }}</span> }
+          </div>
+        </div>
+        @if (row.unitCost != null) {
+          <div class="ppm-row__cost">{{ row.unitCost | number:'1.0-3' }}</div>
+        }
+      </label>
+    }
+
+    @if (hasMore()) {
+      <button type="button" class="ppm-more" (click)="loadMore()" [disabled]="loading()">
+        @if (loading()) { <span class="ppm-spinner" aria-hidden="true"></span> }
+        {{ 'COMMON.LOAD_MORE' | translate }}
+      </button>
+    }
+  </div>
+</div>
+
+<footer class="ppm-footer">
+  <div class="ppm-footer__count">
+    {{ 'COMMON.SELECTED_COUNT' | translate: { count: selectedCount() } }}
+  </div>
+  <div class="ppm-footer__actions">
+    <button type="button" class="ppm-btn ppm-btn--ghost" (click)="cancel()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    @if (multiple()) {
+      <button
+        type="button"
+        class="ppm-btn ppm-btn--primary"
+        (click)="confirm()"
+        [disabled]="selectedCount() === 0"
+      >
+        {{ 'COMMON.SUBMIT' | translate }}
+      </button>
+    }
+  </div>
+</footer>

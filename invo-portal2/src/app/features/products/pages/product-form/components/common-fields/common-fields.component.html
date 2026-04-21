@@ -1,0 +1,124 @@
+<section class="pf-card" [formGroup]="group">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.PRODUCT' | translate }}</h2>
+  </header>
+
+  <div class="pf-card__body">
+    <!-- Name -->
+    @if (fieldsOptions()?.name?.isVisible) {
+      <div class="pf-field">
+        <label for="pf-name" class="pf-label pf-label--with-action">
+          <span>
+            {{ 'PRODUCTS.FIELDS.NAME' | translate }}
+            @if (fieldsOptions()?.name?.isRequired) { <span class="pf-required">*</span> }
+          </span>
+          <button type="button" class="pf-link" (click)="showNameTranslation()">
+            {{ 'PRODUCTS.ACTIONS.TRANSLATION' | translate }}
+          </button>
+        </label>
+        <input
+          id="pf-name"
+          type="text"
+          class="pf-input"
+          formControlName="name"
+          [class.pf-input--invalid]="c('name').touched && c('name').invalid"
+          [placeholder]="'PRODUCTS.FIELDS.NAME' | translate"
+        />
+        @if (c('name').touched && c('name').errors?.['required']) {
+          <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+        }
+      </div>
+    }
+
+    <!-- Barcode + SKU row -->
+    <div class="pf-row">
+      @if (fieldsOptions()?.barcode?.isVisible) {
+        <div class="pf-field pf-field--half">
+          <label for="pf-barcode" class="pf-label pf-label--with-action">
+            <span>
+              {{ 'PRODUCTS.FIELDS.BARCODE' | translate }}
+              @if (fieldsOptions()?.barcode?.isRequired) { <span class="pf-required">*</span> }
+            </span>
+            @if (barcodeIsEmpty) {
+              <button type="button" class="pf-link" (click)="generateBarcode()">
+                {{ 'PRODUCTS.FORM.GENERATE' | translate }}
+              </button>
+            }
+          </label>
+          <input
+            id="pf-barcode"
+            type="text"
+            class="pf-input"
+            formControlName="barcode"
+            [class.pf-input--invalid]="c('barcode').touched && c('barcode').invalid"
+            [placeholder]="'PRODUCTS.FIELDS.BARCODE' | translate"
+          />
+          @if (c('barcode').touched && c('barcode').errors?.['required']) {
+            <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+          }
+        </div>
+      }
+
+      @if (fieldsOptions()?.SKU?.isVisible) {
+        <div class="pf-field pf-field--half">
+          <label for="pf-sku" class="pf-label">
+            <span>
+              {{ 'PRODUCTS.FIELDS.SKU' | translate }}
+              @if (fieldsOptions()?.SKU?.isRequired) { <span class="pf-required">*</span> }
+            </span>
+            <span class="pf-info-icon" [appTooltip]="'PRODUCTS.FORM.SKU_HINT' | translate" aria-label="SKU info">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4"/>
+                <path d="M12 8h.01"/>
+              </svg>
+            </span>
+          </label>
+          <input
+            id="pf-sku"
+            type="text"
+            class="pf-input"
+            formControlName="sku"
+            [class.pf-input--invalid]="c('sku').touched && c('sku').invalid"
+            [placeholder]="'PRODUCTS.FIELDS.SKU' | translate"
+          />
+          @if (c('sku').touched && c('sku').errors?.['required']) {
+            <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Description -->
+    @if (fieldsOptions()?.description?.isVisible) {
+      <div class="pf-field">
+        <label for="pf-description" class="pf-label pf-label--with-action">
+          <span>
+            {{ 'PRODUCTS.FORM.DESCRIPTION' | translate }}
+            @if (fieldsOptions()?.description?.isRequired) { <span class="pf-required">*</span> }
+          </span>
+          <button type="button" class="pf-link" (click)="showDescriptionTranslation()">
+            {{ 'PRODUCTS.ACTIONS.TRANSLATION' | translate }}
+          </button>
+        </label>
+        <textarea
+          id="pf-description"
+          class="pf-textarea"
+          rows="5"
+          formControlName="description"
+          [class.pf-input--invalid]="c('description').touched && c('description').invalid"
+          [placeholder]="'PRODUCTS.FORM.DESCRIPTION' | translate"
+        ></textarea>
+        @if (c('description').touched && c('description').errors?.['required']) {
+          <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+        }
+      </div>
+    }
+  </div>
+</section>

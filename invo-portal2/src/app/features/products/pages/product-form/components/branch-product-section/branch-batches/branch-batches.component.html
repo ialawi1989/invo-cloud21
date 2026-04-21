@@ -1,0 +1,94 @@
+<div class="bb">
+  <div class="bb__header">
+    <h3 class="bb__title">
+      {{ 'PRODUCTS.FORM.BATCHES' | translate }}
+      <span class="bb__count">({{ array().length }})</span>
+    </h3>
+  </div>
+
+  <div class="bb__controls">
+    <div class="bb__add">
+      <input
+        type="text"
+        class="pf-input"
+        [value]="newBatchName()"
+        (input)="onNewNameInput($any($event.target).value)"
+        (keyup.enter)="addBatch()"
+        [placeholder]="'PRODUCTS.FORM.BATCH_NAME' | translate"
+      />
+      <button
+        type="button"
+        class="bb__add-btn"
+        (click)="addBatch()"
+        [disabled]="!newBatchName().trim()"
+      >
+        {{ 'COMMON.ADD' | translate }}
+      </button>
+    </div>
+    @if (array().length > 0) {
+      <input
+        type="text"
+        class="pf-input bb__search"
+        [value]="search()"
+        (input)="onSearchInput($any($event.target).value)"
+        [placeholder]="'COMMON.SEARCH' | translate"
+      />
+    }
+  </div>
+  @if (error() === 'DUPLICATE') {
+    <p class="pf-error">{{ 'PRODUCTS.FORM.BATCH_DUPLICATE' | translate }}</p>
+  }
+
+  @if (visibleIndices().length === 0) {
+    <p class="bb__empty">{{ 'PRODUCTS.FORM.NO_BATCHES_YET' | translate }}</p>
+  } @else {
+    <div class="bb__head">
+      <span>{{ 'PRODUCTS.FORM.BATCH_NAME' | translate }}</span>
+      <span>{{ 'PRODUCTS.FIELDS.BARCODE' | translate }}</span>
+      <span>{{ 'PRODUCTS.FIELDS.QTY' | translate }}</span>
+      <span>{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</span>
+      <span>{{ 'PRODUCTS.FORM.PROD_DATE' | translate }}</span>
+      <span>{{ 'PRODUCTS.FORM.EXPIRE_DATE' | translate }}</span>
+      <span></span>
+    </div>
+
+    @for (idx of visibleIndices(); track idx) {
+      <div class="bb__row" [formGroup]="rowAt(idx)" [class.bb__row--invalid]="hasDateError(idx)">
+        <input
+          type="text"
+          class="pf-input"
+          formControlName="batch"
+          [class.pf-input--invalid]="rowAt(idx).controls['batch'].touched && rowAt(idx).controls['batch'].invalid"
+        />
+        <input type="text" class="pf-input" formControlName="barcode"/>
+        <input
+          type="number"
+          class="pf-input"
+          formControlName="onHand"
+          min="0"
+          [class.pf-input--invalid]="rowAt(idx).controls['onHand'].touched && rowAt(idx).controls['onHand'].invalid"
+        />
+        <input type="number" class="pf-input" formControlName="unitCost" min="0"/>
+        <app-date-picker formControlName="prodDate" [placeholder]="'PRODUCTS.FORM.PICK_DATE' | translate"/>
+        <app-date-picker formControlName="expireDate" [placeholder]="'PRODUCTS.FORM.PICK_DATE' | translate"/>
+        <button
+          type="button"
+          class="bb__remove"
+          (click)="removeAt(idx)"
+          [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
+
+        @if (hasDateError(idx)) {
+          <p class="pf-error bb__row-error">
+            {{ 'PRODUCTS.FORM.EXPIRE_BEFORE_PROD' | translate }}
+          </p>
+        }
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,157 @@
+<section class="pf-card" [formGroup]="group">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="1" x2="12" y2="23"/>
+        <path d="M17 5H9.5A3.5 3.5 0 0 0 9.5 12h5a3.5 3.5 0 0 1 0 7H6"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.PRICING.TITLE' | translate }}</h2>
+  </header>
+
+  <div class="pf-card__body">
+
+    <!-- Default price + compare-at -->
+    @if (fieldsOptions()?.pricing?.defaultPrice?.isVisible || fieldsOptions()?.pricing?.compareAtPrice?.isVisible) {
+      <div class="pf-row">
+        @if (fieldsOptions()?.pricing?.defaultPrice?.isVisible) {
+          <div class="pf-field pf-field--half">
+            <label for="pf-default-price" class="pf-label">
+              {{ 'PRODUCTS.PRICING.DEFAULT_PRICE' | translate }}
+              @if (fieldsOptions()?.pricing?.defaultPrice?.isRequired) { <span class="pf-required">*</span> }
+            </label>
+
+            @if (hideDefaultPriceInput()) {
+              <div class="pf-readonly">
+                <strong>{{ totalPriceForDisplay() | number:'1.0-3' }}</strong>
+              </div>
+              <p class="pf-hint">{{ 'PRODUCTS.PRICING.PRICE_DERIVED_FROM_SELECTION' | translate }}</p>
+            } @else {
+              <input
+                id="pf-default-price"
+                type="number"
+                class="pf-input"
+                formControlName="defaultPrice"
+                min="0"
+                [class.pf-input--invalid]="c('defaultPrice').touched && c('defaultPrice').invalid"
+              />
+              @if (c('defaultPrice').touched && c('defaultPrice').errors?.['required']) {
+                <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+              }
+              @if (defaultPriceValue() === 0 && !hideDefaultPriceInput()) {
+                <p class="pf-hint">{{ 'PRODUCTS.PRICING.ITEM_WILL_BE_FREE' | translate }}</p>
+              }
+            }
+          </div>
+        }
+
+        @if (fieldsOptions()?.pricing?.compareAtPrice?.isVisible) {
+          <div class="pf-field pf-field--half">
+            <label for="pf-compare-price" class="pf-label">
+              {{ 'PRODUCTS.PRICING.COMPARE_AT_PRICE' | translate }}
+            </label>
+            <input
+              id="pf-compare-price"
+              type="number"
+              class="pf-input"
+              formControlName="comparePriceAt"
+              min="0"
+            />
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Unit cost + Profit + Margin -->
+    @if (fieldsOptions()?.pricing?.unitCost?.isVisible) {
+      <div class="pf-row pf-row--thirds">
+        <div class="pf-field">
+          <label for="pf-unit-cost" class="pf-label">
+            {{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}
+            @if (fieldsOptions()?.pricing?.unitCost?.isRequired) { <span class="pf-required">*</span> }
+          </label>
+          <input
+            id="pf-unit-cost"
+            type="number"
+            class="pf-input"
+            formControlName="unitCost"
+            min="0"
+            [class.pf-input--invalid]="c('unitCost').touched && c('unitCost').invalid"
+          />
+          @if (productInfo().isChild) {
+            <p class="pf-hint">{{ 'PRODUCTS.PRICING.UNIT_COST_CHILD_HINT' | translate }}</p>
+          }
+        </div>
+
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PRODUCTS.PRICING.PROFIT' | translate }}</label>
+          <div class="pf-readonly" [class.pf-readonly--warn]="profit() < 0">
+            {{ profit() | number:'1.0-3' }}
+          </div>
+          @if (profit() < 0) {
+            <p class="pf-error">{{ 'PRODUCTS.PRICING.PROFIT_LOSS_WARN' | translate }}</p>
+          }
+        </div>
+
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PRODUCTS.PRICING.MARGIN' | translate }}</label>
+          <div class="pf-readonly">{{ margin() | number:'1.0-3' }}%</div>
+        </div>
+      </div>
+    }
+
+    <!-- Tax -->
+    @if (fieldsOptions()?.pricing?.tax?.isVisible) {
+      <div class="pf-field">
+        <label class="pf-label">
+          {{ 'PRODUCTS.PRICING.TAX' | translate }}
+          @if (fieldsOptions()?.pricing?.tax?.isRequired) { <span class="pf-required">*</span> }
+        </label>
+        <app-search-dropdown
+          formControlName="taxId"
+          [loadFn]="loadTaxes"
+          [displayWith]="displayLabel"
+          [compareWith]="compareByValue"
+          [placeholder]="'PRODUCTS.PRICING.CHOOSE_TAX' | translate"
+        />
+        @if (c('taxId').touched && c('taxId').errors?.['required']) {
+          <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+        }
+      </div>
+    }
+
+    <!-- Price model + conditional discount -->
+    @if (fieldsOptions()?.pricing?.priceModel?.isVisible) {
+      <div class="pf-row">
+        <div class="pf-field" [class.pf-field--half]="showDiscount()">
+          <label class="pf-label">{{ 'PRODUCTS.PRICING.PRICE_MODEL' | translate }}</label>
+          <app-search-dropdown
+            formControlName="priceModel"
+            [items]="priceModelOptions"
+            [displayWith]="priceModelDisplay"
+            [compareWith]="compareByValue"
+            [searchable]="false"
+            [clearable]="false"
+            [placeholder]="'PRODUCTS.PRICING.PRICE_MODEL' | translate"
+          />
+        </div>
+
+        @if (showDiscount() && fieldsOptions()?.pricing?.discount?.isVisible) {
+          <div class="pf-field pf-field--half">
+            <label for="pf-discount" class="pf-label">
+              {{ 'PRODUCTS.PRICING.DISCOUNT' | translate }}
+            </label>
+            <input
+              id="pf-discount"
+              type="number"
+              class="pf-input"
+              formControlName="discount"
+              min="0"
+            />
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</section>

@@ -5,6 +5,7 @@ export type {
   DatePickerMode,
   DatePickerView,
   DateDisabledPredicate,
+  DatePreset,
 } from './date-picker.types';
 export { isCompleteRange } from './date-picker.types';
 export {

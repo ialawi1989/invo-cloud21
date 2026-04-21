@@ -1,0 +1,83 @@
+<div class="bs">
+  <div class="bs__header">
+    <h3 class="bs__title">
+      {{ 'PRODUCTS.FORM.SERIALS' | translate }}
+      <span class="bs__count">({{ array().length }})</span>
+    </h3>
+  </div>
+
+  <!-- Add serial + search -->
+  <div class="bs__controls">
+    <div class="bs__add">
+      <input
+        type="text"
+        class="pf-input"
+        [value]="newSerial()"
+        (input)="onNewSerialInput($any($event.target).value)"
+        (keyup.enter)="addSerial()"
+        [placeholder]="'PRODUCTS.FORM.SERIAL_NUMBER' | translate"
+      />
+      <button
+        type="button"
+        class="bs__add-btn"
+        (click)="addSerial()"
+        [disabled]="!newSerial().trim()"
+      >
+        {{ 'COMMON.ADD' | translate }}
+      </button>
+    </div>
+    @if (array().length > 0) {
+      <input
+        type="text"
+        class="pf-input bs__search"
+        [value]="search()"
+        (input)="onSearchInput($any($event.target).value)"
+        [placeholder]="'COMMON.SEARCH' | translate"
+      />
+    }
+  </div>
+  @if (error() === 'DUPLICATE') {
+    <p class="pf-error">{{ 'PRODUCTS.FORM.SERIAL_DUPLICATE' | translate }}</p>
+  }
+
+  <!-- Rows -->
+  @if (visibleIndices().length === 0) {
+    <p class="bs__empty">{{ 'PRODUCTS.FORM.NO_SERIALS_YET' | translate }}</p>
+  } @else {
+    <div class="bs__head">
+      <span>{{ 'PRODUCTS.FORM.SERIAL_NUMBER' | translate }}</span>
+      <span>{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</span>
+      <span>{{ 'PRODUCTS.FORM.EXPIRE_DATE' | translate }}</span>
+      <span></span>
+    </div>
+    @for (idx of visibleIndices(); track idx) {
+      <div class="bs__row" [formGroup]="rowAt(idx)">
+        <input
+          type="text"
+          class="pf-input"
+          formControlName="serial"
+          [class.pf-input--invalid]="rowAt(idx).controls['serial'].touched && rowAt(idx).controls['serial'].invalid"
+        />
+        <input
+          type="number"
+          class="pf-input"
+          formControlName="unitCost"
+          min="0"
+          [class.pf-input--invalid]="rowAt(idx).controls['unitCost'].touched && rowAt(idx).controls['unitCost'].invalid"
+        />
+        <app-date-picker formControlName="expireDate" [placeholder]="'PRODUCTS.FORM.PICK_DATE' | translate"/>
+        <button
+          type="button"
+          class="bs__remove"
+          (click)="removeAt(idx)"
+          [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,91 @@
+<section class="pf-card" [formGroup]="group">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 3v18h18"/><path d="M9 9l3-3 4 4 5-5"/><path d="M21 5h-4v4"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.INVENTORY' | translate }}</h2>
+  </header>
+
+  <div class="pf-card__body">
+    <div class="pf-row">
+      @if (fieldsOptions()?.inventoryDetails?.UOM?.isVisible) {
+        <div class="pf-field pf-field--half">
+          <label class="pf-label">
+            {{ 'PRODUCTS.FORM.UOM' | translate }}
+            @if (fieldsOptions()?.inventoryDetails?.UOM?.isRequired) { <span class="pf-required">*</span> }
+          </label>
+          <app-search-dropdown
+            formControlName="UOM"
+            [items]="uomOptions"
+            [displayWith]="uomDisplay"
+            [compareWith]="compareByValue"
+            [placeholder]="'PRODUCTS.FORM.UOM' | translate"
+          />
+          @if (c('UOM').touched && c('UOM').errors?.['required']) {
+            <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+          }
+        </div>
+      }
+
+      @if (fieldsOptions()?.inventoryDetails?.isChildItem?.isVisible) {
+        <div class="pf-field pf-field--half">
+          <label class="pf-label">{{ 'PRODUCTS.FORM.IS_CHILD' | translate }}</label>
+          <label class="pf-switch">
+            <input type="checkbox" formControlName="isChild"/>
+            <span class="pf-switch__track"></span>
+          </label>
+        </div>
+      }
+    </div>
+
+    @if (showParent() || showChildQty()) {
+      <div class="pf-row">
+        @if (showParent()) {
+          <div class="pf-field pf-field--half">
+            <label class="pf-label">
+              {{ 'PRODUCTS.FORM.CHOOSE_PARENT_PRODUCT' | translate }}
+              @if (fieldsOptions()?.inventoryDetails?.parentItem?.isRequired) { <span class="pf-required">*</span> }
+            </label>
+            <app-search-dropdown
+              formControlName="parentId"
+              [loadFn]="loadParentProducts"
+              [displayWith]="displayLabel"
+              [compareWith]="compareByValue"
+              [placeholder]="'PRODUCTS.FORM.CHOOSE_PARENT_PRODUCT' | translate"
+            />
+            @if (c('parentId').touched && c('parentId').errors?.['required']) {
+              <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+            }
+          </div>
+        }
+
+        @if (showChildQty()) {
+          <div class="pf-field pf-field--half">
+            <label class="pf-label">
+              {{ 'PRODUCTS.FORM.EVERY_ONE_UOM_OF_PARENT' | translate: {
+                    value: productInfo().parent?.UOM ?? '',
+                    value2: productInfo().parent?.name ?? ''
+                  }
+              }} {{ c('childQty').value }} {{ productInfo().UOM }}
+            </label>
+            <input
+              type="number"
+              class="pf-input"
+              formControlName="childQty"
+              min="0"
+              [class.pf-input--invalid]="c('childQty').touched && c('childQty').invalid"
+            />
+            @if (c('childQty').touched && c('childQty').errors?.['min']) {
+              <p class="pf-error">{{ 'PRODUCTS.FORM.VALUE_MUST_BE_GT_ZERO' | translate }}</p>
+            }
+            @if (c('childQty').touched && c('childQty').errors?.['required']) {
+              <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>

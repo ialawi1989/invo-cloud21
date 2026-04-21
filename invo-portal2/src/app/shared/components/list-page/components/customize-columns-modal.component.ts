@@ -33,16 +33,23 @@ interface DisplayColumn extends TableColumn {
     <div class="px-4 pb-4 overflow-y-auto flex-1 min-h-0">
       <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="flex flex-col divide-y divide-slate-100">
         @for (item of displayColumns(); track item.key) {
-          <!-- Row wrapper. Locked rows stay draggable — the locked flag
-               controls visibility only, not order. -->
+          <!-- Row wrapper. Locked rows are not draggable — they stay at the
+               top so sticky-column positioning in the table holds. -->
           <div cdkDrag
+            [cdkDragDisabled]="!!item.locked"
             [class.bg-slate-50/70]="item.isGroup && item.isExpanded">
 
             <!-- Main row -->
             <div class="group/row flex items-center gap-3 px-2 py-2.5 rounded-md hover:bg-slate-50/80 transition-colors">
 
-              <!-- Drag handle — always visible for all rows (locked or not). -->
-              <div cdkDragHandle class="flex-shrink-0 text-slate-300 cursor-grab active:cursor-grabbing hover:text-slate-500 transition-colors">
+              <!-- Drag handle — hidden for locked rows since drag is disabled. -->
+              <div cdkDragHandle
+                class="flex-shrink-0 text-slate-300 transition-colors"
+                [class.cursor-grab]="!item.locked"
+                [class.active:cursor-grabbing]="!item.locked"
+                [class.hover:text-slate-500]="!item.locked"
+                [class.opacity-30]="item.locked"
+                [class.cursor-not-allowed]="item.locked">
                 <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
                   <circle cx="2.5" cy="3"  r="1.1"/><circle cx="7.5" cy="3"  r="1.1"/>
                   <circle cx="2.5" cy="8"  r="1.1"/><circle cx="7.5" cy="8"  r="1.1"/>
@@ -128,12 +135,19 @@ interface DisplayColumn extends TableColumn {
                 [cdkDropListData]="item.groupedItems"
                 (cdkDropListDropped)="onChildDrop(item, $event)">
                 @for (child of item.groupedItems; track child.key; let first = $first) {
-                  <!-- Locked children are still reorderable; only visibility is frozen. -->
+                  <!-- Locked children cannot be dragged. -->
                   <div cdkDrag
+                    [cdkDragDisabled]="!!child.locked"
                     class="group/child flex items-center gap-3 px-2 py-2 ps-14 hover:bg-slate-100/60 transition-colors"
                     [class.opacity-60]="!child.visible && !child.locked">
-                    <!-- Drag handle — always visible; locked children are still draggable. -->
-                    <div cdkDragHandle class="flex-shrink-0 text-slate-300 cursor-grab active:cursor-grabbing hover:text-slate-500 transition-colors">
+                    <!-- Drag handle — dimmed for locked children. -->
+                    <div cdkDragHandle
+                      class="flex-shrink-0 text-slate-300 transition-colors"
+                      [class.cursor-grab]="!child.locked"
+                      [class.active:cursor-grabbing]="!child.locked"
+                      [class.hover:text-slate-500]="!child.locked"
+                      [class.opacity-30]="child.locked"
+                      [class.cursor-not-allowed]="child.locked">
                       <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
                         <circle cx="2.5" cy="3"  r="1.1"/><circle cx="7.5" cy="3"  r="1.1"/>
                         <circle cx="2.5" cy="8"  r="1.1"/><circle cx="7.5" cy="8"  r="1.1"/>
@@ -233,6 +247,11 @@ interface DisplayColumn extends TableColumn {
       :host {
         display: flex;
         flex-direction: column;
+        /* Fill the drawer panel on both axes so the footer sits at the bottom.
+           flex: 1 1 auto is required because the parent .drawer-panel is a
+           flex-col — height: 100% alone does not stretch a flex item along
+           the main axis. */
+        flex: 1 1 auto;
         height: 100%;
         min-height: 0;
       }
@@ -306,6 +325,10 @@ export class CustomizeColumnsModalComponent {
 
   onDrop(event: CdkDragDrop<any>): void {
     const cols = [...this.displayColumns()];
+    // Locked items (e.g. sticky primary column) must not move, and other
+    // items cannot displace them by landing on their slot.
+    if (cols[event.previousIndex]?.locked) return;
+    if (cols[event.currentIndex]?.locked)  return;
     moveItemInArray(cols, event.previousIndex, event.currentIndex);
     cols.forEach((col, i) => col.order = i);
     this.displayColumns.set([...cols]);
@@ -314,8 +337,10 @@ export class CustomizeColumnsModalComponent {
   /** Reorder items within an expanded group. */
   onChildDrop(parent: DisplayColumn, event: CdkDragDrop<any>): void {
     if (!parent.groupedItems) return;
-    moveItemInArray(parent.groupedItems, event.previousIndex, event.currentIndex);
-    // Force change detection on the display signal so the card re-renders.
+    const items = parent.groupedItems;
+    if (items[event.previousIndex]?.locked) return;
+    if (items[event.currentIndex]?.locked)  return;
+    moveItemInArray(items, event.previousIndex, event.currentIndex);
     this.displayColumns.set([...this.displayColumns()]);
   }
 

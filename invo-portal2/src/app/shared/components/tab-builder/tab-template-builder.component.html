@@ -1,0 +1,257 @@
+<div class="tb-grid">
+  <!-- ═══ Left column: templates list ═════════════════════════════════════ -->
+  <aside class="tb-card tb-list">
+    <header class="tb-list__header">
+      <h3 class="tb-list__title">{{ 'TAB_BUILDER.TAB_TEMPLATES' | translate }}</h3>
+      <button type="button" class="btn btn-primary btn-sm" (click)="openAdd()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        {{ 'COMMON.ADD' | translate }}
+      </button>
+    </header>
+
+    <ul class="tb-list__body" cdkDropList (cdkDropListDropped)="onDrop($event)">
+      @for (tpl of templates(); track tpl.id) {
+        <li
+          class="tb-row"
+          [class.tb-row--selected]="selectedTemplate()?.id === tpl.id"
+          [class.tb-row--inactive]="!tpl.isActive"
+          cdkDrag
+          (click)="select(tpl.id)"
+        >
+          <span class="tb-row__handle" cdkDragHandle aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="6"  r="1"/><circle cx="15" cy="6"  r="1"/>
+              <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+              <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+            </svg>
+          </span>
+
+          <span class="tb-row__icon">
+            <app-tab-type-icon [type]="tpl.type" [size]="16"/>
+          </span>
+
+          <div class="tb-row__text">
+            <p class="tb-row__name">{{ tpl.name }}</p>
+            <p class="tb-row__meta">{{ typeKey(tpl.type) | translate }} · {{ tpl.abbr }}</p>
+          </div>
+
+          <button type="button" class="icon-btn icon-btn--danger" (click)="deleteTemplate(tpl.id, $event)"
+            [attr.aria-label]="'COMMON.DELETE' | translate">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6"/>
+            </svg>
+          </button>
+        </li>
+      }
+
+      @if (templates().length === 0) {
+        <li class="tb-empty">
+          <p>{{ 'TAB_BUILDER.NO_TEMPLATES' | translate }}</p>
+          <button type="button" class="btn btn-primary btn-sm" (click)="openAdd()">
+            {{ 'TAB_BUILDER.ADD_FIRST_TEMPLATE' | translate }}
+          </button>
+        </li>
+      }
+    </ul>
+  </aside>
+
+  <!-- ═══ Right column: template editor ═══════════════════════════════════ -->
+  @if (selectedTemplate(); as tpl) {
+    <section class="tb-card tb-editor">
+      <header class="tb-editor__header">
+        <input
+          class="tb-editor__title-input"
+          type="text"
+          [ngModel]="tpl.name"
+          (ngModelChange)="updateName($event)"
+        />
+        <span class="chip chip--slate">{{ tpl.abbr }}</span>
+        <span class="chip chip--type">{{ typeKey(tpl.type) | translate }}</span>
+
+        <label class="switch">
+          <input type="checkbox" [checked]="tpl.isActive" (change)="toggleActive($any($event.target).checked)"/>
+          <span class="switch__track"></span>
+          <span class="switch__label">{{ 'TAB_BUILDER.ACTIVE' | translate }}</span>
+        </label>
+      </header>
+
+      <div class="tb-editor__body">
+        <!-- ─── Applies to (product types) ─────────────────────────── -->
+        <div class="section">
+          <h4>{{ 'TAB_BUILDER.APPLIES_TO' | translate }}</h4>
+          <p class="muted">{{ 'TAB_BUILDER.APPLIES_TO_HINT' | translate }}</p>
+          <app-search-dropdown
+            class="applies-dropdown"
+            [items]="PRODUCT_TYPE_VALUES"
+            [multiple]="true"
+            [displayWith]="productTypeLabel"
+            [searchable]="true"
+            [value]="selectedProductTypes(tpl)"
+            (valueChange)="onProductTypesChange($any($event))"
+            [placeholder]="'TAB_BUILDER.ALL_TYPES' | translate"
+          />
+        </div>
+
+        <!-- ─── Specs template editor ──────────────────────────────── -->
+        @if (tpl.type === 'specs') {
+          <div class="section">
+            <div class="section__header">
+              <h4>{{ 'TAB_BUILDER.SPEC_FIELDS' | translate }}</h4>
+              <button type="button" class="btn btn-primary btn-sm" (click)="addSpecField()">
+                + {{ 'TAB_BUILDER.ADD_FIELD' | translate }}
+              </button>
+            </div>
+
+            @if (!tpl.specFields || tpl.specFields.length === 0) {
+              <div class="dashed-empty">
+                <p>{{ 'TAB_BUILDER.NO_FIELDS' | translate }}</p>
+                <button type="button" class="link-btn" (click)="addSpecField()">
+                  + {{ 'TAB_BUILDER.ADD_FIRST_FIELD' | translate }}
+                </button>
+              </div>
+            }
+
+            @for (f of tpl.specFields; track f.id; let i = $index) {
+              <div class="spec-field">
+                <div class="spec-field__grid">
+                  <label class="sub-field">
+                    <span class="sub-field__label">{{ 'TAB_BUILDER.LABEL' | translate }}</span>
+                    <input class="input" type="text" [ngModel]="f.label"
+                           (ngModelChange)="updateSpecField(i, { label: $event })"
+                           [placeholder]="'TAB_BUILDER.FIELD_LABEL_PLACEHOLDER' | translate"/>
+                  </label>
+                  <label class="sub-field">
+                    <span class="sub-field__label">{{ 'TAB_BUILDER.KEY_ABBR' | translate }}</span>
+                    <input class="input input--readonly" type="text" [ngModel]="f.abbr"
+                           (ngModelChange)="updateSpecField(i, { abbr: $event })"
+                           [placeholder]="'TAB_BUILDER.FIELD_KEY_PLACEHOLDER' | translate"/>
+                  </label>
+                  <div class="sub-field">
+                    <span class="sub-field__label">{{ 'TAB_BUILDER.TYPE' | translate }}</span>
+                    <app-search-dropdown
+                      [items]="SPEC_FIELD_TYPE_VALUES"
+                      [displayWith]="displaySpecType"
+                      [searchable]="false"
+                      [value]="f.type"
+                      (valueChange)="updateSpecField(i, { type: $any($event) })"
+                    />
+                  </div>
+                </div>
+
+                @if (f.type === 'select' || f.type === 'multiselect') {
+                  <label class="sub-field">
+                    <span class="sub-field__label">{{ 'TAB_BUILDER.OPTIONS' | translate }}</span>
+                    <input class="input" type="text"
+                           [ngModel]="(f.options || []).join(', ')"
+                           (ngModelChange)="updateSpecOptions(i, $event)"
+                           [placeholder]="'TAB_BUILDER.OPTIONS_PLACEHOLDER' | translate"/>
+                  </label>
+                }
+
+                <div class="spec-field__footer">
+                  <label class="check">
+                    <input type="checkbox" [checked]="f.required"
+                           (change)="updateSpecField(i, { required: $any($event.target).checked })"/>
+                    {{ 'TAB_BUILDER.REQUIRED' | translate }}
+                  </label>
+                  <button type="button" class="link-btn link-btn--danger" (click)="deleteSpecField(i)">
+                    {{ 'COMMON.DELETE' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ─── Vehicle template editor ────────────────────────────── -->
+        @if (tpl.type === 'vehicle') {
+          <div class="section">
+            <h4>{{ 'TAB_BUILDER.VEHICLE_CONFIG' | translate }}</h4>
+            <div class="toggle-list">
+              <label class="toggle-row">
+                <input type="checkbox" [checked]="tpl.vehicleConfig?.allowUniversal ?? true"
+                       (change)="updateVehicleConfig({ allowUniversal: $any($event.target).checked })"/>
+                <div>
+                  <p class="toggle-row__name">{{ 'TAB_BUILDER.ALLOW_UNIVERSAL' | translate }}</p>
+                  <p class="toggle-row__desc">{{ 'TAB_BUILDER.ALLOW_UNIVERSAL_DESC' | translate }}</p>
+                </div>
+              </label>
+              <label class="toggle-row">
+                <input type="checkbox" [checked]="tpl.vehicleConfig?.allowYearRange ?? true"
+                       (change)="updateVehicleConfig({ allowYearRange: $any($event.target).checked })"/>
+                <div>
+                  <p class="toggle-row__name">{{ 'TAB_BUILDER.ALLOW_YEAR_RANGE' | translate }}</p>
+                  <p class="toggle-row__desc">{{ 'TAB_BUILDER.ALLOW_YEAR_RANGE_DESC' | translate }}</p>
+                </div>
+              </label>
+              <label class="toggle-row">
+                <input type="checkbox" [checked]="tpl.vehicleConfig?.requireEngine ?? false"
+                       (change)="updateVehicleConfig({ requireEngine: $any($event.target).checked })"/>
+                <div>
+                  <p class="toggle-row__name">{{ 'TAB_BUILDER.REQUIRE_ENGINE' | translate }}</p>
+                  <p class="toggle-row__desc">{{ 'TAB_BUILDER.REQUIRE_ENGINE_DESC' | translate }}</p>
+                </div>
+              </label>
+            </div>
+          </div>
+        }
+
+        <!-- ─── Richtext / Custom template editor ──────────────────── -->
+        @if (tpl.type === 'richtext' || tpl.type === 'custom') {
+          <div class="section">
+            <h4>{{ 'TAB_BUILDER.CONTENT_SETTINGS' | translate }}</h4>
+            <label class="sub-field">
+              <span class="sub-field__label">{{ 'TAB_BUILDER.PLACEHOLDER_TEXT' | translate }}</span>
+              <textarea class="input input--textarea" rows="3"
+                        [ngModel]="tpl.placeholder || ''"
+                        (ngModelChange)="updatePlaceholder($event)"
+                        [placeholder]="'TAB_BUILDER.PLACEHOLDER_HINT' | translate"></textarea>
+            </label>
+          </div>
+        }
+
+        <!-- ─── FAQ template editor ────────────────────────────────── -->
+        @if (tpl.type === 'faq') {
+          <div class="section">
+            <div class="section__header">
+              <h4>{{ 'TAB_BUILDER.PREDEFINED_FAQ' | translate }}</h4>
+              <button type="button" class="btn btn-primary btn-sm" (click)="addFaqField()">
+                + {{ 'TAB_BUILDER.ADD_QUESTION' | translate }}
+              </button>
+            </div>
+            <p class="muted">{{ 'TAB_BUILDER.PREDEFINED_FAQ_HINT' | translate }}</p>
+
+            @for (f of tpl.faqFields; track f.id; let i = $index) {
+              <div class="faq-field">
+                <input class="input" type="text" [ngModel]="f.question"
+                       (ngModelChange)="updateFaqField(i, { question: $event })"
+                       [placeholder]="'TAB_BUILDER.QUESTION_TEMPLATE' | translate"/>
+                <div class="faq-field__footer">
+                  <button type="button" class="link-btn link-btn--danger" (click)="deleteFaqField(i)">
+                    {{ 'COMMON.DELETE' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ─── Table template editor (no config) ──────────────────── -->
+        @if (tpl.type === 'table') {
+          <div class="section">
+            <h4>{{ 'TAB_BUILDER.TABLE_TEMPLATE' | translate }}</h4>
+            <p class="muted">{{ 'TAB_BUILDER.TABLE_TEMPLATE_HINT' | translate }}</p>
+          </div>
+        }
+      </div>
+    </section>
+  } @else {
+    <section class="tb-card tb-editor tb-editor--empty">
+      <p>{{ 'TAB_BUILDER.SELECT_TEMPLATE_HINT' | translate }}</p>
+    </section>
+  }
+</div>
