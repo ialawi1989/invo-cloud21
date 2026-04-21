@@ -22,7 +22,6 @@ import {
   SpecFieldType,
   TabTemplate,
   TabType,
-  VehicleConfig,
   newFaqTemplateItem,
   newSpecField,
   newTabTemplate,
@@ -61,7 +60,7 @@ export class TabTemplateBuilderComponent {
 
   selectedId = signal<string>('');
 
-  readonly SPEC_FIELD_TYPE_VALUES: SpecFieldType[] = ['text', 'number', 'select', 'multiselect'];
+  readonly SPEC_FIELD_TYPE_VALUES: SpecFieldType[] = ['text', 'number', 'select', 'multiselect', 'date'];
   displaySpecType = (t: SpecFieldType) =>
     this.translate.instant(`TAB_BUILDER.SPEC_TYPES.${t.toUpperCase()}`);
 
@@ -174,12 +173,35 @@ export class TabTemplateBuilderComponent {
     this.updateSelected({ specFields: sel.specFields.filter((_, i) => i !== index) });
   }
 
-  // ── Vehicle ────────────────────────────────────────────────────────────
-  updateVehicleConfig(patch: Partial<VehicleConfig>): void {
+  // ── Records (same schema as specs, but one template = many rows) ───────
+  addRecordField(): void {
     const sel = this.selectedTemplate();
     if (!sel) return;
-    const cur = sel.vehicleConfig ?? { allowUniversal: true, allowYearRange: true, requireEngine: false };
-    this.updateSelected({ vehicleConfig: { ...cur, ...patch } });
+    this.updateSelected({ recordFields: [...(sel.recordFields ?? []), newSpecField()] });
+  }
+
+  updateRecordField(index: number, patch: Partial<SpecField>): void {
+    const sel = this.selectedTemplate();
+    if (!sel?.recordFields) return;
+    const fields = sel.recordFields.map((f, i) => {
+      if (i !== index) return f;
+      const next = { ...f, ...patch };
+      if (patch.label !== undefined) next.abbr = slugify(patch.label);
+      if (next.type !== 'select' && next.type !== 'multiselect') next.options = [];
+      return next;
+    });
+    this.updateSelected({ recordFields: fields });
+  }
+
+  updateRecordOptions(index: number, commaSeparated: string): void {
+    const options = commaSeparated.split(',').map(s => s.trim()).filter(Boolean);
+    this.updateRecordField(index, { options });
+  }
+
+  deleteRecordField(index: number): void {
+    const sel = this.selectedTemplate();
+    if (!sel?.recordFields) return;
+    this.updateSelected({ recordFields: sel.recordFields.filter((_, i) => i !== index) });
   }
 
   // ── FAQ ────────────────────────────────────────────────────────────────

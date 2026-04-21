@@ -129,51 +129,65 @@
   p { margin: 0; font-size: 13px; }
 }
 
-// ── Vehicle ────────────────────────────────────────────────────────────────
-.toggle-card {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 16px;
-  background: #f8fafc;
+// ── Records (dynamic typed table) ──────────────────────────────────────────
+.records-wrap {
+  overflow-x: auto;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-
-  &__body { display: flex; align-items: center; gap: 12px; }
-  &__name { margin: 0; font-size: 13px; font-weight: 600; color: #1e293b; }
-  &__desc { margin: 2px 0 0; font-size: 12px; color: #64748b; }
+  border-radius: 8px;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
-.switch-btn {
-  width: 44px; height: 24px;
-  background: #cbd5e1;
-  border: none;
-  border-radius: 12px;
-  position: relative;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background .14s;
+.records-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
 
-  &__thumb {
-    position: absolute;
-    top: 2px; inset-inline-start: 2px;
-    width: 20px; height: 20px;
-    background: #fff;
-    border-radius: 50%;
-    transition: transform .14s;
+  th, td {
+    padding: 0;
+    border-right: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    min-width: 140px;
+    vertical-align: top;
+    &:last-child { border-right: none; }
   }
 
-  &--on { background: #22c55e;
-    .switch-btn__thumb { transform: translateX(20px); }
+  th {
+    background: #f8fafc;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    text-align: start;
+  }
+
+  tbody td {
+    padding: 4px;
+  }
+
+  &__actions {
+    width: 44px;
+    min-width: 44px;
+    text-align: center;
+    background: #fafbfc;
+    padding: 4px !important;
   }
 }
 
-.veh-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
-.veh-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 10px;
+.input--cell {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 13px;
+}
 
-  &__info { flex: 1; min-width: 0; }
-  &__name { margin: 0; font-size: 13px; font-weight: 600; color: #1e293b; }
-  &__meta { margin: 2px 0 0; font-size: 12px; color: #64748b; }
+.multi--compact {
+  flex-direction: column;
+  gap: 4px;
+
+  .multi__opt {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
 }
 
 // ── FAQ ────────────────────────────────────────────────────────────────────
@@ -217,6 +231,56 @@
 .review-summary {
   font-size: 12px; font-weight: 500; color: #64748b;
   margin-inline-start: 8px;
+}
+
+// ── Video ──────────────────────────────────────────────────────────────────
+.video-card {
+  border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 12px; display: flex; flex-direction: column; gap: 8px;
+  background: #f8fafc;
+
+  &__preview {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0f172a;
+    border-radius: 8px;
+    overflow: hidden;
+
+    iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+  }
+
+  &__footer { display: flex; justify-content: flex-end; }
+}
+
+// ── Downloads ──────────────────────────────────────────────────────────────
+.download-card {
+  border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 12px; display: flex; flex-direction: column; gap: 8px;
+  background: #f8fafc;
+
+  &__row {
+    display: flex; align-items: center; gap: 8px;
+  }
+}
+
+.input--size { max-width: 140px; }
+
+.kind-chip {
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: #0f172a;
+  background: #e2e8f0;
+  border-radius: 6px;
 }
 
 // ── Table ──────────────────────────────────────────────────────────────────

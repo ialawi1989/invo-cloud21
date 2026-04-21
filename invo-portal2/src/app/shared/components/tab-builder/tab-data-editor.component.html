@@ -82,6 +82,11 @@
                     (ngModelChange)="updateSpec(tpl.abbr, f.abbr, $event)"
                     [placeholder]="'TAB_BUILDER.ENTER' | translate: { value: f.label }"/>
                 }
+                @case ('date') {
+                  <input class="input" type="date"
+                    [ngModel]="specValue(tpl.abbr, f)"
+                    (ngModelChange)="updateSpec(tpl.abbr, f.abbr, $event)"/>
+                }
                 @default {
                   <input class="input" type="text"
                     [ngModel]="specValue(tpl.abbr, f)"
@@ -93,58 +98,96 @@
           }
         }
 
-        <!-- ─── Vehicle ───────────────────────────────────────────── -->
-        @if (tpl.type === 'vehicle') {
-          @if (tpl.vehicleConfig?.allowUniversal) {
-            <label class="toggle-card">
-              <div class="toggle-card__body">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                     [attr.stroke]="vehicleData(tpl).isUniversal ? '#22c55e' : '#94a3b8'"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="22 4 12 14.01 9 11.01"/><circle cx="12" cy="12" r="10"/>
-                </svg>
-                <div>
-                  <p class="toggle-card__name">{{ 'TAB_BUILDER.UNIVERSAL_FIT' | translate }}</p>
-                  <p class="toggle-card__desc">{{ 'TAB_BUILDER.UNIVERSAL_FIT_DESC' | translate }}</p>
-                </div>
-              </div>
-              <button type="button" class="switch-btn"
-                [class.switch-btn--on]="vehicleData(tpl).isUniversal"
-                (click)="toggleUniversal(tpl)">
-                <span class="switch-btn__thumb"></span>
-              </button>
-            </label>
-          }
-
-          @if (!vehicleData(tpl).isUniversal) {
+        <!-- ─── Records (dynamic typed table) ─────────────────────── -->
+        @if (tpl.type === 'records') {
+          @if (!tpl.recordFields || tpl.recordFields.length === 0) {
+            <p class="muted">{{ 'TAB_BUILDER.NO_RECORD_FIELDS_PROD' | translate }}</p>
+          } @else {
             <div class="section__header">
-              <h4>{{ 'TAB_BUILDER.COMPATIBLE_VEHICLES' | translate }} ({{ vehicleData(tpl).vehicles.length }})</h4>
-              <button type="button" class="btn btn-primary btn-sm" (click)="openAddVehicle(tpl)">
-                + {{ 'TAB_BUILDER.ADD_VEHICLE' | translate }}
+              <h4>{{ 'TAB_BUILDER.RECORDS' | translate }} ({{ recordsValue(tpl).length }})</h4>
+              <button type="button" class="btn btn-primary btn-sm" (click)="addRecord(tpl)">
+                + {{ 'TAB_BUILDER.ADD_RECORD' | translate }}
               </button>
             </div>
 
-            @if (vehicleData(tpl).vehicles.length === 0) {
+            @if (recordsValue(tpl).length === 0) {
               <div class="dashed-empty">
-                <p>{{ 'TAB_BUILDER.NO_VEHICLES' | translate }}</p>
+                <p>{{ 'TAB_BUILDER.NO_RECORDS' | translate }}</p>
               </div>
             } @else {
-              <ul class="veh-list">
-                @for (v of vehicleData(tpl).vehicles; track v.id; let i = $index) {
-                  <li class="veh-row">
-                    <div class="veh-row__info">
-                      <p class="veh-row__name">{{ v.makeName }} {{ v.modelName }}</p>
-                      <p class="veh-row__meta">{{ vehicleYears(v) }} · {{ v.engineSize || ('TAB_BUILDER.ALL_ENGINES' | translate) }}</p>
-                    </div>
-                    <button type="button" class="icon-btn icon-btn--danger" (click)="removeVehicle(tpl, i)">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                      </svg>
-                    </button>
-                  </li>
-                }
-              </ul>
+              <div class="records-wrap">
+                <table class="records-table">
+                  <thead>
+                    <tr>
+                      @for (f of tpl.recordFields; track f.id) {
+                        <th>
+                          {{ f.label || f.abbr }}
+                          @if (f.required) { <span class="req">*</span> }
+                        </th>
+                      }
+                      <th class="records-table__actions"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of recordsValue(tpl); track $index; let r = $index) {
+                      <tr>
+                        @for (f of tpl.recordFields; track f.id) {
+                          <td>
+                            @switch (f.type) {
+                              @case ('select') {
+                                <app-search-dropdown
+                                  [items]="f.options || []"
+                                  [searchable]="(f.options?.length || 0) > 8"
+                                  [value]="recordCellValue(row, f) || null"
+                                  (valueChange)="updateRecordCell(tpl, r, f, $event)"
+                                  [placeholder]="'TAB_BUILDER.SELECT_PLACEHOLDER' | translate"
+                                />
+                              }
+                              @case ('multiselect') {
+                                <div class="multi multi--compact">
+                                  @for (opt of f.options; track opt) {
+                                    <label class="multi__opt">
+                                      <input type="checkbox"
+                                        [checked]="isRecordMultiSelected(row, f, opt)"
+                                        (change)="toggleRecordMulti(tpl, r, f, opt, $any($event.target).checked)"/>
+                                      <span>{{ opt }}</span>
+                                    </label>
+                                  }
+                                </div>
+                              }
+                              @case ('number') {
+                                <input class="input input--cell" type="number"
+                                  [ngModel]="recordCellValue(row, f)"
+                                  (ngModelChange)="updateRecordCell(tpl, r, f, $event)"
+                                  [placeholder]="f.label"/>
+                              }
+                              @case ('date') {
+                                <input class="input input--cell" type="date"
+                                  [ngModel]="recordCellValue(row, f)"
+                                  (ngModelChange)="updateRecordCell(tpl, r, f, $event)"/>
+                              }
+                              @default {
+                                <input class="input input--cell" type="text"
+                                  [ngModel]="recordCellValue(row, f)"
+                                  (ngModelChange)="updateRecordCell(tpl, r, f, $event)"
+                                  [placeholder]="f.label"/>
+                              }
+                            }
+                          </td>
+                        }
+                        <td class="records-table__actions">
+                          <button type="button" class="icon-btn icon-btn--danger" (click)="removeRecord(tpl, r)" [attr.aria-label]="'COMMON.DELETE' | translate">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="3 6 5 6 21 6"/>
+                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
             }
           }
         }
@@ -246,6 +289,80 @@
 
               <div class="review-card__footer">
                 <button type="button" class="link-btn link-btn--danger" (click)="removeReview(tpl, i)">
+                  {{ 'COMMON.DELETE' | translate }}
+                </button>
+              </div>
+            </div>
+          }
+        }
+
+        <!-- ─── Video ─────────────────────────────────────────────── -->
+        @if (tpl.type === 'video') {
+          <div class="section__header">
+            <h4>{{ 'TAB_BUILDER.VIDEOS' | translate }}</h4>
+            <button type="button" class="btn btn-primary btn-sm" (click)="addVideo(tpl)">
+              + {{ 'TAB_BUILDER.ADD_VIDEO' | translate }}
+            </button>
+          </div>
+          @if (videoValue(tpl).length === 0) {
+            <p class="muted">{{ 'TAB_BUILDER.NO_VIDEOS' | translate }}</p>
+          }
+          @for (v of videoValue(tpl); track $index; let i = $index) {
+            <div class="video-card">
+              @if (videoEmbedUrl(v.url); as embed) {
+                <div class="video-card__preview">
+                  <iframe [src]="embed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+              }
+              <input class="input" type="url"
+                     [ngModel]="v.url"
+                     (ngModelChange)="updateVideo(tpl, i, { url: $event })"
+                     [placeholder]="'TAB_BUILDER.VIDEO_URL_PLACEHOLDER' | translate"/>
+              <input class="input" type="text"
+                     [ngModel]="v.caption"
+                     (ngModelChange)="updateVideo(tpl, i, { caption: $event })"
+                     [placeholder]="'TAB_BUILDER.VIDEO_CAPTION' | translate"/>
+              <div class="video-card__footer">
+                <button type="button" class="link-btn link-btn--danger" (click)="removeVideo(tpl, i)">
+                  {{ 'COMMON.DELETE' | translate }}
+                </button>
+              </div>
+            </div>
+          }
+        }
+
+        <!-- ─── Downloads ─────────────────────────────────────────── -->
+        @if (tpl.type === 'downloads') {
+          <div class="section__header">
+            <h4>{{ 'TAB_BUILDER.DOWNLOADS' | translate }}</h4>
+            <button type="button" class="btn btn-primary btn-sm" (click)="addDownload(tpl)">
+              + {{ 'TAB_BUILDER.ADD_DOWNLOAD' | translate }}
+            </button>
+          </div>
+          @if (downloadValue(tpl).length === 0) {
+            <p class="muted">{{ 'TAB_BUILDER.NO_DOWNLOADS' | translate }}</p>
+          }
+          @for (d of downloadValue(tpl); track $index; let i = $index) {
+            <div class="download-card">
+              <div class="download-card__row">
+                <input class="input" type="text"
+                       [ngModel]="d.name"
+                       (ngModelChange)="updateDownload(tpl, i, { name: $event })"
+                       [placeholder]="'TAB_BUILDER.DOWNLOAD_NAME' | translate"/>
+                @if (d.kind) {
+                  <span class="kind-chip">{{ d.kind }}</span>
+                }
+              </div>
+              <input class="input" type="url"
+                     [ngModel]="d.url"
+                     (ngModelChange)="updateDownload(tpl, i, { url: $event })"
+                     [placeholder]="'TAB_BUILDER.DOWNLOAD_URL' | translate"/>
+              <div class="download-card__row">
+                <input class="input input--size" type="text"
+                       [ngModel]="d.size"
+                       (ngModelChange)="updateDownload(tpl, i, { size: $event })"
+                       [placeholder]="'TAB_BUILDER.DOWNLOAD_SIZE' | translate"/>
+                <button type="button" class="link-btn link-btn--danger" (click)="removeDownload(tpl, i)">
                   {{ 'COMMON.DELETE' | translate }}
                 </button>
               </div>

@@ -9,22 +9,23 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ModalService } from '../../modal/modal.service';
 import { SearchDropdownComponent } from '../dropdown/search-dropdown.component';
 import {
+  DownloadEntry,
   FaqEntry,
+  RecordEntry,
   ReviewEntry,
   SpecField,
   TabDataMap,
   TabTemplate,
   TableData,
-  VehicleFitment,
-  VehicleTabData,
+  VideoEntry,
   initialTabData,
 } from './tab-builder.types';
-import { AddVehicleModalComponent } from './add-vehicle-modal.component';
 import { TabTypeIconComponent } from './tab-type-icon.component';
 
 /**
@@ -44,7 +45,8 @@ import { TabTypeIconComponent } from './tab-type-icon.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TabDataEditorComponent {
-  private modal = inject(ModalService);
+  private modal     = inject(ModalService);
+  private sanitizer = inject(DomSanitizer);
 
   templates   = input<TabTemplate[]>([]);
   value       = input<TabDataMap>({});
@@ -140,41 +142,50 @@ export class TabDataEditorComponent {
     this.updateSpec(abbr, field.abbr, cur);
   }
 
-  // ─── Vehicle ────────────────────────────────────────────────────────────
-  vehicleData(tpl: TabTemplate): VehicleTabData {
-    const existing = this.value()?.[tpl.abbr];
-    if (existing && typeof existing === 'object' && 'vehicles' in existing) {
-      return {
-        isUniversal: !!existing.isUniversal,
-        vehicles: Array.isArray(existing.vehicles) ? existing.vehicles : [],
-      };
+  // ─── Records (typed list — same schema as specs, but many rows) ─────────
+  recordsValue(tpl: TabTemplate): RecordEntry[] {
+    const v = this.value()?.[tpl.abbr];
+    return Array.isArray(v) ? v as RecordEntry[] : [];
+  }
+
+  addRecord(tpl: TabTemplate): void {
+    // Seed new record with all schema fields so the JSON stays consistent.
+    const fields = tpl.recordFields ?? [];
+    const empty: RecordEntry = {};
+    for (const f of fields) {
+      empty[f.abbr] = f.type === 'multiselect' ? [] : '';
     }
-    return initialTabData(tpl) as VehicleTabData;
+    this.patchValue(tpl.abbr, [...this.recordsValue(tpl), empty]);
   }
 
-  toggleUniversal(tpl: TabTemplate): void {
-    const cur = this.vehicleData(tpl);
-    this.patchValue(tpl.abbr, { ...cur, isUniversal: !cur.isUniversal });
+  updateRecordCell(tpl: TabTemplate, rowIdx: number, field: SpecField, value: any): void {
+    const cur = [...this.recordsValue(tpl)];
+    cur[rowIdx] = { ...cur[rowIdx], [field.abbr]: value };
+    this.patchValue(tpl.abbr, cur);
   }
 
-  async openAddVehicle(tpl: TabTemplate): Promise<void> {
-    const ref = this.modal.open<AddVehicleModalComponent, any, VehicleFitment>(
-      AddVehicleModalComponent,
-      { size: 'sm', data: { config: tpl.vehicleConfig ?? { allowUniversal: true, allowYearRange: true, requireEngine: false } } },
-    );
-    const v = await ref.afterClosed();
-    if (!v) return;
-    const cur = this.vehicleData(tpl);
-    this.patchValue(tpl.abbr, { ...cur, vehicles: [...cur.vehicles, v] });
+  removeRecord(tpl: TabTemplate, rowIdx: number): void {
+    this.patchValue(tpl.abbr, this.recordsValue(tpl).filter((_, i) => i !== rowIdx));
   }
 
-  removeVehicle(tpl: TabTemplate, index: number): void {
-    const cur = this.vehicleData(tpl);
-    this.patchValue(tpl.abbr, { ...cur, vehicles: cur.vehicles.filter((_, i) => i !== index) });
+  /** Safe accessor for a cell's current value, defaulting to the right shape. */
+  recordCellValue(row: RecordEntry, f: SpecField): any {
+    const v = row?.[f.abbr];
+    if (f.type === 'multiselect') return Array.isArray(v) ? v : [];
+    return v ?? '';
   }
 
-  vehicleYears(v: VehicleFitment): string {
-    return v.yearStart === v.yearEnd ? String(v.yearStart) : `${v.yearStart}-${v.yearEnd}`;
+  isRecordMultiSelected(row: RecordEntry, f: SpecField, opt: string): boolean {
+    const v = this.recordCellValue(row, f);
+    return Array.isArray(v) && v.includes(opt);
+  }
+
+  toggleRecordMulti(tpl: TabTemplate, rowIdx: number, f: SpecField, opt: string, checked: boolean): void {
+    const cur: string[] = [...(this.recordCellValue(this.recordsValue(tpl)[rowIdx], f) as string[])];
+    const i = cur.indexOf(opt);
+    if (checked && i === -1) cur.push(opt);
+    if (!checked && i !== -1) cur.splice(i, 1);
+    this.updateRecordCell(tpl, rowIdx, f, cur);
   }
 
   // ─── Richtext / Custom ──────────────────────────────────────────────────
@@ -304,6 +315,104 @@ export class TabDataEditorComponent {
     if (list.length === 0) return 0;
     const total = list.reduce((sum, r) => sum + (r.rating || 0), 0);
     return Math.round((total / list.length) * 10) / 10;
+  }
+
+  // ─── Video ──────────────────────────────────────────────────────────────
+  videoValue(tpl: TabTemplate): VideoEntry[] {
+    const v = this.value()?.[tpl.abbr];
+    if (Array.isArray(v)) {
+      return v.map(e => ({
+        url: String(e?.url ?? ''),
+        caption: e?.caption != null ? String(e.caption) : '',
+      }));
+    }
+    return [];
+  }
+
+  addVideo(tpl: TabTemplate): void {
+    this.patchValue(tpl.abbr, [...this.videoValue(tpl), { url: '', caption: '' }]);
+  }
+
+  updateVideo(tpl: TabTemplate, index: number, patch: Partial<VideoEntry>): void {
+    const cur = [...this.videoValue(tpl)];
+    cur[index] = { ...cur[index], ...patch };
+    this.patchValue(tpl.abbr, cur);
+  }
+
+  removeVideo(tpl: TabTemplate, index: number): void {
+    this.patchValue(tpl.abbr, this.videoValue(tpl).filter((_, i) => i !== index));
+  }
+
+  /**
+   * Best-effort normaliser for common sharing URLs. Returns a SafeResourceUrl
+   * for embedding in an iframe when the source is YouTube or Vimeo;
+   * otherwise null so the preview is hidden. Kept tolerant — bad input
+   * returns null.
+   */
+  videoEmbedUrl(raw: string): SafeResourceUrl | null {
+    const url = (raw ?? '').trim();
+    if (!url) return null;
+    try {
+      const u = new URL(url);
+      const host = u.hostname.replace(/^www\./, '');
+      let embed = '';
+      if (host === 'youtu.be') {
+        embed = `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+      } else if (host === 'youtube.com' || host.endsWith('.youtube.com')) {
+        const id = u.searchParams.get('v') ?? u.pathname.replace('/embed/', '').replace('/', '');
+        embed = id ? `https://www.youtube.com/embed/${id}` : '';
+      } else if (host === 'vimeo.com') {
+        const id = u.pathname.split('/').filter(Boolean)[0];
+        embed = id ? `https://player.vimeo.com/video/${id}` : '';
+      }
+      return embed ? this.sanitizer.bypassSecurityTrustResourceUrl(embed) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // ─── Downloads ──────────────────────────────────────────────────────────
+  downloadValue(tpl: TabTemplate): DownloadEntry[] {
+    const v = this.value()?.[tpl.abbr];
+    if (Array.isArray(v)) {
+      return v.map(e => ({
+        name: String(e?.name ?? ''),
+        url:  String(e?.url ?? ''),
+        size: e?.size != null ? String(e.size) : '',
+        kind: e?.kind != null ? String(e.kind) : this.deriveKind(String(e?.url ?? '')),
+      }));
+    }
+    return [];
+  }
+
+  addDownload(tpl: TabTemplate): void {
+    this.patchValue(tpl.abbr, [...this.downloadValue(tpl), { name: '', url: '', size: '', kind: '' }]);
+  }
+
+  updateDownload(tpl: TabTemplate, index: number, patch: Partial<DownloadEntry>): void {
+    const cur = [...this.downloadValue(tpl)];
+    const next = { ...cur[index], ...patch };
+    // If the URL changed, auto-refresh the derived kind (unless the user has
+    // manually set one — an explicit non-empty kind survives).
+    if (patch.url !== undefined) {
+      const autoKind = this.deriveKind(next.url);
+      if (!cur[index].kind || cur[index].kind === this.deriveKind(cur[index].url)) {
+        next.kind = autoKind;
+      }
+    }
+    cur[index] = next;
+    this.patchValue(tpl.abbr, cur);
+  }
+
+  removeDownload(tpl: TabTemplate, index: number): void {
+    this.patchValue(tpl.abbr, this.downloadValue(tpl).filter((_, i) => i !== index));
+  }
+
+  private deriveKind(url: string): string {
+    const u = (url ?? '').trim();
+    if (!u) return '';
+    const match = u.split(/[?#]/)[0].match(/\.([a-z0-9]{1,5})$/i);
+    return match ? match[1].toLowerCase() : '';
   }
 
   // ─── helpers ────────────────────────────────────────────────────────────

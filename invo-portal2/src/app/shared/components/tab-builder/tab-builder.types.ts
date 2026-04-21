@@ -7,7 +7,7 @@
  *   1. **TabTemplate[]** (company-wide, lives under Customization
  *      `type='product', key='tabBuilder'`). Defines *which tabs exist*, what
  *      type each is, and the schema for content (e.g. list of spec fields,
- *      vehicle fitment flags, predefined FAQ questions). Stored as
+ *      record fields, predefined FAQ questions). Stored as
  *      `{ templates: TabTemplate[] }`.
  *
  *   2. **TabData** (per-product, lives on `Product.tabBuilder`). A plain map
@@ -15,18 +15,23 @@
  *      identified by `abbr` in the company template. The shape of each value
  *      depends on the tab's type:
  *
- *        - specs       → { [fieldAbbr]: string | number | string[] }
- *        - vehicle     → { isUniversal: boolean; vehicles: VehicleFitment[] }
+ *        - specs       → { [fieldAbbr]: string | number | string[] }       (single record)
+ *        - records     → Array<{ [fieldAbbr]: string | number | string[] }> (many records of the same schema)
  *        - richtext    → string (HTML)
  *        - faq         → FaqEntry[]
  *        - custom      → string (raw HTML)
  *        - table       → { headers: string[]; rows: string[][] }
+ *        - review      → ReviewEntry[]
+ *        - video       → VideoEntry[]
+ *        - downloads   → DownloadEntry[]
  *
  * The backend stores both blobs as opaque JSON; shape enforcement is the
  * frontend's responsibility.
  */
 
-export type TabType = 'specs' | 'vehicle' | 'richtext' | 'faq' | 'custom' | 'table' | 'review';
+export type TabType =
+  | 'specs' | 'records' | 'richtext' | 'faq' | 'custom'
+  | 'table' | 'review' | 'video' | 'downloads';
 
 // ─── Product types the template may target ──────────────────────────────────
 // Mirrors `ProductFormComponent.ALLOWED_TYPES`. An empty / missing
@@ -58,22 +63,28 @@ export function productTypeI18nKey(t: ProductType): string {
 
 // ─── Template (settings) ─────────────────────────────────────────────────────
 
-export type SpecFieldType = 'text' | 'number' | 'select' | 'multiselect';
+export type SpecFieldType = 'text' | 'number' | 'select' | 'multiselect' | 'date';
 
+/**
+ * Schema for a single field, used by both `specs` (one-off key/value) and
+ * `records` (many rows sharing this schema). `filterable` flags the field as
+ * a candidate for an e-commerce storefront filter (brand, material,
+ * colour…); the storefront reads this when building facet filters.
+ */
 export interface SpecField {
   id: string;
   label: string;
   abbr: string;
   type: SpecFieldType;
   required: boolean;
+  /**
+   * Whether this field can be used as a filter facet on the storefront.
+   * Defaults to false — callers opt in per field. Most meaningful for
+   * `text` / `select` / `multiselect` / `number`; `date` is also allowed.
+   */
+  filterable?: boolean;
   /** Only used when type === 'select' | 'multiselect' */
   options?: string[];
-}
-
-export interface VehicleConfig {
-  allowUniversal: boolean;
-  allowYearRange: boolean;
-  requireEngine: boolean;
 }
 
 export interface FaqTemplateItem {
@@ -98,7 +109,8 @@ export interface TabTemplate {
 
   // Type-specific config (only one is set per template, matching type)
   specFields?: SpecField[];
-  vehicleConfig?: VehicleConfig;
+  /** Field schema used by `records`-typed templates. Same shape as specFields. */
+  recordFields?: SpecField[];
   faqFields?: FaqTemplateItem[];
   /** Shared by richtext + custom */
   placeholder?: string;
@@ -109,22 +121,6 @@ export interface TabBuilderTemplates {
 }
 
 // ─── Data (per-product) ──────────────────────────────────────────────────────
-
-export interface VehicleFitment {
-  id: string;
-  makeId: string;
-  makeName: string;
-  modelId: string;
-  modelName: string;
-  yearStart: number;
-  yearEnd: number;
-  engineSize?: string;
-}
-
-export interface VehicleTabData {
-  isUniversal: boolean;
-  vehicles: VehicleFitment[];
-}
 
 export interface FaqEntry {
   question: string;
@@ -144,8 +140,24 @@ export interface ReviewEntry {
   date?: string;     // ISO string, optional
 }
 
-export type SpecsData  = Record<string, string | number | string[]>;
-export type TabDataMap = Record<string, any>;
+export interface VideoEntry {
+  url: string;
+  caption?: string;
+}
+
+export interface DownloadEntry {
+  name: string;
+  url: string;
+  /** Human-readable size string shown next to the name (e.g. "2.4 MB"). */
+  size?: string;
+  /** Short kind label ("pdf", "zip"…). Usually auto-derived by the consumer
+   *  from the URL extension, but can be overridden here. */
+  kind?: string;
+}
+
+export type SpecsData   = Record<string, string | number | string[]>;
+export type RecordEntry = Record<string, string | number | string[]>;
+export type TabDataMap  = Record<string, any>;
 
 // ─── Factories / defaults ────────────────────────────────────────────────────
 
@@ -172,17 +184,26 @@ export function newTabTemplate(name: string, type: TabType, sortOrder = 0): TabT
   };
   switch (type) {
     case 'specs':    return { ...base, specFields: [] };
-    case 'vehicle':  return { ...base, vehicleConfig: { allowUniversal: true, allowYearRange: true, requireEngine: false } };
+    case 'records':  return { ...base, recordFields: [] };
     case 'faq':      return { ...base, faqFields: [] };
     case 'richtext': return { ...base, placeholder: '' };
     case 'custom':   return { ...base, placeholder: '' };
     case 'table':    return { ...base };
     case 'review':   return { ...base };
+    case 'video':    return { ...base };
+    case 'downloads': return { ...base };
   }
 }
 
 export function newSpecField(): SpecField {
-  return { id: generateId('fld'), label: '', abbr: '', type: 'text', required: false, options: [] };
+  return {
+    id: generateId('fld'),
+    label: '', abbr: '',
+    type: 'text',
+    required: false,
+    filterable: false,
+    options: [],
+  };
 }
 
 export function newFaqTemplateItem(): FaqTemplateItem {
@@ -193,12 +214,14 @@ export function newFaqTemplateItem(): FaqTemplateItem {
 export function initialTabData(tpl: TabTemplate): any {
   switch (tpl.type) {
     case 'specs':    return {};
-    case 'vehicle':  return { isUniversal: false, vehicles: [] } as VehicleTabData;
+    case 'records':  return [] as RecordEntry[];
     case 'richtext': return '';
     case 'custom':   return '';
     case 'faq':      return [] as FaqEntry[];
     case 'table':    return { headers: ['Column 1', 'Column 2'], rows: [] } as TableData;
     case 'review':   return [] as ReviewEntry[];
+    case 'video':    return [] as VideoEntry[];
+    case 'downloads': return [] as DownloadEntry[];
   }
 }
 
@@ -219,10 +242,70 @@ export function normaliseTemplates(raw: any): TabTemplate[] {
       productTypes:  Array.isArray(t.productTypes)
         ? t.productTypes.filter((x: any): x is ProductType => PRODUCT_TYPES.includes(x))
         : undefined,
-      specFields:    Array.isArray(t.specFields) ? t.specFields : undefined,
-      vehicleConfig: t.vehicleConfig ?? undefined,
-      faqFields:     Array.isArray(t.faqFields) ? t.faqFields : undefined,
+      specFields:    Array.isArray(t.specFields)   ? t.specFields   : undefined,
+      recordFields:  Array.isArray(t.recordFields) ? t.recordFields : undefined,
+      faqFields:     Array.isArray(t.faqFields)    ? t.faqFields    : undefined,
       placeholder:   typeof t.placeholder === 'string' ? t.placeholder : undefined,
     }))
     .sort((a: TabTemplate, b: TabTemplate) => a.sortOrder - b.sortOrder);
+}
+
+// ─── Filterable-field discovery for storefront ──────────────────────────────
+
+/**
+ * Walk a set of templates + product data and return a list of fields flagged
+ * as `filterable: true`, each tagged with its current value on the product.
+ * This is the shape a storefront facet-filter system can index directly.
+ *
+ * Only `specs` and `records` tab types contribute filterable fields.
+ */
+export interface FilterableValue {
+  /** `tabAbbr.fieldAbbr` — stable identifier for the facet across products. */
+  key: string;
+  tabAbbr: string;
+  fieldAbbr: string;
+  label: string;
+  type: SpecFieldType;
+  /** `'single'` for specs (one value per product) or `'list'` for records. */
+  cardinality: 'single' | 'list';
+  value: any;
+}
+
+export function collectFilterableValues(
+  templates: TabTemplate[],
+  data: TabDataMap,
+): FilterableValue[] {
+  const out: FilterableValue[] = [];
+  for (const tpl of templates) {
+    if (!tpl.isActive) continue;
+
+    if (tpl.type === 'specs' && Array.isArray(tpl.specFields)) {
+      const record = (data?.[tpl.abbr] ?? {}) as Record<string, any>;
+      for (const f of tpl.specFields) {
+        if (!f.filterable) continue;
+        out.push({
+          key: `${tpl.abbr}.${f.abbr}`,
+          tabAbbr: tpl.abbr, fieldAbbr: f.abbr,
+          label: f.label, type: f.type,
+          cardinality: 'single',
+          value: record[f.abbr],
+        });
+      }
+    }
+
+    if (tpl.type === 'records' && Array.isArray(tpl.recordFields)) {
+      const rows = Array.isArray(data?.[tpl.abbr]) ? (data[tpl.abbr] as any[]) : [];
+      for (const f of tpl.recordFields) {
+        if (!f.filterable) continue;
+        out.push({
+          key: `${tpl.abbr}.${f.abbr}`,
+          tabAbbr: tpl.abbr, fieldAbbr: f.abbr,
+          label: f.label, type: f.type,
+          cardinality: 'list',
+          value: rows.map(r => r?.[f.abbr]).filter(v => v !== '' && v != null),
+        });
+      }
+    }
+  }
+  return out;
 }

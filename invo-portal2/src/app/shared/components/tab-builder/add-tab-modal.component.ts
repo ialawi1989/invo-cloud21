@@ -120,12 +120,14 @@ export class AddTabModalComponent {
 
   readonly TYPE_OPTIONS: { value: TabType; labelKey: string; descKey: string }[] = [
     { value: 'specs',    labelKey: 'TAB_BUILDER.TYPES.SPECS',    descKey: 'TAB_BUILDER.TYPES.SPECS_DESC' },
-    { value: 'vehicle',  labelKey: 'TAB_BUILDER.TYPES.VEHICLE',  descKey: 'TAB_BUILDER.TYPES.VEHICLE_DESC' },
+    { value: 'records',  labelKey: 'TAB_BUILDER.TYPES.RECORDS',  descKey: 'TAB_BUILDER.TYPES.RECORDS_DESC' },
     { value: 'table',    labelKey: 'TAB_BUILDER.TYPES.TABLE',    descKey: 'TAB_BUILDER.TYPES.TABLE_DESC' },
     { value: 'richtext', labelKey: 'TAB_BUILDER.TYPES.RICHTEXT', descKey: 'TAB_BUILDER.TYPES.RICHTEXT_DESC' },
-    { value: 'faq',      labelKey: 'TAB_BUILDER.TYPES.FAQ',      descKey: 'TAB_BUILDER.TYPES.FAQ_DESC' },
-    { value: 'review',   labelKey: 'TAB_BUILDER.TYPES.REVIEW',   descKey: 'TAB_BUILDER.TYPES.REVIEW_DESC' },
-    { value: 'custom',   labelKey: 'TAB_BUILDER.TYPES.CUSTOM',   descKey: 'TAB_BUILDER.TYPES.CUSTOM_DESC' },
+    { value: 'faq',       labelKey: 'TAB_BUILDER.TYPES.FAQ',       descKey: 'TAB_BUILDER.TYPES.FAQ_DESC' },
+    { value: 'review',    labelKey: 'TAB_BUILDER.TYPES.REVIEW',    descKey: 'TAB_BUILDER.TYPES.REVIEW_DESC' },
+    { value: 'video',     labelKey: 'TAB_BUILDER.TYPES.VIDEO',     descKey: 'TAB_BUILDER.TYPES.VIDEO_DESC' },
+    { value: 'downloads', labelKey: 'TAB_BUILDER.TYPES.DOWNLOADS', descKey: 'TAB_BUILDER.TYPES.DOWNLOADS_DESC' },
+    { value: 'custom',    labelKey: 'TAB_BUILDER.TYPES.CUSTOM',    descKey: 'TAB_BUILDER.TYPES.CUSTOM_DESC' },
   ];
 
   name      = signal('');

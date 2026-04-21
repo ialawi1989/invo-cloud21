@@ -118,6 +118,19 @@ export class TabBuilderSettingsService {
         }));
     }
 
+    if (Array.isArray(out.recordFields)) {
+      out.recordFields = out.recordFields
+        .filter(f => (f.label ?? '').trim() !== '')
+        .map(f => ({
+          ...f,
+          label: f.label.trim(),
+          abbr:  (f.abbr ?? '').trim(),
+          options: Array.isArray(f.options)
+            ? f.options.map(o => o.trim()).filter(Boolean)
+            : undefined,
+        }));
+    }
+
     if (Array.isArray(out.faqFields)) {
       out.faqFields = out.faqFields
         .filter(f => (f.question ?? '').trim() !== '')

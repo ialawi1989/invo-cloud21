@@ -153,11 +153,18 @@
                 }
 
                 <div class="spec-field__footer">
-                  <label class="check">
-                    <input type="checkbox" [checked]="f.required"
-                           (change)="updateSpecField(i, { required: $any($event.target).checked })"/>
-                    {{ 'TAB_BUILDER.REQUIRED' | translate }}
-                  </label>
+                  <div class="check-row">
+                    <label class="check">
+                      <input type="checkbox" [checked]="f.required"
+                             (change)="updateSpecField(i, { required: $any($event.target).checked })"/>
+                      {{ 'TAB_BUILDER.REQUIRED' | translate }}
+                    </label>
+                    <label class="check" [title]="'TAB_BUILDER.FILTERABLE_HINT' | translate">
+                      <input type="checkbox" [checked]="f.filterable"
+                             (change)="updateSpecField(i, { filterable: $any($event.target).checked })"/>
+                      {{ 'TAB_BUILDER.FILTERABLE' | translate }}
+                    </label>
+                  </div>
                   <button type="button" class="link-btn link-btn--danger" (click)="deleteSpecField(i)">
                     {{ 'COMMON.DELETE' | translate }}
                   </button>
@@ -168,35 +175,81 @@
         }
 
         <!-- ─── Vehicle template editor ────────────────────────────── -->
-        @if (tpl.type === 'vehicle') {
+        @if (tpl.type === 'records') {
           <div class="section">
-            <h4>{{ 'TAB_BUILDER.VEHICLE_CONFIG' | translate }}</h4>
-            <div class="toggle-list">
-              <label class="toggle-row">
-                <input type="checkbox" [checked]="tpl.vehicleConfig?.allowUniversal ?? true"
-                       (change)="updateVehicleConfig({ allowUniversal: $any($event.target).checked })"/>
-                <div>
-                  <p class="toggle-row__name">{{ 'TAB_BUILDER.ALLOW_UNIVERSAL' | translate }}</p>
-                  <p class="toggle-row__desc">{{ 'TAB_BUILDER.ALLOW_UNIVERSAL_DESC' | translate }}</p>
-                </div>
-              </label>
-              <label class="toggle-row">
-                <input type="checkbox" [checked]="tpl.vehicleConfig?.allowYearRange ?? true"
-                       (change)="updateVehicleConfig({ allowYearRange: $any($event.target).checked })"/>
-                <div>
-                  <p class="toggle-row__name">{{ 'TAB_BUILDER.ALLOW_YEAR_RANGE' | translate }}</p>
-                  <p class="toggle-row__desc">{{ 'TAB_BUILDER.ALLOW_YEAR_RANGE_DESC' | translate }}</p>
-                </div>
-              </label>
-              <label class="toggle-row">
-                <input type="checkbox" [checked]="tpl.vehicleConfig?.requireEngine ?? false"
-                       (change)="updateVehicleConfig({ requireEngine: $any($event.target).checked })"/>
-                <div>
-                  <p class="toggle-row__name">{{ 'TAB_BUILDER.REQUIRE_ENGINE' | translate }}</p>
-                  <p class="toggle-row__desc">{{ 'TAB_BUILDER.REQUIRE_ENGINE_DESC' | translate }}</p>
-                </div>
-              </label>
+            <div class="section__header">
+              <h4>{{ 'TAB_BUILDER.RECORD_FIELDS' | translate }}</h4>
+              <button type="button" class="btn btn-primary btn-sm" (click)="addRecordField()">
+                + {{ 'TAB_BUILDER.ADD_FIELD' | translate }}
+              </button>
             </div>
+            <p class="muted">{{ 'TAB_BUILDER.RECORD_FIELDS_HINT' | translate }}</p>
+
+            @if (!tpl.recordFields || tpl.recordFields.length === 0) {
+              <div class="dashed-empty">
+                <p>{{ 'TAB_BUILDER.NO_FIELDS' | translate }}</p>
+                <button type="button" class="link-btn" (click)="addRecordField()">
+                  + {{ 'TAB_BUILDER.ADD_FIRST_FIELD' | translate }}
+                </button>
+              </div>
+            }
+
+            @for (f of tpl.recordFields; track f.id; let i = $index) {
+              <div class="spec-field">
+                <div class="spec-field__grid">
+                  <label class="sub-field">
+                    <span class="sub-field__label">{{ 'TAB_BUILDER.LABEL' | translate }}</span>
+                    <input class="input" type="text" [ngModel]="f.label"
+                           (ngModelChange)="updateRecordField(i, { label: $event })"
+                           [placeholder]="'TAB_BUILDER.FIELD_LABEL_PLACEHOLDER' | translate"/>
+                  </label>
+                  <label class="sub-field">
+                    <span class="sub-field__label">{{ 'TAB_BUILDER.KEY_ABBR' | translate }}</span>
+                    <input class="input input--readonly" type="text" [ngModel]="f.abbr"
+                           (ngModelChange)="updateRecordField(i, { abbr: $event })"
+                           [placeholder]="'TAB_BUILDER.FIELD_KEY_PLACEHOLDER' | translate"/>
+                  </label>
+                  <div class="sub-field">
+                    <span class="sub-field__label">{{ 'TAB_BUILDER.TYPE' | translate }}</span>
+                    <app-search-dropdown
+                      [items]="SPEC_FIELD_TYPE_VALUES"
+                      [displayWith]="displaySpecType"
+                      [searchable]="false"
+                      [value]="f.type"
+                      (valueChange)="updateRecordField(i, { type: $any($event) })"
+                    />
+                  </div>
+                </div>
+
+                @if (f.type === 'select' || f.type === 'multiselect') {
+                  <label class="sub-field">
+                    <span class="sub-field__label">{{ 'TAB_BUILDER.OPTIONS' | translate }}</span>
+                    <input class="input" type="text"
+                           [ngModel]="(f.options || []).join(', ')"
+                           (ngModelChange)="updateRecordOptions(i, $event)"
+                           [placeholder]="'TAB_BUILDER.OPTIONS_PLACEHOLDER' | translate"/>
+                  </label>
+                }
+
+                <div class="spec-field__footer">
+                  <div class="check-row">
+                    <label class="check">
+                      <input type="checkbox" [checked]="f.required"
+                             (change)="updateRecordField(i, { required: $any($event.target).checked })"/>
+                      {{ 'TAB_BUILDER.REQUIRED' | translate }}
+                    </label>
+                    <label class="check" [title]="'TAB_BUILDER.FILTERABLE_HINT' | translate">
+                      <input type="checkbox" [checked]="f.filterable"
+                             (change)="updateRecordField(i, { filterable: $any($event.target).checked })"/>
+                      {{ 'TAB_BUILDER.FILTERABLE' | translate }}
+                    </label>
+                  </div>
+                  <button type="button" class="link-btn link-btn--danger" (click)="deleteRecordField(i)">
+                    {{ 'COMMON.DELETE' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
           </div>
         }
 

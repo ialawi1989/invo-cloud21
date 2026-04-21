@@ -303,6 +303,13 @@
   cursor: pointer;
 }
 
+.check-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 // ─── Applies-to dropdown ───────────────────────────────────────────────────
 .applies-dropdown {
   display: block;
