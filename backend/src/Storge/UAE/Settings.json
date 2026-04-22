@@ -1,0 +1,65 @@
+{
+    "contryCode": "971",
+    "currencySymbol": "AED",
+    "timeOffset": "+4",
+    "afterDecimal": 2,
+    "phoneRegExp": "\\d{10}",
+    "Taxes": [
+        {
+            "name": "Exempt Tax",
+            "taxPercentage": 0,
+            "default": false
+
+        },
+        {
+            "name": "Zero Tax ",
+            "taxPercentage": 0,
+            "default": false
+            
+        }
+    ],
+    "addressFormat": [
+        {
+            "key": "governorate",
+            "title": "Governorate",
+            "isRequired": true
+        },
+        {
+            "key": "city",
+            "title": "City",
+            "isRequired": true
+        },
+        {
+            "key": "block",
+            "title": "Block",
+            "isRequired": true
+        },
+        {
+            "key": "road",
+            "title": "Road/Avenue",
+            "isRequired": true
+        },
+        {
+            "key": "building",
+            "title": "Building/House",
+            "isRequired": true
+        },
+        {
+            "key": "flat",
+            "title": "Flat/Office",
+            "isRequired": false
+        }
+    ],
+
+    "cashValues": [
+        20,
+        10,
+        5,
+        1,
+        0.5,
+        0.1,
+        0.05,
+        0.025
+    ]
+    
+}

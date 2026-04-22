@@ -135,14 +135,16 @@
   <ng-template listRowActions let-row>
     <div class="inline-flex items-center gap-2" (click)="$event.stopPropagation()">
       <!-- Inline Edit — pill button. Opacity 1 on mobile; hover-reveal on md+. -->
-      <button type="button"
-        (click)="editProduct(row, $event)"
-        style="box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.25), 0 2px 6px -2px rgba(15, 23, 42, 0.12);"
-        class="px-4 py-1.5 rounded-full bg-brand-600 text-white text-xs font-semibold
-               hover:bg-brand-700 transition-all
-               md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100">
-        {{ 'COMMON.ACTIONS.EDIT' | translate }}
-      </button>
+      @if (canEdit) {
+        <button type="button"
+          (click)="editProduct(row, $event)"
+          style="box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.25), 0 2px 6px -2px rgba(15, 23, 42, 0.12);"
+          class="px-4 py-1.5 rounded-full bg-brand-600 text-white text-xs font-semibold
+                 hover:bg-brand-700 transition-all
+                 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100">
+          {{ 'COMMON.ACTIONS.EDIT' | translate }}
+        </button>
+      }
 
       <!-- Overflow menu (⋯) — circular floating button, always visible -->
       <button type="button"
@@ -171,28 +173,34 @@
         (backdropClick)="closeRowMenu()"
         (detach)="closeRowMenu()">
         <div class="w-44 bg-white border border-slate-200 rounded-xl shadow-lg py-1 animate-in fade-in slide-in-from-top-1 duration-100">
-          <button type="button" (click)="printLabel(row, $event); closeRowMenu()"
-            class="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-            </svg>
-            {{ 'PRODUCTS.ACTIONS.PRINT_LABEL' | translate }}
-          </button>
-          <button type="button" (click)="copyProduct(row, $event); closeRowMenu()"
-            class="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-            </svg>
-            {{ 'COMMON.ACTIONS.COPY' | translate }}
-          </button>
-          <div class="my-1 border-t border-slate-100"></div>
-          <button type="button" (click)="deleteProduct(row, $event); closeRowMenu()"
-            class="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-            </svg>
-            {{ 'COMMON.ACTIONS.DELETE' | translate }}
-          </button>
+          @if (canPrintLabel) {
+            <button type="button" (click)="printLabel(row, $event); closeRowMenu()"
+              class="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+              </svg>
+              {{ 'PRODUCTS.ACTIONS.PRINT_LABEL' | translate }}
+            </button>
+          }
+          @if (canClone) {
+            <button type="button" (click)="copyProduct(row, $event); closeRowMenu()"
+              class="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              {{ 'COMMON.ACTIONS.COPY' | translate }}
+            </button>
+          }
+          @if (canDelete) {
+            <div class="my-1 border-t border-slate-100"></div>
+            <button type="button" (click)="deleteProduct(row, $event); closeRowMenu()"
+              class="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+              {{ 'COMMON.ACTIONS.DELETE' | translate }}
+            </button>
+          }
         </div>
       </ng-template>
     </div>

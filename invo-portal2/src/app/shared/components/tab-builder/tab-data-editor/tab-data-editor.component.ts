@@ -12,8 +12,9 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { ModalService } from '../../modal/modal.service';
-import { SearchDropdownComponent } from '../dropdown/search-dropdown.component';
+import { ModalService } from '../../../modal/modal.service';
+import { SearchDropdownComponent } from '../../dropdown/search-dropdown.component';
+import { RichEditorComponent } from '../../rich-editor/rich-editor.component';
 import {
   DownloadEntry,
   FaqEntry,
@@ -25,8 +26,8 @@ import {
   TableData,
   VideoEntry,
   initialTabData,
-} from './tab-builder.types';
-import { TabTypeIconComponent } from './tab-type-icon.component';
+} from '../tab-builder.types';
+import { TabTypeIconComponent } from '../tab-type-icon/tab-type-icon.component';
 
 /**
  * Per-product data editor. Reads the company `templates` and renders **only
@@ -39,7 +40,7 @@ import { TabTypeIconComponent } from './tab-type-icon.component';
 @Component({
   selector: 'app-tab-data-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, SearchDropdownComponent, TabTypeIconComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, SearchDropdownComponent, RichEditorComponent, TabTypeIconComponent],
   templateUrl: './tab-data-editor.component.html',
   styleUrl: './tab-data-editor.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,6 +57,12 @@ export class TabDataEditorComponent {
    * shared settings preview), all active templates are shown.
    */
   productType = input<string | null>(null);
+  /**
+   * Current product description. Piped into any richtext tab whose template
+   * has `source === 'productDescription'` — the tab becomes a live view of
+   * the description rather than a separately-edited field.
+   */
+  productDescription = input<string>('');
   valueChange = output<TabDataMap>();
 
   activeAbbrSignal = signal<string>('');
@@ -192,6 +199,16 @@ export class TabDataEditorComponent {
   textValue(abbr: string): string {
     const v = this.value()?.[abbr];
     return typeof v === 'string' ? v : '';
+  }
+
+  /**
+   * Per-product richtext value. Used only in `manual` source mode. The
+   * other two modes (productDescription / shared) ignore per-product
+   * content entirely.
+   */
+  richtextValueFor(tpl: TabTemplate): string {
+    const own = this.value()?.[tpl.abbr];
+    return typeof own === 'string' ? own : '';
   }
 
   updateText(abbr: string, value: string): void {

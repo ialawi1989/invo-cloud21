@@ -8,7 +8,9 @@ export type BreadcrumbIcon =
   | 'folder'
   | 'file'
   | 'image'
-  | 'settings';
+  | 'settings'
+  | 'arrow-left'
+  | 'package';
 
 /** A single segment in a breadcrumb trail. */
 export interface BreadcrumbItem {

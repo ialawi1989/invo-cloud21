@@ -1,0 +1,404 @@
+[{
+    "name": "New Invoice Security",
+    "access": false
+},
+{
+    "name": "Edit Other Employee Invoice Security",
+    "access": false
+},
+{
+    "name": "ReOpen Invoice Security",
+    "access": false
+},
+{
+    "name": "Print Invoice Security",
+    "access": false
+},
+{
+    "name": "Settle Invoice Security",
+    "access": false
+},
+{
+    "name": "Split Invoice Security",
+    "access": false
+},
+{
+    "name": "FollowUp Invoice Security",
+    "access": false
+},
+{
+    "name": "Void Invoice Security",
+    "access": false
+},
+{
+    "name": "Discount Invoice Security",
+    "access": false
+},
+{
+    "name": "Surcharge Invoice Security",
+    "access": false
+},
+{
+    "name": "Driver Dispatcher Security",
+    "access": false
+},
+{
+    "name": "Reservation Security",
+    "access": false
+},
+{
+    "name": "BackOffice Security",
+    "access": false
+},
+{
+    "name": "DineIn Security",
+    "access": false
+},
+{
+    "name": "TakeAway Security",
+    "access": false
+},
+{
+    "name": "DriveThru Security",
+    "access": false
+},
+{
+    "name": "Delivery Security",
+    "access": false
+},
+{
+    "name": "Change Product Price Security",
+    "access": false
+},
+{
+    "name": "Remove Tax Security",
+    "access": false
+},
+{
+    "name": "Pay Credit Security",
+    "access": false
+},
+{
+    "name": "Customer Credit Security",
+    "access": false
+},
+{
+    "name": "Edit Mode Security",
+    "access": false
+},
+{
+    "name": "Show Menu Section",
+    "access": false
+},
+{
+    "name": "Show Employee Section",
+    "access": false
+},
+{
+    "name": "Show Report Section",
+    "access": false
+},
+{
+    "name": "Show Setting Section",
+    "access": false
+},
+{
+    "name": "Add MenuProduct",
+    "access": false
+},
+{
+    "name": "Edit MenuProduct",
+    "access": false
+},
+{
+    "name": "Delete MenuProduct",
+    "access": false
+},
+{
+    "name": "Add MenuModifier",
+    "access": false
+},
+{
+    "name": "Edit MenuModifier",
+    "access": false
+},
+{
+    "name": "Delete MenuModifier",
+    "access": false
+},
+{
+    "name": "Add MenuCategory",
+    "access": false
+},
+{
+    "name": "Edit MenuCategory",
+    "access": false
+},
+{
+    "name": "Delete MenuCategory",
+    "access": false
+},
+{
+    "name": "Add PriceLabel",
+    "access": false
+},
+{
+    "name": "Edit PriceLabel",
+    "access": false
+},
+{
+    "name": "Delete PriceLabel",
+    "access": false
+},
+{
+    "name": "Add Surcharge",
+    "access": false
+},
+{
+    "name": "Edit Surcharge",
+    "access": false
+},
+{
+    "name": "Delete Surcharge",
+    "access": false
+},
+{
+    "name": "Add Discount",
+    "access": false
+},
+{
+    "name": "Edit Discount",
+    "access": false
+},
+{
+    "name": "Delete Discount",
+    "access": false
+},
+{
+    "name": "Add Employee",
+    "access": false
+},
+{
+    "name": "Edit Employee",
+    "access": false
+},
+{
+    "name": "Add Equipment",
+    "access": false
+},
+{
+    "name": "Edit Equipment",
+    "access": false
+},
+{
+    "name": "Delete Equipment",
+    "access": false
+},
+{
+    "name": "Add Role",
+    "access": false
+},
+{
+    "name": "Edit Role",
+    "access": false
+},
+{
+    "name": "Delete Role",
+    "access": false
+},
+{
+    "name": "Exit Security",
+    "access": false
+},
+{
+    "name": "Open Drawer",
+    "access": false
+},
+{
+    "name": "Employee Attendence",
+    "access": false
+},
+{
+    "name": "Customers",
+    "access": false
+},
+{
+    "name": "Merge Invoice",
+    "access": false
+},
+{
+    "name": "Sent Email",
+    "access": false
+},
+{
+    "name": "Minimize",
+    "access": false
+},
+{
+    "name": "Show Inventory Section",
+    "access": false
+},
+{
+    "name": "Add Inventory Product",
+    "access": false
+},
+{
+    "name": "Edit Inventory Product",
+    "access": false
+},
+{
+    "name": "Delete Inventory Product",
+    "access": false
+},
+{
+    "name": "Add Inventory Recipe",
+    "access": false
+},
+{
+    "name": "Edit Inventory Recipe",
+    "access": false
+},
+{
+    "name": "Delete Inventory Recipe",
+    "access": false
+},
+{
+    "name": "Add PO",
+    "access": false
+},
+{
+    "name": "Edit PO",
+    "access": false
+},
+{
+    "name": "Add Supplier",
+    "access": false
+},
+{
+    "name": "Edit Supplier",
+    "access": false
+},
+{
+    "name": "Delete Supplier",
+    "access": false
+},
+{
+    "name": "Add Inventory Category",
+    "access": false
+},
+{
+    "name": "Edit Inventory Category",
+    "access": false
+},
+{
+    "name": "Delete Inventory Category",
+    "access": false
+},
+{
+    "name": "Add Inventory Location",
+    "access": false
+},
+{
+    "name": "Edit Inventory Location",
+    "access": false
+},
+{
+    "name": "Delete Inventory Location",
+    "access": false
+},
+{
+    "name": "New PhysicalCount AllProduct",
+    "access": false
+},
+{
+    "name": "New PhysicalCount By Category",
+    "access": false
+},
+{
+    "name": "New PhysicalCount By Location",
+    "access": false
+},
+{
+    "name": "New PhysicalCount ByProduct",
+    "access": false
+},
+{
+    "name": "Edit PhysicalCount",
+    "access": false
+},
+{
+    "name": "Calculate PhysicalCount",
+    "access": false
+},
+{
+    "name": "Commit PhysicalCount",
+    "access": false
+},
+{
+    "name": "Add Price management",
+    "access": false
+},
+{
+    "name": "Edit Price management",
+    "access": false
+},
+{
+    "name": "Delete Price management",
+    "access": false
+},
+{
+    "name": "Add Database",
+    "access": false
+},
+{
+    "name": "Export Database",
+    "access": false
+},
+{
+    "name": "Import Database",
+    "access": false
+},
+{
+    "name": "Backup Database",
+    "access": false
+},
+{
+    "name": "Search Security",
+    "access": false
+},
+{
+    "name": "Void Payment",
+    "access": false
+},
+{
+    "name": "Driver Option",
+    "access": false
+},
+{
+    "name": "Remove Charge Per Hour",
+    "access": false
+},
+{
+    "name": "Remove Minimum Charge",
+    "access": false
+},
+{
+    "name": "Change Table",
+    "access": false
+},
+{
+    "name": "Pending Invoice",
+    "access": false
+},
+{
+    "name": "Manager CashierOut",
+    "access": false
+},
+{
+    "name": "Setteld Invoices",
+    "access": false
+},
+{
+    "name": "Custom Discount",
+    "access": false
+}]

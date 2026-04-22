@@ -1,59 +1,28 @@
 <div class="product-form-page">
-  <!-- ═══ Header (back + breadcrumbs + page title + save toolbar) ═══ -->
+  <!-- ═══ Header (back-icon + current page title in breadcrumbs) ═══ -->
   <header class="page-header">
-    <div class="page-header__top">
-      <button
-        type="button"
-        class="btn-back"
-        (click)="backPage()"
-        [attr.aria-label]="'COMMON.BACK' | translate"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-        </svg>
-      </button>
-
-      <div class="page-header__titles">
-        <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-        <h1 class="page-title">
-          @if (formStatus() === 'new') {
-            {{ 'PRODUCTS.FORM.ADD_TITLE' | translate: { value: productType() } }}
-          } @else {
-            {{ 'PRODUCTS.FORM.EDIT_TITLE' | translate: { value: productType() } }}
-            @if (productInfo().name) { : {{ productInfo().name }} }
-          }
-        </h1>
-      </div>
-    </div>
-
-    <div class="page-header__actions">
-      <button
-        type="button"
-        class="btn btn-ghost"
-        (click)="backPage()"
-        [disabled]="saving()"
-      >
-        {{ 'COMMON.CANCEL' | translate }}
-      </button>
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="saveProduct()"
-        [disabled]="saving() || loading()"
-      >
-        @if (saving()) {
-          <span class="spinner" aria-hidden="true"></span>
-        }
-        {{ 'COMMON.SAVE' | translate }}
-      </button>
-    </div>
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
   </header>
 
   <!-- ═══ Body ═══ -->
-  @if (loading()) {
-    <div class="form-loading">
-      <div class="spinner spinner--lg"></div>
+  @if (loadError()) {
+    <div class="form-error" role="alert">
+      <svg class="form-error__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8"  x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <div class="form-error__text">
+        <h3 class="form-error__title">{{ loadError()! | translate }}</h3>
+        <p  class="form-error__hint">{{ 'PRODUCTS.FORM.LOAD_FAILED_HINT' | translate }}</p>
+      </div>
+      <button type="button" class="btn btn-primary" (click)="load()">
+        {{ 'PRODUCTS.FORM.RETRY' | translate }}
+      </button>
     </div>
+    <app-product-form-skeleton/>
+  } @else if (loading()) {
+    <app-product-form-skeleton/>
   } @else {
     <form
       [formGroup]="productForm"
@@ -116,7 +85,7 @@
             />
           }
 
-          @if (fieldsOptions()?.recipe?.isVisible) {
+          @if (fieldsOptions()?.recipe?.isVisible && privileges.check('productRecipeSecurity.actions.view.access')) {
             <app-pf-recipe-builder
               [productInfo]="productInfo()"
               [productForm]="productForm"
@@ -236,5 +205,45 @@
         </aside>
       </div>
     </form>
+  }
+
+  <!-- ═══ Sticky Save/Cancel footer ═══ -->
+  @if (!loadError()) {
+    <div class="form-footer" [class.form-footer--invalid]="errorCount() > 0">
+      <div class="form-footer__inner">
+        @if (errorCount() > 0) {
+          <span class="form-footer__errors" aria-live="polite">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8"  x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ errorCount() }} {{ (errorCount() === 1 ? 'COMMON.ERROR' : 'COMMON.ERRORS') | translate }}
+          </span>
+        }
+
+        <button
+          type="button"
+          class="btn btn-ghost"
+          (click)="backPage()"
+          [disabled]="saving()"
+        >
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-primary form-footer__save"
+          (click)="saveProduct()"
+          [disabled]="saving() || loading()"
+        >
+          @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+          {{ 'COMMON.SAVE' | translate }}
+          @if (errorCount() > 0) {
+            <span class="form-footer__badge" aria-hidden="true">{{ errorCount() }}</span>
+          }
+        </button>
+      </div>
+    </div>
   }
 </div>

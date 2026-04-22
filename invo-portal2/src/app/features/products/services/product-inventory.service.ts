@@ -33,6 +33,48 @@ export class ProductInventoryService {
     return this.api.request(this.api.post('product/saveInventoryLocations', locationInfo));
   }
 
+  /**
+   * Paged inventory-locations loader for the branch-product location
+   * picker. Payload mirrors the old project's
+   * `product/getInventoryLocationsList` exactly:
+   *
+   *   {
+   *     page, limit, searchTerm, sortBy: {},
+   *     filter: { branches: [branchId] },  // scope to one branch
+   *     locationId: string | null,         // pins selected row on page 1
+   *   }
+   *
+   * `locationId` is always sent (null when nothing is selected) so the
+   * backend contract stays consistent page-to-page — same rule as the tax
+   * / department / brand loaders.
+   */
+  async getInventoryLocationsList(params: {
+    page: number;
+    pageSize: number;
+    search: string;
+    branchId?: string | null;
+    /** Currently-selected location id — pinned to the top of page 1. */
+    locationId?: string | null;
+  } = { page: 1, pageSize: 20, search: '' }): Promise<{ items: Array<{ label: string; value: string }>; hasMore: boolean; raw: any[] }> {
+    const res = await this.api.request<any>(
+      this.api.post('product/getInventoryLocationsList', {
+        page: params.page,
+        limit: params.pageSize,
+        searchTerm: params.search,
+        sortBy: {},
+        filter: {
+          branches: params.branchId ? [params.branchId] : [],
+        },
+        locationId: params.locationId ?? null,
+      }),
+    );
+    const data = res?.data;
+    const list: any[] = data?.list || data || [];
+    const count = Number(data?.count ?? list.length);
+    const items = list.map((l: any) => ({ label: l.name, value: l.id || l._id }));
+    return { items, hasMore: params.page * params.pageSize < count, raw: list };
+  }
+
   // ─── Availability ──────────────────────────────────────────
 
   async getProductAvailability(productId: string): Promise<BranchSummary[]> {

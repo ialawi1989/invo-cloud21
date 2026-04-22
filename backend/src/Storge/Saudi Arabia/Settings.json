@@ -1,0 +1,78 @@
+{
+    "contryCode": "966",
+    "currencySymbol": "SAR",
+    "afterDecimal": 2,
+    "timeOffset": "+3",
+    "phoneRegExp": "(((\\+|00){0,1}966)|0){1}(51\\d{5}|57\\d{5}|54\\d{5}|56\\d{5}|50\\d{6}|53\\d{6}|55\\d{6}|58\\d{5}|59\\d{5})",
+    "// another regex for phone number ": [
+        "/^(009665|9665|\\+9665|05|5)(5|0|3|6|4|9|1|8|7)([0-9]{7})$/",
+        "^(009665|9665|\\+9665|05){1}(5|0|3|6|4|9|1|8|7){1}([0-9]{7})",
+        "^(00|0|)?(966|5|)(\\d{9})$",
+        "(?:\\+?0*?966)?0?(5[0-9]{8}) numbers without 0  or (?:\\+?0*?966)?0?5[0-9]{8}"
+    ],
+    "addressFormat": [
+        {
+            "key": "city",
+            "name": "City",
+            "isRequired": true
+        },
+        {
+            "key": "block",
+            "name": "Block",
+            "isRequired": true
+        },
+        {
+            "key": "district",
+            "name": "District",
+            "isRequired": true
+        },
+        {
+            "key": "road",
+            "title": "Road/Avenue",
+            "isRequired": true
+        },
+        {
+            "key": "building",
+            "name": "Building/House",
+            "isRequired": true
+        },
+        {
+            "key": "flat",
+            "name": "Flat/Office",
+            "isRequired": false
+        }
+    ],
+    "TaxValidationLink" : "https://zatca.gov.sa/en/eServices/Pages/TaxpayerLookup.aspx",
+    "Taxes": [
+        {
+            "name": "Exempt Tax",
+            "taxPercentage": 0,
+            "default": false
+        },
+        {
+            "name": "Zero Tax ",
+            "taxPercentage": 0,
+            "default": false
+        },
+        {
+            "name": "VAT 15%",
+            "taxPercentage": 15,
+            "default": false
+        }
+    ],
+    "cashValues": [
+        500,
+        200,
+        100,
+        50,
+        20,
+        10,
+        5,
+        2,
+        1,
+        0.5,
+        0.25,
+        0.1,
+        0.05
+    ]
+}

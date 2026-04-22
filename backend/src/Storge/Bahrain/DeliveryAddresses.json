@@ -1,0 +1,7187 @@
+[
+  {
+    "Governorate": "Southern",
+    "City": "A'Ali",
+    "Block": "746",
+    "translation": {
+      "City": {
+        "ar": "عالي",
+        "en": "A'Ali"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "A'Ali",
+    "Block": "748",
+    "translation": {
+      "City": {
+        "ar": "عالي",
+        "en": "A'Ali"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Door",
+    "Block": "965",
+    "translation": {
+      "City": {
+        "ar": "الدور",
+        "en": "Al Door"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Algainah",
+    "Block": "961",
+    "translation": {
+      "City": {
+        "ar": "القينة",
+        "en": "Algainah"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Hajyat",
+    "Block": "929",
+    "translation": {
+      "City": {
+        "ar": "الحاجيات",
+        "en": "Al Hajyat"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Hajyat",
+    "Block": "931",
+    "translation": {
+      "City": {
+        "ar": "الحاجيات",
+        "en": "Al Hajyat"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Hajyat",
+    "Block": "935",
+    "translation": {
+      "City": {
+        "ar": "الحاجيات",
+        "en": "Al Hajyat"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Hajyat",
+    "Block": "939",
+    "translation": {
+      "City": {
+        "ar": "الحاجيات",
+        "en": "Al Hajyat"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Hunaniya",
+    "Block": "901",
+    "translation": {
+      "City": {
+        "ar": "الحنانية",
+        "en": "Al Hunaniya"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Hunaniya",
+    "Block": "903",
+    "translation": {
+      "City": {
+        "ar": "الحنانية",
+        "en": "Al Hunaniya"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Jaseera",
+    "Block": "971",
+    "translation": {
+      "City": {
+        "ar": "الجزيرة",
+        "en": "Al Jaseera"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Mamtala",
+    "Block": "1099",
+    "translation": {
+      "City": {
+        "ar": "الممتلة",
+        "en": "Al Mamtala"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Mazrooeeah",
+    "Block": "943",
+    "translation": {
+      "City": {
+        "ar": "المزروعية",
+        "en": "Al Mazrooeeah"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Moaaskar",
+    "Block": "949",
+    "translation": {
+      "City": {
+        "ar": "المعسكر",
+        "en": "Al Moaaskar"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Omar",
+    "Block": "988",
+    "translation": {
+      "City": {
+        "ar": "العمار",
+        "en": "Al Omar"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Qarah",
+    "Block": "983",
+    "translation": {
+      "City": {
+        "ar": "القارة",
+        "en": "Al Qarah"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Qarah",
+    "Block": "987",
+    "translation": {
+      "City": {
+        "ar": "القارة",
+        "en": "Al Qarah"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Qareen",
+    "Block": "967",
+    "translation": {
+      "City": {
+        "ar": "القرين",
+        "en": "Al Qareen"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Rawdha",
+    "Block": "906",
+    "translation": {
+      "City": {
+        "ar": "الروضة",
+        "en": "Al Rawdha"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Rawdha",
+    "Block": "930",
+    "translation": {
+      "City": {
+        "ar": "الروضة",
+        "en": "Al Rawdha"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Riffah",
+    "Block": "947",
+    "translation": {
+      "City": {
+        "ar": "الرفة",
+        "en": "Al Riffah"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Romaitha",
+    "Block": "995",
+    "translation": {
+      "City": {
+        "ar": "الرميثة",
+        "en": "Al Romaitha"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Rumamin",
+    "Block": "981",
+    "translation": {
+      "City": {
+        "ar": "الرمامين",
+        "en": "Al Rumamin"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Rumamin",
+    "Block": "982",
+    "translation": {
+      "City": {
+        "ar": "الرمامين",
+        "en": "Al Rumamin"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Al Shabak",
+    "Block": "989",
+    "translation": {
+      "City": {
+        "ar": "الشباك",
+        "en": "Al Shabak"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Askar",
+    "Block": "951",
+    "translation": {
+      "City": {
+        "ar": "عسكر",
+        "en": "Askar"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Awali",
+    "Block": "945",
+    "translation": {
+      "City": {
+        "ar": "عوالي",
+        "en": "Awali"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Awali",
+    "Block": "946",
+    "translation": {
+      "City": {
+        "ar": "عوالي",
+        "en": "Awali"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Belaj Al Jazair",
+    "Block": "1063",
+    "translation": {
+      "City": {
+        "ar": "بلاج الجزائر",
+        "en": "Belaj Al Jazair"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Belaj Al Jazair",
+    "Block": "1064",
+    "translation": {
+      "City": {
+        "ar": "بلاج الجزائر",
+        "en": "Belaj Al Jazair"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Bu Kuwarah",
+    "Block": "913",
+    "translation": {
+      "City": {
+        "ar": "بو كويرة",
+        "en": "Bu Kuwarah"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Bu Kuwarah",
+    "Block": "917",
+    "translation": {
+      "City": {
+        "ar": "بو كويرة",
+        "en": "Bu Kuwarah"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Bu Kuwarah",
+    "Block": "919",
+    "translation": {
+      "City": {
+        "ar": "بو كويرة",
+        "en": "Bu Kuwarah"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Bu Kuwarah",
+    "Block": "921",
+    "translation": {
+      "City": {
+        "ar": "بو كويرة",
+        "en": "Bu Kuwarah"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Bu Kuwarah",
+    "Block": "923",
+    "translation": {
+      "City": {
+        "ar": "بو كويرة",
+        "en": "Bu Kuwarah"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Bu Kuwarah",
+    "Block": "925",
+    "translation": {
+      "City": {
+        "ar": "بو كويرة",
+        "en": "Bu Kuwarah"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Bu Kuwarah",
+    "Block": "927",
+    "translation": {
+      "City": {
+        "ar": "بو كويرة",
+        "en": "Bu Kuwarah"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Dar Kulaib",
+    "Block": "1048",
+    "translation": {
+      "City": {
+        "ar": "دار كليب",
+        "en": "Dar Kulaib"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Durrat Al Bahrain",
+    "Block": "999",
+    "translation": {
+      "City": {
+        "ar": "درة البحرين",
+        "en": "Durrat Al Bahrain"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "East Riffa",
+    "Block": "905",
+    "translation": {
+      "City": {
+        "ar": "الرفاع الشرقي",
+        "en": "East Riffa"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "East Riffa",
+    "Block": "907",
+    "translation": {
+      "City": {
+        "ar": "الرفاع الشرقي",
+        "en": "East Riffa"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "East Riffa",
+    "Block": "909",
+    "translation": {
+      "City": {
+        "ar": "الرفاع الشرقي",
+        "en": "East Riffa"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "East Riffa",
+    "Block": "911",
+    "translation": {
+      "City": {
+        "ar": "الرفاع الشرقي",
+        "en": "East Riffa"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Hafeera",
+    "Block": "959",
+    "translation": {
+      "City": {
+        "ar": "الحفيرة",
+        "en": "Hafeera"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Hawrat Sanad",
+    "Block": "645",
+    "translation": {
+      "City": {
+        "ar": "حورة سند",
+        "en": "Hawrat Sanad"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Hidd Al Jamal",
+    "Block": "973",
+    "translation": {
+      "City": {
+        "ar": "حد الجمل",
+        "en": "Hidd Al Jamal"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Hlaitan",
+    "Block": "1067",
+    "translation": {
+      "City": {
+        "ar": "هليتان",
+        "en": "Hlaitan"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Horat Anaqa",
+    "Block": "1062",
+    "translation": {
+      "City": {
+        "ar": "حورة عناقة",
+        "en": "Horat Anaqa"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "801",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "802",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "803",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "804",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "805",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "806",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "807",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "808",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "809",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "810",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "812",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "813",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "814",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "840",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Isa Town",
+    "Block": "841",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Jari Al Shaikh",
+    "Block": "920",
+    "translation": {
+      "City": {
+        "ar": "جاري الشيخ",
+        "en": "Jari Al Shaikh"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Jari Al Shaikh",
+    "Block": "924",
+    "translation": {
+      "City": {
+        "ar": "جاري الشيخ",
+        "en": "Jari Al Shaikh"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Jari Al Shaikh",
+    "Block": "926",
+    "translation": {
+      "City": {
+        "ar": "جاري الشيخ",
+        "en": "Jari Al Shaikh"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Jaw",
+    "Block": "957",
+    "translation": {
+      "City": {
+        "ar": "جو",
+        "en": "Jaw"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Jaw",
+    "Block": "960",
+    "translation": {
+      "City": {
+        "ar": "جو",
+        "en": "Jaw"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Jazaer Beach",
+    "Block": "1061",
+    "translation": {
+      "City": {
+        "ar": "شاطئ الجزائر",
+        "en": "Jazaer Beach"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Juzur Al Dar",
+    "Block": "613",
+    "translation": {
+      "City": {
+        "ar": "جزر الدار",
+        "en": "Juzur Al Dar"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Lhassay",
+    "Block": "948",
+    "translation": {
+      "City": {
+        "ar": "الحساي",
+        "en": "Lhassay"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Maameer",
+    "Block": "635",
+    "translation": {
+      "City": {
+        "ar": "المعامير",
+        "en": "Maameer"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Maameer",
+    "Block": "636",
+    "translation": {
+      "City": {
+        "ar": "المعامير",
+        "en": "Maameer"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Mamlahat Al Mamtala",
+    "Block": "1069",
+    "translation": {
+      "City": {
+        "ar": "مملحة المٌطلة",
+        "en": "Mamlahat Al Mamtala"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Mamlahat Al Mamtala",
+    "Block": "1070",
+    "translation": {
+      "City": {
+        "ar": "مملحة المٌطلة",
+        "en": "Mamlahat Al Mamtala"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Mazraa",
+    "Block": "953",
+    "translation": {
+      "City": {
+        "ar": "المزرعة",
+        "en": "Mazraa"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "1101",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "1102",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "1103",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "1104",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "1106",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "1107",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "1108",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "1110",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "1111",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "1112",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "1113",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "918",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "932",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "944",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "950",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "New districts",
+    "Block": "955",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Nuwaydirat",
+    "Block": "643",
+    "translation": {
+      "City": {
+        "ar": "النويدرات",
+        "en": "Nuwaydirat"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Nuwaydirat",
+    "Block": "646",
+    "translation": {
+      "City": {
+        "ar": "النويدرات",
+        "en": "Nuwaydirat"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Ras Abu Jarjor",
+    "Block": "954",
+    "translation": {
+      "City": {
+        "ar": "رأس أبو جرجور",
+        "en": "Ras Abu Jarjor"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Ras Hayan",
+    "Block": "958",
+    "translation": {
+      "City": {
+        "ar": "رأس حيان",
+        "en": "Ras Hayan"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Ras Zuwaid",
+    "Block": "952",
+    "translation": {
+      "City": {
+        "ar": "رأس زويد",
+        "en": "Ras Zuwaid"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Riffa / Albuhair",
+    "Block": "914",
+    "translation": {
+      "City": {
+        "ar": "الرفاع / البحير",
+        "en": "Riffa / Albuhair"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Riffa / Albuhair",
+    "Block": "915",
+    "translation": {
+      "City": {
+        "ar": "الرفاع / البحير",
+        "en": "Riffa / Albuhair"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Riffa / Albuhair",
+    "Block": "916",
+    "translation": {
+      "City": {
+        "ar": "الرفاع / البحير",
+        "en": "Riffa / Albuhair"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Riffa / Albuhair",
+    "Block": "922",
+    "translation": {
+      "City": {
+        "ar": "الرفاع / البحير",
+        "en": "Riffa / Albuhair"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Riffa / Albuhair",
+    "Block": "933",
+    "translation": {
+      "City": {
+        "ar": "الرفاع / البحير",
+        "en": "Riffa / Albuhair"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Riffa / Albuhair",
+    "Block": "934",
+    "translation": {
+      "City": {
+        "ar": "الرفاع / البحير",
+        "en": "Riffa / Albuhair"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Riffa / Albuhair",
+    "Block": "937",
+    "translation": {
+      "City": {
+        "ar": "الرفاع / البحير",
+        "en": "Riffa / Albuhair"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Riffa / Albuhair",
+    "Block": "941",
+    "translation": {
+      "City": {
+        "ar": "الرفاع / البحير",
+        "en": "Riffa / Albuhair"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Sukhair",
+    "Block": "976",
+    "translation": {
+      "City": {
+        "ar": "الصخير",
+        "en": "Sukhair"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Sukhair",
+    "Block": "985",
+    "translation": {
+      "City": {
+        "ar": "الصخير",
+        "en": "Sukhair"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Swayfra",
+    "Block": "942",
+    "translation": {
+      "City": {
+        "ar": "صويفرة",
+        "en": "Swayfra"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Trafi",
+    "Block": "998",
+    "translation": {
+      "City": {
+        "ar": "طرافي",
+        "en": "Trafi"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Um Albaidh",
+    "Block": "614",
+    "translation": {
+      "City": {
+        "ar": "أم البيض",
+        "en": "Um Albaidh"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Um Albaidh",
+    "Block": "615",
+    "translation": {
+      "City": {
+        "ar": "أم البيض",
+        "en": "Um Albaidh"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Um Albaidh",
+    "Block": "616",
+    "translation": {
+      "City": {
+        "ar": "أم البيض",
+        "en": "Um Albaidh"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Um Jadir",
+    "Block": "986",
+    "translation": {
+      "City": {
+        "ar": "أم جدير",
+        "en": "Um Jadir"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Umm Jidr Al Summan",
+    "Block": "997",
+    "translation": {
+      "City": {
+        "ar": "أم جدر السمان",
+        "en": "Umm Jidr Al Summan"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Wadi Ali",
+    "Block": "1068",
+    "translation": {
+      "City": {
+        "ar": "وادي علي",
+        "en": "Wadi Ali"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Wadi Al Sail",
+    "Block": "928",
+    "translation": {
+      "City": {
+        "ar": "وادي السيل",
+        "en": "Wadi Al Sail"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "West Riffa",
+    "Block": "902",
+    "translation": {
+      "City": {
+        "ar": "الرفاع الغربي",
+        "en": "West Riffa"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "West Riffa",
+    "Block": "904",
+    "translation": {
+      "City": {
+        "ar": "الرفاع الغربي",
+        "en": "West Riffa"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "West Riffa",
+    "Block": "908",
+    "translation": {
+      "City": {
+        "ar": "الرفاع الغربي",
+        "en": "West Riffa"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "West Riffa",
+    "Block": "910",
+    "translation": {
+      "City": {
+        "ar": "الرفاع الغربي",
+        "en": "West Riffa"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "West Riffa",
+    "Block": "912",
+    "translation": {
+      "City": {
+        "ar": "الرفاع الغربي",
+        "en": "West Riffa"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Zallaq",
+    "Block": "1051",
+    "translation": {
+      "City": {
+        "ar": "الزلاق",
+        "en": "Zallaq"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Zallaq",
+    "Block": "1052",
+    "translation": {
+      "City": {
+        "ar": "الزلاق",
+        "en": "Zallaq"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Zallaq",
+    "Block": "1054",
+    "translation": {
+      "City": {
+        "ar": "الزلاق",
+        "en": "Zallaq"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Zallaq",
+    "Block": "1055",
+    "translation": {
+      "City": {
+        "ar": "الزلاق",
+        "en": "Zallaq"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Zallaq",
+    "Block": "1056",
+    "translation": {
+      "City": {
+        "ar": "الزلاق",
+        "en": "Zallaq"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Zayed Town",
+    "Block": "718",
+    "translation": {
+      "City": {
+        "ar": "مدينة زايد",
+        "en": "Zayed Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Southern",
+    "City": "Zayed Town",
+    "Block": "720",
+    "translation": {
+      "City": {
+        "ar": "مدينة زايد",
+        "en": "Zayed Town"
+      },
+      "Governorate": {
+        "ar": "الجنوبية",
+        "en": "Southern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "A'Ali",
+    "Block": "732",
+    "translation": {
+      "City": {
+        "ar": "عالي",
+        "en": "A'Ali"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "A'Ali",
+    "Block": "734",
+    "translation": {
+      "City": {
+        "ar": "عالي",
+        "en": "A'Ali"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "A'Ali",
+    "Block": "736",
+    "translation": {
+      "City": {
+        "ar": "عالي",
+        "en": "A'Ali"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "A'Ali",
+    "Block": "738",
+    "translation": {
+      "City": {
+        "ar": "عالي",
+        "en": "A'Ali"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "A'Ali",
+    "Block": "740",
+    "translation": {
+      "City": {
+        "ar": "عالي",
+        "en": "A'Ali"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "A'Ali",
+    "Block": "742",
+    "translation": {
+      "City": {
+        "ar": "عالي",
+        "en": "A'Ali"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "A'Ali",
+    "Block": "744",
+    "translation": {
+      "City": {
+        "ar": "عالي",
+        "en": "A'Ali"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Abu Saiba'a",
+    "Block": "469",
+    "translation": {
+      "City": {
+        "ar": "أبو صيبع",
+        "en": "Abu Saiba'a"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Abu Saiba'a",
+    "Block": "471",
+    "translation": {
+      "City": {
+        "ar": "أبو صيبع",
+        "en": "Abu Saiba'a"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Abu Saiba'a",
+    "Block": "473",
+    "translation": {
+      "City": {
+        "ar": "أبو صيبع",
+        "en": "Abu Saiba'a"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Abu Saiba'a",
+    "Block": "475",
+    "translation": {
+      "City": {
+        "ar": "أبو صيبع",
+        "en": "Abu Saiba'a"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Hajar",
+    "Block": "463",
+    "translation": {
+      "City": {
+        "ar": "الحجر",
+        "en": "Al Hajar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Hajar",
+    "Block": "465",
+    "translation": {
+      "City": {
+        "ar": "الحجر",
+        "en": "Al Hajar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Jasra",
+    "Block": "1001",
+    "translation": {
+      "City": {
+        "ar": "الجسرة",
+        "en": "Al Jasra"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Jasra",
+    "Block": "1002",
+    "translation": {
+      "City": {
+        "ar": "الجسرة",
+        "en": "Al Jasra"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Jasra",
+    "Block": "1003",
+    "translation": {
+      "City": {
+        "ar": "الجسرة",
+        "en": "Al Jasra"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Jasra",
+    "Block": "1004",
+    "translation": {
+      "City": {
+        "ar": "الجسرة",
+        "en": "Al Jasra"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Jasra",
+    "Block": "1006",
+    "translation": {
+      "City": {
+        "ar": "الجسرة",
+        "en": "Al Jasra"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Lawzi",
+    "Block": "1016",
+    "translation": {
+      "City": {
+        "ar": "اللوزي",
+        "en": "Al Lawzi"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Lawzi",
+    "Block": "1018",
+    "translation": {
+      "City": {
+        "ar": "اللوزي",
+        "en": "Al Lawzi"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Lawzi",
+    "Block": "1020",
+    "translation": {
+      "City": {
+        "ar": "اللوزي",
+        "en": "Al Lawzi"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Muhamadyia",
+    "Block": "587",
+    "translation": {
+      "City": {
+        "ar": "المحمدية",
+        "en": "Al Muhamadyia"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Shakhura",
+    "Block": "477",
+    "translation": {
+      "City": {
+        "ar": "الشاخورة",
+        "en": "Al Shakhura"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Shakhura",
+    "Block": "479",
+    "translation": {
+      "City": {
+        "ar": "الشاخورة",
+        "en": "Al Shakhura"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Al Shakhura",
+    "Block": "481",
+    "translation": {
+      "City": {
+        "ar": "الشاخورة",
+        "en": "Al Shakhura"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Bani Jamra",
+    "Block": "537",
+    "translation": {
+      "City": {
+        "ar": "بني جمرة",
+        "en": "Bani Jamra"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Bani Jamra",
+    "Block": "539",
+    "translation": {
+      "City": {
+        "ar": "بني جمرة",
+        "en": "Bani Jamra"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Bani Jamra",
+    "Block": "541",
+    "translation": {
+      "City": {
+        "ar": "بني جمرة",
+        "en": "Bani Jamra"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Bani Jamra",
+    "Block": "543",
+    "translation": {
+      "City": {
+        "ar": "بني جمرة",
+        "en": "Bani Jamra"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Barbar",
+    "Block": "518",
+    "translation": {
+      "City": {
+        "ar": "باربار",
+        "en": "Barbar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Barbar",
+    "Block": "520",
+    "translation": {
+      "City": {
+        "ar": "باربار",
+        "en": "Barbar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Barbar",
+    "Block": "522",
+    "translation": {
+      "City": {
+        "ar": "باربار",
+        "en": "Barbar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Barbar",
+    "Block": "524",
+    "translation": {
+      "City": {
+        "ar": "باربار",
+        "en": "Barbar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Barbar",
+    "Block": "526",
+    "translation": {
+      "City": {
+        "ar": "باربار",
+        "en": "Barbar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Barbar",
+    "Block": "528",
+    "translation": {
+      "City": {
+        "ar": "باربار",
+        "en": "Barbar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Barbar",
+    "Block": "530",
+    "translation": {
+      "City": {
+        "ar": "باربار",
+        "en": "Barbar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Budaiya",
+    "Block": "550",
+    "translation": {
+      "City": {
+        "ar": "البديع",
+        "en": "Budaiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Budaiya",
+    "Block": "552",
+    "translation": {
+      "City": {
+        "ar": "البديع",
+        "en": "Budaiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Budaiya",
+    "Block": "553",
+    "translation": {
+      "City": {
+        "ar": "البديع",
+        "en": "Budaiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Budaiya",
+    "Block": "555",
+    "translation": {
+      "City": {
+        "ar": "البديع",
+        "en": "Budaiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Budaiya",
+    "Block": "557",
+    "translation": {
+      "City": {
+        "ar": "البديع",
+        "en": "Budaiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Budaiya",
+    "Block": "559",
+    "translation": {
+      "City": {
+        "ar": "البديع",
+        "en": "Budaiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Buqwa",
+    "Block": "455",
+    "translation": {
+      "City": {
+        "ar": "بوقوة",
+        "en": "Buqwa"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Buqwa",
+    "Block": "457",
+    "translation": {
+      "City": {
+        "ar": "بوقوة",
+        "en": "Buqwa"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Buri",
+    "Block": "752",
+    "translation": {
+      "City": {
+        "ar": "بوري",
+        "en": "Buri"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Buri",
+    "Block": "754",
+    "translation": {
+      "City": {
+        "ar": "بوري",
+        "en": "Buri"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Buri",
+    "Block": "756",
+    "translation": {
+      "City": {
+        "ar": "بوري",
+        "en": "Buri"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Buri",
+    "Block": "758",
+    "translation": {
+      "City": {
+        "ar": "بوري",
+        "en": "Buri"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Buri",
+    "Block": "760",
+    "translation": {
+      "City": {
+        "ar": "بوري",
+        "en": "Buri"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Buri",
+    "Block": "762",
+    "translation": {
+      "City": {
+        "ar": "بوري",
+        "en": "Buri"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Damistan",
+    "Block": "1017",
+    "translation": {
+      "City": {
+        "ar": "دمستان",
+        "en": "Damistan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Damistan",
+    "Block": "1019",
+    "translation": {
+      "City": {
+        "ar": "دمستان",
+        "en": "Damistan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Damistan",
+    "Block": "1022",
+    "translation": {
+      "City": {
+        "ar": "دمستان",
+        "en": "Damistan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Dar Kulaib",
+    "Block": "1046",
+    "translation": {
+      "City": {
+        "ar": "دار كليب",
+        "en": "Dar Kulaib"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Diraz",
+    "Block": "536",
+    "translation": {
+      "City": {
+        "ar": "الدراز",
+        "en": "Diraz"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Diraz",
+    "Block": "538",
+    "translation": {
+      "City": {
+        "ar": "الدراز",
+        "en": "Diraz"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Diraz",
+    "Block": "540",
+    "translation": {
+      "City": {
+        "ar": "الدراز",
+        "en": "Diraz"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Diraz",
+    "Block": "542",
+    "translation": {
+      "City": {
+        "ar": "الدراز",
+        "en": "Diraz"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Diraz",
+    "Block": "544",
+    "translation": {
+      "City": {
+        "ar": "الدراز",
+        "en": "Diraz"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1038",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1203",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1204",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1205",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1206",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1207",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1208",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1209",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1210",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1211",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1212",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1213",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1214",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1215",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamad Town",
+    "Block": "1216",
+    "translation": {
+      "City": {
+        "ar": "مدينة حمد",
+        "en": "Hamad Town"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamala",
+    "Block": "1009",
+    "translation": {
+      "City": {
+        "ar": "الهملة",
+        "en": "Hamala"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamala",
+    "Block": "1010",
+    "translation": {
+      "City": {
+        "ar": "الهملة",
+        "en": "Hamala"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamala",
+    "Block": "1012",
+    "translation": {
+      "City": {
+        "ar": "الهملة",
+        "en": "Hamala"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hamala",
+    "Block": "1014",
+    "translation": {
+      "City": {
+        "ar": "الهملة",
+        "en": "Hamala"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hillat AbdulSaleh",
+    "Block": "444",
+    "translation": {
+      "City": {
+        "ar": "حلة عبد الصالح",
+        "en": "Hillat AbdulSaleh"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hoarat A'Ali",
+    "Block": "714",
+    "translation": {
+      "City": {
+        "ar": "هورة عالي",
+        "en": "Hoarat A'Ali"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Hoarat A'Ali",
+    "Block": "730",
+    "translation": {
+      "City": {
+        "ar": "هورة عالي",
+        "en": "Hoarat A'Ali"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Jabalt Hibshi",
+    "Block": "431",
+    "translation": {
+      "City": {
+        "ar": "جبلة حبشي",
+        "en": "Jabalt Hibshi"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Jabalt Hibshi",
+    "Block": "433",
+    "translation": {
+      "City": {
+        "ar": "جبلة حبشي",
+        "en": "Jabalt Hibshi"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Jabalt Hibshi",
+    "Block": "435",
+    "translation": {
+      "City": {
+        "ar": "جبلة حبشي",
+        "en": "Jabalt Hibshi"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Janabiya",
+    "Block": "561",
+    "translation": {
+      "City": {
+        "ar": "الجنبية",
+        "en": "Janabiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Janabiya",
+    "Block": "565",
+    "translation": {
+      "City": {
+        "ar": "الجنبية",
+        "en": "Janabiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Janabiya",
+    "Block": "569",
+    "translation": {
+      "City": {
+        "ar": "الجنبية",
+        "en": "Janabiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Janabiya",
+    "Block": "571",
+    "translation": {
+      "City": {
+        "ar": "الجنبية",
+        "en": "Janabiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Janabiya",
+    "Block": "575",
+    "translation": {
+      "City": {
+        "ar": "الجنبية",
+        "en": "Janabiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Janabiya",
+    "Block": "577",
+    "translation": {
+      "City": {
+        "ar": "الجنبية",
+        "en": "Janabiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Janabiya",
+    "Block": "579",
+    "translation": {
+      "City": {
+        "ar": "الجنبية",
+        "en": "Janabiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Jannusan",
+    "Block": "502",
+    "translation": {
+      "City": {
+        "ar": "جنوسان",
+        "en": "Jannusan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Jannusan",
+    "Block": "504",
+    "translation": {
+      "City": {
+        "ar": "جنوسان",
+        "en": "Jannusan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Jannusan",
+    "Block": "506",
+    "translation": {
+      "City": {
+        "ar": "جنوسان",
+        "en": "Jannusan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Jannusan",
+    "Block": "508",
+    "translation": {
+      "City": {
+        "ar": "جنوسان",
+        "en": "Jannusan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Jedah",
+    "Block": "591",
+    "translation": {
+      "City": {
+        "ar": "جدة",
+        "en": "Jedah"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Jid Al Haj",
+    "Block": "514",
+    "translation": {
+      "City": {
+        "ar": "جد الحاج",
+        "en": "Jid Al Haj"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Karana",
+    "Block": "454",
+    "translation": {
+      "City": {
+        "ar": "كرانة",
+        "en": "Karana"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Karana",
+    "Block": "456",
+    "translation": {
+      "City": {
+        "ar": "كرانة",
+        "en": "Karana"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Karana",
+    "Block": "458",
+    "translation": {
+      "City": {
+        "ar": "كرانة",
+        "en": "Karana"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Karana",
+    "Block": "460",
+    "translation": {
+      "City": {
+        "ar": "كرانة",
+        "en": "Karana"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Karzakan",
+    "Block": "1025",
+    "translation": {
+      "City": {
+        "ar": "كرزكان",
+        "en": "Karzakan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Karzakan",
+    "Block": "1026",
+    "translation": {
+      "City": {
+        "ar": "كرزكان",
+        "en": "Karzakan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Karzakan",
+    "Block": "1027",
+    "translation": {
+      "City": {
+        "ar": "كرزكان",
+        "en": "Karzakan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Karzakan",
+    "Block": "1028",
+    "translation": {
+      "City": {
+        "ar": "كرزكان",
+        "en": "Karzakan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "King Fahad Causway",
+    "Block": "1095",
+    "translation": {
+      "City": {
+        "ar": "جسر الملك فهد",
+        "en": "King Fahad Causway"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Magaba",
+    "Block": "505",
+    "translation": {
+      "City": {
+        "ar": "مقابة",
+        "en": "Magaba"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Magaba",
+    "Block": "507",
+    "translation": {
+      "City": {
+        "ar": "مقابة",
+        "en": "Magaba"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Magaba",
+    "Block": "509",
+    "translation": {
+      "City": {
+        "ar": "مقابة",
+        "en": "Magaba"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Magaba",
+    "Block": "513",
+    "translation": {
+      "City": {
+        "ar": "مقابة",
+        "en": "Magaba"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Malkiya",
+    "Block": "1032",
+    "translation": {
+      "City": {
+        "ar": "المالكية",
+        "en": "Malkiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Malkiya",
+    "Block": "1033",
+    "translation": {
+      "City": {
+        "ar": "المالكية",
+        "en": "Malkiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Malkiya",
+    "Block": "1034",
+    "translation": {
+      "City": {
+        "ar": "المالكية",
+        "en": "Malkiya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Maqsha",
+    "Block": "450",
+    "translation": {
+      "City": {
+        "ar": "المقشع",
+        "en": "Maqsha"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Markh",
+    "Block": "529",
+    "translation": {
+      "City": {
+        "ar": "المرخ",
+        "en": "Markh"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Markh",
+    "Block": "531",
+    "translation": {
+      "City": {
+        "ar": "المرخ",
+        "en": "Markh"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Markh",
+    "Block": "533",
+    "translation": {
+      "City": {
+        "ar": "المرخ",
+        "en": "Markh"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "New districts",
+    "Block": "1218",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "New districts",
+    "Block": "515",
+    "translation": {
+      "City": {
+        "ar": "المناطق الجديدة",
+        "en": "New districts"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "North City",
+    "Block": "532",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "North City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "North City",
+    "Block": "534",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "North City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "North City",
+    "Block": "535",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "North City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Northern City",
+    "Block": "580",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "Northern City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Northern City",
+    "Block": "581",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "Northern City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Northern City",
+    "Block": "582",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "Northern City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Northern City",
+    "Block": "583",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "Northern City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Northern City",
+    "Block": "584",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "Northern City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Northern City",
+    "Block": "585",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "Northern City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Northern City",
+    "Block": "586",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "Northern City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Northern City",
+    "Block": "588",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "Northern City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Northern City",
+    "Block": "589",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "Northern City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Northern City",
+    "Block": "590",
+    "translation": {
+      "City": {
+        "ar": "المدينة الشمالية",
+        "en": "Northern City"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Northern Sehla",
+    "Block": "439",
+    "translation": {
+      "City": {
+        "ar": "سحلة الشمالية",
+        "en": "Northern Sehla"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Northern Sehla",
+    "Block": "441",
+    "translation": {
+      "City": {
+        "ar": "سحلة الشمالية",
+        "en": "Northern Sehla"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Qadam",
+    "Block": "447",
+    "translation": {
+      "City": {
+        "ar": "القدم",
+        "en": "Qadam"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Qadam",
+    "Block": "449",
+    "translation": {
+      "City": {
+        "ar": "القدم",
+        "en": "Qadam"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Qadam",
+    "Block": "453",
+    "translation": {
+      "City": {
+        "ar": "القدم",
+        "en": "Qadam"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Quraya",
+    "Block": "545",
+    "translation": {
+      "City": {
+        "ar": "القريّة",
+        "en": "Quraya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Quraya",
+    "Block": "547",
+    "translation": {
+      "City": {
+        "ar": "القريّة",
+        "en": "Quraya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Quraya",
+    "Block": "549",
+    "translation": {
+      "City": {
+        "ar": "القريّة",
+        "en": "Quraya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Quraya",
+    "Block": "551",
+    "translation": {
+      "City": {
+        "ar": "القريّة",
+        "en": "Quraya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Saar",
+    "Block": "517",
+    "translation": {
+      "City": {
+        "ar": "سار",
+        "en": "Saar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Saar",
+    "Block": "521",
+    "translation": {
+      "City": {
+        "ar": "سار",
+        "en": "Saar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Saar",
+    "Block": "523",
+    "translation": {
+      "City": {
+        "ar": "سار",
+        "en": "Saar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Saar",
+    "Block": "525",
+    "translation": {
+      "City": {
+        "ar": "سار",
+        "en": "Saar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Saar",
+    "Block": "527",
+    "translation": {
+      "City": {
+        "ar": "سار",
+        "en": "Saar"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Sadaq",
+    "Block": "1037",
+    "translation": {
+      "City": {
+        "ar": "صداق",
+        "en": "Sadaq"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Safriya",
+    "Block": "1041",
+    "translation": {
+      "City": {
+        "ar": "الصفرية",
+        "en": "Safriya"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Salmabad",
+    "Block": "702",
+    "translation": {
+      "City": {
+        "ar": "سلماباد",
+        "en": "Salmabad"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Salmabad",
+    "Block": "704",
+    "translation": {
+      "City": {
+        "ar": "سلماباد",
+        "en": "Salmabad"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Salmabad",
+    "Block": "706",
+    "translation": {
+      "City": {
+        "ar": "سلماباد",
+        "en": "Salmabad"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Salmabad",
+    "Block": "708",
+    "translation": {
+      "City": {
+        "ar": "سلماباد",
+        "en": "Salmabad"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Salmabad",
+    "Block": "712",
+    "translation": {
+      "City": {
+        "ar": "سلماباد",
+        "en": "Salmabad"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Shahrakan",
+    "Block": "1042",
+    "translation": {
+      "City": {
+        "ar": "شهركان",
+        "en": "Shahrakan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Shahrakan",
+    "Block": "1044",
+    "translation": {
+      "City": {
+        "ar": "شهركان",
+        "en": "Shahrakan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Northern",
+    "City": "Um Al Naasan",
+    "Block": "1089",
+    "translation": {
+      "City": {
+        "ar": "أم النعسان",
+        "en": "Um Al Naasan"
+      },
+      "Governorate": {
+        "ar": "الشمالية",
+        "en": "Northern"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Abu Al Aish",
+    "Block": "607",
+    "translation": {
+      "City": {
+        "ar": "أبو العيش",
+        "en": "Abu Al Aish"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Abu Buham",
+    "Block": "367",
+    "translation": {
+      "City": {
+        "ar": "أبو بهام",
+        "en": "Abu Buham"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Adhari",
+    "Block": "366",
+    "translation": {
+      "City": {
+        "ar": "عذاري",
+        "en": "Adhari"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Adhari",
+    "Block": "369",
+    "translation": {
+      "City": {
+        "ar": "عذاري",
+        "en": "Adhari"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Adliya",
+    "Block": "327",
+    "translation": {
+      "City": {
+        "ar": "العدلية",
+        "en": "Adliya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Adliya",
+    "Block": "336",
+    "translation": {
+      "City": {
+        "ar": "العدلية",
+        "en": "Adliya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Al Akr Al Sharqi",
+    "Block": "623",
+    "translation": {
+      "City": {
+        "ar": "العكر الشرقي",
+        "en": "Al Akr Al Sharqi"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Al Belad Al Qadeem",
+    "Block": "361",
+    "translation": {
+      "City": {
+        "ar": "البلد القديم",
+        "en": "Al Belad Al Qadeem"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Al Belad Al Qadeem",
+    "Block": "362",
+    "translation": {
+      "City": {
+        "ar": "البلد القديم",
+        "en": "Al Belad Al Qadeem"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Al Belad Al Qadeem",
+    "Block": "363",
+    "translation": {
+      "City": {
+        "ar": "البلد القديم",
+        "en": "Al Belad Al Qadeem"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Al Belad Al Qadeem",
+    "Block": "364",
+    "translation": {
+      "City": {
+        "ar": "البلد القديم",
+        "en": "Al Belad Al Qadeem"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alcornish",
+    "Block": "322",
+    "translation": {
+      "City": {
+        "ar": "الكورنيش",
+        "en": "Alcornish"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Al Fatih",
+    "Block": "324",
+    "translation": {
+      "City": {
+        "ar": "الفاتح",
+        "en": "Al Fatih"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Al Guraifa",
+    "Block": "342",
+    "translation": {
+      "City": {
+        "ar": "الجريفة",
+        "en": "Al Guraifa"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Al Hamriya",
+    "Block": "611",
+    "translation": {
+      "City": {
+        "ar": "الحمرية",
+        "en": "Al Hamriya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Al Khamiss",
+    "Block": "365",
+    "translation": {
+      "City": {
+        "ar": "الخميس",
+        "en": "Al Khamiss"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Al Kharjiya",
+    "Block": "606",
+    "translation": {
+      "City": {
+        "ar": "الخارجية",
+        "en": "Al Kharjiya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alnaim",
+    "Block": "303",
+    "translation": {
+      "City": {
+        "ar": "النعيم",
+        "en": "Alnaim"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alnaim",
+    "Block": "314",
+    "translation": {
+      "City": {
+        "ar": "النعيم",
+        "en": "Alnaim"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Al Nasfa",
+    "Block": "733",
+    "translation": {
+      "City": {
+        "ar": "النصفة",
+        "en": "Al Nasfa"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alqalla",
+    "Block": "438",
+    "translation": {
+      "City": {
+        "ar": "القلة",
+        "en": "Alqalla"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alsalmaniya",
+    "Block": "309",
+    "translation": {
+      "City": {
+        "ar": "السلمانية",
+        "en": "Alsalmaniya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alsalmaniya",
+    "Block": "310",
+    "translation": {
+      "City": {
+        "ar": "السلمانية",
+        "en": "Alsalmaniya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alsalmaniya",
+    "Block": "311",
+    "translation": {
+      "City": {
+        "ar": "السلمانية",
+        "en": "Alsalmaniya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alsalmaniya",
+    "Block": "329",
+    "translation": {
+      "City": {
+        "ar": "السلمانية",
+        "en": "Alsalmaniya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alseef District",
+    "Block": "428",
+    "translation": {
+      "City": {
+        "ar": "منطقة السيف",
+        "en": "Alseef District"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alseef District",
+    "Block": "436",
+    "translation": {
+      "City": {
+        "ar": "منطقة السيف",
+        "en": "Alseef District"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Al Suqayyah",
+    "Block": "328",
+    "translation": {
+      "City": {
+        "ar": "السقية",
+        "en": "Al Suqayyah"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alsuwayfia",
+    "Block": "313",
+    "translation": {
+      "City": {
+        "ar": "السويفية",
+        "en": "Alsuwayfia"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alsuwayfia",
+    "Block": "351",
+    "translation": {
+      "City": {
+        "ar": "السويفية",
+        "en": "Alsuwayfia"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alsuwayfia",
+    "Block": "353",
+    "translation": {
+      "City": {
+        "ar": "السويفية",
+        "en": "Alsuwayfia"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alwajeha Albhariya",
+    "Block": "344",
+    "translation": {
+      "City": {
+        "ar": "الواجهة البحرية",
+        "en": "Alwajeha Albhariya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Alwajeha Albhariya",
+    "Block": "346",
+    "translation": {
+      "City": {
+        "ar": "الواجهة البحرية",
+        "en": "Alwajeha Albhariya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Bu Asheera",
+    "Block": "332",
+    "translation": {
+      "City": {
+        "ar": "بو عشيرة",
+        "en": "Bu Asheera"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Bu Ghazal",
+    "Block": "373",
+    "translation": {
+      "City": {
+        "ar": "بو غزال",
+        "en": "Bu Ghazal"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Bu Ghazal",
+    "Block": "330",
+    "translation": {
+      "City": {
+        "ar": "بو غزال",
+        "en": "Bu Ghazal"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Bu Ghazal",
+    "Block": "331",
+    "translation": {
+      "City": {
+        "ar": "بو غزال",
+        "en": "Bu Ghazal"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Burhama",
+    "Block": "354",
+    "translation": {
+      "City": {
+        "ar": "البرهامة",
+        "en": "Burhama"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Burhama",
+    "Block": "357",
+    "translation": {
+      "City": {
+        "ar": "البرهامة",
+        "en": "Burhama"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Commercial Area",
+    "Block": "315",
+    "translation": {
+      "City": {
+        "ar": "المنطقة التجارية",
+        "en": "Commercial Area"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Commercial Area",
+    "Block": "316",
+    "translation": {
+      "City": {
+        "ar": "المنطقة التجارية",
+        "en": "Commercial Area"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Daih",
+    "Block": "412",
+    "translation": {
+      "City": {
+        "ar": "الديه",
+        "en": "Daih"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Daih",
+    "Block": "414",
+    "translation": {
+      "City": {
+        "ar": "الديه",
+        "en": "Daih"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Diplomatic Area",
+    "Block": "317",
+    "translation": {
+      "City": {
+        "ar": "المنطقة الدبلوماسية",
+        "en": "Diplomatic Area"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Gudaibiya",
+    "Block": "307",
+    "translation": {
+      "City": {
+        "ar": "القضيبية",
+        "en": "Gudaibiya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Gudaibiya",
+    "Block": "308",
+    "translation": {
+      "City": {
+        "ar": "القضيبية",
+        "en": "Gudaibiya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Gudaibiya",
+    "Block": "321",
+    "translation": {
+      "City": {
+        "ar": "القضيبية",
+        "en": "Gudaibiya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Gudaibiya",
+    "Block": "325",
+    "translation": {
+      "City": {
+        "ar": "القضيبية",
+        "en": "Gudaibiya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Gudaibiya",
+    "Block": "326",
+    "translation": {
+      "City": {
+        "ar": "القضيبية",
+        "en": "Gudaibiya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Gudaibiya",
+    "Block": "338",
+    "translation": {
+      "City": {
+        "ar": "القضيبية",
+        "en": "Gudaibiya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Hoora",
+    "Block": "318",
+    "translation": {
+      "City": {
+        "ar": "الحورة",
+        "en": "Hoora"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Hoora",
+    "Block": "319",
+    "translation": {
+      "City": {
+        "ar": "الحورة",
+        "en": "Hoora"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Hoora",
+    "Block": "320",
+    "translation": {
+      "City": {
+        "ar": "الحورة",
+        "en": "Hoora"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Isa Town",
+    "Block": "815",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Isa Town",
+    "Block": "816",
+    "translation": {
+      "City": {
+        "ar": "مدينة عيسى",
+        "en": "Isa Town"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Jid Ali",
+    "Block": "721",
+    "translation": {
+      "City": {
+        "ar": "جد علي",
+        "en": "Jid Ali"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Jidhafs",
+    "Block": "419",
+    "translation": {
+      "City": {
+        "ar": "جدحفص",
+        "en": "Jidhafs"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Jidhafs",
+    "Block": "421",
+    "translation": {
+      "City": {
+        "ar": "جدحفص",
+        "en": "Jidhafs"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Jidhafs",
+    "Block": "422",
+    "translation": {
+      "City": {
+        "ar": "جدحفص",
+        "en": "Jidhafs"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Jidhafs",
+    "Block": "423",
+    "translation": {
+      "City": {
+        "ar": "جدحفص",
+        "en": "Jidhafs"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Jidhafs",
+    "Block": "424",
+    "translation": {
+      "City": {
+        "ar": "جدحفص",
+        "en": "Jidhafs"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Jidhafs",
+    "Block": "425",
+    "translation": {
+      "City": {
+        "ar": "جدحفص",
+        "en": "Jidhafs"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Jidhafs",
+    "Block": "426",
+    "translation": {
+      "City": {
+        "ar": "جدحفص",
+        "en": "Jidhafs"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Juffair",
+    "Block": "340",
+    "translation": {
+      "City": {
+        "ar": "الجفير",
+        "en": "Juffair"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Juffair",
+    "Block": "341",
+    "translation": {
+      "City": {
+        "ar": "الجفير",
+        "en": "Juffair"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Jurdab",
+    "Block": "729",
+    "translation": {
+      "City": {
+        "ar": "جرداب",
+        "en": "Jurdab"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Karbabad",
+    "Block": "430",
+    "translation": {
+      "City": {
+        "ar": "كرباباد",
+        "en": "Karbabad"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Karbabad",
+    "Block": "432",
+    "translation": {
+      "City": {
+        "ar": "كرباباد",
+        "en": "Karbabad"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Karbabad",
+    "Block": "434",
+    "translation": {
+      "City": {
+        "ar": "كرباباد",
+        "en": "Karbabad"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Maameer",
+    "Block": "633",
+    "translation": {
+      "City": {
+        "ar": "المعامير",
+        "en": "Maameer"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Maameer",
+    "Block": "634",
+    "translation": {
+      "City": {
+        "ar": "المعامير",
+        "en": "Maameer"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Mahaza",
+    "Block": "602",
+    "translation": {
+      "City": {
+        "ar": "مهزة",
+        "en": "Mahaza"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Mahaza",
+    "Block": "603",
+    "translation": {
+      "City": {
+        "ar": "مهزة",
+        "en": "Mahaza"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Mahooz",
+    "Block": "334",
+    "translation": {
+      "City": {
+        "ar": "الماحوز",
+        "en": "Mahooz"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Manama Center",
+    "Block": "323",
+    "translation": {
+      "City": {
+        "ar": "وسط المنامة",
+        "en": "Manama Center"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Minaa Salman Industrial Area",
+    "Block": "343",
+    "translation": {
+      "City": {
+        "ar": "المنطقة الصناعية ميناء سلمان",
+        "en": "Minaa Salman Industrial Area"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Murgoban",
+    "Block": "605",
+    "translation": {
+      "City": {
+        "ar": "مرقبان",
+        "en": "Murgoban"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Musala",
+    "Block": "411",
+    "translation": {
+      "City": {
+        "ar": "المصلى",
+        "en": "Musala"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Musala",
+    "Block": "413",
+    "translation": {
+      "City": {
+        "ar": "المصلى",
+        "en": "Musala"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Nabih Saleh",
+    "Block": "380",
+    "translation": {
+      "City": {
+        "ar": "النبيه صالح",
+        "en": "Nabih Saleh"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Nabih Saleh",
+    "Block": "381",
+    "translation": {
+      "City": {
+        "ar": "النبيه صالح",
+        "en": "Nabih Saleh"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Nabih Saleh",
+    "Block": "382",
+    "translation": {
+      "City": {
+        "ar": "النبيه صالح",
+        "en": "Nabih Saleh"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Nurana",
+    "Block": "592",
+    "translation": {
+      "City": {
+        "ar": "نورانة",
+        "en": "Nurana"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Nuwaydirat",
+    "Block": "644",
+    "translation": {
+      "City": {
+        "ar": "النويدرات",
+        "en": "Nuwaydirat"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Qarya",
+    "Block": "604",
+    "translation": {
+      "City": {
+        "ar": "القرية",
+        "en": "Qarya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Qufool",
+    "Block": "312",
+    "translation": {
+      "City": {
+        "ar": "القفول",
+        "en": "Qufool"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Ras Ruman",
+    "Block": "306",
+    "translation": {
+      "City": {
+        "ar": "رأس رمان",
+        "en": "Ras Ruman"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Salhiya",
+    "Block": "356",
+    "translation": {
+      "City": {
+        "ar": "الصالحية",
+        "en": "Salhiya"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Sanabis",
+    "Block": "402",
+    "translation": {
+      "City": {
+        "ar": "السنابس",
+        "en": "Sanabis"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Sanabis",
+    "Block": "404",
+    "translation": {
+      "City": {
+        "ar": "السنابس",
+        "en": "Sanabis"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Sanabis",
+    "Block": "405",
+    "translation": {
+      "City": {
+        "ar": "السنابس",
+        "en": "Sanabis"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Sanabis",
+    "Block": "406",
+    "translation": {
+      "City": {
+        "ar": "السنابس",
+        "en": "Sanabis"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Sanabis",
+    "Block": "408",
+    "translation": {
+      "City": {
+        "ar": "السنابس",
+        "en": "Sanabis"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Sanabis",
+    "Block": "410",
+    "translation": {
+      "City": {
+        "ar": "السنابس",
+        "en": "Sanabis"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Sanad",
+    "Block": "743",
+    "translation": {
+      "City": {
+        "ar": "سند",
+        "en": "Sanad"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Sanad",
+    "Block": "745",
+    "translation": {
+      "City": {
+        "ar": "سند",
+        "en": "Sanad"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Sitra Industrial Area",
+    "Block": "601",
+    "translation": {
+      "City": {
+        "ar": "المنطقة الصناعية سترة",
+        "en": "Sitra Industrial Area"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Souq",
+    "Block": "301",
+    "translation": {
+      "City": {
+        "ar": "السوق",
+        "en": "Souq"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Souq",
+    "Block": "302",
+    "translation": {
+      "City": {
+        "ar": "السوق",
+        "en": "Souq"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Souq",
+    "Block": "304",
+    "translation": {
+      "City": {
+        "ar": "السوق",
+        "en": "Souq"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Souq",
+    "Block": "305",
+    "translation": {
+      "City": {
+        "ar": "السوق",
+        "en": "Souq"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Southern Sehla",
+    "Block": "368",
+    "translation": {
+      "City": {
+        "ar": "سحلة الجنوبية",
+        "en": "Southern Sehla"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Sufala",
+    "Block": "609",
+    "translation": {
+      "City": {
+        "ar": "السفالة",
+        "en": "Sufala"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Tashan",
+    "Block": "407",
+    "translation": {
+      "City": {
+        "ar": "تاشان",
+        "en": "Tashan"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Tubli",
+    "Block": "701",
+    "translation": {
+      "City": {
+        "ar": "توبلي",
+        "en": "Tubli"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Tubli",
+    "Block": "705",
+    "translation": {
+      "City": {
+        "ar": "توبلي",
+        "en": "Tubli"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Tubli",
+    "Block": "707",
+    "translation": {
+      "City": {
+        "ar": "توبلي",
+        "en": "Tubli"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Tubli",
+    "Block": "709",
+    "translation": {
+      "City": {
+        "ar": "توبلي",
+        "en": "Tubli"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Tubli",
+    "Block": "711",
+    "translation": {
+      "City": {
+        "ar": "توبلي",
+        "en": "Tubli"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Um Albaidh",
+    "Block": "610",
+    "translation": {
+      "City": {
+        "ar": "أم البيض",
+        "en": "Um Albaidh"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Um Alhassam",
+    "Block": "333",
+    "translation": {
+      "City": {
+        "ar": "أم الحصم",
+        "en": "Um Alhassam"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Um Alhassam",
+    "Block": "335",
+    "translation": {
+      "City": {
+        "ar": "أم الحصم",
+        "en": "Um Alhassam"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Um Alhassam",
+    "Block": "337",
+    "translation": {
+      "City": {
+        "ar": "أم الحصم",
+        "en": "Um Alhassam"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Um Alhassam",
+    "Block": "339",
+    "translation": {
+      "City": {
+        "ar": "أم الحصم",
+        "en": "Um Alhassam"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Wadyan",
+    "Block": "608",
+    "translation": {
+      "City": {
+        "ar": "الوديان",
+        "en": "Wadyan"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Western Aker",
+    "Block": "624",
+    "translation": {
+      "City": {
+        "ar": "العكر الغربي",
+        "en": "Western Aker"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Western Aker",
+    "Block": "625",
+    "translation": {
+      "City": {
+        "ar": "العكر الغربي",
+        "en": "Western Aker"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Western Aker",
+    "Block": "626",
+    "translation": {
+      "City": {
+        "ar": "العكر الغربي",
+        "en": "Western Aker"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Zinj",
+    "Block": "358",
+    "translation": {
+      "City": {
+        "ar": "الزنج",
+        "en": "Zinj"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Zinj",
+    "Block": "359",
+    "translation": {
+      "City": {
+        "ar": "الزنج",
+        "en": "Zinj"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Capital",
+    "City": "Zinj",
+    "Block": "360",
+    "translation": {
+      "City": {
+        "ar": "الزنج",
+        "en": "Zinj"
+      },
+      "Governorate": {
+        "ar": "العاصمة",
+        "en": "Capital"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Al Sayh",
+    "Block": "228",
+    "translation": {
+      "City": {
+        "ar": "الصيح",
+        "en": "Al Sayh"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Al Sayh",
+    "Block": "229",
+    "translation": {
+      "City": {
+        "ar": "الصيح",
+        "en": "Al Sayh"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Amwaj",
+    "Block": "257",
+    "translation": {
+      "City": {
+        "ar": "أمواج",
+        "en": "Amwaj"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Amwaj",
+    "Block": "258",
+    "translation": {
+      "City": {
+        "ar": "أمواج",
+        "en": "Amwaj"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Amwaj",
+    "Block": "263",
+    "translation": {
+      "City": {
+        "ar": "أمواج",
+        "en": "Amwaj"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Amwaj",
+    "Block": "264",
+    "translation": {
+      "City": {
+        "ar": "أمواج",
+        "en": "Amwaj"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Amwaj",
+    "Block": "265",
+    "translation": {
+      "City": {
+        "ar": "أمواج",
+        "en": "Amwaj"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Amwaj",
+    "Block": "266",
+    "translation": {
+      "City": {
+        "ar": "أمواج",
+        "en": "Amwaj"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Amwaj",
+    "Block": "269",
+    "translation": {
+      "City": {
+        "ar": "أمواج",
+        "en": "Amwaj"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Arad",
+    "Block": "240",
+    "translation": {
+      "City": {
+        "ar": "عراد",
+        "en": "Arad"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Arad",
+    "Block": "241",
+    "translation": {
+      "City": {
+        "ar": "عراد",
+        "en": "Arad"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Arad",
+    "Block": "242",
+    "translation": {
+      "City": {
+        "ar": "عراد",
+        "en": "Arad"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Arad",
+    "Block": "243",
+    "translation": {
+      "City": {
+        "ar": "عراد",
+        "en": "Arad"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Arad",
+    "Block": "244",
+    "translation": {
+      "City": {
+        "ar": "عراد",
+        "en": "Arad"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Arad",
+    "Block": "245",
+    "translation": {
+      "City": {
+        "ar": "عراد",
+        "en": "Arad"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Arad",
+    "Block": "246",
+    "translation": {
+      "City": {
+        "ar": "عراد",
+        "en": "Arad"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Busaiteen",
+    "Block": "221",
+    "translation": {
+      "City": {
+        "ar": "البسيتين",
+        "en": "Busaiteen"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Busaiteen",
+    "Block": "222",
+    "translation": {
+      "City": {
+        "ar": "البسيتين",
+        "en": "Busaiteen"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Busaiteen",
+    "Block": "223",
+    "translation": {
+      "City": {
+        "ar": "البسيتين",
+        "en": "Busaiteen"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Busaiteen",
+    "Block": "225",
+    "translation": {
+      "City": {
+        "ar": "البسيتين",
+        "en": "Busaiteen"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Busaiteen",
+    "Block": "226",
+    "translation": {
+      "City": {
+        "ar": "البسيتين",
+        "en": "Busaiteen"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Busaiteen",
+    "Block": "227",
+    "translation": {
+      "City": {
+        "ar": "البسيتين",
+        "en": "Busaiteen"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Dair",
+    "Block": "231",
+    "translation": {
+      "City": {
+        "ar": "الدير",
+        "en": "Dair"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Dair",
+    "Block": "232",
+    "translation": {
+      "City": {
+        "ar": "الدير",
+        "en": "Dair"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Dair",
+    "Block": "233",
+    "translation": {
+      "City": {
+        "ar": "الدير",
+        "en": "Dair"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Galali",
+    "Block": "251",
+    "translation": {
+      "City": {
+        "ar": "قلالي",
+        "en": "Galali"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Galali",
+    "Block": "252",
+    "translation": {
+      "City": {
+        "ar": "قلالي",
+        "en": "Galali"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Galali",
+    "Block": "253",
+    "translation": {
+      "City": {
+        "ar": "قلالي",
+        "en": "Galali"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Galali",
+    "Block": "254",
+    "translation": {
+      "City": {
+        "ar": "قلالي",
+        "en": "Galali"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Galali",
+    "Block": "255",
+    "translation": {
+      "City": {
+        "ar": "قلالي",
+        "en": "Galali"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Galali",
+    "Block": "256",
+    "translation": {
+      "City": {
+        "ar": "قلالي",
+        "en": "Galali"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Halat Alnaim",
+    "Block": "248",
+    "translation": {
+      "City": {
+        "ar": "حالة النعيم",
+        "en": "Halat Alnaim"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Halat Alsulta",
+    "Block": "247",
+    "translation": {
+      "City": {
+        "ar": "حالة السلطة",
+        "en": "Halat Alsulta"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "101",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "102",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "103",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "104",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "105",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "106",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "107",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "108",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "109",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "110",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "111",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "112",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "113",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "115",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "116",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "117",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "118",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "119",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "121",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Hidd",
+    "Block": "128",
+    "translation": {
+      "City": {
+        "ar": "الحد",
+        "en": "Hidd"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "202",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "203",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "204",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "205",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "206",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "207",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "208",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "209",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "210",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "211",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "212",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "213",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "214",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "215",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "216",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "217",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Muharraq",
+    "Block": "224",
+    "translation": {
+      "City": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Samaheej",
+    "Block": "234",
+    "translation": {
+      "City": {
+        "ar": "سماهيج",
+        "en": "Samaheej"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Samaheej",
+    "Block": "235",
+    "translation": {
+      "City": {
+        "ar": "سماهيج",
+        "en": "Samaheej"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Samaheej",
+    "Block": "236",
+    "translation": {
+      "City": {
+        "ar": "سماهيج",
+        "en": "Samaheej"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  },
+  {
+    "Governorate": "Muharraq",
+    "City": "Samaheej",
+    "Block": "237",
+    "translation": {
+      "City": {
+        "ar": "سماهيج",
+        "en": "Samaheej"
+      },
+      "Governorate": {
+        "ar": "المحرق",
+        "en": "Muharraq"
+      }
+    }
+  }
+]

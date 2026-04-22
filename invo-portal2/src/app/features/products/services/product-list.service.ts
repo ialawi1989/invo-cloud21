@@ -45,10 +45,23 @@ export class ProductListService {
   }
 
   async getDepartments(
-    params: { page: number; pageSize: number; search: string } = { page: 1, pageSize: 20, search: '' },
+    params: {
+      page: number;
+      pageSize: number;
+      search: string;
+      /** Currently-selected department id — backend pins it to the top of page 1
+       *  so the trigger can resolve its label on first render. */
+      departmentId?: string | null;
+    } = { page: 1, pageSize: 20, search: '' },
   ): Promise<DropdownPage> {
     const res = await this.api.request(
-      this.api.post('product/getDepartmentList', { page: params.page, limit: params.pageSize, searchTerm: params.search }),
+      this.api.post('product/getDepartmentList', {
+        page: params.page,
+        limit: params.pageSize,
+        searchTerm: params.search,
+        sortBy: {},
+        departmentId: params.departmentId ?? null,
+      }),
     );
     const data = res?.data;
     const list = data?.list || data || [];
@@ -58,17 +71,23 @@ export class ProductListService {
   }
 
   async getCategories(
-    params: { page: number; pageSize: number; search: string; departmentId?: string | null } =
-      { page: 1, pageSize: 20, search: '' },
+    params: {
+      page: number;
+      pageSize: number;
+      search: string;
+      departmentId?: string | null;
+      /** Currently-selected category id — pinned at top of page 1. */
+      categoryId?: string | null;
+    } = { page: 1, pageSize: 20, search: '' },
   ): Promise<DropdownPage> {
-    const body: any = {
+    const res = await this.api.request(this.api.post('product/getCategoryList', {
       page: params.page,
       limit: params.pageSize,
       searchTerm: params.search,
       sortBy: {},
-    };
-    if (params.departmentId) body.departmentId = params.departmentId;
-    const res = await this.api.request(this.api.post('product/getCategoryList', body));
+      departmentId: params.departmentId ?? null,
+      categoryId: params.categoryId ?? null,
+    }));
     const data = res?.data;
     const list = data?.list || data || [];
     const count = data?.count || list.length;
@@ -78,7 +97,13 @@ export class ProductListService {
 
   // ─── Brands (dropdown) ─────────────────────────────────────
   async getBrands(
-    params: { page: number; pageSize: number; search: string } = { page: 1, pageSize: 20, search: '' },
+    params: {
+      page: number;
+      pageSize: number;
+      search: string;
+      /** Currently-selected brand id — pinned at top of page 1. */
+      brandId?: string | null;
+    } = { page: 1, pageSize: 20, search: '' },
   ): Promise<DropdownPage> {
     const res = await this.api.request(
       this.api.post('product/getBrandList', {
@@ -86,6 +111,7 @@ export class ProductListService {
         limit: params.pageSize,
         searchTerm: params.search,
         sortBy: {},
+        brandId: params.brandId ?? null,
       }),
     );
     const data = res?.data;
@@ -99,7 +125,13 @@ export class ProductListService {
   // Returns items plus the raw list so callers can compute taxPercentage
   // after a selection without re-fetching.
   async getTaxes(
-    params: { page: number; pageSize: number; search: string } = { page: 1, pageSize: 20, search: '' },
+    params: {
+      page: number;
+      pageSize: number;
+      search: string;
+      /** Currently-selected tax id; backend pins it to the top of the list. */
+      taxId?: string | null;
+    } = { page: 1, pageSize: 20, search: '' },
   ): Promise<DropdownPage & { raw: any[] }> {
     const res = await this.api.request(
       this.api.post('accounts/getTaxesList', {
@@ -107,6 +139,11 @@ export class ProductListService {
         limit: params.pageSize,
         searchTerm: params.search,
         sortBy: {},
+        // Always include taxId (null when none selected). The backend uses
+        // it to pin the selected tax at the top of the list so the trigger
+        // can resolve the label on first render instead of showing the raw
+        // id. Sending explicitly (even as null) keeps the contract simple.
+        taxId: params.taxId ?? null,
       }),
     );
     const data = res?.data;

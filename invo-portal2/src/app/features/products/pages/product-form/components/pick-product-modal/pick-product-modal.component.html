@@ -26,6 +26,20 @@
           [checked]="isSelected(row.id)"
           (change)="toggle(row.id)"
         />
+
+        <!-- Thumbnail (or placeholder svg when the row has no image) -->
+        <div class="ppm-row__thumb" aria-hidden="true">
+          @if (row.thumbnailUrl) {
+            <img [src]="row.thumbnailUrl" [alt]="row.name" loading="lazy"/>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+              <circle cx="9" cy="9" r="2"/>
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+            </svg>
+          }
+        </div>
+
         <div class="ppm-row__main">
           <div class="ppm-row__name">{{ row.name }}</div>
           <div class="ppm-row__meta">
@@ -40,12 +54,13 @@
       </label>
     }
 
-    @if (hasMore()) {
-      <button type="button" class="ppm-more" (click)="loadMore()" [disabled]="loading()">
-        @if (loading()) { <span class="ppm-spinner" aria-hidden="true"></span> }
-        {{ 'COMMON.LOAD_MORE' | translate }}
-      </button>
-    }
+    <!-- Infinite-scroll sentinel — observer fires `loadMore()` when it
+         enters the viewport; inline spinner while a next page loads. -->
+    <div #scrollSentinel class="ppm-sentinel" aria-hidden="true">
+      @if (loading() && rows().length > 0) {
+        <span class="ppm-spinner"></span>
+      }
+    </div>
   </div>
 </div>
 

@@ -20,6 +20,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ModalService } from '@shared/modal/modal.service';
+import { QtyInputComponent } from '@shared/components/qty-input';
 import type { SupplierMini } from '../../../../../suppliers';
 
 import { Product, SupplierItem } from '../../../../models/product-form.model';
@@ -44,7 +45,7 @@ import {
 @Component({
   selector: 'app-pf-supplier-list-product',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, QtyInputComponent],
   templateUrl: './supplier-list-product.component.html',
   styleUrl: './supplier-list-product.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,9 +64,19 @@ export class SupplierListProductComponent implements OnInit {
   // Searchable filter (visible-only filter; server is not hit).
   searchTerm = signal<string>('');
 
+  /**
+   * Bumped after every mutation of `productInfo().suppliers` (add / remove /
+   * soft-delete). The `visible` computed reads this signal so array-in-place
+   * mutations propagate to the UI — `productInfo` itself is the same Product
+   * reference across mutations, so a signal that tracks reference identity
+   * alone would miss them.
+   */
+  private suppliersTick = signal(0);
+
   // Visible suppliers (filtered by search). We index by absolute position
   // in productInfo.suppliers to stay aligned with FormArray rows.
   visible = computed<Array<{ absIdx: number; s: SupplierItem }>>(() => {
+    void this.suppliersTick();
     const term = this.searchTerm().trim().toLowerCase();
     return this.productInfo().suppliers
       .map((s, idx) => ({ absIdx: idx, s }))
@@ -150,6 +161,7 @@ export class SupplierListProductComponent implements OnInit {
     if (!picked?.length) return;
 
     picked.forEach((supplier) => this.attachSupplier(supplier));
+    this.suppliersTick.update((n) => n + 1);
     this.productForm().markAsDirty();
   }
 
@@ -191,6 +203,7 @@ export class SupplierListProductComponent implements OnInit {
     } else {
       info.suppliers.splice(absIdx, 1);
     }
+    this.suppliersTick.update((n) => n + 1);
     this.productForm().markAsDirty();
   }
 

@@ -1,0 +1,822 @@
+<html dir="rtl">
+
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900;1000&display=swap");
+
+    html,
+    body {
+      margin: 0;
+      -webkit-print-color-adjust:exact;
+    }
+
+    body {
+
+      font-family: "Cairo", sans-serif !important;
+      font-size: 14px !important;
+    }
+
+    .card {
+      --bs-card-spacer-y: 1.25rem;
+      --bs-card-spacer-x: 1.25rem;
+      --bs-card-title-spacer-y: 0.5rem;
+      --bs-card-title-color: ;
+      --bs-card-subtitle-color: ;
+      --bs-card-border-width: 0;
+      --bs-card-border-color: #f6f6f6;
+      --bs-card-border-radius: 0.25rem;
+      --bs-card-box-shadow: ;
+      --bs-card-inner-border-radius: calc(0.25rem - 0);
+      --bs-card-cap-padding-y: 0.625rem;
+      --bs-card-cap-padding-x: 1.25rem;
+      --bs-card-cap-bg: rgba(0, 0, 0, 0.03);
+      --bs-card-cap-color: ;
+      --bs-card-height: ;
+      --bs-card-color: ;
+      --bs-card-bg: #fff;
+      --bs-card-img-overlay-padding: 1rem;
+      --bs-card-group-margin: 12px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      word-wrap: break-word;
+      background-color: var(--bs-card-bg);
+      background-clip: border-box;
+      border: var(--bs-card-border-width) solid var(--bs-card-border-color);
+      border-radius: var(--bs-card-border-radius);
+    }
+
+    .card {
+      margin-bottom: 24px;
+      box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
+    }
+
+    .card-body {
+      flex: 1 1 auto;
+      padding: 1.25rem 1.25rem;
+    }
+
+    .p-3 {
+      padding: 1rem !important;
+    }
+
+    .justify-content-end {
+      justify-content: flex-end !important;
+    }
+
+    .border {
+      border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color) !important;
+    }
+
+    .text-ellipsis {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .text-primary {
+      --bs-primary-rgb: 50, 172, 193;
+      --bs-text-opacity: 1;
+      color: rgba(var(--bs-primary-rgb), var(--bs-text-opacity)) !important;
+    }
+
+    .ribbon {
+      position: absolute !important;
+      top: -5px;
+      left: -5px;
+      overflow: hidden;
+      width: 96px;
+      height: 94px;
+    }
+
+    [dir="rtl"] .ribbon {
+      left: auto;
+      top: -4px;
+      right: -5px;
+      transform: rotate(-270deg);
+    }
+
+    .ribbon .ribbon-inner {
+      text-align: center;
+      color: #fff;
+      top: 24px;
+      left: -31px;
+      width: 135px;
+      padding: 3px;
+      position: relative;
+      transform: rotate(-45deg);
+    }
+
+    [dir="rtl"] .ribbon .ribbon-inner {
+      left: 9px;
+    }
+
+    .ribbon .ribbon-inner:after,
+    .ribbon .ribbon-inner:before {
+      content: "";
+      border-top: 5px solid transparent;
+      border-left: 5px solid;
+      border-left-color: inherit;
+      border-right: 5px solid transparent;
+      border-bottom: 5px solid;
+      border-bottom-color: inherit;
+      position: absolute;
+      top: 20px;
+      transform: rotate(-45deg);
+    }
+
+    .ribbon .ribbon-inner:before {
+      border-left: 2px solid transparent;
+    }
+
+    .ribbon .ribbon-inner:before {
+      left: 0;
+      color: #2e8fda;
+    }
+
+    .ribbon .ribbon-inner:after {
+      right: -3px;
+      border-bottom: 3px solid transparent;
+      color: #2e8fda;
+    }
+
+
+    [dir="rtl"] .ribbon .ribbon-inner:before {
+      left: -2px;
+      top: 21px;
+    }
+
+    [dir="rtl"] .ribbon .ribbon-inner:after {
+      top: 21px;
+    }
+
+    .ribbon-draft {
+      background-color: #495057;
+      border-color: #1a1f24;
+    }
+
+    .ribbon-paid {
+      background-color: #74b72e;
+      border-color: #538f16;
+    }
+
+    .ribbon-partially-paid {
+      background-color: #f1b44c;
+      border-color: #c58d2d;
+    }
+
+    .ribbon-open {
+      background-color: #32acc1;
+      border-color: #3047b5;
+    }
+
+    .ribbon-danger {
+      background-color: #f46a6a;
+      border-color: #c44141;
+    }
+
+    .ribbon-info {
+      background-color: #50a5f1;
+      border-color: #3787cc;
+    }
+
+    .ribbon-writeOff {
+      background-color: #74788d;
+      border-color: #474c63;
+    }
+
+    .bg-draft,
+    .bg-pending {
+      --bs-bg-opacity: 1;
+      background-color: #495057 !important;
+    }
+
+    .bg-paid,
+    .bg-accepted,
+    .bg-ready {
+      --bs-bg-opacity: 1;
+      background-color: #74b72e !important;
+    }
+
+    .bg-departure {
+      --bs-bg-opacity: 1;
+      background-color: rgb(255, 90, 0) !important;
+    }
+
+    .bg-arrived {
+      --bs-bg-opacity: 1;
+      background-color: rgb(255, 90, 0) !important;
+    }
+
+    .bg-completed {
+      --bs-bg-opacity: 1;
+      background-color: #ff8800 !important;
+    }
+
+    .bg-partially-paid {
+      --bs-bg-opacity: 1;
+      background-color: #f1b44c !important;
+    }
+
+    .bg-merged,
+    .bg-open {
+      --bs-bg-opacity: 1;
+      background-color: #32acc1 !important;
+    }
+
+    .d-md-flex {
+      display: flex !important;
+    }
+
+    .me-4 {
+      margin-right: 1.5rem !important;
+    }
+
+    .ms-auto {
+      margin-left: auto !important;
+    }
+
+    .w-50 {
+      width: 50% !important;
+    }
+
+    .mb-3 {
+      margin-bottom: 1rem !important;
+    }
+
+    .font-size-24 {
+      font-size: 24px !important;
+    }
+
+    .mb-0 {
+      margin-bottom: 0 !important;
+    }
+
+    h6,
+    .h6,
+    h5,
+    .h5,
+    h4,
+    .h4,
+    h3,
+    .h3,
+    h2,
+    .h2,
+    h1,
+    .h1 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      line-height: 1.2;
+      color: #495057;
+    }
+
+    b,
+    strong {
+      font-weight: bolder;
+    }
+
+    .text-end {
+      text-align: right !important;
+    }
+
+    .d-flex {
+      display: flex !important;
+    }
+
+    .flex-column {
+      flex-direction: column !important;
+    }
+
+    .align-items-end {
+      align-items: flex-end !important;
+    }
+
+    .text-end {
+      text-align: right !important;
+    }
+
+    hr {
+      margin: 1rem 0;
+      color: inherit;
+      border: 0;
+      border-top: 1px solid;
+      opacity: 0.2;
+    }
+
+    .row>* {
+      position: relative;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .col-6,
+    .col-md-6 {
+      flex: 0 0 auto;
+      width: 50%;
+    }
+
+    .py-2 {
+      padding-top: 0.5rem !important;
+      padding-bottom: 0.5rem !important;
+    }
+
+    .col-md-5 {
+      flex: 0 0 auto;
+      width: 41.66666667%;
+    }
+
+    .col-md-7 {
+      flex: 0 0 auto;
+      width: 58.33333333%;
+    }
+
+    .col-md-6 {
+      flex: 0 0 auto;
+      width: 50%;
+    }
+
+    .justify-content-end {
+      justify-content: flex-end !important;
+    }
+
+    .p-3 {
+      padding: 1rem !important;
+    }
+
+    table {
+      caption-side: bottom;
+      border-collapse: collapse;
+    }
+
+    .table {
+      --bs-table-bg: var(--bs-white) !important;
+    }
+
+    .table {
+      --bs-table-color-type: initial;
+      --bs-table-bg-type: initial;
+      --bs-table-color-state: initial;
+      --bs-table-bg-state: initial;
+      --bs-table-color: #495057;
+      --bs-table-bg: var(--bs-body-bg);
+      --bs-table-border-color: #eff2f7;
+      --bs-table-accent-bg: transparent;
+      --bs-table-striped-color: #495057;
+      --bs-table-striped-bg: #f8f9fa;
+      --bs-table-active-color: #495057;
+      --bs-table-active-bg: #f8f9fa;
+      --bs-table-hover-color: #495057;
+      --bs-table-hover-bg: #f8f9fa;
+      width: 100%;
+      margin-bottom: 1rem;
+      vertical-align: top;
+      border-color: var(--bs-table-border-color);
+    }
+
+    thead,
+    tbody,
+    tfoot,
+    tr,
+    td,
+    th {
+      border-color: inherit;
+      border-style: solid;
+      border-width: 0;
+    }
+
+    .table-dark {
+
+
+      border-color: #484e53 !important;
+
+
+    }
+
+    .table>thead {
+      vertical-align: bottom;
+    }
+
+    .table th {
+      color: #fff !important;
+      background-color: #343a40 !important;
+      font-weight: 700 !important;
+    }
+
+    .align-middle {
+      vertical-align: middle !important;
+    }
+
+    .table> :not(caption)>*>* {
+      padding: 0.75rem 0.75rem;
+      color: var(--bs-table-color-state,
+          var(--bs-table-color-type, var(--bs-table-color)));
+      background-color: var(--bs-table-bg);
+      border-bottom-width: 1px;
+      box-shadow: inset 0 0 0 9999px var(--bs-table-bg-state,
+          var(--bs-table-bg-type, var(--bs-table-accent-bg)));
+    }
+
+    .table>tbody {
+      vertical-align: inherit;
+    }
+
+    .bg-warning {
+      --bs-bg-opacity: 1;
+      background-color: rgba(241, 180, 76, var(--bs-bg-opacity)) !important;
+    }
+
+    .mt-2 {
+      margin-top: 0.5rem !important;
+    }
+
+    .text-center {
+      text-align: center !important;
+    }
+
+    .alert-info {
+      --bs-alert-border-radius: 0.25rem;
+      --bs-alert-padding-x: 1.25rem;
+      --bs-alert-padding-y: 0.75rem;
+      --bs-alert-border: 1px solid var(--bs-alert-border-color);
+      --bs-info-text-emphasis: #055160;
+      --bs-info-bg-subtle: #cff4fc;
+      --bs-info-border-subtle: #9eeaf9;
+      --bs-alert-color: var(--bs-info-text-emphasis);
+      --bs-alert-bg: var(--bs-info-bg-subtle);
+      --bs-alert-border-color: var(--bs-info-border-subtle);
+      --bs-alert-link-color: var(--bs-info-text-emphasis);
+      width: 100%;
+      padding: var(--bs-alert-padding-y) var(--bs-alert-padding-x);
+      color: var(--bs-alert-color);
+      background-color: var(--bs-alert-bg);
+      border: var(--bs-alert-border);
+      border-radius: var(--bs-alert-border-radius);
+    }
+
+    .text-sm-end {
+      text-align: right !important;
+    }
+
+    #company-note span,
+    #print-footer strong {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class=" p-4">
+    <div id="main-content-paper">
+      <div class="paper-header">
+        <div class="d-md-flex">
+          <div class="me-4 w-50">
+            <div class="mb-3">
+
+
+              <img src="{{logo}}" alt="logo" style="height:50px" />
+
+            </div>
+            <h4 class="font-size-24 mb-0">{{ company.name }}</h4>
+            {{#if (notEmpty company?.vatNumber )}}
+            <div>
+              <strong>Vat No:</strong> {{ company?.vatNumber }}<br />
+            </div>
+            {{/if}}
+          </div>
+          <div class="ms-auto w-50">
+            <div class="d-flex flex-column align-items-end text-sm-end">
+              <h4 class="font-size-24">{{title}}</h4>
+              {{#if invoice.branchName}}
+              <div>
+                <span> <strong>Branch:</strong> {{ invoice.branchName }}</span>
+              </div>
+              {{/if}}
+              {{#if invoice.branchAddress}}
+              <div *ngIf="invoice.branchAddress">
+                <span><strong>Branch Address:</strong> {{ invoice.branchAddress
+                  }}</span>
+              </div>
+              {{/if}}
+              {{#if invoice.branchPhone}}
+              <div *ngIf="invoice.branchPhone">
+                <span> <strong>Phone:</strong> {{ invoice.branchPhone }}</span>
+              </div>
+              {{/if}}
+            </div>
+          </div>
+        </div>
+        <hr />
+      </div>
+
+      <div class="invoice-details">
+        <div class="row">
+          <div class="col-6 mt-0">
+            {{#if invoice.invoiceNumber}}
+            <div>
+              <strong>Invoice Number: </strong>
+              {{ invoice.invoiceNumber }}
+            </div>
+            {{/if}}
+            <div>
+              <strong>Bill to: </strong>
+              {{#if (notEmpty invoice.customerName )}}
+              {{ invoice.customerName }}
+              {{else}}
+              WalkIn Customer
+              {{/if}}
+            </div>
+          </div>
+          <div class="col-6 mt-0 text-sm-start">
+            <div>
+              <strong>Invoice Date:</strong>
+              {{ formatDate invoice.invoiceDate }}
+            </div>
+            {{#if (notEmpty invoice.dueDate)}}
+            <div>
+              <strong>Invoice Due Date:</strong>
+              {{ formatDate invoice.dueDate }}
+            </div>
+            {{/if}}
+            <div>
+              <strong>Created Date:</strong>
+              {{ formatDate invoice.createdAt }}
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6 mt-0">
+            {{#if invoice.customerVatNumber}}
+            <div>
+              <strong>Customer VAT Number: </strong>
+              {{ invoice.customerVatNumber }}
+            </div>
+            {{/if}}
+          </div>
+          <div class="col-6 mt-0 text-sm-start">
+            {{#if ( notEmpty invoice.refrenceNumber)}}
+            <div>
+              <strong> Reference Number#:</strong>
+              {{ invoice.refrenceNumber }}
+            </div>
+            {{/if}}
+          </div>
+        </div>
+        {{#if invoice.employeeName }}
+        <div>
+          <div class="col-6 mt-0">
+            <div>
+              <strong>Sales Person: </strong>{{ invoice.employeeName }}
+            </div>
+          </div>
+          <div class="col-6 mt-0 text-sm-end"></div>
+        </div>
+        {{/if}}
+      </div>
+
+
+      <div class="py-2 mt-3 d-flex">
+        <span class="font-size-15 fw-bold">Order summary</span>
+        <div class="ms-auto">
+          {{#if invoice.isInclusiveTax}}
+          <div>Inclusive Tax</div>
+          {{else}}
+          <div>Exclusive Tax</div>
+          {{/if}}
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table id="lines-table" class="table">
+          <thead class="table-dark" style="      color: #fff !important;
+          background-color: #343a40 !important;
+          font-weight: 700 !important;">
+            <tr style="color: #fff !important;
+            background-color: #343a40 !important;
+            font-weight: 700 !important;">
+              <th style="max-width: 30%; width: 30%" class="align-middle">
+                Description
+              </th>
+              <th class="align-middle">Qty</th>
+              <th class="align-middle">Price</th>
+              <th class="align-middle">
+                Tax%
+              </th>
+              <th class="align-middle">Tax</th>
+              <th class="align-middle">Discount</th>
+              <th class="align-middle text-sm-end">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each invoice.lines}}
+            {{#if (notEmpty qty)}}
+
+            <div>
+              <tr>
+                <td>
+                  <ul style="list-style-type: none; margin: 0; padding: 0">
+                    <li>
+                      {{#if (notEmpty selectedItem.name ) }} <div>{{ selectedItem.name }}</div> {{/if}}
+                      {{#if (greaterThanZero optionList.length)}}
+                      <div>
+                        <div class="d-flex gap-1 mt-1 flex-wrap">
+                          {{#each optionList}}
+                          <div>
+                            <span class="badge rounded-pill font-size-11 bg-info">{{ name }}
+                              {{#if ( greaterThanZero price)}}
+                              <i>{{ formatCurrency price ../company.currencySymbol ../company.afterDecimal }}</i>
+                              {{/if}}
+                            </span>
+                          </div>
+                          {{/each}}
+                        </div>
+                      </div>
+                      {{/if}}
+                      {{#if (isEmpty selectedItem.name )}} <div>{{ note }}</div> {{/if}}
+                      <!-- <div [ngIf]="line.selectedItem.name == null && line.note != null && line.note !=''">{{line.note}}</div> -->
+                    </li>
+
+                  </ul>
+                </td>
+                <td>{{ qty }}</td>
+                <td>{{formatCurrency price ../company.currencySymbol ../company.afterDecimal }}</td>
+                <td>{{ taxPercentage }} %</td>
+                <td>{{formatCurrency taxTotal ../company.currencySymbol ../company.afterDecimal }}</td>
+                <td>{{formatCurrency discountTotal ../company.currencySymbol ../company.afterDecimal }}</td>
+                <td class="text-sm-end">{{formatCurrency total ../company.currencySymbol ../company.afterDecimal }}</td>
+              </tr>
+              {{#each voidedItems}}
+              <div>
+                <tr class="table-light">
+                  <td>
+                    <ul style="list-style-type: none; margin: 0; padding: 0">
+                      <li>
+                        {{#if (notEmpty selectedItem?.name )}}
+                        <div>{{ selectedItem?.name}}</div>
+                        {{/if}}
+                        {{#if (greaterThanZero optionList.length)}}
+                        <div>
+                          <div class="d-flex gap-1 mt-1 flex-wrap">
+                            {{#each optionList}}
+                            <div>
+                              <span class="badge rounded-pill font-size-11 bg-info">{{ name }}
+                                {{#if (greaterThanZero price)}} <i>{{ price }}</i></span>{{/if}}
+                            </div>
+                            {{/each}}
+                          </div>
+                        </div>
+                        {{/if}}
+                        {{#if (isEmpty selectedItem?.name)}} <div>{{ note }}</div>{{/if}}
+                        <!-- <div [ngIf]="selectedItem.name == null && note != null && note !=''">{{note}}</div> -->
+                      </li>
+
+                      <li style="font-size: 10px">
+                        {{#if (notEmpty selectedItem?.name )}} <div>{{ note }}</div> {{/if}}
+                      </li>
+                    </ul>
+                  </td>
+                  <td>{{ qty }}</td>
+                  <td>{{formatCurrency price ../company.currencySymbol ../company.afterDecimal }}</td>
+                  <td>{{taxPercentage }} %</td>
+                  <td>{{formatCurrency taxTotal ../company.currencySymbol ../company.afterDecimal }}</td>
+                  <td>{{formatCurrency discountTotal ../company.currencySymbol ../company.afterDecimal }}</td>
+                  <td class="text-sm-end">{{formatCurrency total ../company.currencySymbol ../company.afterDecimal }}
+                  </td>
+                </tr>
+              </div>
+              {{/each}}
+            </div>
+            {{/if}}
+
+            {{/each}}
+
+          </tbody>
+        </table>
+      </div>
+      <div id="total-details" class="row m-0">
+        <div class="col-md-7"></div>
+
+        <div class="col-md-5 p-0">
+          <div class="justify-content-end card border p-3">
+            <div class="row">
+              <div class="col-md-6">Items Total</div>
+              <div class="col-md-6 text-md-end">
+                {{formatCurrency invoice.itemSubTotal company.currencySymbol company.afterDecimal }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">Tax Total</div>
+              <div class="col-md-6 text-md-end">
+                {{ formatCurrency invoice.invoiceTaxTotal company.currencySymbol company.afterDecimal }}
+              </div>
+            </div>
+            {{#if (notEmpty invoice.discountAmount)}}
+            {{#if invoice.discountPercentage}}
+            <div class="row">
+              <div class="col-md-6">Discount</div>
+              <div class="col-md-6 text-md-end">
+                {{ invoice.discountAmount }} %
+              </div>
+              {{else}}
+              <div class="row">
+                <div class="col-md-6">Discount</div>
+                <div class="col-md-6 text-md-end">
+                  {{ formatCurrency invoice.discountAmount company.currencySymbol company.afterDecimal }}
+                </div>
+              </div>
+            </div>
+            {{/if}}
+            {{/if}}
+            {{#if (notEmpty invoice.chargeTotal )}}
+            <div class="row">
+              <div class="col-md-6">Charge</div>
+              <div class="col-md-6 text-md-end">
+                {{formatCurrency invoice.chargeTotal company.currencySymbol company.afterDecimal }}
+              </div>
+            </div>
+            {{/if}}
+            {{#if (notEmpty invoice.deliveryCharge)}}
+            <div class="row">
+              <div class="col-md-6">Delivery Charge</div>
+              <div class="col-md-6 text-md-end">
+                {{formatCurrency invoice.deliveryCharge company.currencySymbol company.afterDecimal }}
+              </div>
+            </div>
+            {{/if}}
+
+            {{#if (notEmpty invoice.roundingTotal )}}
+            {{#if (greaterThanZero invoice.roundingTotal)}}
+            <div class="row">
+              <div class="col-md-6"><strong>Rounding</strong></div>
+              <div class="col-md-6 text-md-end">
+                <strong>{{formatCurrency invoice.roundingTotal company.currencySymbol company.afterDecimal }}</strong>
+              </div>
+            </div>
+            {{/if}}
+            {{/if}}
+
+            <div class="row">
+              <div class="col-md-6"><strong>Total</strong></div>
+              <div class="col-md-6 text-md-end">
+                <strong>{{formatCurrency invoice.total company.currencySymbol company.afterDecimal }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="payment-details" class="row m-0">
+        <div class="col-md-7"></div>
+
+        <div class="col-md-5 p-0">
+          <div class="mt-2 justify-content-end card border p-3 bg-warning" style="background-color: #3787cc;">
+            <div class="row">
+              <div class="col-md-6"><strong>Paymnet Made</strong></div>
+              <div class="col-md-6 text-md-end">
+                <strong>{{formatCurrency invoice.paidAmount company.currencySymbol company.afterDecimal }}</strong>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6"><strong>Credit Applied</strong></div>
+              <div class="col-md-6 text-md-end">
+                <strong>{{formatCurrency invoice.appliedCredit company.currencySymbol company.afterDecimal }}</strong>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6"><strong>Balance</strong></div>
+              <div class="col-md-6 text-md-end">
+                <strong>{{formatCurrency invoice.balance company.currencySymbol company.afterDecimal }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {{#if (notEmpty invoice.note)}}
+      <div class="row m-0" id="customer-note">
+        <div class="mb-0 alert-info">{{ invoice.note }}</div>
+      </div>
+      <div class="row text-center mt-2" id="company-note">
+        <span> <strong>{{ company?.invoiceOptions.note }}</strong></span>
+      </div>
+      {{/if}}
+    </div>
+    <footer id="print-footer" class="page-footer">
+      {{#if (notEmpty company?.invoiceOptions.term) }}
+      <div class="row text-center">
+        <strong class="text-primary">Terms & Conditions<br />{{ company?.invoiceOptions.term
+          }}</strong>
+      </div>
+      {{/if}}
+    </footer>
+    <div class="foot">
+      <div class="page-footer-space"></div>
+    </div>
+  </div>
+</body>
+
+</html>

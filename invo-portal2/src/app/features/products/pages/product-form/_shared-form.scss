@@ -19,7 +19,7 @@
     gap: 10px;
     padding: 14px 18px;
     border-bottom: 1px solid #f1f5f9;
-    background: #fafbfc;
+    background: #fff;
   }
 
   .pf-card__icon {
@@ -123,6 +123,12 @@
     font-size: 12px;
     color: #64748b;
     margin: 0;
+
+    &--info {
+      color: #32acc1;
+      font-style: normal;
+      padding: 2px 0;
+    }
   }
 
   .pf-link {
@@ -163,6 +169,65 @@
     align-items: center;
   }
   .pf-readonly--warn { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
+  .pf-readonly--strong {
+    font-weight: 700;
+    background: transparent;
+    border-color: transparent;
+    padding: 9px 0;
+  }
+
+  // Label with a right-aligned action (e.g. "Unit Cost · [ Adjust ]")
+  .pf-label--with-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .pf-chip-btn {
+    background: #32acc1;
+    color: #fff;
+    border: none;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .12s;
+
+    &:hover { background: #2a93a6; }
+
+    &--sm { padding: 2px 8px; font-size: 10px; margin-inline-start: 6px; }
+  }
+
+  // Exclude-inventory-deduction checkbox grid
+  .pf-field--deduction { margin-top: 14px; }
+
+  .pf-deduction-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px 20px;
+    margin-top: 6px;
+
+    @media (max-width: 680px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .pf-deduction-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #475569;
+    cursor: pointer;
+
+    input {
+      width: 16px; height: 16px;
+      accent-color: #32acc1;
+      cursor: pointer;
+    }
+  }
 
   // Toggle (checkbox styled as switch)
   .pf-switch {

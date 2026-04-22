@@ -76,12 +76,9 @@
                 />
               </div>
               <div class="pf-sl-col">
-                <input
-                  type="number"
-                  class="pf-input"
+                <app-qty-input
                   formControlName="minimumOrder"
-                  min="0"
-                  [class.pf-input--invalid]="group.controls['minimumOrder'].touched && group.controls['minimumOrder'].invalid"
+                  [min]="0"
                 />
               </div>
               <div class="pf-sl-col">
@@ -90,6 +87,7 @@
                   class="pf-input"
                   formControlName="cost"
                   min="0"
+                  step="0.01"
                   [class.pf-input--invalid]="group.controls['cost'].touched && group.controls['cost'].invalid"
                 />
               </div>

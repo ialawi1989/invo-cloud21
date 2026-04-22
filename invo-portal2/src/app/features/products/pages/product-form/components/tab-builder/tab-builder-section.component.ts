@@ -11,7 +11,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { TabDataEditorComponent } from '@shared/components/tab-builder/tab-data-editor.component';
+import { TabDataEditorComponent } from '@shared/components/tab-builder/tab-data-editor/tab-data-editor.component';
 import { TabDataMap, TabTemplate } from '@shared/components/tab-builder/tab-builder.types';
 import { TabBuilderSettingsService } from '../../../../../settings/services/tab-builder.service';
 import { Product } from '../../../../models/product-form.model';
@@ -71,6 +71,7 @@ import { Fields } from '../../../../models/product-fields.model';
           <app-tab-data-editor
             [templates]="templates()"
             [productType]="productInfo().type || null"
+            [productDescription]="productInfo().description || ''"
             [value]="value()"
             (valueChange)="onChange($event)"
           />
@@ -78,59 +79,7 @@ import { Fields } from '../../../../models/product-fields.model';
       </div>
     </section>
   `,
-  styles: [`
-    :host { display: block; }
-
-    .pf-card {
-      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
-      overflow: hidden;
-    }
-    .pf-card__header {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 18px; border-bottom: 1px solid #f1f5f9;
-    }
-    .pf-card__icon {
-      width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
-      background: #eff9fb; color: #32acc1;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .pf-card__title { font-size: 14px; font-weight: 600; color: #1e293b; margin: 0; }
-    .pf-card__body  { padding: 14px 18px; }
-
-    .hint-banner {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px; margin: 0 0 14px;
-      background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px;
-      color: #92400e;
-
-      &__icon { color: #d97706; flex-shrink: 0; }
-      &__text { margin: 0; font-size: 12px; line-height: 1.5; flex: 1; }
-      &__link {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 5px 10px; border-radius: 6px;
-        background: #fcd34d; color: #78350f;
-        font-size: 12px; font-weight: 600;
-        text-decoration: none; flex-shrink: 0;
-        transition: background .12s;
-
-        &:hover { background: #fbbf24; color: #451a03; }
-      }
-
-      @media (max-width: 640px) {
-        flex-wrap: wrap;
-        &__link { width: 100%; justify-content: center; }
-      }
-    }
-
-    .muted   { color: #94a3b8; font-size: 13px; margin: 0; }
-    .loading { display: flex; justify-content: center; padding: 28px 0; }
-    .spinner {
-      width: 22px; height: 22px; border-radius: 50%;
-      border: 3px solid #e2e8f0; border-top-color: #32acc1;
-      display: inline-block; animation: spin .8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  `],
+  styleUrl: './tab-builder-section.component.scss',
 })
 export class ProductTabBuilderSectionComponent implements OnInit {
   private tabBuilderSvc = inject(TabBuilderSettingsService);

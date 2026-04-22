@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { TabTemplateBuilderComponent } from '@shared/components/tab-builder/tab-template-builder.component';
+import { TabTemplateBuilderComponent } from '@shared/components/tab-builder/tab-template-builder/tab-template-builder.component';
 import { TabTemplate } from '@shared/components/tab-builder/tab-builder.types';
 import { TabBuilderSettingsService } from '../../services/tab-builder.service';
 
@@ -118,24 +119,49 @@ import { TabBuilderSettingsService } from '../../services/tab-builder.service';
   `],
 })
 export class TabBuilderSettingsComponent implements OnInit {
-  private service   = inject(TabBuilderSettingsService);
-  private translate = inject(TranslateService);
+  private service    = inject(TabBuilderSettingsService);
+  private translate  = inject(TranslateService);
+  private destroyRef = inject(DestroyRef);
 
   templates = signal<TabTemplate[]>([]);
   loading   = signal<boolean>(false);
   saving    = signal<boolean>(false);
 
-  breadcrumbs = computed<BreadcrumbItem[]>(() => [
-    { label: this.translate.instant('SETTINGS.TITLE'), routerLink: '/settings', icon: 'settings' },
-    { label: this.translate.instant('SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER') },
-  ]);
+  /**
+   * Ticks on every translation load / language switch. `withTranslations`
+   * fetches feature i18n asynchronously, so `translate.instant()` returns
+   * raw keys on the very first render — this tick makes labels recompute
+   * once the bundles arrive.
+   */
+  private i18nTick = signal(0);
 
-  saveLabel = computed<string>(() => this.translate.instant('COMMON.SAVING'));
+  breadcrumbs = computed<BreadcrumbItem[]>(() => {
+    this.i18nTick();
+    return [
+      { label: this.translate.instant('SETTINGS.TITLE'), routerLink: '/settings', icon: 'settings' },
+      { label: this.translate.instant('SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER') },
+    ];
+  });
+
+  saveLabel = computed<string>(() => {
+    this.i18nTick();
+    return this.translate.instant('COMMON.SAVING');
+  });
 
   constructor() {
     // `settings` covers the page chrome; `products` provides PRODUCTS.TYPES.*
     // labels used by the template builder's "Applies to" chips.
     withTranslations('settings', 'products');
+
+    // Re-resolve translated strings whenever the bundle lands or the
+    // language changes — ngx-translate caches the merged map per language,
+    // but `instant()` called before merge returns the key literally.
+    this.translate.onTranslationChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.i18nTick.update(n => n + 1));
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.i18nTick.update(n => n + 1));
   }
 
   async ngOnInit(): Promise<void> {

@@ -20,10 +20,17 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DropdownLoadFn, DropdownLoadResult } from '@shared/components/dropdown/search-dropdown.types';
+import { ModalService } from '@shared/modal';
+import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 
 import { ProductsService } from '../../../../services/products.service';
 import { Product, Tax } from '../../../../models/product-form.model';
 import { Fields } from '../../../../models/product-fields.model';
+import {
+  UnitCostAdjustModalComponent,
+  UnitCostAdjustData,
+  UnitCostAdjustResult,
+} from './unit-cost-adjust-modal.component';
 
 interface DropdownItem { label: string; value: string; }
 
@@ -53,6 +60,12 @@ export class ProductPricingComponent implements OnInit {
   private fb = inject(FormBuilder);
   private destroyRef = inject(DestroyRef);
   private productsService = inject(ProductsService);
+  private privileges = inject(PrivilegeService);
+
+  /** Same gate as branch-product-section — only shown to users who can adjust. */
+  readonly canAdjust         = this.privileges.check('manualAdjustmentSecurity.access');
+  /** Whole unit-cost / profit / margin block hides when the user can't manage unit cost (old parity). */
+  readonly canManageUnitCost = this.privileges.check('productSecurity.actions.manageUnitCost.access');
 
   productInfo   = input.required<Product>();
   productForm   = input.required<FormGroup>();
@@ -89,9 +102,61 @@ export class ProductPricingComponent implements OnInit {
     this.priceModelValue() === 'totalPrice' || this.priceModelValue() === 'totalPriceWithDiscount',
   );
 
-  // Paged async loader for the tax dropdown
+  /**
+   * Backend populates `branchesUnitCost` with per-branch overrides when a
+   * product has differing unit costs across branches. In that case there is
+   * no single "unit cost" to show at the product level — the old app hides
+   * the unit-cost / profit / margin row and redirects the user to the
+   * branch section. We honour that here.
+   */
+  branchCostsVary = computed<boolean>(() => {
+    const list = this.productInfo().branchesUnitCost;
+    return Array.isArray(list) && list.length > 0;
+  });
+
+  /**
+   * Unit-cost is read-only at rest. The "Adjust" button opens the
+   * Inventory-adjustment modal, which posts a `saveManualAdjustmentMovement`
+   * record and returns the new cost. We patch the form control on close so
+   * the read-only display + derived profit/margin refresh instantly.
+   */
+  private modals = inject(ModalService);
+
+  async openAdjustModal(): Promise<void> {
+    const info = this.productInfo();
+    if (!info.id) return; // can't log an adjustment for a brand-new product
+
+    const ref = this.modals.open<UnitCostAdjustModalComponent, UnitCostAdjustData, UnitCostAdjustResult>(
+      UnitCostAdjustModalComponent,
+      {
+        size: 'sm',
+        data: {
+          productId: info.id,
+          currentUnitCost: Number(this.unitCostValue()) || 0,
+        },
+      },
+    );
+
+    const result = await ref.afterClosed();
+    if (!result) return;
+
+    // Patch both the form control and productInfo so profit/margin recompute.
+    this.group.patchValue({ unitCost: result.unitCost });
+    info.unitCost = result.unitCost;
+  }
+
+  // Paged async loader for the tax dropdown. Sends the currently-selected
+  // `taxId` on page 1 so the backend can pin the selected row at the top of
+  // the list — otherwise the dropdown trigger shows the stored id literally
+  // until the user scrolls to the page that contains the row.
   loadTaxes: DropdownLoadFn<DropdownItem> = async ({ page, pageSize, search }) => {
-    const res = await this.productsService.getTaxes({ page, pageSize, search });
+    // Prefer the current form value, fall back to productInfo.taxId if the
+    // form hasn't propagated yet (can happen on the very first loadFn call
+    // that the dropdown fires before Angular's CVA flow settles).
+    const taxId = this.group?.get('taxId')?.value
+      ?? this.productInfo()?.taxId
+      ?? null;
+    const res = await this.productsService.getTaxes({ page, pageSize, search, taxId });
     if (page === 1) this.taxListRaw.set(res.raw as Tax[]);
     else this.taxListRaw.update((prev) => [...prev, ...(res.raw as Tax[])]);
     return { items: res.items as DropdownItem[], hasMore: res.hasMore } as DropdownLoadResult<DropdownItem>;
@@ -111,7 +176,17 @@ export class ProductPricingComponent implements OnInit {
       : v.label;
 
   // Angular template parser can't evaluate inline arrows — bind these methods.
-  displayLabel = (item: any): string => item?.label ?? String(item ?? '');
+  // For the tax dropdown the stored value is a bare UUID string (from
+  // `info.taxId`); resolve it against the cached raw tax list so the trigger
+  // shows the tax name on first render instead of the raw id.
+  displayLabel = (item: any): string => {
+    if (item?.label) return item.label;
+    if (typeof item === 'string' && item) {
+      const t: any = this.taxListRaw().find((x: any) => x.id === item);
+      if (t?.name) return t.name;
+    }
+    return String(item ?? '');
+  };
   compareByValue = (a: any, b: any): boolean => (a?.value ?? a) === (b?.value ?? b);
 
   ngOnInit(): void {
@@ -149,15 +224,31 @@ export class ProductPricingComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.syncSignals());
 
-    // Seed default tax for a new product — fires once taxes are loaded.
-    if (!info.id && taxId == null) {
-      this.productsService.getTaxes({ page: 1, pageSize: 50, search: '' }).then((res) => {
+    // Preload the tax list on init. Two cases:
+    //  1. New product (no taxId yet) → fetch page 1 and seed the default tax
+    //     if the backend flags one as `default`.
+    //  2. Edit mode (taxId already set) → fetch page 1 with the selected id
+    //     pinned so the trigger resolves to the tax name immediately and
+    //     `syncSignals` can look up the correct taxPercentage. Without this
+    //     pre-fetch the dropdown stays lazy and the raw UUID is shown until
+    //     the user opens it.
+    if (f?.tax?.isVisible !== false) {
+      this.productsService.getTaxes({ page: 1, pageSize: 50, search: '', taxId }).then((res) => {
         this.taxListRaw.set(res.raw as Tax[]);
-        const def = (res.raw as Tax[]).find((t: any) => t.default);
-        if (def) {
-          this.group.patchValue({ taxId: def.id });
-          info.taxId = def.id;
-          info.taxPercentage = def.taxPercentage ?? 0;
+
+        if (!info.id && taxId == null) {
+          const def = (res.raw as Tax[]).find((t: any) => t.default);
+          if (def) {
+            this.group.patchValue({ taxId: def.id });
+            info.taxId = def.id;
+            info.taxPercentage = def.taxPercentage ?? 0;
+          }
+        } else if (taxId) {
+          // Edit mode — resolve taxPercentage from the selected row now that
+          // the list is cached, so profit/margin/tax calculations are correct
+          // before the user interacts with the dropdown.
+          const t: any = (res.raw as Tax[]).find((x: any) => x.id === taxId);
+          if (t) info.taxPercentage = t.taxPercentage ?? 0;
         }
       }).catch(() => void 0);
     }

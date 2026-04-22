@@ -1,0 +1,50 @@
+{
+    "contryCode": "964",
+    "currencySymbol": "IQD",
+    "timeOffset": "+3",
+    "afterDecimal": 0,
+    "phoneRegExp": "\\d{10}",
+    "Taxes": [],
+    "addressFormat": [
+        {
+            "key": "governorate",
+            "title": "Governorate",
+            "isRequired": false
+        },
+        {
+            "key": "city",
+            "title": "City",
+            "isRequired": false
+        },
+        {
+            "key": "block",
+            "title": "Block",
+            "isRequired": false
+        },
+        {
+            "key": "road",
+            "title": "Road/Avenue",
+            "isRequired": false
+        },
+        {
+            "key": "building",
+            "title": "Building/House",
+            "isRequired": false
+        },
+        {
+            "key": "flat",
+            "title": "Flat/Office",
+            "isRequired": false
+        }
+    ],
+
+    "cashValues": [
+        25000,
+        10000, 
+        5000,
+        1000,
+        500,
+        250
+    ]
+    
+}

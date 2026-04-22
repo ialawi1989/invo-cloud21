@@ -2,6 +2,47 @@ import { Injectable, inject } from '@angular/core';
 import { ApiService } from '../../../core/http';
 
 /**
+ * Payload shape for `accounts/saveManualAdjustmentMovement`. Mirrors the
+ * wire format from the old project verbatim — field names + server typo
+ * (`inventoryMovmentDate`) included.
+ */
+export interface ManualAdjustmentLine {
+  id: string;
+  productId: string;
+  /** New unit cost when `adjustmentType === 'unitCost adjustment'`. */
+  cost?: number;
+  /** Old unit cost — preserved for audit trail. */
+  currentCost?: number;
+  /** Existing on-hand BEFORE the adjustment (server populates display). */
+  currentOnHand?: number;
+  /** New on-hand value the user typed (for `onHand adjustment`). */
+  tempQty?: number;
+  /** Delta from currentOnHand to tempQty — backend applies this to stock. */
+  qty?: number;
+  unitCost?: number;
+  [extra: string]: any;
+}
+
+export interface ManualAdjustmentMovement {
+  id: string;
+  /** Server spelling — keep as-is. */
+  inventoryMovmentDate: string | null;
+  /** Branch scope for the adjustment (required by backend on stock changes). */
+  branchId?: string;
+  branchName: string;
+  employeeId: string;
+  employeeName: string;
+  /** `"unitCost adjustment"` | `"onHand adjustment"`. */
+  adjustmentType: 'unitCost adjustment' | 'onHand adjustment' | string;
+  cost: number;
+  referenceId: string;
+  /** Always `"Manual Adjustment"` for this endpoint. */
+  type: 'Manual Adjustment' | string;
+  lines: ManualAdjustmentLine[];
+  [extra: string]: any;
+}
+
+/**
  * Product CRUD Service
  * Handles single-product get/save/delete, serials, batches, import/export,
  * bulk updates, barcode generation.
@@ -125,6 +166,123 @@ export class ProductCrudService {
     // TODO: Port GenerateBarcodeComponent to standalone + use ModalService.
     // For now this is a placeholder.
     console.log('Generate barcode for:', productInfo, { type, batchOrSerialData, branch });
+  }
+
+  // ─── Manual adjustment (unit-cost / stock corrections) ─────
+  /**
+   * Posts a manual adjustment-movement record (endpoint: `accounts/…`).
+   *
+   * Body shape mirrors the old project exactly — a full movement envelope
+   * with a `lines` array that carries the actual adjustment. The `type`
+   * `"Manual Adjustment"` and `adjustmentType` `"unitCost adjustment"` are
+   * both required discriminators the backend keys off. Note the typo in
+   * `inventoryMovmentDate` — preserved to match the server field name.
+   */
+  async saveManualAdjustmentMovement(body: ManualAdjustmentMovement): Promise<any> {
+    return this.api.request(this.api.post('accounts/saveManualAdjustmentMovement', body));
+  }
+
+  /**
+   * Unit-cost adjustment. Backend signature:
+   *   adjustmentType = "unitCost adjustment"
+   *   lines[0].currentCost = old cost (audit)
+   *   lines[0].cost        = new cost
+   */
+  buildUnitCostAdjustmentBody(
+    productId: string,
+    newUnitCost: number,
+    opts: { branchId?: string; currentUnitCost?: number } = {},
+  ): ManualAdjustmentMovement {
+    return {
+      id: '',
+      inventoryMovmentDate: null,
+      branchId: opts.branchId ?? '',
+      branchName: '',
+      employeeId: '',
+      employeeName: '',
+      adjustmentType: 'unitCost adjustment',
+      cost: 0,
+      referenceId: '',
+      type: 'Manual Adjustment',
+      lines: [
+        {
+          id: '',
+          productId,
+          currentCost: Number(opts.currentUnitCost ?? 0),
+          cost: Number(newUnitCost) || 0,
+        },
+      ],
+    };
+  }
+
+  /**
+   * Stock (onHand) adjustment. Backend signature:
+   *   adjustmentType = "onHand adjustment"
+   *   lines[0].currentOnHand = old qty (audit)
+   *   lines[0].tempQty       = new qty the user entered
+   *   lines[0].qty           = delta (tempQty - currentOnHand)
+   */
+  buildStockAdjustmentBody(
+    productId: string,
+    branchId: string,
+    currentOnHand: number,
+    newOnHand: number,
+  ): ManualAdjustmentMovement {
+    const cur = Number(currentOnHand) || 0;
+    const next = Number(newOnHand) || 0;
+    return {
+      id: '',
+      inventoryMovmentDate: null,
+      branchId,
+      branchName: '',
+      employeeId: '',
+      employeeName: '',
+      adjustmentType: 'onHand adjustment',
+      cost: 0,
+      referenceId: '',
+      type: 'Manual Adjustment',
+      lines: [
+        {
+          id: '',
+          productId,
+          currentOnHand: cur,
+          tempQty: next,
+          qty: next - cur,
+        },
+      ],
+    };
+  }
+
+  // ─── Uniqueness validation (name / barcode) ───────────────
+  /**
+   * Checks whether a product name is free within the given table. The
+   * backend contract returns `{ success: true }` when the name is unique
+   * (or unchanged for the current record) and `{ success: false }` when a
+   * duplicate exists elsewhere.
+   */
+  async validateName(params: { tableName: string; id?: string | null; name: string; branchId?: string }): Promise<{ success: boolean; msg?: string }> {
+    const res = await this.api.request<any>(this.api.post('company/validateName', {
+      tableName: params.tableName,
+      id: params.id ?? '',
+      name: params.name,
+      branchId: params.branchId ?? '',
+    }));
+    return { success: !!res?.success, msg: res?.msg };
+  }
+
+  /**
+   * Checks whether a barcode is free. Backend: `product/validateBarcode`.
+   * Pass `isMatrix` when validating a matrix-product child so the backend
+   * skips the parent-vs-child collision rule.
+   */
+  async validateBarcode(params: { tableName?: string; productId?: string | null; barcode: string; isMatrix?: boolean }): Promise<{ success: boolean; msg?: string }> {
+    const res = await this.api.request<any>(this.api.post('product/validateBarcode', {
+      tableName: params.tableName ?? 'product',
+      productId: params.productId ?? '',
+      barcode: params.barcode,
+      ...(params.isMatrix != null ? { isMatrix: params.isMatrix } : {}),
+    }));
+    return { success: !!res?.success, msg: res?.msg };
   }
 
   // ─── Helper ────────────────────────────────────────────────

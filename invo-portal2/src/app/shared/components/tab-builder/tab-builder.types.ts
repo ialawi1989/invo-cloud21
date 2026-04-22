@@ -93,6 +93,19 @@ export interface FaqTemplateItem {
   answerPlaceholder?: string;
 }
 
+/**
+ * Content source for richtext templates.
+ *
+ *   - `manual` (default): user types content on each product.
+ *   - `productDescription`: live-linked to `product.description` — no
+ *     per-product content is stored; the storefront reads the description
+ *     at render time.
+ *   - `shared`: admin writes one content block in settings; every product
+ *     shows the same thing. Stored in the template's `sharedContent` and
+ *     read-only on the product side.
+ */
+export type RichtextSource = 'manual' | 'productDescription' | 'shared';
+
 export interface TabTemplate {
   id: string;
   name: string;
@@ -114,6 +127,15 @@ export interface TabTemplate {
   faqFields?: FaqTemplateItem[];
   /** Shared by richtext + custom */
   placeholder?: string;
+  /**
+   * Source of content for a `richtext` tab. Omitted = `'manual'`.
+   */
+  source?: RichtextSource;
+  /**
+   * Company-wide content rendered on every product when `source === 'shared'`.
+   * The product side shows this read-only; there is no per-product copy.
+   */
+  sharedContent?: string;
 }
 
 export interface TabBuilderTemplates {
@@ -186,7 +208,7 @@ export function newTabTemplate(name: string, type: TabType, sortOrder = 0): TabT
     case 'specs':    return { ...base, specFields: [] };
     case 'records':  return { ...base, recordFields: [] };
     case 'faq':      return { ...base, faqFields: [] };
-    case 'richtext': return { ...base, placeholder: '' };
+    case 'richtext': return { ...base, placeholder: '', source: 'manual' };
     case 'custom':   return { ...base, placeholder: '' };
     case 'table':    return { ...base };
     case 'review':   return { ...base };
@@ -245,7 +267,10 @@ export function normaliseTemplates(raw: any): TabTemplate[] {
       specFields:    Array.isArray(t.specFields)   ? t.specFields   : undefined,
       recordFields:  Array.isArray(t.recordFields) ? t.recordFields : undefined,
       faqFields:     Array.isArray(t.faqFields)    ? t.faqFields    : undefined,
-      placeholder:   typeof t.placeholder === 'string' ? t.placeholder : undefined,
+      placeholder:    typeof t.placeholder === 'string' ? t.placeholder : undefined,
+      source:         (t.source === 'productDescription' || t.source === 'shared')
+                        ? t.source : undefined,
+      sharedContent:  typeof t.sharedContent === 'string' ? t.sharedContent : undefined,
     }))
     .sort((a: TabTemplate, b: TabTemplate) => a.sortOrder - b.sortOrder);
 }

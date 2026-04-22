@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TabType } from './tab-builder.types';
+import { TabType } from '../tab-builder.types';
 
 /**
  * Inline SVG mark for a `TabType`. Matches the lucide-equivalent icons used

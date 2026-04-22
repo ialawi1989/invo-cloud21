@@ -1,7 +1,7 @@
 @use '../../_shared-form.scss' as *;
 @include pfCard;
 
-.pf-card__header { flex-wrap: wrap; }
+.pf-card__header { flex-wrap: wrap; gap: 12px; }
 
 .pf-bp-summary {
   margin-inline-start: auto;
@@ -11,6 +11,277 @@
   color: #64748b;
 
   &__item strong { color: #0f172a; margin-inline-start: 4px; }
+}
+
+// Single / Bulk mode toggle — pushed to the far end of the header
+// via `margin-inline-start: auto` (was balanced by the old Total-stock
+// tile before it was removed).
+.pf-bp-mode {
+  display: inline-flex;
+  padding: 3px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  margin-inline-start: auto;
+
+  &__btn {
+    padding: 6px 14px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    transition: background .12s, color .12s;
+
+    &:hover { color: #334155; }
+    &--active {
+      background: #fff;
+      color: #0f172a;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+  }
+}
+
+// Branch picker row
+.pf-bp-picker {
+  padding: 14px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+// Custom dropdown row
+.pf-bp-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+
+  &__name { font-weight: 500; color: #1e293b; }
+  &__meta { display: inline-flex; gap: 4px; align-items: center; }
+}
+
+.pf-bp-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+
+  &--good  { background: #dcfce7; color: #166534; }
+  &--info  { background: #e0f2fe; color: #075985; }
+  &--count { background: #f1f5f9; color: #334155; }
+}
+
+.pf-bp-skeleton {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// ── Card-style "Different price" checkbox ─────────────────────────────────
+.pf-bp-card-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+  margin: 8px 0 12px;
+  position: relative;
+
+  &:hover { border-color: #cbd5e1; }
+
+  // Hide the native checkbox but keep it layout-inert and clickable via label.
+  input {
+    position: absolute;
+    inset-inline-start: -9999px;
+    opacity: 0;
+    width: 0; height: 0;
+  }
+
+  &__box {
+    width: 20px; height: 20px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; background: #fff;
+    flex-shrink: 0;
+    transition: background .12s, border-color .12s;
+
+    svg { width: 14px; height: 14px; opacity: 0; transition: opacity .12s; }
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1e293b;
+  }
+
+  // :has() bubbles checked state from the native input to the card.
+  &:has(input:checked) {
+    border-color: #a6d8df;
+    background: #eff9fb;
+
+    .pf-bp-card-check__box {
+      background: #32acc1;
+      border-color: #32acc1;
+      svg { opacity: 1; }
+    }
+  }
+}
+
+// ── Manage Stock collapsible ──────────────────────────────────────────────
+.pf-bp-manage {
+  margin: 12px 0;
+
+  &__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: #32acc1;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+
+    svg { transition: transform .15s; }
+  }
+  &__chev--open { transform: rotate(180deg); }
+
+  &__formula {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    color: #32acc1;
+  }
+
+  &__body {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fafbfc;
+  }
+}
+
+// ── Advance Pricing section header ────────────────────────────────────────
+.pf-bp-section-title {
+  margin: 20px 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+// Bulk-edit table — all branches as rows, each cell editable.
+.pf-bp-bulk {
+  padding: 14px 18px 18px;
+
+  &__scroll {
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+  }
+}
+
+.pf-bp-bulk-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+
+  th, td {
+    padding: 10px 12px;
+    text-align: start;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky; top: 0; z-index: 1;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+
+  &__name {
+    font-weight: 600;
+    color: #1e293b;
+    min-width: 120px;
+  }
+  &__stock {
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+}
+
+.pf-bp-check {
+  width: 18px; height: 18px;
+  accent-color: #32acc1;
+  cursor: pointer;
+}
+
+.pf-bp-bulk-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; flex-shrink: 0;
+
+  &--good { background: #22c55e; }
+  &--warn { background: #f59e0b; }
+  &--bad  { background: #ef4444; }
+}
+.pf-bp-bulk-val { font-weight: 500; color: #1e293b; }
+
+:host ::ng-deep .pf-input--compact {
+  padding: 6px 8px;
+  font-size: 13px;
+  width: 80px;
+  min-width: 80px;
+  text-align: center;
+}
+
+// Summary footer (Available / Online / Low Stock)
+.pf-bp-bulk-summary {
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+
+  @media (max-width: 640px) { grid-template-columns: repeat(3, 1fr); }
+
+  &__item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-size: 12px; color: #64748b;
+  }
+  &__num {
+    font-size: 20px;
+    font-weight: 700;
+
+    &--good  { color: #22c55e; }
+    &--info  { color: #32acc1; }
+    &--warn  { color: #f59e0b; }
+    &--muted { color: #6366f1; }
+  }
 }
 
 // Tabs ─────────────────────────────────────────────────────────────────────

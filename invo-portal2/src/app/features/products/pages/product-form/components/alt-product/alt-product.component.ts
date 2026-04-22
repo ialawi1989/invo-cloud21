@@ -13,6 +13,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { ModalService } from '@shared/modal/modal.service';
 
+import { ProductsService } from '../../../../services/products.service';
 import { Product } from '../../../../models/product-form.model';
 import { Fields } from '../../../../models/product-fields.model';
 import {
@@ -38,7 +39,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AltProductComponent implements OnInit {
-  private modal = inject(ModalService);
+  private modal    = inject(ModalService);
+  private products = inject(ProductsService);
 
   productInfo   = input.required<Product>();
   productForm   = input.required<FormGroup>();
@@ -58,9 +60,40 @@ export class AltProductComponent implements OnInit {
     });
   });
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     // No FormGroup control — this section operates on the model directly;
     // dirty state is still tracked via `productForm.markAsDirty()` on change.
+
+    // Edit mode: if the backend returned `alternativeProducts` ids but no
+    // matching `alternativeProductsTemp` entries, the names aren't known
+    // and the template would fall back to showing the raw UUIDs. Fetch
+    // those names in one paged call and populate the display cache so the
+    // user sees product names on first paint.
+    const info = this.productInfo();
+    if (!info) return;
+    const ids  = info.alternativeProducts ?? [];
+    const temp = info.alternativeProductsTemp ?? [];
+    const missing = ids.filter(id => !temp.some((t: any) => t?.id === id));
+    if (missing.length === 0) return;
+
+    try {
+      const res = await this.products.getProductList({
+        page: 1,
+        pageSize: Math.max(missing.length, 50),
+        search: '',
+        ids: missing,
+      } as any);
+      const list: any[] = res?.list ?? [];
+      if (!Array.isArray(info.alternativeProductsTemp)) info.alternativeProductsTemp = [];
+      for (const p of list) {
+        const id = p.id ?? p._id;
+        if (!id || temp.some((t: any) => t.id === id)) continue;
+        info.alternativeProductsTemp.push({ id, name: p.name ?? id });
+      }
+      this.version.update(n => n + 1);
+    } catch (e) {
+      console.error('[alt-product] failed to resolve alternative names', e);
+    }
   }
 
   async openPicker(): Promise<void> {

@@ -1,0 +1,354 @@
+<html style="margin:0">
+
+<head>
+  <style>.ribbon .ribbon-inner:after {content:"";border-top:5px solid transparent;border-left:5px solid;border-left-color:inherit;border-right:5px solid transparent;border-bottom:5px solid;border-bottom-color:inherit;position:absolute;top:20px;transform:rotate(-45deg)}
+.ribbon .ribbon-inner:before {content:"";border-top:5px solid transparent;border-left:5px solid;border-left-color:inherit;border-right:5px solid transparent;border-bottom:5px solid;border-bottom-color:inherit;position:absolute;top:20px;transform:rotate(-45deg)}
+.ribbon .ribbon-inner:before {border-left:2px solid transparent}
+.ribbon .ribbon-inner:before {left:0;color:#2e8fda}
+.ribbon .ribbon-inner:after {right:-3px;border-bottom:3px solid transparent;color:#2e8fda}
+.table > :not(caption) > * > * {padding:0.75rem 0.75rem;border-bottom-width:1px}</style>
+  
+ 
+</head>
+
+<body style="margin:0">
+  <div class="card p-4" style="background-clip:border-box; box-shadow:0 0.75rem 1.5rem rgba(18, 38, 63, 0.03); display:flex; flex-direction:column; margin-bottom:24px; min-width:0; position:relative; word-wrap:break-word">
+    <div class="card-body" id="main-content-paper" style="flex:1 1 auto; padding:1.25rem 1.25rem">
+      <div class="paper-header">
+        <div class="d-md-flex" style="display:flex">
+          <div class="me-4" style="margin-right:1.5rem">
+            <div class="mb-3" style="margin-bottom:1rem">
+              {{#if companyData?.logoImg}}
+              <img alt="logo" height="40">
+              {{else}}
+              <img src="%7B%7B%20companyDefaultLogo%20%7D%7D" alt="logo" height="40">
+              {{/if}}
+            </div>
+            <h4 class="font-size-24 mb-0" style="color:#495057; font-weight:500; line-height:1.2; margin-bottom:0; margin-top:0; font-size:24px">{{ companyData.name }}</h4>
+            {{#if (notEmpty companyData?.vatNumber )}}
+            <div>
+              <strong style="font-weight:bolder">Vat No:</strong> {{ companyData?.vatNumber }}<br>
+            </div>
+            {{/if}}
+          </div>
+          <div class="ms-auto w-50" style="margin-left:auto; width:50%" width="50%">
+            <div class="d-flex flex-column align-items-end text-end" style="text-align:right; display:flex; flex-direction:column; align-items:flex-end" align="right">
+              <h4 class="font-size-24" style="color:#495057; font-weight:500; line-height:1.2; margin-bottom:0.5rem; margin-top:0; font-size:24px">{{title}}</h4>
+              {{#if data.branchName}}
+              <div>
+                <span> <strong style="font-weight:bolder">Branch:</strong> {{ data.branchName }}</span>
+              </div>
+              {{/if}}
+              {{#if data.branchAddress}}
+              <div>
+                <span><strong style="font-weight:bolder">Branch Address:</strong> {{ data.branchAddress
+                  }}</span>
+              </div>
+              {{/if}}
+              {{#if data.branchPhone}}
+              <div>
+                <span> <strong style="font-weight:bolder">Phone:</strong> {{ data.branchPhone }}</span>
+              </div>
+              {{/if}}
+            </div>
+          </div>
+        </div>
+        <hr style="border:0; border-top:1px solid; color:inherit; margin:1rem 0; opacity:0.2">
+      </div>
+
+      <div class="invoice-details">
+        <div class="row" style="display:flex; flex-wrap:wrap">
+          <div class="col-6 mt-0" style="flex:0 0 auto; width:50%" width="50%">
+            {{#if invoiceData.invoiceNumber}}
+            <div>
+              <strong style="font-weight:bolder">Invoice Number: </strong>
+              {{ invoiceData.invoiceNumber }}
+            </div>
+            {{/if}}
+            <div>
+              <strong style="font-weight:bolder">Bill to: </strong>
+              {{#if (notEmpty invoiceData.customerName )}}
+              {{ invoiceData.customerName }}
+              {{else}}
+               WalkIn Customer
+               {{/if}}
+            </div>
+          </div>
+          <div class="col-6 mt-0 text-sm-end" style="flex:0 0 auto; width:50%; text-align:right" width="50%" align="right">
+            <div>
+              <strong style="font-weight:bolder">Invoice Date:</strong>
+              {{ invoiceData.invoiceDate }}
+            </div>
+            {{#if (notEmpty invoiceData.dueDate)}}
+            <div>
+              <strong style="font-weight:bolder">Invoice Due Date:</strong>
+              {{ invoiceData.dueDate }}
+            </div>
+            {{/if}}
+            <div>
+              <strong style="font-weight:bolder">Created Date:</strong>
+              {{ invoiceData.createdAt }}
+            </div>
+          </div>
+        </div>
+        <div class="row" style="display:flex; flex-wrap:wrap">
+          <div class="col-6 mt-0" style="flex:0 0 auto; width:50%" width="50%">
+            {{#if invoiceData.customerVatNumber}}
+            <div>
+              <strong style="font-weight:bolder">Customer VAT Number: </strong>
+              {{ invoiceData.customerVatNumber }}
+            </div>
+            {{/if}}
+          </div>
+          <div class="col-6 mt-0 text-sm-end" style="flex:0 0 auto; width:50%; text-align:right" width="50%" align="right">
+            {{#if ( notEmpty invoiceData.refrenceNumber)}}
+            <div>
+              <strong style="font-weight:bolder"> Reference Number#:</strong>
+              {{ invoiceData.refrenceNumber }}
+            </div>
+            {{/if}}
+          </div>
+        </div>
+        {{#if invoiceData.employeeName }}
+        <div>
+          <div class="col-6 mt-0" style="flex:0 0 auto; width:50%" width="50%">
+            <div>
+              <strong style="font-weight:bolder">Sales Person: </strong>{{ invoiceData.employeeName }}
+            </div>
+          </div>
+          <div class="col-6 mt-0 text-sm-end" style="flex:0 0 auto; width:50%; text-align:right" width="50%" align="right"></div>
+        </div>
+        {{/if}}
+      </div>
+
+
+      <div class="py-2 mt-3 d-flex" style="display:flex; padding-bottom:0.5rem; padding-top:0.5rem">
+        <h3 class="font-size-15 fw-bold" style="color:#495057; font-weight:500; line-height:1.2; margin-bottom:0.5rem; margin-top:0">Order summary</h3>
+        <div class="ms-auto" style="margin-left:auto">
+          {{#if invoiceData.isInclusiveTax}}
+          <div>Inclusive Tax</div>
+          {{else}}
+          <div>Exclusive Tax</div>
+          {{/if}}
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table id="lines-table" class="table" style="border-collapse:collapse; caption-side:bottom; margin-bottom:1rem; vertical-align:top; width:100%" valign="top" width="100%">
+          <thead class="table-dark" style="border-color:inherit; border-style:solid; border-width:0; vertical-align:bottom" valign="bottom">
+            <tr style="border-color:inherit; border-style:solid; border-width:0">
+              <th style="border-color:inherit; border-style:solid; border-width:0; vertical-align:middle; font-weight:700; max-width:30%; width:30%" class="align-middle" valign="middle" width="30%">
+                Description
+              </th>
+              <th class="align-middle" style="border-color:inherit; border-style:solid; border-width:0; vertical-align:middle; font-weight:700" valign="middle">Qty</th>
+              <th class="align-middle" style="border-color:inherit; border-style:solid; border-width:0; vertical-align:middle; font-weight:700" valign="middle">Price</th>
+              <th class="align-middle" style="border-color:inherit; border-style:solid; border-width:0; vertical-align:middle; font-weight:700" valign="middle">
+                Tax%
+              </th>
+              <th class="align-middle" style="border-color:inherit; border-style:solid; border-width:0; vertical-align:middle; font-weight:700" valign="middle">Tax</th>
+              <th class="align-middle" style="border-color:inherit; border-style:solid; border-width:0; vertical-align:middle; font-weight:700" valign="middle">Discount</th>
+              <th class="align-middle text-sm-end" style="border-color:inherit; border-style:solid; border-width:0; vertical-align:middle; text-align:right; font-weight:700" valign="middle" align="right">Amount</th>
+            </tr>
+          </thead>
+          <tbody style="border-color:inherit; border-style:solid; border-width:0; vertical-align:inherit" valign="inherit">
+            {{#each invoiceData.lines}}
+            {{#if (notEmpty qty)}}
+        
+            <div>
+              <tr style="border-color:inherit; border-style:solid; border-width:0">
+                <td style="border-color:inherit; border-style:solid; border-width:0">
+                  <ul style="list-style-type: none; margin: 0; padding: 0">
+                    <li>
+                      {{#if (notEmpty selectedItem.name ) }} <div>{{ selectedItem.name }}</div> {{/if}}
+                      {{#if (greaterThanZero optionList.length)}}
+                      <div>
+                        <div class="d-flex gap-1 mt-1 flex-wrap" style="display:flex">
+                          {{#each optionList}}
+                          <div>
+                            <span class="badge rounded-pill font-size-11 bg-info">{{ name }}
+                              {{#if ( greaterThanZero price)}}
+                              <i>({{ price}})</i>
+                              {{/if}}
+                            </span>
+                          </div>
+                          {{/each}}
+                        </div>
+                      </div>
+                      {{/if}}
+                      <div null>{{ note }}</div>
+                      <!-- <div [ngIf]="line.selectedItem.name == null && line.note != null && line.note !=''">{{line.note}}</div> -->
+                    </li>
+
+                    <li style="font-size: 10px">
+                      <div null>{{ note }}</div>
+                    </li>
+                  </ul>
+                </td>
+                <td style="border-color:inherit; border-style:solid; border-width:0">{{ qty }}</td>
+                <td style="border-color:inherit; border-style:solid; border-width:0">{{ price }}</td>
+                <td style="border-color:inherit; border-style:solid; border-width:0">{{ taxPercentage }} %</td>
+                <td style="border-color:inherit; border-style:solid; border-width:0">{{ taxTotal }}</td>
+                <td style="border-color:inherit; border-style:solid; border-width:0">{{ discountTotal }}</td>
+                <td class="text-sm-end" style="border-color:inherit; border-style:solid; border-width:0; text-align:right" align="right">{{ total }}</td>
+              </tr>
+              <div line2 of line.voideditems let i='index"'>
+                <tr class="table-light" style="border-color:inherit; border-style:solid; border-width:0">
+                  <td style="border-color:inherit; border-style:solid; border-width:0">
+                    <ul style="list-style-type: none; margin: 0; padding: 0">
+                      <li>
+                        <div null>{{ line2.selectedItem?.name
+                          }}</div>
+                        <div line2.optionlist.length> 0"&gt;
+                          <div class="d-flex gap-1 mt-1 flex-wrap" style="display:flex">
+                            <div let option of line2.optionlist i="index">
+                              <span class="badge rounded-pill font-size-11 bg-info">{{ option.name }}
+                                <i> 0"&gt;({{ option.price }})</i></span>
+                            </div>
+                          </div>
+                        </div>
+                        <div null>{{ line2.note }}</div>
+                        <!-- <div [ngIf]="line2.selectedItem.name == null && line2.note != null && line2.note !=''">{{line2.note}}</div> -->
+                      </li>
+
+                      <li style="font-size: 10px">
+                        <div null>{{ line2.note }}</div>
+                      </li>
+                    </ul>
+                  </td>
+                  <td style="border-color:inherit; border-style:solid; border-width:0">{{ line2.qty }}</td>
+                  <td style="border-color:inherit; border-style:solid; border-width:0">{{ line2.price }}</td>
+                  <td style="border-color:inherit; border-style:solid; border-width:0">{{ line2.taxPercentage }} %</td>
+                  <td style="border-color:inherit; border-style:solid; border-width:0">{{ line2.taxTotal }}</td>
+                  <td style="border-color:inherit; border-style:solid; border-width:0">{{ line2.discountTotal }}</td>
+                  <td class="text-sm-end" style="border-color:inherit; border-style:solid; border-width:0; text-align:right" align="right">{{ line2.total }}</td>
+                </tr>
+              </div>
+            </div>
+            {{/if}}
+       
+            {{/each}}
+        
+          </tbody>
+        </table>
+      </div>
+      <div id="total-details" class="row m-0" style="display:flex; flex-wrap:wrap">
+        <div class="col-md-7" style="flex:0 0 auto; width:58.333333%" width="58.333333%"></div>
+
+        <div class="col-md-5 p-0" style="flex:0 0 auto; width:41.666667%" width="41.666667%">
+          <div class="justify-content-end card border p-3" style="background-clip:border-box; box-shadow:0 0.75rem 1.5rem rgba(18, 38, 63, 0.03); display:flex; flex-direction:column; margin-bottom:24px; min-width:0; position:relative; word-wrap:break-word; padding:1rem; justify-content:flex-end">
+            <div class="row" style="display:flex; flex-wrap:wrap">
+              <div class="col-md-6" style="flex:0 0 auto; width:50%" width="50%">Items Total</div>
+              <div class="col-md-6 text-md-end" style="flex:0 0 auto; width:50%" width="50%">
+                {{ invoiceData.itemSubTotal }}
+              </div>
+            </div>
+            <div class="row" style="display:flex; flex-wrap:wrap">
+              <div class="col-md-6" style="flex:0 0 auto; width:50%" width="50%">Tax Total</div>
+              <div class="col-md-6 text-md-end" style="flex:0 0 auto; width:50%" width="50%">
+                {{ invoiceData.invoiceTaxTotal }}
+              </div>
+            </div>
+            {{#if (notEmpty invoiceData.discountAmount)}}
+            {{#if invoiceData.discountPercentage}}
+            <div class="row" style="display:flex; flex-wrap:wrap">
+              <div class="col-md-6" style="flex:0 0 auto; width:50%" width="50%">Discount</div>
+              <div class="col-md-6 text-md-end" style="flex:0 0 auto; width:50%" width="50%">
+                {{ invoiceData.discountAmount }} %
+              </div>
+              {{else}}
+              <div class="row" style="display:flex; flex-wrap:wrap">
+                <div class="col-md-6" style="flex:0 0 auto; width:50%" width="50%">Discount</div>
+                <div class="col-md-6 text-md-end" style="flex:0 0 auto; width:50%" width="50%">
+                  {{ invoiceData.discountAmount }}
+                </div>
+              </div>
+            </div>
+            {{/if}}
+            {{/if}}
+            {{#if (notEmpty invoiceData.chargeTotal)}}
+            <div class="row" style="display:flex; flex-wrap:wrap">
+              <div class="col-md-6" style="flex:0 0 auto; width:50%" width="50%">Charge</div>
+              <div class="col-md-6 text-md-end" style="flex:0 0 auto; width:50%" width="50%">
+                {{ invoiceData.chargeTotal }}
+              </div>
+            </div>
+            {{/if}}
+            {{#if (notEmpty invoiceData.deliveryCharge)}}
+            <div class="row" style="display:flex; flex-wrap:wrap">
+              <div class="col-md-6" style="flex:0 0 auto; width:50%" width="50%">Delivery Charge</div>
+              <div class="col-md-6 text-md-end" style="flex:0 0 auto; width:50%" width="50%">
+                {{ invoiceData.deliveryCharge }}
+              </div>
+            </div>
+            {{/if}}
+
+            {{#if (notEmpty  invoiceData.roundingTotal  )}}
+            {{#if (greaterThanZero invoiceData.roundingTotal)}}
+            <div class="row" style="display:flex; flex-wrap:wrap">
+              <div class="col-md-6" style="flex:0 0 auto; width:50%" width="50%"><strong style="font-weight:bolder">Rounding</strong></div>
+              <div class="col-md-6 text-md-end" style="flex:0 0 auto; width:50%" width="50%">
+                <strong style="font-weight:bolder">{{ invoiceData.roundingTotal }}</strong>
+              </div>
+            </div>
+            {{/if}}
+            {{/if}}
+
+            <div class="row" style="display:flex; flex-wrap:wrap">
+              <div class="col-md-6" style="flex:0 0 auto; width:50%" width="50%"><strong style="font-weight:bolder">Total</strong></div>
+              <div class="col-md-6 text-md-end" style="flex:0 0 auto; width:50%" width="50%">
+                <strong style="font-weight:bolder">{{ invoiceData.total }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="payment-details" class="row m-0" style="display:flex; flex-wrap:wrap">
+        <div class="col-md-7" style="flex:0 0 auto; width:58.333333%" width="58.333333%"></div>
+
+        <div class="col-md-5 p-0" style="flex:0 0 auto; width:41.666667%" width="41.666667%">
+          <div class="mt-2 justify-content-end card border p-3 bg-warning" style="background-clip:border-box; box-shadow:0 0.75rem 1.5rem rgba(18, 38, 63, 0.03); display:flex; flex-direction:column; margin-bottom:24px; min-width:0; position:relative; word-wrap:break-word; padding:1rem; justify-content:flex-end; margin-top:0.5rem">
+            <div class="row" style="display:flex; flex-wrap:wrap">
+              <div class="col-md-6" style="flex:0 0 auto; width:50%" width="50%"><strong style="font-weight:bolder">Paymnet Made</strong></div>
+              <div class="col-md-6 text-md-end" style="flex:0 0 auto; width:50%" width="50%">
+                <strong style="font-weight:bolder">{{ invoiceData.paidAmount }}</strong>
+              </div>
+            </div>
+            <div class="row" style="display:flex; flex-wrap:wrap">
+              <div class="col-md-6" style="flex:0 0 auto; width:50%" width="50%"><strong style="font-weight:bolder">Credit Applied</strong></div>
+              <div class="col-md-6 text-md-end" style="flex:0 0 auto; width:50%" width="50%">
+                <strong style="font-weight:bolder">{{ invoiceData.appliedCredit }}</strong>
+              </div>
+            </div>
+            <div class="row" style="display:flex; flex-wrap:wrap">
+              <div class="col-md-6" style="flex:0 0 auto; width:50%" width="50%"><strong style="font-weight:bolder">Balance</strong></div>
+              <div class="col-md-6 text-md-end" style="flex:0 0 auto; width:50%" width="50%">
+                <strong style="font-weight:bolder">{{ invoiceData.balance }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {{#if (notEmpty invoiceData.note)}}
+      <div class="row m-0" id="customer-note" style="display:flex; flex-wrap:wrap">
+        <div class="mb-0 alert-info" style="width:100%; margin-bottom:0" width="100%">{{ invoiceData.note }}</div>
+      </div>
+      <div class="row text-center mt-2" id="company-note" style="display:flex; flex-wrap:wrap; margin-top:0.5rem; text-align:center" align="center">
+        <span style="width:100%" width="100%"> <strong style="font-weight:bolder">{{ companyData?.invoiceOptions.note }}</strong></span>
+      </div>
+      {{/if}}
+    </div>
+    <footer id="print-footer" class="page-footer">
+      {{#if (notEmpty companyData?.invoiceOptions.term) }}
+      <div class="row text-center" style="display:flex; flex-wrap:wrap; text-align:center" align="center">
+        <strong class="text-primary" style="font-weight:bolder; width:100%" width="100%">Terms &amp; Conditions<br>{{ companyData?.invoiceOptions.term
+          }}</strong>
+      </div>
+      {{/if}}
+    </footer>
+    <div class="foot">
+      <div class="page-footer-space"></div>
+    </div>
+  </div>
+</body>
+
+</html>
