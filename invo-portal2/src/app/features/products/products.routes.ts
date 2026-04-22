@@ -1,6 +1,8 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Routes } from '@angular/router';
 import { LanguageService } from '@core/i18n/language.service';
+import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
+import { privilegeGuard } from '@core/guards/privilege.guard';
 
 // ── URL pattern ──────────────────────────────────────────────────────────────
 // /products                            → redirects to /products/list
@@ -38,15 +40,19 @@ export const PRODUCTS_ROUTES: Routes = [
   },
   {
     path: 'list',
-    canActivate: [translationsLoaded],
+    canActivate: [translationsLoaded, privilegeGuard],
     loadComponent: () =>
-      import('./pages/products-list/products-list.component').then(m => m.ProductsListComponent)
+      import('./pages/products-list/products-list.component').then(m => m.ProductsListComponent),
+    data: { permissionPath: 'productSecurity.actions.view' },
   },
   {
     path: 'form/:type/:id',
-    canActivate: [translationsLoaded],
+    canActivate: [translationsLoaded, privilegeGuard],
+    canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
       import('./pages/product-form/product-form.component').then(m => m.ProductFormComponent),
-    data: { permissionPath: 'productSecurity.actions.add.access' }
+    // `add` is the Add/Edit privilege in this model — there is no separate
+    // edit action (see privileges/definitions/productSecurity.ts).
+    data: { permissionPath: 'productSecurity.actions.add.access' },
   },
 ];

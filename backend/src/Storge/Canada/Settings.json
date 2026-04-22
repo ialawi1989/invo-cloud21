@@ -1,0 +1,59 @@
+{
+    "contryCode": "1",
+    "currencySymbol": "CAD",
+    "afterDecimal": 2,
+    "phoneRegExp": "\\d{10}",
+    "timeOffset": "+0",
+    "Taxes": [
+        {
+            "name": "Exempt Tax",
+            "taxPercentage": 0,
+            "default": false
+
+        },
+        {
+            "name": "Zero Tax ",
+            "taxPercentage": 0,
+            "default": false
+            
+        }
+    
+    ],
+    "addressFormat": [
+        {
+            "key": "governorate",
+            "title": "Governorate",
+            "isRequired": true
+        },
+        {
+            "key": "city",
+            "title": "City",
+            "isRequired": true
+        },
+        {
+            "key": "block",
+            "title": "Block",
+            "isRequired": true
+        },
+        {
+            "key": "road",
+            "title": "Road/Avenue",
+            "isRequired": true
+        },
+        {
+            "key": "building",
+            "title": "Building/House",
+            "isRequired": true
+        },
+        {
+            "key": "flat",
+            "title": "Flat/Office",
+            "isRequired": false
+        }
+    ],
+
+    "cashValues": [
+      
+    ]
+    
+}

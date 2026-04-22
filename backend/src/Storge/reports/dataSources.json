@@ -1,0 +1,5254 @@
+{
+  "InvoiceView": {
+    "id": "InvoiceView",
+    "name": "Invoices",
+    "data": [
+      {
+        "id": "id",
+        "name": "Invoices id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "customerId",
+        "name": "Invoices Customer",
+        "filter": false,
+        "edit": false,
+        "type": "reference",
+        "ref": "CustomerView",
+        "key": false,
+        "show": false
+      },
+      {
+        "id": "invoiceNumber",
+        "name": "Invoices invoiceNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "refrenceNumber",
+        "name": "Invoices refrenceNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "total",
+        "name": "Invoices total",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "note",
+        "name": "Invoices note",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "guests",
+        "name": "Invoices guests",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchId",
+        "name": "Invoices branchId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Branches",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchName",
+        "name": "Invoices branchName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeId",
+        "name": "Invoices employeeId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeName",
+        "name": "Invoices employeeName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "tableId",
+        "name": "Invoices tableId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Tables",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "tableName",
+        "name": "Invoices tableName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "Invoices createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "source",
+        "name": "Invoices source",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "serviceId",
+        "name": "Invoices serviceId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Services",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "serviceName",
+        "name": "Invoices serviceName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "customerName",
+        "name": "Invoices customerName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountId",
+        "name": "Invoices discountId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountAmount",
+        "name": "Invoices discountAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountPercentage",
+        "name": "Invoices discountPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "estimateId",
+        "name": "Invoices estimateId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "estimateNumber",
+        "name": "Invoices estimateNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "status",
+        "name": "Invoices status",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountTotal",
+        "name": "Invoices discountTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "chargeId",
+        "name": "Invoices chargeId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "chargeAmount",
+        "name": "Invoices chargeAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "chargePercentage",
+        "name": "Invoices chargePercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "chargeTotal",
+        "name": "Invoices chargeTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "subTotal",
+        "name": "Invoices subTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "deliveryCharge",
+        "name": "Invoices deliveryCharge",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "printTime",
+        "name": "Invoices printTime",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "readyTime",
+        "name": "Invoices readyTime",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "departureTime",
+        "name": "Invoices departureTime",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "arrivalTime",
+        "name": "Invoices arrivalTime",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "scheduleTime",
+        "name": "Invoices scheduleTime",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "mergeWith",
+        "name": "Invoices mergeWith",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "updatedDate",
+        "name": "Invoices updatedDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "invoiceDate",
+        "name": "Invoices invoiceDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "terminalId",
+        "name": "Invoices terminalId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Terminals",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "roundingType",
+        "name": "Invoices roundingType",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "roundingTotal",
+        "name": "Invoices roundingTotal",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "smallestCurrency",
+        "name": "Invoices smallestCurrency",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "isInclusiveTax",
+        "name": "Invoices isInclusiveTax",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 1,
+        "target": "CustomerView",
+        "source": "InvoiceView",
+        "name": "Customer"
+      },
+      {
+        "id": 2,
+        "target": "Branches",
+        "source": "InvoiceView",
+        "name": "Branches"
+      },
+      {
+        "id": 3,
+        "target": "Tables",
+        "source": "InvoiceView",
+        "name": "Tables"
+      },
+      {
+        "id": 4,
+        "target": "Services",
+        "source": "InvoiceView",
+        "name": "Services"
+      },
+      {
+        "id": 5,
+        "target": "Terminals",
+        "source": "InvoiceView",
+        "name": "Terminals"
+      },
+      {
+        "id": 6,
+        "target": "InvoiceView",
+        "source": "InvoiceLinesView",
+        "name": "InvoiceView"
+      },
+      {
+        "id": 30,
+        "target": "InvoiceView",
+        "source": "InvoicePaymentLinesView",
+        "name": "InvoiceView"
+      },
+      {
+        "id": 32,
+        "target": "InvoiceView",
+        "source": "CreditNotesView",
+        "name": "InvoiceView"
+      },
+      {
+        "id": 46,
+        "target": "InvoiceView",
+        "source": "CreditNoteRefundsView",
+        "name": "InvoiceView"
+      }
+    ]
+  },
+  "InvoiceLinesView": {
+    "id": "InvoiceLinesView",
+    "name": "InvoiceLines",
+    "data": [
+      {
+        "id": "id",
+        "name": "InvoiceLines id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "invoiceId",
+        "name": "InvoiceLines invoiceId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "InvoiceView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "total",
+        "name": "InvoiceLines total",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "price",
+        "name": "InvoiceLines price",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "qty",
+        "name": "InvoiceLines qty",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "productId",
+        "name": "InvoiceLines productId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Products",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "productName",
+        "name": "InvoiceLines productName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchName",
+        "name": "InvoiceLines branchName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeId",
+        "name": "InvoiceLines employeeId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Employees",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeName",
+        "name": "InvoiceLines employeeName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "batch",
+        "name": "InvoiceLines batch",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "serial",
+        "name": "InvoiceLines serial",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "InvoiceLines createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "parentId",
+        "name": "InvoiceLines parentId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "seatNumber",
+        "name": "InvoiceLines seatNumber",
+        "filter": true,
+        "edit": false,
+        "type": "integer",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "salesEmployeeId",
+        "name": "InvoiceLines salesEmployeeId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Employees",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "salesEmployeeName",
+        "name": "InvoiceLines salesEmployeeName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "serviceDate",
+        "name": "InvoiceLines serviceDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "serviceDuration",
+        "name": "InvoiceLines serviceDuration",
+        "filter": true,
+        "edit": false,
+        "type": "integer",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountId",
+        "name": "InvoiceLines discountId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountAmount",
+        "name": "InvoiceLines discountAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountPercentage",
+        "name": "InvoiceLines discountPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "note",
+        "name": "InvoiceLines note",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "status",
+        "name": "InvoiceLines status",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "accountId",
+        "name": "InvoiceLines accountId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Accounts",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "accountName",
+        "name": "InvoiceLines accountName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "subTotal",
+        "name": "InvoiceLines subTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountTotal",
+        "name": "InvoiceLines discountTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "commissionPercentage",
+        "name": "InvoiceLines commissionPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "commissionAmount",
+        "name": "InvoiceLines commissionAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "commissionTotal",
+        "name": "InvoiceLines commissionTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxId",
+        "name": "InvoiceLines taxId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Taxes",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxName",
+        "name": "InvoiceLines taxName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "voidFrom",
+        "name": "InvoiceLines voidFrom",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxTotal",
+        "name": "InvoiceLines taxTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "isWaste",
+        "name": "InvoiceLines isWaste",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxes",
+        "name": "InvoiceLines taxes",
+        "filter": true,
+        "edit": false,
+        "type": "array",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxType",
+        "name": "InvoiceLines taxType",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxPercentage",
+        "name": "InvoiceLines taxPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "isInclusiveTax",
+        "name": "InvoiceLines isInclusiveTax",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 6,
+        "target": "InvoiceView",
+        "source": "InvoiceLinesView",
+        "name": "InvoiceView"
+      },
+      {
+        "id": 7,
+        "target": "Products",
+        "source": "InvoiceLinesView",
+        "name": "Products"
+      },
+      {
+        "id": 8,
+        "target": "Accounts",
+        "source": "InvoiceLinesView",
+        "name": "Accounts"
+      },
+      {
+        "id": 9,
+        "target": "Taxes",
+        "source": "InvoiceLinesView",
+        "name": "Taxes"
+      },
+      {
+        "id": 10,
+        "target": "Employees",
+        "source": "InvoiceLinesView",
+        "name": "Employees"
+      },
+      {
+        "id": 12,
+        "target": "InvoiceLinesView",
+        "source": "InvoiceLineOptionsView",
+        "name": "InvoiceLinesView"
+      }
+    ]
+  },
+  "InvoiceLineOptionsView": {
+    "id": "InvoiceLineOptionsView",
+    "name": "InvoiceLineOptions",
+    "data": [
+      {
+        "id": "id",
+        "name": "InvoiceLineOptions id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "invoiceLineId",
+        "name": "InvoiceLineOptions invoiceLineId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "InvoiceLinesView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "price",
+        "name": "InvoiceLineOptions price",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "qty",
+        "name": "InvoiceLineOptions qty",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "note",
+        "name": "InvoiceLineOptions note",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "optionId",
+        "name": "InvoiceLineOptions optionId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Options",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "optionName",
+        "name": "InvoiceLineOptions optionName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "InvoiceLineOptions createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 11,
+        "target": "Options",
+        "source": "InvoiceLineOptionsView",
+        "name": "Options"
+      },
+      {
+        "id": 12,
+        "target": "InvoiceLinesView",
+        "source": "InvoiceLineOptionsView",
+        "name": "InvoiceLinesView"
+      }
+    ]
+  },
+  "EstimatesView": {
+    "id": "EstimatesView",
+    "name": "Estimates",
+    "data": [
+      {
+        "id": "id",
+        "name": "Estimates id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "estimateNumber",
+        "name": "Estimates estimateNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "refrenceNumber",
+        "name": "Estimates refrenceNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "total",
+        "name": "Estimates total",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "note",
+        "name": "Estimates note",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "guests",
+        "name": "Estimates guests",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchId",
+        "name": "Estimates branchId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Branches",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchName",
+        "name": "Estimates branchName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeId",
+        "name": "Estimates employeeId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Employees",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeName",
+        "name": "Estimates employeeName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "tableId",
+        "name": "Estimates tableId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Tables",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "tableName",
+        "name": "Estimates tableName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "Estimates createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "source",
+        "name": "Estimates source",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "serviceId",
+        "name": "Estimates serviceId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Services",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "serviceName",
+        "name": "Estimates serviceName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "customerId",
+        "name": "Estimates customerId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "CustomerView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "customerName",
+        "name": "Estimates customerName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountId",
+        "name": "Estimates discountId",
+        "filter": true,
+        "edit": false,
+        "type": "",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountAmount",
+        "name": "Estimates discountAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountPercentage",
+        "name": "Estimates discountPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountTotal",
+        "name": "Estimates discountTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "chargeId",
+        "name": "Estimates chargeId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "chargeAmount",
+        "name": "Estimates chargeAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "chargePercentage",
+        "name": "Estimates chargePercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "chargeTotal",
+        "name": "Estimates chargeTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "subTotal",
+        "name": "Estimates subTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "deliveryCharge",
+        "name": "Estimates deliveryCharge",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "updatedDate",
+        "name": "Estimates updatedDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "estimateDate",
+        "name": "Estimates estimateDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "roundingType",
+        "name": "Estimates roundingType",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "roundingTotal",
+        "name": "Estimates roundingTotal",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "smallestCurrency",
+        "name": "Estimates smallestCurrency",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "isInclusiveTax",
+        "name": "Estimates isInclusiveTax",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 13,
+        "target": "Employees",
+        "source": "EstimatesView",
+        "name": "Employees"
+      },
+      {
+        "id": 14,
+        "target": "Branches",
+        "source": "EstimatesView",
+        "name": "Branches"
+      },
+      {
+        "id": 15,
+        "target": "CustomerView",
+        "source": "EstimatesView",
+        "name": "Customers"
+      },
+      {
+        "id": 16,
+        "target": "Tables",
+        "source": "EstimatesView",
+        "name": "Tables"
+      },
+      {
+        "id": 17,
+        "target": "Services",
+        "source": "EstimatesView",
+        "name": "Services"
+      },
+      {
+        "id": 19,
+        "target": "EstimatesView",
+        "source": "EstimateLinesView",
+        "name": "EstimatesView"
+      }
+    ]
+  },
+  "EstimateLinesView": {
+    "id": "EstimateLinesView",
+    "name": "EstimateLines",
+    "data": [
+      {
+        "id": "id",
+        "name": "EstimateLines id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "estimateId",
+        "name": "EstimateLines estimateId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "EstimatesView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "total",
+        "name": "EstimateLines total",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "price",
+        "name": "EstimateLines price",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "qty",
+        "name": "EstimateLines qty",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "productId",
+        "name": "EstimateLines productId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Products",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "productName",
+        "name": "EstimateLines productName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeId",
+        "name": "EstimateLines employeeId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Employees",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeName",
+        "name": "EstimateLines employeeName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "batch",
+        "name": "EstimateLines batch",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "serial",
+        "name": "EstimateLines serial",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "EstimateLines createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "parentId",
+        "name": "EstimateLines parentId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "seatNumber",
+        "name": "EstimateLines seatNumber",
+        "filter": true,
+        "edit": false,
+        "type": "integer",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "serviceDuration",
+        "name": "EstimateLines serviceDuration",
+        "filter": true,
+        "edit": false,
+        "type": "integer",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountId",
+        "name": "EstimateLines discountId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountAmount",
+        "name": "EstimateLines discountAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountPercentage",
+        "name": "EstimateLines discountPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "note",
+        "name": "EstimateLines note",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "accountId",
+        "name": "EstimateLines accountId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Accounts",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "accountName",
+        "name": "EstimateLines accountName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "subTotal",
+        "name": "EstimateLines subTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountTotal",
+        "name": "EstimateLines discountTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxId",
+        "name": "EstimateLines taxId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Taxes",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxName",
+        "name": "EstimateLines taxName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxTotal",
+        "name": "EstimateLines taxTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxes",
+        "name": "EstimateLines taxes",
+        "filter": true,
+        "edit": false,
+        "type": "array",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxType",
+        "name": "EstimateLines taxType",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxPercentage",
+        "name": "EstimateLines taxPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "isInclusiveTax",
+        "name": "EstimateLines isInclusiveTax",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 18,
+        "target": "Employees",
+        "source": "EstimateLinesView",
+        "name": "Employees"
+      },
+      {
+        "id": 19,
+        "target": "EstimatesView",
+        "source": "EstimateLinesView",
+        "name": "EstimatesView"
+      },
+      {
+        "id": 20,
+        "target": "Products",
+        "source": "EstimateLinesView",
+        "name": "Products"
+      },
+      {
+        "id": 21,
+        "target": "Taxes",
+        "source": "EstimateLinesView",
+        "name": "Taxes"
+      },
+      {
+        "id": 23,
+        "target": "EstimatesView",
+        "source": "EstimateLineOptionsView",
+        "name": "EstimatesView"
+      }
+    ]
+  },
+  "EstimateLineOptionsView": {
+    "id": "EstimateLineOptionsView",
+    "name": "EstimateLineOptions",
+    "data": [
+      {
+        "id": "id",
+        "name": "EstimateLineOptions id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "estimateLineId",
+        "name": "EstimateLineOptions estimateLineId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "estimateLineId",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "price",
+        "name": "EstimateLineOptions price",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "qty",
+        "name": "EstimateLineOptions qty",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "note",
+        "name": "EstimateLineOptions note",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "optionId",
+        "name": "EstimateLineOptions optionId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Options",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "optionName",
+        "name": "EstimateLineOptions optionName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "EstimateLineOptions createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 22,
+        "target": "Options",
+        "source": "EstimateLineOptionsView",
+        "name": "Options"
+      },
+      {
+        "id": 23,
+        "target": "EstimatesView",
+        "source": "EstimateLineOptionsView",
+        "name": "EstimatesView"
+      }
+    ]
+  },
+  "InvoicePaymentsView": {
+    "id": "InvoicePaymentsView",
+    "name": "InvoicePayments",
+    "data": [
+      {
+        "id": "createdAt",
+        "name": "InvoicePayments createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchId",
+        "name": "InvoicePayments branchId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Branches",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchName",
+        "name": "InvoicePayments branchName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "referenceNumber",
+        "name": "InvoicePayments referenceNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "paymentMethodId",
+        "name": "InvoicePayments paymentMethodId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "PaymentMethods",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "paymentMethodName",
+        "name": "InvoicePayments paymentMethodName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "total",
+        "name": "InvoicePayments total",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "cashierId",
+        "name": "InvoicePayments cashierId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "CashiersView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "cashierNumber",
+        "name": "InvoicePayments cashierNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "paymentMethodAccountId",
+        "name": "InvoicePayments paymentMethodAccountId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Accounts",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "accountName",
+        "name": "InvoicePayments accountName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "customerId",
+        "name": "InvoicePayments customerId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "CustomerView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "customerName",
+        "name": "InvoicePayments customerName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "paidAmount",
+        "name": "InvoicePayments paidAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "paymentDate",
+        "name": "InvoicePayments paymentDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "updatedDate",
+        "name": "InvoicePayments updatedDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 24,
+        "target": "Branches",
+        "source": "InvoicePaymentsView",
+        "name": "Branches"
+      },
+      {
+        "id": 25,
+        "target": "PaymentMethods",
+        "source": "InvoicePaymentsView",
+        "name": "PaymentMethods"
+      },
+      {
+        "id": 26,
+        "target": "CashiersView",
+        "source": "InvoicePaymentsView",
+        "name": "CashiersView"
+      },
+      {
+        "id": 27,
+        "target": "Employees",
+        "source": "InvoicePaymentsView",
+        "name": "Employees"
+      },
+      {
+        "id": 28,
+        "target": "Accounts",
+        "source": "InvoicePaymentsView",
+        "name": "Accounts"
+      },
+      {
+        "id": 29,
+        "target": "CustomerView",
+        "source": "InvoicePaymentsView",
+        "name": "Customers"
+      },
+      {
+        "id": 31,
+        "target": "InvoicePaymentsView",
+        "source": "InvoicePaymentLinesView",
+        "name": "InvoicePaymentsView"
+      }
+    ]
+  },
+  "InvoicePaymentLinesView": {
+    "id": "InvoicePaymentLinesView",
+    "name": "InvoicePaymentLines",
+    "data": [
+      {
+        "id": "id",
+        "name": "InvoicePaymentLines id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "invoiceId",
+        "name": "InvoicePaymentLines invoiceId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "InvoiceView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "invoicePaymentId",
+        "name": "InvoicePaymentLines invoicePaymentId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "InvoicePaymentsView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "amount",
+        "name": "InvoicePaymentLines amount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "InvoicePaymentLines createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 30,
+        "target": "InvoiceView",
+        "source": "InvoicePaymentLinesView",
+        "name": "InvoiceView"
+      },
+      {
+        "id": 31,
+        "target": "InvoicePaymentsView",
+        "source": "InvoicePaymentLinesView",
+        "name": "InvoicePaymentsView"
+      }
+    ]
+  },
+  "CreditNotesView": {
+    "id": "CreditNotesView",
+    "name": "CreditNotes",
+    "data": [
+      {
+        "id": "id",
+        "name": "CreditNotes id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "creditNoteNumber",
+        "name": "CreditNotes creditNoteNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "refrenceNumber",
+        "name": "CreditNotes refrenceNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "total",
+        "name": "CreditNotes total",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "note",
+        "name": "CreditNotes note",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchId",
+        "name": "CreditNotes branchId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Branches",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchName",
+        "name": "CreditNotes branchName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeId",
+        "name": "CreditNotes employeeId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Employees",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeName",
+        "name": "CreditNotes employeeName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "invoiceId",
+        "name": "CreditNotes invoiceId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "InvoiceView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "invoiceNumber",
+        "name": "CreditNotes invoiceNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "CreditNotes createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountId",
+        "name": "CreditNotes discountId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountAmount",
+        "name": "CreditNotes discountAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountPercentage",
+        "name": "CreditNotes discountPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "chargeTotal",
+        "name": "CreditNotes chargeTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "chargeId",
+        "name": "CreditNotes chargeId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountTotal",
+        "name": "CreditNotes discountTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "deliveryCharge",
+        "name": "CreditNotes deliveryCharge",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "chargeAmount",
+        "name": "CreditNotes chargeAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "chargePercentage",
+        "name": "CreditNotes chargePercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "subTotal",
+        "name": "CreditNotes subTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "creditNoteDate",
+        "name": "CreditNotes creditNoteDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "updatedDate",
+        "name": "CreditNotes updatedDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "roundingType",
+        "name": "CreditNotes roundingType",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "roundingTotal",
+        "name": "CreditNotes roundingTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "smallestCurrency",
+        "name": "CreditNotes smallestCurrency",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "isInclusiveTax",
+        "name": "CreditNotes isInclusiveTax",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 32,
+        "target": "InvoiceView",
+        "source": "CreditNotesView",
+        "name": "InvoiceView"
+      },
+      {
+        "id": 33,
+        "target": "Branches",
+        "source": "CreditNotesView",
+        "name": "Branches"
+      },
+      {
+        "id": 34,
+        "target": "Employees",
+        "source": "CreditNotesView",
+        "name": "Employees"
+      },
+      {
+        "id": 38,
+        "target": "CreditNotesView",
+        "source": "CreditNoteLinesView",
+        "name": "CreditNotesView"
+      },
+      {
+        "id": 42,
+        "target": "CreditNotesView",
+        "source": "CreditNoteRefundsView",
+        "name": "CreditNotesView"
+      },
+      {
+        "id": 46,
+        "target": "CreditNotesView",
+        "source": "CreditNoteRefundsView",
+        "name": "CreditNotesView"
+      }
+    ]
+  },
+  "CreditNoteLinesView": {
+    "id": "CreditNoteLinesView",
+    "name": "CreditNoteLines",
+    "data": [
+      {
+        "id": "id",
+        "name": "CreditNoteLines id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "creditNoteId",
+        "name": "CreditNoteLines creditNoteId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "CreditNotesView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "creditNoteNumber",
+        "name": "CreditNoteLines creditNoteNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "total",
+        "name": "CreditNoteLines total",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "price",
+        "name": "CreditNoteLines price",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "qty",
+        "name": "CreditNoteLines qty",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "productId",
+        "name": "CreditNoteLines productId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Products",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "productName",
+        "name": "CreditNoteLines productName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeId",
+        "name": "CreditNoteLines employeeId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Employees",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeName",
+        "name": "CreditNoteLines employeeName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "batch",
+        "name": "CreditNoteLines batch",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "serial",
+        "name": "CreditNoteLines serial",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "invoiceLineId",
+        "name": "CreditNoteLines invoiceLineId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "InvoiceLinesView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "CreditNoteLines createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "parentId",
+        "name": "CreditNoteLines parentId",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "accountId",
+        "name": "CreditNoteLines accountId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Accounts",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "note",
+        "name": "CreditNoteLines note",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "subTotal",
+        "name": "CreditNoteLines subTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountTotal",
+        "name": "CreditNoteLines discountTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountPercentage",
+        "name": "CreditNoteLines discountPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discountId",
+        "name": "CreditNoteLines discountId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxId",
+        "name": "CreditNoteLines taxId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Taxes",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxPercentage",
+        "name": "CreditNoteLines taxPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "commissionPercentage",
+        "name": "CreditNoteLines commissionPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "commissionTotal",
+        "name": "CreditNoteLines commissionTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "commissionAmount",
+        "name": "CreditNoteLines commissionAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxTotal",
+        "name": "CreditNoteLines taxTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxes",
+        "name": "CreditNoteLines taxes",
+        "filter": true,
+        "edit": false,
+        "type": "json",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxPercentage",
+        "name": "CreditNoteLines taxPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxType",
+        "name": "CreditNoteLines taxType",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "isInclusiveTax",
+        "name": "CreditNoteLines isInclusiveTax",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 35,
+        "target": "Products",
+        "source": "CreditNoteLinesView",
+        "name": "Products"
+      },
+      {
+        "id": 36,
+        "target": "Employees",
+        "source": "CreditNoteLinesView",
+        "name": "Employees"
+      },
+      {
+        "id": 37,
+        "target": "Taxes",
+        "source": "CreditNoteLinesView",
+        "name": "Taxes"
+      },
+      {
+        "id": 38,
+        "target": "CreditNotesView",
+        "source": "CreditNoteLinesView",
+        "name": "CreditNotesView"
+      },
+      {
+        "id": 39,
+        "target": "Accounts",
+        "source": "CreditNoteLinesView",
+        "name": "Accounts"
+      }
+    ]
+  },
+  "CreditNoteRefundsView": {
+    "id": "CreditNoteRefundsView",
+    "name": "CreditNoteRefunds",
+    "data": [
+      {
+        "id": "id",
+        "name": "CreditNoteRefunds id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "employeeId",
+        "name": "CreditNoteRefunds employeeId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Employees",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeName",
+        "name": "CreditNoteRefunds employeeName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchId",
+        "name": "CreditNoteRefunds branchId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Branches",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "total",
+        "name": "CreditNoteRefunds total",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "CreditNoteRefunds createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "creditNoteId",
+        "name": "CreditNoteRefunds creditNoteId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "CreditNotesView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "creditNoteNumber",
+        "name": "CreditNoteRefunds creditNoteNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "refrenceNumber",
+        "name": "CreditNoteRefunds refrenceNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "description",
+        "name": "CreditNoteRefunds description",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "refundDate",
+        "name": "CreditNoteRefunds refundDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "updatedDate",
+        "name": "CreditNoteRefunds updatedDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "ref": [
+      {
+        "id": 40,
+        "target": "Employees",
+        "source": "CreditNoteRefundsView",
+        "name": "Employees"
+      },
+      {
+        "id": 41,
+        "target": "Branches",
+        "source": "CreditNoteRefundsView",
+        "name": "Branches"
+      },
+      {
+        "id": 42,
+        "target": "CreditNotesView",
+        "source": "CreditNoteRefundsView",
+        "name": "CreditNotesView"
+      },
+      {
+        "id": 43,
+        "target": "CreditNoteRefundsView",
+        "source": "CreditNoteRefundsView",
+        "name": "CreditNoteRefundsView"
+      }
+    ]
+  },
+  "CreditNoteRefundLinesView": {
+    "id": "CreditNoteRefundLinesView",
+    "name": "CreditNoteRefundLines",
+    "data": [
+      {
+        "id": "id",
+        "name": "CreditNoteRefundLines id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "creditNoteRefundId",
+        "name": "CreditNoteRefundLines creditNoteRefundId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "CreditNoteRefundsView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "amount",
+        "name": "CreditNoteRefundLines amount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "paymentMethodId",
+        "name": "CreditNoteRefundLines paymentMethodId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "PaymentMethods",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "paymentMethodName",
+        "name": "CreditNoteRefundLines paymentMethodName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "accountId",
+        "name": "CreditNoteRefundLines accountId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Accounts",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "accountName",
+        "name": "CreditNoteRefundLines accountName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 43,
+        "target": "CreditNoteRefundsView",
+        "source": "CreditNoteRefundsView",
+        "name": "CreditNoteRefundsView"
+      },
+      {
+        "id": 44,
+        "target": "PaymentMethods",
+        "source": "CreditNoteRefundsView",
+        "name": "PaymentMethods"
+      },
+      {
+        "id": 45,
+        "target": "Accounts",
+        "source": "CreditNoteRefundsView",
+        "name": "Accounts"
+      }
+    ]
+  },
+  "AppliedCreditsView": {
+    "id": "AppliedCreditsView",
+    "name": "AppliedCredits",
+    "data": [
+      {
+        "id": "id",
+        "name": "AppliedCredits id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "invoiceId",
+        "name": "AppliedCredits invoiceId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "InvoiceView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "invoiceNumber",
+        "name": "AppliedCredits invoiceNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "creditNoteId",
+        "name": "AppliedCredits creditNoteId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "CreditNotesView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "creditNoteNumber",
+        "name": "AppliedCredits creditNoteNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "amount",
+        "name": "AppliedCredits amount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "AppliedCredits createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "appliedCreditDate",
+        "name": "AppliedCredits appliedCreditDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 46,
+        "target": "InvoiceView",
+        "source": "CreditNoteRefundsView",
+        "name": "InvoiceView"
+      },
+      {
+        "id": 47,
+        "target": "CreditNotesView",
+        "source": "CreditNoteRefundsView",
+        "name": "CreditNotesView"
+      }
+    ]
+  },
+  "CustomerView": {
+    "id": "CustomerView",
+    "name": "Customers",
+    "data": [
+      {
+        "id": "id",
+        "name": "Customers Customer",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "name",
+        "name": "Customers name",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "saluation",
+        "name": "Customers saluation",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "phone",
+        "name": "Customers phone",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "mobile",
+        "name": "Customers mobile",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "email",
+        "name": "Customers email",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "addresses",
+        "name": "Customers addresses",
+        "filter": true,
+        "edit": false,
+        "type": "json",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "companyId",
+        "name": "Customers companyId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "birth_month",
+        "name": "Customers birth_month",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "birthDay",
+        "name": "Customers birthDay",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "notes",
+        "name": "Customers notes",
+        "filter": true,
+        "edit": false,
+        "type": "json",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "MSR",
+        "name": "Customers MSR",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "Customers createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 1,
+        "target": "CustomerView",
+        "source": "InvoiceView",
+        "name": "Customer"
+      },
+      {
+        "id": 29,
+        "target": "CustomerView",
+        "source": "InvoicePaymentsView",
+        "name": "Customers"
+      }
+    ]
+  },
+  "Taxes": {
+    "id": "Taxes",
+    "name": "Taxes",
+    "data": [
+      {
+        "id": "id",
+        "name": "Taxes id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "name",
+        "name": "Taxes name",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxPercentage",
+        "name": "Taxes taxPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "companyId",
+        "name": "Taxes companyId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "Taxes createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxType",
+        "name": "Taxes taxType",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxes",
+        "name": "Taxes taxes",
+        "filter": true,
+        "edit": false,
+        "type": "json",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "updatedAt",
+        "name": "Taxes updatedAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 9,
+        "target": "Taxes",
+        "source": "InvoiceLinesView",
+        "name": "Taxes"
+      },
+      {
+        "id": 21,
+        "target": "Taxes",
+        "source": "EstimateLinesView",
+        "name": "Taxes"
+      },
+      {
+        "id": 37,
+        "target": "Taxes",
+        "source": "CreditNoteLinesView",
+        "name": "Taxes"
+      }
+    ]
+  },
+  "Branches": {
+    "id": "Branches",
+    "name": "Branches",
+    "data": [
+      {
+        "id": "id",
+        "name": "Branches id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "name",
+        "name": "Branches name",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 2,
+        "target": "Branches",
+        "source": "InvoiceView",
+        "name": "Branches"
+      },
+      {
+        "id": 14,
+        "target": "Branches",
+        "source": "EstimatesView",
+        "name": "Branches"
+      },
+      {
+        "id": 24,
+        "target": "Branches",
+        "source": "InvoicePaymentsView",
+        "name": "Branches"
+      },
+      {
+        "id": 33,
+        "target": "Branches",
+        "source": "CreditNotesView",
+        "name": "Branches"
+      },
+      {
+        "id": 41,
+        "target": "Branches",
+        "source": "CreditNoteRefundsView",
+        "name": "Branches"
+      },
+      {
+        "id": 49,
+        "target": "Branches",
+        "source": "CashiersView",
+        "name": "Branches"
+      }
+    ]
+  },
+  "Employees": {
+    "id": "Employees",
+    "name": "Employees",
+    "data": [
+      {
+        "id": "id",
+        "name": "Employees id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "name",
+        "name": "Employees name",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 10,
+        "target": "Employees",
+        "source": "InvoiceLinesView",
+        "name": "Employees"
+      },
+      {
+        "id": 13,
+        "target": "Employees",
+        "source": "EstimatesView",
+        "name": "Employees"
+      },
+      {
+        "id": 18,
+        "target": "Employees",
+        "source": "EstimateLinesView",
+        "name": "Employees"
+      },
+      {
+        "id": 27,
+        "target": "Employees",
+        "source": "InvoicePaymentsView",
+        "name": "Employees"
+      },
+      {
+        "id": 34,
+        "target": "Employees",
+        "source": "CreditNotesView",
+        "name": "Employees"
+      },
+      {
+        "id": 36,
+        "target": "Employees",
+        "source": "CreditNoteLinesView",
+        "name": "Employees"
+      },
+      {
+        "id": 40,
+        "target": "Employees",
+        "source": "CreditNoteRefundsView",
+        "name": "Employees"
+      },
+      {
+        "id": 47,
+        "target": "Employees",
+        "source": "CashiersView",
+        "name": "Employees"
+      }
+    ]
+  },
+  "Tables": {
+    "id": "Tables",
+    "name": "Tables",
+    "data": [
+      {
+        "id": "id",
+        "name": "Tables id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "name",
+        "name": "Tables name",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 3,
+        "target": "Tables",
+        "source": "InvoiceView",
+        "name": "Tables"
+      },
+      {
+        "id": 16,
+        "target": "Tables",
+        "source": "EstimatesView",
+        "name": "Tables"
+      }
+    ]
+  },
+  "Services": {
+    "id": "Services",
+    "name": "Services",
+    "data": [
+      {
+        "id": "id",
+        "name": "Services id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "name",
+        "name": "Services name",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchId",
+        "name": "Services branchId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 4,
+        "target": "Services",
+        "source": "InvoiceView",
+        "name": "Services"
+      }
+    ]
+  },
+  "Accounts": {
+    "id": "Accounts",
+    "name": "Accounts",
+    "data": [
+      {
+        "id": "id",
+        "name": "Accounts id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "name",
+        "name": "Accounts name",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "parentType",
+        "name": "Accounts parentType",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "type",
+        "name": "Accounts type",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 8,
+        "target": "Accounts",
+        "source": "InvoiceLinesView",
+        "name": "Accounts"
+      },
+      {
+        "id": 28,
+        "target": "Accounts",
+        "source": "InvoicePaymentsView",
+        "name": "Accounts"
+      },
+      {
+        "id": 39,
+        "target": "Accounts",
+        "source": "CreditNoteLinesView",
+        "name": "Accounts"
+      },
+      {
+        "id": 45,
+        "target": "Accounts",
+        "source": "CreditNoteRefundsView",
+        "name": "Accounts"
+      }
+    ]
+  },
+  "Options": {
+    "id": "Options",
+    "name": "Options",
+    "data": [
+      {
+        "id": "id",
+        "name": "Options id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "name",
+        "name": "Options name",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "displayName",
+        "name": "Options displayName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "price",
+        "name": "Options price",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 11,
+        "target": "Options",
+        "source": "InvoiceLineOptionsView",
+        "name": "Options"
+      },
+      {
+        "id": 22,
+        "target": "Options",
+        "source": "EstimateLineOptionsView",
+        "name": "Options"
+      }
+    ]
+  },
+  "CashiersView": {
+    "id": "CashiersView",
+    "name": "Cashiers",
+    "data": [
+      {
+        "id": "id",
+        "name": "Cashiers id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "employeeId",
+        "name": "Cashiers employeeId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Employees",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeName",
+        "name": "Cashiers employeeName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "cashierIn",
+        "name": "Cashiers cashierIn",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "cashierOut",
+        "name": "Cashiers cashierOut",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "startAmount",
+        "name": "Cashiers startAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "endAmount",
+        "name": "Cashiers endAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchId",
+        "name": "Cashiers branchId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Branches",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchName",
+        "name": "Cashiers branchName",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "terminalId",
+        "name": "Cashiers terminalId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Terminals",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "cashierOutBy",
+        "name": "Cashiers cashierOutBy",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "cashierNumber",
+        "name": "Cashiers cashierNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 26,
+        "target": "CashiersView",
+        "source": "InvoicePaymentsView",
+        "name": "CashiersView"
+      },
+      {
+        "id": 47,
+        "target": "Employees",
+        "source": "CashiersView",
+        "name": "Employees"
+      },
+      {
+        "id": 48,
+        "target": "Terminals",
+        "source": "CashiersView",
+        "name": "Terminals"
+      },
+      {
+        "id": 49,
+        "target": "Branches",
+        "source": "CashiersView",
+        "name": "Branches"
+      },
+      {
+        "id": 50,
+        "target": "CashiersView",
+        "source": "CashierLinesView",
+        "name": "CashiersView"
+      }
+    ]
+  },
+  "CashierLinesView": {
+    "id": "CashierLinesView",
+    "name": "CashierLines",
+    "data": [
+      {
+        "id": "id",
+        "name": "CashierLines id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "cashierId",
+        "name": "CashierLines cashierId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "CashiersView",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "cashierNumber",
+        "name": "CashierLines cashierNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "paymentMethodId",
+        "name": "CashierLines paymentMethodId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "PaymentMethods",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "rate",
+        "name": "CashierLines rate",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "startAmount",
+        "name": "CashierLines startAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "endAmount",
+        "name": "CashierLines endAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 50,
+        "target": "CashiersView",
+        "source": "CashierLinesView",
+        "name": "CashiersView"
+      },
+      {
+        "id": 51,
+        "target": "PaymentMethods",
+        "source": "CashierLinesView",
+        "name": "PaymentMethods"
+      }
+    ]
+  },
+  "Terminals": {
+    "id": "Terminals",
+    "name": "Terminals",
+    "data": [
+      {
+        "id": "id",
+        "name": "Terminals id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "name",
+        "name": "Terminals name",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 5,
+        "target": "Terminals",
+        "source": "InvoiceView",
+        "name": "Terminals"
+      },
+      {
+        "id": 48,
+        "target": "Terminals",
+        "source": "CashiersView",
+        "name": "Terminals"
+      }
+    ]
+  },
+  "Products": {
+    "id": "Products",
+    "name": "Products",
+    "data": [
+      {
+        "id": "id",
+        "name": "Products id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "name",
+        "name": "Products name",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "barcode",
+        "name": "Products barcode",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "defaultPrice",
+        "name": "Products defaultPrice",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "unitCost",
+        "name": "Products unitCost",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "UOM",
+        "name": "Products UOM",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 5,
+        "target": "Terminals",
+        "source": "InvoiceView",
+        "name": "Terminals"
+      },
+      {
+        "id": 7,
+        "target": "Products",
+        "source": "InvoiceLinesView",
+        "name": "Products"
+      },
+      {
+        "id": 20,
+        "target": "Products",
+        "source": "EstimateLinesView",
+        "name": "Products"
+      },
+      {
+        "id": 35,
+        "target": "Products",
+        "source": "CreditNoteLinesView",
+        "name": "Products"
+      }
+    ]
+  },
+  "PaymentMethods": {
+    "id": "PaymentMethods",
+    "name": "PaymentMethods",
+    "data": [
+      {
+        "id": "id",
+        "name": "PaymentMethods id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "name",
+        "name": "PaymentMethods name",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "type",
+        "name": "PaymentMethods type",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "rate",
+        "name": "PaymentMethods rate",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ],
+    "refs": [
+      {
+        "id": 25,
+        "target": "PaymentMethods",
+        "source": "InvoicePaymentsView",
+        "name": "PaymentMethods"
+      },
+      {
+        "id": 44,
+        "target": "PaymentMethods",
+        "source": "CreditNoteRefundsView",
+        "name": "PaymentMethods"
+      },
+      {
+        "id": 51,
+        "target": "PaymentMethods",
+        "source": "CashierLinesView",
+        "name": "PaymentMethods"
+      }
+    ]
+  },
+  "SupplierItemsView": {
+    "id": "SupplierItemsView",
+    "name": "SupplierItems",
+    "data": [
+      {
+        "id": "id",
+        "name": "SupplierItems id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": false
+      },
+      {
+        "id": "supplierId",
+        "name": "SupplierItems supplierId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Suppliers",
+        "key": false,
+        "show": false
+      },
+      {
+        "id": "productId",
+        "name": "SupplierItems productId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Products",
+        "key": false,
+        "show": false
+      }
+    ],
+    "refs": [
+      {
+        "id": 45,
+        "target": "Products",
+        "source": "SupplierItems",
+        "name": "Products_supp"
+      },
+      {
+        "id": 46,
+        "target": "Suppliers",
+        "source": "SupplierItems",
+        "name": "Suppliers_supp"
+      }
+    ]
+  },
+  "Suppliers": {
+    "id": "Suppliers",
+    "name": "Suppliers",
+    "data": [
+      {
+        "id": "id",
+        "name": "Suppliers id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "name",
+        "name": "Suppliers name",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "code",
+        "name": "Suppliers code",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "phone",
+        "name": "Suppliers phone",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "email",
+        "name": "Suppliers email",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "website",
+        "name": "Suppliers website",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "note",
+        "name": "Suppliers note",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "companyId",
+        "name": "Suppliers companyId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "contacts",
+        "name": "Suppliers contacts",
+        "filter": true,
+        "edit": false,
+        "type": "json",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "address",
+        "name": "Suppliers address",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "Suppliers createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "openingBalance",
+        "name": "Suppliers openingBalance",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "country",
+        "name": "Suppliers country",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "vatNumber",
+        "name": "Suppliers vatNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "updatedDate",
+        "name": "Suppliers updatedDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ]
+  },
+  "Billings": {
+    "id": "Billings",
+    "name": "Billings",
+    "data": [
+      {
+        "id": "id",
+        "name": "Billings id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "billingNumber",
+        "name": "Billings billingNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "reference",
+        "name": "Billings reference",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "status",
+        "name": "Billings status",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "note",
+        "name": "Billings note",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "shipping",
+        "name": "Billings shipping",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "discount",
+        "name": "Billings discount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeId",
+        "name": "Billings employeeId",
+        "filter": false,
+        "edit": false,
+        "type": "reference",
+        "ref": "Employees",
+        "key": false,
+        "show": false
+      },
+      {
+        "id": "supplierId",
+        "name": "Billings supplierId",
+        "filter": false,
+        "edit": false,
+        "type": "reference",
+        "ref": "Suppliers",
+        "key": false,
+        "show": false
+      },
+      {
+        "id": "dueDate",
+        "name": "Billings dueDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "Billings createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchId",
+        "name": "Billings branchId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Branches",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "total",
+        "name": "Billings total",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "billingDate",
+        "name": "Billings billingDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "isInclusiveTax",
+        "name": "Billings isInclusiveTax",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "roundingType",
+        "name": "Billings roundingType",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "roundingTotal",
+        "name": "Billings roundingTotal",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "smallestCurrency",
+        "name": "Billings smallestCurrency",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "payableAccountId",
+        "name": "Billings payableAccountId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Accounts",
+        "key": false,
+        "show": true
+      }
+    ]
+  },
+  "Expenses": {
+    "id": "Expenses",
+    "name": "Expenses",
+    "data": [
+      {
+        "id": "id",
+        "name": "Expenses id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "expenseDate",
+        "name": "Expenses expenseDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "Expenses createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeId",
+        "name": "Expenses employeeId",
+        "filter": false,
+        "edit": false,
+        "type": "reference",
+        "ref": "Employees",
+        "key": false,
+        "show": false
+      },
+      {
+        "id": "paidThroughAccountId",
+        "name": "Expenses paidThroughAccountId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Accounts",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchId",
+        "name": "Expenses branchId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Branches",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "supplierId",
+        "name": "Expenses supplierId",
+        "filter": false,
+        "edit": false,
+        "type": "reference",
+        "ref": "Suppliers",
+        "key": false,
+        "show": false
+      },
+      {
+        "id": "total",
+        "name": "Expenses total",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "referenceNumber",
+        "name": "Expenses referenceNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "expenseNumber",
+        "name": "Expenses expenseNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "expenseNumber",
+        "name": "Expenses expenseNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "notes",
+        "name": "Expenses notes",
+        "filter": true,
+        "edit": false,
+        "type": "json",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "paymentMethodId",
+        "name": "Expenses paymentMethodId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "PaymentMethods",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "isInclusiveTax",
+        "name": "Expenses isInclusiveTax",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "customerId",
+        "name": "Expenses Customer",
+        "filter": false,
+        "edit": false,
+        "type": "reference",
+        "ref": "CustomerView",
+        "key": false,
+        "show": false
+      },
+      {
+        "id": "roundingType",
+        "name": "Expenses roundingType",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "roundingTotal",
+        "name": "Expenses roundingTotal",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "smallestCurrency",
+        "name": "Expenses smallestCurrency",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ]
+  },
+  "BillingLinesView": {
+    "id": "BillingLinesView",
+    "name": "BillingLines",
+    "data": [
+      {
+        "id": "id",
+        "name": "BillingLines id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "barcode",
+        "name": "BillingLines barcode",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "qty",
+        "name": "BillingLines qty",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "unitCost",
+        "name": "BillingLines unitCost",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "accountId",
+        "name": "BillingLines accountId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Accounts",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "billingId",
+        "name": "BillingLines billingId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Billings",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "productId",
+        "name": "BillingLines productId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Products",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "note",
+        "name": "BillingLines note",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "total",
+        "name": "BillingLines total",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "subTotal",
+        "name": "BillingLines subTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxId",
+        "name": "BillingLines taxId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Taxes",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxTotal",
+        "name": "BillingLines taxTotal",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxPercentage",
+        "name": "BillingLines taxPercentage",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "isInclusiveTax",
+        "name": "BillingLines isInclusiveTax",
+        "filter": true,
+        "edit": false,
+        "type": "boolean",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxes",
+        "name": "BillingLines taxes",
+        "filter": true,
+        "edit": false,
+        "type": "array",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "taxType",
+        "name": "BillingLines taxType",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeId",
+        "name": "BillingLines employeeId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Employees",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "BillingLines createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "prodDate",
+        "name": "BillingLines prodDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "prodDate",
+        "name": "BillingLines prodDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ]
+  },
+  "BillingPayments": {
+    "id": "BillingPayments",
+    "name": "BillingPayments",
+    "data": [
+      {
+        "id": "id",
+        "name": "BillingPayments id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "tenderAmount",
+        "name": "BillingPayments tenderAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "employeeId",
+        "name": "BillingPayments employeeId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "BillingPayments createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "paymentMethodId",
+        "name": "BillingPayments paymentMethodId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "PaymentMethods",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "accountId",
+        "name": "BillingPayments accountId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Accounts",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "paidAmount",
+        "name": "BillingPayments paidAmount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "supplierId",
+        "name": "BillingPayments supplierId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Suppliers",
+        "key": false,
+        "show": false
+      },
+      {
+        "id": "paymentMethodAccountId",
+        "name": "BillingPayments paymentMethodAccountId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Accounts",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "paymentDate",
+        "name": "BillingPayments paymentDate",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "companyId",
+        "name": "BillingPayments companyId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "rate",
+        "name": "BillingPayments rate",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "branchId",
+        "name": "BillingPayments branchId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Branches",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "referenceNumber",
+        "name": "BillingPayments referenceNumber",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ]
+  },
+  "BillingPaymentLinesView": {
+    "id": "BillingPaymentLinesView",
+    "name": "BillingPaymentLines",
+    "data": [
+      {
+        "id": "companyId",
+        "name": "BillingPaymentLines companyId",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "id",
+        "name": "BillingPaymentLines id",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": true,
+        "show": true
+      },
+      {
+        "id": "billingId",
+        "name": "BillingPaymentLines billingId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Billings",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "billingPaymentId",
+        "name": "BillingPaymentLines billingPaymentId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "BillingPayments",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "amount",
+        "name": "BillingPaymentLines amount",
+        "filter": true,
+        "edit": false,
+        "type": "number",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "createdAt",
+        "name": "BillingPaymentLines createdAt",
+        "filter": true,
+        "edit": false,
+        "type": "date",
+        "ref": "",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "accountId",
+        "name": "BillingPaymentLines accountId",
+        "filter": true,
+        "edit": false,
+        "type": "reference",
+        "ref": "Accounts",
+        "key": false,
+        "show": true
+      },
+      {
+        "id": "note",
+        "name": "BillingPaymentLines note",
+        "filter": true,
+        "edit": false,
+        "type": "text",
+        "ref": "",
+        "key": false,
+        "show": true
+      }
+    ]
+  }
+}

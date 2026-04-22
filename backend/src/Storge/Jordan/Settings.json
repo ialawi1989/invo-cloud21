@@ -1,0 +1,59 @@
+{
+    "contryCode": "962",
+    "currencySymbol": "JD",
+    "timeOffset": "+3",
+    "afterDecimal": 3,
+    "phoneRegExp": "\\d{10}",
+    "Taxes": [    {
+        "name": "VAT 8%",
+        "taxPercentage": 8,
+        "default": false
+
+    }],
+    "addressFormat": [
+        {
+            "key": "governorate",
+            "title": "Governorate",
+            "isRequired": false
+        },
+        {
+            "key": "city",
+            "title": "City",
+            "isRequired": true
+        },
+        {
+            "key": "block",
+            "title": "Block",
+            "isRequired": false
+        },
+        {
+            "key": "road",
+            "title": "Road/Avenue",
+            "isRequired": true
+        },
+        {
+            "key": "building",
+            "title": "Building/House",
+            "isRequired": true
+        },
+        {
+            "key": "flat",
+            "title": "Flat/Office",
+            "isRequired": false
+        }
+    ],
+
+    "cashValues": [
+        50,
+        20, 
+        10,
+        5,
+        1,
+        0.5,
+        0.25,
+        0.01,
+        0.05
+
+    ]
+    
+}

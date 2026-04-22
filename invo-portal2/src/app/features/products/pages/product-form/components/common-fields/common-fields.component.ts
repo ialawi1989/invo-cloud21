@@ -17,10 +17,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ProductsService } from '../../../../services/products.service';
+import {
+  productBarcodeUniqueValidator,
+  productNameUniqueValidator,
+} from '../../../../services/product-validators';
 import { Product } from '../../../../models/product-form.model';
 import { Fields } from '../../../../models/product-fields.model';
 import { ModalService } from '@shared/modal';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
+import { RichEditorComponent } from '@shared/components/rich-editor/rich-editor.component';
 import { TranslationModalComponent, TranslationModalData } from './translation-modal.component';
 
 /**
@@ -35,7 +40,7 @@ import { TranslationModalComponent, TranslationModalData } from './translation-m
 @Component({
   selector: 'app-pf-common-fields',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, TooltipDirective],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, TooltipDirective, RichEditorComponent],
   templateUrl: './common-fields.component.html',
   styleUrl: './common-fields.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,9 +62,26 @@ export class CommonFieldsComponent implements OnInit {
     const info = this.productInfo();
     const f = this.fieldsOptions();
 
+    // Async uniqueness validators — fire 500ms after typing settles, skip
+    // blank values, and pass the current product id so editing your own
+    // record doesn't self-flag as a duplicate.
+    const nameAsync = productNameUniqueValidator(this.productsService, {
+      getProductId: () => this.productInfo().id,
+      tableName: 'product',
+    });
+    const barcodeAsync = productBarcodeUniqueValidator(this.productsService, {
+      getProductId: () => this.productInfo().id,
+      getIsMatrix: () => !!this.productInfo().productMatrixId,
+      tableName: 'product',
+    });
+
     this.group = this.fb.group({
-      name:        [info.name, f?.name?.isRequired ? [Validators.required] : []],
-      barcode:     [info.barcode, f?.barcode?.isRequired ? [Validators.required] : []],
+      name:        [info.name,
+                    f?.name?.isRequired ? [Validators.required] : [],
+                    [nameAsync]],
+      barcode:     [info.barcode,
+                    f?.barcode?.isRequired ? [Validators.required] : [],
+                    [barcodeAsync]],
       sku:         [{ value: info.sku, disabled: !!info.productMatrixId },
                     f?.SKU?.isRequired ? [Validators.required] : []],
       description: [info.description, f?.description?.isRequired ? [Validators.required] : []],
@@ -130,6 +152,7 @@ export class CommonFieldsComponent implements OnInit {
         data: {
           title: this.translate.instant('PRODUCTS.ACTIONS.TRANSLATION'),
           value: { en: p.translation.description.en, ar: p.translation.description.ar },
+          rich: true, // description is now HTML
         },
       },
     );

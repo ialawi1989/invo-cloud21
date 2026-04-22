@@ -1,0 +1,414 @@
+<div class="card a4 p-4" [ngStyle]="{ zoom: zoom + '%' }">
+  <div class="card-body" id="main-content-paper">
+    <div class="ribbon text-ellipsis" *ngIf="status">
+  <div
+    class="ribbon-inner"
+    [ngClass]="{
+      'ribbon-draft': status == 'Draft',
+      'ribbon-writeOff ': status == 'writeOff',
+      'ribbon-paid': status == 'Paid',
+      'ribbon-partially-paid': status == 'Partially Paid',
+      'ribbon-open': status == 'Open',
+      'ribbon-info': status == 'Void',
+      'ribbon-danger': status == 'Closed'
+    }"
+  >
+    <ng-container *ngIf="status != 'Void'">{{ status }}</ng-container>
+
+    <ng-container *ngIf="status == 'Void'">Voided</ng-container>
+  </div>
+</div>
+
+   <div class="paper-header">
+  <div class="d-md-flex">
+    <div class="me-4" *ngIf="companyData">
+      <div class="mb-3">
+        <img
+          [src]="companyData?.logoImg"
+          *ngIf="companyData?.logoImg != null"
+          alt="logo"
+          height="40"
+        />
+        <img
+          *ngIf="companyData?.logoImg == null"
+          src="{{ companyDefaultLogo }}"
+          alt="logo"
+          height="40"
+        />
+      </div>
+      <h4 class="font-size-24 mb-0">{{ companyData.name }}</h4>
+      <ng-container
+        *ngIf="companyData?.vatNumber != '' && companyData?.vatNumber != null"
+        ><strong>Vat No:</strong> {{ companyData?.vatNumber }}<br
+      /></ng-container>
+    </div>
+    <div class="ms-auto w-50">
+      <div class="d-flex flex-column align-items-end text-end">
+        <h4 class="font-size-24">{{ title }}</h4>
+        <ng-container *ngIf="branchData">
+          <ng-container
+            *ngIf="branchData.name != null && branchData.name != ''"
+          >
+            <span> <strong>Branch:</strong> {{ branchData.name }}</span>
+          </ng-container>
+          <ng-container
+            *ngIf="branchData.address != null && branchData.address != ''"
+          >
+            <span
+              ><strong>Branch Address:</strong> {{ branchData.address }}</span
+            >
+          </ng-container>
+          <ng-container
+            *ngIf="branchData.phone != null && branchData.phone != ''"
+          >
+            <span> <strong>Phone:</strong> {{ branchData.phone }}</span>
+          </ng-container>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+  <hr />
+</div>
+
+
+    <div class="invoice-details">
+      <div class="row">
+        <div class="col-6 mt-0">
+          <div
+            *ngIf="
+              invoiceData.invoiceNumber != '' &&
+              invoiceData.invoiceNumber != null
+            "
+          >
+            <strong>Invoice Number: </strong>
+            {{ invoiceData.invoiceNumber }}
+          </div>
+          <div>
+            <strong>Bill to: </strong>
+            {{ invoiceData.customerName }}
+          </div>
+        </div>
+        <div class="col-6 mt-0 text-sm-end">
+          <div>
+            <strong>Invoice Date:</strong>
+            {{ invoiceData.invoiceDate | date : "dd/MM/yyyy" }}
+          </div>
+          <div *ngIf="invoiceData.dueDate != null && invoiceData.dueDate != ''">
+            <strong>Invoice Due Date:</strong>
+            {{ invoiceData.dueDate | date : "dd/MM/yyyy" }}
+          </div>
+          <div>
+            <strong>Created Date:</strong>
+            {{ invoiceData.createdAt | date : "dd/MM/yyyy" }}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6 mt-0">
+          <div *ngIf="invoiceData.customerVatNumber">
+            <strong>Customer VAT Number: </strong>
+            {{ invoiceData.customerVatNumber }}
+          </div>
+        </div>
+        <div class="col-6 mt-0 text-sm-end">
+          <div
+            *ngIf="
+              invoiceData.refrenceNumber != '' &&
+              invoiceData.refrenceNumber != null
+            "
+          >
+            <strong
+              >{{ "MENUITEMS.BILLS.LIST.REFERENCE" | translate }}#:</strong
+            >
+            {{ invoiceData.refrenceNumber }}
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="row"
+        *ngIf="
+          invoiceData.employeeName != null && invoiceData.employeeName != ''
+        "
+      >
+        <div class="col-6 mt-0">
+          <div>
+            <strong>Sales Person: </strong>{{ invoiceData.employeeName }}
+          </div>
+        </div>
+        <div class="col-6 mt-0 text-sm-end"></div>
+      </div>
+    </div>
+
+    <!-- <div class="row">
+                <div class="col-12 mt-0 text-sm-end">
+
+                    <strong>{{ 'MENUITEMS.BILLS.LIST.REFERENCE' | translate }}#:</strong> {{invoiceData.reference}}
+                    <br><br>
+
+                </div>
+            </div> -->
+    <div class="py-2 mt-3 d-flex">
+      <h3 class="font-size-15 fw-bold">Order summary</h3>
+      <div class="ms-auto">
+        <div *ngIf="invoiceData.isInclusiveTax">Inclusive Tax</div>
+        <div *ngIf="!invoiceData.isInclusiveTax">Exclusive Tax</div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table id="lines-table" class="table">
+        <thead class="table-dark">
+          <tr>
+            <th style="max-width: 30%; width: 30%" class="align-middle">
+              {{ "MENUITEMS.ACCOUNTS.LIST.DESCRIPTION" | translate }}
+            </th>
+            <th class="align-middle">Qty</th>
+            <th class="align-middle">Price</th>
+            <th class="align-middle">
+              {{ "PRODUCTS.TAX_PERCENTAGE" | translate }}
+            </th>
+            <th class="align-middle">Tax</th>
+            <th class="align-middle">Discount</th>
+            <th class="align-middle text-sm-end">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let line of invoiceData.lines; let i = index">
+            <tr>
+              <td>
+                <ul style="list-style-type: none; margin: 0; padding: 0">
+                  <li>
+                    <ng-template [ngIf]="line.selectedItem.name != null">{{
+                      line.selectedItem.name
+                    }}</ng-template>
+                    <ng-template [ngIf]="line.optionList.length > 0">
+                      <div class="d-flex gap-1 mt-1 flex-wrap">
+                        <ng-container
+                          *ngFor="let option of line.optionList; let i = index"
+                        >
+                          <span class="badge rounded-pill font-size-11 bg-info"
+                            >{{ option.name }}
+                            <i *ngIf="option.price > 0"
+                              >({{ option.price | mynumber }})</i
+                            ></span
+                          >
+                        </ng-container>
+                      </div>
+                    </ng-template>
+                    <ng-template [ngIf]="line.selectedItem.name == null">{{
+                      line.note
+                    }}</ng-template>
+                    <!-- <ng-template [ngIf]="line.selectedItem.name == null && line.note != null && line.note !=''">{{line.note}}</ng-template> -->
+                  </li>
+
+                  <li style="font-size: 10px">
+                    <ng-template [ngIf]="line.selectedItem.name != null">{{
+                      line.note
+                    }}</ng-template>
+                  </li>
+                </ul>
+              </td>
+              <td>{{ line.qty }}</td>
+              <td>{{ line.price | mynumber }}</td>
+              <td>{{ line.taxPercentage }} %</td>
+              <td>{{ line.taxTotal | mynumber }}</td>
+              <td>{{ line.discountTotal | mynumber }}</td>
+              <td class="text-sm-end">{{ line.total | mynumber }}</td>
+            </tr>
+            <ng-container *ngFor="let line2 of line.voidedItems; let i = index">
+              <tr class="table-light">
+                <td>
+                  <ul style="list-style-type: none; margin: 0; padding: 0">
+                    <li>
+                      <ng-template [ngIf]="line2.selectedItem?.name != null">{{
+                        line2.selectedItem?.name
+                      }}</ng-template>
+                      <ng-template
+                        [ngIf]="line2.optionList && line2.optionList.length > 0"
+                      >
+                        <div class="d-flex gap-1 mt-1 flex-wrap">
+                          <ng-container
+                            *ngFor="
+                              let option of line2.optionList;
+                              let i = index
+                            "
+                          >
+                            <span
+                              class="badge rounded-pill font-size-11 bg-info"
+                              >{{ option.name }}
+                              <i *ngIf="option.price > 0"
+                                >({{ option.price | mynumber }})</i
+                              ></span
+                            >
+                          </ng-container>
+                        </div>
+                      </ng-template>
+                      <ng-template [ngIf]="line2.selectedItem?.name == null">{{
+                        line2.note
+                      }}</ng-template>
+                      <!-- <ng-template [ngIf]="line2.selectedItem.name == null && line2.note != null && line2.note !=''">{{line2.note}}</ng-template> -->
+                    </li>
+
+                    <li style="font-size: 10px">
+                      <ng-template [ngIf]="line2.selectedItem?.name != null">{{
+                        line2.note
+                      }}</ng-template>
+                    </li>
+                  </ul>
+                </td>
+                <td>{{ line2.qty }}</td>
+                <td>{{ line2.price | mynumber }}</td>
+                <td>{{ line2.taxPercentage }} %</td>
+                <td>{{ line2.taxTotal | mynumber }}</td>
+                <td>{{ line2.discountTotal | mynumber }}</td>
+                <td class="text-sm-end">{{ line2.total | mynumber }}</td>
+              </tr>
+            </ng-container>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+    <div id="total-details" class="row m-0">
+      <div class="col-md-7"></div>
+
+      <div class="col-md-5 p-0">
+        <div class="justify-content-end card border p-3">
+          <div class="row">
+            <div class="col-md-6">Items Total</div>
+            <div class="col-md-6 text-md-end">
+              {{ invoiceData.itemSubTotal | mycurrency }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">Tax Total</div>
+            <div class="col-md-6 text-md-end">
+              {{ invoiceData.invoiceTaxTotal | mycurrency }}
+            </div>
+          </div>
+
+          <div
+            class="row"
+            *ngIf="
+              invoiceData.discountAmount != '' &&
+              invoiceData.discountAmount != null &&
+              !invoiceData.discountPercentage
+            "
+          >
+            <div class="col-md-6">Discount</div>
+            <div class="col-md-6 text-md-end">
+              {{ invoiceData.discountAmount | mycurrency }}
+            </div>
+          </div>
+          <div
+            class="row"
+            *ngIf="
+              invoiceData.discountAmount != '' &&
+              invoiceData.discountAmount != null &&
+              invoiceData.discountPercentage
+            "
+          >
+            <div class="col-md-6">Discount</div>
+            <div class="col-md-6 text-md-end">
+              {{ invoiceData.discountAmount }} %
+            </div>
+          </div>
+          <div
+            class="row"
+            *ngIf="
+              invoiceData.chargeTotal != '' && invoiceData.chargeTotal != null
+            "
+          >
+            <div class="col-md-6">Charge</div>
+            <div class="col-md-6 text-md-end">
+              {{ invoiceData.chargeTotal | mycurrency }}
+            </div>
+          </div>
+          <div
+            class="row"
+            *ngIf="
+              invoiceData.deliveryCharge != '' &&
+              invoiceData.deliveryCharge != null
+            "
+          >
+            <div class="col-md-6">Delivery Charge</div>
+            <div class="col-md-6 text-md-end">
+              {{ invoiceData.deliveryCharge | mycurrency }}
+            </div>
+          </div>
+
+          <div
+            class="row"
+            *ngIf="
+              invoiceData.roundingTotal != 0 &&
+              invoiceData.roundingTotal != '' &&
+              invoiceData.roundingTotal != null
+            "
+          >
+            <div class="col-md-6"><strong>Rounding</strong></div>
+            <div class="col-md-6 text-md-end">
+              <strong>{{ invoiceData.roundingTotal | mycurrency }}</strong>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6"><strong>Total</strong></div>
+            <div class="col-md-6 text-md-end">
+              <strong>{{ invoiceData.total | mycurrency }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="payment-details" class="row m-0">
+      <div class="col-md-7"></div>
+
+      <div class="col-md-5 p-0">
+        <div class="mt-2 justify-content-end card border p-3 bg-warning">
+          <div class="row">
+            <div class="col-md-6"><strong>Paymnet Made</strong></div>
+            <div class="col-md-6 text-md-end">
+              <strong>{{ invoiceData.paidAmount | mycurrency }}</strong>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6"><strong>Credit Applied</strong></div>
+            <div class="col-md-6 text-md-end">
+              <strong>{{ invoiceData.appliedCredit | mycurrency }}</strong>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6"><strong>Balance</strong></div>
+            <div class="col-md-6 text-md-end">
+              <strong>{{ invoiceData.balance | mycurrency }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="row m-0"
+      id="customer-note"
+      *ngIf="invoiceData.note != '' && invoiceData.note != null"
+    >
+      <ngb-alert [dismissible]="false" type="info" class="mb-0">
+        {{ invoiceData.note }}
+      </ngb-alert>
+    </div>
+    <div class="row text-center mt-2" id="company-note">
+      <span>
+        <strong>{{ companyData?.invoiceOptions.note }}</strong></span
+      >
+    </div>
+  </div>
+  <footer id="print-footer" class="page-footer">
+    <div class="row text-center" *ngIf="companyData?.invoiceOptions.term != '' && companyData?.invoiceOptions.term != null">
+      <strong class="text-primary"
+        >Terms & Conditions<br />{{ companyData?.invoiceOptions.term }}</strong
+      >
+    </div>
+  </footer>
+  <div class="foot">
+    <div class="page-footer-space"></div>
+  </div>
+</div>

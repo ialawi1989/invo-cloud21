@@ -1,0 +1,51 @@
+{
+    "contryCode": "351",
+    "currencySymbol": "Euro",
+    "timeOffset": "+1",
+    "afterDecimal": 2,
+    "phoneRegExp": "\\d{10}",
+    "Taxes": [],
+    "addressFormat": [
+        {
+            "key": "governorate",
+            "title": "Governorate",
+            "isRequired": false
+        },
+        {
+            "key": "city",
+            "title": "City",
+            "isRequired": true
+        },
+        {
+            "key": "block",
+            "title": "Block",
+            "isRequired": false
+        },
+        {
+            "key": "road",
+            "title": "Road/Avenue",
+            "isRequired": true
+        },
+        {
+            "key": "building",
+            "title": "Building/House",
+            "isRequired": true
+        },
+        {
+            "key": "flat",
+            "title": "Flat/Office",
+            "isRequired": false
+        }
+    ],
+
+    "cashValues": [
+        5,
+        10,
+        20,
+        50,
+        100,
+        200,
+        500
+    ]
+    
+}

@@ -3,8 +3,12 @@ import { ApiService } from '../../../core/http';
 
 /** Lightweight supplier shape used in pickers / filters. */
 export interface SupplierMini {
-  id:   string;
-  name: string;
+  id:    string;
+  name:  string;
+  /** Supplier code (short business id). Shown as a pill in the picker. */
+  code?: string;
+  /** Primary contact phone. Shown as a secondary metadata line. */
+  phone?: string;
 }
 
 /** Page result returned by `getMiniListPage()` — matches the shape expected
@@ -70,8 +74,10 @@ export class SupplierService {
 
   private mapRow(s: any): SupplierMini {
     return {
-      id:   s.id   ?? s._id ?? '',
-      name: s.name ?? s.supplierName ?? '',
+      id:    s.id   ?? s._id ?? '',
+      name:  s.name ?? s.supplierName ?? '',
+      code:  s.code ?? undefined,
+      phone: s.phone ?? undefined,
     };
   }
 }

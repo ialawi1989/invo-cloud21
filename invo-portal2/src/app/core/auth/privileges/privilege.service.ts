@@ -54,14 +54,20 @@ export class PrivilegeService {
    */
   check(permissionPath: string | undefined): boolean {
     if (!permissionPath) return true;
-    if (!this._privileges) return false;
-
-    const parts = permissionPath.split('.');
 
     // Semantics: only an explicit `access === false` denies. Anything else
-    // (null, undefined, missing section/action entry) means "not restricted"
-    // and is treated as allowed. Matches how the backend models permissions —
-    // a missing record = inherit / allow rather than implicit deny.
+    // (null, undefined, missing section/action entry, or no privileges
+    // object loaded at all) means "not restricted" and is treated as
+    // allowed. Matches how the backend models permissions — a missing
+    // record = inherit / allow rather than implicit deny.
+    //
+    // This also keeps super-admin access working: super admins typically
+    // arrive with no `privileges` payload (they bypass the privilege
+    // system server-side) and would otherwise be locked out of every
+    // gated route.
+    if (!this._privileges) return true;
+
+    const parts = permissionPath.split('.');
 
     // Format: "key.access"
     if (parts[1] === 'access') {

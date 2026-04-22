@@ -1,10 +1,14 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  OnDestroy,
   OnInit,
   computed,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -36,7 +40,7 @@ export interface PickSupplierModalData {
   styleUrl: './pick-supplier-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PickSupplierModalComponent implements OnInit {
+export class PickSupplierModalComponent implements OnInit, AfterViewInit, OnDestroy {
   private supplierSvc = inject(SupplierService);
   private modalRef    = inject<ModalRef<SupplierMini[]>>(MODAL_REF);
   data                = inject<PickSupplierModalData>(MODAL_DATA) ?? {};
@@ -49,6 +53,10 @@ export class PickSupplierModalComponent implements OnInit {
   selected  = signal<Set<string>>(new Set());
   private searchDebounce?: ReturnType<typeof setTimeout>;
 
+  /** Sentinel at the bottom of the list; observed to trigger next-page load. */
+  readonly scrollSentinel = viewChild<ElementRef<HTMLElement>>('scrollSentinel');
+  private scrollObserver?: IntersectionObserver;
+
   excluded = computed<Set<string>>(() => new Set(this.data.excludedIds ?? []));
 
   visibleRows = computed<SupplierMini[]>(() =>
@@ -59,6 +67,23 @@ export class PickSupplierModalComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadPage(1);
+  }
+
+  ngAfterViewInit(): void {
+    const el = this.scrollSentinel()?.nativeElement;
+    if (!el) return;
+    // IntersectionObserver is cheap and avoids the scroll-event throttling dance.
+    // When the sentinel enters the scroll viewport and another page is available,
+    // kick off the next load.
+    this.scrollObserver = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) this.loadMore();
+    }, { root: el.closest('.psm-list') as Element | null, rootMargin: '120px' });
+    this.scrollObserver.observe(el);
+  }
+
+  ngOnDestroy(): void {
+    this.scrollObserver?.disconnect();
+    clearTimeout(this.searchDebounce);
   }
 
   onSearchInput(value: string): void {

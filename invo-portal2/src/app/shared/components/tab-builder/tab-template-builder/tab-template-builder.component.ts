@@ -12,12 +12,14 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
-import { ModalService } from '../../modal/modal.service';
-import { SearchDropdownComponent } from '../dropdown/search-dropdown.component';
+import { ModalService } from '../../../modal/modal.service';
+import { SearchDropdownComponent } from '../../dropdown/search-dropdown.component';
+import { RichEditorComponent } from '../../rich-editor/rich-editor.component';
 import {
   FaqTemplateItem,
   PRODUCT_TYPES,
   ProductType,
+  RichtextSource,
   SpecField,
   SpecFieldType,
   TabTemplate,
@@ -27,9 +29,9 @@ import {
   newTabTemplate,
   productTypeI18nKey,
   slugify,
-} from './tab-builder.types';
-import { AddTabModalComponent, AddTabResult } from './add-tab-modal.component';
-import { TabTypeIconComponent } from './tab-type-icon.component';
+} from '../tab-builder.types';
+import { AddTabModalComponent, AddTabResult } from '../add-tab-modal/add-tab-modal.component';
+import { TabTypeIconComponent } from '../tab-type-icon/tab-type-icon.component';
 
 /**
  * Tab-template builder (Settings → Tab Builder).
@@ -46,7 +48,7 @@ import { TabTypeIconComponent } from './tab-type-icon.component';
 @Component({
   selector: 'app-tab-template-builder',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, DragDropModule, SearchDropdownComponent, TabTypeIconComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, DragDropModule, SearchDropdownComponent, RichEditorComponent, TabTypeIconComponent],
   templateUrl: './tab-template-builder.component.html',
   styleUrl: './tab-template-builder.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -229,6 +231,37 @@ export class TabTemplateBuilderComponent {
   updatePlaceholder(value: string): void {
     this.updateSelected({ placeholder: value });
   }
+
+  updateSharedContent(value: string): void {
+    this.updateSelected({ sharedContent: value || undefined });
+  }
+
+  /**
+   * For richtext templates — `manual`, `productDescription`, or `shared`.
+   * `manual` is the default state and stored as `undefined` to keep the JSON
+   * compact.
+   */
+  setRichtextSource(source: RichtextSource): void {
+    const next: Partial<TabTemplate> = { source: source === 'manual' ? undefined : source };
+    // Clear fields that aren't relevant to the new mode so the stored JSON
+    // stays tidy and the UI doesn't surface stale data on a mode switch.
+    if (source !== 'shared')  next.sharedContent = undefined;
+    if (source !== 'manual')  next.placeholder   = undefined;
+    this.updateSelected(next);
+  }
+
+  richtextSource(tpl: TabTemplate): RichtextSource {
+    return tpl.source ?? 'manual';
+  }
+
+  readonly RICHTEXT_SOURCE_VALUES: RichtextSource[] = ['manual', 'productDescription', 'shared'];
+  private static readonly SOURCE_I18N: Record<RichtextSource, string> = {
+    manual:             'TAB_BUILDER.SOURCE_OPTIONS.MANUAL',
+    productDescription: 'TAB_BUILDER.SOURCE_OPTIONS.PRODUCT_DESCRIPTION',
+    shared:             'TAB_BUILDER.SOURCE_OPTIONS.SHARED',
+  };
+  displayRichtextSource = (s: RichtextSource) =>
+    this.translate.instant(TabTemplateBuilderComponent.SOURCE_I18N[s]);
 
   // ─── helpers ────────────────────────────────────────────────────────────
 

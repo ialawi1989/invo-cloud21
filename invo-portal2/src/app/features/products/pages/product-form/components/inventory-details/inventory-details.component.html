@@ -87,5 +87,28 @@
         }
       </div>
     }
+
+    <!-- Exclude Inventory Deduction — order-source channels to skip stock decrement for -->
+    @if (fieldsOptions()?.productDeduction?.isVisible) {
+      <div class="pf-field pf-field--deduction">
+        <label class="pf-label">{{ 'PRODUCTS.FORM.EXCLUDE_INVENTORY_DEDUCTION' | translate }}</label>
+        <div class="pf-deduction-grid">
+          @for (src of visibleDeductionSources(); track src) {
+            <label class="pf-deduction-item">
+              <input type="checkbox"
+                     [checked]="isDeductionChecked(src)"
+                     (change)="toggleDeductionSource(src, $any($event.target).checked)"/>
+              <span>{{ src }}</span>
+            </label>
+          }
+        </div>
+        @if (deductionSources.length > DEDUCTION_COLLAPSED_COUNT) {
+          <button type="button" class="pf-link"
+                  (click)="showAllDeductions.update(v => !v)">
+            {{ (showAllDeductions() ? 'PRODUCTS.FORM.SHOW_LESS' : 'PRODUCTS.FORM.SHOW_MORE') | translate }}
+          </button>
+        }
+      </div>
+    }
   </div>
 </section>

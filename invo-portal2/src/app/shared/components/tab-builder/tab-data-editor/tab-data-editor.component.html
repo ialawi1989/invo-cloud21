@@ -38,7 +38,6 @@
     <section class="td-editor">
       <header class="td-editor__header">
         <h3 class="td-editor__title">{{ tpl.name }}</h3>
-        <span class="chip chip--slate">tabs.{{ tpl.abbr }}</span>
       </header>
 
       <div class="td-editor__body">
@@ -193,16 +192,50 @@
         }
 
         <!-- ─── Richtext / Custom ─────────────────────────────────── -->
-        @if (tpl.type === 'richtext' || tpl.type === 'custom') {
+        @if (tpl.type === 'richtext') {
+          @switch (tpl.source ?? 'manual') {
+            @case ('productDescription') {
+              <div class="linked-banner">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+                <p>{{ 'TAB_BUILDER.LINKED_DESCRIPTION_NOTICE' | translate }}</p>
+              </div>
+            }
+            @case ('shared') {
+              <div class="linked-banner">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                <p>{{ 'TAB_BUILDER.SHARED_NOTICE' | translate }}</p>
+              </div>
+              <div class="linked-preview" [innerHTML]="tpl.sharedContent || ''"></div>
+              @if (!tpl.sharedContent) {
+                <p class="muted">{{ 'TAB_BUILDER.SHARED_EMPTY' | translate }}</p>
+              }
+            }
+            @default {
+              <app-rich-editor
+                [ngModel]="richtextValueFor(tpl)"
+                (ngModelChange)="updateText(tpl.abbr, $event)"
+                [placeholder]="tpl.placeholder || ('TAB_BUILDER.ENTER_CONTENT' | translate)"
+                height="220px"
+              />
+              <p class="hint">{{ 'TAB_BUILDER.RICHTEXT_HINT' | translate }}</p>
+            }
+          }
+        }
+
+        @if (tpl.type === 'custom') {
           <textarea class="input input--textarea"
                     rows="10"
                     [ngModel]="textValue(tpl.abbr)"
                     (ngModelChange)="updateText(tpl.abbr, $event)"
                     [placeholder]="tpl.placeholder || ('TAB_BUILDER.ENTER_CONTENT' | translate)"></textarea>
-          <p class="hint">
-            @if (tpl.type === 'custom') { {{ 'TAB_BUILDER.CUSTOM_HINT' | translate }} }
-            @else { {{ 'TAB_BUILDER.RICHTEXT_HINT' | translate }} }
-          </p>
+          <p class="hint">{{ 'TAB_BUILDER.CUSTOM_HINT' | translate }}</p>
         }
 
         <!-- ─── FAQ ───────────────────────────────────────────────── -->

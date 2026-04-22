@@ -1,0 +1,55 @@
+{
+    "contryCode": "968",
+    "currencySymbol": "OMR",
+    "timeOffset": "+4",
+    "afterDecimal": 3,
+    "phoneRegExp": "\\d{10}",
+    "Taxes": [],
+    "addressFormat": [
+        {
+            "key": "governorate",
+            "title": "Governorate",
+            "isRequired": false
+        },
+        {
+            "key": "city",
+            "title": "City",
+            "isRequired": true
+        },
+        {
+            "key": "block",
+            "title": "Block",
+            "isRequired": false
+        },
+        {
+            "key": "road",
+            "title": "Road/Avenue",
+            "isRequired": true
+        },
+        {
+            "key": "building",
+            "title": "Building/House",
+            "isRequired": true
+        },
+        {
+            "key": "flat",
+            "title": "Flat/Office",
+            "isRequired": false
+        }
+    ],
+
+    "cashValues": [
+        50,
+        20,
+        10,
+        5,
+        1,
+        0.5,
+        0.100,
+        0.050,
+        0.025,
+        0.010,
+        0.005
+    ]
+    
+}

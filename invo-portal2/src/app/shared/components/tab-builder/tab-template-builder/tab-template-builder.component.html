@@ -69,7 +69,6 @@
           [ngModel]="tpl.name"
           (ngModelChange)="updateName($event)"
         />
-        <span class="chip chip--slate">{{ tpl.abbr }}</span>
         <span class="chip chip--type">{{ typeKey(tpl.type) | translate }}</span>
 
         <label class="switch">
@@ -257,13 +256,56 @@
         @if (tpl.type === 'richtext' || tpl.type === 'custom') {
           <div class="section">
             <h4>{{ 'TAB_BUILDER.CONTENT_SETTINGS' | translate }}</h4>
-            <label class="sub-field">
-              <span class="sub-field__label">{{ 'TAB_BUILDER.PLACEHOLDER_TEXT' | translate }}</span>
-              <textarea class="input input--textarea" rows="3"
-                        [ngModel]="tpl.placeholder || ''"
-                        (ngModelChange)="updatePlaceholder($event)"
-                        [placeholder]="'TAB_BUILDER.PLACEHOLDER_HINT' | translate"></textarea>
-            </label>
+
+            @if (tpl.type === 'richtext') {
+              <div class="sub-field">
+                <span class="sub-field__label">{{ 'TAB_BUILDER.CONTENT_SOURCE' | translate }}</span>
+                <app-search-dropdown
+                  class="source-dropdown"
+                  [items]="RICHTEXT_SOURCE_VALUES"
+                  [displayWith]="displayRichtextSource"
+                  [searchable]="false"
+                  [value]="richtextSource(tpl)"
+                  (valueChange)="setRichtextSource($any($event))"
+                />
+                <p class="muted">
+                  {{ 'TAB_BUILDER.SOURCE_OPTIONS.' + (richtextSource(tpl) === 'productDescription' ? 'PRODUCT_DESCRIPTION_DESC' : richtextSource(tpl) === 'shared' ? 'SHARED_DESC' : 'MANUAL_DESC') | translate }}
+                </p>
+              </div>
+
+              @if (richtextSource(tpl) === 'manual') {
+                <label class="sub-field">
+                  <span class="sub-field__label">{{ 'TAB_BUILDER.PLACEHOLDER_TEXT' | translate }}</span>
+                  <textarea class="input input--textarea" rows="3"
+                            [ngModel]="tpl.placeholder || ''"
+                            (ngModelChange)="updatePlaceholder($event)"
+                            [placeholder]="'TAB_BUILDER.PLACEHOLDER_HINT' | translate"></textarea>
+                </label>
+              }
+
+              @if (richtextSource(tpl) === 'shared') {
+                <div class="sub-field">
+                  <span class="sub-field__label">{{ 'TAB_BUILDER.SHARED_CONTENT' | translate }}</span>
+                  <app-rich-editor
+                    [ngModel]="tpl.sharedContent || ''"
+                    (ngModelChange)="updateSharedContent($event)"
+                    [placeholder]="'TAB_BUILDER.SHARED_CONTENT_PLACEHOLDER' | translate"
+                    height="220px"
+                  />
+                  <p class="muted">{{ 'TAB_BUILDER.SHARED_CONTENT_HINT' | translate }}</p>
+                </div>
+              }
+            }
+
+            @if (tpl.type === 'custom') {
+              <label class="sub-field">
+                <span class="sub-field__label">{{ 'TAB_BUILDER.PLACEHOLDER_TEXT' | translate }}</span>
+                <textarea class="input input--textarea" rows="3"
+                          [ngModel]="tpl.placeholder || ''"
+                          (ngModelChange)="updatePlaceholder($event)"
+                          [placeholder]="'TAB_BUILDER.PLACEHOLDER_HINT' | translate"></textarea>
+              </label>
+            }
           </div>
         }
 

@@ -40,6 +40,17 @@ export class ProductsListComponent implements OnInit {
   private privileges = inject(PrivilegeService);
   private modalService = inject(ModalService);
 
+  // ── Row-action privilege gates (used by the template) ─────────────────────
+  // 1:1 port of the old product-list row-action gates. Note this privilege
+  // model has no separate `edit` action — the `add` action is literally
+  // "Add/Edit New Product" (see definitions/productSecurity.ts), so the Edit
+  // button uses `add.access`. `clone` is its own privilege; don't reuse add.
+  readonly canEdit       = this.privileges.check('productSecurity.actions.add.access');
+  readonly canAdd        = this.privileges.check('productSecurity.actions.add.access');
+  readonly canClone      = this.privileges.check('productSecurity.actions.clone.access');
+  readonly canDelete     = this.privileges.check('productSecurity.actions.delete.access');
+  readonly canPrintLabel = this.privileges.check('productSecurity.actions.printBarcode.access');
+
   // Breadcrumbs
   breadcrumbs = [
     { label: 'Home', routerLink: '/', icon: 'home' as const, iconOnly: true },
@@ -376,7 +387,6 @@ export class ProductsListComponent implements OnInit {
       },
     ];
     bulkCandidates.forEach(({ action, permission }) => {
-      console.log(permission, this.privileges.check(permission))
       if (!permission || this.privileges.check(permission)) {
         this.bulkOperationActions.push(action);
       }

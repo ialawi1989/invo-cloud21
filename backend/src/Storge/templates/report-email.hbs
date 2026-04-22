@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{reportName}} - {{companyName}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        .email-container {
+            width: 100%;
+            margin: 0;
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, {{primaryColor}} 0%, {{secondaryColor}} 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .logo-section {
+            margin-bottom: 20px;
+        }
+        
+        .logo-section img {
+            max-height: 50px;
+            max-width: 180px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            color: white;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #1f2937;
+        }
+        
+        .main-message {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #374151;
+            margin-bottom: 30px;
+        }
+        
+        .report-highlight {
+            font-weight: 600;
+            color: {{primaryColor}};
+        }
+        
+        .company-highlight {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .attachment-section {
+            background: linear-gradient(135deg, {{attachmentBgStart}} 0%, {{attachmentBgEnd}} 100%);
+            border: 2px dashed {{primaryColor}};
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .attachment-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 15px;
+            fill: {{primaryColor}};
+        }
+        
+        .attachment-text {
+            color: {{secondaryColor}};
+            font-weight: 500;
+            font-size: 16px;
+        }
+        
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+            margin: 30px 0;
+        }
+        
+        .closing {
+            font-size: 16px;
+            color: #374151;
+            margin-top: 30px;
+        }
+        
+        .signature {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #1f2937;
+        }
+        
+        .team-name {
+            font-weight: 600;
+            color: {{primaryColor}};
+        }
+        
+        .footer {
+            background: #f8fafc;
+            padding: 25px 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .footer p {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .footer a {
+            text-decoration: none;
+        }
+        
+        .footer-note {
+            font-size: 12px;
+            color: #9ca3af;
+            font-style: italic;
+            margin-top: 15px;
+        }
+        
+        .contact-info {
+            margin-top: 10px;
+        }
+        
+        .contact-info a {
+            color: {{primaryColor}};
+            text-decoration: none;
+        }
+        
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 600px) {
+            .content {
+                padding: 30px 20px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .main-message {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📄{{headerReportName}}</h1>
+            <p>{{headerSubtitle}}</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                Dear {{recipientName}},
+            </div>
+            
+            <div class="main-message">
+                This is an automated notification from <span class="company-highlight">{{companyName}}</span> regarding your scheduled <span class="report-highlight">{{reportName}}</span> report.
+                <br><br>
+                  The report, 
+                {{#if reportDate}}
+                    dated <strong>{{reportDate}}</strong>,
+                {{else}}
+                    scheduled as a <strong>{{frequency}}</strong> report,
+                {{/if}} 
+                has been successfully generated and is enclosed with this email for your review.
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="closing">
+                {{closingMessage}}
+            </div>
+            
+            <div class="signature">
+                {{companyName}}
+            </div>
+            
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <a href="https://invopos.com">
+               <p><strong>Powered By Invo Pos Technologies</strong></p>
+            </a>
+            <div class="footer-note">
+                This is an automated message generated on {{generationTimestamp}}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

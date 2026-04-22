@@ -1,10 +1,14 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  OnDestroy,
   OnInit,
   computed,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
@@ -24,6 +28,8 @@ export interface PickedProduct {
   unitCost?: number;
   price?:    number;
   type?:     string;
+  /** Thumbnail URL for the product-list row. Falls back to the placeholder SVG. */
+  thumbnailUrl?: string;
 }
 
 export interface PickProductModalData {
@@ -58,7 +64,7 @@ export interface PickProductModalData {
   styleUrl: './pick-product-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PickProductModalComponent implements OnInit {
+export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestroy {
   private products = inject(ProductsService);
   private modalRef = inject<ModalRef<PickedProduct[]>>(MODAL_REF);
   data             = inject<PickProductModalData>(MODAL_DATA) ?? {};
@@ -71,6 +77,10 @@ export class PickProductModalComponent implements OnInit {
   selected = signal<Set<string>>(new Set());
   private debounce?: ReturnType<typeof setTimeout>;
 
+  /** Sentinel observed by IntersectionObserver to trigger next-page load. */
+  readonly scrollSentinel = viewChild<ElementRef<HTMLElement>>('scrollSentinel');
+  private scrollObserver?: IntersectionObserver;
+
   multiple = computed(() => this.data.multiple !== false);
   excluded = computed<Set<string>>(() => new Set(this.data.excludedIds ?? []));
   visible  = computed<PickedProduct[]>(() =>
@@ -80,6 +90,20 @@ export class PickProductModalComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadPage(1);
+  }
+
+  ngAfterViewInit(): void {
+    const el = this.scrollSentinel()?.nativeElement;
+    if (!el) return;
+    this.scrollObserver = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) this.loadMore();
+    }, { root: el.closest('.ppm-list') as Element | null, rootMargin: '120px' });
+    this.scrollObserver.observe(el);
+  }
+
+  ngOnDestroy(): void {
+    this.scrollObserver?.disconnect();
+    clearTimeout(this.debounce);
   }
 
   onSearchInput(value: string): void {
@@ -107,6 +131,7 @@ export class PickProductModalComponent implements OnInit {
         unitCost: r.unitCost ?? 0,
         price:    r.defaultPrice ?? 0,
         type:     r.type,
+        thumbnailUrl: r.mediaUrl?.thumbnailUrl ?? r.mediaUrl?.defaultUrl ?? r.thumbnailUrl ?? undefined,
       }));
       if (page === 1) this.rows.set(rows);
       else this.rows.update((prev) => [...prev, ...rows]);

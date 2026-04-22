@@ -66,6 +66,8 @@ export class ProductsService {
   generateRandomEan13                = ()                                                                            => this.crud.generateRandomEan13();
   showGenerateBarcode                = (...a: Parameters<ProductCrudService['showGenerateBarcode']>)                => this.crud.showGenerateBarcode(...a);
   productMergeInfo                   = (...a: Parameters<ProductCrudService['productMergeInfo']>)                   => this.crud.productMergeInfo(...a);
+  validateName                       = (...a: Parameters<ProductCrudService['validateName']>)                       => this.crud.validateName(...a);
+  validateBarcode                    = (...a: Parameters<ProductCrudService['validateBarcode']>)                    => this.crud.validateBarcode(...a);
 
   // ================================================================
   // INVENTORY (delegated to ProductInventoryService)
@@ -74,6 +76,7 @@ export class ProductsService {
   getProductOptionsOld               = ()                                                                            => this.inventory.getProductOptionsOld();
   getProductOptions                  = ()                                                                            => this.inventory.getProductOptions();
   saveProductInventoryLocations      = (...a: Parameters<ProductInventoryService['saveProductInventoryLocations']>) => this.inventory.saveProductInventoryLocations(...a);
+  getInventoryLocationsList          = (...a: Parameters<ProductInventoryService['getInventoryLocationsList']>)     => this.inventory.getInventoryLocationsList(...a);
   getProductAvailability             = (...a: Parameters<ProductInventoryService['getProductAvailability']>)        => this.inventory.getProductAvailability(...a);
   getBranchProductsAvailability      = (...a: Parameters<ProductInventoryService['getBranchProductsAvailability']>) => this.inventory.getBranchProductsAvailability(...a);
   setBranchProductAvailability       = (...a: Parameters<ProductInventoryService['setBranchProductAvailability']>)  => this.inventory.setBranchProductAvailability(...a);

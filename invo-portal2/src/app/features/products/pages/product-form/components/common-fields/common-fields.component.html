@@ -33,6 +33,12 @@
         @if (c('name').touched && c('name').errors?.['required']) {
           <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
         }
+        @if (c('name').pending) {
+          <p class="pf-hint">{{ 'PRODUCTS.FORM.CHECKING_NAME' | translate }}</p>
+        }
+        @if (c('name').touched && c('name').errors?.['exist']) {
+          <p class="pf-error">{{ 'PRODUCTS.FORM.NAME_EXISTS' | translate }}</p>
+        }
       </div>
     }
 
@@ -61,6 +67,12 @@
           />
           @if (c('barcode').touched && c('barcode').errors?.['required']) {
             <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+          }
+          @if (c('barcode').pending) {
+            <p class="pf-hint">{{ 'PRODUCTS.FORM.CHECKING_BARCODE' | translate }}</p>
+          }
+          @if (c('barcode').touched && c('barcode').errors?.['exist']) {
+            <p class="pf-error">{{ 'PRODUCTS.FORM.BARCODE_EXISTS' | translate }}</p>
           }
         </div>
       }
@@ -107,14 +119,11 @@
             {{ 'PRODUCTS.ACTIONS.TRANSLATION' | translate }}
           </button>
         </label>
-        <textarea
-          id="pf-description"
-          class="pf-textarea"
-          rows="5"
+        <app-rich-editor
           formControlName="description"
-          [class.pf-input--invalid]="c('description').touched && c('description').invalid"
           [placeholder]="'PRODUCTS.FORM.DESCRIPTION' | translate"
-        ></textarea>
+          height="180px"
+        />
         @if (c('description').touched && c('description').errors?.['required']) {
           <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
         }

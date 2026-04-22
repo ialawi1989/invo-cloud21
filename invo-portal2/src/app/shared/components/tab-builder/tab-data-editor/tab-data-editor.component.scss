@@ -76,10 +76,10 @@
 
   &__header {
     display: flex; align-items: center; gap: 12px;
-    padding: 18px 22px; border-bottom: 1px solid #f1f5f9;
+    padding: 15px 15px; border-bottom: 1px solid #f1f5f9;
   }
   &__title { margin: 0; font-size: 14px; font-weight: 600; color: #1e293b; }
-  &__body  { padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+  &__body  { padding: 15px 15px; display: flex; flex-direction: column; gap: 14px; }
 }
 
 .chip {
@@ -127,6 +127,29 @@
   border-radius: 10px;
   color: #94a3b8;
   p { margin: 0; font-size: 13px; }
+}
+
+// ── Linked richtext source ─────────────────────────────────────────────────
+.linked-banner {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 10px 12px; margin: 0 0 10px;
+  background: #eff9fb; border: 1px solid #a6d8df; border-radius: 8px;
+  color: #0f172a;
+
+  svg { color: #32acc1; flex-shrink: 0; margin-top: 2px; }
+  p   { margin: 0; font-size: 12px; line-height: 1.5; }
+}
+
+.linked-preview {
+  padding: 12px 14px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #fafbfc;
+  color: #374151;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  min-height: 80px;
 }
 
 // ── Records (dynamic typed table) ──────────────────────────────────────────

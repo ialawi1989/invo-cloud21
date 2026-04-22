@@ -73,6 +73,36 @@ export class InventoryDetailsComponent implements OnInit {
     { label: 'Pcs',    value: 'Pcs' },
   ];
 
+  /**
+   * Order-source channels that can be excluded from inventory deduction on
+   * this product. Mirrors the old project's static enumeration — custom
+   * user-defined sources should be merged in from the backend once that
+   * endpoint is ported (TODO).
+   */
+  readonly deductionSources: string[] = [
+    'DineIn', 'Delivery', 'CarHop', 'Salon', 'Retail', 'TakeAway', 'Web', 'POS',
+  ];
+  /** Slice size before "Show More" expands the full list. */
+  readonly DEDUCTION_COLLAPSED_COUNT = 6;
+  showAllDeductions = signal<boolean>(false);
+
+  visibleDeductionSources = computed<string[]>(() => {
+    const all = this.deductionSources;
+    return this.showAllDeductions() ? all : all.slice(0, this.DEDUCTION_COLLAPSED_COUNT);
+  });
+
+  toggleDeductionSource(source: string, checked: boolean): void {
+    const p = this.productInfo();
+    const set = new Set(p.productDeduction ?? []);
+    if (checked) set.add(source);
+    else         set.delete(source);
+    p.productDeduction = Array.from(set);
+  }
+
+  isDeductionChecked(source: string): boolean {
+    return (this.productInfo().productDeduction ?? []).includes(source);
+  }
+
   showParent = computed(() => this.isChild() && !!this.fieldsOptions()?.inventoryDetails?.parentItem?.isVisible);
   showChildQty = computed(() => this.isChild() && !!this.fieldsOptions()?.inventoryDetails?.childQty?.isVisible);
 

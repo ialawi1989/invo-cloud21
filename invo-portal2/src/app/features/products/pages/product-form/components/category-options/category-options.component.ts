@@ -57,11 +57,24 @@ export class CategoryOptionsComponent implements OnInit {
   // Bump this to force the SearchDropdown to re-fetch from page 1.
   private categoryVersion = signal(0);
 
+  /**
+   * Caches of the most recently-seen dropdown rows — populated on every
+   * `loadFn` call. Used by `displayLabel` to resolve a bare UUID stored
+   * in the form control back to a human-readable label, so the trigger
+   * doesn't show the raw id on edit-mode first paint.
+   */
+  private departmentsCache = signal<DropdownItem[]>([]);
+  private categoriesCache  = signal<DropdownItem[]>([]);
+  private brandsCache      = signal<DropdownItem[]>([]);
+
   @ViewChild('categoryDropdown') categoryDropdown?: SearchDropdownComponent<DropdownItem>;
 
   loadDepartments: DropdownLoadFn<DropdownItem> = async ({ page, pageSize, search }) => {
-    const res = await this.productsService.getDepartments({ page, pageSize, search });
-    return { items: res.items as DropdownItem[], hasMore: res.hasMore } as DropdownLoadResult<DropdownItem>;
+    const departmentId = (this.group?.get('departmentId')?.value as string | null) ?? null;
+    const res = await this.productsService.getDepartments({ page, pageSize, search, departmentId });
+    const items = res.items as DropdownItem[];
+    this.mergeCache(this.departmentsCache, items, page === 1);
+    return { items, hasMore: res.hasMore } as DropdownLoadResult<DropdownItem>;
   };
 
   loadCategories: DropdownLoadFn<DropdownItem> = async ({ page, pageSize, search }) => {
@@ -69,14 +82,28 @@ export class CategoryOptionsComponent implements OnInit {
     void this.categoryVersion();
     const depId = this.departmentId();
     if (!depId) return { items: [], hasMore: false };
-    const res = await this.productsService.getCategories({ page, pageSize, search, departmentId: depId });
-    return { items: res.items as DropdownItem[], hasMore: res.hasMore } as DropdownLoadResult<DropdownItem>;
+    const categoryId = (this.group?.get('categoryId')?.value as string | null) ?? null;
+    const res = await this.productsService.getCategories({ page, pageSize, search, departmentId: depId, categoryId });
+    const items = res.items as DropdownItem[];
+    this.mergeCache(this.categoriesCache, items, page === 1);
+    return { items, hasMore: res.hasMore } as DropdownLoadResult<DropdownItem>;
   };
 
   loadBrands: DropdownLoadFn<DropdownItem> = async ({ page, pageSize, search }) => {
-    const res = await this.productsService.getBrands({ page, pageSize, search });
-    return { items: res.items as DropdownItem[], hasMore: res.hasMore } as DropdownLoadResult<DropdownItem>;
+    const brandId = (this.group?.get('brandId')?.value as string | null) ?? null;
+    const res = await this.productsService.getBrands({ page, pageSize, search, brandId });
+    const items = res.items as DropdownItem[];
+    this.mergeCache(this.brandsCache, items, page === 1);
+    return { items, hasMore: res.hasMore } as DropdownLoadResult<DropdownItem>;
   };
+
+  private mergeCache(cache: ReturnType<typeof signal<DropdownItem[]>>, items: DropdownItem[], replace: boolean): void {
+    if (replace) cache.set([...items]);
+    else {
+      const existing = new Set(cache().map(i => i.value));
+      cache.update(cur => [...cur, ...items.filter(i => !existing.has(i.value))]);
+    }
+  }
 
   ngOnInit(): void {
     const info = this.productInfo();
@@ -90,6 +117,43 @@ export class CategoryOptionsComponent implements OnInit {
 
     this.productForm().setControl('category', this.group);
     this.departmentId.set(info.departmentId ?? null);
+
+    // Optimistic seed from productInfo's denormalised names — keeps the
+    // trigger showing a label for the split-second before the init fetches
+    // resolve, instead of flashing the raw UUID.
+    if (info.departmentId && info.departmentName) {
+      this.departmentsCache.set([{ label: info.departmentName, value: info.departmentId }]);
+    }
+    if (info.categoryId && info.categoryName) {
+      this.categoriesCache.set([{ label: info.categoryName, value: info.categoryId }]);
+    }
+
+    // When any of Department / Category / Brand already has a selected value,
+    // fire a page-1 load on init so the backend can pin the selected row to
+    // the top of the list and the cache has its canonical label ready — even
+    // if the denormalised name on `productInfo` was missing or stale.
+    if (info.departmentId) {
+      this.productsService.getDepartments({
+        page: 1, pageSize: 20, search: '', departmentId: info.departmentId,
+      })
+        .then((res) => this.mergeCache(this.departmentsCache, res.items as DropdownItem[], true))
+        .catch(() => void 0);
+    }
+    if (info.categoryId && info.departmentId) {
+      this.productsService.getCategories({
+        page: 1, pageSize: 20, search: '',
+        departmentId: info.departmentId, categoryId: info.categoryId,
+      })
+        .then((res) => this.mergeCache(this.categoriesCache, res.items as DropdownItem[], true))
+        .catch(() => void 0);
+    }
+    if (info.brandid) {
+      this.productsService.getBrands({
+        page: 1, pageSize: 20, search: '', brandId: info.brandid,
+      })
+        .then((res) => this.mergeCache(this.brandsCache, res.items as DropdownItem[], true))
+        .catch(() => void 0);
+    }
 
     // Clear category when department changes.
     this.group.controls['departmentId'].valueChanges
@@ -118,6 +182,19 @@ export class CategoryOptionsComponent implements OnInit {
   }
 
   // Angular template parser can't evaluate inline arrows — bind these methods.
-  displayLabel = (item: any): string => item?.label ?? String(item ?? '');
+  displayLabel = (item: any): string => {
+    if (item?.label) return item.label;
+    if (typeof item === 'string' && item) {
+      // Resolve a bare UUID from one of our caches so the trigger shows the
+      // department/category/brand name instead of the raw id on edit-mode
+      // first paint.
+      const hit =
+        this.departmentsCache().find(d => d.value === item) ||
+        this.categoriesCache().find(c => c.value === item) ||
+        this.brandsCache().find(b => b.value === item);
+      if (hit?.label) return hit.label;
+    }
+    return String(item ?? '');
+  };
   compareByValue = (a: any, b: any): boolean => (a?.value ?? a) === (b?.value ?? b);
 }

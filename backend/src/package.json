@@ -1,0 +1,27 @@
+{
+  "name": "dist",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --max-old-space-size=6144 index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@sentry/profiling-node": "7.118.0",
+    "mime": "1.6.0",
+    "msgpackr": "^1.11.2",
+    "msgpackr-extract": "^3.0.3",
+    "node-pg-migrate": "^7.9.1",
+    "pg": "^8.16.0",
+    "pg-format": "^1.0.4",
+    "sharp": "^0.34.1",
+    "ssh2": "^1.16.0"
+  },
+  "devDependencies": {
+    "@types/pdfmake": "^0.2.12"
+  }
+}

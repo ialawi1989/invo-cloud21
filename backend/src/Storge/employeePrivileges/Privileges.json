@@ -1,0 +1,213 @@
+{
+    "estimateSecurity": {
+                "name": "Estimate Security",
+                "actions": {
+                    "add": {
+                        "name": "Add New Estimate",
+                        "access": false
+                    },
+                    "edit": {
+                        "name": "Edit Estimates",
+                        "access": false
+                    },
+                    "print": {
+                        "name": "Print Estimates",
+                        "access": false
+                    },
+                    "view": {
+                        "name": "View Estimates",
+                        "access": false
+                    },
+                    "convert": {
+                        "name": "Convert Estimates to Invoice",
+                        "access": false
+                    }
+                }
+            },
+            "invoiceSecurity": {
+                "name": "Invoice Security",
+                "actions": {
+                    "add": {
+                        "name": "Add New Invoice",
+                        "access": false
+                    },
+                    "edit": {
+                        "name": "Edit Invoices",
+                        "access": false
+                    },
+                    "print": {
+                        "name": "Print Invoice",
+                        "access": false
+                    },
+                    "view": {
+                        "name": "View Invoice",
+                        "access": false
+                    }
+                }
+            },
+            "invoicePaymentsSecurity": {
+                "name": "Invoice Payments Security",
+                "actions": {
+                    "add": {
+                        "name": "Add New Invoice Payments",
+                        "access": false
+                    },
+                    "edit": {
+                        "name": "Edit Invoice Payments",
+                        "access": false
+                    },
+                    "print": {
+                        "name": "Print Invoice",
+                        "access": false
+                    },
+                    "view": {
+                        "name": "View Invoice",
+                        "access": false
+                    }
+                }
+            },
+           "creditNoteSecurity": {
+                "name": "Credit Note Security",
+                "actions": {
+                    "add": {
+                        "name": "Add New Credit Note",
+                        "access": false
+                    },
+                    "edit": {
+                        "name": "Edit Credit Note",
+                        "access": false
+                    },
+                    "print": {
+                        "name": "Print Credit Note",
+                        "access": false
+                    },
+                    "view": {
+                        "name": "View Credit Note",
+                        "access": false
+                    },
+                    "refund": {
+                        "name": "Refund Credit Note",
+                        "access": false
+                    },
+                    "applyCredit": {
+                        "name": "Apply Credit On Invoice",
+                        "access": false
+                    }
+                }
+            },
+           "customersSecurity" :{
+                "name": "Customers Security",
+                "actions": {
+                    "add": {
+                        "name": "Add New Customer",
+                        "access": false
+                    },
+                    "edit": {
+                        "name": "Edit Customers",
+                        "access": false
+                    },
+                    "view": {
+                        "name": "View Customers",
+                        "access": false
+                    }
+                }
+            },
+            "workOrderSecurity":{
+                "name": "Work Order Security",
+                "actions":  {
+                    "add": {
+                        "name": "Add New Work Order",
+                        "access": false
+                    },
+                    "edit": {
+                        "name": "Edit Work Order",
+                        "access": false
+                    },
+                    "view": {
+                        "name": "View Work Order",
+                        "access": false
+                    }
+                }
+            },
+            "purchaseOrderSecurity":{
+                "name": "Purchase Order Security",
+                "actions":
+                {
+                    "add": {
+                        "name": "Add New Purchase Order",
+                        "access": false
+                    },
+                    "edit": {
+                        "name": "Edit Purchase Order",
+                        "access": false
+                    },
+                    "view": {
+                        "name": "View Purchase Order",
+                        "access": false
+                    },
+                    "convert":{
+                        "name": "Convert  Purchase Order to Bill",
+                        "access": false
+                    }
+                }
+            },
+            "supplierSecurity":{
+                "name": "Supplier Security",
+                "actions":   {
+                    "add": {
+                        "name": "Add New Supplier",
+                        "access": false
+                    },
+                    "edit": {
+                        "name": "Edit Supplier",
+                        "access": false
+                    },
+                    "view": {
+                        "name": "View Supplier",
+                        "access": false
+                    }
+                }
+            },
+            "billingSecurity":{
+                "name": "Billing Security",
+                "actions": {
+                    "add": {
+                        "name": "Add New Bill",
+                        "access": false
+                    },
+                    "edit": {
+                        "name": "Edit Bill",
+                        "access": false
+                    },
+                    "print": {
+                        "name": "Print Bill",
+                        "access": false
+                    },
+                    "view": {
+                        "name": "View Bill",
+                        "access": false
+                    }
+                }
+            },
+            "billingPaymentsSecurity": {
+                "name": "Billing Payments Security",
+                "actions": {
+                    "add": {
+                        "name": "Add New Billing Payment",
+                        "access": false
+                    },
+                    "edit": {
+                        "name": "Edit Invoice  Billing Payment",
+                        "access": false
+                    },
+                    "print": {
+                        "name": "Print  Billing Payment",
+                        "access": false
+                    },
+                    "view": {
+                        "name": "View  Billing Payments",
+                        "access": false
+                    }
+                }
+            }
+    }

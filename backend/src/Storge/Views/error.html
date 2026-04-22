@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Page</title>
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Alexandria:100,200,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            font-family: Poppins, sans-serif;
+            font-size: 1.4rem;
+            line-height: 1.6;
+            color: #666;
+        }
+        html {
+            font-size: 62.5%;
+            font-size-adjust: 100%;
+            font-weight: 400;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        }
+        * {
+            box-sizing: border-box;
+        }
+        .loading-container {
+            height: 85vh;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+        h1 {
+            font-weight: 600;
+            line-height: 1.4;
+            color: #222;
+            font-size: 4rem;
+            margin: 0 0 2rem;
+        }
+        h4 {
+            font-weight: 600;
+            line-height: 1.4;
+            color: #222;
+            font-size: 2.4rem;
+            margin: 0 0 2rem;
+            text-transform: uppercase;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <h1>Error!</h1>
+        <img src="https://shussai.dev.invopos.shop/assets/images/subpages/404.png" alt="error 404" width="609" height="131">
+        <h4>{{errorMessage}}</h4>
+    </div>
+</body>
+</html>

@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { ModalRef } from '../../modal/modal.service';
-import { MODAL_DATA, MODAL_REF } from '../../modal/modal.tokens';
-import { ModalHeaderComponent } from '../../modal/modal-header.component';
-import { ModalFooterComponent } from '../../modal/modal-footer.component';
-import { TabType } from './tab-builder.types';
-import { TabTypeIconComponent } from './tab-type-icon.component';
+import { ModalRef } from '../../../modal/modal.service';
+import { MODAL_DATA, MODAL_REF } from '../../../modal/modal.tokens';
+import { ModalHeaderComponent } from '../../../modal/modal-header.component';
+import { ModalFooterComponent } from '../../../modal/modal-footer.component';
+import { TabType } from '../tab-builder.types';
+import { TabTypeIconComponent } from '../tab-type-icon/tab-type-icon.component';
 
 export interface AddTabResult {
   name: string;

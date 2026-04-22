@@ -1,0 +1,69 @@
+{
+    "contryCode": "20",
+    "currencySymbol": "EGP",
+    "afterDecimal": 2,
+    "timeOffset": "+3",
+    "phoneRegExp": "\\d{10}",
+    "Taxes": [
+        {
+            "name": "Exempt Tax",
+            "taxPercentage": 0,
+            "default": false
+
+        },
+        {
+            "name": "Zero Tax ",
+            "taxPercentage": 0,
+            "default": false
+            
+        }
+    ],
+    "addressFormat": [
+        {
+            "key": "governorate",
+            "title": "Governorate",
+            "isRequired": true
+        },
+        {
+            "key": "city",
+            "title": "City",
+            "isRequired": true
+        },
+        {
+            "key": "block",
+            "title": "Block",
+            "isRequired": true
+        },
+        {
+            "key": "road",
+            "title": "Road/Avenue",
+            "isRequired": true
+        },
+        {
+            "key": "building",
+            "title": "Building/House",
+            "isRequired": true
+        },
+        {
+            "key": "flat",
+            "title": "Flat/Office",
+            "isRequired": false
+        }
+    ],
+
+    "cashValues": [
+     200,
+     100,
+     50,
+     20,
+     10,
+     5,
+     1,
+     0.5,
+     0.25,
+     0.1,
+     0.05
+    
+    ]
+    
+}

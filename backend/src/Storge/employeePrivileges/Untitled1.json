@@ -1,0 +1,160 @@
+{
+    "name": "Sales By Category By Product",
+    "allow": false
+},
+{
+    "name": "Sales By Product",
+    "allow": false
+},
+{
+    "name": "Sales By Employee",
+    "allow": false
+},
+{
+    "name": "Sales By Period",
+    "allow": false
+},
+{
+    "name": "Sales By Category",
+    "allow": false
+},
+{
+    "name": "Sales By Type",
+    "allow": false
+},
+{
+    "name": "Sales By Table",
+    "allow": false
+},
+{
+    "name": "Log Report",
+    "allow": false
+},
+{
+    "name": "Daily Closing Report",
+    "allow": false
+},
+{
+    "name": "Cashier History",
+    "allow": false
+},
+{
+    "name": "Sales By Terminal",
+    "allow": false
+},
+{
+    "name": "Sales By Table Group",
+    "allow": false
+},
+{
+    "name": "Cashier Report",
+    "allow": false
+},
+{
+    "name": "Sales By Menu",
+    "allow": false
+},
+{
+    "name": "Sales By Group",
+    "allow": false
+},
+{
+    "name": "MenuProduct Vs MenuModifier",
+    "allow": false
+},
+{
+    "name": "Service Vs Modifier",
+    "allow": false
+},
+{
+    "name": "Employee Attendence",
+    "allow": false
+},
+{
+    "name": "Employee Vs Product",
+    "allow": false
+},
+{
+    "name": "PayOut Report",
+    "allow": false
+},
+{
+    "name": "Driver Report",
+    "allow": false
+},
+{
+    "name": "Purchase Report",
+    "allow": false
+},
+{
+    "name": "Account Balance",
+    "allow": false
+},
+{
+    "name": "Payment History",
+    "allow": false
+},
+{
+    "name": "Guest Report",
+    "allow": false
+},
+{
+    "name": "CountDown Movement",
+    "allow": false
+},
+{
+    "name": "CountDown List",
+    "allow": false
+},
+{
+    "name": "Product Movement",
+    "allow": false
+},
+{
+    "name": "General Inventory Report",
+    "allow": false
+},
+{
+    "name": "Sales Vs Usage",
+    "allow": false
+},
+{
+    "name": "Inventory Usage",
+    "allow": false
+},
+{
+    "name": "Payment Method Report",
+    "allow": false
+},
+{
+    "name": "Discount Report",
+    "allow": false
+},
+{
+    "name": "Surcharge Report",
+    "allow": false
+},
+{
+    "name": "Minimum Charge Report",
+    "allow": false
+},
+{
+    "name": "Charge Per Hour Report",
+    "allow": false
+},
+{
+    "name": "Table Usage",
+    "allow": false
+},
+{
+    "name": "Void Report",
+    "allow": false
+},
+{
+    "name": "Tax Report",
+    "allow": false
+},
+{
+    "name": "Sales By Delivery Area",
+    "allow": false
+}
