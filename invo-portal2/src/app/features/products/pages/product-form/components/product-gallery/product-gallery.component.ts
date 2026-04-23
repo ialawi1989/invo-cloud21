@@ -43,28 +43,49 @@ export class ProductGalleryComponent {
   productForm   = input.required<FormGroup>();
   fieldsOptions = input<Fields | null>(null);
 
-  private version = signal<number>(0);
+  /**
+   * Max images per product — matches the old project (templates there gated
+   * the Add button on `productMedia.length <= 4`, i.e. 5 total).
+   */
+  static readonly MAX_IMAGES = 5;
 
-  media = computed<ProductMedia[]>(() => {
-    void this.version();
-    return this.productInfo().productMedia ?? [];
-  });
+  /**
+   * Source-of-truth for the gallery in THIS component. We keep a local
+   * signal rather than reading `productInfo().productMedia` directly because
+   * signals track reference identity — pushing to the inner array wouldn't
+   * invalidate a computed that returned that array.
+   *
+   * We seed from `productInfo` on first render and mirror every write back
+   * to it so the parent form's save path still sees the latest state.
+   */
+  media = signal<ProductMedia[]>([]);
+  coverId = signal<string | null>(null);
 
-  coverId = computed<string | null>(() => {
-    void this.version();
-    return this.productInfo().mediaId;
-  });
+  /** Main photo (first in the list), derived from `media`. */
+  firstImage = computed<ProductMedia | null>(() => this.media()[0] ?? null);
+  canAddMore = computed<boolean>(() => this.media().length < ProductGalleryComponent.MAX_IMAGES);
+
+  constructor() {
+    // Seed local state from productInfo after the input is bound.
+    queueMicrotask(() => {
+      const info = this.productInfo();
+      this.media.set([...(info.productMedia ?? [])]);
+      this.coverId.set(info.mediaId ?? info.productMedia?.[0]?.id ?? null);
+    });
+  }
 
   async openPicker(): Promise<void> {
+    if (!this.canAddMore()) return;
+
     const info = this.productInfo();
-    const existingIds = (info.productMedia ?? []).map((m) => m.id);
+    const existingIds = this.media().map((m) => m.id);
     const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
       MediaPickerModalComponent,
       {
         data: {
-          contentTypes:  ['image'],
-          multiple:      true,
-          title:         'Add images',
+          contentTypes:   ['image'],
+          multiple:       true,
+          title:          'Add images',
           preSelectedIds: existingIds,
         },
         size: 'xl',
@@ -74,55 +95,88 @@ export class ProductGalleryComponent {
     const picked = Array.isArray(result) ? result : (result ? [result] : []);
     if (!picked.length) return;
 
-    if (!Array.isArray(info.productMedia)) info.productMedia = [];
-    picked.forEach((p: Media) => {
-      if (!p?.id) return;
-      if (info.productMedia.some((m) => m.id === p.id)) return;
-      info.productMedia.push({
+    // Merge picked items into local state, dedup by id, respect the 5-image cap.
+    const next = [...this.media()];
+    for (const p of picked as Media[]) {
+      if (!p?.id || next.some((m) => m.id === p.id)) continue;
+      if (next.length >= ProductGalleryComponent.MAX_IMAGES) break;
+      next.push({
         id:           p.id ?? '',
         defaultUrl:   p.url?.defaultUrl ?? p.url?.original ?? '',
         thumbnailUrl: p.url?.thumbnail  ?? p.url?.defaultUrl ?? '',
       } as ProductMedia);
-    });
-    // Adopt first image as cover if nothing picked yet.
-    if (!info.mediaId && info.productMedia.length) {
-      this.setCover(info.productMedia[0].id, /* silent */ true);
     }
+    this.media.set(next);
+
+    // First image in the list is the main / cover — always. Old project
+    // semantics: `productMedia[0]` is main, index-0 is the cover.
+    const firstId = next[0]?.id ?? null;
+    if (firstId) this.coverId.set(firstId);
+
+    this.syncToModel();
     this.productForm().markAsDirty();
-    this.version.update((n) => n + 1);
   }
 
-  setCover(id: string, silent = false): void {
-    const info = this.productInfo();
-    const hit = info.productMedia.find((m) => m.id === id);
-    if (!hit) return;
-    info.mediaId = hit.id;
-    info.mediaUrl = {
-      id:           hit.id,
-      defaultUrl:   hit.defaultUrl,
-      thumbnailUrl: hit.thumbnailUrl ?? hit.defaultUrl,
-    } as any;
-    if (!silent) {
-      this.productForm().markAsDirty();
-      this.version.update((n) => n + 1);
-    }
+  /** Promote any image to the first position (becomes the main). */
+  promoteToMain(id: string): void {
+    const list = [...this.media()];
+    const idx = list.findIndex((m) => m.id === id);
+    if (idx <= 0) return; // already main or not found
+    const [hit] = list.splice(idx, 1);
+    list.unshift(hit);
+    this.media.set(list);
+    this.coverId.set(list[0].id);
+    this.syncToModel();
+    this.productForm().markAsDirty();
+  }
+
+  /**
+   * Move a tile one slot earlier (towards position 0). Reads left-to-right,
+   * top-to-bottom in the grid. Whatever ends up at index 0 becomes the new
+   * main photo via `syncToModel`. Boundary-safe: calling on index 0 is a no-op.
+   */
+  moveLeft(id: string): void {
+    this.swapWithOffset(id, -1);
+  }
+
+  /** Move a tile one slot later. No-op if already last. */
+  moveRight(id: string): void {
+    this.swapWithOffset(id, +1);
+  }
+
+  private swapWithOffset(id: string, offset: 1 | -1): void {
+    const list = [...this.media()];
+    const idx = list.findIndex((m) => m.id === id);
+    const target = idx + offset;
+    if (idx < 0 || target < 0 || target >= list.length) return;
+    [list[idx], list[target]] = [list[target], list[idx]];
+    this.media.set(list);
+    this.coverId.set(list[0]?.id ?? null);
+    this.syncToModel();
+    this.productForm().markAsDirty();
   }
 
   removeAt(id: string): void {
-    const info = this.productInfo();
-    info.productMedia = info.productMedia.filter((m) => m.id !== id);
-    if (info.mediaId === id) {
-      const nextCover = info.productMedia[0];
-      info.mediaId = nextCover?.id ?? null;
-      info.mediaUrl = nextCover
-        ? ({ id: nextCover.id, defaultUrl: nextCover.defaultUrl, thumbnailUrl: nextCover.thumbnailUrl } as any)
-        : ({} as any);
-    }
+    const next = this.media().filter((m) => m.id !== id);
+    this.media.set(next);
+    // First remaining image becomes the new main (mirrors old project).
+    this.coverId.set(next[0]?.id ?? null);
+    this.syncToModel();
     this.productForm().markAsDirty();
-    this.version.update((n) => n + 1);
   }
 
-  isCover(id: string): boolean {
-    return this.coverId() === id;
+  isMain(id: string): boolean {
+    return this.firstImage()?.id === id;
+  }
+
+  // ── Sync local state → productInfo so the form's save path picks it up. ─
+  private syncToModel(): void {
+    const info = this.productInfo();
+    info.productMedia = [...this.media()];
+    const first = info.productMedia[0] ?? null;
+    info.mediaId = first?.id ?? null;
+    info.mediaUrl = first
+      ? ({ id: first.id, defaultUrl: first.defaultUrl, thumbnailUrl: first.thumbnailUrl ?? first.defaultUrl } as any)
+      : ({} as any);
   }
 }

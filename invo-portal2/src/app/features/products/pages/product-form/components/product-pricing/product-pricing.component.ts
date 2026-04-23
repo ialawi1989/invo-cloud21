@@ -22,6 +22,8 @@ import { SearchDropdownComponent } from '@shared/components/dropdown/search-drop
 import { DropdownLoadFn, DropdownLoadResult } from '@shared/components/dropdown/search-dropdown.types';
 import { ModalService } from '@shared/modal';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
+import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 
 import { ProductsService } from '../../../../services/products.service';
 import { Product, Tax } from '../../../../models/product-form.model';
@@ -51,7 +53,7 @@ type PriceModel = 'fixedPrice' | 'fixedPriceWOption' | 'totalPrice' | 'totalPric
 @Component({
   selector: 'app-pf-product-pricing',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, MycurrencyPipe, MynumberPipe],
   templateUrl: './product-pricing.component.html',
   styleUrl: './product-pricing.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

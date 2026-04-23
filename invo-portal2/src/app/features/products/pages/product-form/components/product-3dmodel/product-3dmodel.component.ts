@@ -36,17 +36,24 @@ export class Product3dModelComponent {
   productForm   = input.required<FormGroup>();
   fieldsOptions = input<Fields | null>(null);
 
-  private version = signal<number>(0);
+  /**
+   * Local state — see `ProductGalleryComponent` for the rationale. Seeding
+   * from `productInfo` in a microtask ensures we pick up the async-loaded
+   * product data; we then mirror every write back to `productInfo` via
+   * `syncToModel`.
+   */
+  current = signal<ProductImageModel | null>(null);
 
-  currentUrl = computed<string>(() => {
-    void this.version();
-    return this.productInfo().threeDModel?.defaultUrl ?? '';
-  });
-  hasModel = computed(() => !!this.currentUrl());
-  modelName = computed(() => {
-    void this.version();
-    return this.productInfo().threeDModel?.name ?? '';
-  });
+  hasModel  = computed<boolean>(() => !!this.current());
+  currentUrl = computed<string>(() => this.current()?.defaultUrl ?? '');
+  modelName  = computed<string>(() => this.current()?.name ?? '');
+
+  constructor() {
+    queueMicrotask(() => {
+      const info = this.productInfo();
+      this.current.set(info.threeDModel?.id ? info.threeDModel : null);
+    });
+  }
 
   async openPicker(): Promise<void> {
     const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
@@ -60,23 +67,27 @@ export class Product3dModelComponent {
     const picked = Array.isArray(result) ? result[0] : result;
     if (!picked) return;
 
-    const info = this.productInfo();
     const m = new ProductImageModel();
     m.id           = picked.id ?? '';
     m.defaultUrl   = picked.url?.defaultUrl ?? picked.url?.original ?? '';
     m.thumbnailUrl = picked.url?.thumbnail ?? m.defaultUrl;
     m.name         = picked.name;
-    info.threeDModel   = m;
-    info.threeDModelId = m.id ?? '';
+
+    this.current.set(m);
+    this.syncToModel();
     this.productForm().markAsDirty();
-    this.version.update((n) => n + 1);
   }
 
   removeModel(): void {
-    const info = this.productInfo();
-    info.threeDModel   = null;
-    info.threeDModelId = '';
+    this.current.set(null);
+    this.syncToModel();
     this.productForm().markAsDirty();
-    this.version.update((n) => n + 1);
+  }
+
+  private syncToModel(): void {
+    const info = this.productInfo();
+    const m = this.current();
+    info.threeDModel   = m;
+    info.threeDModelId = m?.id ?? '';
   }
 }

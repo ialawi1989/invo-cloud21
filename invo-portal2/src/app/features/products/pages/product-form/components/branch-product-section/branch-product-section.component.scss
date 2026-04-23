@@ -227,8 +227,21 @@
     color: #1e293b;
     min-width: 120px;
   }
+  // ON HAND / UNIT COST cells. The <td> must stay `display: table-cell` or
+  // it leaves the table column layout and the content stacks vertically
+  // under the ON HAND column instead of sitting in its own column. Space
+  // inline children (dot + value + Adjust button) via margin.
   &__stock {
-    display: inline-flex; align-items: center; gap: 8px;
+    white-space: nowrap;
+
+    > .pf-bp-bulk-dot,
+    > .pf-bp-bulk-val,
+    > .pf-chip-btn,
+    > .pf-input--compact {
+      vertical-align: middle;
+    }
+
+    > *:not(:first-child) { margin-inline-start: 8px; }
   }
 }
 

@@ -1,0 +1,56 @@
+<section class="pf-card pf-media">
+  <!-- Tab bar replaces the normal `.pf-card__header` — each tab carries a
+       coloured icon chip + label with an underline indicator for the active
+       one (matches old `<product-image>` tab-navigation). -->
+  <header class="pf-media-tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      class="pf-media-tabs__btn"
+      [class.pf-media-tabs__btn--active]="activeTab() === 'images'"
+      (click)="setTab('images')"
+    >
+      <span class="pf-media-tabs__chip pf-media-tabs__chip--images">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </span>
+      {{ 'PRODUCTS.FORM.IMAGES_TAB' | translate }}
+    </button>
+
+    <button
+      type="button"
+      role="tab"
+      class="pf-media-tabs__btn"
+      [class.pf-media-tabs__btn--active]="activeTab() === 'model'"
+      (click)="setTab('model')"
+    >
+      <span class="pf-media-tabs__chip pf-media-tabs__chip--model">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+          <polyline points="2 17 12 22 22 17"/>
+          <polyline points="2 12 12 17 22 12"/>
+        </svg>
+      </span>
+      {{ 'PRODUCTS.FORM.MODEL_3D_TAB' | translate }}
+    </button>
+  </header>
+
+  <div class="pf-card__body pf-media__body">
+    @if (activeTab() === 'images') {
+      <app-pf-product-gallery
+        [productInfo]="productInfo()"
+        [productForm]="productForm()"
+        [fieldsOptions]="fieldsOptions()"
+      />
+    } @else {
+      <app-pf-product-3dmodel
+        [productInfo]="productInfo()"
+        [productForm]="productForm()"
+        [fieldsOptions]="fieldsOptions()"
+      />
+    }
+  </div>
+</section>

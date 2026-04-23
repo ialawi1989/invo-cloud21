@@ -119,6 +119,9 @@
       "HAS_DIFFERENT_PRICE": "This item has different price in this branch",
       "MANAGE_STOCK":        "Manage Stock",
       "STOCK_EQUATION":      "Available Stock = onHand ({{value}})",
+      "MANAGE_UNIT_COST":    "Manage Unit Cost",
+      "UNIT_COST_EQUATION":  "Unit Cost = {{value}}",
+      "PROFIT_EQUATION":     "Profit = Selling Price ({{sellingPrice}}) - Unit Cost ({{unitCost}}) - Tax Amount ({{taxAmount}})",
       "ADVANCE_PRICING":     "Advance Pricing",
       "SELECTED_PRICING_TYPE":   "Pricing Type",
       "PRICING_TYPE_PLACEHOLDER":"Select a pricing type …",
@@ -204,6 +207,8 @@
 
       "ATTRIBUTES":                 "Attributes",
       "NO_ATTRIBUTES":              "No attributes defined for this product type.",
+      "ATTRIBUTES_SEARCH":          "Search attributes…",
+      "ATTRIBUTES_NO_MATCH":        "No attributes match your search.",
 
       "ALT_PRODUCTS":               "Alternative products",
       "PICK_ALT":                   "Pick alternatives",
@@ -235,7 +240,16 @@
 
       "GALLERY":                    "Image gallery",
       "ADD_IMAGES":                 "Add images",
-      "NO_GALLERY_IMAGES":          "No gallery images yet. The cover image is separate.",
+      "ADD_PHOTO":                  "Add a photo",
+      "NO_GALLERY_IMAGES":          "No images yet — add up to 5. The first image is the main photo.",
+      "GALLERY_MAX_REACHED":        "Maximum of 5 images reached.",
+      "SET_AS_MAIN":                "Set as main photo",
+      "MAIN_PHOTO":                 "Main photo",
+      "MOVE_LEFT":                  "Move earlier",
+      "MOVE_RIGHT":                 "Move later",
+      "MEDIA":                      "Media",
+      "IMAGES_TAB":                 "Images",
+      "MODEL_3D_TAB":               "3D Model",
       "SET_AS_COVER":               "Set as cover",
       "COVER":                      "Cover"
     },

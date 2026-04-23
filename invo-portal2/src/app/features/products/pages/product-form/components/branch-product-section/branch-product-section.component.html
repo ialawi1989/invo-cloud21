@@ -66,7 +66,7 @@
               @if (opt.availableOnline) {
                 <span class="pf-bp-chip pf-bp-chip--info">{{ 'PRODUCTS.FORM.ONLINE' | translate }}</span>
               }
-              <span class="pf-bp-chip pf-bp-chip--count">{{ opt.onHand | number:'1.0-0' }}</span>
+              <span class="pf-bp-chip pf-bp-chip--count">{{ opt.onHand | mynumber:0 }}</span>
             </span>
           </div>
         </ng-template>
@@ -134,7 +134,7 @@
                     <td class="pf-bp-bulk-table__stock">
                       <span class="pf-bp-bulk-dot"
                             [class]="'pf-bp-bulk-dot--' + getStockBadgeClass(row.value['onHand'], row.value['reorderPoint'])"></span>
-                      <span class="pf-bp-bulk-val">{{ row.value['onHand'] | number:'1.0-0' }}</span>
+                      <span class="pf-bp-bulk-val">{{ row.value['onHand'] | mynumber:0 }}</span>
                       @if (productInfo().id && canAdjust) {
                         <button type="button" class="pf-chip-btn pf-chip-btn--sm"
                                 (click)="openStockAdjustModalFor(i)">
@@ -146,7 +146,7 @@
                   @if (fieldsOptions()?.branchProduct?.unitCost?.isVisible && canManageUnitCost) {
                     @if (productInfo().id) {
                       <td class="pf-bp-bulk-table__stock">
-                        <span class="pf-bp-bulk-val">{{ row.value['unitCost'] | number:'1.0-3' }}</span>
+                        <span class="pf-bp-bulk-val">{{ row.value['unitCost'] | mynumber }}</span>
                         @if (canAdjust) {
                           <button type="button" class="pf-chip-btn pf-chip-btn--sm"
                                   (click)="openUnitCostAdjustModalFor(i)">
@@ -221,7 +221,14 @@
       </div>
     }
 
+    <!-- Single-branch panel. Wrapped in `@for` over `[activeTab()]` with a
+         value-based track key so switching branches destroys + recreates the
+         panel — Angular's FormGroupDirective doesn't always rebind cleanly
+         when `[formGroup]` swaps to a different group on the same DOM. This
+         mirrors the old project's `*ngFor + [hidden]` pattern in effect (one
+         set of controls mounted at a time, fresh bindings after switch). -->
     @if (mode() === 'single' && activeGroup(); as grp) {
+    @for (tab of [activeTab()]; track tab) {
       <div class="pf-bp-panel" [formGroup]="grp">
         <!-- Flags row -->
         <div class="pf-row">
@@ -273,8 +280,22 @@
           }
         }
 
-        <!-- Manage Stock (collapsible) — formula hint + onHand read-only + Adjust -->
-        @if (fieldsOptions()?.branchProduct?.onHand?.isVisible) {
+        <!-- Inline On Hand (only when openingBalance is NOT a visible field —
+             i.e. product types that don't use the Manage Stock collapsible.
+             Matches old `branch.component.html` lines 143-157). -->
+        @if (
+          fieldsOptions()?.branchProduct?.onHand?.isVisible &&
+          !fieldsOptions()?.branchProduct?.openingBalance?.isVisible
+        ) {
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.ON_HAND' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="onHand" min="0"/>
+          </div>
+        }
+
+        <!-- Manage Stock (collapsible) — only when openingBalance is visible;
+             otherwise the inline On Hand field above covers the case. -->
+        @if (fieldsOptions()?.branchProduct?.openingBalance?.isVisible) {
           <div class="pf-bp-manage">
             <button type="button" class="pf-bp-manage__toggle"
                     (click)="toggleManageStock(activeTab())">
@@ -303,7 +324,7 @@
                       }
                     </div>
                     <div class="pf-readonly pf-readonly--strong">
-                      {{ ctl('onHand')?.value | number:'1.0-0' }}
+                      {{ ctl('onHand')?.value | mynumber:0 }}
                     </div>
                   </div>
                 } @else {
@@ -327,7 +348,81 @@
           </div>
         }
 
-        <!-- Reorder point / level (row of two) -->
+        <!-- Manage Unit Cost (collapsible) — mirrors old `isCollapsedCost`.
+             Read-only current value + Adjust button for existing products,
+             plain input for new products; gated on both visibility + privilege. -->
+        @if (fieldsOptions()?.branchProduct?.unitCost?.isVisible && canManageUnitCost) {
+          <div class="pf-bp-manage">
+            <button type="button" class="pf-bp-manage__toggle"
+                    (click)="toggleManageCost(activeTab())">
+              {{ 'PRODUCTS.FORM.MANAGE_UNIT_COST' | translate }}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   [class.pf-bp-manage__chev--open]="isManageCostOpen(activeTab())">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <small class="pf-bp-manage__formula">
+              {{ 'PRODUCTS.FORM.UNIT_COST_EQUATION' | translate: { value: ctl('unitCost')?.value ?? 0 } }}
+            </small>
+
+            @if (isManageCostOpen(activeTab())) {
+              <div class="pf-bp-manage__body">
+                @if (productInfo().id) {
+                  <!-- Existing product: 3-col Unit Cost / Profit / Margin row
+                       (mirrors old `branch.component.html` lines 277–327). -->
+                  <div class="pf-row pf-row--thirds">
+                    <div class="pf-field">
+                      <div class="pf-label pf-label--with-action">
+                        <span>{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</span>
+                        @if (canAdjust) {
+                          <button type="button" class="pf-chip-btn"
+                                  (click)="openUnitCostAdjustModalFor(activeTab())">
+                            {{ 'PRODUCTS.PRICING.ADJUST' | translate }}
+                          </button>
+                        }
+                      </div>
+                      <div class="pf-readonly pf-readonly--strong">
+                        {{ ctl('unitCost')?.value | mynumber }}
+                      </div>
+                    </div>
+
+                    <div class="pf-field">
+                      <label class="pf-label">{{ 'PRODUCTS.PRICING.PROFIT' | translate }}</label>
+                      <div class="pf-readonly pf-readonly--strong"
+                           [class.pf-readonly--warn]="activeBranchProfit() < 0">
+                        {{ activeBranchProfit() | mycurrency }}
+                      </div>
+                    </div>
+
+                    <div class="pf-field">
+                      <label class="pf-label">{{ 'PRODUCTS.PRICING.MARGIN' | translate }}</label>
+                      <div class="pf-readonly pf-readonly--strong">
+                        {{ activeBranchMargin() | mynumber }}%
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Formula hint — shows the exact inputs feeding the profit calc. -->
+                  <small class="pf-bp-manage__formula">
+                    {{ 'PRODUCTS.FORM.PROFIT_EQUATION' | translate: {
+                         sellingPrice: (sellingPriceForActive() | mynumber),
+                         unitCost:     (ctl('unitCost')?.value | mynumber),
+                         taxAmount:    (productInfo().taxAmount | mynumber)
+                       } }}
+                  </small>
+                } @else {
+                  <div class="pf-field">
+                    <label class="pf-label">{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</label>
+                    <input type="number" class="pf-input" formControlName="unitCost" min="0"/>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Reorder point / level (row of two) — sits after Manage Unit Cost
+             to match the old project's field order. -->
         @if (fieldsOptions()?.branchProduct?.reorderPoint?.isVisible || fieldsOptions()?.branchProduct?.reorderLevel?.isVisible) {
           <div class="pf-row">
             @if (fieldsOptions()?.branchProduct?.reorderPoint?.isVisible) {
@@ -342,14 +437,6 @@
                 <input type="number" class="pf-input" formControlName="reorderLevel" min="0"/>
               </div>
             }
-          </div>
-        }
-
-        <!-- Per-branch unit cost (only some types expose this) -->
-        @if (fieldsOptions()?.branchProduct?.unitCost?.isVisible && canManageUnitCost) {
-          <div class="pf-field">
-            <label class="pf-label">{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</label>
-            <input type="number" class="pf-input" formControlName="unitCost" min="0"/>
           </div>
         }
 
@@ -445,6 +532,7 @@
           />
         }
       </div>
+    }
     }
   </div>
 </section>

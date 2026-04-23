@@ -23,7 +23,7 @@
 
             @if (hideDefaultPriceInput()) {
               <div class="pf-readonly">
-                <strong>{{ totalPriceForDisplay() | number:'1.0-3' }}</strong>
+                <strong>{{ totalPriceForDisplay() | mycurrency }}</strong>
               </div>
               <p class="pf-hint">{{ 'PRODUCTS.PRICING.PRICE_DERIVED_FROM_SELECTION' | translate }}</p>
             } @else {
@@ -105,7 +105,7 @@
                  product (no id yet) the read-only renders without the
                  Adjust button — the first save records the initial cost. -->
             <div class="pf-readonly pf-readonly--strong">
-              {{ unitCostValue() | number:'1.0-3' }}
+              {{ unitCostValue() | mynumber }}
             </div>
 
             @if (productInfo().isChild) {
@@ -116,7 +116,7 @@
           <div class="pf-field">
             <label class="pf-label">{{ 'PRODUCTS.PRICING.PROFIT' | translate }}</label>
             <div class="pf-readonly pf-readonly--strong" [class.pf-readonly--warn]="profit() < 0">
-              BHD {{ profit() | number:'1.0-3' }}
+              {{ profit() | mycurrency }}
             </div>
             @if (profit() < 0) {
               <p class="pf-error">{{ 'PRODUCTS.PRICING.PROFIT_LOSS_WARN' | translate }}</p>
@@ -125,7 +125,7 @@
 
           <div class="pf-field">
             <label class="pf-label">{{ 'PRODUCTS.PRICING.MARGIN' | translate }}</label>
-            <div class="pf-readonly pf-readonly--strong">{{ margin() | number:'1.0-3' }}%</div>
+            <div class="pf-readonly pf-readonly--strong">{{ margin() | mynumber }}%</div>
           </div>
         </div>
       }

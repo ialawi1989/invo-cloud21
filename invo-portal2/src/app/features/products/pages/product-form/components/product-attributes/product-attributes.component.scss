@@ -1,25 +1,92 @@
 @use '../../_shared-form.scss' as *;
 @include pfCard;
 
-.pf-attr-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 14px;
-}
-
-.pf-attr-row {
+// ── Search input ─────────────────────────────────────────────────────────
+.pf-attr-search {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #0f172a;
-  cursor: pointer;
-  padding: 4px 2px;
+  margin-bottom: 10px;
 
-  input[type="checkbox"] {
-    width: 16px; height: 16px;
-    accent-color: #32acc1;
-    cursor: pointer;
+  svg {
+    position: absolute;
+    inset-inline-start: 10px;
+    color: #94a3b8;
+    pointer-events: none;
   }
-  &__title { min-width: 0; word-break: break-word; }
+
+  input {
+    width: 100%;
+    padding: 8px 10px 8px 32px;
+    padding-inline-start: 32px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    &:focus {
+      outline: none;
+      border-color: #32acc1;
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+    }
+    &::placeholder { color: #94a3b8; }
+  }
+}
+
+// ── Tile grid ────────────────────────────────────────────────────────────
+.pf-attr-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pf-attr-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font: inherit;
+  color: #0f172a;
+  text-align: start;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  &--checked {
+    background: #eff9fb;
+    border-color: #32acc1;
+    box-shadow: 0 0 0 2px rgba(50, 172, 193, 0.15);
+  }
+
+  &__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 0;
+    flex: 1;
+    word-break: break-word;
+  }
+
+  &__check {
+    color: #32acc1;
+    flex-shrink: 0;
+  }
+
+  &__img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
 }

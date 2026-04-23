@@ -118,8 +118,12 @@
 
         <!-- Side column -->
         <aside class="form-col form-col--side">
+          <!-- Gallery + 3D model live in one tabbed card — matches old
+               `<product-image>` wrapper (Images / 3D Model tabs). Pinned
+               to the top of the sidebar since the main photo is the first
+               thing users want to confirm. -->
           @if (fieldsOptions()?.image) {
-            <app-pf-product-image
+            <app-pf-product-media
               [productInfo]="productInfo()"
               [productForm]="productForm"
               [fieldsOptions]="fieldsOptions()"
@@ -190,18 +194,6 @@
             />
           }
 
-          @if (fieldsOptions()?.image) {
-            <app-pf-product-gallery
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-            <app-pf-product-3dmodel
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
         </aside>
       </div>
     </form>

@@ -119,6 +119,9 @@
       "HAS_DIFFERENT_PRICE":   "هذا العنصر له سعر مختلف في هذا الفرع",
       "MANAGE_STOCK":          "إدارة المخزون",
       "STOCK_EQUATION":        "المخزون المتاح = onHand ({{value}})",
+      "MANAGE_UNIT_COST":      "إدارة تكلفة الوحدة",
+      "UNIT_COST_EQUATION":    "تكلفة الوحدة = {{value}}",
+      "PROFIT_EQUATION":       "الربح = سعر البيع ({{sellingPrice}}) - تكلفة الوحدة ({{unitCost}}) - مبلغ الضريبة ({{taxAmount}})",
       "ADVANCE_PRICING":       "التسعير المتقدم",
       "SELECTED_PRICING_TYPE":     "نوع التسعير",
       "PRICING_TYPE_PLACEHOLDER":  "اختر نوع التسعير…",
@@ -204,6 +207,8 @@
 
       "ATTRIBUTES":                 "السمات",
       "NO_ATTRIBUTES":              "لا توجد سمات لهذا النوع من المنتجات.",
+      "ATTRIBUTES_SEARCH":          "ابحث عن سمة…",
+      "ATTRIBUTES_NO_MATCH":        "لا توجد سمات مطابقة للبحث.",
 
       "ALT_PRODUCTS":               "المنتجات البديلة",
       "PICK_ALT":                   "اختيار بدائل",
@@ -235,7 +240,16 @@
 
       "GALLERY":                    "معرض الصور",
       "ADD_IMAGES":                 "إضافة صور",
-      "NO_GALLERY_IMAGES":          "لا توجد صور في المعرض بعد.",
+      "ADD_PHOTO":                  "إضافة صورة",
+      "NO_GALLERY_IMAGES":          "لا توجد صور بعد — يمكنك إضافة حتى 5 صور. أول صورة هي الصورة الرئيسية.",
+      "GALLERY_MAX_REACHED":        "تم الوصول إلى الحد الأقصى وهو 5 صور.",
+      "SET_AS_MAIN":                "تعيين كصورة رئيسية",
+      "MAIN_PHOTO":                 "الصورة الرئيسية",
+      "MOVE_LEFT":                  "تحريك للخلف",
+      "MOVE_RIGHT":                 "تحريك للأمام",
+      "MEDIA":                      "الوسائط",
+      "IMAGES_TAB":                 "الصور",
+      "MODEL_3D_TAB":               "نموذج ثلاثي الأبعاد",
       "SET_AS_COVER":               "تعيين كغلاف",
       "COVER":                      "الغلاف"
     },

@@ -9,15 +9,51 @@
   </header>
 
   <div class="pf-card__body">
-    @if (rows.length === 0) {
-      <p class="pf-hint">{{ 'PRODUCTS.FORM.NO_ATTRIBUTES' | translate }}</p>
+    <!-- Search (title filter — mirrors old project behaviour). -->
+    <label class="pf-attr-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        [value]="search()"
+        (input)="onSearchInput($any($event.target).value)"
+        [placeholder]="'PRODUCTS.FORM.ATTRIBUTES_SEARCH' | translate"
+      />
+    </label>
+
+    @if (visibleRows().length === 0) {
+      <p class="pf-hint">
+        {{ (search() ? 'PRODUCTS.FORM.ATTRIBUTES_NO_MATCH' : 'PRODUCTS.FORM.NO_ATTRIBUTES') | translate }}
+      </p>
     } @else {
-      <div class="pf-attr-list">
-        @for (row of rows.controls; track row.value['key']; let i = $index) {
-          <label class="pf-attr-row" [formGroup]="rowAt(i)">
-            <input type="checkbox" formControlName="checked"/>
-            <span class="pf-attr-row__title">{{ row.value['title'] }}</span>
-          </label>
+      <!-- Click-to-toggle tile grid: each card shows the title + a small
+           attribute icon, selection state marked by a brand border + check. -->
+      <div class="pf-attr-grid">
+        @for (entry of visibleRows(); track entry.group.value['key']) {
+          <button
+            type="button"
+            class="pf-attr-tile"
+            [class.pf-attr-tile--checked]="entry.group.value['checked']"
+            (click)="toggle(entry.index)"
+            [attr.aria-pressed]="entry.group.value['checked']"
+          >
+            <span class="pf-attr-tile__title">
+              {{ entry.group.value['title'] }}
+              @if (entry.group.value['checked']) {
+                <svg class="pf-attr-tile__check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="5 13 9 17 19 7"/>
+                </svg>
+              }
+            </span>
+            <img
+              [src]="iconFor(entry.group.value['key'])"
+              [alt]="entry.group.value['title']"
+              class="pf-attr-tile__img"
+              (error)="onIconError($event)"
+            />
+          </button>
         }
       </div>
     }

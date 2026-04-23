@@ -25,6 +25,8 @@ import { ModalService } from '@shared/modal';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DropdownLoadFn, DropdownLoadResult } from '@shared/components/dropdown/search-dropdown.types';
 import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
+import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 import { ProductsService } from '../../../../services/products.service';
 
 import {
@@ -85,6 +87,8 @@ interface PricingTypeOption { value: PricingType; labelKey: string; }
     BranchPriceByQtyComponent,
     BranchSerialsComponent,
     BranchBatchesComponent,
+    MycurrencyPipe,
+    MynumberPipe,
   ],
   templateUrl: './branch-product-section.component.html',
   styleUrl: './branch-product-section.component.scss',
@@ -141,6 +145,19 @@ export class BranchProductSectionComponent implements OnInit {
     return !!this.manageStockOpen()[i];
   }
 
+  /**
+   * "Manage Unit Cost" collapsible — mirrors the old `isCollapsedCost`
+   * toggle. Shown alongside Manage Stock when the user has
+   * `productSecurity.actions.manageUnitCost.access` + the field is visible.
+   */
+  manageCostOpen = signal<Record<number, boolean>>({});
+  toggleManageCost(i: number): void {
+    this.manageCostOpen.update(m => ({ ...m, [i]: !m[i] }));
+  }
+  isManageCostOpen(i: number): boolean {
+    return !!this.manageCostOpen()[i];
+  }
+
   /** Pricing-type dropdown options — mirror old `branch.component.html` lines 467–479. */
   readonly PRICING_TYPE_OPTIONS: PricingTypeOption[] = [
     { value: '',             labelKey: 'PRODUCTS.FORM.PRICING_NONE' },
@@ -186,6 +203,11 @@ export class BranchProductSectionComponent implements OnInit {
 
   /** Items fed to the branch-picker dropdown. Label carries status + onHand. */
   branchOptions = computed<Array<{ value: number; label: string; onHand: number; available: boolean; availableOnline: boolean }>>(() => {
+    // `rows` is a plain class property (FormArray), not a signal — track the
+    // tick so this computed re-runs when the rows are rebuilt in ngOnInit
+    // and on every value change afterwards. Without this, a computed that
+    // early-returns before reading any signal would be cached forever.
+    void this.rowsTick();
     if (!this.rows) return [];
     return this.rows.controls.map((g, i) => {
       const v: any = g.value;
@@ -235,6 +257,10 @@ export class BranchProductSectionComponent implements OnInit {
 
     this.rows = this.fb.array(info.branchProduct.map((b) => this.buildRow(b)));
     this.productForm().setControl('branchProduct', this.rows);
+    // Fire the tick immediately so computeds that depend on `this.rows`
+    // (`activeGroup`, `branchOptions`, …) pick up the freshly-built array
+    // on the very next CD pass instead of waiting for the first value edit.
+    this.rowsTick.update(n => n + 1);
 
     // Keep productInfo.branchProduct in sync with FormArray values so model
     // getters (checkBranchPrice…Empty, etc.) keep reporting fresh values.
@@ -339,13 +365,20 @@ export class BranchProductSectionComponent implements OnInit {
       ),
     );
 
+    // `has_different_price` isn't always persisted by the backend — the old
+    // project derives it on edit as "the branch overrode the default price
+    // iff branch.price > 0". Mirror that so re-opening an edited product
+    // keeps the checkbox checked and the price field visible.
+    const hasDifferentPrice = !!b.has_different_price ||
+      (b.price != null && Number(b.price) > 0);
+
     return this.fb.group({
       branchId:            [b.branchId ?? ''],
       branchName:          [b.branchName ?? ''],
       available:           [b['available'] ?? true],
       availableOnline:     [b['availableOnline'] ?? true],
-      has_different_price: [!!b.has_different_price],
-      price:               [b.price ?? null, [Validators.min(0)]],
+      has_different_price: [hasDifferentPrice],
+      price:               [b.price ?? null, hasDifferentPrice ? [Validators.required, Validators.min(0)] : [Validators.min(0)]],
       selectedPricingType: [(b.selectedPricingType ?? '') as PricingType],
       buyDownPrice:        [b.buyDownPrice ?? null, [Validators.min(0)]],
       buyDownQty:          [b.buyDownQty ?? null,   [Validators.min(0)]],
@@ -471,8 +504,15 @@ export class BranchProductSectionComponent implements OnInit {
 
 
   activeGroup = computed<FormGroup | null>(() => {
+    // Read `rowsTick` first so the computed has a live dependency even
+    // when `this.rows` is still undefined on the very first template pass.
+    // Without this, the early null-return would register zero signal deps
+    // and cache the null value forever — that's the "refresh once, data
+    // disappears until refresh twice" race we hit before.
+    void this.rowsTick();
+    const idx = this.activeTab();
     if (!this.rows) return null;
-    const grp = this.rows.at(this.activeTab()) as FormGroup | undefined;
+    const grp = this.rows.at(idx) as FormGroup | undefined;
     return grp ?? null;
   });
 
@@ -496,6 +536,42 @@ export class BranchProductSectionComponent implements OnInit {
   hasDifferentPriceValue = computed<boolean>(() => {
     this.rowsTick();
     return !!this.activeGroup()?.controls['has_different_price']?.value;
+  });
+
+  /**
+   * Selling price used for profit / margin: the branch override if
+   * `has_different_price` is set, otherwise the product's defaultPrice.
+   * Mirrors the old project's `productInfo.branchProduct[i].getProfitValue`
+   * args + the `PROFIT_EQUATION` template expression.
+   */
+  sellingPriceForActive = computed<number>(() => {
+    this.rowsTick();
+    const grp = this.activeGroup();
+    const info = this.productInfo();
+    if (!grp) return Number(info.defaultPrice ?? 0);
+    const v = grp.value as any;
+    const override = v.has_different_price ? Number(v.price ?? 0) : NaN;
+    return Number.isFinite(override) ? override : Number(info.defaultPrice ?? 0);
+  });
+
+  /** Per-branch profit — Selling Price − Tax Amount (if inclusive) − Unit Cost. */
+  activeBranchProfit = computed<number>(() => {
+    this.rowsTick();
+    const grp = this.activeGroup();
+    const info = this.productInfo();
+    if (!grp) return 0;
+    const unitCost = Number(grp.value['unitCost'] ?? 0);
+    let sellingPrice = this.sellingPriceForActive();
+    if ((info as any).isInclusiveTax) sellingPrice -= Number(info.taxAmount ?? 0);
+    return sellingPrice - unitCost;
+  });
+
+  /** Margin % = Profit / Selling Price × 100. */
+  activeBranchMargin = computed<number>(() => {
+    const price = this.sellingPriceForActive();
+    if (!price) return 0;
+    const m = (this.activeBranchProfit() / price) * 100;
+    return Number.isFinite(m) ? m : 0;
   });
 
   setPricingType(type: PricingType): void {

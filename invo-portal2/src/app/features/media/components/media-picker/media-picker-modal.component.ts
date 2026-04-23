@@ -358,6 +358,53 @@ type PickerTab = 'library' | 'upload';
     }
     .multi-summary-delete:hover { background:#fef2f2; }
 
+    /* ── Mobile (≤640px) ───────────────────────────────────────────────
+       Stack main + sidebar vertically and collapse the "X files selected"
+       summary into a compact horizontal bar pinned below the grid so it
+       doesn't steal vertical space from the list.
+    */
+    @media (max-width: 640px) {
+      .library-row { flex-direction: column; overflow: auto; }
+
+      /* Main grid area takes all remaining height; sidebar flows below. */
+      .body { overflow: visible; padding: 14px 16px; }
+
+      .sidebar,
+      .sidebar-empty {
+        width: 100%;
+        min-width: 0;
+        flex-shrink: 0;
+        border-inline-start: 0;
+        border-top: 1px solid #e2e8f0;
+        padding: 0;
+      }
+      .sidebar-empty { display: none; }
+
+      /* Single-item detail: shrink the preview so it doesn't eat the viewport. */
+      .sidebar-preview { aspect-ratio: auto; height: 160px; }
+      .sidebar-name    { padding: 12px 16px 4px; }
+
+      /* Multi-select summary → one-line bar with inline "Clear selection". */
+      .multi-summary {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 16px;
+        height: auto;
+        text-align: start;
+      }
+      .multi-summary-header { font-size: 14px; }
+      .multi-summary-size {
+        display: none; /* hide total-size on mobile — count is the useful bit */
+      }
+      .multi-summary-delete {
+        margin-top: 0;
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+    }
+
     /* Single item delete */
     .sidebar-delete-btn {
       display:flex; align-items:center; justify-content:center; gap:6px;

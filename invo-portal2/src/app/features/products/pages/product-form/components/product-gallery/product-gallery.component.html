@@ -12,45 +12,109 @@
   </header>
 
   <div class="pf-card__body">
-    <button type="button" class="pf-btn pf-btn--outline" (click)="openPicker()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-      {{ 'PRODUCTS.FORM.ADD_IMAGES' | translate }}
-    </button>
+    <!-- Layout (matches old project's <product-gallery>):
+         • Main image renders as a wide hero tile with the "Main photo" badge.
+         • Images 2..5 render as a smaller 2-column thumbnail grid beneath.
+         • "Add a photo" is another grid tile (not a button at the top),
+           only rendered while under the 5-image cap. Clicking it opens
+           the same picker. -->
 
-    @if (media().length === 0) {
-      <p class="pf-hint">{{ 'PRODUCTS.FORM.NO_GALLERY_IMAGES' | translate }}</p>
-    } @else {
-      <div class="pf-gallery-grid">
-        @for (m of media(); track m.id) {
-          <div class="pf-gallery-tile" [class.pf-gallery-tile--cover]="isCover(m.id)">
-            <img [src]="m.thumbnailUrl || m.defaultUrl" alt="" class="pf-gallery-img"/>
-            <div class="pf-gallery-actions">
-              @if (!isCover(m.id)) {
-                <button
-                  type="button"
-                  class="pf-gallery-btn"
-                  (click)="setCover(m.id)"
-                  [attr.aria-label]="'PRODUCTS.FORM.SET_AS_COVER' | translate"
-                  [title]="'PRODUCTS.FORM.SET_AS_COVER' | translate"
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                  </svg>
-                </button>
-              }
+    <!-- Grid of tiles. Reorder via explicit left/right arrow buttons (drag-
+         drop was fragile across device types / CDK preview sizing). Whatever
+         sits at index 0 is the main photo — `syncToModel` writes mediaId /
+         mediaUrl after every swap. The star button is a shortcut that jumps
+         straight to position 0 (useful when the thumb is several slots deep). -->
+    <div class="pf-gallery-grid">
+      @for (m of media(); track m.id; let i = $index; let first = $first; let last = $last) {
+        <div
+          class="pf-gallery-tile"
+          [class.pf-gallery-tile--hero]="first"
+        >
+          <img [src]="m.defaultUrl || m.thumbnailUrl"
+               alt=""
+               class="pf-gallery-img"/>
+
+          @if (first) {
+            <span class="pf-gallery-main-badge">{{ 'PRODUCTS.FORM.MAIN_PHOTO' | translate }}</span>
+          }
+
+          <div class="pf-gallery-actions">
+            @if (!first) {
               <button
                 type="button"
-                class="pf-gallery-btn pf-gallery-btn--danger"
-                (click)="removeAt(m.id)"
-                [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
-              >✕</button>
-            </div>
-            @if (isCover(m.id)) { <span class="pf-gallery-cover-badge">{{ 'PRODUCTS.FORM.COVER' | translate }}</span> }
+                class="pf-gallery-btn"
+                (click)="promoteToMain(m.id)"
+                [attr.aria-label]="'PRODUCTS.FORM.SET_AS_MAIN' | translate"
+                [title]="'PRODUCTS.FORM.SET_AS_MAIN' | translate"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </button>
+            }
+            <button
+              type="button"
+              class="pf-gallery-btn pf-gallery-btn--danger"
+              (click)="removeAt(m.id)"
+              [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+            >✕</button>
           </div>
-        }
-      </div>
+
+          <!-- Move arrows pinned to the bottom-left corner so they're
+               always discoverable. Left-arrow disabled on index 0; right-
+               arrow disabled on the last tile. -->
+          <div class="pf-gallery-reorder">
+            <button
+              type="button"
+              class="pf-gallery-btn pf-gallery-btn--sq"
+              (click)="moveLeft(m.id)"
+              [disabled]="first"
+              [attr.aria-label]="'PRODUCTS.FORM.MOVE_LEFT' | translate"
+              [title]="'PRODUCTS.FORM.MOVE_LEFT' | translate"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="rtl:rotate-180">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="pf-gallery-btn pf-gallery-btn--sq"
+              (click)="moveRight(m.id)"
+              [disabled]="last"
+              [attr.aria-label]="'PRODUCTS.FORM.MOVE_RIGHT' | translate"
+              [title]="'PRODUCTS.FORM.MOVE_RIGHT' | translate"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="rtl:rotate-180">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- "Add a photo" tile — stays outside draggable reordering but lives
+           at the end of the grid. Stretches full-width when the gallery
+           is empty so it reads as the primary CTA. -->
+      @if (canAddMore()) {
+        <button
+          type="button"
+          class="pf-gallery-add-tile"
+          [class.pf-gallery-add-tile--empty]="media().length === 0"
+          (click)="openPicker()"
+        >
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3Z"/>
+            <circle cx="12" cy="13" r="3.5"/>
+            <line x1="20" y1="7"  x2="20" y2="11"/>
+            <line x1="18" y1="9"  x2="22" y2="9"/>
+          </svg>
+          <span>{{ 'PRODUCTS.FORM.ADD_PHOTO' | translate }}</span>
+        </button>
+      }
+    </div>
+
+    @if (!canAddMore()) {
+      <p class="pf-hint pf-hint--info">{{ 'PRODUCTS.FORM.GALLERY_MAX_REACHED' | translate }}</p>
     }
   </div>
 </section>

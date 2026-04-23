@@ -38,7 +38,6 @@ import { CommonFieldsComponent }         from './components/common-fields/common
 import { ProductPricingComponent }       from './components/product-pricing/product-pricing.component';
 import { InventoryDetailsComponent }     from './components/inventory-details/inventory-details.component';
 import { CategoryOptionsComponent }      from './components/category-options/category-options.component';
-import { ProductImageComponent }         from './components/product-image/product-image.component';
 import { SupplierListProductComponent }  from './components/supplier-list-product/supplier-list-product.component';
 import { BranchProductSectionComponent } from './components/branch-product-section/branch-product-section.component';
 import { KitBuilderComponent }           from './components/kit-builder/kit-builder.component';
@@ -53,8 +52,7 @@ import { FoodNutritionComponent }        from './components/food-nutrition/food-
 import { ShippingOptionsComponent }      from './components/shipping-options/shipping-options.component';
 import { ProductCustomFieldsComponent }  from './components/product-custom-fields/product-custom-fields.component';
 import { AliasBarcodesComponent }        from './components/alias-barcodes/alias-barcodes.component';
-import { Product3dModelComponent }       from './components/product-3dmodel/product-3dmodel.component';
-import { ProductGalleryComponent }       from './components/product-gallery/product-gallery.component';
+import { ProductMediaCardComponent }     from './components/product-media/product-media.component';
 import { ProductTabBuilderSectionComponent } from './components/tab-builder/tab-builder-section.component';
 import { ProductFormSkeletonComponent } from './components/product-form-skeleton/product-form-skeleton.component';
 
@@ -85,7 +83,6 @@ type FormStatus = 'new' | 'edit';
     ProductPricingComponent,
     InventoryDetailsComponent,
     CategoryOptionsComponent,
-    ProductImageComponent,
     SupplierListProductComponent,
     BranchProductSectionComponent,
     KitBuilderComponent,
@@ -100,8 +97,7 @@ type FormStatus = 'new' | 'edit';
     ShippingOptionsComponent,
     ProductCustomFieldsComponent,
     AliasBarcodesComponent,
-    Product3dModelComponent,
-    ProductGalleryComponent,
+    ProductMediaCardComponent,
     ProductTabBuilderSectionComponent,
     ProductFormSkeletonComponent,
   ],

@@ -1,0 +1,78 @@
+@use '../../_shared-form.scss' as *;
+@include pfCard;
+
+// The embedded Gallery + 3D components bring their own <section class="pf-card">
+// — strip the inner card chrome so we see only ONE framed card.
+:host ::ng-deep app-pf-product-gallery .pf-card,
+:host ::ng-deep app-pf-product-3dmodel .pf-card {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+:host ::ng-deep app-pf-product-gallery .pf-card__header,
+:host ::ng-deep app-pf-product-3dmodel .pf-card__header {
+  display: none;
+}
+:host ::ng-deep app-pf-product-gallery .pf-card__body,
+:host ::ng-deep app-pf-product-3dmodel .pf-card__body {
+  padding: 0;
+}
+
+.pf-media__body {
+  padding: 18px;
+}
+
+// Tab bar as the card's header — prominent icon chips with labels and an
+// underline indicator on the active tab. Matches the old project layout.
+.pf-media-tabs {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fff;
+
+  &__btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 120ms ease;
+
+    &:hover { color: #334155; }
+
+    // Active-underline indicator.
+    &--active {
+      color: #0f172a;
+      font-weight: 600;
+    }
+    &--active::after {
+      content: '';
+      position: absolute;
+      inset-inline: 18px;
+      bottom: -1px;
+      height: 2px;
+      background: #32acc1;
+      border-radius: 2px;
+    }
+  }
+
+  // Coloured icon chip per tab (teal for images, green for 3D model) —
+  // same palette convention the sidebar uses so the tabs feel familiar.
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+
+    &--images { background: #d9f2f6; color: #0e7490; }
+    &--model  { background: #dcfce7; color: #15803d; }
+  }
+}
