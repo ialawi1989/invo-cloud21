@@ -1,0 +1,157 @@
+:host { display: block; }
+
+.bt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  background: #f1f5f9;            // matches the Single Branch / Bulk Edit toggle track
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  min-height: 40px;
+  overflow: hidden;                // never let tabs leak a scrollbar
+
+  &__tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  &__spacer { flex: 1; min-width: 4px; }
+
+  // ── Tab ─────────────────────────────────────────────────────────
+  &__tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 32px;
+    padding: 0 10px 0 12px;
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    font-size: 12.5px;
+    color: #64748b;
+    cursor: pointer;
+    overflow: hidden;
+    max-width: 200px;
+    transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
+
+    &:hover { background: rgba(255, 255, 255, 0.6); color: #334155; }
+
+    &--active {
+      background: #fff;
+      color: #0f172a;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+    &--active:hover { background: #fff; }
+    &--active &__close { color: #64748b; }
+  }
+
+  // Compact mode kicks in when 6–8 tabs are open.
+  &--compact &__tab {
+    min-width: 80px;
+    max-width: 140px;
+    padding: 0 8px 0 10px;
+  }
+
+  &__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid #cbd5e1;
+    flex-shrink: 0;
+  }
+  &__dot--on { background: #22c55e; border-color: #22c55e; }
+  &__tab--active &__dot {
+    border-color: #32acc1;
+    &.bt__dot--on { background: #22c55e; border-color: #22c55e; }
+  }
+
+  &__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: #94a3b8;
+    cursor: pointer;
+    flex-shrink: 0;
+    opacity: 0.7;
+    transition: background 120ms ease, color 120ms ease, opacity 120ms ease;
+
+    &:hover { background: rgba(220, 38, 38, 0.1); color: #b91c1c; opacity: 1; }
+  }
+  &__tab:hover &__close,
+  &__tab--active &__close { opacity: 1; }
+
+  // ── Find pill ───────────────────────────────────────────────────
+  &__find {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    background: #fff;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+
+    &:hover { color: #0f172a; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1); }
+    &[aria-expanded="true"] {
+      background: #eff6f8;
+      border-color: #32acc1;
+      color: #0e7c8a;
+    }
+
+    svg { color: #94a3b8; transition: color 120ms ease; }
+    &:hover svg { color: #475569; }
+    &[aria-expanded="true"] svg { color: #0e7c8a; }
+  }
+  &__find-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  &__find-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    margin-inline-start: 2px;
+    font-size: 10.5px;
+    font-weight: 600;
+    background: #e0f7fa;
+    color: #0e7c8a;
+    border-radius: 9px;
+  }
+
+  // Mobile: collapse the find label, keep the icon + counter.
+  @media (max-width: 540px) {
+    &__find-label { display: none; }
+  }
+}

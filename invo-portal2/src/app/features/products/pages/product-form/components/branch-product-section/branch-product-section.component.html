@@ -41,37 +41,13 @@
     </div>
   }
 
-  <!-- Branch picker (single mode) -->
+  <!-- Branch picker (single mode) — pinned tabs + searchable overflow popover -->
   @if (!initializing() && mode() === 'single' && rows && rows.length > 0) {
-    <div class="pf-bp-picker">
-      <label class="pf-label">{{ 'PRODUCTS.FORM.SELECT_BRANCH' | translate }}</label>
-      <app-search-dropdown
-        [items]="branchOptions()"
-        [displayWith]="branchDisplay"
-        [compareWith]="branchCompare"
-        [value]="selectedBranchOption()"
-        (valueChange)="onBranchPicked($event)"
-        [searchable]="branchOptions().length > 5"
-        [clearable]="false"
-        [placeholder]="'PRODUCTS.FORM.SELECT_BRANCH' | translate"
-      >
-        <!-- Custom row: name + status chips + onHand badge -->
-        <ng-template #item let-opt>
-          <div class="pf-bp-option">
-            <span class="pf-bp-option__name">{{ opt.label }}</span>
-            <span class="pf-bp-option__meta">
-              @if (opt.available) {
-                <span class="pf-bp-chip pf-bp-chip--good">{{ 'PRODUCTS.FORM.AVAILABLE' | translate }}</span>
-              }
-              @if (opt.availableOnline) {
-                <span class="pf-bp-chip pf-bp-chip--info">{{ 'PRODUCTS.FORM.ONLINE' | translate }}</span>
-              }
-              <span class="pf-bp-chip pf-bp-chip--count">{{ opt.onHand | mynumber:0 }}</span>
-            </span>
-          </div>
-        </ng-template>
-      </app-search-dropdown>
-    </div>
+    <app-pf-branch-tabs
+      class="pf-bp-tabs"
+      [branches]="branchDirectory()"
+      (activeChange)="onBranchTabChange($event)"
+    />
   }
 
   <!-- Panel -->

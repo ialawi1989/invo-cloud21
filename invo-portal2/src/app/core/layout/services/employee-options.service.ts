@@ -20,10 +20,24 @@ export interface ListPreference {
   columns: ListColumnPref[];
 }
 
+/**
+ * Persisted state for a single instance of the branch-tabs UX. Multiple
+ * call sites can use the tabs component simultaneously (each with its own
+ * pinned/recent/open lists) by providing a unique namespace via
+ * `provideBranchTabs(namespace)`.
+ */
+export interface BranchTabsPreference {
+  openTabIds:  string[];
+  activeTabId: string | null;
+  pinnedIds:   string[];
+}
+
 export interface EmployeeOptions {
   sidebar?: SidebarOptions;
   /** Per-entity list preferences, keyed by entity type (e.g. 'product'). */
   lists?: { [entityType: string]: ListPreference };
+  /** Per-namespace branch-tabs preferences (e.g. 'productForm.branches'). */
+  branchTabs?: { [namespace: string]: BranchTabsPreference };
 }
 
 @Injectable({ providedIn: 'root' })

@@ -1,0 +1,71 @@
+<div class="bt" [class.bt--compact]="compact()">
+  <!-- Open tabs -->
+  <div class="bt__tabs" role="tablist">
+    @for (tab of visibleTabs(); track tab.id) {
+      <button
+        type="button"
+        role="tab"
+        class="bt__tab"
+        [class.bt__tab--active]="isActive(tab.id)"
+        [attr.aria-selected]="isActive(tab.id)"
+        [title]="tab.name"
+        (click)="selectTab(tab.id)"
+      >
+        <span class="bt__dot" [class.bt__dot--on]="tab.isOnline" aria-hidden="true"></span>
+        <span class="bt__name">{{ tab.name }}</span>
+        <button
+          type="button"
+          class="bt__close"
+          (click)="closeTab($event, tab.id)"
+          [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+          tabindex="-1"
+        >
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </button>
+    }
+  </div>
+
+  <!-- Spacer pushes the find pill to the end -->
+  <div class="bt__spacer"></div>
+
+  <!-- Find pill — opens the searchable popover -->
+  <button
+    #findTrigger
+    type="button"
+    class="bt__find"
+    cdkOverlayOrigin
+    #findOrigin="cdkOverlayOrigin"
+    [attr.aria-expanded]="popoverOpen()"
+    (click)="togglePopover()"
+  >
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <span class="bt__find-label">{{ 'PRODUCTS.FORM.BRANCH_TABS_FIND' | translate }}</span>
+    @if (hiddenCount() > 0) {
+      <span class="bt__find-count">+{{ hiddenCount() }}</span>
+    }
+  </button>
+
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="findOrigin"
+    [cdkConnectedOverlayOpen]="popoverOpen()"
+    [cdkConnectedOverlayHasBackdrop]="true"
+    cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+    [cdkConnectedOverlayPositions]="[
+      { originX: 'end',   originY: 'bottom', overlayX: 'end',   overlayY: 'top',    offsetY: 6 },
+      { originX: 'end',   originY: 'top',    overlayX: 'end',   overlayY: 'bottom', offsetY: -6 },
+      { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top',    offsetY: 6 }
+    ]"
+    (backdropClick)="closePopover()"
+    (detach)="closePopover()"
+  >
+    <app-pf-find-branch-popover (closed)="closePopover()"/>
+  </ng-template>
+</div>

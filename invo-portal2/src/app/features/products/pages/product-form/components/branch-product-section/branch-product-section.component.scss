@@ -43,40 +43,14 @@
   }
 }
 
-// Branch picker row
-.pf-bp-picker {
-  padding: 14px 18px;
+// Branch tabs strip — replaces the legacy .pf-bp-picker dropdown row.
+// Sits under the card header; the strip itself is the visual container, so
+// the wrapper just provides breathing room and a faint separator before the
+// per-branch panel below.
+.pf-bp-tabs {
+  display: block;
+  padding: 14px 18px 12px;
   border-bottom: 1px solid #f1f5f9;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-// Custom dropdown row
-.pf-bp-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-
-  &__name { font-weight: 500; color: #1e293b; }
-  &__meta { display: inline-flex; gap: 4px; align-items: center; }
-}
-
-.pf-bp-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .3px;
-
-  &--good  { background: #dcfce7; color: #166534; }
-  &--info  { background: #e0f2fe; color: #075985; }
-  &--count { background: #f1f5f9; color: #334155; }
 }
 
 .pf-bp-skeleton {

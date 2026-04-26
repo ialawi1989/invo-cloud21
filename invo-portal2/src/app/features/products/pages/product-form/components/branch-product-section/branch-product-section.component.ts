@@ -46,6 +46,8 @@ import { Fields } from '../../../../models/product-fields.model';
 import { BranchPriceByQtyComponent } from './branch-price-by-qty/branch-price-by-qty.component';
 import { BranchSerialsComponent }    from './branch-serials/branch-serials.component';
 import { BranchBatchesComponent }    from './branch-batches/branch-batches.component';
+import { BranchTabsComponent }       from './branch-tabs/branch-tabs.component';
+import { BranchTabRef, provideBranchTabs } from './branch-tabs/branch-tabs.service';
 
 type PricingType = '' | 'buyDownPrice' | 'priceBoundary' | 'priceByQty' | 'openPrice';
 
@@ -88,12 +90,17 @@ interface PricingTypeOption { value: PricingType; labelKey: string; }
     BranchPriceByQtyComponent,
     BranchSerialsComponent,
     BranchBatchesComponent,
+    BranchTabsComponent,
     MycurrencyPipe,
     MynumberPipe,
   ],
   templateUrl: './branch-product-section.component.html',
   styleUrl: './branch-product-section.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Each call site of <app-pf-branch-tabs> declares its own namespace so its
+  // open/pinned/active state is persisted independently of any other place
+  // that mounts the component.
+  providers: [provideBranchTabs('productForm.branches')],
 })
 export class BranchProductSectionComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -250,32 +257,40 @@ export class BranchProductSectionComponent implements OnInit {
     return out;
   });
 
-  /** Items fed to the branch-picker dropdown. Label carries status + onHand. */
-  branchOptions = computed<Array<{ value: number; label: string; onHand: number; available: boolean; availableOnline: boolean }>>(() => {
-    // `rows` is a plain class property (FormArray), not a signal — track the
-    // tick so this computed re-runs when the rows are rebuilt in ngOnInit
-    // and on every value change afterwards. Without this, a computed that
-    // early-returns before reading any signal would be cached forever.
+  /**
+   * Branch directory feeding the new tabs/popover UI. Derived from the
+   * current FormArray rows so it always reflects the live state of
+   * `available` / `availableOnline` toggles. The `id` here is the
+   * `branchId` UUID — the tabs UI persists by id, so it must remain
+   * stable across rebuilds (which is true for already-saved branches).
+   */
+  branchDirectory = computed<BranchTabRef[]>(() => {
     void this.rowsTick();
     if (!this.rows) return [];
-    return this.rows.controls.map((g, i) => {
-      const v: any = g.value;
-      return {
-        value: i,
-        label: v.branchName || 'Branch',
-        onHand: Number(v.onHand ?? 0),
-        available: !!v.available,
-        availableOnline: !!v.availableOnline,
-      };
-    });
+    return this.rows.controls
+      .map((g) => {
+        const v: any = g.value;
+        return {
+          id:       String(v.branchId ?? ''),
+          name:     v.branchName || 'Branch',
+          isOnline: !!v.availableOnline,
+        } as BranchTabRef;
+      })
+      .filter((b) => !!b.id);
   });
 
-  branchDisplay = (opt: any): string => opt?.label ?? '';
+  /** Kept — still used as `compareWith` on the pricing-type dropdown below. */
   branchCompare = (a: any, b: any): boolean => (a?.value ?? a) === (b?.value ?? b);
 
-  selectedBranchOption = computed(() =>
-    this.branchOptions().find(o => o.value === this.activeTab()) ?? null,
-  );
+  /**
+   * Bridge from the tabs component (branchId-based) to the existing
+   * index-based `activeTab` signal that drives the rest of this component.
+   */
+  onBranchTabChange(branchId: string): void {
+    if (!this.rows) return;
+    const idx = this.rows.controls.findIndex((g) => g.value['branchId'] === branchId);
+    if (idx >= 0 && idx !== this.activeTab()) this.activeTab.set(idx);
+  }
 
   hasAnyDifferentPrice = computed<boolean>(() =>
     this.productInfo().branchProduct.some((b: any) => b.has_different_price),
@@ -575,13 +590,6 @@ export class BranchProductSectionComponent implements OnInit {
     if (i < 0 || i >= this.rows.length) return;
     this.activeTab.set(i);
   }
-
-  /** Dropdown handler — receives the full option object (or its `value`). */
-  onBranchPicked(opt: any): void {
-    const idx = typeof opt === 'object' ? opt?.value : opt;
-    if (typeof idx === 'number') this.changeTab(idx);
-  }
-
 
   activeGroup = computed<FormGroup | null>(() => {
     // Read `rowsTick` first so the computed has a live dependency even

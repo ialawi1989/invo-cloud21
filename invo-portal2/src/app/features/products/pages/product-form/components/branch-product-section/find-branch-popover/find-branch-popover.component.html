@@ -1,0 +1,106 @@
+<div class="fbp">
+  <!-- Search -->
+  <div class="fbp__search">
+    <svg class="fbp__search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input
+      #searchInput
+      type="text"
+      class="fbp__search-input"
+      [value]="search()"
+      (input)="onSearchInput($any($event.target).value)"
+      [placeholder]="'PRODUCTS.FORM.BRANCH_TABS_SEARCH' | translate"
+    />
+  </div>
+
+  <div class="fbp__body">
+    <!-- Pinned -->
+    @if (pinned().length > 0) {
+      <div class="fbp__section">
+        <h4 class="fbp__section-title">{{ 'PRODUCTS.FORM.BRANCH_TABS_PINNED' | translate }}</h4>
+        <ul class="fbp__list">
+          @for (b of pinned(); track b.id) {
+            <li class="fbp__row" (click)="pick(b)">
+              <button
+                type="button"
+                class="fbp__pin fbp__pin--on"
+                (click)="togglePin($event, b.id)"
+                [attr.aria-label]="'PRODUCTS.FORM.BRANCH_TABS_UNPIN' | translate"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2l2.5 6 6.5 1-5 4 1.5 7-5.5-3-5.5 3 1.5-7-5-4 6.5-1z"/>
+                </svg>
+              </button>
+              <span class="fbp__name">{{ b.name }}</span>
+              <span class="fbp__pill" [class.fbp__pill--on]="b.isOnline">
+                {{ (b.isOnline ? 'PRODUCTS.FORM.ONLINE' : 'PRODUCTS.FORM.BRANCH_TABS_OFFLINE') | translate }}
+              </span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Recent -->
+    @if (recent().length > 0) {
+      <div class="fbp__section">
+        <h4 class="fbp__section-title">{{ 'PRODUCTS.FORM.BRANCH_TABS_RECENT' | translate }}</h4>
+        <ul class="fbp__list">
+          @for (b of recent(); track b.id) {
+            <li class="fbp__row" (click)="pick(b)">
+              <button
+                type="button"
+                class="fbp__pin"
+                [class.fbp__pin--on]="isPinned(b.id)"
+                (click)="togglePin($event, b.id)"
+                [attr.aria-label]="(isPinned(b.id) ? 'PRODUCTS.FORM.BRANCH_TABS_UNPIN' : 'PRODUCTS.FORM.BRANCH_TABS_PIN') | translate"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" [attr.fill]="isPinned(b.id) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2l2.5 6 6.5 1-5 4 1.5 7-5.5-3-5.5 3 1.5-7-5-4 6.5-1z"/>
+                </svg>
+              </button>
+              <span class="fbp__name">{{ b.name }}</span>
+              <span class="fbp__pill" [class.fbp__pill--on]="b.isOnline">
+                {{ (b.isOnline ? 'PRODUCTS.FORM.ONLINE' : 'PRODUCTS.FORM.BRANCH_TABS_OFFLINE') | translate }}
+              </span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- All -->
+    @if (all().length > 0) {
+      <div class="fbp__section">
+        <h4 class="fbp__section-title">{{ 'PRODUCTS.FORM.BRANCH_TABS_ALL' | translate }}</h4>
+        <ul class="fbp__list">
+          @for (b of all(); track b.id) {
+            <li class="fbp__row" (click)="pick(b)">
+              <button
+                type="button"
+                class="fbp__pin"
+                [class.fbp__pin--on]="isPinned(b.id)"
+                (click)="togglePin($event, b.id)"
+                [attr.aria-label]="(isPinned(b.id) ? 'PRODUCTS.FORM.BRANCH_TABS_UNPIN' : 'PRODUCTS.FORM.BRANCH_TABS_PIN') | translate"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" [attr.fill]="isPinned(b.id) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2l2.5 6 6.5 1-5 4 1.5 7-5.5-3-5.5 3 1.5-7-5-4 6.5-1z"/>
+                </svg>
+              </button>
+              <span class="fbp__name">{{ b.name }}</span>
+              <span class="fbp__pill" [class.fbp__pill--on]="b.isOnline">
+                {{ (b.isOnline ? 'PRODUCTS.FORM.ONLINE' : 'PRODUCTS.FORM.BRANCH_TABS_OFFLINE') | translate }}
+              </span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    @if (!hasAnyMatch()) {
+      <p class="fbp__empty">{{ 'PRODUCTS.FORM.BRANCH_TABS_NO_MATCH' | translate }}</p>
+    }
+  </div>
+</div>
