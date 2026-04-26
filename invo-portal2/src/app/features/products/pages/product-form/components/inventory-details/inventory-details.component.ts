@@ -108,12 +108,15 @@ export class InventoryDetailsComponent implements OnInit {
 
   loadParentProducts: DropdownLoadFn<DropdownItem> = async ({ page, pageSize, search }) => {
     const info = this.productInfo();
+    // Only pin the selected parent row on the first page-1, empty-search call.
+    // Scroll/search fetches drop the id for clean pagination.
+    const initial = page === 1 && !search;
     const res = await this.productsService.getChildProducts({
       page,
       pageSize,
       search,
       productId: info.id || null,
-      parentId: info.parentId || null,
+      parentId: initial ? (info.parentId || null) : null,
     });
     return { items: res.items as DropdownItem[], hasMore: res.hasMore } as DropdownLoadResult<DropdownItem>;
   };
@@ -222,4 +225,6 @@ export class InventoryDetailsComponent implements OnInit {
   uomDisplay = (v: UomItem | string): string => (typeof v === 'string' ? v : v.label);
   displayLabel = (item: any): string => item?.label ?? String(item ?? '');
   compareByValue = (a: any, b: any): boolean => (a?.value ?? a) === (b?.value ?? b);
+  /** Persist only the parent-product UUID to the form. */
+  toValueId = (item: any): string => item?.value ?? '';
 }

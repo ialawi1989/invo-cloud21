@@ -4,6 +4,7 @@ import {
   DestroyRef,
   OnInit,
   computed,
+  effect,
   inject,
   input,
   signal,
@@ -115,6 +116,32 @@ export class BranchProductSectionComponent implements OnInit {
   readonly canManageUnitCost = this.privileges.check('productSecurity.actions.manageUnitCost.access');
   readonly canViewStockValue = this.privileges.check('productSecurity.actions.viewStockValue.access');
 
+  /**
+   * Mirrors the old project's `productInfo.branchesUnitCost != null` gate —
+   * the Manage Unit Cost collapsible is only meaningful when the backend has
+   * populated per-branch cost overrides. For products with uniform costs
+   * (null list) the section is hidden; branch cost is edited via the main
+   * pricing card instead.
+   */
+  hasBranchesUnitCost = computed<boolean>(() => {
+    const list = this.productInfo().branchesUnitCost;
+    return Array.isArray(list) && list.length > 0;
+  });
+
+  constructor() {
+    // Whenever the active branch changes (including the initial mount once
+    // rows are built), prefetch its locations if it has a saved
+    // `locationId`. This makes the Location trigger resolve its label on
+    // first paint — before the user ever opens the dropdown. Safe no-op
+    // when the branch has no selection or when the cache is already warm.
+    effect(() => {
+      // Read both signals so the effect re-runs on either change.
+      const idx = this.activeTab();
+      void this.rowsTick();
+      if (this.rows) this.prefetchLocationsFor(idx);
+    });
+  }
+
   productInfo   = input.required<Product>();
   productForm   = input.required<FormGroup>();
   fieldsOptions = input<Fields | null>(null);
@@ -200,6 +227,28 @@ export class BranchProductSectionComponent implements OnInit {
   activeBranchName = computed<string>(() =>
     this.productInfo().branchProduct[this.activeTab()]?.branchName ?? '',
   );
+
+  /**
+   * Set of serial strings (lowercased) that belong to branches OTHER than the
+   * currently-active one. The serials editor uses this to warn when the user
+   * tries to add a serial that already exists elsewhere in the product — old
+   * project behaviour (checkNameSerialExistsInAnotherBranch).
+   */
+  otherBranchesSerials = computed<Set<string>>(() => {
+    this.rowsTick();
+    const active = this.activeTab();
+    const out = new Set<string>();
+    if (!this.rows) return out;
+    this.rows.controls.forEach((grp, i) => {
+      if (i === active) return;
+      const serials = (grp.value['serials'] ?? []) as Array<{ serial?: string }>;
+      serials.forEach((s) => {
+        const v = String(s?.serial ?? '').trim().toLowerCase();
+        if (v) out.add(v);
+      });
+    });
+    return out;
+  });
 
   /** Items fed to the branch-picker dropdown. Label carries status + onHand. */
   branchOptions = computed<Array<{ value: number; label: string; onHand: number; available: boolean; availableOnline: boolean }>>(() => {
@@ -346,9 +395,10 @@ export class BranchProductSectionComponent implements OnInit {
     const serialsArr = this.fb.array(
       (b.serials ?? []).map((s: any) =>
         this.fb.group({
-          serial:     [s.serial ?? ''],
-          unitCost:   [s.unitCost ?? null, [Validators.required, Validators.min(0)]],
-          expireDate: [s.expireDate ? new Date(s.expireDate) : null],
+          serial:    [s.serial ?? ''],
+          status:    [s.status ?? 'Available'],
+          invoiceId: [s.invoiceId ?? ''],
+          unitCost:  [s.unitCost ?? null, [Validators.required, Validators.min(0)]],
         }),
       ),
     );
@@ -409,8 +459,11 @@ export class BranchProductSectionComponent implements OnInit {
   loadLocations: DropdownLoadFn<{ label: string; value: string }> = async ({ page, pageSize, search }) => {
     const grp = this.activeGroup();
     if (!grp) return { items: [], hasMore: false };
-    const branchId   = grp.value['branchId'] as string;
-    const locationId = (grp.value['locationId'] as string | null) ?? null;
+    const branchId = grp.value['branchId'] as string;
+    // Only pin the selected location on the first page-1, empty-search call.
+    // On scroll / search the id is dropped so the backend paginates cleanly.
+    const selected = (grp.value['locationId'] as string | null) ?? null;
+    const locationId = page === 1 && !search ? selected : null;
     const res = await this.productsService.getInventoryLocationsList({
       page, pageSize, search, branchId, locationId,
     });
@@ -424,6 +477,30 @@ export class BranchProductSectionComponent implements OnInit {
     }
     return { items: res.items, hasMore: res.hasMore } as DropdownLoadResult<{ label: string; value: string }>;
   };
+
+  /**
+   * Prefetch the location list for a branch that already has a selected
+   * `locationId` — otherwise the dropdown shows an empty trigger until the
+   * user opens it. Skips if the cache already has entries or if there's
+   * nothing selected. Fires on mount (for the initial active branch) and
+   * on every `activeTab` change (wired via the constructor's `effect`).
+   */
+  private async prefetchLocationsFor(branchIdx: number): Promise<void> {
+    if (!this.rows || branchIdx < 0 || branchIdx >= this.rows.length) return;
+    const grp = this.rows.at(branchIdx) as FormGroup;
+    const branchId   = grp.value['branchId'] as string | undefined;
+    const locationId = grp.value['locationId'] as string | null | undefined;
+    if (!branchId || !locationId) return;
+    if ((this.locationListRaw()[branchId] ?? []).length > 0) return;
+    try {
+      const res = await this.productsService.getInventoryLocationsList({
+        page: 1, pageSize: 20, search: '', branchId, locationId,
+      });
+      this.locationListRaw.update(m => ({ ...m, [branchId]: res.raw as any[] }));
+    } catch {
+      // Silent — the user can still open the dropdown to trigger the loader.
+    }
+  }
 
   /**
    * Resolves a locationId string to a human label by looking through the
@@ -441,6 +518,8 @@ export class BranchProductSectionComponent implements OnInit {
     }
     return String(item ?? '');
   };
+  /** Persist only the location UUID to the form, not the `{label, value}` option. */
+  toValueId = (item: any): string => item?.value ?? '';
 
   private syncBackToModel(): void {
     const info = this.productInfo();
@@ -470,9 +549,10 @@ export class BranchProductSectionComponent implements OnInit {
         price: r.price ?? null,
       }));
       target.serials = (v.serials ?? []).map((s: any) => ({
-        serial:     s.serial ?? '',
-        unitCost:   s.unitCost ?? null,
-        expireDate: s.expireDate ? this.toIsoDate(s.expireDate) : null,
+        serial:    s.serial ?? '',
+        status:    s.status ?? 'Available',
+        invoiceId: s.invoiceId ?? '',
+        unitCost:  s.unitCost ?? null,
       }));
       target.batches = (v.batches ?? []).map((b: any) => ({
         batch:      b.batch ?? '',

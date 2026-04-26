@@ -53,6 +53,7 @@
               [loadFn]="loadParentProducts"
               [displayWith]="displayLabel"
               [compareWith]="compareByValue"
+              [toValue]="toValueId"
               [placeholder]="'PRODUCTS.FORM.CHOOSE_PARENT_PRODUCT' | translate"
             />
             @if (c('parentId').touched && c('parentId').errors?.['required']) {

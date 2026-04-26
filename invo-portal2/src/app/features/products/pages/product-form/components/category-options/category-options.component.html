@@ -23,6 +23,7 @@
           [loadFn]="loadDepartments"
           [displayWith]="displayLabel"
           [compareWith]="compareByValue"
+          [toValue]="toValueId"
           [placeholder]="'PRODUCTS.FORM.SELECT_DEPARTMENT' | translate"
         />
         @if (c('departmentId').touched && c('departmentId').errors?.['required']) {
@@ -43,6 +44,7 @@
           [loadFn]="loadCategories"
           [displayWith]="displayLabel"
           [compareWith]="compareByValue"
+          [toValue]="toValueId"
           [placeholder]="'PRODUCTS.FORM.SELECT_CATEGORY' | translate"
         />
         @if (c('categoryId').touched && c('categoryId').errors?.['required']) {
@@ -62,6 +64,7 @@
           [loadFn]="loadBrands"
           [displayWith]="displayLabel"
           [compareWith]="compareByValue"
+          [toValue]="toValueId"
           [placeholder]="'PRODUCTS.FORM.SELECT_BRAND' | translate"
         />
         @if (c('brandId').touched && c('brandId').errors?.['required']) {

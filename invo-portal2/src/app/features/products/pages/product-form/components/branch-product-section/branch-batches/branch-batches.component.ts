@@ -47,7 +47,15 @@ export class BranchBatchesComponent {
   search       = signal<string>('');
   error        = signal<string>('');
 
+  /**
+   * Ticks on every FormArray mutation from within this component.
+   * `array()` returns the same FormArray reference after push/removeAt, so
+   * computeds that iterate `controls` need a separate signal dep to re-run.
+   */
+  private arrayTick = signal(0);
+
   visibleIndices = computed<number[]>(() => {
+    this.arrayTick();
     const term = this.search().trim().toLowerCase();
     const out: number[] = [];
     this.array().controls.forEach((row, i) => {
@@ -94,12 +102,14 @@ export class BranchBatchesComponent {
     this.array().push(grp);
     this.array().markAsDirty();
     this.newBatchName.set('');
+    this.arrayTick.update(n => n + 1);
   }
 
   removeAt(i: number): void {
     if (i < 0 || i >= this.array().length) return;
     this.array().removeAt(i);
     this.array().markAsDirty();
+    this.arrayTick.update(n => n + 1);
   }
 
   rowAt(i: number): FormGroup {

@@ -1,0 +1,262 @@
+@if (hasAnyVisible()) {
+<section class="pf-card" [formGroup]="group">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.PRODUCT_OPTIONS' | translate }}</h2>
+  </header>
+
+  <div class="pf-card__body">
+    <!-- ── Order by weight ─────────────────────────────────────────────── -->
+    @if (showOrderByWeight()) {
+      <div class="pf-field">
+        <label class="pf-switch-row">
+          <input type="checkbox" formControlName="orderByWeight"/>
+          <span class="pf-switch"><span class="pf-switch__track"></span></span>
+          <span class="pf-switch-row__label">
+            {{ 'PRODUCTS.FORM.ORDER_BY_WEIGHT' | translate }}
+            @if (productInfo().UOM) { <span class="pf-muted">({{ productInfo().UOM }})</span> }
+          </span>
+        </label>
+      </div>
+    }
+
+    <!-- ── Discountable in POS ────────────────────────────────────────── -->
+    @if (showDiscountableInPOS()) {
+      <div class="pf-field">
+        <label class="pf-switch-row">
+          <input type="checkbox" formControlName="discountableInPOS"/>
+          <span class="pf-switch"><span class="pf-switch__track"></span></span>
+          <span class="pf-switch-row__label">{{ 'PRODUCTS.FORM.DISCOUNTABLE' | translate }}</span>
+        </label>
+      </div>
+    }
+
+    <!-- ── Max items per ticket ───────────────────────────────────────── -->
+    @if (showMaxItemPerTicket()) {
+      <div class="pf-field">
+        <label for="pf-max-per-ticket" class="pf-label">
+          {{ 'PRODUCTS.FORM.MAX_ITEM_PER_TICKET' | translate }}
+        </label>
+        <input
+          id="pf-max-per-ticket"
+          type="number"
+          class="pf-input"
+          formControlName="maxItemPerTicket"
+          min="0"
+          [placeholder]="'PRODUCTS.FORM.MAX_ITEM_PER_TICKET' | translate"
+        />
+        @if ((c('maxItemPerTicket')?.value ?? 0) === 0) {
+          <p class="pf-hint">{{ 'PRODUCTS.FORM.ZERO_MEANS_UNLIMITED' | translate }}</p>
+        }
+      </div>
+    }
+
+    <!-- ── Preparation time (exclusive with serviceTime by fieldsOptions) ── -->
+    @if (showPreparationTime()) {
+      <div class="pf-field">
+        <label for="pf-prep-time" class="pf-label">{{ 'PRODUCTS.FORM.PREPARATION_TIME' | translate }}</label>
+        <input
+          id="pf-prep-time"
+          type="number"
+          class="pf-input"
+          formControlName="preparationTime"
+          [min]="minServiceTime"
+        />
+        @if (c('preparationTime')?.touched && c('preparationTime')?.errors?.['min']) {
+          <p class="pf-error">{{ 'PRODUCTS.FORM.MIN_VALUE' | translate: { value: minServiceTime } }}</p>
+        }
+      </div>
+    }
+
+    <!-- ── Service time (service type) ────────────────────────────────── -->
+    @if (showServiceTime()) {
+      <div class="pf-field">
+        <label for="pf-service-time" class="pf-label">{{ 'PRODUCTS.FORM.SERVICE_DURATION' | translate }}</label>
+        <input
+          id="pf-service-time"
+          type="number"
+          class="pf-input"
+          formControlName="serviceTime"
+          [min]="minServiceTime"
+        />
+        @if (c('serviceTime')?.touched && c('serviceTime')?.errors?.['min']) {
+          <p class="pf-error">{{ 'PRODUCTS.FORM.MIN_VALUE' | translate: { value: minServiceTime } }}</p>
+        }
+      </div>
+    }
+
+    <!-- ── Kitchen name (menu-item print) ────────────────────────────── -->
+    @if (showKitchenName()) {
+      <div class="pf-field">
+        <label for="pf-kitchen-name" class="pf-label">{{ 'PRODUCTS.FORM.KITCHEN_NAME' | translate }}</label>
+        <input
+          id="pf-kitchen-name"
+          type="text"
+          class="pf-input"
+          formControlName="kitchenName"
+          [placeholder]="'PRODUCTS.FORM.KITCHEN_NAME' | translate"
+        />
+      </div>
+    }
+
+    <!-- ── Tags (chip input with autocomplete) ──────────────────────── -->
+    @if (showTags()) {
+      <div class="pf-field pf-field--tags">
+        <label class="pf-label">
+          {{ 'PRODUCTS.FORM.TAGS' | translate }}
+          <span class="pf-hint pf-hint--inline">{{ 'PRODUCTS.FORM.TAGS_HINT' | translate }}</span>
+        </label>
+        <div class="pf-chips">
+          @for (t of tags(); track t.value; let i = $index) {
+            <span class="pf-chip">
+              {{ t.display }}
+              <button type="button" class="pf-chip__remove"
+                      (click)="removeTagAt(i)"
+                      [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate">✕</button>
+            </span>
+          }
+          <input
+            type="text"
+            class="pf-chips__input"
+            [value]="tagInput()"
+            (input)="onTagInput($any($event.target).value)"
+            (focus)="onTagFocus()"
+            (blur)="onTagBlur()"
+            (keydown)="onTagKeydown($event)"
+            [placeholder]="tags().length === 0 ? ('PRODUCTS.FORM.ADD_TAG_PLACEHOLDER' | translate) : ''"
+          />
+        </div>
+        @if (tagDropdownOpen() && tagSuggestions().length > 0) {
+          <ul class="pf-chips__dropdown">
+            @for (s of tagSuggestions(); track s.tag) {
+              <li class="pf-chips__dropdown-item"
+                  (mousedown)="pickSuggestion(s.tag)">
+                {{ s.tag }}
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+
+    <!-- ── Warning textarea ─────────────────────────────────────────── -->
+    @if (showWarning()) {
+      <div class="pf-field">
+        <label for="pf-warning" class="pf-label">{{ 'PRODUCTS.FORM.WARNING' | translate }}</label>
+        <textarea
+          id="pf-warning"
+          class="pf-input pf-input--textarea"
+          rows="3"
+          formControlName="warning"
+          [placeholder]="'PRODUCTS.FORM.WARNING_PLACEHOLDER' | translate"
+        ></textarea>
+      </div>
+    }
+
+    <!-- ── Item message textarea ─────────────────────────────────────── -->
+    @if (showItemMessage()) {
+      <div class="pf-field">
+        <label for="pf-item-message" class="pf-label">{{ 'PRODUCTS.FORM.ITEM_MESSAGE' | translate }}</label>
+        <textarea
+          id="pf-item-message"
+          class="pf-input pf-input--textarea"
+          rows="3"
+          formControlName="itemMessage"
+          [placeholder]="'PRODUCTS.FORM.ITEM_MESSAGE' | translate"
+        ></textarea>
+      </div>
+    }
+
+    <!-- ── After-service description (service type) ─────────────────── -->
+    @if (showAfterServiceDesc()) {
+      <div class="pf-field">
+        <label for="pf-after-service" class="pf-label">{{ 'PRODUCTS.FORM.AFTER_SERVICE_DESCRIPTION' | translate }}</label>
+        <textarea
+          id="pf-after-service"
+          class="pf-input pf-input--textarea"
+          rows="3"
+          formControlName="afterServiceDescription"
+          [placeholder]="'PRODUCTS.FORM.AFTER_SERVICE_DESCRIPTION' | translate"
+        ></textarea>
+      </div>
+    }
+
+    <!-- ── Purchase item + account ──────────────────────────────────── -->
+    @if (showPurchaseItem()) {
+      <div class="pf-field pf-field--divider">
+        <label class="pf-switch-row">
+          <input type="checkbox" formControlName="isPurchaseItem"/>
+          <span class="pf-switch"><span class="pf-switch__track"></span></span>
+          <span class="pf-switch-row__label">{{ 'PRODUCTS.FORM.IS_PURCHASE_ITEM' | translate }}</span>
+        </label>
+      </div>
+      @if (c('isPurchaseItem')?.value && purchaseReady() && purchaseItems().length > 0) {
+        <div class="pf-field">
+          <label class="pf-label">
+            {{ 'PRODUCTS.FORM.SELECT_AN_ACCOUNT' | translate }}
+          </label>
+          <app-search-dropdown
+            [items]="purchaseItems()"
+            [value]="selectedPurchase()"
+            (valueChange)="onPurchasePicked($event)"
+            [displayWith]="accountDisplay"
+            [compareWith]="compareByValue"
+            [placeholder]="'PRODUCTS.FORM.SELECT_AN_ACCOUNT' | translate"
+          >
+            <!-- Subtle parent-type tag on each row so the flattened list
+                 still reads as grouped. -->
+            <ng-template #item let-opt>
+              <div class="pf-acc-opt">
+                <span class="pf-acc-opt__name">{{ opt.label }}</span>
+                @if (opt.group) {
+                  <span class="pf-acc-opt__group">{{ opt.group }}</span>
+                }
+              </div>
+            </ng-template>
+          </app-search-dropdown>
+        </div>
+      }
+    }
+
+    <!-- ── Sale item + account ──────────────────────────────────────── -->
+    @if (showSaleItem()) {
+      <div class="pf-field">
+        <label class="pf-switch-row">
+          <input type="checkbox" formControlName="isSaleItem"/>
+          <span class="pf-switch"><span class="pf-switch__track"></span></span>
+          <span class="pf-switch-row__label">{{ 'PRODUCTS.FORM.IS_SALE_ITEM' | translate }}</span>
+        </label>
+      </div>
+      @if (c('isSaleItem')?.value && saleReady() && saleItems().length > 0) {
+        <div class="pf-field">
+          <label class="pf-label">
+            {{ 'PRODUCTS.FORM.SELECT_AN_ACCOUNT' | translate }}
+          </label>
+          <app-search-dropdown
+            [items]="saleItems()"
+            [value]="selectedSale()"
+            (valueChange)="onSalePicked($event)"
+            [displayWith]="accountDisplay"
+            [compareWith]="compareByValue"
+            [placeholder]="'PRODUCTS.FORM.SELECT_AN_ACCOUNT' | translate"
+          >
+            <ng-template #item let-opt>
+              <div class="pf-acc-opt">
+                <span class="pf-acc-opt__name">{{ opt.label }}</span>
+                @if (opt.group) {
+                  <span class="pf-acc-opt__group">{{ opt.group }}</span>
+                }
+              </div>
+            </ng-template>
+          </app-search-dropdown>
+        </div>
+      }
+    }
+  </div>
+</section>
+}

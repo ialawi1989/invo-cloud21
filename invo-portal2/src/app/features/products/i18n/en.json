@@ -155,10 +155,19 @@
       "PRICE_BY_QTY":            "Price by quantity",
       "NO_PRICE_BY_QTY_ROWS":    "No price tiers yet — add a quantity / price pair to get started.",
 
-      "SERIALS":                 "Serials",
-      "SERIAL_NUMBER":           "Serial number",
-      "NO_SERIALS_YET":          "No serials added for this branch yet.",
-      "SERIAL_DUPLICATE":        "This serial is already in the list.",
+      "SERIALS":                       "Serials",
+      "SERIAL_NUMBER":                 "Serial number",
+      "NO_SERIALS_YET":                "No serials added for this branch yet.",
+      "NO_SERIALS_MATCH":              "No serials match your filter.",
+      "SERIAL_DUPLICATE":              "This serial is already in the list.",
+      "SERIAL_DUPLICATE_OTHER_BRANCH": "This serial already exists in another branch.",
+      "ADD_AND_MANAGE_SERIALS":        "Add and manage serials.",
+      "SERIAL_TO_ADD":                 "Serial to add",
+      "FILTER_ALL":                    "All",
+      "SOLD":                          "Sold",
+      "GENERATE_BARCODE":              "Generate barcode",
+      "SHOW_INVOICE":                  "Show invoice",
+      "CONFIRM_DELETE_SELECTED_SERIALS": "Delete {{count}} selected serial(s)? This cannot be undone.",
       "EXPIRE_DATE":             "Expiry date",
       "PICK_DATE":               "Pick a date",
 
@@ -223,6 +232,7 @@
       "SHIPPING":                   "Shipping",
       "SHIPPING_ENABLED":           "Ships to customers",
       "WEIGHT":                     "Weight",
+      "SHIPPING_WEIGHT":            "Shipping Weight",
       "WEIGHT_UOM":                 "Weight unit",
 
       "CUSTOM_FIELDS":              "Custom fields",
@@ -240,6 +250,25 @@
 
       "GALLERY":                    "Image gallery",
       "ADD_IMAGES":                 "Add images",
+      "PRODUCT_OPTIONS":            "Product options",
+      "ORDER_BY_WEIGHT":            "Order by weight",
+      "DISCOUNTABLE":               "Discountable in POS",
+      "MAX_ITEM_PER_TICKET":        "Max items per ticket",
+      "ZERO_MEANS_UNLIMITED":       "Set to 0 for unlimited.",
+      "PREPARATION_TIME":           "Preparation time (minutes)",
+      "SERVICE_DURATION":           "Service duration (minutes)",
+      "MIN_VALUE":                  "Minimum value is {{ value }}.",
+      "KITCHEN_NAME":               "Kitchen name",
+      "TAGS":                       "Tags",
+      "TAGS_HINT":                  "Type a tag and press Enter.",
+      "ADD_TAG_PLACEHOLDER":        "Add a tag…",
+      "WARNING":                    "Warning",
+      "WARNING_PLACEHOLDER":        "Shown to staff before the item is sold.",
+      "ITEM_MESSAGE":               "Item message",
+      "AFTER_SERVICE_DESCRIPTION":  "After-service description",
+      "IS_PURCHASE_ITEM":           "I purchase this item",
+      "IS_SALE_ITEM":               "I sell this item",
+      "SELECT_AN_ACCOUNT":          "Select an account",
       "ADD_PHOTO":                  "Add a photo",
       "NO_GALLERY_IMAGES":          "No images yet — add up to 5. The first image is the main photo.",
       "GALLERY_MAX_REACHED":        "Maximum of 5 images reached.",
@@ -433,6 +462,9 @@
     }
   },
   "COMMON": {
+    "CONFIRM":             "Confirm",
+    "CONFIRM_CANT_REVERT": "This action cannot be undone.",
+    "TOTAL":               "Total",
     "ACTIONS": {
       "EDIT": "Edit",
       "DELETE": "Delete",
@@ -442,7 +474,9 @@
       "EXPORT": "Export",
       "REFRESH": "Refresh",
       "COPY": "Copy",
-      "VIEW": "View"
+      "VIEW": "View",
+      "ACTION": "Action",
+      "SEARCH": "Search"
     }
   },
   "TAB_BUILDER": {

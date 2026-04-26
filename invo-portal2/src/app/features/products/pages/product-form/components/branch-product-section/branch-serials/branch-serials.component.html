@@ -1,83 +1,235 @@
 <div class="bs">
+  <!-- Header: title + subtitle + quick-add input -->
   <div class="bs__header">
-    <h3 class="bs__title">
-      {{ 'PRODUCTS.FORM.SERIALS' | translate }}
-      <span class="bs__count">({{ array().length }})</span>
-    </h3>
-  </div>
+    <div class="bs__header-text">
+      <h3 class="bs__title">
+        {{ 'PRODUCTS.FORM.SERIALS' | translate }}
+        <span class="bs__count">{{ array().length }}</span>
+      </h3>
+      <p class="bs__subtitle">{{ 'PRODUCTS.FORM.ADD_AND_MANAGE_SERIALS' | translate }}</p>
+    </div>
 
-  <!-- Add serial + search -->
-  <div class="bs__controls">
     <div class="bs__add">
       <input
         type="text"
-        class="pf-input"
+        class="pf-input bs__add-input"
+        [class.pf-input--invalid]="error() !== ''"
         [value]="newSerial()"
         (input)="onNewSerialInput($any($event.target).value)"
         (keyup.enter)="addSerial()"
-        [placeholder]="'PRODUCTS.FORM.SERIAL_NUMBER' | translate"
+        [placeholder]="'PRODUCTS.FORM.SERIAL_TO_ADD' | translate"
       />
       <button
         type="button"
         class="bs__add-btn"
         (click)="addSerial()"
         [disabled]="!newSerial().trim()"
+        [attr.aria-label]="'COMMON.ADD' | translate"
       >
-        {{ 'COMMON.ADD' | translate }}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
       </button>
     </div>
-    @if (array().length > 0) {
+  </div>
+
+  @if (error() === 'DUPLICATE') {
+    <p class="pf-error bs__error">{{ 'PRODUCTS.FORM.SERIAL_DUPLICATE' | translate }}</p>
+  } @else if (error() === 'DUPLICATE_OTHER_BRANCH') {
+    <p class="pf-error bs__error">{{ 'PRODUCTS.FORM.SERIAL_DUPLICATE_OTHER_BRANCH' | translate }}</p>
+  }
+
+  <!-- Controls: filter + search -->
+  <div class="bs__controls">
+    <div class="bs__filter">
+      <app-search-dropdown
+        [items]="STATUS_OPTIONS"
+        [displayWith]="$any(statusDisplay)"
+        [compareWith]="$any(statusCompare)"
+        [searchable]="false"
+        [clearable]="false"
+        [value]="$any(selectedStatusOption())"
+        (valueChange)="onStatusFilterChange($any($event))"
+      />
+    </div>
+
+    <div class="bs__search-wrap">
+      <svg class="bs__search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
       <input
         type="text"
         class="pf-input bs__search"
         [value]="search()"
         (input)="onSearchInput($any($event.target).value)"
-        [placeholder]="'COMMON.SEARCH' | translate"
+        [placeholder]="'COMMON.ACTIONS.SEARCH' | translate"
       />
-    }
+    </div>
   </div>
-  @if (error() === 'DUPLICATE') {
-    <p class="pf-error">{{ 'PRODUCTS.FORM.SERIAL_DUPLICATE' | translate }}</p>
+
+  <!-- Bulk actions row (sits below the search input) -->
+  @if (selectedCount() > 0) {
+    <div class="bs__bulk-actions">
+      <button
+        type="button"
+        class="bs__delete-selected"
+        (click)="deleteSelected()"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        {{ 'PRODUCTS.ACTIONS.DELETE_SELECTED' | translate }} ({{ selectedCount() }})
+      </button>
+    </div>
   }
 
-  <!-- Rows -->
-  @if (visibleIndices().length === 0) {
-    <p class="bs__empty">{{ 'PRODUCTS.FORM.NO_SERIALS_YET' | translate }}</p>
-  } @else {
-    <div class="bs__head">
-      <span>{{ 'PRODUCTS.FORM.SERIAL_NUMBER' | translate }}</span>
-      <span>{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</span>
-      <span>{{ 'PRODUCTS.FORM.EXPIRE_DATE' | translate }}</span>
-      <span></span>
-    </div>
-    @for (idx of visibleIndices(); track idx) {
-      <div class="bs__row" [formGroup]="rowAt(idx)">
-        <input
-          type="text"
-          class="pf-input"
-          formControlName="serial"
-          [class.pf-input--invalid]="rowAt(idx).controls['serial'].touched && rowAt(idx).controls['serial'].invalid"
-        />
-        <input
-          type="number"
-          class="pf-input"
-          formControlName="unitCost"
-          min="0"
-          [class.pf-input--invalid]="rowAt(idx).controls['unitCost'].touched && rowAt(idx).controls['unitCost'].invalid"
-        />
-        <app-date-picker formControlName="expireDate" [placeholder]="'PRODUCTS.FORM.PICK_DATE' | translate"/>
-        <button
-          type="button"
-          class="bs__remove"
-          (click)="removeAt(idx)"
-          [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-          </svg>
-        </button>
-      </div>
-    }
-  }
+  <!-- Table -->
+  <div class="bs__table-wrap">
+    <table class="bs__table">
+      <thead>
+        <tr>
+          <th class="bs__th bs__th--check">
+            <label class="bs__check">
+              <input
+                type="checkbox"
+                [checked]="isAllSelected()"
+                [disabled]="visibleIndices().length === 0"
+                (change)="toggleSelectAll()"
+              />
+              <span class="bs__check-box"></span>
+            </label>
+          </th>
+          <th class="bs__th">{{ 'PRODUCTS.FORM.SERIAL_NUMBER' | translate }}</th>
+          <th class="bs__th">{{ 'COMMON.STATUS' | translate }}</th>
+          <th class="bs__th">{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</th>
+          <th class="bs__th bs__th--actions">{{ 'COMMON.ACTIONS.ACTION' | translate }}</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @if (visibleIndices().length === 0) {
+          <tr>
+            <td colspan="5" class="bs__empty">
+              @if (array().length === 0) {
+                {{ 'PRODUCTS.FORM.NO_SERIALS_YET' | translate }}
+              } @else {
+                {{ 'PRODUCTS.FORM.NO_SERIALS_MATCH' | translate }}
+              }
+            </td>
+          </tr>
+        } @else {
+          @for (idx of visibleIndices(); track idx) {
+            <tr
+              class="bs__row"
+              [class.bs__row--selected]="isRowSelected(idx)"
+              [formGroup]="rowAt(idx)"
+            >
+              <td class="bs__td bs__td--check">
+                <label class="bs__check">
+                  <input
+                    type="checkbox"
+                    [checked]="isRowSelected(idx)"
+                    (change)="toggleRow(idx)"
+                  />
+                  <span class="bs__check-box"></span>
+                </label>
+              </td>
+
+              <td class="bs__td bs__td--serial">
+                <span class="bs__serial-text">{{ rowAt(idx).value['serial'] }}</span>
+              </td>
+
+              <td class="bs__td">
+                @if (rowAt(idx).value['status'] === 'Sold') {
+                  <span class="bs__chip bs__chip--sold">{{ 'PRODUCTS.FORM.SOLD' | translate }}</span>
+                } @else {
+                  <span class="bs__chip bs__chip--avail">{{ 'PRODUCTS.FORM.AVAILABLE' | translate }}</span>
+                }
+              </td>
+
+              <td class="bs__td bs__td--cost">
+                <input
+                  type="number"
+                  class="pf-input pf-input--compact"
+                  formControlName="unitCost"
+                  min="0"
+                  [class.pf-input--invalid]="rowAt(idx).controls['unitCost'].touched && rowAt(idx).controls['unitCost'].invalid"
+                  [class.pf-input--warn]="rowAt(idx).value['unitCost'] === 0"
+                />
+                @if (rowAt(idx).value['unitCost'] === 0) {
+                  <small class="bs__warn">{{ 'PRODUCTS.PRICING.ITEM_WILL_BE_FREE' | translate }}</small>
+                }
+              </td>
+
+              <td class="bs__td bs__td--actions">
+                <div class="bs__actions">
+                  <button
+                    type="button"
+                    class="bs__icon-btn bs__icon-btn--primary"
+                    (click)="onBarcode(idx)"
+                    [attr.aria-label]="'PRODUCTS.FORM.GENERATE_BARCODE' | translate"
+                    [title]="'PRODUCTS.FORM.GENERATE_BARCODE' | translate"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="5" width="1" height="14"/>
+                      <rect x="6" y="5" width="2" height="14"/>
+                      <rect x="10" y="5" width="1" height="14"/>
+                      <rect x="13" y="5" width="3" height="14"/>
+                      <rect x="18" y="5" width="1" height="14"/>
+                      <rect x="20.5" y="5" width="1" height="14"/>
+                    </svg>
+                  </button>
+
+                  @if (rowAt(idx).value['status'] === 'Sold' && rowAt(idx).value['invoiceId']) {
+                    <button
+                      type="button"
+                      class="bs__icon-btn bs__icon-btn--info"
+                      (click)="openInvoice(rowAt(idx).value['invoiceId'])"
+                      [title]="'PRODUCTS.FORM.SHOW_INVOICE' | translate"
+                    >
+                      {{ 'COMMON.ACTIONS.VIEW' | translate }}
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="bs__icon-btn bs__icon-btn--danger"
+                      (click)="removeAt(idx)"
+                      [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+                      [title]="'COMMON.ACTIONS.DELETE' | translate"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+
+      @if (array().length > 0) {
+        <tfoot>
+          <tr>
+            <td colspan="5" class="bs__footer">
+              <div class="bs__footer-inner">
+                <strong>{{ 'COMMON.TOTAL' | translate }}:</strong>
+                <span class="bs__footer-stat bs__footer-stat--avail">
+                  {{ 'PRODUCTS.FORM.AVAILABLE' | translate }} {{ totalAvailable() }}
+                </span>
+                <span class="bs__footer-stat bs__footer-stat--sold">
+                  {{ 'PRODUCTS.FORM.SOLD' | translate }} {{ totalSold() }}
+                </span>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      }
+    </table>
+  </div>
 </div>

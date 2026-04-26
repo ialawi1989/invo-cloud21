@@ -69,8 +69,18 @@ export class CategoryOptionsComponent implements OnInit {
 
   @ViewChild('categoryDropdown') categoryDropdown?: SearchDropdownComponent<DropdownItem>;
 
+  /**
+   * Pin the selected row to the top ONLY on the first fetch (page 1, empty
+   * search). On scroll / search pages the id is dropped — the backend would
+   * otherwise echo the pinned row on every page, polluting the result set.
+   */
+  private idOnInitialFetch(page: number, search: string, id: string | null): string | null {
+    return page === 1 && !search ? (id ?? null) : null;
+  }
+
   loadDepartments: DropdownLoadFn<DropdownItem> = async ({ page, pageSize, search }) => {
-    const departmentId = (this.group?.get('departmentId')?.value as string | null) ?? null;
+    const selected = (this.group?.get('departmentId')?.value as string | null) ?? null;
+    const departmentId = this.idOnInitialFetch(page, search, selected);
     const res = await this.productsService.getDepartments({ page, pageSize, search, departmentId });
     const items = res.items as DropdownItem[];
     this.mergeCache(this.departmentsCache, items, page === 1);
@@ -82,7 +92,8 @@ export class CategoryOptionsComponent implements OnInit {
     void this.categoryVersion();
     const depId = this.departmentId();
     if (!depId) return { items: [], hasMore: false };
-    const categoryId = (this.group?.get('categoryId')?.value as string | null) ?? null;
+    const selected = (this.group?.get('categoryId')?.value as string | null) ?? null;
+    const categoryId = this.idOnInitialFetch(page, search, selected);
     const res = await this.productsService.getCategories({ page, pageSize, search, departmentId: depId, categoryId });
     const items = res.items as DropdownItem[];
     this.mergeCache(this.categoriesCache, items, page === 1);
@@ -90,7 +101,8 @@ export class CategoryOptionsComponent implements OnInit {
   };
 
   loadBrands: DropdownLoadFn<DropdownItem> = async ({ page, pageSize, search }) => {
-    const brandId = (this.group?.get('brandId')?.value as string | null) ?? null;
+    const selected = (this.group?.get('brandId')?.value as string | null) ?? null;
+    const brandId = this.idOnInitialFetch(page, search, selected);
     const res = await this.productsService.getBrands({ page, pageSize, search, brandId });
     const items = res.items as DropdownItem[];
     this.mergeCache(this.brandsCache, items, page === 1);
@@ -197,4 +209,6 @@ export class CategoryOptionsComponent implements OnInit {
     return String(item ?? '');
   };
   compareByValue = (a: any, b: any): boolean => (a?.value ?? a) === (b?.value ?? b);
+  /** Persist only the UUID string (not the whole `{label, value}` option) to the form. */
+  toValueId = (item: DropdownItem): string => item?.value ?? '';
 }

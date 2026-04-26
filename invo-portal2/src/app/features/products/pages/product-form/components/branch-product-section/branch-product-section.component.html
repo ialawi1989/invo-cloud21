@@ -350,8 +350,10 @@
 
         <!-- Manage Unit Cost (collapsible) — mirrors old `isCollapsedCost`.
              Read-only current value + Adjust button for existing products,
-             plain input for new products; gated on both visibility + privilege. -->
-        @if (fieldsOptions()?.branchProduct?.unitCost?.isVisible && canManageUnitCost) {
+             plain input for new products; gated on visibility + privilege +
+             the old project's `branchesUnitCost != null` check so the section
+             only renders when the product has per-branch cost overrides. -->
+        @if (fieldsOptions()?.branchProduct?.unitCost?.isVisible && canManageUnitCost && hasBranchesUnitCost()) {
           <div class="pf-bp-manage">
             <button type="button" class="pf-bp-manage__toggle"
                     (click)="toggleManageCost(activeTab())">
@@ -448,6 +450,7 @@
               formControlName="locationId"
               [loadFn]="loadLocations"
               [displayWith]="locationDisplay"
+              [toValue]="toValueId"
               [placeholder]="'PRODUCTS.FORM.SELECT_LOCATION' | translate"
             />
           </div>
@@ -521,6 +524,8 @@
           <app-pf-branch-serials
             [array]="$any(grp.get('serials'))"
             [fieldsOptions]="fieldsOptions()"
+            [productInfo]="productInfo()"
+            [otherBranchesSerials]="otherBranchesSerials()"
           />
         }
 

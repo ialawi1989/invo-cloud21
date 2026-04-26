@@ -75,13 +75,15 @@
 
     <!-- Unit cost + Profit + Margin — also gated behind `manageUnitCost`
          privilege so users without that right never see the cost/profit/margin
-         row (matches the old product-pricing behaviour). -->
+         row (matches the old product-pricing behaviour). The row itself is
+         suppressed for brand-new products (no id yet) since there's no stored
+         cost to adjust — the first save records the initial cost. -->
     @if (fieldsOptions()?.pricing?.unitCost?.isVisible && canManageUnitCost) {
       @if (branchCostsVary()) {
         <p class="pf-hint pf-hint--info">
           {{ 'PRODUCTS.PRICING.UNIT_COST_VARIES_ACROSS_BRANCHES' | translate }}
         </p>
-      } @else {
+      } @else if (productInfo().id) {
         <div class="pf-row pf-row--thirds">
           <div class="pf-field">
             <label class="pf-label pf-label--with-action">
@@ -129,6 +131,20 @@
           </div>
         </div>
       }
+
+      <!-- Profit formula hint — only renders when the company uses
+           inclusive tax and the product has no per-branch cost overrides,
+           mirroring the old product-pricing.component.html gate (sourced
+           from company settings, not the product itself). -->
+      @if (isInclusiveTax() && !branchCostsVary()) {
+        <p class="pf-hint pf-hint--info">
+          {{ 'PRODUCTS.FORM.PROFIT_EQUATION' | translate: {
+               sellingPrice: (formulaSellingPrice() | mynumber),
+               unitCost:     (unitCostValue() | mynumber),
+               taxAmount:    (productInfo().taxAmount | mynumber)
+             } }}
+        </p>
+      }
     }
 
     <!-- Tax -->
@@ -143,6 +159,7 @@
           [loadFn]="loadTaxes"
           [displayWith]="displayLabel"
           [compareWith]="compareByValue"
+          [toValue]="toValueId"
           [placeholder]="'PRODUCTS.PRICING.CHOOSE_TAX' | translate"
         />
         @if (c('taxId').touched && c('taxId').errors?.['required']) {

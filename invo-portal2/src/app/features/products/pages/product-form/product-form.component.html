@@ -29,8 +29,16 @@
       class="product-form"
       (keydown.enter)="$event.preventDefault()"
     >
+      <!-- Order mirrors the old project's product-form.component.html:
+           main column = common-fields → pricing → inventory → suppliers →
+           type-specific builders (service/kit/recipe/package/menu) →
+           custom-fields → branches; side column = media → measurements →
+           product-options → shipping → category → alias → alt-product →
+           attributes → nutrition. Tab-builder is a new addition so it
+           sits right after common-fields to match its "content editor"
+           role (closest analog to the old options-tab). -->
       <div class="form-grid">
-        <!-- Main column -->
+        <!-- ═══ Main column ═══ -->
         <section class="form-col form-col--main">
           <app-pf-common-fields
             [productInfo]="productInfo()"
@@ -68,7 +76,6 @@
             />
           }
 
-          <!-- Type-specific sections (Phase 4) -->
           @if (productType() === 'service' && fieldsOptions()?.serviceTime?.isVisible) {
             <app-pf-service-duration
               [productInfo]="productInfo()"
@@ -93,6 +100,14 @@
             />
           }
 
+          @if (fieldsOptions()?.menuSelection?.isVisible) {
+            <app-pf-menu-selection
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
           @if (fieldsOptions()?.packageBuilder?.isVisible) {
             <app-pf-package-builder
               [productInfo]="productInfo()"
@@ -101,8 +116,8 @@
             />
           }
 
-          @if (fieldsOptions()?.menuSelection?.isVisible) {
-            <app-pf-menu-selection
+          @if (fieldsOptions()?.customFields?.isVisible) {
+            <app-pf-product-custom-fields
               [productInfo]="productInfo()"
               [productForm]="productForm"
               [fieldsOptions]="fieldsOptions()"
@@ -116,22 +131,10 @@
           />
         </section>
 
-        <!-- Side column -->
+        <!-- ═══ Side column ═══ -->
         <aside class="form-col form-col--side">
-          <!-- Gallery + 3D model live in one tabbed card — matches old
-               `<product-image>` wrapper (Images / 3D Model tabs). Pinned
-               to the top of the sidebar since the main photo is the first
-               thing users want to confirm. -->
           @if (fieldsOptions()?.image) {
             <app-pf-product-media
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
-
-          @if (fieldsOptions()?.department?.isVisible || fieldsOptions()?.category?.isVisible || fieldsOptions()?.brand?.isVisible) {
-            <app-pf-category-options
               [productInfo]="productInfo()"
               [productForm]="productForm"
               [fieldsOptions]="fieldsOptions()"
@@ -146,13 +149,14 @@
             />
           }
 
-          @if (fieldsOptions()?.productAttributes?.isVisible) {
-            <app-pf-product-attributes
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
+          <!-- Misc product flags & account pickers (port of old
+               `inventory/product-options`). Self-gates via `hasAnyVisible()`
+               when no sub-field applies to this product type. -->
+          <app-pf-product-options
+            [productInfo]="productInfo()"
+            [productForm]="productForm"
+            [fieldsOptions]="fieldsOptions()"
+          />
 
           @if (fieldsOptions()?.shippingOptions?.isVisible) {
             <app-pf-shipping-options
@@ -162,8 +166,8 @@
             />
           }
 
-          @if (fieldsOptions()?.nutrition?.isVisible) {
-            <app-pf-food-nutrition
+          @if (fieldsOptions()?.department?.isVisible || fieldsOptions()?.category?.isVisible || fieldsOptions()?.brand?.isVisible) {
+            <app-pf-category-options
               [productInfo]="productInfo()"
               [productForm]="productForm"
               [fieldsOptions]="fieldsOptions()"
@@ -186,14 +190,21 @@
             />
           }
 
-          @if (fieldsOptions()?.customFields?.isVisible) {
-            <app-pf-product-custom-fields
+          @if (fieldsOptions()?.productAttributes?.isVisible) {
+            <app-pf-product-attributes
               [productInfo]="productInfo()"
               [productForm]="productForm"
               [fieldsOptions]="fieldsOptions()"
             />
           }
 
+          @if (fieldsOptions()?.nutrition?.isVisible) {
+            <app-pf-food-nutrition
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
         </aside>
       </div>
     </form>

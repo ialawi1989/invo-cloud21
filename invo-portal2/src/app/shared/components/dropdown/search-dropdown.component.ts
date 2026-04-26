@@ -84,6 +84,18 @@ export class SearchDropdownComponent<T = any> implements OnDestroy, ControlValue
   /** Equality function for selection. Defaults to reference equality. */
   compareWith = input<(a: T, b: T) => boolean>((a, b) => a === b);
 
+  /**
+   * Transform an item into the value written to the parent form / ngModel.
+   * Defaults to identity — the full item object is written, preserving the
+   * historical behaviour. Set e.g. `[toValue]="(i) => i.value"` when the
+   * consuming form should persist a plain primitive (UUID, string, etc.)
+   * instead of the `{label, value}` option object. This does NOT change
+   * the internal signal value used for display / `isSelected`; consumers
+   * that already provide a `compareWith` like `(a?.value ?? a) === …`
+   * continue to work with either shape.
+   */
+  toValue = input<(item: T) => any>((item) => item);
+
   /** Two-way bound selected value. `T` for single, `T[]` for multiple. */
   value = model<T | T[] | null>(null);
 
@@ -279,8 +291,15 @@ export class SearchDropdownComponent<T = any> implements OnDestroy, ControlValue
   close(): void {
     if (!this.isOpen()) return;
     this.isOpen.set(false);
-    this.searchQuery.set('');
-    this.searchInput$.next('');
+    // Reset the search state only if the user actually typed something —
+    // otherwise pushing '' through the debounced search stream would trigger
+    // a redundant `fetchPage()` after every close (e.g. after selection).
+    // Keeping the existing `loadedItems` cached means the next open reuses
+    // the previously-fetched page instead of hitting the network again.
+    if (this.searchQuery() !== '') {
+      this.searchQuery.set('');
+      this.searchInput$.next('');
+    }
     this._onTouched();
     this.closed.emit();
   }
@@ -322,16 +341,17 @@ export class SearchDropdownComponent<T = any> implements OnDestroy, ControlValue
 
   selectItem(item: T): void {
     const eq = this.compareWith();
+    const toVal = this.toValue();
     if (this.multiple()) {
       const current = (this.value() as T[]) ?? [];
       const exists = current.some((x) => eq(x, item));
       const next = exists ? current.filter((x) => !eq(x, item)) : [...current, item];
       this.value.set(next);
-      this._onChange(next);
+      this._onChange(next.map((x) => toVal(x)));
       // Multi-select stays open.
     } else {
       this.value.set(item);
-      this._onChange(item);
+      this._onChange(toVal(item));
       this.close();
       this.triggerEl()?.nativeElement.focus();
     }

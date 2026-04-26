@@ -10,32 +10,15 @@
   </header>
 
   <div class="pf-card__body">
-    <div class="pf-field pf-field--inline">
-      <span class="pf-label">{{ 'PRODUCTS.FORM.SHIPPING_ENABLED' | translate }}</span>
-      <label class="pf-switch">
-        <input type="checkbox" formControlName="shippingEnabled"/>
-        <span class="pf-switch__track"></span>
-      </label>
+    <!-- Only "Shipping Weight" is exposed per product spec — the old
+         `shippingEnabled` toggle and the separate `weightUOM` picker were
+         removed because the UOM is tracked at the product level and
+         shipping is enabled implicitly when weight > 0. The underlying
+         form still carries `shippingEnabled` / `weightUOM` so backend
+         payloads stay stable. -->
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PRODUCTS.FORM.SHIPPING_WEIGHT' | translate }}</label>
+      <input type="number" class="pf-input" formControlName="weight" min="0"/>
     </div>
-
-    @if (fieldsOptions()?.shippingOptions?.weight?.isVisible || fieldsOptions()?.shippingOptions?.weightUOM?.isVisible) {
-      <div class="pf-row">
-        <div class="pf-field pf-field--half">
-          <label class="pf-label">{{ 'PRODUCTS.FORM.WEIGHT' | translate }}</label>
-          <input type="number" class="pf-input" formControlName="weight" min="0"/>
-        </div>
-        <div class="pf-field pf-field--half">
-          <label class="pf-label">{{ 'PRODUCTS.FORM.WEIGHT_UOM' | translate }}</label>
-          <app-search-dropdown
-            formControlName="weightUOM"
-            [items]="weightUoms"
-            [displayWith]="displayLabel"
-            [compareWith]="compareByValue"
-            [searchable]="false"
-            [clearable]="false"
-          />
-        </div>
-      </div>
-    }
   </div>
 </section>

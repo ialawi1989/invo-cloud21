@@ -22,6 +22,7 @@ import { SearchDropdownComponent } from '@shared/components/dropdown/search-drop
 import { DropdownLoadFn, DropdownLoadResult } from '@shared/components/dropdown/search-dropdown.types';
 import { ModalService } from '@shared/modal';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
+import { CompanyService } from '@core/auth/company.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 
@@ -63,6 +64,7 @@ export class ProductPricingComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private productsService = inject(ProductsService);
   private privileges = inject(PrivilegeService);
+  private companyService = inject(CompanyService);
 
   /** Same gate as branch-product-section — only shown to users who can adjust. */
   readonly canAdjust         = this.privileges.check('manualAdjustmentSecurity.access');
@@ -103,6 +105,23 @@ export class ProductPricingComponent implements OnInit {
   hideDefaultPriceInput = computed(() =>
     this.priceModelValue() === 'totalPrice' || this.priceModelValue() === 'totalPriceWithDiscount',
   );
+
+  // Selling price fed into the PROFIT_EQUATION hint. Matches the old code's
+  // ternary: totalPrice() for totalPrice / totalPriceWithDiscount models, else
+  // the raw defaultPrice form value.
+  formulaSellingPrice = computed<number>(() => {
+    const model = this.priceModelValue();
+    if (model === 'totalPrice' || model === 'totalPriceWithDiscount') {
+      return this.productInfo().totalPrice();
+    }
+    return this.defaultPriceValue();
+  });
+
+  // The old product-pricing sourced isInclusiveTax from company settings
+  // (not from the product itself — the product flag just mirrored it). Read
+  // the setting reactively so the profit-equation hint toggles correctly
+  // when settings load after first render.
+  isInclusiveTax = computed<boolean>(() => !!this.companyService.settings()?.isInclusiveTax);
 
   /**
    * Backend populates `branchesUnitCost` with per-branch overrides when a
@@ -152,12 +171,12 @@ export class ProductPricingComponent implements OnInit {
   // the list — otherwise the dropdown trigger shows the stored id literally
   // until the user scrolls to the page that contains the row.
   loadTaxes: DropdownLoadFn<DropdownItem> = async ({ page, pageSize, search }) => {
-    // Prefer the current form value, fall back to productInfo.taxId if the
-    // form hasn't propagated yet (can happen on the very first loadFn call
-    // that the dropdown fires before Angular's CVA flow settles).
-    const taxId = this.group?.get('taxId')?.value
+    // Only pin the selected row on the first page-1, empty-search call.
+    // Scroll/search fetches drop the id so the backend paginates cleanly.
+    const selected = this.group?.get('taxId')?.value
       ?? this.productInfo()?.taxId
       ?? null;
+    const taxId = page === 1 && !search ? selected : null;
     const res = await this.productsService.getTaxes({ page, pageSize, search, taxId });
     if (page === 1) this.taxListRaw.set(res.raw as Tax[]);
     else this.taxListRaw.update((prev) => [...prev, ...(res.raw as Tax[])]);
@@ -190,10 +209,17 @@ export class ProductPricingComponent implements OnInit {
     return String(item ?? '');
   };
   compareByValue = (a: any, b: any): boolean => (a?.value ?? a) === (b?.value ?? b);
+  /** Persist only the tax UUID to the form, not the whole `{label, value}` option. */
+  toValueId = (item: any): string => item?.value ?? '';
 
   ngOnInit(): void {
     const info = this.productInfo();
     const f = this.fieldsOptions()?.pricing;
+
+    // Mirror the company-wide `isInclusiveTax` onto productInfo so the
+    // model's `getProfitValue` (which subtracts taxAmount when inclusive)
+    // computes correctly before any explicit write.
+    info.isInclusiveTax = !!this.companyService.settings()?.isInclusiveTax;
 
     const defaultPrice     = info.defaultPrice ?? 0;
     const unitCost         = this.initialUnitCost(info);

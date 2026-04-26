@@ -51,6 +51,7 @@ import { AltProductComponent }           from './components/alt-product/alt-prod
 import { FoodNutritionComponent }        from './components/food-nutrition/food-nutrition.component';
 import { ShippingOptionsComponent }      from './components/shipping-options/shipping-options.component';
 import { ProductCustomFieldsComponent }  from './components/product-custom-fields/product-custom-fields.component';
+import { ProductOptionsComponent }       from './components/product-options/product-options.component';
 import { AliasBarcodesComponent }        from './components/alias-barcodes/alias-barcodes.component';
 import { ProductMediaCardComponent }     from './components/product-media/product-media.component';
 import { ProductTabBuilderSectionComponent } from './components/tab-builder/tab-builder-section.component';
@@ -96,6 +97,7 @@ type FormStatus = 'new' | 'edit';
     FoodNutritionComponent,
     ShippingOptionsComponent,
     ProductCustomFieldsComponent,
+    ProductOptionsComponent,
     AliasBarcodesComponent,
     ProductMediaCardComponent,
     ProductTabBuilderSectionComponent,

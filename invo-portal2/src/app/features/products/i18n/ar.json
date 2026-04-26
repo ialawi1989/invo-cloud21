@@ -155,10 +155,19 @@
       "PRICE_BY_QTY":            "السعر حسب الكمية",
       "NO_PRICE_BY_QTY_ROWS":    "لا توجد مستويات سعر — أضف زوج كمية/سعر للبدء.",
 
-      "SERIALS":                 "الأرقام التسلسلية",
-      "SERIAL_NUMBER":           "الرقم التسلسلي",
-      "NO_SERIALS_YET":          "لم تتم إضافة أرقام تسلسلية لهذا الفرع بعد.",
-      "SERIAL_DUPLICATE":        "هذا الرقم التسلسلي موجود بالفعل.",
+      "SERIALS":                       "الأرقام التسلسلية",
+      "SERIAL_NUMBER":                 "الرقم التسلسلي",
+      "NO_SERIALS_YET":                "لم تتم إضافة أرقام تسلسلية لهذا الفرع بعد.",
+      "NO_SERIALS_MATCH":              "لا توجد أرقام تسلسلية تطابق الفلتر.",
+      "SERIAL_DUPLICATE":              "هذا الرقم التسلسلي موجود بالفعل.",
+      "SERIAL_DUPLICATE_OTHER_BRANCH": "هذا الرقم التسلسلي موجود في فرع آخر.",
+      "ADD_AND_MANAGE_SERIALS":        "أضف وأدِر الأرقام التسلسلية.",
+      "SERIAL_TO_ADD":                 "رقم تسلسلي للإضافة",
+      "FILTER_ALL":                    "الكل",
+      "SOLD":                          "مباع",
+      "GENERATE_BARCODE":              "توليد باركود",
+      "SHOW_INVOICE":                  "عرض الفاتورة",
+      "CONFIRM_DELETE_SELECTED_SERIALS": "حذف {{count}} رقم تسلسلي مُحدد؟ لا يمكن التراجع.",
       "EXPIRE_DATE":             "تاريخ الانتهاء",
       "PICK_DATE":               "اختر تاريخًا",
 
@@ -223,6 +232,7 @@
       "SHIPPING":                   "الشحن",
       "SHIPPING_ENABLED":           "متاح للشحن",
       "WEIGHT":                     "الوزن",
+      "SHIPPING_WEIGHT":            "وزن الشحن",
       "WEIGHT_UOM":                 "وحدة الوزن",
 
       "CUSTOM_FIELDS":              "حقول مخصصة",
@@ -240,6 +250,25 @@
 
       "GALLERY":                    "معرض الصور",
       "ADD_IMAGES":                 "إضافة صور",
+      "PRODUCT_OPTIONS":            "خيارات المنتج",
+      "ORDER_BY_WEIGHT":            "بيع بالوزن",
+      "DISCOUNTABLE":               "يقبل الخصم في نقطة البيع",
+      "MAX_ITEM_PER_TICKET":        "الحد الأقصى للعدد في الفاتورة",
+      "ZERO_MEANS_UNLIMITED":       "الصفر يعني بدون حد.",
+      "PREPARATION_TIME":           "وقت التحضير (بالدقائق)",
+      "SERVICE_DURATION":           "مدة الخدمة (بالدقائق)",
+      "MIN_VALUE":                  "الحد الأدنى للقيمة هو {{ value }}.",
+      "KITCHEN_NAME":               "اسم المطبخ",
+      "TAGS":                       "الوسوم",
+      "TAGS_HINT":                  "اكتب الوسم ثم اضغط Enter.",
+      "ADD_TAG_PLACEHOLDER":        "أضف وسمًا…",
+      "WARNING":                    "تنبيه",
+      "WARNING_PLACEHOLDER":        "يظهر للموظف قبل بيع المنتج.",
+      "ITEM_MESSAGE":               "رسالة المنتج",
+      "AFTER_SERVICE_DESCRIPTION":  "وصف ما بعد الخدمة",
+      "IS_PURCHASE_ITEM":           "أشتري هذا المنتج",
+      "IS_SALE_ITEM":               "أبيع هذا المنتج",
+      "SELECT_AN_ACCOUNT":          "اختر حسابًا",
       "ADD_PHOTO":                  "إضافة صورة",
       "NO_GALLERY_IMAGES":          "لا توجد صور بعد — يمكنك إضافة حتى 5 صور. أول صورة هي الصورة الرئيسية.",
       "GALLERY_MAX_REACHED":        "تم الوصول إلى الحد الأقصى وهو 5 صور.",
@@ -433,6 +462,9 @@
     }
   },
   "COMMON": {
+    "CONFIRM":             "تأكيد",
+    "CONFIRM_CANT_REVERT": "لا يمكن التراجع عن هذا الإجراء.",
+    "TOTAL":               "الإجمالي",
     "ACTIONS": {
       "EDIT": "تعديل",
       "DELETE": "حذف",
@@ -442,7 +474,9 @@
       "EXPORT": "تصدير",
       "REFRESH": "تحديث",
       "COPY": "نسخ",
-      "VIEW": "عرض"
+      "VIEW": "عرض",
+      "ACTION": "إجراء",
+      "SEARCH": "بحث"
     }
   },
   "TAB_BUILDER": {
