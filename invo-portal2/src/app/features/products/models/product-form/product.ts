@@ -546,5 +546,16 @@ export class Product {
     if (this.isTaxable == null) this.isTaxable = true;
     if (this.isPurchaseItem == null) this.isPurchaseItem = true;
     if (this.isSaleItem == null) this.isSaleItem = true;
+
+    // Normalise server-side `barcodes: [{barcode}]` and `tags: [...]` into the
+    // UI-side `barcodesArr: [{value}]` / `tagsArr: [{value}]` shapes that the
+    // alias-barcodes and tags editors consume. Without this, existing aliases
+    // load into `barcodes` only and the editor renders empty on edit.
+    if (Array.isArray(this.barcodes) && this.barcodes.length > 0 && this.barcodesArr.length === 0) {
+      this.barcodesArr = this.barcodes.map((b: any) => ({ value: b?.barcode ?? b?.value ?? '' }));
+    }
+    if (Array.isArray(this.tags) && this.tags.length > 0 && this.tagsArr.length === 0) {
+      this.tagsArr = this.tags.map((t: any) => ({ value: typeof t === 'string' ? t : (t?.value ?? '') }));
+    }
   }
 }

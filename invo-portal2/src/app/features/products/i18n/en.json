@@ -237,6 +237,8 @@
 
       "CUSTOM_FIELDS":              "Custom fields",
       "NO_CUSTOM_FIELDS":           "No custom fields configured for this product.",
+      "CUSTOM_FIELDS_HINT":         "No custom fields are defined yet. Manage fields in Settings → Custom Fields, then they'll appear here for every product.",
+      "CUSTOM_FIELDS_OPEN_SETTINGS":"Open settings",
 
       "ALIAS_BARCODES":             "Alias barcodes",
       "ENTER_BARCODE":              "Enter barcode",

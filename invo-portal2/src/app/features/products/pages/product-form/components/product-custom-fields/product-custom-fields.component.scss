@@ -7,3 +7,40 @@
   justify-content: space-between;
   gap: 12px;
 }
+
+// Empty-state hint pointing the user to the custom-fields settings page —
+// mirrors the Content Tabs banner so the two empty states feel uniform.
+.hint-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 10px;
+  color: #92400e;
+
+  &__icon { color: #d97706; flex-shrink: 0; }
+  &__text { margin: 0; font-size: 12px; line-height: 1.5; flex: 1; }
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: #fcd34d;
+    color: #78350f;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: background .12s;
+
+    &:hover { background: #fbbf24; color: #451a03; }
+  }
+
+  @media (max-width: 640px) {
+    flex-wrap: wrap;
+    &__link { width: 100%; justify-content: center; }
+  }
+}

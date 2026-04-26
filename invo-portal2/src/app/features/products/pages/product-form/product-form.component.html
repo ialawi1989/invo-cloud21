@@ -238,7 +238,7 @@
           type="button"
           class="btn btn-primary form-footer__save"
           (click)="saveProduct()"
-          [disabled]="saving() || loading()"
+          [disabled]="saving() || loading() || errorCount() > 0"
         >
           @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
           {{ 'COMMON.SAVE' | translate }}

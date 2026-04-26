@@ -14,6 +14,7 @@ import {
   FormGroup,
   ReactiveFormsModule,
 } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -37,7 +38,7 @@ interface CustomFieldMeta {
 @Component({
   selector: 'app-pf-product-custom-fields',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule],
   templateUrl: './product-custom-fields.component.html',
   styleUrl: './product-custom-fields.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
