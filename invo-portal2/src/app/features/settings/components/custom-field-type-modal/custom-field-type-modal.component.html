@@ -1,0 +1,90 @@
+<div class="cft-modal">
+  <header class="cft-head">
+    <div>
+      <h2 class="cft-title">{{ 'SETTINGS.CUSTOM_FIELDS.TYPE_PICKER.TITLE' | translate }}</h2>
+      <p class="cft-sub">{{ 'SETTINGS.CUSTOM_FIELDS.TYPE_PICKER.SUBTITLE' | translate }}</p>
+    </div>
+    <button
+      type="button"
+      class="cft-close"
+      (click)="cancel()"
+      [attr.aria-label]="'COMMON.CLOSE' | translate"
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="cft-body">
+    <p class="cft-section-lbl">{{ 'SETTINGS.CUSTOM_FIELDS.TYPE_PICKER.ESSENTIALS' | translate }}</p>
+    <div class="cft-grid">
+      @for (card of essentialCards(); track card.type) {
+        <button
+          type="button"
+          class="cft-card"
+          [class.cft-card--selected]="selected() === card.type"
+          (click)="pick(card.type)"
+        >
+          <span class="cft-card__ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="iconHtml(card)"></svg>
+          </span>
+          <span class="cft-card__body">
+            <span class="cft-card__name">{{ card.labelKey | translate }}</span>
+            <span class="cft-card__desc">{{ card.descKey | translate }}</span>
+          </span>
+        </button>
+      }
+    </div>
+
+    <p class="cft-section-lbl">{{ 'SETTINGS.CUSTOM_FIELDS.TYPE_PICKER.CONTACT' | translate }}</p>
+    <div class="cft-grid">
+      @for (card of contactCards(); track card.type) {
+        <button
+          type="button"
+          class="cft-card"
+          [class.cft-card--selected]="selected() === card.type"
+          (click)="pick(card.type)"
+        >
+          <span class="cft-card__ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="iconHtml(card)"></svg>
+          </span>
+          <span class="cft-card__body">
+            <span class="cft-card__name">{{ card.labelKey | translate }}</span>
+            <span class="cft-card__desc">{{ card.descKey | translate }}</span>
+          </span>
+        </button>
+      }
+    </div>
+
+    <p class="cft-section-lbl">{{ 'SETTINGS.CUSTOM_FIELDS.TYPE_PICKER.TIME' | translate }}</p>
+    <div class="cft-grid">
+      @for (card of timeCards(); track card.type) {
+        <button
+          type="button"
+          class="cft-card"
+          [class.cft-card--selected]="selected() === card.type"
+          (click)="pick(card.type)"
+        >
+          <span class="cft-card__ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="iconHtml(card)"></svg>
+          </span>
+          <span class="cft-card__body">
+            <span class="cft-card__name">{{ card.labelKey | translate }}</span>
+            <span class="cft-card__desc">{{ card.descKey | translate }}</span>
+          </span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <footer class="cft-foot">
+    <button type="button" class="btn btn-ghost" (click)="cancel()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="ok()">
+      {{ 'SETTINGS.CUSTOM_FIELDS.TYPE_PICKER.CONFIRM' | translate }}
+    </button>
+  </footer>
+</div>

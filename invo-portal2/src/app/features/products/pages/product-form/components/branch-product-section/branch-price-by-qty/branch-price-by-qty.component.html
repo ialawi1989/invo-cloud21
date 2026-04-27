@@ -9,12 +9,14 @@
     </button>
   </div>
 
+  <p class="pbq__hint">{{ 'PRODUCTS.FORM.PRICE_BY_QTY_HINT' | translate }}</p>
+
   @if (array().length === 0) {
     <p class="pbq__empty">{{ 'PRODUCTS.FORM.NO_PRICE_BY_QTY_ROWS' | translate }}</p>
   } @else {
     <div class="pbq__head">
       <span>{{ 'PRODUCTS.FIELDS.QTY' | translate }}</span>
-      <span>{{ 'PRODUCTS.PRICING.DEFAULT_PRICE' | translate }}</span>
+      <span>{{ 'PRODUCTS.FORM.PRICE_BY_QTY_PRICE' | translate }}</span>
       <span></span>
     </div>
 
@@ -32,7 +34,7 @@
           class="pf-input"
           formControlName="price"
           min="0"
-          [placeholder]="'PRODUCTS.PRICING.DEFAULT_PRICE' | translate"
+          [placeholder]="'PRODUCTS.FORM.PRICE_BY_QTY_PRICE' | translate"
         />
         <button
           type="button"

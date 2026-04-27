@@ -8,6 +8,7 @@ import { MathUtils } from './math-utils';
 import {
   ProductImage,
   Nutrition,
+  Allergens,
   Measurement,
   ProductAttributes,
   InventorySummary,
@@ -104,7 +105,10 @@ export class Product {
   orderByWeight = false;
   isDiscountable: boolean | null = true;
   nutrition: Nutrition = new Nutrition();
+  allergens: Allergens = new Allergens();
   productAttributes: ProductAttributes[] = [];
+  certificationBody = '';
+  certificationNumber = '';
   tabBuilder: Record<string, any> = {};
   sku = '';
   alternativeProducts: string[] = [];
@@ -513,6 +517,10 @@ export class Product {
         const n = new Nutrition();
         n.ParseJson(json[key]);
         this.nutrition = n;
+      } else if (key === 'allergens') {
+        const a = new Allergens();
+        a.ParseJson(json[key]);
+        this.allergens = a;
       } else if (key === 'translation') {
         const t = new Translation();
         t.ParseJson(json[key]);

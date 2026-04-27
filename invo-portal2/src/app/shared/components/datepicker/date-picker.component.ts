@@ -131,6 +131,18 @@ export class DatePickerComponent implements ControlValueAccessor {
   showFooter = input<boolean>(true);
 
   /**
+   * Show an inline time stepper (HH:MM + AM/PM) at the bottom of the
+   * calendar panel. Combined with `mode='single'` this turns the
+   * picker into a date+time picker — the bound `Date` carries the
+   * picked hour/minute and the trigger label includes them.
+   * Range mode ignores this flag.
+   */
+  showTime = input<boolean>(false);
+
+  /** Minute step the up/down chevrons advance by. Defaults to 5. */
+  timeStep = input<number>(5);
+
+  /**
    * Optional quick-pick preset list (e.g. "Today", "Last 7 days"). Rendered
    * as a left sidebar inside the panel when non-empty. Range-mode only —
    * presets are ignored in single mode.
@@ -209,7 +221,27 @@ export class DatePickerComponent implements ControlValueAccessor {
       return `${s} → ${e}`;
     }
     const single = this.singleValue();
-    return single ? formatDate(single, fmt, months, monthsShort) : '';
+    if (!single) return '';
+    const dateStr = formatDate(single, fmt, months, monthsShort);
+    if (this.showTime()) {
+      const t = this.timePieces();
+      return `${dateStr} ${pad2(t.h12)}:${pad2(t.min)} ${t.meridiem}`;
+    }
+    return dateStr;
+  });
+
+  /**
+   * Hour (1-12), minute (0-59) and AM/PM derived from the current
+   * single value. Falls back to the cursor (or "now") when no value
+   * is selected so the stepper has something to show before the
+   * user clicks a day.
+   */
+  timePieces = computed<{ h12: number; min: number; meridiem: 'AM' | 'PM' }>(() => {
+    const src = this.singleValue() ?? this.cursor();
+    const h24 = src.getHours();
+    const meridiem: 'AM' | 'PM' = h24 >= 12 ? 'PM' : 'AM';
+    const h12 = ((h24 + 11) % 12) + 1;
+    return { h12, min: src.getMinutes(), meridiem };
   });
 
   hasValue = computed<boolean>(() => {
@@ -449,10 +481,48 @@ export class DatePickerComponent implements ControlValueAccessor {
         if (!this.inline()) this.close();
       }
     } else {
+      // In time mode, preserve the previously-selected hour/minute (or
+      // default to now) so the user keeps tweaking instead of being
+      // reset to midnight every time they pick a day.
+      if (this.showTime()) {
+        const prev = this.singleValue();
+        const hours   = prev ? prev.getHours()   : new Date().getHours();
+        const minutes = prev ? prev.getMinutes() : new Date().getMinutes();
+        date = new Date(date);
+        date.setHours(hours, minutes, 0, 0);
+      }
       this.value.set(date);
       this._onChange(date);
-      if (!this.inline()) this.close();
+      // Don't auto-close while the user is also picking a time —
+      // they'll close via the Done button or the backdrop.
+      if (!this.inline() && !this.showTime()) this.close();
     }
+  }
+
+  // ── Time stepper actions (showTime mode only) ──────────────────────────────
+  /** Step hour up/minute up/etc., normalising via Date arithmetic. */
+  private bumpTime(dHours: number, dMinutes: number): void {
+    if (!this.showTime() || this.isRangeMode()) return;
+    const base = this.singleValue() ?? new Date(this.cursor());
+    const next = new Date(base);
+    next.setHours(next.getHours() + dHours);
+    next.setMinutes(next.getMinutes() + dMinutes);
+    next.setSeconds(0, 0);
+    this.value.set(next);
+    this._onChange(next);
+  }
+
+  hourUp():    void { this.bumpTime(+1, 0); }
+  hourDown():  void { this.bumpTime(-1, 0); }
+  minuteUp():  void { this.bumpTime(0, +this.timeStep()); }
+  minuteDown(): void { this.bumpTime(0, -this.timeStep()); }
+
+  /** Flip AM/PM by adding/subtracting 12 hours from the current value. */
+  toggleMeridiem(target: 'AM' | 'PM'): void {
+    if (!this.showTime() || this.isRangeMode()) return;
+    const cur = this.timePieces();
+    if (cur.meridiem === target) return;
+    this.bumpTime(target === 'PM' ? +12 : -12, 0);
   }
 
   selectMonth(idx: number, disabled: boolean): void {
@@ -558,3 +628,6 @@ export class DatePickerComponent implements ControlValueAccessor {
     }
   }
 }
+
+// ─── Free helpers ──────────────────────────────────────────────────────────
+function pad2(n: number): string { return n < 10 ? '0' + n : String(n); }

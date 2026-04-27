@@ -1,11 +1,13 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   DestroyRef,
   OnInit,
   computed,
   inject,
   input,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -26,6 +28,7 @@ import {
   PickProductModalComponent,
   PickProductModalData,
   PickedProduct,
+  PickProductResult,
 } from '../pick-product-modal/pick-product-modal.component';
 
 /**
@@ -51,6 +54,7 @@ export class RecipeBuilderComponent implements OnInit {
   private fb = inject(FormBuilder);
   private destroyRef = inject(DestroyRef);
   private modal = inject(ModalService);
+  private cdr = inject(ChangeDetectorRef);
 
   productInfo   = input.required<Product>();
   productForm   = input.required<FormGroup>();
@@ -58,7 +62,13 @@ export class RecipeBuilderComponent implements OnInit {
 
   rows!: FormArray<FormGroup>;
 
+  /** Bumped on every row mutation (push/remove/value) so `totalCost` re-runs.
+   *  Input-signal mutations on `productInfo().recipes` aren't tracked, so the
+   *  computed needs an explicit reactive trigger. */
+  private rowsVersion = signal<number>(0);
+
   totalCost = computed<number>(() => {
+    this.rowsVersion();
     const rows = this.productInfo().recipes ?? [];
     return rows.reduce((sum, r: any) => sum + (Number(r.unitCost ?? 0) * Number(r.usages ?? 0)), 0);
   });
@@ -72,7 +82,10 @@ export class RecipeBuilderComponent implements OnInit {
 
     this.rows.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.syncBackToModel());
+      .subscribe(() => {
+        this.syncBackToModel();
+        this.rowsVersion.update((n) => n + 1);
+      });
   }
 
   private buildRow(r: ProductRecipe): FormGroup {
@@ -109,7 +122,7 @@ export class RecipeBuilderComponent implements OnInit {
     // Only inventory-style products make sense as recipe ingredients.
     const existingIds = this.rows.controls
       .map((g) => (g.value as any).inventoryId || (g.value as any).recipeId);
-    const ref = this.modal.open<PickProductModalComponent, PickProductModalData, PickedProduct[]>(
+    const ref = this.modal.open<PickProductModalComponent, PickProductModalData, PickProductResult>(
       PickProductModalComponent,
       {
         data: {
@@ -121,10 +134,20 @@ export class RecipeBuilderComponent implements OnInit {
         size: 'md',
       },
     );
-    const picked = await ref.afterClosed();
-    if (!picked?.length) return;
-    picked.forEach((p) => this.addFromPick(p));
+    const result = await ref.afterClosed();
+    if (!result) return;
+    if (!result.added.length && !result.removed.length) return;
+    if (result.removed.length) {
+      const removeSet = new Set(result.removed);
+      for (let i = this.rows.length - 1; i >= 0; i--) {
+        const v = this.rows.at(i).value as any;
+        const id = v.inventoryId || v.recipeId;
+        if (removeSet.has(id)) this.rows.removeAt(i);
+      }
+    }
+    result.added.forEach((p) => this.addFromPick(p));
     this.productForm().markAsDirty();
+    this.cdr.markForCheck();
   }
 
   private addFromPick(p: PickedProduct): void {
@@ -143,6 +166,7 @@ export class RecipeBuilderComponent implements OnInit {
     if (i < 0 || i >= this.rows.length) return;
     this.rows.removeAt(i);
     this.productForm().markAsDirty();
+    this.cdr.markForCheck();
   }
 
   rowAt(i: number): FormGroup {

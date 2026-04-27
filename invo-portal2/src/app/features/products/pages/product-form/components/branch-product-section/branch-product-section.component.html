@@ -89,6 +89,9 @@
                 @if (fieldsOptions()?.branchProduct?.reorderLevel?.isVisible) {
                   <th>{{ 'PRODUCTS.FORM.REORDER_LEVEL' | translate }}</th>
                 }
+                @if (fieldsOptions()?.branchProduct?.differentPrice) {
+                  <th>{{ 'PRODUCTS.FORM.DIFFERENT_PRICE_COL' | translate }}</th>
+                }
               </tr>
             </thead>
             <tbody>
@@ -171,6 +174,18 @@
                              min="0"/>
                     </td>
                   }
+                  @if (fieldsOptions()?.branchProduct?.differentPrice) {
+                    <td class="pf-bp-bulk-table__diff">
+                      @if (row.value['has_different_price']) {
+                        <input type="number"
+                               class="pf-input pf-input--compact"
+                               formControlName="price"
+                               min="0"/>
+                      } @else {
+                        <span class="pf-bp-bulk-default">{{ 'PRODUCTS.FORM.BULK_DEFAULT' | translate }}</span>
+                      }
+                    </td>
+                  }
                 </tr>
               }
             </tbody>
@@ -247,9 +262,13 @@
               <div class="pf-field pf-field--half">
                 <label class="pf-label">{{ 'PRODUCTS.PRICING.DEFAULT_PRICE' | translate }}</label>
                 <input type="number" class="pf-input" formControlName="price" min="0"
-                       [class.pf-input--invalid]="ctl('price')?.touched && ctl('price')?.invalid"/>
+                       [class.pf-input--invalid]="ctl('price')?.touched && ctl('price')?.invalid"
+                       [class.pf-input--warn]="branchPriceIsFree()"/>
                 @if (ctl('price')?.touched && ctl('price')?.errors?.['required']) {
                   <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+                }
+                @if (branchPriceIsFree()) {
+                  <small class="pf-warn">{{ 'PRODUCTS.PRICING.ITEM_WILL_BE_FREE' | translate }}</small>
                 }
               </div>
             </div>
@@ -452,6 +471,7 @@
 
           <!-- Buy-down fields -->
           @if (selectedPricingTypeValue() === 'buyDownPrice') {
+            <p class="pf-hint">{{ 'PRODUCTS.FORM.BUY_DOWN_HINT' | translate }}</p>
             <div class="pf-row">
               @if (fieldsOptions()?.branchProduct?.buyDownQty?.isVisible) {
                 <div class="pf-field pf-field--half">
@@ -462,7 +482,16 @@
               @if (fieldsOptions()?.branchProduct?.buyDownPrice?.isVisible) {
                 <div class="pf-field pf-field--half">
                   <label class="pf-label">{{ 'PRODUCTS.FORM.BUY_DOWN_PRICE' | translate }}</label>
-                  <input type="number" class="pf-input" formControlName="buyDownPrice" min="0"/>
+                  <input
+                    type="number"
+                    class="pf-input"
+                    formControlName="buyDownPrice"
+                    min="0"
+                    [class.pf-input--warn]="buyDownPriceIsFree()"
+                  />
+                  @if (buyDownPriceIsFree()) {
+                    <small class="pf-warn">{{ 'PRODUCTS.PRICING.ITEM_WILL_BE_FREE' | translate }}</small>
+                  }
                 </div>
               }
             </div>
@@ -470,20 +499,36 @@
 
           <!-- Price boundary fields -->
           @if (selectedPricingTypeValue() === 'priceBoundary') {
+            <p class="pf-hint">{{ 'PRODUCTS.FORM.PRICE_BOUNDARY_HINT' | translate }}</p>
             <div class="pf-row">
               @if (fieldsOptions()?.branchProduct?.priceBoundriesFrom?.isVisible) {
                 <div class="pf-field pf-field--half">
                   <label class="pf-label">{{ 'PRODUCTS.FORM.PRICE_FROM' | translate }}</label>
-                  <input type="number" class="pf-input" formControlName="priceBoundriesFrom" min="0"/>
+                  <input
+                    type="number"
+                    class="pf-input"
+                    formControlName="priceBoundriesFrom"
+                    min="0"
+                    [class.pf-input--invalid]="priceBoundsInvalid()"
+                  />
                 </div>
               }
               @if (fieldsOptions()?.branchProduct?.priceBoundriesTo?.isVisible) {
                 <div class="pf-field pf-field--half">
                   <label class="pf-label">{{ 'PRODUCTS.FORM.PRICE_TO' | translate }}</label>
-                  <input type="number" class="pf-input" formControlName="priceBoundriesTo" min="0"/>
+                  <input
+                    type="number"
+                    class="pf-input"
+                    formControlName="priceBoundriesTo"
+                    min="0"
+                    [class.pf-input--invalid]="priceBoundsInvalid()"
+                  />
                 </div>
               }
             </div>
+            @if (priceBoundsInvalid()) {
+              <p class="pf-error">{{ 'PRODUCTS.FORM.PRICE_BOUNDARY_INVALID' | translate }}</p>
+            }
           }
         }
 
@@ -510,6 +555,7 @@
           <app-pf-branch-batches
             [array]="$any(grp.get('batches'))"
             [fieldsOptions]="fieldsOptions()"
+            [productInfo]="productInfo()"
           />
         }
       </div>

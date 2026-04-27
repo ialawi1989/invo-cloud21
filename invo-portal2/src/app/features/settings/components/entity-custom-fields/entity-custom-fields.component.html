@@ -1,0 +1,48 @@
+<section class="ecf-card" [formGroup]="group">
+  <header class="ecf-card__head">
+    <div class="ecf-card__icon" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 11h16a1 1 0 0 1 1 1v.5c0 1.5-.7 2.5-2 2.5H5c-1.3 0-2-1-2-2.5V12a1 1 0 0 1 1-1z"/>
+        <path d="M5 11v-5a1 1 0 0 1 1-1h3"/><path d="M19 11v-5a1 1 0 0 0-1-1h-3"/>
+        <path d="M5 19v-2a1 1 0 0 1 1-1h3"/><path d="M19 19v-2a1 1 0 0 0-1-1h-3"/>
+      </svg>
+    </div>
+    <h2 class="ecf-card__title">{{ titleKey() | translate }}</h2>
+  </header>
+
+  <div class="ecf-card__body">
+    @if (!hasFields()) {
+      <div class="ecf-empty">
+        <svg class="ecf-empty__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8"  x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p class="ecf-empty__text">{{ 'SETTINGS.CUSTOM_FIELDS.SECTION_EMPTY' | translate }}</p>
+        <a
+          [routerLink]="['/settings/custom-fields', entityType()]"
+          target="_blank"
+          rel="noopener"
+          class="ecf-empty__link"
+        >
+          {{ 'SETTINGS.CUSTOM_FIELDS.SECTION_OPEN_SETTINGS' | translate }}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </a>
+      </div>
+    } @else {
+      <div class="ecf-grid">
+        @for (f of fields(); track f.id) {
+          <app-custom-field-renderer
+            [field]="f"
+            [control]="controlOf(f)"
+            [idPrefix]="idPrefix()"
+          />
+        }
+      </div>
+    }
+  </div>
+</section>

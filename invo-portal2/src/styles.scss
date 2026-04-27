@@ -1,6 +1,10 @@
 @use 'tailwindcss';
 @use 'styles/content-library-design-system';
 
+// Leaflet map styles — only loaded once globally so the location-edit
+// modal doesn't have to ship them per-instance.
+@import 'leaflet/dist/leaflet.css';
+
 // ── Brand color palette (#32acc1 spectrum) ───────────────────────────────────
 // Tailwind v4 reads `@theme` to register custom design tokens. Once defined
 // here, the utilities `bg-brand-50` … `bg-brand-950`, `text-brand-*`,

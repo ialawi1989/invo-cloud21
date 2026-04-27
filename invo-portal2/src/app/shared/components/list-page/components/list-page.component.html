@@ -3,11 +3,8 @@
   <!-- ══════════════════════════════════════════════════════════════ -->
   <!-- PAGE HEADER -->
   <!-- ══════════════════════════════════════════════════════════════ -->
-  @if (pageTitle || breadcrumbs.length > 0) {
+  @if (pageTitle) {
   <div class="mb-6">
-    @if (breadcrumbs.length > 0) {
-      <app-breadcrumbs [items]="breadcrumbs" navClass="mb-2" />
-    }
     <div class="flex items-center justify-between">
       <div>
         @if (pageTitle) {
@@ -70,7 +67,7 @@
         <div class="flex items-center gap-2">
 
           <!-- Header Actions (only shown in toolbar when no page header) -->
-          @if (!pageTitle && breadcrumbs.length === 0) {
+          @if (!pageTitle) {
             @for (action of enabledHeaderActions(); track action.id) {
             <button type="button" (click)="onHeaderAction(action)" [disabled]="isActionDisabled(action)" [class]="
                   'flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ' +

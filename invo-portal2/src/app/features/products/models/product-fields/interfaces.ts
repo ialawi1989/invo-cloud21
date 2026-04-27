@@ -37,6 +37,7 @@ export interface Fields {
   altProduct: FieldTemplate;
   productAttributes?: FieldTemplate;
   nutrition?: nutritionFields;
+  allergens?: FieldTemplate;
   priceByTeam?: PriceByTeam;
   branchProduct: branchProductFields;
   packageBuilder?: PackageBuilder;

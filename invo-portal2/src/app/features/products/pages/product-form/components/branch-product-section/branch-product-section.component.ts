@@ -417,17 +417,31 @@ export class BranchProductSectionComponent implements OnInit {
         }),
       ),
     );
+    const productBarcode = String(this.productInfo()?.barcode ?? '');
     const batchesArr = this.fb.array(
-      (b.batches ?? []).map((bt: any) =>
-        this.fb.group({
+      (b.batches ?? []).map((bt: any) => {
+        // Backend doesn't persist a per-batch barcode — convention is
+        // `<product barcode>-<batch name>`. Fall back to that when the
+        // server returns nothing so saved batches don't render an empty
+        // barcode field.
+        const fallbackBarcode = productBarcode && bt.batch
+          ? `${productBarcode}-${bt.batch}`
+          : '';
+        const grp = this.fb.group({
+          id:         [bt.id ?? null],
           batch:      [bt.batch ?? '',    [Validators.required]],
-          barcode:    [bt.barcode ?? ''],
+          barcode:    [bt.barcode || fallbackBarcode],
           onHand:     [bt.onHand ?? null, [Validators.required, Validators.min(0)]],
           unitCost:   [bt.unitCost ?? 0,  [Validators.min(0)]],
           prodDate:   [bt.prodDate   ? new Date(bt.prodDate)   : null],
           expireDate: [bt.expireDate ? new Date(bt.expireDate) : null],
-        }),
-      ),
+        });
+        // Lock batches that already exist on the server — once saved, batch
+        // metadata (name, dates, etc.) is immutable from this form. Stock
+        // movements happen through the dedicated stock-adjust flow.
+        if (bt.id) grp.disable({ emitEvent: false });
+        return grp;
+      }),
     );
 
     // `has_different_price` isn't always persisted by the backend — the old
@@ -570,6 +584,7 @@ export class BranchProductSectionComponent implements OnInit {
         unitCost:  s.unitCost ?? null,
       }));
       target.batches = (v.batches ?? []).map((b: any) => ({
+        id:         b.id ?? null,
         batch:      b.batch ?? '',
         barcode:    b.barcode ?? '',
         onHand:     b.onHand ?? null,
@@ -624,6 +639,52 @@ export class BranchProductSectionComponent implements OnInit {
   hasDifferentPriceValue = computed<boolean>(() => {
     this.rowsTick();
     return !!this.activeGroup()?.controls['has_different_price']?.value;
+  });
+
+  /**
+   * True when the active branch is on the buy-down pricing type AND its
+   * `buyDownPrice` is zero / missing — drives the orange "Item will be free"
+   * warning on the Buy-down price input. Mirrors the old project's hint.
+   */
+  buyDownPriceIsFree = computed<boolean>(() => {
+    this.rowsTick();
+    if (this.selectedPricingTypeValue() !== 'buyDownPrice') return false;
+    const v = this.activeGroup()?.controls['buyDownPrice']?.value;
+    return v == null || v === '' || Number(v) === 0;
+  });
+
+  /**
+   * True when `has_different_price` is checked AND the branch override `price`
+   * is explicitly zero. Skipped when the value is null/empty so we don't
+   * shadow the existing "required" validator message — the warn only fires
+   * once the user has actually typed 0.
+   */
+  branchPriceIsFree = computed<boolean>(() => {
+    this.rowsTick();
+    if (!this.hasDifferentPriceValue()) return false;
+    const v = this.activeGroup()?.controls['price']?.value;
+    if (v == null || v === '') return false;
+    return Number(v) === 0;
+  });
+
+  /**
+   * True when the price-boundary range is invalid (`from >= to` with both
+   * values present). Lets the template surface the cross-field error inline
+   * without adding a real cross-field validator that would block save in
+   * other workflows.
+   */
+  priceBoundsInvalid = computed<boolean>(() => {
+    this.rowsTick();
+    if (this.selectedPricingTypeValue() !== 'priceBoundary') return false;
+    const grp = this.activeGroup();
+    if (!grp) return false;
+    const from = grp.controls['priceBoundriesFrom']?.value;
+    const to   = grp.controls['priceBoundriesTo']?.value;
+    if (from == null || from === '' || to == null || to === '') return false;
+    const f = Number(from);
+    const t = Number(to);
+    if (!Number.isFinite(f) || !Number.isFinite(t)) return false;
+    return f >= t;
   });
 
   /**

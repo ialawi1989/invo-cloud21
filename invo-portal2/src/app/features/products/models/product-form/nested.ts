@@ -16,15 +16,58 @@ export class ProductImage {
 }
 
 export class Nutrition {
+  // Serving information
+  servingSize = '';
+  servingsPerContainer = 0;
+  // `kcal` maps to "Calories per Serving" — kept under the original name to
+  // preserve compatibility with existing persisted records.
   kcal = 0;
-  fat = 0;
-  carb = 0;
-  protien = 0;
+
+  // Macronutrients
+  fat = 0;          // Total fat (g)
+  saturatedFat = 0; // g
+  transFat = 0;     // g
+  cholesterol = 0;  // mg
+  sodium = 0;       // mg
+  carb = 0;         // Total carbohydrates (g)
+  protien = 0;      // Protein (g) — original typo preserved for back-compat
+  dietaryFiber = 0; // g
+  totalSugars = 0;  // g
+  addedSugars = 0;  // g
+
+  // Vitamins & minerals — entered as % Daily Value.
+  vitaminA = 0;
+  vitaminC = 0;
+  vitaminD = 0;
+  vitaminE = 0;
+  calcium = 0;
+  iron = 0;
+  potassium = 0;
+  magnesium = 0;
 
   ParseJson(json: any): void {
     for (const key in json) {
       if (key in this) (this as any)[key] = json[key];
     }
+  }
+}
+
+/**
+ * FDA-style allergen tracking. `contains` and `mayContain` are arrays of
+ * canonical allergen keys (see ALLERGEN_KEYS in the component) — the same
+ * key may appear in either, both, or neither. `statement` is a free-form
+ * advisory string the user can edit independently of the boxes.
+ */
+export class Allergens {
+  contains: string[] = [];
+  mayContain: string[] = [];
+  statement = '';
+
+  ParseJson(json: any): void {
+    if (!json) return;
+    if (Array.isArray(json.contains))   this.contains   = json.contains.filter((x: any) => typeof x === 'string');
+    if (Array.isArray(json.mayContain)) this.mayContain = json.mayContain.filter((x: any) => typeof x === 'string');
+    if (typeof json.statement === 'string') this.statement = json.statement;
   }
 }
 

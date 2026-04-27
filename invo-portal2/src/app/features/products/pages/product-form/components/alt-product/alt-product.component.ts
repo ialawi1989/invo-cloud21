@@ -19,7 +19,7 @@ import { Fields } from '../../../../models/product-fields.model';
 import {
   PickProductModalComponent,
   PickProductModalData,
-  PickedProduct,
+  PickProductResult,
 } from '../pick-product-modal/pick-product-modal.component';
 
 /**
@@ -98,7 +98,7 @@ export class AltProductComponent implements OnInit {
 
   async openPicker(): Promise<void> {
     const info = this.productInfo();
-    const ref = this.modal.open<PickProductModalComponent, PickProductModalData, PickedProduct[]>(
+    const ref = this.modal.open<PickProductModalComponent, PickProductModalData, PickProductResult>(
       PickProductModalComponent,
       {
         data: {
@@ -110,12 +110,19 @@ export class AltProductComponent implements OnInit {
         size: 'md',
       },
     );
-    const picked = await ref.afterClosed();
-    if (!picked?.length) return;
+    const result = await ref.afterClosed();
+    if (!result) return;
+    if (!result.added.length && !result.removed.length) return;
 
     if (!Array.isArray(info.alternativeProducts))     info.alternativeProducts = [];
     if (!Array.isArray(info.alternativeProductsTemp)) info.alternativeProductsTemp = [];
-    picked.forEach((p) => {
+
+    if (result.removed.length) {
+      const removeSet = new Set(result.removed);
+      info.alternativeProducts = info.alternativeProducts.filter((id: string) => !removeSet.has(id));
+      info.alternativeProductsTemp = info.alternativeProductsTemp.filter((t: any) => !removeSet.has(t.id));
+    }
+    result.added.forEach((p) => {
       if (info.alternativeProducts.includes(p.id)) return;
       info.alternativeProducts.push(p.id);
       info.alternativeProductsTemp.push({ id: p.id, name: p.name });

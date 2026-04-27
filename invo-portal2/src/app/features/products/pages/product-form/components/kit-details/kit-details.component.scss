@@ -1,0 +1,47 @@
+@use '../../_shared-form.scss' as *;
+@include pfCard;
+
+// Footer "+ Create UOM" action — mounted inside the search-dropdown panel
+// (rendered via CDK overlay, but Angular preserves this component's view
+// encapsulation attributes so the rule still scopes correctly).
+.pf-create-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 0;
+  background: transparent;
+  color: #0e7490;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+
+  &:hover,
+  &:focus-visible {
+    background: #ecfeff;
+    color: #155e75;
+    outline: 0;
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 999px;
+    background: rgba(14, 116, 144, 0.1);
+    color: inherit;
+    flex: 0 0 auto;
+  }
+
+  &__text {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

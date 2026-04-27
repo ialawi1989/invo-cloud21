@@ -1,0 +1,23 @@
+<app-modal-header [title]="data.title"/>
+
+<div class="wh-modal__body">
+  <h2 class="wh-modal__heading">{{ data.title }}</h2>
+  @if (data.subtitle) {
+    <p class="wh-modal__sub">{{ data.subtitle }}</p>
+  }
+
+  <app-working-hours-editor
+    [parentForm]="form"
+    controlName="schedule"
+    [initial]="data.initial"
+  />
+</div>
+
+<footer class="wh-modal__footer">
+  <button type="button" class="btn btn-ghost" (click)="close()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form.invalid">
+    {{ 'COMMON.SAVE' | translate }}
+  </button>
+</footer>

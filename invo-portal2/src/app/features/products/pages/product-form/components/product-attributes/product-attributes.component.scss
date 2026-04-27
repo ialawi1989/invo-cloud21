@@ -33,11 +33,32 @@
   }
 }
 
+// ── Section heading above the tile grid ─────────────────────────────────
+.pf-attr-section {
+  margin: 4px 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
 // ── Tile grid ────────────────────────────────────────────────────────────
 .pf-attr-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  // Auto-fit so the grid expands to as many columns as the card width
+  // allows. The card now lives in the wide main column, so 4–5 tiles per
+  // row is typical.
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
+}
+
+// ── Certification details ──────────────────────────────────────────────
+.pf-attr-cert {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
 }
 
 .pf-attr-tile {
@@ -80,13 +101,6 @@
 
   &__check {
     color: #32acc1;
-    flex-shrink: 0;
-  }
-
-  &__img {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
     flex-shrink: 0;
   }
 }

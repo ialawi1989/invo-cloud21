@@ -2,13 +2,9 @@
 @include pfCard;
 
 .bb {
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 14px;
-  background: #fff;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 
   &__header {
     display: flex;
@@ -17,9 +13,12 @@
   }
   &__title {
     margin: 0;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
-    color: #334155;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
   &__count { color: #94a3b8; font-weight: 500; margin-inline-start: 4px; }
 
@@ -57,65 +56,175 @@
     font-style: italic;
   }
 
-  &__head,
-  &__row {
-    display: grid;
-    grid-template-columns:
-      minmax(120px, 1.2fr)
-      minmax(100px, 1fr)
-      minmax(80px, 0.8fr)
-      minmax(90px, 0.9fr)
-      minmax(120px, 1.1fr)
-      minmax(120px, 1.1fr)
-      36px;
-    gap: 8px;
-    align-items: center;
+  // ── Card list ────────────────────────────────────────────────────
+  &__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
-  &__head {
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    padding: 0 2px;
-  }
-
-  &__row {
-    position: relative;
-    padding-bottom: 0;
-
-    &--invalid { padding-bottom: 18px; }
-  }
-
-  &__row-error {
-    grid-column: 1 / -1;
-    margin: 2px 0 0;
-  }
-
-  &__remove {
-    padding: 6px;
+  &__card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
     background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    color: #64748b;
-    cursor: pointer;
+    padding: 14px 16px;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+
+    &:hover { border-color: #cbd5e1; }
+    &--invalid { border-color: #fecaca; background: #fffaf9; }
+    &--expired { border-color: #fcd34d; background: #fffbeb; }
+    // Saved (server-persisted) batches read as locked via the muted surface
+    // and the "SAVED" chip in the header — the disabled inputs handle the
+    // per-field treatment, so no extra accent stripe is needed.
+    &--saved {
+      background: #fafbfc;
+      border-color: #e2e8f0;
+    }
+  }
+
+  &__card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  &__card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  &__card-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+
+    &--expired { background: #fef3c7; color: #92400e; }
+    &--saved   { background: #f1f5f9; color: #475569; }
+  }
+
+  &__card-actions {
+    display: inline-flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  &__icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    &:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+    width: 30px;
+    height: 30px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 120ms ease;
+
+    &--primary {
+      background: #eef6fb;
+      border-color: #bee0ee;
+      color: #1e7fa3;
+      &:hover { background: #dcedf6; }
+    }
+    &--danger {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #dc2626;
+      &:hover { background: #fee2e2; border-color: #fca5a5; }
+    }
   }
 
-  @media (max-width: 900px) {
-    &__head { display: none; }
-    &__row {
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      padding: 10px;
-      border: 1px solid #f1f5f9;
-      border-radius: 8px;
-      & > * { min-width: 0; }
-      &__remove { grid-column: 2; justify-self: end; }
+  // ── Field grid ───────────────────────────────────────────────────
+  &__card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 14px;
+    row-gap: 12px;
+
+    @media (max-width: 540px) {
+      grid-template-columns: 1fr;
     }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  &__label {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #475569;
+  }
+
+  // Unit-cost wrapper with "free" warning state.
+  &__cost-wrap {
+    position: relative;
+
+    &--warn .pf-input {
+      border-color: #f59e0b;
+      background: #fffbeb;
+      padding-inline-end: 32px;
+    }
+  }
+  &__cost-warn {
+    position: absolute;
+    top: 50%;
+    inset-inline-end: 10px;
+    transform: translateY(-50%);
+    color: #f59e0b;
+    pointer-events: none;
+  }
+  &__warn-text {
+    font-size: 10.5px;
+    color: #b45309;
+  }
+
+  &__card-error {
+    margin: 10px 0 0;
+  }
+
+  // ── Totals footer ────────────────────────────────────────────────
+  &__totals {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+
+    strong { color: #0f172a; font-weight: 600; }
+  }
+  &__total-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+
+    &--valid   { color: #15803d; }
+    &--expired { color: #b45309; }
   }
 }

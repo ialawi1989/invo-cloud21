@@ -1,0 +1,74 @@
+<div class="cf-list">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'SETTINGS.ITEMS.CUSTOM_FIELDS' | translate }}</h1>
+      <p class="page-sub">{{ 'SETTINGS.CUSTOM_FIELDS.LIST_SUBTITLE' | translate }}</p>
+    </div>
+    @if (totalActive() > 0) {
+      <div class="kpi">
+        <span class="kpi__num">{{ totalActive() }}</span>
+        <span class="kpi__label">{{ 'SETTINGS.CUSTOM_FIELDS.TOTAL_ACTIVE' | translate }}</span>
+      </div>
+    }
+  </header>
+
+  <div class="search-bar">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/>
+      <path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input
+      type="text"
+      class="search-input"
+      [placeholder]="'SETTINGS.CUSTOM_FIELDS.SEARCH_PLACEHOLDER' | translate"
+      [value]="search()"
+      (input)="onSearchInput($any($event.target).value)"
+    />
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <span class="spinner spinner--lg"></span>
+    </div>
+  } @else if (filteredRows().length === 0) {
+    <div class="empty">
+      <p class="empty__text">{{ 'COMMON.NO_DATA' | translate }}</p>
+    </div>
+  } @else {
+    <div class="cards-grid">
+      @for (row of filteredRows(); track row.type) {
+        <button
+          type="button"
+          class="card"
+          (click)="open(row)"
+          [attr.aria-label]="row.label"
+        >
+          <span class="card__icon" [class]="row.color">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="row.icon | safeHtml"></svg>
+          </span>
+          <span class="card__body">
+            <span class="card__title">{{ row.label }}</span>
+            <span class="card__sub">
+              @if (row.active === 0) {
+                {{ 'SETTINGS.CUSTOM_FIELDS.NO_FIELDS' | translate }}
+              } @else if (row.active === 1) {
+                {{ 'SETTINGS.CUSTOM_FIELDS.ONE_FIELD' | translate }}
+              } @else {
+                {{ 'SETTINGS.CUSTOM_FIELDS.N_FIELDS' | translate: { count: row.active } }}
+              }
+              @if (row.deleted > 0) {
+                <span class="card__sub-trash">
+                  · {{ 'SETTINGS.CUSTOM_FIELDS.N_DELETED' | translate: { count: row.deleted } }}
+                </span>
+              }
+            </span>
+          </span>
+          <svg class="card__chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      }
+    </div>
+  }
+</div>

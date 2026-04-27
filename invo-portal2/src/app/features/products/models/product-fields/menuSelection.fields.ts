@@ -197,6 +197,11 @@ export const menuSelectionFields: Fields = {
       isRequired: false,
     },
   },
+  allergens: {
+    isVisible: true,
+    isDisabled: false,
+    isRequired: false,
+  },
   branchProduct: {
     available: true,
     availableOnline: true,

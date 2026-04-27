@@ -46,12 +46,13 @@
           id="pf-max-per-ticket"
           type="number"
           class="pf-input"
+          [class.pf-input--warn]="(c('maxItemPerTicket')?.value ?? 0) === 0"
           formControlName="maxItemPerTicket"
           min="0"
           [placeholder]="'PRODUCTS.FORM.MAX_ITEM_PER_TICKET' | translate"
         />
         @if ((c('maxItemPerTicket')?.value ?? 0) === 0) {
-          <p class="pf-hint">{{ 'PRODUCTS.FORM.ZERO_MEANS_UNLIMITED' | translate }}</p>
+          <p class="pf-warn">{{ 'PRODUCTS.FORM.ZERO_MEANS_UNLIMITED' | translate }}</p>
         }
       </div>
     }
@@ -93,7 +94,16 @@
     <!-- ── Kitchen name (menu-item print) ────────────────────────────── -->
     @if (showKitchenName()) {
       <div class="pf-field">
-        <label for="pf-kitchen-name" class="pf-label">{{ 'PRODUCTS.FORM.KITCHEN_NAME' | translate }}</label>
+        <label for="pf-kitchen-name" class="pf-label">
+          <span>{{ 'PRODUCTS.FORM.KITCHEN_NAME' | translate }}</span>
+          <span class="pf-info-icon" [appTooltip]="'PRODUCTS.FORM.KITCHEN_NAME_HINT' | translate" aria-label="Kitchen name info">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 16v-4"/>
+              <path d="M12 8h.01"/>
+            </svg>
+          </span>
+        </label>
         <input
           id="pf-kitchen-name"
           type="text"
@@ -104,42 +114,53 @@
       </div>
     }
 
-    <!-- ── Tags (chip input with autocomplete) ──────────────────────── -->
+    <!-- ── Tags (searchable multi-select dropdown) ──────────────────── -->
     @if (showTags()) {
       <div class="pf-field pf-field--tags">
         <label class="pf-label">
-          {{ 'PRODUCTS.FORM.TAGS' | translate }}
-          <span class="pf-hint pf-hint--inline">{{ 'PRODUCTS.FORM.TAGS_HINT' | translate }}</span>
+          <span>{{ 'PRODUCTS.FORM.TAGS' | translate }}</span>
+          <span class="pf-info-icon" [appTooltip]="'PRODUCTS.FORM.TAGS_HINT' | translate" aria-label="Tags info">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 16v-4"/>
+              <path d="M12 8h.01"/>
+            </svg>
+          </span>
         </label>
-        <div class="pf-chips">
-          @for (t of tags(); track t.value; let i = $index) {
-            <span class="pf-chip">
-              {{ t.display }}
-              <button type="button" class="pf-chip__remove"
-                      (click)="removeTagAt(i)"
-                      [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate">✕</button>
-            </span>
-          }
-          <input
-            type="text"
-            class="pf-chips__input"
-            [value]="tagInput()"
-            (input)="onTagInput($any($event.target).value)"
-            (focus)="onTagFocus()"
-            (blur)="onTagBlur()"
-            (keydown)="onTagKeydown($event)"
-            [placeholder]="tags().length === 0 ? ('PRODUCTS.FORM.ADD_TAG_PLACEHOLDER' | translate) : ''"
-          />
-        </div>
-        @if (tagDropdownOpen() && tagSuggestions().length > 0) {
-          <ul class="pf-chips__dropdown">
-            @for (s of tagSuggestions(); track s.tag) {
-              <li class="pf-chips__dropdown-item"
-                  (mousedown)="pickSuggestion(s.tag)">
-                {{ s.tag }}
-              </li>
+
+        <app-search-dropdown
+          [loadFn]="loadTagOptions"
+          [displayWith]="tagItemLabel"
+          [compareWith]="tagItemEquals"
+          [multiple]="true"
+          [value]="selectedTagItems()"
+          (valueChange)="onTagsChanged($any($event))"
+          (searchChange)="tagSearchTerm.set($event)"
+          [placeholder]="'PRODUCTS.FORM.SELECT_TAGS_PLACEHOLDER' | translate"
+          [searchPlaceholder]="'PRODUCTS.FORM.ADD_TAG_PLACEHOLDER' | translate">
+          <ng-template #footer>
+            @if (canCreateTypedTag()) {
+              <button type="button"
+                      class="w-full flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 cursor-pointer"
+                      (mousedown)="addCustomTag(tagSearchTerm().trim())">
+                <span aria-hidden="true">+</span>
+                <span>{{ 'PRODUCTS.FORM.CREATE_TAG' | translate: { tag: tagSearchTerm().trim() } }}</span>
+              </button>
             }
-          </ul>
+          </ng-template>
+        </app-search-dropdown>
+
+        @if (tags().length > 0) {
+          <div class="pf-chips pf-chips--summary">
+            @for (t of tags(); track t.value; let i = $index) {
+              <span class="pf-chip">
+                {{ t.display }}
+                <button type="button" class="pf-chip__remove"
+                        (click)="removeTagAt(i)"
+                        [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate">✕</button>
+              </span>
+            }
+          </div>
         }
       </div>
     }

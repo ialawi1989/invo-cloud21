@@ -37,6 +37,11 @@ export const unsavedChangesGuard: CanDeactivateFn<CanLeaveComponent> = async (co
     ConfirmModalComponent,
     {
       size: 'sm',
+      // The modal opens inside the router's active navigation flow. Letting
+      // ModalService push/pop its own history sentinel here collides with
+      // back-button navigation — the user ends up having to click navigate
+      // and confirm twice before the form actually unmounts.
+      manageHistory: false,
       data: {
         title:   translate.instant('COMMON.UNSAVED_TITLE'),
         message: translate.instant('COMMON.UNSAVED_HINT'),

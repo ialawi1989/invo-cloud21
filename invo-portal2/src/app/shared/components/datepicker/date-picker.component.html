@@ -355,6 +355,93 @@
     </div>
     </div>
 
+    <!-- Inline time stepper — only shown when [showTime]="true" and we're
+         in single-date mode. Compact horizontal strip: hour and minute
+         columns sized to content (not flex-stretched), centered as a
+         group, with the AM/PM toggle inline beside them. -->
+    @if (showTime() && !isRangeMode()) {
+      <div class="flex items-center justify-center gap-3 mt-2 pt-2 border-t border-slate-100" role="group" aria-label="Time">
+        <!-- Hour column -->
+        <div class="flex flex-col items-center gap-0.5 shrink-0">
+          <button
+            type="button"
+            (click)="hourUp()"
+            aria-label="Increment hour"
+            class="w-7 h-5 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <polyline points="6 15 12 9 18 15"/>
+            </svg>
+          </button>
+          <div class="text-xl font-bold text-slate-800 leading-none tabular-nums min-w-[32px] text-center" aria-live="polite">
+            {{ timePieces().h12 < 10 ? '0' + timePieces().h12 : timePieces().h12 }}
+          </div>
+          <button
+            type="button"
+            (click)="hourDown()"
+            aria-label="Decrement hour"
+            class="w-7 h-5 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
+
+        <span class="text-lg font-bold text-slate-300 leading-none tabular-nums shrink-0" aria-hidden="true">:</span>
+
+        <!-- Minute column -->
+        <div class="flex flex-col items-center gap-0.5 shrink-0">
+          <button
+            type="button"
+            (click)="minuteUp()"
+            aria-label="Increment minute"
+            class="w-7 h-5 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <polyline points="6 15 12 9 18 15"/>
+            </svg>
+          </button>
+          <div class="text-xl font-bold text-slate-800 leading-none tabular-nums min-w-[32px] text-center" aria-live="polite">
+            {{ timePieces().min < 10 ? '0' + timePieces().min : timePieces().min }}
+          </div>
+          <button
+            type="button"
+            (click)="minuteDown()"
+            aria-label="Decrement minute"
+            class="w-7 h-5 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- AM / PM segmented toggle — horizontal pill aligned with the
+             number row, no longer stacked vertically (was wasting space). -->
+        <div class="ms-1 flex items-stretch border border-slate-200 rounded-md overflow-hidden bg-slate-50 shrink-0" role="radiogroup" aria-label="AM or PM">
+          <button
+            type="button"
+            role="radio"
+            [attr.aria-checked]="timePieces().meridiem === 'AM'"
+            (click)="toggleMeridiem('AM')"
+            [class]="
+              'px-2.5 py-1 text-[11px] font-semibold transition-colors ' +
+              (timePieces().meridiem === 'AM'
+                ? 'bg-brand-600 text-white'
+                : 'bg-transparent text-slate-500 hover:text-slate-800 hover:bg-white')
+            ">AM</button>
+          <button
+            type="button"
+            role="radio"
+            [attr.aria-checked]="timePieces().meridiem === 'PM'"
+            (click)="toggleMeridiem('PM')"
+            [class]="
+              'px-2.5 py-1 text-[11px] font-semibold transition-colors ' +
+              (timePieces().meridiem === 'PM'
+                ? 'bg-brand-600 text-white'
+                : 'bg-transparent text-slate-500 hover:text-slate-800 hover:bg-white')
+            ">PM</button>
+        </div>
+      </div>
+    }
+
     <!-- Footer -->
     @if (showFooter()) {
       <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
@@ -364,12 +451,25 @@
           class="text-sm text-slate-500 hover:text-slate-700 transition-colors">
           Clear
         </button>
-        <button
-          type="button"
-          (click)="goToToday()"
-          class="text-sm text-brand-600 font-medium hover:text-brand-700 transition-colors">
-          Today
-        </button>
+        @if (showTime() && !isRangeMode()) {
+          <!-- In time mode, the day click no longer auto-closes the
+               panel — give the user an explicit Done button instead of
+               a Today link, since "Today at 00:00" usually isn't what
+               they want when picking date+time. -->
+          <button
+            type="button"
+            (click)="close()"
+            class="text-sm text-brand-600 font-medium hover:text-brand-700 transition-colors">
+            Done
+          </button>
+        } @else {
+          <button
+            type="button"
+            (click)="goToToday()"
+            class="text-sm text-brand-600 font-medium hover:text-brand-700 transition-colors">
+            Today
+          </button>
+        }
       </div>
     }
   </div>

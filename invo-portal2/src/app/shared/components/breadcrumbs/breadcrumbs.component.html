@@ -19,13 +19,11 @@
             <span class="text-slate-400 select-none" aria-hidden="true">…</span>
           }
 
-          <!-- Current page — solid pill, brand-tinted text -->
+          <!-- Current page — plain text, slightly emphasised; the page H1 is
+               the actual visual title, so we don't pill the breadcrumb. -->
           @else if (isCurrent($index)) {
             <span
-              [class]="
-                'inline-flex items-center gap-1.5 rounded-full bg-slate-100 font-semibold text-slate-900 ' +
-                (item.iconOnly ? 'p-2' : 'px-3 py-1.5')
-              "
+              class="inline-flex items-center gap-1.5 font-medium text-slate-900"
               aria-current="page">
               <ng-container [ngTemplateOutlet]="iconTpl" [ngTemplateOutletContext]="{ $implicit: item }" />
               @if (!item.iconOnly) {
@@ -34,17 +32,14 @@
             </span>
           }
 
-          <!-- Linkable parent — soft pill background -->
+          <!-- Linkable parent — plain text link. -->
           @else if (item.routerLink) {
             <a
               [routerLink]="item.routerLink"
               [queryParams]="item.queryParams ?? null"
               [attr.aria-label]="item.iconOnly ? item.label : null"
               (click)="onItemClick(item, $index, $event)"
-              [class]="
-                'inline-flex items-center gap-1.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ' +
-                (item.iconOnly ? 'p-2' : 'px-3 py-1.5')
-              ">
+              class="inline-flex items-center gap-1.5 px-2 py-1 -mx-2 rounded-full text-slate-500 hover:text-slate-900 hover:bg-[rgba(15,23,42,0.06)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
               <ng-container [ngTemplateOutlet]="iconTpl" [ngTemplateOutletContext]="{ $implicit: item }" />
               @if (!item.iconOnly) {
                 <span class="truncate max-w-[200px]">{{ item.label }}</span>
@@ -52,16 +47,13 @@
             </a>
           }
 
-          <!-- Linkable parent — external href -->
+          <!-- Linkable parent — external href. -->
           @else if (item.href) {
             <a
               [href]="item.href"
               [attr.aria-label]="item.iconOnly ? item.label : null"
               (click)="onItemClick(item, $index, $event)"
-              [class]="
-                'inline-flex items-center gap-1.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ' +
-                (item.iconOnly ? 'p-2' : 'px-3 py-1.5')
-              ">
+              class="inline-flex items-center gap-1.5 px-2 py-1 -mx-2 rounded-full text-slate-500 hover:text-slate-900 hover:bg-[rgba(15,23,42,0.06)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
               <ng-container [ngTemplateOutlet]="iconTpl" [ngTemplateOutletContext]="{ $implicit: item }" />
               @if (!item.iconOnly) {
                 <span class="truncate max-w-[200px]">{{ item.label }}</span>
@@ -69,16 +61,13 @@
             </a>
           }
 
-          <!-- Linkable parent — click handler only -->
+          <!-- Linkable parent — click handler only. -->
           @else {
             <button
               type="button"
               [attr.aria-label]="item.iconOnly ? item.label : null"
               (click)="onItemClick(item, $index, $event)"
-              [class]="
-                'inline-flex items-center gap-1.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ' +
-                (item.iconOnly ? 'p-2' : 'px-3 py-1.5')
-              ">
+              class="inline-flex items-center gap-1.5 px-2 py-1 -mx-2 rounded-full text-slate-500 hover:text-slate-900 hover:bg-[rgba(15,23,42,0.06)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
               <ng-container [ngTemplateOutlet]="iconTpl" [ngTemplateOutletContext]="{ $implicit: item }" />
               @if (!item.iconOnly) {
                 <span class="truncate max-w-[200px]">{{ item.label }}</span>
@@ -89,11 +78,15 @@
 
         <!-- Separator (skip after the last item) -->
         @if (!isCurrent($index)) {
-          <span class="text-slate-400 select-none mx-1.5 inline-flex items-center" aria-hidden="true">
+          <span class="text-slate-400 select-none mx-3 inline-flex items-center" aria-hidden="true">
             @switch (separator()) {
               @case ('chevron') {
-                <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                  <path d="M9 6l6 6-6 6"/>
+                <!-- Slim Wix-style chevron — `currentColor` so it inherits
+                     the surrounding muted text colour, and rotated 180°
+                     under [dir="rtl"] so it still points "forward" through
+                     the trail in Arabic / Hebrew layouts. -->
+                <svg class="rtl:rotate-180" width="6" height="12" viewBox="0 0 6 14" fill="currentColor" aria-hidden="true">
+                  <path d="M0 .7 4.6 7 0 13.3.8 14 6 7 .8 0z"/>
                 </svg>
               }
               @case ('slash') {

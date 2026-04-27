@@ -6,7 +6,12 @@
         <polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/>
       </svg>
     </div>
-    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.PACKAGE_BUILDER' | translate }}</h2>
+    <h2 class="pf-card__title" [class.pf-card__title--required]="isRequiredEmpty()">
+      {{ 'PRODUCTS.FORM.PACKAGE_BUILDER' | translate }}
+      @if (isRequiredEmpty()) {
+        <span class="pf-card__required">{{ 'COMMON.REQUIRED' | translate }}</span>
+      }
+    </h2>
     <div class="pf-pk-total">
       {{ 'PRODUCTS.FORM.TOTAL_PRICE' | translate }}:
       <strong>{{ totalPrice() | number:'1.0-3' }}</strong>
@@ -27,12 +32,12 @@
       <div class="pf-pk-head">
         <span>{{ 'PRODUCTS.FORM.PRODUCT' | translate }}</span>
         <span>{{ 'PRODUCTS.FIELDS.QTY' | translate }}</span>
-        <span>{{ 'PRODUCTS.PRICING.DEFAULT_PRICE' | translate }}</span>
+        <span>{{ 'PRODUCTS.FIELDS.PRICE' | translate }}</span>
         <span>{{ 'PRODUCTS.FORM.LINE_TOTAL' | translate }}</span>
         <span></span>
       </div>
 
-      @for (row of rows.controls; track row.value['id']; let i = $index) {
+      @for (row of rows.controls; track row.value['productId']; let i = $index) {
         <div class="pf-pk-row" [formGroup]="rowAt(i)">
           <div class="pf-pk-name">{{ row.value['name'] }}</div>
           <input
@@ -42,13 +47,10 @@
             min="0"
             [class.pf-input--invalid]="rowAt(i).controls['qty'].touched && rowAt(i).controls['qty'].invalid"
           />
-          <input
-            type="number"
-            class="pf-input"
-            formControlName="defaultPrice"
-            min="0"
-          />
-          <div class="pf-readonly">
+          <div class="pf-readonly pf-readonly--strong">
+            {{ (row.value['defaultPrice'] ?? 0) | number:'1.0-3' }}
+          </div>
+          <div class="pf-readonly pf-readonly--strong">
             {{ ((row.value['defaultPrice'] ?? 0) * (row.value['qty'] ?? 0)) | number:'1.0-3' }}
           </div>
           <button

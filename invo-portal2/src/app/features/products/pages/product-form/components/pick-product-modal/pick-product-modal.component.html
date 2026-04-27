@@ -19,7 +19,10 @@
     }
 
     @for (row of visible(); track row.id) {
-      <label class="ppm-row" [class.ppm-row--selected]="isSelected(row.id)">
+      <label
+        class="ppm-row"
+        [class.ppm-row--selected]="isSelected(row.id)"
+      >
         <input
           [type]="multiple() ? 'checkbox' : 'radio'"
           name="pickProductRow"

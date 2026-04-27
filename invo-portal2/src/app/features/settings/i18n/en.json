@@ -7,6 +7,7 @@
     "GROUPS": {
       "COMPANY":   "Company Setup",
       "PRODUCTS":  "Products",
+      "MEDIA":     "Media",
       "POS":       "POS Settings",
       "INVOICE":   "Invoice Settings",
       "ESTIMATE":  "Estimate Settings",
@@ -31,6 +32,8 @@
       "CUSTOM_FIELDS_DESC":        "Add your fields and define the location rules.",
       "PRODUCTS_TAB_BUILDER":      "Product Tabs Template",
       "PRODUCTS_TAB_BUILDER_DESC": "Define the default content tabs shown on every product.",
+      "IMAGE_DISPLAY":             "Image Display",
+      "IMAGE_DISPLAY_DESC":        "Set how product images are cropped and positioned across the storefront.",
       "PREFIX_SETTINGS":           "Prefix Settings",
       "PREFIX_SETTINGS_DESC":      "Customize the prefixes for various document types.",
 
@@ -90,6 +93,244 @@
       "SERVICE_MANAGEMENT_DESC":   "Configure the services your business offers, including service types and pricing.",
       "IMPORT_FROM_INVO":          "Import from Invo",
       "IMPORT_FROM_INVO_DESC":     "Import company data from another Invo account."
+    },
+
+    "BUSINESS": {
+      "IDENTITY":                "Identity",
+      "IDENTITY_DESC":           "How your business appears across the app, on receipts, and in customer-facing pages.",
+      "LOGO":                    "Logo",
+      "LOGO_HINT":               "Square images render best. Used in the sidebar, receipts, and exported invoices.",
+      "CHOOSE_LOGO":             "Choose logo",
+      "REPLACE_LOGO":            "Replace logo",
+      "REMOVE_LOGO":             "Remove",
+      "NAME":                    "Business name",
+      "NAME_REQUIRED":           "Business name is required.",
+      "SLUG":                    "Slug",
+      "SLUG_HINT":               "Auto-generated identifier — used in URLs and integrations. Read-only.",
+
+      "LOCALE":                  "Locale & Currency",
+      "LOCALE_DESC":             "Country, currency and rounding behaviour. Country and currency are set during registration; rounding is editable.",
+      "COUNTRY":                 "Country",
+      "COUNTRY_CODE":            "Country code",
+      "CURRENCY_SYMBOL":         "Currency symbol",
+      "DECIMALS":                "Decimal places",
+      "SMALLEST_CURRENCY":       "Smallest currency unit",
+      "SMALLEST_CURRENCY_HINT":  "The smallest cash denomination in your currency (e.g. 0.005). Used to round cash totals.",
+      "ROUNDING_TYPE":           "Rounding behaviour",
+      "ROUNDING_NORMAL":         "Normal (nearest)",
+      "ROUNDING_NEGATIVE":       "Negative (round down)",
+      "ROUNDING_POSITIVE":       "Positive (round up)",
+
+      "TAX":                     "Tax",
+      "TAX_DESC":                "Tax identifier and how prices are entered for this business.",
+      "VAT_NUMBER":              "VAT / Tax number",
+      "INCLUSIVE_TAX":           "Prices include tax",
+      "INCLUSIVE_TAX_HINT":      "When enabled, the prices you enter on products are treated as tax-inclusive."
+    },
+
+    "BRANCHES": {
+      "ADD_NEW":              "Add branch",
+      "EDIT":                 "Edit branch",
+      "SEARCH_PLACEHOLDER":   "Search branches…",
+      "EMPTY":                "No branches yet. Click \"Add branch\" to create the first one.",
+      "NO_MATCH":             "No branches match your search.",
+      "NAME":                 "Branch name",
+      "NAME_REQUIRED":        "Branch name is required.",
+      "PHONE":                "Phone",
+      "ADDRESS":              "Address",
+      "DEFAULT_HEADING":      "Default for storefront",
+      "DEFAULT":              "Default",
+      "MAIN":                 "Main",
+      "IS_DEFAULT":           "Default",
+      "SET_AS_DEFAULT":       "Set as default",
+      "LAT":                  "Latitude",
+      "LNG":                  "Longitude",
+      "OPENING_TIME":         "Opening time",
+      "OPENING_TIME_HINT":    "When this branch starts its day. Detailed open/close periods per day go under Working hours.",
+      "USE_MY_LOCATION":      "Use my current location",
+      "MAP_DRAG_HINT":        "Drag the pin (or click anywhere) so it matches the exact location of your branch.",
+      "ONLINE_AVAILABILITY":  "Online sales available for this branch",
+      "ONLINE_AVAILABILITY_HINT": "Customers can place orders against this branch from the online storefront.",
+      "MAIN_BRANCH":          "Main branch for the company",
+      "MAIN_BRANCH_HINT":     "Used as the company-level fallback for reports and exports.",
+      "INCLUSIVE_TAX":        "Prices on this branch include tax",
+      "INCLUSIVE_TAX_HINT":   "Overrides the company-wide tax-inclusive setting for branch-specific pricing.",
+      "LOCKED_BY_DEFAULT":    "(can't disable on the storefront default branch)",
+      "WORKING_HOURS":        "Working hours",
+      "WORKING_HOURS_DESC":   "Hours during which staff is on-site and the branch is open to customers.",
+      "EDIT_WORKING_HOURS":   "Edit working hours",
+      "DELIVERY_TIMES":       "Delivery times",
+      "DELIVERY_TIMES_DESC":  "Hours during which the branch accepts and dispatches delivery orders.",
+      "EDIT_DELIVERY_TIMES":  "Edit delivery times",
+      "SECTION_IDENTITY":      "Identity",
+      "SECTION_IDENTITY_DESC": "How customers and staff recognise this branch.",
+      "SECTION_LOCATION":      "Location",
+      "SECTION_LOCATION_DESC": "Address and coordinates.",
+      "SECTION_OPERATIONS":      "Operations",
+      "SECTION_OPERATIONS_DESC": "Branch operating preferences such as closing time.",
+      "SECTION_OPTIONS":       "Options",
+      "SECTION_OPTIONS_DESC":  "Toggles that change how this branch behaves in the storefront and reports.",
+      "EDIT_LOCATION":         "Edit your location",
+      "EDIT_LOCATION_HINT":    "Update the address shown to customers and the coordinates used by the storefront map.",
+      "MAP_LOCATION":          "Map location",
+      "MAP_LOCATION_HINT":     "Latitude and longitude pinpoint the branch on the map. Paste them from a Google Maps link if you don't know them.",
+      "MAP_NEEDS_COORDS":      "Add latitude and longitude to preview the map.",
+      "NO_ADDRESS":            "No address set yet.",
+      "NO_COORDS":             "No coordinates yet — click Edit to add the address and pinpoint this branch on the map."
+    },
+
+    "WORKING_HOURS": {
+      "OPEN":           "Open",
+      "CLOSED":         "Closed",
+      "TO":             "to",
+      "ADD_PERIOD":     "Add period",
+      "COPY_TO_ALL":    "Copy to all days",
+      "COPY_TO_ALL_HINT":"Stamp this day's hours onto every other day.",
+      "TO_AFTER_FROM":  "End time must be after start time.",
+      "OVERLAPPING":    "Periods overlap — adjust the times so they don't conflict.",
+      "COPY_BANNER_TITLE": "Copy these opening hours to all days?",
+      "COPY_BANNER_YES":   "Yes, copy",
+      "COPY_BANNER_NO":    "Not now"
+    },
+
+    "CUSTOM_FIELDS": {
+      "SECTION_TITLE":     "Custom fields",
+      "SECTION_EMPTY":     "No custom fields are defined for this entity yet.",
+      "SECTION_OPEN_SETTINGS": "Manage in settings",
+
+      "LIST_SUBTITLE":     "Pick the entity you want to extend with extra information.",
+      "SEARCH_PLACEHOLDER":"Search entity types…",
+      "TOTAL_ACTIVE":      "Active fields",
+      "NO_FIELDS":         "No fields yet",
+      "ONE_FIELD":         "1 field",
+      "N_FIELDS":          "{{count}} fields",
+      "N_DELETED":         "{{count}} in trash",
+
+      "MANAGER_TITLE":     "{{entity}} fields",
+      "MANAGER_SUBTITLE":  "Define the extra inputs that will appear on every form for this entity.",
+
+      "ACTIVE_HEADING":    "Fields",
+      "ACTIVE_SUB":        "Drag to reorder. Click a row to edit its settings.",
+      "ADD_FIELD":         "Add field",
+      "ADD_FIRST":         "Add your first field",
+      "EMPTY_ACTIVE":      "No fields yet — start by adding one.",
+
+      "TRASH_HEADING":     "Trash",
+      "TRASH_SUB":         "Soft-deleted fields are hidden from forms but kept here so you can restore them.",
+      "RESTORE":           "Restore",
+
+      "TAB_GENERAL":       "General",
+      "TAB_VALIDATION":    "Validation",
+      "TAB_OPTIONS":       "Options",
+      "TAB_LAYOUT":        "Layout",
+
+      "UNNAMED":           "Untitled field",
+      "DUPLICATE":         "Duplicate",
+
+      "NAME":              "Label",
+      "NAME_PLACEHOLDER":  "e.g. Company size",
+      "SLUG":              "Identifier",
+      "SLUG_HINT":         "Used in storage. Lowercase letters, numbers and underscores only.",
+      "SLUG_TAKEN":        "Another field already uses this identifier.",
+      "TYPE":              "Type",
+      "DEFAULT_VALUE":     "Default value",
+
+      "REQUIRED":          "Required",
+      "REQUIRED_HINT":     "Users must fill this field before saving.",
+      "CHAR_LIMIT":        "Character limit",
+      "MIN_NUMBER":        "Minimum",
+      "MAX_NUMBER":        "Maximum",
+      "NUMBER_DISPLAY":    "Display as",
+      "MULTI_SELECT":      "Allow multi-select",
+      "MULTI_SELECT_HINT": "Users can pick more than one option.",
+      "CLEARABLE":         "Allow clearing",
+      "CLEARABLE_HINT":    "Show a clear (×) button on the dropdown.",
+
+      "OPTIONS_EMPTY":     "Add at least one option for users to pick from.",
+      "OPTION_LABEL":      "Label",
+      "OPTION_VALUE":      "Stored value",
+      "ADD_OPTION":        "Add option",
+
+      "GRID_TEMPLATE":     "Width on the form",
+
+      "ENTITIES": {
+        "PRODUCT":         "Product",
+        "BRANCH":          "Branch",
+        "CUSTOMER":        "Customer",
+        "ESTIMATE":        "Estimate",
+        "INVOICE":         "Invoice",
+        "SUPPLIER":        "Supplier",
+        "PURCHASE_ORDER":  "Purchase Order",
+        "BILL":            "Bill",
+        "EXPENSE":         "Expense"
+      },
+
+      "TYPES": {
+        "TEXT":     "Text",
+        "TEXTAREA": "Long text",
+        "DATE":     "Date",
+        "DATETIME": "Date & time",
+        "TIME":     "Time",
+        "NUMBER":   "Number",
+        "SELECT":   "Dropdown",
+        "BOOLEAN":  "Yes / No",
+        "EMAIL":    "Email",
+        "URL":      "URL",
+        "PHONE":    "Phone",
+        "COLOR":    "Color"
+      },
+
+      "TYPE_DESC": {
+        "TEXT":     "A single line of plain text.",
+        "TEXTAREA": "Multiple lines for longer descriptions.",
+        "DATE":     "A single date with no time component.",
+        "DATETIME": "Date plus time of day.",
+        "TIME":     "Time of day, no date.",
+        "NUMBER":   "Integers, decimals, currency or percentages.",
+        "SELECT":   "Pick from a predefined list of options.",
+        "BOOLEAN":  "A simple yes/no toggle.",
+        "EMAIL":    "Email address with format validation.",
+        "URL":      "Web link with format validation.",
+        "PHONE":    "Phone number with mobile-keyboard hints.",
+        "COLOR":    "Pick a HEX color from a swatch."
+      },
+
+      "TYPE_PICKER": {
+        "TITLE":       "Choose field type",
+        "SUBTITLE":    "Pick the input that fits the data you'll be capturing on this entity.",
+        "ESSENTIALS":  "Essentials",
+        "CONTACT":     "Contact & links",
+        "TIME":        "Date & time",
+        "CONFIRM":     "Choose field type",
+        "CHANGE":      "Change"
+      },
+
+      "NUMBER_KINDS": {
+        "INTEGER":    "Integer",
+        "DECIMAL":    "Decimal",
+        "CURRENCY":   "Currency",
+        "PERCENTAGE": "Percentage"
+      },
+
+      "GRIDS": {
+        "COL_4":  "One third",
+        "COL_6":  "Half",
+        "COL_12": "Full width"
+      }
+    },
+
+    "IMAGE_DISPLAY": {
+      "CONTROLS":         "Display rules",
+      "CONTROLS_DESC":    "Pick how product images render on cards and listing tiles.",
+      "FIT":              "Image fit",
+      "FIT_HINT":         "Cover crops to fill, Contain shows the whole image, Fill stretches.",
+      "FIT_COVER":        "Cover",
+      "FIT_CONTAIN":      "Contain",
+      "FIT_FILL":         "Fill",
+      "POSITION":         "Focal point",
+      "POSITION_HINT":    "Pick which part of the image stays visible when it has to crop.",
+      "PREVIEW":          "Live preview",
+      "PREVIEW_DESC":     "How the same image renders at three common card aspect ratios."
     }
   }
 }

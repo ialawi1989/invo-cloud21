@@ -1,0 +1,133 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.loc-edit__body {
+  padding: 20px 24px 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.loc-edit__heading {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.loc-edit__sub {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.loc-edit__divider {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 22px 0 16px;
+}
+
+.loc-edit__map-title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.loc-edit__map-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.loc-edit__map {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.loc-edit__map-canvas {
+  width: 100%;
+  height: 320px;
+  position: relative;
+  z-index: 0;
+}
+
+.btn-sm { padding: 5px 12px; font-size: 12px; gap: 6px; display: inline-flex; align-items: center; }
+
+// ── Form fields ────────────────────────────────────────────────────────
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+
+  @media (max-width: 540px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+
+  &--span-2 { grid-column: 1 / -1; }
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.input {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: inherit;
+  &:focus {
+    outline: none;
+    border-color: #32acc1;
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+}
+
+// ── Footer ─────────────────────────────────────────────────────────────
+.loc-edit__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 24px 18px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &-primary {
+    background: #32acc1; color: #fff; border-color: #32acc1;
+    &:hover { background: #2a93a6; border-color: #2a93a6; }
+  }
+  &-ghost {
+    background: #fff; color: #475569; border-color: #e5e7eb;
+    &:hover { background: #f8fafc; color: #0f172a; }
+  }
+}

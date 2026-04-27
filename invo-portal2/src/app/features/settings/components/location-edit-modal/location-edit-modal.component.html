@@ -1,0 +1,51 @@
+<app-modal-header [title]="'SETTINGS.BRANCHES.EDIT_LOCATION' | translate"/>
+
+<div class="loc-edit__body" [formGroup]="form">
+  <h2 class="loc-edit__heading">{{ 'SETTINGS.BRANCHES.SECTION_LOCATION' | translate }}</h2>
+  <p class="loc-edit__sub">{{ 'SETTINGS.BRANCHES.EDIT_LOCATION_HINT' | translate }}</p>
+
+  <div class="grid">
+    <div class="field field--span-2">
+      <label class="field-label" for="loc-address">{{ 'SETTINGS.BRANCHES.ADDRESS' | translate }}</label>
+      <input id="loc-address" type="text" class="input" formControlName="address"/>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="loc-lat">{{ 'SETTINGS.BRANCHES.LAT' | translate }}</label>
+      <input id="loc-lat" type="text" class="input" formControlName="lat" inputmode="decimal" placeholder="26.2389"/>
+    </div>
+    <div class="field">
+      <label class="field-label" for="loc-lng">{{ 'SETTINGS.BRANCHES.LNG' | translate }}</label>
+      <input id="loc-lng" type="text" class="input" formControlName="lng" inputmode="decimal" placeholder="50.5876"/>
+    </div>
+  </div>
+
+  <hr class="loc-edit__divider"/>
+
+  <div class="loc-edit__map-head">
+    <div>
+      <h3 class="loc-edit__map-title">{{ 'SETTINGS.BRANCHES.MAP_LOCATION' | translate }}</h3>
+      <p class="loc-edit__sub">{{ 'SETTINGS.BRANCHES.MAP_DRAG_HINT' | translate }}</p>
+    </div>
+    <button type="button" class="btn btn-ghost btn-sm" (click)="useCurrentLocation()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="2"  x2="12" y2="4"/>
+        <line x1="12" y1="20" x2="12" y2="22"/>
+        <line x1="2"  y1="12" x2="4"  y2="12"/>
+        <line x1="20" y1="12" x2="22" y2="12"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      {{ 'SETTINGS.BRANCHES.USE_MY_LOCATION' | translate }}
+    </button>
+  </div>
+
+  <div class="loc-edit__map">
+    <div #mapEl class="loc-edit__map-canvas" [attr.aria-label]="'SETTINGS.BRANCHES.MAP_LOCATION' | translate"></div>
+  </div>
+</div>
+
+<footer class="loc-edit__footer">
+  <button type="button" class="btn btn-ghost" (click)="close()">{{ 'COMMON.CANCEL' | translate }}</button>
+  <button type="button" class="btn btn-primary" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+</footer>

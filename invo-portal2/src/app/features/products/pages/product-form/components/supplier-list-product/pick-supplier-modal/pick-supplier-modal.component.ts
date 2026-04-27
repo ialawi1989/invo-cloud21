@@ -21,8 +21,14 @@ import type { ModalRef } from '@shared/modal/modal.service';
 import { SupplierService, SupplierMini } from '../../../../../../suppliers';
 
 export interface PickSupplierModalData {
-  /** Supplier ids already attached to the product — hidden from the picker. */
+  /** Supplier ids already attached — pre-selected on open. The user can
+   *  uncheck them to remove from the parent list. */
   excludedIds?: string[];
+}
+
+export interface PickSupplierResult {
+  added: SupplierMini[];
+  removed: string[];
 }
 
 /**
@@ -42,7 +48,7 @@ export interface PickSupplierModalData {
 })
 export class PickSupplierModalComponent implements OnInit, AfterViewInit, OnDestroy {
   private supplierSvc = inject(SupplierService);
-  private modalRef    = inject<ModalRef<SupplierMini[]>>(MODAL_REF);
+  private modalRef    = inject<ModalRef<PickSupplierResult>>(MODAL_REF);
   data                = inject<PickSupplierModalData>(MODAL_DATA) ?? {};
 
   search    = signal('');
@@ -51,21 +57,21 @@ export class PickSupplierModalComponent implements OnInit, AfterViewInit, OnDest
   hasMore   = signal(false);
   rows      = signal<SupplierMini[]>([]);
   selected  = signal<Set<string>>(new Set());
+  private initialSelected: Set<string> = new Set();
   private searchDebounce?: ReturnType<typeof setTimeout>;
 
   /** Sentinel at the bottom of the list; observed to trigger next-page load. */
   readonly scrollSentinel = viewChild<ElementRef<HTMLElement>>('scrollSentinel');
   private scrollObserver?: IntersectionObserver;
 
-  excluded = computed<Set<string>>(() => new Set(this.data.excludedIds ?? []));
-
-  visibleRows = computed<SupplierMini[]>(() =>
-    this.rows().filter((r) => !this.excluded().has(r.id)),
-  );
+  visibleRows = computed<SupplierMini[]>(() => this.rows());
 
   selectedCount = computed(() => this.selected().size);
 
   ngOnInit(): void {
+    const ids = this.data.excludedIds ?? [];
+    this.initialSelected = new Set(ids);
+    this.selected.set(new Set(ids));
     this.loadPage(1);
   }
 
@@ -128,8 +134,10 @@ export class PickSupplierModalComponent implements OnInit, AfterViewInit, OnDest
   }
 
   confirm(): void {
-    const picked = this.rows().filter((r) => this.selected().has(r.id));
-    this.modalRef.close(picked);
+    const current = this.selected();
+    const added = this.rows().filter((r) => current.has(r.id) && !this.initialSelected.has(r.id));
+    const removed = [...this.initialSelected].filter((id) => !current.has(id));
+    this.modalRef.close({ added, removed });
   }
 
   cancel(): void {

@@ -1,0 +1,170 @@
+<div class="business-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'SETTINGS.ITEMS.BUSINESS_SETTINGS' | translate }}</h1>
+      <p class="page-sub">{{ 'SETTINGS.ITEMS.BUSINESS_SETTINGS_DESC' | translate }}</p>
+    </div>
+    <div class="page-header__actions">
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="save()"
+        [disabled]="saving() || loading() || form.invalid"
+      >
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Identity ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'SETTINGS.BUSINESS.IDENTITY' | translate }}</h2>
+        <p class="card__sub">{{ 'SETTINGS.BUSINESS.IDENTITY_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <!-- Logo -->
+        <div class="logo-row">
+          <div class="logo-thumb" (click)="pickLogo()" role="button" tabindex="0">
+            @if (mediaUrl()) {
+              <img [src]="mediaUrl()" alt="logo"/>
+            } @else {
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="9" cy="9" r="2"/>
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              </svg>
+            }
+          </div>
+          <div class="logo-actions">
+            <span class="field-label">{{ 'SETTINGS.BUSINESS.LOGO' | translate }}</span>
+            <p class="field-hint">{{ 'SETTINGS.BUSINESS.LOGO_HINT' | translate }}</p>
+            <div class="logo-actions__buttons">
+              <button type="button" class="btn btn-outline btn-sm" (click)="pickLogo()">
+                {{ (mediaUrl() ? 'SETTINGS.BUSINESS.REPLACE_LOGO' : 'SETTINGS.BUSINESS.CHOOSE_LOGO') | translate }}
+              </button>
+              @if (mediaUrl()) {
+                <button type="button" class="btn btn-ghost btn-sm btn-danger" (click)="removeLogo()">
+                  {{ 'SETTINGS.BUSINESS.REMOVE_LOGO' | translate }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label" for="bs-name">
+              {{ 'SETTINGS.BUSINESS.NAME' | translate }}
+              <span class="required">*</span>
+            </label>
+            <input
+              id="bs-name"
+              type="text"
+              class="input"
+              formControlName="name"
+              [class.input--invalid]="form.controls['name'].touched && form.controls['name'].invalid"
+            />
+            @if (form.controls['name'].touched && form.controls['name'].errors?.['required']) {
+              <p class="field-error">{{ 'SETTINGS.BUSINESS.NAME_REQUIRED' | translate }}</p>
+            }
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="bs-slug">{{ 'SETTINGS.BUSINESS.SLUG' | translate }}</label>
+            <input id="bs-slug" type="text" class="input input--readonly" formControlName="slug"/>
+            <p class="field-hint">{{ 'SETTINGS.BUSINESS.SLUG_HINT' | translate }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Locale & Currency ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'SETTINGS.BUSINESS.LOCALE' | translate }}</h2>
+        <p class="card__sub">{{ 'SETTINGS.BUSINESS.LOCALE_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label">{{ 'SETTINGS.BUSINESS.COUNTRY' | translate }}</label>
+            <input type="text" class="input input--readonly" formControlName="country"/>
+          </div>
+          <div class="field">
+            <label class="field-label">{{ 'SETTINGS.BUSINESS.COUNTRY_CODE' | translate }}</label>
+            <input type="text" class="input input--readonly" formControlName="contryCode"/>
+          </div>
+          <div class="field">
+            <label class="field-label">{{ 'SETTINGS.BUSINESS.CURRENCY_SYMBOL' | translate }}</label>
+            <input type="text" class="input input--readonly" formControlName="currencySymbol"/>
+          </div>
+          <div class="field">
+            <label class="field-label">{{ 'SETTINGS.BUSINESS.DECIMALS' | translate }}</label>
+            <input type="number" class="input input--readonly" formControlName="afterDecimal"/>
+          </div>
+          <div class="field">
+            <label class="field-label">{{ 'SETTINGS.BUSINESS.SMALLEST_CURRENCY' | translate }}</label>
+            <input
+              type="number"
+              class="input"
+              formControlName="smallestCurrency"
+              min="0"
+              max="0.99"
+              step="0.001"
+            />
+            <p class="field-hint">{{ 'SETTINGS.BUSINESS.SMALLEST_CURRENCY_HINT' | translate }}</p>
+          </div>
+          <div class="field">
+            <label class="field-label">{{ 'SETTINGS.BUSINESS.ROUNDING_TYPE' | translate }}</label>
+            <app-search-dropdown
+              [items]="roundingOptions()"
+              [displayWith]="roundingDisplay"
+              [compareWith]="roundingCompare"
+              [toValue]="roundingToValue"
+              [clearable]="false"
+              [searchable]="false"
+              [value]="form.controls['roundingType'].value"
+              (valueChange)="setRoundingType($any($event))"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Tax ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'SETTINGS.BUSINESS.TAX' | translate }}</h2>
+        <p class="card__sub">{{ 'SETTINGS.BUSINESS.TAX_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label" for="bs-vat">{{ 'SETTINGS.BUSINESS.VAT_NUMBER' | translate }}</label>
+            <input id="bs-vat" type="text" class="input" formControlName="vatNumber"/>
+          </div>
+          <div class="field field--toggle">
+            <label class="toggle">
+              <input type="checkbox" formControlName="isInclusiveTax"/>
+              <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+              <span class="toggle__label">
+                <span class="field-label">{{ 'SETTINGS.BUSINESS.INCLUSIVE_TAX' | translate }}</span>
+                <span class="field-hint">{{ 'SETTINGS.BUSINESS.INCLUSIVE_TAX_HINT' | translate }}</span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+</div>

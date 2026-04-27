@@ -1,0 +1,63 @@
+<p class="pf-opts-desc" [innerHTML]="'PRODUCTS.FORM.DEFAULT_OPTIONS_DESCRIPTION' | translate"></p>
+
+<div class="pf-opts-toolbar">
+  @if (rows().length === 0 && !search()) {
+    <span class="pf-opts-empty">{{ 'PRODUCTS.FORM.NO_SELECTED_ITEMS' | translate }}</span>
+  } @else {
+    <label class="pf-opts-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        [value]="search()"
+        (input)="setSearch($any($event.target).value)"
+        [placeholder]="'COMMON.SEARCH' | translate"
+      />
+    </label>
+  }
+
+  <button type="button" class="pf-btn pf-btn--outline" (click)="openPicker()">
+    {{ 'PRODUCTS.FORM.SELECT' | translate }}
+  </button>
+</div>
+
+@if (rows().length > 0) {
+  <div class="pf-opts-list" cdkDropList (cdkDropListDropped)="drop($event)">
+    @for (row of rows(); track row.optionId) {
+      <div class="pf-opts-row" cdkDrag [cdkDragDisabled]="!!search()">
+        <span class="pf-opts-row__handle" cdkDragHandle aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9"  cy="6"  r="1"/><circle cx="15" cy="6"  r="1"/>
+            <circle cx="9"  cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+            <circle cx="9"  cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+          </svg>
+        </span>
+
+        <span class="pf-opts-row__name">{{ row.name }}</span>
+
+        <input
+          type="number"
+          class="pf-opts-row__qty"
+          min="0"
+          step="1"
+          [value]="row.qty"
+          (input)="setQty(row.optionId, $any($event.target).value)"
+          [attr.aria-label]="'PRODUCTS.FIELDS.QTY' | translate"
+        />
+
+        <button
+          type="button"
+          class="pf-opts-row__remove"
+          (click)="removeOption(row.optionId)"
+          [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
+      </div>
+    }
+  </div>
+}

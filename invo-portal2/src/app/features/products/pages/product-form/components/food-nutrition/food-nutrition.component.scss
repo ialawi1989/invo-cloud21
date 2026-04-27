@@ -1,8 +1,119 @@
 @use '../../_shared-form.scss' as *;
 @include pfCard;
 
+.pf-nut-body { padding-top: 8px; }
+
+// Two-column shell only when there's enough room. Below the breakpoint the
+// preview drops below the form, so the form gets the full width and the
+// auto-fit grids can comfortably show 3–4 columns.
+.pf-nut-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (min-width: 1280px) {
+  .pf-nut-shell { grid-template-columns: minmax(0, 1fr) 300px; }
+}
+
+.pf-nut-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pf-nut-section {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  &:first-child { margin-top: 4px; }
+
+  &--centered { text-align: center; margin-top: 4px; }
+}
+
+// Auto-fit columns adapt to whatever width the section actually has, so
+// labels never wrap mid-word and inputs keep a sensible minimum size.
 .pf-nut-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+// ─── FDA-style Nutrition Facts label ─────────────────────────────────────
+.pf-nut-preview { position: sticky; top: 16px; }
+
+.nf-label {
+  background: #fff;
+  color: #0f172a;
+  border: 2px solid #0f172a;
+  padding: 10px 12px;
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+
+  &__title {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  &__serving {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  &__serving-count { font-weight: 700; }
+
+  &__bar {
+    height: 4px;
+    background: #0f172a;
+    margin: 4px 0;
+
+    &--lg { height: 8px; }
+    &--sm { height: 2px; margin-top: 6px; }
+  }
+
+  &__amount-per { font-weight: 700; font-size: 11px; }
+
+  &__calories-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid #0f172a;
+    padding-bottom: 4px;
+  }
+  &__calories-label { font-size: 22px; font-weight: 900; }
+  &__calories-value { font-size: 28px; font-weight: 900; }
+
+  &__dv-header {
+    text-align: end;
+    font-weight: 700;
+    border-bottom: 1px solid #0f172a;
+    padding-bottom: 2px;
+    font-size: 11px;
+  }
+
+  &__footnote {
+    font-size: 10px;
+    line-height: 1.3;
+    margin: 6px 0 0;
+  }
+}
+
+.nf-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid #0f172a;
+  padding: 3px 0;
+
+  &--bold     { font-weight: 700; }
+  &--indent   { padding-inline-start: 14px; }
+  &--indent2  { padding-inline-start: 28px; }
 }

@@ -54,6 +54,7 @@ import { manualAdjustmentSecurity } from '../definitions/manualAdjustmentSecurit
 import { manualJournalSecurity } from '../definitions/manualJournalSecurity';
 import { matrixItemSecurity } from '../definitions/matrixItemSecurity';
 import { mediaSecurity } from '../definitions/mediaSecurity';
+import { mediaSettingsSecurity } from '../definitions/mediaSettingsSecurity';
 import { menuBuilderSecurity } from '../definitions/menuBuilderSecurity';
 import { openingBalances } from '../definitions/openingBalances';
 import { optionGroupSecurity } from '../definitions/optionGroupSecurity';
@@ -155,6 +156,7 @@ export class Privilege {
   optionSecurity                 = optionSecurity();
   recipeSecurity                 = recipeSecurity();
   mediaSecurity                  = mediaSecurity();
+  mediaSettingsSecurity          = mediaSettingsSecurity();
   pluginsSecurity                = pluginsSecurity();
   pendingOrderSecurity           = pendingOrderSecurity();
   waitingListSecurity            = waitingListSecurity();

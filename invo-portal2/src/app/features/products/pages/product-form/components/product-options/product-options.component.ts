@@ -20,6 +20,8 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { AccountService, AccountMini } from '@core/layout/services/account.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { DropdownLoadFn } from '@shared/components/dropdown/search-dropdown.types';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { ProductsService } from '../../../../services/products.service';
 import { Product } from '../../../../models/product-form.model';
 import { Fields } from '../../../../models/product-fields.model';
@@ -48,6 +50,7 @@ import { Fields } from '../../../../models/product-fields.model';
  * to the old form without branching in the component.
  */
 interface PendingTag { display: string; value: string; }
+interface TagOption { label: string; value: string; }
 /** One row in the purchase / sale account dropdowns — flattened with a
  *  `group` tag so the `#item` template can subtly render the parent type. */
 interface AccountOption { label: string; value: string; group: string; }
@@ -55,7 +58,7 @@ interface AccountOption { label: string; value: string; group: string; }
 @Component({
   selector: 'app-pf-product-options',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, TooltipDirective],
   templateUrl: './product-options.component.html',
   styleUrl: './product-options.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -142,11 +145,21 @@ export class ProductOptionsComponent implements OnInit {
    * `productForm.markAsDirty()` on every mutation.
    */
   tags = signal<PendingTag[]>([]);
-  /** Autocomplete state for the tag input. */
-  tagInput        = signal<string>('');
-  tagSuggestions  = signal<Array<{ tag: string }>>([]);
-  tagDropdownOpen = signal<boolean>(false);
-  private tagSearchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Selected tags as `{label, value}` rows for the multi-select dropdown. */
+  selectedTagItems = computed<TagOption[]>(() =>
+    this.tags().map((t) => ({ label: t.display, value: t.value })),
+  );
+
+  /** Live search term in the dropdown — drives the "Create tag" footer button. */
+  tagSearchTerm = signal<string>('');
+
+  /** True when the typed term is non-empty AND not already a selected tag. */
+  canCreateTypedTag = computed<boolean>(() => {
+    const q = this.tagSearchTerm().trim();
+    if (!q) return false;
+    return !this.tags().some((t) => t.value.toLowerCase() === q.toLowerCase());
+  });
 
   // ─── Visibility shorthands (derived, for cleaner template) ─────────────
   showOrderByWeight         = computed(() => !!this.fieldsOptions()?.orderByWeight?.isVisible);
@@ -284,79 +297,53 @@ export class ProductOptionsComponent implements OnInit {
     this.group.patchValue({ saleAccountId: defaultAcc.id });
   }
 
-  // ─── Tag chip input ────────────────────────────────────────────────────
+  // ─── Tag picker ─────────────────────────────────────────────────────────
 
-  onTagInput(value: string): void {
-    this.tagInput.set(value);
-    // Debounce the autocomplete fetch — old form used a 2s timer, we use
-    // 400ms to feel responsive without hammering the endpoint.
-    if (this.tagSearchTimer) clearTimeout(this.tagSearchTimer);
-    this.tagSearchTimer = setTimeout(() => this.refreshSuggestions(value), 400);
-  }
-
-  onTagFocus(): void {
-    this.tagDropdownOpen.set(true);
-    // Fire an initial fetch so the dropdown has something to show.
-    this.refreshSuggestions(this.tagInput());
-  }
-
-  onTagBlur(): void {
-    // Delay close so click events on dropdown items still fire.
-    setTimeout(() => this.tagDropdownOpen.set(false), 150);
-  }
-
-  onTagKeydown(ev: KeyboardEvent): void {
-    if (ev.key === 'Enter') {
-      ev.preventDefault();
-      const v = this.tagInput().trim();
-      if (v) this.addTag(v);
-    } else if (ev.key === 'Backspace' && !this.tagInput() && this.tags().length) {
-      this.removeTagAt(this.tags().length - 1);
+  /** Async page loader for the tag dropdown — calls the existing service. */
+  loadTagOptions: DropdownLoadFn<TagOption> = async ({ page, pageSize, search }) => {
+    try {
+      const res = await this.productsService.getProductTags({ page, pageSize, search });
+      return { items: res.items as TagOption[], hasMore: res.hasMore };
+    } catch {
+      return { items: [], hasMore: false };
     }
-  }
+  };
 
-  addTag(raw: string): void {
-    const v = raw.trim();
-    if (!v) return;
-    // Dedup case-insensitively
-    const exists = this.tags().some((t) => t.value.toLowerCase() === v.toLowerCase());
-    if (exists) {
-      this.tagInput.set('');
-      return;
-    }
-    this.tags.update((cur) => [...cur, { display: v, value: v }]);
-    this.tagInput.set('');
+  /** Display function for dropdown — renders the option's label. */
+  tagItemLabel = (opt: TagOption): string => opt?.label ?? '';
+
+  /** Equality check across freshly-loaded options vs. seeded selection. */
+  tagItemEquals = (a: TagOption, b: TagOption): boolean =>
+    (a?.value ?? a as unknown as string) === (b?.value ?? b as unknown as string);
+
+  /** User checked/unchecked tags in the multi-select panel. */
+  onTagsChanged(items: TagOption[]): void {
+    const next: PendingTag[] = (items ?? []).map((i) => ({
+      display: i.label,
+      value:   i.value,
+    }));
+    this.tags.set(next);
     this.syncTagsToModel();
     this.productForm().markAsDirty();
   }
 
+  /** Footer "+ Create tag" — adds a brand-new tag the user typed in search. */
+  addCustomTag(raw: string): void {
+    const v = raw?.trim();
+    if (!v) return;
+    if (this.tags().some((t) => t.value.toLowerCase() === v.toLowerCase())) return;
+    this.tags.update((cur) => [...cur, { display: v, value: v }]);
+    this.tagSearchTerm.set('');
+    this.syncTagsToModel();
+    this.productForm().markAsDirty();
+  }
+
+  /** Remove a tag from the chip strip below the dropdown. */
   removeTagAt(i: number): void {
     if (i < 0 || i >= this.tags().length) return;
     this.tags.update((cur) => cur.filter((_, idx) => idx !== i));
     this.syncTagsToModel();
     this.productForm().markAsDirty();
-  }
-
-  pickSuggestion(tag: string): void {
-    this.addTag(tag);
-    this.tagDropdownOpen.set(false);
-  }
-
-  private async refreshSuggestions(search: string): Promise<void> {
-    try {
-      // `getProductTagsRaw` returns the raw envelope including a `list` —
-      // simpler than the dropdown-shaped `getProductTags` for a plain chip UI.
-      const res: any = await this.productsService.getProductTagsRaw({
-        page: 1,
-        limit: 20,
-        searchTerm: search,
-        sortBy: {},
-      });
-      const list: any[] = res?.list ?? res?.data?.list ?? [];
-      this.tagSuggestions.set(list.map((t: any) => ({ tag: t.tag ?? t.name ?? String(t) })));
-    } catch {
-      this.tagSuggestions.set([]);
-    }
   }
 
   private syncTagsToModel(): void {

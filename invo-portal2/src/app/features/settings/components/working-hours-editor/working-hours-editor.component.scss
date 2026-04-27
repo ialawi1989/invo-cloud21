@@ -1,0 +1,282 @@
+.wh-editor {
+  display: flex;
+  flex-direction: column;
+}
+
+.day {
+  display: grid;
+  // Day label column shrunk from 180px → 140px; "Wednesday" /
+  // "الأربعاء" both fit comfortably and the freed pixels go to the
+  // time pickers so values aren't truncated.
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding: 16px 0;
+  border-bottom: 1px solid #f1f5f9;
+
+  &:last-child { border-bottom: none; }
+
+  @media (max-width: 720px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+}
+
+// ── Day row: checkbox + day name + status ──────────────────────────────
+.day-row__check {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+// Hide the native checkbox; we draw our own filled square below.
+.day-row__cb {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+
+.day-row__cb-box {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: background 120ms ease, border-color 120ms ease;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: #fff;
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+}
+
+.day-row__cb:checked + .day-row__cb-box {
+  // Brand-tinted — picks up future palette tweaks automatically.
+  background: var(--color-brand-600);
+  border-color: var(--color-brand-600);
+  svg { opacity: 1; }
+}
+
+.day-row__cb:focus-visible + .day-row__cb-box {
+  box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.25);
+}
+
+.day-row__name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.day-row__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.day-row__status {
+  font-size: 12px;
+  font-weight: 600;
+  color: #16a34a;            // green — "Open"
+}
+
+// ── Period rows ────────────────────────────────────────────────────────
+.day__periods {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.period-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  min-width: 0;
+
+  // Each app-time-picker host expands to fill the row but is allowed
+  // to shrink so the +/trash buttons stay on the same line.
+  app-time-picker {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  // On very narrow screens we still allow wrapping so values stay
+  // readable instead of getting clipped.
+  @media (max-width: 480px) {
+    flex-wrap: wrap;
+  }
+
+  &__sep {
+    color: #475569;
+    font-size: 13px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  // Inline action buttons sit at the end of the row (after the
+  // time pickers). Add (+) appears only on the last period. Remove
+  // (trash) appears for any period after the first and uses the
+  // danger color so it reads as destructive.
+  //
+  // The slot is a FIXED 80px on every row — even when only one button
+  // (or none) is rendered — so the two time pickers always share the
+  // same remaining width and stay visually aligned across rows.
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-inline-start: 4px;
+    flex: 0 0 80px;
+  }
+
+  &__btn {
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+    &--add {
+      color: #475569;
+      border-color: #cbd5e1;
+      background: #fff;
+
+      &:hover {
+        background: var(--color-brand-50);
+        border-color: var(--color-brand-500);
+        color: var(--color-brand-700);
+      }
+    }
+
+    &--danger {
+      color: #dc2626;
+
+      &:hover {
+        background: #fef2f2;
+        color: #b91c1c;
+      }
+    }
+  }
+}
+
+.period-error {
+  margin: 0;
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &::before {
+    content: '⚠';
+    font-size: 13px;
+  }
+}
+
+// "Copy to all days" link at the bottom of the period list — only shown
+// when the day is open.
+.copy-all-link {
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  margin-top: 2px;
+  &:hover { color: var(--color-brand-700); text-decoration: underline; }
+}
+
+// Soft brand-tinted banner suggesting the user copy this day's hours
+// onto the rest. Only appears when the user just edited the last input
+// and schedules diverge. Layout mirrors the reference design — info
+// icon + title on the first row, action button(s) on the row below.
+.copy-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: var(--color-brand-50);
+  border: 1px solid var(--color-brand-100, #e0f2fe);
+  border-radius: 10px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__icon {
+    width: 18px;
+    height: 18px;
+    color: var(--color-brand-600);
+    flex-shrink: 0;
+  }
+
+  &__text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.35;
+  }
+
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-inline-start: 26px; // line up with the title (icon width + gap)
+  }
+
+  &__btn {
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &--primary {
+      background: #fff;
+      color: #0f172a;
+      border: 1px solid #e2e8f0;
+      &:hover {
+        background: var(--color-brand-50);
+        border-color: var(--color-brand-300, #bae6fd);
+        color: var(--color-brand-700);
+      }
+    }
+
+    &--ghost {
+      background: transparent;
+      color: #64748b;
+      border: 1px solid transparent;
+      &:hover {
+        color: #0f172a;
+      }
+    }
+  }
+}

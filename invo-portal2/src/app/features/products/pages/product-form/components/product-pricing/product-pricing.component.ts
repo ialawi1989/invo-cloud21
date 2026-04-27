@@ -20,6 +20,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DropdownLoadFn, DropdownLoadResult } from '@shared/components/dropdown/search-dropdown.types';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { ModalService } from '@shared/modal';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { CompanyService } from '@core/auth/company.service';
@@ -54,7 +55,7 @@ type PriceModel = 'fixedPrice' | 'fixedPriceWOption' | 'totalPrice' | 'totalPric
 @Component({
   selector: 'app-pf-product-pricing',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, MycurrencyPipe, MynumberPipe],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, TooltipDirective, MycurrencyPipe, MynumberPipe],
   templateUrl: './product-pricing.component.html',
   styleUrl: './product-pricing.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

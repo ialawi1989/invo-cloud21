@@ -1,0 +1,86 @@
+@if (hasAny()) {
+  <section class="pf-card">
+    <header class="pf-card__header pf-opts-header">
+      <div class="pf-opts-tabs" role="tablist">
+        @if (showQuick()) {
+          <button
+            type="button"
+            role="tab"
+            class="pf-opts-tab"
+            [class.pf-opts-tab--active]="activeTab() === 'quick'"
+            [attr.aria-selected]="activeTab() === 'quick'"
+            (click)="setTab('quick')"
+          >
+            <span class="pf-opts-tab__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/>
+              </svg>
+            </span>
+            {{ 'PRODUCTS.FORM.QUICK_OPTIONS' | translate }}
+          </button>
+        }
+        @if (showDefault()) {
+          <button
+            type="button"
+            role="tab"
+            class="pf-opts-tab"
+            [class.pf-opts-tab--active]="activeTab() === 'default'"
+            [attr.aria-selected]="activeTab() === 'default'"
+            (click)="setTab('default')"
+          >
+            <span class="pf-opts-tab__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/><path d="m9 12 2 2 4-4"/>
+              </svg>
+            </span>
+            {{ 'PRODUCTS.FORM.DEFAULT_OPTIONS' | translate }}
+          </button>
+        }
+        @if (showGroup()) {
+          <button
+            type="button"
+            role="tab"
+            class="pf-opts-tab"
+            [class.pf-opts-tab--active]="activeTab() === 'group'"
+            [attr.aria-selected]="activeTab() === 'group'"
+            (click)="setTab('group')"
+          >
+            <span class="pf-opts-tab__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3"  y="3"  width="7" height="7" rx="1"/>
+                <rect x="14" y="3"  width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3"  y="14" width="7" height="7" rx="1"/>
+              </svg>
+            </span>
+            {{ 'PRODUCTS.FORM.OPTION_GROUPS' | translate }}
+          </button>
+        }
+      </div>
+    </header>
+
+    <div class="pf-card__body">
+      @if (showQuick() && activeTab() === 'quick') {
+        <app-pf-quick-option
+          [productInfo]="productInfo()"
+          [productForm]="productForm()"
+          [fieldsOptions]="fieldsOptions()"
+        />
+      }
+      @if (showDefault() && activeTab() === 'default') {
+        <app-pf-default-options
+          [productInfo]="productInfo()"
+          [productForm]="productForm()"
+          [fieldsOptions]="fieldsOptions()"
+        />
+      }
+      @if (showGroup() && activeTab() === 'group') {
+        <app-pf-option-group
+          [productInfo]="productInfo()"
+          [productForm]="productForm()"
+          [fieldsOptions]="fieldsOptions()"
+        />
+      }
+    </div>
+  </section>
+}

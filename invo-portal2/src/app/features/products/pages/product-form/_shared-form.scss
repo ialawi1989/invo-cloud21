@@ -39,6 +39,21 @@
     color: #0f172a;
     margin: 0;
     letter-spacing: -0.1px;
+
+    &--required {
+      color: #dc2626;
+    }
+  }
+
+  // "Required" hint rendered below a section's title when the section is
+  // required by fieldsOptions but has no rows yet.
+  .pf-card__required {
+    display: block;
+    margin-top: 2px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #dc2626;
+    letter-spacing: 0;
   }
 
   .pf-card__body {
@@ -113,10 +128,25 @@
     &:focus { box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12); }
   }
 
+  // Soft warning state — used for non-blocking hints like "item will be free"
+  // when a price input is set to zero.
+  .pf-input--warn {
+    border-color: #f59e0b;
+    background: #fffbeb;
+    &:focus { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15); }
+  }
+
   .pf-error {
     font-size: 12px;
     color: #dc2626;
     margin: 0;
+  }
+
+  .pf-warn {
+    display: block;
+    margin-top: 4px;
+    font-size: 11.5px;
+    color: #d97706;
   }
 
   .pf-hint {

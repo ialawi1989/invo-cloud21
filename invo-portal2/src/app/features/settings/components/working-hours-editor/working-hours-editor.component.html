@@ -1,0 +1,143 @@
+<div class="wh-editor" [formGroup]="parentForm()">
+  <div [formArrayName]="controlName()">
+    @for (day of daysArray.controls; track $index; let dayIndex = $index) {
+      <div
+        class="day"
+        [formGroupName]="dayIndex"
+        [class.day--closed]="!!dayAt(dayIndex).controls['isClosed'].value"
+        [class.day--invalid]="!!dayAt(dayIndex).errors?.['overlappingPeriods']"
+      >
+        <!-- ─── Day toggle (checkbox + name + status) ─── -->
+        <label class="day-row__check">
+          <input
+            type="checkbox"
+            class="no-custom day-row__cb"
+            [checked]="!dayAt(dayIndex).controls['isClosed'].value"
+            (change)="toggleDay(dayIndex)"
+          />
+          <span class="day-row__cb-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </span>
+          <span class="day-row__name-block">
+            <span class="day-row__name">{{ dayLabel()(day.value['day']) }}</span>
+            @if (!dayAt(dayIndex).controls['isClosed'].value) {
+              <span class="day-row__status">{{ 'SETTINGS.WORKING_HOURS.OPEN' | translate }}</span>
+            }
+          </span>
+        </label>
+
+        <!-- ─── Periods ─── -->
+        @if (!dayAt(dayIndex).controls['isClosed'].value) {
+          <div formArrayName="periods" class="day__periods">
+            @for (period of periodsOf(dayIndex).controls; track $index; let periodIndex = $index) {
+              <!-- All controls live on a single inline row:
+                   [from] to [to] [action button].
+                   - Single period → "+" (add) on the right.
+                   - Multi periods → red trash on each row. The last row
+                     also shows "+" alongside the trash so the user can
+                     keep adding more shifts. -->
+              <div class="period-row" [formGroupName]="periodIndex">
+                <app-time-picker
+                  formControlName="from"
+                  [invalid]="periodHasToBeforeFrom(dayIndex, periodIndex) || dayHasOverlap(dayIndex)"
+                />
+                <span class="period-row__sep">{{ 'SETTINGS.WORKING_HOURS.TO' | translate }}</span>
+                <app-time-picker
+                  formControlName="to"
+                  [invalid]="periodHasToBeforeFrom(dayIndex, periodIndex) || dayHasOverlap(dayIndex)"
+                />
+
+                <span class="period-row__actions">
+                  @if (periodIndex > 0) {
+                    <button
+                      type="button"
+                      class="period-row__btn period-row__btn--danger"
+                      (click)="removePeriod(dayIndex, periodIndex)"
+                      [attr.aria-label]="'COMMON.DELETE' | translate"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                      </svg>
+                    </button>
+                  }
+                  @if (periodIndex === periodsOf(dayIndex).length - 1) {
+                    <button
+                      type="button"
+                      class="period-row__btn period-row__btn--add"
+                      (click)="addPeriod(dayIndex)"
+                      [attr.aria-label]="'SETTINGS.WORKING_HOURS.ADD_PERIOD' | translate"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="16"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                      </svg>
+                    </button>
+                  }
+                </span>
+              </div>
+
+              @if (periodHasToBeforeFrom(dayIndex, periodIndex)) {
+                <p class="period-error">{{ 'SETTINGS.WORKING_HOURS.TO_AFTER_FROM' | translate }}</p>
+              }
+            }
+
+            @if (dayHasOverlap(dayIndex)) {
+              <p class="period-error">{{ 'SETTINGS.WORKING_HOURS.OVERLAPPING' | translate }}</p>
+            }
+
+            <!-- Surfaced right below the last input only after the user
+                 finishes editing it (i.e. the last `to` field's value
+                 actually changed). Hides as soon as schedules align,
+                 the user dismisses, or focus moves to a different day. -->
+            @if (shouldShowCopyBanner(dayIndex)) {
+              <div class="copy-banner">
+                <div class="copy-banner__header">
+                  <svg class="copy-banner__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+                  <span class="copy-banner__text">
+                    {{ 'SETTINGS.WORKING_HOURS.COPY_BANNER_TITLE' | translate }}
+                  </span>
+                </div>
+                <div class="copy-banner__actions">
+                  <button
+                    type="button"
+                    class="copy-banner__btn copy-banner__btn--primary"
+                    (click)="copyToAll(dayIndex)"
+                  >
+                    {{ 'SETTINGS.WORKING_HOURS.COPY_BANNER_YES' | translate }}
+                  </button>
+                  <button
+                    type="button"
+                    class="copy-banner__btn copy-banner__btn--ghost"
+                    (click)="dismissCopyBanner(dayIndex)"
+                  >
+                    {{ 'SETTINGS.WORKING_HOURS.COPY_BANNER_NO' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+
+            <button
+              type="button"
+              class="copy-all-link"
+              (click)="copyToAll(dayIndex)"
+              [title]="'SETTINGS.WORKING_HOURS.COPY_TO_ALL_HINT' | translate"
+            >
+              {{ 'SETTINGS.WORKING_HOURS.COPY_TO_ALL' | translate }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

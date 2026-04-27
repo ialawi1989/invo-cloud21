@@ -31,6 +31,14 @@ export interface ModalConfig<D = any> {
   drawerMaxWidth?:  number;
   /** Extra providers to inject into the modal component */
   providers?:       StaticProvider[];
+  /**
+   * Whether this modal participates in the back-button history sentinel
+   * (default `true`). Set to `false` when the modal is opened from inside an
+   * active router navigation (e.g. a CanDeactivate guard) — the navigation
+   * already manages history, and pushing/popping a sentinel from underneath
+   * it makes the user have to confirm and click navigate twice.
+   */
+  manageHistory?:   boolean;
 }
 
 export class ModalRef<R = any> {
@@ -122,10 +130,24 @@ export class ModalService {
    */
   private dismissingFromPopstate = false;
 
+  /**
+   * Handle for the deferred `history.back()` scheduled when the last modal
+   * closes. Tracked so that opening a new modal during the deferral can
+   * cancel the pop — otherwise the modal-to-modal handoff (e.g. drawer →
+   * edit modal) triggers a popstate that dismisses the just-opened modal.
+   */
+  private pendingHistoryBack: ReturnType<typeof setTimeout> | null = null;
+
   constructor() {
     // Single global listener — on back, dismiss every open modal.
     window.addEventListener('popstate', () => {
       if (this.openModals.length === 0) return;
+      // If a deferred history.back() was queued, the user beat us to it —
+      // drop our handle so we don't double-pop.
+      if (this.pendingHistoryBack != null) {
+        clearTimeout(this.pendingHistoryBack);
+        this.pendingHistoryBack = null;
+      }
       this.dismissingFromPopstate = true;
       // Snapshot so dismissals mutating the array during iteration are safe.
       const snapshot = [...this.openModals];
@@ -153,6 +175,7 @@ export class ModalService {
       drawerResizableHeight,
       drawerMinWidth,
       drawerMaxWidth,
+      manageHistory   = true,
     } = config;
 
     const isRtl = document.documentElement.dir === 'rtl' ||
@@ -166,11 +189,31 @@ export class ModalService {
 
     const modalRef = new ModalRef<R>(overlayRef);
 
+    // Modal-to-modal handoff: if a previous modal just closed and scheduled
+    // a `history.back()` to pop its sentinel, cancel that pop. The sentinel
+    // is still in history; the new modal can reuse it instead of pushing
+    // a redundant one (which would also fire when the deferred back runs
+    // and dismiss us immediately).
+    if (this.pendingHistoryBack != null) {
+      clearTimeout(this.pendingHistoryBack);
+      this.pendingHistoryBack = null;
+      if (history.state && history.state.invoModal) {
+        this.historyPushed = true;
+      }
+    }
+
     // Track for back-button handling. Push a single sentinel history entry
     // on the first modal open — subsequent opens don't push again, so one
     // back press closes the entire stack.
+    //
+    // `manageHistory: false` opts out entirely: the modal still tracks itself
+    // in `openModals` (so the popstate listener can dismiss it on back), but
+    // it neither pushes nor consumes the sentinel. Use this when the modal
+    // opens inside an active router navigation (CanDeactivate guard) — the
+    // navigation already owns history, and a competing push/pop here makes
+    // the user click navigate + confirm twice.
     this.openModals.push(modalRef);
-    if (!this.historyPushed) {
+    if (manageHistory && !this.historyPushed) {
       history.pushState({ invoModal: true }, '');
       this.historyPushed = true;
     }
@@ -178,7 +221,7 @@ export class ModalService {
     overlayRef.detachments().subscribe(() => {
       const idx = this.openModals.indexOf(modalRef);
       if (idx >= 0) this.openModals.splice(idx, 1);
-      if (this.openModals.length === 0 && this.historyPushed && !this.dismissingFromPopstate) {
+      if (manageHistory && this.openModals.length === 0 && this.historyPushed && !this.dismissingFromPopstate) {
         this.historyPushed = false;
         // IMPORTANT: defer to a macrotask.
         //
@@ -198,7 +241,12 @@ export class ModalService {
         // nothing else navigated and it's safe to consume it; if no, an
         // app-initiated navigation pushed a new entry and we leave history
         // alone.
-        setTimeout(() => {
+        this.pendingHistoryBack = setTimeout(() => {
+          this.pendingHistoryBack = null;
+          // Belt-and-braces: a new modal may have opened during the
+          // deferral. If so, leave the sentinel in place — the new modal
+          // owns it now (we already prevented the duplicate push above).
+          if (this.openModals.length > 0) return;
           if (history.state && history.state.invoModal) {
             history.back();
           }

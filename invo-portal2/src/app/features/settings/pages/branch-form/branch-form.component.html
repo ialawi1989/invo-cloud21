@@ -1,0 +1,232 @@
+<div class="branch-form-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="save()"
+        [disabled]="saving() || loading() || form.invalid"
+      >
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Identity ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_IDENTITY' | translate }}</h2>
+        <p class="card__sub">{{ 'SETTINGS.BRANCHES.SECTION_IDENTITY_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label" for="branch-name">
+              {{ 'SETTINGS.BRANCHES.NAME' | translate }}
+              <span class="required">*</span>
+            </label>
+            <input
+              id="branch-name"
+              type="text"
+              class="input"
+              formControlName="name"
+              [class.input--invalid]="form.controls['name'].touched && form.controls['name'].invalid"
+            />
+            @if (form.controls['name'].touched && form.controls['name'].errors?.['required']) {
+              <p class="field-error">{{ 'SETTINGS.BRANCHES.NAME_REQUIRED' | translate }}</p>
+            }
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="branch-phone">
+              {{ 'SETTINGS.BRANCHES.PHONE' | translate }}
+            </label>
+            <div class="phone">
+              <span class="phone__prefix">+{{ countryCode() || '—' }}</span>
+              <input
+                id="branch-phone"
+                type="tel"
+                class="input phone__input"
+                formControlName="phoneNumber"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Location (read-only summary; Edit opens a modal) ═══ -->
+    <section class="card">
+      <header class="card__head card__head--with-action">
+        <div>
+          <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_LOCATION' | translate }}</h2>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="openLocationModal()">
+          {{ 'COMMON.EDIT' | translate }}
+        </button>
+      </header>
+
+      <div class="card__body location-summary">
+        <div class="location-summary__row">
+          <span class="location-summary__label">{{ 'SETTINGS.BRANCHES.ADDRESS' | translate }}</span>
+          @if (form.controls['address'].value) {
+            <span class="location-summary__value">{{ form.controls['address'].value }}</span>
+          } @else {
+            <span class="location-summary__placeholder">{{ 'SETTINGS.BRANCHES.NO_ADDRESS' | translate }}</span>
+          }
+        </div>
+
+        @if (mapPreviewUrl()) {
+          <div class="location-summary__map">
+            <iframe
+              [src]="mapPreviewUrl()"
+              width="100%"
+              height="220"
+              style="border: 0;"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              [title]="'SETTINGS.BRANCHES.MAP_LOCATION' | translate"
+            ></iframe>
+          </div>
+        } @else {
+          <p class="location-summary__no-coords">
+            {{ 'SETTINGS.BRANCHES.NO_COORDS' | translate }}
+          </p>
+        }
+      </div>
+    </section>
+
+    <!-- ═══ Operations (closing time stays here — it's not really a
+         location field even though the OLD form bundled them) ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_OPERATIONS' | translate }}</h2>
+        <p class="card__sub">{{ 'SETTINGS.BRANCHES.SECTION_OPERATIONS_DESC' | translate }}</p>
+      </header>
+      <div class="card__body">
+        <div class="field">
+          <!-- Note: the underlying field is `closingTime` for back-compat
+               with the legacy Branch model, but it's labelled "Opening time"
+               here to match what users saw in the original Invo form. -->
+          <label class="field-label">{{ 'SETTINGS.BRANCHES.OPENING_TIME' | translate }}</label>
+          <app-time-picker formControlName="closingTime"/>
+          <p class="field-hint">{{ 'SETTINGS.BRANCHES.OPENING_TIME_HINT' | translate }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Settings (toggles) ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_OPTIONS' | translate }}</h2>
+        <p class="card__sub">{{ 'SETTINGS.BRANCHES.SECTION_OPTIONS_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body toggles">
+        <label class="toggle">
+          <input type="checkbox" formControlName="onlineAvailability"/>
+          <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+          <span class="toggle__label">
+            <span class="field-label">{{ 'SETTINGS.BRANCHES.ONLINE_AVAILABILITY' | translate }}</span>
+            <span class="field-hint">
+              {{ 'SETTINGS.BRANCHES.ONLINE_AVAILABILITY_HINT' | translate }}
+              @if (isEcommerceDefault()) {
+                <em class="locked"> {{ 'SETTINGS.BRANCHES.LOCKED_BY_DEFAULT' | translate }}</em>
+              }
+            </span>
+          </span>
+        </label>
+
+        <label class="toggle">
+          <input type="checkbox" formControlName="mainBranch"/>
+          <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+          <span class="toggle__label">
+            <span class="field-label">{{ 'SETTINGS.BRANCHES.MAIN_BRANCH' | translate }}</span>
+            <span class="field-hint">{{ 'SETTINGS.BRANCHES.MAIN_BRANCH_HINT' | translate }}</span>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ═══ Working Hours (read-only summary; Edit opens a modal) ═══ -->
+    <section class="card">
+      <header class="card__head card__head--with-action">
+        <div>
+          <h2 class="card__title">{{ 'SETTINGS.BRANCHES.WORKING_HOURS' | translate }}</h2>
+          <p class="card__sub">{{ 'SETTINGS.BRANCHES.WORKING_HOURS_DESC' | translate }}</p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="openWorkingHoursModal()">
+          {{ 'COMMON.EDIT' | translate }}
+        </button>
+      </header>
+      <div class="card__body">
+        <div class="schedule-summary">
+          @for (d of workingHoursSummary(); track d.day) {
+            <div class="schedule-summary__day" [class.schedule-summary__day--closed]="d.isClosed">
+              <div class="schedule-summary__name">{{ d.label }}</div>
+              <div class="schedule-summary__body">
+                @if (d.isClosed) {
+                  <span class="schedule-summary__closed">{{ 'SETTINGS.WORKING_HOURS.CLOSED' | translate }}</span>
+                } @else {
+                  <span class="schedule-summary__time">{{ d.from }}</span>
+                  <span class="schedule-summary__dash" aria-hidden="true">−</span>
+                  <span class="schedule-summary__time">{{ d.to }}</span>
+                  @if (d.extra > 0) {
+                    <span class="schedule-summary__extra">+{{ d.extra }}</span>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Delivery Times (same pattern) ═══ -->
+    <section class="card">
+      <header class="card__head card__head--with-action">
+        <div>
+          <h2 class="card__title">{{ 'SETTINGS.BRANCHES.DELIVERY_TIMES' | translate }}</h2>
+          <p class="card__sub">{{ 'SETTINGS.BRANCHES.DELIVERY_TIMES_DESC' | translate }}</p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="openDeliveryTimesModal()">
+          {{ 'COMMON.EDIT' | translate }}
+        </button>
+      </header>
+      <div class="card__body">
+        <div class="schedule-summary">
+          @for (d of deliveryTimesSummary(); track d.day) {
+            <div class="schedule-summary__day" [class.schedule-summary__day--closed]="d.isClosed">
+              <div class="schedule-summary__name">{{ d.label }}</div>
+              <div class="schedule-summary__body">
+                @if (d.isClosed) {
+                  <span class="schedule-summary__closed">{{ 'SETTINGS.WORKING_HOURS.CLOSED' | translate }}</span>
+                } @else {
+                  <span class="schedule-summary__time">{{ d.from }}</span>
+                  <span class="schedule-summary__dash" aria-hidden="true">−</span>
+                  <span class="schedule-summary__time">{{ d.to }}</span>
+                  @if (d.extra > 0) {
+                    <span class="schedule-summary__extra">+{{ d.extra }}</span>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+</div>

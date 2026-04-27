@@ -235,6 +235,15 @@
 }
 .pf-bp-bulk-val { font-weight: 500; color: #1e293b; }
 
+// "Default" indicator in the bulk-edit Different-Price column — shown when
+// `has_different_price` is false. Read-only hint; user toggles the override
+// via the single-branch panel.
+.pf-bp-bulk-default {
+  font-size: 12px;
+  font-style: italic;
+  color: #94a3b8;
+}
+
 :host ::ng-deep .pf-input--compact {
   padding: 6px 8px;
   font-size: 13px;

@@ -36,13 +36,21 @@ export interface PickProductModalData {
   /** Optional product-type filter — e.g. ['inventory', 'serialized'] for raw
    *  ingredients in a recipe picker, or leave empty to show everything. */
   types?: string[];
-  /** Ids already in the caller's list — hidden from results. */
+  /** Ids already in the caller's list — pre-selected on open. The user can
+   *  uncheck them to remove from the parent list, or leave them checked. */
   excludedIds?: string[];
   /** Allow multi-select? Default true. Kit/package pickers use multi;
    *  single-select pickers (e.g. parent-item) pass false. */
   multiple?: boolean;
   /** Modal title override. */
   title?: string;
+}
+
+export interface PickProductResult {
+  /** Newly picked rows (not in `excludedIds` at open time). */
+  added: PickedProduct[];
+  /** Ids that were in `excludedIds` at open time and the user unchecked. */
+  removed: string[];
 }
 
 /**
@@ -66,7 +74,7 @@ export interface PickProductModalData {
 })
 export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestroy {
   private products = inject(ProductsService);
-  private modalRef = inject<ModalRef<PickedProduct[]>>(MODAL_REF);
+  private modalRef = inject<ModalRef<PickProductResult>>(MODAL_REF);
   data             = inject<PickProductModalData>(MODAL_DATA) ?? {};
 
   search   = signal<string>('');
@@ -75,6 +83,8 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
   hasMore  = signal<boolean>(false);
   rows     = signal<PickedProduct[]>([]);
   selected = signal<Set<string>>(new Set());
+  /** Snapshot of `excludedIds` at open — used to compute `removed` on confirm. */
+  private initialSelected: Set<string> = new Set();
   private debounce?: ReturnType<typeof setTimeout>;
 
   /** Sentinel observed by IntersectionObserver to trigger next-page load. */
@@ -82,13 +92,13 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
   private scrollObserver?: IntersectionObserver;
 
   multiple = computed(() => this.data.multiple !== false);
-  excluded = computed<Set<string>>(() => new Set(this.data.excludedIds ?? []));
-  visible  = computed<PickedProduct[]>(() =>
-    this.rows().filter((r) => !this.excluded().has(r.id)),
-  );
+  visible  = computed<PickedProduct[]>(() => this.rows());
   selectedCount = computed(() => this.selected().size);
 
   ngOnInit(): void {
+    const ids = this.data.excludedIds ?? [];
+    this.initialSelected = new Set(ids);
+    this.selected.set(new Set(ids));
     this.loadPage(1);
   }
 
@@ -168,8 +178,10 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   confirm(): void {
-    const picked = this.rows().filter((r) => this.selected().has(r.id));
-    this.modalRef.close(picked);
+    const current = this.selected();
+    const added = this.rows().filter((r) => current.has(r.id) && !this.initialSelected.has(r.id));
+    const removed = [...this.initialSelected].filter((id) => !current.has(id));
+    this.modalRef.close({ added, removed });
   }
 
   cancel(): void {

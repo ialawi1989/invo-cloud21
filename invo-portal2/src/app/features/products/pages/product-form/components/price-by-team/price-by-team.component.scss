@@ -1,0 +1,145 @@
+@use '../../_shared-form.scss' as *;
+@include pfCard;
+
+.pbt-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.pbt-search {
+  position: relative;
+  flex: 1 1 240px;
+  max-width: 320px;
+
+  svg {
+    position: absolute;
+    inset-inline-start: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding: 8px 12px 8px 32px;
+    padding-inline-start: 32px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+
+    &:focus {
+      outline: none;
+      border-color: #32acc1;
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+    }
+
+    &::placeholder { color: #94a3b8; }
+  }
+}
+
+.pbt-empty-text {
+  flex: 1 1 auto;
+  font-size: 13px;
+  font-style: italic;
+  color: #64748b;
+}
+
+.pbt-table {
+  margin-top: 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pbt-head,
+.pbt-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 36px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 14px;
+}
+
+.pbt-head {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.pbt-row {
+  border-bottom: 1px solid #f1f5f9;
+  &:last-child { border-bottom: none; }
+}
+
+.pbt-name {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.pbt-cell {
+  min-width: 0;
+
+  .pf-input {
+    width: 100%;
+  }
+
+  .pf-error {
+    font-size: 11.5px;
+    margin-top: 2px;
+  }
+}
+
+.pbt-remove {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #ef4444;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+
+  &:hover,
+  &:focus-visible {
+    background: #fef2f2;
+    outline: 0;
+  }
+}
+
+.pf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background 150ms ease, border-color 150ms ease;
+
+  &--outline {
+    color: #0e7490;
+    border-color: #0e7490;
+    background: #fff;
+    &:hover {
+      background: #ecfeff;
+    }
+  }
+}

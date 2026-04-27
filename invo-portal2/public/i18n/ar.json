@@ -14,6 +14,8 @@
     "NO": "لا",
     "BACK": "رجوع",
     "NEXT": "التالي",
+    "PREVIOUS": "السابق",
+    "PAGINATION_RANGE": "{{start}}–{{end}} من {{total}}",
     "SUBMIT": "إرسال",
     "CLOSE": "إغلاق",
     "ERROR": "خطأ",
@@ -55,7 +57,22 @@
     "NO_ITEMS_MESSAGE": "حاول تعديل الفلاتر أو مصطلح البحث",
     "SELECT_PLACEHOLDER": "اختر...",
     "REQUIRED": "هذا الحقل مطلوب",
-    "LOAD_MORE": "تحميل المزيد"
+    "LOAD_MORE": "تحميل المزيد",
+    "OK": "موافق",
+    "SELECT_TIME": "اختيار الوقت",
+    "HOUR": "ساعة",
+    "MINUTE": "دقيقة",
+    "INCREMENT": "زيادة",
+    "DECREMENT": "إنقاص",
+    "DAYS": {
+      "SUNDAY":    "الأحد",
+      "MONDAY":    "الاثنين",
+      "TUESDAY":   "الثلاثاء",
+      "WEDNESDAY": "الأربعاء",
+      "THURSDAY":  "الخميس",
+      "FRIDAY":    "الجمعة",
+      "SATURDAY":  "السبت"
+    }
   },
   "AUTH": {
     "WELCOME_BACK": "مرحباً بعودتك",

@@ -14,6 +14,8 @@
     "NO": "No",
     "BACK": "Back",
     "NEXT": "Next",
+    "PREVIOUS": "Previous",
+    "PAGINATION_RANGE": "{{start}}–{{end}} of {{total}}",
     "SUBMIT": "Submit",
     "CLOSE": "Close",
     "ERROR": "error",
@@ -55,7 +57,22 @@
     "NO_ITEMS_MESSAGE": "Try adjusting your filters or search query",
     "SELECT_PLACEHOLDER": "Select...",
     "REQUIRED": "This field is required",
-    "LOAD_MORE": "Load more"
+    "LOAD_MORE": "Load more",
+    "OK": "OK",
+    "SELECT_TIME": "Select time",
+    "HOUR": "hour",
+    "MINUTE": "min",
+    "INCREMENT": "Increment",
+    "DECREMENT": "Decrement",
+    "DAYS": {
+      "SUNDAY":    "Sunday",
+      "MONDAY":    "Monday",
+      "TUESDAY":   "Tuesday",
+      "WEDNESDAY": "Wednesday",
+      "THURSDAY":  "Thursday",
+      "FRIDAY":    "Friday",
+      "SATURDAY":  "Saturday"
+    }
   },
   "AUTH": {
     "WELCOME_BACK": "Welcome back",

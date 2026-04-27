@@ -2,11 +2,15 @@
   <header class="pf-card__header">
     <div class="pf-card__icon">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+        <path d="M3 3v18h18"/><path d="M9 9l3-3 4 4 5-5"/><path d="M21 5h-4v4"/>
       </svg>
     </div>
-    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.MENU_SELECTION' | translate }}</h2>
+    <h2 class="pf-card__title" [class.pf-card__title--required]="isRequiredEmpty()">
+      {{ 'PRODUCTS.FORM.MENU_SELECTION' | translate }}
+      @if (isRequiredEmpty()) {
+        <span class="pf-card__required">{{ 'COMMON.REQUIRED' | translate }}</span>
+      }
+    </h2>
     <div class="pf-ms-total">
       {{ 'PRODUCTS.FORM.MIN_TOTAL_PRICE' | translate }}:
       <strong>{{ totalFromLowestSelections() | number:'1.0-3' }}</strong>
@@ -14,80 +18,170 @@
   </header>
 
   <div class="pf-card__body">
-    <button type="button" class="pf-btn pf-btn--outline" (click)="addTier()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-      {{ 'PRODUCTS.FORM.ADD_SELECTION_TIER' | translate }}
-    </button>
+    @if (levels.length === 0) {
+      <!-- ═══ Zero-state: prominent CTA, error-tinted when required ═══ -->
+      <div class="pf-ms-zero" [class.pf-ms-zero--error]="isRequiredEmpty()" role="alert">
+        @if (isRequiredEmpty()) {
+          <svg class="pf-ms-zero__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8"  x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        }
+        <p class="pf-ms-zero__text">{{ 'PRODUCTS.FORM.NO_SELECTION_LEVELS_YET' | translate }}</p>
+        <button type="button" class="pf-btn pf-btn--primary" (click)="addLevel()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          {{ 'PRODUCTS.FORM.ADD_SELECTION_LEVEL' | translate }}
+        </button>
+      </div>
+    } @else {
+      <!-- ═══ Two-column: levels list + active panel ═══ -->
+      <div class="pf-ms-shell">
+        <!-- Levels rail -->
+        <aside class="pf-ms-rail">
+          <header class="pf-ms-rail__head">
+            <span class="pf-ms-rail__title">{{ 'PRODUCTS.FORM.MENU_SEL_LEVEL' | translate }}s</span>
+            <button type="button" class="pf-btn pf-btn--primary pf-btn--sm" (click)="addLevel()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              {{ 'PRODUCTS.FORM.ADD_SELECTION_LEVEL' | translate }}
+            </button>
+          </header>
 
-    @if (tiers.length === 0) {
-      <p class="pf-hint">{{ 'PRODUCTS.FORM.NO_SELECTION_TIERS_YET' | translate }}</p>
-    }
+          <div class="pf-ms-cards" cdkDropList (cdkDropListDropped)="dropLevel($event)">
+            @for (level of levels.controls; track $index; let i = $index) {
+              <div
+                class="pf-ms-card"
+                [class.pf-ms-card--active]="activeLevel() === i"
+                [class.pf-ms-card--invalid]="!!levelAt(i).errors?.['tooFewItems']"
+                role="tab"
+                [attr.aria-selected]="activeLevel() === i"
+                (click)="setActiveLevel(i)"
+                cdkDrag
+                [formGroup]="levelAt(i)"
+              >
+                <span class="pf-ms-card__handle" cdkDragHandle aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9"  cy="6"  r="1"/><circle cx="15" cy="6"  r="1"/>
+                    <circle cx="9"  cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+                    <circle cx="9"  cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+                  </svg>
+                </span>
 
-    @for (tier of tiers.controls; track $index; let tierIdx = $index) {
-      <div class="pf-ms-tier" [formGroup]="tierAt(tierIdx)">
-        <div class="pf-ms-tier__head">
-          <div class="pf-ms-tier__head-fields">
-            <div class="pf-field">
-              <label class="pf-label">{{ 'PRODUCTS.FORM.TIER_NAME' | translate }}</label>
-              <input
-                type="text"
-                class="pf-input"
-                formControlName="name"
-                [class.pf-input--invalid]="tierAt(tierIdx).controls['name'].touched && tierAt(tierIdx).controls['name'].invalid"
-                [placeholder]="'PRODUCTS.FORM.TIER_NAME' | translate"
-              />
-            </div>
-            <div class="pf-field">
-              <label class="pf-label">{{ 'PRODUCTS.FORM.NO_OF_SELECTION' | translate }}</label>
-              <input type="number" class="pf-input" formControlName="noOfSelection" min="1"/>
-            </div>
-          </div>
-          <button
-            type="button"
-            class="pf-ms-remove"
-            (click)="removeTier(tierIdx)"
-            [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-            </svg>
-          </button>
-        </div>
+                <div class="pf-ms-card__body" (click)="setActiveLevel(i)">
+                  <input
+                    type="text"
+                    class="pf-ms-card__name"
+                    formControlName="name"
+                    [placeholder]="'PRODUCTS.FORM.LEVEL_NAME' | translate"
+                    [class.pf-ms-card__name--invalid]="levelAt(i).controls['name'].touched && levelAt(i).controls['name'].invalid"
+                    (click)="$event.stopPropagation()"
+                  />
 
-        <div class="pf-ms-tier__items">
-          <button type="button" class="pf-ms-tier__add" (click)="openPicker(tierIdx)">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            {{ 'PRODUCTS.FORM.ADD_ITEMS' | translate }}
-          </button>
+                  <div class="pf-ms-card__meta">
+                    <label class="pf-ms-card__picks">
+                      {{ 'PRODUCTS.FORM.NO_OF_SELECTION' | translate }}
+                      <input
+                        type="number"
+                        min="1"
+                        formControlName="noOfSelection"
+                        (click)="$event.stopPropagation()"
+                      />
+                    </label>
+                    <span class="pf-ms-card__items-count">
+                      · {{ itemsOf(i).length }} {{ itemsOf(i).length === 1 ? 'item' : 'items' }}
+                    </span>
+                  </div>
+                </div>
 
-          @if (itemsOf(tierIdx).length === 0) {
-            <p class="pf-ms-tier__empty">{{ 'PRODUCTS.FORM.NO_SELECTION_ITEMS' | translate }}</p>
-          } @else {
-            @for (item of itemsOf(tierIdx).controls; track item.value['id']; let itemIdx = $index) {
-              <div class="pf-ms-item" [formGroup]="itemAt(tierIdx, itemIdx)">
-                <div class="pf-ms-item__name">{{ item.value['name'] }}</div>
-                <input
-                  type="number"
-                  class="pf-input pf-ms-item__price"
-                  formControlName="defaultPrice"
-                  min="0"
-                  [placeholder]="'PRODUCTS.PRICING.DEFAULT_PRICE' | translate"
-                />
                 <button
                   type="button"
-                  class="pf-ms-item__remove"
-                  (click)="removeItem(tierIdx, itemIdx)"
+                  class="pf-ms-card__remove"
+                  (click)="$event.stopPropagation(); removeLevel(i)"
                   [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
-                >✕</button>
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        </aside>
+
+        <!-- Active-level panel -->
+        <section class="pf-ms-panel" aria-live="polite">
+          @if (activeLevel() < levels.length) {
+            <header class="pf-ms-panel__head">
+              <div class="pf-ms-panel__head-text">
+                <h3 class="pf-ms-panel__title">
+                  {{ levelAt(activeLevel()).value['name'] || ('PRODUCTS.FORM.MENU_SEL_LEVEL' | translate) + ' ' + (activeLevel() + 1) }}
+                </h3>
+                @if (levelAt(activeLevel()).errors?.['tooFewItems']; as e) {
+                  <span class="pf-ms-panel__hint pf-ms-panel__hint--invalid">
+                    {{ 'PRODUCTS.FORM.LEVEL_NEED_MORE' | translate: { current: e.current, required: e.required } }}
+                  </span>
+                } @else {
+                  <span class="pf-ms-panel__hint">
+                    {{ 'PRODUCTS.FORM.LEVEL_OK' | translate: { current: itemsOf(activeLevel()).length, required: levelAt(activeLevel()).value['noOfSelection'] } }}
+                  </span>
+                }
+              </div>
+              <button type="button" class="pf-btn pf-btn--outline pf-btn--sm" (click)="openPickerForActive()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+                  <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                </svg>
+                {{ 'PRODUCTS.FORM.ADD_ITEMS' | translate }}
+              </button>
+            </header>
+
+            @if (itemsOf(activeLevel()).length === 0) {
+              <div class="pf-ms-panel__empty">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8"  x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <p>
+                  {{ 'PRODUCTS.FORM.NO_SELECTION_ITEMS_N' | translate: { required: levelAt(activeLevel()).value['noOfSelection'] } }}
+                </p>
+                <button type="button" class="pf-btn pf-btn--outline pf-btn--sm" (click)="openPickerForActive()">
+                  {{ 'PRODUCTS.FORM.ADD_ITEMS' | translate }}
+                </button>
+              </div>
+            } @else {
+              <div class="pf-ms-panel__list" cdkDropList (cdkDropListDropped)="dropItem($event, activeLevel())">
+                @for (item of itemsOf(activeLevel()).controls; track item.value['productId']; let itemIdx = $index) {
+                  <div class="pf-ms-item" cdkDrag>
+                    <span class="pf-ms-item__handle" cdkDragHandle aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9"  cy="6"  r="1"/><circle cx="15" cy="6"  r="1"/>
+                        <circle cx="9"  cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+                        <circle cx="9"  cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+                      </svg>
+                    </span>
+                    <span class="pf-ms-item__name">{{ item.value['name'] }}</span>
+                    <span class="pf-ms-item__price">{{ item.value['defaultPrice'] | number:'1.0-3' }}</span>
+                    <button
+                      type="button"
+                      class="pf-ms-item__remove"
+                      (click)="removeItem(activeLevel(), itemIdx)"
+                      [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                }
               </div>
             }
           }
-        </div>
+        </section>
       </div>
     }
   </div>

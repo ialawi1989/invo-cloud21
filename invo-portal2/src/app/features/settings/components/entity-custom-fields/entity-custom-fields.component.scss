@@ -1,0 +1,105 @@
+// Section card — same shape and palette as the other product/branch
+// form cards (white surface, slate border, brand-tinted icon tile).
+:host {
+  display: block;
+}
+
+.ecf-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  &__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--color-brand-50);
+    color: var(--color-brand-700);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  &__body { padding: 18px; }
+}
+
+// 12-column responsive grid for the renderer cells. Each cell's host
+// carries `grid-column: span N` set by `CustomFieldRendererComponent`,
+// so widths snap to thirds / halves / full.
+.ecf-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: minmax(0, 1fr);
+    > * { grid-column: 1 / -1 !important; }
+  }
+}
+
+// Empty state — soft hint banner pointing to settings.
+.ecf-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--color-brand-50);
+  border: 1px solid var(--color-brand-100, #e0f2fe);
+  border-radius: 10px;
+
+  &__icon {
+    color: var(--color-brand-600);
+    flex-shrink: 0;
+  }
+
+  &__text {
+    margin: 0;
+    flex: 1;
+    font-size: 13px;
+    color: #0f172a;
+    line-height: 1.4;
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+    &:hover {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-300, #bae6fd);
+      color: var(--color-brand-700);
+    }
+  }
+
+  @media (max-width: 640px) {
+    flex-wrap: wrap;
+    &__link { width: 100%; justify-content: center; }
+  }
+}

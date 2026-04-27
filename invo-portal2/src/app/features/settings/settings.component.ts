@@ -179,8 +179,10 @@ export class SettingsComponent {
       id: 'company', title: 'SETTINGS.GROUPS.COMPANY', color: '#32acc1',
       icon: `<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>`,
       items: [
+        // Business Settings now folds in identity + locale + currency +
+        // rounding + tax in one page, so the standalone "Rounding Settings"
+        // link is dropped — rounding lives under Locale & Currency there.
         { label: 'SETTINGS.ITEMS.BUSINESS_SETTINGS',  description: 'SETTINGS.ITEMS.BUSINESS_SETTINGS_DESC',  link: '/settings/business',      privilege: 'companySettingsSecurity.actions.businessSettings.access' },
-        { label: 'SETTINGS.ITEMS.ROUNDING_SETTINGS',  description: 'SETTINGS.ITEMS.ROUNDING_SETTINGS_DESC',  link: '/settings/rounding',      privilege: 'companySettingsSecurity.actions.roundingSettings.access' },
         { label: 'SETTINGS.ITEMS.BRANCH_SETTINGS',    description: 'SETTINGS.ITEMS.BRANCH_SETTINGS_DESC',    link: '/settings/branches',      privilege: 'branchSettingsSecurity.access' },
         { label: 'SETTINGS.ITEMS.CUSTOM_FIELDS',      description: 'SETTINGS.ITEMS.CUSTOM_FIELDS_DESC',      link: '/settings/custom-fields', privilege: 'companySettingsSecurity.actions.customFields.access' },
         { label: 'SETTINGS.ITEMS.PREFIX_SETTINGS',    description: 'SETTINGS.ITEMS.PREFIX_SETTINGS_DESC',    link: '/settings/prefix',        privilege: 'prefixSettingsSecurity.actions.view.access' },
@@ -191,6 +193,13 @@ export class SettingsComponent {
       icon: `<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>`,
       items: [
         { label: 'SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER', description: 'SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER_DESC', link: '/settings/tab-builder', privilege: 'tabBuilderSecurity.access' },
+      ],
+    },
+    {
+      id: 'media', title: 'SETTINGS.GROUPS.MEDIA', color: '#a855f7',
+      icon: `<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>`,
+      items: [
+        { label: 'SETTINGS.ITEMS.IMAGE_DISPLAY', description: 'SETTINGS.ITEMS.IMAGE_DISPLAY_DESC', link: '/settings/image-display', privilege: 'mediaSettingsSecurity.actions.view.access' },
       ],
     },
     {

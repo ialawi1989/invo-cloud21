@@ -1,0 +1,11 @@
+// Styling lives entirely in the template's Tailwind utility classes so
+// the picker's theme stays in lockstep with the date picker. The host
+// is `inline-block` with `min-width: 0` so it can shrink inside flex
+// containers (e.g. the working-hours editor's period row) without
+// pushing siblings to the next line. We deliberately do NOT set
+// `width: 100%` here — the trigger sizes to its content by default,
+// and parents that want it to stretch use flex grow on the host.
+:host {
+  display: inline-block;
+  min-width: 0;
+}

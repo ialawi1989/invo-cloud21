@@ -1,0 +1,162 @@
+<!--
+  ─────────────────────────────────────────────────────────────────────────
+  Time picker — same trigger and panel theme as DatePickerComponent so the
+  two pickers look like siblings. Opens a stepper popover BELOW the input.
+  ─────────────────────────────────────────────────────────────────────────
+-->
+<div class="relative inline-block w-full">
+  <!-- Trigger (matches the date picker's trigger styling 1:1) -->
+  <button
+    #trigger
+    type="button"
+    cdkOverlayOrigin
+    #triggerOrigin="cdkOverlayOrigin"
+    [disabled]="isDisabled()"
+    (click)="toggle()"
+    [attr.aria-expanded]="isOpen()"
+    [attr.aria-haspopup]="'dialog'"
+    [class]="
+      'group w-full flex items-center justify-between gap-2 px-3 py-2 text-start text-sm ' +
+      'border rounded-lg bg-white transition-colors ' +
+      'outline-none focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-brand-100 ' +
+      (isDisabled()
+        ? 'border-slate-200 text-slate-400 cursor-not-allowed bg-slate-50'
+        : invalid()
+          ? 'border-red-400 ring-2 ring-red-100 text-slate-700'
+          : isOpen()
+            ? 'border-brand-500 ring-2 ring-brand-100 text-slate-700'
+            : 'border-slate-300 hover:border-slate-400 text-slate-700')
+    ">
+
+    <span class="truncate flex-1">
+      @if (hasValue()) {
+        {{ displayLabel() }}
+      } @else {
+        <span class="text-slate-400">{{ placeholder() }}</span>
+      }
+    </span>
+
+    <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <polyline points="12 7 12 12 15 14"/>
+    </svg>
+  </button>
+
+  <!-- Popover panel (body-mounted, drops below trigger). -->
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="triggerOrigin"
+    [cdkConnectedOverlayOpen]="isOpen()"
+    [cdkConnectedOverlayHasBackdrop]="true"
+    cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+    [cdkConnectedOverlayPositions]="[
+      { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top',    offsetY: 4 },
+      { originX: 'start', originY: 'top',    overlayX: 'start', overlayY: 'bottom', offsetY: -4 }
+    ]"
+    (backdropClick)="cancel()"
+    (detach)="cancel()">
+
+    <div
+      class="bg-white rounded-xl border border-slate-200 shadow-lg p-3 select-none flex flex-col gap-2 w-[240px] max-w-[calc(100vw-16px)]"
+      role="dialog"
+      [attr.aria-label]="'COMMON.SELECT_TIME' | translate">
+
+      <!-- ═══ Stepper columns: hour | : | minute ═══ -->
+      <div class="flex items-start justify-center gap-1" role="group" aria-label="Time stepper">
+        <!-- Hour column -->
+        <div class="flex flex-col items-center gap-1 flex-1 min-w-0">
+          <button
+            type="button"
+            (click)="hourUp()"
+            [attr.aria-label]="'COMMON.INCREMENT' | translate"
+            class="w-8 h-6 flex items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <polyline points="6 15 12 9 18 15"/>
+            </svg>
+          </button>
+          <div class="text-2xl font-bold text-slate-800 leading-none tabular-nums min-w-[44px] text-center" aria-live="polite">
+            {{ hourLabel() }}
+          </div>
+          <button
+            type="button"
+            (click)="hourDown()"
+            [attr.aria-label]="'COMMON.DECREMENT' | translate"
+            class="w-8 h-6 flex items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
+
+        <span class="text-xl font-bold text-slate-300 leading-none mt-[34px] tabular-nums" aria-hidden="true">:</span>
+
+        <!-- Minute column -->
+        <div class="flex flex-col items-center gap-1 flex-1 min-w-0">
+          <button
+            type="button"
+            (click)="minuteUp()"
+            [attr.aria-label]="'COMMON.INCREMENT' | translate"
+            class="w-8 h-6 flex items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <polyline points="6 15 12 9 18 15"/>
+            </svg>
+          </button>
+          <div class="text-2xl font-bold text-slate-800 leading-none tabular-nums min-w-[44px] text-center" aria-live="polite">
+            {{ minuteLabel() }}
+          </div>
+          <button
+            type="button"
+            (click)="minuteDown()"
+            [attr.aria-label]="'COMMON.DECREMENT' | translate"
+            class="w-8 h-6 flex items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- AM / PM stacked toggle, aligned with the number row -->
+        <div class="flex flex-col items-stretch border border-slate-200 rounded-md overflow-hidden bg-white shrink-0 mt-[28px] ms-1" role="radiogroup" aria-label="AM or PM">
+          <button
+            type="button"
+            role="radio"
+            [attr.aria-checked]="meridiem() === 'AM'"
+            (click)="setMeridiem('AM')"
+            [class]="
+              'px-2.5 py-0.5 text-[11px] font-semibold transition-colors ' +
+              (meridiem() === 'AM'
+                ? 'bg-brand-600 text-white'
+                : 'bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-50')
+            ">AM</button>
+          <button
+            type="button"
+            role="radio"
+            [attr.aria-checked]="meridiem() === 'PM'"
+            (click)="setMeridiem('PM')"
+            [class]="
+              'px-2.5 py-0.5 text-[11px] font-semibold border-t border-slate-200 transition-colors ' +
+              (meridiem() === 'PM'
+                ? 'bg-brand-600 text-white border-t-brand-600'
+                : 'bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-50')
+            ">PM</button>
+        </div>
+      </div>
+
+      <!-- ═══ Footer (Cancel + OK side by side, like date picker) ═══ -->
+      <div class="flex items-center justify-between gap-2 mt-1 pt-2 border-t border-slate-100">
+        <button
+          type="button"
+          (click)="cancel()"
+          class="text-sm text-slate-500 hover:text-slate-700 transition-colors">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <button
+          type="button"
+          (click)="ok()"
+          class="text-sm text-brand-600 font-medium hover:text-brand-700 transition-colors">
+          {{ 'COMMON.OK' | translate }}
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</div>

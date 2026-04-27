@@ -1,0 +1,149 @@
+<div class="cfr">
+  <label class="cfr__label" [attr.for]="inputId()">
+    {{ field().name }}
+    @if (field().required) { <span class="cfr__req">*</span> }
+  </label>
+
+  @switch (field().type) {
+
+    <!-- ── Single-line text variants ─────────────────────────────────── -->
+    @case ('text')     { <ng-container *ngTemplateOutlet="textInput; context: { type: 'text' }"/> }
+    @case ('email')    { <ng-container *ngTemplateOutlet="textInput; context: { type: 'email' }"/> }
+    @case ('url')      { <ng-container *ngTemplateOutlet="textInput; context: { type: 'url' }"/> }
+    @case ('phone')    { <ng-container *ngTemplateOutlet="textInput; context: { type: 'tel' }"/> }
+
+    <!-- ── Long text ─────────────────────────────────────────────────── -->
+    @case ('textarea') {
+      <textarea
+        [id]="inputId()"
+        class="cfr__input cfr__input--textarea"
+        [formControl]="control()"
+        [placeholder]="placeholder()"
+        [attr.maxlength]="field().charLimit ?? null"
+        rows="3"
+      ></textarea>
+    }
+
+    <!-- ── Number ────────────────────────────────────────────────────── -->
+    @case ('number') {
+      <div class="cfr__num-wrap">
+        <input
+          [id]="inputId()"
+          type="number"
+          class="cfr__input"
+          [formControl]="control()"
+          [attr.min]="field().minNumber ?? null"
+          [attr.max]="field().maxNumber ?? null"
+          [step]="numberStep()"
+          [placeholder]="placeholder()"
+        />
+        @if (field().numberDisplayType === 'currency') {
+          <span class="cfr__num-suffix">$</span>
+        } @else if (field().numberDisplayType === 'percentage') {
+          <span class="cfr__num-suffix">%</span>
+        }
+      </div>
+    }
+
+    <!-- ── Select / dropdown ─────────────────────────────────────────── -->
+    @case ('select') {
+      <app-search-dropdown
+        [items]="options()"
+        [displayWith]="optionLabel"
+        [toValue]="optionToValue"
+        [compareWith]="optionEquals"
+        [multiple]="!!field().selectMultiple"
+        [clearable]="field().clearable !== false"
+        [searchable]="options().length > 6"
+        [formControl]="control()"
+        [placeholder]="placeholder() || ('COMMON.SELECT_PLACEHOLDER' | translate)"
+      />
+    }
+
+    <!-- ── Boolean toggle ────────────────────────────────────────────── -->
+    @case ('boolean') {
+      <label class="cfr__toggle">
+        <input type="checkbox" [formControl]="control()"/>
+        <span class="cfr__toggle-track" aria-hidden="true">
+          <span class="cfr__toggle-thumb"></span>
+        </span>
+        <span class="cfr__toggle-label">
+          {{ (control().value ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+        </span>
+      </label>
+    }
+
+    <!-- ── Date / datetime ───────────────────────────────────────────── -->
+    @case ('date') {
+      <app-date-picker
+        [formControl]="control()"
+        displayFormat="yyyy-MM-dd"
+        [placeholder]="placeholder()"
+      />
+    }
+    @case ('datetime') {
+      <app-date-picker
+        [formControl]="control()"
+        [showTime]="true"
+        displayFormat="yyyy-MM-dd"
+        [placeholder]="placeholder()"
+      />
+    }
+
+    <!-- ── Time only ─────────────────────────────────────────────────── -->
+    @case ('time') {
+      <app-time-picker
+        [formControl]="control()"
+        [placeholder]="placeholder() || '—'"
+      />
+    }
+
+    <!-- ── Color ─────────────────────────────────────────────────────── -->
+    @case ('color') {
+      <app-color-picker
+        [formControl]="control()"
+        [placeholder]="placeholder()"
+      />
+    }
+
+    <!-- Fallback for unknown types — render as plain text. -->
+    @default {
+      <ng-container *ngTemplateOutlet="textInput; context: { type: 'text' }"/>
+    }
+  }
+
+  <!-- Inline validation messages -->
+  @if (control().touched && control().invalid) {
+    @if (control().errors?.['required']) {
+      <p class="cfr__error">{{ 'COMMON.REQUIRED' | translate }}</p>
+    } @else if (control().errors?.['maxlength']) {
+      <p class="cfr__error">
+        {{ 'SETTINGS.CUSTOM_FIELDS.CHAR_LIMIT' | translate }}: {{ field().charLimit }}
+      </p>
+    } @else if (control().errors?.['min']) {
+      <p class="cfr__error">
+        {{ 'SETTINGS.CUSTOM_FIELDS.MIN_NUMBER' | translate }}: {{ field().minNumber }}
+      </p>
+    } @else if (control().errors?.['max']) {
+      <p class="cfr__error">
+        {{ 'SETTINGS.CUSTOM_FIELDS.MAX_NUMBER' | translate }}: {{ field().maxNumber }}
+      </p>
+    } @else if (control().errors?.['email']) {
+      <p class="cfr__error">{{ 'SETTINGS.CUSTOM_FIELDS.TYPE_DESC.EMAIL' | translate }}</p>
+    }
+  }
+</div>
+
+<!-- Shared text-input template — reused for text/email/url/phone. -->
+<ng-template #textInput let-type="type">
+  <input
+    [id]="inputId()"
+    [type]="type"
+    class="cfr__input"
+    [formControl]="control()"
+    [placeholder]="placeholder()"
+    [attr.maxlength]="field().charLimit ?? null"
+    spellcheck="false"
+    autocomplete="off"
+  />
+</ng-template>

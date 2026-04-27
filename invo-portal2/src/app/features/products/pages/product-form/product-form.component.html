@@ -1,7 +1,8 @@
 <div class="product-form-page">
-  <!-- ═══ Header (back-icon + current page title in breadcrumbs) ═══ -->
+  <!-- ═══ Header: parent breadcrumb (back-link) + H1 page title ═══ -->
   <header class="page-header">
     <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="page-header__title">{{ pageTitle() }}</h1>
   </header>
 
   <!-- ═══ Body ═══ -->
@@ -76,8 +77,16 @@
             />
           }
 
-          @if (productType() === 'service' && fieldsOptions()?.serviceTime?.isVisible) {
-            <app-pf-service-duration
+          @if (fieldsOptions()?.priceByTeam?.isVisible) {
+            <app-pf-price-by-team
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.kitDetails?.isVisible) {
+            <app-pf-kit-details
               [productInfo]="productInfo()"
               [productForm]="productForm"
               [fieldsOptions]="fieldsOptions()"
@@ -100,6 +109,12 @@
             />
           }
 
+          <app-pf-options-tab
+            [productInfo]="productInfo()"
+            [productForm]="productForm"
+            [fieldsOptions]="fieldsOptions()"
+          />
+
           @if (fieldsOptions()?.menuSelection?.isVisible) {
             <app-pf-menu-selection
               [productInfo]="productInfo()"
@@ -117,10 +132,11 @@
           }
 
           @if (fieldsOptions()?.customFields?.isVisible) {
-            <app-pf-product-custom-fields
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
+            <app-entity-custom-fields
+              entityType="product"
+              [parentForm]="productForm"
+              [valueSource]="productInfo().customFields"
+              idPrefix="pf-cf"
             />
           }
 
@@ -129,6 +145,30 @@
             [productForm]="productForm"
             [fieldsOptions]="fieldsOptions()"
           />
+
+          @if (fieldsOptions()?.productAttributes?.isVisible) {
+            <app-pf-product-attributes
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.allergens?.isVisible) {
+            <app-pf-allergens
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
+
+          @if (fieldsOptions()?.nutrition?.isVisible) {
+            <app-pf-food-nutrition
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+              [fieldsOptions]="fieldsOptions()"
+            />
+          }
         </section>
 
         <!-- ═══ Side column ═══ -->
@@ -190,21 +230,6 @@
             />
           }
 
-          @if (fieldsOptions()?.productAttributes?.isVisible) {
-            <app-pf-product-attributes
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
-
-          @if (fieldsOptions()?.nutrition?.isVisible) {
-            <app-pf-food-nutrition
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
         </aside>
       </div>
     </form>

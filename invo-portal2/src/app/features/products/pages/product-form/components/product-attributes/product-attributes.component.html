@@ -9,6 +9,8 @@
   </header>
 
   <div class="pf-card__body">
+    <h3 class="pf-attr-section">{{ 'PRODUCTS.FORM.ATTRIBUTES_SELECT' | translate }}</h3>
+
     <!-- Search (title filter — mirrors old project behaviour). -->
     <label class="pf-attr-search">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -47,15 +49,39 @@
                 </svg>
               }
             </span>
-            <img
-              [src]="iconFor(entry.group.value['key'])"
-              [alt]="entry.group.value['title']"
-              class="pf-attr-tile__img"
-              (error)="onIconError($event)"
-            />
+            <app-pf-attribute-icon [iconKey]="entry.group.value['key']"/>
           </button>
         }
       </div>
     }
+
+    <!-- Certification details (optional — only relevant when one of the
+         labels above implies a certifier, e.g. USDA Organic). -->
+    <div class="pf-attr-cert">
+      <div class="pf-field">
+        <label class="pf-label" for="cert-body">
+          {{ 'PRODUCTS.FORM.CERTIFICATION_BODY' | translate }}
+        </label>
+        <input
+          id="cert-body"
+          type="text"
+          class="pf-input"
+          [formControl]="certificationBody"
+          [placeholder]="'PRODUCTS.FORM.CERTIFICATION_BODY_PH' | translate"
+        />
+      </div>
+      <div class="pf-field">
+        <label class="pf-label" for="cert-number">
+          {{ 'PRODUCTS.FORM.CERTIFICATION_NUMBER' | translate }}
+        </label>
+        <input
+          id="cert-number"
+          type="text"
+          class="pf-input"
+          [formControl]="certificationNumber"
+          [placeholder]="'PRODUCTS.FORM.CERTIFICATION_NUMBER_PH' | translate"
+        />
+      </div>
+    </div>
   </div>
 </section>

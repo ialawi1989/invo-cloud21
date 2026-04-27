@@ -47,6 +47,42 @@ export const routes: Routes = [
           import('./features/settings/pages/tab-builder-settings/tab-builder-settings.component')
             .then(m => m.TabBuilderSettingsComponent),
       },
+      {
+        path: 'settings/business',
+        loadComponent: () =>
+          import('./features/settings/pages/business-settings/business-settings.component')
+            .then(m => m.BusinessSettingsComponent),
+      },
+      {
+        path: 'settings/image-display',
+        loadComponent: () =>
+          import('./features/settings/pages/image-display-settings/image-display-settings.component')
+            .then(m => m.ImageDisplaySettingsComponent),
+      },
+      {
+        path: 'settings/branches',
+        loadComponent: () =>
+          import('./features/settings/pages/branches-list/branches-list.component')
+            .then(m => m.BranchesListComponent),
+      },
+      {
+        path: 'settings/branches/:id',
+        loadComponent: () =>
+          import('./features/settings/pages/branch-form/branch-form.component')
+            .then(m => m.BranchFormComponent),
+      },
+      {
+        path: 'settings/custom-fields',
+        loadComponent: () =>
+          import('./features/settings/pages/custom-fields-list/custom-fields-list.component')
+            .then(m => m.CustomFieldsListComponent),
+      },
+      {
+        path: 'settings/custom-fields/:type',
+        loadComponent: () =>
+          import('./features/settings/pages/custom-fields-manager/custom-fields-manager.component')
+            .then(m => m.CustomFieldsManagerComponent),
+      },
       // ── Content Library ─────────────────────────────────────────────────
       {
         path: 'website/content-library',

@@ -1,0 +1,106 @@
+@use '../../_shared-form.scss' as *;
+@include pfCard;
+
+.pf-card__icon--allergen {
+  background: linear-gradient(135deg, #fed7aa, #fdba74);
+  color: #c2410c;
+}
+
+.pf-allergen-section {
+  margin: 14px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  &:first-of-type { margin-top: 4px; }
+}
+
+.pf-allergen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+// ── Tile (shared base) ──────────────────────────────────────────────────
+.pf-allergen-tile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  text-align: start;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  &__check {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 4px;
+    color: transparent;
+    flex-shrink: 0;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    svg { width: 12px; height: 12px; }
+  }
+
+  &__title {
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+  }
+}
+
+// ── "Contains" — red/coral when checked ────────────────────────────────
+.pf-allergen-tile--contains-on {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  box-shadow: 0 0 0 2px rgba(252, 165, 165, 0.35);
+
+  .pf-allergen-tile__check {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #fff;
+  }
+}
+
+// ── "May Contain" — amber/yellow when checked ──────────────────────────
+.pf-allergen-tile--may-on {
+  background: #fef9c3;
+  border-color: #fde047;
+  box-shadow: 0 0 0 2px rgba(253, 224, 71, 0.45);
+
+  .pf-allergen-tile__check {
+    background: #ca8a04;
+    border-color: #ca8a04;
+    color: #fff;
+  }
+}
+
+// ── Statement ──────────────────────────────────────────────────────────
+.pf-allergen-statement {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+
+  textarea.pf-input {
+    width: 100%;
+    resize: vertical;
+    min-height: 88px;
+    font-family: inherit;
+    line-height: 1.5;
+  }
+}

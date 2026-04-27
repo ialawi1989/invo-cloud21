@@ -27,7 +27,7 @@
         <span>{{ 'PRODUCTS.FORM.INGREDIENT' | translate }}</span>
         <span>{{ 'PRODUCTS.FORM.USAGE' | translate }}</span>
         <span>{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</span>
-        <span>{{ 'PRODUCTS.FORM.LINE_TOTAL' | translate }}</span>
+        <span>{{ 'PRODUCTS.FORM.TOTAL_COST' | translate }}</span>
         <span></span>
       </div>
 
@@ -44,8 +44,8 @@
             min="0"
             [class.pf-input--invalid]="rowAt(i).controls['usages'].touched && rowAt(i).controls['usages'].invalid"
           />
-          <div class="pf-readonly">{{ row.value['unitCost'] | number:'1.0-3' }}</div>
-          <div class="pf-readonly">
+          <div class="pf-readonly pf-readonly--strong">{{ row.value['unitCost'] | number:'1.0-3' }}</div>
+          <div class="pf-readonly pf-readonly--strong">
             {{ ((row.value['unitCost'] ?? 0) * (row.value['usages'] ?? 0)) | number:'1.0-3' }}
           </div>
           <button

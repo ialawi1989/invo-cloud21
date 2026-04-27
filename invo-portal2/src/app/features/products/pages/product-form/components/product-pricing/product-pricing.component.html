@@ -39,7 +39,7 @@
                 <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
               }
               @if (defaultPriceValue() === 0 && !hideDefaultPriceInput()) {
-                <p class="pf-hint">{{ 'PRODUCTS.PRICING.ITEM_WILL_BE_FREE' | translate }}</p>
+                <p class="pf-warn">{{ 'PRODUCTS.PRICING.ITEM_WILL_BE_FREE' | translate }}</p>
               }
             }
           </div>
@@ -51,7 +51,8 @@
               <span>
                 {{ 'PRODUCTS.PRICING.COMPARE_AT_PRICE' | translate }}
                 <span class="pf-info-icon"
-                      [title]="'PRODUCTS.PRICING.COMPARE_AT_PRICE_TOOLTIP' | translate">
+                      [appTooltip]="'PRODUCTS.PRICING.COMPARE_AT_PRICE_TOOLTIP' | translate"
+                      aria-label="Compare-at price info">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"/>

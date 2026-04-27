@@ -7,6 +7,7 @@ import { ModalRef } from '../../../../shared/modal/modal.service';
 import { ContentField, ContentFieldType, ContentFieldOption } from '../models/content-library.model';
 import { ContentLibraryService } from '../services/content-library.service';
 import { Website } from '../../models/website.model';
+import { TooltipDirective } from '../../../../shared/directives/tooltip.directive';
 
 type FieldStep = 'choose-type' | 'configure';
 type ConfigTab  = 'settings' | 'validations' | 'default';
@@ -78,7 +79,7 @@ function blankForm(): FormState {
 @Component({
   selector: 'app-manage-fields-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TooltipDirective],
   styles: [`
     :host { font-family:'Inter',-apple-system,sans-serif; color:#111827; }
 
@@ -394,7 +395,9 @@ function blankForm(): FormState {
               <div class="form-group">
                 <label class="form-label">
                   Help text (optional)
-                  <span class="info-ico" title="Shown as a hint below the field in the CMS editor">
+                  <span class="info-ico"
+                        [appTooltip]="'Shown as a hint below the field in the CMS editor so authors know what to enter.'"
+                        aria-label="Help text info">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                   </span>
                 </label>

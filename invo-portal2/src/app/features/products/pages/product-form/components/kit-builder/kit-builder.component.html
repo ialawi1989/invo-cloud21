@@ -6,7 +6,12 @@
         <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
       </svg>
     </div>
-    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.KIT_BUILDER' | translate }}</h2>
+    <h2 class="pf-card__title" [class.pf-card__title--required]="isRequiredEmpty()">
+      {{ 'PRODUCTS.FORM.KIT_BUILDER' | translate }}
+      @if (isRequiredEmpty()) {
+        <span class="pf-card__required">{{ 'COMMON.REQUIRED' | translate }}</span>
+      }
+    </h2>
     <div class="pf-kb-total">
       {{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}:
       <strong>{{ totalCost() | number:'1.0-3' }}</strong>
@@ -32,7 +37,7 @@
         <span></span>
       </div>
 
-      @for (row of rows.controls; track row.value['id']; let i = $index) {
+      @for (row of rows.controls; track row.value['productId']; let i = $index) {
         <div class="pf-kb-row" [formGroup]="rowAt(i)">
           <div class="pf-kb-name">
             <div class="pf-kb-name__title">{{ row.value['name'] }}</div>

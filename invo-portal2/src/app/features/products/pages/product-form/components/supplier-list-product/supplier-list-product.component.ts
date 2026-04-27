@@ -28,6 +28,7 @@ import { Fields } from '../../../../models/product-fields.model';
 import {
   PickSupplierModalComponent,
   PickSupplierModalData,
+  PickSupplierResult,
 } from './pick-supplier-modal/pick-supplier-modal.component';
 
 /**
@@ -154,13 +155,23 @@ export class SupplierListProductComponent implements OnInit {
     const ref = this.modal.open<
       PickSupplierModalComponent,
       PickSupplierModalData,
-      SupplierMini[]
+      PickSupplierResult
     >(PickSupplierModalComponent, { data: { excludedIds }, size: 'md' });
 
-    const picked = await ref.afterClosed();
-    if (!picked?.length) return;
+    const result = await ref.afterClosed();
+    if (!result) return;
+    if (!result.added.length && !result.removed.length) return;
 
-    picked.forEach((supplier) => this.attachSupplier(supplier));
+    if (result.removed.length) {
+      const removeSet = new Set(result.removed);
+      const info = this.productInfo();
+      // Find absIdx for each removed supplierId and re-use existing soft-delete logic.
+      removeSet.forEach((supplierId) => {
+        const absIdx = info.suppliers.findIndex((s: any) => s.supplierId === supplierId && !s.isDeleted);
+        if (absIdx >= 0) this.removeSupplier(absIdx);
+      });
+    }
+    result.added.forEach((supplier) => this.attachSupplier(supplier));
     this.suppliersTick.update((n) => n + 1);
     this.productForm().markAsDirty();
   }

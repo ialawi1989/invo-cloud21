@@ -1,0 +1,104 @@
+<div class="img-display-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'SETTINGS.ITEMS.IMAGE_DISPLAY' | translate }}</h1>
+      <p class="page-sub">{{ 'SETTINGS.ITEMS.IMAGE_DISPLAY_DESC' | translate }}</p>
+    </div>
+    <div class="page-header__actions">
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="save()"
+        [disabled]="saving() || loading() || !isDirty()"
+      >
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Controls + live preview shell ═══ -->
+    <div class="shell">
+      <!-- Left column — controls -->
+      <section class="card">
+        <header class="card__head">
+          <h2 class="card__title">{{ 'SETTINGS.IMAGE_DISPLAY.CONTROLS' | translate }}</h2>
+          <p class="card__sub">{{ 'SETTINGS.IMAGE_DISPLAY.CONTROLS_DESC' | translate }}</p>
+        </header>
+
+        <div class="card__body">
+          <!-- ─── Fit ─── -->
+          <div class="field">
+            <label class="field-label">
+              {{ 'SETTINGS.IMAGE_DISPLAY.FIT' | translate }}
+            </label>
+            <p class="field-hint">{{ 'SETTINGS.IMAGE_DISPLAY.FIT_HINT' | translate }}</p>
+
+            <div class="seg">
+              @for (f of fitOptions; track f) {
+                <button
+                  type="button"
+                  class="seg__btn"
+                  [class.seg__btn--active]="fit() === f"
+                  (click)="setFit(f)"
+                >
+                  {{ fitLabel(f) }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- ─── Position grid ─── -->
+          <div class="field">
+            <label class="field-label">
+              {{ 'SETTINGS.IMAGE_DISPLAY.POSITION' | translate }}
+            </label>
+            <p class="field-hint">{{ 'SETTINGS.IMAGE_DISPLAY.POSITION_HINT' | translate }}</p>
+
+            <div class="pos-grid" role="radiogroup" [attr.aria-label]="'SETTINGS.IMAGE_DISPLAY.POSITION' | translate">
+              @for (row of positionGrid; track $index) {
+                @for (p of row; track p) {
+                  <button
+                    type="button"
+                    class="pos-grid__cell"
+                    [class.pos-grid__cell--active]="isPosition(p)"
+                    role="radio"
+                    [attr.aria-checked]="isPosition(p)"
+                    [attr.aria-label]="p"
+                    (click)="setPosition(p)"
+                  >
+                    <span class="pos-grid__dot" aria-hidden="true"></span>
+                  </button>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right column — live preview -->
+      <section class="card preview-card">
+        <header class="card__head">
+          <h2 class="card__title">{{ 'SETTINGS.IMAGE_DISPLAY.PREVIEW' | translate }}</h2>
+          <p class="card__sub">{{ 'SETTINGS.IMAGE_DISPLAY.PREVIEW_DESC' | translate }}</p>
+        </header>
+
+        <div class="card__body preview-grid">
+          @for (s of previewSamples; track s.id) {
+            <figure class="preview-tile">
+              <div class="preview-tile__frame" [class]="'preview-tile__frame--' + s.id">
+                <img [src]="s.src" [alt]="s.label" [style]="previewStyle()" loading="lazy"/>
+              </div>
+              <figcaption>{{ s.label }}</figcaption>
+            </figure>
+          }
+        </div>
+      </section>
+    </div>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+</div>

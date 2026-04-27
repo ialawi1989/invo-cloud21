@@ -138,7 +138,7 @@ export class TabBuilderSettingsComponent implements OnInit {
   breadcrumbs = computed<BreadcrumbItem[]>(() => {
     this.i18nTick();
     return [
-      { label: this.translate.instant('SETTINGS.TITLE'), routerLink: '/settings', icon: 'settings' },
+      { label: this.translate.instant('SETTINGS.TITLE'), routerLink: '/settings' },
       { label: this.translate.instant('SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER') },
     ];
   });

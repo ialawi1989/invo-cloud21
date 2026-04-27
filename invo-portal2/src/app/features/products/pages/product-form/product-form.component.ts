@@ -41,16 +41,19 @@ import { CategoryOptionsComponent }      from './components/category-options/cat
 import { SupplierListProductComponent }  from './components/supplier-list-product/supplier-list-product.component';
 import { BranchProductSectionComponent } from './components/branch-product-section/branch-product-section.component';
 import { KitBuilderComponent }           from './components/kit-builder/kit-builder.component';
+import { KitDetailsComponent }           from './components/kit-details/kit-details.component';
+import { PriceByTeamComponent }          from './components/price-by-team/price-by-team.component';
 import { RecipeBuilderComponent }        from './components/recipe-builder/recipe-builder.component';
 import { PackageBuilderComponent }       from './components/package-builder/package-builder.component';
 import { MenuSelectionComponent }        from './components/menu-selection/menu-selection.component';
-import { ServiceDurationComponent }      from './components/service-duration/service-duration.component';
+import { OptionsTabComponent }           from './components/options-tab/options-tab.component';
 import { MeasurementsComponent }         from './components/measurements/measurements.component';
 import { ProductAttributesComponent }    from './components/product-attributes/product-attributes.component';
 import { AltProductComponent }           from './components/alt-product/alt-product.component';
 import { FoodNutritionComponent }        from './components/food-nutrition/food-nutrition.component';
+import { AllergensComponent }            from './components/allergens/allergens.component';
 import { ShippingOptionsComponent }      from './components/shipping-options/shipping-options.component';
-import { ProductCustomFieldsComponent }  from './components/product-custom-fields/product-custom-fields.component';
+import { EntityCustomFieldsComponent }   from '../../../settings/components/entity-custom-fields/entity-custom-fields.component';
 import { ProductOptionsComponent }       from './components/product-options/product-options.component';
 import { AliasBarcodesComponent }        from './components/alias-barcodes/alias-barcodes.component';
 import { ProductMediaCardComponent }     from './components/product-media/product-media.component';
@@ -87,16 +90,19 @@ type FormStatus = 'new' | 'edit';
     SupplierListProductComponent,
     BranchProductSectionComponent,
     KitBuilderComponent,
+    KitDetailsComponent,
+    PriceByTeamComponent,
     RecipeBuilderComponent,
     PackageBuilderComponent,
     MenuSelectionComponent,
-    ServiceDurationComponent,
+    OptionsTabComponent,
     MeasurementsComponent,
     ProductAttributesComponent,
     AltProductComponent,
     FoodNutritionComponent,
+    AllergensComponent,
     ShippingOptionsComponent,
-    ProductCustomFieldsComponent,
+    EntityCustomFieldsComponent,
     ProductOptionsComponent,
     AliasBarcodesComponent,
     ProductMediaCardComponent,
@@ -160,24 +166,25 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
   // The back-arrow chip carries the parent label as aria-only (`iconOnly`)
   // and uses routerLink to /products so Ctrl+click / middle-click still work
   // as expected. This replaces the old separate `.btn-back` button.
-  breadcrumbs = computed<BreadcrumbItem[]>(() => {
+  /** Big H1 shown beneath the breadcrumb. */
+  pageTitle = computed<string>(() => {
     const type = this.productType();
     const status = this.formStatus();
     const name = this.productInfo()?.name;
     const typeLabel = this.translate.instant('PRODUCTS.TYPES.' + this.typeI18nKey(type));
     const titleKey = status === 'new' ? 'PRODUCTS.FORM.ADD_TITLE' : 'PRODUCTS.FORM.EDIT_TITLE';
     const title = this.translate.instant(titleKey, { value: typeLabel });
-    const label = status === 'edit' && name ? `${title}: ${name}` : title;
-    return [
-      {
-        icon: 'package',
-        iconOnly: true,
-        label: this.translate.instant('PRODUCTS.TITLE'),
-        routerLink: '/products',
-      },
-      { label },
-    ];
+    return status === 'edit' && name ? `${title}: ${name}` : title;
   });
+
+  /** Trail above the H1 — parent (clickable) › current page (text only). */
+  breadcrumbs = computed<BreadcrumbItem[]>(() => [
+    {
+      label: this.translate.instant('PRODUCTS.TITLE'),
+      routerLink: '/products',
+    },
+    { label: this.pageTitle() },
+  ]);
 
   // Query params we pass through when navigating back to the list
   private listQueryParams: Record<string, string> = {};
@@ -312,7 +319,9 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
     this.formTick.update(n => n + 1);
   }
 
-  /** Recursively count invalid leaf controls under the given node. */
+  /** Recursively count invalid leaf controls under the given node, plus
+   *  any errors set directly on intermediate FormGroup / FormArray nodes
+   *  (e.g. a "required: empty list" error on a FormArray with no children). */
   private countInvalid(ctrl: AbstractControl | null | undefined): number {
     if (!ctrl) return 0;
     if (ctrl instanceof FormGroup || ctrl instanceof FormArray) {
@@ -321,6 +330,7 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
         : Object.values(ctrl.controls);
       let sum = 0;
       for (const c of children) sum += this.countInvalid(c);
+      if (ctrl.errors) sum += 1;
       return sum;
     }
     return ctrl.invalid ? 1 : 0;

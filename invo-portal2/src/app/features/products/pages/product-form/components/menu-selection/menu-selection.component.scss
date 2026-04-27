@@ -3,6 +3,14 @@
 
 .pf-card__header { flex-wrap: wrap; }
 
+// Make the body itself a query container so the inner layout responds to
+// its own width rather than the viewport. Critical because the form's
+// main column shrinks under sidebars / overlays even on wide viewports.
+.pf-card__body {
+  container-type: inline-size;
+  container-name: ms-card;
+}
+
 .pf-ms-total {
   margin-inline-start: auto;
   font-size: 13px;
@@ -19,93 +27,297 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 
+  &--sm { padding: 6px 10px; font-size: 12px; }
+
+  &--primary {
+    background: #16a34a;
+    color: #fff;
+    border-color: #16a34a;
+    &:hover { background: #15803d; border-color: #15803d; }
+  }
   &--outline {
     background: #fff;
     color: #0e7490;
-    border: 1px solid #a5f3fc;
+    border-color: #a5f3fc;
     &:hover { background: #ecfeff; border-color: #67e8f9; }
   }
 }
 
-.pf-ms-tier {
-  border: 1px solid #e5e7eb;
+// ── Zero state ──────────────────────────────────────────────────────────
+.pf-ms-zero {
+  text-align: center;
+  padding: 28px 18px;
+  border: 1px dashed #e2e8f0;
   border-radius: 12px;
-  padding: 14px;
-  background: #fff;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+
+  &__icon { color: #ef4444; }
+  &__text { color: #475569; font-size: 13px; margin: 0; }
+
+  // Required-but-empty: error tint so it reads as a problem to fix.
+  &--error {
+    border-color: #fca5a5;
+    background: #fef2f2;
+    .pf-ms-zero__text { color: #b91c1c; font-weight: 500; }
+  }
+}
+
+// ── Two-column shell ────────────────────────────────────────────────────
+// Default = single column. Switch to two columns only when the card has
+// at least ~720px to spare; otherwise the right panel collapses to a few
+// pixels wide and item names wrap one character per line.
+.pf-ms-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+@container ms-card (min-width: 720px) {
+  .pf-ms-shell { grid-template-columns: 300px minmax(0, 1fr); }
+}
+
+// ── Left rail ───────────────────────────────────────────────────────────
+.pf-ms-rail {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
 
   &__head {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  &__head-fields {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 12px;
-
-    @media (max-width: 640px) { grid-template-columns: 1fr; }
-  }
-
-  &__items {
-    display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
     gap: 8px;
-    padding-top: 10px;
-    border-top: 1px dashed #e5e7eb;
   }
 
-  &__add {
-    align-self: flex-start;
+  &__title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+}
+
+.pf-ms-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// ── Level card (clickable as a tab, inline-editable inside) ─────────────
+.pf-ms-card {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 28px;
+  gap: 8px;
+  align-items: start;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  &--active {
+    background: #ecfeff;
+    border-color: #32acc1;
+    box-shadow: 0 0 0 2px rgba(50, 172, 193, 0.18);
+  }
+
+  // Levels that don't yet have enough items to satisfy `noOfSelection`
+  // light up red, unless the user is currently editing one — the brand
+  // cyan highlight then takes over so the active level doesn't shout at
+  // you while you're working on it.
+  &--invalid:not(.pf-ms-card--active) {
+    border-color: #fecaca;
+    background: #fff;
+    .pf-ms-card__name { color: #b91c1c; }
+  }
+
+  &__handle {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 6px 10px;
-    font-size: 12px;
-    font-weight: 500;
-    color: #0e7490;
+    justify-content: center;
+    width: 22px;
+    height: 32px;
+    color: #94a3b8;
+    cursor: grab;
+    align-self: center;
+    &:active { cursor: grabbing; }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  &__name {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
     background: #fff;
-    border: 1px solid #a5f3fc;
+    border: 1px solid transparent;
     border-radius: 6px;
+    cursor: text;
+    transition: background 120ms ease, border-color 120ms ease;
+
+    &:hover { background: #f1f5f9; }
+    &:focus {
+      outline: none;
+      background: #fff;
+      border-color: #32acc1;
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+    }
+    &--invalid { border-color: #ef4444; }
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #64748b;
+    padding-inline-start: 2px;
+  }
+
+  &__picks {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+
+    input {
+      width: 48px;
+      padding: 3px 6px;
+      font-size: 12px;
+      text-align: center;
+      color: #0f172a;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      &:focus {
+        outline: none;
+        border-color: #32acc1;
+        box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+      }
+    }
+  }
+
+  &__items-count { color: #94a3b8; }
+
+  &__remove {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    color: #64748b;
     cursor: pointer;
-    &:hover { background: #ecfeff; }
+    align-self: center;
+    &:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+  }
+}
+
+// ── Active panel ───────────────────────────────────────────────────────
+.pf-ms-panel {
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 14px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  &__head-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    word-break: break-word;
+    min-width: 0;
+  }
+
+  &__hint {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
+
+    &--invalid { color: #b91c1c; }
   }
 
   &__empty {
-    font-size: 12px;
-    color: #94a3b8;
-    font-style: italic;
-    margin: 4px 0;
-    padding-inline-start: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 28px 14px;
+    color: #b91c1c;
+    text-align: center;
+
+    svg { color: #fca5a5; }
+    p { margin: 0; font-size: 13px; }
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
 }
 
-.pf-ms-remove {
-  padding: 6px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  color: #64748b;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  &:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
-}
-
+// ── Item row in the panel ───────────────────────────────────────────────
 .pf-ms-item {
   display: grid;
-  grid-template-columns: 1fr 140px 30px;
-  gap: 8px;
+  grid-template-columns: 22px 1fr auto 28px;
+  gap: 10px;
   align-items: center;
-  padding: 8px 10px;
+  padding: 8px 12px;
   background: #f8fafc;
+  border: 1px solid #f1f5f9;
   border-radius: 8px;
+
+  &__handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    cursor: grab;
+    &:active { cursor: grabbing; }
+  }
 
   &__name {
     font-size: 13px;
@@ -115,11 +327,21 @@
     min-width: 0;
   }
 
-  &__price { max-width: 100%; }
+  &__price {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
 
   &__remove {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -127,8 +349,21 @@
     border: 1px solid #e5e7eb;
     border-radius: 50%;
     color: #64748b;
-    font-size: 11px;
     cursor: pointer;
     &:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
   }
+}
+
+// ── CDK drag-drop visuals ──────────────────────────────────────────────
+.cdk-drag-preview {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.15);
+  padding: 12px;
+}
+.cdk-drag-placeholder { opacity: 0.4; }
+.cdk-drop-list-dragging .pf-ms-card:not(.cdk-drag-placeholder),
+.cdk-drop-list-dragging .pf-ms-item:not(.cdk-drag-placeholder) {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
 }

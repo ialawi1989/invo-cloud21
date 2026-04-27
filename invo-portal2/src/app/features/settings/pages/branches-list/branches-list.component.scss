@@ -1,0 +1,232 @@
+// ── Page chrome (matches the other settings pages) ─────────────────────
+.branches-list-page {
+  max-width: 1200px;
+  padding: 0 0 40px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+
+  &__titles { min-width: 0; flex: 1; }
+  &__actions { flex-shrink: 0; }
+}
+
+.page-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 6px 0 0; }
+.page-sub   { font-size: 13px; color: #64748b;  margin: 2px 0 0; }
+
+.btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 120ms ease, border-color 120ms ease;
+
+  &-primary {
+    background: #32acc1; color: #fff; border-color: #32acc1;
+    &:disabled { opacity: .5; cursor: not-allowed; }
+    &:not(:disabled):hover { background: #2a93a6; border-color: #2a93a6; }
+  }
+}
+
+// ── Toolbar (search + pagination) ──────────────────────────────────────
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 240px;
+  max-width: 420px;
+
+  svg { position: absolute; inset-inline-start: 12px; color: #94a3b8; pointer-events: none; }
+  input {
+    width: 100%;
+    padding: 9px 36px 9px 36px;
+    padding-inline-start: 36px;
+    font-size: 14px;
+    color: #0f172a;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+    &:focus {
+      outline: none;
+      border-color: #32acc1;
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+    }
+    &::placeholder { color: #94a3b8; }
+  }
+  &__clear {
+    position: absolute; inset-inline-end: 8px;
+    background: transparent; border: none; cursor: pointer;
+    color: #94a3b8; padding: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    &:hover { color: #475569; }
+  }
+}
+
+.pager {
+  display: flex; align-items: center; gap: 6px;
+  margin-inline-start: auto;
+
+  &__range { font-size: 12px; color: #64748b; margin-inline-end: 6px; }
+  &__btn {
+    width: 32px; height: 32px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    &:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
+    &:disabled { opacity: .45; cursor: not-allowed; }
+  }
+}
+
+// ── Card / table ──────────────────────────────────────────────────────
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.loading { display: flex; justify-content: center; padding: 60px 0; }
+.spinner {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 3px solid #e2e8f0; border-top-color: #32acc1;
+  animation: br-spin .8s linear infinite;
+  display: inline-block;
+  &--lg { width: 32px; height: 32px; }
+}
+@keyframes br-spin { to { transform: rotate(360deg); } }
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 60px 18px;
+  color: #94a3b8;
+  text-align: center;
+
+  svg { color: #cbd5e1; }
+  p { margin: 0; font-size: 13px; color: #64748b; }
+}
+
+// ── Table proper ──────────────────────────────────────────────────────
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead th {
+    text-align: start;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 120ms ease;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: #f8fafc; }
+    &.row--default { background: #f0fdfa; }
+    &.row--default:hover { background: #ccfbf1; }
+  }
+
+  tbody td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #0f172a;
+    vertical-align: middle;
+  }
+
+  &__address {
+    color: #475569;
+    font-size: 13px;
+  }
+  &__phone {
+    font-variant-numeric: tabular-nums;
+    color: #475569;
+    font-size: 13px;
+  }
+  &__default { width: 200px; }
+  &__actions { width: 60px; text-align: end; }
+}
+
+.row-name {
+  font-weight: 500;
+  margin-inline-end: 8px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  margin-inline-end: 4px;
+
+  &--main    { background: #ecfeff; color: #0e7490; }
+  &--default { background: #dcfce7; color: #166534; }
+}
+
+.default-on {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #166534;
+}
+
+.btn-link {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #475569;
+  cursor: pointer;
+  &:hover:not(:disabled) { background: #f1f5f9; color: #0f172a; }
+  &:disabled { opacity: .45; cursor: not-allowed; }
+}
+
+.icon-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  width: 28px; height: 28px;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  &:hover { background: #f1f5f9; color: #0f172a; border-color: #e2e8f0; }
+}

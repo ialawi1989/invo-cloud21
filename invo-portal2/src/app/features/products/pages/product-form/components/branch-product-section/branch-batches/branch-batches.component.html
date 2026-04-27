@@ -40,55 +40,149 @@
   }
 
   @if (visibleIndices().length === 0) {
-    <p class="bb__empty">{{ 'PRODUCTS.FORM.NO_BATCHES_YET' | translate }}</p>
+    <p class="bb__empty">
+      @if (array().length === 0) {
+        {{ 'PRODUCTS.FORM.NO_BATCHES_YET' | translate }}
+      } @else {
+        {{ 'PRODUCTS.FORM.NO_BATCHES_MATCH' | translate }}
+      }
+    </p>
   } @else {
-    <div class="bb__head">
-      <span>{{ 'PRODUCTS.FORM.BATCH_NAME' | translate }}</span>
-      <span>{{ 'PRODUCTS.FIELDS.BARCODE' | translate }}</span>
-      <span>{{ 'PRODUCTS.FIELDS.QTY' | translate }}</span>
-      <span>{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</span>
-      <span>{{ 'PRODUCTS.FORM.PROD_DATE' | translate }}</span>
-      <span>{{ 'PRODUCTS.FORM.EXPIRE_DATE' | translate }}</span>
-      <span></span>
+    <div class="bb__cards">
+      @for (idx of visibleIndices(); track idx) {
+        <div
+          class="bb__card"
+          [class.bb__card--expired]="isExpired(idx)"
+          [class.bb__card--invalid]="hasDateError(idx)"
+          [class.bb__card--saved]="isSaved(idx)"
+          [formGroup]="rowAt(idx)"
+        >
+          <!-- Card header: name + actions -->
+          <div class="bb__card-head">
+            <div class="bb__card-title">
+              <span class="bb__card-name">{{ rowVal(idx, 'batch') || ('PRODUCTS.FORM.BATCH' | translate) }}</span>
+              @if (isSaved(idx)) {
+                <span class="bb__chip bb__chip--saved" [title]="'PRODUCTS.FORM.BATCH_SAVED_HINT' | translate">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  {{ 'PRODUCTS.FORM.BATCH_SAVED' | translate }}
+                </span>
+              }
+              @if (isExpired(idx)) {
+                <span class="bb__chip bb__chip--expired">
+                  {{ 'PRODUCTS.FORM.BATCH_TOTAL_EXPIRED' | translate }}
+                </span>
+              }
+            </div>
+            <div class="bb__card-actions">
+              <button
+                type="button"
+                class="bb__icon-btn bb__icon-btn--primary"
+                (click)="onBarcode(idx)"
+                [attr.aria-label]="'PRODUCTS.FORM.GENERATE_BARCODE' | translate"
+                [title]="'PRODUCTS.FORM.GENERATE_BARCODE' | translate"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="5" width="1" height="14"/>
+                  <rect x="6" y="5" width="2" height="14"/>
+                  <rect x="10" y="5" width="1" height="14"/>
+                  <rect x="13" y="5" width="3" height="14"/>
+                  <rect x="18" y="5" width="1" height="14"/>
+                  <rect x="20.5" y="5" width="1" height="14"/>
+                </svg>
+              </button>
+              @if (!isSaved(idx)) {
+                <button
+                  type="button"
+                  class="bb__icon-btn bb__icon-btn--danger"
+                  (click)="removeAt(idx)"
+                  [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+                  [title]="'COMMON.ACTIONS.DELETE' | translate"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Card body: 2-col field grid -->
+          <div class="bb__card-grid">
+            <div class="bb__field">
+              <label class="bb__label">{{ 'PRODUCTS.FIELDS.BARCODE' | translate }}</label>
+              <input type="text" class="pf-input" formControlName="barcode"/>
+            </div>
+            <div class="bb__field">
+              <label class="bb__label">{{ 'PRODUCTS.FORM.BATCH' | translate }}</label>
+              <input
+                type="text"
+                class="pf-input"
+                formControlName="batch"
+                [class.pf-input--invalid]="rowAt(idx).controls['batch'].touched && rowAt(idx).controls['batch'].invalid"
+              />
+            </div>
+
+            <div class="bb__field">
+              <label class="bb__label">{{ 'PRODUCTS.FORM.ON_HAND' | translate }}</label>
+              <input
+                type="number"
+                class="pf-input"
+                formControlName="onHand"
+                min="0"
+                [class.pf-input--invalid]="rowAt(idx).controls['onHand'].touched && rowAt(idx).controls['onHand'].invalid"
+              />
+            </div>
+            <div class="bb__field">
+              <label class="bb__label">{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</label>
+              <div class="bb__cost-wrap" [class.bb__cost-wrap--warn]="isCostFree(idx)">
+                <input
+                  type="number"
+                  class="pf-input"
+                  formControlName="unitCost"
+                  min="0"
+                />
+                @if (isCostFree(idx)) {
+                  <svg class="bb__cost-warn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8"  x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                }
+              </div>
+              @if (isCostFree(idx)) {
+                <small class="bb__warn-text">{{ 'PRODUCTS.PRICING.ITEM_WILL_BE_FREE' | translate }}</small>
+              }
+            </div>
+
+            <div class="bb__field">
+              <label class="bb__label">{{ 'PRODUCTS.FORM.PROD_DATE_SHORT' | translate }}</label>
+              <app-date-picker formControlName="prodDate" [placeholder]="'PRODUCTS.FORM.PICK_DATE' | translate"/>
+            </div>
+            <div class="bb__field">
+              <label class="bb__label">{{ 'PRODUCTS.FORM.EXP_DATE_SHORT' | translate }}</label>
+              <app-date-picker formControlName="expireDate" [placeholder]="'PRODUCTS.FORM.PICK_DATE' | translate"/>
+            </div>
+          </div>
+
+          @if (hasDateError(idx)) {
+            <p class="pf-error bb__card-error">{{ 'PRODUCTS.FORM.EXPIRE_BEFORE_PROD' | translate }}</p>
+          }
+        </div>
+      }
     </div>
 
-    @for (idx of visibleIndices(); track idx) {
-      <div class="bb__row" [formGroup]="rowAt(idx)" [class.bb__row--invalid]="hasDateError(idx)">
-        <input
-          type="text"
-          class="pf-input"
-          formControlName="batch"
-          [class.pf-input--invalid]="rowAt(idx).controls['batch'].touched && rowAt(idx).controls['batch'].invalid"
-        />
-        <input type="text" class="pf-input" formControlName="barcode"/>
-        <input
-          type="number"
-          class="pf-input"
-          formControlName="onHand"
-          min="0"
-          [class.pf-input--invalid]="rowAt(idx).controls['onHand'].touched && rowAt(idx).controls['onHand'].invalid"
-        />
-        <input type="number" class="pf-input" formControlName="unitCost" min="0"/>
-        <app-date-picker formControlName="prodDate" [placeholder]="'PRODUCTS.FORM.PICK_DATE' | translate"/>
-        <app-date-picker formControlName="expireDate" [placeholder]="'PRODUCTS.FORM.PICK_DATE' | translate"/>
-        <button
-          type="button"
-          class="bb__remove"
-          (click)="removeAt(idx)"
-          [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-          </svg>
-        </button>
-
-        @if (hasDateError(idx)) {
-          <p class="pf-error bb__row-error">
-            {{ 'PRODUCTS.FORM.EXPIRE_BEFORE_PROD' | translate }}
-          </p>
-        }
-      </div>
-    }
+    <p class="bb__totals">
+      <strong>{{ 'COMMON.TOTAL' | translate }}:</strong>
+      <span class="bb__total-stat bb__total-stat--valid">
+        {{ 'PRODUCTS.FORM.BATCH_TOTAL_VALID' | translate }} {{ validCount() }}
+      </span>
+      <span class="bb__total-stat bb__total-stat--expired">
+        {{ 'PRODUCTS.FORM.BATCH_TOTAL_EXPIRED' | translate }} {{ expiredCount() }}
+      </span>
+    </p>
   }
 </div>

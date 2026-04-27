@@ -1,0 +1,449 @@
+<div class="cf-manager">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+      <p class="page-sub">{{ 'SETTINGS.CUSTOM_FIELDS.MANAGER_SUBTITLE' | translate }}</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="save()"
+        [disabled]="saving() || loading() || !isValid()"
+      >
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Active fields ═══ -->
+    <section class="card">
+      <header class="card__head card__head--with-action">
+        <div>
+          <h2 class="card__title">{{ 'SETTINGS.CUSTOM_FIELDS.ACTIVE_HEADING' | translate }}</h2>
+          <p class="card__sub">{{ 'SETTINGS.CUSTOM_FIELDS.ACTIVE_SUB' | translate }}</p>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" (click)="add()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          {{ 'SETTINGS.CUSTOM_FIELDS.ADD_FIELD' | translate }}
+        </button>
+      </header>
+
+      <div class="card__body card__body--list">
+        @if (active().length === 0) {
+          <div class="empty">
+            <p class="empty__text">{{ 'SETTINGS.CUSTOM_FIELDS.EMPTY_ACTIVE' | translate }}</p>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="add()">
+              {{ 'SETTINGS.CUSTOM_FIELDS.ADD_FIRST' | translate }}
+            </button>
+          </div>
+        } @else {
+          <ul
+            class="fields"
+            cdkDropList
+            (cdkDropListDropped)="drop($event)"
+          >
+            @for (f of active(); track identify($index, f); let i = $index) {
+              <li class="field" cdkDrag [class.field--open]="f.isOpened">
+                <!-- ── Header row ─────────────────────────────────── -->
+                <div class="field__head">
+                  <button type="button" class="field__handle" cdkDragHandle [attr.aria-label]="'COMMON.REORDER' | translate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="9"  cy="6"  r="1"/>
+                      <circle cx="15" cy="6"  r="1"/>
+                      <circle cx="9"  cy="12" r="1"/>
+                      <circle cx="15" cy="12" r="1"/>
+                      <circle cx="9"  cy="18" r="1"/>
+                      <circle cx="15" cy="18" r="1"/>
+                    </svg>
+                  </button>
+
+                  <span class="field__order">{{ i + 1 }}</span>
+
+                  <button type="button" class="field__title-btn" (click)="toggleOpen(f.id)">
+                    <span class="field__title">
+                      {{ f.name.trim() || ('SETTINGS.CUSTOM_FIELDS.UNNAMED' | translate) }}
+                    </span>
+                    <span class="field__sub">
+                      <span class="field__type-badge field__type-badge--{{ f.type }}">{{ ('SETTINGS.CUSTOM_FIELDS.TYPES.' + f.type.toUpperCase()) | translate }}</span>
+                      @if (f.abbr) { <span class="field__slug">{{ f.abbr }}</span> }
+                      @if (f.required) { <span class="field__req">*</span> }
+                    </span>
+                  </button>
+
+                  <button type="button" class="field__icon-btn" (click)="duplicate(f)" [attr.aria-label]="'SETTINGS.CUSTOM_FIELDS.DUPLICATE' | translate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                  </button>
+                  <button type="button" class="field__icon-btn field__icon-btn--danger" (click)="remove(f.id)" [attr.aria-label]="'COMMON.DELETE' | translate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6"/>
+                      <path d="M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                  </button>
+                  <button type="button" class="field__icon-btn field__icon-btn--chev" (click)="toggleOpen(f.id)" [attr.aria-label]="'COMMON.TOGGLE' | translate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+                      @if (f.isOpened) {
+                        <polyline points="18 15 12 9 6 15"/>
+                      } @else {
+                        <polyline points="6 9 12 15 18 9"/>
+                      }
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- ── Body (when expanded) ────────────────────────── -->
+                @if (f.isOpened) {
+                  <div class="field__body">
+                    <!-- Tab strip -->
+                    <nav class="tabs">
+                      <button type="button" class="tab" [class.tab--active]="f.activeTab === 'general'"    (click)="setTab(f.id, 'general')">{{ 'SETTINGS.CUSTOM_FIELDS.TAB_GENERAL'    | translate }}</button>
+                      <button type="button" class="tab" [class.tab--active]="f.activeTab === 'validation'" (click)="setTab(f.id, 'validation')">{{ 'SETTINGS.CUSTOM_FIELDS.TAB_VALIDATION' | translate }}</button>
+                      @if (f.type === 'select') {
+                        <button type="button" class="tab" [class.tab--active]="f.activeTab === 'options'" (click)="setTab(f.id, 'options')">{{ 'SETTINGS.CUSTOM_FIELDS.TAB_OPTIONS' | translate }}</button>
+                      }
+                      <button type="button" class="tab" [class.tab--active]="f.activeTab === 'layout'"     (click)="setTab(f.id, 'layout')">{{ 'SETTINGS.CUSTOM_FIELDS.TAB_LAYOUT'     | translate }}</button>
+                    </nav>
+
+                    <!-- General -->
+                    @if (f.activeTab === 'general') {
+                      <div class="grid grid--2">
+                        <div class="field-row">
+                          <label class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.NAME' | translate }} <span class="required">*</span></label>
+                          <input
+                            type="text"
+                            class="input"
+                            [class.input--invalid]="!f.name.trim()"
+                            [ngModel]="f.name"
+                            (ngModelChange)="patch(f.id, 'name', $event)"
+                            (blur)="onNameBlur(f.id)"
+                            [placeholder]="'SETTINGS.CUSTOM_FIELDS.NAME_PLACEHOLDER' | translate"
+                          />
+                        </div>
+
+                        <div class="field-row">
+                          <label class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.SLUG' | translate }} <span class="required">*</span></label>
+                          <input
+                            type="text"
+                            class="input"
+                            [class.input--invalid]="!f.abbr.trim() || isSlugTaken(f.id, f.abbr)"
+                            [ngModel]="f.abbr"
+                            (ngModelChange)="onSlugInput(f.id, $event)"
+                            placeholder="snake_case_id"
+                          />
+                          @if (isSlugTaken(f.id, f.abbr)) {
+                            <p class="field-error">{{ 'SETTINGS.CUSTOM_FIELDS.SLUG_TAKEN' | translate }}</p>
+                          } @else {
+                            <p class="field-hint">{{ 'SETTINGS.CUSTOM_FIELDS.SLUG_HINT' | translate }}</p>
+                          }
+                        </div>
+
+                        <div class="field-row">
+                          <label class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.TYPE' | translate }}</label>
+                          <div class="type-row">
+                            <span class="type-row__ico">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="iconHtml(f.type)"></svg>
+                            </span>
+                            <span class="type-row__name">
+                              {{ ('SETTINGS.CUSTOM_FIELDS.TYPES.' + f.type.toUpperCase()) | translate }}
+                            </span>
+                            <button type="button" class="type-row__change" (click)="changeType(f.id)">
+                              {{ 'SETTINGS.CUSTOM_FIELDS.TYPE_PICKER.CHANGE' | translate }}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div class="field-row">
+                          <label class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.DEFAULT_VALUE' | translate }}</label>
+                          @switch (f.type) {
+                            @case ('number') {
+                              <input
+                                type="number"
+                                class="input"
+                                [ngModel]="f.defaultValue"
+                                (ngModelChange)="patch(f.id, 'defaultValue', $event)"
+                              />
+                            }
+                            @case ('date') {
+                              <app-date-picker
+                                [value]="dateValueOf(f)"
+                                (valueChange)="setDate(f, $any($event))"
+                                displayFormat="yyyy-MM-dd"
+                              />
+                            }
+                            @case ('datetime') {
+                              <app-date-picker
+                                [value]="dateValueOf(f)"
+                                (valueChange)="setDate(f, $any($event))"
+                                [showTime]="true"
+                                displayFormat="yyyy-MM-dd"
+                              />
+                            }
+                            @case ('time') {
+                              <app-time-picker
+                                [ngModel]="timeValueOf(f)"
+                                (ngModelChange)="setTime(f, $event)"
+                                [ngModelOptions]="{ standalone: true }"
+                              />
+                            }
+                            @case ('boolean') {
+                              <label class="toggle">
+                                <input
+                                  type="checkbox"
+                                  [checked]="f.defaultValue === true"
+                                  (change)="patch(f.id, 'defaultValue', $any($event.target).checked)"
+                                />
+                                <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+                                <span class="toggle__label">
+                                  <span class="field-label">{{ (f.defaultValue === true ? 'COMMON.YES' : 'COMMON.NO') | translate }}</span>
+                                </span>
+                              </label>
+                            }
+                            @case ('color') {
+                              <app-color-picker
+                                [ngModel]="f.defaultValue"
+                                (ngModelChange)="patch(f.id, 'defaultValue', $event)"
+                                [ngModelOptions]="{ standalone: true }"
+                              />
+                            }
+                            @case ('email') {
+                              <input type="email" class="input" placeholder="name@example.com" [ngModel]="f.defaultValue" (ngModelChange)="patch(f.id, 'defaultValue', $event)"/>
+                            }
+                            @case ('url') {
+                              <input type="url" class="input" placeholder="https://" [ngModel]="f.defaultValue" (ngModelChange)="patch(f.id, 'defaultValue', $event)"/>
+                            }
+                            @case ('phone') {
+                              <input type="tel" class="input" placeholder="+1 555 0100" [ngModel]="f.defaultValue" (ngModelChange)="patch(f.id, 'defaultValue', $event)"/>
+                            }
+                            @default {
+                              <input
+                                type="text"
+                                class="input"
+                                [ngModel]="f.defaultValue"
+                                (ngModelChange)="patch(f.id, 'defaultValue', $event)"
+                              />
+                            }
+                          }
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Validation -->
+                    @if (f.activeTab === 'validation') {
+                      <div class="grid grid--2">
+                        <label class="toggle">
+                          <input
+                            type="checkbox"
+                            [checked]="f.required"
+                            (change)="patch(f.id, 'required', $any($event.target).checked)"
+                          />
+                          <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+                          <span class="toggle__label">
+                            <span class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.REQUIRED' | translate }}</span>
+                            <span class="field-hint">{{ 'SETTINGS.CUSTOM_FIELDS.REQUIRED_HINT' | translate }}</span>
+                          </span>
+                        </label>
+
+                        @if (isTextual(f.type)) {
+                          <div class="field-row">
+                            <label class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.CHAR_LIMIT' | translate }}</label>
+                            <input
+                              type="number"
+                              class="input"
+                              min="1"
+                              [ngModel]="f.charLimit"
+                              (ngModelChange)="patch(f.id, 'charLimit', $event)"
+                            />
+                          </div>
+                        }
+
+                        @if (f.type === 'number') {
+                          <div class="field-row">
+                            <label class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.MIN_NUMBER' | translate }}</label>
+                            <input
+                              type="number"
+                              class="input"
+                              [ngModel]="f.minNumber"
+                              (ngModelChange)="patch(f.id, 'minNumber', $event)"
+                            />
+                          </div>
+                          <div class="field-row">
+                            <label class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.MAX_NUMBER' | translate }}</label>
+                            <input
+                              type="number"
+                              class="input"
+                              [ngModel]="f.maxNumber"
+                              (ngModelChange)="patch(f.id, 'maxNumber', $event)"
+                            />
+                          </div>
+                          <div class="field-row">
+                            <label class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.NUMBER_DISPLAY' | translate }}</label>
+                            <select
+                              class="input"
+                              [ngModel]="f.numberDisplayType"
+                              (ngModelChange)="patch(f.id, 'numberDisplayType', $event)"
+                            >
+                              @for (k of numberKinds; track k) {
+                                <option [value]="k">{{ ('SETTINGS.CUSTOM_FIELDS.NUMBER_KINDS.' + k.toUpperCase()) | translate }}</option>
+                              }
+                            </select>
+                          </div>
+                        }
+
+                        @if (f.type === 'select') {
+                          <label class="toggle">
+                            <input
+                              type="checkbox"
+                              [checked]="f.selectMultiple"
+                              (change)="patch(f.id, 'selectMultiple', $any($event.target).checked)"
+                            />
+                            <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+                            <span class="toggle__label">
+                              <span class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.MULTI_SELECT' | translate }}</span>
+                              <span class="field-hint">{{ 'SETTINGS.CUSTOM_FIELDS.MULTI_SELECT_HINT' | translate }}</span>
+                            </span>
+                          </label>
+                          <label class="toggle">
+                            <input
+                              type="checkbox"
+                              [checked]="f.clearable !== false"
+                              (change)="patch(f.id, 'clearable', $any($event.target).checked)"
+                            />
+                            <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+                            <span class="toggle__label">
+                              <span class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.CLEARABLE' | translate }}</span>
+                              <span class="field-hint">{{ 'SETTINGS.CUSTOM_FIELDS.CLEARABLE_HINT' | translate }}</span>
+                            </span>
+                          </label>
+                        }
+                      </div>
+                    }
+
+                    <!-- Options (select only) -->
+                    @if (f.activeTab === 'options' && f.type === 'select') {
+                      <div class="options">
+                        @if ((f.customOptions ?? []).length === 0) {
+                          <p class="options__hint">{{ 'SETTINGS.CUSTOM_FIELDS.OPTIONS_EMPTY' | translate }}</p>
+                        }
+                        @for (opt of f.customOptions ?? []; track $index; let oi = $index) {
+                          <div class="option-row">
+                            <input
+                              type="text"
+                              class="input"
+                              [placeholder]="'SETTINGS.CUSTOM_FIELDS.OPTION_LABEL' | translate"
+                              [ngModel]="opt.label"
+                              (ngModelChange)="patchOption(f.id, oi, 'label', $event)"
+                            />
+                            <input
+                              type="text"
+                              class="input"
+                              [placeholder]="'SETTINGS.CUSTOM_FIELDS.OPTION_VALUE' | translate"
+                              [ngModel]="opt.value"
+                              (ngModelChange)="patchOption(f.id, oi, 'value', $event)"
+                            />
+                            <button type="button" class="field__icon-btn field__icon-btn--danger" (click)="removeOption(f.id, oi)" [attr.aria-label]="'COMMON.DELETE' | translate">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                <path d="M10 11v6"/>
+                                <path d="M14 11v6"/>
+                              </svg>
+                            </button>
+                          </div>
+                        }
+                        <button type="button" class="btn btn-ghost btn-sm" (click)="addOption(f.id)">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                          </svg>
+                          {{ 'SETTINGS.CUSTOM_FIELDS.ADD_OPTION' | translate }}
+                        </button>
+                      </div>
+                    }
+
+                    <!-- Layout -->
+                    @if (f.activeTab === 'layout') {
+                      <div class="layout-options">
+                        <p class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.GRID_TEMPLATE' | translate }}</p>
+                        <div class="grid-options">
+                          @for (g of grids; track g) {
+                            <button
+                              type="button"
+                              class="grid-option"
+                              [class.grid-option--active]="f.gridTemplate === g"
+                              (click)="patch(f.id, 'gridTemplate', g)"
+                            >
+                              <span class="grid-option__bar grid-option__bar--{{ g }}"></span>
+                              <span class="grid-option__name">{{ ('SETTINGS.CUSTOM_FIELDS.GRIDS.' + g.toUpperCase().replace('-', '_')) | translate }}</span>
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </section>
+
+    <!-- ═══ Trash (soft-deleted) ═══ -->
+    @if (deleted().length > 0) {
+      <section class="card card--trash">
+        <header class="card__head card__head--clickable" (click)="trashOpen.set(!trashOpen())">
+          <div>
+            <h2 class="card__title">
+              {{ 'SETTINGS.CUSTOM_FIELDS.TRASH_HEADING' | translate }}
+              <span class="card__count">({{ deleted().length }})</span>
+            </h2>
+            <p class="card__sub">{{ 'SETTINGS.CUSTOM_FIELDS.TRASH_SUB' | translate }}</p>
+          </div>
+          <svg class="card__chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+            @if (trashOpen()) {
+              <polyline points="18 15 12 9 6 15"/>
+            } @else {
+              <polyline points="6 9 12 15 18 9"/>
+            }
+          </svg>
+        </header>
+        @if (trashOpen()) {
+          <div class="card__body">
+            <ul class="trash-list">
+              @for (d of deleted(); track d.id) {
+                <li class="trash-row">
+                  <span class="trash-row__title">{{ d.name || ('SETTINGS.CUSTOM_FIELDS.UNNAMED' | translate) }}</span>
+                  <span class="trash-row__sub">
+                    <span class="field__type-badge field__type-badge--{{ d.type }}">{{ ('SETTINGS.CUSTOM_FIELDS.TYPES.' + d.type.toUpperCase()) | translate }}</span>
+                    @if (d.abbr) { <span class="field__slug">{{ d.abbr }}</span> }
+                  </span>
+                  <button type="button" class="btn btn-ghost btn-sm" (click)="restore(d.id)">
+                    {{ 'SETTINGS.CUSTOM_FIELDS.RESTORE' | translate }}
+                  </button>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </section>
+    }
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+</div>

@@ -1,0 +1,98 @@
+<section class="pf-card">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.PRICE_BY_TEAM' | translate }}</h2>
+  </header>
+
+  <div class="pf-card__body">
+    <div class="pbt-toolbar">
+      @if (rows.length > 0) {
+        <label class="pbt-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            [value]="search()"
+            (input)="search.set($any($event.target).value)"
+            [placeholder]="'COMMON.SEARCH' | translate"
+          />
+        </label>
+      } @else {
+        <span class="pbt-empty-text">{{ 'PRODUCTS.FORM.NO_TEAM_MEMBERS_YET' | translate }}</span>
+      }
+
+      <button type="button" class="pf-btn pf-btn--outline" (click)="openPicker()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        {{ 'PRODUCTS.FORM.SELECT_EMPLOYEES' | translate }}
+      </button>
+    </div>
+
+    @if (rows.length > 0) {
+      <div class="pbt-table">
+        <div class="pbt-head">
+          <span>{{ 'PRODUCTS.FORM.NAME' | translate }}</span>
+          <span>{{ 'PRODUCTS.FORM.SERVICE_TIME_MIN' | translate }}</span>
+          <span>{{ 'PRODUCTS.FORM.PRICE' | translate }}</span>
+          <span></span>
+        </div>
+
+        @for (i of visibleRows(); track rowAt(i).value['employeeId']) {
+          <div class="pbt-row" [formGroup]="rowAt(i)">
+            <div class="pbt-name">{{ rowAt(i).value['name'] }}</div>
+
+            <div class="pbt-cell">
+              <input
+                type="number"
+                class="pf-input"
+                formControlName="serviceTime"
+                min="0"
+                [class.pf-input--invalid]="controlAt(i,'serviceTime').invalid"
+              />
+              @if (controlAt(i,'serviceTime').errors?.['required']) {
+                <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+              }
+              @if (controlAt(i,'serviceTime').errors?.['min']) {
+                <p class="pf-error">{{ 'PRODUCTS.FORM.DURATION_TIME_MIN' | translate: { value: minServiceTime } }}</p>
+              }
+            </div>
+
+            <div class="pbt-cell">
+              <input
+                type="number"
+                class="pf-input"
+                formControlName="price"
+                min="0"
+                [class.pf-input--invalid]="controlAt(i,'price').invalid"
+              />
+              @if (controlAt(i,'price').errors?.['required']) {
+                <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+              }
+            </div>
+
+            <button
+              type="button"
+              class="pbt-remove"
+              (click)="removeRow(i)"
+              [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>

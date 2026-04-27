@@ -8,22 +8,208 @@
     <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.NUTRITION' | translate }}</h2>
   </header>
 
-  <div class="pf-card__body pf-nut-grid">
-    <div class="pf-field">
-      <label class="pf-label">{{ 'PRODUCTS.FORM.KCAL' | translate }}</label>
-      <input type="number" class="pf-input" formControlName="kcal" min="0"/>
-    </div>
-    <div class="pf-field">
-      <label class="pf-label">{{ 'PRODUCTS.FORM.FAT' | translate }}</label>
-      <input type="number" class="pf-input" formControlName="fat" min="0"/>
-    </div>
-    <div class="pf-field">
-      <label class="pf-label">{{ 'PRODUCTS.FORM.CARB' | translate }}</label>
-      <input type="number" class="pf-input" formControlName="carb" min="0"/>
-    </div>
-    <div class="pf-field">
-      <label class="pf-label">{{ 'PRODUCTS.FORM.PROTEIN' | translate }}</label>
-      <input type="number" class="pf-input" formControlName="protien" min="0"/>
+  <div class="pf-card__body pf-nut-body">
+    <!-- Two-column shell: inputs on the left, FDA-style preview on the right.
+         Drops to a single column on narrow screens (see scss). -->
+    <div class="pf-nut-shell">
+      <div class="pf-nut-form">
+        <!-- ═══ Serving Information ═══ -->
+        <h3 class="pf-nut-section">{{ 'PRODUCTS.FORM.NUT_SERVING_INFO' | translate }}</h3>
+        <div class="pf-nut-grid pf-nut-grid--3">
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_SERVING_SIZE' | translate }}</label>
+            <input
+              type="text"
+              class="pf-input"
+              formControlName="servingSize"
+              [placeholder]="'PRODUCTS.FORM.NUT_SERVING_SIZE_PH' | translate"
+            />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_SERVINGS_PER_CONTAINER' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="servingsPerContainer" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_CALORIES_PER_SERVING' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="kcal" min="0"/>
+          </div>
+        </div>
+
+        <!-- ═══ Macronutrients ═══ -->
+        <h3 class="pf-nut-section">{{ 'PRODUCTS.FORM.NUT_MACROS' | translate }}</h3>
+        <div class="pf-nut-grid pf-nut-grid--4">
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_TOTAL_FAT' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="fat" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_SATURATED_FAT' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="saturatedFat" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_TRANS_FAT' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="transFat" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_CHOLESTEROL' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="cholesterol" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_SODIUM' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="sodium" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_TOTAL_CARBS' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="carb" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_PROTEIN' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="protien" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_DIETARY_FIBER' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="dietaryFiber" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_TOTAL_SUGARS' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="totalSugars" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_ADDED_SUGARS' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="addedSugars" min="0"/>
+          </div>
+        </div>
+
+        <!-- ═══ Vitamins & Minerals (% Daily Value) ═══ -->
+        <h3 class="pf-nut-section">{{ 'PRODUCTS.FORM.NUT_VITAMINS' | translate }}</h3>
+        <div class="pf-nut-grid pf-nut-grid--4">
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_VITAMIN_A' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="vitaminA" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_VITAMIN_C' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="vitaminC" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_CALCIUM' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="calcium" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_IRON' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="iron" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_POTASSIUM' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="potassium" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_VITAMIN_D' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="vitaminD" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_VITAMIN_E' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="vitaminE" min="0"/>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">{{ 'PRODUCTS.FORM.NUT_MAGNESIUM' | translate }}</label>
+            <input type="number" class="pf-input" formControlName="magnesium" min="0"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ FDA-style Nutrition Facts preview ═══ -->
+      <aside class="pf-nut-preview" aria-label="Nutrition facts preview">
+        <h3 class="pf-nut-section pf-nut-section--centered">{{ 'PRODUCTS.FORM.NUT_LABEL_PREVIEW' | translate }}</h3>
+        <div class="nf-label">
+          <div class="nf-label__title">{{ 'PRODUCTS.FORM.NUT_LABEL_TITLE' | translate }}</div>
+
+          @if (c('servingSize').value || c('servingsPerContainer').value) {
+            <div class="nf-label__serving">
+              @if (c('servingSize').value) { <div>{{ c('servingSize').value }}</div> }
+              <div class="nf-label__serving-count">
+                {{ 'PRODUCTS.FORM.NUT_SERVINGS_PER_CONTAINER' | translate }}
+                {{ c('servingsPerContainer').value || 0 }}
+              </div>
+            </div>
+          }
+
+          <div class="nf-label__bar nf-label__bar--lg"></div>
+          <div class="nf-label__amount-per">{{ 'PRODUCTS.FORM.NUT_LABEL_AMOUNT_PER' | translate }}</div>
+          <div class="nf-label__calories-row">
+            <span class="nf-label__calories-label">Calories</span>
+            <span class="nf-label__calories-value">{{ c('kcal').value || 0 }}</span>
+          </div>
+
+          <div class="nf-label__bar"></div>
+          <div class="nf-label__dv-header">{{ 'PRODUCTS.FORM.NUT_LABEL_DAILY_VALUE' | translate }}</div>
+
+          <!-- Macros — bold rows are top-level FDA categories. -->
+          <div class="nf-row nf-row--bold">
+            <span><b>Total Fat</b> {{ c('fat').value || 0 }}g</span>
+            <span>{{ totalFatPct() }}%</span>
+          </div>
+          <div class="nf-row nf-row--indent">
+            <span>Saturated Fat {{ c('saturatedFat').value || 0 }}g</span>
+            <span>{{ saturatedFatPct() }}%</span>
+          </div>
+          <div class="nf-row nf-row--indent">
+            <span><i>Trans</i> Fat {{ c('transFat').value || 0 }}g</span>
+            <span></span>
+          </div>
+          <div class="nf-row nf-row--bold">
+            <span><b>Cholesterol</b> {{ c('cholesterol').value || 0 }}mg</span>
+            <span>{{ cholesterolPct() }}%</span>
+          </div>
+          <div class="nf-row nf-row--bold">
+            <span><b>Sodium</b> {{ c('sodium').value || 0 }}mg</span>
+            <span>{{ sodiumPct() }}%</span>
+          </div>
+          <div class="nf-row nf-row--bold">
+            <span><b>Total Carbohydrate</b> {{ c('carb').value || 0 }}g</span>
+            <span>{{ totalCarbsPct() }}%</span>
+          </div>
+          <div class="nf-row nf-row--indent">
+            <span>Dietary Fiber {{ c('dietaryFiber').value || 0 }}g</span>
+            <span>{{ dietaryFiberPct() }}%</span>
+          </div>
+          <div class="nf-row nf-row--indent">
+            <span>Total Sugars {{ c('totalSugars').value || 0 }}g</span>
+            <span></span>
+          </div>
+          <div class="nf-row nf-row--indent2">
+            <span>{{ 'PRODUCTS.FORM.NUT_LABEL_INCLUDES' | translate }} {{ c('addedSugars').value || 0 }}g Added Sugars</span>
+            <span>{{ addedSugarsPct() }}%</span>
+          </div>
+          <div class="nf-row nf-row--bold">
+            <span><b>Protein</b> {{ c('protien').value || 0 }}g</span>
+            <span>{{ proteinPct() }}%</span>
+          </div>
+
+          <div class="nf-label__bar"></div>
+
+          <!-- Mandatory micronutrients — derive mass from %DV input. -->
+          <div class="nf-row">
+            <span>Vitamin D {{ vitaminDMcg() }}mcg</span>
+            <span>{{ c('vitaminD').value || 0 }}%</span>
+          </div>
+          <div class="nf-row">
+            <span>Calcium {{ calciumMg() }}mg</span>
+            <span>{{ c('calcium').value || 0 }}%</span>
+          </div>
+          <div class="nf-row">
+            <span>Iron {{ ironMg() }}mg</span>
+            <span>{{ c('iron').value || 0 }}%</span>
+          </div>
+          <div class="nf-row">
+            <span>Potassium {{ potassiumMg() }}mg</span>
+            <span>{{ c('potassium').value || 0 }}%</span>
+          </div>
+
+          <div class="nf-label__bar nf-label__bar--sm"></div>
+          <p class="nf-label__footnote">{{ 'PRODUCTS.FORM.NUT_LABEL_FOOTNOTE' | translate }}</p>
+        </div>
+      </aside>
     </div>
   </div>
 </section>

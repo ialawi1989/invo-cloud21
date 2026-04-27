@@ -19,7 +19,9 @@ export interface BranchProduct {
 }
 
 export interface KitBuilderItem {
-  id?: string;
+  /** The PICKED product's id — backend's required field, named `productId`
+   *  to mirror the saved payload (don't rename to `id`; the API rejects). */
+  productId?: string;
   name?: string;
   qty: number | null;
   unitCost: number;
@@ -28,7 +30,9 @@ export interface KitBuilderItem {
 }
 
 export interface PackageItem {
-  id?: string;
+  /** Picked product's id — backend's required field, named `productId` to
+   *  mirror the legacy save payload (don't rename to `id`; the API rejects). */
+  productId?: string;
   name?: string;
   qty: number | null;
   defaultPrice?: number;

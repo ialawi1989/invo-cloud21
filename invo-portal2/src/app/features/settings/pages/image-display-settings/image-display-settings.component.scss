@@ -1,0 +1,203 @@
+// ── Page chrome (matches tab-builder / business-settings) ──────────────
+.img-display-page {
+  max-width: 1200px;
+  padding: 0 0 40px;
+  position: relative;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  &__titles { min-width: 0; flex: 1; }
+  &__actions { flex-shrink: 0; }
+}
+
+.page-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 6px 0 0; }
+.page-sub   { font-size: 13px; color: #64748b;  margin: 2px 0 0; }
+
+.btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 120ms ease, border-color 120ms ease;
+
+  &-primary {
+    background: #32acc1; color: #fff; border-color: #32acc1;
+    &:disabled { opacity: .5; cursor: not-allowed; }
+    &:not(:disabled):hover { background: #2a93a6; border-color: #2a93a6; }
+  }
+}
+
+.loading { display: flex; justify-content: center; padding: 60px 0; }
+.spinner {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 3px solid #e2e8f0; border-top-color: #32acc1;
+  display: inline-block; animation: img-spin .8s linear infinite;
+  &--lg { width: 32px; height: 32px; }
+}
+@keyframes img-spin { to { transform: rotate(360deg); } }
+
+// ── Shell ───────────────────────────────────────────────────────────────
+.shell {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 16px;
+
+  @media (max-width: 880px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// ── Cards ───────────────────────────────────────────────────────────────
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  &__head {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  &__title { margin: 0; font-size: 15px; font-weight: 600; color: #0f172a; }
+  &__sub   { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+
+  &__body { padding: 18px 20px; }
+}
+
+.field {
+  margin-bottom: 22px;
+  &:last-child { margin-bottom: 0; }
+}
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+.field-hint {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+// ── Segmented control (Cover / Contain / Fill) ─────────────────────────
+.seg {
+  display: inline-flex;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+
+  &__btn {
+    padding: 7px 14px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { color: #0f172a; }
+    &--active {
+      background: #fff;
+      color: #0f172a;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    }
+  }
+}
+
+// ── 3×3 position grid ──────────────────────────────────────────────────
+.pos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 56px);
+  grid-template-rows:    repeat(3, 56px);
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 6px;
+
+  &__cell {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, border-color 120ms ease;
+
+    &:hover { background: #ecfeff; border-color: #67e8f9; }
+    &--active {
+      background: #ecfeff;
+      border-color: #32acc1;
+      box-shadow: 0 0 0 2px rgba(50, 172, 193, 0.18);
+    }
+  }
+  &__dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    transition: background 120ms ease, transform 120ms ease;
+  }
+  &__cell--active &__dot {
+    background: #32acc1;
+    transform: scale(1.4);
+  }
+}
+
+// ── Preview ────────────────────────────────────────────────────────────
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.preview-tile {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__frame {
+    width: 100%;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      // `object-fit` and `object-position` are applied via [style] from
+      // the component's `previewStyle()` computed.
+    }
+
+    // Fixed aspect-ratio frames so the preview reads as "card sizes the
+    // user will encounter" — short tile, square tile, wide banner.
+    &--tall   { aspect-ratio: 3 / 4;  }
+    &--square { aspect-ratio: 1 / 1;  }
+    &--wide   { aspect-ratio: 16 / 9; }
+  }
+
+  figcaption {
+    font-size: 12px;
+    color: #64748b;
+    text-align: center;
+  }
+}

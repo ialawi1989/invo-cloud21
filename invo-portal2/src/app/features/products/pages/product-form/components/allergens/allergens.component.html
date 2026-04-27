@@ -1,0 +1,71 @@
+<section class="pf-card" [formGroup]="group">
+  <header class="pf-card__header">
+    <div class="pf-card__icon pf-card__icon--allergen">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.ALLERGENS' | translate }}</h2>
+  </header>
+
+  <div class="pf-card__body">
+    <h3 class="pf-allergen-section">{{ 'PRODUCTS.FORM.ALLERGEN_CONTAINS' | translate }}</h3>
+    <div class="pf-allergen-grid">
+      @for (a of allergens; track a.key) {
+        <button
+          type="button"
+          class="pf-allergen-tile pf-allergen-tile--contains"
+          [class.pf-allergen-tile--contains-on]="isContained()(a.key)"
+          [attr.aria-pressed]="isContained()(a.key)"
+          (click)="toggleContains(a.key)"
+        >
+          <span class="pf-allergen-tile__check" aria-hidden="true">
+            @if (isContained()(a.key)) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="5 13 9 17 19 7"/>
+              </svg>
+            }
+          </span>
+          <span class="pf-allergen-tile__title">{{ a.title }}</span>
+        </button>
+      }
+    </div>
+
+    <h3 class="pf-allergen-section">{{ 'PRODUCTS.FORM.ALLERGEN_MAY_CONTAIN' | translate }}</h3>
+    <div class="pf-allergen-grid">
+      @for (a of allergens; track a.key) {
+        <button
+          type="button"
+          class="pf-allergen-tile pf-allergen-tile--may"
+          [class.pf-allergen-tile--may-on]="isMayContain()(a.key)"
+          [attr.aria-pressed]="isMayContain()(a.key)"
+          (click)="toggleMayContain(a.key)"
+        >
+          <span class="pf-allergen-tile__check" aria-hidden="true">
+            @if (isMayContain()(a.key)) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="5 13 9 17 19 7"/>
+              </svg>
+            }
+          </span>
+          <span class="pf-allergen-tile__title">{{ a.title }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="pf-field pf-allergen-statement">
+      <label class="pf-label" for="allergen-statement">
+        {{ 'PRODUCTS.FORM.ALLERGEN_STATEMENT' | translate }}
+      </label>
+      <textarea
+        id="allergen-statement"
+        class="pf-input"
+        rows="4"
+        [formControl]="statement"
+        [placeholder]="'PRODUCTS.FORM.ALLERGEN_STATEMENT_PH' | translate"
+      ></textarea>
+    </div>
+  </div>
+</section>

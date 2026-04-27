@@ -1,0 +1,113 @@
+// Each label has its own colour palette via a modifier class — the SVG
+// itself uses currentColor so swapping the host class is enough to retint.
+
+.pf-attr-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  flex-shrink: 0;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
+}
+
+// Plant-based / "natural" — green
+.pf-attr-icon--organic,
+.pf-attr-icon--vegan,
+.pf-attr-icon--vegetarian,
+.pf-attr-icon--non-gmo,
+.pf-attr-icon--fresh,
+.pf-attr-icon--raw {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+// Grain / wheat — amber
+.pf-attr-icon--gluten-free {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+// Dairy / liquids — blue
+.pf-attr-icon--dairy-free,
+.pf-attr-icon--lactose-free {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+// Sugar — pink
+.pf-attr-icon--sugar-free,
+.pf-attr-icon--no-sugar {
+  background: #fce7f3;
+  color: #be185d;
+}
+
+// Fat / oil — orange
+.pf-attr-icon--low-fat,
+.pf-attr-icon--trans-fat-free {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+// Sodium — slate
+.pf-attr-icon--low-sodium {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+// Protein / strength — purple
+.pf-attr-icon--high-protein {
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+// Keto — emerald
+.pf-attr-icon--keto-friendly,
+.pf-attr-icon--keto {
+  background: #d1fae5;
+  color: #047857;
+}
+
+// Paleo — brown
+.pf-attr-icon--paleo {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+// Religious labels — deep blue / green
+.pf-attr-icon--kosher {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.pf-attr-icon--halal {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+// Heat — red
+.pf-attr-icon--spicy,
+.pf-attr-icon--very-spicy {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+// Beef — warm brown
+.pf-attr-icon--angus-beaf {
+  background: #fef3c7;
+  color: #78350f;
+}
+
+// Alcohol — amber
+.pf-attr-icon--contain-alcohol,
+.pf-attr-icon--non-alcoholic {
+  background: #fef3c7;
+  color: #a16207;
+}
