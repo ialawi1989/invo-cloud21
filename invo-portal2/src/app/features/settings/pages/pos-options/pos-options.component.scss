@@ -1,0 +1,263 @@
+// ── Page chrome ─────────────────────────────────────────────────────────
+.pos-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  // Bottom padding leaves room for the sticky save bar so the last
+  // card never sits underneath it when the user scrolls.
+  padding: 16px 24px 96px;
+  position: relative;
+}
+
+.page-header {
+  margin-bottom: 20px;
+
+  &__titles { min-width: 0; }
+}
+
+.page-title {
+  margin: 8px 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.page-sub { margin: 0; font-size: 14px; color: #64748b; }
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.spinner {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 3px solid #e2e8f0; border-top-color: var(--color-brand-600);
+  animation: pos-spin .8s linear infinite;
+  display: inline-block;
+  &--lg { width: 32px; height: 32px; }
+}
+@keyframes pos-spin { to { transform: rotate(360deg); } }
+
+// ── Cards ──────────────────────────────────────────────────────────────
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 16px;
+
+  &__head {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  &__title { margin: 0; font-size: 15px; font-weight: 600; color: #0f172a; }
+  &__sub   { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+  &__body  { padding: 18px 20px; }
+
+  &__divider {
+    border: none;
+    border-top: 1px solid #f1f5f9;
+    margin: 18px 0;
+  }
+}
+
+// ── Toggle grid ────────────────────────────────────────────────────────
+.toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 24px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// "Print on sent" / "Print on paid" each take a wider row that includes
+// the matching copies picker.
+.receipt-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 4px 0;
+
+  & + & { margin-top: 14px; }
+
+  &__copies {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  @media (max-width: 720px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+// ── Toggles ────────────────────────────────────────────────────────────
+.toggle {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+
+  input { position: absolute; opacity: 0; pointer-events: none; }
+
+  &__track {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    border-radius: 999px;
+    background: #cbd5e1;
+    flex-shrink: 0;
+    transition: background 120ms ease;
+    margin-top: 2px;
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 2px;
+    inset-inline-start: 2px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+    transition: inset-inline-start 120ms ease;
+  }
+
+  input:checked + &__track { background: var(--color-brand-600); }
+  input:checked + &__track .toggle__thumb { inset-inline-start: 18px; }
+
+  &__label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+}
+
+// ── Field controls (number input, void-reasons, etc.) ──────────────────
+.field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 0;
+
+  & + & { margin-top: 18px; }
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+
+  &--inline { font-weight: 500; color: #475569; }
+}
+
+.field-hint  { margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.4; }
+
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: #0f172a;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &::placeholder { color: #94a3b8; }
+  &:hover { border-color: #cbd5e1; }
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+
+  &--narrow { width: auto; min-width: 80px; }
+}
+
+// ── Void reasons ───────────────────────────────────────────────────────
+.void-add {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.void-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.void-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 4px 4px 10px;
+  background: var(--color-brand-50);
+  border: 1px solid var(--color-brand-200, #bae6fd);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--color-brand-800, #075985);
+
+  &__text { line-height: 1; }
+
+  &__remove {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    color: var(--color-brand-700);
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: rgba(255, 255, 255, 0.7); color: #be123c; }
+  }
+}
+
+.void-empty {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+// ── Buttons ────────────────────────────────────────────────────────────
+.btn {
+  padding: 8px 18px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &-sm { padding: 6px 12px; font-size: 12px; }
+
+  &-primary {
+    background: var(--color-brand-600); color: #fff; border-color: var(--color-brand-600);
+    &:hover:not(:disabled) { background: var(--color-brand-700); border-color: var(--color-brand-700); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+  &-ghost {
+    background: #fff; color: #475569; border-color: #e2e8f0;
+    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}

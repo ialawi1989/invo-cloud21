@@ -1,0 +1,710 @@
+<!--
+  Element editor — one switch per element type. Every input emits
+  `(fieldChange)` so the parent funnels all edits through a single
+  patch path. We bind `[ngModel]` (one-way) plus `(ngModelChange)` so
+  the input stays a controlled component and the model only updates
+  when the parent decides to.
+-->
+@if (element(); as el) {
+  @switch (el.type) {
+
+    <!-- ════ Text ════════════════════════════════════════════════════ -->
+    @case ('Text') {
+      @if (asText(el); as t) {
+        <!-- Group-driven render: each iteration produces ONE widget that
+             may carry 1 or more slots as tabs. Vertical drag reorders
+             groups; dropping onto another widget's header merges tabs;
+             clicking × on a tab pulls it back into its own group. -->
+        <div class="ee" cdkDropList (cdkDropListDropped)="onSlotReorder('Text', $event)">
+          @for (group of groupsFor('Text'); track trackGroup($index, group); let gi = $index) {
+            <div cdkDrag class="ee-slot" [attr.data-rbfw-gi]="gi" (cdkDragMoved)="onWidgetDragMoved($event)" (cdkDragEnded)="onWidgetDragEnded()">
+              <app-rbf-widget
+                [title]="widgetTitle(group)"
+                [storageKey]="'el:' + group[0]"
+                [draggable]="true"
+                [tabs]="buildTabs(group)"
+                [activeTabId]="activeTab('Text', gi, group)"
+                (activeTabIdChange)="setActiveTab('Text', gi, $event)"
+                (tabClose)="ungroupTab('Text', gi, $event)"
+                (tabReorder)="reorderTab('Text', gi, $event)"
+              >
+                @switch (activeTab('Text', gi, group)) {
+                  @case ('content') {
+                    <app-bindable-input
+                      [multiline]="true"
+                      [rows]="2"
+                      [value]="t.value"
+                      (valueChange)="emit('value', $event)"
+                      [placeholder]="'RECEIPT_BUILDER.EDITOR.VALUE_PLACEHOLDER' | translate"
+                    />
+                  }
+                  @case ('alignment') {
+                    <div class="seg">
+                      @for (a of alignments; track a) {
+                        <button
+                          type="button"
+                          class="seg__btn seg__btn--icon"
+                          [class.seg__btn--on]="t.alignment === a"
+                          (click)="emit('alignment', a)"
+                          [attr.aria-label]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                          [title]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                        ><app-align-icon [value]="a"/></button>
+                      }
+                    </div>
+                  }
+                  @case ('typography') {
+                    <div class="row">
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.FONT_SIZE' | translate }}</label>
+                        <input type="number" class="input" min="8" max="80" step="1"
+                          [ngModel]="t.fontSize" (ngModelChange)="emit('fontSize', +$event)"/>
+                      </div>
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.FONT_WEIGHT' | translate }}</label>
+                        <app-search-dropdown
+                          [items]="fontWeightOptions()"
+                          [displayWith]="optionLabel"
+                          [toValue]="optionValue"
+                          [compareWith]="optionEquals"
+                          [searchable]="false"
+                          [clearable]="false"
+                          [value]="resolveOption(fontWeightOptions(), t.fontWeight)"
+                          (valueChange)="onSelect('fontWeight', $any($event))"
+                        />
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.FONT_STYLE' | translate }}</label>
+                        <app-search-dropdown
+                          [items]="fontStyleOptions()"
+                          [displayWith]="optionLabel"
+                          [toValue]="optionValue"
+                          [compareWith]="optionEquals"
+                          [searchable]="false"
+                          [clearable]="false"
+                          [value]="resolveOption(fontStyleOptions(), t.fontStyle)"
+                          (valueChange)="onSelect('fontStyle', $any($event))"
+                        />
+                      </div>
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.DECORATION' | translate }}</label>
+                        <app-search-dropdown
+                          [items]="textDecorOptions()"
+                          [displayWith]="optionLabel"
+                          [toValue]="optionValue"
+                          [compareWith]="optionEquals"
+                          [searchable]="false"
+                          [clearable]="false"
+                          [value]="resolveOption(textDecorOptions(), t.textDecoration)"
+                          (valueChange)="onSelect('textDecoration', $any($event))"
+                        />
+                      </div>
+                    </div>
+                  }
+                  @case ('visibility') {
+                    <div class="seg">
+                      <button type="button" class="seg__btn" [class.seg__btn--on]="t.visibility === 'Visible'" (click)="emit('visibility', 'Visible')">{{ 'RECEIPT_BUILDER.EDITOR.VISIBLE_ON' | translate }}</button>
+                      <button type="button" class="seg__btn" [class.seg__btn--on]="t.visibility === 'Hidden'" (click)="emit('visibility', 'Hidden')">{{ 'RECEIPT_BUILDER.EDITOR.HIDE_ON' | translate }}</button>
+                    </div>
+                    <div class="row">
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.CONDITION_IF' | translate }}</label>
+                        <app-bindable-input
+                          [value]="t.condition.data || ''"
+                          (valueChange)="emitCondition(t.condition, 'data', $event)"
+                        />
+                      </div>
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.CONDITION_EQUALS' | translate }}</label>
+                        <input class="input" [ngModel]="t.condition.equals || ''" (ngModelChange)="emitCondition(t.condition, 'equals', $event)"/>
+                      </div>
+                    </div>
+                  }
+                }
+              </app-rbf-widget>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ════ SideText ════════════════════════════════════════════════ -->
+    @case ('SideText') {
+      @if (asSideText(el); as st) {
+        <div class="ee" cdkDropList (cdkDropListDropped)="onSlotReorder('SideText', $event)">
+          @for (group of groupsFor('SideText'); track trackGroup($index, group); let gi = $index) {
+            <div cdkDrag class="ee-slot" [attr.data-rbfw-gi]="gi" (cdkDragMoved)="onWidgetDragMoved($event)" (cdkDragEnded)="onWidgetDragEnded()">
+              <app-rbf-widget
+                [title]="widgetTitle(group)"
+                [storageKey]="'el:' + group[0]"
+                [draggable]="true"
+                [tabs]="buildTabs(group)"
+                [activeTabId]="activeTab('SideText', gi, group)"
+                (activeTabIdChange)="setActiveTab('SideText', gi, $event)"
+                (tabClose)="ungroupTab('SideText', gi, $event)"
+                (tabReorder)="reorderTab('SideText', gi, $event)"
+              >
+                @switch (activeTab('SideText', gi, group)) {
+                  @case ('content') {
+                    <!-- Left/right text + their alignments stack on their own
+                         rows because invoice bindings (e.g. `Invoice No.
+                         !invoice.invoiceNumber`) easily exceed the half-width
+                         column and end up truncated. -->
+                    <div class="field">
+                      <label>{{ 'RECEIPT_BUILDER.EDITOR.LEFT_TEXT' | translate }}</label>
+                      <app-bindable-input
+                        [multiline]="true"
+                        [rows]="2"
+                        [value]="st.leftText"
+                        (valueChange)="emit('leftText', $event)"
+                      />
+                    </div>
+                    <div class="field">
+                      <label>{{ 'RECEIPT_BUILDER.EDITOR.LEFT_ALIGN' | translate }}</label>
+                      <div class="seg">
+                        @for (a of alignments; track a) {
+                          <button type="button" class="seg__btn seg__btn--icon"
+                                  [class.seg__btn--on]="st.leftTextAlign === a"
+                                  (click)="emit('leftTextAlign', a)"
+                                  [attr.aria-label]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                                  [title]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                          ><app-align-icon [value]="a"/></button>
+                        }
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label>{{ 'RECEIPT_BUILDER.EDITOR.RIGHT_TEXT' | translate }}</label>
+                      <app-bindable-input
+                        [multiline]="true"
+                        [rows]="2"
+                        [value]="st.rightText"
+                        (valueChange)="emit('rightText', $event)"
+                      />
+                    </div>
+                    <div class="field">
+                      <label>{{ 'RECEIPT_BUILDER.EDITOR.RIGHT_ALIGN' | translate }}</label>
+                      <div class="seg">
+                        @for (a of alignments; track a) {
+                          <button type="button" class="seg__btn seg__btn--icon"
+                                  [class.seg__btn--on]="st.rightTextAlign === a"
+                                  (click)="emit('rightTextAlign', a)"
+                                  [attr.aria-label]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                                  [title]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                          ><app-align-icon [value]="a"/></button>
+                        }
+                      </div>
+                    </div>
+                  }
+                  @case ('typography') {
+                    <div class="row">
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.FONT_SIZE' | translate }}</label>
+                        <input type="number" class="input" min="8" max="80" step="1"
+                          [ngModel]="st.fontSize" (ngModelChange)="emit('fontSize', +$event)"/>
+                      </div>
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.FONT_WEIGHT' | translate }}</label>
+                        <app-search-dropdown
+                          [items]="fontWeightOptions()"
+                          [displayWith]="optionLabel"
+                          [toValue]="optionValue"
+                          [compareWith]="optionEquals"
+                          [searchable]="false"
+                          [clearable]="false"
+                          [value]="resolveOption(fontWeightOptions(), st.fontWeight)"
+                          (valueChange)="onSelect('fontWeight', $any($event))"
+                        />
+                      </div>
+                    </div>
+                  }
+                  @case ('visibility') {
+                    <div class="seg">
+                      <button type="button" class="seg__btn" [class.seg__btn--on]="st.visibility === 'Visible'" (click)="emit('visibility', 'Visible')">{{ 'RECEIPT_BUILDER.EDITOR.VISIBLE_ON' | translate }}</button>
+                      <button type="button" class="seg__btn" [class.seg__btn--on]="st.visibility === 'Hidden'" (click)="emit('visibility', 'Hidden')">{{ 'RECEIPT_BUILDER.EDITOR.HIDE_ON' | translate }}</button>
+                    </div>
+                    <div class="row">
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.CONDITION_IF' | translate }}</label>
+                        <app-bindable-input
+                          [value]="st.condition.data || ''"
+                          (valueChange)="emitCondition(st.condition, 'data', $event)"
+                        />
+                      </div>
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.CONDITION_EQUALS' | translate }}</label>
+                        <input class="input" [ngModel]="st.condition.equals || ''" (ngModelChange)="emitCondition(st.condition, 'equals', $event)"/>
+                      </div>
+                    </div>
+                  }
+                }
+              </app-rbf-widget>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ════ Line ════════════════════════════════════════════════════ -->
+    @case ('Line') {
+      @if (asLine(el); as l) {
+        <div class="ee" cdkDropList (cdkDropListDropped)="onSlotReorder('Line', $event)">
+          @for (group of groupsFor('Line'); track trackGroup($index, group); let gi = $index) {
+            <div cdkDrag class="ee-slot" [attr.data-rbfw-gi]="gi" (cdkDragMoved)="onWidgetDragMoved($event)" (cdkDragEnded)="onWidgetDragEnded()">
+              <app-rbf-widget
+                [title]="widgetTitle(group)"
+                [storageKey]="'el:' + group[0]"
+                [draggable]="true"
+                [tabs]="buildTabs(group)"
+                [activeTabId]="activeTab('Line', gi, group)"
+                (activeTabIdChange)="setActiveTab('Line', gi, $event)"
+                (tabClose)="ungroupTab('Line', gi, $event)"
+                (tabReorder)="reorderTab('Line', gi, $event)"
+              >
+                @switch (activeTab('Line', gi, group)) {
+                  @case ('line-style') {
+                    <div class="seg">
+                      @for (s of lineStyles; track s) {
+                        <button type="button" class="seg__btn" [class.seg__btn--on]="l.style === s" (click)="emit('style', s)">{{ s }}</button>
+                      }
+                    </div>
+                  }
+                  @case ('padding') {
+                    <div class="row">
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.PAD_H' | translate }}</label>
+                        <input type="number" class="input" min="0" max="100" [ngModel]="l.paddingHorizontal" (ngModelChange)="emit('paddingHorizontal', +$event)"/>
+                      </div>
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.PAD_V' | translate }}</label>
+                        <input type="number" class="input" min="0" max="100" [ngModel]="l.paddingVertical" (ngModelChange)="emit('paddingVertical', +$event)"/>
+                      </div>
+                    </div>
+                  }
+                }
+              </app-rbf-widget>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ════ Spacer ══════════════════════════════════════════════════ -->
+    @case ('Spacer') {
+      @if (asSpacer(el); as sp) {
+        <div class="ee" cdkDropList (cdkDropListDropped)="onSlotReorder('Spacer', $event)">
+          @for (group of groupsFor('Spacer'); track trackGroup($index, group); let gi = $index) {
+            <div cdkDrag class="ee-slot" [attr.data-rbfw-gi]="gi" (cdkDragMoved)="onWidgetDragMoved($event)" (cdkDragEnded)="onWidgetDragEnded()">
+              <app-rbf-widget
+                [title]="widgetTitle(group)"
+                [storageKey]="'el:' + group[0]"
+                [draggable]="true"
+                [tabs]="buildTabs(group)"
+                [activeTabId]="activeTab('Spacer', gi, group)"
+                (activeTabIdChange)="setActiveTab('Spacer', gi, $event)"
+                (tabClose)="ungroupTab('Spacer', gi, $event)"
+                (tabReorder)="reorderTab('Spacer', gi, $event)"
+              >
+                @switch (activeTab('Spacer', gi, group)) {
+                  @case ('size') {
+                    <div class="field">
+                      <label>{{ 'RECEIPT_BUILDER.EDITOR.HEIGHT' | translate }} · {{ sp.height }}px</label>
+                      <input type="range" class="slider" min="4" max="80" step="1"
+                        [ngModel]="sp.height" (ngModelChange)="emit('height', +$event)"/>
+                    </div>
+                  }
+                  @case ('padding') {
+                    <div class="row">
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.PAD_H' | translate }}</label>
+                        <input type="number" class="input" min="0" max="100" [ngModel]="sp.paddingHorizontal" (ngModelChange)="emit('paddingHorizontal', +$event)"/>
+                      </div>
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.PAD_V' | translate }}</label>
+                        <input type="number" class="input" min="0" max="100" [ngModel]="sp.paddingVertical" (ngModelChange)="emit('paddingVertical', +$event)"/>
+                      </div>
+                    </div>
+                  }
+                }
+              </app-rbf-widget>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ════ Logo ════════════════════════════════════════════════════
+         No source picker — the legacy POS only carries one logo
+         binding (`!preferences.logo`) which `makeElement('Logo')`
+         seeds. Width / Height / Alignment cover the rest of the
+         element-level customisation. -->
+    @case ('Logo') {
+      @if (asLogo(el); as lg) {
+        <div class="ee" cdkDropList (cdkDropListDropped)="onSlotReorder('Logo', $event)">
+          @for (group of groupsFor('Logo'); track trackGroup($index, group); let gi = $index) {
+            <div cdkDrag class="ee-slot" [attr.data-rbfw-gi]="gi" (cdkDragMoved)="onWidgetDragMoved($event)" (cdkDragEnded)="onWidgetDragEnded()">
+              <app-rbf-widget
+                [title]="widgetTitle(group)"
+                [storageKey]="'el:' + group[0]"
+                [draggable]="true"
+                [tabs]="buildTabs(group)"
+                [activeTabId]="activeTab('Logo', gi, group)"
+                (activeTabIdChange)="setActiveTab('Logo', gi, $event)"
+                (tabClose)="ungroupTab('Logo', gi, $event)"
+                (tabReorder)="reorderTab('Logo', gi, $event)"
+              >
+                @switch (activeTab('Logo', gi, group)) {
+                  @case ('size') {
+                    <div class="row">
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.WIDTH' | translate }}</label>
+                        <input type="number" class="input" min="20" max="240" [ngModel]="lg.width" (ngModelChange)="emit('width', +$event)"/>
+                      </div>
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.HEIGHT' | translate }}</label>
+                        <input type="number" class="input" min="20" max="240" [ngModel]="lg.height" (ngModelChange)="emit('height', +$event)"/>
+                      </div>
+                    </div>
+                  }
+                  @case ('alignment') {
+                    <div class="seg">
+                      @for (a of alignmentsLow; track a) {
+                        <button type="button" class="seg__btn seg__btn--icon"
+                                [class.seg__btn--on]="lg.alignment === a"
+                                (click)="emit('alignment', a)"
+                                [attr.aria-label]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                                [title]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                        ><app-align-icon [value]="a"/></button>
+                      }
+                    </div>
+                  }
+                }
+              </app-rbf-widget>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ════ Image ═══════════════════════════════════════════════════ -->
+    @case ('Image') {
+      @if (asImage(el); as im) {
+        <div class="ee" cdkDropList (cdkDropListDropped)="onSlotReorder('Image', $event)">
+          @for (group of groupsFor('Image'); track trackGroup($index, group); let gi = $index) {
+            <div cdkDrag class="ee-slot" [attr.data-rbfw-gi]="gi" (cdkDragMoved)="onWidgetDragMoved($event)" (cdkDragEnded)="onWidgetDragEnded()">
+              <app-rbf-widget
+                [title]="widgetTitle(group)"
+                [storageKey]="'el:' + group[0]"
+                [draggable]="true"
+                [tabs]="buildTabs(group)"
+                [activeTabId]="activeTab('Image', gi, group)"
+                (activeTabIdChange)="setActiveTab('Image', gi, $event)"
+                (tabClose)="ungroupTab('Image', gi, $event)"
+                (tabReorder)="reorderTab('Image', gi, $event)"
+              >
+                @switch (activeTab('Image', gi, group)) {
+                  @case ('content') {
+                    <div class="field">
+                      <label>{{ 'RECEIPT_BUILDER.EDITOR.IMAGE_PATH' | translate }}</label>
+                      <input class="input" [ngModel]="im.path" (ngModelChange)="emit('path', $event)" [placeholder]="'RECEIPT_BUILDER.EDITOR.IMAGE_PATH_PLACEHOLDER' | translate"/>
+                      <small class="hint">{{ 'RECEIPT_BUILDER.EDITOR.IMAGE_PATH_HINT' | translate }}</small>
+                    </div>
+                  }
+                  @case ('size') {
+                    <div class="row">
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.WIDTH' | translate }}</label>
+                        <input type="number" class="input" min="20" max="240" [ngModel]="im.width" (ngModelChange)="emit('width', +$event)"/>
+                      </div>
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.HEIGHT' | translate }}</label>
+                        <input type="number" class="input" min="20" max="240" [ngModel]="im.height" (ngModelChange)="emit('height', +$event)"/>
+                      </div>
+                    </div>
+                  }
+                  @case ('alignment') {
+                    <div class="seg">
+                      @for (a of alignmentsLow; track a) {
+                        <button type="button" class="seg__btn seg__btn--icon"
+                                [class.seg__btn--on]="im.alignment === a"
+                                (click)="emit('alignment', a)"
+                                [attr.aria-label]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                                [title]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                        ><app-align-icon [value]="a"/></button>
+                      }
+                    </div>
+                  }
+                }
+              </app-rbf-widget>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ════ QrCode ══════════════════════════════════════════════════ -->
+    @case ('QrCode') {
+      @if (asQrCode(el); as q) {
+        <div class="ee" cdkDropList (cdkDropListDropped)="onSlotReorder('QrCode', $event)">
+          @for (group of groupsFor('QrCode'); track trackGroup($index, group); let gi = $index) {
+            <div cdkDrag class="ee-slot" [attr.data-rbfw-gi]="gi" (cdkDragMoved)="onWidgetDragMoved($event)" (cdkDragEnded)="onWidgetDragEnded()">
+              <app-rbf-widget
+                [title]="widgetTitle(group)"
+                [storageKey]="'el:' + group[0]"
+                [draggable]="true"
+                [tabs]="buildTabs(group)"
+                [activeTabId]="activeTab('QrCode', gi, group)"
+                (activeTabIdChange)="setActiveTab('QrCode', gi, $event)"
+                (tabClose)="ungroupTab('QrCode', gi, $event)"
+                (tabReorder)="reorderTab('QrCode', gi, $event)"
+              >
+                @switch (activeTab('QrCode', gi, group)) {
+                  @case ('content') {
+                    <app-bindable-input
+                      [multiline]="true"
+                      [rows]="2"
+                      [value]="q.value"
+                      (valueChange)="emit('value', $event)"
+                    />
+                    @if (isZatcaQr(q.value)) {
+                      <small class="hint hint--zatca">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                          <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        {{ 'RECEIPT_BUILDER.EDITOR.ZATCA_HINT' | translate }}
+                      </small>
+                    } @else if (isFeedbackQr(q.value)) {
+                      <small class="hint hint--feedback">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        {{ 'RECEIPT_BUILDER.EDITOR.FEEDBACK_HINT' | translate }}
+                      </small>
+                    }
+                    <div class="qr-presets">
+                      @if (!isZatcaQr(q.value)) {
+                        <button type="button" class="hint hint--link" (click)="emit('value', ZATCA_BINDING)">
+                          {{ 'RECEIPT_BUILDER.EDITOR.USE_ZATCA' | translate }}
+                        </button>
+                      }
+                      @if (!isFeedbackQr(q.value)) {
+                        <button type="button" class="hint hint--link" (click)="emit('value', feedbackUrl())">
+                          {{ 'RECEIPT_BUILDER.EDITOR.USE_FEEDBACK' | translate }}
+                        </button>
+                      }
+                    </div>
+                  }
+                  @case ('size') {
+                    <div class="field">
+                      <label>{{ 'RECEIPT_BUILDER.EDITOR.QR_SIZE' | translate }} · {{ q.size }}</label>
+                      <input type="range" class="slider" min="4" max="8" step="1" [ngModel]="q.size" (ngModelChange)="emit('size', +$event)"/>
+                    </div>
+                  }
+                  @case ('visibility') {
+                    <div class="seg">
+                      <button type="button" class="seg__btn" [class.seg__btn--on]="q.visibility === 'Visible'" (click)="emit('visibility', 'Visible')">{{ 'RECEIPT_BUILDER.EDITOR.VISIBLE_ON' | translate }}</button>
+                      <button type="button" class="seg__btn" [class.seg__btn--on]="q.visibility === 'Hidden'" (click)="emit('visibility', 'Hidden')">{{ 'RECEIPT_BUILDER.EDITOR.HIDE_ON' | translate }}</button>
+                    </div>
+                    <div class="row">
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.CONDITION_IF' | translate }}</label>
+                        <app-bindable-input
+                          [value]="q.condition.data || ''"
+                          (valueChange)="emitCondition(q.condition, 'data', $event)"
+                        />
+                      </div>
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.CONDITION_EQUALS' | translate }}</label>
+                        <input class="input" [ngModel]="q.condition.equals || ''" (ngModelChange)="emitCondition(q.condition, 'equals', $event)"/>
+                      </div>
+                    </div>
+                  }
+                }
+              </app-rbf-widget>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ════ Barcode ═════════════════════════════════════════════════ -->
+    @case ('Barcode') {
+      @if (asBarcode(el); as b) {
+        <div class="ee" cdkDropList (cdkDropListDropped)="onSlotReorder('Barcode', $event)">
+          @for (group of groupsFor('Barcode'); track trackGroup($index, group); let gi = $index) {
+            <div cdkDrag class="ee-slot" [attr.data-rbfw-gi]="gi" (cdkDragMoved)="onWidgetDragMoved($event)" (cdkDragEnded)="onWidgetDragEnded()">
+              <app-rbf-widget
+                [title]="widgetTitle(group)"
+                [storageKey]="'el:' + group[0]"
+                [draggable]="true"
+                [tabs]="buildTabs(group)"
+                [activeTabId]="activeTab('Barcode', gi, group)"
+                (activeTabIdChange)="setActiveTab('Barcode', gi, $event)"
+                (tabClose)="ungroupTab('Barcode', gi, $event)"
+                (tabReorder)="reorderTab('Barcode', gi, $event)"
+              >
+                @switch (activeTab('Barcode', gi, group)) {
+                  @case ('content') {
+                    <app-bindable-input
+                      [value]="b.value"
+                      (valueChange)="emit('value', $event)"
+                    />
+                  }
+                  @case ('size') {
+                    <div class="field">
+                      <label>{{ 'RECEIPT_BUILDER.EDITOR.BARCODE_HEIGHT' | translate }}</label>
+                      <input type="number" class="input" min="20" max="200" [ngModel]="b.height" (ngModelChange)="emit('height', +$event)"/>
+                    </div>
+                  }
+                  @case ('visibility') {
+                    <div class="seg">
+                      <button type="button" class="seg__btn" [class.seg__btn--on]="b.visibility === 'Visible'" (click)="emit('visibility', 'Visible')">{{ 'RECEIPT_BUILDER.EDITOR.VISIBLE_ON' | translate }}</button>
+                      <button type="button" class="seg__btn" [class.seg__btn--on]="b.visibility === 'Hidden'" (click)="emit('visibility', 'Hidden')">{{ 'RECEIPT_BUILDER.EDITOR.HIDE_ON' | translate }}</button>
+                    </div>
+                    <div class="row">
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.CONDITION_IF' | translate }}</label>
+                        <app-bindable-input
+                          [value]="b.condition.data || ''"
+                          (valueChange)="emitCondition(b.condition, 'data', $event)"
+                        />
+                      </div>
+                      <div class="field">
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.CONDITION_EQUALS' | translate }}</label>
+                        <input class="input" [ngModel]="b.condition.equals || ''" (ngModelChange)="emitCondition(b.condition, 'equals', $event)"/>
+                      </div>
+                    </div>
+                  }
+                }
+              </app-rbf-widget>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ════ Table ═══════════════════════════════════════════════════
+         The table's source (lines / taxes / payments) is decided by
+         which palette tile the user added — the editor doesn't expose
+         a source picker because changing source mid-edit would
+         silently invalidate the columns and (for lines) the options
+         block. To switch table type, the user removes the element
+         and adds the right palette tile instead. -->
+    @case ('Table') {
+      @if (asTable(el); as t) {
+        <div class="ee" cdkDropList (cdkDropListDropped)="onSlotReorder('Table', $event)">
+          @for (group of groupsForTable(t.source); track trackGroup($index, group); let gi = $index) {
+            <div cdkDrag class="ee-slot" [attr.data-rbfw-gi]="gi" (cdkDragMoved)="onWidgetDragMoved($event)" (cdkDragEnded)="onWidgetDragEnded()">
+              <app-rbf-widget
+                [title]="widgetTitle(group)"
+                [storageKey]="'el:' + group[0]"
+                [draggable]="true"
+                [tabs]="buildTabs(group)"
+                [activeTabId]="activeTab('Table', gi, group)"
+                (activeTabIdChange)="setActiveTab('Table', gi, $event)"
+                (tabClose)="ungroupTab('Table', gi, $event)"
+                (tabReorder)="reorderTab('Table', gi, $event)"
+              >
+                @switch (activeTab('Table', gi, group)) {
+                  @case ('columns') {
+                    <!-- Columns editor — rows of draggable cell chips with width
+                         %, visibility toggle, and add/remove. -->
+                    <app-table-columns-editor
+                      [groups]="t.groups || []"
+                      [addColumnCatalog]="catalogFor(t.source)"
+                      (groupsChange)="emit('groups', $event)"
+                    />
+                  }
+                  @case ('line-options') {
+                    <!-- Wire encoding stays exactly as legacy:
+                         - showOptions / showPrice / showOptionName /
+                           showOptionSecondaryName / showKitchenName ->
+                           saved on `options` (TableInvoiceLinesOptions).
+                         - qty.hideIfOne() / price.hideIfZero() -> encoded
+                           as suffixes on the matching cell.key.
+                         Per-cell rows only render when the table actually
+                         has a cell with that base. `option.kitchenName` is
+                         kitchen-template-only per the legacy gate. -->
+                    <ul class="opt-list">
+                      <li>
+                        <label class="toggle">
+                          <input type="checkbox"
+                            [checked]="t.options?.showOptions !== false"
+                            (change)="emitOption(t.options, 'showOptions', $any($event.target).checked)"/>
+                          <span class="toggle__track"><span class="toggle__thumb"></span></span>
+                          <span class="toggle__label">{{ 'RECEIPT_BUILDER.EDITOR.LINES_SHOW_OPTIONS' | translate }}</span>
+                        </label>
+                        <p class="opt-desc">{{ 'RECEIPT_BUILDER.EDITOR.LINES_SHOW_OPTIONS_DESC' | translate }}</p>
+                      </li>
+
+                      @if (hasCellWithBase(t, 'qty')) {
+                        <li class="opt-list__sep">
+                          <label class="toggle">
+                            <input type="checkbox"
+                              [checked]="hasCellModifier(t, 'qty', 'hideIfOne')"
+                              (change)="toggleCellModifier(t, 'qty', 'hideIfOne')"/>
+                            <span class="toggle__track"><span class="toggle__thumb"></span></span>
+                            <span class="toggle__label">{{ 'RECEIPT_BUILDER.EDITOR.LINES_QTY_HIDE_IF_ONE' | translate }}</span>
+                          </label>
+                          <p class="opt-desc">{{ 'RECEIPT_BUILDER.EDITOR.LINES_QTY_HIDE_IF_ONE_DESC' | translate }}</p>
+                        </li>
+                      }
+
+                      <li>
+                        <label class="toggle" [class.toggle--disabled]="t.options?.showOptions === false">
+                          <input type="checkbox"
+                            [disabled]="t.options?.showOptions === false"
+                            [checked]="!!t.options?.showOptionName"
+                            (change)="emitOption(t.options, 'showOptionName', $any($event.target).checked)"/>
+                          <span class="toggle__track"><span class="toggle__thumb"></span></span>
+                          <span class="toggle__label">{{ 'RECEIPT_BUILDER.EDITOR.LINES_SHOW_OPTION_NAME' | translate }}</span>
+                        </label>
+                        <p class="opt-desc">{{ 'RECEIPT_BUILDER.EDITOR.LINES_SHOW_OPTION_NAME_DESC' | translate }}</p>
+                      </li>
+                      <li>
+                        <label class="toggle" [class.toggle--disabled]="t.options?.showOptions === false">
+                          <input type="checkbox"
+                            [disabled]="t.options?.showOptions === false"
+                            [checked]="!!t.options?.showOptionSecondaryName"
+                            (change)="emitOption(t.options, 'showOptionSecondaryName', $any($event.target).checked)"/>
+                          <span class="toggle__track"><span class="toggle__thumb"></span></span>
+                          <span class="toggle__label">{{ 'RECEIPT_BUILDER.EDITOR.LINES_SHOW_OPTION_SECONDARY' | translate }}</span>
+                        </label>
+                        <p class="opt-desc">{{ 'RECEIPT_BUILDER.EDITOR.LINES_SHOW_OPTION_SECONDARY_DESC' | translate }}</p>
+                      </li>
+                      @if (templateType() === 'kitchen') {
+                        <li>
+                          <label class="toggle" [class.toggle--disabled]="t.options?.showOptions === false">
+                            <input type="checkbox"
+                              [disabled]="t.options?.showOptions === false"
+                              [checked]="!!t.options?.showKitchenName"
+                              (change)="emitOption(t.options, 'showKitchenName', $any($event.target).checked)"/>
+                            <span class="toggle__track"><span class="toggle__thumb"></span></span>
+                            <span class="toggle__label">{{ 'RECEIPT_BUILDER.EDITOR.LINES_SHOW_KITCHEN_NAME' | translate }}</span>
+                          </label>
+                          <p class="opt-desc">{{ 'RECEIPT_BUILDER.EDITOR.LINES_SHOW_KITCHEN_NAME_DESC' | translate }}</p>
+                        </li>
+                      }
+                      <li>
+                        <label class="toggle" [class.toggle--disabled]="t.options?.showOptions === false">
+                          <input type="checkbox"
+                            [disabled]="t.options?.showOptions === false"
+                            [checked]="t.options?.showPrice !== false"
+                            (change)="emitOption(t.options, 'showPrice', $any($event.target).checked)"/>
+                          <span class="toggle__track"><span class="toggle__thumb"></span></span>
+                          <span class="toggle__label">{{ 'RECEIPT_BUILDER.EDITOR.LINES_PRICE_HIDE_IF_ZERO' | translate }}</span>
+                        </label>
+                        <p class="opt-desc">{{ 'RECEIPT_BUILDER.EDITOR.LINES_PRICE_HIDE_IF_ZERO_DESC' | translate }}</p>
+                      </li>
+                    </ul>
+                  }
+                }
+              </app-rbf-widget>
+            </div>
+          }
+        </div>
+      }
+    }
+  }
+}

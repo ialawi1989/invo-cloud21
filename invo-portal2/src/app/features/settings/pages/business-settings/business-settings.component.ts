@@ -24,6 +24,8 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { ModalService } from '@shared/modal/modal.service';
 
 import { BusinessSettingsService } from '../../services/business-settings.service';
@@ -52,12 +54,13 @@ import type { MediaPickerModalComponent as MediaPickerType } from '../../../medi
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     SearchDropdownComponent,
+    FormStickyFooterComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './business-settings.component.html',
   styleUrl: './business-settings.component.scss',
 })
-export class BusinessSettingsComponent implements OnInit {
+export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
   private fb         = inject(FormBuilder);
   private service    = inject(BusinessSettingsService);
   private translate  = inject(TranslateService);
@@ -217,6 +220,11 @@ export class BusinessSettingsComponent implements OnInit {
     const id = (value && typeof value === 'object' ? value.id : value) ?? 'normal';
     this.form.patchValue({ roundingType: id });
     this.form.markAsDirty();
+  }
+
+  /** CanDeactivate hook — guard prompts when the form is dirty. */
+  hasUnsavedChanges(): boolean {
+    return this.form.dirty && !this.saving();
   }
 
   async save(): Promise<void> {

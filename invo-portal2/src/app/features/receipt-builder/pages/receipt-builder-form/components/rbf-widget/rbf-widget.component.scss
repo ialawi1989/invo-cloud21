@@ -1,0 +1,224 @@
+:host {
+  display: block;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+// Drag preview — pop the widget off the page when the user
+// grabs the header to reorder.
+:host.cdk-drag-preview {
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+  border-color: var(--color-brand-500);
+}
+:host.cdk-drag-placeholder {
+  opacity: 0.4;
+  border-style: dashed;
+  background: #f8fafc;
+}
+
+.rbfw__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  cursor: pointer;
+  user-select: none;
+
+  // Only promise grab cursor when drag-reorder is actually wired.
+  &--draggable {
+    cursor: grab;
+    &:active { cursor: grabbing; }
+  }
+}
+
+.rbfw__handle {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  // Brighter base + larger hit area so the grip reads as an
+  // interactive control. Hover state pops a background pill so the
+  // user gets clear "I can grab this" feedback.
+  color: #94a3b8;
+  background: transparent;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: background 120ms ease, color 120ms ease;
+
+  &:hover {
+    background: #fff;
+    color: #0f172a;
+  }
+}
+
+// Drop-target highlight during drag — applied by JS to the header
+// the cursor is hovering. Tells the user "release here to merge as
+// a tab on this widget". Mirrors the brand-active accent used on tab
+// pills so the relationship reads.
+.rbfw__header--drop-target {
+  background: var(--color-brand-50) !important;
+  border-bottom-color: var(--color-brand-300, #bae6fd) !important;
+  box-shadow: inset 0 0 0 2px var(--color-brand-300, #bae6fd);
+}
+
+.rbfw__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Tab strip — replaces `.rbfw__title` when the widget is hosting 2+
+// slots. Each tab is a clean pill: brand-tinted background + brand
+// text when active, transparent + grey when not. Strip scrolls
+// horizontally when overflowing — never wraps.
+.rbfw__tabs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+
+  // Hidden by default, reveals on hover. The strip itself stays
+  // scrollable — the bar just doesn't claim visual space until the
+  // user is actively interacting with the tabs.
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  // Firefox: thin is the smallest available, so we hide via
+  // transparent thumb and only colour it on hover.
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  // WebKit / Chromium / Edge — 2px hairline; thumb stays
+  // transparent until the user hovers the tabs.
+  &::-webkit-scrollbar        { height: 2px; }
+  &::-webkit-scrollbar-track  { background: transparent; }
+  &::-webkit-scrollbar-thumb  {
+    background: transparent;
+    border-radius: 2px;
+    transition: background 120ms ease;
+  }
+  &:hover {
+    scrollbar-color: rgba(15, 23, 42, 0.35) transparent;
+    &::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.35); }
+  }
+}
+
+.rbfw__tab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+
+  &:hover {
+    color: #0f172a;
+    background: rgba(15, 23, 42, 0.04);
+  }
+
+  // Active — subtle brand pill. Reads as "selected tab" without the
+  // heavy folder-tab chrome that didn't scale well to many tabs.
+  &--on,
+  &--on:hover {
+    background: var(--color-brand-50);
+    color: var(--color-brand-700);
+  }
+}
+
+.rbfw__tab-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 90px;
+}
+
+// Tab × — only on the active tab (or on hover for inactive). Subtle
+// so it doesn't fight the label.
+.rbfw__tab-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1;
+  color: currentColor;
+  opacity: 0;
+  cursor: pointer;
+  transition: background 120ms ease, opacity 120ms ease;
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.10);
+  }
+
+  .rbfw__tab--on &,
+  .rbfw__tab:hover & {
+    opacity: 0.6;
+  }
+  .rbfw__tab-close:hover { opacity: 1; }
+}
+
+// Tabbed header overrides — same chrome as the single-title header
+// so the visual rhythm down the rail stays even.
+.rbfw__header--tabbed {
+  cursor: default;
+}
+
+.rbfw__caret {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 120ms ease, color 120ms ease, transform 160ms ease;
+
+  &:hover { background: #fff; color: #0f172a; }
+  &--collapsed { transform: rotate(-90deg); }
+}
+
+.rbfw__body {
+  padding: 12px;
+  // Flex column with gap so projected sibling rows / fields stack
+  // with consistent rhythm — without this, two `.row` divs in a
+  // typography widget collapse against each other.
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  // Collapsed → hide the body but keep it in the DOM so projected
+  // content state (scroll positions, focus, signals) survives the
+  // toggle.
+  &--collapsed { display: none; }
+}

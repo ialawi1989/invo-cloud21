@@ -1,0 +1,679 @@
+<div class="tm-page">
+  <!-- Builder header — full-page chrome (no app sidebar/topbar). Mirrors
+       the legacy form: Home/back left, branch picker centered, Save right. -->
+  <header class="tm-topbar">
+    <button type="button" class="tm-topbar__home" (click)="cancel()" [attr.aria-label]="'COMMON.BACK' | translate">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </button>
+
+    <div class="tm-topbar__center">
+      <label class="tm-topbar__label">{{ 'SETTINGS.TABLES.BRANCH' | translate }}</label>
+      <app-search-dropdown
+        [items]="branches()"
+        [displayWith]="branchLabel"
+        [toValue]="branchValue"
+        [compareWith]="branchEquals"
+        [searchable]="branches().length > 6"
+        [clearable]="false"
+        [value]="selectedBranch()"
+        (valueChange)="onBranchChange($any($event))"
+      />
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || !isDirty()"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Group tabs (drag-reorderable) ═══ -->
+    <nav class="tm-tabs" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="reorderGroups($event)">
+      @for (g of groups(); track trackGroup($index, g)) {
+        <button
+          type="button"
+          cdkDrag
+          class="tm-tab"
+          [class.tm-tab--active]="selectedGroupId() === idOf(g)"
+          [style.--tab-color]="g.properties.color"
+          (click)="selectGroup(idOf(g))"
+        >
+          <span class="tm-tab__dot" aria-hidden="true"></span>
+          <span class="tm-tab__name">{{ g.name || ('SETTINGS.TABLES.UNNAMED_GROUP' | translate) }}</span>
+          <span class="tm-tab__count">{{ g.tables.length }}</span>
+        </button>
+      }
+    </nav>
+
+    <!-- ═══ Workspace ═══
+         Full-bleed: the canvas viewport fills everything below the
+         brown tabs bar. The right-side settings panel floats over the
+         canvas and can be collapsed via the chevron handle on its left
+         edge. Floating zoom controls sit at the bottom-left. -->
+    <div class="tm-workspace">
+      <!-- Canvas viewport — pans/zooms the floor plan inside it.
+           Wheel-zoom is wired in component code (passive: false so we can
+           preventDefault). Click-drag on the background pans by setting
+           the wrapper's scrollLeft/scrollTop. -->
+      <div
+        #canvasWrap
+        class="tm-canvas-wrap"
+        [class.tm-canvas-wrap--panning]="panning()"
+        (mousedown)="onPanStart($event)"
+      >
+        @if (selectedGroup(); as g) {
+          <!-- Stage = oversized scrollable area so the canvas can be
+               panned anywhere in the wrap (legacy pinch-zoom workspace
+               behaviour). The stage's 1500px padding on each side means
+               the user can drag the canvas ~1500px off any edge. -->
+          <div class="tm-canvas-stage">
+          <div
+            #canvas
+            class="tm-canvas"
+            [class]="patternClass()"
+            [style.width.px]="canvasW"
+            [style.height.px]="canvasH"
+            [style.--accent]="g.properties.color"
+            [style.--pattern-size]="patternSize() + '%'"
+            [style.transform]="'scale(' + zoom() + ')'"
+            (click)="onCanvasClick($event)"
+            (contextmenu)="onCanvasContextMenu($event)"
+          >
+              <!-- Decor objects render BELOW tables so a table dropped on top stays interactive.
+                   The drag wrapper owns left/top + the CDK translate transform; the inner
+                   `.tm-decor` owns the rotation transform. Splitting them avoids Angular's
+                   `[style.transform]` clobbering CDK's drag transform on each change-
+                   detection cycle (which used to make dropped objects snap back). -->
+              @for (o of selectedGroup()!.objects; track trackObject($index, o)) {
+                <div
+                  class="tm-decor-wrap"
+                  cdkDrag
+                  cdkDragBoundary=".tm-canvas"
+                  (cdkDragStarted)="onObjectDragStart(o)"
+                  (cdkDragMoved)="onBulkDragMove($event)"
+                  (cdkDragEnded)="onObjectDragEnd(o, $event)"
+                  [style.left.px]="o.position.x"
+                  [style.top.px]="o.position.y"
+                  [style.width.px]="o.width"
+                  [style.height.px]="o.height"
+                  [style.transform]="extraTransformForObject(o)"
+                >
+                  <!-- Decor backgrounds come from SCSS via `.tm-decor--<type>`,
+                       which references the legacy decoration_0X.png assets.
+                       All classes are composed into ONE `[class]` binding
+                       because mixing `class="..."` + `[class]="string"` +
+                       `[class.foo]` confuses Angular's class merger and ends
+                       up applying boolean classes to every element.
+                       Ctrl/Cmd+click adds the object to the multi-selection;
+                       a plain click replaces the selection with just this one. -->
+                  <div
+                    [class]="'tm-decor tm-decor--' + o.type.toLowerCase() + (selectedObjectIds().has(idOf(o)) ? ' tm-decor--selected' : '')"
+                    [style.transform]="'rotate(' + o.angle + 'deg)'"
+                    [style.background-color]="o.type === 'Divider' ? o.color : null"
+                    (click)="$event.stopPropagation(); selectObject(idOf(o), $event.ctrlKey || $event.metaKey)"
+                  ></div>
+                </div>
+              }
+
+              <!-- Tables — wrap owns position + CDK drag; an inner `.tm-table-frame`
+                   owns the rotation so the table top + its surrounding chairs all
+                   rotate together (matching the legacy `.table` block). The chair
+                   PNGs are anchored to the frame edges; the marble table top is
+                   inset 18% so the chair backs hang outside it. -->
+              @for (t of selectedGroup()!.tables; track trackTable($index, t)) {
+                <div
+                  class="tm-table-wrap"
+                  cdkDrag
+                  cdkDragBoundary=".tm-canvas"
+                  (cdkDragStarted)="onTableDragStart(t)"
+                  (cdkDragMoved)="onBulkDragMove($event)"
+                  (cdkDragEnded)="onTableDragEnd(t, $event)"
+                  [style.left.px]="t.properties.position.x"
+                  [style.top.px]="t.properties.position.y"
+                  [style.width.px]="tableW(t)"
+                  [style.height.px]="tableH(t)"
+                  [style.transform]="extraTransformForTable(t)"
+                >
+                  <div class="tm-table-frame" [style.transform]="'rotate(' + t.properties.angle + 'deg)'">
+                    <!-- Chairs from the legacy chair.png — render BEFORE the table
+                         so the table top sits visually on top of the chair backs. -->
+                    @for (s of seatPositions(t); track trackSeat($index)) {
+                      <div
+                        class="tm-chair"
+                        [style.width.px]="chairSize(t)"
+                        [style.height.px]="chairSize(t)"
+                        [style.left.px]="s.leftPx"
+                        [style.top.px]="s.topPx"
+                        [style.transform]="'rotate(' + s.angle + 'deg)'"
+                        aria-hidden="true"
+                      ></div>
+                    }
+                    <button
+                      type="button"
+                      class="tm-table"
+                      [class.tm-table--selected]="selectedTableIds().has(idOf(t))"
+                      [class.tm-table--circle]="t.properties.type === 'circle'"
+                      [class.tm-table--square]="t.properties.type === 'square'"
+                      [class.tm-table--rectangle]="t.properties.type === 'rectangle'"
+                      [class.tm-table--hidden]="!t.properties.visible"
+                      (click)="$event.stopPropagation(); selectTable(idOf(t), $event.ctrlKey || $event.metaKey)"
+                    >
+                      <span class="tm-table__name">{{ t.name }}</span>
+                      @if (!t.properties.hideSeats) {
+                        <span class="tm-table__seats">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                          </svg>
+                          {{ t.maxSeat }}
+                        </span>
+                      }
+                    </button>
+                  </div>
+                </div>
+              }
+
+            @if (selectedGroup()!.tables.length === 0 && selectedGroup()!.objects.length === 0) {
+              <p class="tm-canvas__hint">{{ 'SETTINGS.TABLES.CANVAS_EMPTY' | translate }}</p>
+            }
+          </div>
+          </div>
+        }
+      </div>
+
+      <!-- Empty-state overlay (no group picked yet) -->
+      @if (!selectedGroup()) {
+        <div class="tm-empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <p>{{ 'SETTINGS.TABLES.NO_GROUP_SELECTED' | translate }}</p>
+          <button type="button" class="btn btn-primary btn-sm" (click)="addGroup()">
+            {{ 'SETTINGS.TABLES.NEW_GROUP' | translate }}
+          </button>
+        </div>
+      }
+
+      <!-- Floating zoom controls — bottom-left of the workspace. -->
+      @if (selectedGroup()) {
+        <div class="tm-zoom-fab">
+          <button type="button" class="tm-iconbtn" (click)="zoomOut()" [disabled]="zoom() <= 0.5" [attr.aria-label]="'SETTINGS.TABLES.ZOOM_OUT' | translate">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button type="button" class="tm-zoom-fab__lbl" (click)="zoomFit()">{{ zoomPercent() }}%</button>
+          <button type="button" class="tm-iconbtn" (click)="zoomIn()" [disabled]="zoom() >= 1.5" [attr.aria-label]="'SETTINGS.TABLES.ZOOM_IN' | translate">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+      }
+
+      <!-- ═══ Right panel — floating window ═══
+           A draggable card with a top header that doubles as the drag
+           handle and the collapse trigger. Click the chevron on the
+           right of the header to roll the panel up to its title strip. -->
+      <aside
+        class="tm-panel"
+        [class.tm-panel--collapsed]="panelCollapsed()"
+        cdkDrag
+        cdkDragBoundary=".tm-workspace"
+      >
+        <div class="tm-panel__head">
+          <span class="tm-panel__grip" cdkDragHandle [attr.aria-label]="'COMMON.DRAG' | translate">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="9"  cy="6"  r="1.4"/>
+              <circle cx="15" cy="6"  r="1.4"/>
+              <circle cx="9"  cy="12" r="1.4"/>
+              <circle cx="15" cy="12" r="1.4"/>
+              <circle cx="9"  cy="18" r="1.4"/>
+              <circle cx="15" cy="18" r="1.4"/>
+            </svg>
+          </span>
+          <h3 class="tm-panel__title">{{ 'SETTINGS.TABLES.PANEL_TITLE' | translate }}</h3>
+          <button
+            type="button"
+            class="tm-panel__collapse"
+            (click)="panelCollapsed.set(!panelCollapsed())"
+            [attr.aria-label]="(panelCollapsed() ? 'SETTINGS.TABLES.SHOW_PANEL' : 'SETTINGS.TABLES.HIDE_PANEL') | translate"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+              @if (panelCollapsed()) {
+                <polyline points="6 9 12 15 18 9"/>
+              } @else {
+                <polyline points="18 15 12 9 6 15"/>
+              }
+            </svg>
+          </button>
+        </div>
+        <nav class="tm-panel__tabs">
+          <button type="button" class="tm-panel__tab" [class.tm-panel__tab--active]="panelTab() === 'settings'" (click)="panelTab.set('settings')">
+            {{ 'SETTINGS.TABLES.PANEL_SETTINGS' | translate }}
+          </button>
+          <button type="button" class="tm-panel__tab" [class.tm-panel__tab--active]="panelTab() === 'tables'" (click)="panelTab.set('tables')">
+            {{ 'SETTINGS.TABLES.PANEL_TABLES' | translate }} <span class="tm-panel__count">{{ panelTables().length }}</span>
+          </button>
+          <button type="button" class="tm-panel__tab" [class.tm-panel__tab--active]="panelTab() === 'objects'" (click)="panelTab.set('objects')">
+            {{ 'SETTINGS.TABLES.PANEL_OBJECTS' | translate }} <span class="tm-panel__count">{{ panelObjects().length }}</span>
+          </button>
+        </nav>
+
+        <div class="tm-panel__body">
+          @if (!selectedGroup()) {
+            <p class="tm-panel__hint">{{ 'SETTINGS.TABLES.PICK_GROUP_FIRST' | translate }}</p>
+          } @else {
+
+            <!-- ── Settings tab ── -->
+            @if (panelTab() === 'settings') {
+              <!-- Table Groups list — drag-reorderable, with name + delete X. -->
+              <h4 class="tm-panel__heading">{{ 'SETTINGS.TABLES.GROUPS_HEADING' | translate }}</h4>
+              <ul
+                class="tm-grouplist"
+                cdkDropList
+                (cdkDropListDropped)="reorderGroups($event)"
+              >
+                @for (g of groups(); track trackGroup($index, g)) {
+                  <li class="tm-grouplist__row" cdkDrag [class.tm-grouplist__row--active]="selectedGroupId() === idOf(g)" (click)="selectGroup(idOf(g))">
+                    <span class="tm-grouplist__handle" cdkDragHandle aria-hidden="true">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="6"  x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                      </svg>
+                    </span>
+                    <input
+                      type="text"
+                      class="tm-grouplist__name"
+                      [ngModel]="g.name"
+                      (ngModelChange)="patchGroup(idOf(g), 'name', $event)"
+                      (click)="$event.stopPropagation()"
+                      [placeholder]="'SETTINGS.TABLES.GROUP_NAME_PLACEHOLDER' | translate"
+                    />
+                    <button
+                      type="button"
+                      class="tm-grouplist__remove"
+                      (click)="$event.stopPropagation(); removeGroup(idOf(g))"
+                      [attr.aria-label]="'COMMON.DELETE' | translate"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </li>
+                }
+              </ul>
+
+              <!-- Legacy parity: clicking "Add Group" opens a dropdown that
+                   includes "Add New" *plus* every previously-deleted /
+                   inactive group for this branch (so deleted groups can be
+                   re-attached without recreating their tables from scratch).
+                   The "+" tab in the brown bar uses the same menu. -->
+              <div class="tm-addgroup" (click)="$event.stopPropagation()">
+                <button type="button" class="btn btn-primary btn-sm tm-block-btn" (click)="toggleAddGroupMenu()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  {{ 'SETTINGS.TABLES.ADD_GROUP' | translate }}
+                </button>
+                @if (showAddGroupMenu()) {
+                  <div class="tm-popmenu tm-popmenu--block">
+                    <button
+                      type="button"
+                      class="tm-popmenu__item tm-popmenu__item--primary"
+                      (click)="addGroup()"
+                    >
+                      {{ 'SETTINGS.TABLES.NEW_GROUP' | translate }}
+                    </button>
+                    @if (inactiveGroups().length > 0) {
+                      <div class="tm-popmenu__divider"></div>
+                      <p class="tm-popmenu__heading">{{ 'SETTINGS.TABLES.INACTIVE_GROUPS' | translate }}</p>
+                      @for (g of inactiveGroups(); track g.id) {
+                        <button
+                          type="button"
+                          class="tm-popmenu__item"
+                          (click)="addGroup(g)"
+                        >
+                          <span class="tm-popmenu__dot" [style.background]="g.properties.color" aria-hidden="true"></span>
+                          {{ g.name || ('SETTINGS.TABLES.UNNAMED_GROUP' | translate) }}
+                        </button>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Pattern Options — applies to the currently-selected group. -->
+              <div class="tm-divider"></div>
+              <h4 class="tm-panel__heading">{{ 'SETTINGS.TABLES.PATTERN_OPTIONS' | translate }}</h4>
+
+              <div class="tm-field">
+                <label class="tm-field__label">{{ 'SETTINGS.TABLES.GROUP_COLOR' | translate }}</label>
+                <div class="tm-swatches">
+                  @for (c of groupColors; track c) {
+                    <button
+                      type="button"
+                      class="tm-swatch"
+                      [class.tm-swatch--active]="selectedGroup()!.properties.color === c"
+                      [style.background]="c"
+                      (click)="patchGroupProps(selectedGroupId()!, 'color', c)"
+                      [attr.aria-label]="c"
+                    ></button>
+                  }
+                </div>
+              </div>
+
+              <!-- Pattern picker — visual tile grid of the 18 legacy floor JPGs.
+                   Click a tile to set the group's `defaultPattern`; the canvas
+                   re-paints via `patternClass()`. Switching pattern also resets
+                   `patternSize` to that pattern's legacy default (matching the
+                   old builder's `changePattern()` behaviour). -->
+              <div class="tm-field">
+                <label class="tm-field__label">{{ 'SETTINGS.TABLES.PATTERN' | translate }}</label>
+                <div class="tm-pattern-grid">
+                  @for (p of patternSlugs; track p) {
+                    <button
+                      type="button"
+                      [class]="'tm-pattern-tile tm-pattern--p' + p + (selectedGroup()!.properties.defaultPattern === p ? ' tm-pattern-tile--active' : '')"
+                      (click)="setPattern(selectedGroupId()!, p)"
+                      [attr.aria-label]="'SETTINGS.TABLES.PATTERN_OPTION' | translate: { n: p }"
+                    ></button>
+                  }
+                </div>
+              </div>
+
+              <!-- Tile-size slider — legacy `background-size: NN%` so this is
+                   the *percentage of canvas width* one tile occupies. -->
+              <div class="tm-field">
+                <label class="tm-field__label">
+                  {{ 'SETTINGS.TABLES.PATTERN_SIZE' | translate }} · {{ selectedGroup()!.properties.patternSize }}%
+                </label>
+                <input
+                  type="range"
+                  min="1" max="100" step="1"
+                  class="tm-slider"
+                  [ngModel]="selectedGroup()!.properties.patternSize"
+                  (ngModelChange)="patchGroupProps(selectedGroupId()!, 'patternSize', +$event)"
+                />
+              </div>
+
+              <div class="tm-divider"></div>
+
+              <button type="button" class="btn btn-ghost btn-sm tm-block-btn" (click)="openPickUnassigned()">
+                {{ 'SETTINGS.TABLES.PICK_UNASSIGNED' | translate }}
+              </button>
+            }
+
+            <!-- ── Tables tab ── -->
+            @if (panelTab() === 'tables') {
+              <button type="button" class="btn btn-primary btn-sm tm-block-btn" (click)="addTable()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                {{ 'SETTINGS.TABLES.ADD_TABLE' | translate }}
+              </button>
+              <!-- Re-attach unassigned tables → opens the existing modal
+                   picker (search + checkboxes + bulk Add). The inline
+                   dropdown experiment was removed in favour of this
+                   richer modal flow. -->
+              <button type="button" class="btn btn-ghost btn-sm tm-block-btn" (click)="openPickUnassigned()">
+                {{ 'SETTINGS.TABLES.PICK_UNASSIGNED' | translate }}
+              </button>
+
+              <!-- Multi-select bulk actions — shown only when 2+ tables are
+                   Ctrl/Cmd-selected. Single-selection falls through to the
+                   per-table edit form below. -->
+              @if (selectedTableIds().size > 1) {
+                <div class="tm-multibar">
+                  <span class="tm-multibar__count">
+                    {{ 'SETTINGS.TABLES.N_SELECTED' | translate: { n: selectedTableIds().size } }}
+                  </span>
+                  <button type="button" class="btn btn-ghost btn-sm" (click)="clearSelection()">
+                    {{ 'COMMON.DESELECT' | translate }}
+                  </button>
+                  <button type="button" class="btn btn-danger btn-sm" (click)="unassignSelectedTables()">
+                    {{ 'SETTINGS.TABLES.UNASSIGN' | translate }}
+                  </button>
+                </div>
+              }
+
+              @if (panelTables().length === 0) {
+                <p class="tm-panel__hint">{{ 'SETTINGS.TABLES.TABLES_EMPTY' | translate }}</p>
+              } @else {
+                <ul class="tm-list">
+                  @for (t of panelTables(); track trackTable($index, t)) {
+                    <li
+                      class="tm-list__row"
+                      [class.tm-list__row--active]="selectedTableIds().has(idOf(t))"
+                      (click)="selectTable(idOf(t), $event.ctrlKey || $event.metaKey)"
+                    >
+                      <span class="tm-list__name">{{ t.name }}</span>
+                      <span class="tm-list__meta">
+                        <span class="tm-list__chip">{{ ('SETTINGS.TABLES.SHAPES.' + t.properties.type.toUpperCase()) | translate }}</span>
+                        <span class="tm-list__seats">{{ t.maxSeat }}</span>
+                      </span>
+                      <button type="button" class="tm-iconbtn" (click)="$event.stopPropagation(); patchTableProps(idOf(t), 'visible', !t.properties.visible)" [attr.aria-label]="(t.properties.visible ? 'SETTINGS.TABLES.HIDE' : 'SETTINGS.TABLES.SHOW') | translate">
+                        @if (t.properties.visible) {
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        } @else {
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        }
+                      </button>
+                      <button type="button" class="tm-iconbtn" (click)="$event.stopPropagation(); duplicateTable(idOf(t))" [attr.aria-label]="'SETTINGS.TABLES.DUPLICATE' | translate">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+
+              <!-- Selected-table edit form -->
+              @if (selectedTable()) {
+                <div class="tm-divider"></div>
+                <h4 class="tm-panel__heading">{{ 'SETTINGS.TABLES.TABLE_PROPERTIES' | translate }}</h4>
+
+                <div class="tm-field">
+                  <label class="tm-field__label">{{ 'SETTINGS.TABLES.NAME' | translate }}</label>
+                  <input type="text" class="tm-input" [ngModel]="selectedTable()!.name" (ngModelChange)="patchTable(selectedTableId()!, 'name', $event)"/>
+                </div>
+                <div class="tm-field">
+                  <label class="tm-field__label">{{ 'SETTINGS.TABLES.SEATS' | translate }}</label>
+                  <input type="number" min="1" class="tm-input" [ngModel]="selectedTable()!.maxSeat" (ngModelChange)="patchTable(selectedTableId()!, 'maxSeat', +($event ?? 1))"/>
+                </div>
+                <div class="tm-field">
+                  <label class="tm-field__label">{{ 'SETTINGS.TABLES.SHAPE' | translate }}</label>
+                  <div class="tm-segmented">
+                    @for (s of shapes; track s) {
+                      <button type="button" class="tm-segmented__btn" [class.tm-segmented__btn--active]="selectedTable()!.properties.type === s" (click)="patchTableProps(selectedTableId()!, 'type', s)">{{ ('SETTINGS.TABLES.SHAPES.' + s.toUpperCase()) | translate }}</button>
+                    }
+                  </div>
+                </div>
+                <div class="tm-field">
+                  <label class="tm-field__label">{{ 'SETTINGS.TABLES.SIZE' | translate }}</label>
+                  <div class="tm-segmented">
+                    @for (s of sizes; track s) {
+                      <button type="button" class="tm-segmented__btn" [class.tm-segmented__btn--active]="selectedTable()!.properties.size === s" (click)="patchTableProps(selectedTableId()!, 'size', s)">{{ ('SETTINGS.TABLES.SIZES.' + s.toUpperCase()) | translate }}</button>
+                    }
+                  </div>
+                </div>
+                <div class="tm-field">
+                  <label class="tm-field__label">{{ 'SETTINGS.TABLES.ROTATION' | translate }} · {{ selectedTable()!.properties.angle }}°</label>
+                  <div class="tm-rotate">
+                    <button type="button" class="btn btn-ghost btn-sm" (click)="rotateTable(selectedTableId()!, -45)">-45°</button>
+                    <input
+                      type="range"
+                      min="0" max="360" step="5"
+                      class="tm-slider"
+                      [ngModel]="selectedTable()!.properties.angle"
+                      (ngModelChange)="patchTableProps(selectedTableId()!, 'angle', +$event)"
+                    />
+                    <button type="button" class="btn btn-ghost btn-sm" (click)="rotateTable(selectedTableId()!, 45)">+45°</button>
+                  </div>
+                </div>
+
+                <label class="tm-toggle">
+                  <input type="checkbox" [checked]="!selectedTable()!.properties.hideSeats" (change)="patchTableProps(selectedTableId()!, 'hideSeats', !$any($event.target).checked)"/>
+                  <span class="tm-toggle__track" aria-hidden="true"><span class="tm-toggle__thumb"></span></span>
+                  <span class="tm-toggle__label">{{ 'SETTINGS.TABLES.SHOW_SEATS' | translate }}</span>
+                </label>
+                <label class="tm-toggle">
+                  <input type="checkbox" [checked]="selectedTable()!.properties.visible" (change)="patchTableProps(selectedTableId()!, 'visible', $any($event.target).checked)"/>
+                  <span class="tm-toggle__track" aria-hidden="true"><span class="tm-toggle__thumb"></span></span>
+                  <span class="tm-toggle__label">{{ 'SETTINGS.TABLES.VISIBLE_ON_POS' | translate }}</span>
+                </label>
+
+                <div class="tm-divider"></div>
+                <h4 class="tm-panel__heading">{{ 'SETTINGS.TABLES.BILLING' | translate }}</h4>
+
+                <div class="tm-field">
+                  <label class="tm-field__label">{{ 'SETTINGS.TABLES.MIN_CHARGE' | translate }}</label>
+                  <input type="number" min="0" step="0.01" class="tm-input" [ngModel]="selectedTable()!.settings.minimumCharge" (ngModelChange)="patchTableSettings(selectedTableId()!, 'minimumCharge', +($event ?? 0))"/>
+                </div>
+                <div class="tm-field">
+                  <label class="tm-field__label">{{ 'SETTINGS.TABLES.CHARGE_PER_HOUR' | translate }}</label>
+                  <input type="number" min="0" step="0.01" class="tm-input" [ngModel]="selectedTable()!.settings.chargePerHour" (ngModelChange)="patchTableSettings(selectedTableId()!, 'chargePerHour', +($event ?? 0))"/>
+                </div>
+                <div class="tm-field">
+                  <label class="tm-field__label">{{ 'SETTINGS.TABLES.CHARGE_AFTER' | translate }}</label>
+                  <input type="number" min="0" class="tm-input" [ngModel]="selectedTable()!.settings.chargeAfter" (ngModelChange)="patchTableSettings(selectedTableId()!, 'chargeAfter', +($event ?? 0))"/>
+                  <p class="tm-field__hint">{{ 'SETTINGS.TABLES.CHARGE_AFTER_HINT' | translate }}</p>
+                </div>
+
+                <div class="tm-divider"></div>
+                <div class="tm-actions">
+                  <!-- Tables aren't hard-deleted from the UI. "Unassign"
+                       calls the API for saved rows (preserving any
+                       past orders) and falls through to a local delete
+                       for never-saved rows (no orders to protect). -->
+                  <button type="button" class="btn btn-danger btn-sm" (click)="unassignTable(selectedTableId()!)">{{ 'SETTINGS.TABLES.UNASSIGN' | translate }}</button>
+                </div>
+              }
+            }
+
+            <!-- ── Objects tab ── -->
+            @if (panelTab() === 'objects') {
+              <p class="tm-field__label">{{ 'SETTINGS.TABLES.ADD_OBJECT' | translate }}</p>
+              <div class="tm-decor-grid">
+                @for (t of decorTypes; track t) {
+                  <button type="button" class="tm-decor-tile" (click)="addObject(t)" [attr.aria-label]="('SETTINGS.TABLES.OBJECTS_TYPES.' + t.toUpperCase()) | translate">
+                    <span class="tm-decor-tile__name">{{ ('SETTINGS.TABLES.OBJECTS_TYPES.' + t.toUpperCase()) | translate }}</span>
+                  </button>
+                }
+              </div>
+
+              @if (selectedObjectIds().size > 1) {
+                <div class="tm-multibar">
+                  <span class="tm-multibar__count">
+                    {{ 'SETTINGS.TABLES.N_SELECTED' | translate: { n: selectedObjectIds().size } }}
+                  </span>
+                  <button type="button" class="btn btn-ghost btn-sm" (click)="clearSelection()">
+                    {{ 'COMMON.DESELECT' | translate }}
+                  </button>
+                  <button type="button" class="btn btn-danger btn-sm" (click)="removeSelectedObjects()">
+                    {{ 'COMMON.DELETE' | translate }}
+                  </button>
+                </div>
+              }
+
+              @if (panelObjects().length > 0) {
+                <div class="tm-divider"></div>
+                <ul class="tm-list">
+                  @for (o of panelObjects(); track trackObject($index, o)) {
+                    <li
+                      class="tm-list__row"
+                      [class.tm-list__row--active]="selectedObjectIds().has(idOf(o))"
+                      (click)="selectObject(idOf(o), $event.ctrlKey || $event.metaKey)"
+                    >
+                      <span class="tm-list__name">{{ ('SETTINGS.TABLES.OBJECTS_TYPES.' + o.type.toUpperCase()) | translate }}</span>
+                      <span class="tm-list__meta">
+                        <span class="tm-list__chip">{{ o.width }} × {{ o.height }}</span>
+                      </span>
+                      <button type="button" class="tm-iconbtn" (click)="$event.stopPropagation(); removeObject(idOf(o))" [attr.aria-label]="'COMMON.DELETE' | translate">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+
+              <!-- Selected-object edit form -->
+              @if (selectedObject()) {
+                <div class="tm-divider"></div>
+                <h4 class="tm-panel__heading">{{ 'SETTINGS.TABLES.OBJECT_PROPERTIES' | translate }}</h4>
+
+                <div class="tm-field">
+                  <label class="tm-field__label">{{ 'SETTINGS.TABLES.WIDTH' | translate }}</label>
+                  <input type="number" min="20" class="tm-input" [ngModel]="selectedObject()!.width" (ngModelChange)="resizeObject(selectedObjectId()!, 'width', +$event)"/>
+                </div>
+                <div class="tm-field">
+                  <label class="tm-field__label">{{ 'SETTINGS.TABLES.HEIGHT' | translate }}</label>
+                  <input type="number" min="6" class="tm-input" [ngModel]="selectedObject()!.height" (ngModelChange)="resizeObject(selectedObjectId()!, 'height', +$event)"/>
+                </div>
+                @if (selectedObject()!.type === 'Divider') {
+                  <div class="tm-field">
+                    <label class="tm-field__label">{{ 'SETTINGS.TABLES.DIVIDER_COLOR' | translate }}</label>
+                    <app-color-picker
+                      [ngModel]="selectedObject()!.color || '#94a3b8'"
+                      (ngModelChange)="patchObject(selectedObjectId()!, 'color', $event)"
+                      [ngModelOptions]="{ standalone: true }"
+                    />
+                  </div>
+                }
+                <div class="tm-field">
+                  <label class="tm-field__label">{{ 'SETTINGS.TABLES.ROTATION' | translate }} · {{ selectedObject()!.angle }}°</label>
+                  <div class="tm-rotate">
+                    <button type="button" class="btn btn-ghost btn-sm" (click)="rotateObject(selectedObjectId()!, -45)">-45°</button>
+                    <input type="range" min="0" max="360" step="5" class="tm-slider" [ngModel]="selectedObject()!.angle" (ngModelChange)="patchObject(selectedObjectId()!, 'angle', +$event)"/>
+                    <button type="button" class="btn btn-ghost btn-sm" (click)="rotateObject(selectedObjectId()!, 45)">+45°</button>
+                  </div>
+                </div>
+
+                <div class="tm-divider"></div>
+                <div class="tm-actions">
+                  <button type="button" class="btn btn-ghost btn-sm" (click)="resetObjectSize(selectedObjectId()!)">{{ 'SETTINGS.TABLES.RESET_SIZE' | translate }}</button>
+                  <button type="button" class="btn btn-danger btn-sm" (click)="removeObject(selectedObjectId()!)">{{ 'COMMON.DELETE' | translate }}</button>
+                </div>
+              }
+            }
+
+          }
+        </div>
+      </aside>
+    </div>
+  }
+
+  <!-- ═══ Right-click context menu ═══ -->
+  @if (ctxMenu(); as ctx) {
+    <div class="tm-ctxmenu" [style.left.px]="ctx.x" [style.top.px]="ctx.y" (click)="$event.stopPropagation()">
+      <button type="button" class="tm-ctxmenu__item" (click)="ctxAddTable()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        {{ 'SETTINGS.TABLES.ADD_TABLE' | translate }}
+      </button>
+      <button type="button" class="tm-ctxmenu__item" (click)="ctxPickUnassigned()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        {{ 'SETTINGS.TABLES.PICK_UNASSIGNED' | translate }}
+      </button>
+      <div class="tm-ctxmenu__divider"></div>
+      <p class="tm-ctxmenu__heading">{{ 'SETTINGS.TABLES.ADD_OBJECT' | translate }}</p>
+      @for (t of decorTypes; track t) {
+        <button type="button" class="tm-ctxmenu__item tm-ctxmenu__item--sub" (click)="ctxAddObject(t)">
+          {{ ('SETTINGS.TABLES.OBJECTS_TYPES.' + t.toUpperCase()) | translate }}
+        </button>
+      }
+    </div>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <!-- Phone-only "open on desktop" overlay. Hidden via CSS above
+       768 px so desktops see nothing; below it, the notice covers
+       the page and disables interaction with the floor-plan builder. -->
+  <app-desktop-only-notice/>
+</div>

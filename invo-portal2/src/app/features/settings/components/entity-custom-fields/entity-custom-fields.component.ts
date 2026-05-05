@@ -23,6 +23,7 @@ import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { withTranslations } from '@core/i18n/with-translations';
 import {
   CustomField,
   CustomFieldType,
@@ -98,6 +99,14 @@ export class EntityCustomFieldsComponent implements OnInit, OnChanges {
   group!: FormGroup;
   fields = signal<CustomField[]>([]);
   hasFields = computed<boolean>(() => this.fields().length > 0);
+
+  constructor() {
+    // Settings translations carry the SECTION_TITLE / SECTION_EMPTY
+    // keys this component renders — load them eagerly so the section
+    // shows the right copy on entity forms (product, branch, …) that
+    // don't otherwise pull the settings i18n bundle.
+    withTranslations('settings');
+  }
 
   async ngOnInit(): Promise<void> {
     this.group = this.fb.group({});

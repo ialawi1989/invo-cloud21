@@ -1,0 +1,207 @@
+@switch (element().type) {
+
+  <!-- ════ Text ════════════════════════════════════════════════════ -->
+  @case ('Text') {
+    @if (asText(); as t) {
+      <div
+        class="er-text"
+        [style.font-size.px]="scaleFontSize(t.fontSize)"
+        [style.font-weight]="t.fontWeight"
+        [style.font-style]="t.fontStyle"
+        [style.text-decoration]="t.textDecoration"
+        [style.text-align]="t.alignment.toLowerCase()"
+        [class.er--hidden]="t.visibility === 'Hidden'"
+      >{{ resolveText(t.value) || " " }}</div>
+    }
+  }
+
+  <!-- ════ SideText ════════════════════════════════════════════════ -->
+  @case ('SideText') {
+    @if (asSideText(); as st) {
+      <div class="er-side"
+        [style.font-size.px]="scaleFontSize(st.fontSize)"
+        [style.font-weight]="st.fontWeight"
+        [style.font-style]="st.fontStyle"
+        [style.text-decoration]="st.textDecoration"
+        [class.er--hidden]="st.visibility === 'Hidden'"
+      >
+        <span [style.text-align]="st.leftTextAlign.toLowerCase()"  class="er-side__cell">{{ resolveText(st.leftText) || " " }}</span>
+        <span [style.text-align]="st.rightTextAlign.toLowerCase()" class="er-side__cell">{{ resolveText(st.rightText) || " " }}</span>
+      </div>
+    }
+  }
+
+  <!-- ════ Line ════════════════════════════════════════════════════ -->
+  @case ('Line') {
+    @if (asLine(); as l) {
+      <div class="er-line"
+        [style.padding-left.px]="l.paddingHorizontal"
+        [style.padding-right.px]="l.paddingHorizontal"
+        [style.padding-top.px]="l.paddingVertical"
+        [style.padding-bottom.px]="l.paddingVertical"
+      >
+        <span class="er-line__rule" [style.border-top-style]="l.style"></span>
+      </div>
+    }
+  }
+
+  <!-- ════ Spacer ══════════════════════════════════════════════════ -->
+  @case ('Spacer') {
+    @if (asSpacer(); as sp) {
+      <div class="er-spacer"
+        [style.height.px]="sp.height"
+        [style.padding-left.px]="sp.paddingHorizontal"
+        [style.padding-right.px]="sp.paddingHorizontal"
+      ></div>
+    }
+  }
+
+  <!-- ════ Logo ════════════════════════════════════════════════════ -->
+  @case ('Logo') {
+    @if (asLogo(); as lg) {
+      <div class="er-img" [style.text-align]="lg.alignment">
+        @if (resolveImageSrc(lg.data); as src) {
+          <img [src]="src" [style.width.px]="lg.width" [style.height.px]="lg.height" alt="Logo"/>
+        } @else {
+          <span class="er-img__ph"
+            [style.width.px]="lg.width"
+            [style.height.px]="lg.height">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <small>{{ lg.data }}</small>
+          </span>
+        }
+      </div>
+    }
+  }
+
+  <!-- ════ Image ═══════════════════════════════════════════════════ -->
+  @case ('Image') {
+    @if (asImage(); as im) {
+      <div class="er-img" [style.text-align]="im.alignment">
+        @if (resolveImageSrc(im.data, im.path); as src) {
+          <img [src]="src" [style.width.px]="im.width" [style.height.px]="im.height" alt="Image"/>
+        } @else {
+          <span class="er-img__ph"
+            [style.width.px]="im.width"
+            [style.height.px]="im.height">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </span>
+        }
+      </div>
+    }
+  }
+
+  <!-- ════ QrCode — real encoder via `qrcode` ══════════════════════
+       The frame wrapper exists because `[innerHTML]` replaces every
+       child of its host element — putting the ZATCA badge as a sibling
+       of the SVG would otherwise be wiped on every re-render. The
+       frame owns the border + padding + relative positioning, and the
+       inner span is the dedicated SVG mount point. -->
+  @case ('QrCode') {
+    @if (asQrCode(); as q) {
+      <div class="er-qr-wrap" [class.er--hidden]="q.visibility === 'Hidden'">
+        <span class="er-qr-frame" [class.er-qr-frame--zatca]="isZatcaQr(q.value)">
+          <span class="er-qr"
+            [style.width.px]="q.size * 12"
+            [style.height.px]="q.size * 12"
+            [attr.aria-label]="'QR code: ' + q.value"
+            [innerHTML]="qrSvg()"
+          ></span>
+          @if (isZatcaQr(q.value)) {
+            <small class="er-qr__badge">ZATCA</small>
+          }
+        </span>
+      </div>
+    }
+  }
+
+  <!-- ════ Barcode — real encoder via `jsbarcode` (CODE128) ════════ -->
+  @case ('Barcode') {
+    @if (asBarcode(); as b) {
+      <div class="er-barcode-wrap" [class.er--hidden]="b.visibility === 'Hidden'">
+        <span class="er-barcode"
+          [style.height.px]="b.height"
+          [attr.aria-label]="'Barcode: ' + b.value"
+          [innerHTML]="barcodeSvg()"
+        ></span>
+        <small>{{ resolveText(b.value) }}</small>
+      </div>
+    }
+  }
+
+  <!-- ════ Table ═══════════════════════════════════════════════════
+       Renders one row per `groups[].rows[]`, one cell per visible
+       column. We use a CSS grid per row instead of a real <table>
+       because every row has its own column count + width split (the
+       legacy model carries a header row + a body row with a different
+       layout). The width per cell drives `flex-basis` as a percentage
+       of the row's content area.
+
+       Hidden cells stay in the model but aren't rendered here so the
+       preview reads exactly like the printed receipt. -->
+  @case ('Table') {
+    @if (asTable(); as tbl) {
+      <!-- Two sections per the legacy printer behaviour:
+           1. Header — every row in the table renders ONCE with its
+              cell labels (`cell.value`). All rows together describe
+              the column layout (e.g. row 1: "Qty | Tax% | Price"
+              and row 2: "Product Name | … | Total").
+           2. Body — for each item in `tbl.source` (lines / taxes /
+              payments) the *whole row stack* repeats, this time with
+              cells reading their `key` against the line. So a
+              two-row template prints two physical lines per record.
+      -->
+      <div class="er-table">
+        @if (hasVisibleCells(tbl)) {
+          <!-- Header section -->
+          <div class="er-table__section er-table__section--header">
+            @for (g of tableGroups(tbl); track $index) {
+              @for (r of g.rows; track $index; let rowIdx = $index) {
+                <div class="er-table__row" [class.er-table__row--header-top]="rowIdx === 0">
+                  @for (c of visibleCells(r); track $index) {
+                    <span
+                      class="er-table__cell"
+                      [style.flex-basis.%]="c.width || 0"
+                      [style.text-align]="(c.alignment || 'left').toLowerCase()"
+                    >{{ resolveText(c.value) || " " }}</span>
+                  }
+                </div>
+              }
+            }
+          </div>
+
+          <!-- Body section: per-line repeat of the full row stack -->
+          <div class="er-table__section er-table__section--body">
+            @for (line of sampleRowsFor(tbl.source); track $index) {
+              <div class="er-table__line">
+                @for (g of tableGroups(tbl); track $index) {
+                  @for (r of g.rows; track $index) {
+                    <div class="er-table__row">
+                      @for (c of visibleCells(r); track $index) {
+                        <span
+                          class="er-table__cell"
+                          [style.flex-basis.%]="c.width || 0"
+                          [style.text-align]="(c.alignment || 'left').toLowerCase()"
+                        >{{ resolveCellForLine(c.key, line) || " " }}</span>
+                      }
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <span class="er-table__hint">{{ tbl.source }}</span>
+        }
+      </div>
+    }
+  }
+}

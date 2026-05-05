@@ -1,0 +1,145 @@
+:host {
+  display: block;
+}
+
+// Designer canvas — paper rectangle. The dotted grid background is
+// a guide-only effect (doesn't print) so the user has a visible
+// snap reference even when no other elements are placed yet.
+.dcv {
+  position: relative;
+  background-image: radial-gradient(circle, rgba(15, 23, 42, 0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.12),
+    0 10px 40px rgba(15, 23, 42, 0.15);
+  overflow: hidden;
+  user-select: none;
+
+  &__el {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    transition: border-color 80ms ease;
+
+    &:hover {
+      border-color: rgba(50, 172, 193, 0.4);
+    }
+
+    &--selected {
+      border: 2px solid var(--color-brand-500);
+    }
+
+    &--locked {
+      cursor: default !important;
+    }
+  }
+
+  // 8 corner / edge handles — only rendered on the selected element.
+  &__handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border: 2px solid var(--color-brand-500);
+    border-radius: 1px;
+    box-sizing: border-box;
+    z-index: 2;
+  }
+
+  // Smart alignment guides drawn during drag (pink so they pop
+  // against any paper background — same colour Adobe XD uses).
+  &__guide {
+    position: absolute;
+    background: #ec4899;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  // Per-type render styling
+  &__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    gap: 3px;
+    background: #f3f4f6;
+    outline: 1px dashed #d1d5db;
+    outline-offset: -1px;
+
+    > span { font-size: 9pt; }
+  }
+
+  &__barcode {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    > small {
+      font-size: 7pt;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #374151;
+      margin-top: 2px;
+      letter-spacing: 1px;
+    }
+  }
+
+  &__sig {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #374151;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 6px 10px;
+    box-sizing: border-box;
+
+    &-line {
+      width: 100%;
+      border-top: 1px dashed #9ca3af;
+      margin-bottom: 4px;
+    }
+    &-label {
+      text-align: center;
+      font-style: italic;
+      color: #6b7280;
+      font-size: 9pt;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &__table {
+    width: 100%;
+    height: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    th {
+      padding: 4px 6px;
+      text-align: start;
+      font-weight: 600;
+      border-inline-end: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    td {
+      padding: 4px 6px;
+      color: #111827;
+      border-inline-end: 1px solid #f3f4f6;
+      border-bottom: 1px solid #e5e7eb;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &--striped { background: #fafafa; }
+  }
+}

@@ -1,5 +1,7 @@
 @use 'tailwindcss';
 @use 'styles/content-library-design-system';
+@use 'styles/product-detail-badges';
+@use 'styles/print';
 
 // Leaflet map styles — only loaded once globally so the location-edit
 // modal doesn't have to ship them per-instance.

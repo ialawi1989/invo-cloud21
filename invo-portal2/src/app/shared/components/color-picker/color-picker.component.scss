@@ -20,3 +20,272 @@
   background-size: 8px 8px;
   background-position: 0 0, 0 4px, 4px -4px, -4px 0;
 }
+
+// ── Collapsible advanced sections ───────────────────────────────────────
+// Each opt-in advanced section (spectrum / rainbow / formats) is wrapped
+// in a `<section class="cp-section">`. Header is a button so the whole
+// row is keyboard-accessible. The chevron rotates 180° when expanded.
+.cp-section {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 8px;
+  margin-top: -2px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 2px;
+    background: transparent;
+    border: none;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border-radius: 6px;
+
+    &:hover { color: #0f172a; }
+  }
+
+  &__chev {
+    color: #94a3b8;
+    transition: transform 120ms ease;
+
+    &--open { transform: rotate(-180deg); }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+// ── Popover panel sizing ────────────────────────────────────────────────
+// Default panel is narrow (260 px) for the curated 16-swatch grid.
+// Switching on any advanced section (spectrum / rainbow / formats)
+// widens it so the dense grid + format pills fit without horizontal
+// scroll.
+//
+// Height: cap at 90 vh and overflow vertically. With every advanced
+// section open the content is ~660 px tall — taller than many laptop
+// viewports — so this keeps the OK / Clear footer reachable instead
+// of getting clipped below the fold.
+.cp-panel {
+  width: 260px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+// 380 px gives the format pills (HEX / HSL / RGB / etc.) ~165 px each
+// in the 2-column grid, comfortably fitting "336, 100%, 40%" without
+// truncation. Caps at viewport-edge for narrow mobile widths.
+.cp-panel--wide  {
+  width: 380px;
+  max-width: calc(100vw - 16px);
+}
+
+// ── Swatch button (shared by both preset grids) ─────────────────────────
+.cp-swatch {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+
+  &:hover { transform: scale(1.1); }
+
+  &--sm {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+  }
+
+  &--active {
+    box-shadow:
+      0 0 0 1px #fff,
+      0 0 0 3px var(--color-brand-600, #32acc1);
+  }
+}
+
+// ── HSV spectrum + hue slider ───────────────────────────────────────────
+// The spectrum is a single coloured div with two stacked overlays:
+//   - `__sat`: white → transparent left-to-right (saturation axis)
+//   - `__val`: transparent → black top-to-bottom (value axis)
+// The thumb is a 14 px ring positioned by S % / V % inline styles.
+.cp-spectrum {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: crosshair;
+  user-select: none;
+  touch-action: none;
+
+  &__sat,
+  &__val {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  &__sat { background: linear-gradient(to right, #fff, transparent); }
+  &__val { background: linear-gradient(to top, #000, transparent); }
+
+  &__thumb {
+    position: absolute;
+    width: 14px; height: 14px;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+}
+
+.cp-hue {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  border-radius: 6px;
+  cursor: ew-resize;
+  user-select: none;
+  touch-action: none;
+  background: linear-gradient(to right,
+    #ff0000 0%,
+    #ffff00 17%,
+    #00ff00 33%,
+    #00ffff 50%,
+    #0000ff 67%,
+    #ff00ff 83%,
+    #ff0000 100%);
+
+  &__thumb {
+    position: absolute;
+    top: 50%;
+    width: 10px; height: 18px;
+    border: 2px solid #fff;
+    border-radius: 4px;
+    background: transparent;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+}
+
+// ── Multi-format readout pills ──────────────────────────────────────────
+.cp-formats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.cp-format {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  color: #0f172a;
+  cursor: pointer;
+  text-align: start;
+  transition: border-color 120ms ease, background 120ms ease;
+
+  &:hover { border-color: var(--color-brand-300, #bae6fd); background: #f8fafc; }
+
+  &__label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    flex-shrink: 0;
+    width: 36px;
+  }
+  &__value {
+    flex: 1;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  &__copy {
+    color: #94a3b8;
+    flex-shrink: 0;
+  }
+  &:hover &__copy { color: var(--color-brand-600, #32acc1); }
+}
+
+// WCAG 2.1 contrast badge — small chip showing the picked colour's
+// contrast ratio against `[wcagAgainst]`, plus a level label
+// (Fail / AA-Large / AA / AAA). Variants colour-code the chip so
+// the user reads the result at a glance.
+.cp-wcag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+
+  &__chip {
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__ratio {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco,
+      "Cascadia Mono", "Roboto Mono", Consolas, "Courier New", monospace;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  &__bg {
+    width: 14px;
+    height: 14px;
+    margin-inline-start: auto;
+    border: 1px solid rgba(15, 23, 42, 0.15);
+    border-radius: 4px;
+  }
+
+  &--fail {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+    .cp-wcag__chip { background: #ef4444; color: #fff; }
+  }
+  &--aa-large {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+    .cp-wcag__chip { background: #d97706; color: #fff; }
+  }
+  &--aa {
+    background: #ecfdf5;
+    border-color: #bbf7d0;
+    color: #065f46;
+    .cp-wcag__chip { background: #10b981; color: #fff; }
+  }
+  &--aaa {
+    background: #ecfdf5;
+    border-color: #6ee7b7;
+    color: #065f46;
+    .cp-wcag__chip { background: #047857; color: #fff; }
+  }
+}

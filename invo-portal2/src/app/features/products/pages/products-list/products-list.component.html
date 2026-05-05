@@ -104,10 +104,14 @@
     </div>
   </ng-template>
 
-  <!-- Barcode badge (grouped under the same cell as the product name) -->
+  <!-- Barcode badge (grouped under the same cell as the product name).
+       Uses the shared `.app-product-badge--barcode` class so this chip
+       stays visually identical to the same chip in the document paper,
+       POS cart, and anywhere else a product/line is rendered. Update
+       once in `_product-detail-badges.scss` to roll forward. -->
   <ng-template listCellTemplate="barcode" let-row>
     @if (row.barcode) {
-      <span class="inline-flex px-2 py-0.5 rounded text-xs font-mono bg-teal-100 text-teal-700 w-fit">
+      <span class="app-product-badge app-product-badge--barcode">
         {{ row.barcode }}
       </span>
     }

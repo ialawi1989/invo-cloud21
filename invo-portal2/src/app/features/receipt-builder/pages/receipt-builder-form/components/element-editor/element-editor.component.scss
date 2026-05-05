@@ -1,0 +1,356 @@
+:host { display: block; }
+
+// Inside element-editor — the per-element wrapper. With the per-group
+// widgets each child is an `<app-rbf-widget>` so the gap is what
+// separates the cards visually.
+.ee {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// Slot wrapper — the drag-anchor for each widget. We put cdkDrag on
+// this div (not the widget host) so the widget keeps its hover /
+// active styling while the wrapper handles the drag. Display contents
+// would collapse the wrapper visually but breaks CDK's drop indicator,
+// so we keep `display: block` and rely on the gap above for spacing.
+.ee-slot {
+  display: block;
+
+  // Drag-preview lift — the floating clone CDK shows under the
+  // cursor. Matches the rbf-widget's own card chrome with a stronger
+  // shadow so it reads as "lifted off the rail" (Illustrator dock
+  // style).
+  &.cdk-drag-preview {
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(15, 23, 42, 0.06);
+    border-radius: 12px;
+    transform: rotate(-0.4deg); // slight tilt — the classic Adobe lift
+  }
+
+  // Placeholder where the dragged widget would land — collapsed to
+  // a thin brand-coloured insertion line, the way Illustrator marks
+  // a panel drop point. We hide the original content so the slot
+  // doesn't reserve its full height while in flight.
+  &.cdk-drag-placeholder {
+    height: 4px;
+    min-height: 4px;
+    margin: 3px 0;
+    background: var(--color-brand-500);
+    border: none;
+    border-radius: 2px;
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.18);
+    overflow: hidden;
+
+    > * { visibility: hidden; height: 0; }
+  }
+}
+
+// Smooth slide-in / slide-out for siblings while a drag is in flight.
+.cdk-drop-list-dragging .ee-slot:not(.cdk-drag-placeholder) {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  > label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+
+  > .field { flex: 1; min-width: 0; }
+}
+
+// Sub-section header inside an editor (e.g. "Padding" above the
+// Horizontal/Vertical px row). Lighter styling than the main field
+// labels so it reads as a grouping affordance rather than its own
+// input label.
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__title {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+}
+
+.input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: #0f172a;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+}
+
+textarea.input { resize: vertical; min-height: 56px; }
+
+.slider {
+  width: 100%;
+  accent-color: var(--color-brand-600);
+}
+
+.hint { font-size: 11px; color: #94a3b8; }
+
+// Option toggles for an `!invoice.lines` table — listed vertically
+// so each line label stays full-width legible. List markers stripped
+// because each row is a custom toggle.
+.opt-list {
+  list-style: none;
+  // Extra top breathing room so the LINE OPTIONS label doesn't sit
+  // right on top of the first toggle (the field's default 4px gap is
+  // too tight for a section as dense as this one).
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  // Subtle separator before the master toggle. Tight padding so the
+  // gap above the rule reads as the same rhythm as the per-attribute
+  // toggle gaps above — only the rule itself signals the grouping.
+  &__sep {
+    padding-top: 8px;
+    border-top: 1px solid #e2e8f0;
+  }
+}
+
+// Attribute rows for per-cell modifiers (`qty.hideIfOne()`,
+// `price.hideIfZero()`) — render with the legacy "Attributes list"
+// style: monospace label + an eye icon that toggles the modifier
+// suffix on every matching cell across the table. Sits below the
+// `.opt-list` toggles inside the LINES OPTIONS panel.
+.opt-attrs {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.opt-attr {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &:hover {
+    background: #fff;
+    border-color: #cbd5e1;
+  }
+
+  // Active state — the modifier is currently applied. Tinted to
+  // match the rest of the brand-active surfaces in the editor.
+  &--on {
+    background: var(--color-brand-50);
+    border-color: var(--color-brand-300, #bae6fd);
+  }
+
+  // Token uses monospace + ink colour so the legacy attribute name
+  // (e.g. `qty.hideIfOne()`) reads as a code-style chip.
+  &__token {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Eye-icon colour tracks the active state.
+  > svg {
+    flex-shrink: 0;
+    color: #94a3b8;
+    transition: color 120ms ease;
+  }
+  &--on > svg { color: var(--color-brand-700); }
+}
+
+// ZATCA hint — confirms the QR value resolves to the Saudi Arabia
+// tax-compliance binding. The green ink + leaf icon mirrors the
+// canvas badge so the two pieces visually correspond.
+.hint--zatca {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 4px 8px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  color: #047857;
+  font-weight: 600;
+}
+
+// Customer-feedback URL hint — confirms the QR will encode a link to
+// the storefront's feedback form. Cyan-toned to distinguish it from
+// the green ZATCA hint above.
+.hint--feedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 4px 8px;
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+  border-radius: 6px;
+  color: #0e7490;
+  font-weight: 600;
+}
+
+// Row of preset shortcuts under the QR value field. Side-by-side so
+// the user can switch from one preset to another with a single click;
+// hidden individually when their corresponding preset is already in use.
+.qr-presets {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 4px;
+}
+
+// "Use X" preset — rendered as a tiny inline action so it doesn't
+// take a full-width button row.
+.hint--link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+  color: var(--color-brand-700);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover { color: var(--color-brand-600); }
+}
+
+// ── Segmented control (alignment, line style) ─────────────────────────
+.seg {
+  display: inline-flex;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8fafc;
+
+  &__btn {
+    flex: 1;
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+    text-transform: capitalize;
+
+    &:hover:not(.seg__btn--on) {
+      background: #fff;
+      color: #0f172a;
+    }
+    &--on {
+      background: var(--color-brand-600);
+      color: #fff;
+    }
+    & + & { border-inline-start: 1px solid #e2e8f0; }
+
+    // Icon-only segment buttons (alignment pickers). Flex-center the
+    // glyph and drop the text-transform — there's no text to capitalize.
+    &--icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 4px;
+      text-transform: none;
+    }
+  }
+}
+
+// ── Toggle ────────────────────────────────────────────────────────────
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+
+  input { position: absolute; opacity: 0; pointer-events: none; }
+
+  &__track {
+    position: relative;
+    width: 32px; height: 18px;
+    border-radius: 999px;
+    background: #cbd5e1;
+    flex-shrink: 0;
+    transition: background 120ms ease;
+  }
+  &__thumb {
+    position: absolute;
+    top: 2px; inset-inline-start: 2px;
+    width: 14px; height: 14px;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+    transition: inset-inline-start 120ms ease;
+  }
+  input:checked + &__track { background: var(--color-brand-600); }
+  input:checked + &__track .toggle__thumb { inset-inline-start: 16px; }
+
+  &__label { font-size: 13px; color: #475569; }
+
+  // Disabled — applied when the master `showOptions` toggle is off.
+  // Pointer-events disabled on the whole label so the user can't
+  // flip the inner state; visual dim signals the inert state.
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+// Inline description text under each option toggle. Smaller + lighter
+// so it reads as a hint rather than a label, indented past the
+// toggle track so it visually groups with the toggle above it.
+.opt-desc {
+  margin: 4px 0 0;
+  padding-inline-start: 42px;
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+}

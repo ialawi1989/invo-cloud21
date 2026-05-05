@@ -19,6 +19,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
+import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { CompanyService } from '@core/auth/company.service';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
@@ -45,6 +46,13 @@ import {
   WorkingHoursModalData,
   WorkingHoursModalResult,
 } from '../../components/working-hours-modal/working-hours-modal.component';
+import {
+  TranslationModalComponent,
+  TranslationModalData,
+  TranslationLang,
+} from '@shared/components/translation-modal/translation-modal.component';
+import { EntityCustomFieldsComponent } from '../../components/entity-custom-fields/entity-custom-fields.component';
+import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 
 /**
  * Settings → Branch form (edit only)
@@ -68,12 +76,14 @@ import {
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     TimePickerComponent,
+    EntityCustomFieldsComponent,
+    FormStickyFooterComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './branch-form.component.html',
   styleUrl: './branch-form.component.scss',
 })
-export class BranchFormComponent implements OnInit {
+export class BranchFormComponent implements OnInit, CanLeaveComponent {
   private fb         = inject(FormBuilder);
   private service    = inject(BranchSettingsService);
   private translate  = inject(TranslateService);
@@ -145,6 +155,18 @@ export class BranchFormComponent implements OnInit {
   /** Disabled state for the "online availability" toggle — backend
    *  forbids turning off the e-commerce default branch's online flag. */
   isEcommerceDefault = computed<boolean>(() => !!this.original()?.isEcommerceDefault);
+
+  /**
+   * Mutable handle the custom-fields renderer mirrors edits back to.
+   * `EntityCustomFieldsComponent` calls `Object.assign(target, value)`
+   * after every change, so as long as we hand it the same reference
+   * the legacy `original` snapshot tracked, the save payload (which
+   * spreads `original`) carries the latest values without any extra
+   * wiring.
+   */
+  customFieldsRef = computed<Record<string, unknown> | null>(
+    () => (this.original()?.customFields ?? null) as Record<string, unknown> | null,
+  );
 
   /** Bumped on every form valueChange so map-related computeds re-run.
    *  FormControl values are not tracked by signals automatically. */
@@ -250,6 +272,11 @@ export class BranchFormComponent implements OnInit {
       };
       const res = await this.service.save(payload);
       if (res?.success) {
+        // Clear the dirty flag before navigating — `saving.set(false)`
+        // in the `finally` block runs synchronously, BEFORE the route
+        // guard fires, so `hasUnsavedChanges()` would otherwise still
+        // return true and bounce the user into the leave-confirm modal.
+        this.form.markAsPristine();
         this.router.navigate(['/settings/branches']);
       }
     } catch (e) {
@@ -261,6 +288,55 @@ export class BranchFormComponent implements OnInit {
 
   cancel(): void {
     this.router.navigate(['/settings/branches']);
+  }
+
+  /** CanDeactivate hook — guard prompts when the form is dirty. */
+  hasUnsavedChanges(): boolean {
+    return this.form.dirty && !this.saving();
+  }
+
+  /**
+   * Open the per-language Translation modal for the branch name.
+   *
+   * Seeds with the current English value (from the form) plus the
+   * existing Arabic from `original.translation.name.ar`. On save we
+   * write the result back onto `original.translation.name` so the
+   * spread on the save payload round-trips it, and mirror the
+   * English value into the form so the visible field stays in sync.
+   */
+  async openNameTranslationModal(): Promise<void> {
+    const currentEn = String(this.form.controls['name'].value ?? '').trim();
+    const currentAr = this.original()?.translation?.name?.ar ?? '';
+
+    const ref = this.modal.open<
+      TranslationModalComponent,
+      TranslationModalData,
+      TranslationLang | null
+    >(TranslationModalComponent, {
+      size: 'sm',
+      data: {
+        initial: { en: currentEn, ar: currentAr },
+        label:   this.translate.instant('SETTINGS.BRANCHES.NAME'),
+      },
+      closeOnBackdrop: false,
+    });
+
+    const result = await ref.afterClosed();
+    if (!result) return;
+
+    // Mirror EN into the primary form control so the visible value
+    // matches `translation.name.en` — keeps the wire shape consistent
+    // with the legacy backend which uses `name === translation.name.en`.
+    this.form.patchValue({ name: result.en });
+    const orig = this.original();
+    if (orig) {
+      orig.translation = {
+        ...(orig.translation ?? {}),
+        name: { en: result.en, ar: result.ar },
+      };
+      this.original.set({ ...orig });
+    }
+    this.form.markAsDirty();
   }
 
   /** Open the location editor in a modal — keeps the form card slim

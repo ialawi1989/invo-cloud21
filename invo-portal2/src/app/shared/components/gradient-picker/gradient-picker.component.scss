@@ -1,0 +1,172 @@
+:host { display: block; }
+
+.gp {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+
+  &--disabled { opacity: 0.5; pointer-events: none; }
+}
+
+.gp-preview {
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+// ── Stops track ─────────────────────────────────────────────────────────
+// Wider than the preview so thumbs have a click target. Cursor is a
+// crosshair to suggest "click to add a stop here".
+.gp-track {
+  position: relative;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  cursor: crosshair;
+  user-select: none;
+  touch-action: none;
+
+  &__thumb {
+    --stop-color: #fff;
+    position: absolute;
+    top: -4px;
+    width: 14px;
+    height: 30px;
+    border: 2px solid #fff;
+    border-radius: 4px;
+    background: var(--stop-color);
+    transform: translateX(-50%);
+    cursor: ew-resize;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+    padding: 0;
+    transition: box-shadow 120ms ease, transform 120ms ease;
+
+    &:hover  { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55); }
+    &--active {
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.4),
+        0 0 0 3px var(--color-brand-300, #bae6fd);
+      transform: translateX(-50%) scale(1.05);
+    }
+  }
+}
+
+// ── Direction picker ────────────────────────────────────────────────────
+.gp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gp-segmented {
+  display: inline-flex;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8fafc;
+
+  &__btn {
+    width: 36px;
+    height: 30px;
+    background: transparent;
+    border: none;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+    padding: 0;
+
+    &:hover:not(&--active) { background: #fff; color: #0f172a; }
+    &--active {
+      background: var(--color-brand-600);
+      color: #fff;
+    }
+    & + & { border-inline-start: 1px solid #e2e8f0; }
+  }
+}
+
+.gp-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #0f172a;
+  outline: none;
+
+  &:focus {
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+
+  &--angle {
+    width: 64px;
+  }
+}
+
+// ── Selected stop card ──────────────────────────────────────────────────
+.gp-stop {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  &__label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  &__remove {
+    width: 24px; height: 24px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover:not(:disabled) { background: #fef2f2; color: #b91c1c; }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+  }
+
+  &__body {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+
+    app-color-picker { flex: 1; min-width: 0; }
+  }
+  &__pos {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #64748b;
+    width: 90px;
+
+    span { font-weight: 600; }
+  }
+}

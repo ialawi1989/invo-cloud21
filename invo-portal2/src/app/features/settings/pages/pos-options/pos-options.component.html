@@ -1,0 +1,186 @@
+<div class="pos-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'SETTINGS.ITEMS.POS_OPTIONS' | translate }}</h1>
+      <p class="page-sub">{{ 'SETTINGS.POS_OPTIONS.SUBTITLE' | translate }}</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Section 1 — POS options ═══ -->
+    <section class="card" formGroupName="options">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'SETTINGS.POS_OPTIONS.SECTION_POS' | translate }}</h2>
+        <p class="card__sub">{{ 'SETTINGS.POS_OPTIONS.SECTION_POS_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="toggle-grid">
+          @for (t of posToggles; track t.controlName) {
+            <label class="toggle">
+              <input type="checkbox" [formControlName]="t.controlName"/>
+              <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+              <span class="toggle__label">
+                <span class="field-label">{{ t.labelKey | translate }}</span>
+                <span class="field-hint">{{ t.hintKey | translate }}</span>
+              </span>
+            </label>
+          }
+        </div>
+
+        <hr class="card__divider"/>
+
+        <div class="field-row">
+          <label class="field-label" for="max-ref">
+            {{ 'SETTINGS.POS_OPTIONS.OPTIONS.MAX_REF' | translate }}
+          </label>
+          <input
+            id="max-ref"
+            type="number"
+            class="input input--narrow"
+            formControlName="maxReferneceNumber"
+            min="1"
+          />
+          <p class="field-hint">{{ 'SETTINGS.POS_OPTIONS.OPTIONS.MAX_REF_HINT' | translate }}</p>
+        </div>
+
+        <hr class="card__divider"/>
+
+        <div class="field-row">
+          <span class="field-label">{{ 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS' | translate }}</span>
+          <p class="field-hint">{{ 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS_HINT' | translate }}</p>
+
+          <div class="void-add">
+            <input
+              type="text"
+              class="input"
+              [placeholder]="'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASON_PLACEHOLDER' | translate"
+              [value]="voidReasonDraft()"
+              (input)="voidReasonDraft.set($any($event.target).value)"
+              (keydown.enter)="$event.preventDefault(); addVoidReason()"
+            />
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm"
+              (click)="addVoidReason()"
+              [disabled]="!voidReasonDraft().trim()"
+            >
+              {{ 'COMMON.ADD' | translate }}
+            </button>
+          </div>
+
+          @if (voidReasons.length > 0) {
+            <ul class="void-list">
+              @for (r of voidReasons.controls; track $index; let i = $index) {
+                <li class="void-chip">
+                  <span class="void-chip__text">{{ r.value }}</span>
+                  <button
+                    type="button"
+                    class="void-chip__remove"
+                    (click)="removeVoidReason(i)"
+                    [attr.aria-label]="'COMMON.DELETE' | translate"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="void-empty">{{ 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS_EMPTY' | translate }}</p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Section 2 — Printing options ═══ -->
+    <section class="card" formGroupName="printingOptions">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'SETTINGS.POS_OPTIONS.SECTION_PRINT' | translate }}</h2>
+        <p class="card__sub">{{ 'SETTINGS.POS_OPTIONS.SECTION_PRINT_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <!-- The two "copies on..." selects sit beside their related toggles. -->
+        <div class="receipt-row">
+          <label class="toggle">
+            <input type="checkbox" formControlName="printReceiptOnSent"/>
+            <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+            <span class="toggle__label">
+              <span class="field-label">{{ 'SETTINGS.POS_OPTIONS.PRINT.PRINT_ON_SENT' | translate }}</span>
+              <span class="field-hint">{{ 'SETTINGS.POS_OPTIONS.PRINT.PRINT_ON_SENT_HINT' | translate }}</span>
+            </span>
+          </label>
+          <div class="receipt-row__copies">
+            <span class="field-label field-label--inline">{{ 'SETTINGS.POS_OPTIONS.PRINT.COPIES' | translate }}</span>
+            <select class="input input--narrow" formControlName="numberOfReceiptWhenSent">
+              @for (o of receiptCopies; track o.value) {
+                <option [ngValue]="o.value">{{ o.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="receipt-row">
+          <label class="toggle">
+            <input type="checkbox" formControlName="printReceiptOnPaid"/>
+            <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+            <span class="toggle__label">
+              <span class="field-label">{{ 'SETTINGS.POS_OPTIONS.PRINT.PRINT_ON_PAID' | translate }}</span>
+              <span class="field-hint">{{ 'SETTINGS.POS_OPTIONS.PRINT.PRINT_ON_PAID_HINT' | translate }}</span>
+            </span>
+          </label>
+          <div class="receipt-row__copies">
+            <span class="field-label field-label--inline">{{ 'SETTINGS.POS_OPTIONS.PRINT.COPIES' | translate }}</span>
+            <select class="input input--narrow" formControlName="numberOfReceiptWhenPaid">
+              @for (o of receiptCopies; track o.value) {
+                <option [ngValue]="o.value">{{ o.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <hr class="card__divider"/>
+
+        <!-- Remaining print toggles in a 2-col grid. The first two
+             ("on-sent" / "on-paid") are above with their copies pickers,
+             so we filter them out here. -->
+        <div class="toggle-grid">
+          @for (t of printToggles; track t.controlName) {
+            @if (t.controlName !== 'printReceiptOnSent' && t.controlName !== 'printReceiptOnPaid') {
+              <label class="toggle">
+                <input type="checkbox" [formControlName]="t.controlName"/>
+                <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+                <span class="toggle__label">
+                  <span class="field-label">{{ t.labelKey | translate }}</span>
+                  <span class="field-hint">{{ t.hintKey | translate }}</span>
+                </span>
+              </label>
+            }
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || form.invalid"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

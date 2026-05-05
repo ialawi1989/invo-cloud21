@@ -1,0 +1,60 @@
+<div class="tm">
+  <header class="tm__head">
+    <div>
+      <h2 class="tm__title">{{ 'COMMON.TRANSLATION' | translate }}</h2>
+      @if (label) {
+        <p class="tm__sub">{{ label }}</p>
+      }
+    </div>
+    <button
+      type="button"
+      class="tm__close"
+      (click)="cancel()"
+      [attr.aria-label]="'COMMON.CLOSE' | translate"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="tm__body">
+    <div class="tm__field">
+      <label class="tm__label" for="tm-en">
+        {{ 'COMMON.TEXT_IN_ENGLISH' | translate }}
+      </label>
+      <textarea
+        id="tm-en"
+        class="tm__input"
+        rows="3"
+        [ngModel]="en()"
+        (ngModelChange)="en.set($event)"
+        dir="ltr"
+      ></textarea>
+    </div>
+
+    <div class="tm__field">
+      <label class="tm__label" for="tm-ar">
+        {{ 'COMMON.TEXT_IN_ARABIC' | translate }}
+      </label>
+      <textarea
+        id="tm-ar"
+        class="tm__input"
+        rows="3"
+        [ngModel]="ar()"
+        (ngModelChange)="ar.set($event)"
+        dir="rtl"
+      ></textarea>
+    </div>
+  </div>
+
+  <footer class="tm__foot">
+    <button type="button" class="btn btn-ghost" (click)="cancel()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </footer>
+</div>

@@ -1,7 +1,9 @@
 // ── Page chrome (matches tab-builder / business-settings) ──────────────
 .img-display-page {
   max-width: 1200px;
-  padding: 0 0 40px;
+  // Extra bottom padding leaves room for the sticky save bar so the
+  // last card never sits underneath it when the user scrolls.
+  padding: 0 0 96px;
   position: relative;
 }
 

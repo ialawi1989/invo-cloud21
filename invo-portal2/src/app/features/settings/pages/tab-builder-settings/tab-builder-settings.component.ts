@@ -9,6 +9,8 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { TabTemplateBuilderComponent } from '@shared/components/tab-builder/tab-template-builder/tab-template-builder.component';
+import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { TabTemplate } from '@shared/components/tab-builder/tab-builder.types';
 import { TabBuilderSettingsService } from '../../services/tab-builder.service';
 
@@ -30,6 +32,7 @@ import { TabBuilderSettingsService } from '../../services/tab-builder.service';
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     TabTemplateBuilderComponent,
+    FormStickyFooterComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -39,11 +42,6 @@ import { TabBuilderSettingsService } from '../../services/tab-builder.service';
           <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
           <h1 class="page-title">{{ 'SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER' | translate }}</h1>
           <p class="page-sub">{{ 'SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER_DESC' | translate }}</p>
-        </div>
-        <div class="page-header__actions">
-          <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || loading()">
-            {{ 'COMMON.SAVE' | translate }}
-          </button>
         </div>
       </header>
 
@@ -70,10 +68,18 @@ import { TabBuilderSettingsService } from '../../services/tab-builder.service';
         [show]="saving()"
         [message]="saveLabel()"
       />
+
+      <app-form-sticky-footer>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || loading()">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </app-form-sticky-footer>
     </div>
   `,
   styles: [`
-    .tab-builder-page { max-width: 1200px; padding: 0 0 40px; position: relative; }
+    // Extra bottom padding leaves room for the sticky save bar so the
+    // last card never sits underneath it when the user scrolls.
+    .tab-builder-page { max-width: 1200px; padding: 0 0 96px; position: relative; }
 
     .page-header {
       display: flex; align-items: flex-start; justify-content: space-between;
@@ -118,7 +124,7 @@ import { TabBuilderSettingsService } from '../../services/tab-builder.service';
     @keyframes spin { to { transform: rotate(360deg); } }
   `],
 })
-export class TabBuilderSettingsComponent implements OnInit {
+export class TabBuilderSettingsComponent implements OnInit, CanLeaveComponent {
   private service    = inject(TabBuilderSettingsService);
   private translate  = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
@@ -126,6 +132,9 @@ export class TabBuilderSettingsComponent implements OnInit {
   templates = signal<TabTemplate[]>([]);
   loading   = signal<boolean>(false);
   saving    = signal<boolean>(false);
+
+  /** Snapshot of templates at load time — drives dirty detection. */
+  private snapshot: string = '[]';
 
   /**
    * Ticks on every translation load / language switch. `withTranslations`
@@ -167,16 +176,26 @@ export class TabBuilderSettingsComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
-      this.templates.set(await this.service.getTemplates());
+      const fetched = await this.service.getTemplates();
+      this.templates.set(fetched);
+      this.snapshot = JSON.stringify(fetched);
     } finally {
       this.loading.set(false);
     }
   }
 
+  /** CanDeactivate hook — prompt when templates differ from the load snapshot. */
+  hasUnsavedChanges(): boolean {
+    if (this.saving()) return false;
+    return JSON.stringify(this.templates()) !== this.snapshot;
+  }
+
   async save(): Promise<void> {
     this.saving.set(true);
     try {
-      await this.service.saveTemplates(this.templates());
+      const next = this.templates();
+      await this.service.saveTemplates(next);
+      this.snapshot = JSON.stringify(next);
     } catch (e) {
       console.error('[tab-builder-settings] save failed', e);
     } finally {

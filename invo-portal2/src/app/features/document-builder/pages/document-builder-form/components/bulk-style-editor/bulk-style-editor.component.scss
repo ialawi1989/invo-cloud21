@@ -1,0 +1,140 @@
+:host { display: block; }
+
+// Section-level bulk style editor. Mirrors the legacy builder's
+// vertical, full-width row layout so a settings sub-panel reads as
+// a clean form rather than a dense grid.
+.bse {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0;
+
+  &__heading {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+  }
+
+  // Yellow / orange callout that signals the bulk edit will overwrite
+  // every per-field style in the section. Using brand-warning hues so
+  // it matches the rest of the app's "destructive override" tone.
+  &__callout {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 9px 12px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #92400e;
+
+    &-icon {
+      flex-shrink: 0;
+      margin-top: 1px;
+      color: #d97706;
+    }
+  }
+
+  // Vertical row: label on the left, control on the right. The label
+  // takes a fixed pixel width so every row aligns down the panel.
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__label {
+    flex: 0 0 110px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1f2937;
+  }
+
+  &__control {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  // Number input with a "pt" suffix tucked inside the field — matches
+  // the legacy "10 pt" pill input.
+  &__size {
+    position: relative;
+    width: 100%;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 7px 30px 7px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+    font: inherit;
+    font-size: 13px;
+    color: #1f2937;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-brand-500);
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.10);
+    }
+  }
+
+  &__suffix {
+    position: absolute;
+    inset-inline-end: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #94a3b8;
+    pointer-events: none;
+  }
+
+  // Format / Alignment button group — sits in the same right-hand
+  // column as the colour pickers so every row stays aligned.
+  &__btn-group {
+    display: inline-flex;
+    background: #f1f5f9;
+    border-radius: 6px;
+    padding: 2px;
+    gap: 2px;
+  }
+
+  &__btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    color: #64748b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    line-height: 1;
+    transition: background 120ms ease, color 120ms ease;
+
+    > strong, > em, > u { font-size: 12px; }
+
+    &:hover:not(.bse__btn--on) { color: #0f172a; }
+
+    &--on,
+    &--on:hover {
+      background: #fff;
+      color: var(--color-brand-700);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.10);
+    }
+  }
+}
+
+// When the host sits inside a panel that already has its own
+// background, let the editor inherit (no card chrome).
+:host {
+  .bse { background: transparent; }
+}

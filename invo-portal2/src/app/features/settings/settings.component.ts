@@ -12,6 +12,11 @@ interface SettingItem {
   label:       string;
   description: string;
   link?:       string;
+  /** Optional query params merged onto the routerLink. Used to deep-
+   *  link into a generic page filtered by context (e.g. all the
+   *  document-builder tiles share the same route, distinguished by
+   *  `?type=invoice|estimate|…`). */
+  queryParams?: Record<string, string>;
   privilege?:  string;
   feature?:    string;
   popup?:      { component: any; size?: string };
@@ -70,7 +75,7 @@ interface SettingGroup {
                 @for (item of group.items; track item.label) {
                   @if (canAccess(item)) {
                     @if (item.link) {
-                      <a [routerLink]="item.link" class="setting-item">
+                      <a [routerLink]="item.link" [queryParams]="item.queryParams ?? null" class="setting-item">
                         <div class="item-text">
                           <span class="item-label">{{ item.label | translate }}</span>
                           <span class="item-desc">{{ item.description | translate }}</span>
@@ -217,7 +222,11 @@ export class SettingsComponent {
       id: 'invoice', title: 'SETTINGS.GROUPS.INVOICE', color: '#10b981',
       icon: `<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>`,
       items: [
-        { label: 'SETTINGS.ITEMS.INVOICE_BUILDER', description: 'SETTINGS.ITEMS.INVOICE_BUILDER_DESC', link: '/settings/invoice-builder', privilege: 'invoiceBuilderSecurity.access' },
+        // All entity-builder tiles route into the unified document-builder
+        // filtered by ?type — the builder itself shows tabs for every doc
+        // type so the user can switch within the same surface.
+        { label: 'SETTINGS.ITEMS.INVOICE_BUILDER', description: 'SETTINGS.ITEMS.INVOICE_BUILDER_DESC', link: '/settings/document-builder', queryParams: { type: 'invoice' }, privilege: 'invoiceBuilderSecurity.access' },
+        { label: 'SETTINGS.ITEMS.CREDIT_NOTE_BUILDER', description: 'SETTINGS.ITEMS.CREDIT_NOTE_BUILDER_DESC', link: '/settings/document-builder', queryParams: { type: 'credit-note' }, privilege: 'invoiceBuilderSecurity.access' },
         { label: 'SETTINGS.ITEMS.INVOICE_OPTIONS', description: 'SETTINGS.ITEMS.INVOICE_OPTIONS_DESC', link: '/settings/invoice-options', privilege: 'companySettingsSecurity.actions.invoiceOptions.access' },
       ],
     },
@@ -225,28 +234,29 @@ export class SettingsComponent {
       id: 'estimate', title: 'SETTINGS.GROUPS.ESTIMATE', color: '#10b981',
       icon: `<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>`,
       items: [
-        { label: 'SETTINGS.ITEMS.ESTIMATE_BUILDER', description: 'SETTINGS.ITEMS.ESTIMATE_BUILDER_DESC', link: '/settings/estimate-builder', privilege: 'estimateBuilderSecurity.access' },
+        { label: 'SETTINGS.ITEMS.ESTIMATE_BUILDER', description: 'SETTINGS.ITEMS.ESTIMATE_BUILDER_DESC', link: '/settings/document-builder', queryParams: { type: 'estimate' }, privilege: 'estimateBuilderSecurity.access' },
       ],
     },
     {
       id: 'expense', title: 'SETTINGS.GROUPS.EXPENSE', color: '#f59e0b',
       icon: `<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>`,
       items: [
-        { label: 'SETTINGS.ITEMS.EXPENSE_BUILDER', description: 'SETTINGS.ITEMS.EXPENSE_BUILDER_DESC', link: '/settings/expense-builder', privilege: 'expenseBuilderSecurity.access' },
+        { label: 'SETTINGS.ITEMS.EXPENSE_BUILDER', description: 'SETTINGS.ITEMS.EXPENSE_BUILDER_DESC', link: '/settings/document-builder', queryParams: { type: 'expense' }, privilege: 'expenseBuilderSecurity.access' },
       ],
     },
     {
       id: 'purchase', title: 'SETTINGS.GROUPS.PURCHASE', color: '#f59e0b',
       icon: `<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>`,
       items: [
-        { label: 'SETTINGS.ITEMS.PURCHASE_ORDER_BUILDER', description: 'SETTINGS.ITEMS.PURCHASE_ORDER_BUILDER_DESC', link: '/settings/purchase-order-builder', privilege: 'purchaseOrderBuilderSecurity.access' },
+        { label: 'SETTINGS.ITEMS.PURCHASE_ORDER_BUILDER', description: 'SETTINGS.ITEMS.PURCHASE_ORDER_BUILDER_DESC', link: '/settings/document-builder', queryParams: { type: 'purchase-order' }, privilege: 'purchaseOrderBuilderSecurity.access' },
       ],
     },
     {
       id: 'bill', title: 'SETTINGS.GROUPS.BILL', color: '#8b5cf6',
       icon: `<path d="M4 2v20l3-3 2.5 3L12 19l2.5 3L17 19l3 3V2z"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/>`,
       items: [
-        { label: 'SETTINGS.ITEMS.BILL_BUILDER', description: 'SETTINGS.ITEMS.BILL_BUILDER_DESC', link: '/settings/bill-builder', privilege: 'billBuilderSecurity.access' },
+        { label: 'SETTINGS.ITEMS.BILL_BUILDER', description: 'SETTINGS.ITEMS.BILL_BUILDER_DESC', link: '/settings/document-builder', queryParams: { type: 'bill' }, privilege: 'billBuilderSecurity.access' },
+        { label: 'SETTINGS.ITEMS.SUPPLIER_CREDIT_BUILDER', description: 'SETTINGS.ITEMS.SUPPLIER_CREDIT_BUILDER_DESC', link: '/settings/document-builder', queryParams: { type: 'supplier-credit' }, privilege: 'billBuilderSecurity.access' },
       ],
     },
     {

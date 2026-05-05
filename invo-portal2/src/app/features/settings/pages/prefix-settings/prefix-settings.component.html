@@ -1,0 +1,115 @@
+<div class="ps-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'SETTINGS.ITEMS.PREFIX_SETTINGS' | translate }}</h1>
+      <p class="page-sub">{{ 'SETTINGS.PREFIX.SUBTITLE' | translate }}</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- Token-syntax hint banner — explains what {YYYY}/{YY}/{MM}/{DD}
+         expand to so the user doesn't have to guess. -->
+    <aside class="ps-hint">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+      <div class="ps-hint__body">
+        <p class="ps-hint__title">{{ 'SETTINGS.PREFIX.HINT_TITLE' | translate }}</p>
+        <p class="ps-hint__text">
+          {{ 'SETTINGS.PREFIX.HINT_TEXT' | translate }}
+        </p>
+        <ul class="ps-hint__tokens">
+          <li><code>&#123;YYYY&#125;</code> {{ 'SETTINGS.PREFIX.TOKEN_YYYY' | translate }}</li>
+          <li><code>&#123;YY&#125;</code> {{ 'SETTINGS.PREFIX.TOKEN_YY' | translate }}</li>
+          <li><code>&#123;MM&#125;</code> {{ 'SETTINGS.PREFIX.TOKEN_MM' | translate }}</li>
+          <li><code>&#123;DD&#125;</code> {{ 'SETTINGS.PREFIX.TOKEN_DD' | translate }}</li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- One card per document type. Always-editable inputs + live preview. -->
+    <div class="ps-grid">
+      @for (r of rows(); track r.module) {
+        <article class="ps-card" [class.ps-card--invalid]="!!r.prefixError || !!r.widthError">
+          <header class="ps-card__head">
+            <h2 class="ps-card__title">{{ r.label }}</h2>
+            <button
+              type="button"
+              class="ps-card__reset"
+              (click)="revertRow(r.module)"
+              [title]="'SETTINGS.PREFIX.REVERT_HINT' | translate"
+            >
+              {{ 'SETTINGS.PREFIX.REVERT' | translate }}
+            </button>
+          </header>
+
+          <div class="ps-card__row">
+            <label class="ps-field ps-field--prefix">
+              <span class="ps-field__label">{{ 'SETTINGS.PREFIX.PREFIX' | translate }}</span>
+              <input
+                type="text"
+                class="ps-input"
+                [class.ps-input--invalid]="!!r.prefixError"
+                [ngModel]="r.prefix"
+                (ngModelChange)="patchPrefix(r.module, $event)"
+                placeholder="INV-"
+                spellcheck="false"
+                autocomplete="off"
+              />
+              @if (r.prefixError === 'required') {
+                <span class="ps-field__error">{{ 'SETTINGS.PREFIX.PREFIX_REQUIRED' | translate }}</span>
+              } @else if (r.prefixError === 'duplicate') {
+                <span class="ps-field__error">{{ 'SETTINGS.PREFIX.PREFIX_DUPLICATE' | translate }}</span>
+              }
+            </label>
+
+            <label class="ps-field ps-field--width">
+              <span class="ps-field__label">{{ 'SETTINGS.PREFIX.WIDTH' | translate }}</span>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                class="ps-input"
+                [class.ps-input--invalid]="!!r.widthError"
+                [ngModel]="r.width"
+                (ngModelChange)="patchWidth(r.module, $event)"
+              />
+              @if (r.widthError === 'range') {
+                <span class="ps-field__error">{{ 'SETTINGS.PREFIX.WIDTH_RANGE' | translate }}</span>
+              }
+            </label>
+          </div>
+
+          <div class="ps-card__preview">
+            <span class="ps-card__preview-label">{{ 'SETTINGS.PREFIX.PREVIEW' | translate }}</span>
+            <code class="ps-card__preview-value">{{ r.preview }}</code>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="resetToDefaults()" [disabled]="saving() || loading()">
+      {{ 'SETTINGS.PREFIX.RESET_DEFAULTS' | translate }}
+    </button>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || !isValid() || !isDirty()"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

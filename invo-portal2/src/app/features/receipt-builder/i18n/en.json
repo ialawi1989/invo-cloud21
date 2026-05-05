@@ -1,0 +1,199 @@
+{
+  "RECEIPT_BUILDER": {
+    "TITLE":             "Receipt Builder",
+    "SUBTITLE":          "Design printed receipts and kitchen tickets that the POS sends to the printers.",
+    "ADD_NEW":           "Add new",
+    "NEW_TEMPLATE":      "New template",
+    "EDIT_TEMPLATE":     "Edit template",
+    "EMPTY":             "No templates yet — start by adding one.",
+    "NO_MATCH":          "No templates match your search.",
+    "SEARCH_PLACEHOLDER":"Search templates…",
+    "CONFIRM_DELETE":    "Delete the template \"{{name}}\"? This cannot be undone.",
+    "BACK_TO_LIST":      "Back to list",
+    "TEMPLATES_MENU":    "Templates",
+
+    "RENAME": {
+      "TITLE": "Rename template"
+    },
+
+    "NAME":              "Name",
+    "TYPE":              "Type",
+    "ELEMENTS":          "Elements",
+    "UPDATED":           "Updated",
+
+    "TYPE_RECEIPT":      "Receipt",
+    "TYPE_KITCHEN":      "Kitchen",
+    "SWITCH_TYPE_HINT":     "Switch template type — clears the current canvas",
+    "SWITCH_TYPE_TITLE":    "Switch template type?",
+    "SWITCH_TYPE_MESSAGE":  "Switching the template type will reset the canvas to the new type's defaults. All current elements and changes will be lost. This cannot be undone.",
+    "SWITCH_TYPE_CONFIRM":  "Switch and reset",
+
+    "EDITOR_COMING_SOON_TITLE": "Editor is on the way",
+    "EDITOR_COMING_SOON_BODY":  "The print-element editor lands in the next slice. The route, list page, and template service are wired so existing templates already round-trip.",
+
+    "NAME_PLACEHOLDER":         "Template name",
+    "PALETTE":                  "Add element",
+    "LAYERS": {
+      "TITLE": "Elements",
+      "EMPTY": "Drop or click an element above to add it."
+    },
+    "CANVAS_EMPTY_TITLE":       "Empty receipt",
+    "CANVAS_EMPTY_HINT":        "Click an element on the left to add it.",
+
+    "PANEL_TITLE":              "No element selected",
+    "PANEL_PICK_ELEMENT":       "Pick an element on the canvas to edit it.",
+    "PANEL_COMING_SOON":        "The per-element editor lands in the next slice.",
+    "COLLAPSE_ALL":             "Collapse all",
+    "EXPAND_ALL":               "Expand all",
+    "WIDGET_DRAG_HINT":         "Drag up/down to reorder · drop on another header to merge as a tab",
+    "RESIZE_PANEL":             "Drag to resize panel",
+
+    "ELEMENTS": {
+      "SideText":      "Side text",
+      "Text":          "Text",
+      "Line":          "Line",
+      "Logo":          "Logo",
+      "Image":         "Image",
+      "Spacer":        "Spacer",
+      "QrCode":        "QR code",
+      "Barcode":       "Barcode",
+      "Table":         "Table",
+      "TableLines":    "Lines table",
+      "TableTaxes":    "Taxes table",
+      "TablePayments": "Payments table"
+    },
+
+    "PREVIEW": {
+      "TEXT_PLACEHOLDER": "Empty text",
+      "LOGO_BINDING":     "Logo binding",
+      "IMAGE_NONE":       "No image yet",
+      "QR":               "QR · {{value}}",
+      "BARCODE":          "Barcode · {{value}}",
+      "TABLE":            "Table · {{source}}"
+    },
+
+    "HISTORY": {
+      "UNDO_TIP":   "Undo: {{desc}} (Ctrl+Z)",
+      "REDO_TIP":   "Redo: {{desc}} (Ctrl+Shift+Z)",
+      "UNDO_EMPTY": "Nothing to undo",
+      "REDO_EMPTY": "Nothing to redo"
+    },
+
+    "EDITOR": {
+      "WIDGET_CONTENT":    "Content",
+      "WIDGET_TYPOGRAPHY": "Typography",
+      "WIDGET_SIZE":       "Size",
+      "WIDGET_LAYOUT":     "Layout",
+      "VALUE":             "Content",
+      "VALUE_PLACEHOLDER": "Type text or a !invoice.field binding…",
+      "ALIGNMENT":         "Alignment",
+      "ALIGN_LEFT":        "Left",
+      "ALIGN_CENTER":      "Center",
+      "ALIGN_RIGHT":       "Right",
+      "FONT_SIZE":         "Font size (px)",
+      "FONT_WEIGHT":       "Weight",
+      "WEIGHT_NORMAL":     "Normal",
+      "WEIGHT_BOLD":       "Bold",
+      "FONT_STYLE":        "Style",
+      "STYLE_NORMAL":      "Normal",
+      "STYLE_ITALIC":      "Italic",
+      "DECORATION":        "Decoration",
+      "DECOR_NONE":        "None",
+      "DECOR_UNDERLINE":   "Underline",
+      "VISIBLE":           "Visible on print",
+      "VISIBILITY":        "Visibility",
+      "VISIBLE_ON":        "Visible",
+      "HIDE_ON":           "Hide",
+      "CONDITION_IF":      "IF",
+      "CONDITION_EQUALS":  "Equals",
+      "LEFT_TEXT":         "Left text",
+      "RIGHT_TEXT":        "Right text",
+      "LEFT_ALIGN":        "Left side align",
+      "RIGHT_ALIGN":       "Right side align",
+      "LINE_STYLE":        "Style",
+      "PADDING":           "Padding",
+      "PAD_H":             "Horizontal (px)",
+      "PAD_V":             "Vertical (px)",
+      "HEIGHT":            "Height (px)",
+      "WIDTH":             "Width (px)",
+      "SOURCE":            "Source",
+      "IMAGE_PATH":        "Image URL or asset path",
+      "IMAGE_PATH_PLACEHOLDER": "https://… or /assets/img.png",
+      "IMAGE_PATH_HINT":   "Leave empty to use the inline data field.",
+      "QR_SIZE":           "QR size",
+      "BARCODE_HEIGHT":    "Barcode height (px)",
+      "TABLE_SOURCE":      "Source",
+      "TABLE_SOURCE_HINT": "Picks which invoice collection feeds this table (lines / taxes / payments). Column editor lands in the next slice.",
+
+      "ZATCA_HINT":        "ZATCA QR — Saudi Arabia tax-compliance payload.",
+      "USE_ZATCA":         "Use ZATCA QR",
+      "FEEDBACK_HINT":     "Feedback link — opens the storefront feedback form for this invoice.",
+      "USE_FEEDBACK":      "Use Feedback link",
+
+
+      "LOGO_PRIMARY":      "Company logo",
+      "LOGO_SECONDARY":    "Secondary logo",
+      "TABLE_LINES":       "Invoice lines",
+      "TABLE_TAXES":       "Invoice taxes",
+      "TABLE_PAYMENTS":    "Invoice payments",
+
+      "TABLE_COLUMNS":     "Columns",
+
+      "LINES_OPTIONS":              "Line options",
+      "LINES_QTY_HIDE_IF_ONE":      "qty.hideIfOne()",
+      "LINES_PRICE_HIDE_IF_ZERO":   "price.hideIfZero()",
+      "LINES_SHOW_OPTIONS":         "List options under each line",
+      "LINES_SHOW_PRICE":           "Show option price (hidden when 0.00)",
+      "LINES_SHOW_KITCHEN_NAME":    "option.kitchenName",
+      "LINES_SHOW_OPTION_NAME":     "option.name",
+      "LINES_SHOW_OPTION_SECONDARY": "option.secondaryName",
+
+      "LINES_SHOW_OPTIONS_DESC":         "Master switch — when off, no add-on rows print under each invoice line.",
+      "LINES_QTY_HIDE_IF_ONE_DESC":      "Hide the line's qty column when the value is exactly 1.",
+      "LINES_SHOW_OPTION_NAME_DESC":     "Show the add-on's primary name (e.g. \"Extra cheese\").",
+      "LINES_SHOW_OPTION_SECONDARY_DESC": "Show the add-on's second-language name (typically Arabic).",
+      "LINES_SHOW_KITCHEN_NAME_DESC":    "Show the kitchen-specific name for each add-on (used on kitchen tickets).",
+      "LINES_PRICE_HIDE_IF_ZERO_DESC":   "Show each add-on's price next to its name. Hidden automatically when the price is 0.00."
+    },
+
+    "TABLE_EDITOR": {
+      "GROUP":             "Group {{n}}",
+      "ROW":               "Row {{n}}",
+      "ROW_STATIC":        "Header",
+      "ROW_DYNAMIC":       "Body",
+      "ADD_COLUMN":        "Add column",
+      "ADD_COLUMN_VERB":   "Add column",
+      "ADD_ROW":           "Add row",
+      "ADD_GROUP":         "Add group",
+      "EMPTY_COLUMN":      "emptyColumn",
+      "NO_SUGGESTIONS":    "No suggestions for this source.",
+      "HIDE_IF_ONE":       "Hide when value is 1",
+      "HIDE_IF_ZERO":      "Hide when value is 0",
+      "LABEL_PLACEHOLDER": "Header label",
+      "KEY_PLACEHOLDER":   "binding.key",
+      "HIDE":              "Hide column",
+      "SHOW":              "Show column"
+    },
+
+    "BINDINGS": {
+      "PICKER_TITLE":      "Insert binding",
+      "SEARCH_PLACEHOLDER": "Search bindings",
+      "NO_MATCH":          "No matching bindings.",
+      "GROUP": {
+        "INVOICE_HEADER":  "Invoice — header",
+        "INVOICE_PARTIES": "Invoice — parties & details",
+        "INVOICE_TOTALS":  "Invoice — totals",
+        "INVOICE_TAX":     "Invoice — tax & compliance",
+        "PREFERENCES":     "Business preferences"
+      }
+    },
+
+    "DEMO": {
+      "PREVIEW_AS":      "Preview as",
+      "PROFILE_DEFAULT": "Default",
+      "PROFILE_DINE_IN": "Dine-in",
+      "PROFILE_PAID":    "Paid",
+      "PROFILE_DELIVERY":"Delivery"
+    }
+  }
+}

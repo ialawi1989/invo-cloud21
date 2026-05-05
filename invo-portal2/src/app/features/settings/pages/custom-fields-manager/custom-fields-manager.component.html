@@ -5,19 +5,6 @@
       <h1 class="page-title">{{ pageTitle() }}</h1>
       <p class="page-sub">{{ 'SETTINGS.CUSTOM_FIELDS.MANAGER_SUBTITLE' | translate }}</p>
     </div>
-    <div class="page-header__actions">
-      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-        {{ 'COMMON.CANCEL' | translate }}
-      </button>
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="save()"
-        [disabled]="saving() || loading() || !isValid()"
-      >
-        {{ 'COMMON.SAVE' | translate }}
-      </button>
-    </div>
   </header>
 
   @if (loading()) {
@@ -446,4 +433,18 @@
   }
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || !isValid()"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
 </div>

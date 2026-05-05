@@ -1,0 +1,147 @@
+<div class="ksf-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Identity ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'SETTINGS.KITCHEN.SECTION_IDENTITY' | translate }}</h2>
+        <p class="card__sub">{{ 'SETTINGS.KITCHEN.SECTION_IDENTITY_DESC' | translate }}</p>
+      </header>
+      <div class="card__body">
+        <div class="field">
+          <label class="field-label field-label--with-action" for="ks-name">
+            <span>
+              {{ 'SETTINGS.KITCHEN.NAME' | translate }}
+              <span class="required">*</span>
+            </span>
+            <button type="button" class="translation-link" (click)="openNameTranslationModal()">
+              {{ 'COMMON.TRANSLATION' | translate }}
+            </button>
+          </label>
+          <input
+            id="ks-name"
+            type="text"
+            class="input"
+            formControlName="name"
+            [placeholder]="'SETTINGS.KITCHEN.NAME_PLACEHOLDER' | translate"
+            [class.input--invalid]="nameCtrl.touched && nameCtrl.invalid"
+          />
+          @if (nameCtrl.touched && nameCtrl.errors?.['required']) {
+            <p class="field-error">{{ 'SETTINGS.KITCHEN.NAME_REQUIRED' | translate }}</p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Products ═══ -->
+    <section class="card">
+      <header class="card__head card__head--with-action">
+        <div>
+          <h2 class="card__title">{{ 'SETTINGS.KITCHEN.PRODUCTS' | translate }}</h2>
+          <p class="card__sub">
+            {{ 'SETTINGS.KITCHEN.PRODUCTS_DESC' | translate }}
+            @if (products().length > 0) {
+              <span class="card__count">· {{ products().length }}</span>
+            }
+          </p>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" (click)="openPickProducts()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          {{ 'SETTINGS.KITCHEN.SELECT_PRODUCTS' | translate }}
+        </button>
+      </header>
+
+      <div class="card__body card__body--list">
+        @if (products().length === 0) {
+          <div class="empty">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            </svg>
+            <p>{{ 'SETTINGS.KITCHEN.PRODUCTS_EMPTY' | translate }}</p>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="openPickProducts()">
+              {{ 'SETTINGS.KITCHEN.SELECT_PRODUCTS' | translate }}
+            </button>
+          </div>
+        } @else {
+          <label class="search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              type="text"
+              [value]="productSearch()"
+              (input)="productSearch.set($any($event.target).value)"
+              [placeholder]="'SETTINGS.KITCHEN.SEARCH_ASSIGNED' | translate"
+            />
+          </label>
+
+          <ul class="prod-list">
+            @for (p of filteredProducts(); track p.id) {
+              <li class="prod">
+                @if (p.thumbnailUrl) {
+                  <img class="prod__thumb" [src]="p.thumbnailUrl" [alt]="p.name"/>
+                } @else {
+                  <span class="prod__thumb prod__thumb--ph" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                  </span>
+                }
+                <div class="prod__body">
+                  <span class="prod__name">{{ p.name || '—' }}</span>
+                  <span class="prod__meta">
+                    @if (p.type) { <span class="prod__chip prod__chip--type">{{ p.type }}</span> }
+                    @if (p.barcode) { <span class="prod__chip prod__chip--code">{{ p.barcode }}</span> }
+                    @if (p.UOM) { <span class="prod__chip">{{ p.UOM }}</span> }
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="prod__remove"
+                  (click)="removeProduct(p.id)"
+                  [attr.aria-label]="'COMMON.DELETE' | translate"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </li>
+            } @empty {
+              <p class="prod-list__empty">{{ 'SETTINGS.KITCHEN.NO_PRODUCT_MATCH' | translate }}</p>
+            }
+          </ul>
+        }
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || form.invalid"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

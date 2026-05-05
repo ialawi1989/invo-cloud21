@@ -1,0 +1,77 @@
+{
+  "MENU_BUILDER": {
+    "TITLE":           "Menu Builder",
+    "SUBTITLE":        "Group products into menus and lay them out on the POS grid.",
+    "ADD_NEW":         "Add menu",
+    "NEW_MENU":        "New menu",
+    "EMPTY":           "No menus yet — start by adding one.",
+    "NO_MATCH":        "No menus match your search.",
+    "SEARCH_PLACEHOLDER": "Search menus…",
+
+    "NAME":            "Name",
+    "NAME_PLACEHOLDER":"e.g. Lunch menu",
+    "PRICE":           "Price",
+    "START_AT":        "Start at",
+    "END_AT":          "End at",
+    "AVAILABLE_ONLINE":"Available online",
+    "BRANCHES":        "Branches",
+    "BRANCHES_PLACEHOLDER": "Pick one or more branches",
+    "NO_BRANCHES":     "No branches available for this account.",
+    "HOURS":           "Hours",
+    "SECTIONS":        "Sections",
+    "ONLINE":          "Online",
+    "CONFIRM_DELETE_SECTION": "Delete the section \"{{name}}\" and its placed products?",
+
+    "ADD_SECTION":     "Add section",
+    "NO_SECTIONS":     "No sections yet — add one to start placing products.",
+    "UNNAMED_SECTION": "Untitled section",
+    "NEW_SECTION_DEFAULT": "New section",
+
+    "ADD_PAGE":        "Add page",
+    "REMOVE_PAGE":     "Remove page",
+    "CONFIRM_REMOVE_PAGE": "Remove page {{n}} and every product on it?",
+
+    "SECTION": {
+      "DETAILS":       "Menu details",
+      "LIST":          "Sections",
+      "NAME_PLACEHOLDER": "Section name",
+      "COLOR":         "Section color",
+      "PRODUCT_COLORS":"Product colors"
+    },
+
+    "MANAGE": {
+      "TITLE":         "Product color in ({{name}})",
+      "PAGE":          "Page {{n}}",
+      "EMPTY":         "No products in this section yet.",
+      "AUTO_COLOR":      "Auto-color ({{n}})",
+      "AUTO_COLOR_HINT": "Assign a unique color from the palette to every product that doesn't have one yet."
+    },
+
+    "GRID": {
+      "ADD_HERE":      "Add product here",
+      "COLOR":         "Change color",
+      "WIDE":          "Toggle wide (×2 columns)",
+      "TALL":          "Toggle tall (×2 rows)"
+    },
+
+    "PICK": {
+      "TITLE":         "Pick products",
+      "SUB":           "Add one or more products to this section page.",
+      "EMPTY":         "No products available.",
+      "SELECTED":      "{{n}} selected",
+      "SELECT_ALL":    "Select all",
+      "DESELECT_ALL":  "Deselect all",
+      "COUNTER":       "{{picked}} selected · {{cells}} cells left",
+      "CONFIRM":       "Add to section"
+    },
+
+    "COLOR": {
+      "TITLE":         "Pick a color",
+      "PRESETS":       "Presets",
+      "CUSTOM":        "Custom",
+      "START":         "Start",
+      "END":           "End",
+      "BORDER":        "Border"
+    }
+  }
+}

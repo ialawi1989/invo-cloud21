@@ -1,0 +1,198 @@
+:host {
+  display: block;
+}
+
+.bi {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+
+  // ── Native control base styling ────────────────────────────────────
+  // Class-based selector (`.bi__field`) instead of tag/direct-child:
+  // the conditional `@if (multiline())` block historically caused the
+  // `>` combinator to miss the textarea on some load paths, leaving
+  // it unstyled. A dedicated class is bullet-proof against that.
+  &__field {
+    width: 100%;
+    padding: 7px 32px 7px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    font: inherit;
+    font-size: 13px;
+    color: #0f172a;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+
+    &::placeholder { color: #94a3b8; }
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-brand-500);
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+    }
+  }
+
+  // Textarea-specific bits — resize handle and a min height so the
+  // user has something to grab.
+  textarea.bi__field {
+    resize: vertical;
+    min-height: 56px;
+  }
+}
+
+.bi__trigger {
+  position: absolute;
+  top: 4px;
+  inset-inline-end: 4px;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  z-index: 1;
+
+  &:hover {
+    background: var(--color-brand-50);
+    color: var(--color-brand-700);
+    border-color: var(--color-brand-300, #bae6fd);
+  }
+
+  &--on {
+    background: var(--color-brand-600);
+    color: #fff;
+    border-color: var(--color-brand-600);
+  }
+}
+
+// ── Popover ────────────────────────────────────────────────────────────
+.bi-popover {
+  width: 320px;
+  max-height: 380px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+
+  &__search {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+
+    > svg { color: #94a3b8; flex-shrink: 0; }
+
+    > input {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      background: transparent;
+      font: inherit;
+      font-size: 12px;
+      color: #0f172a;
+      outline: none;
+
+      &::placeholder { color: #94a3b8; }
+    }
+  }
+
+  &__count {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 2px 8px;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 6px;
+  }
+
+  &__empty {
+    padding: 24px 12px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 12px;
+  }
+}
+
+// ── Group of bindings ──────────────────────────────────────────────────
+.bi-group {
+  & + & { margin-top: 8px; }
+
+  &__title {
+    margin: 6px 6px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+// ── Single binding row (button) ────────────────────────────────────────
+.bi-binding {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+
+  &:hover {
+    background: var(--color-brand-50);
+    border-color: var(--color-brand-300, #bae6fd);
+  }
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  &__token {
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--color-brand-700);
+  }
+
+  &__hint {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-top: 2px;
+  }
+}

@@ -1,7 +1,15 @@
 // Section card — same shape and palette as the other product/branch
 // form cards (white surface, slate border, brand-tinted icon tile).
+//
+// The host carries the bottom margin instead of `.ecf-card` so the
+// element stacks correctly next to plain `.card` / `.pf-card`
+// siblings (which also use `margin-bottom: 16px`). Without it the
+// section sits flush against the following card.
 :host {
   display: block;
+  margin-bottom: 16px;
+
+  &:last-child { margin-bottom: 0; }
 }
 
 .ecf-card {

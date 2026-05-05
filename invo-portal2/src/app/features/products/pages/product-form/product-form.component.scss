@@ -208,12 +208,22 @@
     line-height: 1;
   }
 
+  // When the form has validation errors the Save button shifts to a
+  // washed-out brand tint instead of a hard grey. Communicates "still
+  // the primary action, just not ready yet" while the red badge does
+  // the heavy lifting of saying "fix N things first".
   &--invalid &__save {
-    background: linear-gradient(180deg, #6b7280 0%, #374151 100%);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    background: linear-gradient(180deg,
+      var(--color-brand-300, #7dd3fc) 0%,
+      var(--color-brand-400, #38bdf8) 100%);
+    border-color: transparent;
+    color: #fff;
+    opacity: 0.85;
+    box-shadow: 0 1px 2px rgba(50, 172, 193, 0.18);
 
     &:hover:not(:disabled) {
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+      opacity: 1;
+      box-shadow: 0 4px 10px rgba(50, 172, 193, 0.25);
     }
   }
 }

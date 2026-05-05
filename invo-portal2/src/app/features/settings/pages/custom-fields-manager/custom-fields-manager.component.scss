@@ -2,7 +2,9 @@
 .cf-manager {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 16px 24px 40px;
+  // Bottom padding leaves room for the sticky save bar so the last
+  // card doesn't sit underneath it when the user scrolls all the way.
+  padding: 16px 24px 96px;
   position: relative;
 }
 
@@ -14,7 +16,6 @@
   margin-bottom: 20px;
 
   &__titles { flex: 1; min-width: 0; }
-  &__actions { display: flex; gap: 8px; flex-shrink: 0; }
 }
 
 .page-title {
@@ -580,3 +581,4 @@
     gap: 6px;
   }
 }
+

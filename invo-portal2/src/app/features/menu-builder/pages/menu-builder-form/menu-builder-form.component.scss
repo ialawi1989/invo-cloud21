@@ -1,0 +1,263 @@
+:host { display: block; }
+
+.mbf-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 24px 96px;
+}
+
+.mbf-header { margin-bottom: 16px; }
+.mbf-title  { margin: 8px 0 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+.mbf-loading { display: flex; align-items: center; justify-content: center; padding: 80px 0; }
+
+.spinner {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 3px solid #e2e8f0; border-top-color: var(--color-brand-600);
+  animation: mbf-spin .8s linear infinite; display: inline-block;
+  &--lg { width: 32px; height: 32px; }
+}
+@keyframes mbf-spin { to { transform: rotate(360deg); } }
+
+// ── Card chrome ────────────────────────────────────────────────────────
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  &__heading { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+}
+
+.row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+
+  & > .field { flex: 1; min-width: 200px; }
+  & > .field--name  { flex: 2; }
+  & > .field--time  { max-width: 180px; }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: #0f172a;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+
+  &--inline {
+    border-color: transparent;
+    font-size: 14px;
+    font-weight: 600;
+    background: transparent;
+    padding: 6px 8px;
+    &:hover { border-color: #e2e8f0; }
+  }
+}
+
+.hint { margin: 8px 0 0; font-size: 12px; color: #94a3b8; }
+
+// ── Buttons ────────────────────────────────────────────────────────────
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &-sm { padding: 6px 12px; font-size: 12px; }
+
+  &-primary {
+    background: var(--color-brand-600); color: #fff; border-color: var(--color-brand-600);
+    &:hover:not(:disabled) { background: var(--color-brand-700); border-color: var(--color-brand-700); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+  &-ghost {
+    background: #fff; color: #475569; border-color: #e2e8f0;
+    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}
+
+// ── Toggle (reused pattern) ────────────────────────────────────────────
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  align-self: flex-end;
+  margin-bottom: 4px;
+
+  input { position: absolute; opacity: 0; pointer-events: none; }
+
+  &__track {
+    position: relative;
+    width: 32px; height: 18px;
+    border-radius: 999px;
+    background: #cbd5e1;
+    flex-shrink: 0;
+    transition: background 120ms ease;
+  }
+  &__thumb {
+    position: absolute;
+    top: 2px; inset-inline-start: 2px;
+    width: 14px; height: 14px;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+    transition: inset-inline-start 120ms ease;
+  }
+  input:checked + &__track { background: var(--color-brand-600); }
+  input:checked + &__track .toggle__thumb { inset-inline-start: 16px; }
+
+  &__label { font-size: 13px; color: #475569; }
+}
+
+// ── Section pills ──────────────────────────────────────────────────────
+.section-strip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.section-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 14px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  user-select: none;
+  transition: filter 120ms ease, background 120ms ease;
+
+  &--active { background: #fff !important; }
+
+  &__name {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__color, &__remove {
+    width: 22px; height: 22px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+
+    &:hover { background: rgba(255, 255, 255, 0.45); }
+  }
+}
+
+// ── Section header inline name + page tabs ─────────────────────────────
+.section-edit-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+
+  // The inline name input flexes to fill the row; the "Product colors"
+  // button sits on its left and stays at content width.
+  .input--inline { flex: 1; min-width: 0; }
+}
+
+.page-pager {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: inline-flex;
+  gap: 4px;
+
+  &__btn, &__add {
+    width: 32px; height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+    position: relative;
+
+    &:hover { background: #f8fafc; color: #0f172a; }
+  }
+  &__btn--active {
+    background: var(--color-brand-50);
+    border-color: var(--color-brand-300, #bae6fd);
+    color: var(--color-brand-700);
+  }
+
+  &__add--disabled { opacity: 0.4; pointer-events: none; }
+
+  &__remove {
+    position: absolute;
+    top: -6px; inset-inline-end: -6px;
+    width: 16px; height: 16px;
+    background: #ef4444;
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+
+    &:hover { background: #dc2626; }
+  }
+}

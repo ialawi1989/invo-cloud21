@@ -1,0 +1,95 @@
+<!--
+  Custom 6×6 grid — pure CSS Grid layout, no external lib.
+  · Drag (cdkDrag) snaps to the nearest cell on drop; overlapping
+    drops are rejected (tile snaps back via `ev.source.reset()`).
+  · Resize handles SE / E / S drive the `resizing` signal so the
+    template previews the new footprint live; mouseup commits.
+  · Empty cells render a `+` button that opens the product picker
+    at exactly that grid position.
+-->
+<div
+  #grid
+  class="menu-grid"
+  [style.grid-template-columns]="'repeat(' + cols() + ', 1fr)'"
+  [style.grid-template-rows]="'repeat(' + rows() + ', 1fr)'"
+  [class.menu-grid--resizing]="!!resizing()"
+>
+  @for (c of cells(); track trackCell($index, c)) {
+    <button
+      type="button"
+      class="cell cell--empty"
+      [style.grid-column-start]="c.x + 1"
+      [style.grid-row-start]="c.y + 1"
+      (click)="onCellClick(c)"
+      [attr.aria-label]="'MENU_BUILDER.GRID.ADD_HERE' | translate"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+  }
+
+  @if (dragTarget(); as t) {
+    <!-- Dashed phantom over the cells the tile would land on. Tracks
+         the live drag position; valid drops use the brand colour,
+         invalid drops (overlap / out-of-bounds) use a red tone. -->
+    <div
+      class="drop-target"
+      [class.drop-target--invalid]="!t.valid"
+      [style.grid-column-start]="t.x + 1"
+      [style.grid-column-end]="'span ' + t.cols"
+      [style.grid-row-start]="t.y + 1"
+      [style.grid-row-end]="'span ' + t.rows"
+      aria-hidden="true">
+    </div>
+  }
+
+  @for (p of products(); track trackProduct($index, p)) {
+    <div
+      class="tile"
+      cdkDrag
+      cdkDragBoundary=".menu-grid"
+      (cdkDragStarted)="onTileDragStarted(p, $event)"
+      (cdkDragMoved)="onTileDragMoved(p, $event)"
+      (cdkDragEnded)="onTileDragEnd(p, $event)"
+      [style.grid-column-start]="p.x + 1"
+      [style.grid-column-end]="'span ' + effectiveCols(p)"
+      [style.grid-row-start]="p.y + 1"
+      [style.grid-row-end]="'span ' + effectiveRows(p)"
+      [style.--tile-color]="p.color || sectionColor()?.borderColor"
+    >
+      <div class="tile__inner">
+        @if (p.defaultImage) {
+          <img class="tile__img" [src]="p.defaultImage" [alt]="p.productName" draggable="false"/>
+        }
+        <span class="tile__name">{{ p.productName }}</span>
+      </div>
+
+      <!-- Per-tile action toolbar (visible on hover). -->
+      <div class="tile__actions">
+        <button type="button" class="tile__btn" (click)="productColor.emit(p)" [attr.aria-label]="'MENU_BUILDER.GRID.COLOR' | translate">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/>
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+          </svg>
+        </button>
+        <button type="button" class="tile__btn tile__btn--danger" (click)="productRemove.emit(p)" [attr.aria-label]="'COMMON.DELETE' | translate">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Resize handles. SE drags both axes; E only changes cols; S
+           only changes rows. The handler calls
+           `event.stopPropagation()` so the parent `cdkDrag` never sees
+           the mousedown — that lets the rest of the tile remain a
+           single drag handle (do NOT add `cdkDragHandle` here; the
+           moment any cdkDragHandle exists, CDK uses ONLY those for
+           drag initiation, breaking drag on the tile body). -->
+      <span class="tile__handle tile__handle--e"  (mousedown)="beginResize(p, 'E',  $event)" aria-hidden="true"></span>
+      <span class="tile__handle tile__handle--s"  (mousedown)="beginResize(p, 'S',  $event)" aria-hidden="true"></span>
+      <span class="tile__handle tile__handle--se" (mousedown)="beginResize(p, 'SE', $event)" aria-hidden="true"></span>
+    </div>
+  }
+</div>

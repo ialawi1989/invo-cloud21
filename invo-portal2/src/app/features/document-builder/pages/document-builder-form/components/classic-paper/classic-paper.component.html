@@ -1,0 +1,132 @@
+<!--
+  Classic preview — structural mock of the legacy unified-paper
+  layout. Header / title / meta / table / totals / footer toggle on
+  the template's visibility flags so changes in the right sidebar
+  are reflected immediately.
+-->
+<div
+  class="dcp"
+  [style.width.px]="paperWidthPx()"
+  [style.minHeight.px]="paperHeightPx()"
+  [style.padding]="template().margins.top + 'cm ' + template().margins.right + 'cm ' + template().margins.bottom + 'cm ' + template().margins.left + 'cm'"
+  [style.background]="template().BackgroundColor"
+  [style.color]="template().textColor"
+  [style.fontSize.pt]="template().textSize"
+>
+  <!-- ── HEADER ───────────────────────────────────────────────── -->
+  @if (template().headerCustomization.visibility.visible) {
+    <header class="dcp__header">
+      <div class="dcp__header-left">
+        @if (template().headerCustomization.logo.show) {
+          <div class="dcp__logo"
+               [style.width.px]="template().headerCustomization.logo.width"
+               [style.height.px]="template().headerCustomization.logo.height">
+            <span>LOGO</span>
+          </div>
+        }
+        <div class="dcp__company">
+          @if (template().headerCustomization.companyName.show) {
+            <div class="dcp__company-name" [ngStyle]="textStyle(template().headerCustomization.companyName)">{{ sample.company.name }}</div>
+          }
+          @if (template().headerCustomization.vatNumber.show) {
+            <div [ngStyle]="textStyle(template().headerCustomization.vatNumber)">VAT: {{ sample.company.vat }}</div>
+          }
+          @if (template().headerCustomization.address.show) {
+            <div [ngStyle]="textStyle(template().headerCustomization.address)">{{ sample.company.address }}</div>
+          }
+          @if (template().headerCustomization.phone.show) {
+            <div [ngStyle]="textStyle(template().headerCustomization.phone)">Tel: {{ sample.company.phone }}</div>
+          }
+        </div>
+      </div>
+      <div class="dcp__header-right">
+        <div><strong>#{{ sample.invoice.number }}</strong></div>
+        <div>{{ sample.invoice.date }}</div>
+      </div>
+    </header>
+  } @else {
+    <div [style.height.px]="template().headerCustomization.visibility.height"></div>
+  }
+
+  <!-- ── TITLE ────────────────────────────────────────────────── -->
+  @if (template().headerCustomization.title.show) {
+    <h1 class="dcp__title" [ngStyle]="textStyle(template().headerCustomization.title)">{{ titleLabel() }}</h1>
+  }
+
+  <!-- ── META (customer + invoice meta) ───────────────────────── -->
+  <div class="dcp__meta">
+    <div class="dcp__meta-block">
+      <div class="dcp__meta-label">Bill To</div>
+      <div><strong>{{ sample.customer.name }}</strong></div>
+      <div>{{ sample.customer.address }}</div>
+      <div>Tel: {{ sample.customer.phone }}</div>
+      <div>VAT: <strong>{{ sample.customer.vat }}</strong></div>
+    </div>
+    <div class="dcp__meta-block dcp__meta-block--right">
+      <div><strong>Invoice No.:</strong> {{ sample.invoice.number }}</div>
+      <div><strong>Issue Date:</strong> {{ sample.invoice.date }}</div>
+      <div><strong>Due Date:</strong> {{ sample.invoice.dueDate }}</div>
+      <div><strong>Reference:</strong> {{ sample.invoice.reference }}</div>
+    </div>
+  </div>
+
+  <!-- ── ITEMS TABLE ─────────────────────────────────────────── -->
+  <table class="dcp__table">
+    <thead>
+      <tr>
+        <th class="dcp__col-num">#</th>
+        <th>Description</th>
+        <th class="dcp__col-num">Qty</th>
+        <th class="dcp__col-num">Unit (BHD)</th>
+        <th class="dcp__col-num">Total (BHD)</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (ln of sample.lines; track $index) {
+        <tr>
+          <td>{{ $index + 1 }}</td>
+          <td>{{ ln.desc }}</td>
+          <td class="dcp__col-num">{{ ln.qty }}</td>
+          <td class="dcp__col-num">{{ ln.price.toFixed(3) }}</td>
+          <td class="dcp__col-num"><strong>{{ (ln.qty * ln.price).toFixed(3) }}</strong></td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <!-- ── TOTALS ──────────────────────────────────────────────── -->
+  <div class="dcp__totals">
+    <div class="dcp__totals-row">
+      <span>Subtotal (Excl. VAT)</span>
+      <strong>BHD {{ sample.totals.subtotal.toFixed(3) }}</strong>
+    </div>
+    <div class="dcp__totals-row">
+      <span>VAT (10%)</span>
+      <strong>BHD {{ sample.totals.vat.toFixed(3) }}</strong>
+    </div>
+    <div class="dcp__totals-row dcp__totals-row--grand">
+      <span>Grand Total</span>
+      <strong>BHD {{ sample.totals.grandTotal.toFixed(3) }}</strong>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ──────────────────────────────────────────────── -->
+  @if (template().footerCustomization.visibility.visible) {
+    <footer class="dcp__footer">
+      @if (template().footerCustomization.note.show) {
+        <div [ngStyle]="textStyle(template().footerCustomization.note)">
+          <div class="dcp__footer-title">Note</div>
+          {{ sample.notes }}
+        </div>
+      }
+      @if (template().footerCustomization.term.show) {
+        <div [ngStyle]="textStyle(template().footerCustomization.term)">
+          <div class="dcp__footer-title">Terms &amp; Conditions</div>
+          {{ sample.terms }}
+        </div>
+      }
+    </footer>
+  } @else {
+    <div [style.height.px]="template().footerCustomization.visibility.height"></div>
+  }
+</div>

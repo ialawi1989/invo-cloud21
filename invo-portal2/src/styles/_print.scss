@@ -1,0 +1,244 @@
+// ─────────────────────────────────────────────────────────────────────
+// Print styles
+// ─────────────────────────────────────────────────────────────────────
+//
+// What this file does
+// -------------------
+// Makes the browser's native print dialog (`Ctrl+P` / our "Print"
+// button) produce a clean printed paper that:
+//
+//   • Hides the document-builder chrome — toolbar, sidebar, modals,
+//     ribbons, the zoom transform — so only `<app-document-paper>`
+//     reaches the printed page.
+//   • Lays the items table out so its column header repeats at the
+//     top of every page (`thead { display: table-header-group }`),
+//     and per-row breaking respects the spec via `page-break-inside`.
+//   • Treats structural blocks as atomic — the totals card, the
+//     payments box, the customer-balance card, the customer-signature
+//     panel, the customer-note band, the footer notes, and the
+//     terms paragraph all carry `page-break-inside: avoid` so they
+//     never split across two pages. This was the user's main pain
+//     point ("don't split the total container in two pages").
+//   • Resets the canvas zoom transform so the paper prints at native
+//     dimensions rather than the on-screen 70%-or-whatever zoom.
+//
+// What this file *doesn't* do (yet)
+// ---------------------------------
+// The DOCUMENT header (company logo / VAT / address) currently shows
+// only on page 1. Repeating it on every page requires wrapping the
+// paper in an outer `<table>` with `<thead>` for the header so the
+// browser's table-header-group rule promotes it — a structural
+// refactor of `document-paper.component.html`. Logged as a future
+// improvement; for v1 the items-table column header IS repeated and
+// the pain points (split totals, mid-page breaks) are addressed.
+// ─────────────────────────────────────────────────────────────────────
+
+@media print {
+  // ─── Hide everything except the document paper ──────────────────
+  // Visibility-based hide leaves the hidden elements in their
+  // layout slot but invisible — that's fine because we re-position
+  // the paper to the document origin below.
+  body * {
+    visibility: hidden;
+  }
+
+  app-document-paper,
+  app-document-paper * {
+    visibility: visible;
+  }
+
+  // Pull the paper to the document origin and size to the printable
+  // area. The browser's `@page` margin still applies on top.
+  app-document-paper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: auto;
+  }
+
+  // Drop the canvas zoom transform — the paper prints at native size
+  // regardless of how zoomed-in the user was looking at it.
+  .dbf-canvas__paper {
+    transform: none !important;
+  }
+
+  // Drop the paper's box-shadow + outer border (purely on-screen
+  // chrome — looks ugly on paper).
+  .dp__paper {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+  }
+
+  // Paginated preview chrome — the canvas wrapper, page shadows,
+  // page-stack background, and inter-page gaps are all on-screen
+  // hints that should disappear on paper.
+  .dp__pages {
+    background: transparent !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  .dp__page {
+    box-shadow: none !important;
+    // Keep `flex-shrink: 0` and `overflow: hidden` from the on-screen
+    // SCSS so the box stays rigidly at its inline cm dimensions —
+    // anything else lets the print engine collapse a short-content
+    // page to its content height (browser fit-to-content quirk),
+    // which was the "page smaller than A4" bug seen in earlier
+    // iterations.
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .dp__page:last-child {
+    // Don't force a trailing blank page after the final pre-paginated page.
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  // The on-screen dashed separator + on-screen-only "continued on
+  // next page" hint are decoration. The actual page number stays —
+  // it's small but useful when paper falls out of order. The
+  // browser's native page numbers (configurable in the print
+  // dialog) can be turned off if the user wants a cleaner footer.
+  .dp__page-footer {
+    border-top-color: transparent !important;
+  }
+  .dp__page-continued { display: none !important; }
+
+  // ─── Atomic structural blocks ────────────────────────────────────
+  // These should never split across two pages. The browser will
+  // push the whole block to the next page if it doesn't fit.
+  .dp__totals,
+  .dp__payments,
+  .dp__customer-balance,
+  .dp__customer-signature,
+  .dp__customer-note,
+  .dp__notes,
+  .dp__terms,
+  .dp__signature,
+  .dp__items-heading,
+  .dp__additional,
+  .dp__cf-row,
+  .dp__fields {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  // Keep the items-heading attached to the table that follows.
+  .dp__items-heading {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  // ─── Items table — repeat column header per page ─────────────────
+  // `display: table-header-group` is the standard recipe for
+  // repeating <thead> rows on every paginated page; supported by
+  // Chrome / Edge / Safari / Firefox.
+  .dp__items {
+    thead {
+      display: table-header-group;
+    }
+    tfoot {
+      display: table-footer-group;
+    }
+    // Don't split a single line row across pages — but allow the
+    // table itself to span pages.
+    tr {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+  }
+
+  // ─── Default page setup ──────────────────────────────────────────
+  // The user's printer-driver dialog still wins; this just sets a
+  // sensible default margin in case nothing's chosen.
+  // Pin the @page size explicitly to A4 portrait so the printable
+  // area is 210×297mm regardless of the browser's default paper
+  // size (which can be Letter on US systems even when the user's
+  // dialog shows A4 selected). `margin: 0` removes the browser's
+  // default 12mm margin so the page fills the full sheet.
+  // For non-A4 templates (A5 / Letter), the inline cm dimensions on
+  // `.dp__page` still drive sizing — the @page size here is just the
+  // physical-paper hint to the print engine.
+  @page {
+    size: 210mm 297mm;
+    margin: 0;
+  }
+
+  // Reset html / body margin so the printed area starts at 0,0.
+  // The `.dp__page` carries inline `width.cm` / `height.cm` matching
+  // the template's paper size — so 1 page maps to exactly 1 printed
+  // sheet regardless of A4 / A5 / Letter selection.
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  // ─── Page sizing in print ────────────────────────────────────────
+  // The `.dp__page` carries inline `[style.width.cm]` /
+  // `[style.height.cm]` matching the template's paper size. We want
+  // those physical-unit dimensions to win in print — they map to
+  // real paper exactly.
+  //
+  // CRITICAL: `vh` units don't help here. Chrome's print engine
+  // resolves `100vh` to the browser-window height, not the print
+  // page height — a known Chromium quirk. Hardcoded mm/cm units
+  // are physical and bind correctly to paper.
+  //
+  // Default browser margins (12mm) still shrink the printable area
+  // and cause a 21cm-wide page to be scaled down. The fix is for
+  // the user to pick **Margins → None** in the print dialog, which
+  // honours `@page { margin: 0 }` and makes printable area = full
+  // sheet. We document this in `PRINT_HINT`.
+  html, body {
+    width: auto !important;
+    height: auto !important;
+  }
+
+  app-document-paper {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .dp__pages {
+    display: block !important;
+    width: auto !important;
+    align-items: initial !important;
+  }
+
+  // Force A4 dimensions in print. The inline `[style.height.cm]` /
+  // `[style.min-height.cm]` SHOULD work but Chrome's print engine
+  // sometimes resolves cm via screen DPI (96px/in) instead of the
+  // physical paper, ending up with a shorter box. `!important`
+  // here pins the dimensions so the print engine has nothing to
+  // shrink against.
+  // Hardcoded A4 — for A5 / Letter templates this would need
+  // template-driven values; document-builder defaults to A4 and a
+  // `<style>` element injection per template can come later.
+  .dp__page {
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+  }
+
+  // Modal layers, overlays, tooltips, splash screens — never print.
+  .cdk-overlay-container,
+  app-loading-overlay,
+  app-desktop-only-notice,
+  .modal-backdrop {
+    display: none !important;
+  }
+}

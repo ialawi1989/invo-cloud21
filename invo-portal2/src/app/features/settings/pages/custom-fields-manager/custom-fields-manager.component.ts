@@ -20,9 +20,11 @@ import {
 } from '@angular/cdk/drag-drop';
 
 import { withTranslations } from '@core/i18n/with-translations';
+import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
+import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ModalService } from '@shared/modal/modal.service';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { TimePickerComponent } from '@shared/components/time-picker/time-picker.component';
@@ -71,6 +73,7 @@ import {
     TranslateModule,
     BreadcrumbsComponent,
     LoadingOverlayComponent,
+    FormStickyFooterComponent,
     DragDropModule,
     DatePickerComponent,
     TimePickerComponent,
@@ -80,7 +83,7 @@ import {
   templateUrl: './custom-fields-manager.component.html',
   styleUrl: './custom-fields-manager.component.scss',
 })
-export class CustomFieldsManagerComponent implements OnInit {
+export class CustomFieldsManagerComponent implements OnInit, CanLeaveComponent {
   private service    = inject(CustomFieldsService);
   private translate  = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
@@ -490,6 +493,14 @@ export class CustomFieldsManagerComponent implements OnInit {
       const ok = await this.service.save(this.entity().type, payload);
       if (ok) {
         this.service.invalidate(this.entity().type);
+        // Refresh the snapshot so the leave-confirm guard sees a clean
+        // state — `saving.set(false)` in the finally block fires before
+        // the route guard runs, so without this the guard would still
+        // see "current ≠ snapshot" and prompt the user.
+        this.snapshot = {
+          active:  this.active().map(clone),
+          deleted: this.deleted().map(clone),
+        };
         this.router.navigate(['/settings/custom-fields']);
       }
     } finally {
@@ -502,6 +513,25 @@ export class CustomFieldsManagerComponent implements OnInit {
     this.active.set(this.snapshot.active.map(this.attachUi));
     this.deleted.set(this.snapshot.deleted.map(clone));
     this.router.navigate(['/settings/custom-fields']);
+  }
+
+  /**
+   * CanDeactivate hook — prompt when the working set differs from the
+   * snapshot taken on load. Compares with `JSON.stringify` after
+   * stripping the transient UI flags so opening / closing an accordion
+   * tab doesn't count as a change.
+   */
+  hasUnsavedChanges(): boolean {
+    if (this.saving()) return false;
+    const cur = JSON.stringify({
+      active:  this.active().map(stripUi),
+      deleted: this.deleted().map(stripUi),
+    });
+    const snap = JSON.stringify({
+      active:  this.snapshot.active.map(stripUi),
+      deleted: this.snapshot.deleted.map(stripUi),
+    });
+    return cur !== snap;
   }
 
   // ─── Internal ──────────────────────────────────────────────────────────

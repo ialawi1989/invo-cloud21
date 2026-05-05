@@ -1,0 +1,1134 @@
+:host {
+  display: block;
+  height: 100vh;
+  background: var(--color-surface, #fff);
+}
+
+// Document Builder Form — root layout. Stacked top-bar + 3-column
+// workspace (nav | sidebar | canvas). Same theme tokens as the rest
+// of portal2 so the chrome stays consistent.
+.dbf {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+}
+
+// ════════════ TOP BAR ════════════════════════════════════════════════
+.dbf-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  min-height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  z-index: 10;
+  flex-shrink: 0;
+
+  &__home {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #64748b;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      background: #f9fafb;
+      color: var(--color-brand-500);
+      border-color: var(--color-brand-300, #bae6fd);
+    }
+  }
+
+  &__divider {
+    width: 1px;
+    height: 24px;
+    background: #e5e7eb;
+    margin: 0 4px;
+  }
+
+  &__name {
+    flex: 0 1 280px;
+    min-width: 160px;
+    padding: 8px 12px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: #f9fafb;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
+    transition: background 120ms ease, border-color 120ms ease;
+
+    &:focus {
+      outline: none;
+      background: #fff;
+      border-color: var(--color-brand-500);
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.10);
+    }
+  }
+
+  // Document-type segmented switcher
+  &__type-switch {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: stretch;
+    padding: 2px;
+    background: #f1f5f9;
+    border-radius: 999px;
+  }
+  &__type-btn {
+    padding: 4px 10px;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover:not(.dbf-topbar__type-btn--on) { color: #0f172a; }
+
+    &--on,
+    &--on:hover {
+      background: #fff;
+      color: var(--color-brand-700);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.10);
+    }
+  }
+  &__type-chip {
+    flex-shrink: 0;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--color-brand-50);
+    color: var(--color-brand-700);
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__spacer { flex: 1; }
+
+  // Undo / Redo button cluster.
+  &__history {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  &__icon-btn {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #475569;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover:not(:disabled) {
+      background: #fff;
+      color: var(--color-brand-700);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  // Render-mode badge (locked) — Classic vs Designer.
+  // Read-only: the user picked the mode at create-time and it stays
+  // locked for the life of the template.
+  &__render-locked {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    padding: 4px 10px;
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #1e40af;
+    cursor: default;
+
+    > svg { opacity: 0.85; }
+
+    &--designer {
+      background: #fef3c7;
+      border-color: #fcd34d;
+      color: #92400e;
+    }
+  }
+}
+
+// ════════════ LAYOUT ════════════════════════════════════════════════
+.dbf-layout {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+  overflow: hidden;
+}
+
+// ── LEFT NAV ────────────────────────────────────────────────────────
+.dbf-nav {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  background: #fff;
+  border-inline-end: 1px solid #e5e7eb;
+  width: 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 6px;
+    width: 100%;
+    text-align: center;
+    color: #64748b;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.2;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover {
+      background: #f9fafb;
+      color: var(--color-brand-500);
+    }
+
+    &--on,
+    &--on:hover {
+      background: var(--color-brand-50);
+      color: var(--color-brand-700);
+    }
+  }
+
+  &__icon { display: inline-flex; }
+  &__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+  }
+}
+
+// ── RIGHT SIDEBAR (accordion config) ─────────────────────────────────
+.dbf-sidebar {
+  // Width is driven by `--dbf-sidebar-w` so the user can drag the
+  // trailing-edge splitter to resize. Default 300 px keeps layouts
+  // unchanged for users who haven't dragged. `position: relative`
+  // so the absolutely-positioned splitter pins to the trailing edge.
+  position: relative;
+  width: var(--dbf-sidebar-w, 300px);
+  background: #fff;
+  border-inline-end: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+
+  // Invisible drag-zone straddling the trailing edge. The cursor
+  // switches to col-resize on hover; a thin brand-colour bar lights
+  // up while dragging so the user gets clear feedback.
+  &__splitter {
+    position: absolute;
+    inset-inline-end: -4px;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    z-index: 5;
+    cursor: col-resize;
+    user-select: none;
+    background: transparent;
+    transition: background 120ms ease;
+
+    &:hover,
+    &--active {
+      background: rgba(50, 172, 193, 0.14);
+    }
+  }
+
+  &__header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+
+    h2 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+    p {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    &::-webkit-scrollbar       { width: 6px; }
+    &::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }
+  }
+}
+
+// ── ACCORDION ────────────────────────────────────────────────────────
+.dbf-acc {
+  border-bottom: 1px solid #f3f4f6;
+
+  &:last-child { border-bottom: none; }
+
+  &__btn {
+    width: 100%;
+    padding: 14px 20px;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: start;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    transition: background 120ms ease;
+
+    &:hover { background: #f9fafb; }
+  }
+
+  &__chev {
+    transition: transform 120ms ease;
+    color: #64748b;
+    flex-shrink: 0;
+  }
+
+  &__btn--open &__chev { transform: rotate(180deg); }
+
+  &__body {
+    padding: 4px 20px 20px;
+  }
+}
+
+// ── FORM PRIMITIVES ──────────────────────────────────────────────────
+.dbf-field {
+  margin-bottom: 20px;
+
+  &__label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+  }
+
+  &__sublabel {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  &__muted {
+    color: #94a3b8;
+    font-weight: 400;
+    font-size: 12px;
+  }
+}
+
+.dbf-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+  font-size: 14px;
+  color: #1f2937;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &:hover:not(:focus) { border-color: #94a3b8; }
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.10);
+  }
+
+  &--mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+}
+
+.dbf-radio-group {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.dbf-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #1f2937;
+
+  // Custom-styled radio. Native `accent-color` ships dark in some
+  // browsers (the teal tint we asked for renders almost black on
+  // Windows Chrome at default contrast), so we strip the native
+  // chrome and draw a clean ring + dot in the brand palette.
+  > input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    flex-shrink: 0;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+
+    &:hover { border-color: var(--color-brand-400, #43b9c9); }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.20);
+    }
+
+    &:checked {
+      border-color: var(--color-brand-500);
+
+      // Inner dot — drawn via a radial-gradient so we don't need a
+      // pseudo-element (which `appearance: none` doesn't always
+      // expose on input elements). The 50% stop is the dot edge.
+      background:
+        radial-gradient(circle, var(--color-brand-500) 50%, #fff 55%);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.dbf-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  cursor: pointer;
+  font-size: 14px;
+  color: #1f2937;
+
+  > input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-brand-500);
+    cursor: pointer;
+  }
+}
+
+.dbf-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.dbf-color {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &__swatch {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+
+// ── Info card / counts / column row ────────────────────────────────
+.dbf-info {
+  margin: 16px 20px;
+  padding: 12px 14px;
+  background: var(--color-brand-50);
+  border: 1px solid var(--color-brand-300, #bae6fd);
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: #1f2937;
+  line-height: 1.5;
+
+  &--compact {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  > strong { color: var(--color-brand-700); display: block; margin-bottom: 4px; }
+  > p      { margin: 0; color: #475569; }
+}
+
+// Page-number config block in the Footer panel — small wrapper
+// that groups the show toggle with the position picker. Sits below
+// the customer-note row in the Fields sub-tab.
+.dbf-pagenum {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-top: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+
+  &__field {
+    margin-top: 0;
+  }
+}
+
+// Empty-state copy inside an accordion body — used by the Custom
+// Fields panel when the tenant hasn't defined any CFs for a scope.
+.dbf-empty {
+  margin: 0;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #64748b;
+  background: #f9fafb;
+  border: 1px dashed #e5e7eb;
+  border-radius: 6px;
+}
+
+.dbf-count {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 1px 7px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+.dbf-muted {
+  margin: 0;
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+// Pill-style tab toggle (used by Table Settings: Columns | Style).
+.dbf-tabs {
+  display: inline-flex;
+  background: #f1f5f9;
+  border-radius: 999px;
+  padding: 3px;
+  margin-bottom: 16px;
+
+  &__btn {
+    flex: 1;
+    padding: 6px 14px;
+    border: none;
+    background: transparent;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover:not(.dbf-tabs__btn--on) { color: #0f172a; }
+
+    &--on,
+    &--on:hover {
+      background: #fff;
+      color: var(--color-brand-700);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.10);
+    }
+  }
+}
+
+// Section heading inside the Style tab — small, muted.
+.dbf-style-section {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+// Table-column row
+.dbf-col {
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: #fff;
+
+  &__row { margin-top: 10px; }
+}
+
+// Additional-data card
+.dbf-add {
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  background: #f9fafb;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  &__check {
+    width: 18px; height: 18px;
+    accent-color: var(--color-brand-500);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  &__label { flex: 1; font-weight: 500; }
+
+  &__remove {
+    width: 28px; height: 28px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    color: #b91c1c;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    transition: background 120ms ease;
+
+    &:hover { background: #fef2f2; }
+  }
+
+  &__value { margin-top: 8px; }
+}
+
+// Custom-element palette + list
+.dbf-palette {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+
+  &__tile {
+    padding: 14px 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #fff;
+    color: #64748b;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      border-color: var(--color-brand-500);
+      color: var(--color-brand-700);
+      background: var(--color-brand-50);
+    }
+  }
+}
+
+.dbf-elem {
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: #fff;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  &__type {
+    flex: 0 0 auto;
+    padding: 3px 8px;
+    background: var(--color-brand-50);
+    color: var(--color-brand-700);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  &__pos { flex: 1; }
+  &__content { margin-top: 8px; }
+}
+
+.dbf-acc__add-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.dbf-placeholder {
+  margin: 20px;
+  padding: 16px;
+  background: var(--color-brand-50);
+  border: 1px solid var(--color-brand-300, #bae6fd);
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1f2937;
+  line-height: 1.5;
+
+  > strong { color: var(--color-brand-700); }
+  > p      { margin: 6px 0 0; color: #64748b; }
+}
+
+// ── DESIGNER LAYOUT ──────────────────────────────────────────────────
+.dbf-layout--designer {
+  // Three-column flex (left palette/layers, canvas, right inspector).
+  // No 8-tab nav + no accordion sidebar — Designer mode replaces them
+  // entirely.
+}
+
+.dbf-designer-left {
+  width: 240px;
+  flex-shrink: 0;
+  background: #fff;
+  border-inline-end: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+
+  &__header {
+    padding: 12px 14px 6px;
+
+    > h3 {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+  }
+
+  &__sync {
+    margin: 12px 14px 16px;
+    width: calc(100% - 28px);
+    justify-content: center;
+  }
+}
+
+.dbf-designer-palette {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 0 14px 12px;
+
+  &__tile {
+    padding: 12px 6px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 11px;
+    color: #64748b;
+    cursor: grab;
+    user-select: none;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      border-color: var(--color-brand-500);
+      color: var(--color-brand-700);
+      background: var(--color-brand-50);
+    }
+    &:active { cursor: grabbing; }
+  }
+}
+
+.dbf-designer-layers {
+  list-style: none;
+  margin: 0;
+  padding: 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: #fff;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: background 120ms ease, border-color 120ms ease;
+
+    &:hover { background: #f9fafb; }
+    &--on,
+    &--on:hover {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-300, #bae6fd);
+    }
+    &--hidden { opacity: 0.45; }
+    &--locked { font-style: italic; }
+  }
+
+  &__type {
+    flex-shrink: 0;
+    padding: 1px 6px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-radius: 999px;
+  }
+
+  &__name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #1f2937;
+  }
+
+  &__btn {
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: transparent;
+    border-radius: 3px;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 11px;
+    line-height: 1;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.06);
+      color: #1f2937;
+    }
+  }
+
+  &__empty {
+    padding: 16px 8px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 11px;
+  }
+}
+
+.dbf-designer-right {
+  width: 280px;
+  flex-shrink: 0;
+  background: #fff;
+  border-inline-start: 1px solid #e5e7eb;
+  overflow-y: auto;
+}
+
+// ── CANVAS ───────────────────────────────────────────────────────────
+.dbf-canvas {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #e5e7eb;
+  // Outer canvas owns the scrollbar — the inner `__paper` block grows
+  // naturally to the full document height so the entire invoice is
+  // visible (no nested scroll inside the paper area).
+  overflow: auto;
+
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+    // Stay glued to the top of the canvas viewport while the paper
+    // scrolls underneath. `sticky` works because the canvas is the
+    // overflow:auto scroll container — the toolbar sticks at top:0
+    // of that scroll context, not the document.
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  &__zoom-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    color: #64748b;
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    line-height: 1;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: #f3f4f6; color: var(--color-brand-500); }
+  }
+
+  &__zoom-value {
+    min-width: 44px;
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #64748b;
+  }
+
+  &__zoom-text {
+    padding: 4px 10px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    color: #64748b;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: #f3f4f6; color: var(--color-brand-500); }
+  }
+
+  &__spacer { flex: 1; }
+
+  &__meta {
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  // Print preview toggle — neutral chrome until enabled, then a
+  // brand-tinted pill so the user reads "in preview mode" at a
+  // glance. Sits to the left of the primary Print button.
+  &__preview-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #fff;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      background: var(--color-brand-50);
+      color: var(--color-brand-700);
+      border-color: var(--color-brand-300);
+    }
+
+    &--on,
+    &--on:hover {
+      background: var(--color-brand-50);
+      color: var(--color-brand-700);
+      border-color: var(--color-brand-500);
+    }
+  }
+
+  // Print button — opens the browser's native print dialog. The
+  // brand teal pill stands out from the muted toolbar chrome so the
+  // user can spot it easily.
+  &__print {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--color-brand-500);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 120ms ease;
+
+    &:hover { background: var(--color-brand-600); }
+    &:active { background: var(--color-brand-700); }
+  }
+
+  // Edit / Preview toggle in the canvas toolbar — flips the paper
+  // between the structural editing surface and the live <app-document-paper>
+  // renderer.
+  &__preview-btn {
+    padding: 4px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    background: #fff;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
+
+    &--on,
+    &--on:hover {
+      background: var(--color-brand-50);
+      color: var(--color-brand-700);
+      border-color: var(--color-brand-300, #bae6fd);
+    }
+  }
+
+  // Sample-data profile picker (Default / Paid / Discounted / Multipage)
+  &__profile {
+    display: inline-flex;
+    padding: 2px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    gap: 2px;
+
+    &-btn {
+      padding: 3px 10px;
+      border: none;
+      background: transparent;
+      border-radius: 999px;
+      font: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 120ms ease, color 120ms ease;
+
+      &:hover:not(.dbf-canvas__profile-btn--on) { color: #0f172a; }
+
+      &--on,
+      &--on:hover {
+        background: #fff;
+        color: var(--color-brand-700);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.10);
+      }
+    }
+  }
+
+  // Paper holder — does NOT scroll. Grows to the full document
+  // height; the `.dbf-canvas` parent handles overflow so the page
+  // displays end-to-end without an inner scrollbar.
+  &__paper {
+    padding: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    transform-origin: top center;
+    transition: transform 200ms ease;
+  }
+
+  &__designer-stub {
+    margin: 16px 32px 0;
+    padding: 16px;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+    color: #78350f;
+    font-size: 13px;
+    line-height: 1.5;
+
+    > strong { display: block; margin-bottom: 4px; color: #78350f; }
+  }
+}
+
+// ── BUTTON RESETS (matches portal2 button conventions) ──────────────
+.btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  &-default {
+    background: #fff;
+    border-color: #e5e7eb;
+    color: #64748b;
+
+    &:hover {
+      background: #f9fafb;
+      border-color: #94a3b8;
+    }
+  }
+
+  &-primary {
+    background: var(--color-brand-500);
+    color: #fff;
+    border-color: var(--color-brand-500);
+
+    &:hover { background: var(--color-brand-600); border-color: var(--color-brand-600); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}

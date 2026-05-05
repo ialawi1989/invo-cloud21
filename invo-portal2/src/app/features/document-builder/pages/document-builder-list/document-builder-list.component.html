@@ -1,0 +1,73 @@
+<div class="dbl">
+  <header class="dbl__header">
+    <div>
+      <h1>{{ ('DOCUMENT_BUILDER.TYPE.' + documentType()) | translate }} {{ 'DOCUMENT_BUILDER.LIST_HEADING_SUFFIX' | translate }}</h1>
+      <p class="dbl__sub">{{ 'DOCUMENT_BUILDER.LIST_SUBTITLE' | translate }}</p>
+    </div>
+    <button type="button" class="btn btn-primary" (click)="newTemplate()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      {{ 'DOCUMENT_BUILDER.NEW' | translate }}
+    </button>
+  </header>
+
+  <div class="dbl__body">
+    @if (isEmpty()) {
+      <div class="dbl__empty">
+        <p>{{ 'DOCUMENT_BUILDER.LIST_EMPTY' | translate }}</p>
+        <button type="button" class="btn btn-default" (click)="newTemplate()">
+          {{ 'DOCUMENT_BUILDER.NEW' | translate }}
+        </button>
+      </div>
+    } @else if (!loading()) {
+      <ul class="dbl__list">
+        @for (t of templates(); track trackTemplate($index, t)) {
+          <li class="dbl__item"
+              [class.dbl__item--default]="t.isDefault"
+              (click)="openTemplate(t)">
+            <div class="dbl__item-name">
+              <strong>{{ t.name || ('DOCUMENT_BUILDER.UNNAMED' | translate) }}</strong>
+              @if (t.isDefault) {
+                <span class="dbl__item-default" [appTooltip]="'DOCUMENT_BUILDER.IS_DEFAULT_HINT' | translate">
+                  ★ {{ 'DOCUMENT_BUILDER.IS_DEFAULT' | translate }}
+                </span>
+              }
+              <span
+                class="dbl__item-mode"
+                [class.dbl__item-mode--designer]="t.renderMode === 'designer'"
+              >{{ ('DOCUMENT_BUILDER.RENDER.' + t.renderMode.toUpperCase()) | translate }}</span>
+            </div>
+            <div class="dbl__item-meta">
+              @if (t.updatedDate) { <span>{{ t.updatedDate }}</span> }
+            </div>
+            @if (!t.isDefault) {
+              <button
+                type="button"
+                class="dbl__item-action"
+                (click)="setDefault(t, $event)"
+                [appTooltip]="'DOCUMENT_BUILDER.SET_DEFAULT_HINT' | translate"
+              >
+                ☆ {{ 'DOCUMENT_BUILDER.SET_DEFAULT' | translate }}
+              </button>
+            }
+            <button
+              type="button"
+              class="dbl__item-delete"
+              (click)="deleteTemplate(t, $event)"
+              [appTooltip]="(t.isDefault ? 'DOCUMENT_BUILDER.CANNOT_DELETE_DEFAULT_HINT' : 'COMMON.DELETE') | translate"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

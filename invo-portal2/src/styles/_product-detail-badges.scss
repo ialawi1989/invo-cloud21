@@ -1,0 +1,97 @@
+// ─────────────────────────────────────────────────────────────────────────
+// Product-detail badges
+// ─────────────────────────────────────────────────────────────────────────
+// Single source of truth for the small chips that decorate a product
+// row anywhere in the app: barcode, UoM, options, tags, line notes.
+//
+// Use these classes wherever a product/line item is rendered — the
+// products list, POS cart lines, invoice / estimate / bill paper
+// previews, the live document-paper renderer, custom-fields summary,
+// etc. The shape (size, radius, padding) and the colour palette are
+// kept here so visual consistency holds across surfaces.
+//
+// Anywhere a product detail needs a chip, prefer `.app-product-badge`
+// (with a variant) over a one-off inline style or Tailwind class
+// blob — that way one change here re-styles every surface.
+// ─────────────────────────────────────────────────────────────────────────
+
+.app-product-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  background: #f1f5f9;
+  color: #475569;
+
+  // Print / paper preview surfaces use a slightly tighter chip so
+  // they sit cleanly inside table rows at narrower zoom levels.
+  // Reach into this from a parent paper class via `> .app-product-badge`
+  // if the inherited typography needs to override the defaults.
+
+  // ── Barcode ──────────────────────────────────────────────────────
+  // Small monospace pill in the brand teal palette. Matches the
+  // products-list barcode column 1:1 — change here to roll forward
+  // a single visual update across every surface.
+  &--barcode {
+    background: var(--color-brand-100, #d6f4f8);
+    color: var(--color-brand-700, #207484);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Cascadia Mono",
+      "Roboto Mono", Consolas, "Courier New", monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+  }
+
+  // ── Unit of measure (UoM) ────────────────────────────────────────
+  // Soft grey — a UoM ("ea", "kg", "ml") is contextual; we don't
+  // want it competing with the barcode for attention.
+  &--uom {
+    background: #f3f4f6;
+    color: #475569;
+    font-weight: 600;
+    text-transform: lowercase;
+  }
+
+  // ── Option ───────────────────────────────────────────────────────
+  // For per-line options (size: large, milk: oat, …). Accent hue
+  // distinguishes options from identifiers (barcode, SKU, UoM).
+  &--option {
+    background: #e0f2fe;
+    color: #075985;
+    border-radius: 999px;
+
+    > i { font-style: italic; opacity: 0.85; font-weight: 400; }
+  }
+
+  // ── Tag ──────────────────────────────────────────────────────────
+  // Free-form classifier (e.g. "vegan", "new"). Neutral so a row of
+  // tags doesn't dominate the line.
+  &--tag {
+    background: #f1f5f9;
+    color: #334155;
+    border-radius: 999px;
+  }
+
+  // ── Voided / cancelled ───────────────────────────────────────────
+  &--voided {
+    background: #fef2f2;
+    color: #991b1b;
+    text-decoration: line-through;
+  }
+}
+
+// Inline note hung under a product line ("delivery on Friday",
+// "with no ice"). Not a chip — just small italic-y muted text so
+// it reads as an aside rather than a structural field.
+.app-product-note {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.45;
+}

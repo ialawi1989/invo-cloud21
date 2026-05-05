@@ -1,0 +1,639 @@
+:host { display: block; }
+
+// Document paper — shared chrome between Classic + Designer modes.
+// All selectors share the `dp__` prefix to avoid colliding with the
+// document-builder's `dbf__` chrome.
+.dp {
+  background: #fff;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.12),
+    0 10px 40px rgba(15, 23, 42, 0.15);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1f2937;
+  position: relative;
+
+  // Designer mode positions every child absolutely and uses the
+  // paper as the offset parent.
+  &--designer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  // Classic mode uses normal flow + flex/grid for the structural
+  // sections.
+  &--classic {
+    padding: 1cm;
+    overflow: hidden;     // ribbon clips to the corner
+  }
+
+  // Paginated mode — the `.dp` wrapper becomes a transparent
+  // container and the inner `.dp__page` boxes own the paper
+  // geometry / shadow / background. Strip the chrome from this
+  // wrapper so it doesn't double up on the pages inside.
+  &--paginated {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  // ── Status ribbon (top-right corner) ─────────────────────────
+  // Diagonal banner used by the legacy paper to flag Issued/Paid/
+  // Voided status. Pinned to the top-right; the parent `.dp` clips.
+  &__ribbon {
+    position: absolute;
+    top: 18px;
+    inset-inline-end: -42px;
+    width: 160px;
+    padding: 4px 0;
+    background: var(--color-brand-500);
+    color: #fff;
+    text-align: center;
+    font-size: 9.5pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transform: rotate(40deg);
+    z-index: 5;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
+
+    &--paid   { background: #16a34a; }
+    &--voided { background: #b91c1c; }
+  }
+
+  // ── Header ────────────────────────────────────────────────────
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--color-brand-500);
+  }
+
+  &__header-left {
+    display: flex;
+    gap: 16px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    text-align: end;
+    font-size: 9pt;
+    color: #64748b;
+    flex-shrink: 0;
+    min-width: 0;
+  }
+
+  // ── Paginated print preview ─────────────────────────────────
+  // When `[printPreview]="true"`, the component renders multiple
+  // `<div class="dp__page">` blocks instead of one continuous flow.
+  // Each page is sized to the template's paper dimensions and gets
+  // a soft drop-shadow so a stack of them reads like a Word / PDF
+  // viewer. The on-screen presentation is what the printer renders
+  // (with the `@media print` rules in `_print.scss` removing the
+  // visual chrome — page shadows, gaps, page-number footer become
+  // invisible at print time).
+  &__pages {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 24px 0;
+    background: #f1f5f9;
+  }
+
+  // One A4 (or template-paper-size) page in the paginated stack.
+  // Laid out as a column flex with a pinned page-footer at the
+  // bottom — `.dp__page-main` flex:1 absorbs the remaining space
+  // and clips anything that doesn't fit. The chunk constants in
+  // the TS are sized to keep clipping rare, but `overflow: hidden`
+  // is the safety net.
+  //
+  // `flex-shrink: 0` is critical: the parent `.dp__pages` is a
+  // column flex container, which by default lets its children
+  // shrink along the main axis (height). Without this, a page
+  // whose content is shorter than the paper size would collapse
+  // to its content height — both on screen and in the print
+  // preview, leading to the "page is shorter than A4" bug.
+  &__page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    padding: 1cm;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.10);
+    overflow: hidden;
+    page-break-after: always;
+    break-after: always;
+  }
+
+  // Header section — repeats on every page.
+  &__page-header {
+    flex-shrink: 0;
+  }
+
+  // Main content area — fills the space between the page's header
+  // and footer. Items / totals / etc. flow here; `overflow: hidden`
+  // makes sure rogue overflow doesn't push the footer off the page.
+  &__page-main {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  // Pinned page footer — the document-level notes / terms /
+  // footer-additional-data block ("fixed footer") sits here on
+  // every paginated page, so the legal boilerplate prints with
+  // every sheet rather than only the last one. Below the footer
+  // content sits an optional page-number row (configurable
+  // show + position via `footerCustomization.pageNumber`) and a
+  // small "continued on next page" hint.
+  &__page-footer {
+    flex-shrink: 0;
+    margin-top: 12px;
+    padding-top: 6px;
+    border-top: 1px dashed #e2e8f0;
+    font-size: 9pt;
+    color: #475569;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    > .dp__footer {
+      // The doc footer block already provides its own line stack;
+      // collapse the wrapper so the borders + paddings don't double.
+      margin: 0;
+    }
+  }
+
+  // Page-number row sits below the doc-footer content. Position
+  // class flips the inline alignment so left / center / right
+  // match the user's choice. RTL flips left↔right via inset-inline.
+  &__page-num-row {
+    display: flex;
+    justify-content: flex-start;
+    color: #64748b;
+
+    &--center { justify-content: center; }
+    &--end    { justify-content: flex-end; }
+  }
+
+  &__page-num,
+  &__page-continued {
+    font-size: 9pt;
+  }
+
+  &__page-continued {
+    align-self: flex-end;
+    font-style: italic;
+    color: #94a3b8;
+  }
+
+  // Header-row meta block — sits beneath the document title in the
+  // trailing column (invoice number / date / status hints).
+  &__header-meta {
+    > div + div { margin-top: 2px; }
+  }
+
+  // Company logo. Real photo when CompanyService provides one;
+  // styled placeholder otherwise. Container clips to its configured
+  // width/height; the inner img scales to fit without distortion.
+  &__logo {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #fff;
+
+    > img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    &--placeholder {
+      background: linear-gradient(135deg, var(--color-brand-500) 0%, #4dc4d9 100%);
+      border-radius: 6px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: 2px;
+    }
+  }
+
+  &__company {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    &-name { font-weight: 700; }
+  }
+
+  // ── Title ────────────────────────────────────────────────────
+  // Sits inside the header row's trailing column above the
+  // invoice-number / date meta. Big, bold banner style — the
+  // user's TextStyle overrides via `[ngStyle]` win the typography
+  // (size / colour / alignment / weight) but the structural margins
+  // here keep it visually anchored.
+  &__title {
+    margin: 0;
+    color: var(--color-brand-700);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  // ── Meta ─────────────────────────────────────────────────────
+  &__meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+    font-size: 9.5pt;
+
+    &-block {
+      > div + div { margin-top: 2px; }
+      > strong   { color: #1f2937; margin-inline-end: 4px; }
+
+      &--right { text-align: end; }
+    }
+
+    &-label {
+      font-size: 10pt;
+      font-weight: 700;
+      color: var(--color-brand-700);
+      margin-bottom: 4px;
+    }
+  }
+
+  // ── Configured transactional fields (2-column label/value list) ──
+  &__fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+    margin: 16px 0;
+    font-size: 9.5pt;
+  }
+
+  &__fields-col {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    // Right-side column — both axes pushed to the end so each field
+    // sits flush against the column's trailing edge. `text-align`
+    // covers the inline content path (used when the inner
+    // `[ngStyle]` doesn't set its own alignment); `align-items:
+    // flex-end` covers the box path (each `.dp__field` is a flex
+    // item so it shrinks to content width and floats to the end —
+    // this is what makes legacy templates with stored
+    // `alignment: 'left'` still LOOK right-aligned visually). New
+    // templates seed second-column fields with `alignment: 'right'`
+    // so the inline path also resolves correctly.
+    &--right {
+      text-align: end;
+      align-items: flex-end;
+    }
+  }
+
+  &__field {
+    > strong {
+      color: #1f2937;
+      margin-inline-end: 6px;
+      font-weight: 700;
+    }
+  }
+
+  // Entity custom-field row — sits below the two-column field block
+  // and flows horizontally so a single CF reads inline rather than
+  // stretching across the page. Wraps gracefully when the user has
+  // many CFs defined.
+  &__cf-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 0 0 12px;
+    font-size: 9.5pt;
+  }
+
+  &__cf {
+    flex: 0 0 auto;
+  }
+
+  // ── Order summary heading ───────────────────────────────────
+  &__items-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 16px 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 10pt;
+
+    > strong { color: #1f2937; }
+  }
+
+  &__tax-mode {
+    font-size: 9pt;
+    color: #64748b;
+    font-style: italic;
+  }
+
+  // ── Items table ──────────────────────────────────────────────
+  &__items {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 9.5pt;
+
+    thead tr {
+      background: var(--color-brand-500);
+      color: #fff;
+    }
+    th {
+      padding: 8px 10px;
+      text-align: start;
+      font-weight: 600;
+      font-size: 9pt;
+    }
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    tbody tr:nth-child(even) { background: #fafafa; }
+  }
+
+  &__col-num { text-align: end; }
+
+  // ── Items table — voided rows ────────────────────────────────
+  // Strikes through with grey backdrop; matches legacy `.table-light`
+  // + voided-line styling.
+  &__items-voided > td {
+    background: #f5f5f5;
+    color: #94a3b8 !important;
+    font-style: italic;
+    text-decoration: line-through;
+    text-decoration-color: #94a3b8;
+  }
+
+  // ── Description column richness ──────────────────────────────
+  // Chip styles (barcode, UoM, option, note) live in the shared
+  // `_product-detail-badges.scss` partial under `.app-product-badge*`
+  // so the document paper, products list, POS cart, and any other
+  // surface that renders product details share one visual identity.
+  // Only the wrapper styles stay local — they control how the chips
+  // stack inside the description cell.
+  &__line {
+    &-desc {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+    }
+
+    &-name { color: inherit; }
+
+    &-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 2px;
+    }
+  }
+
+  // ── Totals ───────────────────────────────────────────────────
+  &__totals {
+    margin-top: 16px;
+    margin-inline-start: auto;
+    width: 280px;
+    font-size: 9.5pt;
+  }
+
+  &__totals-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-bottom: 1px solid #f3f4f6;
+
+    &--grand {
+      background: var(--color-brand-50);
+      font-weight: 700;
+      color: var(--color-brand-700);
+      border: 2px solid var(--color-brand-500);
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+  }
+
+  // ── Payments table (orange) ──────────────────────────────────
+  &__payments {
+    margin: 8px 0 0 auto;
+    width: 280px;
+    background: #f1b44c;
+    color: #1f2937;
+    border-radius: 4px;
+    overflow: hidden;
+    font-size: 9.5pt;
+  }
+
+  &__payments-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 12px;
+
+    & + & {
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  &__payments-row--method {
+    > span > small {
+      display: block;
+      opacity: 0.75;
+      font-size: 8.5pt;
+    }
+  }
+
+  // ── Customer signature card ──────────────────────────────────
+  &__signature {
+    margin: 12px 0 0 auto;
+    width: 280px;
+    padding: 10px 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 9pt;
+
+    > strong { color: #1f2937; }
+    > img    { max-width: 100%; max-height: 80px; align-self: flex-start; }
+  }
+
+  // ── Customer note (yellow band) ──────────────────────────────
+  // Sits between the totals/payments cluster and the company note.
+  &__customer-note {
+    margin: 12px 0 0;
+    padding: 10px 16px;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: 4px;
+    font-size: 9pt;
+    color: #1f2937;
+  }
+
+  // ── Balance-due chip ─────────────────────────────────────────
+  &__balance {
+    margin: 12px 0 0 auto;
+    width: 280px;
+    padding: 8px 12px;
+    background: #f1b44c;
+    color: #1f2937;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10pt;
+    font-weight: 700;
+  }
+
+  // ── Footer ───────────────────────────────────────────────────
+  &__footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 9pt;
+    color: #64748b;
+
+    > div + div { margin-top: 8px; }
+  }
+
+  &__footer-title {
+    font-weight: 700;
+    color: #1f2937;
+    font-size: 10pt;
+    margin-bottom: 4px;
+  }
+
+  // ── Additional data rows ─────────────────────────────────────
+  &__additional {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 8px 12px;
+    background: #f9fafb;
+    border: 1px solid #f3f4f6;
+    border-radius: 4px;
+    margin: 8px 0;
+    font-size: 9pt;
+
+    &--meta { background: var(--color-brand-50); border: none; }
+    &--footer {
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px dashed #e5e7eb;
+      background: transparent;
+      flex-direction: column;
+    }
+
+    &-pair > strong { color: var(--color-brand-700); margin-inline-end: 4px; }
+  }
+
+  // ── Designer-mode element types ──────────────────────────────
+  &__el {
+    box-sizing: border-box;
+  }
+
+  &__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    color: #9ca3af;
+    font-size: 9pt;
+    outline: 1px dashed #d1d5db;
+    outline-offset: -1px;
+  }
+
+  &__barcode {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    > small {
+      font-size: 7pt;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #374151;
+      margin-top: 2px;
+    }
+  }
+
+  &__sig {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #374151;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 6px 10px;
+    box-sizing: border-box;
+
+    &-line {
+      width: 100%;
+      border-top: 1px dashed #9ca3af;
+      margin-bottom: 4px;
+    }
+    &-label {
+      text-align: center;
+      font-style: italic;
+      color: #6b7280;
+      font-size: 9pt;
+    }
+  }
+
+  &__table {
+    width: 100%;
+    height: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    th {
+      padding: 4px 6px;
+      text-align: start;
+      font-weight: 600;
+    }
+    td {
+      padding: 4px 6px;
+      color: #111827;
+      border-bottom: 1px solid #e5e7eb;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &--striped { background: #fafafa; }
+  }
+}

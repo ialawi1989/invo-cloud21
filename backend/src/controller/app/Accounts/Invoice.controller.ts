@@ -933,13 +933,6 @@ export class InvoiceController {
     }
 
 
-
-
-
-
-
-
-
     public static async viewInvoicePdf(req: Request, res: Response, next: NextFunction) {
         try {
             const data = {

@@ -1,0 +1,587 @@
+<!--
+  Unified document paper. Picks Classic / Designer based on
+  `template.renderMode` (or `forceMode` when overridden). Both
+  branches share the same sample-data resolver so token bindings
+  produce identical strings — only the layout differs.
+-->
+<div
+  class="dp"
+  [class.dp--classic]="renderMode() === 'classic' && !printPreview()"
+  [class.dp--paginated]="renderMode() === 'classic' && printPreview()"
+  [class.dp--designer]="renderMode() === 'designer'"
+  [style.width.px]="printPreview() ? null : paperWidthPx()"
+  [style.minHeight.px]="printPreview() ? null : paperHeightPx()"
+  [style.background]="printPreview() ? null : template().BackgroundColor"
+  [style.color]="template().textColor"
+  [style.fontSize.pt]="template().textSize"
+>
+  @if (renderMode() === 'designer') {
+    <!-- ── DESIGNER mode ───────────────────────────────────────── -->
+    @for (el of template().designerElements; track trackEl($index, el)) {
+      @if (!el.hidden) {
+        <div class="dp__el" [ngStyle]="designerStyle(el)">
+          @switch (el.type) {
+            @case ('Image') {
+              @if ($any(el.src)) {
+                <img [src]="$any(el.src)" alt="" style="max-width:100%; max-height:100%; object-fit:contain"/>
+              } @else {
+                <div class="dp__placeholder">{{ el.content || 'IMAGE' }}</div>
+              }
+            }
+            @case ('QR Code') {
+              <svg viewBox="0 0 10 10" style="width:100%; height:100%; background:#fff; padding:2px">
+                @for (m of qrPattern; track $index) {
+                  <rect [attr.x]="m[0]" [attr.y]="m[1]" width="1" height="1" fill="#111"/>
+                }
+              </svg>
+            }
+            @case ('Barcode') {
+              <div class="dp__barcode">
+                <svg width="100%" height="70%" viewBox="0 0 100 30" preserveAspectRatio="none">
+                  @for (b of barcodeBars; track $index) {
+                    <rect [attr.x]="$index * 2" y="0" [attr.width]="b" height="30" fill="#111"/>
+                  }
+                </svg>
+                <small>{{ r($any(el.content)) }}</small>
+              </div>
+            }
+            @case ('Signature') {
+              <div class="dp__sig">
+                <div class="dp__sig-line"></div>
+                <div class="dp__sig-label">{{ el.content || 'Signature' }}</div>
+              </div>
+            }
+            @case ('Table') {
+              @if ($any(el.headers)) {
+                <table class="dp__table" [style.font-size.pt]="el.size || 9">
+                  <thead>
+                    <tr [style.background]="el.headerBg || '#1e3a8a'" [style.color]="el.headerColor || '#fff'">
+                      @for (h of $any(el.headers); track $index) { <th>{{ h }}</th> }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of designerTableRows(el); track $index) {
+                      <tr [class.dp__table--striped]="el.striped !== false && $index % 2">
+                        @for (cell of row; track $index) { <td>{{ cell }}</td> }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            }
+            @case ('Data Field') { <span>{{ dataFieldText(el) }}</span> }
+            @case ('Page #')     { <span>{{ pageNumberText(el) }}</span> }
+            @case ('Shape')      { <span></span> }
+            @default             { <span style="white-space:pre-line">{{ r($any(el.content)) }}</span> }
+          }
+        </div>
+      }
+    }
+  } @else {
+    <!-- ── CLASSIC mode ────────────────────────────────────────── -->
+    <!--
+      Two render paths share the same markup via ng-template
+      extraction below:
+        • Single-paper (default): the legacy continuous flow — header
+          → fields → items → totals → footer — all in one paper box.
+        • Paginated print-preview (when [printPreview]="true"): the
+          same blocks split across multiple A4 page boxes. The
+          company header repeats on every page; the totals/payments/
+          signature/customer-note tail stays atomic on the last page;
+          items split between pages by simple chunking.
+      Both paths feed window.print() (Ctrl+P) the same DOM, so the
+      browser print preview matches the on-screen preview.
+    -->
+
+    @if (printPreview()) {
+      <!-- ═══ Paginated print preview ════════════════════════════
+        Each page is a fixed-size A4 box laid out as a column flex:
+          ┌───────────────────────────────┐
+          │ HEADER  (flex-shrink: 0)      │  ← repeats every page
+          ├───────────────────────────────┤
+          │                               │
+          │ MAIN    (flex: 1; overflow:   │  ← items chunk + first/
+          │          hidden)              │     last-page extras
+          │                               │
+          ├───────────────────────────────┤
+          │ FOOTER  (flex-shrink: 0)      │  ← page number + fixed
+          └───────────────────────────────┘     tagline; printable
+      -->
+      <div class="dp__pages">
+        @for (page of pages(); track page.index) {
+          <div class="dp__page"
+               [style.width.cm]="paperWidthCmValue()"
+               [style.height.cm]="paperHeightCmValue()"
+               [style.min-height.cm]="paperHeightCmValue()"
+               [style.background]="template().BackgroundColor || '#fff'">
+
+            @if (page.isFirst && documentStatus()) {
+              <div class="dp__ribbon"
+                   [class.dp__ribbon--paid]="documentStatus().toLowerCase() === 'paid'"
+                   [class.dp__ribbon--voided]="documentStatus().toLowerCase() === 'voided'">
+                {{ documentStatus() }}
+              </div>
+            }
+
+            <!-- Page header — repeats on every printed page. -->
+            <div class="dp__page-header">
+              <ng-container *ngTemplateOutlet="classicHeaderTpl"/>
+            </div>
+
+            <!-- Page main content — flex:1 so it consumes the space
+                 between header and footer; `overflow: hidden` clips
+                 anything that doesn't fit (the chunk constants are
+                 sized so this is rare). -->
+            <div class="dp__page-main">
+              @if (page.isFirst) {
+                <ng-container *ngTemplateOutlet="classicMetaFieldsTpl"/>
+              }
+
+              <!-- Items table — the per-page slice. The thead repeats
+                   inside each page. Row numbering picks up where the
+                   previous page left off so the running `#` column
+                   stays continuous. -->
+              <ng-container *ngTemplateOutlet="classicItemsTableTpl;
+                                                context: { $implicit: page.items, startIndex: itemsStartIndex(page.index) }"/>
+
+              @if (page.isLast) {
+                <ng-container *ngTemplateOutlet="classicLastPageTailTpl"/>
+              }
+            </div>
+
+            <!-- Page footer — pinned to the bottom of every page.
+                 The "fixed footer" is the document-level notes +
+                 terms + footer-additional-data block (rendered via
+                 `classicFooterTpl`); every printed page carries it.
+                 Page number sits below the footer in a separate row,
+                 toggled + positioned by `footerCustomization.pageNumber`. -->
+            <div class="dp__page-footer">
+              <ng-container *ngTemplateOutlet="classicFooterTpl"/>
+
+              @if (template().footerCustomization.pageNumber.show) {
+                <div class="dp__page-num-row"
+                     [class.dp__page-num-row--center]="template().footerCustomization.pageNumber.position === 'center'"
+                     [class.dp__page-num-row--end]="template().footerCustomization.pageNumber.position === 'right'">
+                  <span class="dp__page-num">
+                    {{ page.index + 1 }} / {{ pages().length }}
+                  </span>
+                </div>
+              }
+
+              @if (!page.isLast) {
+                <span class="dp__page-continued">
+                  continued on next page
+                </span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- ═══ Single-paper Classic (default) ═════════════════════ -->
+      @if (documentStatus()) {
+        <div class="dp__ribbon"
+             [class.dp__ribbon--paid]="documentStatus().toLowerCase() === 'paid'"
+             [class.dp__ribbon--voided]="documentStatus().toLowerCase() === 'voided'">
+          {{ documentStatus() }}
+        </div>
+      }
+      <ng-container *ngTemplateOutlet="classicHeaderTpl"/>
+      <ng-container *ngTemplateOutlet="classicMetaFieldsTpl"/>
+      <ng-container *ngTemplateOutlet="classicItemsTableTpl;
+                                        context: { $implicit: $any(data()['lines']) || [], startIndex: 0 }"/>
+      <ng-container *ngTemplateOutlet="classicLastPageTailTpl"/>
+      <ng-container *ngTemplateOutlet="classicFooterTpl"/>
+    }
+  }
+</div>
+
+<!-- ─── Reusable Classic templates ──────────────────────────────────
+     Defined outside the main `<div class="dp">` so both render paths
+     (single-paper + paginated) reach them via *ngTemplateOutlet.
+     Inlining them this way keeps the main flow readable without a
+     full component split. -->
+
+<ng-template #classicHeaderTpl>
+    <!-- Header -->
+    @if (template().headerCustomization.visibility.visible) {
+      <header class="dp__header">
+        <div class="dp__header-left">
+          @if (template().headerCustomization.logo.show) {
+            <div class="dp__logo"
+                 [class.dp__logo--placeholder]="!realLogoUrl()"
+                 [style.width.px]="template().headerCustomization.logo.width"
+                 [style.height.px]="template().headerCustomization.logo.height">
+              @if (realLogoUrl()) {
+                <img [src]="realLogoUrl()" alt="Company logo"/>
+              } @else {
+                <span>LOGO</span>
+              }
+            </div>
+          }
+          <div class="dp__company">
+            @if (template().headerCustomization.companyName.show) {
+              <div class="dp__company-name" [ngStyle]="textStyle(template().headerCustomization.companyName)">{{ r('{{company.name}}') }}</div>
+            }
+            @if (template().headerCustomization.vatNumber.show) {
+              <div [ngStyle]="textStyle(template().headerCustomization.vatNumber)">
+                @if (template().headerCustomization.vatNumber.showLabel !== false) {
+                  <strong [style.color]="template().headerCustomization.vatNumber.labelColor || 'inherit'">{{ (template().headerCustomization.vatNumber.label && template().headerCustomization.vatNumber.label.trim()) || 'VAT' }}:</strong>
+                }
+                {{ r('{{company.vat}}') }}
+              </div>
+            }
+            <!-- Branch name — labelled separately from the company line
+                 so a tenant with multiple branches surfaces "Branch: Main"
+                 cleanly. Reads `{{branch.name}}` from data; falls back to
+                 the company name token when no branch data is present. -->
+            @if (template().headerCustomization.name.show) {
+              <div [ngStyle]="textStyle(template().headerCustomization.name)">
+                @if (template().headerCustomization.name.showLabel !== false) {
+                  <strong [style.color]="template().headerCustomization.name.labelColor || 'inherit'">{{ (template().headerCustomization.name.label && template().headerCustomization.name.label.trim()) || 'Branch' }}:</strong>
+                }
+                {{ r('{{branch.name}}') || r('{{company.name}}') }}
+              </div>
+            }
+            @if (template().headerCustomization.address.show) {
+              <div [ngStyle]="textStyle(template().headerCustomization.address)">
+                @if (template().headerCustomization.address.showLabel !== false && template().headerCustomization.address.label && template().headerCustomization.address.label.trim()) {
+                  <strong [style.color]="template().headerCustomization.address.labelColor || 'inherit'">{{ template().headerCustomization.address.label }}:</strong>
+                }
+                {{ r('{{company.address}}') }}
+              </div>
+            }
+            @if (template().headerCustomization.phone.show) {
+              <div [ngStyle]="textStyle(template().headerCustomization.phone)">
+                <strong [style.color]="template().headerCustomization.phone.labelColor || 'inherit'">{{ (template().headerCustomization.phone.label && template().headerCustomization.phone.label.trim()) || 'Tel' }}:</strong>
+                {{ r('{{company.phone}}') }}
+              </div>
+            }
+            <!-- Branch custom fields — tenant-defined extras (e.g.
+                 "Tax Office", "Branch License") that sit alongside
+                 the company info. Styled per-row from the template. -->
+            @for (cf of branchCustomFieldRows(); track cf.abbr) {
+              <div [ngStyle]="textStyle(cf.style)">
+                @if (cf.style.showLabel !== false) {
+                  <strong [style.color]="cf.style.labelColor || 'inherit'">{{ cf.label }}:</strong>
+                }
+                <span>{{ cf.value }}</span>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="dp__header-right">
+          <!-- Document title sits inside the header row on the trailing
+               edge — matches the legacy paper where "Invoice" /
+               "Tax Invoice" / etc. is the prominent banner at the top
+               next to the logo, not a centred subhead below the
+               company info. The user can re-style / re-align via
+               Header → Title in the form. -->
+          @if (template().headerCustomization.title.show) {
+            <h1 class="dp__title" [ngStyle]="textStyle(template().headerCustomization.title)">{{ titleLabel() }}</h1>
+          }
+          <div class="dp__header-meta">
+            <div><strong>#{{ r('{{invoice.number}}') }}</strong></div>
+            <div>{{ r('{{invoice.date}}') }}</div>
+          </div>
+        </div>
+      </header>
+    } @else {
+      <div [style.height.px]="template().headerCustomization.visibility.height"></div>
+    }
+</ng-template>
+
+<!-- Meta block — additional-header + transactional fields (firstColumn /
+     secondColumn) + entity CFs + additional-meta + order-summary heading.
+     In paginated mode this only runs on the FIRST page. -->
+<ng-template #classicMetaFieldsTpl>
+    <!-- Additional data — header position. Inherits the shared
+         `additionalDataStyle` so the Other-Details Layout sub-tab
+         can re-style every row in one move. -->
+    @if (additionalAt('header').length > 0) {
+      <div class="dp__additional" [ngStyle]="textStyle(template().additionalDataStyle)">
+        @for (a of additionalAt('header'); track a.key) {
+          <span class="dp__additional-pair">
+            <strong [style.color]="template().additionalDataStyle.labelColor || 'inherit'">{{ a.label }}:</strong> {{ a.value }}
+          </span>
+        }
+      </div>
+    }
+
+    <!-- Document title was here historically; it now lives inside
+         the header row's trailing column (above) so a "TAX INVOICE"
+         banner sits next to the logo rather than below the company
+         info — matches the legacy paper layout. -->
+
+    <!-- Configured transactional fields — laid out in two columns
+         (firstColumn / secondColumn). Each field's label + style
+         come from the template config. -->
+    <div class="dp__fields">
+      <div class="dp__fields-col">
+        @for (f of fieldsFirstColumn(); track f.id) {
+          <div class="dp__field" [ngStyle]="textStyle(f.style)">
+            @if (f.style.showLabel !== false) {
+              <strong [style.color]="f.style.labelColor || 'inherit'">{{ f.label }}:</strong>
+            }
+            <span>{{ f.value }}</span>
+          </div>
+        }
+      </div>
+      <div class="dp__fields-col dp__fields-col--right">
+        @for (f of fieldsSecondColumn(); track f.id) {
+          <div class="dp__field" [ngStyle]="textStyle(f.style)">
+            @if (f.style.showLabel !== false) {
+              <strong [style.color]="f.style.labelColor || 'inherit'">{{ f.label }}:</strong>
+            }
+            <span>{{ f.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Entity custom fields — per-document-type extras (Invoice CFs,
+         Bill CFs, …). Rendered as a flowing row beneath the two-column
+         field block so they don't disrupt the firstColumn /
+         secondColumn alignment. -->
+    @if (entityCustomFieldRows().length > 0) {
+      <div class="dp__cf-row">
+        @for (cf of entityCustomFieldRows(); track cf.abbr) {
+          <div class="dp__field dp__cf" [ngStyle]="textStyle(cf.style)">
+            @if (cf.style.showLabel !== false) {
+              <strong [style.color]="cf.style.labelColor || 'inherit'">{{ cf.label }}:</strong>
+            }
+            <span>{{ cf.value }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Additional data — meta position -->
+    @if (additionalAt('meta').length > 0) {
+      <div class="dp__additional dp__additional--meta" [ngStyle]="textStyle(template().additionalDataStyle)">
+        @for (a of additionalAt('meta'); track a.key) {
+          <div class="dp__additional-pair">
+            <strong [style.color]="template().additionalDataStyle.labelColor || 'inherit'">{{ a.label }}:</strong> {{ a.value }}
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Order summary heading + tax-mode chip (Inclusive/Exclusive) -->
+    <div class="dp__items-heading"
+         [ngStyle]="textStyle(txStyle('tableTitle'))">
+      <strong>Order summary</strong>
+      <span class="dp__tax-mode"
+            [ngStyle]="textStyle(txStyle('taxType'))">
+        {{ isInclusiveTax() ? 'Inclusive Tax' : 'Exclusive Tax' }}
+      </span>
+    </div>
+</ng-template>
+
+<!-- Items table — parameterised by `lines` (the slice to render) and
+     `startIndex` (offset into the original data so row numbers stay
+     continuous across paginated pages). Single-paper mode passes
+     the full `data()['lines']` array with `startIndex: 0`.
+     Skipped entirely when `lines` is empty — that's the case for the
+     last paginated page when all items already fit on earlier pages
+     and the last page is just totals/payments. Without this guard
+     the empty thead would print on a totals-only page. -->
+<ng-template #classicItemsTableTpl let-lines let-startIndex="startIndex">
+    <!-- Items table — columns driven by tableCustomization. Each
+         row may carry voided sub-rows (struck-through, table-light
+         backdrop) and a description block with the legacy badges
+         (barcode, options, sub-items, line note). -->
+    @if (visibleColumns().length > 0 && lines && lines.length > 0) {
+      <table class="dp__items">
+        <thead>
+          <tr [ngStyle]="textStyle(tableHeaderStyle())">
+            @for (col of visibleColumns(); track col.id) {
+              <th [class.dp__col-num]="isRightAlignedColumn(col.id)"
+                  [style.width.%]="col.width || null">{{ col.label }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (ln of lines; track trackLine($index, ln); let i = $index) {
+            <tr>
+              @for (col of visibleColumns(); track col.id) {
+                <td [class.dp__col-num]="isRightAlignedColumn(col.id)">
+                  @if (col.id === 'order') {
+                    {{ startIndex + i + 1 }}
+                  } @else if (col.id === 'description' || col.id === 'product') {
+                    <!-- Description column — rich content matches the legacy: the
+                         item name, a barcode badge, line note, and option pills.
+                         Uses shared `.app-product-badge*` classes so the chip
+                         style matches the products-list and POS surfaces. -->
+                    <div class="dp__line-desc">
+                      <span class="dp__line-name">{{ ln.desc }}</span>
+                      @if (ln.barcode) {
+                        <span class="app-product-badge app-product-badge--barcode">{{ ln.barcode }}</span>
+                      }
+                      @if (ln['uom']) {
+                        <span class="app-product-badge app-product-badge--uom">{{ ln['uom'] }}</span>
+                      }
+                      @if (ln.options && ln.options.length) {
+                        <div class="dp__line-options">
+                          @for (opt of ln.options; track $index) {
+                            <span class="app-product-badge app-product-badge--option">
+                              {{ opt.name }}
+                              @if (opt.price > 0) {
+                                <i>({{ asNum(opt.price).toFixed(3) }})</i>
+                              }
+                            </span>
+                          }
+                        </div>
+                      }
+                      @if (ln.note) {
+                        <small class="app-product-note">{{ ln.note }}</small>
+                      }
+                    </div>
+                  } @else {
+                    {{ cellFor(ln, col.id) }}
+                  }
+                </td>
+              }
+            </tr>
+
+            <!-- Voided sub-rows — struck-through, table-light bg.
+                 Mirrors legacy `voidedItems` rendering. -->
+            @for (vl of voidedFor(ln); track $index) {
+              <tr class="dp__items-voided">
+                @for (col of visibleColumns(); track col.id) {
+                  <td [class.dp__col-num]="isRightAlignedColumn(col.id)">
+                    @if (col.id === 'order') {
+                      {{ startIndex + i + 1 }}
+                    } @else if (col.id === 'description' || col.id === 'product') {
+                      {{ vl['desc'] }}
+                    } @else {
+                      {{ cellFor(vl, col.id) }}
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    }
+</ng-template>
+
+<!-- Tail block — totals + payments + customer-balance + signature +
+     customer-note + footer notes/terms + footer-additional-data. In
+     paginated mode this only runs on the LAST page. The whole tail
+     is a single ng-template so the last page's `<div class="dp__page">`
+     can pull it in via *ngTemplateOutlet without re-doing the
+     conditional logic for each block. -->
+<ng-template #classicLastPageTailTpl>
+    <!-- Totals + payments + balance, all driven by visibility flags. -->
+    @if (template().totalSectionCustomization.totalTable.show && visibleTotalRows().length > 0) {
+      <div class="dp__totals" [style.background]="template().totalSectionCustomization.totalTable.backgroundColor || 'transparent'">
+        @for (row of visibleTotalRows(); track row.id) {
+          <div class="dp__totals-row"
+               [class.dp__totals-row--grand]="row.id === 'Total'"
+               [ngStyle]="textStyle(row.style)">
+            <span>{{ row.label }}</span>
+            <strong>{{ row.value }}</strong>
+          </div>
+        }
+      </div>
+    }
+
+    @if (hasPayments()) {
+      <div class="dp__payments"
+           [style.background]="template().totalSectionCustomization.paymentTable.backgroundColor || '#f1b44c'">
+        @for (row of visiblePaymentRows(); track row.id) {
+          <div class="dp__payments-row" [ngStyle]="textStyle(row.style)">
+            <span>{{ row.label }}</span>
+            <strong>{{ row.value }}</strong>
+          </div>
+        }
+        <!-- Per-payment-method rows from `data.invoicePayments`.
+             Mirrors the legacy `paymentMethods` block — one row per
+             SUCCESS payment with method name + reference + amount. -->
+        @for (p of paymentEntries(); track $index) {
+          <div class="dp__payments-row dp__payments-row--method">
+            <span>
+              {{ p.method }}
+              @if (p.ref) { <small> · Ref# {{ p.ref }}</small> }
+            </span>
+            <strong>BHD {{ p.amount.toFixed(3) }}</strong>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Customer signature card — appears below totals/payments
+         when the record carries a signature. -->
+    @if (customerSignature()) {
+      <div class="dp__signature">
+        <strong>Customer Signature:</strong>
+        <img [src]="customerSignature()" alt="Customer signature"/>
+      </div>
+    }
+
+    <!-- Customer note — yellow band styled per `footerCustomization.customerNote`.
+         Sits between the totals block and the company note. -->
+    @if (customerNote() && template().footerCustomization.customerNote.show) {
+      <div class="dp__customer-note"
+           [ngStyle]="textStyle(template().footerCustomization.customerNote)"
+           [style.text-align]="template().footerCustomization.customerNote.alignment || 'center'">
+        {{ customerNote() }}
+      </div>
+    }
+
+    @if (template().totalSectionCustomization.customerBalance.show && asNum($any(data()['totals'])?.balance) > 0) {
+      <div class="dp__balance" [style.background]="template().totalSectionCustomization.customerBalance.backgroundColor">
+        <span [ngStyle]="textStyle(template().totalSectionCustomization.customerBalance.balance)">Balance Due</span>
+        <strong>BHD {{ asNum($any(data()['totals'])?.balance).toFixed(3) }}</strong>
+      </div>
+    }
+
+    <!-- Document footer (notes + terms + footer-additional-data) is
+         rendered separately via `classicFooterTpl` below. The tail
+         block ends with the totals / payments / signature etc. so
+         that the paginated render path can pin the footer to every
+         page while keeping the totals atomic on the last page. -->
+</ng-template>
+
+<!-- Document footer — notes + terms + footer-additional-data.
+     Used by both render paths: single-paper renders it once at
+     the bottom of the document; paginated render pins it to the
+     bottom of EVERY page (legacy "fixed footer" semantic). -->
+<ng-template #classicFooterTpl>
+    @if (template().footerCustomization.visibility.visible) {
+      <footer class="dp__footer">
+        @if (template().footerCustomization.note.show) {
+          <div [ngStyle]="textStyle(template().footerCustomization.note)"
+               [style.text-align]="template().footerCustomization.note.alignment || 'left'">
+            <strong [style.color]="template().footerCustomization.note.labelColor || 'inherit'">
+              {{ (template().footerCustomization.note.label || 'Note') }}:
+            </strong>
+            <span>{{ r('{{notes}}') }}</span>
+          </div>
+        }
+        @if (template().footerCustomization.term.show) {
+          <div [ngStyle]="textStyle(template().footerCustomization.term)"
+               [style.text-align]="template().footerCustomization.term.alignment || 'left'">
+            <strong [style.color]="template().footerCustomization.term.labelColor || 'inherit'">
+              {{ (template().footerCustomization.term.label || 'Terms & Conditions') }}:
+            </strong>
+            <br/>
+            <span>{{ r('{{terms}}') }}</span>
+          </div>
+        }
+        @if (additionalAt('footer').length > 0) {
+          <div class="dp__additional dp__additional--footer" [ngStyle]="textStyle(template().additionalDataStyle)">
+            @for (a of additionalAt('footer'); track a.key) {
+              <div class="dp__additional-pair">
+                <strong [style.color]="template().additionalDataStyle.labelColor || 'inherit'">{{ a.label }}:</strong> {{ a.value }}
+              </div>
+            }
+          </div>
+        }
+      </footer>
+    } @else {
+      <div [style.height.px]="template().footerCustomization.visibility.height"></div>
+    }
+</ng-template>

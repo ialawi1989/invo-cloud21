@@ -1,0 +1,192 @@
+:host { display: block; }
+
+// ── CDK drag placeholder — global selector ─────────────────────────────
+// The placeholder is a clone CDK inserts in the source cell; depending
+// on how the framework round-trips view-encapsulation attributes the
+// clone may not match component-scoped rules. Targeting it through
+// `::ng-deep` (un-encapsulated) is the safe path: the clone always
+// has the `cdk-drag-placeholder` class regardless of where CDK puts
+// it in the DOM.
+:host ::ng-deep .cdk-drag-placeholder {
+  border: 2px dashed #32acc1 !important;
+  background: #f1f5f9 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  border-radius: 10px;
+
+  .tile__inner   { opacity: 0.35; }
+  .tile__actions,
+  .tile__handle  { display: none !important; }
+}
+
+.menu-grid {
+  display: grid;
+  gap: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px;
+  // Square 6×6 — keeps cell width == cell height so resize math is symmetric.
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  user-select: none;
+  position: relative;
+
+  // While the user is mid-resize the document-level mousemove handler
+  // fires on every move; we kill text selection on the page so the
+  // pointer doesn't drag into a selection halo.
+  &--resizing { cursor: nwse-resize; }
+}
+
+.cell {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  &:hover {
+    background: var(--color-brand-50);
+    color: var(--color-brand-700);
+    border-color: var(--color-brand-300, #bae6fd);
+  }
+}
+
+// ── Drop-target phantom ────────────────────────────────────────────────
+// Rendered over the destination grid cells while the user is dragging
+// a tile (CDK doesn't expose drop targets for free `cdkDrag`). Uses
+// the same `grid-column/row` placement system as the tiles, so it
+// snaps cleanly to whichever cells the tile would land on.
+.drop-target {
+  border: 2px dashed var(--color-brand-600, #32acc1);
+  background: rgba(50, 172, 193, 0.12);
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: 1;
+  transition: background 80ms ease, border-color 80ms ease;
+
+  &--invalid {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.10);
+  }
+}
+
+.tile {
+  --tile-color: var(--color-brand-600);
+  position: relative;
+  border: 2px solid var(--tile-color);
+  border-radius: 10px;
+  background: #fff;
+  cursor: grab;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+
+  &:hover { box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12); }
+  &:active { cursor: grabbing; }
+
+  &.cdk-drag-preview     { box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18); border-radius: 12px; }
+  &.cdk-drag-dragging    { transition: none; cursor: grabbing; }
+
+  &__inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 6px;
+    pointer-events: none; // taps go to the tile itself, not its kids
+  }
+
+  &__img {
+    width: 60%;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+  }
+
+  &__name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    margin-top: 2px;
+  }
+
+  // Action toolbar — hidden until hover so the tile face stays clean.
+  &__actions {
+    position: absolute;
+    top: 4px;
+    inset-inline-end: 4px;
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 120ms ease;
+    z-index: 2;
+  }
+  &:hover &__actions { opacity: 1; }
+
+  &__btn {
+    width: 20px; height: 20px;
+    border: none;
+    border-radius: 4px;
+    background: rgba(15, 23, 42, 0.6);
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover { background: rgba(15, 23, 42, 0.8); }
+    &--danger:hover { background: #b91c1c; }
+  }
+
+  // ── Resize handles ──────────────────────────────────────────────────
+  // Always rendered; visually appear on hover so the tile face is
+  // uncluttered until the user wants to resize.
+  &__handle {
+    position: absolute;
+    background: var(--tile-color);
+    opacity: 0;
+    z-index: 2;
+    transition: opacity 120ms ease;
+
+    &--e {
+      top: 25%;
+      bottom: 25%;
+      inset-inline-end: -3px;
+      width: 6px;
+      border-radius: 3px;
+      cursor: ew-resize;
+    }
+    &--s {
+      left: 25%;
+      right: 25%;
+      bottom: -3px;
+      height: 6px;
+      border-radius: 3px;
+      cursor: ns-resize;
+    }
+    &--se {
+      bottom: -2px;
+      inset-inline-end: -2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      cursor: nwse-resize;
+    }
+  }
+  &:hover &__handle { opacity: 0.85; }
+}

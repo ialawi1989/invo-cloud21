@@ -60,6 +60,8 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 31, label: 'MENU.SUB.PRODUCT_LIST', link: '/products', requiredPermission: 'productSecurity.action.view.access' },
       { id: 32, label: 'MENU.SUB.MATRIX_ITEMS', link: '/matrix-item', requiredPermission: 'matrixItemSecurity.action.view.access' },
       { id: 313, label: 'MENU.SUB.COLLECTIONS', link: '/products/products-collections', requiredPermission: 'productsCollectionsSecurity.action.view.access' },
+      // Menu Builder lives under Settings (see SETTINGS.ITEMS.MENU_BUILDER) —
+      // not exposed in the catalog sidebar.
 
       // — Classifications —
       { id: 34, label: 'MENU.SUB.DEPARTMENTS', link: '/products/department', requiredPermission: 'departmentSecurity.action.view.access' },

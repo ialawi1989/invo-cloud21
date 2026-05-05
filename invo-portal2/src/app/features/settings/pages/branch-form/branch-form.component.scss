@@ -1,7 +1,9 @@
 // ── Page chrome (matches business-settings) ───────────────────────────
 .branch-form-page {
   max-width: 1200px;
-  padding: 0 0 40px;
+  // Extra bottom padding leaves room for the sticky save bar so the
+  // last card never sits underneath it when the user scrolls.
+  padding: 0 0 96px;
   position: relative;
 }
 
@@ -99,6 +101,35 @@
   gap: 4px;
 
   .required { color: #ef4444; font-weight: 700; }
+
+  // Variant used when the label has a trailing action (e.g. "Translation"
+  // link) — pushes the action to the far end of the row.
+  &--with-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+  }
+}
+
+// "Translation" link beside a translatable field's label.
+.translation-link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-brand-700);
+  cursor: pointer;
+  transition: color 120ms ease, text-decoration-color 120ms ease;
+
+  &:hover {
+    color: var(--color-brand-800, #075985);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
 }
 
 .field-hint {

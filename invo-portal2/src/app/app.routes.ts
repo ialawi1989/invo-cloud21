@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { unsavedChangesGuard } from './core/guards/unsaved-changes.guard';
 
 export const routes: Routes = [
   // ── Public (blocked for authenticated users) ─────────────────────────────
@@ -21,6 +22,41 @@ export const routes: Routes = [
     path: 'feature-unavailable',
     loadComponent: () =>
       import('./shared/pages/feature-unavailable.component').then(m => m.FeatureUnavailableComponent),
+  },
+
+  // ── Full-page builders (no main layout chrome) ─────────────────────────
+  // Table Management is a visual floor-plan builder — like the receipt /
+  // invoice builders, it takes over the full viewport rather than living
+  // inside the sidebar+topbar shell.
+  {
+    path: 'settings/tables',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/settings/pages/table-management/table-management.component')
+        .then(m => m.TableManagementComponent),
+    canDeactivate: [unsavedChangesGuard],
+  },
+  {
+    // Receipt-builder editor — full-page builder like table management.
+    // List page stays under MainLayoutComponent (registered below); only
+    // the per-template editor takes over the viewport.
+    path: 'settings/receipt-builder/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/receipt-builder/pages/receipt-builder-form/receipt-builder-form.component')
+        .then(m => m.ReceiptBuilderFormComponent),
+    canDeactivate: [unsavedChangesGuard],
+  },
+  {
+    // Document-builder editor — same full-page pattern as receipt-builder.
+    // The list page lives under MainLayoutComponent (registered below);
+    // the editor takes over the viewport so the canvas has room.
+    path: 'settings/document-builder/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/document-builder/pages/document-builder-form/document-builder-form.component')
+        .then(m => m.DocumentBuilderFormComponent),
+    canDeactivate: [unsavedChangesGuard],
   },
 
   // ── Protected (requires login) ───────────────────────────────────────────
@@ -46,18 +82,21 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/settings/pages/tab-builder-settings/tab-builder-settings.component')
             .then(m => m.TabBuilderSettingsComponent),
+        canDeactivate: [unsavedChangesGuard],
       },
       {
         path: 'settings/business',
         loadComponent: () =>
           import('./features/settings/pages/business-settings/business-settings.component')
             .then(m => m.BusinessSettingsComponent),
+        canDeactivate: [unsavedChangesGuard],
       },
       {
         path: 'settings/image-display',
         loadComponent: () =>
           import('./features/settings/pages/image-display-settings/image-display-settings.component')
             .then(m => m.ImageDisplaySettingsComponent),
+        canDeactivate: [unsavedChangesGuard],
       },
       {
         path: 'settings/branches',
@@ -70,6 +109,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/settings/pages/branch-form/branch-form.component')
             .then(m => m.BranchFormComponent),
+        canDeactivate: [unsavedChangesGuard],
       },
       {
         path: 'settings/custom-fields',
@@ -82,6 +122,34 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/settings/pages/custom-fields-manager/custom-fields-manager.component')
             .then(m => m.CustomFieldsManagerComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
+      {
+        path: 'settings/prefix',
+        loadComponent: () =>
+          import('./features/settings/pages/prefix-settings/prefix-settings.component')
+            .then(m => m.PrefixSettingsComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
+      {
+        path: 'settings/pos-options',
+        loadComponent: () =>
+          import('./features/settings/pages/pos-options/pos-options.component')
+            .then(m => m.PosOptionsComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
+      {
+        path: 'settings/kitchen',
+        loadComponent: () =>
+          import('./features/settings/pages/kitchen-sections-list/kitchen-sections-list.component')
+            .then(m => m.KitchenSectionsListComponent),
+      },
+      {
+        path: 'settings/kitchen/:id',
+        loadComponent: () =>
+          import('./features/settings/pages/kitchen-section-form/kitchen-section-form.component')
+            .then(m => m.KitchenSectionFormComponent),
+        canDeactivate: [unsavedChangesGuard],
       },
       // ── Content Library ─────────────────────────────────────────────────
       {
@@ -107,6 +175,26 @@ export const routes: Routes = [
         path: 'products',
         loadChildren: () =>
           import('./features/products/products.routes').then(m => m.PRODUCTS_ROUTES)
+      },
+      {
+        // Menu Builder is surfaced from Settings (see settings.component.ts
+        // → SETTINGS.ITEMS.MENU_BUILDER), so it lives under /settings/* in
+        // the URL space too.
+        path: 'settings/menu-builder',
+        loadChildren: () =>
+          import('./features/menu-builder/menu-builder.routes').then(m => m.MENU_BUILDER_ROUTES)
+      },
+      {
+        // Receipt Builder — surfaced from Settings (SETTINGS.ITEMS.RECEIPT_BUILDER).
+        path: 'settings/receipt-builder',
+        loadChildren: () =>
+          import('./features/receipt-builder/receipt-builder.routes').then(m => m.RECEIPT_BUILDER_ROUTES)
+      },
+      {
+        // Document Builder — surfaced from Settings (DOCUMENT_BUILDER.LIST_TITLE).
+        path: 'settings/document-builder',
+        loadChildren: () =>
+          import('./features/document-builder/document-builder.routes').then(m => m.DOCUMENT_BUILDER_ROUTES)
       }
       // ── Add features here as you build them ──────────────────────────────
     ],

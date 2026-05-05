@@ -23,6 +23,17 @@ export interface BranchDetails extends BranchSummary {
   // edit them but we still round-trip them so save doesn't drop the data.
   workingHours?: any;
   deliveryTimes?: any;
+  /**
+   * Per-language overrides for translatable fields (`name`, etc.). Mirrors
+   * the legacy `Translation` shape (`{ <field>: { en, ar } }`) so saved
+   * translations round-trip transparently. Anything else the backend
+   * already stored (title, alias, …) is preserved via the form's
+   * `original` snapshot spread.
+   */
+  translation?: {
+    name?: { en: string; ar: string };
+    [key: string]: any;
+  };
 }
 
 export interface BranchListParams {
@@ -114,6 +125,10 @@ export class BranchSettingsService {
       isInclusiveTax: !!b.isInclusiveTax,
       workingHours:  b.workingHours ?? {},
       deliveryTimes: b.deliveryTimes ?? {},
+      // Pass through the legacy `translation` blob so the form's
+      // per-language editors (Translation modal) seed with the saved
+      // values instead of always opening empty.
+      translation:   (b.translation && typeof b.translation === 'object') ? { ...b.translation } : undefined,
     };
   }
 }

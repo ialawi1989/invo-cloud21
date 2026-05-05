@@ -1,0 +1,278 @@
+<!--
+  Table columns editor.
+
+  One card per row; each card hosts a `cdkDropList` so the user can
+  drag cells within the row and across to other rows (paired via
+  `cdkDropListGroup` + each row's `cdkDropListConnectedTo`). Hidden
+  cells stay rendered with a dimmed style so the user can re-enable
+  them — they're just collapsed out of the print preview.
+-->
+<div class="tce" cdkDropListGroup>
+  @for (group of groups(); track trackGroup($index, group); let gi = $index) {
+    <!-- Each group is a visual section so multi-group tables (legacy
+         allows this) read with clear boundaries. The "+ Add row"
+         button at the end of each group lets the user extend that
+         group's row stack without affecting siblings. -->
+    <div class="tce-group">
+      <!-- Group header — labels the section so multi-group tables
+           are readable. The trash button only renders when more
+           than one group exists; every table needs at least one
+           group to hold its rows. -->
+      <header class="tce-group__header">
+        <h3 class="tce-group__title">{{ 'RECEIPT_BUILDER.TABLE_EDITOR.GROUP' | translate: { n: gi + 1 } }}</h3>
+        @if (groups().length > 1) {
+          <button
+            type="button"
+            class="tce-group__remove"
+            (click)="removeGroup(gi)"
+            [attr.aria-label]="'COMMON.DELETE' | translate"
+            [title]="'COMMON.DELETE' | translate"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        }
+      </header>
+    @for (row of group.rows; track trackRow($index, row); let ri = $index) {
+      <div class="tce-row">
+        <header class="tce-row__header">
+          <h3 class="tce-row__title">
+            {{ 'RECEIPT_BUILDER.TABLE_EDITOR.ROW' | translate: { n: ri + 1 } }}
+          </h3>
+        </header>
+
+        <div
+          class="tce-row__list"
+          cdkDropList
+          [id]="rowId(gi, ri)"
+          [cdkDropListData]="row.cells"
+          [cdkDropListConnectedTo]="rowDropListIds()"
+          (cdkDropListDropped)="onCellDrop($event)"
+        >
+          @for (cell of row.cells; track trackCell($index, cell); let ci = $index) {
+            <!-- Cell wraps the always-visible summary row + an optional
+                 detail panel beneath. Clicking anywhere on the row that
+                 isn't an interactive control toggles the detail open.
+                 Inputs and buttons stop propagation so they don't flip
+                 expansion as a side-effect. -->
+            <div
+              class="tce-cell"
+              [class.tce-cell--hidden]="!cell.isVisible"
+              [class.tce-cell--open]="isExpanded(cell.__key)"
+              cdkDrag
+              [cdkDragData]="cell"
+            >
+              <div class="tce-cell__placeholder" *cdkDragPlaceholder></div>
+
+              <div class="tce-cell__row" (click)="toggleExpanded(cell.__key)">
+                <span class="tce-cell__handle" cdkDragHandle aria-hidden="true" (click)="$event.stopPropagation()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6"  x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                  </svg>
+                </span>
+
+                <!-- Compact summary shows ONLY the binding key — it's
+                     the unique identifier and stays legible in the
+                     narrow rail. The user-facing label (cell.value)
+                     is editable in the expanded detail panel where
+                     it has full row width to breathe. -->
+                <span class="tce-cell__key-summary" [title]="cell.key">{{ cell.key || ('RECEIPT_BUILDER.TABLE_EDITOR.EMPTY_COLUMN' | translate) }}</span>
+
+                <input
+                  type="number"
+                  class="tce-cell__width"
+                  min="0"
+                  max="100"
+                  step="1"
+                  [disabled]="!cell.isVisible"
+                  [ngModel]="cell.width"
+                  (ngModelChange)="patchCell(gi, ri, ci, 'width', +$event)"
+                  (click)="$event.stopPropagation()"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+                <span class="tce-cell__pct">%</span>
+
+                <button
+                  type="button"
+                  class="tce-cell__btn"
+                  (click)="toggleVisible(gi, ri, ci); $event.stopPropagation()"
+                  [attr.aria-label]="(cell.isVisible
+                    ? 'RECEIPT_BUILDER.TABLE_EDITOR.HIDE'
+                    : 'RECEIPT_BUILDER.TABLE_EDITOR.SHOW') | translate"
+                  [title]="(cell.isVisible
+                    ? 'RECEIPT_BUILDER.TABLE_EDITOR.HIDE'
+                    : 'RECEIPT_BUILDER.TABLE_EDITOR.SHOW') | translate"
+                >
+                  @if (cell.isVisible) {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  } @else {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a18.45 18.45 0 0 1-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  }
+                </button>
+
+                @if (!cell.isRequired) {
+                  <button
+                    type="button"
+                    class="tce-cell__btn tce-cell__btn--danger"
+                    (click)="removeCell(gi, ri, ci); $event.stopPropagation()"
+                    [attr.aria-label]="'COMMON.DELETE' | translate"
+                    [title]="'COMMON.DELETE' | translate"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                }
+
+                <span class="tce-cell__chev" [class.tce-cell__chev--open]="isExpanded(cell.__key)" aria-hidden="true">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </span>
+              </div>
+
+              <!-- Detail panel — visible only when this cell is the
+                   one expanded. Mirrors the legacy "Row 1 ↑" expanded
+                   view: read-only key chip on top, Value textarea, and
+                   a Width + Alignment row. The detail panel doesn't
+                   propagate clicks so editing inside it never collapses
+                   the row. -->
+              @if (isExpanded(cell.__key)) {
+                <div class="tce-detail" (click)="$event.stopPropagation()">
+                  <span class="tce-detail__key-chip" [title]="cell.key">{{ cell.key || '—' }}</span>
+
+                  <div class="tce-detail__field">
+                    <label>{{ 'RECEIPT_BUILDER.EDITOR.VALUE' | translate }}</label>
+                    <textarea
+                      rows="2"
+                      [ngModel]="cell.value"
+                      (ngModelChange)="patchCell(gi, ri, ci, 'value', $event)"
+                      [placeholder]="'RECEIPT_BUILDER.TABLE_EDITOR.LABEL_PLACEHOLDER' | translate"
+                      [ngModelOptions]="{ standalone: true }"
+                    ></textarea>
+                  </div>
+
+                  <div class="tce-detail__row">
+                    <div class="tce-detail__field">
+                      <label>{{ 'RECEIPT_BUILDER.EDITOR.WIDTH' | translate }}</label>
+                      <div class="tce-detail__width">
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="1"
+                          [disabled]="!cell.isVisible"
+                          [ngModel]="cell.width"
+                          (ngModelChange)="patchCell(gi, ri, ci, 'width', +$event)"
+                          [ngModelOptions]="{ standalone: true }"
+                        />
+                        <span>%</span>
+                      </div>
+                    </div>
+                    <div class="tce-detail__field">
+                      <label>{{ 'RECEIPT_BUILDER.EDITOR.ALIGNMENT' | translate }}</label>
+                      <div class="tce-detail__seg">
+                        @for (a of cellAlignments; track a) {
+                          <button
+                            type="button"
+                            class="tce-detail__seg-btn tce-detail__seg-btn--icon"
+                            [class.tce-detail__seg-btn--on]="isAlignmentOn(cell, a)"
+                            (click)="patchCell(gi, ri, ci, 'alignment', a)"
+                            [attr.aria-label]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + (a | uppercase)) | translate"
+                            [title]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + (a | uppercase)) | translate"
+                          ><app-align-icon [value]="a"/></button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Add-column trigger + per-row overlay menu. The catalog is
+             handed in by the parent (element-editor) and is keyed off
+             the table's source so each table type surfaces its own
+             list of suggestions. The trigger element doubles as the
+             CDK overlay origin so the menu anchors directly under the
+             button. -->
+        <button
+          type="button"
+          class="tce-row__add"
+          [class.tce-row__add--on]="isAddMenuOpen(gi, ri)"
+          (click)="openAddMenu(gi, ri)"
+          cdkOverlayOrigin
+          #addOrigin="cdkOverlayOrigin"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          {{ 'RECEIPT_BUILDER.TABLE_EDITOR.ADD_COLUMN' | translate }}
+        </button>
+
+        <ng-template
+          cdkConnectedOverlay
+          [cdkConnectedOverlayOrigin]="addOrigin"
+          [cdkConnectedOverlayOpen]="isAddMenuOpen(gi, ri)"
+          [cdkConnectedOverlayHasBackdrop]="true"
+          cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+          (backdropClick)="closeAddMenu()"
+          (detach)="closeAddMenu()"
+          [cdkConnectedOverlayPositions]="[
+            { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top',    offsetY: 4 },
+            { originX: 'start', originY: 'top',    overlayX: 'start', overlayY: 'bottom', offsetY: -4 }
+          ]"
+        >
+          <ul class="tce-add-menu" role="menu">
+            @for (item of availableColumns(); track item.key + ':' + $index) {
+              <li>
+                <button
+                  type="button"
+                  class="tce-add-menu__item"
+                  (click)="addCellFromCatalog(gi, ri, item)"
+                >
+                  <span class="tce-add-menu__prefix">{{ 'RECEIPT_BUILDER.TABLE_EDITOR.ADD_COLUMN_VERB' | translate }}</span>
+                  <strong class="tce-add-menu__token">{{ item.key || ('RECEIPT_BUILDER.TABLE_EDITOR.EMPTY_COLUMN' | translate) }}</strong>
+                </button>
+              </li>
+            }
+            @if (availableColumns().length === 0) {
+              <li class="tce-add-menu__empty">
+                {{ 'RECEIPT_BUILDER.TABLE_EDITOR.NO_SUGGESTIONS' | translate }}
+              </li>
+            }
+          </ul>
+        </ng-template>
+      </div>
+    }
+      <!-- "+ Add row" — appends a new empty row to this group. The
+           row starts with no cells; the user fills it via the
+           per-row "+ Add column" menu. -->
+      <button type="button" class="tce-group__add-row" (click)="addRow(gi)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        {{ 'RECEIPT_BUILDER.TABLE_EDITOR.ADD_ROW' | translate }}
+      </button>
+    </div>
+  }
+  <!-- "+ Add group" — appends a fresh group with one empty starter
+       row at the end of the table. -->
+  <button type="button" class="tce-add-group" (click)="addGroup()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    {{ 'RECEIPT_BUILDER.TABLE_EDITOR.ADD_GROUP' | translate }}
+  </button>
+</div>

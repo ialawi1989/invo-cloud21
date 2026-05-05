@@ -4,6 +4,17 @@
     "SAVING": "Saving…",
     "CANCEL": "Cancel",
     "DELETE": "Delete",
+    "DESELECT": "Deselect",
+    "DESKTOP_ONLY": {
+      "TITLE": "Best on a larger screen",
+      "BODY":  "This builder needs more room than a phone can provide. Please reopen it on a tablet or desktop."
+    },
+    "DONE": "Done",
+    "DUPLICATE": "Duplicate",
+    "DRAG_TO_REORDER": "Drag to reorder",
+    "UNGROUP": "Move to its own panel",
+    "EXPAND": "Expand",
+    "COLLAPSE": "Collapse",
     "EDIT": "Edit",
     "ADD": "Add",
     "SEARCH": "Search",
@@ -59,6 +70,10 @@
     "REQUIRED": "This field is required",
     "LOAD_MORE": "Load more",
     "OK": "OK",
+    "DRAG":            "Drag",
+    "TRANSLATION":     "Translation",
+    "TEXT_IN_ENGLISH": "Text in English",
+    "TEXT_IN_ARABIC":  "Text in Arabic",
     "SELECT_TIME": "Select time",
     "HOUR": "hour",
     "MINUTE": "min",
@@ -401,5 +416,15 @@
     "SWITCH": "Language",
     "EN": "English",
     "AR": "العربية"
+  },
+  "COLOR_PICKER": {
+    "SPECTRUM": "Spectrum",
+    "PALETTE":  "Palette",
+    "FORMATS":  "Formats",
+    "WCAG_HINT": "Contrast ratio against the configured background. Higher is more readable.",
+    "WCAG_FAIL": "Fail",
+    "WCAG_AA_LARGE": "AA Large",
+    "WCAG_AA": "AA",
+    "WCAG_AAA": "AAA"
   }
 }

@@ -1,0 +1,127 @@
+<!--
+  Designer canvas — paper rectangle with absolute-positioned children.
+  Drop targets accept palette items via the `application/x-palette-item`
+  MIME type (the parent's palette tiles set this on dragstart).
+-->
+<div
+  class="dcv"
+  [style.width.px]="paperWidthPx()"
+  [style.height.px]="paperHeightPx()"
+  [style.background]="template().BackgroundColor"
+  (mousedown)="onPaperMouseDown()"
+  (dragover)="onPaperDragOver($event)"
+  (drop)="onPaperDrop($event)"
+>
+  @for (el of elements(); track trackEl($index, el)) {
+    @if (!el.hidden) {
+      <div
+        class="dcv__el"
+        [class.dcv__el--selected]="isSelected(el)"
+        [class.dcv__el--locked]="el.locked"
+        [ngStyle]="elementStyle(el)"
+        (mousedown)="onElementMouseDown($event, el)"
+      >
+        <!-- Per-type rendering — same set the Classic paper supports. -->
+        @switch (el.type) {
+          @case ('Image') {
+            @if ($any(el.src)) {
+              <img [src]="$any(el.src)" alt="" style="max-width:100%; max-height:100%; object-fit:contain"/>
+            } @else {
+              <div class="dcv__placeholder">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span>{{ el.content || 'IMAGE' }}</span>
+              </div>
+            }
+          }
+          @case ('QR Code') {
+            <svg viewBox="0 0 10 10" style="width:100%; height:100%; background:#fff; padding:2px">
+              @for (m of qrPattern; track $index) {
+                <rect [attr.x]="m[0]" [attr.y]="m[1]" width="1" height="1" fill="#111"/>
+              }
+            </svg>
+          }
+          @case ('Barcode') {
+            <div class="dcv__barcode">
+              <svg width="100%" height="70%" viewBox="0 0 100 30" preserveAspectRatio="none">
+                @for (b of barcodeBars; track $index) {
+                  <rect [attr.x]="$index * 2" y="0" [attr.width]="b" height="30" fill="#111"/>
+                }
+              </svg>
+              <small>{{ resolveTokens($any(el.content)) }}</small>
+            </div>
+          }
+          @case ('Signature') {
+            <div class="dcv__sig">
+              <div class="dcv__sig-line"></div>
+              <div class="dcv__sig-label">{{ el.content || 'Signature' }}</div>
+            </div>
+          }
+          @case ('Table') {
+            @if ($any(el.headers)) {
+              <table class="dcv__table" [style.font-size.pt]="el.size || 9">
+                <thead>
+                  <tr [style.background]="el.headerBg || '#1e3a8a'" [style.color]="el.headerColor || '#fff'">
+                    @for (h of $any(el.headers); track $index) {
+                      <th>{{ h }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of $any(el.rows) || []; track $index) {
+                    <tr [class.dcv__table--striped]="el.striped !== false && $index % 2">
+                      @for (cell of row; track $index) {
+                        <td>{{ resolveTokens(cell) }}</td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          }
+          @case ('Data Field') {
+            <span>{{ dataFieldText(el) }}</span>
+          }
+          @case ('Page #') {
+            <span>{{ pageNumberText(el) }}</span>
+          }
+          @case ('Shape') {
+            <!-- Shapes are pure background/border — no inner content. -->
+            <span></span>
+          }
+          @default {
+            <!-- Text fallback: resolve {{tokens}} against sample data. -->
+            <span style="white-space:pre-line">{{ resolveTokens($any(el.content)) }}</span>
+          }
+        }
+
+        <!-- Resize handles — only on the selected element. -->
+        @if (isSelected(el) && !el.locked) {
+          @for (h of handles; track h) {
+            <span
+              class="dcv__handle"
+              [ngStyle]="handleStyle(h)"
+              (mousedown)="onHandleMouseDown($event, el, h)"
+            ></span>
+          }
+        }
+      </div>
+    }
+  }
+
+  <!-- Smart-alignment guides drawn during a drag. -->
+  @for (g of guides(); track $index) {
+    <div
+      class="dcv__guide"
+      [class.dcv__guide--v]="g.orient === 'v'"
+      [class.dcv__guide--h]="g.orient === 'h'"
+      [style.left.px]="g.orient === 'v' ? g.pos - 0.5 : g.from"
+      [style.top.px]="g.orient === 'v' ? g.from : g.pos - 0.5"
+      [style.width.px]="g.orient === 'v' ? 1 : g.to - g.from"
+      [style.height.px]="g.orient === 'v' ? g.to - g.from : 1"
+    ></div>
+  }
+</div>

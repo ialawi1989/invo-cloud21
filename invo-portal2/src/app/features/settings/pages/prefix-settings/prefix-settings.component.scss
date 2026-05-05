@@ -1,0 +1,248 @@
+// ── Page chrome ─────────────────────────────────────────────────────────
+.ps-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  // Bottom padding leaves room for the sticky save bar so the last
+  // card never sits underneath it when the user scrolls.
+  padding: 16px 24px 96px;
+  position: relative;
+}
+
+.page-header {
+  margin-bottom: 20px;
+
+  &__titles { min-width: 0; }
+}
+
+.page-title {
+  margin: 8px 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.page-sub { margin: 0; font-size: 14px; color: #64748b; }
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.spinner {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 3px solid #e2e8f0; border-top-color: var(--color-brand-600);
+  animation: ps-spin .8s linear infinite;
+  display: inline-block;
+  &--lg { width: 32px; height: 32px; }
+}
+@keyframes ps-spin { to { transform: rotate(360deg); } }
+
+// ── Token hint banner ──────────────────────────────────────────────────
+.ps-hint {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  background: var(--color-brand-50);
+  border: 1px solid var(--color-brand-100, #e0f2fe);
+  border-radius: 12px;
+
+  > svg { color: var(--color-brand-700); flex-shrink: 0; margin-top: 2px; }
+
+  &__body { flex: 1; min-width: 0; }
+
+  &__title {
+    margin: 0 0 2px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-brand-800, #075985);
+  }
+
+  &__text {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.45;
+  }
+
+  &__tokens {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    font-size: 12px;
+    color: #475569;
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      padding: 1px 6px;
+      background: #fff;
+      border: 1px solid var(--color-brand-200, #bae6fd);
+      border-radius: 4px;
+      color: var(--color-brand-700);
+      margin-inline-end: 4px;
+    }
+  }
+}
+
+// ── Card grid ──────────────────────────────────────────────────────────
+.ps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.ps-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &:hover { border-color: #cbd5e1; }
+
+  &--invalid {
+    border-color: #fda4af;
+    background: #fff7f7;
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  &__reset {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: color 120ms ease;
+
+    &:hover { color: var(--color-brand-700); text-decoration: underline; }
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 88px;
+    gap: 10px;
+    align-items: start;
+  }
+
+  &__preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px dashed #e2e8f0;
+
+    &-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    &-value {
+      flex: 1;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-brand-700);
+      word-break: break-all;
+    }
+  }
+}
+
+// ── Form fields ────────────────────────────────────────────────────────
+.ps-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__error {
+    font-size: 11px;
+    font-weight: 500;
+    color: #dc2626;
+  }
+}
+
+.ps-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: #0f172a;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &::placeholder { color: #94a3b8; }
+  &:hover { border-color: #cbd5e1; }
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+
+  &--invalid {
+    border-color: #f87171;
+    &:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12); }
+  }
+}
+
+// ── Buttons (sticky footer slots) ──────────────────────────────────────
+.btn {
+  padding: 8px 18px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &-primary {
+    background: var(--color-brand-600); color: #fff; border-color: var(--color-brand-600);
+    &:hover:not(:disabled) { background: var(--color-brand-700); border-color: var(--color-brand-700); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+  &-ghost {
+    background: #fff; color: #475569; border-color: #e2e8f0;
+    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}

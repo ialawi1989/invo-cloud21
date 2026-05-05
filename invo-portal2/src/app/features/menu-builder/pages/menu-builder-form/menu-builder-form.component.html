@@ -1,0 +1,212 @@
+<div class="mbf-page">
+  <header class="mbf-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="mbf-title">{{ menu().id ? menu().name : ('MENU_BUILDER.NEW_MENU' | translate) }}</h1>
+  </header>
+
+  @if (loading()) {
+    <div class="mbf-loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Header card ═══ -->
+    <section class="card">
+      <h2 class="card__heading">{{ 'MENU_BUILDER.SECTION.DETAILS' | translate }}</h2>
+
+      <div class="row">
+        <div class="field field--name">
+          <label class="field__label">{{ 'MENU_BUILDER.NAME' | translate }}</label>
+          <input
+            type="text"
+            class="input"
+            [ngModel]="menu().name"
+            (ngModelChange)="patchMenu('name', $event)"
+            [placeholder]="'MENU_BUILDER.NAME_PLACEHOLDER' | translate"
+          />
+        </div>
+        <div class="field field--price">
+          <label class="field__label">{{ 'MENU_BUILDER.PRICE' | translate }}</label>
+          <app-search-dropdown
+            [items]="priceLabels()"
+            [displayWith]="priceLabelLabel"
+            [toValue]="priceLabelValue"
+            [compareWith]="priceLabelEquals"
+            [searchable]="priceLabels().length > 6"
+            [clearable]="true"
+            [value]="priceLabelSelected()"
+            (valueChange)="onPriceLabelChange($any($event))"
+          />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field field--time">
+          <label class="field__label">{{ 'MENU_BUILDER.START_AT' | translate }}</label>
+          <app-time-picker
+            [ngModel]="toShortTime(menu().startAt)"
+            (ngModelChange)="patchMenu('startAt', fromShortTime($event))"
+          />
+        </div>
+        <div class="field field--time">
+          <label class="field__label">{{ 'MENU_BUILDER.END_AT' | translate }}</label>
+          <app-time-picker
+            [ngModel]="toShortTime(menu().endAt)"
+            (ngModelChange)="patchMenu('endAt', fromShortTime($event))"
+          />
+        </div>
+        <label class="toggle">
+          <input
+            type="checkbox"
+            [checked]="menu().availableOnline"
+            (change)="patchMenu('availableOnline', $any($event.target).checked)"
+          />
+          <span class="toggle__track"><span class="toggle__thumb"></span></span>
+          <span class="toggle__label">{{ 'MENU_BUILDER.AVAILABLE_ONLINE' | translate }}</span>
+        </label>
+      </div>
+
+      <!-- Branches — multi-select searchable dropdown. The shared
+           SearchDropdownComponent has a built-in `[multiple]` mode
+           with per-row checkboxes; we hand it the branch rows + an
+           id-based `compareWith` so it round-trips against
+           `menu().branchIds` (string[]). -->
+      <div class="field">
+        <label class="field__label">{{ 'MENU_BUILDER.BRANCHES' | translate }}</label>
+        @if (branches().length === 0) {
+          <p class="hint">{{ 'MENU_BUILDER.NO_BRANCHES' | translate }}</p>
+        } @else {
+          <app-search-dropdown
+            [items]="branches()"
+            [multiple]="true"
+            [searchable]="true"
+            [clearable]="true"
+            [displayWith]="branchLabel"
+            [toValue]="branchValue"
+            [compareWith]="branchEquals"
+            [value]="selectedBranches()"
+            (valueChange)="onBranchesChange($any($event))"
+            [placeholder]="'MENU_BUILDER.BRANCHES_PLACEHOLDER' | translate"
+          />
+        }
+      </div>
+    </section>
+
+    <!-- ═══ Sections strip ═══ -->
+    <section class="card">
+      <div class="card__head">
+        <h2 class="card__heading">{{ 'MENU_BUILDER.SECTION.LIST' | translate }}</h2>
+        <button type="button" class="btn btn-primary btn-sm" (click)="addSection()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          {{ 'MENU_BUILDER.ADD_SECTION' | translate }}
+        </button>
+      </div>
+
+      @if (menu().sections.length === 0) {
+        <p class="hint">{{ 'MENU_BUILDER.NO_SECTIONS' | translate }}</p>
+      } @else {
+        <ul class="section-strip">
+          @for (s of menu().sections; track trackSection($index, s)) {
+            <li
+              class="section-pill"
+              [class.section-pill--active]="selectedSectionId() === idOf(s)"
+              [style.background]="'linear-gradient(to bottom,' + s.color.colorStart + ',' + s.color.colorEnd + ')'"
+              [style.border-color]="s.color.borderColor"
+              [style.color]="selectedSectionId() === idOf(s) ? s.color.borderColor : '#fff'"
+              (click)="selectSection(idOf(s))"
+            >
+              <span class="section-pill__name">{{ s.name || ('MENU_BUILDER.UNNAMED_SECTION' | translate) }}</span>
+              <button type="button" class="section-pill__color" (click)="$event.stopPropagation(); openSectionColor(s)" [attr.aria-label]="'MENU_BUILDER.SECTION.COLOR' | translate">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/>
+                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+                </svg>
+              </button>
+              <button type="button" class="section-pill__remove" (click)="removeSection(idOf(s), $event)" [attr.aria-label]="'COMMON.DELETE' | translate">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <!-- ═══ Section editor ═══ -->
+    @if (selectedSection(); as s) {
+      <section class="card">
+        <div class="card__head">
+          <div class="section-edit-head">
+            <!-- Manage products' colours across the whole section
+                 (every page) — opens the bulk-edit modal. Disabled
+                 when the section has no products yet. -->
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm"
+              [disabled]="s.products.length === 0"
+              (click)="openSectionProducts(s)"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+              </svg>
+              {{ 'MENU_BUILDER.SECTION.PRODUCT_COLORS' | translate }}
+            </button>
+            <input
+              type="text"
+              class="input input--inline"
+              [ngModel]="s.name"
+              (ngModelChange)="patchSection(idOf(s), 'name', $event)"
+              [placeholder]="'MENU_BUILDER.SECTION.NAME_PLACEHOLDER' | translate"
+            />
+          </div>
+
+          <ul class="page-pager">
+            @for (n of [].constructor(s.pages); let i = $index; track i) {
+              <li
+                class="page-pager__btn"
+                [class.page-pager__btn--active]="selectedPage() === i + 1"
+                (click)="selectPage(i + 1)"
+              >
+                {{ i + 1 }}
+                @if (i + 1 === selectedPage() && i + 1 > 1) {
+                  <button type="button" class="page-pager__remove" (click)="$event.stopPropagation(); removePage(i + 1)" [attr.aria-label]="'MENU_BUILDER.REMOVE_PAGE' | translate">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                }
+              </li>
+            }
+            @if (s.pages < maxPages) {
+              <li class="page-pager__add" [class.page-pager__add--disabled]="!canAddPage()" (click)="addPage()" [attr.aria-label]="'MENU_BUILDER.ADD_PAGE' | translate">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <!-- 6×6 custom grid (no external lib). -->
+        <app-menu-grid
+          [products]="pageProducts()"
+          [sectionColor]="s.color"
+          [cols]="gridCols"
+          [rows]="gridRows"
+          (pickAt)="pickProduct($event)"
+          (placementChange)="updateProductPlacement($event.product, $event.next)"
+          (productRemove)="removeProduct($event)"
+          (productColor)="openProductColor($event)"
+        />
+      </section>
+    }
+  }
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || !menu().name.trim()">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+
+  <app-loading-overlay [show]="saving()" [message]="'COMMON.SAVING' | translate"/>
+</div>

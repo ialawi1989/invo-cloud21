@@ -5,16 +5,6 @@
       <h1 class="page-title">{{ 'SETTINGS.ITEMS.IMAGE_DISPLAY' | translate }}</h1>
       <p class="page-sub">{{ 'SETTINGS.ITEMS.IMAGE_DISPLAY_DESC' | translate }}</p>
     </div>
-    <div class="page-header__actions">
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="save()"
-        [disabled]="saving() || loading() || !isDirty()"
-      >
-        {{ 'COMMON.SAVE' | translate }}
-      </button>
-    </div>
   </header>
 
   @if (loading()) {
@@ -101,4 +91,15 @@
   }
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || !isDirty()"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
 </div>

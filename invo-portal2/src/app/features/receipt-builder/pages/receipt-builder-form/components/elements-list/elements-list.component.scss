@@ -1,0 +1,167 @@
+:host { display: block; }
+
+.el-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  // Adaptive cap — matches the rail's vertical real-estate but never
+  // over-claims. `min()` keeps short receipts from leaving dead
+  // space and tall ones from swallowing the editor stack above.
+  // Bottom scroll-indicator (mask-image gradient) tells the user
+  // there's more below when the list overflows.
+  max-height: min(50vh, 480px);
+  overflow-y: auto;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 16px), transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 16px), transparent 100%);
+
+  // When the user has scrolled to the bottom (no more content below)
+  // the fade is misleading; a JS-friendly toggle could remove it,
+  // but for now the gradient is mild enough to read as a styling
+  // cue rather than a hidden-content warning.
+
+  &__empty {
+    padding: 14px 12px;
+    text-align: center;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+
+  &__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 6px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    transition: background 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+    }
+
+    // Selected state mirrors the canvas slot's --selected styling so
+    // both reads of the same element (canvas vs layers panel) stay
+    // visually in sync.
+    &--selected,
+    &--selected:hover {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-300, #bae6fd);
+    }
+
+    // CDK drag visuals.
+    &.cdk-drag-preview {
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+      border-color: var(--color-brand-500);
+      background: #fff;
+    }
+    &.cdk-drag-dragging { transition: none; }
+  }
+
+  &__placeholder {
+    height: 28px;
+    background: var(--color-brand-50);
+    border: 1px dashed var(--color-brand-300, #bae6fd);
+    border-radius: 4px;
+    margin-bottom: 2px;
+  }
+
+  // Drag handle — the entire grip area, not just the SVG. Bigger
+  // touch target so it's easy to grab; brighter base colour so users
+  // can see at a glance that the row is reorderable.
+  &__handle {
+    width: 22px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    background: transparent;
+    border-radius: 4px;
+    cursor: grab;
+    flex-shrink: 0;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:active { cursor: grabbing; }
+    &:hover  {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+  }
+
+  // When the user hovers the row, brighten the handle as a discovery
+  // hint that the row is draggable. Pairs with the row's own hover
+  // shading so the affordance reads as part of the same gesture.
+  &__item:hover &__handle {
+    color: #475569;
+  }
+
+  // Main row button — clickable surface that selects the element.
+  // Borderless / unstyled button so the row feels like a list item,
+  // not a chunky CTA.
+  &__row {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    background: transparent;
+    border: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: start;
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    color: #94a3b8;
+    flex-shrink: 0;
+  }
+  &__item--selected &__icon { color: var(--color-brand-700); }
+
+  &__type {
+    font-size: 11px;
+    font-weight: 700;
+    color: #0f172a;
+    flex-shrink: 0;
+  }
+  &__item--selected &__type { color: var(--color-brand-700); }
+
+  // The element's content snippet — truncated to a single line so a
+  // long Text value doesn't blow out the rail width.
+  &__summary {
+    flex: 1;
+    min-width: 0;
+    font-size: 10px;
+    color: #94a3b8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__btn {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: #cbd5e1;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: #f1f5f9; color: #475569; }
+    &--danger:hover { background: #fef2f2; color: #b91c1c; }
+  }
+}

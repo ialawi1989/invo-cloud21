@@ -1,0 +1,1245 @@
+// ── Full-page chrome ────────────────────────────────────────────────────
+// The component takes over the viewport (no app sidebar/topbar) so the
+// builder gets full vertical room — same shape as the legacy form.
+:host { display: block; }
+
+.tm-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 0;
+}
+
+// Builder topbar — Home/back, branch picker centered, Save right.
+.tm-topbar {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+
+  &__home {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+  }
+
+  &__center {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    justify-self: center;
+    min-width: 280px;
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+  }
+
+  // Make the branch dropdown sit at a comfortable inline width.
+  app-search-dropdown { display: inline-block; min-width: 220px; }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  flex: 1;
+}
+
+.spinner {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 3px solid #e2e8f0; border-top-color: var(--color-brand-600);
+  animation: tm-spin .8s linear infinite;
+  display: inline-block;
+  &--lg { width: 32px; height: 32px; }
+}
+@keyframes tm-spin { to { transform: rotate(360deg); } }
+
+// ── Buttons ────────────────────────────────────────────────────────────
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &-sm { padding: 5px 10px; font-size: 12px; }
+
+  &-primary {
+    background: var(--color-brand-600); color: #fff; border-color: var(--color-brand-600);
+    &:hover:not(:disabled) { background: var(--color-brand-700); border-color: var(--color-brand-700); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+  &-ghost {
+    background: #fff; color: #475569; border-color: #e2e8f0;
+    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+  &-danger {
+    background: #fff; color: #b91c1c; border-color: #fecaca;
+    &:hover:not(:disabled) { background: #fef2f2; color: #991b1b; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}
+
+.tm-iconbtn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+// ── Group tabs (brown bar — matches the legacy layout) ────────────────
+// The bar itself is dark "wood" brown; tabs use the new project's clean
+// modern type with a brand-cyan underline + brighter text on active.
+.tm-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 0 12px;
+  background: #5d4037;
+  border-bottom: 1px solid #4a322a;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+
+.tm-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  --tab-color: #cbd5e1;
+
+  &:hover:not(.tm-tab--active) {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--tab-color);
+    flex-shrink: 0;
+  }
+
+  &__name {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__count {
+    min-width: 20px;
+    height: 18px;
+    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 999px;
+  }
+
+  &--active {
+    color: #fff;
+    border-bottom-color: var(--color-brand-500);
+
+    .tm-tab__count {
+      background: var(--color-brand-500);
+      color: #fff;
+    }
+  }
+
+  // The "+ Add group" tab still sits in the brown bar but uses a cyan
+  // accent so it reads as the primary action.
+  &--add {
+    color: var(--color-brand-300, #7dd3fc);
+    border-bottom: 3px solid transparent;
+    margin-inline-start: auto;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+    }
+  }
+
+  &__add-wrap {
+    position: relative;
+    margin-inline-start: auto;
+    display: inline-flex;
+  }
+
+  // CDK drag treatments — keeps the dragged tab looking right while dragging.
+  &.cdk-drag-preview {
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.18);
+    background: #5d4037;
+    color: #fff;
+  }
+  &.cdk-drag-placeholder { opacity: 0.3; }
+}
+
+// Inactive-groups dropdown anchored under the "+" tab. The
+// `--block` modifier stretches it edge-to-edge under a wider button
+// (used by the right-panel "Add Group" trigger so the dropdown sits
+// directly below it like the legacy menu).
+.tm-popmenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  inset-inline-end: 0;
+  min-width: 220px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  &--block {
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    min-width: 0;
+  }
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: #0f172a;
+    cursor: pointer;
+    text-align: start;
+    width: 100%;
+
+    &:hover { background: #f8fafc; }
+    &--primary { color: var(--color-brand-700); font-weight: 600; }
+  }
+
+  &__heading {
+    margin: 6px 10px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__divider {
+    height: 1px;
+    background: #f1f5f9;
+    margin: 4px 0;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+}
+
+// ── Workspace ─────────────────────────────────────────────────────────
+// Fills the entire area below the brown tabs bar. The canvas viewport
+// stretches edge-to-edge; the right-side settings panel floats over
+// the canvas (collapsible). Matches the legacy "the floor IS the
+// workspace" feel — chrome layers above it.
+.tm-workspace {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+
+.tm-canvas-wrap {
+  // Fills the full workspace edge-to-edge. The canvas inside is
+  // 1800×1200 — when zoomed/panned the user navigates the workspace
+  // beneath every floating piece of chrome (panel, zoom FAB, ctx menu).
+  position: absolute;
+  inset: 0;
+  background: #2a1f1c;
+  overflow: auto;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  overscroll-behavior: contain;
+
+  // Use the project's thin scrollbar look (see styles.scss:147) but
+  // tinted lighter so the thumb stays visible against the dark wood
+  // wrap. Same 6px width as the rest of the app — keeps the workspace
+  // chrome consistent with sidebar / dropdown / modal scrollbars.
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+
+  &::-webkit-scrollbar        { width: 6px; height: 6px; }
+  &::-webkit-scrollbar-track  { background: transparent; }
+  &::-webkit-scrollbar-thumb  {
+    background: rgba(255, 255, 255, 0.22);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+  &::-webkit-scrollbar-corner { background: transparent; }
+
+  &--panning {
+    cursor: grabbing;
+    .tm-table, .tm-decor { pointer-events: none; }
+  }
+}
+
+// Inner stage that pads the canvas with viewport-sized breathing room
+// on every side. Without this padding the wrap's overflow scrolls
+// stop at the canvas edge — the user can't pan further. Adding the
+// pad lets the canvas float anywhere inside the wrap, exactly like
+// the legacy pinch-zoom workspace which had no logical bounds.
+.tm-canvas-stage {
+  position: relative;
+  display: inline-block;
+  padding: 1500px;
+}
+
+.tm-canvas {
+  position: relative;
+  // The pattern sits on a slightly cool off-white. Each pattern preset
+  // overrides the `background-image` below, but they all start from
+  // this base so partially-transparent patterns layer correctly.
+  background-color: #ece9e3;
+  overflow: hidden;
+  user-select: none;
+  --accent: #32acc1;
+  --pattern-size: 20%;
+  transform-origin: top left;
+
+  // Legacy floor wash — `rgba(255, 255, 255, 0.5)` overlay sits on top
+  // of the JPG pattern to lighten the colours. Without it the patterns
+  // look way too saturated compared to the legacy builder. Z-index 0 +
+  // pointer-events:none means tables/decor (z-index 1+) stay above and
+  // remain interactive.
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.5);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  &__hint {
+    position: absolute;
+    inset: 50% 0 auto 0;
+    transform: translateY(-50%);
+    text-align: center;
+    color: #475569;
+    font-size: 13px;
+    margin: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+}
+
+// ── Floor patterns ─────────────────────────────────────────────────────
+// `none` = the legacy default — a cream + grey marble diamond tile drawn
+// in CSS so we don't need an image. Patterns 1-18 use the legacy JPG
+// assets verbatim from `/images/table-management/pattern-NN.jpg`.
+//
+// LEGACY SIZING: the old builder set `background-size: NN%` directly
+// (e.g. 20% for pattern 1, 5% for pattern 4, 80% for 16) so the tile is
+// a *percentage of the canvas width*, not a fixed pixel size. The new
+// `--pattern-size` CSS var carries that same percent literal so the
+// pattern-tiles look pixel-for-pixel identical to the legacy floor.
+// `$padded` is the zero-padded slug (e.g. "01", "12") matching the
+// legacy filename convention `pattern-NN.jpg`. Tile size is read from
+// the `--pattern-size` CSS variable as a *percentage of the canvas* so
+// the slider value can be applied directly.
+@mixin floor-jpg($padded) {
+  background-color: #2a1f1c;
+  background-image: url('/images/table-management/pattern-#{$padded}.jpg');
+  background-repeat: repeat;
+  background-size: var(--pattern-size, 20%);
+}
+
+.tm-pattern--p1  { @include floor-jpg('01'); }
+.tm-pattern--p2  { @include floor-jpg('02'); }
+.tm-pattern--p3  { @include floor-jpg('03'); }
+.tm-pattern--p4  { @include floor-jpg('04'); }
+.tm-pattern--p5  { @include floor-jpg('05'); }
+.tm-pattern--p6  { @include floor-jpg('06'); }
+.tm-pattern--p7  { @include floor-jpg('07'); }
+.tm-pattern--p8  { @include floor-jpg('08'); }
+.tm-pattern--p9  { @include floor-jpg('09'); }
+.tm-pattern--p10 { @include floor-jpg('10'); }
+.tm-pattern--p11 { @include floor-jpg('11'); }
+.tm-pattern--p12 { @include floor-jpg('12'); }
+.tm-pattern--p13 { @include floor-jpg('13'); }
+.tm-pattern--p14 { @include floor-jpg('14'); }
+.tm-pattern--p15 { @include floor-jpg('15'); }
+.tm-pattern--p16 { @include floor-jpg('16'); }
+.tm-pattern--p17 { @include floor-jpg('17'); }
+.tm-pattern--p18 { @include floor-jpg('18'); }
+
+// ── Tables on canvas ──────────────────────────────────────────────────
+// The wrap = the *full footprint* (table-top + chair area) so dragging
+// it moves both at once. Inside it we have:
+//   .tm-table-frame  → applies the rotation transform; holds chairs + table
+//   .tm-chair        → background-image of legacy chair.png, anchored to wrap edges
+//   .tm-table        → the table-top button (marble PNG), inset so chairs peek out
+// Splitting CDK's translate (on the wrap) from the rotation (on the
+// frame) avoids `[style.transform]` clobbering CDK's drag transform.
+.tm-table-wrap {
+  position: absolute;
+  cursor: grab;
+  // Sit above the canvas's white-wash overlay (z-index 0) so the table
+  // top + chairs render at full saturation, matching the legacy floor.
+  z-index: 1;
+
+  &:active { cursor: grabbing; }
+  &.cdk-drag-preview { box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18); border-radius: 12px; }
+  &.cdk-drag-placeholder { opacity: 0; }
+}
+
+.tm-table-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-origin: center center;
+}
+
+.tm-chair {
+  position: absolute;
+  background-image: url('/images/table-management/chair.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  // Width / height / left / top / transform are set inline per-seat.
+}
+
+.tm-table {
+  // Inner marble — legacy `.circle-table` / `.square-table` /
+  // `.rqctangle-table` all use a 20px margin against the wrap, so the
+  // chair PNGs (61px) hang outside the table top by ~41px.
+  position: absolute;
+  inset: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  border: 4px solid var(--accent, #32acc1);
+  // Marble texture from the legacy asset.
+  background-color: #fff;
+  background-image: url('/images/table-management/pattern_table.png');
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.48);
+  color: #0f172a;
+  cursor: inherit;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  outline: none;
+  z-index: 1;
+
+  // Permanent white wash + selection tint — mirrors the legacy
+  // `.circle-table::before` rule: 50% white over the marble at rest,
+  // swapped for the legacy blue tint when the table is selected. This
+  // is what makes the marble read as bright/cream and lets the
+  // selection stand out without changing the table border.
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: inherit;
+    pointer-events: none;
+    transition: background-color 120ms ease;
+  }
+
+  &:hover { box-shadow: 0 0 12px rgba(0, 0, 0, 0.55); }
+
+  &--selected {
+    z-index: 3;
+    &::before {
+      background-color: rgba(85, 110, 230, 0.5);
+    }
+  }
+  &--hidden {
+    opacity: 0.5;
+    background-image: repeating-linear-gradient(45deg, transparent 0 6px, rgba(15, 23, 42, 0.04) 6px 12px);
+  }
+
+  &--circle    { border-radius: 999px; }
+  &--square    { border-radius: 10px; }
+  &--rectangle { border-radius: 12px; }
+
+  &__name {
+    position: relative; // sit above ::before overlay
+    z-index: 1;
+    display: inline-block;
+    max-width: 100%;
+    padding: 0 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.1;
+    color: #0f172a;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+  }
+
+  &__seats {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #475569;
+    svg { color: #64748b; }
+  }
+}
+
+// ── Decor objects ─────────────────────────────────────────────────────
+.tm-decor-wrap {
+  position: absolute;
+  cursor: grab;
+  z-index: 1;
+
+  &:active { cursor: grabbing; }
+  &.cdk-drag-preview { box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18); border-radius: 8px; }
+  &.cdk-drag-placeholder { opacity: 0; }
+}
+
+.tm-decor {
+  position: relative; // anchor for the selection ::before overlay
+  width: 100%;
+  height: 100%;
+  display: block;
+  outline: none;
+  transform-origin: center center;
+  cursor: inherit;
+
+  // Decor backgrounds = legacy `decoration_0X.png` assets; one class per
+  // type so each `<div class="tm-decor tm-decor--tv">` paints itself
+  // without an extra `<img>` tag.
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+
+  // Legacy selected-decor highlight: a translucent blue wash overlaid
+  // via `::before` (matches `.sofa.selected:before` etc.). No outline,
+  // no glow — just the same blue (rgba 85,110,230,0.5) the tables use
+  // so selection is visually consistent across the whole canvas.
+  &--selected {
+    z-index: 2;
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-color: rgba(85, 110, 230, 0.5);
+      border-radius: 10px;
+      pointer-events: none;
+    }
+  }
+
+  &--couch      { background-image: url('/images/table-management/objects/decoration_01.png'); }
+  &--sofa       { background-image: url('/images/table-management/objects/decoration_02.png'); }
+  &--glasstable { background-image: url('/images/table-management/objects/decoration_03.png'); }
+  &--plant      { background-image: url('/images/table-management/objects/decoration_04.png'); }
+  &--walltable  { background-image: url('/images/table-management/objects/decoration_05.png'); }
+  &--tv         { background-image: url('/images/table-management/objects/decoration_06.png'); }
+
+  // Divider is drawn via the inline `background` colour rather than an image.
+  &--divider {
+    border-radius: 999px;
+    background-image: none;
+  }
+}
+
+// ── Floating zoom FAB ─────────────────────────────────────────────────
+// Bottom-left corner of the workspace; shows percent + zoom in/out
+// buttons. Hidden when there's no group selected.
+.tm-zoom-fab {
+  position: absolute;
+  bottom: 16px;
+  inset-inline-start: 16px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(6px);
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
+
+  &__lbl {
+    background: transparent;
+    border: none;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    padding: 0 8px;
+    min-width: 48px;
+    cursor: pointer;
+    border-radius: 4px;
+
+    &:hover { background: #f8fafc; color: #0f172a; }
+  }
+}
+
+// Empty state — when no group is selected, sits centered over the canvas.
+.tm-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none; // let the canvas keep panning; only buttons re-enable
+
+  & > * { pointer-events: auto; }
+
+  background: rgba(20, 14, 12, 0.55);
+  color: #fff;
+
+  svg { color: rgba(255, 255, 255, 0.85); }
+  p   { margin: 0; font-size: 14px; }
+}
+
+// ── Right panel — floating draggable window ───────────────────────────
+// Anchored top-right by default; the user can drag from the header
+// grip to relocate it anywhere inside the workspace. Clicking the
+// chevron in the header rolls the body up to header-only height.
+.tm-panel {
+  position: absolute;
+  top: 16px;
+  inset-inline-end: 16px;
+  bottom: 16px;
+  width: 340px;
+  z-index: 8;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  // When collapsed the body folds away — the panel becomes a small
+  // floating chip showing only its header strip. `auto`-sized so we
+  // don't reserve unused vertical space.
+  &--collapsed {
+    bottom: auto;
+    height: auto;
+
+    .tm-panel__tabs,
+    .tm-panel__body {
+      display: none;
+    }
+  }
+
+  // CDK drag visuals — keeps the dragged element looking right.
+  &.cdk-drag-preview { box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18); }
+  &.cdk-drag-dragging { transition: none; }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 8px 8px 6px;
+    border-bottom: 1px solid #f1f5f9;
+    user-select: none;
+    background: #fafbfc;
+  }
+
+  // Drag handle on the left of the header. The dotted "grip" icon is
+  // the affordance — `cdkDragHandle` is on this span only, so clicks
+  // on the title text or the collapse button still fire normally.
+  &__grip {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    cursor: grab;
+    border-radius: 4px;
+    flex-shrink: 0;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: #f1f5f9; color: #475569; }
+    &:active { cursor: grabbing; }
+  }
+
+  &__title {
+    margin: 0;
+    flex: 1;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__collapse {
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: #f1f5f9; color: #0f172a; }
+  }
+
+  &__tabs {
+    display: flex;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  &__tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px 8px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 120ms ease, border-color 120ms ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    &:hover { color: #0f172a; }
+    &--active {
+      color: var(--color-brand-700);
+      border-bottom-color: var(--color-brand-600);
+    }
+  }
+
+  &__count {
+    min-width: 18px;
+    height: 16px;
+    padding: 0 5px;
+    background: #f1f5f9;
+    color: #64748b;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__tab--active &__count {
+    background: var(--color-brand-50);
+    color: var(--color-brand-700);
+  }
+
+  &__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__hint {
+    margin: 0;
+    padding: 24px 8px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  &__heading {
+    margin: 4px 0 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+// Field controls inside panel
+.tm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+}
+
+.tm-input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: #0f172a;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+}
+
+.tm-slider {
+  width: 100%;
+  accent-color: var(--color-brand-600);
+}
+
+.tm-segmented {
+  display: inline-flex;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8fafc;
+
+  &__btn {
+    flex: 1;
+    padding: 6px 10px;
+    background: transparent;
+    border: none;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover:not(.tm-segmented__btn--active) {
+      background: #fff;
+      color: #0f172a;
+    }
+    &--active {
+      background: var(--color-brand-600);
+      color: #fff;
+    }
+    & + & { border-inline-start: 1px solid #e2e8f0; }
+  }
+}
+
+.tm-rotate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .tm-slider { flex: 1; }
+}
+
+// Pattern + colour swatch grid
+.tm-swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+
+.tm-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease;
+
+  &:hover { transform: scale(1.1); }
+  &--active { border-color: #0f172a; }
+}
+
+// Pattern picker — small thumbnails of every legacy floor JPG.
+// Each tile reuses the same `.tm-pattern--*` class as the main canvas
+// (composed at the call site as `tm-pattern-tile tm-pattern--p3`), so
+// the thumbnail is the actual texture rather than a generated swatch.
+.tm-pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.tm-pattern-tile {
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  // Override the canvas's `--pattern-size` CSS var locally so the
+  // thumbnail shows the texture at a readable scale instead of the
+  // tiny 20%-of-thumbnail tile the canvas uses.
+  --pattern-size: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+
+  &:hover { transform: scale(1.05); }
+
+  &--active {
+    border-color: var(--color-brand-600);
+    box-shadow: 0 0 0 2px rgba(50, 172, 193, 0.18);
+  }
+}
+
+// Settings tab — Table Groups list with drag handle + delete X
+.tm-grouplist {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px 6px 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 120ms ease;
+
+    &:hover { background: #f8fafc; }
+    &--active { background: var(--color-brand-50); }
+
+    &.cdk-drag-preview {
+      background: #fff;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.12);
+      border-radius: 8px;
+    }
+    &.cdk-drag-placeholder { opacity: 0.3; }
+  }
+
+  &__handle {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    cursor: grab;
+    flex-shrink: 0;
+    border-radius: 4px;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:active { cursor: grabbing; }
+    &:hover { background: #f1f5f9; color: #475569; }
+  }
+
+  &__name {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: #0f172a;
+    padding: 4px 0;
+
+    &::placeholder { color: #94a3b8; }
+  }
+
+  &__remove {
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #f87171;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: #fef2f2; color: #dc2626; }
+  }
+}
+
+// Toggle (reused from other pages)
+.tm-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+
+  input { position: absolute; opacity: 0; pointer-events: none; }
+
+  &__track {
+    position: relative;
+    width: 32px;
+    height: 18px;
+    border-radius: 999px;
+    background: #cbd5e1;
+    flex-shrink: 0;
+    transition: background 120ms ease;
+  }
+  &__thumb {
+    position: absolute;
+    top: 2px;
+    inset-inline-start: 2px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+    transition: inset-inline-start 120ms ease;
+  }
+  input:checked + &__track { background: var(--color-brand-600); }
+  input:checked + &__track .tm-toggle__thumb { inset-inline-start: 16px; }
+
+  &__label { font-size: 13px; color: #475569; }
+}
+
+// Lists in the right panel (tables / objects)
+.tm-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tm-list__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 120ms ease;
+
+  &:hover { background: #f8fafc; }
+  &--active { background: var(--color-brand-50); }
+
+  .tm-list__name { flex: 1; min-width: 0; font-size: 13px; font-weight: 500; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tm-list__meta { display: inline-flex; gap: 4px; flex-shrink: 0; }
+  .tm-list__chip { padding: 2px 6px; font-size: 10px; font-weight: 600; background: #f1f5f9; color: #475569; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .tm-list__seats { padding: 2px 6px; font-size: 10px; font-weight: 600; background: var(--color-brand-50); color: var(--color-brand-700); border-radius: 4px; }
+
+  .tm-iconbtn {
+    width: 24px;
+    height: 24px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #94a3b8;
+
+    &:hover { background: #f1f5f9; color: #475569; }
+  }
+}
+
+.tm-decor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.tm-decor-tile {
+  padding: 10px 8px;
+  background: #fff;
+  border: 1px dashed #e2e8f0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  &:hover {
+    background: var(--color-brand-50);
+    border-color: var(--color-brand-300, #bae6fd);
+    color: var(--color-brand-700);
+  }
+}
+
+.tm-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 4px 0;
+}
+
+.tm-block-btn {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+// Add-group dropdown wrapper — positioning context for the popmenu so
+// it anchors directly under the "Add Group" button (matching the
+// legacy floating list of inactive groups).
+.tm-addgroup {
+  position: relative;
+  display: block;
+}
+
+.tm-actions {
+  display: flex;
+  gap: 6px;
+}
+
+// Bulk-select bar — pops up at the top of the Tables / Objects tab when
+// the user has Ctrl/Cmd-clicked more than one item on the canvas.
+.tm-multibar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--color-brand-50);
+  border: 1px solid var(--color-brand-200, #bae6fd);
+  border-radius: 8px;
+
+  &__count {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-brand-700);
+  }
+}
+
+// Right-click context menu
+.tm-ctxmenu {
+  position: fixed;
+  z-index: 80;
+  min-width: 200px;
+  padding: 5px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 13px;
+    color: #0f172a;
+    cursor: pointer;
+    text-align: start;
+    width: 100%;
+
+    &:hover { background: #f8fafc; }
+    &--sub { padding-inline-start: 22px; font-size: 12px; color: #475569; }
+  }
+
+  &__heading {
+    margin: 4px 10px 2px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__divider {
+    height: 1px;
+    background: #f1f5f9;
+    margin: 4px 0;
+  }
+}

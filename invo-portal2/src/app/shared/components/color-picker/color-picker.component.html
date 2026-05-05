@@ -2,6 +2,13 @@
   ─────────────────────────────────────────────────────────────────────────
   Color picker — same trigger and panel theme as the date/time pickers.
   Opens a popover BELOW the trigger via CDK overlay.
+
+  The popover layers three OPT-IN sections on top of the always-visible
+  preset grid + hex input + footer:
+    • [showSpectrum]        — HSV picker area + hue slider
+    • [showRainbowPresets]  — replaces the small preset grid with an
+                              11×10 swatch grid
+    • [showFormats]         — multi-format readout (HEX/RGB/HSL/…)
   ─────────────────────────────────────────────────────────────────────────
 -->
 <div class="relative inline-block w-full">
@@ -56,34 +63,113 @@
     cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
     [cdkConnectedOverlayPositions]="[
       { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top',    offsetY: 4 },
-      { originX: 'start', originY: 'top',    overlayX: 'start', overlayY: 'bottom', offsetY: -4 }
+      { originX: 'start', originY: 'top',    overlayX: 'start', overlayY: 'bottom', offsetY: -4 },
+      { originX: 'end',   originY: 'bottom', overlayX: 'end',   overlayY: 'top',    offsetY: 4 },
+      { originX: 'end',   originY: 'top',    overlayX: 'end',   overlayY: 'bottom', offsetY: -4 }
     ]"
+    [cdkConnectedOverlayFlexibleDimensions]="true"
+    [cdkConnectedOverlayPush]="true"
+    [cdkConnectedOverlayViewportMargin]="8"
     (backdropClick)="cancel()"
     (detach)="cancel()">
 
     <div
-      class="bg-white rounded-xl border border-slate-200 shadow-lg p-3 select-none flex flex-col gap-3 w-[260px] max-w-[calc(100vw-16px)]"
+      class="cp-panel bg-white rounded-xl border border-slate-200 shadow-lg p-3 select-none flex flex-col gap-3 max-w-[calc(100vw-16px)]"
+      [class.cp-panel--wide]="showSpectrum() || showRainbowPresets() || showFormats()"
       role="dialog"
       aria-label="Color picker">
 
-      <!-- Preset palette -->
-      <div class="grid grid-cols-8 gap-1.5" role="group" aria-label="Preset colors">
-        @for (hex of presets(); track hex) {
-          <button
-            type="button"
-            class="w-6 h-6 rounded-md border border-slate-200 cursor-pointer transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-1"
-            [class.ring-2]="isPicked(hex)"
-            [class.ring-brand-600]="isPicked(hex)"
-            [class.ring-offset-1]="isPicked(hex)"
-            [style.background]="hex"
-            [attr.aria-label]="hex"
-            [attr.title]="hex"
-            (click)="pickPreset(hex)">
+      <!-- ═══ HSV spectrum + hue slider ═══ -->
+      @if (showSpectrum()) {
+        <section class="cp-section">
+          <button type="button" class="cp-section__head" (click)="toggleSpectrum()" [attr.aria-expanded]="spectrumExpanded()">
+            <span>{{ 'COLOR_PICKER.SPECTRUM' | translate }}</span>
+            <svg class="cp-section__chev" [class.cp-section__chev--open]="spectrumExpanded()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
           </button>
-        }
-      </div>
+          @if (spectrumExpanded()) {
+            <div class="cp-section__body">
+              <!-- 2D saturation × value area. Background is the base hue at
+                   full saturation/value; left-to-right = +S, top-to-bottom = -V. -->
+              <div
+                #spectrumEl
+                class="cp-spectrum"
+                [style.background-color]="spectrumStyle().hueColor"
+                (mousedown)="onSpectrumDown($event)"
+                (touchstart)="onSpectrumDown($event)">
+                <div class="cp-spectrum__sat"></div>
+                <div class="cp-spectrum__val"></div>
+                <div
+                  class="cp-spectrum__thumb"
+                  [style.left.%]="spectrumStyle().thumbX"
+                  [style.top.%]="spectrumStyle().thumbY"
+                  [style.background]="draft()">
+                </div>
+              </div>
+              <!-- Hue slider — drag horizontally to rotate the base hue. -->
+              <div
+                #hueEl
+                class="cp-hue"
+                (mousedown)="onHueDown($event)"
+                (touchstart)="onHueDown($event)">
+                <div class="cp-hue__thumb" [style.left.%]="spectrumStyle().huePos"></div>
+              </div>
+            </div>
+          }
+        </section>
+      }
 
-      <!-- Custom: native swatch + hex input -->
+      <!-- ═══ Preset palette ═══
+           Two flavours: the curated 16-swatch grid (default) and the
+           dense 11×10 rainbow grid (showRainbowPresets). They share the
+           same swatch markup; only the column count + source array
+           differ, so the active-state ring works for both. The dense
+           variant lives inside a collapsible section since it eats
+           ~280px on its own. -->
+      @if (showRainbowPresets()) {
+        <section class="cp-section">
+          <button type="button" class="cp-section__head" (click)="toggleRainbow()" [attr.aria-expanded]="rainbowExpanded()">
+            <span>{{ 'COLOR_PICKER.PALETTE' | translate }}</span>
+            <svg class="cp-section__chev" [class.cp-section__chev--open]="rainbowExpanded()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          @if (rainbowExpanded()) {
+            <div class="cp-section__body">
+              <div class="grid grid-cols-12 gap-1" role="group" aria-label="Color presets">
+                @for (hex of rainbowGrid; track hex) {
+                  <button
+                    type="button"
+                    class="cp-swatch cp-swatch--sm"
+                    [class.cp-swatch--active]="isPicked(hex)"
+                    [style.background]="hex"
+                    [attr.title]="hex"
+                    [attr.aria-label]="hex"
+                    (click)="pickPreset(hex)">
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </section>
+      } @else {
+        <div class="grid grid-cols-8 gap-1.5" role="group" aria-label="Preset colors">
+          @for (hex of presets(); track hex) {
+            <button
+              type="button"
+              class="cp-swatch"
+              [class.cp-swatch--active]="isPicked(hex)"
+              [style.background]="hex"
+              [attr.aria-label]="hex"
+              [attr.title]="hex"
+              (click)="pickPreset(hex)">
+            </button>
+          }
+        </div>
+      }
+
+      <!-- ═══ Custom: native swatch + hex input ═══ -->
       <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
         <label class="relative w-8 h-8 rounded-md border border-slate-200 overflow-hidden cursor-pointer bg-white shrink-0" [attr.title]="'Custom color'">
           <input
@@ -110,7 +196,91 @@
         />
       </div>
 
-      <!-- Footer -->
+      <!-- ═══ WCAG 2.1 contrast badge ═══
+           Surfaces a pass/fail score against the configured background
+           (`[wcagAgainst]`) so brand teams see at a glance whether
+           their picked colour will be readable on the printed paper.
+           Soft warning, not a block — picking a fail-grade colour
+           still commits on Done. -->
+      @if (wcagResult(); as r) {
+        <div
+          class="cp-wcag"
+          [class.cp-wcag--fail]="r.level === 'fail'"
+          [class.cp-wcag--aa-large]="r.level === 'aa-large'"
+          [class.cp-wcag--aa]="r.level === 'aa'"
+          [class.cp-wcag--aaa]="r.level === 'aaa'"
+          [attr.title]="'COLOR_PICKER.WCAG_HINT' | translate"
+        >
+          <span class="cp-wcag__chip">
+            @switch (r.level) {
+              @case ('fail')     { {{ 'COLOR_PICKER.WCAG_FAIL'     | translate }} }
+              @case ('aa-large') { {{ 'COLOR_PICKER.WCAG_AA_LARGE' | translate }} }
+              @case ('aa')       { {{ 'COLOR_PICKER.WCAG_AA'       | translate }} }
+              @case ('aaa')      { {{ 'COLOR_PICKER.WCAG_AAA'      | translate }} }
+            }
+          </span>
+          <span class="cp-wcag__ratio">{{ r.ratio.toFixed(2) }} : 1</span>
+          <span class="cp-wcag__bg" [style.background]="wcagAgainst()"></span>
+        </div>
+      }
+
+      <!-- ═══ Multi-format readouts ═══
+           One pill per colour space; each has a copy button. The
+           formats() computed re-derives every value from the live
+           draft so what you copy is what you'd save on OK. -->
+      @if (showFormats()) {
+        <section class="cp-section">
+          <button type="button" class="cp-section__head" (click)="toggleFormats()" [attr.aria-expanded]="formatsExpanded()">
+            <span>{{ 'COLOR_PICKER.FORMATS' | translate }}</span>
+            <svg class="cp-section__chev" [class.cp-section__chev--open]="formatsExpanded()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          @if (formatsExpanded() && formats(); as f) {
+            <div class="cp-section__body">
+              <div class="cp-formats" role="group" aria-label="Color formats">
+                <button type="button" class="cp-format" (click)="copy(f.hex)"  [attr.aria-label]="'Copy HEX'">
+                  <span class="cp-format__label">HEX</span>
+                  <span class="cp-format__value">{{ f.hex }}</span>
+                  <svg class="cp-format__copy" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                </button>
+                <button type="button" class="cp-format" (click)="copy(f.hsl)" [attr.aria-label]="'Copy HSL'">
+                  <span class="cp-format__label">HSL</span><span class="cp-format__value">{{ f.hsl }}</span>
+                  <svg class="cp-format__copy" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+                <button type="button" class="cp-format" (click)="copy(f.rgb)" [attr.aria-label]="'Copy RGB'">
+                  <span class="cp-format__label">RGB</span><span class="cp-format__value">{{ f.rgb }}</span>
+                  <svg class="cp-format__copy" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+                <button type="button" class="cp-format" (click)="copy(f.xyz)" [attr.aria-label]="'Copy XYZ'">
+                  <span class="cp-format__label">XYZ</span><span class="cp-format__value">{{ f.xyz }}</span>
+                  <svg class="cp-format__copy" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+                <button type="button" class="cp-format" (click)="copy(f.cmyk)" [attr.aria-label]="'Copy CMYK'">
+                  <span class="cp-format__label">CMYK</span><span class="cp-format__value">{{ f.cmyk }}</span>
+                  <svg class="cp-format__copy" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+                <button type="button" class="cp-format" (click)="copy(f.luv)" [attr.aria-label]="'Copy LUV'">
+                  <span class="cp-format__label">LUV</span><span class="cp-format__value">{{ f.luv }}</span>
+                  <svg class="cp-format__copy" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+                <button type="button" class="cp-format" (click)="copy(f.lab)" [attr.aria-label]="'Copy LAB'">
+                  <span class="cp-format__label">LAB</span><span class="cp-format__value">{{ f.lab }}</span>
+                  <svg class="cp-format__copy" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+                <button type="button" class="cp-format" (click)="copy(f.hwb)" [attr.aria-label]="'Copy HWB'">
+                  <span class="cp-format__label">HWB</span><span class="cp-format__value">{{ f.hwb }}</span>
+                  <svg class="cp-format__copy" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+            </div>
+          }
+        </section>
+      }
+
+      <!-- ═══ Footer ═══ -->
       <div class="flex items-center justify-between pt-2 border-t border-slate-100">
         <button
           type="button"

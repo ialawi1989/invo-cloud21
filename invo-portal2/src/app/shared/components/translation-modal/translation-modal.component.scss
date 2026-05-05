@@ -1,0 +1,116 @@
+:host { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+
+.tm {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+// ── Header ─────────────────────────────────────────────────────────────
+.tm__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tm__title {
+  margin: 0 0 2px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.tm__sub {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.tm__close {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 120ms ease, color 120ms ease;
+
+  &:hover { background: #f1f5f9; color: #475569; }
+}
+
+// ── Body ───────────────────────────────────────────────────────────────
+.tm__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tm__field { display: flex; flex-direction: column; gap: 6px; }
+
+.tm__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.tm__input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: #0f172a;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+}
+
+// ── Footer ─────────────────────────────────────────────────────────────
+.tm__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 24px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn {
+  padding: 8px 18px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &-primary {
+    background: var(--color-brand-600); color: #fff; border-color: var(--color-brand-600);
+    &:hover { background: var(--color-brand-700); border-color: var(--color-brand-700); }
+  }
+  &-ghost {
+    background: #fff; color: #475569; border-color: #e2e8f0;
+    &:hover { background: #f8fafc; color: #0f172a; }
+  }
+}

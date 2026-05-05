@@ -1,0 +1,116 @@
+<!--
+  ─────────────────────────────────────────────────────────────────────────
+  Gradient picker — multi-stop linear gradient editor.
+
+  Layout:
+    1. Live preview bar (the gradient itself)
+    2. Stops track — click to add a stop, drag a thumb to move
+    3. Direction segmented control (+ angle input when 'angle' picked)
+    4. Selected stop's colour picker (advanced) and remove button
+  ─────────────────────────────────────────────────────────────────────────
+-->
+<div class="gp" [class.gp--disabled]="isDisabled()">
+  <!-- Live preview -->
+  <div class="gp-preview" [style.background]="cssValue()" aria-hidden="true"></div>
+
+  <!-- Stops track. The track's background is the same gradient as the
+       preview so the user sees stops anchored on top of their colours.
+       Click anywhere on the empty bar to add a stop at that x%. -->
+  <div
+    #trackEl
+    class="gp-track"
+    [style.background]="cssValue()"
+    (mousedown)="onTrackDown($event)"
+    (touchstart)="onTrackDown($event)">
+    @for (s of value().stops; track $index; let i = $index) {
+      <button
+        type="button"
+        class="gp-track__thumb"
+        [class.gp-track__thumb--active]="selectedIndex() === i"
+        [style.left.%]="s.position"
+        [style.--stop-color]="s.color"
+        (mousedown)="onThumbDown(i, $event)"
+        (touchstart)="onThumbDown(i, $event)"
+        (click)="$event.stopPropagation(); selectStop(i)"
+        [attr.aria-label]="s.color + ' at ' + s.position + '%'"
+        [attr.title]="s.color + ' @ ' + s.position + '%'">
+      </button>
+    }
+  </div>
+
+  <!-- Direction segmented control. -->
+  <div class="gp-row">
+    <div class="gp-segmented" role="group" [attr.aria-label]="'Direction'">
+      @for (dir of directions; track dir) {
+        <button
+          type="button"
+          class="gp-segmented__btn"
+          [class.gp-segmented__btn--active]="value().direction === dir"
+          (click)="setDirection(dir)">
+          @switch (dir) {
+            @case ('to right')  { → }
+            @case ('to left')   { ← }
+            @case ('to bottom') { ↓ }
+            @case ('to top')    { ↑ }
+            @case ('angle')     { ° }
+          }
+        </button>
+      }
+    </div>
+    @if (value().direction === 'angle') {
+      <input
+        type="number"
+        class="gp-input gp-input--angle"
+        min="0" max="360" step="1"
+        [ngModel]="value().angle ?? 90"
+        (ngModelChange)="setAngle(+($event ?? 90))"
+        [ngModelOptions]="{ standalone: true }"
+        aria-label="Angle (degrees)"
+      />
+    }
+  </div>
+
+  <!-- Selected-stop editor -->
+  @if (selectedStop(); as s) {
+    <div class="gp-stop">
+      <div class="gp-stop__head">
+        <span class="gp-stop__label">
+          {{ 'Stop' }} {{ selectedIndex() + 1 }} / {{ value().stops.length }}
+        </span>
+        <button
+          type="button"
+          class="gp-stop__remove"
+          [disabled]="value().stops.length <= 2"
+          (click)="removeStop(selectedIndex())"
+          aria-label="Remove stop">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="gp-stop__body">
+        <app-color-picker
+          [ngModel]="s.color"
+          (ngModelChange)="setStopColor($event)"
+          [ngModelOptions]="{ standalone: true }"
+          [showSpectrum]="true"
+          [showRainbowPresets]="true"
+          [showFormats]="true"
+        />
+        <label class="gp-stop__pos">
+          <span>%</span>
+          <input
+            type="number"
+            class="gp-input"
+            min="0" max="100" step="1"
+            [ngModel]="s.position"
+            (ngModelChange)="setStopPosition(selectedIndex(), +($event ?? 0))"
+            [ngModelOptions]="{ standalone: true }"
+            aria-label="Stop position (%)"
+          />
+        </label>
+      </div>
+    </div>
+  }
+</div>

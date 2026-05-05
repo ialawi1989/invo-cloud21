@@ -1,0 +1,226 @@
+:host {
+  display: block;
+  width: 100%;
+  /* Receipt-paper ink style: dark text on the slightly off-white
+     paper background. Using `currentColor` lets QR / barcode swap
+     to brand cyan when the row is selected (handled in the parent). */
+  color: #1f2937;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  line-height: 1.25;
+}
+
+/* `--hidden` = element flagged hidden in the model. We dim it
+    rather than removing it so the user can still see the slot
+    while editing. Matches the legacy preview behaviour. */
+.er--hidden { opacity: 0.4; }
+
+/* ── Text ────────────────────────────────────────────────────────── */
+.er-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── SideText: simple two-cell flex (left + right of receipt) ────── */
+.er-side {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+
+  &__cell {
+    flex: 1;
+    min-width: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}
+
+/* ── Line ────────────────────────────────────────────────────────── */
+.er-line {
+  display: block;
+
+  &__rule {
+    display: block;
+    border-top-width: 1px;
+    border-top-color: #1f2937;
+  }
+}
+
+/* ── Spacer (just empty box at chosen height) ────────────────────── */
+.er-spacer { display: block; }
+
+/* ── Logo / Image ────────────────────────────────────────────────── */
+.er-img {
+  img {
+    display: inline-block;
+    object-fit: contain;
+  }
+
+  &__ph {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 4px;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.5);
+
+    small {
+      font-size: 9px;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 0 2px;
+    }
+  }
+}
+
+/* ── QR — real SVG via `qrcode` ──────────────────────────────────── */
+.er-qr-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+/* Frame owns the border + padding + relative positioning so the
+   ZATCA badge has a stable anchor (the inner `.er-qr` is a pure
+   SVG mount point — `[innerHTML]` clobbers every child each tick). */
+.er-qr-frame {
+  position: relative;
+  display: inline-block;
+  border: 2px solid #1f2937;
+  padding: 6px;
+  background: #fff;
+  color: #1f2937;
+
+  // ZATCA QR (Saudi Arabia tax-compliance). Tinted ink + a corner
+  // badge so the user can spot the legally-required QR at a glance
+  // among ordinary feedback / link QR codes.
+  &--zatca {
+    border-color: #047857;
+    color: #064e3b;
+  }
+}
+
+.er-qr {
+  display: inline-block;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+}
+
+.er-qr__badge {
+  position: absolute;
+  top: -8px;
+  inset-inline-end: -8px;
+  padding: 1px 6px;
+  background: #047857;
+  color: #fff;
+  border-radius: 999px;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+}
+
+/* ── Barcode — real CODE128 via `jsbarcode` ──────────────────────── */
+.er-barcode-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.er-barcode {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  background: #fff;
+
+  /* `jsbarcode` writes a fixed-width SVG; let it scale to the
+     wrapper's width while keeping the bar height the user picked.
+     `display: block` on the inline SVG kills the baseline gap. */
+  > svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.er-barcode-wrap small {
+  font-size: 10px;
+  color: #1f2937;
+  letter-spacing: 0.05em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ── Table — header section + per-line body section ────────────────
+   The receipt prints the column layout twice: once as a header
+   (cell labels = `cell.value`) and once per line item (cell data =
+   `cell.key` resolved against the line). Each `__line` block is a
+   compact stack of all rows for one record so the user can see how a
+   two-row template (e.g. qty/tax on top, product/total below) looks
+   filled out. */
+.er-table {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-size: 11px;
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+
+    &--header {
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 10px;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 2px;
+    }
+
+    &--body {
+      padding-top: 2px;
+    }
+  }
+
+  /* One invoice line spans every row in the column template — group
+     them visually so a multi-row layout reads as one record. */
+  &__line {
+    display: flex;
+    flex-direction: column;
+    padding: 2px 0;
+
+    & + & { border-top: 1px dotted #e2e8f0; }
+  }
+
+  &__row {
+    display: flex;
+    align-items: baseline;
+    width: 100%;
+    padding: 1px 0;
+  }
+
+  &__cell {
+    min-width: 0;
+    padding: 0 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__hint {
+    display: block;
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 12px 0;
+  }
+}

@@ -1,0 +1,1508 @@
+<div class="dbf">
+  <!-- ════ TOP BAR ═══════════════════════════════════════════════════ -->
+  <header class="dbf-topbar">
+    <button type="button" class="dbf-topbar__home" (click)="cancel()" [appTooltip]="'COMMON.BACK' | translate">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </button>
+
+    <div class="dbf-topbar__divider"></div>
+
+    <input
+      type="text"
+      class="dbf-topbar__name"
+      [ngModel]="template().templateName"
+      (ngModelChange)="patch('templateName', $event)"
+      [placeholder]="'DOCUMENT_BUILDER.NAME_PLACEHOLDER' | translate"
+      [ngModelOptions]="{ standalone: true }"
+    />
+
+    <!-- Document-type segmented control. New templates can switch
+         (with confirm); saved templates show the type as a static
+         chip because changing it would invalidate stored data. -->
+    <!-- Document type is locked to the URL (`?type=…`). The user
+         entered this builder from the entity-specific tile in
+         Settings; switching type within the form would be confusing
+         since it'd no longer match the entity context they came from. -->
+    <span class="dbf-topbar__type-chip"
+          [appTooltip]="'DOCUMENT_BUILDER.TYPE_LOCKED_HINT' | translate">
+      {{ ('DOCUMENT_BUILDER.TYPE.' + template().documentType) | translate }}
+    </span>
+
+    <div class="dbf-topbar__spacer"></div>
+
+    <!-- Render-mode badge — locked. The user picked Classic vs
+         Designer when the template was created; switching it on a
+         saved template would mix incompatible JSON shapes, so the
+         badge is read-only. To change the mode, create a new
+         template. -->
+    <span class="dbf-topbar__render-locked"
+          [class.dbf-topbar__render-locked--designer]="template().renderMode === 'designer'"
+          [appTooltip]="'DOCUMENT_BUILDER.RENDER_LOCKED_HINT' | translate">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      {{ ('DOCUMENT_BUILDER.RENDER.' + template().renderMode.toUpperCase()) | translate }}
+    </span>
+
+    <!-- Undo / Redo — keyboard shortcuts wired in the component
+         (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z). Buttons are disabled when
+         their respective stack is empty so the toolbar reflects
+         what's actionable. -->
+    <div class="dbf-topbar__history">
+      <button
+        type="button"
+        class="dbf-topbar__icon-btn"
+        (click)="undo()"
+        [disabled]="!canUndo()"
+        [appTooltip]="'DOCUMENT_BUILDER.UNDO' | translate"
+        [attr.aria-label]="'DOCUMENT_BUILDER.UNDO' | translate"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7v6h6"/>
+          <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-7 3.3L3 13"/>
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="dbf-topbar__icon-btn"
+        (click)="redo()"
+        [disabled]="!canRedo()"
+        [appTooltip]="'DOCUMENT_BUILDER.REDO' | translate"
+        [attr.aria-label]="'DOCUMENT_BUILDER.REDO' | translate"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 7v6h-6"/>
+          <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 7 3.3L21 13"/>
+        </svg>
+      </button>
+    </div>
+
+    <button type="button" class="btn btn-default" (click)="resetToDefault()">
+      {{ 'DOCUMENT_BUILDER.RESET' | translate }}
+    </button>
+
+    <button type="button" class="btn btn-default" (click)="exportJson()" [appTooltip]="'DOCUMENT_BUILDER.EXPORT_HINT' | translate">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <polyline points="19 12 12 19 5 12"/>
+      </svg>
+      {{ 'DOCUMENT_BUILDER.EXPORT' | translate }}
+    </button>
+
+    <label class="btn btn-default" [appTooltip]="'DOCUMENT_BUILDER.IMPORT_HINT' | translate">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="19" x2="12" y2="5"/>
+        <polyline points="5 12 12 5 19 12"/>
+      </svg>
+      {{ 'DOCUMENT_BUILDER.IMPORT' | translate }}
+      <input type="file" accept="application/json,.json" hidden (change)="onImportFile($event)"/>
+    </label>
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || !isDirty() || !template().templateName.trim()"
+    >
+      {{ saving() ? ('DOCUMENT_BUILDER.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+    </button>
+  </header>
+
+  <!-- ════ LAYOUT — switches based on renderMode ═════════════════════
+       Classic: nav + accordion sidebar + canvas (Classic preview).
+       Designer: palette + layers + canvas (designer canvas) +
+                 inspector. The renderMode flag picks which layout
+                 shows; both share the same template signal so
+                 toggles + edits round-trip cleanly. -->
+  @if (template().renderMode === 'designer') {
+    <div class="dbf-layout dbf-layout--designer">
+      <!-- ── Left rail: palette + layers ─────────────────────── -->
+      <aside class="dbf-designer-left">
+        <header class="dbf-designer-left__header">
+          <h3>{{ 'DOCUMENT_BUILDER.DESIGNER.PALETTE' | translate }}</h3>
+        </header>
+        <div class="dbf-designer-palette">
+          @for (type of designerPalette; track type) {
+            <div
+              class="dbf-designer-palette__tile"
+              draggable="true"
+              (dragstart)="onPaletteDragStart($event, type)"
+              [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.DRAG_TO_CANVAS' | translate"
+            >{{ type }}</div>
+          }
+        </div>
+
+        <header class="dbf-designer-left__header">
+          <h3>{{ 'DOCUMENT_BUILDER.DESIGNER.LAYERS' | translate }}
+            <span class="dbf-count">{{ template().designerElements.length }}</span>
+          </h3>
+        </header>
+        <ul class="dbf-designer-layers">
+          @for (el of template().designerElements; track trackDesigner($index, el); let i = $index) {
+            <li
+              class="dbf-designer-layers__item"
+              [class.dbf-designer-layers__item--on]="selectedDesignerId() === el.id"
+              [class.dbf-designer-layers__item--hidden]="el.hidden"
+              [class.dbf-designer-layers__item--locked]="el.locked"
+              (click)="selectDesignerElement(el)"
+            >
+              <span class="dbf-designer-layers__type">{{ el.type }}</span>
+              <span class="dbf-designer-layers__name">{{ $any(el.content) || ('—') }}</span>
+              <button class="dbf-designer-layers__btn"
+                      (click)="$event.stopPropagation(); patchDesignerElement(el.id, { hidden: !el.hidden })"
+                      [appTooltip]="(el.hidden ? 'DOCUMENT_BUILDER.DESIGNER.SHOW' : 'DOCUMENT_BUILDER.DESIGNER.HIDE') | translate">
+                {{ el.hidden ? '◯' : '◉' }}
+              </button>
+              <button class="dbf-designer-layers__btn"
+                      (click)="$event.stopPropagation(); patchDesignerElement(el.id, { locked: !el.locked })"
+                      [appTooltip]="(el.locked ? 'DOCUMENT_BUILDER.DESIGNER.UNLOCK' : 'DOCUMENT_BUILDER.DESIGNER.LOCK') | translate">
+                {{ el.locked ? '🔒' : '🔓' }}
+              </button>
+            </li>
+          }
+          @if (template().designerElements.length === 0) {
+            <li class="dbf-designer-layers__empty">
+              {{ 'DOCUMENT_BUILDER.DESIGNER.LAYERS_EMPTY' | translate }}
+            </li>
+          }
+        </ul>
+
+        <button class="btn btn-default dbf-designer-left__sync"
+                (click)="syncFromClassic()"
+                [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.SYNC_HINT' | translate">
+          {{ 'DOCUMENT_BUILDER.DESIGNER.SYNC' | translate }}
+        </button>
+      </aside>
+
+      <!-- ── Canvas ────────────────────────────────────────────── -->
+      <div class="dbf-canvas">
+        <div class="dbf-canvas__toolbar">
+          <button type="button" class="dbf-canvas__zoom-btn" (click)="zoomOut()" [appTooltip]="'DOCUMENT_BUILDER.ZOOM_OUT' | translate">−</button>
+          <span class="dbf-canvas__zoom-value">{{ (zoom() * 100) | number:'1.0-0' }}%</span>
+          <button type="button" class="dbf-canvas__zoom-btn" (click)="zoomIn()" [appTooltip]="'DOCUMENT_BUILDER.ZOOM_IN' | translate">+</button>
+          <button type="button" class="dbf-canvas__zoom-text" (click)="zoomFit()">{{ 'DOCUMENT_BUILDER.FIT' | translate }}</button>
+          <button type="button" class="dbf-canvas__zoom-text" (click)="zoom100()">100%</button>
+          <div class="dbf-canvas__spacer"></div>
+          <span class="dbf-canvas__meta">
+            {{ template().selectedPaperSize }} ·
+            {{ ('DOCUMENT_BUILDER.GENERAL.ORIENT_' + template().selectedPaperOrientation.toUpperCase()) | translate }} ·
+            {{ 'DOCUMENT_BUILDER.RENDER.DESIGNER' | translate }}
+          </span>
+        </div>
+        <div class="dbf-canvas__paper" [style.transform]="'scale(' + zoom() + ')'">
+          <app-designer-canvas
+            [template]="template()"
+            [elements]="template().designerElements"
+            [selectedId]="selectedDesignerId()"
+            [zoom]="zoom()"
+            (elementsChange)="setDesignerElements($event)"
+            (selectChange)="selectDesignerElement($event)"
+          />
+        </div>
+      </div>
+
+      <!-- ── Right rail: inspector ─────────────────────────────── -->
+      <aside class="dbf-designer-right">
+        <app-designer-inspector
+          [selected]="selectedDesigner()"
+          [zIndex]="selectedDesignerZ()"
+          [total]="template().designerElements.length"
+          (elementChange)="replaceDesignerElement($event)"
+          (arrange)="arrangeSelected($event)"
+          (duplicate)="duplicateSelectedDesigner()"
+          (delete)="deleteSelectedDesigner()"
+          (toggleHidden)="toggleDesignerHidden()"
+          (toggleLocked)="toggleDesignerLocked()"
+        />
+      </aside>
+    </div>
+  } @else {
+  <!-- ════ CLASSIC layout (existing — left-nav | sidebar | canvas) ═══ -->
+  <div class="dbf-layout">
+    <!-- ── Left nav: 8 vertical tabs ─────────────────────────── -->
+    <ul class="dbf-nav">
+      @for (tab of tabs; track trackTab($index, tab)) {
+        <li>
+          <button
+            type="button"
+            class="dbf-nav__item"
+            [class.dbf-nav__item--on]="activeTab() === tab.id"
+            (click)="selectTab(tab.id)"
+            [appTooltip]="(tab.label) | translate"
+          >
+            <span class="dbf-nav__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                @switch (tab.icon) {
+                  @case ('settings') {
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                  }
+                  @case ('layout') {
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/>
+                    <line x1="3" y1="15" x2="21" y2="15"/>
+                  }
+                  @case ('file') {
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  }
+                  @case ('table') {
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/>
+                    <line x1="3" y1="15" x2="21" y2="15"/>
+                    <line x1="9" y1="3" x2="9" y2="21"/>
+                  }
+                  @case ('receipt') {
+                    <rect x="4" y="2" width="16" height="20" rx="2"/>
+                    <line x1="8" y1="6" x2="16" y2="6"/>
+                    <line x1="8" y1="10" x2="16" y2="10"/>
+                    <line x1="8" y1="14" x2="16" y2="14"/>
+                  }
+                  @case ('edit') {
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  }
+                  @case ('more') {
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="19" cy="12" r="1"/>
+                    <circle cx="5"  cy="12" r="1"/>
+                  }
+                  @case ('type') {
+                    <polyline points="4 7 4 4 20 4 20 7"/>
+                    <line x1="9" y1="20" x2="15" y2="20"/>
+                    <line x1="12" y1="4" x2="12" y2="20"/>
+                  }
+                }
+              </svg>
+            </span>
+            <span class="dbf-nav__label">{{ tab.label | translate }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+
+    <!-- ── Right sidebar: accordion config (per-tab) ─────────── -->
+    <aside class="dbf-sidebar">
+      <header class="dbf-sidebar__header">
+        <h2>{{ ('DOCUMENT_BUILDER.TAB.' + activeTab().toUpperCase().replace('-', '_')) | translate }}</h2>
+        <p>{{ 'DOCUMENT_BUILDER.SIDEBAR_HINT' | translate }}</p>
+      </header>
+
+      <!-- Vertical splitter on the trailing edge — drag to widen the
+           config panel. Width is persisted to localStorage so it
+           survives reloads. -->
+      <div
+        class="dbf-sidebar__splitter"
+        [class.dbf-sidebar__splitter--active]="sidebarDragging()"
+        [appTooltip]="'DOCUMENT_BUILDER.RESIZE_PANEL' | translate"
+        role="separator"
+        aria-orientation="vertical"
+        (mousedown)="onSidebarSplitterMouseDown($event)"
+      ></div>
+
+      <div class="dbf-sidebar__body">
+        @switch (activeTab()) {
+          <!-- ─── GENERAL ─────────────────────────────────────── -->
+          @case ('general') {
+            <!-- Properties -->
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn" [class.dbf-acc__btn--open]="activePanel() === 'properties'" (click)="togglePanel('properties')">
+                <span>{{ 'DOCUMENT_BUILDER.GENERAL.PROPERTIES' | translate }}</span>
+                <svg class="dbf-acc__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              @if (activePanel() === 'properties') {
+                <div class="dbf-acc__body">
+                  <!-- Paper size -->
+                  <div class="dbf-field">
+                    <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.GENERAL.PAPER_SIZE' | translate }}</label>
+                    <div class="dbf-radio-group">
+                      @for (sz of ['A5', 'A4', 'Letter']; track sz) {
+                        <label class="dbf-radio">
+                          <input type="radio" name="paperSize"
+                                 [checked]="template().selectedPaperSize === sz"
+                                 (change)="patch('selectedPaperSize', sz)"/>
+                          <span>{{ sz }}</span>
+                        </label>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Orientation -->
+                  <div class="dbf-field">
+                    <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.GENERAL.ORIENTATION' | translate }}</label>
+                    <div class="dbf-radio-group">
+                      @for (o of ['portrait', 'landscape']; track o) {
+                        <label class="dbf-radio">
+                          <input type="radio" name="orient"
+                                 [checked]="template().selectedPaperOrientation === o"
+                                 (change)="patch('selectedPaperOrientation', o)"/>
+                          <span>{{ ('DOCUMENT_BUILDER.GENERAL.ORIENT_' + o.toUpperCase()) | translate }}</span>
+                        </label>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Margins -->
+                  <div class="dbf-field">
+                    <label class="dbf-field__label">
+                      {{ 'DOCUMENT_BUILDER.GENERAL.MARGINS' | translate }}
+                      <span class="dbf-field__muted">({{ 'DOCUMENT_BUILDER.GENERAL.IN_CM' | translate }})</span>
+                    </label>
+                    <div class="dbf-grid-2">
+                      @for (k of marginKeys; track k) {
+                        <div>
+                          <label class="dbf-field__sublabel">{{ ('DOCUMENT_BUILDER.GENERAL.MARGIN_' + k.toUpperCase()) | translate }}</label>
+                          <input type="number" min="0" step="0.1" class="dbf-input"
+                                 [ngModel]="marginValue(k)"
+                                 (ngModelChange)="patchMargin(k, $event)"/>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </section>
+
+            <!-- Background -->
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn" [class.dbf-acc__btn--open]="activePanel() === 'background'" (click)="togglePanel('background')">
+                <span>{{ 'DOCUMENT_BUILDER.GENERAL.BACKGROUND' | translate }}</span>
+                <svg class="dbf-acc__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              @if (activePanel() === 'background') {
+                <div class="dbf-acc__body">
+                  <div class="dbf-field">
+                    <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.GENERAL.BACKGROUND_COLOR' | translate }}</label>
+                    <app-color-picker
+                      [ngModel]="template().BackgroundColor"
+                      [showSpectrum]="true"
+                      [showRainbowPresets]="true"
+                      (ngModelChange)="patch('BackgroundColor', $event)"
+                    />
+                  </div>
+                </div>
+              }
+            </section>
+
+            <!-- Defaults -->
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn" [class.dbf-acc__btn--open]="activePanel() === 'defaults'" (click)="togglePanel('defaults')">
+                <span>{{ 'DOCUMENT_BUILDER.GENERAL.TEXT_DEFAULTS' | translate }}</span>
+                <svg class="dbf-acc__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              @if (activePanel() === 'defaults') {
+                <div class="dbf-acc__body">
+                  <div class="dbf-field">
+                    <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.GENERAL.TEXT_COLOR' | translate }}</label>
+                    <app-color-picker
+                      [ngModel]="template().textColor"
+                      [wcagAgainst]="template().BackgroundColor || '#ffffff'"
+                      [showSpectrum]="true"
+                      [showRainbowPresets]="true"
+                      (ngModelChange)="patch('textColor', $event)"
+                    />
+                  </div>
+                  <div class="dbf-field">
+                    <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.GENERAL.TEXT_SIZE' | translate }}</label>
+                    <input type="number" min="6" max="24" class="dbf-input"
+                           [ngModel]="template().textSize"
+                           (ngModelChange)="patch('textSize', $event)"/>
+                  </div>
+                </div>
+              }
+            </section>
+          }
+
+          <!-- ─── HEADER & FOOTER ─────────────────────────────── -->
+          @case ('header-footer') {
+            <!-- HEADER -->
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn" [class.dbf-acc__btn--open]="activePanel() === 'header'" (click)="togglePanel('header')">
+                <span>{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.HEADER' | translate }}</span>
+                <svg class="dbf-acc__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              @if (activePanel() === 'header') {
+                <div class="dbf-acc__body">
+                  <label class="dbf-toggle">
+                    <input type="checkbox"
+                           [checked]="template().headerCustomization.visibility.visible"
+                           (change)="patchHeaderVisibility({ visible: $any($event.target).checked })"/>
+                    <span>{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_HEADER' | translate }}</span>
+                  </label>
+
+                  @if (!template().headerCustomization.visibility.visible) {
+                    <div class="dbf-field">
+                      <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.RESERVED_HEIGHT' | translate }}</label>
+                      <input type="number" min="0" class="dbf-input"
+                             [ngModel]="template().headerCustomization.visibility.height"
+                             (ngModelChange)="patchHeaderVisibility({ height: +$event })"/>
+                    </div>
+                  } @else {
+                    <!-- Fields | Layout sub-tab. Fields = per-field
+                         visibility + per-field gear-collapsed editor;
+                         Layout = bulk style editor that pushes a font
+                         change onto every field in this section. -->
+                    <div class="dbf-tabs" role="tablist">
+                      <button type="button"
+                              class="dbf-tabs__btn"
+                              role="tab"
+                              [class.dbf-tabs__btn--on]="headerActiveTab() === 'fields'"
+                              [attr.aria-selected]="headerActiveTab() === 'fields'"
+                              (click)="setHeaderTab('fields')">
+                        {{ 'DOCUMENT_BUILDER.SUBTAB.FIELDS' | translate }}
+                      </button>
+                      <button type="button"
+                              class="dbf-tabs__btn"
+                              role="tab"
+                              [class.dbf-tabs__btn--on]="headerActiveTab() === 'layout'"
+                              [attr.aria-selected]="headerActiveTab() === 'layout'"
+                              (click)="setHeaderTab('layout')">
+                        {{ 'DOCUMENT_BUILDER.SUBTAB.LAYOUT' | translate }}
+                      </button>
+                    </div>
+
+                    @if (headerActiveTab() === 'fields') {
+                      <!-- Logo (its own row + dimension fields). -->
+                      <label class="dbf-toggle">
+                        <input type="checkbox"
+                               [checked]="template().headerCustomization.logo.show"
+                               (change)="patchHeaderLogo({ show: $any($event.target).checked })"/>
+                        <span>{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_LOGO' | translate }}</span>
+                      </label>
+                      @if (template().headerCustomization.logo.show) {
+                        <div class="dbf-field">
+                          <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.LOGO_SIZE' | translate }}</label>
+                          <div class="dbf-grid-2">
+                            <div>
+                              <label class="dbf-field__sublabel">{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.WIDTH_PX' | translate }}</label>
+                              <input type="number" class="dbf-input"
+                                     [ngModel]="template().headerCustomization.logo.width"
+                                     (ngModelChange)="patchHeaderLogo({ width: +$event })"/>
+                            </div>
+                            <div>
+                              <label class="dbf-field__sublabel">{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.HEIGHT_PX' | translate }}</label>
+                              <input type="number" class="dbf-input"
+                                     [ngModel]="template().headerCustomization.logo.height"
+                                     (ngModelChange)="patchHeaderLogo({ height: +$event })"/>
+                            </div>
+                          </div>
+                        </div>
+                      }
+
+                      <!-- Per-text-field gear-collapsed editors. The
+                           checkbox lives inside the editor, so this
+                           single component drives both visibility AND
+                           per-field style. -->
+                      <!-- Invoice Title — the main document heading
+                           ("TAX INVOICE", "ESTIMATE", …). Required:
+                           a printed paper without a document title
+                           is hard to identify in a stack. Shows
+                           alignment so the user can centre or end-align
+                           it for the Classic page layout. -->
+                      <app-text-style-editor
+                        [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_TITLE' | translate"
+                        [value]="template().headerCustomization.title"
+                        [showLabel]="true"
+                        [required]="true"
+                        (valueChange)="patchHeaderField('title', $event)"
+                      />
+                      <app-text-style-editor
+                        [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_COMPANY' | translate"
+                        [value]="template().headerCustomization.companyName"
+                        [showAlignment]="false"
+                        (valueChange)="patchHeaderField('companyName', $event)"
+                      />
+                      <!-- VAT Number — required: most jurisdictions
+                           legally require the supplier's VAT number
+                           on the document, so the user can't hide it.
+                           Style + label override are still editable. -->
+                      <app-text-style-editor
+                        [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_VAT' | translate"
+                        [value]="template().headerCustomization.vatNumber"
+                        [showLabel]="true"
+                        [showAlignment]="false"
+                        [required]="true"
+                        (valueChange)="patchHeaderField('vatNumber', $event)"
+                      />
+                      <!-- Branch Name — separate from the company line
+                           in the legacy spec; a tenant with multiple
+                           branches surfaces this as "Branch: Main
+                           Branch" so the printed invoice ties to the
+                           right location. -->
+                      <app-text-style-editor
+                        [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_BRANCH_NAME' | translate"
+                        [value]="template().headerCustomization.name"
+                        [showLabel]="true"
+                        [showAlignment]="false"
+                        (valueChange)="patchHeaderField('name', $event)"
+                      />
+                      <app-text-style-editor
+                        [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_ADDRESS' | translate"
+                        [value]="template().headerCustomization.address"
+                        [showAlignment]="false"
+                        (valueChange)="patchHeaderField('address', $event)"
+                      />
+                      <app-text-style-editor
+                        [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_PHONE' | translate"
+                        [value]="template().headerCustomization.phone"
+                        [showAlignment]="false"
+                        (valueChange)="patchHeaderField('phone', $event)"
+                      />
+                    }
+
+                    @if (headerActiveTab() === 'layout') {
+                      <app-bulk-style-editor
+                        [title]="'DOCUMENT_BUILDER.BULK.HEADER_STYLE' | translate"
+                        [note]="'DOCUMENT_BUILDER.BULK.NOTE' | translate"
+                        [size]="$any(bulkHeaderRepresentative().size)"
+                        [color]="bulkHeaderRepresentative().color"
+                        [bold]="bulkHeaderRepresentative().bold"
+                        [italic]="bulkHeaderRepresentative().italic"
+                        [underline]="bulkHeaderRepresentative().underline"
+                        [alignment]="$any(bulkHeaderRepresentative().alignment)"
+                        [showLabelColor]="false"
+                        [showBackground]="false"
+                        (patch)="patchAllHeaderFields($event)"
+                      />
+                    }
+                  }
+                </div>
+              }
+            </section>
+
+            <!-- FOOTER -->
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn" [class.dbf-acc__btn--open]="activePanel() === 'footer'" (click)="togglePanel('footer')">
+                <span>{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.FOOTER' | translate }}</span>
+                <svg class="dbf-acc__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              @if (activePanel() === 'footer') {
+                <div class="dbf-acc__body">
+                  <label class="dbf-toggle">
+                    <input type="checkbox"
+                           [checked]="template().footerCustomization.visibility.visible"
+                           (change)="patchFooterVisibility({ visible: $any($event.target).checked })"/>
+                    <span>{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_FOOTER' | translate }}</span>
+                  </label>
+
+                  @if (template().footerCustomization.visibility.visible) {
+                    <div class="dbf-tabs" role="tablist">
+                      <button type="button"
+                              class="dbf-tabs__btn"
+                              role="tab"
+                              [class.dbf-tabs__btn--on]="footerActiveTab() === 'fields'"
+                              [attr.aria-selected]="footerActiveTab() === 'fields'"
+                              (click)="setFooterTab('fields')">
+                        {{ 'DOCUMENT_BUILDER.SUBTAB.FIELDS' | translate }}
+                      </button>
+                      <button type="button"
+                              class="dbf-tabs__btn"
+                              role="tab"
+                              [class.dbf-tabs__btn--on]="footerActiveTab() === 'layout'"
+                              [attr.aria-selected]="footerActiveTab() === 'layout'"
+                              (click)="setFooterTab('layout')">
+                        {{ 'DOCUMENT_BUILDER.SUBTAB.LAYOUT' | translate }}
+                      </button>
+                    </div>
+
+                    @if (footerActiveTab() === 'fields') {
+                      <app-text-style-editor
+                        [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_NOTE' | translate"
+                        [value]="template().footerCustomization.note"
+                        [showLabel]="true"
+                        (valueChange)="patchFooterField('note', $event)"
+                      />
+                      <app-text-style-editor
+                        [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_TERMS' | translate"
+                        [value]="template().footerCustomization.term"
+                        [showLabel]="true"
+                        (valueChange)="patchFooterField('term', $event)"
+                      />
+                      <app-text-style-editor
+                        [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_CUSTOMER_NOTE' | translate"
+                        [value]="template().footerCustomization.customerNote"
+                        [showLabel]="true"
+                        (valueChange)="patchFooterField('customerNote', $event)"
+                      />
+
+                      <!-- Page number — independent from the document
+                           footer (notes / terms). When enabled, prints
+                           on every paginated page below the fixed
+                           footer block; the position selector decides
+                           whether it sits at the start, centre, or
+                           end of the row. -->
+                      <div class="dbf-pagenum">
+                        <label class="dbf-toggle">
+                          <input type="checkbox"
+                                 [checked]="template().footerCustomization.pageNumber.show"
+                                 (change)="patchPageNumber({ show: $any($event.target).checked })"/>
+                          <span>{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_PAGE_NUM' | translate }}</span>
+                        </label>
+                        @if (template().footerCustomization.pageNumber.show) {
+                          <div class="dbf-field dbf-pagenum__field">
+                            <label class="dbf-field__sublabel">{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.PAGE_NUM_POSITION' | translate }}</label>
+                            <div class="dbf-tabs" role="tablist">
+                              @for (p of ['left', 'center', 'right']; track p) {
+                                <button type="button"
+                                        class="dbf-tabs__btn"
+                                        role="tab"
+                                        [class.dbf-tabs__btn--on]="template().footerCustomization.pageNumber.position === p"
+                                        [attr.aria-selected]="template().footerCustomization.pageNumber.position === p"
+                                        (click)="patchPageNumber({ position: $any(p) })">
+                                  {{ ('DOCUMENT_BUILDER.HEADER_FOOTER.POS_' + p.toUpperCase()) | translate }}
+                                </button>
+                              }
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    @if (footerActiveTab() === 'layout') {
+                      <app-bulk-style-editor
+                        [title]="'DOCUMENT_BUILDER.BULK.FOOTER_STYLE' | translate"
+                        [note]="'DOCUMENT_BUILDER.BULK.NOTE' | translate"
+                        [size]="$any(bulkFooterRepresentative().size)"
+                        [color]="bulkFooterRepresentative().color"
+                        [bold]="bulkFooterRepresentative().bold"
+                        [italic]="bulkFooterRepresentative().italic"
+                        [underline]="bulkFooterRepresentative().underline"
+                        [alignment]="$any(bulkFooterRepresentative().alignment)"
+                        [showLabelColor]="false"
+                        [showBackground]="false"
+                        (patch)="patchAllFooterFields($event)"
+                      />
+                    }
+                  }
+                </div>
+              }
+            </section>
+          }
+
+          <!-- ─── TRANSACTION ─────────────────────────────────── -->
+          @case ('transaction') {
+            <!-- CUSTOMER DETAILS — customer/supplier/staff fields with
+                 a Fields/Layout toggle. Layout broadcasts a single
+                 style patch onto every customer-side field at once. -->
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn"
+                      [class.dbf-acc__btn--open]="activePanel() === 'customer-details'"
+                      (click)="togglePanel('customer-details')">
+                <span>{{ 'DOCUMENT_BUILDER.TRANSACTION.CUSTOMER_DETAILS' | translate }}</span>
+                <svg class="dbf-acc__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              @if (activePanel() === 'customer-details') {
+                <div class="dbf-acc__body">
+                  <div class="dbf-tabs" role="tablist">
+                    <button type="button"
+                            class="dbf-tabs__btn"
+                            role="tab"
+                            [class.dbf-tabs__btn--on]="customerActiveTab() === 'fields'"
+                            [attr.aria-selected]="customerActiveTab() === 'fields'"
+                            (click)="setCustomerTab('fields')">
+                      {{ 'DOCUMENT_BUILDER.SUBTAB.FIELDS' | translate }}
+                    </button>
+                    <button type="button"
+                            class="dbf-tabs__btn"
+                            role="tab"
+                            [class.dbf-tabs__btn--on]="customerActiveTab() === 'layout'"
+                            [attr.aria-selected]="customerActiveTab() === 'layout'"
+                            (click)="setCustomerTab('layout')">
+                      {{ 'DOCUMENT_BUILDER.SUBTAB.LAYOUT' | translate }}
+                    </button>
+                  </div>
+
+                  @if (customerActiveTab() === 'fields') {
+                    @for (f of customerFieldIds(); track trackField($index, f)) {
+                      <app-text-style-editor
+                        [label]="('DOCUMENT_BUILDER.FIELD.' + f) | translate"
+                        [value]="transactionalField(f)"
+                        [required]="isFieldRequired(f)"
+                        [showLabel]="isFieldEditable(f)"
+                        (valueChange)="patchTransactionalField(f, $event)"
+                      />
+                    }
+                  }
+
+                  @if (customerActiveTab() === 'layout') {
+                    <app-bulk-style-editor
+                      [title]="'DOCUMENT_BUILDER.TRANSACTION.CUSTOMER_DETAILS_STYLE' | translate"
+                      [note]="'DOCUMENT_BUILDER.BULK.NOTE' | translate"
+                      [size]="$any(bulkCustomerRepresentative().size)"
+                      [color]="bulkCustomerRepresentative().color"
+                      [labelColor]="bulkCustomerRepresentative().labelColor"
+                      [bold]="bulkCustomerRepresentative().bold"
+                      [italic]="bulkCustomerRepresentative().italic"
+                      [underline]="bulkCustomerRepresentative().underline"
+                      [alignment]="$any(bulkCustomerRepresentative().alignment)"
+                      [showBackground]="false"
+                      (patch)="patchAllCustomerFields($event)"
+                    />
+                  }
+                </div>
+              }
+            </section>
+
+            <!-- DOCUMENT DETAILS — document-level fields (numbers /
+                 dates / reference / service / common toggles). Same
+                 Fields/Layout pattern. -->
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn"
+                      [class.dbf-acc__btn--open]="activePanel() === 'document-details'"
+                      (click)="togglePanel('document-details')">
+                <span>{{ 'DOCUMENT_BUILDER.TRANSACTION.DOCUMENT_DETAILS' | translate }}</span>
+                <svg class="dbf-acc__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              @if (activePanel() === 'document-details') {
+                <div class="dbf-acc__body">
+                  <div class="dbf-tabs" role="tablist">
+                    <button type="button"
+                            class="dbf-tabs__btn"
+                            role="tab"
+                            [class.dbf-tabs__btn--on]="documentActiveTab() === 'fields'"
+                            [attr.aria-selected]="documentActiveTab() === 'fields'"
+                            (click)="setDocumentTab('fields')">
+                      {{ 'DOCUMENT_BUILDER.SUBTAB.FIELDS' | translate }}
+                    </button>
+                    <button type="button"
+                            class="dbf-tabs__btn"
+                            role="tab"
+                            [class.dbf-tabs__btn--on]="documentActiveTab() === 'layout'"
+                            [attr.aria-selected]="documentActiveTab() === 'layout'"
+                            (click)="setDocumentTab('layout')">
+                      {{ 'DOCUMENT_BUILDER.SUBTAB.LAYOUT' | translate }}
+                    </button>
+                  </div>
+
+                  @if (documentActiveTab() === 'fields') {
+                    <!-- Common (always shown) — tableTitle, taxType, barcode -->
+                    @for (f of commonTransactionalFields; track trackField($index, f)) {
+                      <app-text-style-editor
+                        [label]="('DOCUMENT_BUILDER.FIELD.' + f) | translate"
+                        [value]="transactionalField(f)"
+                        [required]="isFieldRequired(f)"
+                        [showLabel]="isFieldEditable(f)"
+                        (valueChange)="patchTransactionalField(f, $event)"
+                      />
+                    }
+                    <!-- Per-doc-type document-level fields (numbers, dates, …) -->
+                    @for (f of documentFieldIds(); track trackField($index, f)) {
+                      <app-text-style-editor
+                        [label]="('DOCUMENT_BUILDER.FIELD.' + f) | translate"
+                        [value]="transactionalField(f)"
+                        [required]="isFieldRequired(f)"
+                        [showLabel]="isFieldEditable(f)"
+                        (valueChange)="patchTransactionalField(f, $event)"
+                      />
+                    }
+                  }
+
+                  @if (documentActiveTab() === 'layout') {
+                    <app-bulk-style-editor
+                      [title]="'DOCUMENT_BUILDER.TRANSACTION.DOCUMENT_DETAILS_STYLE' | translate"
+                      [note]="'DOCUMENT_BUILDER.BULK.NOTE' | translate"
+                      [size]="$any(bulkDocumentRepresentative().size)"
+                      [color]="bulkDocumentRepresentative().color"
+                      [labelColor]="bulkDocumentRepresentative().labelColor"
+                      [bold]="bulkDocumentRepresentative().bold"
+                      [italic]="bulkDocumentRepresentative().italic"
+                      [underline]="bulkDocumentRepresentative().underline"
+                      [alignment]="$any(bulkDocumentRepresentative().alignment)"
+                      [showBackground]="false"
+                      (patch)="patchAllDocumentFields($event)"
+                    />
+                  }
+                </div>
+              }
+            </section>
+          }
+
+          <!-- ─── TABLE (Columns | Style) ─────────────────────── -->
+          @case ('table') {
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn dbf-acc__btn--open">
+                <span>{{ 'DOCUMENT_BUILDER.TABLE.SETTINGS' | translate }}</span>
+              </button>
+              <div class="dbf-acc__body">
+                <!-- Tab toggle: Columns vs Style. Mirrors the legacy
+                     two-tab layout in the Table Settings panel. -->
+                <div class="dbf-tabs" role="tablist">
+                  <button type="button"
+                          class="dbf-tabs__btn"
+                          role="tab"
+                          [class.dbf-tabs__btn--on]="tableActiveTab() === 'columns'"
+                          [attr.aria-selected]="tableActiveTab() === 'columns'"
+                          (click)="setTableTab('columns')">
+                    {{ 'DOCUMENT_BUILDER.TABLE.COLUMNS' | translate }}
+                  </button>
+                  <button type="button"
+                          class="dbf-tabs__btn"
+                          role="tab"
+                          [class.dbf-tabs__btn--on]="tableActiveTab() === 'style'"
+                          [attr.aria-selected]="tableActiveTab() === 'style'"
+                          (click)="setTableTab('style')">
+                    {{ 'DOCUMENT_BUILDER.TABLE.STYLE' | translate }}
+                  </button>
+                </div>
+
+                @if (tableActiveTab() === 'columns') {
+                  @for (cfg of tableColumnConfigs(); track trackColumnConfig($index, cfg)) {
+                    <div class="dbf-col">
+                      <label class="dbf-toggle">
+                        <input type="checkbox"
+                               [checked]="tableColumn(cfg.id).show"
+                               (change)="patchTableColumn(cfg.id, { show: $any($event.target).checked })"/>
+                        <span>{{ cfg.defaultLabel }}</span>
+                      </label>
+                      @if (tableColumn(cfg.id).show) {
+                        <div class="dbf-grid-2 dbf-col__row">
+                          <div>
+                            <label class="dbf-field__sublabel">{{ 'DOCUMENT_BUILDER.TABLE.LABEL' | translate }}</label>
+                            <!-- Label override is locked when the column
+                                 config opts out of editability (e.g. the
+                                 row-number "#" column always shows the
+                                 sequence symbol, not a renameable string). -->
+                            <input type="text" class="dbf-input"
+                                   [ngModel]="tableColumn(cfg.id).label"
+                                   [disabled]="cfg.editable === false"
+                                   [placeholder]="cfg.defaultLabel"
+                                   (ngModelChange)="patchTableColumn(cfg.id, { label: $event })"/>
+                          </div>
+                          <div>
+                            <label class="dbf-field__sublabel">{{ 'DOCUMENT_BUILDER.TABLE.WIDTH' | translate }} (%)</label>
+                            <input type="number" min="0" max="100" class="dbf-input"
+                                   [ngModel]="tableColumn(cfg.id).width"
+                                   (ngModelChange)="patchTableColumn(cfg.id, { width: +$event })"/>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                }
+
+                @if (tableActiveTab() === 'style') {
+                  <!-- TABLE HEADER style — Font Size + Font Color +
+                       Background. Edits flow into the per-type
+                       `<type>TableHeader` TextStyle so the user's
+                       chosen header chrome applies on the rendered
+                       paper. -->
+                  <h4 class="dbf-style-section">{{ 'DOCUMENT_BUILDER.TABLE.HEADER' | translate }}</h4>
+                  <div class="dbf-field">
+                    <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.FONT_SIZE' | translate }}</label>
+                    <input type="number" min="6" max="24" class="dbf-input"
+                           [ngModel]="$any(tableHeaderField().size)"
+                           (ngModelChange)="patchTableHeader({ size: +$event })"/>
+                  </div>
+                  <div class="dbf-field">
+                    <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.FONT_COLOR' | translate }}</label>
+                    <app-color-picker
+                      [ngModel]="tableHeaderField().color"
+                      [wcagAgainst]="tableHeaderField().backgroundColor || '#ffffff'"
+                      [showSpectrum]="true"
+                      [showRainbowPresets]="true"
+                      (ngModelChange)="patchTableHeader({ color: $event })"/>
+                  </div>
+                  <div class="dbf-field">
+                    <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.BACKGROUND' | translate }}</label>
+                    <app-color-picker
+                      [ngModel]="tableHeaderField().backgroundColor"
+                      [showSpectrum]="true"
+                      [showRainbowPresets]="true"
+                      (ngModelChange)="patchTableHeader({ backgroundColor: $event })"/>
+                  </div>
+
+                  <!-- TABLE LINES style — Font Size + Font Color +
+                       Background for body rows. -->
+                  <h4 class="dbf-style-section">{{ 'DOCUMENT_BUILDER.TABLE.LINES' | translate }}</h4>
+                  <div class="dbf-field">
+                    <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.FONT_SIZE' | translate }}</label>
+                    <input type="number" min="6" max="24" class="dbf-input"
+                           [ngModel]="$any(tableLinesField().size)"
+                           (ngModelChange)="patchTableLines({ size: +$event })"/>
+                  </div>
+                  <div class="dbf-field">
+                    <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.FONT_COLOR' | translate }}</label>
+                    <app-color-picker
+                      [ngModel]="tableLinesField().color"
+                      [wcagAgainst]="tableLinesField().backgroundColor || '#ffffff'"
+                      [showSpectrum]="true"
+                      [showRainbowPresets]="true"
+                      (ngModelChange)="patchTableLines({ color: $event })"/>
+                  </div>
+                  <div class="dbf-field">
+                    <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.BACKGROUND' | translate }}</label>
+                    <app-color-picker
+                      [ngModel]="tableLinesField().backgroundColor"
+                      [showSpectrum]="true"
+                      [showRainbowPresets]="true"
+                      (ngModelChange)="patchTableLines({ backgroundColor: $event })"/>
+                  </div>
+
+                  <!-- ADDITIONAL STYLES — voided-lines toggle. -->
+                  <h4 class="dbf-style-section">{{ 'DOCUMENT_BUILDER.TABLE.ADDITIONAL' | translate }}</h4>
+                  <label class="dbf-toggle">
+                    <input type="checkbox"
+                           [checked]="tableVoidedField().show"
+                           (change)="patchTableVoided({ show: $any($event.target).checked })"/>
+                    <span>{{ 'DOCUMENT_BUILDER.TABLE.VOIDED_LINES' | translate }}</span>
+                  </label>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- ─── TOTAL ───────────────────────────────────────── -->
+          @case ('total') {
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn"
+                      [class.dbf-acc__btn--open]="activePanel() === 'total-table'"
+                      (click)="togglePanel('total-table')">
+                <span>{{ 'DOCUMENT_BUILDER.TOTAL.SECTION' | translate }}</span>
+                <svg class="dbf-acc__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              @if (activePanel() === 'total-table') {
+                <div class="dbf-acc__body">
+                  <label class="dbf-toggle">
+                    <input type="checkbox"
+                           [checked]="template().totalSectionCustomization.totalTable.show"
+                           (change)="patchTotalTable({ show: $any($event.target).checked })"/>
+                    <span>{{ 'DOCUMENT_BUILDER.TOTAL.SHOW_SECTION' | translate }}</span>
+                  </label>
+
+                  @if (template().totalSectionCustomization.totalTable.show) {
+                    <div class="dbf-tabs" role="tablist">
+                      <button type="button"
+                              class="dbf-tabs__btn"
+                              role="tab"
+                              [class.dbf-tabs__btn--on]="totalActiveTab() === 'fields'"
+                              [attr.aria-selected]="totalActiveTab() === 'fields'"
+                              (click)="setTotalTab('fields')">
+                        {{ 'DOCUMENT_BUILDER.SUBTAB.FIELDS' | translate }}
+                      </button>
+                      <button type="button"
+                              class="dbf-tabs__btn"
+                              role="tab"
+                              [class.dbf-tabs__btn--on]="totalActiveTab() === 'layout'"
+                              [attr.aria-selected]="totalActiveTab() === 'layout'"
+                              (click)="setTotalTab('layout')">
+                        {{ 'DOCUMENT_BUILDER.SUBTAB.LAYOUT' | translate }}
+                      </button>
+                    </div>
+
+                    @if (totalActiveTab() === 'fields') {
+                      @for (f of ['itemTotal', 'taxTotal', 'discount', 'charge', 'delevary', 'roundingTotal', 'subTotal', 'Total']; track f) {
+                        <app-text-style-editor
+                          [label]="('DOCUMENT_BUILDER.TOTAL.' + f.toUpperCase()) | translate"
+                          [value]="$any(template().totalSectionCustomization.totalTable)[f]"
+                          [showAlignment]="false"
+                          (valueChange)="patchTotalField($any(f), $event)"
+                        />
+                      }
+                    }
+
+                    @if (totalActiveTab() === 'layout') {
+                      <app-bulk-style-editor
+                        [title]="'DOCUMENT_BUILDER.BULK.TOTAL_STYLE' | translate"
+                        [note]="'DOCUMENT_BUILDER.BULK.NOTE' | translate"
+                        [size]="$any(bulkTotalRepresentative().size)"
+                        [color]="bulkTotalRepresentative().color"
+                        [backgroundColor]="bulkTotalBackground()"
+                        [bold]="bulkTotalRepresentative().bold"
+                        [italic]="bulkTotalRepresentative().italic"
+                        [underline]="bulkTotalRepresentative().underline"
+                        [alignment]="$any(bulkTotalRepresentative().alignment)"
+                        [showLabelColor]="false"
+                        [showAlignment]="false"
+                        (patch)="patchAllTotalFields($event)"
+                      />
+                    }
+                  }
+                </div>
+              }
+            </section>
+
+            @if (showPaymentPanels()) {
+              <section class="dbf-acc">
+                <button type="button" class="dbf-acc__btn"
+                        [class.dbf-acc__btn--open]="activePanel() === 'payment-table'"
+                        (click)="togglePanel('payment-table')">
+                  <span>{{ 'DOCUMENT_BUILDER.TOTAL.PAYMENTS' | translate }}</span>
+                  <svg class="dbf-acc__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                @if (activePanel() === 'payment-table') {
+                  <div class="dbf-acc__body">
+                    <label class="dbf-toggle">
+                      <input type="checkbox"
+                             [checked]="template().totalSectionCustomization.paymentTable.show"
+                             (change)="patchPaymentTable({ show: $any($event.target).checked })"/>
+                      <span>{{ 'DOCUMENT_BUILDER.TOTAL.SHOW_PAYMENTS' | translate }}</span>
+                    </label>
+
+                    @if (template().totalSectionCustomization.paymentTable.show) {
+                      <div class="dbf-tabs" role="tablist">
+                        <button type="button"
+                                class="dbf-tabs__btn"
+                                role="tab"
+                                [class.dbf-tabs__btn--on]="paymentActiveTab() === 'fields'"
+                                [attr.aria-selected]="paymentActiveTab() === 'fields'"
+                                (click)="setPaymentTab('fields')">
+                          {{ 'DOCUMENT_BUILDER.SUBTAB.FIELDS' | translate }}
+                        </button>
+                        <button type="button"
+                                class="dbf-tabs__btn"
+                                role="tab"
+                                [class.dbf-tabs__btn--on]="paymentActiveTab() === 'layout'"
+                                [attr.aria-selected]="paymentActiveTab() === 'layout'"
+                                (click)="setPaymentTab('layout')">
+                          {{ 'DOCUMENT_BUILDER.SUBTAB.LAYOUT' | translate }}
+                        </button>
+                      </div>
+
+                      @if (paymentActiveTab() === 'fields') {
+                        @for (f of ['payments', 'paymentMethods', 'credit', 'balance']; track f) {
+                          <app-text-style-editor
+                            [label]="('DOCUMENT_BUILDER.TOTAL.' + f.toUpperCase()) | translate"
+                            [value]="$any(template().totalSectionCustomization.paymentTable)[f]"
+                            [showAlignment]="false"
+                            (valueChange)="patchPaymentField($any(f), $event)"
+                          />
+                        }
+                      }
+
+                      @if (paymentActiveTab() === 'layout') {
+                        <app-bulk-style-editor
+                          [title]="'DOCUMENT_BUILDER.BULK.PAYMENT_STYLE' | translate"
+                          [note]="'DOCUMENT_BUILDER.BULK.NOTE' | translate"
+                          [size]="$any(bulkPaymentRepresentative().size)"
+                          [color]="bulkPaymentRepresentative().color"
+                          [backgroundColor]="bulkPaymentBackground()"
+                          [bold]="bulkPaymentRepresentative().bold"
+                          [italic]="bulkPaymentRepresentative().italic"
+                          [underline]="bulkPaymentRepresentative().underline"
+                          [alignment]="$any(bulkPaymentRepresentative().alignment)"
+                          [showLabelColor]="false"
+                          [showAlignment]="false"
+                          (patch)="patchAllPaymentFields($event)"
+                        />
+                      }
+                    }
+                  </div>
+                }
+              </section>
+
+              <section class="dbf-acc">
+                <button type="button" class="dbf-acc__btn"
+                        [class.dbf-acc__btn--open]="activePanel() === 'customer-balance'"
+                        (click)="togglePanel('customer-balance')">
+                  <span>{{ 'DOCUMENT_BUILDER.TOTAL.BALANCE' | translate }}</span>
+                  <svg class="dbf-acc__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                @if (activePanel() === 'customer-balance') {
+                  <div class="dbf-acc__body">
+                    <label class="dbf-toggle">
+                      <input type="checkbox"
+                             [checked]="template().totalSectionCustomization.customerBalance.show"
+                             (change)="patchCustomerBalance({ show: $any($event.target).checked })"/>
+                      <span>{{ 'DOCUMENT_BUILDER.TOTAL.SHOW_BALANCE' | translate }}</span>
+                    </label>
+                    <app-text-style-editor
+                      [label]="'DOCUMENT_BUILDER.TOTAL.BALANCE_FIELD' | translate"
+                      [value]="template().totalSectionCustomization.customerBalance.balance"
+                      [showAlignment]="false"
+                      (valueChange)="patchCustomerBalance({ balance: $event })"
+                    />
+                  </div>
+                }
+              </section>
+            }
+          }
+
+          <!-- ─── CUSTOM FIELDS (info card) ───────────────────── -->
+          @case ('custom-fields') {
+            <!-- Branch custom fields — rendered alongside company info
+                 in the document header. These are tenant-level extras
+                 that sit on the branch record (e.g. "Tax Office",
+                 "Branch License"). -->
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn"
+                      [class.dbf-acc__btn--open]="activePanel() === 'cf-branch'"
+                      (click)="togglePanel('cf-branch')">
+                <span>{{ 'DOCUMENT_BUILDER.CUSTOM_FIELDS.BRANCH' | translate }}</span>
+                <svg class="dbf-acc__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              @if (activePanel() === 'cf-branch') {
+                <div class="dbf-acc__body">
+                  @if (branchCustomFields().length === 0) {
+                    <p class="dbf-empty">{{ 'DOCUMENT_BUILDER.CUSTOM_FIELDS.NONE' | translate }}</p>
+                  } @else {
+                    <div class="dbf-tabs" role="tablist">
+                      <button type="button" class="dbf-tabs__btn" role="tab"
+                              [class.dbf-tabs__btn--on]="cfBranchActiveTab() === 'fields'"
+                              [attr.aria-selected]="cfBranchActiveTab() === 'fields'"
+                              (click)="setCfBranchTab('fields')">
+                        {{ 'DOCUMENT_BUILDER.SUBTAB.FIELDS' | translate }}
+                      </button>
+                      <button type="button" class="dbf-tabs__btn" role="tab"
+                              [class.dbf-tabs__btn--on]="cfBranchActiveTab() === 'layout'"
+                              [attr.aria-selected]="cfBranchActiveTab() === 'layout'"
+                              (click)="setCfBranchTab('layout')">
+                        {{ 'DOCUMENT_BUILDER.SUBTAB.LAYOUT' | translate }}
+                      </button>
+                    </div>
+
+                    @if (cfBranchActiveTab() === 'fields') {
+                      @for (cf of branchCustomFields(); track trackCustomField($index, cf)) {
+                        <app-text-style-editor
+                          [label]="cf.name"
+                          [value]="cfStyle('branch', cf)"
+                          [showLabel]="true"
+                          (valueChange)="patchCustomFieldStyle('branch', cf, $event)"
+                        />
+                      }
+                    }
+
+                    @if (cfBranchActiveTab() === 'layout') {
+                      <app-bulk-style-editor
+                        [title]="'DOCUMENT_BUILDER.CUSTOM_FIELDS.BRANCH_STYLE' | translate"
+                        [note]="'DOCUMENT_BUILDER.BULK.NOTE' | translate"
+                        [size]="$any(bulkBranchCFRepresentative().size)"
+                        [color]="bulkBranchCFRepresentative().color"
+                        [labelColor]="bulkBranchCFRepresentative().labelColor"
+                        [bold]="bulkBranchCFRepresentative().bold"
+                        [italic]="bulkBranchCFRepresentative().italic"
+                        [underline]="bulkBranchCFRepresentative().underline"
+                        [alignment]="$any(bulkBranchCFRepresentative().alignment)"
+                        [showBackground]="false"
+                        (patch)="patchAllBranchCustomFields($event)"
+                      />
+                    }
+                  }
+                </div>
+              }
+            </section>
+
+            <!-- Entity custom fields — per-document-type extras (Invoice
+                 CFs, Bill CFs, …). Hidden for credit-note / supplier-credit
+                 since the legacy CF service doesn't expose those scopes. -->
+            @if (hasEntityCustomFields()) {
+              <section class="dbf-acc">
+                <button type="button" class="dbf-acc__btn"
+                        [class.dbf-acc__btn--open]="activePanel() === 'cf-entity'"
+                        (click)="togglePanel('cf-entity')">
+                  <span>{{ ('DOCUMENT_BUILDER.CUSTOM_FIELDS.ENTITY_' + template().documentType.toUpperCase()) | translate }}</span>
+                  <svg class="dbf-acc__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                @if (activePanel() === 'cf-entity') {
+                  <div class="dbf-acc__body">
+                    @if (entityCustomFields().length === 0) {
+                      <p class="dbf-empty">{{ 'DOCUMENT_BUILDER.CUSTOM_FIELDS.NONE' | translate }}</p>
+                    } @else {
+                      <div class="dbf-tabs" role="tablist">
+                        <button type="button" class="dbf-tabs__btn" role="tab"
+                                [class.dbf-tabs__btn--on]="cfEntityActiveTab() === 'fields'"
+                                [attr.aria-selected]="cfEntityActiveTab() === 'fields'"
+                                (click)="setCfEntityTab('fields')">
+                          {{ 'DOCUMENT_BUILDER.SUBTAB.FIELDS' | translate }}
+                        </button>
+                        <button type="button" class="dbf-tabs__btn" role="tab"
+                                [class.dbf-tabs__btn--on]="cfEntityActiveTab() === 'layout'"
+                                [attr.aria-selected]="cfEntityActiveTab() === 'layout'"
+                                (click)="setCfEntityTab('layout')">
+                          {{ 'DOCUMENT_BUILDER.SUBTAB.LAYOUT' | translate }}
+                        </button>
+                      </div>
+
+                      @if (cfEntityActiveTab() === 'fields') {
+                        @for (cf of entityCustomFields(); track trackCustomField($index, cf)) {
+                          <app-text-style-editor
+                            [label]="cf.name"
+                            [value]="cfStyle('entity', cf)"
+                            [showLabel]="true"
+                            (valueChange)="patchCustomFieldStyle('entity', cf, $event)"
+                          />
+                        }
+                      }
+
+                      @if (cfEntityActiveTab() === 'layout') {
+                        <app-bulk-style-editor
+                          [title]="'DOCUMENT_BUILDER.CUSTOM_FIELDS.ENTITY_STYLE' | translate"
+                          [note]="'DOCUMENT_BUILDER.BULK.NOTE' | translate"
+                          [size]="$any(bulkEntityCFRepresentative().size)"
+                          [color]="bulkEntityCFRepresentative().color"
+                          [labelColor]="bulkEntityCFRepresentative().labelColor"
+                          [bold]="bulkEntityCFRepresentative().bold"
+                          [italic]="bulkEntityCFRepresentative().italic"
+                          [underline]="bulkEntityCFRepresentative().underline"
+                          [alignment]="$any(bulkEntityCFRepresentative().alignment)"
+                          [showBackground]="false"
+                          (patch)="patchAllEntityCustomFields($event)"
+                        />
+                      }
+                    }
+                  </div>
+                }
+              </section>
+            }
+          }
+
+          <!-- ─── OTHER (additional data CRUD) ────────────────── -->
+          @case ('other') {
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn dbf-acc__btn--open">
+                <span>{{ 'DOCUMENT_BUILDER.OTHER.ADDITIONAL' | translate }}
+                  <span class="dbf-count">{{ template().additionalData.length }}</span>
+                </span>
+              </button>
+              <div class="dbf-acc__body">
+                <!-- Fields | Layout sub-tab. Layout edits a single
+                     `additionalDataStyle` shared by every additional
+                     row at render time. -->
+                <div class="dbf-tabs" role="tablist">
+                  <button type="button" class="dbf-tabs__btn" role="tab"
+                          [class.dbf-tabs__btn--on]="otherActiveTab() === 'fields'"
+                          [attr.aria-selected]="otherActiveTab() === 'fields'"
+                          (click)="setOtherTab('fields')">
+                    {{ 'DOCUMENT_BUILDER.SUBTAB.FIELDS' | translate }}
+                  </button>
+                  <button type="button" class="dbf-tabs__btn" role="tab"
+                          [class.dbf-tabs__btn--on]="otherActiveTab() === 'layout'"
+                          [attr.aria-selected]="otherActiveTab() === 'layout'"
+                          (click)="setOtherTab('layout')">
+                    {{ 'DOCUMENT_BUILDER.SUBTAB.LAYOUT' | translate }}
+                  </button>
+                </div>
+
+                @if (otherActiveTab() === 'layout') {
+                  <app-bulk-style-editor
+                    [title]="'DOCUMENT_BUILDER.OTHER.STYLE' | translate"
+                    [note]="'DOCUMENT_BUILDER.OTHER.STYLE_NOTE' | translate"
+                    [size]="$any(bulkAdditionalRepresentative().size)"
+                    [color]="bulkAdditionalRepresentative().color"
+                    [labelColor]="bulkAdditionalRepresentative().labelColor"
+                    [bold]="bulkAdditionalRepresentative().bold"
+                    [italic]="bulkAdditionalRepresentative().italic"
+                    [underline]="bulkAdditionalRepresentative().underline"
+                    [alignment]="$any(bulkAdditionalRepresentative().alignment)"
+                    [showBackground]="false"
+                    (patch)="patchAdditionalDataStyle($event)"
+                  />
+                }
+
+                @if (otherActiveTab() === 'fields') {
+                <div class="dbf-info dbf-info--compact">
+                  <strong>{{ 'DOCUMENT_BUILDER.OTHER.HOWTO_TITLE' | translate }}</strong>
+                  <p>{{ 'DOCUMENT_BUILDER.OTHER.HOWTO_BODY' | translate }}</p>
+                </div>
+
+                @for (f of template().additionalData; track trackAdditional($index, f); let i = $index) {
+                  <div class="dbf-add">
+                    <header class="dbf-add__header">
+                      <input type="checkbox" class="dbf-add__check"
+                             [checked]="f.show"
+                             (change)="updateAdditionalField(i, { show: $any($event.target).checked })"/>
+                      <input type="text" class="dbf-input dbf-add__label"
+                             [ngModel]="f.label"
+                             (ngModelChange)="updateAdditionalField(i, { label: $event })"
+                             [placeholder]="'DOCUMENT_BUILDER.OTHER.LABEL' | translate"/>
+                      <button type="button" class="dbf-add__remove"
+                              (click)="removeAdditionalField(i)"
+                              [appTooltip]="'COMMON.DELETE' | translate">×</button>
+                    </header>
+                    <div class="dbf-grid-2">
+                      <div>
+                        <label class="dbf-field__sublabel">{{ 'DOCUMENT_BUILDER.OTHER.KEY' | translate }}</label>
+                        <input type="text" class="dbf-input dbf-input--mono"
+                               [ngModel]="f.key"
+                               (ngModelChange)="updateAdditionalField(i, { key: $event.replace(/[^a-zA-Z0-9_]/g, '') })"/>
+                      </div>
+                      <div>
+                        <label class="dbf-field__sublabel">{{ 'DOCUMENT_BUILDER.OTHER.POSITION' | translate }}</label>
+                        <select class="dbf-input"
+                                [ngModel]="f.position"
+                                (ngModelChange)="updateAdditionalField(i, { position: $event })">
+                          <option value="header">{{ 'DOCUMENT_BUILDER.OTHER.POS_HEADER' | translate }}</option>
+                          <option value="meta">{{ 'DOCUMENT_BUILDER.OTHER.POS_META' | translate }}</option>
+                          <option value="footer">{{ 'DOCUMENT_BUILDER.OTHER.POS_FOOTER' | translate }}</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="dbf-add__value">
+                      <label class="dbf-field__sublabel">{{ 'DOCUMENT_BUILDER.OTHER.VALUE' | translate }}</label>
+                      <input type="text" class="dbf-input"
+                             [ngModel]="f.value"
+                             (ngModelChange)="updateAdditionalField(i, { value: $event })"/>
+                    </div>
+                  </div>
+                }
+
+                <button type="button" class="btn btn-default dbf-acc__add-btn" (click)="addAdditionalField()">
+                  + {{ 'DOCUMENT_BUILDER.OTHER.ADD' | translate }}
+                </button>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- ─── ELEMENTS (custom inline elements) ───────────── -->
+          @case ('elements') {
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn dbf-acc__btn--open">
+                <span>{{ 'DOCUMENT_BUILDER.ELEMENTS.PALETTE' | translate }}</span>
+              </button>
+              <div class="dbf-acc__body">
+                <div class="dbf-palette">
+                  @for (type of customElementTypes; track type) {
+                    <button type="button" class="dbf-palette__tile"
+                            (click)="addCustomElement(type)">
+                      {{ type }}
+                    </button>
+                  }
+                </div>
+              </div>
+            </section>
+
+            <section class="dbf-acc">
+              <button type="button" class="dbf-acc__btn dbf-acc__btn--open">
+                <span>{{ 'DOCUMENT_BUILDER.ELEMENTS.LIST' | translate }}
+                  <span class="dbf-count">{{ template().customElements.length }}</span>
+                </span>
+              </button>
+              <div class="dbf-acc__body">
+                @if (template().customElements.length === 0) {
+                  <p class="dbf-muted">{{ 'DOCUMENT_BUILDER.ELEMENTS.EMPTY' | translate }}</p>
+                }
+                @for (c of template().customElements; track trackCustom($index, c)) {
+                  <div class="dbf-elem">
+                    <div class="dbf-elem__row">
+                      <span class="dbf-elem__type">{{ c.type }}</span>
+                      <select class="dbf-input dbf-elem__pos"
+                              [ngModel]="c.position"
+                              (ngModelChange)="updateCustomElement(c.id, { position: $event })">
+                        <option value="header">{{ 'DOCUMENT_BUILDER.OTHER.POS_HEADER' | translate }}</option>
+                        <option value="meta">{{ 'DOCUMENT_BUILDER.OTHER.POS_META' | translate }}</option>
+                        <option value="body">{{ 'DOCUMENT_BUILDER.OTHER.POS_BODY' | translate }}</option>
+                        <option value="footer">{{ 'DOCUMENT_BUILDER.OTHER.POS_FOOTER' | translate }}</option>
+                      </select>
+                      <button type="button" class="dbf-add__remove"
+                              (click)="removeCustomElement(c.id)"
+                              [appTooltip]="'COMMON.DELETE' | translate">×</button>
+                    </div>
+                    @if (c.type === 'Text' || c.type === 'Barcode' || c.type === 'Page #') {
+                      <input type="text" class="dbf-input dbf-elem__content"
+                             [ngModel]="$any(c['content']) || ''"
+                             (ngModelChange)="updateCustomElement(c.id, { content: $event })"
+                             [placeholder]="'DOCUMENT_BUILDER.ELEMENTS.CONTENT' | translate"/>
+                    }
+                  </div>
+                }
+              </div>
+            </section>
+          }
+        }
+      </div>
+    </aside>
+
+    <!-- ── Canvas ─────────────────────────────────────────────── -->
+    <div class="dbf-canvas">
+      <div class="dbf-canvas__toolbar">
+        <button type="button" class="dbf-canvas__zoom-btn" (click)="zoomOut()" [appTooltip]="'DOCUMENT_BUILDER.ZOOM_OUT' | translate">−</button>
+        <span class="dbf-canvas__zoom-value">{{ (zoom() * 100) | number:'1.0-0' }}%</span>
+        <button type="button" class="dbf-canvas__zoom-btn" (click)="zoomIn()" [appTooltip]="'DOCUMENT_BUILDER.ZOOM_IN' | translate">+</button>
+        <button type="button" class="dbf-canvas__zoom-text" (click)="zoomFit()">{{ 'DOCUMENT_BUILDER.FIT' | translate }}</button>
+        <button type="button" class="dbf-canvas__zoom-text" (click)="zoom100()">100%</button>
+
+        <div class="dbf-canvas__spacer"></div>
+
+        <!-- Sample-data profile picker — always visible. The canvas
+             ALWAYS renders via <app-document-paper> (the same
+             component entity view pages use for printing) so what
+             the user sees while editing is exactly what'll print.
+             Switching profiles re-binds against a different sample
+             scenario without leaving the builder. -->
+        <div class="dbf-canvas__profile" role="tablist"
+             [appTooltip]="'DOCUMENT_BUILDER.PREVIEW.HINT' | translate">
+          @for (id of previewProfileIds; track trackProfile($index, id)) {
+            <button
+              type="button"
+              role="tab"
+              class="dbf-canvas__profile-btn"
+              [class.dbf-canvas__profile-btn--on]="previewProfileId() === id"
+              [attr.aria-selected]="previewProfileId() === id"
+              (click)="setPreviewProfile(id)"
+            >{{ ('DOCUMENT_BUILDER.PREVIEW.PROFILE_' + id.toUpperCase()) | translate }}</button>
+          }
+        </div>
+
+        <span class="dbf-canvas__meta">
+          {{ template().selectedPaperSize }} ·
+          {{ ('DOCUMENT_BUILDER.GENERAL.ORIENT_' + template().selectedPaperOrientation.toUpperCase()) | translate }} ·
+          {{ ('DOCUMENT_BUILDER.RENDER.' + template().renderMode.toUpperCase()) | translate }}
+        </span>
+
+        <!-- Print preview toggle — flips the canvas between the
+             single-paper editing surface and a stacked-A4-pages view
+             that mirrors what a Word / PDF viewer would show. While
+             in preview mode the company header repeats on every
+             page and the totals / payments tail stays atomic on the
+             last page. -->
+        <button type="button" class="dbf-canvas__preview-btn"
+                [class.dbf-canvas__preview-btn--on]="printPreviewMode()"
+                (click)="togglePrintPreview()"
+                [appTooltip]="(printPreviewMode() ? 'DOCUMENT_BUILDER.PREVIEW.BACK_TO_EDIT' : 'DOCUMENT_BUILDER.PREVIEW.OPEN_PREVIEW') | translate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            @if (printPreviewMode()) {
+              <path d="M19 12H5"/>
+              <polyline points="12 19 5 12 12 5"/>
+            } @else {
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+              <line x1="15" y1="3" x2="15" y2="21"/>
+            }
+          </svg>
+          {{ (printPreviewMode() ? 'DOCUMENT_BUILDER.PREVIEW.BACK_TO_EDIT' : 'DOCUMENT_BUILDER.PREVIEW.OPEN_PREVIEW') | translate }}
+        </button>
+
+        <!-- Print — opens the browser's native print dialog. Auto-
+             flips into preview mode first if needed so the printed
+             output always matches the paginated layout. -->
+        <button type="button" class="dbf-canvas__print"
+                (click)="print()"
+                [appTooltip]="'DOCUMENT_BUILDER.PRINT_HINT' | translate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          {{ 'DOCUMENT_BUILDER.PRINT' | translate }}
+        </button>
+      </div>
+
+      <div class="dbf-canvas__paper"
+           [class.dbf-canvas__paper--preview]="printPreviewMode()"
+           [style.transform]="'scale(' + zoom() + ')'">
+        <!-- Always the rich renderer fed with the active sample
+             profile. Same component entity view / print pages use,
+             so edits round-trip cleanly to print.
+             The `[printPreview]` flag flips it into the stacked-A4
+             multi-page layout when the user toggles preview mode. -->
+        <app-document-paper
+          [template]="template()"
+          [data]="previewData()"
+          [printPreview]="printPreviewMode()"
+        />
+      </div>
+    </div>
+  </div>
+  }
+
+  <app-loading-overlay [show]="saving() || loading()" [message]="(saving() ? 'DOCUMENT_BUILDER.SAVING' : 'COMMON.LOADING') | translate"/>
+
+  <!-- Phone-only overlay — the document-builder canvas is too dense
+       for a sub-768 viewport. The notice pops via its own CSS media
+       query; desktops never see it. -->
+  <app-desktop-only-notice/>
+</div>

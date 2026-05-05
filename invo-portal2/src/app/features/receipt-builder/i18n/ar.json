@@ -1,0 +1,199 @@
+{
+  "RECEIPT_BUILDER": {
+    "TITLE":             "إنشاء الإيصالات",
+    "SUBTITLE":          "صمّم الإيصالات وتذاكر المطبخ التي يرسلها نقاط البيع إلى الطابعات.",
+    "ADD_NEW":           "إضافة قالب",
+    "NEW_TEMPLATE":      "قالب جديد",
+    "EDIT_TEMPLATE":     "تعديل قالب",
+    "EMPTY":             "لا توجد قوالب — ابدأ بإضافة واحد.",
+    "NO_MATCH":          "لا توجد قوالب مطابقة لبحثك.",
+    "SEARCH_PLACEHOLDER":"ابحث في القوالب…",
+    "CONFIRM_DELETE":    "هل تريد حذف القالب «{{name}}»؟ لا يمكن التراجع.",
+    "BACK_TO_LIST":      "العودة للقائمة",
+    "TEMPLATES_MENU":    "القوالب",
+
+    "RENAME": {
+      "TITLE": "إعادة تسمية القالب"
+    },
+
+    "NAME":              "الاسم",
+    "TYPE":              "النوع",
+    "ELEMENTS":          "العناصر",
+    "UPDATED":           "آخر تحديث",
+
+    "TYPE_RECEIPT":      "إيصال",
+    "TYPE_KITCHEN":      "مطبخ",
+    "SWITCH_TYPE_HINT":     "تغيير نوع القالب — سيؤدي ذلك إلى مسح المحتوى الحالي",
+    "SWITCH_TYPE_TITLE":    "تغيير نوع القالب؟",
+    "SWITCH_TYPE_MESSAGE":  "سيؤدي تغيير نوع القالب إلى إعادة تعيين القماش إلى افتراضيات النوع الجديد. ستُفقد جميع العناصر والتعديلات الحالية. لا يمكن التراجع عن هذا الإجراء.",
+    "SWITCH_TYPE_CONFIRM":  "تغيير وإعادة تعيين",
+
+    "EDITOR_COMING_SOON_TITLE": "المحرر قادم",
+    "EDITOR_COMING_SOON_BODY":  "محرر العناصر سيأتي في المرحلة التالية. تم توصيل المسار وصفحة القائمة وخدمة القوالب، والقوالب الحالية تتنقل بشكل صحيح.",
+
+    "NAME_PLACEHOLDER":         "اسم القالب",
+    "PALETTE":                  "إضافة عنصر",
+    "LAYERS": {
+      "TITLE": "العناصر",
+      "EMPTY": "اسحب أو انقر على عنصر بالأعلى لإضافته."
+    },
+    "CANVAS_EMPTY_TITLE":       "إيصال فارغ",
+    "CANVAS_EMPTY_HINT":        "انقر على عنصر من اليسار لإضافته.",
+
+    "PANEL_TITLE":              "لم يتم تحديد عنصر",
+    "PANEL_PICK_ELEMENT":       "اختر عنصرًا من القائمة لتعديله.",
+    "PANEL_COMING_SOON":        "محرر خصائص العنصر سيأتي في المرحلة التالية.",
+    "COLLAPSE_ALL":             "طي الكل",
+    "EXPAND_ALL":               "توسيع الكل",
+    "WIDGET_DRAG_HINT":         "اسحب لأعلى/أسفل لإعادة الترتيب · أفلت على رأس آخر لدمجه كعلامة تبويب",
+    "RESIZE_PANEL":             "اسحب لتغيير حجم اللوحة",
+
+    "ELEMENTS": {
+      "SideText":      "نص جانبي",
+      "Text":          "نص",
+      "Line":          "خط",
+      "Logo":          "شعار",
+      "Image":         "صورة",
+      "Spacer":        "فاصل",
+      "QrCode":        "رمز QR",
+      "Barcode":       "باركود",
+      "Table":         "جدول",
+      "TableLines":    "جدول البنود",
+      "TableTaxes":    "جدول الضرائب",
+      "TablePayments": "جدول المدفوعات"
+    },
+
+    "PREVIEW": {
+      "TEXT_PLACEHOLDER": "نص فارغ",
+      "LOGO_BINDING":     "ارتباط شعار",
+      "IMAGE_NONE":       "لا توجد صورة",
+      "QR":               "QR · {{value}}",
+      "BARCODE":          "باركود · {{value}}",
+      "TABLE":            "جدول · {{source}}"
+    },
+
+    "HISTORY": {
+      "UNDO_TIP":   "تراجع: {{desc}} (Ctrl+Z)",
+      "REDO_TIP":   "إعادة: {{desc}} (Ctrl+Shift+Z)",
+      "UNDO_EMPTY": "لا شيء للتراجع",
+      "REDO_EMPTY": "لا شيء لإعادة تنفيذه"
+    },
+
+    "EDITOR": {
+      "WIDGET_CONTENT":    "المحتوى",
+      "WIDGET_TYPOGRAPHY": "الخط",
+      "WIDGET_SIZE":       "الحجم",
+      "WIDGET_LAYOUT":     "التخطيط",
+      "VALUE":             "المحتوى",
+      "VALUE_PLACEHOLDER": "اكتب نصًا أو ربطًا مثل !invoice.field…",
+      "ALIGNMENT":         "المحاذاة",
+      "ALIGN_LEFT":        "يسار",
+      "ALIGN_CENTER":      "وسط",
+      "ALIGN_RIGHT":       "يمين",
+      "FONT_SIZE":         "حجم الخط (بكسل)",
+      "FONT_WEIGHT":       "السمك",
+      "WEIGHT_NORMAL":     "عادي",
+      "WEIGHT_BOLD":       "غامق",
+      "FONT_STYLE":        "النمط",
+      "STYLE_NORMAL":      "عادي",
+      "STYLE_ITALIC":      "مائل",
+      "DECORATION":        "التزيين",
+      "DECOR_NONE":        "بدون",
+      "DECOR_UNDERLINE":   "تسطير",
+      "VISIBLE":           "ظاهر عند الطباعة",
+      "VISIBILITY":        "الظهور",
+      "VISIBLE_ON":        "ظاهر",
+      "HIDE_ON":           "مخفي",
+      "CONDITION_IF":      "إذا",
+      "CONDITION_EQUALS":  "يساوي",
+      "LEFT_TEXT":         "النص الأيسر",
+      "RIGHT_TEXT":        "النص الأيمن",
+      "LEFT_ALIGN":        "محاذاة يسار",
+      "RIGHT_ALIGN":       "محاذاة يمين",
+      "LINE_STYLE":        "النمط",
+      "PADDING":           "الحشو",
+      "PAD_H":             "أفقي (بكسل)",
+      "PAD_V":             "رأسي (بكسل)",
+      "HEIGHT":            "الارتفاع (بكسل)",
+      "WIDTH":             "العرض (بكسل)",
+      "SOURCE":            "المصدر",
+      "IMAGE_PATH":        "رابط الصورة أو مسار الأصل",
+      "IMAGE_PATH_PLACEHOLDER": "https://… أو /assets/img.png",
+      "IMAGE_PATH_HINT":   "اتركه فارغًا لاستخدام بيانات الصورة المضمنة.",
+      "QR_SIZE":           "حجم رمز QR",
+      "BARCODE_HEIGHT":    "ارتفاع الباركود (بكسل)",
+      "TABLE_SOURCE":      "المصدر",
+      "TABLE_SOURCE_HINT": "يحدِّد بيانات الفاتورة التي تغذي الجدول (البنود / الضرائب / المدفوعات). محرر الأعمدة في المرحلة التالية.",
+
+      "ZATCA_HINT":        "رمز ZATCA — حمولة الامتثال الضريبي للمملكة العربية السعودية.",
+      "USE_ZATCA":         "استخدم رمز ZATCA",
+      "FEEDBACK_HINT":     "رابط التقييم — يفتح نموذج تقييم الزبون لهذه الفاتورة.",
+      "USE_FEEDBACK":      "استخدم رابط التقييم",
+
+
+      "LOGO_PRIMARY":      "شعار الشركة",
+      "LOGO_SECONDARY":    "الشعار الثانوي",
+      "TABLE_LINES":       "بنود الفاتورة",
+      "TABLE_TAXES":       "ضرائب الفاتورة",
+      "TABLE_PAYMENTS":    "مدفوعات الفاتورة",
+
+      "TABLE_COLUMNS":     "الأعمدة",
+
+      "LINES_OPTIONS":              "خيارات البند",
+      "LINES_QTY_HIDE_IF_ONE":      "qty.hideIfOne()",
+      "LINES_PRICE_HIDE_IF_ZERO":   "price.hideIfZero()",
+      "LINES_SHOW_OPTIONS":         "عرض الخيارات أسفل كل بند",
+      "LINES_SHOW_PRICE":           "إظهار سعر الخيار (يُخفى عند 0.00)",
+      "LINES_SHOW_KITCHEN_NAME":    "option.kitchenName",
+      "LINES_SHOW_OPTION_NAME":     "option.name",
+      "LINES_SHOW_OPTION_SECONDARY": "option.secondaryName",
+
+      "LINES_SHOW_OPTIONS_DESC":         "المفتاح الرئيسي — عند إيقافه لن تُطبع صفوف الإضافات تحت أي بند.",
+      "LINES_QTY_HIDE_IF_ONE_DESC":      "إخفاء عمود الكمية في البند عندما تكون القيمة 1 فقط.",
+      "LINES_SHOW_OPTION_NAME_DESC":     "إظهار الاسم الأساسي للإضافة (مثل «جبنة إضافية»).",
+      "LINES_SHOW_OPTION_SECONDARY_DESC": "إظهار الاسم باللغة الثانية (عادةً العربية).",
+      "LINES_SHOW_KITCHEN_NAME_DESC":    "إظهار اسم المطبخ الخاص بكل إضافة (يُستخدم في تذاكر المطبخ).",
+      "LINES_PRICE_HIDE_IF_ZERO_DESC":   "إظهار سعر كل إضافة بجانب اسمها. يُخفى تلقائياً عندما يكون السعر 0.00."
+    },
+
+    "TABLE_EDITOR": {
+      "GROUP":             "مجموعة {{n}}",
+      "ROW":               "الصف {{n}}",
+      "ROW_STATIC":        "ترويسة",
+      "ROW_DYNAMIC":       "متن",
+      "ADD_COLUMN":        "إضافة عمود",
+      "ADD_COLUMN_VERB":   "إضافة عمود",
+      "ADD_ROW":           "إضافة صف",
+      "ADD_GROUP":         "إضافة مجموعة",
+      "EMPTY_COLUMN":      "عمود فارغ",
+      "NO_SUGGESTIONS":    "لا توجد اقتراحات لهذا المصدر.",
+      "HIDE_IF_ONE":       "إخفاء إذا كانت القيمة 1",
+      "HIDE_IF_ZERO":      "إخفاء إذا كانت القيمة 0",
+      "LABEL_PLACEHOLDER": "عنوان العمود",
+      "KEY_PLACEHOLDER":   "binding.key",
+      "HIDE":              "إخفاء العمود",
+      "SHOW":              "إظهار العمود"
+    },
+
+    "BINDINGS": {
+      "PICKER_TITLE":      "إدراج ربط",
+      "SEARCH_PLACEHOLDER": "ابحث في الربطات",
+      "NO_MATCH":          "لا توجد ربطات مطابقة.",
+      "GROUP": {
+        "INVOICE_HEADER":  "الفاتورة — ترويسة",
+        "INVOICE_PARTIES": "الفاتورة — الأطراف والتفاصيل",
+        "INVOICE_TOTALS":  "الفاتورة — المجاميع",
+        "INVOICE_TAX":     "الفاتورة — الضرائب والامتثال",
+        "PREFERENCES":     "إعدادات النشاط"
+      }
+    },
+
+    "DEMO": {
+      "PREVIEW_AS":      "عرض كـ",
+      "PROFILE_DEFAULT": "افتراضي",
+      "PROFILE_DINE_IN": "تناول داخلي",
+      "PROFILE_PAID":    "مدفوعة",
+      "PROFILE_DELIVERY":"توصيل"
+    }
+  }
+}

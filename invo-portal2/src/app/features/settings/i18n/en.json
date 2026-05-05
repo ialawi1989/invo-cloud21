@@ -50,6 +50,8 @@
 
       "INVOICE_BUILDER":           "Invoice Builder",
       "INVOICE_BUILDER_DESC":      "Build your invoice template.",
+      "CREDIT_NOTE_BUILDER":       "Credit Note Builder",
+      "CREDIT_NOTE_BUILDER_DESC":  "Build your credit-note template.",
       "INVOICE_OPTIONS":           "Invoice Options",
       "INVOICE_OPTIONS_DESC":      "Configure invoice options, default notes, terms and conditions.",
 
@@ -64,6 +66,8 @@
 
       "BILL_BUILDER":              "Bill Builder",
       "BILL_BUILDER_DESC":         "Build your bill template.",
+      "SUPPLIER_CREDIT_BUILDER":   "Supplier Credit Builder",
+      "SUPPLIER_CREDIT_BUILDER_DESC":"Build your supplier-credit template.",
 
       "MANAGE_TAX":                "Manage Tax",
       "MANAGE_TAX_DESC":           "Configure tax rates, tax groups, and tax rules for your business transactions.",
@@ -191,6 +195,238 @@
       "COPY_BANNER_TITLE": "Copy these opening hours to all days?",
       "COPY_BANNER_YES":   "Yes, copy",
       "COPY_BANNER_NO":    "Not now"
+    },
+
+    "TABLES": {
+      "SUBTITLE":             "Design the floor plan for each branch — group tables into zones, set capacity and rotation, drag to position.",
+      "BRANCH":               "Branch",
+      "GROUPS":               "Groups",
+      "GROUPS_EMPTY":         "No groups yet — add one to start placing tables.",
+      "ADD_GROUP":            "Add group",
+      "ADD_TABLE":            "Add table",
+      "GROUP_COLOR":          "Group color",
+      "GROUP_NAME_PLACEHOLDER":"Untitled group",
+      "NEW_GROUP_DEFAULT":    "New group",
+      "UNNAMED_GROUP":        "Untitled group",
+      "TABLES":               "tables",
+
+      "NO_GROUP_SELECTED":    "Pick a group on the left or add a new one to start designing the floor.",
+      "PICK_TABLE_HINT":      "Click a table on the canvas to edit its name, shape and billing.",
+      "CANVAS_EMPTY":         "Click \"Add table\" to drop your first table.",
+
+      "TABLE_PROPERTIES":     "Table properties",
+      "DUPLICATE":            "Duplicate",
+      "NAME":                 "Name",
+      "SEATS":                "Seats",
+      "SHAPE":                "Shape",
+      "SIZE":                 "Size",
+      "ROTATION":             "Rotation",
+      "SHOW_SEATS":           "Show seat count on the canvas",
+      "VISIBLE_ON_POS":       "Visible on the POS",
+
+      "BILLING":              "Billing",
+      "MIN_CHARGE":           "Minimum charge",
+      "CHARGE_PER_HOUR":      "Charge per hour",
+      "CHARGE_AFTER":         "Charge after (minutes)",
+      "CHARGE_AFTER_HINT":    "Hourly charges only apply after this many minutes of seating.",
+
+      "SHAPES": {
+        "CIRCLE":     "Circle",
+        "SQUARE":     "Square",
+        "RECTANGLE":  "Rectangle"
+      },
+      "SIZES": {
+        "SMALL":      "Small",
+        "MEDIUM":     "Medium",
+        "LARGE":      "Large"
+      },
+
+      "CONFIRM_BRANCH_SWITCH": "You have unsaved changes. Switch branch and discard them?",
+      "CONFIRM_DELETE_GROUP":  "Delete the group \"{{name}}\" and all its tables?",
+      "CONFIRM_DELETE_MANY":   "Delete {{n}} selected items?",
+      "CONFIRM_REMOVE_TABLE":  "Remove \"{{name}}\" from this group? The table stays in the branch and can be re-added via \"Pick unassigned\".",
+      "CONFIRM_REMOVE_MANY":   "Remove {{n}} tables from this group? They stay in the branch and can be re-added later.",
+      "CONFIRM_UNASSIGN":      "Unassign \"{{name}}\" from every group? It stays in the branch and can be reassigned later.",
+      "CONFIRM_UNASSIGN_MANY": "Unassign {{n}} tables from every group? They stay in the branch and can be reassigned later.",
+      "N_SELECTED":            "{{n}} selected",
+      "REMOVE_FROM_GROUP":     "Remove from group",
+
+      "PANEL_SETTINGS": "Settings",
+      "PANEL_TABLES":   "Tables",
+      "PANEL_OBJECTS":  "Objects",
+      "GROUPS_HEADING": "Table Groups",
+      "PATTERN_OPTIONS":"Pattern Options",
+      "PATTERN_NONE":   "No pattern",
+      "PATTERN_OPTION": "Pattern {{n}}",
+      "PICK_GROUP_FIRST": "Pick a group above (or add a new one) to start designing the floor.",
+
+      "GROUP_NAME":      "Group name",
+      "DELETE_GROUP":    "Delete group",
+      "NEW_GROUP":       "New group",
+      "INACTIVE_GROUPS": "Inactive groups",
+
+      "PATTERN":         "Background pattern",
+      "PATTERN_SIZE":    "Pattern size",
+
+      "PICK_UNASSIGNED": "Re-attach unassigned tables…",
+      "PICK_TABLE_TITLE":"Re-attach an unassigned table",
+      "PICK_TABLE_SUB":  "Tables that exist on this branch but aren't placed in any group yet.",
+      "PICK_CONFIRM":    "Add to this group",
+      "UNASSIGNED":      "Unassigned tables",
+      "UNNAMED_TABLE":   "Unnamed table",
+      "NO_UNASSIGNED":   "Every table on this branch is already placed.",
+      "SELECTED":        "selected",
+
+      "TABLES_EMPTY":    "No tables in this group yet — add one above.",
+      "OBJECTS":         "objects",
+      "ADD_OBJECT":      "Add decor object",
+      "OBJECT_PROPERTIES": "Object properties",
+      "WIDTH":           "Width",
+      "HEIGHT":          "Height",
+      "DIVIDER_COLOR":   "Color",
+      "RESET_SIZE":      "Reset size",
+      "UNASSIGN":        "Unassign",
+      "HIDE":            "Hide",
+      "SHOW":            "Show",
+      "SEATS_SHORT":     "seats",
+
+      "ZOOM_IN":         "Zoom in",
+      "ZOOM_OUT":        "Zoom out",
+      "SHOW_PANEL":      "Expand panel",
+      "HIDE_PANEL":      "Collapse panel",
+      "PANEL_TITLE":     "Panel",
+
+      "OBJECTS_TYPES": {
+        "TV":         "TV",
+        "SOFA":       "Sofa",
+        "COUCH":      "Couch",
+        "GLASSTABLE": "Glass table",
+        "PLANT":      "Plant",
+        "WALLTABLE":  "Wall table",
+        "DIVIDER":    "Divider"
+      }
+    },
+
+    "KITCHEN": {
+      "SUBTITLE":            "Group products by the workstation that prepares them so orders are routed to the right kitchen.",
+      "SEARCH_PLACEHOLDER":  "Search kitchen sections…",
+      "ADD_NEW":             "Add kitchen section",
+      "EDIT":                "Edit kitchen section",
+      "EMPTY":               "No kitchen sections yet. Click \"Add kitchen section\" to create the first one.",
+      "NO_MATCH":            "No kitchen sections match your search.",
+      "NAME":                "Name",
+      "NAME_PLACEHOLDER":    "e.g. Grill station",
+      "NAME_REQUIRED":       "Name is required.",
+      "PRODUCT_COUNT":       "Products",
+
+      "SECTION_IDENTITY":      "Identity",
+      "SECTION_IDENTITY_DESC": "How this kitchen section is named and shown in the app.",
+
+      "PRODUCTS":            "Products",
+      "PRODUCTS_DESC":       "Items routed to this kitchen section when an order is placed.",
+      "PRODUCTS_EMPTY":      "No products assigned yet.",
+      "SELECT_PRODUCTS":     "Select products",
+      "PICK_PRODUCTS_TITLE": "Assign products to this kitchen section",
+      "SEARCH_ASSIGNED":     "Search in assigned products…",
+      "NO_PRODUCT_MATCH":    "No assigned products match your search."
+    },
+
+    "POS_OPTIONS": {
+      "SUBTITLE":          "Configure POS terminal behavior — cashier rules, void/waste flow, and receipt printing.",
+      "SECTION_POS":       "Point-of-Sale options",
+      "SECTION_POS_DESC":  "Behaviour at the cashier terminal: cashier enforcement, voiding, half items, customer prompts.",
+      "SECTION_PRINT":     "Printing options",
+      "SECTION_PRINT_DESC":"How receipts and kitchen tickets are formatted and printed.",
+
+      "OPTIONS": {
+        "ALLOW_ONLY_ONE_CASHIER":          "Allow only one cashier per terminal",
+        "ALLOW_ONLY_ONE_CASHIER_HINT":     "Prevents two cashiers from being signed in on the same terminal at once.",
+        "NO_SALE_WHEN_ZERO":               "Block sales when item is out of stock",
+        "NO_SALE_WHEN_ZERO_HINT":          "Cashiers can't ring up items whose on-hand quantity is zero.",
+        "HIDE_VOIDED":                     "Hide voided items",
+        "HIDE_VOIDED_HINT":                "Voided line items disappear from the active order view.",
+        "VOID_NEEDS_REASON":               "Require a reason when voiding an item",
+        "VOID_NEEDS_REASON_HINT":          "Cashiers must pick (or type) a reason before a void is committed.",
+        "DISABLE_WASTE":                   "Disable waste action",
+        "DISABLE_WASTE_HINT":              "Removes the \"mark as waste\" option from the line-item menu.",
+        "ADD_CUSTOMER_BY_MSR":             "Add customer via magnetic card reader",
+        "ADD_CUSTOMER_BY_MSR_HINT":        "Allow attaching a customer by swiping an MSR card.",
+        "DISABLE_HALF_ITEM":               "Disable half-item quantities",
+        "DISABLE_HALF_ITEM_HINT":          "Cashiers can't ring up fractional (½) units of an item.",
+        "SHOW_PRICE":                      "Show price in menu",
+        "SHOW_PRICE_HINT":                 "Display each menu item's price next to its name.",
+        "SHOW_QTY":                        "Show quantity in menu",
+        "SHOW_QTY_HINT":                   "Display the on-hand quantity next to each menu item.",
+        "ADJ_PRICE_NEEDS_REASON":          "Require a reason for price adjustments",
+        "ADJ_PRICE_NEEDS_REASON_HINT":     "Cashiers must pick a reason before changing a unit price.",
+        "CUSTOMER_REQUIRED_IN_INVOICE":    "Customer required on every invoice",
+        "CUSTOMER_REQUIRED_IN_INVOICE_HINT":"The cashier can't proceed to payment without choosing a customer.",
+        "INSTANT_SAVE_RETAIL_ORDER":       "Auto-save retail orders",
+        "INSTANT_SAVE_RETAIL_ORDER_HINT":  "Persist retail orders the moment items are added — no Save click needed.",
+
+        "MAX_REF":                         "Maximum reference number",
+        "MAX_REF_HINT":                    "Highest serial used for daily reference numbers before they reset.",
+
+        "VOID_REASONS":                    "Void reasons",
+        "VOID_REASONS_HINT":               "Predefined reasons cashiers can pick from when voiding an item.",
+        "VOID_REASONS_EMPTY":              "No reasons added yet — type one above and press Add.",
+        "VOID_REASON_PLACEHOLDER":         "e.g. Customer changed mind"
+      },
+
+      "PRINT": {
+        "PRINT_ON_SENT":                "Print receipt when order is sent",
+        "PRINT_ON_SENT_HINT":           "Print a receipt copy as soon as the order is sent to the kitchen.",
+        "PRINT_ON_PAID":                "Print receipt when order is paid",
+        "PRINT_ON_PAID_HINT":           "Print a receipt copy after the customer completes payment.",
+        "COPIES":                       "Copies",
+        "PRINT_VOIDED_ITEMS":           "Print voided items",
+        "PRINT_VOIDED_ITEMS_HINT":      "Include voided line items on receipts (struck through).",
+        "PRINT_VOID_DETAILS":           "Print void reason on receipts",
+        "PRINT_VOID_DETAILS_HINT":      "Show the chosen reason next to each voided line.",
+        "PRINT_HOLD_STAMP":             "Stamp held orders",
+        "PRINT_HOLD_STAMP_HINT":        "Add a \"HOLD\" stamp to receipts for orders that are still on hold.",
+        "SORT_BY_CATEGORY_KITCHEN":     "Group kitchen tickets by category",
+        "SORT_BY_CATEGORY_KITCHEN_HINT":"Items on a kitchen ticket are sorted by their category.",
+        "HIDE_SHORT_NOTE":              "Hide short notes on receipts",
+        "HIDE_SHORT_NOTE_HINT":         "Don't print line-item notes on customer receipts.",
+        "SECOND_LANGUAGE":              "Print second language on receipts",
+        "SECOND_LANGUAGE_HINT":         "Add Arabic / English translation lines on bilingual receipts.",
+        "GROUP_ITEMS":                  "Group identical items on receipts",
+        "GROUP_ITEMS_HINT":             "Combine duplicate lines on a receipt into one with a quantity."
+      }
+    },
+
+    "PREFIX": {
+      "SUBTITLE":          "Customize the prefix template and zero-padding width used to generate document numbers.",
+      "HINT_TITLE":        "Tokens you can use",
+      "HINT_TEXT":         "Use these tokens inside the prefix template — they expand at generation time.",
+      "TOKEN_YYYY":        "4-digit year (e.g. 2026)",
+      "TOKEN_YY":          "2-digit year (e.g. 26)",
+      "TOKEN_MM":          "2-digit month",
+      "TOKEN_DD":          "2-digit day",
+
+      "PREFIX":            "Prefix",
+      "WIDTH":             "Digits",
+      "PREVIEW":           "Preview",
+      "REVERT":            "Revert",
+      "REVERT_HINT":       "Restore the prefix and width this row had on load.",
+      "RESET_DEFAULTS":    "Reset all to defaults",
+
+      "PREFIX_REQUIRED":   "Prefix is required.",
+      "PREFIX_DUPLICATE":  "Another module already uses this prefix.",
+      "WIDTH_RANGE":       "Width must be between 1 and 10.",
+
+      "MODULES": {
+        "INVOICE":           "Invoice",
+        "BILL":              "Bill",
+        "ESTIMATE":          "Estimate",
+        "CREDITNOTE":        "Credit Note",
+        "EXPENSE":           "Expense",
+        "SUPPLIERCREDIT":    "Supplier Credit",
+        "BILLOFENTRY":       "Bill of Entry",
+        "PURCHASEORDER":     "Purchase Order",
+        "INVENTORYTRANSFER": "Inventory Transfer"
+      }
     },
 
     "CUSTOM_FIELDS": {

@@ -1,0 +1,566 @@
+:host { display: block; }
+
+.tce {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// One group section — wraps all rows that belong to a single
+// `groups[i]` entry. The container has its own subtle ring and a
+// header label so multi-group tables read with unmistakable section
+// boundaries (no more guessing which "Row 1" belongs to which group).
+.tce-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: -2px 0 2px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--color-brand-700);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  &__remove {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: #fef2f2; color: #b91c1c; }
+  }
+
+  &__add-row {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: transparent;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+    &:hover {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-300, #bae6fd);
+      color: var(--color-brand-700);
+    }
+  }
+}
+
+// Table-level "+ Add group" — sits at the very bottom of the column
+// editor. A bit more prominent than per-group "Add row" because it
+// makes a structural change (whole new section).
+.tce-add-group {
+  margin-top: 4px;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--color-brand-50);
+  border: 1px dashed var(--color-brand-300, #bae6fd);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-brand-700);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+
+  &:hover {
+    background: var(--color-brand-100, #e0f2fe);
+    border-color: var(--color-brand-500);
+  }
+}
+
+// ── One row card ───────────────────────────────────────────────────────
+// White inside the tinted group container so the row stands out as a
+// distinct sub-section. Cells inside still have their own border to
+// stay legible against this white background.
+.tce-row {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__type {
+    font-size: 10px;
+    font-weight: 600;
+    color: #64748b;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    padding: 2px 6px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 40px; // give CDK room for the placeholder when row is empty
+  }
+
+  &__add {
+    margin-top: 8px;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #fff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+    &:hover {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-300, #bae6fd);
+      color: var(--color-brand-700);
+    }
+
+    // While the menu is open keep the trigger pinned in the
+    // brand-tinted state so it visually anchors the floating menu.
+    &--on,
+    &--on:hover {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-500);
+      color: var(--color-brand-700);
+    }
+  }
+}
+
+// ── Add-column overlay menu ────────────────────────────────────────────
+// Floating list under the "+ Add column" button. Each entry reads
+// "Add column <token>" with the binding path in monospace so the user
+// can recognise legacy keys. The empty-column entry sits naturally at
+// the catalog's end (parent decides ordering).
+.tce-add-menu {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  width: 240px;
+  max-height: 320px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.15);
+
+  &__item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font: inherit;
+    font-size: 12px;
+    color: #475569;
+    cursor: pointer;
+    text-align: start;
+    transition: background 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-300, #bae6fd);
+      color: var(--color-brand-700);
+    }
+  }
+
+  &__prefix {
+    flex-shrink: 0;
+  }
+
+  &__token {
+    flex: 1;
+    min-width: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__empty {
+    padding: 18px 12px;
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+}
+
+// ── One cell card ──────────────────────────────────────────────────────
+// The cell card hosts a compact summary row + an optional detail
+// panel beneath. Click the summary to expand details (read-only key
+// chip, Value textarea, Width + Alignment row), click again to
+// collapse. The pattern matches the legacy receipt-builder column
+// editor — keep frequent controls (visibility, width, delete) on the
+// always-visible row, less-used edits behind the expansion.
+.tce-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  transition: background 120ms ease, border-color 120ms ease,
+              box-shadow 120ms ease, opacity 120ms ease;
+
+  &--hidden {
+    opacity: 0.55;
+    background: #f1f5f9;
+  }
+
+  // Open state — pin the brand border so the user can spot which
+  // column they're editing while scrolling the rail.
+  &--open {
+    border-color: var(--color-brand-300, #bae6fd);
+    box-shadow: 0 0 0 1px var(--color-brand-300, #bae6fd);
+  }
+
+  // Always-visible summary row.
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    cursor: pointer;
+  }
+
+  &__handle {
+    width: 18px; height: 22px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #94a3b8;
+    cursor: grab;
+    flex-shrink: 0;
+    border-radius: 4px;
+
+    &:active { cursor: grabbing; }
+    &:hover  { background: #f8fafc; color: #475569; }
+  }
+
+  // Read-only key chip — the only column identifier in the compact
+  // row, so it gets the available flex space. Locked behind the chip
+  // on purpose: editing the binding key here would silently break
+  // what the POS reads from each invoice line. The user-facing label
+  // (Value) is editable in the expanded detail panel.
+  &__key-summary {
+    flex: 1;
+    min-width: 0;
+    padding: 0 4px;
+    font: inherit;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  &__width {
+    width: 44px;
+    padding: 3px 4px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    background: #fff;
+    font: inherit;
+    font-size: 11px;
+    text-align: center;
+    color: #0f172a;
+    outline: none;
+
+    &:focus  { border-color: var(--color-brand-500); }
+    &:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+  }
+
+  &__pct {
+    font-size: 10px;
+    color: #94a3b8;
+    flex-shrink: 0;
+    margin-inline-start: -2px;
+  }
+
+  &__btn {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: #f1f5f9; color: #475569; }
+    &--danger:hover { background: #fef2f2; color: #b91c1c; }
+  }
+
+  // Expansion chevron — rotates 180° when the panel is open so the
+  // affordance reads as "click again to close."
+  &__chev {
+    width: 18px; height: 22px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #94a3b8;
+    flex-shrink: 0;
+    transition: transform 160ms ease, color 120ms ease;
+
+    &--open {
+      color: var(--color-brand-700);
+      transform: rotate(180deg);
+    }
+  }
+
+  // CDK drag visuals.
+  &.cdk-drag-preview {
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    border-color: var(--color-brand-500);
+  }
+  &.cdk-drag-dragging { transition: none; }
+
+  &__placeholder {
+    height: 30px;
+    background: var(--color-brand-50);
+    border: 1px dashed var(--color-brand-300, #bae6fd);
+    border-radius: 4px;
+    margin-bottom: 4px;
+  }
+}
+
+// ── Detail panel (revealed on expand) ──────────────────────────────────
+// Sits inside the cell card below the summary row, with its own light
+// background so it visually attaches to the row above. Mirrors the
+// legacy expanded "Row 1 ↑" body: read-only key chip up top, Value
+// textarea, then a Width + Alignment row.
+.tce-detail {
+  padding: 10px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__key-chip {
+    align-self: flex-start;
+    max-width: 100%;
+    padding: 4px 8px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    font: inherit;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: #475569;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+
+    > label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    > textarea,
+    > input {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fff;
+      font: inherit;
+      font-size: 13px;
+      color: #0f172a;
+      outline: none;
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+
+      &:focus {
+        border-color: var(--color-brand-500);
+        box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+      }
+    }
+    > textarea { resize: vertical; min-height: 56px; }
+  }
+
+  &__row {
+    display: flex;
+    gap: 8px;
+  }
+
+  // Width input + % suffix — fixed-width so the segmented control
+  // beside it can take the rest of the row.
+  &__width {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    > input {
+      width: 70px;
+      padding: 6px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background: #fff;
+      font: inherit;
+      font-size: 13px;
+      color: #0f172a;
+      outline: none;
+
+      &:focus { border-color: var(--color-brand-500); }
+      &:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+    }
+    > span { color: #94a3b8; font-size: 12px; }
+  }
+
+  &__seg {
+    display: inline-flex;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  // Toggle for conditional-hide modifiers (`hideIfOne` / `hideIfZero`)
+  // — same visual style as the element-editor toggles so the form
+  // reads consistently. View encapsulation keeps each component's
+  // styles scoped, so the rules are duplicated here intentionally.
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+
+    input { position: absolute; opacity: 0; pointer-events: none; }
+
+    &__track {
+      position: relative;
+      width: 32px; height: 18px;
+      border-radius: 999px;
+      background: #cbd5e1;
+      flex-shrink: 0;
+      transition: background 120ms ease;
+    }
+    &__thumb {
+      position: absolute;
+      top: 2px; inset-inline-start: 2px;
+      width: 14px; height: 14px;
+      background: #fff;
+      border-radius: 999px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+      transition: inset-inline-start 120ms ease;
+    }
+    input:checked + &__track { background: var(--color-brand-600); }
+    input:checked + &__track .toggle__thumb { inset-inline-start: 16px; }
+
+    &__label { font-size: 12px; color: #475569; }
+  }
+
+  &__seg-btn {
+    flex: 1;
+    padding: 6px 4px;
+    background: transparent;
+    border: none;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+    text-transform: capitalize;
+
+    &:hover:not(.tce-detail__seg-btn--on) {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    &--on {
+      background: var(--color-brand-600);
+      color: #fff;
+    }
+    & + & { border-inline-start: 1px solid #e2e8f0; }
+
+    // Icon-only variant for alignment pickers — flex-center the
+    // glyph and drop the text-transform.
+    &--icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: none;
+    }
+  }
+}

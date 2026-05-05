@@ -4,19 +4,6 @@
       <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
       <h1 class="page-title">{{ pageTitle() }}</h1>
     </div>
-    <div class="page-header__actions">
-      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-        {{ 'COMMON.CANCEL' | translate }}
-      </button>
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="save()"
-        [disabled]="saving() || loading() || form.invalid"
-      >
-        {{ 'COMMON.SAVE' | translate }}
-      </button>
-    </div>
   </header>
 
   @if (loading()) {
@@ -32,9 +19,14 @@
       <div class="card__body">
         <div class="grid grid--2">
           <div class="field">
-            <label class="field-label" for="branch-name">
-              {{ 'SETTINGS.BRANCHES.NAME' | translate }}
-              <span class="required">*</span>
+            <label class="field-label field-label--with-action" for="branch-name">
+              <span>
+                {{ 'SETTINGS.BRANCHES.NAME' | translate }}
+                <span class="required">*</span>
+              </span>
+              <button type="button" class="translation-link" (click)="openNameTranslationModal()">
+                {{ 'COMMON.TRANSLATION' | translate }}
+              </button>
             </label>
             <input
               id="branch-name"
@@ -66,46 +58,13 @@
       </div>
     </section>
 
-    <!-- ═══ Location (read-only summary; Edit opens a modal) ═══ -->
-    <section class="card">
-      <header class="card__head card__head--with-action">
-        <div>
-          <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_LOCATION' | translate }}</h2>
-        </div>
-        <button type="button" class="btn btn-ghost btn-sm" (click)="openLocationModal()">
-          {{ 'COMMON.EDIT' | translate }}
-        </button>
-      </header>
-
-      <div class="card__body location-summary">
-        <div class="location-summary__row">
-          <span class="location-summary__label">{{ 'SETTINGS.BRANCHES.ADDRESS' | translate }}</span>
-          @if (form.controls['address'].value) {
-            <span class="location-summary__value">{{ form.controls['address'].value }}</span>
-          } @else {
-            <span class="location-summary__placeholder">{{ 'SETTINGS.BRANCHES.NO_ADDRESS' | translate }}</span>
-          }
-        </div>
-
-        @if (mapPreviewUrl()) {
-          <div class="location-summary__map">
-            <iframe
-              [src]="mapPreviewUrl()"
-              width="100%"
-              height="220"
-              style="border: 0;"
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade"
-              [title]="'SETTINGS.BRANCHES.MAP_LOCATION' | translate"
-            ></iframe>
-          </div>
-        } @else {
-          <p class="location-summary__no-coords">
-            {{ 'SETTINGS.BRANCHES.NO_COORDS' | translate }}
-          </p>
-        }
-      </div>
-    </section>
+    <!-- ═══ Custom fields (per-company, defined in Settings → Custom Fields) ═══ -->
+    <app-entity-custom-fields
+      entityType="branch"
+      [parentForm]="form"
+      [valueSource]="customFieldsRef()"
+      idPrefix="bf-cf"
+    />
 
     <!-- ═══ Operations (closing time stays here — it's not really a
          location field even though the OLD form bundled them) ═══ -->
@@ -156,6 +115,47 @@
             <span class="field-hint">{{ 'SETTINGS.BRANCHES.MAIN_BRANCH_HINT' | translate }}</span>
           </span>
         </label>
+      </div>
+    </section>
+
+    <!-- ═══ Location (read-only summary; Edit opens a modal) ═══ -->
+    <section class="card">
+      <header class="card__head card__head--with-action">
+        <div>
+          <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_LOCATION' | translate }}</h2>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="openLocationModal()">
+          {{ 'COMMON.EDIT' | translate }}
+        </button>
+      </header>
+
+      <div class="card__body location-summary">
+        <div class="location-summary__row">
+          <span class="location-summary__label">{{ 'SETTINGS.BRANCHES.ADDRESS' | translate }}</span>
+          @if (form.controls['address'].value) {
+            <span class="location-summary__value">{{ form.controls['address'].value }}</span>
+          } @else {
+            <span class="location-summary__placeholder">{{ 'SETTINGS.BRANCHES.NO_ADDRESS' | translate }}</span>
+          }
+        </div>
+
+        @if (mapPreviewUrl()) {
+          <div class="location-summary__map">
+            <iframe
+              [src]="mapPreviewUrl()"
+              width="100%"
+              height="220"
+              style="border: 0;"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              [title]="'SETTINGS.BRANCHES.MAP_LOCATION' | translate"
+            ></iframe>
+          </div>
+        } @else {
+          <p class="location-summary__no-coords">
+            {{ 'SETTINGS.BRANCHES.NO_COORDS' | translate }}
+          </p>
+        }
       </div>
     </section>
 
@@ -229,4 +229,18 @@
   }
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || form.invalid"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
 </div>

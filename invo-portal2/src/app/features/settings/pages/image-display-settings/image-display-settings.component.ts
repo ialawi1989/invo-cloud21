@@ -16,6 +16,8 @@ import { withTranslations } from '@core/i18n/with-translations';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
+import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 
 import {
   MediaSettingsService,
@@ -44,12 +46,13 @@ import {
     TranslateModule,
     BreadcrumbsComponent,
     LoadingOverlayComponent,
+    FormStickyFooterComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './image-display-settings.component.html',
   styleUrl: './image-display-settings.component.scss',
 })
-export class ImageDisplaySettingsComponent implements OnInit {
+export class ImageDisplaySettingsComponent implements OnInit, CanLeaveComponent {
   private service    = inject(MediaSettingsService);
   private translate  = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
@@ -143,6 +146,11 @@ export class ImageDisplaySettingsComponent implements OnInit {
 
   setPosition(v: ImageDisplaySettings['position']): void {
     this.position.set(v);
+  }
+
+  /** CanDeactivate hook — guard prompts when settings have changed. */
+  hasUnsavedChanges(): boolean {
+    return this.isDirty() && !this.saving();
   }
 
   async save(): Promise<void> {

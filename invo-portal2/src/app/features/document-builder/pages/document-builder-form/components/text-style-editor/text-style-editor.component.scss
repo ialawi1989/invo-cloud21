@@ -1,0 +1,264 @@
+:host { display: block; }
+
+// Compact field row. The header is always rendered as a single line
+// (checkbox + label + gear). Body opens below when the user clicks
+// the gear — body uses the same vertical-row form layout as the
+// bulk-style editor (label on the left, control on the right) so a
+// panel of these reads as a clean form rather than a dense grid.
+.tse {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &:hover { border-color: #d1d5db; }
+
+  &--disabled { opacity: 0.55; pointer-events: none; }
+
+  // Field is unchecked (off) — slightly muted so the panel reads as
+  // "this row is not in use".
+  &--off { opacity: 0.7; }
+
+  // Expanded state — gear is on; body is shown. Subtle highlight so
+  // the user can see at a glance which row's editor is open.
+  &--expanded {
+    border-color: var(--color-brand-300, #bae6fd);
+    box-shadow: 0 0 0 2px rgba(50, 172, 193, 0.10);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  &__toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+
+    > input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--color-brand-500);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1f2937;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Red asterisk for required fields. Sits inline with the label so
+  // the row reads "Invoice Number *" — same convention as the
+  // entity-form required indicators elsewhere in the app.
+  &__required-badge {
+    margin-inline-start: 4px;
+    color: #ef4444;
+    font-weight: 700;
+  }
+
+  // Required toggles get a tooltip cursor and the checkbox styled
+  // disabled-but-checked so the user reads it as "this can't be
+  // turned off".
+  &__toggle--required {
+    cursor: help;
+    > input { cursor: not-allowed; opacity: 0.85; }
+  }
+
+  // Gear button — opens / closes the per-field body. Only rendered
+  // when the field is shown (off-rows have nothing to style).
+  &__gear {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      background: #f9fafb;
+      border-color: #e5e7eb;
+      color: #1f2937;
+    }
+
+    &--on,
+    &--on:hover {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-300, #bae6fd);
+      color: var(--color-brand-700);
+    }
+  }
+
+  &__body {
+    padding: 12px 14px 14px;
+    border-top: 1px solid #f3f4f6;
+    background: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  // Vertical row: label on the left, control on the right. Mirrors
+  // the bulk-style editor so per-field and section-bulk editors look
+  // visually identical.
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__row-label {
+    flex: 0 0 96px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1f2937;
+  }
+
+  &__row-control {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  // Number input with a "pt" suffix tucked inside.
+  &__size {
+    position: relative;
+    width: 100%;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 7px 30px 7px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+    font: inherit;
+    font-size: 13px;
+    color: #1f2937;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-brand-500);
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.10);
+    }
+  }
+
+  &__suffix {
+    position: absolute;
+    inset-inline-end: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #94a3b8;
+    pointer-events: none;
+  }
+
+  &__checkbox {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-brand-500);
+    cursor: pointer;
+  }
+
+  // "Advanced" toggle pill — expands the secondary panel below it
+  // (Show Label / Label Colour / Style / Alignment).
+  &__advanced-btn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: none;
+    background: var(--color-brand-500);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 120ms ease, transform 120ms ease;
+
+    &:hover { background: var(--color-brand-600); }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    &--on,
+    &--on:hover { background: var(--color-brand-700); }
+  }
+
+  &__advanced-chev {
+    transition: transform 160ms ease;
+    .tse__advanced-btn--on & { transform: rotate(180deg); }
+  }
+
+  // Advanced sub-panel — separated from the primary section by a
+  // tiny inset divider so the visual hierarchy reads as
+  // "primary settings → advanced extras".
+  &__advanced {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e5e7eb;
+  }
+
+  &__advanced-heading {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+  }
+
+  &__btn-group {
+    display: inline-flex;
+    background: #f1f5f9;
+    border-radius: 6px;
+    padding: 2px;
+    gap: 2px;
+  }
+
+  &__btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    color: #64748b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    line-height: 1;
+    transition: background 120ms ease, color 120ms ease;
+
+    > strong, > em, > u { font-size: 12px; }
+
+    &:hover:not(.tse__btn--on):not(:disabled) { color: #0f172a; }
+
+    &--on,
+    &--on:hover {
+      background: #fff;
+      color: var(--color-brand-700);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.10);
+    }
+  }
+}

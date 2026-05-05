@@ -1,0 +1,198 @@
+@if (el(); as e) {
+  <div class="dis">
+    <!-- ── Header: type chip + arrange / duplicate / hide / lock / delete -->
+    <header class="dis__head">
+      <span class="dis__type">{{ e.type }}</span>
+      <span class="dis__zindex">{{ zIndex() }} / {{ total() }}</span>
+    </header>
+
+    <div class="dis__row dis__row--actions">
+      <button class="dis__icon-btn" [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.SEND_TO_BACK' | translate" (click)="arrange.emit('back')">⇤</button>
+      <button class="dis__icon-btn" [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.SEND_BACK' | translate" (click)="arrange.emit('backward')">←</button>
+      <button class="dis__icon-btn" [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.BRING_FORWARD' | translate" (click)="arrange.emit('forward')">→</button>
+      <button class="dis__icon-btn" [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.BRING_TO_FRONT' | translate" (click)="arrange.emit('front')">⇥</button>
+      <span class="dis__sep"></span>
+      <button class="dis__icon-btn" [appTooltip]="'COMMON.DUPLICATE' | translate" (click)="duplicate.emit()">⎘</button>
+      <button class="dis__icon-btn" [appTooltip]="(e.hidden ? 'DOCUMENT_BUILDER.DESIGNER.SHOW' : 'DOCUMENT_BUILDER.DESIGNER.HIDE') | translate" (click)="toggleHidden.emit()">{{ e.hidden ? '◯' : '◉' }}</button>
+      <button class="dis__icon-btn" [appTooltip]="(e.locked ? 'DOCUMENT_BUILDER.DESIGNER.UNLOCK' : 'DOCUMENT_BUILDER.DESIGNER.LOCK') | translate" (click)="toggleLocked.emit()">{{ e.locked ? '🔒' : '🔓' }}</button>
+      <button class="dis__icon-btn dis__icon-btn--danger" [appTooltip]="'COMMON.DELETE' | translate" (click)="delete.emit()">×</button>
+    </div>
+
+    <!-- ── TRANSFORM ─────────────────────────────────────────────── -->
+    <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.TRANSFORM' | translate }}</h3>
+    <div class="dis__grid">
+      <label>X</label>
+      <input type="number" [ngModel]="asInt(e.x)" (ngModelChange)="patch({ x: +$event })"/>
+      <label>Y</label>
+      <input type="number" [ngModel]="asInt(e.y)" (ngModelChange)="patch({ y: +$event })"/>
+      <label>W</label>
+      <input type="number" [ngModel]="asInt(e.w)" (ngModelChange)="patch({ w: +$event })"/>
+      <label>H</label>
+      <input type="number" [ngModel]="asInt(e.h)" (ngModelChange)="patch({ h: +$event })"/>
+      <label>{{ 'DOCUMENT_BUILDER.DESIGNER.ROTATION' | translate }}</label>
+      <input type="number" min="-180" max="180" [ngModel]="e.rotation || 0" (ngModelChange)="patch({ rotation: +$event })"/>
+      <label>{{ 'DOCUMENT_BUILDER.DESIGNER.OPACITY' | translate }}</label>
+      <input type="range" min="0" max="100" [ngModel]="(e.opacity ?? 1) * 100" (ngModelChange)="patch({ opacity: (+$event) / 100 })"/>
+    </div>
+
+    <!-- ── TEXT / DATA FIELD content ─────────────────────────────── -->
+    @if (isText() || isDataField()) {
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.CONTENT' | translate }}</h3>
+      @if (isText()) {
+        <textarea
+          class="dis__textarea"
+          rows="3"
+          [ngModel]="$any(e.content) || ''"
+          (ngModelChange)="patch({ content: $event })"
+          [placeholder]="'DOCUMENT_BUILDER.DESIGNER.CONTENT_PLACEHOLDER' | translate"
+        ></textarea>
+      }
+      @if (isDataField()) {
+        <div class="dis__field">
+          <label>{{ 'DOCUMENT_BUILDER.DESIGNER.PATH' | translate }}</label>
+          <input type="text" [ngModel]="e.path || ''" (ngModelChange)="patch({ path: $event })" placeholder="customer.name"/>
+        </div>
+        <div class="dis__row dis__row--gap">
+          <div class="dis__field">
+            <label>{{ 'DOCUMENT_BUILDER.DESIGNER.PREFIX' | translate }}</label>
+            <input type="text" [ngModel]="e.prefix || ''" (ngModelChange)="patch({ prefix: $event })"/>
+          </div>
+          <div class="dis__field">
+            <label>{{ 'DOCUMENT_BUILDER.DESIGNER.SUFFIX' | translate }}</label>
+            <input type="text" [ngModel]="e.suffix || ''" (ngModelChange)="patch({ suffix: $event })"/>
+          </div>
+        </div>
+        <div class="dis__field">
+          <label>{{ 'DOCUMENT_BUILDER.DESIGNER.FORMAT' | translate }}</label>
+          <select [ngModel]="e.format || ''" (ngModelChange)="patch({ format: $event })">
+            <option value="">— {{ 'DOCUMENT_BUILDER.DESIGNER.FORMAT_NONE' | translate }} —</option>
+            <option value="currency">Currency (3dp)</option>
+            <option value="int">Integer</option>
+            <option value="upper">UPPERCASE</option>
+            <option value="lower">lowercase</option>
+          </select>
+        </div>
+      }
+
+      <!-- Typography — shared by Text / Data Field / Page # -->
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.TYPOGRAPHY' | translate }}</h3>
+      <div class="dis__row dis__row--gap">
+        <div class="dis__field">
+          <label>{{ 'DOCUMENT_BUILDER.TEXT_STYLE.SIZE' | translate }}</label>
+          <input type="number" min="6" max="72" [ngModel]="e.size || 10" (ngModelChange)="patch({ size: +$event })"/>
+        </div>
+        <div class="dis__field">
+          <label>{{ 'DOCUMENT_BUILDER.TEXT_STYLE.COLOR' | translate }}</label>
+          <app-color-picker [ngModel]="e.color || '#1f2937'" [showSpectrum]="true" [showRainbowPresets]="true" (ngModelChange)="patch({ color: $event })"/>
+        </div>
+      </div>
+      <div class="dis__row dis__row--inline">
+        <div class="dis__btn-group">
+          <button [class.dis__btn--on]="e.bold"      (click)="patch({ bold:      !e.bold      })"><strong>B</strong></button>
+          <button [class.dis__btn--on]="e.italic"    (click)="patch({ italic:    !e.italic    })"><em>I</em></button>
+          <button [class.dis__btn--on]="e.underline" (click)="patch({ underline: !e.underline })"><u>U</u></button>
+        </div>
+        <div class="dis__btn-group">
+          <button [class.dis__btn--on]="(e.align || 'left') === 'left'"   (click)="patch({ align: 'left' })">L</button>
+          <button [class.dis__btn--on]="e.align === 'center'" (click)="patch({ align: 'center' })">C</button>
+          <button [class.dis__btn--on]="e.align === 'right'"  (click)="patch({ align: 'right' })">R</button>
+        </div>
+      </div>
+    }
+
+    <!-- ── SHAPE ─────────────────────────────────────────────────── -->
+    @if (isShape()) {
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.SHAPE' | translate }}</h3>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.SHAPE_KIND' | translate }}</label>
+        <select [ngModel]="e.shapeKind || 'rect'" (ngModelChange)="patch({ shapeKind: $event })">
+          <option value="rect">Rectangle</option>
+          <option value="circle">Circle</option>
+          <option value="hline">Horizontal line</option>
+          <option value="vline">Vertical line</option>
+        </select>
+      </div>
+      <div class="dis__row dis__row--gap">
+        <div class="dis__field">
+          <label>{{ 'DOCUMENT_BUILDER.DESIGNER.FILL' | translate }}</label>
+          <app-color-picker [ngModel]="e.bg || '#ffffff'" [showSpectrum]="true" [showRainbowPresets]="true" (ngModelChange)="patch({ bg: $event })"/>
+        </div>
+        <div class="dis__field">
+          <label>{{ 'DOCUMENT_BUILDER.DESIGNER.STROKE' | translate }}</label>
+          <app-color-picker [ngModel]="e.stroke || '#1f2937'" [showSpectrum]="true" [showRainbowPresets]="true" (ngModelChange)="patch({ stroke: $event })"/>
+        </div>
+      </div>
+      <div class="dis__row dis__row--gap">
+        <div class="dis__field">
+          <label>{{ 'DOCUMENT_BUILDER.DESIGNER.STROKE_WIDTH' | translate }}</label>
+          <input type="number" min="0" step="0.5" [ngModel]="e.strokeWidth ?? 1" (ngModelChange)="patch({ strokeWidth: +$event })"/>
+        </div>
+        <div class="dis__field">
+          <label>{{ 'DOCUMENT_BUILDER.DESIGNER.RADIUS' | translate }}</label>
+          <input type="number" min="0" [ngModel]="e.radius ?? 0" (ngModelChange)="patch({ radius: +$event })"/>
+        </div>
+      </div>
+    }
+
+    <!-- ── IMAGE ─────────────────────────────────────────────────── -->
+    @if (isImage()) {
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.IMAGE' | translate }}</h3>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.IMAGE_SRC' | translate }}</label>
+        <input type="text" [ngModel]="e.src || ''" (ngModelChange)="patch({ src: $event })" placeholder="https://… or data:image/…"/>
+      </div>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.IMAGE_LABEL' | translate }}</label>
+        <input type="text" [ngModel]="e.content || ''" (ngModelChange)="patch({ content: $event })" placeholder="LOGO"/>
+      </div>
+    }
+
+    <!-- ── BARCODE / SIGNATURE / PAGE # / TABLE — minimal property surfaces -->
+    @if (isBarcode()) {
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.BARCODE' | translate }}</h3>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.VALUE' | translate }}</label>
+        <input type="text" [ngModel]="e.content || ''" (ngModelChange)="patch({ content: $event })" placeholder="{{ '{{invoice.number}}' }}"/>
+      </div>
+    }
+
+    @if (isSig()) {
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.SIGNATURE' | translate }}</h3>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.LABEL' | translate }}</label>
+        <input type="text" [ngModel]="e.content || ''" (ngModelChange)="patch({ content: $event })"/>
+      </div>
+    }
+
+    @if (isPageNum()) {
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.PAGE_NUM' | translate }}</h3>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.FORMAT' | translate }}</label>
+        <input type="text" [ngModel]="e.content || 'Page {X} of {Y}'" (ngModelChange)="patch({ content: $event })"/>
+      </div>
+    }
+
+    @if (isTable()) {
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.TABLE' | translate }}</h3>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.BIND_TO' | translate }}</label>
+        <input type="text" [ngModel]="e.bindTo || ''" (ngModelChange)="patch({ bindTo: $event })" placeholder="lines"/>
+      </div>
+      <div class="dis__row dis__row--gap">
+        <div class="dis__field">
+          <label>{{ 'DOCUMENT_BUILDER.DESIGNER.HEADER_BG' | translate }}</label>
+          <app-color-picker [ngModel]="e.headerBg || '#1e3a8a'" [showSpectrum]="true" [showRainbowPresets]="true" (ngModelChange)="patch({ headerBg: $event })"/>
+        </div>
+        <div class="dis__field">
+          <label>{{ 'DOCUMENT_BUILDER.DESIGNER.HEADER_TEXT' | translate }}</label>
+          <app-color-picker [ngModel]="e.headerColor || '#ffffff'" [wcagAgainst]="e.headerBg || '#1e3a8a'" [showSpectrum]="true" [showRainbowPresets]="true" (ngModelChange)="patch({ headerColor: $event })"/>
+        </div>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="dis__empty">
+    <strong>{{ 'DOCUMENT_BUILDER.DESIGNER.EMPTY_TITLE' | translate }}</strong>
+    <p>{{ 'DOCUMENT_BUILDER.DESIGNER.EMPTY_BODY' | translate }}</p>
+  </div>
+}
