@@ -178,32 +178,35 @@ export class ColumnHelper {
   private static formatCurrency(value: number, args?: any): string {
     const currency = args?.currency || 'USD';
     const locale = args?.locale || 'en-US';
+    const n = Number(value);
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency
-    }).format(value);
+    }).format(Number.isFinite(n) ? n : 0);
   }
 
   private static formatDate(value: Date | string, args?: any): string {
     if (!value) return '';
     const date = typeof value === 'string' ? new Date(value) : value;
     const format = args?.format || 'short';
-    return date.toLocaleDateString('en-US', { 
+    return date.toLocaleDateString('en-US', {
       ...(format === 'short' ? { month: 'short', day: 'numeric', year: 'numeric' } : {})
     });
   }
 
   private static formatNumber(value: number, args?: any): string {
     const locale = args?.locale || 'en-US';
-    return new Intl.NumberFormat(locale).format(value);
+    const n = Number(value);
+    return new Intl.NumberFormat(locale).format(Number.isFinite(n) ? n : 0);
   }
 
   private static formatPercent(value: number, args?: any): string {
     const locale = args?.locale || 'en-US';
+    const n = Number(value);
     return new Intl.NumberFormat(locale, {
       style: 'percent',
       minimumFractionDigits: args?.decimals || 0
-    }).format(value);
+    }).format(Number.isFinite(n) ? n : 0);
   }
 }
 

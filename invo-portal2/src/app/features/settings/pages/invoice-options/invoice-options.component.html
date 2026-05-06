@@ -1,0 +1,121 @@
+<div class="invoice-options-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'SETTINGS.ITEMS.INVOICE_OPTIONS' | translate }}</h1>
+      <p class="page-sub">{{ 'SETTINGS.ITEMS.INVOICE_OPTIONS_DESC' | translate }}</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <form [formGroup]="form">
+      <!-- ═══ Default Content ═══ -->
+      <section class="card">
+        <header class="card__head">
+          <h2 class="card__title">{{ 'SETTINGS.INVOICE.DEFAULT_CONTENT' | translate }}</h2>
+          <p class="card__sub">{{ 'SETTINGS.INVOICE.DEFAULT_CONTENT_DESC' | translate }}</p>
+        </header>
+
+        <div class="card__body" formGroupName="invoiceOptions">
+          <div class="grid grid--1">
+            <div class="field">
+              <label class="field-label" for="invoice-note">
+                {{ 'SETTINGS.INVOICE.NOTE' | translate }}
+              </label>
+              <textarea
+                id="invoice-note"
+                class="textarea"
+                formControlName="note"
+                rows="4"
+                placeholder="{{ 'SETTINGS.INVOICE.NOTE_HINT' | translate }}"
+              ></textarea>
+              <p class="field-hint">{{ 'SETTINGS.INVOICE.NOTE_DESCRIPTION' | translate }}</p>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="invoice-term">
+                {{ 'SETTINGS.INVOICE.TERM' | translate }}
+              </label>
+              <textarea
+                id="invoice-term"
+                class="textarea"
+                formControlName="term"
+                rows="4"
+                placeholder="{{ 'SETTINGS.INVOICE.TERM_HINT' | translate }}"
+              ></textarea>
+              <p class="field-hint">{{ 'SETTINGS.INVOICE.TERM_DESCRIPTION' | translate }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ Invoice Features ═══ -->
+      <section class="card">
+        <header class="card__head">
+          <h2 class="card__title">{{ 'SETTINGS.INVOICE.FEATURES' | translate }}</h2>
+          <p class="card__sub">{{ 'SETTINGS.INVOICE.FEATURES_DESC' | translate }}</p>
+        </header>
+
+        <div class="card__body" formGroupName="invoiceOptions">
+          <div class="grid grid--2">
+            <div class="field field--toggle">
+              <label class="toggle">
+                <input type="checkbox" formControlName="enableWaste"/>
+                <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+                <span class="toggle__label">
+                  <span class="field-label">{{ 'SETTINGS.INVOICE.ENABLE_WASTE' | translate }}</span>
+                  <span class="field-hint">{{ 'SETTINGS.INVOICE.ENABLE_WASTE_HINT' | translate }}</span>
+                </span>
+              </label>
+            </div>
+
+            <div class="field field--toggle">
+              <label class="toggle">
+                <input type="checkbox" formControlName="enableVoidReason"/>
+                <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+                <span class="toggle__label">
+                  <span class="field-label">{{ 'SETTINGS.INVOICE.ENABLE_VOID_REASON' | translate }}</span>
+                  <span class="field-hint">{{ 'SETTINGS.INVOICE.ENABLE_VOID_REASON_HINT' | translate }}</span>
+                </span>
+              </label>
+            </div>
+
+            <div class="field field--toggle">
+              <label class="toggle">
+                <input type="checkbox" formControlName="isInvoiceOptionGroupVisible"/>
+                <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+                <span class="toggle__label">
+                  <span class="field-label">{{ 'SETTINGS.INVOICE.OPTION_GROUP_VISIBLE' | translate }}</span>
+                  <span class="field-hint">{{ 'SETTINGS.INVOICE.OPTION_GROUP_VISIBLE_HINT' | translate }}</span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+    </form>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button
+      type="button"
+      class="btn btn-cancel"
+      (click)="back()"
+      [disabled]="saving()"
+    >
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || form.invalid"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

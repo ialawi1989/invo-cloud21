@@ -29,6 +29,7 @@
     "ACTIONS": {
       "NEW_PRODUCT": "Add New",
       "DELETE_SELECTED": "Delete Selected",
+      "ASSIGN_TAX": "Assign Tax",
       "PRINT_LABEL": "Print Label",
       "IMPORT_EXPORT": "Import/Export",
       "LABEL_PRINT_BARCODES": "Label Print Barcodes",

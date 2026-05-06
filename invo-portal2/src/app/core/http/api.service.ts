@@ -14,6 +14,22 @@ export interface ApiResponse<T = any> {
   data:     T;
 }
 
+export type ApiError = {
+  type: 'validation' | 'business' | 'server' | 'auth' | 'general';
+  field?: string;
+  message: string;
+};
+
+export class ApiErrorException extends Error {
+  constructor(
+    message: string,
+    public errors: ApiError[] = [],
+  ) {
+    super(message);
+    this.name = 'ApiErrorException';
+  }
+}
+
 /**
  * **Single-source HTTP service** for the entire app.
  *
@@ -137,13 +153,67 @@ export class ApiService {
    *
    * If the response has no `success` field (some legacy endpoints omit it),
    * the data is returned without checking.
+   *
+   * Throws ApiErrorException with structured error details from:
+   * - `.msg` field (most common)
+   * - `.message` field (fallback)
+   * - `.data` field (string, error object, or errors array for bulk operations)
    */
   async call<T = any>(obs: Observable<ApiResponse<T>>): Promise<T> {
     const res = await firstValueFrom(obs);
     if (res.success === false) {
-      throw new Error(res.msg ?? res.message ?? 'API error');
+      const { errorMessage, apiErrors } = this.extractErrors(res);
+      throw new ApiErrorException(errorMessage, apiErrors);
     }
     return res.data;
+  }
+
+  private extractErrors(res: ApiResponse<any>): { errorMessage: string; apiErrors: ApiError[] } {
+    let errorMessage = 'API error';
+    let apiErrors: ApiError[] = [];
+
+    // Priority 1: Check msg/message fields (most common from backend)
+    if (res.msg) {
+      errorMessage = res.msg;
+      return { errorMessage, apiErrors: [{ type: 'general', message: errorMessage }] };
+    }
+
+    if (res.message) {
+      errorMessage = res.message;
+      return { errorMessage, apiErrors: [{ type: 'general', message: errorMessage }] };
+    }
+
+    // Priority 2: Check data field for various error formats
+    if (res.data) {
+      // Case 1: data is a string (error message)
+      if (typeof res.data === 'string') {
+        errorMessage = res.data;
+        return { errorMessage, apiErrors: [{ type: 'general', message: errorMessage }] };
+      }
+
+      // Case 2: data is an object with error field
+      if (typeof res.data === 'object' && res.data.error) {
+        errorMessage = res.data.error || res.data.error?.message || 'API error';
+        return { errorMessage, apiErrors: [{ type: 'general', message: errorMessage }] };
+      }
+
+      // Case 3: data.errors is an array (bulk operations)
+      if (Array.isArray(res.data.errors) && res.data.errors.length > 0) {
+        const errors = res.data.errors;
+        errorMessage = `${errors.length} error(s) encountered`;
+
+        // Convert bulk error objects to ApiError format
+        apiErrors = errors.map((err: any, idx: number) => ({
+          type: 'general' as const,
+          field: err.field || (err.row !== undefined ? `Row ${err.row}` : undefined),
+          message: err.error || err.message || `Error ${idx + 1}`,
+        }));
+        return { errorMessage, apiErrors };
+      }
+    }
+
+    // Fallback
+    return { errorMessage, apiErrors: [{ type: 'general', message: errorMessage }] };
   }
 
   /**

@@ -21,6 +21,8 @@ import { withTranslations } from '@core/i18n/with-translations';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
+import { PickTaxModalComponent } from '@shared/components/pick-tax-modal/pick-tax-modal.component';
+import { ApiService } from '@core/http/api.service';
 import { ProductDetailDrawerComponent, ProductDetailDrawerData } from '../../components/product-detail-drawer/product-detail-drawer.component';
 import { ProductStockModalComponent, ProductStockModalData } from '../../components/product-stock-modal/product-stock-modal.component';
 
@@ -39,6 +41,7 @@ export class ProductsListComponent implements OnInit {
   private lang = inject(LanguageService);
   private privileges = inject(PrivilegeService);
   private modalService = inject(ModalService);
+  private api          = inject(ApiService);
 
   // ── Row-action privilege gates (used by the template) ─────────────────────
   // 1:1 port of the old product-list row-action gates. Note this privilege
@@ -395,6 +398,12 @@ export class ProductsListComponent implements OnInit {
     // Bulk Actions
     this.bulkActions = [
       {
+        id: 'assign-tax',
+        label: this.lang.instant('PRODUCTS.ACTIONS.ASSIGN_TAX'),
+        requiresSelection: true,
+        handler: (rows: any[]) => this.bulkAssignTax(rows)
+      },
+      {
         id: 'delete',
         label: this.lang.instant('PRODUCTS.ACTIONS.DELETE_SELECTED'),
         color: 'danger',
@@ -622,6 +631,22 @@ export class ProductsListComponent implements OnInit {
 
     product.children = children.list;
     product.childrenCount = children.count;
+  }
+
+  async bulkAssignTax(rows: any[]): Promise<void> {
+    const productIds = rows.map(r => r.id);
+    const ref = this.modalService.open<PickTaxModalComponent, void, string>(
+      PickTaxModalComponent,
+      { size: 'sm', closeable: true, closeOnBackdrop: true }
+    );
+    const taxId = await ref.afterClosed();
+    if (!taxId) return;
+
+    await this.api.request(
+      this.api.post('product/assignProductTax', { filterType: 'Product', productIds, taxId })
+    );
+    this.listPage?.clearSelection();
+    this.listPage?.refresh();
   }
 
   async bulkDeleteProducts(rows: any[]): Promise<void> {

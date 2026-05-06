@@ -71,6 +71,8 @@
 
       "MANAGE_TAX":                "Manage Tax",
       "MANAGE_TAX_DESC":           "Configure tax rates, tax groups, and tax rules for your business transactions.",
+      "TAX_SETTINGS":              "Tax Settings",
+      "TAX_SETTINGS_DESC":         "Configure VAT number, tax behavior, and manage tax rates for your business.",
 
       "LABEL_BUILDER":             "Label Builder",
       "LABEL_BUILDER_DESC":        "Design and manage custom label templates for your products.",
@@ -567,6 +569,39 @@
       "POSITION_HINT":    "Pick which part of the image stays visible when it has to crop.",
       "PREVIEW":          "Live preview",
       "PREVIEW_DESC":     "How the same image renders at three common card aspect ratios."
+    },
+
+    "INVOICE": {
+      "DEFAULT_CONTENT":           "Default Content",
+      "DEFAULT_CONTENT_DESC":      "Set default note and terms that appear on all invoices.",
+      "NOTE":                      "Invoice Note",
+      "NOTE_HINT":                 "e.g. Thank you for your business",
+      "NOTE_DESCRIPTION":          "This note will appear on every invoice.",
+      "TERM":                      "Terms and Conditions",
+      "TERM_HINT":                 "e.g. Payment due within 30 days",
+      "TERM_DESCRIPTION":          "These terms will appear on every invoice.",
+      "FEATURES":                  "Invoice Features",
+      "FEATURES_DESC":             "Enable or disable optional invoice features.",
+      "ENABLE_WASTE":              "Enable waste option",
+      "ENABLE_WASTE_HINT":         "Allow items to be marked as waste on invoices.",
+      "ENABLE_VOID_REASON":        "Require reason when voiding",
+      "ENABLE_VOID_REASON_HINT":   "Force users to provide a reason when voiding invoice items.",
+      "OPTION_GROUP_VISIBLE":      "Show option groups",
+      "OPTION_GROUP_VISIBLE_HINT": "Display product option groups as separate sections on invoices."
+    },
+
+    "TAX": {
+      "ADD_NEW":                   "Add Tax",
+      "SETTINGS":                  "Settings",
+      "TAX_LIST":                  "Tax List",
+      "GENERAL_SETTINGS":          "General Settings",
+      "GENERAL_SETTINGS_DESC":     "Configure VAT number and tax behavior for your business.",
+      "VAT_NUMBER":                "VAT / Tax Number",
+      "VAT_NUMBER_VALIDATION":     "VAT number must be 13-15 digits",
+      "INCLUSIVE_TAX":             "Prices include tax",
+      "INCLUSIVE_TAX_HINT":        "When enabled, prices you enter on products are treated as tax-inclusive.",
+      "VALIDATE_TRN":              "Validate TRN",
+      "ASSIGN_TO":                 "Assign to"
     }
   }
 }

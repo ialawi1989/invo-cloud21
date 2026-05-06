@@ -55,6 +55,56 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       justify-content: flex-end;
       gap: 10px;
     }
+
+    /* Default button styling (matches menu-builder style) */
+    ::ng-deep .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+    }
+
+    ::ng-deep .btn-primary {
+      background: #00a8b8;
+      color: #fff;
+      border-color: #00a8b8;
+    }
+
+    ::ng-deep .btn-primary:hover:not(:disabled) {
+      background: #0097a5;
+      border-color: #0097a5;
+    }
+
+    ::ng-deep .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    ::ng-deep .btn-cancel,
+    ::ng-deep .btn-ghost {
+      background: #fff;
+      color: #475569;
+      border-color: #e2e8f0;
+    }
+
+    ::ng-deep .btn-cancel:hover:not(:disabled),
+    ::ng-deep .btn-ghost:hover:not(:disabled) {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    ::ng-deep .btn-cancel:disabled,
+    ::ng-deep .btn-ghost:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

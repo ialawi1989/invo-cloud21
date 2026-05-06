@@ -139,6 +139,19 @@ export const routes: Routes = [
         canDeactivate: [unsavedChangesGuard],
       },
       {
+        path: 'settings/invoice-options',
+        loadComponent: () =>
+          import('./features/settings/pages/invoice-options/invoice-options.component')
+            .then(m => m.InvoiceOptionsComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
+      {
+        path: 'settings/tax',
+        loadComponent: () =>
+          import('./features/settings/pages/tax-settings/tax-settings.component')
+            .then(m => m.TaxSettingsComponent),
+      },
+      {
         path: 'settings/kitchen',
         loadComponent: () =>
           import('./features/settings/pages/kitchen-sections-list/kitchen-sections-list.component')

@@ -29,6 +29,7 @@
     "ACTIONS": {
       "NEW_PRODUCT": "إضافة جديد",
       "DELETE_SELECTED": "حذف المحدد",
+      "ASSIGN_TAX": "تعيين ضريبة",
       "PRINT_LABEL": "طباعة الملصق",
       "IMPORT_EXPORT": "استيراد/تصدير",
       "LABEL_PRINT_BARCODES": "طباعة ملصقات الباركود",
