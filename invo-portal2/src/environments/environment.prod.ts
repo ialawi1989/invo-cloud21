@@ -2,5 +2,5 @@ export const environment = {
   production: true,
   dashboardUrl: '',
   websiteUrl:   '',
-  backendUrl:   '',
+  backendUrl:   'https://devback.invopos.co',
 };
