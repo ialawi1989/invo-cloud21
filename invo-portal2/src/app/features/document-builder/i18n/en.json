@@ -14,6 +14,7 @@
     "TYPE_LOCKED_HINT":        "Document type is set by the entity you came from. To work on a different type, go back to Settings.",
     "NEW":                     "New template",
     "EDIT":                    "Edit template",
+    "DUPLICATE_SUFFIX":        "(copy)",
     "UNNAMED":                 "(Untitled)",
     "NAME_PLACEHOLDER":        "Template name",
     "SAVING":                  "Saving…",

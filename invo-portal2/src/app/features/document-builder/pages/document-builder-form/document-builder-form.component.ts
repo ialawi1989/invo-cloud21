@@ -204,6 +204,10 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
 
+  /** Top-bar overflow menu (Reset / Export / Import). Closed on outside click. */
+  moreMenuOpen = signal<boolean>(false);
+  closeMoreMenu = () => this.moreMenuOpen.set(false);
+
   template = signal<DocumentTemplate>(DEFAULT_TEMPLATE('invoice'));
 
   /** Snapshot at last load/save — drives `isDirty`. */
@@ -407,6 +411,14 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
   // Ctrl+Z and Ctrl+Y are skipped when the focus is inside an input
   // / textarea / contenteditable element so the browser's native
   // text-level undo (typing) keeps working inside form fields.
+  /** Close the top-bar overflow menu when the user clicks anywhere outside
+   *  it. The trigger itself stops propagation so this only fires for
+   *  off-menu clicks. */
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.moreMenuOpen()) this.moreMenuOpen.set(false);
+  }
+
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     const ctrlOrCmd = event.ctrlKey || event.metaKey;

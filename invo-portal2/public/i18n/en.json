@@ -24,6 +24,7 @@
     "YES": "Yes",
     "NO": "No",
     "BACK": "Back",
+    "MORE_ACTIONS": "More actions",
     "NEXT": "Next",
     "PREVIOUS": "Previous",
     "PAGINATION_RANGE": "{{start}}–{{end}} of {{total}}",

@@ -24,6 +24,7 @@
     "YES": "نعم",
     "NO": "لا",
     "BACK": "رجوع",
+    "MORE_ACTIONS": "المزيد من الإجراءات",
     "NEXT": "التالي",
     "PREVIOUS": "السابق",
     "PAGINATION_RANGE": "{{start}}–{{end}} من {{total}}",

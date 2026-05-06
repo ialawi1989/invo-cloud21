@@ -158,6 +158,54 @@
     }
   }
 
+  // Overflow menu — wraps Reset / Export / Import. The trigger is a
+  // standard icon button; the popover is positioned relative to the
+  // wrapper so it anchors to the trigger no matter the scroll/zoom.
+  &__more {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  &__more-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    inset-inline-end: 0;
+    z-index: 30;
+    min-width: 200px;
+    padding: 4px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.18),
+                0 2px 6px -1px rgba(15, 23, 42, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__more-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 13px;
+    color: #334155;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: start;
+
+    > svg { color: #64748b; flex-shrink: 0; }
+
+    &:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+      > svg { color: var(--color-brand-600, #0891b2); }
+    }
+  }
+
   // Render-mode badge (locked) — Classic vs Designer.
   // Read-only: the user picked the mode at create-time and it stays
   // locked for the life of the template.

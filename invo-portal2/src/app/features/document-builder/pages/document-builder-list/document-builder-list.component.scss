@@ -13,6 +13,20 @@
     justify-content: space-between;
     gap: 16px;
 
+    // 75/25 split — text block on the left can wrap freely without ever
+    // bleeding under the action button on the right. `min-width: 0` lets
+    // the long subtitle break instead of forcing the row wider.
+    > div:first-child {
+      flex: 0 0 75%;
+      max-width: 75%;
+      min-width: 0;
+    }
+
+    > .btn {
+      flex: 0 0 auto;
+      align-self: flex-start;
+    }
+
     h1 {
       margin: 0;
       font-size: 18px;
@@ -77,25 +91,93 @@
       color: #92400e;
     }
 
-    &-action {
+    // Per-row overflow menu (Edit / Duplicate / Set default / Delete)
+    // — replaces the old inline "Set Default" pill and the trailing X.
+    &-menu {
+      position: relative;
       flex-shrink: 0;
-      padding: 4px 10px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      border: 1px solid #e5e7eb;
-      background: #fff;
-      border-radius: 999px;
-      color: #64748b;
+    }
+
+    &-menu-trigger {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid transparent;
+      background: transparent;
+      border-radius: 8px;
+      color: #94a3b8;
       cursor: pointer;
       transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
       &:hover {
-        background: #fffbeb;
-        border-color: #f59e0b;
-        color: #92400e;
+        background: #f1f5f9;
+        color: #0f172a;
+        border-color: #e5e7eb;
       }
+    }
+
+    &-menu-popover {
+      position: absolute;
+      top: calc(100% + 6px);
+      inset-inline-end: 0;
+      z-index: 30;
+      min-width: 200px;
+      padding: 4px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.18),
+                  0 2px 6px -1px rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    &-menu-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 13px;
+      color: #334155;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: start;
+
+      > svg { color: #64748b; flex-shrink: 0; }
+
+      &:hover:not(:disabled) {
+        background: #f1f5f9;
+        color: #0f172a;
+        > svg { color: var(--color-brand-600, #0891b2); }
+      }
+
+      &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      &--danger {
+        color: #b91c1c;
+        > svg { color: #b91c1c; }
+
+        &:hover:not(:disabled) {
+          background: #fef2f2;
+          color: #991b1b;
+          > svg { color: #991b1b; }
+        }
+      }
+    }
+
+    &-menu-divider {
+      height: 1px;
+      margin: 4px 2px;
+      background: #f1f5f9;
     }
 
     &-name {
@@ -141,25 +223,6 @@
       color: #94a3b8;
     }
 
-    &-delete {
-      width: 28px;
-      height: 28px;
-      flex-shrink: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
-      background: transparent;
-      border-radius: 6px;
-      color: #94a3b8;
-      cursor: pointer;
-      transition: background 120ms ease, color 120ms ease;
-
-      &:hover {
-        background: #fef2f2;
-        color: #b91c1c;
-      }
-    }
   }
 
   // ── Empty ──────────────────────────────────────────────────

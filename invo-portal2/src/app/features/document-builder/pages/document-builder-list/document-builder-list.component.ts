@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  HostListener,
   OnInit,
   computed,
   inject,
@@ -71,7 +72,27 @@ export class DocumentBuilderListComponent implements OnInit {
   documentType  = signal<DocumentType>('invoice');
   templates     = signal<DocumentTemplateSummary[]>([]);
 
+  /** Id of the row whose overflow menu is currently open. `null` means
+   *  no menu is open. Tracked here (instead of per-row state) so that
+   *  opening one row's menu auto-closes any other. */
+  openMenuId    = signal<string | null>(null);
+
   isEmpty = computed<boolean>(() => !this.loading() && this.templates().length === 0);
+
+  /** Close the overflow menu when the user clicks anywhere outside it.
+   *  Per-row menu containers stop propagation, so this only fires for
+   *  off-menu clicks. */
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.openMenuId() !== null) this.openMenuId.set(null);
+  }
+
+  toggleMenu(id: string, event: Event): void {
+    event.stopPropagation();
+    this.openMenuId.set(this.openMenuId() === id ? null : id);
+  }
+
+  closeMenu(): void { this.openMenuId.set(null); }
 
   ngOnInit(): void {
     const raw = (this.route.snapshot.queryParamMap.get('type') ?? '') as DocumentType;
@@ -93,6 +114,41 @@ export class DocumentBuilderListComponent implements OnInit {
     void this.router.navigate(['/settings/document-builder', t.id], {
       queryParams: { type: t.documentType },
     });
+  }
+
+  /** Edit = same as opening, exposed as a menu item so the row click
+   *  is no longer the only path. Also closes the overflow menu. */
+  editTemplate(t: DocumentTemplateSummary, event: Event): void {
+    event.stopPropagation();
+    this.closeMenu();
+    this.openTemplate(t);
+  }
+
+  /** Client-side duplicate: fetch the full template, strip its id +
+   *  default flag, append a "(copy)" suffix to the name, and save as a
+   *  new row. The backend doesn't expose a server-side duplicate
+   *  endpoint, but `save()` with no id creates a new record, so this
+   *  copies every field (header / footer / table / styling / etc.)
+   *  faithfully. */
+  async duplicateTemplate(t: DocumentTemplateSummary, event: Event): Promise<void> {
+    event.stopPropagation();
+    this.closeMenu();
+    this.loading.set(true);
+    try {
+      const full = await this.service.getById(t.documentType, t.id);
+      if (!full) return;
+      const suffix = this.translate.instant('DOCUMENT_BUILDER.DUPLICATE_SUFFIX');
+      const copy = {
+        ...full,
+        id:           '',
+        templateName: `${full.templateName} ${suffix}`.trim(),
+        isDefault:    false,
+      };
+      await this.service.save(copy);
+      await this.refresh();
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   async newTemplate(): Promise<void> {
