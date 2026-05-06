@@ -63,6 +63,12 @@ export class ProductsListComponent implements OnInit {
 
   @ViewChild(ListPageComponent) listPage?: ListPageComponent;
 
+  /** Whether a column key is currently visible in the list — used by the name
+   * cell template to gate the image thumbnail and barcode badge, matching the
+   * old InvoCloudFront2 behavior where these toggle as part of the name cell. */
+  isColumnVisible = (key: string): boolean =>
+    !!this.listPage?.visibleColumns().includes(key);
+
   // UI state
   expandedProductIds = signal<Set<string>>(new Set());
   openMenuRowId = signal<string | null>(null);
@@ -158,16 +164,42 @@ export class ProductsListComponent implements OnInit {
         order: 1,
       },
       {
+        key: 'SKU',
+        label: this.lang.instant('PRODUCTS.FIELDS.SKU'),
+        sortable: false,
+        width: '120px',
+        visible: false,
+        order: 2,
+      },
+      {
+        key: 'UOM',
+        label: this.lang.instant('PRODUCTS.FIELDS.UOM'),
+        sortable: false,
+        width: '100px',
+        visible: false,
+        order: 3,
+      },
+      {
         key: 'departmentName',
         label: this.lang.instant('PRODUCTS.FIELDS.DEPARTMENT'),
         sortable: true,
-        width: '150px'
+        width: '150px',
+        order: 4,
       },
       {
         key: 'categoryName',
         label: this.lang.instant('PRODUCTS.FIELDS.CATEGORY'),
         sortable: true,
-        width: '150px'
+        width: '150px',
+        order: 5,
+      },
+      {
+        key: 'brandName',
+        label: this.lang.instant('PRODUCTS.FIELDS.BRAND'),
+        sortable: false,
+        width: '150px',
+        visible: false,
+        order: 6,
       },
       {
         key: 'qtySum',
@@ -176,6 +208,7 @@ export class ProductsListComponent implements OnInit {
         width: '100px',
         customTemplate: true,
         interactive: true,
+        order: 7,
       },
       // Stock Value - conditional on permission
       ...(this.privileges.check('productSecurity.actions.viewStockValue.access') ? [{
@@ -184,15 +217,74 @@ export class ProductsListComponent implements OnInit {
         sortable: true,
         pipe: 'currency' as const,
         pipeArgs: { currency: 'BHD' },
-        width: '150px'
+        width: '150px',
+        order: 8,
       }] : []),
+      {
+        key: 'unitCost',
+        label: this.lang.instant('PRODUCTS.FIELDS.UNIT_COST'),
+        sortable: false,
+        customTemplate: true,
+        width: '120px',
+        visible: false,
+        order: 9,
+      },
       {
         key: 'defaultPrice',
         label: this.lang.instant('PRODUCTS.FIELDS.PRICE'),
         sortable: true,
         pipe: 'currency' as const,
         pipeArgs: { currency: 'BHD' },
-        width: '120px'
+        width: '120px',
+        order: 10,
+      },
+      {
+        key: 'taxName',
+        label: this.lang.instant('PRODUCTS.FIELDS.TAX'),
+        sortable: false,
+        customTemplate: true,
+        width: '120px',
+        order: 11,
+      },
+      {
+        key: 'weight',
+        label: this.lang.instant('PRODUCTS.FIELDS.WEIGHT'),
+        sortable: false,
+        width: '100px',
+        visible: false,
+        order: 12,
+      },
+      {
+        key: 'image',
+        // Same label as `name` so it groups with the name cell (list-page
+        // groups columns by label). The thumbnail itself renders inside the
+        // `name` template, gated by `isColumnVisible('image')` — this column's
+        // own template renders nothing, so toggling it just controls visibility
+        // of the thumbnail in the name cell. Matches old InvoCloudFront2.
+        label: this.lang.instant('PRODUCTS.FIELDS.NAME'),
+        headerLabel: this.lang.instant('PRODUCTS.FIELDS.IMAGE'),
+        sortable: false,
+        customTemplate: true,
+        visible: false,
+        order: 13,
+      },
+      {
+        key: 'createdAt',
+        label: this.lang.instant('PRODUCTS.FIELDS.CREATED_AT'),
+        sortable: false,
+        pipe: 'date' as const,
+        width: '150px',
+        visible: false,
+        order: 14,
+      },
+      {
+        key: 'updatedDate',
+        label: this.lang.instant('PRODUCTS.FIELDS.UPDATED_DATE'),
+        sortable: false,
+        pipe: 'date' as const,
+        width: '150px',
+        visible: false,
+        order: 15,
       },
       {
         key: 'type',
@@ -201,7 +293,8 @@ export class ProductsListComponent implements OnInit {
         customTemplate: true,
         width: '120px',
         primary: true,
-        visible: true
+        visible: true,
+        order: 16,
       }
     ];
 

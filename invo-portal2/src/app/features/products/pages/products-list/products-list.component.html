@@ -79,10 +79,14 @@
     }
   </div>
 
-  <!-- Custom Name Template (with matrix expand). Barcode is rendered as a
-       grouped sibling column, not inside this template. -->
+  <!-- Custom Name Template (with matrix expand). Image thumbnail is rendered
+       INSIDE this cell (toggled via the `image` column's visibility), matching
+       the old InvoCloudFront2 product-list behavior where the image is a
+       toggle-only chip in the name cell, not its own column. The `UOM` badge
+       follows the same pattern — always shown when applicable. Barcode is
+       rendered as a grouped sibling column (separate template below). -->
   <ng-template listCellTemplate="name" let-row>
-    <div class="flex items-center gap-2">
+    <div class="flex items-start gap-2">
       @if (row.type === 'matrix') {
         <button
           type="button"
@@ -95,26 +99,71 @@
           </svg>
         </button>
       }
-      <!-- `list-interactive-cell` mirrors the column-level `interactive` flag
-           for custom templates — keeps hover styling consistent with the
-           shared cellContent renderer.
-           Table view truncates via the `<td>`'s `truncate` style; grid view
-           lets the name wrap to multiple lines (`break-words`). -->
-      <span class="font-medium text-slate-900 min-w-0 break-words list-interactive-cell">{{ row.name }}</span>
+
+      <!-- Thumbnail — rendered only when the `image` column is toggled on. -->
+      @if (isColumnVisible('image')) {
+        @if (row.image) {
+          <img [src]="row.image" alt=""
+            class="w-9 h-9 rounded-md object-cover border border-slate-200 flex-shrink-0" />
+        } @else {
+          <span class="w-9 h-9 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center flex-shrink-0 text-slate-400">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="9" cy="9" r="1.5"/>
+              <path d="m21 15-5-5L5 21"/>
+            </svg>
+          </span>
+        }
+      }
+
+      <div class="flex flex-col min-w-0 gap-1">
+        <!-- `list-interactive-cell` mirrors the column-level `interactive` flag
+             for custom templates — keeps hover styling consistent with the
+             shared cellContent renderer.
+             Table view truncates via the `<td>`'s `truncate` style; grid view
+             lets the name wrap to multiple lines (`break-words`). -->
+        <span class="font-medium text-slate-900 min-w-0 break-words list-interactive-cell flex items-center gap-1.5">
+          {{ row.name }}
+          @if (row.UOM && (row.type === 'inventory' || row.type === 'batch' || row.type === 'serialized' || row.type === 'kit')) {
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700">
+              {{ row.UOM }}
+            </span>
+          }
+        </span>
+
+        <!-- Barcode badge — sits directly below the name (same column as the
+             name text), so when an image thumbnail is shown, the layout reads
+             as [image] | [name / barcode] like separate columns. -->
+        @if (isColumnVisible('barcode') && row.barcode) {
+          <span class="app-product-badge app-product-badge--barcode self-start">
+            {{ row.barcode }}
+          </span>
+        }
+      </div>
     </div>
   </ng-template>
 
-  <!-- Barcode badge (grouped under the same cell as the product name).
-       Uses the shared `.app-product-badge--barcode` class so this chip
-       stays visually identical to the same chip in the document paper,
-       POS cart, and anywhere else a product/line is rendered. Update
-       once in `_product-detail-badges.scss` to roll forward. -->
-  <ng-template listCellTemplate="barcode" let-row>
-    @if (row.barcode) {
-      <span class="app-product-badge app-product-badge--barcode">
-        {{ row.barcode }}
-      </span>
-    }
+  <!-- Image — no-op cell template. The `image` column shares the `name` label
+       so it groups into the name cell, but its actual rendering happens inside
+       the name template above. This template prevents the raw URL from being
+       printed as text in the grouped cell. -->
+  <ng-template listCellTemplate="image"></ng-template>
+
+  <!-- Barcode — no-op cell template. The barcode chip is rendered inside the
+       name template (above) so it sits directly under the name, beside the
+       image rather than below it. The column itself only exists to provide a
+       visibility toggle in the customize-columns drawer. -->
+  <ng-template listCellTemplate="barcode"></ng-template>
+
+  <!-- Unit cost — currency, falls back to 0 when missing. -->
+  <ng-template listCellTemplate="unitCost" let-row>
+    {{ (row.unitCost || 0) | currency:'BHD':'symbol':'1.3-3' }}
+  </ng-template>
+
+  <!-- Tax — when the product is non-taxable, show '-' instead of an empty cell
+       (matches old InvoCloudFront2 behavior). -->
+  <ng-template listCellTemplate="taxName" let-row>
+    {{ row.isTaxable === false ? '-' : (row.taxName || '-') }}
   </ng-template>
 
   <!-- Custom Qty Template — badge is clickable (opens stock breakdown modal). -->

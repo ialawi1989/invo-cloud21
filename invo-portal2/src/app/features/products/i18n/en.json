@@ -5,14 +5,22 @@
       "NAME": "Product Name",
       "TYPE": "Type",
       "SKU": "SKU",
+      "UOM": "UOM",
       "BARCODE": "Barcode",
       "CATEGORY": "Category",
       "DEPARTMENT": "Department",
+      "BRAND": "Brand",
       "PRICE": "Price",
       "COST": "Cost",
+      "UNIT_COST": "Unit Cost",
+      "TAX": "Tax",
+      "WEIGHT": "Weight",
+      "IMAGE": "Image",
       "QTY": "Qty",
       "STOCK": "Stock",
-      "STOCK_VALUE": "Stock Value"
+      "STOCK_VALUE": "Stock Value",
+      "CREATED_AT": "Created At",
+      "UPDATED_DATE": "Updated Date"
     },
     "TYPES": {
       "INVENTORY": "Inventory",
