@@ -23,6 +23,10 @@ import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/comp
 import { MediaPickerModalComponent, MediaPickerConfig } from '../../../../media/components/media-picker';
 import { ImageUrlModalComponent } from '../../../../media/components/image-url-modal';
 import { ReferencePickerComponent } from '../../components/reference-picker.component';
+import {
+  DropdownMenuBtnComponent,
+  DropdownMenuBtnItem,
+} from '../../../../../shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 
 type ViewMode = 'table' | 'list' | 'gallery';
 interface SortConfig   { field: string; dir: 'asc' | 'desc'; }
@@ -35,7 +39,7 @@ interface LocalView {
 @Component({
   selector: 'app-content-library',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TooltipDirective, BreadcrumbsComponent, ReferencePickerComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TooltipDirective, BreadcrumbsComponent, ReferencePickerComponent, DropdownMenuBtnComponent],
   styles: [`
     /* ── Host — matches Media Manager theme ── */
     :host {
@@ -573,34 +577,9 @@ interface LocalView {
     <div class="top-bar">
       <h1 class="coll-title">{{ collection()?.template?.displayName || '…' }}</h1>
       <div class="top-actions">
-        <div class="dw">
-          <button class="btn-outline" (click)="toggleMoreActions($event)">
-            Manage definition
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          @if (moreOpen()) {
-            <div class="dm" (click)="$event.stopPropagation()">
-              <button class="mi" (click)="importCsv(); moreOpen.set(false)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Import items
-              </button>
-              <button class="mi" (click)="exportCsv(); moreOpen.set(false)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Export to CSV
-              </button>
-              <div class="msep"></div>
-              <button class="mi" (click)="openSettings(); moreOpen.set(false)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-                Collection settings
-              </button>
-              <div class="msep"></div>
-              <button class="mi danger" (click)="moreOpen.set(false)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-                Delete collection
-              </button>
-            </div>
-          }
-        </div>
+        <app-dropdown-menu-btn [items]="manageMenuItems()" [appendToBody]="true" align="end" triggerClass="btn-outline">
+          Manage definition
+        </app-dropdown-menu-btn>
         <button class="btn-primary" (click)="newItem()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Add Entry
@@ -1253,6 +1232,17 @@ export class ContentLibraryComponent implements OnInit, OnDestroy {
     this.viewMode.set(mode);
     this.layoutOpen.set(false);
   }
+  /** Items rendered in the header "Manage definition" dropdown.
+   *  Replaces the prior hand-rolled `<div class="dm">` popover. */
+  manageMenuItems(): DropdownMenuBtnItem[] {
+    return [
+      { label: 'Import items',        click: () => this.importCsv(),     iconPath: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M17 8 L12 3 L7 8 M12 3 L12 15' },
+      { label: 'Export to CSV',       click: () => this.exportCsv(),     iconPath: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10 L12 15 L17 10 M12 15 L12 3' },
+      { label: 'Collection settings', click: () => this.openSettings(),  separator: true, iconPath: 'M12 9 a3 3 0 1 0 0 6 a3 3 0 0 0 0 -6 z' },
+      { label: 'Delete collection',   click: () => { /* handler TBD */ }, separator: true, danger: true, iconPath: 'M3 6 L21 6 M19 6 l-1 14 a2 2 0 0 1 -2 2 H8 a2 2 0 0 1 -2 -2 L5 6' },
+    ];
+  }
+
   toggleMoreActions(e: Event): void { e.stopPropagation(); this.moreOpen.update(v => !v); this.layoutOpen.set(false); }
   toggleLayoutMenu(e: Event): void  { e.stopPropagation(); this.layoutOpen.update(v => !v); this.moreOpen.set(false); }
   closePopovers(): void { this.visMenuId.set(null); this.colMenuField.set(null); }

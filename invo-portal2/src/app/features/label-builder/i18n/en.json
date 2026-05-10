@@ -1,0 +1,142 @@
+{
+  "LABEL_BUILDER": {
+    "LIST_TITLE":         "Label templates",
+    "LIST_SUBTITLE":      "Design Zebra-style print labels for products and kitchen tickets. Pick a template to edit, or create a new one.",
+    "LIST_EMPTY":         "No templates yet. Create one to get started.",
+    "NO_MATCHES":         "No templates match the current filter.",
+    "SEARCH_PLACEHOLDER": "Search templates by name…",
+
+    "NEW":                "New template",
+    "NEW_LABEL":          "New label template",
+    "NEW_KITCHEN":        "New kitchen ticket",
+    "NAME_PLACEHOLDER":   "Template name",
+    "UNNAMED":            "(Untitled)",
+    "DUPLICATE_SUFFIX":   "(copy)",
+    "RENAME":             "Rename",
+    "RENAME_HINT":        "Double-click to rename",
+
+    "BINDINGS": {
+      "PICKER_TITLE":      "Insert binding",
+      "SEARCH_PLACEHOLDER":"Search bindings",
+      "NO_MATCH":          "No bindings match your search.",
+      "GROUP": {
+        "PRODUCT_CORE":      "Product — core",
+        "PRODUCT_PRICING":   "Product — pricing",
+        "PRODUCT_INVENTORY": "Product — inventory",
+        "PRODUCT_NUTRITION": "Product — nutrition",
+        "PRODUCT_LINKS":     "Product — links",
+        "PRODUCT_CUSTOM":    "Product — custom fields",
+        "INVOICE_LINE":        "Line — fields",
+        "INVOICE_LINE_TOTALS": "Line — totals",
+        "INVOICE_LINE_IDS":    "Line — IDs"
+      }
+    },
+
+    "TYPE": {
+      "LABEL":            "Product label",
+      "KITCHEN":          "Kitchen ticket",
+      "UNKNOWN":          "—"
+    },
+
+    "DELETE_TITLE":       "Delete template?",
+    "DELETE_MESSAGE":     "“{{name}}” will be permanently deleted. This cannot be undone.",
+    "BULK_DELETE_MESSAGE":"{{count}} templates will be permanently deleted. This cannot be undone.",
+    "SAVED":              "Template saved",
+    "SAVE_FAILED":        "Could not save the template",
+
+    "DIMENSIONS":         "{{height}} × {{width}} in",
+    "DPI_LABEL":          "{{dpi}} DPI",
+
+    "FORM": {
+      "BACK":             "Back",
+      "DOWNLOAD":         "Download",
+      "GENERATE_LABEL":   "Download ZPL",
+      "GENERATE_JSON":    "Download JSON",
+      "GENERATE_PNG":     "Download PNG",
+      "SAVE":             "Save",
+      "SAVING":           "Saving…",
+      "UNDO":             "Undo (Ctrl+Z)",
+      "REDO":             "Redo (Ctrl+Y)",
+      "PREVIEW_ENTER":    "Preview mode",
+      "PREVIEW_EXIT":     "Exit preview",
+      "RESIZE_PANEL":     "Drag to resize",
+      "DIRTY_DISCARD":    "Discard changes?",
+      "DIRTY_HINT":       "Unsaved edits will be lost.",
+
+      "PALETTE":          "Elements",
+      "LAYERS":           "Layers",
+      "LAYERS_EMPTY":     "No elements on the canvas yet.",
+      "LAYER_HIDE":       "Hide layer",
+      "LAYER_SHOW":       "Show layer",
+      "LAYER_LOCK":       "Lock layer",
+      "LAYER_UNLOCK":     "Unlock layer",
+      "ITEM": {
+        "TEXTBOX":        "Text",
+        "BARCODE":        "Barcode",
+        "QRCODE":         "QR code",
+        "RECTANGLE":      "Rectangle",
+        "CIRCLE":         "Circle",
+        "HORIZONTAL_LINE":"Horizontal line",
+        "VERTICAL_LINE":  "Vertical line",
+        "IMAGE":          "Image",
+        "LOGO":           "Company logo"
+      },
+
+      "INSPECTOR": {
+        "LABEL_SETTINGS": "Label settings",
+        "ELEMENT":        "Element",
+        "PROPERTIES":     "Properties",
+        "SIZE":           "Size",
+        "TRANSFORM":      "Position",
+        "STYLE":          "Style",
+        "CONTENT":        "Content",
+        "SOURCE":         "Source image",
+        "OPTIONS":        "Options",
+        "DELETE":         "Delete element",
+        "DUPLICATE_HINT": "Duplicate (Ctrl+D)",
+        "LAYER":          "Layer order",
+        "BRING_TO_FRONT": "Bring to front",
+        "BRING_FORWARD":  "Bring forward",
+        "SEND_BACKWARD":  "Send backward",
+        "SEND_TO_BACK":   "Send to back",
+        "SNAP_TO_GRID":   "Snap to grid",
+
+        "HEIGHT_IN":      "Height (in)",
+        "WIDTH_IN":       "Width (in)",
+        "DPI":            "DPI",
+
+        "WIDTH":          "Width",
+        "HEIGHT":         "Height",
+        "THICK":          "Thickness",
+        "DIAMETER":       "Diameter",
+        "FONT_SIZE":      "Font size",
+        "BOLD":           "Bold",
+        "ITALIC":         "Italic",
+        "UNDERLINE":      "Underline",
+        "QR_FACTOR":      "QR size factor",
+        "SHOW_VALUE":     "Show barcode number",
+        "BARCODE_HEIGHT": "Barcode height",
+        "POSITION_X":     "X",
+        "POSITION_Y":     "Y",
+        "ASPECT_LOCK":    "Lock aspect ratio",
+        "ASPECT_UNLOCK":  "Unlock aspect ratio",
+        "ALIGN":              "Align",
+        "DISTRIBUTE":         "Distribute",
+        "ALIGN_LEFT":         "Align left edges",
+        "ALIGN_HCENTER":      "Align horizontal centres",
+        "ALIGN_RIGHT":        "Align right edges",
+        "ALIGN_TOP":          "Align top edges",
+        "ALIGN_VCENTER":      "Align vertical centres",
+        "ALIGN_BOTTOM":       "Align bottom edges",
+        "DISTRIBUTE_H":       "Distribute horizontally",
+        "DISTRIBUTE_V":       "Distribute vertically",
+        "CENTER_ON_CANVAS":   "Centre on canvas",
+        "DROP_HINT":      "Drag elements onto the label canvas, or click to add them at the origin.",
+        "SAMPLE_PRODUCT": "Sample product",
+        "SAMPLE_SEARCH":  "Search products to preview…",
+        "SAMPLE_HINT":    "Pick a real product to preview the template against its actual data instead of the dummy values.",
+        "SAMPLE_CLEAR":   "Clear sample"
+      }
+    }
+  }
+}

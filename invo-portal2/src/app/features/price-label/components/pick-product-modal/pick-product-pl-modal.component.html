@@ -1,0 +1,130 @@
+<app-modal-header [title]="data.title || ('PRICE_LABEL.FORM.PICK_PRODUCTS' | translate)" />
+
+<div class="ppl__body">
+  <!-- Search + filter toggle + Select All. Filters live in a small
+       icon button at the end of the search input — collapsed by
+       default to keep the modal compact, expandable when the user
+       wants to drill in by department / category / type. -->
+  <div class="ppl__row">
+    <label class="ppl__search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text"
+        [ngModel]="search()"
+        (ngModelChange)="onSearchInput($event)"
+        [placeholder]="'PRICE_LABEL.PICKER.SEARCH' | translate"/>
+      <button type="button"
+        class="ppl__filter-toggle"
+        [class.ppl__filter-toggle--on]="filtersOpen()"
+        [class.ppl__filter-toggle--active]="hasActiveFilters()"
+        (click)="filtersOpen.update(v => !v)"
+        [attr.aria-pressed]="filtersOpen()"
+        [attr.aria-label]="'COMMON.FILTERS' | translate"
+        [title]="'COMMON.FILTERS' | translate">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4"  y1="6"  x2="20" y2="6"/>
+          <line x1="7"  y1="12" x2="17" y2="12"/>
+          <line x1="10" y1="18" x2="14" y2="18"/>
+        </svg>
+      </button>
+    </label>
+    <button type="button" class="ppl__btn" (click)="toggleSelectAll()">
+      {{ 'PRICE_LABEL.PICKER.SELECT_ALL' | translate }}
+    </button>
+  </div>
+
+  <!-- Department / Category / Type filters — collapsed by default. -->
+  @if (filtersOpen()) {
+    <div class="ppl__row ppl__row--filters">
+      <app-search-dropdown
+        [loadFn]="loadDepartments"
+        [displayWith]="display"
+        [compareWith]="compare"
+        [toValue]="toValue"
+        [placeholder]="'PRICE_LABEL.PICKER.DEPARTMENT' | translate"
+        (valueChange)="onDepartmentChange($event)"/>
+      <app-search-dropdown
+        [loadFn]="loadCategories"
+        [displayWith]="display"
+        [compareWith]="compare"
+        [toValue]="toValue"
+        [placeholder]="'PRICE_LABEL.PICKER.CATEGORY' | translate"
+        (valueChange)="onCategoryChange($event)"/>
+    </div>
+
+    <div class="ppl__row ppl__row--type">
+      <app-search-dropdown
+        [items]="typeItems()"
+        [displayWith]="display"
+        [compareWith]="compare"
+        [toValue]="toValue"
+        [searchable]="false"
+        [clearable]="false"
+        [value]="selectedTypeItem()"
+        [placeholder]="'PRICE_LABEL.PICKER.TYPE' | translate"
+        (valueChange)="onTypeChange($event)"/>
+    </div>
+  }
+
+  <!-- Header chip -->
+  <div class="ppl__count">
+    {{ 'PRICE_LABEL.PICKER.SELECTED_COUNT' | translate:{ count: selectedCount() } }}
+  </div>
+
+  <!-- List -->
+  <ul class="ppl__list">
+    @for (row of rows(); track trackRow($index, row)) {
+      <li class="ppl__item"
+        [class.ppl__item--on]="row.picked"
+        (click)="toggle(row.id)">
+        <input type="checkbox" class="ppl__check"
+          [checked]="row.picked"
+          (click)="$event.stopPropagation()"
+          (change)="toggle(row.id)"/>
+        <div class="ppl__item-main">
+          <strong class="ppl__name">{{ row.name || '—' }}</strong>
+          <div class="ppl__chips">
+            @if (row.type) {
+              <span class="chip chip--type">{{ row.type }}</span>
+            }
+            @if (row.defaultPrice != null) {
+              <span class="chip chip--price">
+                {{ row.defaultPrice | currency:'BHD':'symbol':'1.3-3' }}
+              </span>
+            }
+            @if (row.barcode) {
+              <span class="chip chip--barcode">{{ row.barcode }}</span>
+            }
+          </div>
+        </div>
+      </li>
+    }
+    @if (loading() && rows().length === 0) {
+      <li class="ppl__state">{{ 'COMMON.LOADING' | translate }}</li>
+    } @else if (!loading() && rows().length === 0) {
+      <li class="ppl__state ppl__state--empty">{{ 'PRICE_LABEL.PICKER.NO_RESULTS' | translate }}</li>
+    }
+    <!-- Subsequent-page loading row lives INSIDE the scroll list
+         so it doesn't change the modal body's outer height when it
+         toggles on/off. Otherwise the modal "jumps" each time the
+         IntersectionObserver fetches the next page. -->
+    @if (loading() && rows().length > 0) {
+      <li class="ppl__loadmore" role="status" aria-live="polite">
+        <span class="ppl__spinner" aria-hidden="true"></span>
+        <span>{{ 'COMMON.LOADING' | translate }}</span>
+      </li>
+    }
+    <!-- IntersectionObserver sentinel triggers the next page -->
+    <li #scrollSentinel class="ppl__sentinel" aria-hidden="true"></li>
+  </ul>
+</div>
+
+<footer class="ppl__footer">
+  <button type="button" class="ppl__btn ppl__btn--ghost" (click)="cancel()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="ppl__btn ppl__btn--primary" (click)="apply()">
+    {{ 'COMMON.APPLY' | translate }}
+  </button>
+</footer>

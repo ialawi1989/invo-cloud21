@@ -12,11 +12,21 @@
 // H1 page title underneath. Save/Cancel live in the sticky footer.
 .page-header {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: 14px;
   margin-bottom: 20px;
   padding-bottom: 16px;
   border-bottom: 1px solid #e5e7eb;
+
+  &__lead {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
 
   &__title {
     margin: 0;
@@ -25,6 +35,30 @@
     color: #0f172a;
     line-height: 1.2;
     word-break: break-word;
+  }
+
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    align-self: end;
+  }
+
+  &__action {
+    flex: 0 0 auto;
+  }
+}
+
+// Per-section wrapper produced by the `@for` loop in the form
+// template. The `--hidden` modifier visually drops the section
+// without unmounting it — controls keep emitting values into the
+// form payload, drag-reorder still preserves state, etc.
+.pf-section {
+  display: contents;
+
+  &--hidden {
+    display: none !important;
   }
 }
 
@@ -100,10 +134,19 @@
   width: 100%;
 }
 
-.form-grid {
+// Each layout row is its own grid — `data-row-layout` flips the
+// column ratio between catalog defaults (`2-1`), 1:1, 1:2, or a
+// single full-width column. Rows stack vertically; gaps match the
+// inter-section spacing inside each column.
+.form-row {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   gap: 20px;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); // default = 2-1
+  margin-bottom: 20px;
+
+  &[data-row-layout='1-1'] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  &[data-row-layout='1-2'] { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+  &[data-row-layout='single'] { grid-template-columns: 1fr; }
 
   @media (max-width: 991px) {
     grid-template-columns: 1fr;

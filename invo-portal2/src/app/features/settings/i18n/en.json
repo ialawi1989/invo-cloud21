@@ -155,6 +155,7 @@
       "OPENING_TIME_HINT":    "When this branch starts its day. Detailed open/close periods per day go under Working hours.",
       "USE_MY_LOCATION":      "Use my current location",
       "MAP_DRAG_HINT":        "Drag the pin (or click anywhere) so it matches the exact location of your branch.",
+      "SUGGESTED_ADDRESS":    "Suggested:",
       "ONLINE_AVAILABILITY":  "Online sales available for this branch",
       "ONLINE_AVAILABILITY_HINT": "Customers can place orders against this branch from the online storefront.",
       "MAIN_BRANCH":          "Main branch for the company",

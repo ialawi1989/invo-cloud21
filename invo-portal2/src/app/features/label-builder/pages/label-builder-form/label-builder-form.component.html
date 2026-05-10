@@ -1,0 +1,1160 @@
+<div class="lbf">
+  <!-- ════ TOP BAR ═════════════════════════════════════════════════════ -->
+  <header class="lbf-topbar">
+    <button type="button" class="lbf-topbar__home" (click)="cancel()" [appTooltip]="'COMMON.BACK' | translate">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </button>
+
+    <div class="lbf-topbar__divider"></div>
+
+    <input
+      type="text"
+      class="lbf-topbar__name"
+      [ngModel]="template().name"
+      (ngModelChange)="patchTemplate('name', $event)"
+      [placeholder]="'LABEL_BUILDER.NAME_PLACEHOLDER' | translate"
+      [ngModelOptions]="{ standalone: true }"
+    />
+
+    <!-- Template-type chip — locked because changing it mid-edit
+         would invalidate the token model the inspector targets. To
+         flip the type, the user creates a new template. -->
+    <span class="lbf-topbar__type-chip"
+      [class.lbf-topbar__type-chip--kitchen]="template().templateType === 'kitchen'">
+      @if (template().templateType === 'kitchen') {
+        {{ 'LABEL_BUILDER.TYPE.KITCHEN' | translate }}
+      } @else {
+        {{ 'LABEL_BUILDER.TYPE.LABEL' | translate }}
+      }
+    </span>
+
+    <div class="lbf-topbar__spacer"></div>
+
+    <!-- Undo / redo cluster. Pressed buttons are disabled at the
+         stack boundaries so users get a visible "no more undo /
+         redo" affordance. -->
+    <div class="lbf-topbar__history">
+      <button type="button"
+        class="lbf-topbar__icon-btn"
+        (click)="undo()"
+        [disabled]="!canUndo()"
+        [appTooltip]="'LABEL_BUILDER.FORM.UNDO' | translate">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7v6h6"/>
+          <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-7 3.3L3 13"/>
+        </svg>
+      </button>
+      <button type="button"
+        class="lbf-topbar__icon-btn"
+        (click)="redo()"
+        [disabled]="!canRedo()"
+        [appTooltip]="'LABEL_BUILDER.FORM.REDO' | translate">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 7v6h-6"/>
+          <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 7 3.3L21 13"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Snap-to-grid toggle. Pressed-state is held by the
+         `aria-pressed` attribute so the visual treatment can rest
+         on `[attr.aria-pressed="true"]` rather than a duplicate
+         class. -->
+    <button type="button"
+      class="lbf-topbar__toggle"
+      [attr.aria-pressed]="snapEnabled()"
+      (click)="snapEnabled.set(!snapEnabled())"
+      [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.SNAP_TO_GRID' | translate">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+    </button>
+
+    <!-- Preview / edit toggle — hides palette + inspector + layers
+         when on so the canvas takes the full width. Same aria-
+         pressed pattern as snap-to-grid. -->
+    <button type="button"
+      class="lbf-topbar__toggle"
+      [attr.aria-pressed]="previewMode()"
+      (click)="togglePreview()"
+      [appTooltip]="(previewMode() ? 'LABEL_BUILDER.FORM.PREVIEW_EXIT' : 'LABEL_BUILDER.FORM.PREVIEW_ENTER') | translate">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    </button>
+
+    <!-- Grouped Download menu — collapses the three export formats
+         (PNG / JSON / ZPL) under one trigger. -->
+    <app-dropdown-menu-btn [items]="downloadMenuItems()" align="end" triggerClass="btn btn-default">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <polyline points="19 12 12 19 5 12"/>
+      </svg>
+      {{ 'LABEL_BUILDER.FORM.DOWNLOAD' | translate }}
+    </app-dropdown-menu-btn>
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || !isDirty()"
+    >
+      {{ saving() ? ('LABEL_BUILDER.FORM.SAVING' | translate) : ('LABEL_BUILDER.FORM.SAVE' | translate) }}
+    </button>
+  </header>
+
+  <!-- ════ LAYOUT ══════════════════════════════════════════════════════
+       Left rail = palette, center = canvas, right rail = inspector. -->
+  <div class="lbf-layout">
+
+    <!-- ── Left rail ───────────────────────────────────────────────────
+         Vertical stack of `app-rbf-widget` cards: palette on top,
+         layers below. Same shape as the receipt-builder rail so the
+         visual language reads identically between editors. -->
+    @if (!previewMode()) {
+    <aside class="lbf-palette">
+      <app-rbf-widget [title]="'LABEL_BUILDER.FORM.PALETTE' | translate" storageKey="lbf:palette">
+        <!-- Single-column list of horizontal-row tiles — icon on the
+             left, label on the right. CDK drop-list connects to the
+             canvas so palette items can be dragged onto it. -->
+        <ul class="lbf-palette__list" cdkDropList
+          [cdkDropListData]="palette"
+          [cdkDropListSortingDisabled]="true"
+          [cdkDropListConnectedTo]="['canvas-drop-zone']">
+          @for (item of palette; track item.type) {
+            <li class="lbf-palette__item"
+              cdkDrag
+              [cdkDragData]="item">
+              <button type="button" class="lbf-palette__tile"
+                (click)="onPaletteClick(item)"
+                [appTooltip]="item.i18nKey | translate">
+                <span class="lbf-palette__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                    stroke="currentColor" stroke-width="1.6"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path [attr.d]="item.iconPath"/>
+                  </svg>
+                </span>
+                <span class="lbf-palette__label">{{ item.i18nKey | translate }}</span>
+              </button>
+
+              <!-- Drag preview clone — sits in <body> while dragged.
+                   Renders as a tighter, brand-tinted pill so the user
+                   can see what they picked up. -->
+              <div *cdkDragPreview class="lbf-palette__preview">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                  stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path [attr.d]="item.iconPath"/>
+                </svg>
+                {{ item.i18nKey | translate }}
+              </div>
+            </li>
+          }
+        </ul>
+        <p class="lbf-palette__hint">{{ 'LABEL_BUILDER.FORM.INSPECTOR.DROP_HINT' | translate }}</p>
+      </app-rbf-widget>
+
+    </aside>
+    }
+
+    <!-- ── Canvas ───────────────────────────────────────────────────── -->
+    <section class="lbf-canvas-wrap" (click)="onCanvasClick()">
+      <div
+        #canvas
+        id="canvas-drop-zone"
+        class="lbf-canvas"
+        cdkDropList
+        cdkDropListSortingDisabled
+        [cdkDropListConnectedTo]="['canvas-drop-zone']"
+        (cdkDropListDropped)="onDropToCanvas($event)"
+        [style.width.px]="canvasPx().width"
+        [style.height.px]="canvasPx().height"
+        (click)="$event.stopPropagation(); onCanvasClick()">
+
+        @for (el of template().template; track trackByIndex($index); let i = $index) {
+          @if (!el.hidden) {
+          <div
+            class="lbf-el"
+            [attr.data-el-idx]="i"
+            [class.lbf-el--selected]="isLayerSelected(i)"
+            [class.lbf-el--focused]="selectedIndex() === i"
+            [class.lbf-el--locked]="el.locked"
+            [style.transform]="'translate(' + el.position.x + 'px,' + el.position.y + 'px)'"
+            (pointerdown)="startElementDrag(i, $event)"
+            (click)="selectElement(i, $event)"
+            (contextmenu)="openContextMenu(i, $event)">
+
+            @switch (el.type) {
+              @case ('Textbox') {
+                <span class="lbf-el-text"
+                  [style.font-size.px]="asTextBox(el)!.fontSize"
+                  [style.font-weight]="asTextBox(el)!.fontWeight"
+                  [style.font-style]="asTextBox(el)!.fontStyle"
+                  [style.text-decoration]="asTextBox(el)!.textDecoration">
+                  {{ resolve(asTextBox(el)!.data) }}
+                </span>
+              }
+              @case ('Barcode') {
+                <!-- Live barcode rendered with jsbarcode — value goes
+                     through the token resolver so `!product.barcode`
+                     etc. show real preview data. -->
+                <app-barcode-preview
+                  [data]="resolve(asBarcode(el)!.data)"
+                  [height]="asBarcode(el)!.height"
+                  [showValue]="asBarcode(el)!.showValue"/>
+              }
+              @case ('QrCode') {
+                <app-qrcode-preview
+                  [data]="resolve(asQrCode(el)!.data)"
+                  [pixel]="qrPixel(asQrCode(el)!.size.factor)"/>
+              }
+              @case ('Rectangle') {
+                <div class="lbf-el-rect"
+                  [style.width.px]="asRectangle(el)!.width"
+                  [style.height.px]="asRectangle(el)!.height"
+                  [style.border-width.px]="asRectangle(el)!.borderThickness"></div>
+              }
+              @case ('Circle') {
+                <div class="lbf-el-circle"
+                  [style.width.px]="asCircle(el)!.circleDiameter"
+                  [style.height.px]="asCircle(el)!.circleDiameter"
+                  [style.border-width.px]="asCircle(el)!.borderThickness"></div>
+              }
+              @case ('HorizontalLine') {
+                <div class="lbf-el-hline"
+                  [style.width.px]="asHorizontal(el)!.width"
+                  [style.height.px]="asHorizontal(el)!.thick"></div>
+              }
+              @case ('VerticalLine') {
+                <div class="lbf-el-vline"
+                  [style.width.px]="asVertical(el)!.thick"
+                  [style.height.px]="asVertical(el)!.height"></div>
+              }
+              @case ('Image') {
+                @if (asImage(el)!.src) {
+                  <img class="lbf-el-img"
+                    [src]="asImage(el)!.src"
+                    [style.width.px]="asImage(el)!.width"
+                    [style.height.px]="asImage(el)!.height"
+                    alt=""/>
+                } @else {
+                  <div class="lbf-el-img-placeholder"
+                    [style.width.px]="asImage(el)!.width"
+                    [style.height.px]="asImage(el)!.height">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="9" cy="9" r="1.5"/>
+                      <path d="m21 15-5-5L5 21"/>
+                    </svg>
+                  </div>
+                }
+              }
+              @case ('Logo') {
+                @if (asLogo(el)!.src) {
+                  <img class="lbf-el-img"
+                    [src]="asLogo(el)!.src"
+                    [style.width.px]="asLogo(el)!.width"
+                    [style.height.px]="asLogo(el)!.height"
+                    alt="logo"/>
+                } @else {
+                  <div class="lbf-el-img-placeholder lbf-el-img-placeholder--logo"
+                    [style.width.px]="asLogo(el)!.width"
+                    [style.height.px]="asLogo(el)!.height">
+                    LOGO
+                  </div>
+                }
+              }
+            }
+
+            <!-- Resize handles — only on the currently-selected
+                 element. The set of handles depends on the element
+                 type (`resizeHandles()`). Each handle stops drag
+                 propagation in its pointerdown, so CDK move-drag
+                 doesn't fire while the user is resizing. -->
+            @if (selectedIndex() === i) {
+              @for (side of resizeHandles(el); track side) {
+                <span class="lbf-handle"
+                  [class]="'lbf-handle--' + side"
+                  (pointerdown)="startResize(side, $event, i)"
+                  (click)="$event.stopPropagation()"></span>
+              }
+            }
+          </div>
+          }
+        }
+
+        <!-- Alignment guide lines — only present while a drag is
+             active. Vertical guides span the full canvas height,
+             horizontal guides span the full width. `pointer-events:
+             none` on the line itself so clicks fall through to the
+             canvas / elements underneath. -->
+        @for (g of guides(); track $index) {
+          @if (g.x !== undefined) {
+            <span class="lbf-guide lbf-guide--v" [style.left.px]="g.x"></span>
+          } @else if (g.y !== undefined) {
+            <span class="lbf-guide lbf-guide--h" [style.top.px]="g.y"></span>
+          }
+        }
+
+        <!-- Position chip — only rendered while a drag is in flight.
+             Anchored to the dragging element's drop coordinate so
+             the user can read the exact (x, y) without looking at
+             the inspector. -->
+        @if (positionChip()) {
+          <span class="lbf-chip"
+            [style.left.px]="positionChip()!.x"
+            [style.top.px]="positionChip()!.y">
+            x {{ positionChip()!.x }} · y {{ positionChip()!.y }}
+          </span>
+        }
+      </div>
+    </section>
+
+    <!-- Vertical splitter — drag to resize the right rail. Lives
+         absolute over the rail's leading edge (not inside the rail)
+         because the rail's overflow rules would clip an internally-
+         positioned handle. Width / position both pin to the same
+         `--lbf-right-rail-w` CSS variable that drives the rail. -->
+    @if (!previewMode()) {
+      <div
+        class="lbf-splitter"
+        [class.lbf-splitter--active]="splitterDragging()"
+        [appTooltip]="'LABEL_BUILDER.FORM.RESIZE_PANEL' | translate"
+        role="separator"
+        aria-orientation="vertical"
+        (mousedown)="onSplitterMouseDown($event)"
+      ></div>
+    }
+
+    <!-- ── Right inspector ──────────────────────────────────────────────
+         Wrapped in `lbf-inspector--card` (mirrors the receipt-builder
+         right rail card) so the inspector reads as a discrete panel
+         with border + shadow + scoped scroll. The pinned title strip
+         lives outside the body so it stays visible while inspector
+         contents scroll. -->
+    @if (!previewMode()) {
+    <aside class="lbf-inspector lbf-inspector--card">
+      <!-- Pinned title strip — displays element type / "Label
+           settings" above the dock stack so the user always knows
+           what they're editing. -->
+      <header class="lbf-panel-title">
+        <h2>{{ inspectorTitleKey() | translate }}</h2>
+      </header>
+
+      <!-- Editor section — Photoshop-style stack of `<app-rbf-widget>`
+           docks. Each widget represents one *group* from the user's
+           layout state; a group can hold one slot (single-tab mode)
+           or several merged together (tabbed mode). Drag a widget
+           header up/down to reorder; drop on another header to merge
+           as tabs; click × on a tab pill to ungroup. -->
+      <div class="lbf-inspector__editor lbf-ee" cdkDropList
+        (cdkDropListDropped)="onSlotReorder(inspectorTypeKey(), $event)">
+        @for (group of groupsFor(inspectorTypeKey()); track trackGroup($index, group); let gi = $index) {
+          <div cdkDrag class="lbf-ee-slot"
+            [attr.data-lbfw-gi]="gi"
+            (cdkDragMoved)="onWidgetDragMoved($event)"
+            (cdkDragEnded)="onWidgetDragEnded()">
+            <app-rbf-widget
+              [title]="widgetTitle(group)"
+              [storageKey]="'lbf-el:' + inspectorTypeKey() + ':' + group[0]"
+              [draggable]="true"
+              [tabs]="buildTabs(group)"
+              [activeTabId]="activeTab(inspectorTypeKey(), gi, group)"
+              (activeTabIdChange)="setActiveTab(inspectorTypeKey(), gi, $event)"
+              (tabClose)="ungroupTab(inspectorTypeKey(), gi, $event)"
+              (tabReorder)="reorderTab(inspectorTypeKey(), gi, $event)">
+              @switch (activeTab(inspectorTypeKey(), gi, group)) {
+                <!-- ─── Label-level slots (no element selected) ────── -->
+                @case ('properties') {
+                  <label class="lbf-field">
+                    <span>{{ 'LABEL_BUILDER.NAME_PLACEHOLDER' | translate }}</span>
+                    <input type="text"
+                      [ngModel]="template().name"
+                      (ngModelChange)="patchTemplate('name', $event)"
+                      [ngModelOptions]="{ standalone: true }"/>
+                  </label>
+                }
+                @case ('sample') {
+                  @if (sampleBoundName()) {
+                    <div class="lbf-sample-bound">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 6L9 17l-5-5"/>
+                      </svg>
+                      <span>{{ sampleBoundName() }}</span>
+                      <button type="button" class="lbf-sample-clear"
+                        (click)="resetSample()"
+                        [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.SAMPLE_CLEAR' | translate">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                      </button>
+                    </div>
+                  } @else {
+                    <div class="lbf-sample-search">
+                      <input type="text"
+                        [ngModel]="sampleQuery()"
+                        (ngModelChange)="onSampleSearch($event)"
+                        [ngModelOptions]="{ standalone: true }"
+                        [placeholder]="'LABEL_BUILDER.FORM.INSPECTOR.SAMPLE_SEARCH' | translate"/>
+                      @if (sampleResults().length) {
+                        <ul class="lbf-sample-results" role="listbox">
+                          @for (r of sampleResults(); track r.id) {
+                            <li class="lbf-sample-result" role="option"
+                              (click)="selectSample(r.id)">
+                              <strong>{{ r.name }}</strong>
+                              @if (r.barcode) {
+                                <span class="lbf-sample-result__barcode">{{ r.barcode }}</span>
+                              }
+                            </li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                    <p class="lbf-sample-hint">
+                      {{ 'LABEL_BUILDER.FORM.INSPECTOR.SAMPLE_HINT' | translate }}
+                    </p>
+                  }
+                }
+
+                <!-- ─── Size slot — different bodies for label vs.
+                     each element type. ─────────────────────────────── -->
+                @case ('size') {
+                  @if (selectedElement() === null) {
+                    <label class="lbf-field">
+                      <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.HEIGHT_IN' | translate }}</span>
+                      <input type="number" min="0.1" step="0.05"
+                        [ngModel]="template().labelHeight"
+                        (ngModelChange)="patchTemplate('labelHeight', +$event)"
+                        [ngModelOptions]="{ standalone: true }"/>
+                    </label>
+                    <label class="lbf-field">
+                      <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.WIDTH_IN' | translate }}</span>
+                      <input type="number" min="0.1" step="0.05"
+                        [ngModel]="template().labelWidth"
+                        (ngModelChange)="patchTemplate('labelWidth', +$event)"
+                        [ngModelOptions]="{ standalone: true }"/>
+                    </label>
+                    <label class="lbf-field">
+                      <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.DPI' | translate }}</span>
+                      <app-search-dropdown
+                        class="lbf-field__dropdown"
+                        [items]="dpiItems"
+                        [displayWith]="dpiDisplay"
+                        [compareWith]="dpiCompare"
+                        [toValue]="dpiToValue"
+                        [clearable]="false"
+                        [searchable]="false"
+                        [value]="dpiSelected()"
+                        (valueChange)="patchTemplate('dpi', +$any($event))"/>
+                    </label>
+                  } @else {
+                    @switch (selectedElement()!.type) {
+                      @case ('Barcode') {
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.BARCODE_HEIGHT' | translate }}</span>
+                          <input type="range" min="20" max="300" step="1"
+                            [ngModel]="asBarcode(selectedElement())!.height"
+                            (ngModelChange)="patchElement('height', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                          <em>{{ asBarcode(selectedElement())!.height }}</em>
+                        </label>
+                      }
+                      @case ('QrCode') {
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.QR_FACTOR' | translate }}</span>
+                          <input type="range" min="1" max="10" step="1"
+                            [ngModel]="asQrCode(selectedElement())!.size.factor"
+                            (ngModelChange)="patchElementPath('size.factor', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                          <em>{{ asQrCode(selectedElement())!.size.factor }}</em>
+                        </label>
+                      }
+                      @case ('Rectangle') {
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.WIDTH' | translate }}</span>
+                          <input type="number" min="1"
+                            [ngModel]="asRectangle(selectedElement())!.width"
+                            (ngModelChange)="patchElement('width', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                        </label>
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.HEIGHT' | translate }}</span>
+                          <input type="number" min="1"
+                            [ngModel]="asRectangle(selectedElement())!.height"
+                            (ngModelChange)="patchElement('height', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                        </label>
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.THICK' | translate }}</span>
+                          <input type="range" min="1" max="8" step="1"
+                            [ngModel]="asRectangle(selectedElement())!.borderThickness"
+                            (ngModelChange)="patchElement('borderThickness', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                          <em>{{ asRectangle(selectedElement())!.borderThickness }}</em>
+                        </label>
+                      }
+                      @case ('Circle') {
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.DIAMETER' | translate }}</span>
+                          <input type="number" min="1"
+                            [ngModel]="asCircle(selectedElement())!.circleDiameter"
+                            (ngModelChange)="patchElement('circleDiameter', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                        </label>
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.THICK' | translate }}</span>
+                          <input type="range" min="1" max="8" step="1"
+                            [ngModel]="asCircle(selectedElement())!.borderThickness"
+                            (ngModelChange)="patchElement('borderThickness', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                          <em>{{ asCircle(selectedElement())!.borderThickness }}</em>
+                        </label>
+                      }
+                      @case ('HorizontalLine') {
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.WIDTH' | translate }}</span>
+                          <input type="number" min="1"
+                            [ngModel]="asHorizontal(selectedElement())!.width"
+                            (ngModelChange)="patchElement('width', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                        </label>
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.THICK' | translate }}</span>
+                          <input type="range" min="1" max="8" step="1"
+                            [ngModel]="asHorizontal(selectedElement())!.thick"
+                            (ngModelChange)="patchElement('thick', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                          <em>{{ asHorizontal(selectedElement())!.thick }}</em>
+                        </label>
+                      }
+                      @case ('VerticalLine') {
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.HEIGHT' | translate }}</span>
+                          <input type="number" min="1"
+                            [ngModel]="asVertical(selectedElement())!.height"
+                            (ngModelChange)="patchElement('height', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                        </label>
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.THICK' | translate }}</span>
+                          <input type="range" min="1" max="8" step="1"
+                            [ngModel]="asVertical(selectedElement())!.thick"
+                            (ngModelChange)="patchElement('thick', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                          <em>{{ asVertical(selectedElement())!.thick }}</em>
+                        </label>
+                      }
+                      @case ('Image') {
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.WIDTH' | translate }}</span>
+                          <input type="number" min="1"
+                            [ngModel]="asImage(selectedElement())!.width"
+                            (ngModelChange)="patchElement('width', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                        </label>
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.HEIGHT' | translate }}</span>
+                          <input type="number" min="1"
+                            [ngModel]="asImage(selectedElement())!.height"
+                            (ngModelChange)="patchElement('height', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                        </label>
+                      }
+                      @case ('Logo') {
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.WIDTH' | translate }}</span>
+                          <input type="number" min="1"
+                            [ngModel]="asLogo(selectedElement())!.width"
+                            (ngModelChange)="patchElement('width', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                        </label>
+                        <label class="lbf-field">
+                          <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.HEIGHT' | translate }}</span>
+                          <input type="number" min="1"
+                            [ngModel]="asLogo(selectedElement())!.height"
+                            (ngModelChange)="patchElement('height', +$event)"
+                            [ngModelOptions]="{ standalone: true }"/>
+                        </label>
+                      }
+                    }
+                  }
+                }
+
+                <!-- ─── Content slot (Textbox / Barcode / QR) ──────── -->
+                @case ('content') {
+                  @if (selectedElement(); as el) {
+                    @switch (el.type) {
+                      @case ('Textbox') {
+                        <app-bindable-input
+                          [multiline]="true" [rows]="3"
+                          [groups]="bindingGroups()"
+                          [value]="asTextBox(el)!.data"
+                          (valueChange)="patchElement('data', $event)"/>
+                      }
+                      @case ('Barcode') {
+                        <app-bindable-input
+                          [multiline]="true" [rows]="2"
+                          [groups]="bindingGroups()"
+                          [value]="asBarcode(el)!.data"
+                          (valueChange)="patchElement('data', $event)"/>
+                      }
+                      @case ('QrCode') {
+                        <app-bindable-input
+                          [multiline]="true" [rows]="3"
+                          [groups]="bindingGroups()"
+                          [value]="asQrCode(el)!.data"
+                          (valueChange)="patchElement('data', $event)"/>
+                      }
+                    }
+                  }
+                }
+
+                <!-- ─── Style slot (Textbox typography) ─────────────── -->
+                @case ('style') {
+                  @if (asTextBox(selectedElement()); as t) {
+                    <label class="lbf-field">
+                      <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.FONT_SIZE' | translate }}</span>
+                      <input type="number" min="6" max="72" step="1"
+                        [ngModel]="t.fontSize"
+                        (ngModelChange)="patchElement('fontSize', +$event)"
+                        [ngModelOptions]="{ standalone: true }"/>
+                    </label>
+                    <div class="lbf-toggle-group">
+                      <button type="button"
+                        [class.lbf-toggle--on]="t.fontWeight === 'bold'"
+                        (click)="patchElement('fontWeight', t.fontWeight === 'bold' ? 'normal' : 'bold')"
+                        [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.BOLD' | translate">
+                        <strong>B</strong>
+                      </button>
+                      <button type="button"
+                        [class.lbf-toggle--on]="t.fontStyle === 'italic'"
+                        (click)="patchElement('fontStyle', t.fontStyle === 'italic' ? 'normal' : 'italic')"
+                        [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.ITALIC' | translate">
+                        <em>I</em>
+                      </button>
+                      <button type="button"
+                        [class.lbf-toggle--on]="t.textDecoration === 'underline'"
+                        (click)="patchElement('textDecoration', t.textDecoration === 'underline' ? 'none' : 'underline')"
+                        [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.UNDERLINE' | translate">
+                        <u>U</u>
+                      </button>
+                    </div>
+                  }
+                }
+
+                <!-- ─── Options slot (Barcode show-value) ───────────── -->
+                @case ('options') {
+                  @if (asBarcode(selectedElement()); as b) {
+                    <label class="lbf-checkbox">
+                      <input type="checkbox"
+                        [ngModel]="b.showValue"
+                        (ngModelChange)="patchElement('showValue', $event)"
+                        [ngModelOptions]="{ standalone: true }"/>
+                      <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.SHOW_VALUE' | translate }}</span>
+                    </label>
+                  }
+                }
+
+                <!-- ─── Source slot (Image picker) ──────────────────── -->
+                @case ('source') {
+                  @if (asImage(selectedElement()); as img) {
+                    @if (img.src) {
+                      <img class="lbf-image-preview" [src]="img.src" alt=""/>
+                    }
+                    <label class="lbf-image-picker">
+                      <input type="file" accept="image/*" (change)="onImageFile($event)" hidden/>
+                      <span>
+                        {{ img.src
+                            ? ('COMMON.ACTIONS.EDIT' | translate)
+                            : ('COMMON.ADD' | translate) }}
+                      </span>
+                    </label>
+                  }
+                }
+
+                <!-- ─── Transform slot — Photoshop-style Properties:
+                     a 2×2 grid of W/H/X/Y inputs with a chain-link
+                     aspect-lock toggle, followed by a z-order strip
+                     and an Align & Distribute panel. -->
+                @case ('transform') {
+                  @if (selectedElement(); as el) {
+                    <!-- Photoshop W/H/X/Y grid. Chain link binds W↔H
+                         when on; only shown for types that scale on
+                         both axes (Rectangle/Image/Logo). -->
+                    <div class="lbf-ps-xy">
+                      <button type="button"
+                        class="lbf-ps-xy__chain"
+                        [class.lbf-ps-xy__chain--on]="aspectLocked()"
+                        [class.lbf-ps-xy__chain--hidden]="!resizableBoth(el)"
+                        (click)="toggleAspectLock()"
+                        [appTooltip]="(aspectLocked()
+                          ? 'LABEL_BUILDER.FORM.INSPECTOR.ASPECT_UNLOCK'
+                          : 'LABEL_BUILDER.FORM.INSPECTOR.ASPECT_LOCK') | translate">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 1 0-7.07-7.07l-1.5 1.5"/>
+                          <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 1 0 7.07 7.07l1.5-1.5"/>
+                        </svg>
+                      </button>
+                      <div class="lbf-ps-xy__grid">
+                        <label class="lbf-ps-xy__field"
+                          [class.lbf-ps-xy__field--disabled]="!canEditWidth(el)">
+                          <span>W</span>
+                          <input type="number" min="1"
+                            [ngModel]="elementWidth(el, selectedIndex() ?? undefined)"
+                            (ngModelChange)="setElementWidth(+$event)"
+                            [disabled]="!canEditWidth(el)"
+                            [ngModelOptions]="{ standalone: true, updateOn: 'blur' }"/>
+                        </label>
+                        <label class="lbf-ps-xy__field">
+                          <span>X</span>
+                          <input type="number"
+                            [ngModel]="el.position.x"
+                            (ngModelChange)="setElementX(+$event)"
+                            [ngModelOptions]="{ standalone: true, updateOn: 'blur' }"/>
+                        </label>
+                        <label class="lbf-ps-xy__field"
+                          [class.lbf-ps-xy__field--disabled]="!canEditHeight(el)">
+                          <span>H</span>
+                          <input type="number" min="1"
+                            [ngModel]="elementHeight(el, selectedIndex() ?? undefined)"
+                            (ngModelChange)="setElementHeight(+$event)"
+                            [disabled]="!canEditHeight(el)"
+                            [ngModelOptions]="{ standalone: true, updateOn: 'blur' }"/>
+                        </label>
+                        <label class="lbf-ps-xy__field">
+                          <span>Y</span>
+                          <input type="number"
+                            [ngModel]="el.position.y"
+                            (ngModelChange)="setElementY(+$event)"
+                            [ngModelOptions]="{ standalone: true, updateOn: 'blur' }"/>
+                        </label>
+                      </div>
+                    </div>
+
+                    <!-- Z-order strip — kept from the legacy panel. -->
+                    <div class="lbf-zorder">
+                      <button type="button"
+                        (click)="sendToBack()"
+                        [disabled]="!canSendBackward()"
+                        [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.SEND_TO_BACK' | translate">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="4" y="4" width="12" height="12" rx="1" fill="#fff"/>
+                          <rect x="8" y="8" width="12" height="12" rx="1" fill="#fff"/>
+                          <path d="M4 16h12V4"/>
+                        </svg>
+                      </button>
+                      <button type="button"
+                        (click)="sendBackward()"
+                        [disabled]="!canSendBackward()"
+                        [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.SEND_BACKWARD' | translate">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="4" y="4" width="12" height="12" rx="1"/>
+                          <path d="M16 12v8H8"/>
+                        </svg>
+                      </button>
+                      <button type="button"
+                        (click)="bringForward()"
+                        [disabled]="!canBringForward()"
+                        [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.BRING_FORWARD' | translate">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="8" y="8" width="12" height="12" rx="1"/>
+                          <path d="M8 12V4h8"/>
+                        </svg>
+                      </button>
+                      <button type="button"
+                        (click)="bringToFront()"
+                        [disabled]="!canBringForward()"
+                        [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.BRING_TO_FRONT' | translate">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="8" y="8" width="12" height="12" rx="1" fill="#fff"/>
+                          <rect x="4" y="4" width="12" height="12" rx="1" fill="#fff"/>
+                          <path d="M16 8h4v12H8v-4"/>
+                        </svg>
+                      </button>
+                    </div>
+
+                    <!-- Align & Distribute. Single-target aligns to
+                         the canvas; multi-target aligns within the
+                         selection bbox. Distribute needs 3+ targets. -->
+                    <div class="lbf-ad">
+                      <div class="lbf-ad__caption">{{ 'LABEL_BUILDER.FORM.INSPECTOR.ALIGN' | translate }}</div>
+                      <div class="lbf-ad__row">
+                        <button type="button" class="lbf-ad__btn"
+                          [disabled]="!hasAlignTargets()" (click)="alignTo('left')"
+                          [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.ALIGN_LEFT' | translate">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="4" y1="3" x2="4" y2="21"/>
+                            <rect x="6"  y="6"  width="12" height="4"/>
+                            <rect x="6"  y="14" width="8"  height="4"/>
+                          </svg>
+                        </button>
+                        <button type="button" class="lbf-ad__btn"
+                          [disabled]="!hasAlignTargets()" (click)="alignTo('h-center')"
+                          [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.ALIGN_HCENTER' | translate">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="3" x2="12" y2="21"/>
+                            <rect x="6"  y="6"  width="12" height="4"/>
+                            <rect x="8"  y="14" width="8"  height="4"/>
+                          </svg>
+                        </button>
+                        <button type="button" class="lbf-ad__btn"
+                          [disabled]="!hasAlignTargets()" (click)="alignTo('right')"
+                          [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.ALIGN_RIGHT' | translate">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="20" y1="3" x2="20" y2="21"/>
+                            <rect x="6"  y="6"  width="12" height="4"/>
+                            <rect x="10" y="14" width="8"  height="4"/>
+                          </svg>
+                        </button>
+                        <span class="lbf-ad__sep"></span>
+                        <button type="button" class="lbf-ad__btn"
+                          [disabled]="!hasAlignTargets()" (click)="alignTo('top')"
+                          [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.ALIGN_TOP' | translate">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="4" x2="21" y2="4"/>
+                            <rect x="6"  y="6"  width="4" height="12"/>
+                            <rect x="14" y="6"  width="4" height="8"/>
+                          </svg>
+                        </button>
+                        <button type="button" class="lbf-ad__btn"
+                          [disabled]="!hasAlignTargets()" (click)="alignTo('v-center')"
+                          [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.ALIGN_VCENTER' | translate">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <rect x="6"  y="6"  width="4" height="12"/>
+                            <rect x="14" y="8"  width="4" height="8"/>
+                          </svg>
+                        </button>
+                        <button type="button" class="lbf-ad__btn"
+                          [disabled]="!hasAlignTargets()" (click)="alignTo('bottom')"
+                          [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.ALIGN_BOTTOM' | translate">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="20" x2="21" y2="20"/>
+                            <rect x="6"  y="6"  width="4" height="12"/>
+                            <rect x="14" y="10" width="4" height="8"/>
+                          </svg>
+                        </button>
+                      </div>
+
+                      <div class="lbf-ad__caption">{{ 'LABEL_BUILDER.FORM.INSPECTOR.DISTRIBUTE' | translate }}</div>
+                      <div class="lbf-ad__row">
+                        <button type="button" class="lbf-ad__btn"
+                          [disabled]="!hasDistribTargets()" (click)="distribute('h')"
+                          [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.DISTRIBUTE_H' | translate">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3"  y="6"  width="4" height="12"/>
+                            <rect x="10" y="6"  width="4" height="12"/>
+                            <rect x="17" y="6"  width="4" height="12"/>
+                          </svg>
+                        </button>
+                        <button type="button" class="lbf-ad__btn"
+                          [disabled]="!hasDistribTargets()" (click)="distribute('v')"
+                          [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.DISTRIBUTE_V' | translate">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="6"  y="3"  width="12" height="4"/>
+                            <rect x="6"  y="10" width="12" height="4"/>
+                            <rect x="6"  y="17" width="12" height="4"/>
+                          </svg>
+                        </button>
+                        <span class="lbf-ad__sep"></span>
+                        <button type="button" class="lbf-ad__btn lbf-ad__btn--text"
+                          [disabled]="!selectedElement()" (click)="centerOnCanvas()"
+                          [appTooltip]="'LABEL_BUILDER.FORM.INSPECTOR.CENTER_ON_CANVAS' | translate">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="1"/>
+                            <line x1="12" y1="3" x2="12" y2="21"/>
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                }
+              }
+            </app-rbf-widget>
+          </div>
+        }
+      </div>
+
+      <!-- Layers panel — moved to the right rail next to the
+           inspector (Figma / receipt-builder convention). Pinned at
+           the foot of the card, scrolls within itself so the editor
+           above always has room. Top entry = front-most on canvas. -->
+      <div class="lbf-inspector__layers">
+        <app-rbf-widget [title]="('LABEL_BUILDER.FORM.LAYERS' | translate) + ' · ' + template().template.length"
+          storageKey="lbf:layers">
+          <ul class="lbf-layers"
+            cdkDropList
+            cdkDropListLockAxis="y"
+            (cdkDropListDropped)="onLayerDrop($event)">
+            @if (template().template.length === 0) {
+              <li class="lbf-layers__empty">
+                {{ 'LABEL_BUILDER.FORM.LAYERS_EMPTY' | translate }}
+              </li>
+            }
+            @for (el of template().template.slice().reverse(); track $index; let revIdx = $index) {
+              @let i = template().template.length - 1 - revIdx;
+              <li class="lbf-layer"
+                cdkDrag
+                cdkDragLockAxis="y"
+                [class.lbf-layer--selected]="isLayerSelected(i)"
+                [class.lbf-layer--focused]="selectedIndex() === i"
+                [class.lbf-layer--hidden]="el.hidden">
+                <!-- Drag handle — dotted 6-circle pattern matching
+                     the custom-fields manager. Always-visible at
+                     the leading edge, low contrast so it doesn't
+                     compete with the row content. -->
+                <span class="lbf-layer__handle" cdkDragHandle
+                  [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"
+                  [appTooltip]="'COMMON.DRAG_TO_REORDER' | translate"
+                  (click)="$event.stopPropagation()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9"  cy="6"  r="1"/>
+                    <circle cx="15" cy="6"  r="1"/>
+                    <circle cx="9"  cy="12" r="1"/>
+                    <circle cx="15" cy="12" r="1"/>
+                    <circle cx="9"  cy="18" r="1"/>
+                    <circle cx="15" cy="18" r="1"/>
+                  </svg>
+                </span>
+
+                <!-- Eye — Photoshop-style visibility toggle. -->
+                <button type="button" class="lbf-layer__btn lbf-layer__btn--eye"
+                  (click)="toggleHidden(i, $event)"
+                  [appTooltip]="(el.hidden ? 'LABEL_BUILDER.FORM.LAYER_SHOW' : 'LABEL_BUILDER.FORM.LAYER_HIDE') | translate">
+                  @if (el.hidden) {
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  }
+                </button>
+
+                <!-- Main row button — receipt-builder `el-list__row`
+                     pattern. Becomes the click target for selecting
+                     the element; the icon + label are the only
+                     content so the click surface stays predictable. -->
+                <button type="button" class="lbf-layer__row"
+                  (click)="selectElement(i, $event)">
+                  <svg class="lbf-layer__icon"
+                    viewBox="0 0 24 24" width="14" height="14"
+                    fill="none" stroke="currentColor" stroke-width="1.6"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path [attr.d]="layerIconPath(el.type)"/>
+                  </svg>
+                  <span class="lbf-layer__label">{{ layerLabel(el) }}</span>
+                </button>
+
+                <!-- Action cluster — Lock / Duplicate / Delete sit
+                     pinned to the trailing edge. They fade in on row
+                     hover so the row reads cleanly at rest, matching
+                     the receipt-builder convention. -->
+                <span class="lbf-layer__actions">
+                  <button type="button" class="lbf-layer__btn"
+                    (click)="toggleLocked(i, $event)"
+                    [appTooltip]="(el.locked ? 'LABEL_BUILDER.FORM.LAYER_UNLOCK' : 'LABEL_BUILDER.FORM.LAYER_LOCK') | translate">
+                    @if (el.locked) {
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                      </svg>
+                    }
+                  </button>
+                  <button type="button" class="lbf-layer__btn"
+                    (click)="duplicateLayer(i, $event)"
+                    [appTooltip]="'COMMON.DUPLICATE' | translate">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2"/>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                  </button>
+                  <button type="button" class="lbf-layer__btn lbf-layer__btn--danger"
+                    (click)="deleteLayer(i, $event)"
+                    [appTooltip]="'COMMON.DELETE' | translate">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6"  y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </span>
+              </li>
+            }
+          </ul>
+
+          <!-- Bulk-action bar — only rendered when 2+ layers are
+               selected (shift / cmd / ctrl click). Surfaces Delete
+               first because it's the most common bulk op; bar is
+               sticky-positioned so users can scroll the layers list
+               without losing access to the action. -->
+          @if (hasMultiSelection()) {
+            <div class="lbf-layers-bulkbar" role="toolbar"
+              [attr.aria-label]="'LABEL_BUILDER.FORM.LAYERS_BULK' | translate">
+              <span class="lbf-layers-bulkbar__count">
+                {{ 'COMMON.SELECTED_COUNT' | translate:{ count: selectedIndices().size } }}
+              </span>
+              <span class="lbf-layers-bulkbar__spacer"></span>
+              <button type="button" class="lbf-layers-bulkbar__btn lbf-layers-bulkbar__btn--danger"
+                (click)="deleteSelectedLayers()"
+                [appTooltip]="'COMMON.DELETE' | translate">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                </svg>
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            </div>
+          }
+        </app-rbf-widget>
+      </div>
+    </aside>
+    }
+  </div>
+
+  <app-loading-overlay [show]="loading()"/>
+
+  <!-- Right-click context menu — fixed-position popover anchored
+       at the click coordinates. Surfaces every per-element action
+       so users can find them without trawling the inspector. The
+       backdrop catches outside-clicks to close, and Escape closes
+       via the keydown handler. Actions reuse the existing
+       per-index helpers (toggleHidden / toggleLocked / etc.) which
+       already do undo + dirty-flag bookkeeping. -->
+  @if (contextMenu(); as cm) {
+    <div class="lbf-ctx-backdrop"
+      (click)="closeContextMenu()"
+      (contextmenu)="closeContextMenu(); $event.preventDefault()"></div>
+    <div class="lbf-ctx" role="menu"
+      [style.left.px]="cm.x"
+      [style.top.px]="cm.y"
+      (click)="$event.stopPropagation()">
+      @let el = template().template[cm.idx];
+
+      <button type="button" class="lbf-ctx__item" role="menuitem"
+        (click)="duplicateLayer(cm.idx, $event); closeContextMenu()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        <span>{{ 'COMMON.DUPLICATE' | translate }}</span>
+        <kbd>Ctrl+D</kbd>
+      </button>
+
+      <button type="button" class="lbf-ctx__item" role="menuitem"
+        (click)="toggleLocked(cm.idx, $event); closeContextMenu()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          @if (el?.locked) {
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          } @else {
+            <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+          }
+        </svg>
+        <span>{{ (el?.locked
+          ? 'LABEL_BUILDER.FORM.LAYER_UNLOCK'
+          : 'LABEL_BUILDER.FORM.LAYER_LOCK') | translate }}</span>
+      </button>
+
+      <button type="button" class="lbf-ctx__item" role="menuitem"
+        (click)="toggleHidden(cm.idx, $event); closeContextMenu()">
+        @if (el?.hidden) {
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        } @else {
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        }
+        <span>{{ (el?.hidden
+          ? 'LABEL_BUILDER.FORM.LAYER_SHOW'
+          : 'LABEL_BUILDER.FORM.LAYER_HIDE') | translate }}</span>
+      </button>
+
+      <div class="lbf-ctx__divider"></div>
+
+      <button type="button" class="lbf-ctx__item" role="menuitem"
+        [disabled]="!ctxCanForward()"
+        (click)="bringToFront(); closeContextMenu()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="8" y="8" width="12" height="12" rx="1" fill="#fff"/>
+          <rect x="4" y="4" width="12" height="12" rx="1" fill="#fff"/>
+          <path d="M16 8h4v12H8v-4"/>
+        </svg>
+        <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.BRING_TO_FRONT' | translate }}</span>
+      </button>
+
+      <button type="button" class="lbf-ctx__item" role="menuitem"
+        [disabled]="!ctxCanForward()"
+        (click)="bringForward(); closeContextMenu()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="8" y="8" width="12" height="12" rx="1"/>
+          <path d="M8 12V4h8"/>
+        </svg>
+        <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.BRING_FORWARD' | translate }}</span>
+      </button>
+
+      <button type="button" class="lbf-ctx__item" role="menuitem"
+        [disabled]="!ctxCanBackward()"
+        (click)="sendBackward(); closeContextMenu()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="4" width="12" height="12" rx="1"/>
+          <path d="M16 12v8H8"/>
+        </svg>
+        <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.SEND_BACKWARD' | translate }}</span>
+      </button>
+
+      <button type="button" class="lbf-ctx__item" role="menuitem"
+        [disabled]="!ctxCanBackward()"
+        (click)="sendToBack(); closeContextMenu()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="4" width="12" height="12" rx="1" fill="#fff"/>
+          <rect x="8" y="8" width="12" height="12" rx="1" fill="#fff"/>
+          <path d="M4 16h12V4"/>
+        </svg>
+        <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.SEND_TO_BACK' | translate }}</span>
+      </button>
+
+      <div class="lbf-ctx__divider"></div>
+
+      <button type="button" class="lbf-ctx__item lbf-ctx__item--danger" role="menuitem"
+        (click)="deleteLayer(cm.idx, $event); closeContextMenu()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        </svg>
+        <span>{{ 'COMMON.DELETE' | translate }}</span>
+        <kbd>Del</kbd>
+      </button>
+    </div>
+  }
+
+  <!-- Phone-only "open on desktop" overlay. Hidden via CSS above
+       768 px so desktops see nothing; below it the notice covers
+       the page and disables interaction with the builder — same
+       gating the receipt + document builders apply, the canvas
+       editor genuinely doesn't fit on phones. -->
+  <app-desktop-only-notice/>
+</div>

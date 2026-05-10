@@ -1,0 +1,1533 @@
+:host { display: block; }
+
+// Whole-viewport editor — same chrome-free pattern as document-builder
+// and receipt-builder. Layout is a vertical stack: topbar then a flex
+// row that fills the remaining height (palette + canvas + inspector).
+.lbf {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+// ════ TOP BAR ═══════════════════════════════════════════════════════
+.lbf-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  min-height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  z-index: 10;
+  flex-shrink: 0;
+
+  &__home {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #64748b;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      background: #f9fafb;
+      color: var(--color-brand-500);
+      border-color: var(--color-brand-300, #bae6fd);
+    }
+  }
+
+  &__divider {
+    width: 1px;
+    height: 24px;
+    background: #e5e7eb;
+    margin: 0 4px;
+  }
+
+  &__name {
+    flex: 0 1 280px;
+    min-width: 160px;
+    padding: 8px 12px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: #f9fafb;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
+    transition: background 120ms ease, border-color 120ms ease;
+
+    &:focus {
+      outline: none;
+      background: #fff;
+      border-color: var(--color-brand-500);
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.10);
+    }
+  }
+
+  &__type-chip {
+    flex-shrink: 0;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--color-brand-50);
+    color: var(--color-brand-700);
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    &--kitchen {
+      background: #fef3c7;
+      color: #92400e;
+    }
+  }
+
+  &__spacer { flex: 1; }
+
+  // Undo / redo cluster — a pill-grouped pair of icon buttons,
+  // matching the document-builder topbar's history widget so the
+  // shape is familiar across the app.
+  &__history {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  &__icon-btn {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #475569;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover:not(:disabled) {
+      background: #fff;
+      color: var(--color-brand-700);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  // Pressable icon-only toolbar button — used for snap-to-grid (and
+  // future toggleable affordances). Pressed state is read from
+  // `aria-pressed` so screen readers + visuals stay in lockstep.
+  &__toggle {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #64748b;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      background: #f9fafb;
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
+
+    &[aria-pressed="true"] {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-300, #bae6fd);
+      color: var(--color-brand-700);
+    }
+  }
+}
+
+// Grouped Download menu — wraps the export-format trigger and
+// its popover so the absolute panel positions against the trigger.
+// `.lbf-download` styles removed — the Download button now uses
+// the shared `<app-dropdown-menu-btn>` which owns its own chrome.
+
+// ════ LAYOUT ═══════════════════════════════════════════════════════
+.lbf-layout {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+  overflow: hidden;
+  // `position: relative` is the absolute-positioning context for the
+  // splitter, which sits on top of the rail's leading edge.
+  position: relative;
+
+  // On phones the editor is unusable — the canvas needs the rails
+  // for context, and the rails need real estate. The
+  // `<app-desktop-only-notice/>` overlay covers the page below
+  // 768 px; we additionally hide the rails so the canvas isn't
+  // sandwiched between empty card columns underneath the notice.
+  @media (max-width: 768px) {
+    .lbf-palette,
+    .lbf-inspector,
+    .lbf-splitter { display: none; }
+  }
+}
+
+// Invisible resize hit-zone over the inspector card's leading edge.
+// 12 px wide so a grab anywhere near the seam counts; the cursor
+// switches to col-resize on hover, and the rail's left border glows
+// brand-coloured during drag (no permanent visible bar). Matches
+// the receipt-builder splitter visually + behaviorally.
+.lbf-splitter {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  // The inspector card has a 12 px outer margin and a width of
+  // `var(--lbf-right-rail-w)`, so its visible LEFT edge sits at
+  // `rail + 12` from the workspace's leading edge. To center the
+  // splitter ON that edge with a 12 px hit width:
+  //   splitter right edge at `rail + 12 - 6 = rail + 6`
+  // Earlier `+ 18px` placed the splitter entirely in the gutter
+  // (which felt offset by ~15 px to the left of the visible seam,
+  // exactly the bug you reported).
+  inset-inline-end: calc(var(--lbf-right-rail-w, 320px) + 6px);
+  width: 12px;
+  z-index: 5;
+  cursor: col-resize;
+  user-select: none;
+  background: transparent;
+}
+
+// While the user is hovering or actively dragging the splitter,
+// brighten the rail's border so the resize is anchored visually
+// to the rail itself.
+.lbf-inspector--card {
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.lbf-splitter:hover ~ .lbf-inspector--card,
+.lbf-splitter--active ~ .lbf-inspector--card {
+  border-color: var(--color-brand-500);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 8px 24px rgba(15, 23, 42, 0.04),
+    -1px 0 0 var(--color-brand-500);
+}
+
+// ── LEFT RAIL — palette + layers (rbf-rail-style) ─────────────────
+// Mirrors the receipt-builder's `.rbf-rail`: a vertical stack of
+// `<app-rbf-widget>` cards (each owns its own header + collapse +
+// drag handle) on a transparent background. Scrolls if the stack is
+// taller than the viewport.
+.lbf-palette {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-self: start;
+  padding: 12px;
+  overflow-y: auto;
+  max-height: calc(100vh - 56px); // 56 px = topbar height
+  min-height: 0;
+
+  &__head {
+    padding: 12px 14px;
+    border-bottom: 1px solid #e5e7eb;
+    h3 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+  }
+
+  // Single-column list — matches the receipt-builder palette
+  // layout so both editors look the same in the left rail.
+  &__list {
+    flex: 0 0 auto;
+    list-style: none;
+    margin: 0;
+    padding: 8px 10px;
+    display: grid;
+    gap: 4px;
+  }
+
+  &__item {
+    list-style: none;
+
+    // CDK drag clones — placeholder is the gap left in the rail
+    // while the tile is being dragged; we hide it because the
+    // palette is a static catalogue, not a sortable list.
+    &.cdk-drag-placeholder { display: none; }
+
+    &.cdk-drag-preview {
+      list-style: none;
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+      border-radius: 8px;
+    }
+  }
+
+  &__tile {
+    width: 100%;
+    appearance: none;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: grab;
+    color: #475569;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: start;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-300, #bae6fd);
+      color: var(--color-brand-700);
+    }
+
+    &:active { cursor: grabbing; }
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+  }
+
+  &__label {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  &__preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--color-brand-500);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    pointer-events: none;
+  }
+
+  &__hint {
+    margin: 0;
+    padding: 10px 14px;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #94a3b8;
+  }
+}
+
+// ── Layers panel ──────────────────────────────────────────────────
+// Now lives inside the right-rail inspector card under the editor
+// section. The widget header (`<app-rbf-widget>`) carries the title
+// so we no longer need a separate `__head` / `__count` block.
+.lbf-layers {
+  list-style: none;
+  margin: 0;
+  padding: 4px 8px 12px;
+  flex: 0 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+
+  &__empty {
+    padding: 12px;
+    font-size: 11px;
+    color: #94a3b8;
+    text-align: center;
+  }
+}
+
+// Layer row — modelled after the receipt-builder `el-list__item`
+// shape: handle (left), eye, click-target row (icon + label),
+// trailing action cluster (lock / duplicate / delete) that fades
+// in on hover.
+.lbf-layer {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  cursor: default;
+  font-size: 12px;
+  color: #334155;
+  transition: background 120ms ease;
+  background: transparent;
+
+  &:hover { background: #f8fafc; }
+
+  // Row-hover brightens the handle so users discover that the row
+  // is reorderable without having to mouse the handle directly.
+  &:hover .lbf-layer__handle { color: #475569; }
+  // Reveal the trailing action cluster only when the row is hovered
+  // or is the focused selection. Cleaner read at rest, matches the
+  // receipt-builder pattern.
+  &:hover .lbf-layer__actions,
+  &--focused .lbf-layer__actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  // Drag handle on the left edge — only this region accepts drag
+  // gestures so click-to-select on the rest of the row stays
+  // separate from drag-to-reorder. Same shape as the receipt-
+  // builder elements-list handle.
+  &__handle {
+    width: 18px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #cbd5e1;
+    background: transparent;
+    border-radius: 4px;
+    cursor: grab;
+    flex-shrink: 0;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:active { cursor: grabbing; }
+    &:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+  }
+
+  // Main row — the click target. Borderless / unstyled so it reads
+  // as a list row, not a button. Icon + label inside, label
+  // truncates if it overflows.
+  &__row {
+    flex: 1;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    color: inherit;
+    text-align: start;
+
+    &:hover { background: rgba(15, 23, 42, 0.04); }
+  }
+
+  // Trailing action cluster — Lock / Duplicate / Delete. Hidden at
+  // rest, fades in on row hover or when the row is focused. Matches
+  // receipt-builder's "actions on hover" pattern.
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    flex-shrink: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+
+  // CDK adds these classes during drag — give the row a soft lift
+  // so the user can see what they're dragging.
+  &.cdk-drag-preview {
+    background: #fff;
+    box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.20),
+                0 2px 6px -1px rgba(15, 23, 42, 0.10);
+    border-radius: 6px;
+  }
+  &.cdk-drag-placeholder { opacity: 0; }
+  &.cdk-drag-animating { transition: transform 200ms cubic-bezier(0, 0, 0.2, 1); }
+
+  // Multi-selected (shift / cmd / ctrl click) — soft brand tint so
+  // multi-select reads as a real state, not just a hover. The
+  // single-element focus (`--focused`) layers a border on top so the
+  // active inspector target stays visually distinct.
+  &--selected,
+  &--selected:hover {
+    background: var(--color-brand-50, #ecfeff);
+    color: var(--color-brand-700, #0e7490);
+  }
+
+  &--focused {
+    box-shadow: inset 0 0 0 1px var(--color-brand-500);
+  }
+
+  &--hidden {
+    opacity: 0.55;
+    .lbf-layer__label { text-decoration: line-through; }
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    color: #64748b;
+  }
+
+  &__label {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__btn {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover {
+      background: rgba(15, 23, 42, 0.06);
+      color: #0f172a;
+    }
+
+    // Danger variant — used for the per-row Delete button so the
+    // gesture reads as destructive on hover.
+    &--danger:hover {
+      background: rgba(239, 68, 68, 0.10);
+      color: #b91c1c;
+    }
+
+    // Eye variant — sits left of the icon + label like Photoshop.
+    // Always-visible (not just on hover) so users can scan
+    // visibility state by glancing down the column.
+    &--eye {
+      color: #475569;
+    }
+  }
+}
+
+// ── Layers bulk-action bar ────────────────────────────────────────
+// Sticky strip pinned at the foot of the layers panel when 2+ rows
+// are multi-selected. Visible chrome (slate-800 background, brand
+// count badge) so the bulk-mode is obvious — addresses the "users
+// don't realize they can multi-select" concern.
+.lbf-layers-bulkbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: #0f172a;
+  color: #f8fafc;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.30);
+  font-size: 12px;
+
+  &__count {
+    font-weight: 600;
+    color: #cbd5e1;
+  }
+
+  &__spacer { flex: 1; }
+
+  &__btn {
+    appearance: none;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: rgba(255, 255, 255, 0.16); }
+
+    &--danger {
+      background: rgba(239, 68, 68, 0.18);
+      color: #fecaca;
+
+      &:hover {
+        background: rgba(239, 68, 68, 0.30);
+        color: #fff;
+      }
+    }
+  }
+}
+
+// ── CANVAS ─────────────────────────────────────────────────────────
+.lbf-canvas-wrap {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 32px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(45deg, #f1f5f9 0 1px, transparent 1px 14px),
+    #f8fafc;
+}
+
+.lbf-canvas {
+  position: relative;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  // The grid pattern hints at the print surface — toned down so it
+  // doesn't fight the elements visually.
+  background-image:
+    linear-gradient(to right,  #f8fafc 1px, transparent 1px),
+    linear-gradient(to bottom, #f8fafc 1px, transparent 1px);
+  background-size: 20px 20px;
+
+  // CDK adds .cdk-drop-list-receiving while a palette item is hovered
+  // over the canvas — give a soft brand tint so the user can see
+  // "I can drop here".
+  &.cdk-drop-list-receiving {
+    border-color: var(--color-brand-500);
+    box-shadow:
+      0 4px 12px rgba(15, 23, 42, 0.08),
+      0 0 0 2px rgba(50, 172, 193, 0.18);
+  }
+}
+
+// Each placed element is wrapped in `.lbf-el`. Position is applied
+// via an inline `transform: translate(x, y)` driven by `el.position`;
+// the wrapper itself sits at (0, 0) of the canvas so the transform
+// space matches the saved coordinates 1:1. We use manual pointer-
+// based drag (see `startElementDrag`) instead of `cdkDrag` because
+// CDK drag inside a `cdkDropList` always behaves like a list child.
+//
+// Selection state is layered:
+//   - `--selected` (multi-select) gets a lighter brand outline so
+//     every member of the group is visible on the canvas.
+//   - `--focused` (the inspector target — the most-recently
+//     clicked element) gets a stronger 2 px ring on top.
+.lbf-el {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0;
+  cursor: move;
+  outline: 1px dashed transparent;
+  outline-offset: 2px;
+  transition: outline-color 120ms ease;
+  // Block the browser from kicking in its native drag-image flow on
+  // pointerdown — we own the drag with our own pointer listeners.
+  user-select: none;
+  -webkit-user-drag: none;
+
+  &:hover { outline-color: rgba(50, 172, 193, 0.45); }
+
+  // Multi-selected sibling — visible but secondary. Solid 1 px in
+  // brand-300 so the user sees which members of the group will move
+  // together without pulling focus from the active inspector target.
+  &--selected {
+    outline: 1px solid var(--color-brand-300, #bae6fd);
+  }
+
+  // Focused (= inspector target). Wins visually over `--selected`.
+  &--focused {
+    outline: 2px solid var(--color-brand-500);
+  }
+
+  &--locked {
+    cursor: not-allowed;
+    // Subtle slate dashed outline when not selected — signals
+    // "you can click but you can't move me" without screaming.
+    outline-style: dashed;
+    outline-color: rgba(100, 116, 139, 0.45);
+  }
+}
+
+// ── Drag-time position chip ───────────────────────────────────────
+// Floating slate badge anchored to the dragging element's drop
+// coordinate. `pointer-events: none` so it can't intercept the drop
+// gesture, `transform: translate(8px, 8px)` so it sits just to the
+// lower-right of the cursor / element corner instead of dead-center.
+.lbf-chip {
+  position: absolute;
+  z-index: 6;
+  background: #0f172a;
+  color: #f1f5f9;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 999px;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translate(8px, 8px);
+  box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.30);
+}
+
+// ── Alignment guide lines ────────────────────────────────────────
+// 1-pixel pink lines that appear during a drag when the moving
+// element's edge / center aligns with another element's. Positioned
+// absolutely inside `.lbf-canvas` and span the full opposing axis
+// so users can read the alignment at a glance.
+.lbf-guide {
+  position: absolute;
+  background: #ec4899;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: 0 0 6px rgba(236, 72, 153, 0.45);
+
+  &--v {
+    top: 0;
+    bottom: 0;
+    width: 1px;
+  }
+  &--h {
+    left: 0;
+    right: 0;
+    height: 1px;
+  }
+}
+
+// ── Resize handles ────────────────────────────────────────────────
+// Small squares positioned at the element's compass points. Only
+// rendered for the selected element (the template gates visibility).
+// `pointer-events: auto` ensures handle clicks/drags win over the
+// CDK drag region underneath; `cdk-no-drag` is unnecessary because
+// the handle's own `pointerdown` calls `stopPropagation()` before
+// CDK sees it.
+.lbf-handle {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: #fff;
+  border: 1.5px solid var(--color-brand-500);
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.15);
+  pointer-events: auto;
+  z-index: 4;
+
+  // Compass placement — half-overlap on the corresponding edge so
+  // the handle visually straddles it.
+  &--nw { top:  -5px; left:  -5px; cursor: nwse-resize; }
+  &--n  { top:  -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+  &--ne { top:  -5px; right: -5px; cursor: nesw-resize; }
+  &--e  { top: 50%;   right: -5px; transform: translateY(-50%); cursor: ew-resize; }
+  &--se { bottom: -5px; right: -5px; cursor: nwse-resize; }
+  &--s  { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+  &--sw { bottom: -5px; left:  -5px; cursor: nesw-resize; }
+  &--w  { top: 50%;   left:  -5px; transform: translateY(-50%); cursor: ew-resize; }
+
+  &:hover { background: var(--color-brand-50); }
+}
+
+// ── Element previews (canvas-side rendering) ──────────────────────
+.lbf-el-text {
+  display: inline-block;
+  white-space: pre-wrap;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+// Barcode + QR previews are rendered by their own components
+// (`<app-barcode-preview>` / `<app-qrcode-preview>`) which carry
+// their own minimal styling — no canvas-side rules needed.
+
+.lbf-el-rect {
+  border: 1px solid #0f172a;
+  background: transparent;
+}
+
+.lbf-el-circle {
+  border: 1px solid #0f172a;
+  background: transparent;
+  border-radius: 50%;
+}
+
+.lbf-el-hline {
+  background: #0f172a;
+}
+
+.lbf-el-vline {
+  background: #0f172a;
+}
+
+.lbf-el-img {
+  display: block;
+  object-fit: contain;
+}
+
+.lbf-el-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 600;
+
+  &--logo {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    color: #64748b;
+  }
+}
+
+// ── RIGHT RAIL — inspector (rbf-rail--right-style) ────────────────
+// Matches the receipt-builder's `.rbf-rail--right`: standalone card
+// with border + shadow + padding, body has its own scroll so the
+// pinned title stays visible while the user navigates the inspector.
+// Width is driven by the `--lbf-right-rail-w` CSS variable that the
+// splitter writes; defaults to 320 px when the user hasn't dragged.
+.lbf-inspector {
+  width: var(--lbf-right-rail-w, 320px);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+
+  &--card {
+    position: relative;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04),
+                0 8px 24px rgba(15, 23, 42, 0.04);
+    padding: 12px;
+    gap: 8px;
+    overflow: hidden;
+    margin: 12px;
+    height: calc(100vh - 80px);
+    max-height: calc(100vh - 80px);
+  }
+
+  // Editor section — takes the available height between the pinned
+  // title strip and the layers panel below; scrolls within itself
+  // so long inspectors can't push the layers off the card.
+  &__editor {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  // Editor slot wrapper — drag anchor for each Photoshop-style
+  // widget dock. Mirrors the receipt-builder `.ee-slot` styling so
+  // both editors show the same drop affordance.
+  &__editor .lbf-ee-slot {
+    display: block;
+
+    // Floating preview (the clone CDK shows under the cursor): card
+    // chrome lifted with a stronger shadow, slight tilt — Adobe panel
+    // dock convention.
+    &.cdk-drag-preview {
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.22),
+                  0 0 0 1px rgba(15, 23, 42, 0.06);
+      border-radius: 12px;
+      transform: rotate(-0.4deg);
+    }
+
+    // Insertion-line placeholder where the dragged widget would land.
+    // Collapsed to a thin brand-coloured bar so siblings don't shift
+    // by the widget's full height while it's in flight.
+    &.cdk-drag-placeholder {
+      height: 4px;
+      min-height: 4px;
+      margin: 3px 0;
+      background: var(--color-brand-500);
+      border: none;
+      border-radius: 2px;
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.18);
+      overflow: hidden;
+
+      > * { visibility: hidden; height: 0; }
+    }
+  }
+
+  // Smooth slide while a drag is in flight.
+  &__editor.cdk-drop-list-dragging .lbf-ee-slot:not(.cdk-drag-placeholder) {
+    transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  // Drop-to-merge highlight — the widget under the cursor flashes its
+  // header in brand colour so the user knows that releasing here will
+  // tab-merge the dragged widget into it.
+  &__editor .rbfw__header--drop-target {
+    background: var(--color-brand-50) !important;
+    box-shadow: inset 0 0 0 2px var(--color-brand-500);
+    border-radius: 8px;
+  }
+
+  // Layers section — pinned at the foot of the right rail (Figma /
+  // receipt-builder convention). Capped to ~40 % of the card so a
+  // long element list never crowds out the editor above. Scrolls
+  // within itself.
+  &__layers {
+    flex: 0 0 auto;
+    max-height: 40%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 8px;
+  }
+}
+
+// Pinned title strip used inside the inspector card — same shape as
+// `.rbf-panel-title`. Doesn't scroll with the body, so the user
+// always sees what they're editing.
+.lbf-panel-title {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 4px;
+
+  > h2 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+}
+
+.lbf-panel {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+
+  > h4 {
+    margin: 0 0 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+  }
+}
+
+// Inspector form rows.
+.lbf-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+
+  > span {
+    flex: 0 0 90px;
+    color: #475569;
+  }
+
+  > input,
+  > select,
+  > textarea {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 12px;
+    color: #0f172a;
+    background: #fff;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-brand-500);
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.10);
+    }
+
+    &:disabled {
+      background: #f1f5f9;
+      color: #94a3b8;
+    }
+  }
+
+  // Range slider — browsers default to a dark grey/black track,
+  // which clashes with the rest of the brand-tinted controls.
+  // Custom track + thumb in brand teal for both WebKit and Gecko.
+  > input[type="range"] {
+    flex: 1;
+    padding: 0;
+    border: none;
+    background: transparent;
+    appearance: none;
+    height: 18px;
+
+    // Track — slim brand-tinted bar.
+    &::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 999px;
+      background: #e2e8f0;
+    }
+    &::-moz-range-track {
+      height: 4px;
+      border-radius: 999px;
+      background: #e2e8f0;
+    }
+
+    // Filled portion (Gecko only — WebKit doesn't expose this).
+    &::-moz-range-progress {
+      height: 4px;
+      border-radius: 999px;
+      background: var(--color-brand-500);
+    }
+
+    // Thumb — brand-coloured pill, gentle ring on hover.
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      margin-top: -5px; // (track 4 - thumb 14) / 2 = -5 to vertically center
+      border-radius: 999px;
+      background: var(--color-brand-500);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px var(--color-brand-500);
+      cursor: pointer;
+      transition: box-shadow 120ms ease;
+    }
+    &::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      background: var(--color-brand-500);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px var(--color-brand-500);
+      cursor: pointer;
+    }
+
+    &:hover::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(50, 172, 193, 0.20); }
+    &:hover::-moz-range-thumb     { box-shadow: 0 0 0 4px rgba(50, 172, 193, 0.20); }
+  }
+
+  > em {
+    flex: 0 0 36px;
+    font-style: normal;
+    font-size: 11px;
+    color: #64748b;
+    text-align: end;
+  }
+
+  &:last-child { margin-bottom: 0; }
+  &--inline { flex: 1; }
+}
+
+textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  color: #0f172a;
+  background: #fff;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.10);
+  }
+}
+
+.lbf-row {
+  display: flex;
+  gap: 8px;
+}
+
+// Bold / italic / underline segmented control. Mirrors the
+// receipt-builder `.seg` so the active toggle fills with the brand
+// teal — strongest possible signal that the style is on.
+.lbf-toggle-group {
+  display: inline-flex;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8fafc;
+
+  > button {
+    flex: 1;
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+
+    &:hover:not(.lbf-toggle--on) {
+      background: #fff;
+      color: #0f172a;
+    }
+
+    & + button { border-inline-start: 1px solid #e2e8f0; }
+  }
+}
+
+.lbf-toggle--on,
+.lbf-toggle--on:hover {
+  background: var(--color-brand-600) !important;
+  color: #fff !important;
+}
+
+// (Token chip styles were removed — the binding picker is now a
+// `<app-bindable-input>` popover that owns its own styling.)
+
+// Sample-product picker — bound state shows a chip with the picked
+// name + a clear icon; unbound state shows a search input with a
+// dropdown of typeahead results.
+.lbf-sample-bound {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--color-brand-50, #ecfeff);
+  border: 1px solid var(--color-brand-300, #bae6fd);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-brand-700, #0e7490);
+  max-width: 100%;
+
+  > span {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  > svg { color: var(--color-brand-600, #0891b2); flex-shrink: 0; }
+}
+
+.lbf-sample-clear {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--color-brand-700, #0e7490);
+  width: 22px; height: 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 120ms ease;
+
+  &:hover { background: rgba(8, 145, 178, 0.10); }
+}
+
+.lbf-sample-search {
+  position: relative;
+
+  > input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 12px;
+    color: #0f172a;
+    background: #fff;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-brand-500);
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.10);
+    }
+  }
+}
+
+.lbf-sample-results {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% + 4px);
+  z-index: 10;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.18),
+              0 2px 6px -1px rgba(15, 23, 42, 0.08);
+}
+
+.lbf-sample-result {
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  color: #0f172a;
+  transition: background 120ms ease;
+
+  > strong {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  &__barcode {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 10.5px;
+    color: #64748b;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: var(--color-brand-50, #ecfeff);
+    > strong          { color: var(--color-brand-700, #0e7490); }
+    .lbf-sample-result__barcode { color: var(--color-brand-600, #0891b2); }
+  }
+}
+
+.lbf-sample-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+// (`.lbf-inspector__actions` removed — Duplicate + Delete moved
+// into each layer row, where the receipt-builder convention puts
+// them.)
+
+// Z-order action row — four equal-width icon buttons in a single
+// row inside the inspector's Layer panel.
+// Photoshop-style W/H/X/Y grid. The chain link sits between the W/H
+// rows on the left, joining them with a small connector (matches PS's
+// Properties panel). Inputs are inline labels with the letter key on
+// the leading edge so the field reads like "W ___ X ___".
+.lbf-ps-xy {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+
+  &__chain {
+    appearance: none;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    width: 22px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &--on {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-300, #bae6fd);
+      color: var(--color-brand-700);
+    }
+    &--hidden {
+      visibility: hidden;
+      pointer-events: none;
+    }
+    &:hover:not(.lbf-ps-xy__chain--hidden) {
+      border-color: var(--color-brand-300, #bae6fd);
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 6px;
+  }
+
+  &__field {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 4px 8px;
+    color: #334155;
+    font-size: 12px;
+
+    > span {
+      font-weight: 600;
+      color: #64748b;
+      width: 12px;
+      flex: 0 0 auto;
+      text-align: center;
+    }
+    > input {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      padding: 2px 0;
+      text-align: end;
+      // Trim spinner buttons — they crowd the cell.
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      -moz-appearance: textfield;
+    }
+    &:focus-within {
+      border-color: var(--color-brand-400, #7dd3fc);
+      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    }
+
+    // Dimmed when the field doesn't apply to the active element
+    // type (e.g. W on a Textbox / Barcode / QR / Circle, H on a
+    // HorizontalLine). Stays in the layout so the grid doesn't
+    // jump between selections — just visually flagged as inert.
+    &--disabled {
+      opacity: 0.5;
+      background: #f8fafc;
+      cursor: not-allowed;
+
+      > input { cursor: not-allowed; }
+    }
+  }
+}
+
+// Align & Distribute panel — Photoshop pattern. A caption row + a
+// strip of icon-only buttons. Disabled state is dimmed and ignores
+// hover / pointer.
+.lbf-ad {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+
+  &__caption {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+  }
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+  }
+
+  &__sep {
+    width: 1px;
+    height: 18px;
+    background: #e2e8f0;
+    margin: 0 4px;
+  }
+
+  &__btn {
+    appearance: none;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    width: 30px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    cursor: pointer;
+    padding: 0;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover:not(:disabled) {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-300, #bae6fd);
+      color: var(--color-brand-700);
+    }
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    &--text {
+      width: auto;
+      padding: 0 8px;
+      gap: 4px;
+    }
+  }
+}
+
+.lbf-zorder {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+
+  > button {
+    appearance: none;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    border-radius: 6px;
+    padding: 6px 0;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover:not(:disabled) {
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-300, #bae6fd);
+      color: var(--color-brand-700);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Image picker — shown on the Image element's inspector panel.
+.lbf-image-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 120px;
+  margin: 0 auto 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: repeating-conic-gradient(#f1f5f9 0 25%, #fff 0 50%) 0 0 / 8px 8px;
+  object-fit: contain;
+}
+
+.lbf-image-picker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &:hover {
+    background: #f0fdfa;
+    border-color: var(--color-brand-300, #bae6fd);
+    color: var(--color-brand-700);
+  }
+}
+
+.lbf-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #475569;
+  cursor: pointer;
+
+  > input { accent-color: var(--color-brand-500); }
+}
+
+// Buttons — scoped, keep the page's own style off form chrome.
+.btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  &-default {
+    background: #fff;
+    border-color: #e5e7eb;
+    color: #64748b;
+    &:hover { background: #f9fafb; border-color: #94a3b8; }
+  }
+
+  &-primary {
+    background: var(--color-brand-500);
+    color: #fff;
+    border-color: var(--color-brand-500);
+    &:hover:not(:disabled) {
+      background: var(--color-brand-600);
+      border-color: var(--color-brand-600);
+    }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  &-danger {
+    background: #fff;
+    color: #b91c1c;
+    border-color: #fecaca;
+    align-self: flex-start;
+    &:hover { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
+  }
+}

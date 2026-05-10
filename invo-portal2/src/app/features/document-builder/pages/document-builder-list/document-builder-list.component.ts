@@ -14,9 +14,14 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
+import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { ModalService } from '@shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
+import {
+  DropdownMenuBtnComponent,
+  DropdownMenuBtnItem,
+} from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 
 import { DocumentBuilderService } from '../../services/document-builder.service';
 import { DocumentTemplateSummary, DocumentType, RenderMode } from '../../services/document-template.types';
@@ -50,7 +55,9 @@ const VALID_TYPES = new Set<DocumentType>([
     FormsModule,
     TranslateModule,
     LoadingOverlayComponent,
+    SkeletonComponent,
     TooltipDirective,
+    DropdownMenuBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './document-builder-list.component.html',
@@ -114,6 +121,30 @@ export class DocumentBuilderListComponent implements OnInit {
     void this.router.navigate(['/settings/document-builder', t.id], {
       queryParams: { type: t.documentType },
     });
+  }
+
+  /** Items rendered in each row's `…` overflow menu. "Set as
+   *  default" only appears for non-default rows; "Delete" is
+   *  disabled on the default row (server forbids removing it). */
+  rowMenuItems(t: DocumentTemplateSummary): DropdownMenuBtnItem[] {
+    const items: DropdownMenuBtnItem[] = [
+      { label: 'COMMON.EDIT',      click: () => this.editTemplate(t,      new Event('synthetic')) },
+      { label: 'COMMON.DUPLICATE', click: () => this.duplicateTemplate(t, new Event('synthetic')) },
+    ];
+    if (!t.isDefault) {
+      items.push({
+        label: 'DOCUMENT_BUILDER.SET_DEFAULT',
+        click: () => this.setDefault(t, new Event('synthetic')),
+      });
+    }
+    items.push({
+      label:     'COMMON.DELETE',
+      danger:    true,
+      separator: true,
+      disabled:  !!t.isDefault,
+      click:     () => this.deleteTemplate(t, new Event('synthetic')),
+    });
+    return items;
   }
 
   /** Edit = same as opening, exposed as a menu item so the row click

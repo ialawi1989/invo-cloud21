@@ -366,3 +366,51 @@ body:has(.main-content.no-padding) {
   bottom: auto; top: 100%;
   border-bottom-color: transparent; border-top-color: #111827;
 }
+
+// ── Button utilities ─────────────────────────────────────────────────
+// Hoisted from price-label-form so they're reachable from elements
+// rendered inside child components (e.g. an `<app-dropdown-menu-btn>`'s
+// projected trigger). Component-scoped styles can't cross the view
+// boundary; living here, these classes work everywhere.
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+.btn-primary {
+  background: var(--color-brand-600, #0891b2);
+  color: #fff;
+  &:hover:not(:disabled) { background: var(--color-brand-700, #0e7490); }
+}
+.btn-default {
+  background: #fff;
+  border-color: #e2e8f0;
+  color: #334155;
+  &:hover:not(:disabled) { background: #f8fafc; }
+}
+.btn-ghost {
+  background: transparent;
+  color: #475569;
+  border-color: #e2e8f0;
+  &:hover:not(:disabled) { background: #f8fafc; }
+}
+.btn-danger-soft {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+  &:hover:not(:disabled) { background: #fee2e2; border-color: #fca5a5; }
+}
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+

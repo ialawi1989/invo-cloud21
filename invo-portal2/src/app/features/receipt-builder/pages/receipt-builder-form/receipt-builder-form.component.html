@@ -343,6 +343,7 @@
           cdkDropList
           id="rbf-canvas"
           [cdkDropListConnectedTo]="['rbf-palette']"
+          [cdkDropListSortPredicate]="canvasSortPredicate"
           (cdkDropListDropped)="onElementsDrop($event)"
         >
           @if (template().recieptTemplate.length === 0) {

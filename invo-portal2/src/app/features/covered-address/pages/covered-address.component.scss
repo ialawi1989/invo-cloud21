@@ -1,0 +1,369 @@
+.cap-page {
+  padding: 16px 20px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header { display: flex; flex-direction: column; gap: 4px; }
+.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+.page-sub    { margin: 0; font-size: 13px; color: #64748b; max-width: 80ch; line-height: 1.5; }
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+
+    &--toggle { cursor: pointer; user-select: none; }
+  }
+
+  &__title { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+  &__sub   { margin: 4px 0 0; font-size: 12px; color: #64748b; line-height: 1.5; max-width: 80ch; }
+
+  &__chev {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: #64748b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 150ms ease, background 100ms ease;
+
+    &:hover { background: #f1f5f9; }
+    &--open { transform: rotate(180deg); }
+  }
+
+  &__body {
+    padding: 16px;
+    &--narrow { max-width: 420px; }
+  }
+}
+
+// ─── Bulk panel ──────────────────────────────────────────────────
+.bulk {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px 12px;
+
+    @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  &--wide { grid-column: 1 / -1; }
+
+  &__label { font-size: 11px; font-weight: 600; color: #475569; }
+
+  &__input {
+    appearance: none;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #fff;
+    transition: border-color 100ms ease, box-shadow 100ms ease;
+
+    &:focus {
+      outline: 0;
+      border-color: var(--color-brand-400, #7dd3fc);
+      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    }
+
+    &--textarea {
+      resize: vertical;
+      min-height: 56px;
+      line-height: 1.4;
+      font-family: inherit;
+    }
+  }
+}
+
+// ─── Toolbar ─────────────────────────────────────────────────────
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 8px 0 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  flex: 1 1 auto;
+  max-width: 360px;
+
+  > svg { color: #94a3b8; flex-shrink: 0; }
+  > input {
+    flex: 1 1 auto;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #0f172a;
+    font-size: 13px;
+    &::placeholder { color: #94a3b8; }
+  }
+  &:focus-within {
+    border-color: var(--color-brand-300, #bae6fd);
+    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+  }
+  &__clear {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    &:hover { background: #f1f5f9; color: #0f172a; }
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+
+  &--brand {
+    background: var(--color-brand-50, #ecfeff);
+    color: var(--color-brand-700, #0e7490);
+    border: 1px solid var(--color-brand-200, #a5f3fc);
+  }
+}
+
+// ─── Table ───────────────────────────────────────────────────────
+.table-wrap {
+  overflow: auto;
+  max-height: 60vh;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th, td {
+    padding: 10px 12px;
+    text-align: start;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    z-index: 1;
+  }
+
+  tbody tr {
+    &:last-child td { border-bottom: 0; }
+    &.is-selected   { background: #f0f9ff; }
+  }
+
+  &__check    { width: 36px; }
+  &__num      { width: 130px; text-align: end; }
+  &__actions  { width: 60px; text-align: end; }
+  &__name     { min-width: 180px; }
+  &__note     { min-width: 220px; }
+  /* Branch picker uses `<app-search-dropdown>` which renders its
+     own bordered control — give the cell a sane width so the
+     trigger doesn't overflow the row. */
+  &__branch   { min-width: 200px; }
+
+  /* Sticky group header — sits below the column header and
+     stays in view while the user scrolls within a group. Click
+     the row (anywhere except the checkbox) to toggle the whole
+     group's selection. */
+  &__group {
+    position: sticky;
+    top: 36px;
+    z-index: 1;
+    background: #f1f5f9;
+    cursor: pointer;
+    border-bottom: 1px solid #e2e8f0;
+
+    &:hover { background: #e2e8f0; }
+
+    td {
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid #e2e8f0;
+    }
+  }
+  &__group-name  { color: #0f172a; }
+  &__group-count { color: #94a3b8; font-weight: 500; margin-inline-start: 4px; }
+}
+
+.cell-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  strong { color: #0f172a; }
+
+  &__edit {
+    color: #94a3b8;
+    &:hover { color: var(--color-brand-700, #0e7490); }
+  }
+}
+
+.cell-input {
+  appearance: none;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  color: #0f172a;
+  background: transparent;
+  transition: background 80ms ease, border-color 80ms ease, box-shadow 80ms ease;
+
+  &:hover  { background: #fff; border-color: #e2e8f0; }
+  &:focus  {
+    outline: 0;
+    background: #fff;
+    border-color: var(--color-brand-400, #7dd3fc);
+    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+  }
+  &--num { text-align: end; }
+
+  /* In-table note textarea — single visible row by default,
+     resizes vertically only so a multi-line note can be entered
+     without breaking the table layout horizontally. */
+  &--note {
+    resize: vertical;
+    min-height: 32px;
+    max-height: 120px;
+    line-height: 1.4;
+    font-family: inherit;
+  }
+}
+
+select.cell-input,
+select.field__input {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-inline-end: 24px;
+}
+
+.icon-btn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 100ms ease, color 100ms ease;
+
+  &:hover { background: #f1f5f9; color: #0f172a; }
+  &--danger:hover { background: #fef2f2; color: #b91c1c; }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 16px;
+  color: #94a3b8;
+  font-size: 13px;
+
+  svg { color: #cbd5e1; }
+  p   { margin: 0; max-width: 60ch; text-align: center; }
+}
+
+.validation {
+  margin: 0;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+// ─── Save bar ────────────────────────────────────────────────────
+.save-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #e2e8f0;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: cap-spin 0.7s linear infinite;
+}
+@keyframes cap-spin { to { transform: rotate(360deg); } }

@@ -24,6 +24,17 @@ export interface TableColumn<T = any> {
   cellClass?: string | ((row: T) => string);
   isCustomField?: boolean;
 
+  /**
+   * Skip this column when building the `columns` array sent to the
+   * list endpoint. Use for UI-only columns whose key isn't a real
+   * server-side field (image thumbnails, derived/computed keys like
+   * `qtySum` that the backend doesn't recognise) — the legacy
+   * InvoCloudFront2 list filtered these out, and including them
+   * makes the new backend match against fields that don't exist and
+   * silently drop matches. Defaults to `false`.
+   */
+  noApi?: boolean;
+
   // Clickable navigation config
   clickable?: {
     enabled: boolean;

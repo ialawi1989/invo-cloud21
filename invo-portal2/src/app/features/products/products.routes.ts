@@ -55,4 +55,12 @@ export const PRODUCTS_ROUTES: Routes = [
     // edit action (see privileges/definitions/productSecurity.ts).
     data: { permissionPath: 'productSecurity.actions.add.access' },
   },
+  {
+    path: 'bulk-print',
+    canActivate: [translationsLoaded, privilegeGuard],
+    loadComponent: () =>
+      import('./pages/bulk-print/bulk-print.component').then(m => m.BulkPrintComponent),
+    // Same gate as the per-row Print Label action.
+    data: { permissionPath: 'productSecurity.actions.printBarcode.access' },
+  },
 ];

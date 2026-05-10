@@ -32,12 +32,53 @@ export interface BranchTabsPreference {
   pinnedIds:   string[];
 }
 
+/** Row layout — only ratios for two-column rows are exposed to the
+ *  user. `single` means the row is one full-width column. */
+export type ProductFormRowLayout = 'single' | '2-1' | '1-1' | '1-2';
+
+/** Per-section override on the product-form layout. Sections not
+ *  listed in `sections[]` fall back to their catalog defaults — so
+ *  new sections shipped after the user saved their prefs still show
+ *  up in the right place.
+ *
+ *  `side` lets the user move a section across the main↔side
+ *  columns; when omitted the catalog's default side wins. The
+ *  newer `row` / `col` fields will be used by the upcoming
+ *  multi-row layout — they're left optional so existing saves
+ *  load without migration. */
+export interface ProductFormSectionPref {
+  id:      string;
+  visible: boolean;
+  order:   number;
+  side?:   'main' | 'aside';
+  row?:    number;
+  col?:    'left' | 'right';
+}
+
+export interface ProductFormPrefs {
+  sections: ProductFormSectionPref[];
+  /** Per-row layout. Index matches `ProductFormSectionPref.row`.
+   *  When omitted (or shorter than the highest row index referenced
+   *  by sections), missing rows default to `'2-1'`. */
+  rows?: ProductFormRowLayout[];
+}
+
+/** Prefs are keyed by product type — each type (inventory, batch,
+ *  service, kit, …) has its own layout because the relevant
+ *  sections differ wildly between types. The `*` key is the
+ *  fallback used when no per-type override exists. */
+export type ProductFormPrefsByType = { [productType: string]: ProductFormPrefs };
+
 export interface EmployeeOptions {
   sidebar?: SidebarOptions;
   /** Per-entity list preferences, keyed by entity type (e.g. 'product'). */
   lists?: { [entityType: string]: ListPreference };
   /** Per-namespace branch-tabs preferences (e.g. 'productForm.branches'). */
   branchTabs?: { [namespace: string]: BranchTabsPreference };
+  /** User layout for the product form — section visibility + order,
+   *  keyed by product type so e.g. service products and kit products
+   *  can each carry their own layout. */
+  productForm?: ProductFormPrefsByType;
 }
 
 @Injectable({ providedIn: 'root' })

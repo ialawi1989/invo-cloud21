@@ -1,0 +1,31 @@
+{
+  "SURCHARGE": {
+    "LIST": {
+      "TITLE":              "Surcharges",
+      "SUBTITLE":           "Named surcharges applied to invoices and receipts. Pick a flat amount or a percentage; optionally link a tax.",
+      "ADD_NEW":            "Add Surcharge",
+      "SEARCH_PLACEHOLDER": "Search surcharges…",
+      "NAME":               "Name",
+      "AMOUNT":             "Amount",
+      "TAX":                "Tax",
+      "EMPTY":              "No surcharges yet — add one to apply to invoices or receipts.",
+      "NO_MATCH":           "No surcharges match your search.",
+      "CONFIRM_DELETE":     "Delete \"{{name}}\"? This can't be undone."
+    },
+    "FORM": {
+      "NEW_TITLE":          "New Surcharge",
+      "EDIT_TITLE":         "Edit · {{name}}",
+      "DETAILS":            "Details",
+      "NAME":               "Name",
+      "NAME_PLACEHOLDER":   "Service charge, Delivery fee, Loyalty rebate…",
+      "AMOUNT":             "Amount",
+      "AMOUNT_HINT":        "Toggle the side button to switch between fixed amount and percentage.",
+      "TAX":                "Linked Tax (optional)",
+      "TAX_PLACEHOLDER":    "Select a tax…",
+      "FIXED":              "Fixed",
+      "PERCENT":            "Percent",
+      "ERR_NAME_REQUIRED":  "Name is required",
+      "ERR_AMOUNT_INVALID": "Amount must be a non-negative number"
+    }
+  }
+}

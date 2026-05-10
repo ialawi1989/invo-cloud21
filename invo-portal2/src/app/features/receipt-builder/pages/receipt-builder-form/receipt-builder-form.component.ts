@@ -655,6 +655,18 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
    *      `transferArrayItem` — that would yank the tile out of the
    *      sidebar.
    */
+  /** CDK sort predicate for the canvas drop list. Sorting is only
+   *  meaningful for true canvas-to-canvas reorders — without this
+   *  guard, dragging a palette tile OVER the canvas would push
+   *  existing slots out of the way as the cursor moves, leaving
+   *  the layout visually scrambled until drop. We restrict sort to
+   *  drags whose source is the canvas itself; palette-to-canvas
+   *  drops still work via the cross-list branch in
+   *  `onElementsDrop`. */
+  canvasSortPredicate = (_index: number, drag: { dropContainer: { id: string } }): boolean => {
+    return drag.dropContainer.id === 'rbf-canvas';
+  };
+
   onElementsDrop(event: CdkDragDrop<PrintElement[]>): void {
     if (event.previousContainer === event.container) {
       // Same list — reorder.

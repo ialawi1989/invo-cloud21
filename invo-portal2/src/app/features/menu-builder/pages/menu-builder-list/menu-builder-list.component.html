@@ -54,7 +54,29 @@
 
   <section class="card">
     @if (loading() && rows().length === 0) {
-      <div class="loading"><span class="spinner spinner--lg"></span></div>
+      <!-- Skeleton table — same chrome as the real list. -->
+      <table class="table table--skeleton" role="grid" aria-busy="true">
+        <thead>
+          <tr>
+            <th class="table__name">{{ 'MENU_BUILDER.NAME' | translate }}</th>
+            <th class="table__hours">{{ 'MENU_BUILDER.HOURS' | translate }}</th>
+            <th class="table__sections">{{ 'MENU_BUILDER.SECTIONS' | translate }}</th>
+            <th class="table__online">{{ 'MENU_BUILDER.ONLINE' | translate }}</th>
+            <th class="table__actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (_ of [0,1,2,3,4]; track $index) {
+            <tr>
+              <td class="table__name"><app-skeleton variant="line" width="40%"/></td>
+              <td class="table__hours"><app-skeleton variant="line" width="80px"/></td>
+              <td class="table__sections"><app-skeleton variant="line" width="32px"/></td>
+              <td class="table__online"><app-skeleton variant="line" width="48px"/></td>
+              <td class="table__actions"><app-skeleton variant="line" width="28px"/></td>
+            </tr>
+          }
+        </tbody>
+      </table>
     } @else if (rows().length === 0) {
       <div class="empty">
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">

@@ -44,6 +44,7 @@
     <div #scrollSentinel class="ppm-sentinel" aria-hidden="true">
       @if (loading() && rows().length > 0) {
         <span class="ppm-spinner"></span>
+        <span class="ppm-loadtxt">{{ 'COMMON.LOADING' | translate }}</span>
       }
     </div>
   </div>

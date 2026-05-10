@@ -566,7 +566,30 @@ export function defaultKitchenElements(): PrintElement[] {
 export function parseElements(raw: unknown): PrintElement[] {
   if (!Array.isArray(raw)) return [];
   return raw.map((e) => {
-    const base = { ...(e as PrintElement), __key: (e as PrintElement).__key ?? nextKey() };
+    const src = e as any;
+    const base = { ...(src as PrintElement), __key: src.__key ?? nextKey() } as any;
+
+    // Normalize the visibility / condition pair across element types.
+    // Legacy templates persisted before the editor added the IF/EQUALS
+    // pair may carry `condition: null`, a bare string, or no field at
+    // all — left unchecked, the editor's two-way binding to
+    // `t.condition.data` shows blank inputs even when a value was set
+    // server-side, which reads to the user as "lost the condition".
+    if (base.type === 'SideText' || base.type === 'Text' ||
+        base.type === 'QrCode'   || base.type === 'Barcode') {
+      const c = src.condition;
+      base.condition =
+        (c && typeof c === 'object')
+          ? { data: typeof c.data === 'string' ? c.data : '', equals: typeof c.equals === 'string' ? c.equals : '' }
+          : (typeof c === 'string')
+            ? { data: c, equals: '' }
+            : { data: '', equals: '' };
+      if (base.visibility !== 'Hidden' && base.visibility !== 'Visible') base.visibility = 'Visible';
+      if (base.type !== 'QrCode' && base.type !== 'Barcode' && typeof base.toggleVisible !== 'string') {
+        base.toggleVisible = '';
+      }
+    }
+
     if (base.type === 'Table') {
       const t = base as TableElement;
       t.groups = (Array.isArray(t.groups) ? t.groups : []).map((g) => ({
@@ -582,7 +605,7 @@ export function parseElements(raw: unknown): PrintElement[] {
         })),
       }));
     }
-    return base;
+    return base as PrintElement;
   });
 }
 

@@ -8,6 +8,31 @@
     <div class="field field--span-2">
       <label class="field-label" for="loc-address">{{ 'SETTINGS.BRANCHES.ADDRESS' | translate }}</label>
       <input id="loc-address" type="text" class="input" formControlName="address"/>
+      <!-- Reverse-geocoded suggestion — shown only when the
+           pin's resolved name differs from what the user typed.
+           Click the chip to accept, the X to dismiss. -->
+      @if (suggestedAddress(); as s) {
+        <div class="addr-suggest" role="status">
+          <svg class="addr-suggest__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span class="addr-suggest__label">
+            {{ 'SETTINGS.BRANCHES.SUGGESTED_ADDRESS' | translate }}
+          </span>
+          <button type="button" class="addr-suggest__apply" (click)="applySuggestion()">
+            {{ s }}
+          </button>
+          <button type="button" class="addr-suggest__dismiss"
+            (click)="dismissSuggestion()"
+            [attr.aria-label]="'COMMON.DISMISS' | translate"
+            [title]="'COMMON.DISMISS' | translate">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      }
     </div>
 
     <div class="field">

@@ -67,8 +67,8 @@ export interface RbfWidgetTab {
       @if (draggable()) {
         <span
           class="rbfw__handle"
-          [attr.aria-label]="'RECEIPT_BUILDER.WIDGET_DRAG_HINT' | translate"
-          [appTooltip]="'RECEIPT_BUILDER.WIDGET_DRAG_HINT' | translate"
+          [attr.aria-label]="'COMMON.WIDGET_DRAG_HINT' | translate"
+          [appTooltip]="'COMMON.WIDGET_DRAG_HINT' | translate"
           (click)="$event.stopPropagation()"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">

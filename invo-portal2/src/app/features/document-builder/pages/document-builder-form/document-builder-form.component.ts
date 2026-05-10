@@ -54,6 +54,10 @@ import { DesignerCanvasComponent } from './components/designer-canvas/designer-c
 import { DesignerInspectorComponent } from './components/designer-inspector/designer-inspector.component';
 import { seedDesignerFromClassic } from './components/designer-canvas/sync-from-classic';
 import { DocumentPaperComponent } from '@shared/components/document-paper/document-paper.component';
+import {
+  DropdownMenuBtnComponent,
+  DropdownMenuBtnItem,
+} from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { PAPER_LAYOUT, getDataModel, getFieldConfig, type TableColumnConfig } from '@shared/components/document-paper/paper-config';
 import {
   SAMPLE_PROFILE_IDS,
@@ -138,6 +142,7 @@ const DOC_TYPES: DocumentType[] = [
     DesignerCanvasComponent,
     DesignerInspectorComponent,
     DocumentPaperComponent,
+    DropdownMenuBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './document-builder-form.component.html',
@@ -207,6 +212,26 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
   /** Top-bar overflow menu (Reset / Export / Import). Closed on outside click. */
   moreMenuOpen = signal<boolean>(false);
   closeMoreMenu = () => this.moreMenuOpen.set(false);
+
+  /** Items rendered in the toolbar's "..." `<app-dropdown-menu-btn>`.
+   *  The Import item triggers a hidden file input owned by the
+   *  template — `triggerImport()` clicks it programmatically so
+   *  the item can stay a regular menu button. */
+  moreMenuItems(): DropdownMenuBtnItem[] {
+    return [
+      { label: 'DOCUMENT_BUILDER.RESET',  click: () => this.resetToDefault() },
+      { label: 'DOCUMENT_BUILDER.EXPORT', click: () => this.exportJson()     },
+      { label: 'DOCUMENT_BUILDER.IMPORT', click: () => this.triggerImport()  },
+    ];
+  }
+
+  /** Programmatically open the hidden file input. The file input
+   *  itself lives in the template so its `(change)` handler still
+   *  fires through Angular's bindings. */
+  triggerImport(): void {
+    const input = document.querySelector<HTMLInputElement>('#dbf-import-file-input');
+    input?.click();
+  }
 
   template = signal<DocumentTemplate>(DEFAULT_TEMPLATE('invoice'));
 

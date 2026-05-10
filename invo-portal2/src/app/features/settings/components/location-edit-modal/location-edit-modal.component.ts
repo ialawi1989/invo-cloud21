@@ -144,6 +144,20 @@ export class LocationEditModalComponent implements AfterViewInit, OnDestroy {
    *  between marker.setLatLng and form.patchValue forever. */
   private suppressFormSync = false;
 
+  // ─── Reverse-geocoded suggestion ───────────────────────────────────────
+  /** Latest reverse-geocoded name for the picked coords. Shown as a
+   *  small banner below the address field when it differs from what
+   *  the user typed — gives the user a one-click way to grab the
+   *  street/area name OSM resolved for the pin. Null = no suggestion
+   *  to show. */
+  suggestedAddress = signal<string | null>(null);
+
+  /** Per-request token. Pin can move faster than the network round-
+   *  trip; we tag each fetch and only accept the response when its
+   *  token still matches the latest one. */
+  private geocodeToken = 0;
+  private geocodeTimer: ReturnType<typeof setTimeout> | undefined;
+
   constructor() {
     this.translate.onLangChange
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -211,6 +225,8 @@ export class LocationEditModalComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.geocodeTimer) clearTimeout(this.geocodeTimer);
+    this.geocodeTimer = undefined;
     this.map?.remove();
     this.map = undefined;
     this.marker = undefined;
@@ -249,6 +265,86 @@ export class LocationEditModalComponent implements AfterViewInit, OnDestroy {
       lat: latlng.lat.toFixed(6),
       lng: latlng.lng.toFixed(6),
     });
+    // Kick off a debounced reverse-geocode whenever the pin moves
+    // — the user might want to grab the resolved area / street name
+    // for the address field. The actual fetch is fire-and-forget;
+    // a stale response is silently dropped via `geocodeToken`.
+    this.scheduleReverseGeocode(latlng.lat, latlng.lng);
+  }
+
+  /** Debounce + cancel-on-supersede wrapper around the geocode
+   *  fetch. 600ms is long enough that fast drag-and-drop only
+   *  fires one request, short enough that the suggestion appears
+   *  before the user reads on. */
+  private scheduleReverseGeocode(lat: number, lng: number): void {
+    if (this.geocodeTimer) clearTimeout(this.geocodeTimer);
+    this.geocodeTimer = setTimeout(() => this.reverseGeocode(lat, lng), 600);
+  }
+
+  private async reverseGeocode(lat: number, lng: number): Promise<void> {
+    const token = ++this.geocodeToken;
+    const lang = (this.translate.currentLang || 'en').split('-')[0];
+    const url =
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}` +
+      `&format=json&zoom=16&accept-language=${encodeURIComponent(lang)}`;
+    try {
+      const res = await fetch(url, { headers: { Accept: 'application/json' } });
+      if (!res.ok) return;
+      const json: any = await res.json();
+      // Pin moved again while we were waiting — drop the stale answer.
+      if (token !== this.geocodeToken) return;
+
+      const suggestion = this.pickSuggestion(json);
+      const current = String(this.form.get('address')?.value ?? '').trim();
+      // Only surface a suggestion if it actually adds something —
+      // skip when it's empty or matches the current value (case-
+      // insensitive, whitespace-tolerant).
+      if (!suggestion || suggestion.trim().toLowerCase() === current.toLowerCase()) {
+        this.suggestedAddress.set(null);
+      } else {
+        this.suggestedAddress.set(suggestion);
+      }
+    } catch {
+      // Geocode is best-effort — silent fail, no toast. The pin
+      // and lat/lng inputs still work without the suggestion.
+      if (token === this.geocodeToken) this.suggestedAddress.set(null);
+    }
+  }
+
+  /** Prefer a short, locally-meaningful name over the full
+   *  display_name. Picks the most specific named place we got
+   *  (suburb / neighbourhood / village / town / city) so the
+   *  suggestion stays one or two words rather than the whole
+   *  street + city + country. */
+  private pickSuggestion(json: any): string {
+    const a = json?.address ?? {};
+    const candidates = [
+      a.neighbourhood, a.suburb, a.quarter, a.hamlet,
+      a.village, a.town, a.city_district, a.city,
+      a.county, a.state,
+    ];
+    for (const c of candidates) {
+      if (c && typeof c === 'string' && c.trim()) return c.trim();
+    }
+    // Fall back to the full display_name's first segment.
+    const dn = String(json?.display_name ?? '').split(',')[0]?.trim();
+    return dn || '';
+  }
+
+  /** User accepted the suggested address. Patch the form (mark
+   *  it dirty so they can still edit) and clear the banner. */
+  applySuggestion(): void {
+    const s = this.suggestedAddress();
+    if (!s) return;
+    this.form.patchValue({ address: s }, { emitEvent: false });
+    this.form.get('address')?.markAsDirty();
+    this.suggestedAddress.set(null);
+  }
+
+  /** User dismissed the suggestion — keep their address as-is.
+   *  We won't surface it again until the pin moves. */
+  dismissSuggestion(): void {
+    this.suggestedAddress.set(null);
   }
 
   /** Use the browser's geolocation to centre on the user's actual location. */

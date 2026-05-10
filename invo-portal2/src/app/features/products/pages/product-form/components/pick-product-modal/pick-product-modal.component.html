@@ -58,10 +58,13 @@
     }
 
     <!-- Infinite-scroll sentinel — observer fires `loadMore()` when it
-         enters the viewport; inline spinner while a next page loads. -->
+         enters the viewport; inline spinner + "Loading…" while a
+         next page is in flight so the user can tell more data is
+         on the way. -->
     <div #scrollSentinel class="ppm-sentinel" aria-hidden="true">
       @if (loading() && rows().length > 0) {
         <span class="ppm-spinner"></span>
+        <span class="ppm-loadtxt">{{ 'COMMON.LOADING' | translate }}</span>
       }
     </div>
   </div>

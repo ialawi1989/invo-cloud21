@@ -216,6 +216,8 @@ export class SettingsComponent {
         { label: 'SETTINGS.ITEMS.TABLE_MANAGEMENT', description: 'SETTINGS.ITEMS.TABLE_MANAGEMENT_DESC', link: '/settings/tables',          privilege: 'tableManagmentSecurity.access' },
         { label: 'SETTINGS.ITEMS.MENU_BUILDER',     description: 'SETTINGS.ITEMS.MENU_BUILDER_DESC',     link: '/settings/menu-builder',    privilege: 'menuBuilderSecurity.actions.view.access' },
         { label: 'SETTINGS.ITEMS.RECEIPT_BUILDER',  description: 'SETTINGS.ITEMS.RECEIPT_BUILDER_DESC',  link: '/settings/receipt-builder', privilege: 'recieptBuilderSecurity.actions.view.access' },
+        { label: 'SETTINGS.ITEMS.LABEL_BUILDER',    description: 'SETTINGS.ITEMS.LABEL_BUILDER_DESC',    link: '/settings/label-builder',   privilege: 'labelBuilderSecurity.actions.view.access' },
+        { label: 'SETTINGS.ITEMS.PRICE_LABEL',      description: 'SETTINGS.ITEMS.PRICE_LABEL_DESC',      link: '/settings/price-label',     privilege: 'priceLabelSecurity.actions.view.access' },
       ],
     },
     {

@@ -1,0 +1,308 @@
+<div class="cap-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'COVERED_ADDRESS.TITLE' | translate }}</h1>
+      <p class="page-sub">{{ 'COVERED_ADDRESS.SUBTITLE' | translate }}</p>
+    </div>
+  </header>
+
+  <!-- Type picker -->
+  <section class="card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'COVERED_ADDRESS.TYPE' | translate }}</h2>
+      <p class="card__sub">{{ 'COVERED_ADDRESS.TYPE_HINT' | translate }}</p>
+    </header>
+    <div class="card__body card__body--narrow">
+      <app-search-dropdown
+        [items]="typeOptions()"
+        [displayWith]="display"
+        [compareWith]="compare"
+        [toValue]="toValue"
+        [value]="selectedTypeOption()"
+        [searchable]="true"
+        [clearable]="false"
+        [placeholder]="'COVERED_ADDRESS.TYPE' | translate"
+        (valueChange)="onTypeChange($event)"/>
+    </div>
+  </section>
+
+  <!-- Bulk-update panel -->
+  <section class="card">
+    <header class="card__head card__head--toggle" (click)="bulkOpen.update(v => !v)">
+      <div>
+        <h2 class="card__title">{{ 'COVERED_ADDRESS.BULK.PANEL_TITLE' | translate }}</h2>
+        <p class="card__sub">{{ 'COVERED_ADDRESS.BULK.PANEL_HINT' | translate }}</p>
+      </div>
+      <button type="button" class="card__chev" [class.card__chev--open]="bulkOpen()"
+        [attr.aria-expanded]="bulkOpen()"
+        [attr.aria-label]="(bulkOpen() ? 'COMMON.COLLAPSE' : 'COMMON.EXPAND') | translate">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+    </header>
+    @if (bulkOpen()) {
+      <div class="card__body bulk">
+        <div class="bulk__grid">
+          <label class="field">
+            <span class="field__label">{{ 'COVERED_ADDRESS.BULK.DELIVERY_CHARGE' | translate }}</span>
+            <input class="field__input" type="number" min="0" step="0.001"
+              [ngModel]="bulk().deliveryCharge"
+              (ngModelChange)="setBulk('deliveryCharge', $event === '' || $event == null ? null : +$event)"/>
+          </label>
+          <label class="field">
+            <span class="field__label">{{ 'COVERED_ADDRESS.BULK.MIN_ORDER' | translate }}</span>
+            <input class="field__input" type="number" min="0" step="0.001"
+              [ngModel]="bulk().minimumOrder"
+              (ngModelChange)="setBulk('minimumOrder', $event === '' || $event == null ? null : +$event)"/>
+          </label>
+          <label class="field">
+            <span class="field__label">{{ 'COVERED_ADDRESS.BULK.FREE_OVER' | translate }}</span>
+            <input class="field__input" type="number" min="0" step="0.001"
+              [ngModel]="bulk().freeDeliveryOver"
+              (ngModelChange)="setBulk('freeDeliveryOver', $event === '' || $event == null ? null : +$event)"/>
+          </label>
+          <label class="field">
+            <span class="field__label">{{ 'COVERED_ADDRESS.BULK.BRANCH' | translate }}</span>
+            <app-search-dropdown
+              [items]="branches()"
+              [displayWith]="display"
+              [compareWith]="compare"
+              [toValue]="toValue"
+              [value]="bulkBranchValue()"
+              [searchable]="true"
+              [clearable]="true"
+              [placeholder]="'COVERED_ADDRESS.TABLE.PICK_BRANCH' | translate"
+              (valueChange)="onBulkBranchChange($event)"/>
+          </label>
+          <label class="field field--wide">
+            <span class="field__label">{{ 'COVERED_ADDRESS.BULK.NOTE' | translate }}</span>
+            <textarea class="field__input field__input--textarea"
+              rows="2"
+              [ngModel]="bulk().note"
+              (ngModelChange)="setBulk('note', $event)"></textarea>
+          </label>
+        </div>
+        <div class="bulk__actions">
+          <button type="button" class="btn btn-ghost" (click)="resetBulk()">
+            {{ 'COVERED_ADDRESS.BULK.RESET' | translate }}
+          </button>
+          <button type="button" class="btn btn-default" (click)="applyBulk('selected')">
+            {{ 'COVERED_ADDRESS.BULK.APPLY_SELECTED' | translate:{ count: selectedCount() } }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="applyBulk('all')">
+            {{ 'COVERED_ADDRESS.BULK.APPLY_ALL' | translate }}
+          </button>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- Toolbar: search + add row + selection chip -->
+  <div class="toolbar">
+    <label class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        [placeholder]="'COVERED_ADDRESS.SEARCH_PLACEHOLDER' | translate"/>
+      @if (search()) {
+        <button type="button" class="search__clear" (click)="search.set('')" aria-label="Clear">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      }
+    </label>
+
+    @if (selectedCount() > 0) {
+      <span class="chip chip--brand">
+        {{ 'COVERED_ADDRESS.SELECTED_COUNT' | translate:{ count: selectedCount() } }}
+      </span>
+      <button type="button" class="btn btn-danger-soft" (click)="removeSelected()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        </svg>
+        {{ 'COVERED_ADDRESS.DELETE_SELECTED' | translate:{ count: selectedCount() } }}
+      </button>
+    }
+
+    <button type="button" class="btn btn-default" (click)="openImport()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      {{ 'COVERED_ADDRESS.IMPORT.ACTION' | translate }}
+    </button>
+
+    <button type="button" class="btn btn-default" (click)="addRow()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      {{ 'COVERED_ADDRESS.ADD_ADDRESS' | translate }}
+    </button>
+  </div>
+
+  <!-- Address table -->
+  <section class="card">
+    @if (rows().length === 0) {
+      <div class="empty">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        <p>{{ 'COVERED_ADDRESS.EMPTY' | translate }}</p>
+      </div>
+    } @else if (filteredRows().length === 0) {
+      <div class="empty">
+        <p>{{ 'COVERED_ADDRESS.NO_MATCH' | translate }}</p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="table__check">
+                <input type="checkbox"
+                  [checked]="selectAll()"
+                  (change)="toggleSelectAll($any($event.target).checked)"
+                  [attr.aria-label]="'COVERED_ADDRESS.SELECT_ALL' | translate"/>
+              </th>
+              <th>{{ 'COVERED_ADDRESS.TABLE.ADDRESS' | translate }}</th>
+              <th>{{ 'COVERED_ADDRESS.TABLE.BRANCH' | translate }}</th>
+              <th class="table__num">{{ 'COVERED_ADDRESS.TABLE.DELIVERY_CHARGE' | translate }}</th>
+              <th class="table__num">{{ 'COVERED_ADDRESS.TABLE.MIN_ORDER' | translate }}</th>
+              <th class="table__num">{{ 'COVERED_ADDRESS.TABLE.FREE_OVER' | translate }}</th>
+              <th>{{ 'COVERED_ADDRESS.TABLE.NOTE' | translate }}</th>
+              <th class="table__actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (group of groupedRows(); track group.parent) {
+              <!-- Group header — shown only when the chosen type
+                   has a parent dimension (City → Governorate,
+                   Block → City). Click toggles every row in the
+                   group as a unit. Hidden for parent-less types. -->
+              @if (group.parent) {
+                <tr class="table__group" (click)="toggleGroupSelection(group.rows, !isGroupAllSelected(group.rows))">
+                  <td class="table__check" (click)="$event.stopPropagation()">
+                    <input type="checkbox"
+                      [checked]="isGroupAllSelected(group.rows)"
+                      (change)="toggleGroupSelection(group.rows, $any($event.target).checked)"
+                      [attr.aria-label]="group.parent"/>
+                  </td>
+                  <td colspan="7">
+                    <span class="table__group-name">{{ group.parent }}</span>
+                    <span class="table__group-count">· {{ group.rows.length }}</span>
+                  </td>
+                </tr>
+              }
+
+              @for (row of group.rows; track trackRow($index, row)) {
+                <tr [class.is-selected]="row.isSelected">
+                  <td class="table__check">
+                    <input type="checkbox"
+                      [checked]="!!row.isSelected"
+                      (change)="toggleRowSelection(indexOfRow(row), $any($event.target).checked)"/>
+                  </td>
+                  <td class="table__name">
+                    @if (isNameLocked(row)) {
+                      <div class="cell-name">
+                        <strong>{{ row.address }}</strong>
+                        @if (isBuiltIn(type()) && (type() === 'City' || type() === 'Governorate')) {
+                          <button type="button" class="icon-btn cell-name__edit"
+                            (click)="editTranslation(indexOfRow(row))"
+                            [title]="'COVERED_ADDRESS.TABLE.NAME_TRANSLATION' | translate"
+                            [attr.aria-label]="'COVERED_ADDRESS.TABLE.NAME_TRANSLATION' | translate">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/>
+                              <path d="M2 5h12"/><path d="M7 2h1"/>
+                              <path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/>
+                            </svg>
+                          </button>
+                        }
+                      </div>
+                    } @else {
+                      <input class="cell-input"
+                        type="text"
+                        [ngModel]="row.address"
+                        (ngModelChange)="setRow(indexOfRow(row), { address: $event })"/>
+                    }
+                  </td>
+                  <td class="table__branch">
+                    <app-search-dropdown
+                      [items]="branches()"
+                      [displayWith]="display"
+                      [compareWith]="compare"
+                      [toValue]="toValue"
+                      [value]="branchById(row.branchId)"
+                      [searchable]="true"
+                      [clearable]="true"
+                      [placeholder]="'COVERED_ADDRESS.TABLE.PICK_BRANCH' | translate"
+                      (valueChange)="onRowBranchChange(indexOfRow(row), $event)"/>
+                  </td>
+                  <td class="table__num">
+                    <input class="cell-input cell-input--num"
+                      type="number" min="0" step="0.001"
+                      [ngModel]="row.deliveryCharge"
+                      (ngModelChange)="setRow(indexOfRow(row), { deliveryCharge: $event })"/>
+                  </td>
+                  <td class="table__num">
+                    <input class="cell-input cell-input--num"
+                      type="number" min="0" step="0.001"
+                      [ngModel]="row.minimumOrder"
+                      (ngModelChange)="setRow(indexOfRow(row), { minimumOrder: $event })"/>
+                  </td>
+                  <td class="table__num">
+                    <input class="cell-input cell-input--num"
+                      type="number" min="0" step="0.001"
+                      [ngModel]="row.freeDeliveryOver"
+                      (ngModelChange)="setRow(indexOfRow(row), { freeDeliveryOver: $event === '' || $event == null ? null : +$event })"/>
+                  </td>
+                  <td class="table__note">
+                    <textarea class="cell-input cell-input--note"
+                      rows="1"
+                      [ngModel]="row.note"
+                      (ngModelChange)="setRow(indexOfRow(row), { note: $event })"></textarea>
+                  </td>
+                  <td class="table__actions">
+                    <button type="button" class="icon-btn icon-btn--danger"
+                      (click)="removeRow(indexOfRow(row))"
+                      [attr.aria-label]="'COMMON.DELETE' | translate"
+                      [title]="'COMMON.DELETE' | translate">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  @if (validationError()) {
+    <p class="validation">{{ validationError()! | translate }}</p>
+  }
+
+  <footer class="save-bar">
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
+      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+      {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+    </button>
+  </footer>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

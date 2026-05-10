@@ -1,0 +1,248 @@
+<div class="bulk-print-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="page-header__title">{{ 'PRODUCTS.BULK_PRINT.TITLE' | translate }}</h1>
+  </header>
+
+  <!-- ═══ Top: settings + preview side-by-side ═══ -->
+  <div class="bp-grid">
+    <!-- Left column: branch + template + product list -->
+    <section class="bp-col">
+      <div class="bp-card">
+        <div class="bp-card__body">
+          <div class="bp-row">
+            <label class="bp-field">
+              <span>{{ 'PRODUCTS.BULK_PRINT.BRANCH' | translate }}</span>
+              <app-search-dropdown
+                [items]="branchItems()"
+                [displayWith]="display"
+                [compareWith]="compare"
+                [toValue]="toValue"
+                [clearable]="false"
+                [searchable]="true"
+                [value]="selectedBranchItem()"
+                (valueChange)="onBranchChange($any($event))"/>
+            </label>
+            <label class="bp-field">
+              <span>{{ 'PRODUCTS.BULK_PRINT.TEMPLATE' | translate }}</span>
+              <app-search-dropdown
+                [items]="templateItems()"
+                [displayWith]="display"
+                [compareWith]="compare"
+                [toValue]="toValue"
+                [clearable]="false"
+                [searchable]="true"
+                [value]="selectedItem()"
+                (valueChange)="onTemplateChange($any($event))"/>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected products list -->
+      <div class="bp-card">
+        <header class="bp-card__head">
+          <h2 class="bp-card__title">
+            {{ 'PRODUCTS.BULK_PRINT.SELECTED_PRODUCTS' | translate }}
+            @if (rows().length > 0) {
+              <span class="bp-badge">
+                {{ totalLabels() }}
+                {{ totalLabels() === 1
+                    ? ('PRODUCTS.BULK_PRINT.LABEL' | translate)
+                    : ('PRODUCTS.BULK_PRINT.LABELS' | translate) }}
+              </span>
+            }
+          </h2>
+          <div class="bp-card__actions">
+            <button type="button" class="btn btn-default"
+              [disabled]="!selectedTemplateId() || !selectedBranchId() || importing()"
+              (click)="openImportBarcodes()">
+              @if (importing()) { <span class="spinner spinner--ghost" aria-hidden="true"></span> }
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              {{ 'PRODUCTS.BULK_PRINT.IMPORT' | translate }}
+            </button>
+            <button type="button" class="btn btn-primary"
+              [disabled]="!selectedTemplateId() || !selectedBranchId()"
+              (click)="pickProducts()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              {{ 'PRODUCTS.BULK_PRINT.PICK_PRODUCTS' | translate }}
+            </button>
+          </div>
+        </header>
+
+        @if (importResult(); as r) {
+          <div class="bp-import-result"
+            [class.bp-import-result--mixed]="r.missed > 0"
+            [appTooltip]="r.missedCodes.length ? r.missedCodes.join(', ') : ''">
+            <span>
+              <strong>{{ r.added }}</strong>
+              {{ 'PRODUCTS.BULK_PRINT.IMPORT_ADDED' | translate }}
+              @if (r.missed > 0) {
+                ·
+                <strong class="bp-import-result__missed">{{ r.missed }}</strong>
+                {{ 'PRODUCTS.BULK_PRINT.IMPORT_MISSED' | translate }}
+              }
+            </span>
+            <button type="button" class="bp-import-result__close"
+              (click)="dismissImportResult()" aria-label="Dismiss">×</button>
+          </div>
+        }
+
+        <!-- Scanner input — type/scan a barcode and the matching
+             product is added (or its qty bumped). Auto-fires after
+             a short debounce; Enter commits immediately. Disabled
+             until both branch + template are picked. -->
+        <div class="bp-scanner">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 5h2v14H3zM7 5h1v14H7zM10 5h2v14h-2zM14 5h1v14h-1zM17 5h2v14h-2zM20 5h1v14h-1z"/>
+          </svg>
+          <input type="text" class="bp-scanner__input"
+            [ngModel]="scannerValue()"
+            (ngModelChange)="onScannerInput($event)"
+            (keydown.enter)="onScannerEnter($event)"
+            [placeholder]="'PRODUCTS.BULK_PRINT.SCAN_PLACEHOLDER' | translate"
+            [disabled]="!selectedTemplateId() || !selectedBranchId()"/>
+          @if (scannerError()) {
+            <span class="bp-scanner__error">{{ scannerError() }}</span>
+          }
+        </div>
+
+        <div class="bp-card__body bp-card__body--list">
+          @if (rows().length === 0) {
+            <div class="bp-empty">
+              <p>{{ 'PRODUCTS.BULK_PRINT.EMPTY_HINT' | translate }}</p>
+              <button type="button" class="btn btn-default"
+                [disabled]="!selectedTemplateId() || !selectedBranchId()"
+                (click)="pickProducts()">
+                {{ 'PRODUCTS.BULK_PRINT.PICK_PRODUCTS' | translate }}
+              </button>
+            </div>
+          } @else {
+            <ul class="bp-list">
+              @for (row of rows(); track trackRow($index, row)) {
+                <li class="bp-list__row"
+                  [class.bp-list__row--active]="row.id === activeRow()?.id"
+                  (click)="setActiveRow(row.id)">
+                  <div class="bp-list__main">
+                    <strong class="bp-list__name">{{ row.name }}</strong>
+                    @if (row.barcode) {
+                      <span class="bp-list__barcode">{{ row.barcode }}</span>
+                    }
+                  </div>
+                  <div class="bp-qty" (click)="$event.stopPropagation()">
+                    <button type="button" class="bp-qty__btn"
+                      [disabled]="row.printQty <= 1"
+                      (click)="changeQty(row.id, -1)">−</button>
+                    <input type="number" class="bp-qty__input" min="1"
+                      [ngModel]="row.printQty"
+                      (ngModelChange)="setQty(row.id, +$event)"/>
+                    <button type="button" class="bp-qty__btn"
+                      (click)="changeQty(row.id, 1)">+</button>
+                  </div>
+                  <button type="button" class="bp-list__remove"
+                    (click)="$event.stopPropagation(); removeRow(row.id)"
+                    [appTooltip]="'COMMON.DELETE' | translate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    </svg>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Right column: live preview of the active row -->
+    <aside class="bp-side">
+      <div class="bp-card bp-card--sticky">
+        <header class="bp-card__head">
+          <h2 class="bp-card__title">{{ 'PRODUCTS.BULK_PRINT.PREVIEW' | translate }}</h2>
+        </header>
+        <div class="bp-card__body bp-preview">
+          @if (rendering()) {
+            <div class="bp-preview__state">{{ 'COMMON.LOADING' | translate }}</div>
+          } @else if (previewUrl()) {
+            <img class="bp-preview__img" [src]="previewUrl()" alt=""/>
+            @if (template(); as t) {
+              <div class="bp-preview__meta">
+                <span>{{ t.labelWidth }}″ × {{ t.labelHeight }}″</span>
+                <span>{{ t.dpi }} DPI</span>
+              </div>
+            }
+          } @else {
+            <div class="bp-preview__state bp-preview__state--empty">
+              {{ 'PRODUCTS.BULK_PRINT.NO_PREVIEW' | translate }}
+            </div>
+          }
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  @if (rows().length > 0) {
+    <div class="bp-footer">
+      <span class="bp-footer__count">
+        <strong>{{ rows().length }}</strong>
+        {{ rows().length === 1
+            ? ('PRODUCTS.BULK_PRINT.PRODUCT' | translate)
+            : ('PRODUCTS.BULK_PRINT.PRODUCTS' | translate) }}
+        ·
+        <strong>{{ totalLabels() }}</strong>
+        {{ totalLabels() === 1
+            ? ('PRODUCTS.BULK_PRINT.LABEL' | translate)
+            : ('PRODUCTS.BULK_PRINT.LABELS' | translate) }}
+      </span>
+      <div class="bp-footer__actions">
+        @if (downloadProgress(); as p) {
+          <span class="bp-footer__progress">
+            {{ 'PRODUCTS.BULK_PRINT.DOWNLOAD_PROGRESS' | translate:{ done: p.done, total: p.total } }}
+          </span>
+        }
+        <button type="button" class="btn btn-default"
+          [disabled]="previewing() || printing() || downloading() || !template()"
+          (click)="openPreviewAll()">
+          @if (previewing()) { <span class="spinner spinner--ghost" aria-hidden="true"></span> }
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          {{ 'PRODUCTS.BULK_PRINT.PREVIEW_ALL' | translate }}
+        </button>
+        <button type="button" class="btn btn-default"
+          [disabled]="downloading() || printing() || previewing() || !template()"
+          (click)="download()">
+          @if (downloading()) { <span class="spinner spinner--ghost" aria-hidden="true"></span> }
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          {{ 'PRODUCTS.BULK_PRINT.DOWNLOAD' | translate }}
+        </button>
+        <button type="button" class="btn btn-primary"
+          [disabled]="printing() || previewing() || downloading() || !template()"
+          (click)="print()">
+          @if (printing()) { <span class="spinner" aria-hidden="true"></span> }
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          {{ 'PRODUCTS.BULK_PRINT.PRINT' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

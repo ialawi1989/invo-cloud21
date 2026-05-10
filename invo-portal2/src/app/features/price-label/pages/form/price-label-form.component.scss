@@ -1,0 +1,291 @@
+.plf-page {
+  position: relative;
+  padding: 24px;
+  padding-bottom: 80px;
+  min-height: 100vh;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+
+  &__titles {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+.page-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+// Two-column row that hosts the Products + Options cards. Stacks
+// vertically on narrow screens.
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  @media (max-width: 991px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  &__title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  &__body {
+    padding: 14px 16px;
+  }
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-brand-50, #ecfeff);
+  color: var(--color-brand-700, #0e7490);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+  }
+  > input {
+    appearance: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #fff;
+    &:focus {
+      outline: 0;
+      border-color: var(--color-brand-400, #7dd3fc);
+      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    }
+  }
+}
+
+.empty {
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+  > p { margin: 0; font-size: 13px; }
+}
+
+.lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    &:last-child { border-bottom: 0; }
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  &__name {
+    font-size: 13px;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+  }
+
+  &__meta {
+    color: #94a3b8;
+    font-size: 11px;
+  }
+
+  &__barcode {
+    align-self: flex-start;
+    padding: 2px 6px;
+    background: var(--color-brand-50, #ecfeff);
+    color: var(--color-brand-700, #0e7490);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  &__price {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 4px 10px;
+
+    &-label {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    > input {
+      width: 100px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f172a;
+      text-align: end;
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    }
+    &:focus-within {
+      border-color: var(--color-brand-300, #bae6fd);
+      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    }
+  }
+
+  // Per-row meta chips: product type / default price / barcode.
+  // Same shape across both columns so Products and Options rows
+  // line up visually.
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+
+    &--type {
+      background: #f1f5f9;
+      color: #475569;
+    }
+    &--price {
+      background: var(--color-brand-50, #ecfeff);
+      color: var(--color-brand-700, #0e7490);
+    }
+    &--barcode {
+      background: #fef3c7;
+      color: #92400e;
+    }
+  }
+
+  &__remove {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+    &:hover { background: #fef2f2; color: #b91c1c; }
+  }
+}
+
+// ── Fixed footer ───────────────────────────────────────────────────
+// Matches the product form's pattern: pinned to the viewport
+// bottom (not sticky-inside-the-card) with a frosted backdrop, so
+// every page using a save action reads the same.
+.form-footer {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 60;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(180%) blur(6px);
+  -webkit-backdrop-filter: saturate(180%) blur(6px);
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.06);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+// ── Buttons ────────────────────────────────────────────────────────
+// `.btn` / `.btn-primary` / `.btn-default` / `.btn-ghost` live in
+// global styles.scss now — see comment there for why.
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: plf-spin 0.7s linear infinite;
+}
+@keyframes plf-spin { to { transform: rotate(360deg); } }
+

@@ -18,64 +18,32 @@
 
   <!-- ═══ Header Action Buttons ═══ -->
   <div listHeaderActions class="flex items-center gap-3">
-    <!-- Add New dropdown -->
-    <div class="relative" (click)="$event.stopPropagation()">
-      <button type="button" (click)="addNewOpen.set(!addNewOpen()); moreMenuOpen.set(false)"
-        class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        {{ 'PRODUCTS.ACTIONS.NEW_PRODUCT' | translate }}
-        <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      @if (addNewOpen()) {
-      <div class="absolute right-0 top-full mt-1 w-52 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1">
-        @for (action of addNewActions; track action.id) {
-        <button type="button" (click)="action.handler!(); addNewOpen.set(false)"
-          class="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-          {{ action.label }}
-        </button>
-        }
-      </div>
-      }
-    </div>
+    <!-- "+ Add New" dropdown — one row per product type the user
+         can create. Uses the shared component (with appendToBody
+         in case the list-page header lives in a clipping ancestor). -->
+    <app-dropdown-menu-btn
+      [items]="addNewMenuItems()"
+      [appendToBody]="true"
+      align="end"
+      triggerClass="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      {{ 'PRODUCTS.ACTIONS.NEW_PRODUCT' | translate }}
+    </app-dropdown-menu-btn>
 
-    <!-- More actions "..." button (hidden entirely if the user has permission for none of the items inside) -->
+    <!-- More actions "..." button (hidden entirely if the user has
+         permission for none of the items inside). Icon-only trigger
+         so we suppress the chevron. -->
     @if (moreActions.length > 0 || bulkOperationActions.length > 0) {
-    <div class="relative" (click)="$event.stopPropagation()">
-      <button type="button" (click)="moreMenuOpen.set(!moreMenuOpen()); addNewOpen.set(false)"
-        class="flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors">
+      <app-dropdown-menu-btn
+        [items]="moreMenuItems()"
+        [appendToBody]="true"
+        [chevron]="false"
+        align="end"
+        triggerClass="flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
         </svg>
-      </button>
-      @if (moreMenuOpen()) {
-      <div class="absolute right-0 top-full mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1">
-        <!-- General actions -->
-        @for (action of moreActions; track action.id) {
-        <button type="button" (click)="action.handler!(); moreMenuOpen.set(false)"
-          class="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-          {{ action.label }}
-        </button>
-        }
-        <!-- Bulk operations section — divider only if there were general actions above -->
-        @if (bulkOperationActions.length > 0) {
-          <div [class.mt-1]="moreActions.length > 0"
-               [class.pt-1]="moreActions.length > 0"
-               [class.border-t]="moreActions.length > 0"
-               [class.border-slate-100]="moreActions.length > 0">
-            <div class="px-4 py-1.5 text-[10.5px] font-semibold tracking-wider uppercase text-slate-400">
-              {{ 'MENU.SUB.BULK_OPERATIONS' | translate }}
-            </div>
-            @for (action of bulkOperationActions; track action.id) {
-            <button type="button" (click)="action.handler!(); moreMenuOpen.set(false)"
-              class="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-              {{ action.label }}
-            </button>
-            }
-          </div>
-        }
-      </div>
-      }
-    </div>
+      </app-dropdown-menu-btn>
     }
   </div>
 
@@ -124,7 +92,7 @@
              lets the name wrap to multiple lines (`break-words`). -->
         <span class="font-medium text-slate-900 min-w-0 break-words list-interactive-cell flex items-center gap-1.5">
           {{ row.name }}
-          @if (row.UOM && (row.type === 'inventory' || row.type === 'batch' || row.type === 'serialized' || row.type === 'kit')) {
+          @if (isColumnVisible('UOM') && row.UOM && (row.type === 'inventory' || row.type === 'batch' || row.type === 'serialized' || row.type === 'kit')) {
             <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700">
               {{ row.UOM }}
             </span>
@@ -149,6 +117,12 @@
        printed as text in the grouped cell. -->
   <ng-template listCellTemplate="image"></ng-template>
 
+  <!-- UOM — no-op cell template. Same pattern as `image`/`barcode`: shares
+       the name label so it groups into the product cell; the chip itself
+       renders inside the name template above (gated on this column's
+       visibility). -->
+  <ng-template listCellTemplate="UOM"></ng-template>
+
   <!-- Barcode — no-op cell template. The barcode chip is rendered inside the
        name template (above) so it sits directly under the name, beside the
        image rather than below it. The column itself only exists to provide a
@@ -166,10 +140,13 @@
     {{ row.isTaxable === false ? '-' : (row.taxName || '-') }}
   </ng-template>
 
-  <!-- Custom Qty Template — badge is clickable (opens stock breakdown modal). -->
-  <ng-template listCellTemplate="qtySum" let-row>
+  <!-- Custom Qty Template — badge is clickable (opens stock breakdown modal).
+       Column key is `qty` so the backend projects the inventory aggregate;
+       the response carries it as a flat `row.qty` (legacy shape) with a
+       nested `inventorySummary.qtySum` fallback for newer back-ends. -->
+  <ng-template listCellTemplate="qty" let-row>
     <span class="inline-flex px-2 py-1 rounded-lg text-sm font-medium bg-brand-50 text-brand-700 list-interactive-cell">
-      {{ row.inventorySummary?.qtySum || 0 }}
+      {{ row.qty ?? row.inventorySummary?.qtySum ?? 0 }}
     </span>
   </ng-template>
 

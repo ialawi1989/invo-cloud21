@@ -1,0 +1,88 @@
+<div class="srf-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+    </div>
+  </header>
+
+  <section class="card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'SURCHARGE.FORM.DETAILS' | translate }}</h2>
+    </header>
+    <div class="card__body">
+      <!-- Name -->
+      <label class="field">
+        <span class="field__label">{{ 'SURCHARGE.FORM.NAME' | translate }}</span>
+        <input class="field__input"
+          type="text"
+          [value]="surcharge().name"
+          (input)="setName($any($event.target).value)"
+          [placeholder]="'SURCHARGE.FORM.NAME_PLACEHOLDER' | translate"
+          [class.field__input--err]="!!nameError() && surcharge().name.length > 0"/>
+        @if (nameError() && surcharge().name.length > 0) {
+          <span class="field__err">{{ nameError() | translate }}</span>
+        }
+      </label>
+
+      <!-- Amount + Fixed/Percent toggle -->
+      <div class="field">
+        <span class="field__label">{{ 'SURCHARGE.FORM.AMOUNT' | translate }}</span>
+        <div class="amount-row">
+          <input class="field__input amount-row__input"
+            type="number"
+            min="0"
+            step="0.001"
+            [value]="surcharge().amount"
+            (input)="setAmount($any($event.target).value)"
+            [class.field__input--err]="!!amountError()"/>
+          <div class="amount-row__toggle" role="tablist">
+            <button type="button" role="tab"
+              [class.is-on]="!surcharge().percentage"
+              [attr.aria-selected]="!surcharge().percentage"
+              (click)="setPercentage(false)">
+              {{ 'SURCHARGE.FORM.FIXED' | translate }}
+            </button>
+            <button type="button" role="tab"
+              [class.is-on]="surcharge().percentage"
+              [attr.aria-selected]="surcharge().percentage"
+              (click)="setPercentage(true)">
+              {{ 'SURCHARGE.FORM.PERCENT' | translate }}
+            </button>
+          </div>
+        </div>
+        @if (amountError()) {
+          <span class="field__err">{{ amountError() | translate }}</span>
+        } @else {
+          <span class="field__hint">{{ 'SURCHARGE.FORM.AMOUNT_HINT' | translate }}</span>
+        }
+      </div>
+
+      <!-- Linked tax (optional) -->
+      <label class="field">
+        <span class="field__label">{{ 'SURCHARGE.FORM.TAX' | translate }}</span>
+        <app-search-dropdown
+          [loadFn]="loadTaxes"
+          [displayWith]="display"
+          [compareWith]="compare"
+          [toValue]="toValue"
+          [value]="selectedTax()"
+          [clearable]="true"
+          [placeholder]="'SURCHARGE.FORM.TAX_PLACEHOLDER' | translate"
+          (valueChange)="setTaxId($event)"/>
+      </label>
+    </div>
+  </section>
+
+  <footer class="save-bar">
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
+      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+      {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+    </button>
+  </footer>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

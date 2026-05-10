@@ -53,52 +53,42 @@
                     </div>
                   }
                   @case ('typography') {
+                    <!-- Font size on its own row, then a single B / I / U
+                         button group instead of three separate
+                         Weight / Style / Decoration dropdowns. Mirrors
+                         the document-builder's text-style controls so
+                         the typography UX is consistent across both
+                         editors. -->
                     <div class="row">
                       <div class="field">
                         <label>{{ 'RECEIPT_BUILDER.EDITOR.FONT_SIZE' | translate }}</label>
                         <input type="number" class="input" min="8" max="80" step="1"
                           [ngModel]="t.fontSize" (ngModelChange)="emit('fontSize', +$event)"/>
                       </div>
-                      <div class="field">
-                        <label>{{ 'RECEIPT_BUILDER.EDITOR.FONT_WEIGHT' | translate }}</label>
-                        <app-search-dropdown
-                          [items]="fontWeightOptions()"
-                          [displayWith]="optionLabel"
-                          [toValue]="optionValue"
-                          [compareWith]="optionEquals"
-                          [searchable]="false"
-                          [clearable]="false"
-                          [value]="resolveOption(fontWeightOptions(), t.fontWeight)"
-                          (valueChange)="onSelect('fontWeight', $any($event))"
-                        />
-                      </div>
                     </div>
                     <div class="row">
                       <div class="field">
-                        <label>{{ 'RECEIPT_BUILDER.EDITOR.FONT_STYLE' | translate }}</label>
-                        <app-search-dropdown
-                          [items]="fontStyleOptions()"
-                          [displayWith]="optionLabel"
-                          [toValue]="optionValue"
-                          [compareWith]="optionEquals"
-                          [searchable]="false"
-                          [clearable]="false"
-                          [value]="resolveOption(fontStyleOptions(), t.fontStyle)"
-                          (valueChange)="onSelect('fontStyle', $any($event))"
-                        />
-                      </div>
-                      <div class="field">
-                        <label>{{ 'RECEIPT_BUILDER.EDITOR.DECORATION' | translate }}</label>
-                        <app-search-dropdown
-                          [items]="textDecorOptions()"
-                          [displayWith]="optionLabel"
-                          [toValue]="optionValue"
-                          [compareWith]="optionEquals"
-                          [searchable]="false"
-                          [clearable]="false"
-                          [value]="resolveOption(textDecorOptions(), t.textDecoration)"
-                          (valueChange)="onSelect('textDecoration', $any($event))"
-                        />
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.STYLE' | translate }}</label>
+                        <div class="seg">
+                          <button type="button" class="seg__btn"
+                            [class.seg__btn--on]="t.fontWeight === 'bold'"
+                            (click)="emit('fontWeight', t.fontWeight === 'bold' ? 'normal' : 'bold')"
+                            [title]="'RECEIPT_BUILDER.EDITOR.FONT_WEIGHT' | translate">
+                            <strong>B</strong>
+                          </button>
+                          <button type="button" class="seg__btn"
+                            [class.seg__btn--on]="t.fontStyle === 'italic'"
+                            (click)="emit('fontStyle', t.fontStyle === 'italic' ? 'normal' : 'italic')"
+                            [title]="'RECEIPT_BUILDER.EDITOR.FONT_STYLE' | translate">
+                            <em>I</em>
+                          </button>
+                          <button type="button" class="seg__btn"
+                            [class.seg__btn--on]="t.textDecoration === 'underline'"
+                            (click)="emit('textDecoration', t.textDecoration === 'underline' ? 'none' : 'underline')"
+                            [title]="'RECEIPT_BUILDER.EDITOR.DECORATION' | translate">
+                            <u>U</u>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   }
@@ -197,24 +187,38 @@
                     </div>
                   }
                   @case ('typography') {
+                    <!-- Same B / I / U toggle pattern as the Text
+                         typography block above. -->
                     <div class="row">
                       <div class="field">
                         <label>{{ 'RECEIPT_BUILDER.EDITOR.FONT_SIZE' | translate }}</label>
                         <input type="number" class="input" min="8" max="80" step="1"
                           [ngModel]="st.fontSize" (ngModelChange)="emit('fontSize', +$event)"/>
                       </div>
+                    </div>
+                    <div class="row">
                       <div class="field">
-                        <label>{{ 'RECEIPT_BUILDER.EDITOR.FONT_WEIGHT' | translate }}</label>
-                        <app-search-dropdown
-                          [items]="fontWeightOptions()"
-                          [displayWith]="optionLabel"
-                          [toValue]="optionValue"
-                          [compareWith]="optionEquals"
-                          [searchable]="false"
-                          [clearable]="false"
-                          [value]="resolveOption(fontWeightOptions(), st.fontWeight)"
-                          (valueChange)="onSelect('fontWeight', $any($event))"
-                        />
+                        <label>{{ 'RECEIPT_BUILDER.EDITOR.STYLE' | translate }}</label>
+                        <div class="seg">
+                          <button type="button" class="seg__btn"
+                            [class.seg__btn--on]="st.fontWeight === 'bold'"
+                            (click)="emit('fontWeight', st.fontWeight === 'bold' ? 'normal' : 'bold')"
+                            [title]="'RECEIPT_BUILDER.EDITOR.FONT_WEIGHT' | translate">
+                            <strong>B</strong>
+                          </button>
+                          <button type="button" class="seg__btn"
+                            [class.seg__btn--on]="st.fontStyle === 'italic'"
+                            (click)="emit('fontStyle', st.fontStyle === 'italic' ? 'normal' : 'italic')"
+                            [title]="'RECEIPT_BUILDER.EDITOR.FONT_STYLE' | translate">
+                            <em>I</em>
+                          </button>
+                          <button type="button" class="seg__btn"
+                            [class.seg__btn--on]="st.textDecoration === 'underline'"
+                            (click)="emit('textDecoration', st.textDecoration === 'underline' ? 'none' : 'underline')"
+                            [title]="'RECEIPT_BUILDER.EDITOR.DECORATION' | translate">
+                            <u>U</u>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   }

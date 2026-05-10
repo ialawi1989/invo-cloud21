@@ -11,12 +11,18 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { OverlayModule } from '@angular/cdk/overlay';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
+import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { ModalService } from '@shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
+import {
+  DropdownMenuBtnComponent,
+  DropdownMenuBtnItem,
+} from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 
 import { ReceiptBuilderService } from '../../services/receipt-builder.service';
 import { ReceiptTemplateSummary, TemplateType } from '../../services/receipt-builder.types';
@@ -38,7 +44,7 @@ import {
 @Component({
   selector: 'app-receipt-builder-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, BreadcrumbsComponent],
+  imports: [CommonModule, RouterModule, TranslateModule, BreadcrumbsComponent, OverlayModule, SkeletonComponent, DropdownMenuBtnComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './receipt-builder-list.component.html',
   styleUrl: './receipt-builder-list.component.scss',
@@ -58,8 +64,25 @@ export class ReceiptBuilderListComponent implements OnInit {
   page     = signal<number>(1);
   pageSize = signal<number>(20);
 
-  /** Show the small "+ Add" menu (Receipt / Kitchen). */
-  addMenuOpen = signal<boolean>(false);
+  /** Items for the "+ Add" `<app-dropdown-menu-btn>` — same list
+   *  shows both Receipt and Kitchen templates, so the user picks
+   *  the flavour at create time. */
+  addMenuItems(): DropdownMenuBtnItem[] {
+    return [
+      { label: 'RECEIPT_BUILDER.TYPE_RECEIPT', click: () => this.addNew('recieptType') },
+      { label: 'RECEIPT_BUILDER.TYPE_KITCHEN', click: () => this.addNew('kitchen')     },
+    ];
+  }
+
+  /** Items rendered in each row's `…` overflow menu. */
+  rowMenuItems(t: ReceiptTemplateSummary): DropdownMenuBtnItem[] {
+    return [
+      { label: 'COMMON.EDIT',                  click: () => this.edit(t) },
+      { label: 'RECEIPT_BUILDER.RENAME.TITLE', click: () => this.renameRow(t, new Event('synthetic')) },
+      { label: 'COMMON.DELETE', danger: true, separator: true,
+        click: () => this.removeRow(t, new Event('synthetic')) },
+    ];
+  }
 
   private i18nTick = signal(0);
   private debounce?: ReturnType<typeof setTimeout>;
@@ -132,16 +155,15 @@ export class ReceiptBuilderListComponent implements OnInit {
   /** "Add new" menu — pass `?type=` so the editor seeds the right
    *  template flavour (receipt vs kitchen). */
   addNew(type: TemplateType): void {
-    this.addMenuOpen.set(false);
     this.router.navigate(['/settings/receipt-builder', 'new'], { queryParams: { type } });
   }
 
-  toggleAddMenu(ev: Event): void {
-    ev.stopPropagation();
-    this.addMenuOpen.update((v) => !v);
-  }
-  /** Click anywhere else closes the dropdown. */
-  closeAddMenu(): void { if (this.addMenuOpen()) this.addMenuOpen.set(false); }
+  /** All menus on this page (header + row) now use the shared
+   *  `<app-dropdown-menu-btn>` and own their own open state.
+   *  This stub remains so the template's `(click)="closeAllMenus()"`
+   *  binding doesn't break — kept as a hook in case future menus
+   *  on this page need centralised dismissal. */
+  closeAllMenus(): void { /* no-op */ }
 
   // ─── Row actions ────────────────────────────────────────────────────
   async removeRow(row: ReceiptTemplateSummary, ev: Event): Promise<void> {

@@ -674,7 +674,12 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
       searchTerm: this.searchTerm() || undefined,
       sortBy: this.sortBy(),
       filter: this.activeFilters(),
-      columns: this.visibleColumns()
+      // API columns array — strips UI-only keys (`noApi: true`) like
+      // image thumbnails / derived totals so the backend's matcher
+      // doesn't silently drop search hits against non-existent
+      // fields. Tracking-side `visibleColumns()` still includes them
+      // so the table renders them locally.
+      columns: ColumnHelper.getApiColumnKeys(this.columns)
     };
 
     // "Scope" excludes page/limit/sort — those operate on the same dataset

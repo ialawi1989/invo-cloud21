@@ -34,6 +34,12 @@ import { ProductsService } from '../../services/products.service';
 import { Product } from '../../models/product-form.model';
 import { Fields, ProductFields } from '../../models/product-fields.model';
 
+import { ProductFormPrefsService } from './services/product-form-prefs.service';
+import {
+  AdvancedOptionsModalComponent,
+  AdvancedOptionsModalData,
+} from './components/advanced-options-modal/advanced-options-modal.component';
+
 import { CommonFieldsComponent }         from './components/common-fields/common-fields.component';
 import { ProductPricingComponent }       from './components/product-pricing/product-pricing.component';
 import { InventoryDetailsComponent }     from './components/inventory-details/inventory-details.component';
@@ -203,6 +209,13 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
       if (v != null) this.listQueryParams[key] = v;
     }
 
+    // Load the user's section visibility / order — runs in parallel
+    // with the product fetch below; the form template binds to the
+    // service's signals so it re-renders when prefs arrive.
+    if (!this.sectionPrefs.loaded()) {
+      void this.sectionPrefs.load();
+    }
+
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const rawId = params.get('id') ?? 'new';
       const isNew = rawId === 'new' || rawId === '0';
@@ -353,6 +366,101 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
       productForm: this.productForm,
       formStatus: this.formStatus(),
     };
+  }
+
+  /** Privilege gate for the header Print Label button — same flag the
+   *  list page uses, so toggling the feature off in roles hides both. */
+  readonly canPrintLabel = this.privileges.check('productSecurity.actions.printBarcode.access');
+
+  /** Section-prefs service drives the visibility / order of the form
+   *  sections — keyed by product type, so each type
+   *  (`inventory` / `batch` / `service` / `kit` / …) carries its own
+   *  layout. The template binds to `mainSections()` / `asideSections()`
+   *  and wraps each one in `[class.pf-section--hidden]="!sec.visible"`
+   *  — components stay mounted when toggled off so their form data
+   *  keeps flowing into the save payload. */
+  readonly sectionPrefs = inject(ProductFormPrefsService);
+  /** Multi-row layout for the active product type. Each row carries
+   *  a layout (`'2-1'` / `'1-1'` / `'1-2'` / `'single'`) plus two
+   *  ordered columns of resolved sections. The form template
+   *  iterates this array — one row per `<div class="form-row">`
+   *  with a `grid-template-columns` derived from the row's layout. */
+  layoutRows = computed(() => this.sectionPrefs.resolveRows(this.productType() || 'default'));
+
+  /** Set of section ids that the form would actually render for
+   *  the current product type + company config + user privileges.
+   *  Mirrors the per-section `@if` guards in the template so the
+   *  Advanced Options modal hides anything the user couldn't make
+   *  visible anyway. Reactive — flips with `fieldsOptions()` (which
+   *  itself depends on the active product type). */
+  availableSectionIds = computed<Set<string>>(() => {
+    const f = this.fieldsOptions();
+    const ids = new Set<string>();
+    // Always-on sections — no `@if` guard in the form template.
+    ids.add('common-fields');
+    ids.add('tab-builder');
+    ids.add('options-tab');
+    ids.add('branches');
+    ids.add('product-options');
+    if (f?.pricing)                                               ids.add('pricing');
+    if (f?.inventory)                                             ids.add('inventory');
+    if (f?.suppliers?.isVisible
+        && this.privileges.check('productSecurity.actions.supplierSection.access')) ids.add('suppliers');
+    if (f?.priceByTeam?.isVisible)                                ids.add('price-by-team');
+    if (f?.kitDetails?.isVisible)                                 ids.add('kit-details');
+    if (f?.kitBuilder?.isVisible)                                 ids.add('kit-builder');
+    if (f?.recipe?.isVisible
+        && this.privileges.check('productRecipeSecurity.actions.view.access')) ids.add('recipe');
+    if (f?.menuSelection?.isVisible)                              ids.add('menu-selection');
+    if (f?.packageBuilder?.isVisible)                             ids.add('package-builder');
+    if (f?.customFields?.isVisible)                               ids.add('custom-fields');
+    if (f?.productAttributes?.isVisible)                          ids.add('product-attributes');
+    if (f?.allergens?.isVisible)                                  ids.add('allergens');
+    if (f?.nutrition?.isVisible)                                  ids.add('nutrition');
+    if (f?.image)                                                 ids.add('media');
+    if (f?.measurements?.isVisible)                               ids.add('measurements');
+    if (f?.shippingOptions?.isVisible)                            ids.add('shipping-options');
+    if (f?.department?.isVisible || f?.category?.isVisible || f?.brand?.isVisible) ids.add('category-options');
+    if (f?.aliasBarcodes?.isVisible)                              ids.add('alias-barcodes');
+    if (f?.altProduct?.isVisible)                                 ids.add('alt-product');
+    return ids;
+  });
+
+  /** Open the Advanced Options modal — drag-reorders + toggles
+   *  visibility for the form sections. Modal saves under the
+   *  current product type so each type carries its own layout, and
+   *  only lists sections the form would actually render. */
+  openAdvancedOptions(): void {
+    this.modalService.open<AdvancedOptionsModalComponent, AdvancedOptionsModalData, void>(
+      AdvancedOptionsModalComponent,
+      {
+        size: 'lg',
+        data: {
+          productType:      this.productType() || 'default',
+          productTypeLabel: this.translate.instant(
+            `PRODUCTS.TYPES.${(this.productType() || 'default').toUpperCase()}`,
+          ),
+          availableSectionIds: this.availableSectionIds(),
+        },
+      },
+    );
+  }
+
+  /** True for an existing product (not the "new product" route). The
+   *  Print Label button is hidden on the new-product flow because
+   *  there's nothing yet to print. */
+  isExistingProduct = computed<boolean>(() => {
+    const id = this.productId();
+    return !!id && id !== '0' && id !== 'new';
+  });
+
+  /** Open the Print Label modal for the in-form product. Reads the
+   *  current `productInfo` snapshot (form values may differ from
+   *  saved state, but printing reflects what the canvas will see). */
+  printLabel(): void {
+    const info = this.productInfo();
+    if (!info) return;
+    this.productsService.showGenerateBarcode(info);
   }
 
   // ── Save ───────────────────────────────────────────────────────────────────

@@ -58,6 +58,16 @@ export const routes: Routes = [
         .then(m => m.DocumentBuilderFormComponent),
     canDeactivate: [unsavedChangesGuard],
   },
+  {
+    // Label-builder editor — full-page like the other builders. The
+    // list page is registered under MainLayoutComponent below.
+    path: 'settings/label-builder/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/label-builder/pages/label-builder-form/label-builder-form.component')
+        .then(m => m.LabelBuilderFormComponent),
+    canDeactivate: [unsavedChangesGuard],
+  },
 
   // ── Protected (requires login) ───────────────────────────────────────────
   {
@@ -208,6 +218,44 @@ export const routes: Routes = [
         path: 'settings/document-builder',
         loadChildren: () =>
           import('./features/document-builder/document-builder.routes').then(m => m.DOCUMENT_BUILDER_ROUTES)
+      },
+      {
+        // Label Builder — Zebra-style label / kitchen-ticket designer.
+        path: 'settings/label-builder',
+        loadChildren: () =>
+          import('./features/label-builder/label-builder.routes').then(m => m.LABEL_BUILDER_ROUTES)
+      },
+      {
+        // Price Labels — named per-product price overrides (wholesale,
+        // branch-specific, customer-segment lists). Mounted under
+        // `/settings/*` to match the receipt-/label-/document-builder
+        // convention.
+        path: 'settings/price-label',
+        loadChildren: () =>
+          import('./features/price-label/price-label.routes').then(m => m.PRICE_LABEL_ROUTES)
+      },
+      {
+        // Surcharges — named fixed/percentage charges that get
+        // applied to invoices and receipts. Settings tile already
+        // links here.
+        path: 'settings/surcharge',
+        loadChildren: () =>
+          import('./features/surcharge/surcharge.routes').then(m => m.SURCHARGE_ROUTES)
+      },
+      {
+        // Covered Addresses — single-page configuration of where
+        // we deliver, with per-area branch + delivery economics.
+        path: 'settings/covered-address',
+        loadChildren: () =>
+          import('./features/covered-address/covered-address.routes').then(m => m.COVERED_ADDRESS_ROUTES)
+      },
+      {
+        // Covered Zones — radius-based delivery zones around each
+        // branch's pinned location, plus the company's pickup
+        // max distance.
+        path: 'settings/covered-zone',
+        loadChildren: () =>
+          import('./features/covered-zone/covered-zone.routes').then(m => m.COVERED_ZONE_ROUTES)
       }
       // ── Add features here as you build them ──────────────────────────────
     ],

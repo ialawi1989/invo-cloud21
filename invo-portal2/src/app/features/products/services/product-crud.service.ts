@@ -1,5 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from '../../../core/http';
+import { ModalService } from '@shared/modal/modal.service';
+import {
+  PrintLabelModalComponent,
+  PrintLabelModalData,
+} from '../components/print-label-modal/print-label-modal.component';
 
 /**
  * Payload shape for `accounts/saveManualAdjustmentMovement`. Mirrors the
@@ -50,6 +55,7 @@ export interface ManualAdjustmentMovement {
 @Injectable({ providedIn: 'root' })
 export class ProductCrudService {
   private api = inject(ApiService);
+  private modalService = inject(ModalService);
 
   // ─── Get single product ────────────────────────────────────
 
@@ -162,10 +168,36 @@ export class ProductCrudService {
     return randomNumber;
   }
 
+  /** Opens the Print Label modal — picks any saved label-builder
+   *  template, renders a live PNG preview against the product's real
+   *  data (token resolution), then prints via popup or downloads as
+   *  PNG. Mirrors the legacy InvoCloudFront2 `GenerateBarcodeComponent`
+   *  flow but routes through the new modal-service stack.
+   *
+   *  `type` / `batchOrSerialData` / `branch` are accepted for
+   *  backwards-compatibility with the call sites that print
+   *  per-batch / per-serial labels (branch-batches, branch-serials);
+   *  they're folded into the product blob before resolution so
+   *  bindings like `!product.batch` resolve correctly.
+   */
   showGenerateBarcode(productInfo: any, type: string = '', batchOrSerialData: any = {}, branch: string = ''): void {
-    // TODO: Port GenerateBarcodeComponent to standalone + use ModalService.
-    // For now this is a placeholder.
-    console.log('Generate barcode for:', productInfo, { type, batchOrSerialData, branch });
+    const product = { ...(productInfo ?? {}) };
+    if (type === 'batch') {
+      product.barcode    = `${productInfo?.barcode ?? ''}-${batchOrSerialData?.batch ?? ''}`;
+      product.batch      = batchOrSerialData?.batch;
+      product.unitCost   = batchOrSerialData?.unitCost ?? product.unitCost;
+      product.onHand     = batchOrSerialData?.onHand;
+      product.expireDate = batchOrSerialData?.expireDate;
+      product.printBranch = branch;
+    } else if (type === 'serial') {
+      product.serial      = batchOrSerialData?.serial;
+      product.unitCost    = batchOrSerialData?.unitCost ?? product.unitCost;
+      product.printBranch = branch;
+    }
+    this.modalService.open<PrintLabelModalComponent, PrintLabelModalData, void>(
+      PrintLabelModalComponent,
+      { size: 'md', data: { product } },
+    );
   }
 
   // ─── Manual adjustment (unit-cost / stock corrections) ─────

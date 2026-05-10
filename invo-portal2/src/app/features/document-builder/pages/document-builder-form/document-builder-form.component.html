@@ -85,56 +85,26 @@
          behind a single "⋯" trigger so the toolbar leans on Save and
          keeps the destructive/IO actions one click away rather than
          occupying premium horizontal space. -->
-    <div class="dbf-topbar__more" (click)="$event.stopPropagation()">
-      <button
-        type="button"
-        class="dbf-topbar__icon-btn"
-        (click)="moreMenuOpen.set(!moreMenuOpen())"
-        [attr.aria-haspopup]="'menu'"
-        [attr.aria-expanded]="moreMenuOpen()"
-        [appTooltip]="'COMMON.MORE_ACTIONS' | translate"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <circle cx="5" cy="12" r="1.75"/>
-          <circle cx="12" cy="12" r="1.75"/>
-          <circle cx="19" cy="12" r="1.75"/>
-        </svg>
-      </button>
+    <app-dropdown-menu-btn
+      [items]="moreMenuItems()"
+      [appendToBody]="true"
+      [chevron]="false"
+      align="end"
+      triggerClass="dbf-topbar__icon-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <circle cx="5" cy="12" r="1.75"/>
+        <circle cx="12" cy="12" r="1.75"/>
+        <circle cx="19" cy="12" r="1.75"/>
+      </svg>
+    </app-dropdown-menu-btn>
 
-      @if (moreMenuOpen()) {
-        <div class="dbf-topbar__more-menu" role="menu">
-          <button type="button" class="dbf-topbar__more-item" role="menuitem"
-            (click)="resetToDefault(); closeMoreMenu()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M3 12a9 9 0 1 0 3-6.7"/>
-              <polyline points="3 4 3 10 9 10"/>
-            </svg>
-            {{ 'DOCUMENT_BUILDER.RESET' | translate }}
-          </button>
-
-          <button type="button" class="dbf-topbar__more-item" role="menuitem"
-            (click)="exportJson(); closeMoreMenu()"
-            [appTooltip]="'DOCUMENT_BUILDER.EXPORT_HINT' | translate">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <polyline points="19 12 12 19 5 12"/>
-            </svg>
-            {{ 'DOCUMENT_BUILDER.EXPORT' | translate }}
-          </button>
-
-          <label class="dbf-topbar__more-item" role="menuitem"
-            [appTooltip]="'DOCUMENT_BUILDER.IMPORT_HINT' | translate">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <line x1="12" y1="19" x2="12" y2="5"/>
-              <polyline points="5 12 12 5 19 12"/>
-            </svg>
-            {{ 'DOCUMENT_BUILDER.IMPORT' | translate }}
-            <input type="file" accept="application/json,.json" hidden
-              (change)="onImportFile($event); closeMoreMenu()"/>
-          </label>
-        </div>
-      }
-    </div>
+    <!-- Hidden file input the dropdown's "Import" item triggers
+         programmatically. Lives here so its `(change)` handler
+         flows through Angular bindings instead of needing manual
+         DOM listeners. -->
+    <input id="dbf-import-file-input" type="file"
+      accept="application/json,.json" hidden
+      (change)="onImportFile($event)"/>
 
     <button
       type="button"

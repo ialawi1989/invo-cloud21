@@ -22,6 +22,14 @@ export interface PickedOption {
   id:   string;
   name: string;
   qty?: number;
+  /** Default option price returned by `product/getOptionsList`.
+   *  Surfaced so callers like the price-label form can show the
+   *  catalog price next to their override input without a second
+   *  fetch. */
+  price?: number;
+  /** Localized display name when present — falls back to `name`
+   *  on consumption. */
+  displayName?: string;
 }
 
 export interface PickOptionModalData {
@@ -40,6 +48,8 @@ interface OptionRow {
   id:   string;
   name: string;
   qty:  number;
+  price?: number;
+  displayName?: string;
 }
 
 /**
@@ -106,10 +116,17 @@ export class PickOptionModalComponent implements OnInit, AfterViewInit, OnDestro
   async loadPage(page: number): Promise<void> {
     this.loading.set(true);
     try {
+      // `selectedOptionId` mirrors the products picker's
+      // `selectedProductId` contract — the backend pins these ids
+      // at the top of page 1 so the user sees their existing
+      // picks without hunting through pages. Source from
+      // `excludedIds` since this picker uses the same field for
+      // "already on the caller's list, start ticked".
       const res = await this.api.request<any>(this.api.post('product/getOptionsList', {
         page,
         limit: 20,
         searchTerm: this.search().trim(),
+        selectedOptionId: this.data.excludedIds ?? [],
       }));
       const list: any[] = res?.data?.list ?? res?.data ?? [];
       const total: number = res?.data?.count ?? list.length;
@@ -117,6 +134,8 @@ export class PickOptionModalComponent implements OnInit, AfterViewInit, OnDestro
         id:   o.id ?? o._id ?? '',
         name: o.name ?? '',
         qty:  Number(o.qty ?? 1),
+        price: o.price != null ? Number(o.price) : undefined,
+        displayName: o.displayName ?? undefined,
       }));
       if (page === 1) this.rows.set(mapped);
       else this.rows.update((prev) => [...prev, ...mapped]);
@@ -149,7 +168,13 @@ export class PickOptionModalComponent implements OnInit, AfterViewInit, OnDestro
     const current = this.selected();
     const added = this.rows()
       .filter((r) => current.has(r.id) && !this.initialSelected.has(r.id))
-      .map<PickedOption>((r) => ({ id: r.id, name: r.name, qty: r.qty }));
+      .map<PickedOption>((r) => ({
+        id:          r.id,
+        name:        r.name,
+        qty:         r.qty,
+        price:       r.price,
+        displayName: r.displayName,
+      }));
     const removed = [...this.initialSelected].filter((id) => !current.has(id));
     this.modalRef.close({ added, removed });
   }

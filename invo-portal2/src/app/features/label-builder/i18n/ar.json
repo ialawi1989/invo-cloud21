@@ -1,0 +1,142 @@
+{
+  "LABEL_BUILDER": {
+    "LIST_TITLE":         "قوالب الملصقات",
+    "LIST_SUBTITLE":      "صمّم ملصقات الطباعة بنمط زيبرا للمنتجات وتذاكر المطبخ. اختر قالباً للتعديل أو أنشئ قالباً جديداً.",
+    "LIST_EMPTY":         "لا توجد قوالب بعد. أنشئ قالباً للبدء.",
+    "NO_MATCHES":         "لا توجد قوالب تطابق التصفية الحالية.",
+    "SEARCH_PLACEHOLDER": "ابحث عن قوالب حسب الاسم…",
+
+    "NEW":                "قالب جديد",
+    "NEW_LABEL":          "قالب ملصق منتج جديد",
+    "NEW_KITCHEN":        "قالب تذكرة مطبخ جديدة",
+    "NAME_PLACEHOLDER":   "اسم القالب",
+    "UNNAMED":            "(بدون اسم)",
+    "DUPLICATE_SUFFIX":   "(نسخة)",
+    "RENAME":             "إعادة تسمية",
+    "RENAME_HINT":        "نقرة مزدوجة لإعادة التسمية",
+
+    "BINDINGS": {
+      "PICKER_TITLE":      "إدراج ربط",
+      "SEARCH_PLACEHOLDER":"ابحث في الروابط",
+      "NO_MATCH":          "لا توجد روابط تطابق البحث.",
+      "GROUP": {
+        "PRODUCT_CORE":      "المنتج — أساسي",
+        "PRODUCT_PRICING":   "المنتج — التسعير",
+        "PRODUCT_INVENTORY": "المنتج — المخزون",
+        "PRODUCT_NUTRITION": "المنتج — التغذية",
+        "PRODUCT_LINKS":     "المنتج — الروابط",
+        "PRODUCT_CUSTOM":    "المنتج — حقول مخصصة",
+        "INVOICE_LINE":        "السطر — الحقول",
+        "INVOICE_LINE_TOTALS": "السطر — الإجماليات",
+        "INVOICE_LINE_IDS":    "السطر — المعرّفات"
+      }
+    },
+
+    "TYPE": {
+      "LABEL":            "ملصق منتج",
+      "KITCHEN":          "تذكرة مطبخ",
+      "UNKNOWN":          "—"
+    },
+
+    "DELETE_TITLE":       "حذف القالب؟",
+    "DELETE_MESSAGE":     "سيتم حذف \"{{name}}\" نهائياً. لا يمكن التراجع.",
+    "BULK_DELETE_MESSAGE":"سيتم حذف {{count}} قوالب نهائياً. لا يمكن التراجع.",
+    "SAVED":              "تم حفظ القالب",
+    "SAVE_FAILED":        "تعذّر حفظ القالب",
+
+    "DIMENSIONS":         "{{height}} × {{width}} انش",
+    "DPI_LABEL":          "{{dpi}} DPI",
+
+    "FORM": {
+      "BACK":             "رجوع",
+      "DOWNLOAD":         "تنزيل",
+      "GENERATE_LABEL":   "تنزيل ZPL",
+      "GENERATE_JSON":    "تنزيل JSON",
+      "GENERATE_PNG":     "تنزيل PNG",
+      "SAVE":             "حفظ",
+      "SAVING":           "جارٍ الحفظ…",
+      "UNDO":             "تراجع (Ctrl+Z)",
+      "REDO":             "إعادة (Ctrl+Y)",
+      "PREVIEW_ENTER":    "وضع المعاينة",
+      "PREVIEW_EXIT":     "الخروج من المعاينة",
+      "RESIZE_PANEL":     "اسحب لتغيير الحجم",
+      "DIRTY_DISCARD":    "تجاهل التعديلات؟",
+      "DIRTY_HINT":       "سيتم فقدان التعديلات غير المحفوظة.",
+
+      "PALETTE":          "العناصر",
+      "LAYERS":           "الطبقات",
+      "LAYERS_EMPTY":     "لا توجد عناصر على لوحة الرسم بعد.",
+      "LAYER_HIDE":       "إخفاء الطبقة",
+      "LAYER_SHOW":       "إظهار الطبقة",
+      "LAYER_LOCK":       "قفل الطبقة",
+      "LAYER_UNLOCK":     "إلغاء قفل الطبقة",
+      "ITEM": {
+        "TEXTBOX":        "نص",
+        "BARCODE":        "باركود",
+        "QRCODE":         "رمز QR",
+        "RECTANGLE":      "مستطيل",
+        "CIRCLE":         "دائرة",
+        "HORIZONTAL_LINE":"خط أفقي",
+        "VERTICAL_LINE":  "خط رأسي",
+        "IMAGE":          "صورة",
+        "LOGO":           "شعار الشركة"
+      },
+
+      "INSPECTOR": {
+        "LABEL_SETTINGS": "إعدادات الملصق",
+        "ELEMENT":        "العنصر",
+        "PROPERTIES":     "الخصائص",
+        "SIZE":           "الحجم",
+        "TRANSFORM":      "الموضع",
+        "STYLE":          "النمط",
+        "CONTENT":        "المحتوى",
+        "SOURCE":         "مصدر الصورة",
+        "OPTIONS":        "خيارات",
+        "DELETE":         "حذف العنصر",
+        "DUPLICATE_HINT": "تكرار (Ctrl+D)",
+        "LAYER":          "ترتيب الطبقات",
+        "BRING_TO_FRONT": "إحضار إلى الأمام",
+        "BRING_FORWARD":  "إحضار للأمام",
+        "SEND_BACKWARD":  "إرسال للخلف",
+        "SEND_TO_BACK":   "إرسال إلى الخلف",
+        "SNAP_TO_GRID":   "محاذاة للشبكة",
+
+        "HEIGHT_IN":      "الارتفاع (انش)",
+        "WIDTH_IN":       "العرض (انش)",
+        "DPI":            "الدقة DPI",
+
+        "WIDTH":          "العرض",
+        "HEIGHT":         "الارتفاع",
+        "THICK":          "السمك",
+        "DIAMETER":       "القطر",
+        "FONT_SIZE":      "حجم الخط",
+        "BOLD":           "غامق",
+        "ITALIC":         "مائل",
+        "UNDERLINE":      "خط تحت",
+        "QR_FACTOR":      "عامل حجم QR",
+        "SHOW_VALUE":     "إظهار رقم الباركود",
+        "BARCODE_HEIGHT": "ارتفاع الباركود",
+        "POSITION_X":     "س",
+        "POSITION_Y":     "ص",
+        "ASPECT_LOCK":    "قفل النسبة",
+        "ASPECT_UNLOCK":  "إلغاء قفل النسبة",
+        "ALIGN":              "محاذاة",
+        "DISTRIBUTE":         "توزيع",
+        "ALIGN_LEFT":         "محاذاة لليسار",
+        "ALIGN_HCENTER":      "توسيط أفقي",
+        "ALIGN_RIGHT":        "محاذاة لليمين",
+        "ALIGN_TOP":          "محاذاة لأعلى",
+        "ALIGN_VCENTER":      "توسيط عمودي",
+        "ALIGN_BOTTOM":       "محاذاة لأسفل",
+        "DISTRIBUTE_H":       "توزيع أفقي",
+        "DISTRIBUTE_V":       "توزيع عمودي",
+        "CENTER_ON_CANVAS":   "توسيط في اللوحة",
+        "DROP_HINT":      "اسحب العناصر إلى لوحة الملصق، أو انقرها لإضافتها عند نقطة الأصل.",
+        "SAMPLE_PRODUCT": "منتج للمعاينة",
+        "SAMPLE_SEARCH":  "ابحث عن منتج للمعاينة…",
+        "SAMPLE_HINT":    "اختر منتجاً حقيقياً لمعاينة القالب ببياناته الفعلية بدلاً من القيم الافتراضية.",
+        "SAMPLE_CLEAR":   "إلغاء العينة"
+      }
+    }
+  }
+}

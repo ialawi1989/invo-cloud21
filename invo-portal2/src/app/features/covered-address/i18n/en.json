@@ -1,0 +1,84 @@
+{
+  "COVERED_ADDRESS": {
+    "TITLE":        "Covered Addresses",
+    "SUBTITLE":     "Configure where you deliver, with per-area branch, delivery charge, minimum order, and free-delivery threshold.",
+    "TYPE":         "Address Type",
+    "TYPE_HINT":    "Pick how addresses are organized. Built-in types auto-generate rows from the country list; type your own to free-form.",
+    "TYPE_GOVERNORATE": "Governorate",
+    "TYPE_CITY":        "City",
+    "TYPE_BLOCK":       "Block",
+    "TYPE_CUSTOM":      "Custom",
+    "TYPE_CONFIRM":     "Switching the type will reset the addresses to defaults for the new type. Continue?",
+
+    "SEARCH_PLACEHOLDER": "Search addresses…",
+    "SELECT_ALL":         "Select all",
+    "SELECTED_COUNT":     "{{count}} selected",
+    "ADD_ADDRESS":        "Add address",
+    "DELETE_SELECTED":    "Delete selected ({{count}})",
+    "CONFIRM_DELETE_SELECTED": "Delete {{count}} selected address(es)? This can't be undone.",
+    "DELETED_COUNT":      "Deleted {{count}} address(es)",
+    "EMPTY":              "Pick an address type above to populate the table — or click Add address to type one yourself.",
+    "NO_MATCH":           "No addresses match your search.",
+
+    "TABLE": {
+      "ADDRESS":           "Address",
+      "PARENT":            "Parent",
+      "BRANCH":            "Branch",
+      "DELIVERY_CHARGE":   "Delivery charge",
+      "MIN_ORDER":         "Min. order",
+      "FREE_OVER":         "Free delivery over",
+      "NOTE":              "Note",
+      "NAME_TRANSLATION":  "Name translation",
+      "ACTIONS":           "Actions",
+      "PICK_BRANCH":       "Pick a branch…"
+    },
+
+    "BULK": {
+      "PANEL_TITLE":       "Bulk update",
+      "PANEL_HINT":        "Apply values to every selected row, or push to all rows at once.",
+      "DELIVERY_CHARGE":   "Delivery charge",
+      "MIN_ORDER":         "Min. order",
+      "FREE_OVER":         "Free delivery over",
+      "BRANCH":            "Branch",
+      "NOTE":              "Note",
+      "APPLY_SELECTED":    "Apply to selected ({{count}})",
+      "APPLY_ALL":         "Apply to all",
+      "RESET":             "Reset",
+      "NO_FIELDS":         "Fill at least one field to apply.",
+      "NO_SELECTION":      "Select at least one address row first.",
+      "CONFIRM_TITLE":     "Apply bulk update",
+      "CONFIRM_BODY_SEL":  "Apply the filled fields to {{count}} selected address(es)?",
+      "CONFIRM_BODY_ALL":  "Apply the filled fields to ALL {{count}} address(es)? This overwrites existing values.",
+      "DONE":              "Updated {{count}} address(es)"
+    },
+
+    "TRANSLATION_CITY":         "Edit City translation",
+    "TRANSLATION_GOVERNORATE":  "Edit Governorate translation",
+
+    "ERR_DUPLICATE_NAMES":       "Two addresses share the same name. Make them unique before saving.",
+    "ERR_MISSING_NAME_OR_BRANCH":"Every address needs a name and a branch (Governorate type doesn't require a branch).",
+    "ERR_NO_ROWS":               "Add at least one address before saving.",
+
+    "IMPORT": {
+      "ACTION":             "Import",
+      "TITLE":              "Import covered addresses",
+      "HINT":               "Paste rows or pick a CSV/XLSX file. The first row may be a header (auto-detected). Imported rows replace the table — click Save afterwards to persist.",
+      "ERR_NAME_REQUIRED":  "Address is required",
+      "ERR_NUMERIC":        "{{field}} must be a number",
+      "ERR_UNKNOWN_BRANCH": "Branch \"{{branch}}\" doesn't match any of your branches",
+      "REQ_FIELD_ADDRESS":  "Address (the area / city / block name)",
+      "REQ_FIELD_BRANCH":   "Branch (must match an existing branch name exactly)",
+      "REQ_FIELD_NUMBERS":  "Delivery charge / min. order / free delivery over (numeric, leave free-delivery blank for none)",
+      "MODE_ADD_UPDATE":      "Add or Update (Recommended)",
+      "MODE_ADD_UPDATE_DESC": "Merge by address. Existing addresses get their values overwritten with the imported values; addresses not in the file are kept as-is.",
+      "MODE_OVERRIDE":        "Override (Replace All)",
+      "MODE_OVERRIDE_DESC":   "Discard the entire current list and keep only what was imported.",
+      "MODE_ADD_ONLY":        "Add Only",
+      "MODE_ADD_ONLY_DESC":   "Keep existing addresses untouched. Only append rows whose address isn't already covered.",
+      "MODE_HINT_ADD_UPDATE": "Add/Update: merge by address, incoming wins",
+      "MODE_HINT_OVERRIDE":   "Override: replace the entire current list",
+      "MODE_HINT_ADD_ONLY":   "Add Only: skip addresses that already exist",
+      "TIP":                "Use Add or Update for most imports — it merges your file with the existing table without losing anything else. Remember to click Save when you're done; the import only stages changes."
+    }
+  }
+}

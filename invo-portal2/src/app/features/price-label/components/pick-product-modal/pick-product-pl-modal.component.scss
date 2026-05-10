@@ -1,0 +1,268 @@
+.ppl {
+  &__body {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    min-width: 0; // let the modal own the width — children flex-shrink rather than pushing the modal wider
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &--filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* Type sits on its own row — stretch the single child so it
+       matches the width of the department/category row above
+       instead of hugging the "All Types" text. */
+    &--type {
+      > * { flex: 1 1 auto; min-width: 0; }
+    }
+  }
+
+  &__search {
+    position: relative;
+    flex: 1 1 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    /* Lock to the same height as `.ppl__btn` so search input and
+       Select All line up cleanly on the same row. */
+    height: 38px;
+    padding: 0 8px 0 12px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    // Match the other inputs in the modal (department / category
+    // dropdowns) — soft 8 px corners instead of the previous pill
+    // style, which read as a different control type.
+    border-radius: 8px;
+    color: #94a3b8;
+
+    > input {
+      flex: 1 1 auto;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: #0f172a;
+      font-size: 13px;
+      &::placeholder { color: #94a3b8; }
+    }
+    &:focus-within {
+      border-color: var(--color-brand-300, #bae6fd);
+      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    }
+  }
+
+  /** Filter toggle inside the search input — hugs the right edge.
+   *  Active state when at least one filter is set, so a collapsed
+   *  panel with active filters is still discoverable. */
+  &__filter-toggle {
+    appearance: none;
+    position: relative;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 100ms ease, color 100ms ease, border-color 100ms ease;
+
+    &:hover { background: #f1f5f9; color: #0f172a; }
+
+    &--on {
+      background: var(--color-brand-50, #ecfeff);
+      border-color: var(--color-brand-200, #a5f3fc);
+      color: var(--color-brand-700, #0e7490);
+    }
+
+    /* Tiny brand dot for "filters are active" — visible whether
+       the panel is open or not. */
+    &--active::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--color-brand-600, #0891b2);
+      transform: translate(8px, -8px);
+    }
+  }
+
+  &__count {
+    text-align: center;
+    padding: 8px 12px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 8px;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 360px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 6px;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 120ms ease;
+    color: #0f172a;
+
+    &:hover { background: #f8fafc; }
+    &--on  { background: var(--color-brand-50, #ecfeff); }
+  }
+
+  &__check {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  &__item-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+
+      &--type    { background: #f1f5f9; color: #475569; }
+      &--price   { background: var(--color-brand-50, #ecfeff); color: var(--color-brand-700, #0e7490); }
+      &--barcode { background: #fef3c7; color: #92400e; }
+    }
+  }
+
+  &__state {
+    color: #64748b;
+    text-align: center;
+    padding: 24px 12px;
+    font-size: 13px;
+
+    &--empty { color: #94a3b8; }
+  }
+
+  &__sentinel { height: 1px; }
+
+  // Infinite-scroll loading strip. Sits BELOW the scroll list as
+  // a static row in the modal body, so it's visible regardless of
+  // where the user has scrolled. Brand-tinted background separates
+  // it from the regular list rows.
+  /* Subsequent-page loading row — sits INSIDE `.ppl__list` so the
+     modal doesn't resize when it appears/disappears. Styled as a
+     subtle in-list row (no card chrome) since it's just a status
+     line in the scroll flow. */
+  &__loadmore {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 12px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    list-style: none;
+    animation: ppl-fade-in 150ms ease-out;
+  }
+  @keyframes ppl-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  &__spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+    border-top-color: var(--color-brand-600, #0891b2);
+    animation: ppl-spin 0.8s linear infinite;
+    display: inline-block;
+  }
+  @keyframes ppl-spin { to { transform: rotate(360deg); } }
+
+  &__opt-on { font-weight: 600; }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  &__btn {
+    appearance: none;
+    /* Match the search input's height — both controls share the
+       same row, so vertical alignment looks off when their
+       computed heights drift. `align-self: stretch` would also
+       work, but locking the height keeps "Select All" looking
+       like a button rather than a stretched chip. */
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: #fff;
+    border-color: #e2e8f0;
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover { background: #f8fafc; }
+
+    &--ghost { background: #f3f4f6; }
+    &--primary {
+      background: var(--color-brand-600, #0891b2);
+      color: #fff;
+      border-color: transparent;
+      &:hover { background: var(--color-brand-700, #0e7490); }
+    }
+  }
+}

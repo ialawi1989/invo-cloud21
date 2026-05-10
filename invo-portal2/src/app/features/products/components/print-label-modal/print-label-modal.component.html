@@ -1,0 +1,84 @@
+<app-modal-header [title]="'PRODUCTS.PRINT_LABEL.TITLE' | translate" />
+
+<div class="plm__body">
+  @if (branchItems().length > 0) {
+    <div class="plm__field">
+      <label>{{ 'PRODUCTS.PRINT_LABEL.BRANCH' | translate }}</label>
+      <app-search-dropdown
+        [items]="branchItems()"
+        [displayWith]="branchDisplay"
+        [compareWith]="branchCompare"
+        [toValue]="branchToValue"
+        [clearable]="false"
+        [searchable]="true"
+        [value]="selectedBranchItem()"
+        (valueChange)="onBranchChange($any($event))"
+      />
+    </div>
+  }
+
+  <div class="plm__field">
+    <label>{{ 'PRODUCTS.PRINT_LABEL.TEMPLATE' | translate }}</label>
+    @if (loading()) {
+      <div class="plm__field-loading">
+        {{ 'COMMON.LOADING' | translate }}
+      </div>
+    } @else if (templates().length === 0) {
+      <div class="plm__field-empty">
+        {{ 'PRODUCTS.PRINT_LABEL.NO_TEMPLATES' | translate }}
+      </div>
+    } @else {
+      <app-search-dropdown
+        [items]="templateItems()"
+        [displayWith]="templateDisplay"
+        [compareWith]="templateCompare"
+        [toValue]="templateToValue"
+        [clearable]="false"
+        [searchable]="true"
+        [value]="selectedItem()"
+        (valueChange)="onTemplateChange($any($event))"
+      />
+    }
+  </div>
+
+  <div class="plm__preview">
+    @if (rendering()) {
+      <div class="plm__preview-loading">
+        {{ 'COMMON.LOADING' | translate }}
+      </div>
+    } @else if (preview()) {
+      <img class="plm__preview-img" [src]="preview()" alt="Label preview"/>
+    } @else if (!loading() && templates().length > 0) {
+      <div class="plm__preview-empty">
+        {{ 'PRODUCTS.PRINT_LABEL.NO_PREVIEW' | translate }}
+      </div>
+    }
+  </div>
+
+  <p class="plm__product">
+    <span class="plm__product-label">{{ 'PRODUCTS.PRINT_LABEL.PRODUCT' | translate }}:</span>
+    <strong>{{ data.product?.name }}</strong>
+    @if (data.product?.barcode) {
+      <span class="plm__product-barcode">{{ data.product.barcode }}</span>
+    }
+    <span class="plm__product-price">
+      {{ 'PRODUCTS.PRINT_LABEL.PRICE' | translate }}: {{ resolvedPriceDisplay() }}
+    </span>
+  </p>
+</div>
+
+<app-modal-footer>
+  <button type="button" class="plm__btn plm__btn--ghost" (click)="cancel()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="plm__btn plm__btn--ghost"
+    [disabled]="!preview() || rendering()"
+    (click)="download()">
+    {{ 'PRODUCTS.PRINT_LABEL.DOWNLOAD' | translate }}
+  </button>
+  <button type="button" class="plm__btn plm__btn--primary"
+    [disabled]="!preview() || rendering()"
+    (click)="print()">
+    {{ 'PRODUCTS.PRINT_LABEL.PRINT' | translate }}
+  </button>
+</app-modal-footer>

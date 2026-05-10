@@ -19,6 +19,41 @@ export class ProductListService {
     };
   }
 
+  /** Picker endpoint used by the price-label modal. Same shape as
+   *  `getProductList` but with `selectedProductId: string[]` so
+   *  already-picked rows surface at the top regardless of paging.
+   *  The backend joins on the price-label's stored prices so the
+   *  modal can show the override + default per row without a
+   *  second lookup. */
+  async getProductsListByType(params: any): Promise<{ list: any[]; count: number; pageCount: number }> {
+    const res = await this.api.request<any>(
+      this.api.post('product/getProductsListByType', params ?? {}),
+    );
+    const data = res?.data ?? {};
+    return {
+      list:      Array.isArray(data?.list) ? data.list : [],
+      count:     Number(data?.count ?? (Array.isArray(data?.list) ? data.list.length : 0)) || 0,
+      pageCount: Number(data?.pageCount ?? 1) || 1,
+    };
+  }
+
+  /** Batch-resolve barcodes to product rows. Used by the bulk-print
+   *  CSV/paste import flow so we don't fan out one request per
+   *  barcode. The backend filters duplicates server-side and
+   *  returns full product blobs (so subsequent token resolution +
+   *  branch-price lookup can run without another round-trip). */
+  async getBarcodesProducts(barcodes: string[], branchId: string | null = null): Promise<any[]> {
+    const cleaned = (barcodes ?? [])
+      .map(b => String(b ?? '').trim())
+      .filter(b => b.length > 0);
+    if (cleaned.length === 0) return [];
+    const res = await this.api.request<any>(
+      this.api.post('product/getBarcodesProducts', { barcodes: cleaned, branchId }),
+    );
+    const data = res?.data;
+    return Array.isArray(data) ? data : (Array.isArray(data?.list) ? data.list : []);
+  }
+
   async productChildsList(params: any): Promise<ProductListResponse> {
     const res = await this.api.request(this.api.post('product/productChildsList', params));
     return {

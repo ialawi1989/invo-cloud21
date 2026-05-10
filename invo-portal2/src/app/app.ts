@@ -4,11 +4,15 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthTabSyncService } from './core/auth/auth-tab-sync.service';
 import { AuthService } from './core/auth/auth.service';
+import { ToastComponent } from './shared/components/toast/toast.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  template: `<router-outlet />`,
+  imports: [RouterOutlet, ToastComponent],
+  template: `
+    <router-outlet />
+    <app-toast />
+  `,
   styles: [`:host { display: block; height: 100vh; }`],
 })
 export class App implements OnInit, OnDestroy {

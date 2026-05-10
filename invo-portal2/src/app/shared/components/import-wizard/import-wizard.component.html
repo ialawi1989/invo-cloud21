@@ -1,0 +1,384 @@
+<app-modal-header [title]="(data.title || 'COMMON.IMPORT_WIZARD.TITLE') | translate" />
+
+<!-- Stepper -->
+<div class="iw__steps" [class.iw__steps--five]="hasModes()">
+  @for (s of stepperItems(); let idx = $index; track s.key) {
+    <div class="iw__step"
+      [class.iw__step--active]="idx === currentStepIdx()"
+      [class.iw__step--done]="idx < currentStepIdx()">
+      <span class="iw__step-dot">
+        @if (idx < currentStepIdx()) {
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        } @else {
+          {{ idx + 1 }}
+        }
+      </span>
+      <span class="iw__step-label">{{ s.label | translate }}</span>
+      @if (idx < stepperItems().length - 1) {
+        <span class="iw__step-line"></span>
+      }
+    </div>
+  }
+</div>
+
+<div class="iw__body">
+  @switch (step()) {
+
+    <!-- ─── Upload ──────────────────────────────────────────────── -->
+    @case ('upload') {
+      @if (data.hint) {
+        <p class="iw__hint">{{ data.hint | translate }}</p>
+      } @else {
+        <p class="iw__hint">{{ 'COMMON.IMPORT_WIZARD.HINT' | translate }}</p>
+      }
+
+      @if (data.scope) {
+        <p class="iw__scope">
+          <span class="iw__scope-label">{{ data.scope.label | translate }}:</span>
+          <strong class="iw__scope-name">{{ data.scope.value || '—' }}</strong>
+        </p>
+      }
+
+      <!-- Template download split-button (CSV / XLSX) — uses the
+           shared `<app-dropdown-menu-btn>` so this stays a single source
+           of truth across all features that need a dropdown. -->
+      <div class="iw__row">
+        <app-dropdown-menu-btn [items]="templateMenuItems()" align="start" triggerClass="iw__link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          {{ 'COMMON.IMPORT_WIZARD.DOWNLOAD_TEMPLATE' | translate }}
+        </app-dropdown-menu-btn>
+      </div>
+
+      <label class="iw__field">
+        <span>{{ 'COMMON.IMPORT_WIZARD.PASTE_LABEL' | translate }}</span>
+        <textarea class="iw__textarea" rows="8"
+          [ngModel]="pasted()"
+          (ngModelChange)="onPasteChange($event)"
+          [placeholder]="'COMMON.IMPORT_WIZARD.PASTE_PLACEHOLDER' | translate"></textarea>
+      </label>
+
+      <label class="iw__file">
+        <input type="file"
+          accept=".csv,.xlsx,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          (change)="onFile($event)" hidden/>
+        <span class="iw__file-trigger">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          {{ 'COMMON.IMPORT_WIZARD.PICK_FILE' | translate }}
+        </span>
+        @if (fileName()) {
+          <span class="iw__file-name">{{ fileName() }}</span>
+        }
+      </label>
+
+      @if (errorMsg()) {
+        <p class="iw__error">{{ errorMsg() }}</p>
+      }
+
+      <!-- Import Guidelines — caller-provided required-fields list,
+           mode descriptions, and a tip box. Optional; the block
+           is hidden when the config doesn't supply any notes. -->
+      @if (data.notes; as notes) {
+        @if (notes.sections?.length || notes.tip) {
+          <div class="iw__notes">
+            <h4 class="iw__notes-title">
+              {{ (notes.title || 'COMMON.IMPORT_WIZARD.GUIDELINES') | translate }}
+            </h4>
+            @if (notes.sections?.length) {
+              <div class="iw__notes-grid">
+                @for (sec of notes.sections; track sec.title) {
+                  <div class="iw__notes-section">
+                    <h5>{{ sec.title | translate }}</h5>
+                    <ul>
+                      @for (it of sec.items; track it) {
+                        <li>{{ it | translate }}</li>
+                      }
+                    </ul>
+                  </div>
+                }
+              </div>
+            }
+            @if (notes.tip) {
+              <div class="iw__notes-tip">
+                <span class="iw__notes-tip-icon" aria-hidden="true">💡</span>
+                <span>{{ notes.tip | translate }}</span>
+              </div>
+            }
+          </div>
+        }
+      }
+    }
+
+    <!-- ─── Preview ─────────────────────────────────────────────── -->
+    @case ('preview') {
+      <!-- Validation summary cards -->
+      <div class="iw__summary">
+        <div class="iw__summary-card iw__summary-card--ok">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <div>
+            <strong>{{ validCount() }}</strong>
+            <span>{{ 'COMMON.IMPORT_WIZARD.VALID' | translate }}</span>
+          </div>
+        </div>
+        <div class="iw__summary-card iw__summary-card--warn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <div>
+            <strong>{{ duplicateCount() }}</strong>
+            <span>{{ 'COMMON.IMPORT_WIZARD.DUPLICATES' | translate }}</span>
+          </div>
+        </div>
+        <div class="iw__summary-card iw__summary-card--err">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9"  x2="9"  y2="15"/>
+            <line x1="9"  y1="9"  x2="15" y2="15"/>
+          </svg>
+          <div>
+            <strong>{{ invalidCount() }}</strong>
+            <span>{{ 'COMMON.IMPORT_WIZARD.INVALID' | translate }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview table — cells are editable inline so the user can
+           fix invalid rows in place without going back to the paste. -->
+      @if (rows().length > 0) {
+        <p class="iw__hint iw__hint--inline">
+          {{ 'COMMON.IMPORT_WIZARD.EDIT_HINT' | translate }}
+        </p>
+        <div class="iw__table-wrap">
+          <table class="iw__table">
+            <thead>
+              <tr>
+                <th class="iw__col-status">{{ 'COMMON.IMPORT_WIZARD.STATUS' | translate }}</th>
+                @for (col of data.columns; track col.key) {
+                  <th>{{ col.label | translate }}</th>
+                }
+                <th class="iw__col-issues">{{ 'COMMON.IMPORT_WIZARD.ISSUES' | translate }}</th>
+                <th class="iw__col-actions"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.line) {
+                <tr [class]="'iw__tr iw__tr--' + row.status">
+                  <td class="iw__col-status">
+                    @switch (row.status) {
+                      @case ('valid') {
+                        <span class="iw__badge iw__badge--ok">{{ 'COMMON.IMPORT_WIZARD.STATUS_VALID' | translate }}</span>
+                      }
+                      @case ('duplicate') {
+                        <span class="iw__badge iw__badge--warn">{{ 'COMMON.IMPORT_WIZARD.STATUS_DUPLICATE' | translate }}</span>
+                      }
+                      @case ('invalid') {
+                        <span class="iw__badge iw__badge--err">{{ 'COMMON.IMPORT_WIZARD.STATUS_INVALID' | translate }}</span>
+                      }
+                    }
+                  </td>
+                  @for (col of data.columns; track col.key) {
+                    <td class="iw__cell">
+                      <input class="iw__cell-edit"
+                        [value]="row.cells[col.key] || ''"
+                        (change)="editCell(row, col.key, $any($event.target).value)"
+                        [attr.aria-label]="col.label | translate"/>
+                    </td>
+                  }
+                  <td class="iw__col-issues">{{ errorsLine(row) }}</td>
+                  <td class="iw__col-actions">
+                    <button type="button" class="iw__row-del"
+                      (click)="removeRow(row)"
+                      [attr.aria-label]="'COMMON.DELETE' | translate"
+                      [title]="'COMMON.DELETE' | translate">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="iw__empty">{{ 'COMMON.IMPORT_WIZARD.EMPTY' | translate }}</p>
+      }
+
+      @if (errorMsg()) {
+        <p class="iw__error">{{ errorMsg() }}</p>
+      }
+    }
+
+    <!-- ─── Options ─────────────────────────────────────────────── -->
+    @case ('options') {
+      <div class="iw__opt-head">
+        <h3>{{ 'COMMON.IMPORT_WIZARD.OPTIONS_TITLE' | translate }}</h3>
+        <p>{{ 'COMMON.IMPORT_WIZARD.OPTIONS_SUB' | translate }}</p>
+      </div>
+
+      <section class="iw__opt-group">
+        <h4 class="iw__section-title">{{ 'COMMON.IMPORT_WIZARD.MODE_TITLE' | translate }}</h4>
+        <div class="iw__modes">
+          @for (m of data.modes; track m.value) {
+            <label class="iw__mode" [class.iw__mode--active]="mode() === m.value">
+              <input type="radio" name="iw-mode"
+                [value]="m.value"
+                [checked]="mode() === m.value"
+                (change)="mode.set(m.value)"/>
+              <div class="iw__mode-body">
+                <div class="iw__mode-head">
+                  <span class="iw__mode-label">{{ m.label | translate }}</span>
+                  @if (m.warn && mode() === m.value) {
+                    <span class="iw__mode-warn">{{ 'COMMON.IMPORT_WIZARD.WARN' | translate }}</span>
+                  }
+                </div>
+                <div class="iw__mode-desc">
+                  @if (m.warn) {
+                    <svg class="iw__warn-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                      <line x1="12" y1="9" x2="12" y2="13"/>
+                      <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                  }
+                  {{ m.description | translate }}
+                </div>
+              </div>
+            </label>
+          }
+        </div>
+      </section>
+
+      @if (duplicateCount() > 0) {
+        <section class="iw__opt-group">
+          <h4 class="iw__section-title">{{ 'COMMON.IMPORT_WIZARD.ADDITIONAL_TITLE' | translate }}</h4>
+          <label class="iw__check">
+            <input type="checkbox"
+              [checked]="skipDuplicates()"
+              (change)="skipDuplicates.set($any($event.target).checked)"/>
+            <span>{{ 'COMMON.IMPORT_WIZARD.SKIP_DUPLICATES' | translate }}</span>
+          </label>
+        </section>
+      }
+
+      <div class="iw__summary-box">
+        <strong>{{ 'COMMON.IMPORT_WIZARD.SUMMARY' | translate }}</strong>
+        <ul>
+          <li>{{ validCount() }} {{ 'COMMON.IMPORT_WIZARD.WILL_BE_IMPORTED' | translate }}</li>
+          @if (duplicateCount() > 0) {
+            @if (skipDuplicates()) {
+              <li>{{ duplicateCount() }} {{ 'COMMON.IMPORT_WIZARD.WILL_BE_SKIPPED' | translate }}</li>
+            } @else {
+              <li>{{ duplicateCount() }} {{ 'COMMON.IMPORT_WIZARD.WILL_BE_PROCESSED' | translate }}</li>
+            }
+          }
+          @if (invalidCount() > 0) {
+            <li>{{ invalidCount() }} {{ 'COMMON.IMPORT_WIZARD.WILL_BE_DROPPED' | translate }}</li>
+          }
+          @if (selectedModeLabel(); as ml) {
+            <li>{{ 'COMMON.IMPORT_WIZARD.SUMMARY_MODE' | translate }}: <strong>{{ ml | translate }}</strong></li>
+          }
+        </ul>
+      </div>
+
+      @if (errorMsg()) {
+        <p class="iw__error">{{ errorMsg() }}</p>
+      }
+    }
+
+    <!-- ─── Importing ───────────────────────────────────────────── -->
+    @case ('importing') {
+      <div class="iw__importing">
+        <span class="iw__spinner-lg" aria-hidden="true"></span>
+        <h3>{{ 'COMMON.IMPORT_WIZARD.IMPORTING_TITLE' | translate }}</h3>
+        <p>{{ 'COMMON.IMPORT_WIZARD.IMPORTING_BODY' | translate }}</p>
+      </div>
+    }
+
+    <!-- ─── Complete ────────────────────────────────────────────── -->
+    @case ('complete') {
+      @if (result(); as r) {
+        <div class="iw__done">
+          <div class="iw__done-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <h3>{{ 'COMMON.IMPORT_WIZARD.DONE_TITLE' | translate }}</h3>
+          <div class="iw__counts">
+            <div><strong>{{ r.total }}</strong><span>{{ 'COMMON.IMPORT_WIZARD.TOTAL' | translate }}</span></div>
+            <div class="iw__counts--ok"><strong>{{ r.successful }}</strong><span>{{ 'COMMON.IMPORT_WIZARD.IMPORTED' | translate }}</span></div>
+            <div class="iw__counts--err"><strong>{{ r.failed }}</strong><span>{{ 'COMMON.IMPORT_WIZARD.FAILED' | translate }}</span></div>
+            <div class="iw__counts--warn"><strong>{{ r.skipped }}</strong><span>{{ 'COMMON.IMPORT_WIZARD.SKIPPED' | translate }}</span></div>
+          </div>
+        </div>
+      }
+    }
+  }
+</div>
+
+<app-modal-footer>
+  @switch (step()) {
+    @case ('upload') {
+      <button type="button" class="iw__btn iw__btn--ghost" (click)="cancel()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button type="button" class="iw__btn iw__btn--primary"
+        [disabled]="rows().length === 0"
+        (click)="step.set('preview')">
+        {{ 'COMMON.NEXT' | translate }}
+      </button>
+    }
+    @case ('preview') {
+      <button type="button" class="iw__btn iw__btn--ghost" (click)="reset()">
+        {{ 'COMMON.IMPORT_WIZARD.START_OVER' | translate }}
+      </button>
+      <button type="button" class="iw__btn iw__btn--primary"
+        [disabled]="submittable().length === 0 || loading()"
+        (click)="continueFromPreview()">
+        @if (hasModes()) {
+          {{ 'COMMON.NEXT' | translate }}
+        } @else {
+          {{ 'COMMON.IMPORT_WIZARD.START_IMPORT' | translate }}
+        }
+      </button>
+    }
+    @case ('options') {
+      <button type="button" class="iw__btn iw__btn--ghost"
+        [disabled]="loading()"
+        (click)="step.set('preview')">
+        {{ 'COMMON.BACK' | translate }}
+      </button>
+      <button type="button" class="iw__btn iw__btn--primary"
+        [disabled]="submittable().length === 0 || loading()"
+        (click)="startImport()">
+        {{ 'COMMON.IMPORT_WIZARD.START_IMPORT' | translate }}
+      </button>
+    }
+    @case ('importing') {
+      <!-- nothing — the wizard owns the progress -->
+    }
+    @case ('complete') {
+      <button type="button" class="iw__btn iw__btn--ghost" (click)="reset()">
+        {{ 'COMMON.IMPORT_WIZARD.IMPORT_MORE' | translate }}
+      </button>
+      <button type="button" class="iw__btn iw__btn--primary" (click)="done()">
+        {{ 'COMMON.DONE' | translate }}
+      </button>
+    }
+  }
+</app-modal-footer>

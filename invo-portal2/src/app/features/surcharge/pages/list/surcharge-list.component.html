@@ -1,0 +1,127 @@
+<div class="srl-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'SURCHARGE.LIST.TITLE' | translate }}</h1>
+      <p class="page-sub">{{ 'SURCHARGE.LIST.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn-primary" (click)="add()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        {{ 'SURCHARGE.LIST.ADD_NEW' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <label class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text"
+        [value]="search()"
+        (input)="onSearchInput($any($event.target).value)"
+        [placeholder]="'SURCHARGE.LIST.SEARCH_PLACEHOLDER' | translate"/>
+      @if (search()) {
+        <button type="button" class="search__clear" (click)="clearSearch()" aria-label="Clear">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      }
+    </label>
+
+    @if (total() > 0) {
+      <div class="pager">
+        <span class="pager__range">{{ rangeLabel() }}</span>
+        <button type="button" class="pager__btn" (click)="goPrev()"
+          [disabled]="page() <= 1 || loading()"
+          [attr.aria-label]="'COMMON.PREVIOUS' | translate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="rtl:rotate-180">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button type="button" class="pager__btn" (click)="goNext()"
+          [disabled]="page() >= pageCount() || loading()"
+          [attr.aria-label]="'COMMON.NEXT' | translate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="rtl:rotate-180">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+    }
+  </div>
+
+  <section class="card">
+    @if (loading() && rows().length === 0) {
+      <table class="table table--skeleton" role="grid" aria-busy="true">
+        <thead>
+          <tr>
+            <th class="table__name">{{ 'SURCHARGE.LIST.NAME' | translate }}</th>
+            <th class="table__amount">{{ 'SURCHARGE.LIST.AMOUNT' | translate }}</th>
+            <th class="table__actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (_ of [0,1,2,3,4]; track $index) {
+            <tr>
+              <td class="table__name"><app-skeleton variant="line" width="40%"/></td>
+              <td class="table__amount"><app-skeleton variant="line" width="60px"/></td>
+              <td class="table__actions"><app-skeleton variant="line" width="28px"/></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else if (rows().length === 0) {
+      <div class="empty">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        <p>{{ (search() ? 'SURCHARGE.LIST.NO_MATCH' : 'SURCHARGE.LIST.EMPTY') | translate }}</p>
+        @if (!search()) {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="add()">
+            {{ 'SURCHARGE.LIST.ADD_NEW' | translate }}
+          </button>
+        }
+      </div>
+    } @else {
+      <table class="table" role="grid">
+        <thead>
+          <tr>
+            <th class="table__name">{{ 'SURCHARGE.LIST.NAME' | translate }}</th>
+            <th class="table__amount">{{ 'SURCHARGE.LIST.AMOUNT' | translate }}</th>
+            <th class="table__actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.id) {
+            <tr (click)="edit(row)">
+              <td class="table__name"><span class="row-name">{{ row.name || '—' }}</span></td>
+              <td class="table__amount">{{ formatAmount(row) }}</td>
+              <td class="table__actions" (click)="$event.stopPropagation()">
+                <app-dropdown-menu-btn
+                  [items]="rowMenuItems(row)"
+                  [appendToBody]="true"
+                  [chevron]="false"
+                  align="end"
+                  triggerClass="icon-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <circle cx="5"  cy="12" r="1.75"/>
+                    <circle cx="12" cy="12" r="1.75"/>
+                    <circle cx="19" cy="12" r="1.75"/>
+                  </svg>
+                </app-dropdown-menu-btn>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

@@ -25,11 +25,15 @@ import { PickTaxModalComponent } from '@shared/components/pick-tax-modal/pick-ta
 import { ApiService } from '@core/http/api.service';
 import { ProductDetailDrawerComponent, ProductDetailDrawerData } from '../../components/product-detail-drawer/product-detail-drawer.component';
 import { ProductStockModalComponent, ProductStockModalData } from '../../components/product-stock-modal/product-stock-modal.component';
+import {
+  DropdownMenuBtnComponent,
+  DropdownMenuBtnItem,
+} from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 
 @Component({
   selector: 'app-products-list',
   standalone: true,
-  imports: [CommonModule, OverlayModule, ListPageComponent, TranslateModule, ListCellTemplateDirective, ListRowActionsDirective],
+  imports: [CommonModule, OverlayModule, ListPageComponent, TranslateModule, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent],
   providers: [ProductsListStateService],
   templateUrl: './products-list.component.html',
   styleUrl: './products-list.component.scss'
@@ -72,13 +76,49 @@ export class ProductsListComponent implements OnInit {
   // UI state
   expandedProductIds = signal<Set<string>>(new Set());
   openMenuRowId = signal<string | null>(null);
-  addNewOpen = signal(false);
-  moreMenuOpen = signal(false);
 
   // Split header actions
   addNewActions: ActionConfig[] = [];
   moreActions: ActionConfig[] = [];          // general (Import/Export, Logs)
   bulkOperationActions: ActionConfig[] = []; // grouped under "Bulk operations"
+
+  /** Map an `ActionConfig` (used by the list-page contract) onto
+   *  the shared dropdown's `DropdownMenuBtnItem` shape. Carries
+   *  `color: 'danger'` through as the danger flag. */
+  private toMenuItem(a: ActionConfig): DropdownMenuBtnItem {
+    return {
+      label:    a.label,
+      click:    () => a.handler?.(),
+      disabled: typeof a.disabled === 'function' ? a.disabled() : !!a.disabled,
+      danger:   a.color === 'danger',
+    };
+  }
+
+  /** "+ Add New" menu items — one row per product type the user
+   *  has permission to create. */
+  addNewMenuItems(): DropdownMenuBtnItem[] {
+    return this.addNewActions.map(a => this.toMenuItem(a));
+  }
+
+  /** "..." overflow menu items: general actions, then a divider +
+   *  a "BULK OPERATIONS" header + the bulk action group. The
+   *  divider/header only render when both groups are non-empty. */
+  moreMenuItems(): DropdownMenuBtnItem[] {
+    const out: DropdownMenuBtnItem[] = this.moreActions.map(a => this.toMenuItem(a));
+    if (this.bulkOperationActions.length > 0) {
+      this.bulkOperationActions.forEach((a, i) => {
+        const it = this.toMenuItem(a);
+        if (i === 0 && this.moreActions.length > 0) {
+          it.separator = true;
+          it.header    = 'MENU.SUB.BULK_OPERATIONS';
+        } else if (i === 0) {
+          it.header    = 'MENU.SUB.BULK_OPERATIONS';
+        }
+        out.push(it);
+      });
+    }
+    return out;
+  }
 
   private clickCloseListener = () => this.closeRowMenu();
 
@@ -172,10 +212,17 @@ export class ProductsListComponent implements OnInit {
         order: 2,
       },
       {
+        // Same label as `name` so list-page groups it into the
+        // product cell (next to the name + barcode chip). Toggling
+        // this column's visibility just shows/hides the UOM line in
+        // the product cell — exactly the way `barcode` is wired
+        // above. Mirrors the InvoCloudFront2 layout.
         key: 'UOM',
-        label: this.lang.instant('PRODUCTS.FIELDS.UOM'),
+        label: this.lang.instant('PRODUCTS.FIELDS.NAME'),
+        headerLabel: this.lang.instant('PRODUCTS.FIELDS.UOM'),
         sortable: false,
-        width: '100px',
+        customTemplate: true,
+        displayStyle: 'newLine',
         visible: false,
         order: 3,
       },
@@ -202,7 +249,12 @@ export class ProductsListComponent implements OnInit {
         order: 6,
       },
       {
-        key: 'qtySum',
+        // Backend recognises `qty` as the inventory aggregate
+        // projection — sending `qtySum` (the field name on the
+        // response) makes the API skip projection and return 0.
+        // Keep the column key as `qty` and pull the value from the
+        // nested `inventorySummary` in the cell template.
+        key: 'qty',
         label: this.lang.instant('PRODUCTS.FIELDS.QTY'),
         sortable: true,
         width: '100px',
@@ -266,6 +318,12 @@ export class ProductsListComponent implements OnInit {
         sortable: false,
         customTemplate: true,
         visible: false,
+        // Image is rendered from `imageUrl` / Cloudinary metadata
+        // server-side; a bare `image` key isn't a real searchable
+        // field. Including it in the API columns array makes the
+        // backend match against a non-existent field and silently
+        // return zero results.
+        noApi: true,
         order: 13,
       },
       {
@@ -406,6 +464,15 @@ export class ProductsListComponent implements OnInit {
 
     // General actions (top of the More dropdown) — gated by permission.
     const generalCandidates: { action: ActionConfig; permission?: string }[] = [
+      {
+        action: {
+          id: 'bulk-print',
+          label: this.lang.instant('PRODUCTS.ACTIONS.BULK_BARCODE_PRINT'),
+          color: 'secondary',
+          handler: () => this.router.navigate(['/products/bulk-print']),
+        },
+        permission: 'productSecurity.actions.printBarcode.access',
+      },
       {
         action: {
           id: 'import-export',
@@ -584,7 +651,7 @@ export class ProductsListComponent implements OnInit {
 
     // Route by column: the Qty badge opens the stock breakdown modal; every
     // other column (or a click outside a column) opens the details drawer.
-    if (event.column?.key === 'qtySum') {
+    if (event.column?.key === 'qty') {
       this.openStockModal(event.row);
       return;
     }
@@ -604,7 +671,7 @@ export class ProductsListComponent implements OnInit {
           productId,
           productName: row.name,
           productType: row.type,
-          qtySum: row.inventorySummary?.qtySum ?? 0,
+          qtySum: row.qty ?? row.inventorySummary?.qtySum ?? 0,
         },
       },
     );
@@ -633,11 +700,9 @@ export class ProductsListComponent implements OnInit {
     );
   }
 
-  @HostListener('document:click')
-  onDocumentClick(): void {
-    this.addNewOpen.set(false);
-    this.moreMenuOpen.set(false);
-  }
+  // Outside-click closing for the Add-new and More-menu dropdowns
+  // is now owned by `<app-dropdown-menu-btn>`. The row "..." menu
+  // continues to use the inline pattern below.
 
   toggleRowMenu(row: any, event: Event): void {
     event.stopPropagation();

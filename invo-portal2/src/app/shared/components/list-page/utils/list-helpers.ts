@@ -134,10 +134,26 @@ export class ColumnHelper {
   }
 
   /**
-   * Get column keys for API request
+   * Get every visible column key — used to drive UI rendering /
+   * column-visibility tracking. Includes `noApi` columns since they
+   * still need to render in the table (e.g. the qty cell, image
+   * thumbnail). The API-columns variant is `getApiColumnKeys`.
    */
   static getColumnKeys<T>(columns: TableColumn<T>[]): string[] {
     return columns.filter(col => col.visible !== false).map(col => col.key);
+  }
+
+  /**
+   * Subset of column keys safe to send to the list endpoint.
+   * Mirrors the legacy InvoCloudFront2 `getColumnsForApi` filter —
+   * UI-only columns carry keys that don't map to real document
+   * fields (image thumbnails, derived totals like `qtySum`) and
+   * would otherwise cause the backend to silently drop matches.
+   */
+  static getApiColumnKeys<T>(columns: TableColumn<T>[]): string[] {
+    return columns
+      .filter(col => col.visible !== false && col.noApi !== true)
+      .map(col => col.key);
   }
 
   /**

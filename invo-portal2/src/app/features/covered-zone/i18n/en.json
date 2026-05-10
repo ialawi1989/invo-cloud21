@@ -1,0 +1,57 @@
+{
+  "COVERED_ZONE": {
+    "TITLE":    "Covered Zones",
+    "SUBTITLE": "Define radius-based delivery zones around each branch, set how far pickup orders can come from, and pin every branch's exact location on the map.",
+
+    "BRANCH_LOCATIONS": {
+      "TITLE":    "Branch locations",
+      "SUBTITLE": "Pin each branch on the map. Zones below are measured as concentric radii around these pins.",
+      "SET":      "Set location",
+      "EDIT":     "Edit location",
+      "MISSING":  "Not set",
+      "MISSING_HINT": "Required before pickup orders or zone-based delivery can work for this branch."
+    },
+
+    "PICKUP": {
+      "TITLE":       "Pickup max distance",
+      "SUBTITLE":    "Maximum distance (km) we'll accept pickup orders from. Set to 0 to allow pickup from anywhere.",
+      "LABEL":       "Distance (km)",
+      "ERR_NEED_PINS":"Pickup max distance can't be greater than 0 until every branch above has a pinned location."
+    },
+
+    "BULK": {
+      "TITLE":         "Bulk update zones",
+      "SUBTITLE":      "Apply the same delivery economics to every zone in one click.",
+      "DELIVERY":      "Delivery charge",
+      "MIN":           "Minimum charge",
+      "FREE_OVER":     "Free delivery over",
+      "APPLY_ALL":     "Apply to all",
+      "RESET":         "Reset",
+      "NO_FIELDS":     "Fill at least one field to apply.",
+      "CONFIRM_TITLE": "Apply bulk update",
+      "CONFIRM_BODY":  "Apply the filled fields to all {{count}} zone(s)? Existing values will be overwritten.",
+      "DONE":          "Updated {{count}} zone(s)"
+    },
+
+    "ZONES": {
+      "TITLE":          "Zones",
+      "SUBTITLE":       "Each zone is a concentric ring around the pinned branch locations. Closer rings should have a smaller radius.",
+      "ADD":            "Add zone",
+      "RADIUS":         "Radius (km)",
+      "DELIVERY":       "Delivery charge",
+      "MIN":            "Minimum charge",
+      "FREE_OVER":      "Free delivery over",
+      "NOTE":           "Note",
+      "EMPTY":          "No zones yet — click Add zone to create the first one.",
+      "ERR_RADIUS_REQ": "Radius must be greater than zero.",
+      "ERR_RADIUS_DUP": "Two zones share the same radius. Make them unique.",
+      "ERR_NEGATIVE":   "Numbers can't be negative."
+    },
+
+    "SHOW_MAP":     "Show on map",
+    "MAP_TITLE":    "Zones preview",
+    "MAP_HINT":     "Concentric rings show each zone's radius around every branch with a pinned location.",
+    "MAP_LEGEND":   "Branches with locations: {{withPins}} of {{total}}",
+    "MAP_NO_PINS":  "No branches have pinned locations yet — pin at least one above to see the zones drawn here."
+  }
+}

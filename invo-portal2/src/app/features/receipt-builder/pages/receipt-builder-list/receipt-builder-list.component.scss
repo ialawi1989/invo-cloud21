@@ -49,44 +49,9 @@
 }
 
 // ── Add-menu split dropdown ────────────────────────────────────────────
-.add-wrap {
-  position: relative;
-  display: inline-block;
-
-  &__chev {
-    transition: transform 120ms ease;
-    margin-inline-start: 2px;
-    &--open { transform: rotate(-180deg); }
-  }
-}
-.add-menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  inset-inline-end: 0;
-  min-width: 180px;
-  margin: 0; padding: 6px;
-  list-style: none;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
-  z-index: 50;
-
-  li > button {
-    width: 100%;
-    text-align: start;
-    padding: 7px 10px;
-    background: transparent;
-    border: none;
-    border-radius: 6px;
-    font: inherit;
-    font-size: 13px;
-    color: #0f172a;
-    cursor: pointer;
-
-    &:hover { background: #f8fafc; }
-  }
-}
+// `.add-wrap` / `.add-menu` styles removed — the Add-new button
+// now uses the shared `<app-dropdown-menu-btn>` which owns its
+// own chrome. See `dropdown-menu-btn.component.ts`.
 
 // ── Toolbar ────────────────────────────────────────────────────────────
 .toolbar {
@@ -264,4 +229,62 @@
 
   &:hover { background: #f1f5f9; color: #475569; }
   &--danger:hover { background: #fef2f2; color: #b91c1c; }
+}
+
+// Row overflow menu — Edit / Rename / Delete popover rendered into
+// CDK's overlay container (a body child), so the card's
+// `overflow: hidden` can't clip it. Positioning is handled by the
+// `cdkConnectedOverlayPositions` config in the template.
+.row-menu {
+  &__popover {
+    min-width: 176px;
+    padding: 4px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.10),
+                0 0 0 1px rgba(15, 23, 42, 0.04);
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__option {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #334155;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-align: start;
+    transition: background 120ms ease, color 120ms ease;
+
+    > svg { color: #94a3b8; flex-shrink: 0; }
+
+    &:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+      > svg { color: #475569; }
+    }
+
+    &--danger {
+      color: #b91c1c;
+      > svg { color: #fca5a5; }
+      &:hover {
+        background: #fef2f2;
+        color: #991b1b;
+        > svg { color: #dc2626; }
+      }
+    }
+  }
+
+  &__divider {
+    height: 1px;
+    background: #f1f5f9;
+    margin: 4px 0;
+  }
 }

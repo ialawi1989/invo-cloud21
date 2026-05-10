@@ -15,6 +15,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { withTranslations } from '@core/i18n/with-translations';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
+import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
 import { MenuBuilderService } from '../../services/menu-builder.service';
 import { MenuListItem } from '../../services/menu-builder.types';
 
@@ -29,7 +30,7 @@ import { MenuListItem } from '../../services/menu-builder.types';
 @Component({
   selector: 'app-menu-builder-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, BreadcrumbsComponent],
+  imports: [CommonModule, RouterModule, TranslateModule, BreadcrumbsComponent, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './menu-builder-list.component.html',
   styleUrl: './menu-builder-list.component.scss',

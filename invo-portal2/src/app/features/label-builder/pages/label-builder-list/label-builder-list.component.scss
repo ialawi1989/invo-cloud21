@@ -1,0 +1,556 @@
+:host { display: block; }
+
+.lbl {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+
+    // 75/25 split — text on the left wraps inside its zone instead of
+    // bleeding under the action button.
+    > div:first-child {
+      flex: 0 0 75%;
+      max-width: 75%;
+      min-width: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+  }
+
+  &__sub {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  // Split "New" — picks template type before navigating to the editor.
+  &__new {
+    position: relative;
+    flex-shrink: 0;
+    align-self: flex-start;
+
+    .btn { display: inline-flex; align-items: center; gap: 6px; }
+  }
+  &__new-caret { opacity: 0.85; }
+
+  &__new-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    inset-inline-end: 0;
+    z-index: 30;
+    min-width: 220px;
+    padding: 4px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.18),
+                0 2px 6px -1px rgba(15, 23, 42, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__new-option {
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 13px;
+    color: #334155;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: start;
+
+    &:hover { background: #f1f5f9; color: #0f172a; }
+  }
+
+  // ── Filter row ──────────────────────────────────────────────
+  // Search input on the left, type-filter chip group on the right
+  // (or wrapped to the next row on narrow viewports).
+  &__filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  &__search {
+    position: relative;
+    flex: 1 1 280px;
+    min-width: 240px;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+
+    &:focus-within {
+      border-color: var(--color-brand-500);
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.10);
+    }
+
+    > svg { color: #94a3b8; flex-shrink: 0; }
+
+    > input {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      background: transparent;
+      outline: none;
+      font: inherit;
+      font-size: 13px;
+      color: #0f172a;
+
+      &::placeholder { color: #94a3b8; }
+    }
+  }
+
+  &__search-clear {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    width: 22px; height: 22px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: #f1f5f9; color: #475569; }
+  }
+
+  // Type filter — three pill-grouped buttons inside one rounded
+  // container, segmented-control style.
+  &__type-filter {
+    display: inline-flex;
+    padding: 3px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    flex-shrink: 0;
+
+    > button {
+      appearance: none;
+      border: none;
+      background: transparent;
+      padding: 5px 14px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      color: #64748b;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 120ms ease, color 120ms ease;
+      white-space: nowrap;
+
+      &:hover:not(.lbl__type-filter--active) { color: #0f172a; }
+    }
+
+    &--active,
+    &--active:hover {
+      background: #fff;
+      color: var(--color-brand-700);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.10);
+    }
+  }
+
+  // ── List body ───────────────────────────────────────────────
+  &__body {
+    flex: 1;
+    min-height: 0;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+
+    &:hover {
+      border-color: var(--color-brand-300, #bae6fd);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+    }
+
+    &--selected {
+      background: var(--color-brand-50, #f0fdfa);
+      border-color: var(--color-brand-300, #bae6fd);
+    }
+
+    // Per-row selection checkbox. Sits to the left of the thumbnail.
+    &-check {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      accent-color: var(--color-brand-500);
+      cursor: pointer;
+    }
+
+    // Real thumbnail — sized to the longest-axis 56 px target via
+    // the component's own inline styling. We just give it a flex
+    // anchor here so it doesn't get squeezed when the row content
+    // grows, plus a comfortable hit-area for hover.
+    &-thumb {
+      flex-shrink: 0;
+      display: inline-block;
+    }
+
+    &-name {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      > strong {
+        flex: 0 1 auto;
+        min-width: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #0f172a;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: text; // hint at the dblclick affordance
+      }
+    }
+
+    // Inline rename input — replaces the `<strong>` while the user
+    // is typing. Sized to occupy the same width footprint so the row
+    // doesn't reflow when entering / leaving edit mode.
+    &-rename {
+      flex: 1 1 220px;
+      min-width: 120px;
+      max-width: 320px;
+      padding: 6px 10px;
+      border: 1px solid var(--color-brand-300, #bae6fd);
+      border-radius: 6px;
+      background: #fff;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.10);
+
+      &:focus {
+        outline: none;
+        border-color: var(--color-brand-500);
+      }
+    }
+
+    // Type chip — Label = brand-blue, Kitchen = amber.
+    &-type {
+      flex-shrink: 0;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-radius: 999px;
+      background: var(--color-brand-50);
+      color: var(--color-brand-700);
+
+      &--kitchen {
+        background: #fef3c7;
+        color: #92400e;
+      }
+    }
+
+    &-meta {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    &-meta-dot { color: #cbd5e1; }
+
+    // Per-row overflow menu (same pattern as document-builder-list).
+    &-menu {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    &-menu-trigger {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid transparent;
+      background: transparent;
+      border-radius: 8px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+      &:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+        border-color: #e5e7eb;
+      }
+    }
+
+    &-menu-popover {
+      position: absolute;
+      top: calc(100% + 6px);
+      inset-inline-end: 0;
+      z-index: 30;
+      min-width: 200px;
+      padding: 4px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.18),
+                  0 2px 6px -1px rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    &-menu-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 13px;
+      color: #334155;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: start;
+
+      > svg { color: #64748b; flex-shrink: 0; }
+
+      &:hover:not(:disabled) {
+        background: #f1f5f9;
+        color: #0f172a;
+        > svg { color: var(--color-brand-600, #0891b2); }
+      }
+
+      &:disabled { opacity: 0.45; cursor: not-allowed; }
+
+      &--danger {
+        color: #b91c1c;
+        > svg { color: #b91c1c; }
+
+        &:hover:not(:disabled) {
+          background: #fef2f2;
+          color: #991b1b;
+          > svg { color: #991b1b; }
+        }
+      }
+    }
+
+    &-menu-divider {
+      height: 1px;
+      margin: 4px 2px;
+      background: #f1f5f9;
+    }
+  }
+
+  // ── Empty ──────────────────────────────────────────────────
+  &__empty {
+    padding: 48px 24px;
+    text-align: center;
+    background: #f9fafb;
+    border: 1px dashed #e5e7eb;
+    border-radius: 8px;
+
+    > p {
+      margin: 0 0 12px;
+      color: #64748b;
+      font-size: 13px;
+    }
+  }
+}
+
+// Pager footer — sits below the list, only when there's more than
+// one page. Mirrors the receipt-builder list `.pager` chrome so
+// both settings pages feel identical.
+.lbl__pager {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 4px 4px;
+  margin-inline-start: auto;
+  align-self: end;
+  width: fit-content;
+
+  &-range {
+    font-size: 12px;
+    color: #64748b;
+    margin-inline-end: 4px;
+  }
+  &-page {
+    font-size: 12px;
+    color: #475569;
+    min-width: 44px;
+    text-align: center;
+  }
+  &-btn {
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, color 120ms ease;
+    &:hover:not(:disabled) {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Floating bulk-action bar — same docked-at-bottom-center pattern
+// as the products list. Visible only when at least one row is
+// selected. The host:: is intentionally outside the `.lbl` block
+// because the bar is a top-level sibling so it can render fixed-
+// position without parent transform offsets.
+.lbl-bulkbar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: #0f172a;
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.45);
+  animation: lbl-bulkbar-up 180ms ease-out;
+  max-width: calc(100vw - 32px);
+
+  &__count {
+    font-size: 13px;
+    font-weight: 500;
+    color: #cbd5e1;
+    white-space: nowrap;
+  }
+
+  &__divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  &__action {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: #cbd5e1;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+
+    &--danger {
+      color: #fca5a5;
+      &:hover { background: rgba(239, 68, 68, 0.18); color: #fecaca; }
+    }
+  }
+
+  &__close {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, color 120ms ease;
+
+    &:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+  }
+}
+
+@keyframes lbl-bulkbar-up {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+// Buttons — scoped so they don't leak into page chrome.
+.btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  &-default {
+    background: #fff;
+    border-color: #e5e7eb;
+    color: #64748b;
+    &:hover { background: #f9fafb; border-color: #94a3b8; }
+  }
+
+  &-primary {
+    background: var(--color-brand-500);
+    color: #fff;
+    border-color: var(--color-brand-500);
+    &:hover { background: var(--color-brand-600); border-color: var(--color-brand-600); }
+  }
+}

@@ -1,8 +1,44 @@
 <div class="product-form-page">
   <!-- ═══ Header: parent breadcrumb (back-link) + H1 page title ═══ -->
   <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-    <h1 class="page-header__title">{{ pageTitle() }}</h1>
+    <div class="page-header__lead">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-header__title">{{ pageTitle() }}</h1>
+    </div>
+
+    <div class="page-header__actions">
+      <!-- Advanced Options — drag-reorder + show/hide individual
+           form sections. Hidden sections still ship their data on
+           save (they're rendered with `display: none`). Saved per
+           user via `employeeOptions.productForm`. -->
+      <button type="button" class="btn btn-ghost page-header__action"
+        (click)="openAdvancedOptions()" [disabled]="loading()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="4" y1="6" x2="20" y2="6"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="18" x2="20" y2="18"/>
+          <circle cx="8"  cy="6"  r="2" fill="#fff"/>
+          <circle cx="16" cy="12" r="2" fill="#fff"/>
+          <circle cx="9"  cy="18" r="2" fill="#fff"/>
+        </svg>
+        {{ 'PRODUCTS.ADVANCED_OPTIONS.BUTTON' | translate }}
+      </button>
+
+      <!-- Print Label — only visible when editing an existing product
+           (nothing to print on the New Product flow) and only when the
+           user has the printBarcode privilege. -->
+      @if (isExistingProduct() && canPrintLabel) {
+        <button type="button" class="btn btn-ghost page-header__action"
+          (click)="printLabel()" [disabled]="loading() || saving()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9V2h12v7"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <path d="M6 14h12v8H6z"/>
+          </svg>
+          {{ 'PRODUCTS.ACTIONS.PRINT_LABEL' | translate }}
+        </button>
+      }
+    </div>
   </header>
 
   <!-- ═══ Body ═══ -->
@@ -38,200 +74,255 @@
            attributes → nutrition. Tab-builder is a new addition so it
            sits right after common-fields to match its "content editor"
            role (closest analog to the old options-tab). -->
-      <div class="form-grid">
-        <!-- ═══ Main column ═══ -->
-        <section class="form-col form-col--main">
-          <app-pf-common-fields
-            [productInfo]="productInfo()"
-            [productForm]="productForm"
-            [fieldsOptions]="fieldsOptions()"
-          />
-
-          <app-pf-tab-builder
-            [productInfo]="productInfo()"
-            [productForm]="productForm"
-            [fieldsOptions]="fieldsOptions()"
-          />
-
-          @if (fieldsOptions()?.pricing) {
-            <app-pf-product-pricing
+      <!-- Section renderer — one giant `@switch` that knows how to
+           render every section by id. Both columns reference it via
+           `*ngTemplateOutlet`, which means a section dragged across
+           columns in the Advanced Options modal renders correctly in
+           whichever column it lands. -->
+      <ng-template #sectionRenderer let-sec>
+        @switch (sec.id) {
+          @case ('common-fields') {
+            <app-pf-common-fields
               [productInfo]="productInfo()"
               [productForm]="productForm"
               [fieldsOptions]="fieldsOptions()"
             />
           }
-
-          @if (fieldsOptions()?.inventory) {
-            <app-pf-inventory-details
+          @case ('tab-builder') {
+            <app-pf-tab-builder
               [productInfo]="productInfo()"
               [productForm]="productForm"
               [fieldsOptions]="fieldsOptions()"
             />
           }
-
-          @if (fieldsOptions()?.suppliers?.isVisible && privileges.check('productSecurity.actions.supplierSection.access')) {
-            <app-pf-supplier-list-product
+          @case ('pricing') {
+            @if (fieldsOptions()?.pricing) {
+              <app-pf-product-pricing
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('inventory') {
+            @if (fieldsOptions()?.inventory) {
+              <app-pf-inventory-details
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('suppliers') {
+            @if (fieldsOptions()?.suppliers?.isVisible && privileges.check('productSecurity.actions.supplierSection.access')) {
+              <app-pf-supplier-list-product
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('price-by-team') {
+            @if (fieldsOptions()?.priceByTeam?.isVisible) {
+              <app-pf-price-by-team
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('kit-details') {
+            @if (fieldsOptions()?.kitDetails?.isVisible) {
+              <app-pf-kit-details
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('kit-builder') {
+            @if (fieldsOptions()?.kitBuilder?.isVisible) {
+              <app-pf-kit-builder
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('recipe') {
+            @if (fieldsOptions()?.recipe?.isVisible && privileges.check('productRecipeSecurity.actions.view.access')) {
+              <app-pf-recipe-builder
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('options-tab') {
+            <app-pf-options-tab
               [productInfo]="productInfo()"
               [productForm]="productForm"
               [fieldsOptions]="fieldsOptions()"
             />
           }
-
-          @if (fieldsOptions()?.priceByTeam?.isVisible) {
-            <app-pf-price-by-team
+          @case ('menu-selection') {
+            @if (fieldsOptions()?.menuSelection?.isVisible) {
+              <app-pf-menu-selection
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('package-builder') {
+            @if (fieldsOptions()?.packageBuilder?.isVisible) {
+              <app-pf-package-builder
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('custom-fields') {
+            @if (fieldsOptions()?.customFields?.isVisible) {
+              <app-entity-custom-fields
+                entityType="product"
+                [parentForm]="productForm"
+                [valueSource]="productInfo().customFields"
+                idPrefix="pf-cf"
+              />
+            }
+          }
+          @case ('branches') {
+            <app-pf-branch-product-section
               [productInfo]="productInfo()"
               [productForm]="productForm"
               [fieldsOptions]="fieldsOptions()"
             />
           }
-
-          @if (fieldsOptions()?.kitDetails?.isVisible) {
-            <app-pf-kit-details
+          @case ('product-attributes') {
+            @if (fieldsOptions()?.productAttributes?.isVisible) {
+              <app-pf-product-attributes
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('allergens') {
+            @if (fieldsOptions()?.allergens?.isVisible) {
+              <app-pf-allergens
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('nutrition') {
+            @if (fieldsOptions()?.nutrition?.isVisible) {
+              <app-pf-food-nutrition
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('media') {
+            @if (fieldsOptions()?.image) {
+              <app-pf-product-media
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('measurements') {
+            @if (fieldsOptions()?.measurements?.isVisible) {
+              <app-pf-measurements
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
+          }
+          @case ('product-options') {
+            <!-- Misc product flags & account pickers (port of old
+                 `inventory/product-options`). Self-gates via
+                 `hasAnyVisible()` when no sub-field applies to this
+                 product type. -->
+            <app-pf-product-options
               [productInfo]="productInfo()"
               [productForm]="productForm"
               [fieldsOptions]="fieldsOptions()"
             />
           }
-
-          @if (fieldsOptions()?.kitBuilder?.isVisible) {
-            <app-pf-kit-builder
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
+          @case ('shipping-options') {
+            @if (fieldsOptions()?.shippingOptions?.isVisible) {
+              <app-pf-shipping-options
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
           }
-
-          @if (fieldsOptions()?.recipe?.isVisible && privileges.check('productRecipeSecurity.actions.view.access')) {
-            <app-pf-recipe-builder
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
+          @case ('category-options') {
+            @if (fieldsOptions()?.department?.isVisible || fieldsOptions()?.category?.isVisible || fieldsOptions()?.brand?.isVisible) {
+              <app-pf-category-options
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
           }
-
-          <app-pf-options-tab
-            [productInfo]="productInfo()"
-            [productForm]="productForm"
-            [fieldsOptions]="fieldsOptions()"
-          />
-
-          @if (fieldsOptions()?.menuSelection?.isVisible) {
-            <app-pf-menu-selection
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
+          @case ('alias-barcodes') {
+            @if (fieldsOptions()?.aliasBarcodes?.isVisible) {
+              <app-pf-alias-barcodes
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
           }
-
-          @if (fieldsOptions()?.packageBuilder?.isVisible) {
-            <app-pf-package-builder
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
+          @case ('alt-product') {
+            @if (fieldsOptions()?.altProduct?.isVisible) {
+              <app-pf-alt-product
+                [productInfo]="productInfo()"
+                [productForm]="productForm"
+                [fieldsOptions]="fieldsOptions()"
+              />
+            }
           }
+        }
+      </ng-template>
 
-          @if (fieldsOptions()?.customFields?.isVisible) {
-            <app-entity-custom-fields
-              entityType="product"
-              [parentForm]="productForm"
-              [valueSource]="productInfo().customFields"
-              idPrefix="pf-cf"
-            />
+      <!-- ═══ Rows ═══
+           Layout is a list of rows, each with its own column ratio
+           (`single` / `2-1` / `1-1` / `1-2`). The user manages rows
+           in the Advanced Options modal — drags sections between
+           rows + columns, picks per-row ratios, adds extra rows as
+           needed. Hidden sections still render (just `display:none`)
+           so their form controls keep emitting values into the
+           save payload. -->
+      @for (row of layoutRows(); track row.index) {
+        <div class="form-row" [attr.data-row-layout]="row.layout">
+          <section class="form-col form-col--left">
+            @for (sec of row.left; track sec.id) {
+              <div class="pf-section" [class.pf-section--hidden]="!sec.visible">
+                <ng-container *ngTemplateOutlet="sectionRenderer; context: { $implicit: sec }"/>
+              </div>
+            }
+          </section>
+          @if (row.layout !== 'single') {
+            <aside class="form-col form-col--right">
+              @for (sec of row.right; track sec.id) {
+                <div class="pf-section" [class.pf-section--hidden]="!sec.visible">
+                  <ng-container *ngTemplateOutlet="sectionRenderer; context: { $implicit: sec }"/>
+                </div>
+              }
+            </aside>
           }
-
-          <app-pf-branch-product-section
-            [productInfo]="productInfo()"
-            [productForm]="productForm"
-            [fieldsOptions]="fieldsOptions()"
-          />
-
-          @if (fieldsOptions()?.productAttributes?.isVisible) {
-            <app-pf-product-attributes
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
-
-          @if (fieldsOptions()?.allergens?.isVisible) {
-            <app-pf-allergens
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
-
-          @if (fieldsOptions()?.nutrition?.isVisible) {
-            <app-pf-food-nutrition
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
-        </section>
-
-        <!-- ═══ Side column ═══ -->
-        <aside class="form-col form-col--side">
-          @if (fieldsOptions()?.image) {
-            <app-pf-product-media
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
-
-          @if (fieldsOptions()?.measurements?.isVisible) {
-            <app-pf-measurements
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
-
-          <!-- Misc product flags & account pickers (port of old
-               `inventory/product-options`). Self-gates via `hasAnyVisible()`
-               when no sub-field applies to this product type. -->
-          <app-pf-product-options
-            [productInfo]="productInfo()"
-            [productForm]="productForm"
-            [fieldsOptions]="fieldsOptions()"
-          />
-
-          @if (fieldsOptions()?.shippingOptions?.isVisible) {
-            <app-pf-shipping-options
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
-
-          @if (fieldsOptions()?.department?.isVisible || fieldsOptions()?.category?.isVisible || fieldsOptions()?.brand?.isVisible) {
-            <app-pf-category-options
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
-
-          @if (fieldsOptions()?.aliasBarcodes?.isVisible) {
-            <app-pf-alias-barcodes
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
-
-          @if (fieldsOptions()?.altProduct?.isVisible) {
-            <app-pf-alt-product
-              [productInfo]="productInfo()"
-              [productForm]="productForm"
-              [fieldsOptions]="fieldsOptions()"
-            />
-          }
-
-        </aside>
-      </div>
+        </div>
+      }
     </form>
   }
 

@@ -21,6 +21,23 @@
           {{ 'DOCUMENT_BUILDER.NEW' | translate }}
         </button>
       </div>
+    } @else if (loading() && templates().length === 0) {
+      <!-- Skeleton list — same row chrome as the real list so the
+           layout doesn't jump when data lands. -->
+      <ul class="dbl__list dbl__list--skeleton">
+        @for (_ of [0,1,2,3,4]; track $index) {
+          <li class="dbl__item dbl__item--skeleton">
+            <div class="dbl__item-name">
+              <app-skeleton variant="line" width="220px"/>
+              <app-skeleton variant="line" width="60px"/>
+            </div>
+            <div class="dbl__item-meta">
+              <app-skeleton variant="line" width="120px"/>
+            </div>
+            <app-skeleton variant="line" width="28px"/>
+          </li>
+        }
+      </ul>
     } @else if (!loading()) {
       <ul class="dbl__list">
         @for (t of templates(); track trackTemplate($index, t)) {
@@ -43,75 +60,20 @@
               @if (t.updatedDate) { <span>{{ t.updatedDate | date:'medium' }}</span> }
             </div>
 
-            <!-- Overflow menu — groups Edit / Duplicate / Set as default
-                 / Delete behind a single "⋯" trigger. The wrapper stops
-                 propagation so opening the menu doesn't fire the row's
-                 navigation click; the document-level listener closes
-                 the menu on outside clicks. -->
-            <div class="dbl__item-menu" (click)="$event.stopPropagation()">
-              <button
-                type="button"
-                class="dbl__item-menu-trigger"
-                (click)="toggleMenu(t.id, $event)"
-                [attr.aria-haspopup]="'menu'"
-                [attr.aria-expanded]="openMenuId() === t.id"
-                [appTooltip]="'COMMON.MORE_ACTIONS' | translate"
-              >
+            <!-- Per-row overflow menu via shared component. -->
+            <div (click)="$event.stopPropagation()">
+              <app-dropdown-menu-btn
+                [items]="rowMenuItems(t)"
+                [appendToBody]="true"
+                [chevron]="false"
+                align="end"
+                triggerClass="dbl__item-menu-trigger">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <circle cx="5" cy="12" r="1.75"/>
                   <circle cx="12" cy="12" r="1.75"/>
                   <circle cx="19" cy="12" r="1.75"/>
                 </svg>
-              </button>
-
-              @if (openMenuId() === t.id) {
-                <div class="dbl__item-menu-popover" role="menu">
-                  <button type="button" class="dbl__item-menu-option" role="menuitem"
-                    (click)="editTemplate(t, $event)">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                    {{ 'COMMON.EDIT' | translate }}
-                  </button>
-
-                  <button type="button" class="dbl__item-menu-option" role="menuitem"
-                    (click)="duplicateTemplate(t, $event)">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <rect x="9" y="9" width="13" height="13" rx="2"/>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                    </svg>
-                    {{ 'COMMON.DUPLICATE' | translate }}
-                  </button>
-
-                  @if (!t.isDefault) {
-                    <button type="button" class="dbl__item-menu-option" role="menuitem"
-                      (click)="setDefault(t, $event); closeMenu()"
-                      [appTooltip]="'DOCUMENT_BUILDER.SET_DEFAULT_HINT' | translate">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                      </svg>
-                      {{ 'DOCUMENT_BUILDER.SET_DEFAULT' | translate }}
-                    </button>
-                  }
-
-                  <div class="dbl__item-menu-divider"></div>
-
-                  <button type="button" class="dbl__item-menu-option dbl__item-menu-option--danger"
-                    role="menuitem"
-                    [disabled]="t.isDefault"
-                    (click)="deleteTemplate(t, $event); closeMenu()"
-                    [appTooltip]="t.isDefault ? ('DOCUMENT_BUILDER.CANNOT_DELETE_DEFAULT_HINT' | translate) : ''">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                      <path d="M10 11v6M14 11v6"/>
-                      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                    {{ 'COMMON.DELETE' | translate }}
-                  </button>
-                </div>
-              }
+              </app-dropdown-menu-btn>
             </div>
           </li>
         }

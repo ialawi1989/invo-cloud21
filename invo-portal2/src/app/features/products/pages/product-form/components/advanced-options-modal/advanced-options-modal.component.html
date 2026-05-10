@@ -1,0 +1,177 @@
+<app-modal-header [title]="'PRODUCTS.ADVANCED_OPTIONS.TITLE' | translate" />
+
+<div class="aom__body">
+  <p class="aom__hint">
+    {{ 'PRODUCTS.ADVANCED_OPTIONS.HINT' | translate }}
+  </p>
+
+  @if (data.productTypeLabel) {
+    <p class="aom__scope">
+      <span class="aom__scope-label">{{ 'PRODUCTS.ADVANCED_OPTIONS.SCOPE' | translate }}:</span>
+      <strong class="aom__scope-type">{{ data.productTypeLabel }}</strong>
+      <span class="aom__scope-note">{{ 'PRODUCTS.ADVANCED_OPTIONS.SCOPE_NOTE' | translate }}</span>
+    </p>
+  }
+
+  <!-- Rows list. Each row is its own draggable block (drag handle
+       on the row header reorders them), and inside it the user
+       drags sections between the lanes. All section lanes are
+       cross-connected via `cdkDropListConnectedTo` (`laneIds()`)
+       so dragging a section from any row+column to any other one
+       works. -->
+  <div class="aom__rows" cdkDropList
+    [cdkDropListData]="rows()"
+    cdkDropListLockAxis="y"
+    (cdkDropListDropped)="dropRow($event)">
+    @for (row of rows(); track trackRow($index, row)) {
+      <section class="aom__row" cdkDrag [cdkDragData]="row">
+        <header class="aom__row-head">
+          <span class="aom__row-handle" cdkDragHandle aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9"  cy="6"  r="1"/>
+              <circle cx="15" cy="6"  r="1"/>
+              <circle cx="9"  cy="12" r="1"/>
+              <circle cx="15" cy="12" r="1"/>
+              <circle cx="9"  cy="18" r="1"/>
+              <circle cx="15" cy="18" r="1"/>
+            </svg>
+          </span>
+          <h3 class="aom__row-title">
+            {{ 'PRODUCTS.ADVANCED_OPTIONS.ROW' | translate }} {{ row.index + 1 }}
+          </h3>
+
+          <!-- Layout segmented selector — picks the row's
+               `grid-template-columns`. Switching to `single`
+               folds any right-column sections into the left
+               column so nothing disappears. Note `row.index` is
+               used (not `$index`) because the layoutOptions loop
+               below shadows `$index` with the layout's own index. -->
+          <div class="aom__layout">
+            @for (l of layoutOptions; track l) {
+              <button type="button" class="aom__layout-btn"
+                [class.aom__layout-btn--on]="row.layout === l"
+                (click)="setLayout(row.index, l)"
+                [title]="layoutLabel(l) | translate">
+                <span class="aom__layout-glyph aom__layout-glyph--{{l}}" aria-hidden="true">
+                  @switch (l) {
+                    @case ('2-1')    { <span></span><span></span> }
+                    @case ('1-1')    { <span></span><span></span> }
+                    @case ('1-2')    { <span></span><span></span> }
+                    @case ('single') { <span></span> }
+                  }
+                </span>
+              </button>
+            }
+          </div>
+
+          <button type="button" class="aom__row-remove"
+            [disabled]="rows().length <= 1"
+            (click)="removeRow(row.index)"
+            [title]="'PRODUCTS.ADVANCED_OPTIONS.REMOVE_ROW' | translate">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6"/>
+            </svg>
+          </button>
+        </header>
+
+        <!-- Lanes. The grid mirrors the form's `data-row-layout`
+             so the modal preview matches what the form will
+             render. Each lane is a connected drop list. -->
+        <div class="aom__lanes" [attr.data-row-layout]="row.layout">
+          <ul class="aom__lane" cdkDropList
+            [id]="'row-' + row.index + '-left'"
+            [cdkDropListData]="row.left"
+            [cdkDropListConnectedTo]="laneIds()"
+            (cdkDropListDropped)="dropSection($event)">
+            @for (sec of row.left; track trackSection($index, sec)) {
+              <li class="aom__row-item" cdkDrag [class.aom__row-item--off]="!sec.visible">
+                <span class="aom__handle" cdkDragHandle aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9"  cy="6"  r="1"/><circle cx="15" cy="6"  r="1"/>
+                    <circle cx="9"  cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+                    <circle cx="9"  cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+                  </svg>
+                </span>
+                <label class="aom__check">
+                  <input type="checkbox"
+                    [checked]="sec.visible"
+                    [disabled]="sec.required"
+                    (change)="toggleVisibility(row.index, 'left', sec.id)"/>
+                  <span>{{ sec.i18nKey | translate }}</span>
+                  @if (sec.required) {
+                    <span class="aom__badge">{{ 'PRODUCTS.ADVANCED_OPTIONS.REQUIRED' | translate }}</span>
+                  }
+                </label>
+              </li>
+            }
+            @if (row.left.length === 0) {
+              <li class="aom__lane-empty">{{ 'PRODUCTS.ADVANCED_OPTIONS.DROP_HERE' | translate }}</li>
+            }
+          </ul>
+
+          @if (row.layout !== 'single') {
+            <ul class="aom__lane" cdkDropList
+              [id]="'row-' + row.index + '-right'"
+              [cdkDropListData]="row.right"
+              [cdkDropListConnectedTo]="laneIds()"
+              (cdkDropListDropped)="dropSection($event)">
+              @for (sec of row.right; track trackSection($index, sec)) {
+                <li class="aom__row-item" cdkDrag [class.aom__row-item--off]="!sec.visible">
+                  <span class="aom__handle" cdkDragHandle aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="9"  cy="6"  r="1"/><circle cx="15" cy="6"  r="1"/>
+                      <circle cx="9"  cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+                      <circle cx="9"  cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+                    </svg>
+                  </span>
+                  <label class="aom__check">
+                    <input type="checkbox"
+                      [checked]="sec.visible"
+                      [disabled]="sec.required"
+                      (change)="toggleVisibility(row.index, 'right', sec.id)"/>
+                    <span>{{ sec.i18nKey | translate }}</span>
+                    @if (sec.required) {
+                      <span class="aom__badge">{{ 'PRODUCTS.ADVANCED_OPTIONS.REQUIRED' | translate }}</span>
+                    }
+                  </label>
+                </li>
+              }
+              @if (row.right.length === 0) {
+                <li class="aom__lane-empty">{{ 'PRODUCTS.ADVANCED_OPTIONS.DROP_HERE' | translate }}</li>
+              }
+            </ul>
+          }
+        </div>
+      </section>
+    }
+  </div>
+
+  <button type="button" class="aom__add-row" (click)="addRow()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    {{ 'PRODUCTS.ADVANCED_OPTIONS.ADD_ROW' | translate }}
+  </button>
+
+  @if (hiddenCount() > 0) {
+    <p class="aom__footer-hint">
+      {{ 'PRODUCTS.ADVANCED_OPTIONS.HIDDEN_HINT' | translate:{ count: hiddenCount() } }}
+    </p>
+  }
+</div>
+
+<app-modal-footer>
+  <button type="button" class="aom__btn aom__btn--ghost" (click)="reset()">
+    {{ 'PRODUCTS.ADVANCED_OPTIONS.RESET' | translate }}
+  </button>
+  <span class="aom__spacer"></span>
+  <button type="button" class="aom__btn aom__btn--ghost" (click)="cancel()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="aom__btn aom__btn--primary" (click)="apply()">
+    {{ 'COMMON.APPLY' | translate }}
+  </button>
+</app-modal-footer>

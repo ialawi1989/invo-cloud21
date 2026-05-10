@@ -1,0 +1,60 @@
+{
+  "SHIPPING": {
+    "TITLE":    "Shipping Settings",
+    "SUBTITLE": "Define shipping zones (groups of countries) and the rate ranges that apply to each — by total weight or by order total. Multiple ranges with the same name form one rate group, automatically checked for gaps and overlaps.",
+
+    "ADD_ZONE":   "Add zone",
+    "NO_ZONES":   "No zones yet — click Add zone to define your first delivery region.",
+
+    "ZONE": {
+      "NAME":           "Zone name",
+      "NAME_PLACEHOLDER":"Domestic, International, GCC…",
+      "COUNTRIES":      "Countries",
+      "EDIT_COUNTRIES": "Edit countries",
+      "PICK_COUNTRIES": "Pick countries",
+      "COUNTRIES_COUNT":"{{count}} countries",
+      "NO_COUNTRIES":   "Pick at least one country.",
+      "DELETE":         "Delete zone",
+      "CONFIRM_DELETE": "Delete zone \"{{name}}\"? Its rates will be removed too.",
+      "DUPLICATE_NAME": "Another zone already uses this name."
+    },
+
+    "PICKER": {
+      "TITLE_NEW":            "Pick countries for the zone",
+      "TITLE_EDIT":           "Edit countries for {{name}}",
+      "SELECTED":             "Selected: {{count}}",
+      "SELECT_ALL_FILTERED":  "Select all filtered",
+      "CLEAR_ALL":            "Clear all",
+      "TAKEN":                "Taken",
+      "NO_MATCH":             "No countries match your search."
+    },
+
+    "RATES": {
+      "TITLE":           "Rates",
+      "ADD_GROUP":       "Add rate group",
+      "ADD_RANGE":       "Add range",
+      "EDIT_GROUP":      "Edit group",
+      "SAVE_GROUP":      "Save",
+      "CANCEL_GROUP":    "Cancel",
+      "GROUP_NAME":      "Rate name",
+      "GROUP_NAME_PH":   "Standard, Express, Overnight…",
+      "GROUP_TYPE":      "Type",
+      "GROUP_NOTE":      "Note (optional)",
+      "GROUP_NOTE_PH":   "Shown to the customer at checkout",
+      "TYPE_WEIGHT":     "By weight (kg)",
+      "TYPE_TOTAL":      "By order total",
+      "RANGE_FROM":      "From",
+      "RANGE_TO":        "To",
+      "RANGE_PRICE":     "Price",
+      "ERR_RANGE":       "From must be ≥ 0 and To must be greater than From.",
+      "ERR_NAME_REQ":    "Rate name is required.",
+      "GAP":             "Gap from {{from}} to {{to}}",
+      "OVERLAP":         "Overlap between two ranges",
+      "EMPTY":           "No rates yet — add a rate group to start charging for shipments to this zone.",
+      "DELETE_RANGE":    "Delete range"
+    },
+
+    "ERR_UNSAVED_GROUP": "You have unsaved rate-group edits. Save or cancel them before saving the page.",
+    "ERR_VALIDATION":    "Fix the highlighted errors before saving."
+  }
+}
