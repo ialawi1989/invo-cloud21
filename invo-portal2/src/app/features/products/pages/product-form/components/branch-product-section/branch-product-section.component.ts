@@ -26,6 +26,10 @@ import { ModalService } from '@shared/modal';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DropdownLoadFn, DropdownLoadResult } from '@shared/components/dropdown/search-dropdown.types';
 import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
+import {
+  SegmentedToggleComponent,
+  SegmentedToggleOption,
+} from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 import { ProductsService } from '../../../../services/products.service';
@@ -87,6 +91,7 @@ interface PricingTypeOption { value: PricingType; labelKey: string; }
     TranslateModule,
     SearchDropdownComponent,
     SkeletonComponent,
+    SegmentedToggleComponent,
     BranchPriceByQtyComponent,
     BranchSerialsComponent,
     BranchBatchesComponent,
@@ -165,6 +170,13 @@ export class BranchProductSectionComponent implements OnInit {
    */
   mode = signal<'single' | 'bulk'>('single');
   setMode(m: 'single' | 'bulk'): void { this.mode.set(m); }
+
+  /** Static option array for the shared `<app-segmented-toggle>` —
+   *  Single Branch / Bulk Edit. */
+  readonly modeOptions: SegmentedToggleOption<'single' | 'bulk'>[] = [
+    { value: 'single', label: 'PRODUCTS.FORM.SINGLE_BRANCH' },
+    { value: 'bulk',   label: 'PRODUCTS.FORM.BULK_EDIT' },
+  ];
 
   // ─── Single-mode UX state ─────────────────────────────────────────────
   /**

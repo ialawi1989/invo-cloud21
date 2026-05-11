@@ -20,6 +20,8 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
+import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { getProductTypeBadgeStyle } from '../../../products/utils/product-type-badge';
 import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import {
@@ -85,6 +87,7 @@ import {
     LoadingOverlayComponent,
     TooltipDirective,
     DropdownMenuBtnComponent,
+    MycurrencyPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './price-label-form.component.html',
@@ -404,4 +407,10 @@ export class PriceLabelFormComponent implements OnInit, CanLeaveComponent {
 
   trackLine   = (_: number, p: PriceLabelProductLine) => p.productId;
   trackOption = (_: number, o: PriceLabelOptionLine)  => o.optionId;
+
+  /** Per-product-type chip palette — wraps the shared util so the
+   *  template can call it via `[ngStyle]`. */
+  getTypeBadgeStyle(type: string | undefined): Record<string, string> {
+    return getProductTypeBadgeStyle(type);
+  }
 }

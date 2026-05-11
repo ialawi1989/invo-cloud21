@@ -1,0 +1,416 @@
+.shp-page {
+  padding: 16px 20px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  &__titles  { display: flex; flex-direction: column; gap: 4px; }
+  &__actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+}
+.page-title { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+.page-sub   { margin: 0; font-size: 13px; color: #64748b; max-width: 80ch; line-height: 1.5; }
+
+// ─── Empty state ─────────────────────────────────────────────────
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 60px 16px;
+  background: #fff;
+  border: 1px dashed #e2e8f0;
+  border-radius: 12px;
+  color: #94a3b8;
+
+  svg { color: #cbd5e1; }
+  p   { margin: 0; max-width: 60ch; text-align: center; font-size: 13px; }
+}
+
+// ─── Zone card ───────────────────────────────────────────────────
+.zone {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px 8px;
+  }
+
+  &__name-wrap { flex: 1 1 auto; min-width: 0; max-width: 420px; }
+
+  &__countries {
+    padding: 8px 16px 14px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  &__countries-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+
+    > strong { font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.04em; }
+  }
+  &__countries-empty {
+    margin: 0;
+    font-size: 12px;
+    color: #b45309;
+    font-weight: 600;
+  }
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  &__rates {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  &__rates-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    > strong { font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.04em; }
+  }
+  &__rates-empty {
+    margin: 0;
+    padding: 16px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 12px;
+    border: 1px dashed #e2e8f0;
+    border-radius: 8px;
+  }
+}
+
+// ─── Field chrome (shared with edit form) ────────────────────────
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  &--wide { grid-column: 1 / -1; }
+
+  &__label { font-size: 11px; font-weight: 600; color: #475569; }
+  &__err   { font-size: 11px; color: #b91c1c; font-weight: 600; }
+
+  &__input {
+    appearance: none;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #fff;
+    transition: border-color 100ms ease, box-shadow 100ms ease;
+
+    &:focus {
+      outline: 0;
+      border-color: var(--color-brand-400, #7dd3fc);
+      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    }
+    &--err {
+      border-color: #fecaca;
+      &:focus { box-shadow: 0 0 0 2px #fee2e2; }
+    }
+  }
+}
+
+select.field__input {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-inline-end: 24px;
+}
+
+// ─── Chips ───────────────────────────────────────────────────────
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #f1f5f9;
+  color: #475569;
+
+  &--brand {
+    background: var(--color-brand-50, #ecfeff);
+    color: var(--color-brand-700, #0e7490);
+    border: 1px solid var(--color-brand-200, #a5f3fc);
+    font-weight: 700;
+  }
+}
+
+// ─── Rate group ──────────────────────────────────────────────────
+.zone__groups {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rg {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+  box-sizing: border-box;
+
+  &.is-editing { border-color: var(--color-brand-300, #bae6fd); background: #f8fafc; }
+  &.cdk-drag-preview {
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+    border-color: var(--color-brand-300, #bae6fd);
+  }
+  &.cdk-drag-placeholder { opacity: 0.4; }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  &__handle {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    color: #94a3b8;
+    cursor: grab;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &:hover { background: #f1f5f9; color: #475569; }
+    &:active { cursor: grabbing; }
+  }
+  &__head-info {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  &__name { font-size: 14px; font-weight: 700; color: #0f172a; }
+  &__type {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #ecfeff;
+    color: #0e7490;
+    border: 1px solid #a5f3fc;
+  }
+  &__note { font-size: 12px; color: #64748b; }
+
+  &__edit {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 12px;
+
+    @media (max-width: 700px) { grid-template-columns: 1fr; }
+  }
+  &__edit-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  &__diag {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  &__diag-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid;
+
+    &--gap     { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    &--overlap { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+  }
+
+  &__ranges {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  &__range-head,
+  &__range {
+    display: grid;
+    grid-template-columns: 20px 1fr 1fr 1fr 36px;
+    gap: 8px;
+    align-items: center;
+  }
+  &__range-head {
+    padding: 4px 4px 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    > span:nth-child(2),
+    > span:nth-child(3),
+    > span:nth-child(4) { text-align: end; padding-inline-end: 6px; }
+  }
+  &__range {
+    padding: 2px 0;
+    box-sizing: border-box;
+    &.is-err .cell-input--num,
+    &.is-overlap .cell-input--num { border-color: #fecaca; background: #fff7f7; }
+    // Keep the floating preview a borderless clone — overriding padding
+    // here changes its height vs. the placeholder and makes the parent
+    // container show a scrollbar mid-drag.
+    &.cdk-drag-placeholder { opacity: 0.35; }
+  }
+  &__range-err {
+    grid-column: 1 / -1;
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: #b91c1c;
+    font-weight: 600;
+  }
+  &__row-handle {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    width: 20px;
+    height: 24px;
+    border-radius: 4px;
+    color: #cbd5e1;
+    cursor: grab;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    &:hover { background: #f1f5f9; color: #64748b; }
+    &:active { cursor: grabbing; }
+  }
+
+  &__add-range {
+    appearance: none;
+    align-self: flex-start;
+    background: transparent;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 100ms ease, border-color 100ms ease, color 100ms ease;
+
+    &:hover {
+      background: var(--color-brand-50, #ecfeff);
+      border-color: var(--color-brand-300, #bae6fd);
+      color: var(--color-brand-700, #0e7490);
+    }
+  }
+}
+
+// ─── Cell inputs (matches covered-zone for consistency) ──────────
+.cell-input {
+  appearance: none;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  color: #0f172a;
+  background: #fff;
+  transition: border-color 100ms ease, box-shadow 100ms ease;
+
+  &:focus {
+    outline: 0;
+    border-color: var(--color-brand-400, #7dd3fc);
+    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+  }
+  &--num { text-align: end; }
+}
+
+// ─── Buttons / icons ─────────────────────────────────────────────
+.icon-btn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 100ms ease, color 100ms ease;
+
+  &:hover { background: #f1f5f9; color: #0f172a; }
+  &--danger:hover { background: #fef2f2; color: #b91c1c; }
+}
+
+// CDK drag-drop polish: smooth rearrangement between siblings while
+// the placeholder shifts position.
+.cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+// ─── Save bar ────────────────────────────────────────────────────
+.save-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #e2e8f0;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: shp-spin 0.7s linear infinite;
+}
+@keyframes shp-spin { to { transform: rotate(360deg); } }

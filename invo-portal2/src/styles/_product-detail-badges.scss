@@ -35,12 +35,15 @@
   // if the inherited typography needs to override the defaults.
 
   // ── Barcode ──────────────────────────────────────────────────────
-  // Small monospace pill in the brand teal palette. Matches the
-  // products-list barcode column 1:1 — change here to roll forward
-  // a single visual update across every surface.
+  // Neutral slate so the barcode reads as an identifier — keeps it
+  // visually distinct from the per-type chip palette (inventory,
+  // service, etc.) which leans cyan/blue/teal in many hues. The
+  // monospace font is the primary differentiator; the muted bg
+  // avoids competing with the saturated type pill next to it.
   &--barcode {
-    background: var(--color-brand-100, #d6f4f8);
-    color: var(--color-brand-700, #207484);
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Cascadia Mono",
       "Roboto Mono", Consolas, "Courier New", monospace;
     font-size: 10.5px;

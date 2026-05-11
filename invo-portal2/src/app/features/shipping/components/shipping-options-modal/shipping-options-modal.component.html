@@ -1,0 +1,51 @@
+<app-modal-header [title]="'SHIPPING.OPTIONS.TITLE' | translate"/>
+
+<div class="som__body">
+  @if (loading()) {
+    <div class="som__loading"><span class="spinner"></span></div>
+  } @else {
+    <p class="som__hint">{{ 'SHIPPING.OPTIONS.HINT' | translate }}</p>
+
+    <!-- Weight UOM only matters for cross-border shipping with
+         weight-based rate ranges; the address/radius delivery editors
+         don't use it, so hide it for `type === 'delivery'`. -->
+    @if (options().type === 'shipping') {
+      <label class="som__field">
+        <span class="som__label">{{ 'SHIPPING.OPTIONS.WEIGHT_UOM' | translate }}</span>
+        <app-search-dropdown
+          [items]="weightOptions()"
+          [displayWith]="optDisplay"
+          [compareWith]="optCompare"
+          [toValue]="optToValue"
+          [value]="selectedWeight()"
+          [searchable]="false"
+          [clearable]="false"
+          (valueChange)="onWeightChange($event)"/>
+      </label>
+    }
+
+    <label class="som__field">
+      <span class="som__label">{{ 'SHIPPING.OPTIONS.DELIVERY_TAX' | translate }}</span>
+      <app-search-dropdown
+        [items]="taxes()"
+        [displayWith]="taxDisplay"
+        [compareWith]="taxCompare"
+        [toValue]="taxToValue"
+        [value]="selectedTax()"
+        [searchable]="taxes().length > 6"
+        [clearable]="true"
+        [placeholder]="'SHIPPING.OPTIONS.NO_TAX' | translate"
+        (valueChange)="onTaxChange($event)"/>
+    </label>
+  }
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btn btn-ghost"   (click)="cancel()" [disabled]="saving()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="btn btn-primary" (click)="save()"   [disabled]="loading() || saving()">
+    @if (saving()) { <span class="spinner spinner--sm" aria-hidden="true"></span> }
+    {{ 'COMMON.SAVE' | translate }}
+  </button>
+</app-modal-footer>

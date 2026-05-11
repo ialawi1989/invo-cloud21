@@ -1,0 +1,54 @@
+:host { display: flex; flex-direction: column; }
+
+.som__body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.som__hint {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.som__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.som__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.som__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e2e8f0;
+  border-top-color: var(--color-brand-500, #0891b2);
+  border-radius: 50%;
+  animation: som-spin 0.7s linear infinite;
+
+  &--sm {
+    width: 12px;
+    height: 12px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    margin-inline-end: 6px;
+    vertical-align: middle;
+  }
+}
+@keyframes som-spin { to { transform: rotate(360deg); } }

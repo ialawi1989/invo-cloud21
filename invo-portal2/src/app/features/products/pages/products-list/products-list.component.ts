@@ -23,6 +23,8 @@ import { ModalService } from '@shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 import { PickTaxModalComponent } from '@shared/components/pick-tax-modal/pick-tax-modal.component';
 import { ApiService } from '@core/http/api.service';
+import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { getProductTypeBadgeStyle } from '../../utils/product-type-badge';
 import { ProductDetailDrawerComponent, ProductDetailDrawerData } from '../../components/product-detail-drawer/product-detail-drawer.component';
 import { ProductStockModalComponent, ProductStockModalData } from '../../components/product-stock-modal/product-stock-modal.component';
 import {
@@ -33,7 +35,7 @@ import {
 @Component({
   selector: 'app-products-list',
   standalone: true,
-  imports: [CommonModule, OverlayModule, ListPageComponent, TranslateModule, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent],
+  imports: [CommonModule, OverlayModule, ListPageComponent, TranslateModule, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe],
   providers: [ProductsListStateService],
   templateUrl: './products-list.component.html',
   styleUrl: './products-list.component.scss'
@@ -627,21 +629,11 @@ export class ProductsListComponent implements OnInit {
     return type.replace(/([A-Z])/g, '_$1').toUpperCase();
   }
 
+  /** Per-product-type chip palette — delegates to the shared util
+   *  so every surface (this list, picker modals, price-label form,
+   *  discount form) draws from the same source of truth. */
   getTypeBadgeStyle(type: string): Record<string, string> {
-    const styles: Record<string, { bg: string; color: string }> = {
-      'inventory':     { bg: '#dbeafe', color: '#1d4ed8' },
-      'serialized':    { bg: '#f3e8ff', color: '#7c3aed' },
-      'batch':         { bg: '#fef9c3', color: '#a16207' },
-      'kit':           { bg: '#dcfce7', color: '#15803d' },
-      'service':       { bg: '#cffafe', color: '#0e7490' },
-      'package':       { bg: '#ffedd5', color: '#c2410c' },
-      'menuItem':      { bg: '#ede9fe', color: '#6d28d9' },
-      'menuSelection': { bg: '#e0e7ff', color: '#4338ca' },
-      'tailoring':     { bg: '#ccfbf1', color: '#0f766e' },
-      'matrix':        { bg: '#f1f5f9', color: '#475569' }
-    };
-    const s = styles[type] || { bg: '#f1f5f9', color: '#475569' };
-    return { background: s.bg, color: s.color };
+    return getProductTypeBadgeStyle(type);
   }
 
   onRowClick(event: any): void {

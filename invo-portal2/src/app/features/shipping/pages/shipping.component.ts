@@ -13,7 +13,13 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import {
+  CdkDragDrop,
+  DragDropModule,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 
+import { CompanyService } from '@core/auth/company.service';
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
@@ -21,6 +27,7 @@ import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import {
   ConfirmModalComponent,
   ConfirmModalData,
@@ -64,6 +71,8 @@ import {
     TranslateModule,
     BreadcrumbsComponent,
     LoadingOverlayComponent,
+    SearchDropdownComponent,
+    DragDropModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shipping.component.html',
@@ -76,6 +85,21 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
   private toast      = inject(ToastService);
   private router     = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private company    = inject(CompanyService);
+
+  /** Currency symbol from company settings — shown as the unit
+   *  adornment on `Price` inputs and on `From/To` for `total` rate
+   *  groups. Falls back to empty string when settings haven't loaded. */
+  currencySymbol = computed<string>(() => this.company.settings()?.settings?.currencySymbol ?? '');
+  /** Weight UOM (e.g. `KG`) from company settings — adornment for
+   *  `From/To` inputs of `weight` rate groups. */
+  weightUOM      = computed<string>(() => this.company.settings()?.weightUOM ?? this.company.settings()?.settings?.weightUOM ?? '');
+
+  /** Adornment for a group's `from`/`to` cells: weight UOM for
+   *  `weight` groups, currency symbol for `total` groups. */
+  unitFor(type: 'weight' | 'total'): string {
+    return type === 'weight' ? this.weightUOM() : this.currencySymbol();
+  }
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
@@ -142,6 +166,40 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
   canSave = computed<boolean>(() =>
     !this.hasErrors() && this.isDirty() && !this.saving() && this.editingGroup() === null,
   );
+
+  // ─── Type-picker (rate group) ───────────────────────────────────
+  /** Pre-translated options for the rate-group "Type" picker.
+   *  `<app-search-dropdown>` renders `displayWith` verbatim — no
+   *  translate pipe inside its row template — so we resolve the
+   *  i18n keys here, with `i18nTick` as a dep to refresh on
+   *  language change. */
+  typeOptions = computed<{ value: 'weight' | 'total'; label: string }[]>(() => {
+    this.i18nTick();
+    return [
+      { value: 'weight', label: this.translate.instant('SHIPPING.RATES.TYPE_WEIGHT') },
+      { value: 'total',  label: this.translate.instant('SHIPPING.RATES.TYPE_TOTAL') },
+    ];
+  });
+
+  /** Resolve the draft's `type` string to its option object so
+   *  the dropdown's `[value]` binding can show the current pick. */
+  selectedTypeOption(): { value: 'weight' | 'total'; label: string } | null {
+    const t = this.editingDraft()?.type;
+    if (!t) return null;
+    return this.typeOptions().find(o => o.value === t) ?? null;
+  }
+
+  /** Dropdown emits `T | T[] | null` — narrow at the edge so the
+   *  edit-draft setter stays terse. */
+  onEditTypeChange(v: { value: 'weight' | 'total' } | { value: 'weight' | 'total' }[] | null): void {
+    const opt = Array.isArray(v) ? v[0] ?? null : v;
+    if (opt) this.setEditDraft('type', opt.value);
+  }
+
+  // SearchDropdown adapters — generic over `{ value, label }`.
+  optDisplay = (o: { label?: string } | null) => o?.label ?? '';
+  optCompare = (a: { value?: string } | null, b: { value?: string } | null) => (a?.value ?? null) === (b?.value ?? null);
+  optToValue = (o: { value?: string } | null) => o?.value ?? '';
 
   constructor() {
     withTranslations('shipping');
@@ -316,6 +374,16 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
     return Number.isFinite(from) && Number.isFinite(to) && from >= 0 && to > from;
   }
 
+  /** True when this range participates in any overlap detected for
+   *  its group — used to mark the row's inputs with the error
+   *  border so the chip message points to the offending rows. */
+  isOverlapping(group: RateGroup, r: Rate): boolean {
+    for (const o of group.overlaps) {
+      if (o.range1.id === r.id || o.range2.id === r.id) return true;
+    }
+    return false;
+  }
+
   // ─── Save / Cancel ──────────────────────────────────────────────
   async save(): Promise<void> {
     if (!this.canSave()) {
@@ -396,11 +464,44 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
       }
     }
     for (const g of map.values()) {
-      g.ranges.sort((a, b) => parseFloat(a.from || '0') - parseFloat(b.from || '0'));
+      // Honour the user's drag-reorder; gaps/overlaps are computed
+      // against the visible order so warnings track what they see.
       g.gaps     = this.detectGaps(g.ranges);
       g.overlaps = this.detectOverlaps(g.ranges);
     }
     return Array.from(map.values());
+  }
+
+  // ─── Drag & drop reorder ────────────────────────────────────────
+  /** Reorder ranges within a single rate group. Rebuilds `z.rates`
+   *  so the *interleaved* order across groups stays stable: we only
+   *  permute the slice that belongs to this group. */
+  dropRange(zoneId: number, group: RateGroup, ev: CdkDragDrop<Rate[]>): void {
+    if (ev.previousIndex === ev.currentIndex) return;
+    this.zones.update(list => list.map(z => {
+      if (z.id !== zoneId) return z;
+      const inGroup = (r: Rate) => r.name === group.name && r.type === group.type;
+      const groupRates = z.rates.filter(inGroup);
+      moveItemInArray(groupRates, ev.previousIndex, ev.currentIndex);
+      // Splice the reordered slice back into the original positions.
+      let i = 0;
+      const next = z.rates.map(r => inGroup(r) ? groupRates[i++] : r);
+      return { ...z, rates: next };
+    }));
+  }
+
+  /** Reorder rate groups within a zone. Implemented by re-emitting
+   *  `z.rates` with the groups concatenated in the new order
+   *  (preserving each group's internal range order). */
+  dropGroup(zoneId: number, ev: CdkDragDrop<RateGroup[]>): void {
+    if (ev.previousIndex === ev.currentIndex) return;
+    this.zones.update(list => list.map(z => {
+      if (z.id !== zoneId) return z;
+      const groups = this.groupRates(z.rates);
+      moveItemInArray(groups, ev.previousIndex, ev.currentIndex);
+      const next = groups.flatMap(g => g.ranges);
+      return { ...z, rates: next };
+    }));
   }
 
   private detectGaps(ranges: Rate[]): Gap[] {
@@ -427,7 +528,12 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
     return out;
   }
 
-  private async openCountryPicker(data: CountryPickerModalData): Promise<string[] | undefined> {
+  /** Helper takes everything the picker needs *except* the
+   *  countries list — the page already has it loaded, so we
+   *  inject it here to keep the call sites short. */
+  private async openCountryPicker(
+    data: Omit<CountryPickerModalData, 'countries'>,
+  ): Promise<string[] | undefined> {
     const ref = this.modal.open<
       CountryPickerModalComponent,
       CountryPickerModalData,

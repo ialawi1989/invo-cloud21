@@ -1,0 +1,109 @@
+{
+  "DISCOUNT": {
+    "LIST": {
+      "TITLE":              "الخصومات",
+      "SUBTITLE":           "خصومات مسمّاة تُطبَّق على الفواتير والإيصالات ومعاملات نقاط البيع.",
+      "ADD_NEW":            "إضافة خصم",
+      "SEARCH_PLACEHOLDER": "ابحث في الخصومات…",
+      "NAME":               "الاسم",
+      "TYPE":               "النوع",
+      "AMOUNT":             "القيمة",
+      "STATUS":             "الحالة",
+      "TYPE_MANUAL":        "يدوي",
+      "TYPE_AUTOMATIC":     "تلقائي",
+      "STATUS_ACTIVE":      "مفعّل",
+      "STATUS_INACTIVE":    "موقوف",
+      "SCOPE_ALL_PRODUCTS": "كل المنتجات",
+      "SCOPE_ALL_BRANCHES": "كل الفروع",
+      "SCOPE_N_PRODUCTS":   "{{count}} منتجات",
+      "SCOPE_N_BRANCHES":   "{{count}} فروع",
+      "MIN_QTY_LABEL":      "الحد الأدنى {{count}}",
+      "EMPTY":              "لا توجد خصومات بعد — أضف خصمًا للبدء.",
+      "NO_MATCH":           "لا توجد خصومات تطابق بحثك."
+    },
+    "FORM": {
+      "NEW_TITLE":          "خصم جديد",
+      "EDIT_TITLE":         "تعديل {{name}}",
+      "DETAILS":            "التفاصيل",
+      "SCOPE":              "النطاق",
+      "SCOPE_HINT":         "اختياري — اترك القائمتين فارغتين لتطبيق الخصم في كل مكان.",
+
+      "TYPE":                  "النوع",
+      "TYPE_MANUAL":           "يدوي",
+      "TYPE_AUTOMATIC":        "تلقائي",
+      "TYPE_MANUAL_HINT":      "يختار الكاشير الخصم يدويًا في نقطة البيع.",
+      "TYPE_AUTOMATIC_HINT":   "يُطبَّق تلقائيًا ضمن الفترة المجدولة أدناه.",
+      "TYPE_LOCKED_HINT":      "لا يمكن تغيير النوع بعد حفظ الخصم.",
+
+      "SCHEDULE":              "الجدول",
+      "SCHEDULE_HINT":         "الفترة التي يُطبَّق فيها الخصم. اترك تاريخ الانتهاء فارغًا ليستمر بلا نهاية.",
+      "ALL_DAY":               "يعمل طوال اليوم",
+      "ALL_DAY_HINT":          "عند التفعيل، يكون الجدول بحسب التاريخ فقط — بلا وقت بداية أو نهاية.",
+      "START_DATE":            "تاريخ البداية",
+      "START_TIME":            "وقت البداية",
+      "EXPIRE_DATE":           "تاريخ الانتهاء",
+      "EXPIRE_TIME":           "وقت الانتهاء",
+      "EXPIRE_HINT":           "اختياري — اتركه فارغًا لتاريخ انتهاء مفتوح.",
+
+      "NAME":               "الاسم",
+      "NAME_PLACEHOLDER":   "عملاء VIP، عرض رمضان…",
+
+      "AMOUNT":             "القيمة",
+      "AMOUNT_HINT":        "مبلغ ثابت بعملة الشركة، أو نسبة من 0 إلى 100.",
+      "FIXED":              "ثابت",
+      "PERCENT":            "نسبة %",
+
+      "QTY_BASED":          "خصم نقدي بحسب الكمية",
+      "QTY_BASED_HINT":     "عند التفعيل، يُطبَّق المبلغ الثابت على كل قطعة بدل البند الواحد.",
+
+      "MIN_QTY":            "الحد الأدنى لكمية المنتج",
+      "MIN_QTY_HINT":       "0 = بدون حد أدنى.",
+
+      "APPLY_TO":                       "ينطبق على",
+      "APPLY_PRODUCT":                  "منتجات محددة",
+      "APPLY_CATEGORY":                 "أصناف محددة",
+      "APPLY_SWITCH_TITLE":             "مسح الاختيار الحالي؟",
+      "APPLY_SWITCH_TO_PRODUCT_MSG":    "التبديل إلى المنتجات سيمسح الأصناف التي اخترتها. هل تريد المتابعة؟",
+      "APPLY_SWITCH_TO_CATEGORY_MSG":   "التبديل إلى الأصناف سيمسح المنتجات التي اخترتها. هل تريد المتابعة؟",
+
+      "PRODUCTS":              "المنتجات",
+      "PRODUCTS_PLACEHOLDER":  "اختر المنتجات…",
+      "PRODUCTS_HINT":         "فارغ = ينطبق على كل المنتجات.",
+      "PICK_PRODUCTS":         "اختر المنتجات",
+      "PICK_MORE_PRODUCTS":    "تعديل المختار",
+
+      "CATEGORIES":              "الأصناف",
+      "CATEGORIES_PLACEHOLDER":  "اختر الأصناف…",
+      "CATEGORIES_HINT":         "فارغ = ينطبق على كل الأصناف.",
+      "PICK_CATEGORIES":         "اختر الأصناف",
+      "PICK_MORE_CATEGORIES":    "تعديل المختار",
+
+      "BRANCHES":              "متاح في الفروع",
+      "BRANCHES_PLACEHOLDER":  "اختر الفروع…",
+      "BRANCHES_HINT":         "فارغ = متاح في كل الفروع.",
+
+      "EMPLOYEES":             "مسموح للموظفين",
+      "EMPLOYEES_PLACEHOLDER": "اختر الموظفين…",
+      "EMPLOYEES_HINT":        "فارغ = يمكن لأي موظف تطبيق هذا الخصم.",
+
+      "AVAILABILITY":          "التوفر",
+      "AVAILABLE":             "مفعّل في نقطة البيع",
+      "AVAILABLE_HINT":        "عند الإيقاف، لا يستطيع الكاشير اختيار هذا الخصم في الجهاز.",
+      "AVAILABLE_ONLINE":      "مفعّل عبر الإنترنت",
+      "AVAILABLE_ONLINE_HINT": "عند الإيقاف، لن يُطبّق المتجر هذا الخصم عند الدفع.",
+
+      "ERR_NAME_REQUIRED":       "الاسم مطلوب.",
+      "ERR_NAME_DUPLICATE":      "خصم آخر يستخدم هذا الاسم.",
+      "ERR_AMOUNT_INVALID":      "يجب أن تكون القيمة أكبر من 0.",
+      "ERR_PERCENT_RANGE":       "النسبة يجب أن تكون بين 0 و100.",
+      "ERR_START_REQUIRED":      "الخصومات التلقائية تحتاج إلى تاريخ بداية.",
+      "ERR_EXPIRE_BEFORE_START": "تاريخ الانتهاء لا يمكن أن يكون قبل تاريخ البداية."
+    },
+    "PICKER": {
+      "PRODUCTS_TITLE":   "اختر المنتجات",
+      "CATEGORIES_TITLE": "اختر الأصناف",
+      "SELECTED_COUNT":   "تم اختيار {{count}}",
+      "NO_MATCH":         "لا توجد نتائج."
+    }
+  }
+}

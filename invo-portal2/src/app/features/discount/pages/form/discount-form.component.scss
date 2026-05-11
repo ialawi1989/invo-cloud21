@@ -1,0 +1,389 @@
+.df-page {
+  padding: 16px 20px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header { display: flex; flex-direction: column; gap: 4px; }
+.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+
+// Two-column body — main (2fr) + side (1fr). Side becomes a
+// horizontal strip above the main on narrow screens so the small
+// option cards stay visible without scrolling.
+.df-body {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+.df-main,
+.df-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.df-side {
+  position: sticky;
+  // Top offset clears the app's fixed top bar; bottom budget in
+  // `max-height` accounts for the top offset plus the fixed
+  // save-bar that the form footer renders. `dvh` so mobile
+  // browsers shrink the budget when the URL bar appears.
+  top: 72px;
+  max-height: calc(100dvh - 140px);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+@media (max-width: 900px) {
+  .df-side {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+
+  &__head {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  &__title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  &__sub {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.5;
+  }
+  &__body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  // Compact variant for the sidebar cards — denser padding so the
+  // side column doesn't feel airy compared to the main column.
+  &--compact {
+    .card__head { padding: 10px 12px; }
+    .card__title { font-size: 13px; }
+    .card__body { padding: 12px; gap: 10px; }
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  &__hint  { font-size: 11px; color: #94a3b8; }
+  &__err   { font-size: 11px; color: #b91c1c; font-weight: 600; }
+  &__validating {
+    width: 10px;
+    height: 10px;
+    border: 2px solid #e2e8f0;
+    border-top-color: var(--color-brand-500, #0891b2);
+    border-radius: 50%;
+    animation: df-spin 0.7s linear infinite;
+  }
+
+  &__input {
+    appearance: none;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #fff;
+    transition: border-color 100ms ease, box-shadow 100ms ease;
+
+    &:focus {
+      outline: 0;
+      border-color: var(--color-brand-400, #7dd3fc);
+      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    }
+    &::placeholder { color: #94a3b8; }
+
+    &--err {
+      border-color: #fecaca;
+      &:focus { box-shadow: 0 0 0 2px #fee2e2; }
+    }
+  }
+}
+
+// Removable chip list used by the "Allowed for employees" picker
+// to surface every selected employee without re-opening the
+// dropdown. Wraps onto multiple rows; the parent card's overflow
+// keeps the layout from blowing past the sidebar width.
+// Picker block — "Pick products" / "Pick categories" header +
+// list of selected items below.
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--color-brand-100, #e0f2fe);
+    color: var(--color-brand-700, #0e7490);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  &__empty {
+    margin: 0;
+    padding: 14px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 12px;
+    background: #f8fafc;
+    border: 1px dashed #e2e8f0;
+    border-radius: 8px;
+  }
+}
+
+// Selected items list — image thumbnail + name + chips + remove.
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    background: #fff;
+
+    &:last-child { border-bottom: 0; }
+  }
+  &__thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: #f1f5f9;
+    flex-shrink: 0;
+
+    &--placeholder {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #cbd5e1;
+    }
+  }
+  &__main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  &__name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  &__chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  &__remove {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: #64748b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &:hover { background: #fef2f2; color: #b91c1c; }
+  }
+}
+
+// Selected-item chips use the canonical `.app-product-badge`
+// classes from `styles/_product-detail-badges.scss` — no local
+// chip styles needed here. The employee chip block (further down)
+// stays local because it carries a removable ✕ which the global
+// badge doesn't.
+
+.chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 4px 4px 10px;
+  background: var(--color-brand-50, #ecfeff);
+  color: var(--color-brand-700, #0e7490);
+  border: 1px solid var(--color-brand-200, #a5f3fc);
+  border-radius: 999px;
+  font-size: 12px;
+  max-width: 100%;
+
+  &__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  &__remove {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: var(--color-brand-700, #0e7490);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &:hover { background: rgba(14, 116, 144, 0.12); }
+  }
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--color-brand-600, #0891b2);
+  }
+  &__text  { display: flex; flex-direction: column; gap: 2px; }
+  &__label { font-size: 13px; font-weight: 600; color: #0f172a; }
+  &__hint  { font-size: 11px; color: #64748b; line-height: 1.5; }
+}
+
+// Segmented toggles in this form use the shared
+// `<app-segmented-toggle>` component — no local styles needed.
+
+// Two-column date/time row in the main column. Stacks vertically
+// when the row lives inside the narrow sidebar (.df-side) or on
+// small screens.
+.date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+.df-side .date-row {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.amount-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+
+  &__input { flex: 1 1 auto; min-width: 0; }
+
+  // The Fixed/Percent picker is now an `<app-segmented-toggle>`
+  // rendered alongside the amount input — no nested toggle styles
+  // needed here. The shared component owns the visual.
+}
+
+.save-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #e2e8f0;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: df-spin 0.7s linear infinite;
+}
+@keyframes df-spin { to { transform: rotate(360deg); } }

@@ -1,0 +1,199 @@
+<div class="dl-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'DISCOUNT.LIST.TITLE' | translate }}</h1>
+      <p class="page-sub">{{ 'DISCOUNT.LIST.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn-primary" (click)="add()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        {{ 'DISCOUNT.LIST.ADD_NEW' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <label class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text"
+        [value]="search()"
+        (input)="onSearchInput($any($event.target).value)"
+        [placeholder]="'DISCOUNT.LIST.SEARCH_PLACEHOLDER' | translate"/>
+      @if (search()) {
+        <button type="button" class="search__clear" (click)="clearSearch()" aria-label="Clear">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      }
+    </label>
+
+    @if (total() > 0) {
+      <div class="pager">
+        <span class="pager__range">{{ rangeLabel() }}</span>
+        <button type="button" class="pager__btn" (click)="goPrev()"
+          [disabled]="page() <= 1 || loading()"
+          [attr.aria-label]="'COMMON.PREVIOUS' | translate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="rtl:rotate-180">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button type="button" class="pager__btn" (click)="goNext()"
+          [disabled]="page() >= pageCount() || loading()"
+          [attr.aria-label]="'COMMON.NEXT' | translate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="rtl:rotate-180">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+    }
+  </div>
+
+  <section class="card">
+    @if (loading() && rows().length === 0) {
+      <table class="table table--skeleton" role="grid" aria-busy="true">
+        <thead>
+          <tr>
+            <th class="table__name">{{ 'DISCOUNT.LIST.NAME' | translate }}</th>
+            <th class="table__type">{{ 'DISCOUNT.LIST.TYPE' | translate }}</th>
+            <th class="table__amount">{{ 'DISCOUNT.LIST.AMOUNT' | translate }}</th>
+            <th class="table__status">{{ 'DISCOUNT.LIST.STATUS' | translate }}</th>
+            <th class="table__actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (_ of [0,1,2,3,4]; track $index) {
+            <tr>
+              <td class="table__name">
+                <app-skeleton variant="line" width="40%"/>
+                <div class="row-meta-skel"><app-skeleton variant="line" width="160px"/></div>
+              </td>
+              <td class="table__type"><app-skeleton variant="line" width="60px"/></td>
+              <td class="table__amount"><app-skeleton variant="line" width="60px"/></td>
+              <td class="table__status"><app-skeleton variant="line" width="50px"/></td>
+              <td class="table__actions"><app-skeleton variant="line" width="28px"/></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else if (rows().length === 0) {
+      <div class="empty">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+          <line x1="7" y1="7" x2="7.01" y2="7"/>
+        </svg>
+        <p>{{ (search() ? 'DISCOUNT.LIST.NO_MATCH' : 'DISCOUNT.LIST.EMPTY') | translate }}</p>
+        @if (!search()) {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="add()">
+            {{ 'DISCOUNT.LIST.ADD_NEW' | translate }}
+          </button>
+        }
+      </div>
+    } @else {
+      <table class="table" role="grid">
+        <thead>
+          <tr>
+            <th class="table__name">
+              <button type="button" class="th-sort"
+                [class.is-sorted]="sortDirOf('name')"
+                (click)="toggleSort('name')">
+                {{ 'DISCOUNT.LIST.NAME' | translate }}
+                <span class="th-sort__arrow" [attr.data-dir]="sortDirOf('name') || ''" aria-hidden="true"></span>
+              </button>
+            </th>
+            <th class="table__type">
+              <button type="button" class="th-sort"
+                [class.is-sorted]="sortDirOf('type')"
+                (click)="toggleSort('type')">
+                {{ 'DISCOUNT.LIST.TYPE' | translate }}
+                <span class="th-sort__arrow" [attr.data-dir]="sortDirOf('type') || ''" aria-hidden="true"></span>
+              </button>
+            </th>
+            <th class="table__amount">
+              <button type="button" class="th-sort"
+                [class.is-sorted]="sortDirOf('amount')"
+                (click)="toggleSort('amount')">
+                {{ 'DISCOUNT.LIST.AMOUNT' | translate }}
+                <span class="th-sort__arrow" [attr.data-dir]="sortDirOf('amount') || ''" aria-hidden="true"></span>
+              </button>
+            </th>
+            <th class="table__status">{{ 'DISCOUNT.LIST.STATUS' | translate }}</th>
+            <th class="table__actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.id) {
+            <tr (click)="edit(row)">
+              <td class="table__name">
+                <span class="row-name">{{ row.name || '—' }}</span>
+                <div class="row-meta">
+                  <span class="row-meta__scope">{{ scopeLabel(row) }}</span>
+                  @if (scheduleLabel(row); as schedule) {
+                    <span class="row-meta__sep">·</span>
+                    <span class="row-meta__schedule">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8"  y1="2" x2="8"  y2="6"/>
+                        <line x1="3"  y1="10" x2="21" y2="10"/>
+                      </svg>
+                      {{ schedule }}
+                    </span>
+                  }
+                  @if (row.minProductQty > 0) {
+                    <span class="row-meta__sep">·</span>
+                    <span class="row-meta__min">
+                      {{ 'DISCOUNT.LIST.MIN_QTY_LABEL' | translate:{ count: row.minProductQty } }}
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="table__type">
+                <span class="chip" [class.chip--auto]="row.type === 'automatic'">
+                  {{ ('DISCOUNT.LIST.TYPE_' + (row.type === 'automatic' ? 'AUTOMATIC' : 'MANUAL')) | translate }}
+                </span>
+              </td>
+              <td class="table__amount">
+                @if (isPercent(row)) {
+                  {{ row.amount }}%
+                } @else {
+                  {{ row.amount | mycurrency }}
+                }
+              </td>
+              <td class="table__status">
+                <span class="status-dot"
+                  [class.status-dot--on]="row.available"
+                  [class.status-dot--off]="!row.available">
+                  <span class="status-dot__bullet" aria-hidden="true"></span>
+                  {{ (row.available ? 'DISCOUNT.LIST.STATUS_ACTIVE' : 'DISCOUNT.LIST.STATUS_INACTIVE') | translate }}
+                </span>
+              </td>
+              <td class="table__actions" (click)="$event.stopPropagation()">
+                <app-dropdown-menu-btn
+                  [items]="rowMenuItems(row)"
+                  [appendToBody]="true"
+                  [chevron]="false"
+                  align="end"
+                  triggerClass="icon-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <circle cx="5"  cy="12" r="1.75"/>
+                    <circle cx="12" cy="12" r="1.75"/>
+                    <circle cx="19" cy="12" r="1.75"/>
+                  </svg>
+                </app-dropdown-menu-btn>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

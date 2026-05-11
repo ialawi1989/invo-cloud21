@@ -1,0 +1,291 @@
+.dl-page {
+  padding: 16px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  &__titles { display: flex; flex-direction: column; gap: 4px; }
+  &__actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+}
+
+.page-title { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+.page-sub   { margin: 0; font-size: 13px; color: #64748b; max-width: 60ch; line-height: 1.5; }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 8px 0 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  color: #94a3b8;
+  flex: 1 1 auto;
+  max-width: 360px;
+
+  > svg { color: #94a3b8; flex-shrink: 0; }
+  > input {
+    flex: 1 1 auto;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #0f172a;
+    font-size: 13px;
+    &::placeholder { color: #94a3b8; }
+  }
+  &:focus-within {
+    border-color: var(--color-brand-300, #bae6fd);
+    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+  }
+  &__clear {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    &:hover { background: #f1f5f9; color: #0f172a; }
+  }
+}
+
+.pager {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #475569;
+
+  &__range { padding-inline-end: 6px; }
+
+  &__btn {
+    appearance: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover:not(:disabled) { background: #f8fafc; }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+  }
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 12px 14px;
+    text-align: start;
+    font-size: 13px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background 100ms ease;
+    &:hover { background: #f8fafc; }
+    &:last-child td { border-bottom: 0; }
+  }
+
+  &__name    { width: 40%; }
+  &__type    { width: 12%; }
+  &__amount  { width: 18%; color: #0f172a; font-weight: 600; }
+  &__status  { width: 14%; }
+  &__actions { width: 60px; text-align: end; }
+}
+
+.row-name { font-weight: 600; color: #0f172a; }
+
+// Sortable column header. The dot/arrow is a pseudo-CSS arrow
+// drawn from `border` so we don't ship another SVG inline. Three
+// states: idle (faint), asc (▲), desc (▼).
+.th-sort {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &:hover { color: #0f172a; }
+  &.is-sorted { color: #0f172a; }
+
+  &__arrow {
+    width: 8px;
+    height: 8px;
+    position: relative;
+    opacity: 0.35;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-inline: 4px solid transparent;
+    }
+    &::before { top: 0;    border-bottom: 4px solid currentColor; }
+    &::after  { bottom: 0; border-top:    4px solid currentColor; }
+
+    &[data-dir='asc']  { opacity: 1; &::after  { opacity: 0.2; } }
+    &[data-dir='desc'] { opacity: 1; &::before { opacity: 0.2; } }
+  }
+}
+
+.row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #64748b;
+
+  &__sep      { color: #cbd5e1; }
+  &__scope    { color: #475569; }
+  &__schedule {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #475569;
+    > svg { color: #94a3b8; }
+  }
+  &__min { color: #475569; }
+}
+
+// Skeleton placeholder spacing under the name skeleton — matches
+// the live row's `row-meta` line height so the loader doesn't
+// jump when real data lands.
+.row-meta-skel { margin-top: 6px; }
+
+// Active / Inactive pill with a small leading dot.
+.status-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+
+  &__bullet {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  &--on {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+  }
+  &--off {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #ecfeff;
+  color: #0e7490;
+  border: 1px solid #a5f3fc;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  &--auto {
+    background: #fff7ed;
+    color: #9a3412;
+    border-color: #fed7aa;
+  }
+}
+
+.icon-btn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover { background: #f1f5f9; color: #0f172a; }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 16px;
+  color: #94a3b8;
+  font-size: 13px;
+
+  svg  { color: #cbd5e1; }
+  p    { margin: 0; }
+  .btn { margin-top: 4px; }
+}

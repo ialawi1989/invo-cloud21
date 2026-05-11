@@ -225,9 +225,14 @@ function snapStep(n: number, step: number): number {
 }
 
 function parse24h(v: string): { hour12: number; minute: number; meridiem: Meridiem } {
-  const [hStr = '12', mStr = '0'] = (v ?? '').split(':');
-  const h24 = clamp(parseInt(hStr, 10) || 12, 0, 23);
-  const m   = clamp(parseInt(mStr, 10) || 0, 0, 59);
+  // `parseInt('00') || 12` would treat midnight as noon because `0`
+  // is falsy. Use explicit NaN guards so `"00:00"` round-trips as
+  // 12:00 AM and `"12:00"` as 12:00 PM.
+  const [hStr = '', mStr = ''] = (v ?? '').split(':');
+  const hParsed = parseInt(hStr, 10);
+  const mParsed = parseInt(mStr, 10);
+  const h24 = clamp(Number.isFinite(hParsed) ? hParsed : 12, 0, 23);
+  const m   = clamp(Number.isFinite(mParsed) ? mParsed : 0,  0, 59);
   const meridiem: Meridiem = h24 >= 12 ? 'PM' : 'AM';
   const hour12 = ((h24 + 11) % 12) + 1;
   return { hour12, minute: m, meridiem };

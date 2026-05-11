@@ -1,0 +1,120 @@
+<div class="pmc-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+      @if (provider(); as p) {
+        <p class="page-sub">
+          {{ 'PAYMENT_METHODS.CONNECT.SUBTITLE' | translate:{ provider: p.name } }}
+          @if (p.setupDocUrl) {
+            · <a [href]="p.setupDocUrl" target="_blank" rel="noopener noreferrer">{{ p.setupDocUrl }}</a>
+          }
+        </p>
+      }
+    </div>
+  </header>
+
+  <!-- Unknown provider — slug isn't in the registry. -->
+  @if (!provider()) {
+    <section class="card">
+      <div class="card__body">
+        <div class="placeholder">
+          <p>
+            <strong>{{ slug() }}</strong> isn't wired up yet. AFS is the only online
+            provider available in this release; the others are coming.
+          </p>
+          <button type="button" class="btn btn-default" (click)="cancel()">
+            {{ 'COMMON.BACK' | translate }}
+          </button>
+        </div>
+      </div>
+    </section>
+  } @else {
+    <!-- AFS connect form. As we ship more providers, branch on
+         `slug()` and render the matching credential block. -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'PAYMENT_METHODS.CONNECT.CREDENTIALS' | translate }}</h2>
+      </header>
+      <div class="card__body">
+        @if (slug() === 'afs') {
+          <label class="field">
+            <span class="field__label">{{ 'PAYMENT_METHODS.CONNECT.AFS.MERCHANT_ID' | translate }}</span>
+            <input class="field__input"
+              type="text"
+              [value]="afsMerchantId()"
+              (input)="setAfsMerchantId($any($event.target).value)"
+              [class.field__input--err]="!afsMerchantId().trim() && isDirty()"/>
+            @if (!afsMerchantId().trim() && isDirty()) {
+              <span class="field__err">{{ 'PAYMENT_METHODS.CONNECT.ERR_FIELD_REQUIRED' | translate }}</span>
+            } @else {
+              <span class="field__hint">{{ 'PAYMENT_METHODS.CONNECT.AFS.MERCHANT_ID_HINT' | translate }}</span>
+            }
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ 'PAYMENT_METHODS.CONNECT.AFS.API_PASSWORD' | translate }}</span>
+            <input class="field__input"
+              type="password"
+              autocomplete="new-password"
+              [value]="afsApiPassword()"
+              (input)="setAfsApiPassword($any($event.target).value)"
+              [class.field__input--err]="!afsApiPassword().trim() && isDirty()"/>
+            @if (!afsApiPassword().trim() && isDirty()) {
+              <span class="field__err">{{ 'PAYMENT_METHODS.CONNECT.ERR_FIELD_REQUIRED' | translate }}</span>
+            } @else {
+              <span class="field__hint">{{ 'PAYMENT_METHODS.CONNECT.AFS.API_PASSWORD_HINT' | translate }}</span>
+            }
+          </label>
+        }
+      </div>
+    </section>
+
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'PAYMENT_METHODS.CONNECT.ACCOUNT' | translate }}</h2>
+      </header>
+      <div class="card__body">
+        <label class="field">
+          <span class="field__label">{{ 'PAYMENT_METHODS.CONNECT.ACCOUNT' | translate }}</span>
+          <app-search-dropdown
+            [items]="accounts()"
+            [displayWith]="accountDisplay"
+            [compareWith]="accountCompare"
+            [toValue]="accountToValue"
+            [value]="selectedAccount()"
+            [clearable]="false"
+            [placeholder]="'PAYMENT_METHODS.CONNECT.ACCOUNT_PLACEHOLDER' | translate"
+            (valueChange)="setAccount($event)"/>
+          @if (accountError() && isDirty()) {
+            <span class="field__err">{{ accountError() | translate }}</span>
+          } @else {
+            <span class="field__hint">{{ 'PAYMENT_METHODS.CONNECT.ACCOUNT_HINT' | translate }}</span>
+          }
+        </label>
+
+        <label class="checkbox-field">
+          <input type="checkbox"
+            [checked]="method().isEnabled"
+            (change)="setEnabled($any($event.target).checked)"/>
+          <span class="checkbox-field__text">
+            <span class="checkbox-field__label">{{ 'PAYMENT_METHODS.CONNECT.ENABLED' | translate }}</span>
+            <span class="checkbox-field__hint">{{ 'PAYMENT_METHODS.CONNECT.ENABLED_HINT' | translate }}</span>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <footer class="save-bar">
+      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
+        @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+        {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+      </button>
+    </footer>
+  }
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

@@ -16,32 +16,9 @@
 // Single / Bulk mode toggle — pushed to the far end of the header
 // via `margin-inline-start: auto` (was balanced by the old Total-stock
 // tile before it was removed).
-.pf-bp-mode {
-  display: inline-flex;
-  padding: 3px;
-  background: #f1f5f9;
-  border-radius: 8px;
-  margin-inline-start: auto;
-
-  &__btn {
-    padding: 6px 14px;
-    border: none;
-    background: transparent;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #64748b;
-    cursor: pointer;
-    transition: background .12s, color .12s;
-
-    &:hover { color: #334155; }
-    &--active {
-      background: #fff;
-      color: #0f172a;
-      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
-    }
-  }
-}
+// The Single Branch / Bulk Edit toggle is now `<app-segmented-toggle>`.
+// Push it to the trailing edge so it keeps the original header layout.
+.pf-bp-mode-toggle { margin-inline-start: auto; }
 
 // Branch tabs strip — replaces the legacy .pf-bp-picker dropdown row.
 // Sits under the card header; the strip itself is the visual container, so

@@ -1,0 +1,174 @@
+<div class="pml-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'PAYMENT_METHODS.LIST.TITLE' | translate }}</h1>
+      <p class="page-sub">{{ 'PAYMENT_METHODS.LIST.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="page-header__actions">
+      @if (tab() !== 'online') {
+        <button type="button" class="btn btn-primary" (click)="add()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          {{ 'PAYMENT_METHODS.LIST.ADD_NEW' | translate }}
+        </button>
+      }
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <app-segmented-toggle
+      [options]="tabOptions"
+      [value]="tab()"
+      (valueChange)="setTab($event)"/>
+
+    <label class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text"
+        [value]="search()"
+        (input)="onSearchInput($any($event.target).value)"
+        [placeholder]="'PAYMENT_METHODS.LIST.SEARCH_PLACEHOLDER' | translate"/>
+      @if (search()) {
+        <button type="button" class="search__clear" (click)="clearSearch()" aria-label="Clear">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      }
+    </label>
+  </div>
+
+  <section class="card">
+    @if (loading() && rows().length === 0) {
+      <ul class="rows rows--skeleton" aria-busy="true">
+        @for (_ of [0,1,2,3,4]; track $index) {
+          <li class="row">
+            <app-skeleton variant="line" width="40%"/>
+            <app-skeleton variant="line" width="80px"/>
+          </li>
+        }
+      </ul>
+    } @else if (rows().length === 0) {
+      <div class="empty">
+        <p>{{ (search() ? 'PAYMENT_METHODS.LIST.NO_MATCH' : 'PAYMENT_METHODS.LIST.EMPTY') | translate }}</p>
+        @if (!search() && tab() !== 'online') {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="add()">
+            {{ 'PAYMENT_METHODS.LIST.ADD_NEW' | translate }}
+          </button>
+        }
+      </div>
+    } @else {
+      <!-- Online tab: group by enabled / disabled. Manual tabs:
+           flat list with drag-reorder. -->
+      @if (tab() === 'online') {
+        @if (enabledOnline().length > 0) {
+          <h3 class="rows__heading">{{ 'PAYMENT_METHODS.LIST.SECTION_ENABLED' | translate }}</h3>
+          <ul class="rows">
+            @for (row of enabledOnline(); track trackRow($index, row)) {
+              <li class="row row--online">
+                <ng-container *ngTemplateOutlet="rowBody; context: { row }"/>
+              </li>
+            }
+          </ul>
+        }
+        @if (disabledOnline().length > 0) {
+          <h3 class="rows__heading">{{ 'PAYMENT_METHODS.LIST.SECTION_AVAILABLE' | translate }}</h3>
+          <ul class="rows">
+            @for (row of disabledOnline(); track trackRow($index, row)) {
+              <li class="row row--online">
+                <ng-container *ngTemplateOutlet="rowBody; context: { row }"/>
+              </li>
+            }
+          </ul>
+        }
+      } @else {
+        <ul class="rows"
+          cdkDropList
+          cdkDropListAutoScrollDisabled
+          [cdkDropListData]="rows()"
+          (cdkDropListDropped)="dropRow($event)">
+          @for (row of rows(); track trackRow($index, row)) {
+            <li class="row" cdkDrag (click)="edit(row)">
+              <button type="button" class="row__handle" cdkDragHandle
+                [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"
+                [title]="'COMMON.DRAG_TO_REORDER' | translate"
+                (click)="$event.stopPropagation()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9"  cy="6"  r="1"/>
+                  <circle cx="15" cy="6"  r="1"/>
+                  <circle cx="9"  cy="12" r="1"/>
+                  <circle cx="15" cy="12" r="1"/>
+                  <circle cx="9"  cy="18" r="1"/>
+                  <circle cx="15" cy="18" r="1"/>
+                </svg>
+              </button>
+              <ng-container *ngTemplateOutlet="rowBody; context: { row }"/>
+            </li>
+          }
+        </ul>
+      }
+    }
+  </section>
+
+  <!-- Shared row body — name + chips + balance + enable toggle. -->
+  <ng-template #rowBody let-row="row">
+    @if (row.mediaUrl?.thumbnailUrl) {
+      <img class="row__thumb" [src]="row.mediaUrl.thumbnailUrl" alt=""/>
+    } @else {
+      <div class="row__thumb row__thumb--placeholder" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="6" width="20" height="13" rx="2"/>
+          <line x1="2" y1="11" x2="22" y2="11"/>
+        </svg>
+      </div>
+    }
+
+    <div class="row__main">
+      <strong class="row__name">{{ row.name || '—' }}</strong>
+      <div class="row__chips">
+        <span class="app-product-badge">{{ row.type }}</span>
+        @if (row.symbol) {
+          <span class="app-product-badge">{{ row.symbol }}</span>
+        }
+        @if (row.type === 'Card' && row.bankCharge > 0) {
+          <span class="app-product-badge">
+            {{ row.bankCharge }}% {{ 'PAYMENT_METHODS.LIST.FEE' | translate }}
+          </span>
+        }
+        @if (row.isDefaultCash) {
+          <span class="app-product-badge app-product-badge--option">
+            {{ 'PAYMENT_METHODS.LIST.DEFAULT' | translate }}
+          </span>
+        }
+      </div>
+    </div>
+
+    @if (row.accountBalance != null && tab() !== 'online') {
+      <div class="row__balance">
+        <span class="row__balance-label">{{ 'PAYMENT_METHODS.LIST.BALANCE' | translate }}</span>
+        <span class="row__balance-value">{{ +row.accountBalance | mycurrency }}</span>
+      </div>
+    }
+
+    @if (tab() === 'online') {
+      <button type="button" class="btn btn-default btn-sm" (click)="connect(row, $event)">
+        {{ (row.id ? 'PAYMENT_METHODS.LIST.CONFIGURE' : 'PAYMENT_METHODS.LIST.CONNECT') | translate }}
+      </button>
+    }
+
+    <label class="row__toggle" (click)="$event.stopPropagation()">
+      <input type="checkbox"
+        [checked]="row.isEnabled"
+        (change)="toggleEnabled(row, $event)"/>
+      <span class="row__toggle-track" aria-hidden="true">
+        <span class="row__toggle-thumb"></span>
+      </span>
+    </label>
+  </ng-template>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

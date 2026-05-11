@@ -256,6 +256,38 @@ export const routes: Routes = [
         path: 'settings/covered-zone',
         loadChildren: () =>
           import('./features/covered-zone/covered-zone.routes').then(m => m.COVERED_ZONE_ROUTES)
+      },
+      {
+        // Shipping — cross-border zones grouping countries with
+        // weight/total-based shipping rate ranges.
+        path: 'settings/shipping',
+        loadChildren: () =>
+          import('./features/shipping/shipping.routes').then(m => m.SHIPPING_ROUTES)
+      },
+      {
+        // Shipping & Delivery hub — single page that picks between
+        // shipping (country zones), delivery-by-address, or
+        // delivery-by-radius and embeds the matching editor.
+        path: 'settings/shipping-delivery',
+        loadChildren: () =>
+          import('./features/shipping-delivery/shipping-delivery.routes').then(m => m.SHIPPING_DELIVERY_ROUTES)
+      },
+      {
+        // Discounts — named per-company discounts applied at POS /
+        // checkout. Lean MVP: name, amount/percentage, product +
+        // branch scope. Automatic schedules deferred.
+        path: 'settings/discounts',
+        loadChildren: () =>
+          import('./features/discount/discount.routes').then(m => m.DISCOUNT_ROUTES)
+      },
+      {
+        // Payment methods — manual Cash + Card methods (regular
+        // form), plus an Online tab listing providers the company
+        // can enable. Per-provider connect forms ship one at a time;
+        // AFS is the first.
+        path: 'settings/payment-methods',
+        loadChildren: () =>
+          import('./features/payment-methods/payment-methods.routes').then(m => m.PAYMENT_METHODS_ROUTES)
       }
       // ── Add features here as you build them ──────────────────────────────
     ],

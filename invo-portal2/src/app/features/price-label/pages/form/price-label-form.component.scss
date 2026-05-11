@@ -211,31 +211,10 @@
     }
   }
 
-  // Per-row meta chips: product type / default price / barcode.
-  // Same shape across both columns so Products and Options rows
-  // line up visually.
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 1.4;
-
-    &--type {
-      background: #f1f5f9;
-      color: #475569;
-    }
-    &--price {
-      background: var(--color-brand-50, #ecfeff);
-      color: var(--color-brand-700, #0e7490);
-    }
-    &--barcode {
-      background: #fef3c7;
-      color: #92400e;
-    }
-  }
+  // Per-row meta chips now use the canonical `.app-product-badge`
+  // partial (`src/styles/_product-detail-badges.scss`) — no local
+  // overrides needed, the shape + colours match the products list
+  // and the discount form by design.
 
   &__remove {
     appearance: none;

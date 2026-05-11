@@ -25,6 +25,10 @@ import type {
   DropdownLoadFn,
   DropdownLoadResult,
 } from '@shared/components/dropdown/search-dropdown.types';
+import {
+  SegmentedToggleComponent,
+  SegmentedToggleOption,
+} from '@shared/components/segmented-toggle/segmented-toggle.component';
 
 import { SurchargeService } from '../../services/surcharge.service';
 import { Surcharge, emptySurcharge } from '../../services/surcharge.types';
@@ -52,6 +56,7 @@ interface TaxOption { id: string; name: string; }
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     SearchDropdownComponent,
+    SegmentedToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './surcharge-form.component.html',
@@ -176,6 +181,17 @@ export class SurchargeFormComponent implements OnInit, CanLeaveComponent {
   }
   setPercentage(percentage: boolean): void {
     this.surcharge.update(s => ({ ...s, percentage }));
+  }
+
+  /** Bridge between the boolean `percentage` flag on the model and
+   *  the segmented toggle's `'fixed' | 'percent'` value space. */
+  readonly amountKindOptions: SegmentedToggleOption<'fixed' | 'percent'>[] = [
+    { value: 'fixed',   label: 'SURCHARGE.FORM.FIXED' },
+    { value: 'percent', label: 'SURCHARGE.FORM.PERCENT' },
+  ];
+  amountKind = computed<'fixed' | 'percent'>(() => this.surcharge().percentage ? 'percent' : 'fixed');
+  onAmountKindChange(kind: 'fixed' | 'percent'): void {
+    this.setPercentage(kind === 'percent');
   }
   /** Tax dropdown is configured for single-select but its
    *  `valueChange` is typed as `T | T[] | null`. Narrow at the

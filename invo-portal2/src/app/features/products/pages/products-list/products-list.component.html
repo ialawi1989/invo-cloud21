@@ -131,7 +131,7 @@
 
   <!-- Unit cost — currency, falls back to 0 when missing. -->
   <ng-template listCellTemplate="unitCost" let-row>
-    {{ (row.unitCost || 0) | currency:'BHD':'symbol':'1.3-3' }}
+    {{ (row.unitCost || 0) | mycurrency }}
   </ng-template>
 
   <!-- Tax — when the product is non-taxable, show '-' instead of an empty cell

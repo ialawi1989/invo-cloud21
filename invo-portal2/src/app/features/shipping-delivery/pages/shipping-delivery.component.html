@@ -1,0 +1,81 @@
+<div class="sdh-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'SHIPPING_DELIVERY.TITLE' | translate }}</h1>
+      <p class="page-sub">{{ 'SHIPPING_DELIVERY.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn-default" (click)="openOptions()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09A1.65 1.65 0 0 0 9 3.09V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        {{ 'SHIPPING_DELIVERY.MORE_OPTIONS' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <!-- Mode selector — segmented controls drive which sub-editor mounts. -->
+  <section class="sdh-modes">
+    <div class="sdh-modes__row">
+      <span class="sdh-modes__label">{{ 'SHIPPING_DELIVERY.TYPE_LABEL' | translate }}</span>
+      <app-segmented-toggle
+        [options]="typeOptions"
+        [value]="draft().type"
+        [locked]="saving()"
+        (valueChange)="setType($event)"/>
+    </div>
+
+    @if (draft().type === 'delivery') {
+      <div class="sdh-modes__row">
+        <span class="sdh-modes__label">{{ 'SHIPPING_DELIVERY.METHOD_LABEL' | translate }}</span>
+        <app-segmented-toggle
+          [options]="methodOptions"
+          [value]="draft().deliveryMethod"
+          [locked]="saving()"
+          (valueChange)="setDeliveryMethod($event)"/>
+      </div>
+    }
+
+    <p class="sdh-modes__hint">
+      @switch (activeMode()) {
+        @case ('shipping')         { {{ 'SHIPPING_DELIVERY.HINT_SHIPPING' | translate }} }
+        @case ('delivery-address') { {{ 'SHIPPING_DELIVERY.HINT_DELIVERY_ADDRESS' | translate }} }
+        @case ('delivery-zone')    { {{ 'SHIPPING_DELIVERY.HINT_DELIVERY_ZONE' | translate }} }
+      }
+    </p>
+
+    @if (isDirty()) {
+      <div class="sdh-modes__commit" role="alert">
+        <span class="sdh-modes__commit-text">
+          {{ 'SHIPPING_DELIVERY.UNSAVED_HINT' | translate }}
+        </span>
+        <div class="sdh-modes__commit-actions">
+          <button type="button" class="btn btn-ghost btn-sm" (click)="discard()" [disabled]="saving()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" (click)="save()" [disabled]="saving()">
+            @if (saving()) { <span class="spinner spinner--sm" aria-hidden="true"></span> }
+            {{ 'COMMON.SAVE' | translate }}
+          </button>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- Embedded editor. `@switch` ensures only the active component
+       is mounted; switching modes destroys + recreates the child so
+       its own unsaved-changes guard catches half-edited work. -->
+  <section class="sdh-editor">
+    @if (!loading()) {
+      @switch (activeMode()) {
+        @case ('shipping')         { <app-shipping/> }
+        @case ('delivery-address') { <app-covered-address/> }
+        @case ('delivery-zone')    { <app-covered-zone/> }
+      }
+    }
+  </section>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

@@ -1,0 +1,185 @@
+<div class="pmf-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+    </div>
+  </header>
+
+  <section class="card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'PAYMENT_METHODS.FORM.DETAILS' | translate }}</h2>
+    </header>
+    <div class="card__body">
+      <!-- Name -->
+      <label class="field">
+        <span class="field__label">{{ 'PAYMENT_METHODS.FORM.NAME' | translate }}</span>
+        <input class="field__input"
+          type="text"
+          [value]="method().name"
+          (input)="setName($any($event.target).value)"
+          [placeholder]="'PAYMENT_METHODS.FORM.NAME_PLACEHOLDER' | translate"
+          [class.field__input--err]="!!nameError() && method().name.length > 0"/>
+        @if (nameError() && method().name.length > 0) {
+          <span class="field__err">{{ nameError() | translate }}</span>
+        }
+      </label>
+
+      <!-- Type -->
+      <div class="field">
+        <span class="field__label">{{ 'PAYMENT_METHODS.FORM.TYPE' | translate }}</span>
+        <app-segmented-toggle
+          [options]="typeOptions"
+          [value]="method().type"
+          (valueChange)="setType($event)"/>
+        <span class="field__hint">
+          @if (method().type === 'Cash') {
+            {{ 'PAYMENT_METHODS.FORM.TYPE_CASH_HINT' | translate }}
+          } @else {
+            {{ 'PAYMENT_METHODS.FORM.TYPE_CARD_HINT' | translate }}
+          }
+        </span>
+      </div>
+
+      <!-- Symbol -->
+      <label class="field">
+        <span class="field__label">{{ 'PAYMENT_METHODS.FORM.SYMBOL' | translate }}</span>
+        <input class="field__input"
+          type="text"
+          [value]="method().symbol"
+          (input)="setSymbol($any($event.target).value)"
+          [placeholder]="'PAYMENT_METHODS.FORM.SYMBOL_PLACEHOLDER' | translate"/>
+        <span class="field__hint">{{ 'PAYMENT_METHODS.FORM.SYMBOL_HINT' | translate }}</span>
+      </label>
+
+      <!-- Exchange rate -->
+      @if (method().type === 'Cash') {
+        <label class="field">
+          <span class="field__label">{{ 'PAYMENT_METHODS.FORM.RATE' | translate }}</span>
+          <input class="field__input"
+            type="number"
+            min="0"
+            step="0.000001"
+            [value]="method().rate"
+            (input)="setRate($any($event.target).value)"
+            [class.field__input--err]="!!rateError()"/>
+          @if (rateError()) {
+            <span class="field__err">{{ rateError() | translate }}</span>
+          } @else {
+            <span class="field__hint">{{ 'PAYMENT_METHODS.FORM.RATE_HINT' | translate }}</span>
+          }
+        </label>
+      }
+
+      <!-- Bank charge (Card only) -->
+      @if (method().type === 'Card') {
+        <label class="field">
+          <span class="field__label">{{ 'PAYMENT_METHODS.FORM.BANK_CHARGE' | translate }}</span>
+          <div class="field__suffix-wrap">
+            <input class="field__input"
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              [value]="method().bankCharge"
+              (input)="setBankCharge($any($event.target).value)"/>
+            <span class="field__suffix">%</span>
+          </div>
+          <span class="field__hint">{{ 'PAYMENT_METHODS.FORM.BANK_CHARGE_HINT' | translate }}</span>
+        </label>
+      }
+
+      <!-- Decimals -->
+      <label class="field">
+        <span class="field__label">{{ 'PAYMENT_METHODS.FORM.AFTER_DECIMAL' | translate }}</span>
+        <input class="field__input"
+          type="number"
+          min="0"
+          max="3"
+          step="1"
+          [value]="method().afterDecimal"
+          (input)="setAfterDecimal($any($event.target).value)"/>
+        <span class="field__hint">{{ 'PAYMENT_METHODS.FORM.AFTER_DECIMAL_HINT' | translate }}</span>
+      </label>
+
+      <!-- GL account -->
+      <label class="field">
+        <span class="field__label">{{ 'PAYMENT_METHODS.FORM.ACCOUNT' | translate }}</span>
+        <app-search-dropdown
+          [items]="accounts()"
+          [displayWith]="accountDisplay"
+          [compareWith]="accountCompare"
+          [toValue]="accountToValue"
+          [value]="selectedAccount()"
+          [clearable]="false"
+          [placeholder]="'PAYMENT_METHODS.FORM.ACCOUNT_PLACEHOLDER' | translate"
+          (valueChange)="setAccount($event)"/>
+        @if (accountError() && isDirty()) {
+          <span class="field__err">{{ accountError() | translate }}</span>
+        } @else {
+          <span class="field__hint">{{ 'PAYMENT_METHODS.FORM.ACCOUNT_HINT' | translate }}</span>
+        }
+      </label>
+    </div>
+  </section>
+
+  <section class="card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'PAYMENT_METHODS.FORM.POS_TITLE' | translate }}</h2>
+      <p class="card__sub">{{ 'PAYMENT_METHODS.FORM.POS_SUB' | translate }}</p>
+    </header>
+    <div class="card__body">
+      <label class="checkbox-field">
+        <input type="checkbox"
+          [checked]="method().pos"
+          (change)="setPos($any($event.target).checked)"/>
+        <span class="checkbox-field__text">
+          <span class="checkbox-field__label">{{ 'PAYMENT_METHODS.FORM.POS_ENABLED' | translate }}</span>
+          <span class="checkbox-field__hint">{{ 'PAYMENT_METHODS.FORM.POS_ENABLED_HINT' | translate }}</span>
+        </span>
+      </label>
+
+      <label class="checkbox-field">
+        <input type="checkbox"
+          [checked]="method().options.OpenDrawer"
+          (change)="setOpenDrawer($any($event.target).checked)"/>
+        <span class="checkbox-field__text">
+          <span class="checkbox-field__label">{{ 'PAYMENT_METHODS.FORM.OPEN_DRAWER' | translate }}</span>
+          <span class="checkbox-field__hint">{{ 'PAYMENT_METHODS.FORM.OPEN_DRAWER_HINT' | translate }}</span>
+        </span>
+      </label>
+
+      <label class="checkbox-field">
+        <input type="checkbox"
+          [checked]="method().options.ReqCode"
+          (change)="setReqCode($any($event.target).checked)"/>
+        <span class="checkbox-field__text">
+          <span class="checkbox-field__label">{{ 'PAYMENT_METHODS.FORM.REQ_CODE' | translate }}</span>
+          <span class="checkbox-field__hint">{{ 'PAYMENT_METHODS.FORM.REQ_CODE_HINT' | translate }}</span>
+        </span>
+      </label>
+
+      <label class="checkbox-field">
+        <input type="checkbox"
+          [checked]="method().showInAccount"
+          (change)="setShowInAccount($any($event.target).checked)"/>
+        <span class="checkbox-field__text">
+          <span class="checkbox-field__label">{{ 'PAYMENT_METHODS.FORM.SHOW_IN_ACCOUNT' | translate }}</span>
+          <span class="checkbox-field__hint">{{ 'PAYMENT_METHODS.FORM.SHOW_IN_ACCOUNT_HINT' | translate }}</span>
+        </span>
+      </label>
+    </div>
+  </section>
+
+  <footer class="save-bar">
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
+      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+      {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+    </button>
+  </footer>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

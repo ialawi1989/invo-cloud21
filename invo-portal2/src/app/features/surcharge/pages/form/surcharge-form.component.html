@@ -36,20 +36,10 @@
             [value]="surcharge().amount"
             (input)="setAmount($any($event.target).value)"
             [class.field__input--err]="!!amountError()"/>
-          <div class="amount-row__toggle" role="tablist">
-            <button type="button" role="tab"
-              [class.is-on]="!surcharge().percentage"
-              [attr.aria-selected]="!surcharge().percentage"
-              (click)="setPercentage(false)">
-              {{ 'SURCHARGE.FORM.FIXED' | translate }}
-            </button>
-            <button type="button" role="tab"
-              [class.is-on]="surcharge().percentage"
-              [attr.aria-selected]="surcharge().percentage"
-              (click)="setPercentage(true)">
-              {{ 'SURCHARGE.FORM.PERCENT' | translate }}
-            </button>
-          </div>
+          <app-segmented-toggle
+            [options]="amountKindOptions"
+            [value]="amountKind()"
+            (valueChange)="onAmountKindChange($event)"/>
         </div>
         @if (amountError()) {
           <span class="field__err">{{ amountError() | translate }}</span>

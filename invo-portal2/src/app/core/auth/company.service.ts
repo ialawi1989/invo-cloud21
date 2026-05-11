@@ -1,5 +1,5 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Company } from './auth.models';
@@ -67,8 +67,20 @@ export class CompanyService {
     if (cached && !force) return cached;
 
     try {
+      // When `force=true` we MUST bypass the browser's HTTP cache;
+      // a stale 304 response body would re-hydrate the signal with
+      // out-of-date values (e.g. the user just saved a tax id but
+      // the cached body still has it as `null`). The cache-busting
+      // query param + no-cache headers together guarantee a fresh
+      // round-trip to the server.
+      const url = force
+        ? `${this.baseUrl}company/getCompanySetting?_=${Date.now()}`
+        : `${this.baseUrl}company/getCompanySetting`;
+      const headers = force
+        ? new HttpHeaders({ 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' })
+        : undefined;
       const res = await firstValueFrom(
-        this.http.get<any>(`${this.baseUrl}company/getCompanySetting`)
+        this.http.get<any>(url, { headers })
       );
 
       const data = res?.data ?? null;

@@ -1,0 +1,109 @@
+{
+  "DISCOUNT": {
+    "LIST": {
+      "TITLE":              "Discounts",
+      "SUBTITLE":           "Named discounts applied to invoices, receipts, and POS transactions.",
+      "ADD_NEW":            "Add discount",
+      "SEARCH_PLACEHOLDER": "Search discounts…",
+      "NAME":               "Name",
+      "TYPE":               "Type",
+      "AMOUNT":             "Amount",
+      "STATUS":             "Status",
+      "TYPE_MANUAL":        "Manual",
+      "TYPE_AUTOMATIC":     "Automatic",
+      "STATUS_ACTIVE":      "Active",
+      "STATUS_INACTIVE":    "Inactive",
+      "SCOPE_ALL_PRODUCTS": "All products",
+      "SCOPE_ALL_BRANCHES": "All branches",
+      "SCOPE_N_PRODUCTS":   "{{count}} products",
+      "SCOPE_N_BRANCHES":   "{{count}} branches",
+      "MIN_QTY_LABEL":      "Min qty {{count}}",
+      "EMPTY":              "No discounts yet — add one to get started.",
+      "NO_MATCH":           "No discounts match your search."
+    },
+    "FORM": {
+      "NEW_TITLE":          "New discount",
+      "EDIT_TITLE":         "Edit {{name}}",
+      "DETAILS":            "Details",
+      "SCOPE":              "Scope",
+      "SCOPE_HINT":         "Optional — leave both lists empty to apply the discount everywhere.",
+
+      "TYPE":                  "Type",
+      "TYPE_MANUAL":           "Manual",
+      "TYPE_AUTOMATIC":        "Automatic",
+      "TYPE_MANUAL_HINT":      "Cashiers pick this discount manually at the POS.",
+      "TYPE_AUTOMATIC_HINT":   "Applies automatically inside the scheduled window below.",
+      "TYPE_LOCKED_HINT":      "Type can't be changed after the discount is saved.",
+
+      "SCHEDULE":              "Schedule",
+      "SCHEDULE_HINT":         "Window during which the discount applies. Leave the expire date empty to keep it running indefinitely.",
+      "ALL_DAY":               "Runs all day",
+      "ALL_DAY_HINT":          "When on, the schedule is date-based only — no start/end time of day.",
+      "START_DATE":            "Start date",
+      "START_TIME":            "Start time",
+      "EXPIRE_DATE":           "Expire date",
+      "EXPIRE_TIME":           "Expire time",
+      "EXPIRE_HINT":           "Optional — leave blank for no end date.",
+
+      "NAME":               "Name",
+      "NAME_PLACEHOLDER":   "VIP customers, Ramadan promo…",
+
+      "AMOUNT":             "Amount",
+      "AMOUNT_HINT":        "Fixed amount in the company currency, or a percentage 0–100.",
+      "FIXED":              "Fixed",
+      "PERCENT":            "Percent %",
+
+      "QTY_BASED":          "Quantity-based cash discount",
+      "QTY_BASED_HINT":     "When enabled, the fixed amount applies per quantity rather than per line.",
+
+      "MIN_QTY":            "Minimum product quantity",
+      "MIN_QTY_HINT":       "0 = no minimum.",
+
+      "APPLY_TO":                       "Apply to",
+      "APPLY_PRODUCT":                  "Specific products",
+      "APPLY_CATEGORY":                 "Specific categories",
+      "APPLY_SWITCH_TITLE":             "Clear the current selection?",
+      "APPLY_SWITCH_TO_PRODUCT_MSG":    "Switching to products will clear the categories you've picked. Continue?",
+      "APPLY_SWITCH_TO_CATEGORY_MSG":   "Switching to categories will clear the products you've picked. Continue?",
+
+      "PRODUCTS":              "Products",
+      "PRODUCTS_PLACEHOLDER":  "Pick products…",
+      "PRODUCTS_HINT":         "Empty = applies to every product.",
+      "PICK_PRODUCTS":         "Pick products",
+      "PICK_MORE_PRODUCTS":    "Edit selection",
+
+      "CATEGORIES":              "Categories",
+      "CATEGORIES_PLACEHOLDER":  "Pick categories…",
+      "CATEGORIES_HINT":         "Empty = applies to every category.",
+      "PICK_CATEGORIES":         "Pick categories",
+      "PICK_MORE_CATEGORIES":    "Edit selection",
+
+      "BRANCHES":              "Available at branches",
+      "BRANCHES_PLACEHOLDER":  "Pick branches…",
+      "BRANCHES_HINT":         "Empty = available at every branch.",
+
+      "EMPLOYEES":             "Allowed for employees",
+      "EMPLOYEES_PLACEHOLDER": "Pick employees…",
+      "EMPLOYEES_HINT":        "Empty = every employee can apply this discount.",
+
+      "AVAILABILITY":          "Availability",
+      "AVAILABLE":             "Active at POS",
+      "AVAILABLE_HINT":        "When off, cashiers can't pick this discount at the register.",
+      "AVAILABLE_ONLINE":      "Active online",
+      "AVAILABLE_ONLINE_HINT": "When off, the storefront won't apply this discount at checkout.",
+
+      "ERR_NAME_REQUIRED":      "Name is required.",
+      "ERR_NAME_DUPLICATE":     "Another discount already uses this name.",
+      "ERR_AMOUNT_INVALID":     "Amount must be greater than 0.",
+      "ERR_PERCENT_RANGE":      "Percentage must be between 0 and 100.",
+      "ERR_START_REQUIRED":     "Automatic discounts need a start date.",
+      "ERR_EXPIRE_BEFORE_START": "Expire date can't be before the start date."
+    },
+    "PICKER": {
+      "PRODUCTS_TITLE":   "Pick products",
+      "CATEGORIES_TITLE": "Pick categories",
+      "SELECTED_COUNT":   "{{count}} selected",
+      "NO_MATCH":         "No matches found."
+    }
+  }
+}

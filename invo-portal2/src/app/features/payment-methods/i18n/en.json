@@ -1,0 +1,78 @@
+{
+  "PAYMENT_METHODS": {
+    "LIST": {
+      "TITLE":               "Payment methods",
+      "SUBTITLE":            "Cash, card, and online providers your business accepts.",
+      "ADD_NEW":             "Add method",
+      "SEARCH_PLACEHOLDER":  "Search…",
+      "TAB_CURRENCY":        "Currency",
+      "TAB_CARD":            "Card",
+      "TAB_ONLINE":          "Online",
+      "SECTION_ENABLED":     "Enabled",
+      "SECTION_AVAILABLE":   "Available",
+      "FEE":                 "fee",
+      "BALANCE":             "Balance",
+      "DEFAULT":             "Default",
+      "EMPTY":               "No methods yet — add one to get started.",
+      "NO_MATCH":            "No methods match your search.",
+      "CONNECT":             "Connect",
+      "CONFIGURE":           "Configure"
+    },
+    "FORM": {
+      "NEW_TITLE":           "New payment method",
+      "EDIT_TITLE":          "Edit {{name}}",
+      "DETAILS":             "Details",
+      "NAME":                "Name",
+      "NAME_PLACEHOLDER":    "Cash · USD · Visa…",
+      "TYPE":                "Type",
+      "TYPE_CASH":           "Cash",
+      "TYPE_CARD":           "Card",
+      "TYPE_CASH_HINT":      "Currency wallet — one per accepted currency.",
+      "TYPE_CARD_HINT":      "Card or non-currency tender (e.g. cheque).",
+      "SYMBOL":              "Symbol",
+      "SYMBOL_PLACEHOLDER":  "BHD, $, €…",
+      "SYMBOL_HINT":         "Shown next to amounts at the POS and on receipts.",
+      "RATE":                "Exchange rate",
+      "RATE_HINT":           "Rate against the company base currency. 1 if this IS the base currency.",
+      "BANK_CHARGE":         "Bank charge",
+      "BANK_CHARGE_HINT":    "Processing fee charged by the bank/network for this method.",
+      "AFTER_DECIMAL":       "Decimal places",
+      "AFTER_DECIMAL_HINT":  "0–3 — how many decimals to show for amounts on this method.",
+      "ACCOUNT":             "GL account",
+      "ACCOUNT_PLACEHOLDER": "Pick an account…",
+      "ACCOUNT_HINT":        "The accounting ledger this method posts to.",
+
+      "POS_TITLE":               "POS behaviour",
+      "POS_SUB":                 "How this method behaves at the register.",
+      "POS_ENABLED":             "Available at POS",
+      "POS_ENABLED_HINT":        "When off, cashiers can't pick this method.",
+      "OPEN_DRAWER":             "Open cash drawer on use",
+      "OPEN_DRAWER_HINT":        "Sends the open-drawer signal after a sale on this method.",
+      "REQ_CODE":                "Require reference code",
+      "REQ_CODE_HINT":           "Prompts the cashier for a reference (e.g. card last 4) before completing.",
+      "SHOW_IN_ACCOUNT":         "Show in Accounts module",
+      "SHOW_IN_ACCOUNT_HINT":    "Surface this method as a wallet inside the Accounts module.",
+
+      "ERR_NAME_REQUIRED":    "Name is required.",
+      "ERR_ACCOUNT_REQUIRED": "Pick a GL account.",
+      "ERR_RATE_INVALID":     "Exchange rate must be greater than 0."
+    },
+    "CONNECT": {
+      "TITLE":               "Connect {{provider}}",
+      "SUBTITLE":            "Enter the credentials issued by {{provider}} so the storefront and POS can process payments through this provider.",
+      "ACCOUNT":             "GL account",
+      "ACCOUNT_PLACEHOLDER": "Pick an account…",
+      "ACCOUNT_HINT":        "Settlement deposits will post to this account.",
+      "ENABLED":             "Enable this provider",
+      "ENABLED_HINT":        "Turn on once the credentials below are filled and tested.",
+      "CREDENTIALS":         "Credentials",
+      "AFS": {
+        "MERCHANT_ID":       "Merchant ID",
+        "MERCHANT_ID_HINT":  "Issued by AFS when your merchant account is provisioned.",
+        "API_PASSWORD":      "API password",
+        "API_PASSWORD_HINT": "The API password matched with the merchant ID. Stored encrypted."
+      },
+      "ERR_FIELD_REQUIRED":  "This field is required."
+    }
+  }
+}

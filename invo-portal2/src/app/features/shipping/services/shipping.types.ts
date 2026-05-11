@@ -93,6 +93,47 @@ export function emptyRate(name: string = '', type: 'weight' | 'total' = 'weight'
   };
 }
 
+// ────────────────────────────────────────────────────────────────────
+// Shipping Options — three settings shared across the storefront
+// (sit on the website-builder ThemeSettings + on the company doc).
+// ────────────────────────────────────────────────────────────────────
+
+/** Wire-format keys for the shipping-type picker. */
+export type ShippingType    = 'delivery' | 'shipping';
+/** Wire-format keys for the weight-UOM picker. */
+export type WeightUomCode   = 'kg' | 'ounce' | 'pound';
+/** When `type === 'delivery'`, which sub-editor governs delivery
+ *  zones: address-based (Govt/City/Block) or radius-based (around
+ *  each branch). Ignored for `type === 'shipping'`. */
+export type DeliveryMethod  = 'address' | 'zone';
+
+export interface ShippingOptions {
+  /** "Delivery" or "Shipping" — chooses how the storefront frames
+   *  the fulfilment step. Lives on `ThemeSettings.template.shippingOptions.type`. */
+  type:                 ShippingType;
+  /** When `type === 'delivery'`: which delivery editor is active.
+   *  Persisted alongside `type` on the theme doc. Defaults to
+   *  `address`. */
+  deliveryMethod:       DeliveryMethod;
+  /** Product weight UOM. Lives on
+   *  `ThemeSettings.template.shippingOptions.weightUOM`. */
+  weightUOM:            WeightUomCode;
+  /** Tax id applied to the delivery charge line. Lives on the
+   *  company doc — saved via `company/saveCompany` rather than the
+   *  theme endpoint. `null` clears it. */
+  deliveryChargeTaxId:  string | null;
+}
+
+/** Lightweight tax shape — just what the picker needs to render. */
+export interface TaxOption {
+  id:    string;
+  name:  string;
+}
+
+export function emptyShippingOptions(): ShippingOptions {
+  return { type: 'delivery', deliveryMethod: 'address', weightUOM: 'kg', deliveryChargeTaxId: null };
+}
+
 export function emptyZone(): Zone {
   return {
     id:        Date.now() + Math.floor(Math.random() * 1000),

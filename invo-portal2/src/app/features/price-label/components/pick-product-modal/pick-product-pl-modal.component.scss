@@ -161,19 +161,9 @@
     display: inline-flex;
     flex-wrap: wrap;
     gap: 4px;
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 600;
-
-      &--type    { background: #f1f5f9; color: #475569; }
-      &--price   { background: var(--color-brand-50, #ecfeff); color: var(--color-brand-700, #0e7490); }
-      &--barcode { background: #fef3c7; color: #92400e; }
-    }
+    // Chips themselves use the canonical `.app-product-badge`
+    // classes from `src/styles/_product-detail-badges.scss` — no
+    // local overrides needed here.
   }
 
   &__state {

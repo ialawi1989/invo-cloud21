@@ -20,6 +20,8 @@ import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import type { ModalRef } from '@shared/modal/modal.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { getProductTypeBadgeStyle } from '../../../products/utils/product-type-badge';
 
 import { ProductsService } from '../../../products/services/products.service';
 
@@ -100,6 +102,7 @@ const PRODUCT_TYPES: { value: string; labelKey: string }[] = [
     TranslateModule,
     ModalHeaderComponent,
     SearchDropdownComponent,
+    MycurrencyPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './pick-product-pl-modal.component.html',
@@ -354,6 +357,12 @@ export class PickProductPlModalComponent implements OnInit, AfterViewInit, OnDes
   }
 
   cancel(): void { this.modalRef.dismiss(); }
+
+  /** Per-product-type chip palette — wraps the shared util so the
+   *  template can call it via `[ngStyle]`. */
+  getTypeBadgeStyle(type: string | undefined): Record<string, string> {
+    return getProductTypeBadgeStyle(type);
+  }
 
   trackRow = (_: number, r: ProductRow) => r.id;
 }

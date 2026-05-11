@@ -10,22 +10,11 @@
 
     <!-- Mode toggle — Single Branch | Bulk Edit -->
     @if (rows && rows.length > 1) {
-      <div class="pf-bp-mode" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          class="pf-bp-mode__btn"
-          [class.pf-bp-mode__btn--active]="mode() === 'single'"
-          (click)="setMode('single')"
-        >{{ 'PRODUCTS.FORM.SINGLE_BRANCH' | translate }}</button>
-        <button
-          type="button"
-          role="tab"
-          class="pf-bp-mode__btn"
-          [class.pf-bp-mode__btn--active]="mode() === 'bulk'"
-          (click)="setMode('bulk')"
-        >{{ 'PRODUCTS.FORM.BULK_EDIT' | translate }}</button>
-      </div>
+      <app-segmented-toggle
+        class="pf-bp-mode-toggle"
+        [options]="modeOptions"
+        [value]="mode()"
+        (valueChange)="setMode($event)"/>
     }
 
   </header>

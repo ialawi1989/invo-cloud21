@@ -68,15 +68,17 @@
                 <strong class="lines__name">{{ line.productName || '—' }}</strong>
                 <div class="lines__chips">
                   @if (line.type) {
-                    <span class="chip chip--type">{{ line.type }}</span>
+                    <span class="app-product-badge" [ngStyle]="getTypeBadgeStyle(line.type)">
+                      {{ line.type }}
+                    </span>
                   }
                   @if (line.defaultPrice != null) {
-                    <span class="chip chip--price">
-                      {{ line.defaultPrice | currency:'BHD':'symbol':'1.3-3' }}
+                    <span class="app-product-badge">
+                      {{ line.defaultPrice | mycurrency }}
                     </span>
                   }
                   @if (line.barcode) {
-                    <span class="chip chip--barcode">{{ line.barcode }}</span>
+                    <span class="app-product-badge app-product-badge--barcode">{{ line.barcode }}</span>
                   }
                 </div>
               </div>
@@ -131,8 +133,8 @@
                 <strong class="lines__name">{{ opt.name || '—' }}</strong>
                 @if (opt.defaultPrice != null) {
                   <div class="lines__chips">
-                    <span class="chip chip--price">
-                      {{ opt.defaultPrice | currency:'BHD':'symbol':'1.3-3' }}
+                    <span class="app-product-badge">
+                      {{ opt.defaultPrice | mycurrency }}
                     </span>
                   </div>
                 }
