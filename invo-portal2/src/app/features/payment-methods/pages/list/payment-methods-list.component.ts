@@ -32,6 +32,7 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 
 import { PaymentMethodService } from '../../services/payment-method.service';
 import { PaymentMethod, PaymentKind } from '../../services/payment-method.types';
+import { findProviderByName } from '../../utils/provider-registry';
 
 /** Top-level tab — what kind of methods we're showing. */
 type Tab = 'currency' | 'card' | 'online';
@@ -212,4 +213,13 @@ export class PaymentMethodsListComponent implements OnInit {
 
   // ─── Helpers ────────────────────────────────────────────────────
   trackRow = (_: number, r: PaymentMethod) => r.id || r.name;
+
+  /** Pick the best thumbnail for a row. Prefer the server-supplied
+   *  `mediaUrl.thumbnailUrl` (custom upload); fall back to the
+   *  provider-registry logo for online providers; otherwise let the
+   *  template render its generic placeholder. */
+  rowThumb(row: PaymentMethod): string | null {
+    if (row.mediaUrl?.thumbnailUrl) return row.mediaUrl.thumbnailUrl;
+    return findProviderByName(row.name)?.logo ?? null;
+  }
 }

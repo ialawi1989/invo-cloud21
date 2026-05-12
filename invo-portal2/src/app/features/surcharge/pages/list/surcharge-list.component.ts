@@ -22,9 +22,22 @@ import {
   DropdownMenuBtnComponent,
   DropdownMenuBtnItem,
 } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import {
+  QueryParamsService,
+  ParamDef,
+  IntCodec,
+  intCodec,
+  StringCodec,
+} from '@shared/services/query-params.service';
 
 import { SurchargeService } from '../../services/surcharge.service';
 import { Surcharge } from '../../services/surcharge.types';
+
+const QP = {
+  page:     { key: 'page',  codec: IntCodec }       as ParamDef<number>,
+  pageSize: { key: 'limit', codec: intCodec(15) }   as ParamDef<number>,
+  search:   { key: 'q',     codec: StringCodec }    as ParamDef<string>,
+};
 
 /**
  * Surcharge list — paginated, searchable table of named surcharges.
@@ -58,6 +71,7 @@ export class SurchargeListComponent implements OnInit {
   private translate  = inject(TranslateService);
   private router     = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private qp         = inject(QueryParamsService);
 
   loading = signal<boolean>(false);
   rows    = signal<Surcharge[]>([]);
@@ -113,7 +127,19 @@ export class SurchargeListComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    const p = this.qp.read(QP);
+    this.page.set(p.page);
+    this.pageSize.set(p.pageSize);
+    this.search.set(p.search);
     await this.load();
+  }
+
+  private syncUrl(): void {
+    this.qp.write(QP, {
+      page:     this.page(),
+      pageSize: this.pageSize(),
+      search:   this.search(),
+    });
   }
 
   async load(): Promise<void> {
@@ -137,12 +163,13 @@ export class SurchargeListComponent implements OnInit {
     clearTimeout(this.searchDebounce);
     this.searchDebounce = setTimeout(() => {
       this.page.set(1);
+      this.syncUrl();
       this.load();
     }, 300);
   }
-  clearSearch(): void { this.search.set(''); this.page.set(1); this.load(); }
-  goPrev(): void { if (this.page() > 1) { this.page.update(p => p - 1); this.load(); } }
-  goNext(): void { if (this.page() < this.pageCount()) { this.page.update(p => p + 1); this.load(); } }
+  clearSearch(): void { this.search.set(''); this.page.set(1); this.syncUrl(); this.load(); }
+  goPrev(): void { if (this.page() > 1) { this.page.update(p => p - 1); this.syncUrl(); this.load(); } }
+  goNext(): void { if (this.page() < this.pageCount()) { this.page.update(p => p + 1); this.syncUrl(); this.load(); } }
 
   // ─── Row actions ────────────────────────────────────────────────
   edit(row: Surcharge): void {

@@ -23,9 +23,30 @@ import {
   DropdownMenuBtnComponent,
   DropdownMenuBtnItem,
 } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import {
+  QueryParamsService,
+  ParamDef,
+  IntCodec,
+  intCodec,
+  StringCodec,
+  enumCodec,
+} from '@shared/services/query-params.service';
 
 import { DiscountService } from '../../services/discount.service';
 import { Discount } from '../../services/discount.types';
+
+const SORT_FIELDS = ['name', 'type', 'amount'] as const;
+const SORT_DIRS = ['asc', 'desc'] as const;
+type SortField = typeof SORT_FIELDS[number] | '';
+type SortDir   = typeof SORT_DIRS[number] | '';
+
+const QP = {
+  page:     { key: 'page',   codec: IntCodec }                              as ParamDef<number>,
+  pageSize: { key: 'limit',  codec: intCodec(15) }                          as ParamDef<number>,
+  search:   { key: 'q',      codec: StringCodec }                           as ParamDef<string>,
+  sortBy:   { key: 'sortBy', codec: enumCodec([...SORT_FIELDS, ''] as const, '') } as ParamDef<SortField>,
+  sortDir:  { key: 'dir',    codec: enumCodec([...SORT_DIRS, ''] as const, '') }   as ParamDef<SortDir>,
+};
 
 /**
  * Discount list — paginated, searchable table of named discounts.
@@ -56,6 +77,7 @@ export class DiscountListComponent implements OnInit {
   private translate  = inject(TranslateService);
   private router     = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private qp         = inject(QueryParamsService);
 
   loading = signal<boolean>(false);
   rows    = signal<Discount[]>([]);
@@ -114,7 +136,23 @@ export class DiscountListComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    const p = this.qp.read(QP);
+    this.page.set(p.page);
+    this.pageSize.set(p.pageSize);
+    this.search.set(p.search);
+    this.sortValue.set(p.sortBy || null);
+    this.sortDirection.set((p.sortDir || null) as 'asc' | 'desc' | null);
     await this.load();
+  }
+
+  private syncUrl(): void {
+    this.qp.write(QP, {
+      page:     this.page(),
+      pageSize: this.pageSize(),
+      search:   this.search(),
+      sortBy:   (this.sortValue() ?? '') as SortField,
+      sortDir:  (this.sortDirection() ?? '') as SortDir,
+    });
   }
 
   async load(): Promise<void> {
@@ -149,6 +187,7 @@ export class DiscountListComponent implements OnInit {
       else                     this.sortDirection.set('asc');
     }
     this.page.set(1);
+    this.syncUrl();
     void this.load();
   }
 
@@ -162,12 +201,13 @@ export class DiscountListComponent implements OnInit {
     clearTimeout(this.searchDebounce);
     this.searchDebounce = setTimeout(() => {
       this.page.set(1);
+      this.syncUrl();
       this.load();
     }, 300);
   }
-  clearSearch(): void { this.search.set(''); this.page.set(1); this.load(); }
-  goPrev(): void { if (this.page() > 1) { this.page.update(p => p - 1); this.load(); } }
-  goNext(): void { if (this.page() < this.pageCount()) { this.page.update(p => p + 1); this.load(); } }
+  clearSearch(): void { this.search.set(''); this.page.set(1); this.syncUrl(); this.load(); }
+  goPrev(): void { if (this.page() > 1) { this.page.update(p => p - 1); this.syncUrl(); this.load(); } }
+  goNext(): void { if (this.page() < this.pageCount()) { this.page.update(p => p + 1); this.syncUrl(); this.load(); } }
 
   // ─── Row actions ────────────────────────────────────────────────
   edit(row: Discount): void {

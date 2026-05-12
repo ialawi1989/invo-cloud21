@@ -125,11 +125,17 @@
   }
 
   &__thumb {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 8px;
-    object-fit: cover;
-    background: #f1f5f9;
+    // `contain` so provider logos aren't cropped — most are wide
+    // wordmarks (TapPayment, BenefitPay) that would lose meaning
+    // under `cover`. The white card behind contrasts the colourful
+    // logos cleanly.
+    object-fit: contain;
+    background: #fff;
+    border: 1px solid #f1f5f9;
+    padding: 3px;
     flex-shrink: 0;
 
     &--placeholder {
@@ -137,6 +143,7 @@
       align-items: center;
       justify-content: center;
       color: #cbd5e1;
+      background: #f8fafc;
     }
   }
 

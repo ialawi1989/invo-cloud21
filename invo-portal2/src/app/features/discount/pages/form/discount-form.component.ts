@@ -653,18 +653,25 @@ export class DiscountFormComponent implements OnInit, CanLeaveComponent {
     }));
   }
 
-  /** Date inputs round-trip as ISO strings on the wire; the picker
-   *  works with `Date | null`. Sends local-midnight (e.g. UTC+3
-   *  midnight May 20 = `"2026-05-19T21:00:00.000Z"` on the wire) so
-   *  the backend's timestamp-with-timezone column stores the exact
-   *  instant the user picked, regardless of server TZ. Reading
-   *  back via local Date components below cancels the offset
-   *  cleanly so the picker shows the same calendar day. */
+  /** Date inputs round-trip as bare `YYYY-MM-DD` strings on the
+   *  wire — no time component, no timezone offset. Picking "May
+   *  20" sends `"2026-05-20"` regardless of where the user (or
+   *  the server) sits in the world. The time-of-day for
+   *  start/expire is carried separately on
+   *  `startAtTime` / `expireAtTime`. */
   setStartDate(v: Date | null): void {
-    this.discount.update(d => ({ ...d, startDate: v ? v.toISOString() : null }));
+    this.discount.update(d => ({ ...d, startDate: this.toDateOnlyString(v) }));
   }
   setExpireDate(v: Date | null): void {
-    this.discount.update(d => ({ ...d, expireDate: v ? v.toISOString() : null }));
+    this.discount.update(d => ({ ...d, expireDate: this.toDateOnlyString(v) }));
+  }
+
+  private toDateOnlyString(v: Date | null): string | null {
+    if (!v) return null;
+    const y  = v.getFullYear();
+    const m  = String(v.getMonth() + 1).padStart(2, '0');
+    const d  = String(v.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
   /** TimePicker is CVA-friendly and emits `HH:mm` strings. */
   setStartAtTime(v: string | null): void {
@@ -684,6 +691,17 @@ export class DiscountFormComponent implements OnInit, CanLeaveComponent {
 
   private parseIsoDate(v: string | null | undefined): Date | null {
     if (!v) return null;
+    // Pure `YYYY-MM-DD` — build a LOCAL Date so the picker shows
+    // the same calendar day. Native `new Date('2025-09-20')` parses
+    // as UTC midnight, which displays as the previous day in
+    // negative-offset zones.
+    const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+    if (dateOnly) {
+      const [, y, m, d] = dateOnly;
+      return new Date(Number(y), Number(m) - 1, Number(d), 0, 0, 0, 0);
+    }
+    // Fall back to native parsing for legacy ISO timestamps still
+    // sitting in the DB from before this change.
     const t = Date.parse(v);
     return Number.isFinite(t) ? new Date(t) : null;
   }

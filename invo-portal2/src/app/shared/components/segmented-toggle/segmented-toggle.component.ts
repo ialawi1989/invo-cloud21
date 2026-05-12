@@ -88,12 +88,18 @@ export interface SegmentedToggleOption<T = string> {
     </div>
   `,
   styles: [`
+    /* Plain CSS — Angular's inline styles array doesn't run
+       through SCSS, so no ampersand nesting here. */
     .st {
       display: inline-flex;
+      /* Center-align so the toggle sits flush with an adjacent
+         input when the parent uses align-items: stretch. */
+      align-items: center;
       padding: 3px;
       background: #f1f5f9;
       border-radius: 8px;
       align-self: flex-start;
+      flex-shrink: 0;
     }
     .st--vertical {
       display: flex;
@@ -112,21 +118,24 @@ export interface SegmentedToggleOption<T = string> {
       color: #64748b;
       cursor: pointer;
       text-align: center;
+      /* Keep labels on a single line — without this, a short label
+         next to a wider one ("Fixed" / "Percent %") may wrap when
+         the parent flex squeezes the toggle. */
+      white-space: nowrap;
       transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
-
-      &:hover:not(:disabled):not(.is-on) { color: #334155; }
-      &.is-on {
-        background: #fff;
-        color: #0f172a;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
-      }
-      &:disabled { cursor: not-allowed; }
     }
+    .st__btn:hover:not(:disabled):not(.is-on) { color: #334155; }
+    .st__btn.is-on {
+      background: #fff;
+      color: #0f172a;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+    .st__btn:disabled { cursor: not-allowed; }
     .st--sm .st__btn { padding: 4px 10px; font-size: 12px; }
     .st--vertical .st__btn { padding: 8px 12px; }
 
-    // Locked variant — selected stays highlighted, unselected
-    // dimmed so the user reads it as "this can't change".
+    /* Locked variant — selected stays highlighted, unselected
+       dimmed so the user reads it as "this can't change". */
     .st.is-locked { opacity: 0.85; }
     .st.is-locked .st__btn:not(.is-on) { color: #94a3b8; }
   `],

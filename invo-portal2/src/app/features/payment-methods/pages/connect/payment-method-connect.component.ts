@@ -28,29 +28,31 @@ import {
   PaymentMethod,
   emptyPaymentMethod,
 } from '../../services/payment-method.types';
-
-/** Provider slug ↔ display-name. Currently only AFS is wired; add
- *  an entry when the next provider lands. */
-const PROVIDER_REGISTRY: Record<string, { name: string; setupDocUrl: string }> = {
-  afs: { name: 'AFS', setupDocUrl: 'https://www.afs.com.bh' },
-};
+import {
+  ProviderFieldSpec,
+  ProviderSpec,
+  findProviderBySlug,
+} from '../../utils/provider-registry';
 
 /**
- * Connect form for online payment providers.
+ * Connect form for online payment providers — single generic
+ * component driven by `provider-registry.ts`.
  *
- * Routed via `/settings/payment-methods/connect/:slug`. The slug is
- * the provider key (e.g. `afs`). The component:
+ * Routed via `/settings/payment-methods/connect/:slug`. The slug
+ * picks a `ProviderSpec` from the registry. The component:
  *
- *   1. Looks the provider up in the local registry (display name,
- *      setup-doc link).
- *   2. Loads the existing record if one was already saved
- *      (`getList({ searchTerm: slug })` then filter by name), or
- *      seeds a fresh `PaymentMethod` with `name = slug, type = 'Card'`.
- *   3. Renders provider-specific credential fields plus the shared
- *      account picker + enable toggle.
+ *   1. Loads any existing saved row for that provider
+ *      (`getOnlineList({ searchTerm: slug })` then filter by name).
+ *      If none, seeds a fresh `PaymentMethod` with
+ *      `name = provider.backendName, type = 'Card'`, plus any
+ *      `seedSettings` constants the provider needs.
+ *   2. Renders every credential field from `provider.fields`
+ *      against `method.settings[field.key]`.
+ *   3. Optionally renders a second card for `provider.applePay`
+ *      mapped onto `method.settings.applepaySettings.*`.
+ *   4. Always renders the GL-account picker + enable toggle.
  *
- * Lean MVP only ships AFS — every other slug falls through to a
- * "not available yet" notice so the route doesn't 500.
+ * Adding a new provider = one registry entry. No template changes.
  */
 @Component({
   selector: 'app-payment-method-connect',
@@ -86,25 +88,31 @@ export class PaymentMethodConnectComponent implements OnInit, CanLeaveComponent 
   cleanSnapshot = signal<string>('');
   private i18nTick = signal(0);
 
-  /** True when we recognise the slug; the template uses this to
-   *  decide whether to render the form or the "coming soon" card. */
-  provider = computed<{ name: string; setupDocUrl: string } | null>(() => {
-    return PROVIDER_REGISTRY[this.slug()] ?? null;
-  });
+  /** Resolved provider spec for the current slug, or null when the
+   *  slug is unknown (template falls through to a "coming soon"
+   *  notice). */
+  provider = computed<ProviderSpec | null>(() => findProviderBySlug(this.slug()));
 
   pageTitle = computed<string>(() => {
     this.i18nTick();
     const p = this.provider();
     return this.translate.instant('PAYMENT_METHODS.CONNECT.TITLE', {
-      provider: p?.name ?? this.slug(),
+      provider: p?.displayName ?? this.slug(),
+    });
+  });
+
+  pageSubtitle = computed<string>(() => {
+    this.i18nTick();
+    return this.translate.instant('PAYMENT_METHODS.CONNECT.SUBTITLE', {
+      provider: this.provider()?.displayName ?? this.slug(),
     });
   });
 
   breadcrumbs = computed<BreadcrumbItem[]>(() => {
     this.i18nTick();
     return [
-      { label: this.translate.instant('SETTINGS.TITLE'),               routerLink: '/settings' },
-      { label: this.translate.instant('PAYMENT_METHODS.LIST.TITLE'),   routerLink: '/settings/payment-methods' },
+      { label: this.translate.instant('SETTINGS.TITLE'),             routerLink: '/settings' },
+      { label: this.translate.instant('PAYMENT_METHODS.LIST.TITLE'), routerLink: '/settings/payment-methods' },
       { label: this.pageTitle() },
     ];
   });
@@ -119,16 +127,42 @@ export class PaymentMethodConnectComponent implements OnInit, CanLeaveComponent 
     return this.accounts().find(a => a.id === id) ?? { id, name: this.method().accountName || id };
   });
 
-  // ─── AFS-specific credential accessors (the lean MVP only ships
-  //     AFS; add provider-specific helpers as we ship more). ─────
-  afsMerchantId  = computed<string>(() => String((this.method().settings as any)?.merchantId  ?? ''));
-  afsApiPassword = computed<string>(() => String((this.method().settings as any)?.apiPassword ?? ''));
-
-  setAfsMerchantId(v: string): void {
-    this.method.update(m => ({ ...m, settings: { ...(m.settings ?? {}), merchantId: v } }));
+  // ─── Generic credential field accessors ─────────────────────────
+  /** Read the value of a `settings.<key>` field. */
+  getField(key: string): string {
+    return String((this.method().settings as any)?.[key] ?? '');
   }
-  setAfsApiPassword(v: string): void {
-    this.method.update(m => ({ ...m, settings: { ...(m.settings ?? {}), apiPassword: v } }));
+  setField(key: string, v: string): void {
+    this.method.update(m => ({ ...m, settings: { ...(m.settings ?? {}), [key]: v } }));
+  }
+
+  /** Apple-Pay subsection accessors — same shape as `getField`
+   *  but addresses `settings.applepaySettings.<key>`. */
+  getApplePayField(key: string): string {
+    return String((this.method().settings as any)?.applepaySettings?.[key] ?? '');
+  }
+  setApplePayField(key: string, v: string): void {
+    this.method.update(m => {
+      const s = (m.settings ?? {}) as Record<string, unknown>;
+      const ap = (s['applepaySettings'] && typeof s['applepaySettings'] === 'object')
+        ? { ...(s['applepaySettings'] as Record<string, unknown>) }
+        : {};
+      ap[key] = v;
+      return { ...m, settings: { ...s, applepaySettings: ap } };
+    });
+  }
+  getApplePayActive(): boolean {
+    return !!(this.method().settings as any)?.applepaySettings?.isActive;
+  }
+  setApplePayActive(on: boolean): void {
+    this.method.update(m => {
+      const s = (m.settings ?? {}) as Record<string, unknown>;
+      const ap = (s['applepaySettings'] && typeof s['applepaySettings'] === 'object')
+        ? { ...(s['applepaySettings'] as Record<string, unknown>) }
+        : {};
+      ap['isActive'] = on;
+      return { ...m, settings: { ...s, applepaySettings: ap } };
+    });
   }
 
   constructor() {
@@ -142,26 +176,28 @@ export class PaymentMethodConnectComponent implements OnInit, CanLeaveComponent 
   async ngOnInit(): Promise<void> {
     const slug = this.route.snapshot.paramMap.get('slug') ?? '';
     this.slug.set(slug);
-    if (!PROVIDER_REGISTRY[slug]) return; // template shows "coming soon"
+    const provider = findProviderBySlug(slug);
+    if (!provider) return; // template shows "coming soon"
 
     this.loading.set(true);
     try {
       // Look up an existing saved row for this provider — match on
-      // the slug stored as `name`. Online-method names are short and
-      // unique-per-company, so a search is enough.
-      const list = await this.service.getOnlineList({ searchTerm: slug });
-      const existing = list.list.find(m => m.name.toLowerCase() === slug.toLowerCase());
+      // `name` (case-insensitive against `backendName`).
+      const list = await this.service.getOnlineList({ searchTerm: provider.backendName });
+      const existing = list.list.find(m =>
+        m.name.toLowerCase() === provider.backendName.toLowerCase(),
+      );
       if (existing) {
         this.method.set(existing);
       } else {
         // Seed a fresh record. Online providers are Card-type and
-        // round-trip the slug as `name`.
+        // round-trip the legacy `backendName` in `method.name`.
         this.method.set({
           ...emptyPaymentMethod(),
-          name: slug,
+          name: provider.backendName,
           type: 'Card',
           rate: 1,
-          settings: {},
+          settings: provider.seedSettings?.() ?? {},
         });
       }
     } finally {
@@ -190,12 +226,20 @@ export class PaymentMethodConnectComponent implements OnInit, CanLeaveComponent 
     if (!this.method().accountId) return 'PAYMENT_METHODS.FORM.ERR_ACCOUNT_REQUIRED';
     return null;
   });
-  /** AFS-specific required-fields check. When we add more
-   *  providers this will branch on `this.slug()`. */
+  /** True when any required credential field for this provider is
+   *  empty. Apple-Pay sub-block fields are always optional. */
   credentialsError = computed<boolean>(() => {
-    if (this.slug() !== 'afs') return false;
-    return !this.afsMerchantId().trim() || !this.afsApiPassword().trim();
+    const p = this.provider();
+    if (!p) return false;
+    for (const f of p.fields) {
+      if (f.required && !this.getField(f.key).trim()) return true;
+    }
+    return false;
   });
+
+  fieldInvalid(f: ProviderFieldSpec): boolean {
+    return f.required && this.isDirty() && !this.getField(f.key).trim();
+  }
 
   isDirty = computed<boolean>(() => this.snapshot() !== this.cleanSnapshot());
   canSave = computed<boolean>(() =>

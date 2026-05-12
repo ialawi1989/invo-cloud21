@@ -11,21 +11,8 @@
       <h2 class="card__title">{{ 'PAYMENT_METHODS.FORM.DETAILS' | translate }}</h2>
     </header>
     <div class="card__body">
-      <!-- Name -->
-      <label class="field">
-        <span class="field__label">{{ 'PAYMENT_METHODS.FORM.NAME' | translate }}</span>
-        <input class="field__input"
-          type="text"
-          [value]="method().name"
-          (input)="setName($any($event.target).value)"
-          [placeholder]="'PAYMENT_METHODS.FORM.NAME_PLACEHOLDER' | translate"
-          [class.field__input--err]="!!nameError() && method().name.length > 0"/>
-        @if (nameError() && method().name.length > 0) {
-          <span class="field__err">{{ nameError() | translate }}</span>
-        }
-      </label>
-
-      <!-- Type -->
+      <!-- Type — declared first because it gates whether the next
+           row is a currency picker or a free-text name input. -->
       <div class="field">
         <span class="field__label">{{ 'PAYMENT_METHODS.FORM.TYPE' | translate }}</span>
         <app-segmented-toggle
@@ -41,16 +28,61 @@
         </span>
       </div>
 
-      <!-- Symbol -->
-      <label class="field">
-        <span class="field__label">{{ 'PAYMENT_METHODS.FORM.SYMBOL' | translate }}</span>
-        <input class="field__input"
-          type="text"
-          [value]="method().symbol"
-          (input)="setSymbol($any($event.target).value)"
-          [placeholder]="'PAYMENT_METHODS.FORM.SYMBOL_PLACEHOLDER' | translate"/>
-        <span class="field__hint">{{ 'PAYMENT_METHODS.FORM.SYMBOL_HINT' | translate }}</span>
-      </label>
+      @if (method().type === 'Cash') {
+        <!-- Currency picker — auto-fills name + symbol + decimals. -->
+        <label class="field">
+          <span class="field__label">{{ 'PAYMENT_METHODS.FORM.CURRENCY' | translate }}</span>
+          <app-search-dropdown
+            [items]="currencies"
+            [displayWith]="currencyDisplay"
+            [compareWith]="currencyCompare"
+            [toValue]="currencyToValue"
+            [value]="selectedCurrency()"
+            [clearable]="false"
+            [placeholder]="'PAYMENT_METHODS.FORM.CURRENCY_PLACEHOLDER' | translate"
+            (valueChange)="setCurrency($event)"/>
+          @if (nameError() && method().name.length > 0) {
+            <span class="field__err">{{ nameError() | translate }}</span>
+          } @else {
+            <span class="field__hint">{{ 'PAYMENT_METHODS.FORM.CURRENCY_HINT' | translate }}</span>
+          }
+        </label>
+
+        <!-- Symbol — read-only, filled by the currency picker above. -->
+        <label class="field">
+          <span class="field__label">{{ 'PAYMENT_METHODS.FORM.SYMBOL' | translate }}</span>
+          <input class="field__input"
+            type="text"
+            [value]="method().symbol"
+            readonly
+            [placeholder]="'PAYMENT_METHODS.FORM.SYMBOL_PLACEHOLDER' | translate"/>
+          <span class="field__hint">{{ 'PAYMENT_METHODS.FORM.SYMBOL_HINT' | translate }}</span>
+        </label>
+      } @else {
+        <!-- Card type — free-text name + free-text symbol. -->
+        <label class="field">
+          <span class="field__label">{{ 'PAYMENT_METHODS.FORM.NAME' | translate }}</span>
+          <input class="field__input"
+            type="text"
+            [value]="method().name"
+            (input)="setName($any($event.target).value)"
+            [placeholder]="'PAYMENT_METHODS.FORM.NAME_PLACEHOLDER' | translate"
+            [class.field__input--err]="!!nameError() && method().name.length > 0"/>
+          @if (nameError() && method().name.length > 0) {
+            <span class="field__err">{{ nameError() | translate }}</span>
+          }
+        </label>
+
+        <label class="field">
+          <span class="field__label">{{ 'PAYMENT_METHODS.FORM.SYMBOL' | translate }}</span>
+          <input class="field__input"
+            type="text"
+            [value]="method().symbol"
+            (input)="setSymbol($any($event.target).value)"
+            [placeholder]="'PAYMENT_METHODS.FORM.SYMBOL_PLACEHOLDER' | translate"/>
+          <span class="field__hint">{{ 'PAYMENT_METHODS.FORM.SYMBOL_HINT' | translate }}</span>
+        </label>
+      }
 
       <!-- Exchange rate -->
       @if (method().type === 'Cash') {

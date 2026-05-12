@@ -1,11 +1,14 @@
 <div class="pmc-page">
   <header class="page-header">
+    @if (provider()?.logo; as logo) {
+      <img class="page-header__logo" [src]="logo" [alt]="provider()!.displayName"/>
+    }
     <div class="page-header__titles">
       <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
       <h1 class="page-title">{{ pageTitle() }}</h1>
       @if (provider(); as p) {
         <p class="page-sub">
-          {{ 'PAYMENT_METHODS.CONNECT.SUBTITLE' | translate:{ provider: p.name } }}
+          {{ pageSubtitle() }}
           @if (p.setupDocUrl) {
             · <a [href]="p.setupDocUrl" target="_blank" rel="noopener noreferrer">{{ p.setupDocUrl }}</a>
           }
@@ -20,8 +23,8 @@
       <div class="card__body">
         <div class="placeholder">
           <p>
-            <strong>{{ slug() }}</strong> isn't wired up yet. AFS is the only online
-            provider available in this release; the others are coming.
+            <strong>{{ slug() }}</strong> isn't wired up yet. Pick a provider from
+            the list on the Online tab to connect it.
           </p>
           <button type="button" class="btn btn-default" (click)="cancel()">
             {{ 'COMMON.BACK' | translate }}
@@ -30,46 +33,75 @@
       </div>
     </section>
   } @else {
-    <!-- AFS connect form. As we ship more providers, branch on
-         `slug()` and render the matching credential block. -->
-    <section class="card">
-      <header class="card__head">
-        <h2 class="card__title">{{ 'PAYMENT_METHODS.CONNECT.CREDENTIALS' | translate }}</h2>
-      </header>
-      <div class="card__body">
-        @if (slug() === 'afs') {
-          <label class="field">
-            <span class="field__label">{{ 'PAYMENT_METHODS.CONNECT.AFS.MERCHANT_ID' | translate }}</span>
-            <input class="field__input"
-              type="text"
-              [value]="afsMerchantId()"
-              (input)="setAfsMerchantId($any($event.target).value)"
-              [class.field__input--err]="!afsMerchantId().trim() && isDirty()"/>
-            @if (!afsMerchantId().trim() && isDirty()) {
-              <span class="field__err">{{ 'PAYMENT_METHODS.CONNECT.ERR_FIELD_REQUIRED' | translate }}</span>
-            } @else {
-              <span class="field__hint">{{ 'PAYMENT_METHODS.CONNECT.AFS.MERCHANT_ID_HINT' | translate }}</span>
-            }
+    <!-- Credential fields — driven by `provider.fields`. Hidden
+         entirely when the provider has no credential inputs
+         (e.g. CrediMax ECR, where it's a presence-flag). -->
+    @if (provider()!.fields.length > 0) {
+      <section class="card">
+        <header class="card__head">
+          <h2 class="card__title">{{ 'PAYMENT_METHODS.CONNECT.CREDENTIALS' | translate }}</h2>
+        </header>
+        <div class="card__body">
+          @for (f of provider()!.fields; track f.key) {
+            <label class="field">
+              <span class="field__label">{{ f.labelKey | translate }}</span>
+              <input class="field__input"
+                [type]="f.type"
+                [autocomplete]="f.type === 'password' ? 'new-password' : 'off'"
+                [value]="getField(f.key)"
+                (input)="setField(f.key, $any($event.target).value)"
+                [class.field__input--err]="fieldInvalid(f)"/>
+              @if (fieldInvalid(f)) {
+                <span class="field__err">{{ 'PAYMENT_METHODS.CONNECT.ERR_FIELD_REQUIRED' | translate }}</span>
+              } @else if (f.hintKey) {
+                <span class="field__hint">{{ f.hintKey | translate }}</span>
+              }
+            </label>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Apple-Pay sub-block — providers that proxy Apple Pay
+         (Tap, CrediMax) carry an optional `applepaySettings`
+         object. Toggle on to expose its inputs. -->
+    @if (provider()!.applePay; as ap) {
+      <section class="card">
+        <header class="card__head">
+          <h2 class="card__title">{{ 'PAYMENT_METHODS.CONNECT.APPLE_PAY_TITLE' | translate }}</h2>
+          <p class="card__sub">{{ 'PAYMENT_METHODS.CONNECT.APPLE_PAY_SUB' | translate }}</p>
+        </header>
+        <div class="card__body">
+          <label class="checkbox-field">
+            <input type="checkbox"
+              [checked]="getApplePayActive()"
+              (change)="setApplePayActive($any($event.target).checked)"/>
+            <span class="checkbox-field__text">
+              <span class="checkbox-field__label">{{ 'PAYMENT_METHODS.CONNECT.APPLE_PAY_ACTIVE' | translate }}</span>
+              <span class="checkbox-field__hint">{{ 'PAYMENT_METHODS.CONNECT.APPLE_PAY_ACTIVE_HINT' | translate }}</span>
+            </span>
           </label>
 
-          <label class="field">
-            <span class="field__label">{{ 'PAYMENT_METHODS.CONNECT.AFS.API_PASSWORD' | translate }}</span>
-            <input class="field__input"
-              type="password"
-              autocomplete="new-password"
-              [value]="afsApiPassword()"
-              (input)="setAfsApiPassword($any($event.target).value)"
-              [class.field__input--err]="!afsApiPassword().trim() && isDirty()"/>
-            @if (!afsApiPassword().trim() && isDirty()) {
-              <span class="field__err">{{ 'PAYMENT_METHODS.CONNECT.ERR_FIELD_REQUIRED' | translate }}</span>
-            } @else {
-              <span class="field__hint">{{ 'PAYMENT_METHODS.CONNECT.AFS.API_PASSWORD_HINT' | translate }}</span>
+          @if (getApplePayActive()) {
+            @for (f of ap.fields; track f.key) {
+              <label class="field">
+                <span class="field__label">{{ f.labelKey | translate }}</span>
+                <input class="field__input"
+                  [type]="f.type"
+                  [autocomplete]="f.type === 'password' ? 'new-password' : 'off'"
+                  [value]="getApplePayField(f.key)"
+                  (input)="setApplePayField(f.key, $any($event.target).value)"/>
+                @if (f.hintKey) {
+                  <span class="field__hint">{{ f.hintKey | translate }}</span>
+                }
+              </label>
             }
-          </label>
-        }
-      </div>
-    </section>
+          }
+        </div>
+      </section>
+    }
 
+    <!-- Account + enable toggle — shared across every provider. -->
     <section class="card">
       <header class="card__head">
         <h2 class="card__title">{{ 'PAYMENT_METHODS.CONNECT.ACCOUNT' | translate }}</h2>

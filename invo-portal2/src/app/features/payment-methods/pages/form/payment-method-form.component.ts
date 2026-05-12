@@ -33,6 +33,12 @@ import {
   PaymentMethod,
   emptyPaymentMethod,
 } from '../../services/payment-method.types';
+import {
+  CURRENCIES,
+  Currency,
+  findCurrencyByCode,
+  findCurrencyByName,
+} from '../../utils/currencies';
 
 /**
  * Payment method editor (`/settings/payment-methods/:id`).
@@ -109,6 +115,29 @@ export class PaymentMethodFormComponent implements OnInit, CanLeaveComponent {
     { value: 'Cash', label: 'PAYMENT_METHODS.FORM.TYPE_CASH' },
     { value: 'Card', label: 'PAYMENT_METHODS.FORM.TYPE_CARD' },
   ];
+
+  // ─── Currency picker (Cash only) ────────────────────────────────
+  readonly currencies = CURRENCIES;
+  currencyDisplay = (c: Currency | null) => c ? `${c.code} — ${c.name}` : '';
+  currencyCompare = (a: Currency | null, b: Currency | null) => (a?.code ?? '') === (b?.code ?? '');
+  currencyToValue = (c: Currency | null) => c?.code ?? '';
+  /** Resolve the saved `name` (legacy stores currency code OR full
+   *  name there) back to a `Currency` so the dropdown pre-selects. */
+  selectedCurrency = computed<Currency | null>(() => {
+    const m = this.method();
+    if (m.type !== 'Cash') return null;
+    return findCurrencyByCode(m.name) ?? findCurrencyByName(m.name);
+  });
+  setCurrency(c: Currency | Currency[] | null): void {
+    const picked = Array.isArray(c) ? c[0] ?? null : c;
+    if (!picked) return;
+    this.method.update(m => ({
+      ...m,
+      name:         picked.code,
+      symbol:       picked.symbol,
+      afterDecimal: picked.decimalDigits,
+    }));
+  }
 
   // ─── Account dropdown adapters ──────────────────────────────────
   accountDisplay = (a: PaymentAccount | null) => a?.name ?? '';

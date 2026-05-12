@@ -116,8 +116,8 @@
 
   <!-- Shared row body — name + chips + balance + enable toggle. -->
   <ng-template #rowBody let-row="row">
-    @if (row.mediaUrl?.thumbnailUrl) {
-      <img class="row__thumb" [src]="row.mediaUrl.thumbnailUrl" alt=""/>
+    @if (rowThumb(row); as src) {
+      <img class="row__thumb" [src]="src" [alt]="row.name"/>
     } @else {
       <div class="row__thumb row__thumb--placeholder" aria-hidden="true">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

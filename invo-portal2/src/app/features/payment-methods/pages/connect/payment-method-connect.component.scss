@@ -10,7 +10,23 @@
   gap: 16px;
 }
 
-.page-header { display: flex; flex-direction: column; gap: 4px; }
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+
+  &__logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    object-fit: contain;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    padding: 6px;
+    flex-shrink: 0;
+  }
+  &__titles { display: flex; flex-direction: column; gap: 4px; flex: 1 1 auto; min-width: 0; }
+}
 .page-title  { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
 .page-sub    {
   margin: 0;
