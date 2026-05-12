@@ -22,9 +22,28 @@ import {
   DropdownMenuBtnComponent,
   DropdownMenuBtnItem,
 } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import { ListShellComponent } from '@shared/components/list-shell/list-shell.component';
+import {
+  QueryParamsService,
+  ParamDef,
+  IntCodec,
+  intCodec,
+  StringCodec,
+  enumCodec,
+} from '@shared/services/query-params.service';
 
 import { LabelBuilderService } from '../../services/label-builder.service';
 import { LabelTemplate, LabelTemplateSummary, LabelTemplateType } from '../../services/label-template.types';
+
+const TYPE_FILTERS = ['all', 'label', 'kitchen'] as const;
+type TypeFilter = typeof TYPE_FILTERS[number];
+
+const QP = {
+  page:     { key: 'page',  codec: IntCodec }                            as ParamDef<number>,
+  pageSize: { key: 'limit', codec: intCodec(15) }                        as ParamDef<number>,
+  search:   { key: 'q',     codec: StringCodec }                         as ParamDef<string>,
+  type:     { key: 'type',  codec: enumCodec(TYPE_FILTERS, 'all') }      as ParamDef<TypeFilter>,
+};
 import { LabelThumbnailComponent } from '../../components/label-thumbnail/label-thumbnail.component';
 import { InViewDirective } from '../../components/in-view.directive';
 
@@ -54,6 +73,7 @@ import { InViewDirective } from '../../components/in-view.directive';
     LabelThumbnailComponent,
     InViewDirective,
     DropdownMenuBtnComponent,
+    ListShellComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './label-builder-list.component.html',
@@ -64,6 +84,7 @@ export class LabelBuilderListComponent implements OnInit {
   private translate = inject(TranslateService);
   private router    = inject(Router);
   private modal     = inject(ModalService);
+  private qp        = inject(QueryParamsService);
 
   constructor() { withTranslations('label-builder'); }
 
@@ -104,7 +125,6 @@ export class LabelBuilderListComponent implements OnInit {
    *  only kitchen tickets. Sent to the backend as `templateType`. */
   typeFilter  = signal<'all' | 'label' | 'kitchen'>('all');
 
-  private searchDebounce?: ReturnType<typeof setTimeout>;
   private i18nTick = signal(0);
 
   /** Backwards-compat alias used by the template — server-side
@@ -195,7 +215,6 @@ export class LabelBuilderListComponent implements OnInit {
   clearFilters(): void {
     this.searchQuery.set('');
     this.typeFilter.set('all');
-    clearTimeout(this.searchDebounce);
     this.reloadFromFirstPage();
   }
 
@@ -207,7 +226,23 @@ export class LabelBuilderListComponent implements OnInit {
     if (this.openMenuId() !== null) this.openMenuId.set(null);
   }
 
-  ngOnInit(): void { void this.refresh(); }
+  ngOnInit(): void {
+    const p = this.qp.read(QP);
+    this.page.set(p.page);
+    this.pageSize.set(p.pageSize);
+    this.searchQuery.set(p.search);
+    this.typeFilter.set(p.type);
+    void this.refresh();
+  }
+
+  private syncUrl(): void {
+    this.qp.write(QP, {
+      page:     this.page(),
+      pageSize: this.pageSize(),
+      search:   this.searchQuery(),
+      type:     this.typeFilter(),
+    });
+  }
 
   async refresh(): Promise<void> {
     this.loading.set(true);
@@ -253,20 +288,19 @@ export class LabelBuilderListComponent implements OnInit {
    *  so the user doesn't end up on a page that no longer exists. */
   private reloadFromFirstPage(): void {
     this.page.set(1);
+    this.syncUrl();
     void this.refresh();
   }
 
-  /** Search input handler — debounce keystrokes so each character
-   *  doesn't fire its own request. */
-  onSearchInput(value: string): void {
+  /** Search submit — fired by `<app-list-search>` on Enter / button
+   *  click. No debounce needed: the user has already committed. */
+  onSearch(value: string): void {
     this.searchQuery.set(value);
-    clearTimeout(this.searchDebounce);
-    this.searchDebounce = setTimeout(() => this.reloadFromFirstPage(), 300);
+    this.reloadFromFirstPage();
   }
 
   clearSearch(): void {
     this.searchQuery.set('');
-    clearTimeout(this.searchDebounce);
     this.reloadFromFirstPage();
   }
 
@@ -279,12 +313,14 @@ export class LabelBuilderListComponent implements OnInit {
   goPrev(): void {
     if (this.page() <= 1 || this.loading()) return;
     this.page.update(p => p - 1);
+    this.syncUrl();
     void this.refresh();
   }
 
   goNext(): void {
     if (this.page() >= this.pageCount() || this.loading()) return;
     this.page.update(p => p + 1);
+    this.syncUrl();
     void this.refresh();
   }
 

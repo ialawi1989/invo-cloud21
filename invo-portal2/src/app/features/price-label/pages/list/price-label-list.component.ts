@@ -16,10 +16,10 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
+import { ListShellComponent } from '@shared/components/list-shell/list-shell.component';
 import { ModalService } from '@shared/modal/modal.service';
 import {
   ConfirmModalComponent,
@@ -41,6 +41,19 @@ import {
   DropdownMenuBtnComponent,
   DropdownMenuBtnItem,
 } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import {
+  QueryParamsService,
+  ParamDef,
+  IntCodec,
+  intCodec,
+  StringCodec,
+} from '@shared/services/query-params.service';
+
+const QP = {
+  page:     { key: 'page',  codec: IntCodec }     as ParamDef<number>,
+  pageSize: { key: 'limit', codec: intCodec(15) } as ParamDef<number>,
+  search:   { key: 'q',     codec: StringCodec }  as ParamDef<string>,
+};
 
 /**
  * Price Label list — paginated, searchable table of named price
@@ -61,10 +74,10 @@ import {
     FormsModule,
     TranslateModule,
     OverlayModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
     SkeletonComponent,
     DropdownMenuBtnComponent,
+    ListShellComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './price-label-list.component.html',
@@ -76,6 +89,7 @@ export class PriceLabelListComponent implements OnInit {
   private router    = inject(Router);
   private modal     = inject(ModalService);
   private destroyRef = inject(DestroyRef);
+  private qp        = inject(QueryParamsService);
 
   loading = signal<boolean>(false);
   rows    = signal<PriceLabelSummary[]>([]);
@@ -103,7 +117,6 @@ export class PriceLabelListComponent implements OnInit {
     ];
   }
 
-  private searchDebounce?: ReturnType<typeof setTimeout>;
   private i18nTick = signal(0);
 
   pageCount = computed<number>(() => {
@@ -136,7 +149,19 @@ export class PriceLabelListComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    const p = this.qp.read(QP);
+    this.page.set(p.page);
+    this.pageSize.set(p.pageSize);
+    this.search.set(p.search);
     await this.load();
+  }
+
+  private syncUrl(): void {
+    this.qp.write(QP, {
+      page:     this.page(),
+      pageSize: this.pageSize(),
+      search:   this.search(),
+    });
   }
 
   async load(): Promise<void> {
@@ -155,31 +180,31 @@ export class PriceLabelListComponent implements OnInit {
   }
 
   // ─── Search + paging ────────────────────────────────────────────
-  onSearchInput(value: string): void {
+  onSearch(value: string): void {
     this.search.set(value);
-    clearTimeout(this.searchDebounce);
-    this.searchDebounce = setTimeout(() => {
-      this.page.set(1);
-      void this.load();
-    }, 300);
+    this.page.set(1);
+    this.syncUrl();
+    void this.load();
   }
 
   clearSearch(): void {
     this.search.set('');
-    clearTimeout(this.searchDebounce);
     this.page.set(1);
+    this.syncUrl();
     void this.load();
   }
 
   goPrev(): void {
     if (this.page() <= 1 || this.loading()) return;
     this.page.update(p => p - 1);
+    this.syncUrl();
     void this.load();
   }
 
   goNext(): void {
     if (this.page() >= this.pageCount() || this.loading()) return;
     this.page.update(p => p + 1);
+    this.syncUrl();
     void this.load();
   }
 

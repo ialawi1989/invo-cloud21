@@ -1,75 +1,147 @@
-.pml-page {
-  padding: 16px 20px 80px;
+// Page chrome (header, toolbar, card, loading, empty) lives in
+// `<app-list-shell>`. Only projected-content styles remain.
+
+// ── Connect tab (large cards) ────────────────────────────────────
+// Mirrors the reference design — each provider sits in its own
+// rounded white card with a logo tile, name + one-line description,
+// toggle, and Connect/Configure button. Sections are split into
+// "Connected" (saved credentials) and "Not Connected" (registry
+// stubs).
+.connect-section__heading {
+  margin: 16px 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+
+  &:first-of-type { margin-top: 0; }
+}
+
+.connect-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
   gap: 12px;
-
-  &__titles  { display: flex; flex-direction: column; gap: 4px; }
-  &__actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 }
-.page-title { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
-.page-sub   { margin: 0; font-size: 13px; color: #64748b; max-width: 70ch; line-height: 1.5; }
 
-.toolbar {
+.connect-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.search {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 38px;
-  padding: 0 8px 0 12px;
+  gap: 18px;
+  padding: 18px 24px;
   background: #fff;
   border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  color: #94a3b8;
-  flex: 1 1 auto;
-  max-width: 360px;
+  border-radius: 14px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 
-  > svg { color: #94a3b8; flex-shrink: 0; }
-  > input {
+  &:hover { border-color: #cbd5e1; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05); }
+
+  &__thumb {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    object-fit: contain;
+    padding: 8px;
+    flex-shrink: 0;
+
+    &--placeholder {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #cbd5e1;
+      background: #f8fafc;
+    }
+  }
+
+  &__main {
     flex: 1 1 auto;
-    border: 0;
-    outline: 0;
-    background: transparent;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  &__name {
+    font-size: 15px;
+    font-weight: 700;
     color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  &__desc {
+    margin: 0;
     font-size: 13px;
-    &::placeholder { color: #94a3b8; }
+    color: #64748b;
+    line-height: 1.45;
   }
-  &:focus-within {
-    border-color: var(--color-brand-300, #bae6fd);
-    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
-  }
-  &__clear {
-    appearance: none;
-    background: transparent;
-    border: 0;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 2px;
-    border-radius: 4px;
-    &:hover { background: #f1f5f9; color: #0f172a; }
-  }
-}
 
-.card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 6px;
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  // iOS-style switch — copy of `.row__toggle` so the Connect tab
+  // can evolve its visual independently.
+  &__toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+
+    input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    &-track {
+      width: 36px;
+      height: 20px;
+      background: #cbd5e1;
+      border-radius: 999px;
+      position: relative;
+      transition: background 120ms ease;
+    }
+    &-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+      transition: transform 140ms ease;
+    }
+    input:checked + .connect-card__toggle-track {
+      background: var(--color-brand-500, #06b6d4);
+    }
+    input:checked + .connect-card__toggle-track .connect-card__toggle-thumb {
+      transform: translateX(16px);
+    }
+  }
+
+  &__btn {
+    appearance: none;
+    padding: 8px 22px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-brand-600, #0891b2);
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 120ms ease;
+
+    &:hover { background: var(--color-brand-700, #0e7490); }
+  }
 }
 
 .rows {
@@ -180,7 +252,44 @@
     &-value { font-weight: 600; }
   }
 
-  // iOS-style switch.
+  // Exchange-rate column for the Currency tab. Same stacked
+  // label/value pattern as `.row__balance` so the columns align
+  // visually.
+  &__rate {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+    color: #0f172a;
+    font-size: 12px;
+    min-width: 72px;
+
+    &-label { color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+    &-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+  }
+
+  &__edit {
+    appearance: none;
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+      border-color: #e2e8f0;
+    }
+  }
+
   &__toggle {
     position: relative;
     display: inline-flex;
@@ -219,18 +328,4 @@
       transform: translateX(16px);
     }
   }
-}
-
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 48px 16px;
-  color: #94a3b8;
-  font-size: 13px;
-
-  p   { margin: 0; }
-  .btn { margin-top: 4px; }
 }

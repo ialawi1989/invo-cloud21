@@ -14,7 +14,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
@@ -22,6 +21,7 @@ import {
   DropdownMenuBtnComponent,
   DropdownMenuBtnItem,
 } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import { ListShellComponent } from '@shared/components/list-shell/list-shell.component';
 import {
   QueryParamsService,
   ParamDef,
@@ -57,10 +57,10 @@ const QP = {
     RouterModule,
     FormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
     SkeletonComponent,
     DropdownMenuBtnComponent,
+    ListShellComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './surcharge-list.component.html',
@@ -81,7 +81,6 @@ export class SurchargeListComponent implements OnInit {
   pageSize = signal<number>(15);
   total    = signal<number>(0);
 
-  private searchDebounce?: ReturnType<typeof setTimeout>;
   private i18nTick = signal(0);
 
   pageCount = computed<number>(() => {
@@ -158,16 +157,13 @@ export class SurchargeListComponent implements OnInit {
   }
 
   // ─── Search + paging ────────────────────────────────────────────
-  onSearchInput(value: string): void {
+  onSearch(value: string): void {
     this.search.set(value);
-    clearTimeout(this.searchDebounce);
-    this.searchDebounce = setTimeout(() => {
-      this.page.set(1);
-      this.syncUrl();
-      this.load();
-    }, 300);
+    this.page.set(1);
+    this.syncUrl();
+    void this.load();
   }
-  clearSearch(): void { this.search.set(''); this.page.set(1); this.syncUrl(); this.load(); }
+  clearSearch(): void { this.search.set(''); this.page.set(1); this.syncUrl(); void this.load(); }
   goPrev(): void { if (this.page() > 1) { this.page.update(p => p - 1); this.syncUrl(); this.load(); } }
   goNext(): void { if (this.page() < this.pageCount()) { this.page.update(p => p + 1); this.syncUrl(); this.load(); } }
 

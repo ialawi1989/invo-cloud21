@@ -13,13 +13,26 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
+import { ListShellComponent } from '@shared/components/list-shell/list-shell.component';
+import {
+  QueryParamsService,
+  ParamDef,
+  IntCodec,
+  intCodec,
+  StringCodec,
+} from '@shared/services/query-params.service';
 
 import {
   BranchSettingsService,
   BranchSummary,
 } from '../../services/branch-settings.service';
+
+const QP = {
+  page:     { key: 'page',  codec: IntCodec }     as ParamDef<number>,
+  pageSize: { key: 'limit', codec: intCodec(20) } as ParamDef<number>,
+  search:   { key: 'q',     codec: StringCodec }  as ParamDef<string>,
+};
 
 /**
  * Settings → Branches list
@@ -35,7 +48,7 @@ import {
 @Component({
   selector: 'app-branches-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, BreadcrumbsComponent],
+  imports: [CommonModule, RouterModule, TranslateModule, ListShellComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './branches-list.component.html',
   styleUrl: './branches-list.component.scss',
@@ -45,6 +58,7 @@ export class BranchesListComponent implements OnInit {
   private translate  = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
+  private qp         = inject(QueryParamsService);
 
   loading  = signal<boolean>(false);
   busy     = signal<string | null>(null); // branchId currently performing an action
@@ -58,8 +72,6 @@ export class BranchesListComponent implements OnInit {
 
   /** Re-translate labels after ngx-translate finishes loading. */
   private i18nTick = signal(0);
-
-  private debounce?: ReturnType<typeof setTimeout>;
 
   breadcrumbs = computed<BreadcrumbItem[]>(() => {
     this.i18nTick();
@@ -96,7 +108,19 @@ export class BranchesListComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    const p = this.qp.read(QP);
+    this.page.set(p.page);
+    this.pageSize.set(p.pageSize);
+    this.search.set(p.search);
     await this.load();
+  }
+
+  private syncUrl(): void {
+    this.qp.write(QP, {
+      page:     this.page(),
+      pageSize: this.pageSize(),
+      search:   this.search(),
+    });
   }
 
   async load(): Promise<void> {
@@ -114,31 +138,31 @@ export class BranchesListComponent implements OnInit {
     }
   }
 
-  onSearchInput(value: string): void {
+  onSearch(value: string): void {
     this.search.set(value);
-    clearTimeout(this.debounce);
-    // 300ms debounce — typical for type-ahead.
-    this.debounce = setTimeout(() => {
-      this.page.set(1);
-      this.load();
-    }, 300);
+    this.page.set(1);
+    this.syncUrl();
+    void this.load();
   }
 
   clearSearch(): void {
     this.search.set('');
     this.page.set(1);
-    this.load();
+    this.syncUrl();
+    void this.load();
   }
 
   goPrev(): void {
     if (this.page() <= 1) return;
     this.page.update(p => p - 1);
+    this.syncUrl();
     this.load();
   }
 
   goNext(): void {
     if (this.page() >= this.pageCount()) return;
     this.page.update(p => p + 1);
+    this.syncUrl();
     this.load();
   }
 

@@ -48,10 +48,18 @@ export interface ProviderSpec {
   setupDocUrl?: string;
   fields:       ProviderFieldSpec[];
   applePay?:    ProviderApplePaySpec;
+  /** One-line description rendered under the provider name on the
+   *  Connect tab's large card. i18n key, not raw text. */
+  descriptionKey?: string;
   /** Optional defaults for the `settings` object on a fresh
    *  record — providers like BenefitPay store a constant `type`
    *  field that the backend keys off. */
   seedSettings?: () => Record<string, unknown>;
+  /** Countries this provider serves. The list page filters the
+   *  Online tab to providers whose `countries[]` includes the
+   *  company's country, matching the legacy
+   *  `setCountryValueForPaymentsConnect` mapping. */
+  countries:    readonly string[];
 }
 
 /* Shared field specs — `merchantId` and `apiPassword` recur across
@@ -119,6 +127,15 @@ const APPLE_PAY_OVER_PROVIDER: ProviderApplePaySpec = {
  * Copied verbatim from the legacy app's asset folder. */
 const LOGO = (file: string) => `images/payment-icons/${file}`;
 
+/* Country list shortcuts — saved off in one place so each provider
+ * row stays readable. Mirror the legacy
+ * `setCountryValueForPaymentsConnect` mapping verbatim. */
+const GCC_FULL = ['Bahrain', 'Kuwait', 'Oman', 'Qatar', 'Saudi Arabia', 'United Arab Emirates'] as const;
+const BAHRAIN_ONLY = ['Bahrain'] as const;
+const KUWAIT_ONLY  = ['Kuwait'] as const;
+const OMAN_ONLY    = ['Oman'] as const;
+const BAHRAIN_IRAQ = ['Bahrain', 'Iraq'] as const;
+
 export const PROVIDERS: ProviderSpec[] = [
   {
     slug: 'afs',
@@ -127,6 +144,8 @@ export const PROVIDERS: ProviderSpec[] = [
     logo: LOGO('afs.png'),
     setupDocUrl: 'https://www.afs.com.bh',
     fields: [FIELD.merchantId(), FIELD.apiPassword()],
+    countries: BAHRAIN_ONLY,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.AFS_DESC',
   },
   {
     slug: 'benefit',
@@ -150,6 +169,8 @@ export const PROVIDERS: ProviderSpec[] = [
         type: 'text', required: true,
       },
     ],
+    countries: BAHRAIN_ONLY,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.BENEFIT_DESC',
   },
   {
     slug: 'benefitpay',
@@ -161,6 +182,8 @@ export const PROVIDERS: ProviderSpec[] = [
     // preserve that on a fresh record so the backend's matching
     // logic doesn't break.
     seedSettings: () => ({ type: 'QR' }),
+    countries: BAHRAIN_ONLY,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.BENEFITPAY_DESC',
   },
   {
     slug: 'credimax',
@@ -169,6 +192,8 @@ export const PROVIDERS: ProviderSpec[] = [
     logo: LOGO('credimax.jpg'),
     fields: [FIELD.merchantId(), FIELD.apiPassword()],
     applePay: APPLE_PAY_OVER_PROVIDER,
+    countries: BAHRAIN_ONLY,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.CREDIMAX_DESC',
   },
   {
     slug: 'credimax-ecr',
@@ -180,6 +205,8 @@ export const PROVIDERS: ProviderSpec[] = [
     // connect page so the user can pick an account + enable.
     fields: [],
     seedSettings: () => ({ type: 'ecr' }),
+    countries: BAHRAIN_ONLY,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.CREDIMAX_ECR_DESC',
   },
   {
     slug: 'aps-ecr',
@@ -188,6 +215,8 @@ export const PROVIDERS: ProviderSpec[] = [
     logo: LOGO('aps.png'),
     fields: [FIELD.merchantId(false)],
     seedSettings: () => ({ type: 'ecr' }),
+    countries: BAHRAIN_IRAQ,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.APS_ECR_DESC',
   },
   {
     slug: 'switch-ecr',
@@ -196,6 +225,8 @@ export const PROVIDERS: ProviderSpec[] = [
     logo: LOGO('switch.png'),
     fields: [FIELD.merchantId(false)],
     seedSettings: () => ({ type: 'ecr' }),
+    countries: BAHRAIN_IRAQ,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.SWITCH_ECR_DESC',
   },
   {
     slug: 'fatoorah',
@@ -203,6 +234,8 @@ export const PROVIDERS: ProviderSpec[] = [
     backendName: 'Fatoorah',
     logo: LOGO('myFatoorah.png'),
     fields: [FIELD.token()],
+    countries: GCC_FULL,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.FATOORAH_DESC',
   },
   {
     slug: 'gatee',
@@ -218,6 +251,8 @@ export const PROVIDERS: ProviderSpec[] = [
         type: 'password', required: true,
       },
     ],
+    countries: GCC_FULL,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.GATEE_DESC',
   },
   {
     slug: 'hesabe',
@@ -238,6 +273,8 @@ export const PROVIDERS: ProviderSpec[] = [
         type: 'password', required: true,
       },
     ],
+    countries: KUWAIT_ONLY,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.HESABE_DESC',
   },
   {
     slug: 'maxwallet',
@@ -245,6 +282,8 @@ export const PROVIDERS: ProviderSpec[] = [
     backendName: 'MaxWallet',
     logo: LOGO('maxWallet.png'),
     fields: [FIELD.merchantId(), FIELD.appId(), FIELD.secretKey()],
+    countries: BAHRAIN_ONLY,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.MAXWALLET_DESC',
   },
   {
     slug: 'tappayment',
@@ -253,6 +292,8 @@ export const PROVIDERS: ProviderSpec[] = [
     logo: LOGO('tap_logo.svg'),
     fields: [FIELD.secretKey()],
     applePay: APPLE_PAY_OVER_PROVIDER,
+    countries: GCC_FULL,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.TAP_DESC',
   },
   {
     slug: 'thawanipayment',
@@ -260,32 +301,14 @@ export const PROVIDERS: ProviderSpec[] = [
     backendName: 'ThawaniPayment',
     logo: LOGO('thawani.jpg'),
     fields: [FIELD.secretKey(), FIELD.publishableKey()],
+    countries: OMAN_ONLY,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.THAWANI_DESC',
   },
-  {
-    slug: 'applepay',
-    displayName: 'Apple Pay',
-    backendName: 'ApplePay',
-    logo: LOGO('applepay.png'),
-    fields: [
-      {
-        key: 'host',
-        labelKey: 'PAYMENT_METHODS.CONNECT.FIELDS.HOST',
-        type: 'text', required: true,
-      },
-      {
-        key: 'Merchant_Identifier',
-        labelKey: 'PAYMENT_METHODS.CONNECT.FIELDS.APPLE_MERCHANT_IDENTIFIER',
-        hintKey:  'PAYMENT_METHODS.CONNECT.FIELDS.APPLE_MERCHANT_IDENTIFIER_HINT',
-        type: 'text', required: true,
-      },
-      {
-        key: 'codeString',
-        labelKey: 'PAYMENT_METHODS.CONNECT.FIELDS.APPLE_CODE_STRING',
-        hintKey:  'PAYMENT_METHODS.CONNECT.FIELDS.APPLE_CODE_STRING_HINT',
-        type: 'password', required: true,
-      },
-    ],
-  },
+  // Note: the legacy `PaymnetMethod` constructor has an `ApplePay`
+  // branch for backwards compat, but Apple Pay isn't a standalone
+  // gateway in the Connect tab — it's only meaningfully configured
+  // as the `applePay` sub-block on CrediMax and Tap. We deliberately
+  // don't surface it here.
 ];
 
 /** Map by both `slug` AND the legacy `backendName` so the list page
@@ -311,4 +334,55 @@ export function findProviderByName(name: string | null | undefined): ProviderSpe
  *  more naturally. */
 export function findProviderBySlug(slug: string | null | undefined): ProviderSpec | null {
   return findProviderByName(slug);
+}
+
+/** Lightweight shape used by `buildConnectList` — we only need the
+ *  `name` field to look up the provider, so callers can pass their
+ *  full `PaymentMethod` rows or anything compatible. */
+export interface ConnectRow {
+  name?: string;
+}
+
+/**
+ * Project the raw `getOnlinePaymentMethods` response into the list
+ * the Connect tab actually shows. Two-step pipeline:
+ *
+ *   1. Drop every server row whose `name` doesn't map to a known
+ *      provider. The endpoint also returns user-created Cash
+ *      methods (BHD wallets, custom currencies) and legacy
+ *      `ApplePay` rows; those have no place on the Connect tab.
+ *   2. Append a stub for every registry provider not already
+ *      represented by a server row, so the user sees "Connect"
+ *      cards for the rest.
+ *
+ * No country filter — every provider surfaces regardless of where
+ * the company is based. Users decide what to enable themselves.
+ *
+ * Stubs are created with the canonical `backendName` so the form
+ * round-trips correctly when the user clicks Connect on one of them.
+ */
+export function buildConnectList<T extends ConnectRow>(
+  serverRows: T[],
+  stubFactory: (provider: ProviderSpec) => T,
+): T[] {
+  const seenSlugs = new Set<string>();
+  const out: T[] = [];
+
+  // 1. Keep every server row that maps to a known provider; drop
+  //    Cash currency rows and ApplePay leftovers (no registry match).
+  for (const row of serverRows) {
+    const p = findProviderByName(row.name);
+    if (!p) continue;
+    out.push(row);
+    seenSlugs.add(p.slug);
+  }
+
+  // 2. Append stubs for providers that didn't come back from the
+  //    server, so the user still sees "Connect" cards for them.
+  for (const p of PROVIDERS) {
+    if (seenSlugs.has(p.slug)) continue;
+    out.push(stubFactory(p));
+  }
+
+  return out;
 }

@@ -288,6 +288,18 @@ export const routes: Routes = [
         path: 'settings/payment-methods',
         loadChildren: () =>
           import('./features/payment-methods/payment-methods.routes').then(m => m.PAYMENT_METHODS_ROUTES)
+      },
+      {
+        // Chart of Accounts — the company's general ledger. List
+        // page + form for individual accounts. Lives under
+        // `/account/*` to match the legacy sidebar grouping
+        // (Accounts → Chart of Accounts / Opening Balances / …).
+        // Reused by the payment-methods feature's inline
+        // "Create new account" modal via the shared
+        // `<app-account-form-fields>` component.
+        path: 'account/chart-of-accounts',
+        loadChildren: () =>
+          import('./features/chart-of-accounts/chart-of-accounts.routes').then(m => m.CHART_OF_ACCOUNTS_ROUTES)
       }
       // ── Add features here as you build them ──────────────────────────────
     ],

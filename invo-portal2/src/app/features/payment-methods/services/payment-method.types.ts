@@ -67,6 +67,15 @@ export interface PaymentMethod {
   /** Server-resolved thumbnail (the form uploads via a media id). */
   mediaUrl:         PaymentMethodImage | null;
   mediaId:          string | null;
+  /** Localised name copies — written by the translation modal,
+   *  round-tripped verbatim. The primary `name` field always
+   *  mirrors `translation.name.en` so legacy queries still match. */
+  translation?:     { name?: { en?: string; ar?: string } };
+  /** Per-branch GL-account override. Map of `branchId → accountId`;
+   *  unset / missing branches fall back to the main `accountId`. The
+   *  legacy wire shape is an object literal (not an array), so we
+   *  round-trip it as-is. */
+  branchesAccounts?: Record<string, string>;
   /** Provider-specific credentials (Tap/Thawani/…); opaque in this
    *  MVP — round-tripped verbatim so existing records don't lose
    *  their config when the user saves an unrelated field. */

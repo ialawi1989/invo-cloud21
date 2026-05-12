@@ -92,7 +92,7 @@ export const SIDE_MENU: SideMenuItem[] = [
     id: 6, label: 'MENU.ACCOUNTS', icon: 'account',
     requiredPermission: '',
     subItems: [
-      { id: 61, label: 'MENU.SUB.CHART_OF_ACCOUNTS', link: '/account/accounts', requiredPermission: 'accountSecurity.actions.view.access' },
+      { id: 61, label: 'MENU.SUB.CHART_OF_ACCOUNTS', link: '/account/chart-of-accounts', requiredPermission: 'accountSecurity.actions.view.access' },
       { id: 62, label: 'MENU.SUB.OPENING_BALANCES', link: '/account/opening-balances', requiredPermission: 'openingBalances.actions.view.access' },
       { id: 63, label: 'MENU.SUB.MANUAL_JOURNALS', link: '/account/journal', requiredPermission: 'manualJournalSecurity.actions.view.access' },
       { id: 64, label: 'MENU.SUB.RECURRING_JOURNALS', link: '/account/recurring-journal', requiredPermission: 'recurringJournalSecurity.actions.view.access' },

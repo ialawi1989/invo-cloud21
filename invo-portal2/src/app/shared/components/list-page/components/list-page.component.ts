@@ -11,8 +11,11 @@ import {
   ContentChildren,
   QueryList,
   TemplateRef,
+  ElementRef,
+  ViewChild,
   inject,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
@@ -118,11 +121,17 @@ import {
     tr.list-row-expanded .list-sticky-cell { background-color: #ecfafd; }
 
     /* Drop shadow on the right edge of the last start-side sticky column
-       so horizontally-scrolled content visibly tucks underneath. */
+       so horizontally-scrolled content visibly tucks underneath. Gated on
+       the .list-has-scroll-start parent class (set by the scroll-affordance
+       state) so the shadow only appears when there's actually content
+       scrolled behind the sticky column - matches the Wix table pattern. */
     .list-sticky-col {
+      transition: box-shadow 140ms ease;
+    }
+    .list-has-scroll-start .list-sticky-col {
       box-shadow: 6px 0 8px -4px rgba(15, 23, 42, 0.08);
     }
-    :host-context([dir="rtl"]) .list-sticky-col {
+    :host-context([dir="rtl"]) .list-has-scroll-start .list-sticky-col {
       box-shadow: -6px 0 8px -4px rgba(15, 23, 42, 0.08);
     }
 
@@ -146,11 +155,16 @@ import {
       width: 28px;
       pointer-events: none;
       z-index: 1;
+      opacity: 0;
+      transition: opacity 140ms ease;
       background: linear-gradient(to left, rgba(15, 23, 42, 0.12), rgba(15, 23, 42, 0));
     }
     :host-context([dir="rtl"]) .list-scroll-fade-end {
       background: linear-gradient(to right, rgba(15, 23, 42, 0.12), rgba(15, 23, 42, 0));
     }
+    /* Reveal the end-edge fade only when the scroll container has
+       more horizontal content beyond the visible area. */
+    .list-has-scroll-end .list-scroll-fade-end { opacity: 1; }
   `]
 })
 export class ListPageComponent<T = any> implements OnInit, OnDestroy {
@@ -257,6 +271,25 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
   /** Enable row selection with checkboxes */
   @Input() selectable = false;
 
+  /** Hide the built-in Grid view toggle. Pages that don't have a
+   *  card layout (e.g. Chart of Accounts) can pass `false` to
+   *  drop the grid button from the view-mode toggle entirely. */
+  @Input() showGridView = true;
+
+  /** Additional view modes to surface alongside the built-in
+   *  Table / Grid toggle. Each entry renders as an icon button in
+   *  the toggle row. When the user picks one, the list-page hides
+   *  its own table/grid bodies and emits `(viewModeChange)`; the
+   *  parent renders custom content via the `[listCustomView]`
+   *  projection slot. Example use: a "Tree" mode on the
+   *  Chart-of-Accounts page. */
+  @Input() extraViewModes: { id: string; labelKey?: string; iconPath?: string }[] = [];
+
+  /** Fires whenever the active view mode changes — including the
+   *  built-in 'table' / 'grid' modes. Useful for parents that need
+   *  to load mode-specific data lazily. */
+  @Output() viewModeChange = new EventEmitter<string>();
+
   /** Set of expanded row IDs (for parent-child rendering) */
   @Input() expandedRowIds: { (): Set<string> } = () => new Set();
 
@@ -315,15 +348,58 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
 
   // UI State
   isLoading = signal(false);
-  viewMode = signal<'table' | 'grid'>('table');
+  viewMode = signal<string>('table');
   isMobile = signal(false);
   showFilters = signal(false);
   showFilterModal = signal(false);
 
+  /** Horizontal-scroll affordance flags — track whether the table's
+   *  scroll container has content tucked behind the sticky-start
+   *  column (`hasScrollStart`) and/or scrollable content to the
+   *  right (`hasScrollEnd`). Shadows are gated on these so they
+   *  only appear when there's actually something to indicate
+   *  (matches the Wix table pattern). */
+  hasScrollStart = signal<boolean>(false);
+  hasScrollEnd   = signal<boolean>(false);
+
+  /** ViewChild reference to the horizontally-scrolling table
+   *  container — used by the data-change effect to recompute the
+   *  scroll-affordance state when rows are added/removed and on
+   *  window resize. */
+  @ViewChild('scrollHost') scrollHost?: ElementRef<HTMLElement>;
+
+  /** Recompute the scroll-affordance flags from a scroll container
+   *  element. RTL flips `scrollLeft`'s polarity in some browsers,
+   *  so we use Math.abs to keep the logic direction-agnostic. */
+  updateScrollState(el: HTMLElement | EventTarget | null): void {
+    const node = el as HTMLElement | null;
+    if (!node) return;
+    const left = Math.abs(node.scrollLeft);
+    const max  = node.scrollWidth - node.clientWidth;
+    // 1px slack so floating-point rounding doesn't flicker the end shadow.
+    this.hasScrollStart.set(left > 1);
+    this.hasScrollEnd.set(max - left > 1);
+  }
+
+  /** Recompute on resize — column widths can change when the
+   *  viewport grows/shrinks, which flips whether the table needs
+   *  horizontal scrolling at all. */
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (this.scrollHost) this.updateScrollState(this.scrollHost.nativeElement);
+  }
+
   // List State
   currentPage = signal(1);
   pageSize = signal(this.initialPageSize);
+  /** Committed search term — the value the data source filters by.
+   *  Only changes when the user submits (Enter or magnifier click);
+   *  typing in the input updates `searchDraft` locally instead. */
   searchTerm = signal('');
+  /** Local typing buffer for the search input. Nothing fires until
+   *  the user commits via `submitSearch()`, which mirrors the rest
+   *  of the app's submit-on-action search UX. */
+  searchDraft = signal('');
   sortBy = signal<{ sortValue: string; sortDirection: 'asc' | 'desc' } | undefined>(undefined);
   activeFilters = signal<FilterState>({});
   filterLabels = signal<Record<string, string>>({});
@@ -594,21 +670,10 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
   }
 
   private setupSearchDebounce(): void {
-    if (!this.search.enabled) return;
-
-    const debounce = this.search.debounceMs || 500;
-
-    this.subscriptions.add(
-      this.searchSubject$.pipe(
-        debounceTime(debounce),
-        distinctUntilChanged()
-      ).subscribe(term => {
-        this.searchTerm.set(term);
-        this.currentPage.set(1); // Reset to first page
-        this.loadData();
-        this.syncStateToUrl();
-      })
-    );
+    // Intentionally a no-op now — search runs on submit (Enter or
+    // magnifier click), not on keystrokes. Kept as a hook so the
+    // ngOnInit call site still type-checks; remove this method
+    // entirely once nothing else references the debounce subject.
   }
 
   private setupViewportDetection(): void {
@@ -705,6 +770,12 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
           }
           if (scopeChanged) this.pruneSelection(response.list);
           this.isLoading.set(false);
+          // Wait for the DOM to flush the new rows before measuring
+          // scrollWidth — otherwise the end-edge fade flashes off
+          // even when the new data overflows the viewport.
+          requestAnimationFrame(() => {
+            if (this.scrollHost) this.updateScrollState(this.scrollHost.nativeElement);
+          });
         }),
         catchError(error => {
           console.error('ListPageComponent: Error loading data', error);
@@ -741,21 +812,39 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
   // SEARCH
   // ══════════════════════════════════════════════════════════════
 
+  /** Keystroke handler — updates only the local draft. The actual
+   *  filtered fetch happens on `submitSearch()` (Enter / magnifier
+   *  click). Match the rest of the app's search UX. */
   onSearchInput(event: Event): void {
     if (!this.search.enabled) return;
-
     const target = event.target as HTMLInputElement;
-    const value = target.value;
+    this.searchDraft.set(target.value);
+  }
 
-    // Check minimum length
+  /** Commit the draft as the active search term and fire a fetch.
+   *  Respects the `minLength` config — short queries are silently
+   *  ignored so users don't trigger noisy load-empty cycles. */
+  submitSearch(): void {
+    if (!this.search.enabled) return;
+    const value = this.searchDraft();
     if (this.search.minLength && value.length > 0 && value.length < this.search.minLength) {
       return;
     }
+    if (this.searchTerm() === value) return;
+    this.searchTerm.set(value);
+    this.currentPage.set(1);
+    this.loadData();
+    this.syncStateToUrl();
+  }
 
-    this.searchSubject$.next(value);
+  /** Esc — revert the draft to the committed term without firing
+   *  a fetch. Lets users back out of an unsubmitted edit. */
+  cancelSearchEdit(): void {
+    this.searchDraft.set(this.searchTerm());
   }
 
   clearSearch(): void {
+    this.searchDraft.set('');
     this.searchTerm.set('');
     this.currentPage.set(1);
     this.loadData();
@@ -1247,14 +1336,23 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
   // VIEW MODE
   // ══════════════════════════════════════════════════════════════
 
-  setViewMode(mode: 'table' | 'grid'): void {
-    // Prevent switching to table on mobile
+  setViewMode(mode: string): void {
+    // Prevent switching to table on mobile.
     if (this.isMobile() && mode === 'table') {
       return;
     }
-
+    if (this.viewMode() === mode) return;
     this.viewMode.set(mode);
+    this.viewModeChange.emit(mode);
   }
+
+  /** True when the active view mode is one of the built-in
+   *  table/grid bodies. False for any consumer-provided extra mode
+   *  (e.g. 'tree') so the parent's projected content takes over. */
+  isBuiltInView = computed<boolean>(() => {
+    const m = this.viewMode();
+    return m === 'table' || m === 'grid';
+  });
 
   // ══════════════════════════════════════════════════════════════
   // URL STATE SYNCHRONIZATION
@@ -1273,7 +1371,11 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
 
     if (state.page) this.currentPage.set(state.page);
     if (state.pageSize) this.pageSize.set(state.pageSize);
-    if (state.searchTerm) this.searchTerm.set(state.searchTerm);
+    if (state.searchTerm) {
+      this.searchTerm.set(state.searchTerm);
+      // Seed the draft too so the input shows the restored term.
+      this.searchDraft.set(state.searchTerm);
+    }
     if (state.sortBy) this.sortBy.set(state.sortBy);
     if (state.filters) this.activeFilters.set(state.filters);
     if (state.visibleColumns) {

@@ -1,0 +1,132 @@
+<app-list-page
+  [pageTitle]="'CHART_OF_ACCOUNTS.LIST.TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="loadAccounts"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="filters"
+  [headerActions]="[]"
+  [selectable]="false"
+  [emptyState]="emptyState"
+  [entityType]="'account'"
+  [extraViewModes]="extraViewModes"
+  (viewModeChange)="onListPageViewModeChange($event)"
+  (rowClicked)="onRowClick($event)">
+
+  <!-- Header actions: only the "+ Add account" button. The view-
+       mode toggle (Table / Tree) lives inside the list-page's
+       built-in toggle now, so it sits alongside Filter / Refresh /
+       Columns and stays visually consistent across list pages. -->
+  <div listHeaderActions class="coa-header-actions">
+    <button type="button" class="coa-add-btn" (click)="add()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      {{ 'CHART_OF_ACCOUNTS.LIST.ADD_NEW' | translate }}
+    </button>
+  </div>
+
+  <!-- Per-row actions. Edit is always inline; the `…` dropdown
+       only renders when there's something else to show. -->
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center gap-2" (click)="$event.stopPropagation()">
+      @if (!row.default) {
+        <button type="button"
+          (click)="edit(row); $event.stopPropagation()"
+          class="coa-edit-pill">
+          {{ 'COMMON.EDIT' | translate }}
+        </button>
+      }
+      @if (hasRowMenu(row)) {
+        <app-dropdown-menu-btn
+          [items]="rowMenuItems(row)"
+          [appendToBody]="true"
+          [chevron]="false"
+          align="end"
+          triggerClass="coa-row-menu">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="5"  cy="12" r="1.75"/>
+            <circle cx="12" cy="12" r="1.75"/>
+            <circle cx="19" cy="12" r="1.75"/>
+          </svg>
+        </app-dropdown-menu-btn>
+      }
+    </div>
+  </ng-template>
+
+  <!-- Custom view body: tree of `parentType → type → account`,
+       mirroring the legacy `viewType=tree` mode. Rendered by the
+       list-page when the user picks the Tree view-mode button. -->
+  <div listCustomView class="coa-tree-wrap">
+    @if (treeLoading()) {
+      <div class="coa-tree-loading"><span class="coa-tree-spinner"></span></div>
+    } @else if (treeRoots().length === 0) {
+      <div class="coa-tree-empty">
+        <p>{{ 'CHART_OF_ACCOUNTS.LIST.EMPTY' | translate }}</p>
+      </div>
+    } @else {
+      <ul class="coa-tree">
+        @for (parent of treeRoots(); track parent.id) {
+          <li class="coa-tree__node coa-tree__node--parent">
+            <button type="button"
+              class="coa-tree__row"
+              (click)="toggleNode(parent.id)">
+              <svg class="coa-tree__caret"
+                [class.coa-tree__caret--open]="isExpanded(parent.id)"
+                width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 6 15 12 9 18"/>
+              </svg>
+              <span class="coa-tree__label">{{ parent.label }}</span>
+              <span class="coa-tree__count">{{ parent.count }}</span>
+            </button>
+
+            @if (isExpanded(parent.id)) {
+              <ul class="coa-tree__children">
+                @for (typeNode of parent.children; track typeNode.id) {
+                  <li class="coa-tree__node coa-tree__node--type">
+                    <button type="button"
+                      class="coa-tree__row"
+                      (click)="toggleNode(typeNode.id)">
+                      <svg class="coa-tree__caret"
+                        [class.coa-tree__caret--open]="isExpanded(typeNode.id)"
+                        width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 6 15 12 9 18"/>
+                      </svg>
+                      <span class="coa-tree__label">{{ typeNode.label }}</span>
+                      <span class="coa-tree__count">{{ typeNode.count }}</span>
+                    </button>
+
+                    @if (isExpanded(typeNode.id)) {
+                      <ul class="coa-tree__children">
+                        @for (leaf of typeNode.children; track leaf.id) {
+                          <li class="coa-tree__node coa-tree__node--leaf">
+                            <button type="button"
+                              class="coa-tree__row coa-tree__row--leaf"
+                              (click)="leaf.account && edit(leaf.account)">
+                              <span class="coa-tree__bullet">·</span>
+                              <span class="coa-tree__label">{{ leaf.label }}</span>
+                              @if (leaf.account?.code) {
+                                <span class="coa-tree__code">{{ leaf.account?.code }}</span>
+                              }
+                              @if (leaf.account?.default) {
+                                <span class="app-product-badge app-product-badge--option">{{ 'CHART_OF_ACCOUNTS.LIST.DEFAULT' | translate }}</span>
+                              }
+                            </button>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</app-list-page>

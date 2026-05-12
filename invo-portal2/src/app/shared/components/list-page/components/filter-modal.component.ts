@@ -146,7 +146,20 @@ export class FilterModalComponent {
       this.filters = this.modalData.filters;
       this.activeFilters = this.modalData.activeFilters;
     }
-    this.localFilters.set({ ...this.activeFilters });
+    // URL-state restore hands back a bare string when a checkbox-
+    // group filter has exactly one selected option (e.g.
+    // `filter_parentType=Current%20Assets`). Coerce to an array
+    // here so `isCheckboxChecked` finds the value and the box
+    // shows as ticked when the modal opens. Without this the
+    // active filter looks "missing" inside the modal even though
+    // it's clearly applied to the list.
+    const coerced: FilterState = { ...this.activeFilters };
+    for (const filter of this.filters) {
+      if (filter.type !== 'checkbox-group' || !('key' in filter)) continue;
+      const v = coerced[filter.key];
+      if (v != null && !Array.isArray(v)) coerced[filter.key] = [v];
+    }
+    this.localFilters.set(coerced);
 
     // Restore dropdown selected items from active filters
     for (const filter of this.filters) {

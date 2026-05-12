@@ -95,6 +95,28 @@ export class PaymentMethodService {
       .filter(a => a.id);
   }
 
+  /** Create a brand-new GL account inline (used by the
+   *  "+ Create account" affordance in the GL-account picker). Posts
+   *  `{ name, type }` to the legacy `accounts/saveAccount` endpoint,
+   *  same shape the standalone accounts page uses. Returns the
+   *  saved account when successful so the caller can append it to
+   *  its in-memory `accounts()` signal and select it without a full
+   *  reload round-trip. */
+  async createAccount(name: string, type: string): Promise<PaymentAccount | null> {
+    const res = await this.api.request<any>(
+      this.api.post('accounts/saveAccount', { name, type }),
+    );
+    if (!res?.success) return null;
+    const raw = res?.data ?? {};
+    const id = String(raw?.id ?? '');
+    if (!id) return null;
+    return {
+      id,
+      name: String(raw?.name ?? name),
+      code: raw?.accountNumber ?? raw?.code ?? undefined,
+    };
+  }
+
   async save(m: PaymentMethod): Promise<{ id: string } | null> {
     const res = await this.api.request<any>(
       this.api.post('accounts/savePaymentMethod', m),
@@ -124,6 +146,31 @@ export class PaymentMethodService {
       this.api.post('accounts/rearrangePaymentMethod', payload),
     );
     return !!res?.success;
+  }
+
+  /** `branchesAccounts` comes back either as an object map
+   *  (`{ branchId: accountId }`) or, for older records, as an array
+   *  of `{ branchId, accountId }` pairs. Normalise to the canonical
+   *  map so the modal can render rows in a single pass. Returns
+   *  `undefined` when there are no overrides, so saves don't ship
+   *  empty maps that the backend might interpret as "clear all". */
+  private normalizeBranchesAccounts(raw: any): Record<string, string> | undefined {
+    if (!raw) return undefined;
+    if (Array.isArray(raw)) {
+      const out: Record<string, string> = {};
+      for (const r of raw) {
+        const bid = String(r?.branchId ?? '');
+        const aid = r?.accountId ? String(r.accountId) : '';
+        if (bid && aid) out[bid] = aid;
+      }
+      return Object.keys(out).length ? out : undefined;
+    }
+    if (typeof raw !== 'object') return undefined;
+    const out: Record<string, string> = {};
+    for (const [bid, aid] of Object.entries(raw)) {
+      if (bid && aid) out[String(bid)] = String(aid);
+    }
+    return Object.keys(out).length ? out : undefined;
   }
 
   /** Coerce server response into the canonical front-end shape.
@@ -158,6 +205,13 @@ export class PaymentMethodService {
         : null,
       mediaId:        raw?.mediaId ? String(raw.mediaId) : null,
       settings:       (raw?.settings && typeof raw.settings === 'object') ? raw.settings : {},
+      translation:    (raw?.translation && typeof raw.translation === 'object')
+        ? { name: {
+            en: raw.translation?.name?.en ?? raw.translation?.nameLocale?.en ?? '',
+            ar: raw.translation?.name?.ar ?? raw.translation?.nameLocale?.ar ?? '',
+          } }
+        : undefined,
+      branchesAccounts: this.normalizeBranchesAccounts(raw?.branchesAccounts),
       // The legacy page hard-codes the lowercase string check.
       isDefaultCash:  typeof raw?.name === 'string' && raw.name.trim().toLowerCase() === 'default cash',
       accountBalance: raw?.accountBalance ?? undefined,

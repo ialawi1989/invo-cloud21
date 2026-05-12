@@ -120,6 +120,29 @@
   p { margin: 0; color: #475569; font-size: 13px; line-height: 1.5; }
 }
 
+// "+ Create account" trigger inside the GL-account dropdown's
+// footer slot. Mirrors the regular payment-method-form styling so
+// both surfaces look identical.
+.create-account-btn {
+  appearance: none;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-brand-700, #0e7490);
+  cursor: pointer;
+  transition: background 120ms ease;
+
+  &:hover { background: var(--color-brand-50, #ecfeff); }
+  > svg { color: currentColor; flex-shrink: 0; }
+}
+
 .save-bar {
   position: fixed;
   inset-inline: 0;

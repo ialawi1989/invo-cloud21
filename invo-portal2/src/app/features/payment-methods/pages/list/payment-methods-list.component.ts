@@ -19,7 +19,6 @@ import {
 } from '@angular/cdk/drag-drop';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
@@ -28,11 +27,20 @@ import {
   SegmentedToggleComponent,
   SegmentedToggleOption,
 } from '@shared/components/segmented-toggle/segmented-toggle.component';
+import { ListShellComponent } from '@shared/components/list-shell/list-shell.component';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 
 import { PaymentMethodService } from '../../services/payment-method.service';
-import { PaymentMethod, PaymentKind } from '../../services/payment-method.types';
-import { findProviderByName } from '../../utils/provider-registry';
+import {
+  PaymentMethod,
+  PaymentKind,
+  emptyPaymentMethod,
+} from '../../services/payment-method.types';
+import {
+  findProviderByName,
+  buildConnectList,
+  ProviderSpec,
+} from '../../utils/provider-registry';
 
 /** Top-level tab — what kind of methods we're showing. */
 type Tab = 'currency' | 'card' | 'online';
@@ -62,10 +70,10 @@ type Tab = 'currency' | 'card' | 'online';
     RouterModule,
     FormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
     SkeletonComponent,
     SegmentedToggleComponent,
+    ListShellComponent,
     MycurrencyPipe,
     DragDropModule,
   ],
@@ -86,7 +94,6 @@ export class PaymentMethodsListComponent implements OnInit {
   tab    = signal<Tab>('currency');
   search = signal<string>('');
 
-  private searchDebounce?: ReturnType<typeof setTimeout>;
   private i18nTick = signal(0);
 
   readonly tabOptions: SegmentedToggleOption<Tab>[] = [
@@ -103,11 +110,18 @@ export class PaymentMethodsListComponent implements OnInit {
     ];
   });
 
-  /** Online list groups by enabled state — matches the legacy
-   *  "Enabled / Disabled" sections. For Currency / Card we render
-   *  a flat list. */
-  enabledOnline  = computed<PaymentMethod[]>(() => this.rows().filter(r => r.isEnabled));
-  disabledOnline = computed<PaymentMethod[]>(() => this.rows().filter(r => !r.isEnabled));
+  /** Online tab splits into "Enabled" (toggle is on right now) vs
+   *  "Not Connected" (everything else — configured-but-disabled and
+   *  registry stubs the user hasn't set up yet). Matches the legacy
+   *  semantics where the section reflects what the toggle says. */
+  connectedOnline    = computed<PaymentMethod[]>(() => this.rows().filter(r => r.isEnabled));
+  notConnectedOnline = computed<PaymentMethod[]>(() => this.rows().filter(r => !r.isEnabled));
+
+  /** Resolve the i18n key for a row's one-line description (used
+   *  by the Connect-tab card layout). Falls back to empty string
+   *  so the template can `@if (desc)` cleanly. */
+  providerDesc = (row: PaymentMethod): string =>
+    findProviderByName(row.name)?.descriptionKey ?? '';
 
   constructor() {
     withTranslations('payment-methods');
@@ -140,19 +154,45 @@ export class PaymentMethodsListComponent implements OnInit {
           });
       // Sort by `index` ascending so the drag order from the
       // server is preserved.
-      this.rows.set([...res.list].sort((a, b) => a.index - b.index));
+      const sorted = [...res.list].sort((a, b) => a.index - b.index);
+
+      if (this.tab() === 'online') {
+        // Server returns a noisy bag: real online providers, Cash
+        // currency rows that happen to live in the same collection,
+        // and ApplePay leftovers. Drop rows that don't map to a known
+        // provider, and inject stubs for providers the user hasn't
+        // connected yet. No country filter — show all 13 providers
+        // regardless of company location.
+        const finalRows = buildConnectList(
+          sorted,
+          (p) => this.stubFromProvider(p),
+        );
+        this.rows.set(finalRows);
+      } else {
+        this.rows.set(sorted);
+      }
     } finally {
       this.loading.set(false);
     }
   }
 
-  // ─── Search ─────────────────────────────────────────────────────
-  onSearchInput(value: string): void {
-    this.search.set(value);
-    clearTimeout(this.searchDebounce);
-    this.searchDebounce = setTimeout(() => this.load(), 300);
+  /** Build an unsaved-method stub from a provider registry entry.
+   *  Matches the legacy `generateConnectPayments` flag-set:
+   *  `type: 'Card'`, `isEnabled: false`, `id: ''` so the row reads
+   *  as "Available — click to connect". */
+  private stubFromProvider(p: ProviderSpec): PaymentMethod {
+    return {
+      ...emptyPaymentMethod(),
+      name:      p.backendName,
+      type:      'Card',
+      isEnabled: false,
+      countries: [...p.countries],
+    };
   }
-  clearSearch(): void { this.search.set(''); this.load(); }
+
+  // ─── Search ─────────────────────────────────────────────────────
+  onSearch(value: string): void { this.search.set(value); void this.load(); }
+  clearSearch(): void { this.search.set(''); void this.load(); }
 
   // ─── Row actions ────────────────────────────────────────────────
   edit(row: PaymentMethod): void {

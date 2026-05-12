@@ -13,8 +13,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
+import { ListShellComponent } from '@shared/components/list-shell/list-shell.component';
 import { SafeHtmlPipe } from '@core/pipes/safe-html.pipe';
 
 import {
@@ -43,7 +43,7 @@ interface EntityTypeRow extends CustomFieldEntityType {
 @Component({
   selector: 'app-custom-fields-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, BreadcrumbsComponent, SafeHtmlPipe],
+  imports: [CommonModule, RouterModule, TranslateModule, ListShellComponent, SafeHtmlPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './custom-fields-list.component.html',
   styleUrl: './custom-fields-list.component.scss',
@@ -120,9 +120,8 @@ export class CustomFieldsListComponent implements OnInit {
     }
   }
 
-  onSearchInput(value: string): void {
-    this.search.set(value);
-  }
+  onSearch(value: string): void { this.search.set(value); }
+  clearSearch(): void { this.search.set(''); }
 
   open(row: EntityTypeRow): void {
     this.router.navigate(['/settings/custom-fields', row.type]);

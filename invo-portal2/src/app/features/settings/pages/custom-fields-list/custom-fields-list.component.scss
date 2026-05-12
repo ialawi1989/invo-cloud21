@@ -1,35 +1,7 @@
-.cf-list {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 16px 24px 32px;
-}
+// Page chrome (header, toolbar) lives in `<app-list-shell>`. Only the
+// `.kpi` block (projected as `[shellActions]`) and the cards-grid layout
+// remain.
 
-// ── Header ──────────────────────────────────────────────────────────────
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 20px;
-
-  &__titles { flex: 1; min-width: 0; }
-}
-
-.page-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 8px 0 4px;
-  letter-spacing: -0.01em;
-}
-
-.page-sub {
-  font-size: 14px;
-  color: #64748b;
-  margin: 0;
-}
-
-// Small "X active" KPI on the right of the header.
 .kpi {
   display: inline-flex;
   flex-direction: column;
@@ -57,55 +29,6 @@
   }
 }
 
-// ── Search ──────────────────────────────────────────────────────────────
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  margin-bottom: 24px;
-  color: #94a3b8;
-
-  &:focus-within {
-    border-color: var(--color-brand-500);
-    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
-  }
-}
-
-.search-input {
-  flex: 1;
-  border: none;
-  outline: none;
-  font: inherit;
-  font-size: 14px;
-  color: #0f172a;
-  background: transparent;
-  &::placeholder { color: #94a3b8; }
-}
-
-// ── Empty / loading ─────────────────────────────────────────────────────
-.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 0;
-}
-
-.empty {
-  text-align: center;
-  padding: 80px 16px;
-
-  &__text {
-    color: #64748b;
-    font-size: 14px;
-    margin: 0;
-  }
-}
-
-// ── Cards grid ──────────────────────────────────────────────────────────
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

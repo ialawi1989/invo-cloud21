@@ -105,7 +105,7 @@ export const MENU_ITEMS: MenuItem[] = [
   {
     id: 41, label: 'Accounts', icon: 'account',
     subItems: [
-      { id: 411, label: 'Chart of Accounts',   link: '/account/accounts',          privilege: 'accountSecurity.actions.view' },
+      { id: 411, label: 'Chart of Accounts',   link: '/account/chart-of-accounts', privilege: 'accountSecurity.actions.view' },
       { id: 412, label: 'Opening Balances',    link: '/account/opening-balances',  privilege: 'openingBalances.actions.view' },
       { id: 413, label: 'Manual Journals',     link: '/account/journal',           privilege: 'manualJournalSecurity.actions.view' },
       { id: 414, label: 'Recurring Journals',  link: '/account/recurring-journal', privilege: 'recurringJournalSecurity.actions.view' },

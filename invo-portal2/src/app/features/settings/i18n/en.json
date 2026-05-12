@@ -89,6 +89,8 @@
 
       "PAYMENT_METHODS":           "Payments Method",
       "PAYMENT_METHODS_DESC":      "Payment methods, currencies, and configuration for linking to POS and website.",
+      "CHART_OF_ACCOUNTS":         "Chart of Accounts",
+      "CHART_OF_ACCOUNTS_DESC":    "General ledger accounts — assets, liabilities, equity, income, and expenses.",
       "SERVICE_MANAGEMENT":        "Service Management",
       "SERVICE_MANAGEMENT_DESC":   "Configure the services your business offers, including service types and pricing.",
       "IMPORT_FROM_INVO":          "Import from Invo",

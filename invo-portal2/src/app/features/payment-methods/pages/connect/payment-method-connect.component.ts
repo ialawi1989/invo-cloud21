@@ -21,8 +21,13 @@ import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { ModalService } from '@shared/modal/modal.service';
 
 import { PaymentMethodService } from '../../services/payment-method.service';
+import {
+  CreateAccountModalComponent,
+  CreateAccountModalData,
+} from '../../components/create-account-modal/create-account-modal.component';
 import {
   PaymentAccount,
   PaymentMethod,
@@ -77,6 +82,7 @@ export class PaymentMethodConnectComponent implements OnInit, CanLeaveComponent 
   private router     = inject(Router);
   private toast      = inject(ToastService);
   private destroyRef = inject(DestroyRef);
+  private modal      = inject(ModalService);
 
   slug = signal<string>('');
 
@@ -216,6 +222,25 @@ export class PaymentMethodConnectComponent implements OnInit, CanLeaveComponent 
       accountId:   picked?.id   ?? null,
       accountName: picked?.name ?? null,
     }));
+  }
+
+  /** Inline "+ Create account" trigger from the GL-account picker's
+   *  footer slot — mirrors the regular form so the user can add an
+   *  account without leaving the connect flow. */
+  async openCreateAccount(): Promise<void> {
+    const ref = this.modal.open<
+      CreateAccountModalComponent,
+      CreateAccountModalData,
+      PaymentAccount | undefined
+    >(CreateAccountModalComponent, {
+      size: 'sm',
+      data: {},
+      closeOnBackdrop: false,
+    });
+    const created = await ref.afterClosed();
+    if (!created) return;
+    this.accounts.update(list => [...list, created]);
+    this.setAccount(created);
   }
   setEnabled(on: boolean): void {
     this.method.update(m => ({ ...m, isEnabled: on }));

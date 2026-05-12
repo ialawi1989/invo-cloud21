@@ -13,13 +13,26 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
+import { ListShellComponent } from '@shared/components/list-shell/list-shell.component';
+import {
+  QueryParamsService,
+  ParamDef,
+  IntCodec,
+  intCodec,
+  StringCodec,
+} from '@shared/services/query-params.service';
 
 import {
   KitchenSectionService,
   KitchenSectionSummary,
 } from '../../services/kitchen-section.service';
+
+const QP = {
+  page:     { key: 'page',  codec: IntCodec }     as ParamDef<number>,
+  pageSize: { key: 'limit', codec: intCodec(20) } as ParamDef<number>,
+  search:   { key: 'q',     codec: StringCodec }  as ParamDef<string>,
+};
 
 /**
  * Settings → Kitchen Sections (list)
@@ -32,7 +45,7 @@ import {
 @Component({
   selector: 'app-kitchen-sections-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, BreadcrumbsComponent],
+  imports: [CommonModule, RouterModule, TranslateModule, ListShellComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './kitchen-sections-list.component.html',
   styleUrl: './kitchen-sections-list.component.scss',
@@ -42,6 +55,7 @@ export class KitchenSectionsListComponent implements OnInit {
   private translate  = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
+  private qp         = inject(QueryParamsService);
 
   loading  = signal<boolean>(false);
   rows     = signal<KitchenSectionSummary[]>([]);
@@ -54,8 +68,6 @@ export class KitchenSectionsListComponent implements OnInit {
 
   /** Re-translate labels after ngx-translate finishes loading. */
   private i18nTick = signal(0);
-
-  private debounce?: ReturnType<typeof setTimeout>;
 
   breadcrumbs = computed<BreadcrumbItem[]>(() => {
     this.i18nTick();
@@ -91,7 +103,19 @@ export class KitchenSectionsListComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    const p = this.qp.read(QP);
+    this.page.set(p.page);
+    this.pageSize.set(p.pageSize);
+    this.search.set(p.search);
     await this.load();
+  }
+
+  private syncUrl(): void {
+    this.qp.write(QP, {
+      page:     this.page(),
+      pageSize: this.pageSize(),
+      search:   this.search(),
+    });
   }
 
   async load(): Promise<void> {
@@ -110,30 +134,31 @@ export class KitchenSectionsListComponent implements OnInit {
   }
 
   // ─── Search + paging ───────────────────────────────────────────────────
-  onSearchInput(value: string): void {
+  onSearch(value: string): void {
     this.search.set(value);
-    clearTimeout(this.debounce);
-    this.debounce = setTimeout(() => {
-      this.page.set(1);
-      this.load();
-    }, 300);
+    this.page.set(1);
+    this.syncUrl();
+    void this.load();
   }
 
   clearSearch(): void {
     this.search.set('');
     this.page.set(1);
-    this.load();
+    this.syncUrl();
+    void this.load();
   }
 
   goPrev(): void {
     if (this.page() <= 1) return;
     this.page.update((p) => p - 1);
+    this.syncUrl();
     this.load();
   }
 
   goNext(): void {
     if (this.page() >= this.pageCount()) return;
     this.page.update((p) => p + 1);
+    this.syncUrl();
     this.load();
   }
 

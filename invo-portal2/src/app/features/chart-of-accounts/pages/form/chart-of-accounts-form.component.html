@@ -1,0 +1,39 @@
+<div class="coaf-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+    </div>
+  </header>
+
+  <section class="card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'CHART_OF_ACCOUNTS.FORM.DETAILS' | translate }}</h2>
+    </header>
+    <div class="card__body">
+      <app-account-form-fields
+        [value]="account()"
+        [locked]="fieldsLocked()"
+        (valueChange)="onValueChange($event)"/>
+
+      @if (nameError() && isDirty()) {
+        <span class="field-err">{{ nameError() | translate }}</span>
+      }
+      @if (typeError() && isDirty()) {
+        <span class="field-err">{{ typeError() | translate }}</span>
+      }
+    </div>
+  </section>
+
+  <footer class="save-bar">
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
+      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+      {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+    </button>
+  </footer>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

@@ -300,6 +300,7 @@ export class SettingsComponent {
       icon: `<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>`,
       items: [
         { label: 'SETTINGS.ITEMS.PAYMENT_METHODS',    description: 'SETTINGS.ITEMS.PAYMENT_METHODS_DESC',    link: '/settings/payment-methods', privilege: 'paymentMethodSecurity.actions.view.access' },
+        { label: 'SETTINGS.ITEMS.CHART_OF_ACCOUNTS',  description: 'SETTINGS.ITEMS.CHART_OF_ACCOUNTS_DESC',  link: '/account/chart-of-accounts', privilege: 'accountSecurity.actions.view.access' },
         { label: 'SETTINGS.ITEMS.SERVICE_MANAGEMENT', description: 'SETTINGS.ITEMS.SERVICE_MANAGEMENT_DESC', link: '/settings/services',        privilege: 'serviceSecurity.actions.view.access' },
         { label: 'SETTINGS.ITEMS.IMPORT_FROM_INVO',   description: 'SETTINGS.ITEMS.IMPORT_FROM_INVO_DESC',   privilege: 'companySettingsSecurity.access',
           popup: { component: () => import('./components/import-from-invo/import-from-invo.component').then(m => m.ImportFromInvoComponent), size: 'md' } },

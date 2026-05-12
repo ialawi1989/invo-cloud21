@@ -25,8 +25,33 @@ import {
   SegmentedToggleComponent,
   SegmentedToggleOption,
 } from '@shared/components/segmented-toggle/segmented-toggle.component';
+import { ModalService } from '@shared/modal/modal.service';
+import {
+  TranslationModalComponent,
+  TranslationModalData,
+  TranslationLang,
+} from '@shared/components/translation-modal/translation-modal.component';
+import {
+  MediaPickerModalComponent,
+  MediaPickerConfig,
+} from '../../../media/components/media-picker/media-picker-modal.component';
+import type { Media } from '../../../media/models/media.model';
+
+import {
+  BranchSettingsService,
+  BranchSummary,
+} from '../../../settings/services/branch-settings.service';
 
 import { PaymentMethodService } from '../../services/payment-method.service';
+import {
+  CreateAccountModalComponent,
+  CreateAccountModalData,
+} from '../../components/create-account-modal/create-account-modal.component';
+import {
+  BranchAdvanceModalComponent,
+  BranchAdvanceModalData,
+  BranchAdvanceResult,
+} from '../../components/branch-advance-modal/branch-advance-modal.component';
 import {
   PaymentAccount,
   PaymentKind,
@@ -79,12 +104,18 @@ export class PaymentMethodFormComponent implements OnInit, CanLeaveComponent {
   private router     = inject(Router);
   private toast      = inject(ToastService);
   private destroyRef = inject(DestroyRef);
+  private modal      = inject(ModalService);
+  private branchSvc  = inject(BranchSettingsService);
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
 
   method = signal<PaymentMethod>(emptyPaymentMethod());
   accounts = signal<PaymentAccount[]>([]);
+  /** Branch list — lazily fetched on the first "Per-branch override"
+   *  click so the page-load cost stays low for users that never open
+   *  the advance modal. */
+  private branches = signal<BranchSummary[] | null>(null);
 
   /** Snapshot of the last clean state — used by the unsaved-changes
    *  guard to compare against the current edit state. */
@@ -228,6 +259,146 @@ export class PaymentMethodFormComponent implements OnInit, CanLeaveComponent {
       accountId:   picked?.id   ?? null,
       accountName: picked?.name ?? null,
     }));
+  }
+
+  // ─── Icon picker ────────────────────────────────────────────────
+  /** Opens the shared media picker so the user can choose a custom
+   *  icon for this payment method. Writes the picked image's id +
+   *  default/thumbnail URLs onto `method.mediaId` + `method.mediaUrl`
+   *  — the list page already reads these fields to render the row
+   *  thumb, so nothing else needs to change downstream. */
+  async openIconPicker(): Promise<void> {
+    const config: MediaPickerConfig = {
+      contentTypes: ['image'],
+      multiple: false,
+      title: this.translate.instant('PAYMENT_METHODS.FORM.ICON_PICKER_TITLE'),
+    };
+    const ref = this.modal.open<
+      MediaPickerModalComponent,
+      MediaPickerConfig,
+      Media | Media[] | undefined
+    >(MediaPickerModalComponent, { data: config, size: 'xl' });
+    const result = await ref.afterClosed();
+    const picked = Array.isArray(result) ? result[0] : result;
+    if (!picked) return;
+
+    const defaultUrl   = picked.url?.defaultUrl ?? picked.url?.original ?? '';
+    const thumbnailUrl = picked.url?.thumbnail ?? defaultUrl;
+    this.method.update(m => ({
+      ...m,
+      mediaId:  picked.id ?? null,
+      mediaUrl: { defaultUrl, thumbnailUrl },
+    }));
+  }
+
+  removeIcon(): void {
+    this.method.update(m => ({ ...m, mediaId: null, mediaUrl: null }));
+  }
+
+  // ─── Translation modal ──────────────────────────────────────────
+  /** Open the shared translation modal for the method `name` so the
+   *  user can provide an Arabic copy alongside the English one. The
+   *  primary `name` field is kept in sync with `translation.name.en`
+   *  so the wire shape matches what the legacy backend expects (the
+   *  list endpoint still searches against `name`). */
+  async openNameTranslation(): Promise<void> {
+    const m = this.method();
+    // Use the saved translation if it's non-empty; otherwise seed
+    // the English field with the primary `name` so the user has a
+    // starting point instead of an empty box. `??` alone isn't
+    // enough — the service normalises missing translation copies
+    // to `''`, which is defined and would shadow the real name.
+    const initial: TranslationLang = {
+      en: m.translation?.name?.en || m.name || '',
+      ar: m.translation?.name?.ar || '',
+    };
+    const ref = this.modal.open<
+      TranslationModalComponent,
+      TranslationModalData,
+      TranslationLang | null
+    >(TranslationModalComponent, {
+      size: 'sm',
+      data: {
+        initial,
+        label: this.translate.instant('PAYMENT_METHODS.FORM.NAME'),
+      },
+      closeOnBackdrop: false,
+    });
+    const result = await ref.afterClosed();
+    if (!result) return;
+
+    this.method.update(prev => ({
+      ...prev,
+      name: result.en || prev.name,
+      translation: { name: { en: result.en, ar: result.ar } },
+    }));
+  }
+
+  // ─── Per-branch GL-account override ────────────────────────────
+  /** Count of branches with a custom override — drives the
+   *  badge on the "Per-branch override" button so the user can see
+   *  at a glance whether they've set any. */
+  branchOverrideCount = computed<number>(() => {
+    const map = this.method().branchesAccounts;
+    if (!map) return 0;
+    return Object.values(map).filter(v => !!v).length;
+  });
+
+  /** Open the per-branch GL-account override modal. Lazy-loads the
+   *  branch list on first open so the page doesn't pay for it
+   *  unless the user actually wants to set overrides. */
+  async openBranchAdvance(): Promise<void> {
+    // Hydrate the branch list once per page lifetime.
+    if (!this.branches()) {
+      try {
+        // Limit high enough to cover any realistic branch count;
+        // the modal renders one row per branch.
+        const res = await this.branchSvc.getList({ page: 1, limit: 500 });
+        this.branches.set(res.list);
+      } catch (err: any) {
+        this.toast.error('COMMON.LOAD_FAILED', err?.message);
+        return;
+      }
+    }
+    const ref = this.modal.open<
+      BranchAdvanceModalComponent,
+      BranchAdvanceModalData,
+      BranchAdvanceResult | undefined
+    >(BranchAdvanceModalComponent, {
+      size: 'md',
+      data: {
+        branches: (this.branches() ?? []).map(b => ({ id: b.id, name: b.name })),
+        accounts: this.accounts(),
+        branchesAccounts: this.method().branchesAccounts,
+      },
+      closeOnBackdrop: false,
+    });
+    const result = await ref.afterClosed();
+    if (!result) return;
+    this.method.update(m => ({
+      ...m,
+      branchesAccounts: Object.keys(result).length ? result : undefined,
+    }));
+  }
+
+  /** Inline "+ Create account" trigger from the GL-account picker's
+   *  footer slot. Opens a small modal; on success, append the new
+   *  account to the local list and select it so the user can keep
+   *  filling the rest of the form without a round-trip to /accounts. */
+  async openCreateAccount(): Promise<void> {
+    const ref = this.modal.open<
+      CreateAccountModalComponent,
+      CreateAccountModalData,
+      PaymentAccount | undefined
+    >(CreateAccountModalComponent, {
+      size: 'sm',
+      data: {},
+      closeOnBackdrop: false,
+    });
+    const created = await ref.afterClosed();
+    if (!created) return;
+    this.accounts.update(list => [...list, created]);
+    this.setAccount(created);
   }
   setOpenDrawer(on: boolean): void {
     this.method.update(m => ({ ...m, options: { ...m.options, OpenDrawer: on } }));

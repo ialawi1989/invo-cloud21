@@ -6,24 +6,34 @@
       "ADD_NEW":             "إضافة طريقة",
       "SEARCH_PLACEHOLDER":  "ابحث…",
       "TAB_CURRENCY":        "العملات",
-      "TAB_CARD":            "البطاقات",
-      "TAB_ONLINE":          "إلكتروني",
+      "TAB_CARD":            "الدفع",
+      "TAB_ONLINE":          "ربط",
       "SECTION_ENABLED":     "مفعّل",
       "SECTION_AVAILABLE":   "متاح",
+      "SECTION_CONNECTED":   "مفعّل",
+      "SECTION_NOT_CONNECTED": "غير متصل",
       "FEE":                 "عمولة",
+      "RATE":                "السعر",
       "BALANCE":             "الرصيد",
       "DEFAULT":             "افتراضي",
       "EMPTY":               "لا توجد طرق بعد — أضف طريقة للبدء.",
       "NO_MATCH":            "لا توجد نتائج تطابق بحثك.",
       "CONNECT":             "ربط",
-      "CONFIGURE":           "تهيئة"
+      "CONFIGURE":           "تهيئة",
+      "LOCATION":            "موقع العمل"
     },
     "FORM": {
       "NEW_TITLE":           "طريقة دفع جديدة",
       "EDIT_TITLE":          "تعديل {{name}}",
       "DETAILS":             "التفاصيل",
+      "ICON":                "الأيقونة",
+      "ICON_HINT":           "تظهر بجانب طريقة الدفع في نقطة البيع وفي الإيصالات. يُستخدم شعار المزوّد افتراضيًا للطرق الإلكترونية.",
+      "ICON_PICKER_TITLE":   "اختر أيقونة طريقة الدفع",
+      "CHOOSE_ICON":         "اختر أيقونة",
+      "REPLACE_ICON":        "استبدال الأيقونة",
       "NAME":                "الاسم",
       "NAME_PLACEHOLDER":    "نقد · USD · فيزا…",
+      "NAME_LOCKED_HINT":    "اسم الطريقة ثابت بعد الحفظ — استخدم نافذة الترجمة لتعديل النسخ المترجمة.",
       "TYPE":                "النوع",
       "TYPE_CASH":           "نقد",
       "TYPE_CARD":           "بطاقة",
@@ -41,12 +51,14 @@
       "BANK_CHARGE_HINT":    "العمولة التي يقتطعها البنك أو الشبكة لهذه الطريقة.",
       "AFTER_DECIMAL":       "خانات الكسر",
       "AFTER_DECIMAL_HINT":  "0–3 — عدد الخانات العشرية المعروضة لمبالغ هذه الطريقة.",
-      "ACCOUNT":             "حساب الأستاذ",
+      "ACCOUNT":             "الحساب",
       "ACCOUNT_PLACEHOLDER": "اختر حسابًا…",
       "ACCOUNT_HINT":        "الحساب المحاسبي الذي ترحَّل إليه هذه الطريقة.",
 
       "POS_TITLE":               "سلوك نقطة البيع",
       "POS_SUB":                 "كيف تتصرف هذه الطريقة في نقطة البيع.",
+      "CLOUD_TITLE":             "السلوك السحابي",
+      "CLOUD_SUB":               "كيف تظهر هذه الطريقة في وحدة الحسابات والتقارير.",
       "POS_ENABLED":             "متاحة في نقطة البيع",
       "POS_ENABLED_HINT":        "عند الإيقاف لا يستطيع الكاشير اختيار هذه الطريقة.",
       "OPEN_DRAWER":             "فتح درج النقد عند الاستخدام",
@@ -57,13 +69,13 @@
       "SHOW_IN_ACCOUNT_HINT":    "إظهار هذه الطريقة كمحفظة داخل وحدة الحسابات.",
 
       "ERR_NAME_REQUIRED":    "الاسم مطلوب.",
-      "ERR_ACCOUNT_REQUIRED": "اختر حساب الأستاذ.",
+      "ERR_ACCOUNT_REQUIRED": "اختر حسابًا.",
       "ERR_RATE_INVALID":     "يجب أن يكون سعر الصرف أكبر من 0."
     },
     "CONNECT": {
       "TITLE":                "ربط {{provider}}",
       "SUBTITLE":             "أدخل بيانات الاعتماد المصدّرة من {{provider}} ليتمكن المتجر ونقطة البيع من معالجة الدفعات عبر هذا المزوّد.",
-      "ACCOUNT":              "حساب الأستاذ",
+      "ACCOUNT":              "الحساب",
       "ACCOUNT_PLACEHOLDER":  "اختر حسابًا…",
       "ACCOUNT_HINT":         "ستُرحَّل إيداعات التسوية إلى هذا الحساب.",
       "ENABLED":              "تفعيل هذا المزوّد",
@@ -101,6 +113,42 @@
         "APPLE_SECRET_KEY":              "سر Apple Pay",
         "APPLE_SECRET_KEY_HINT":         "سر صادر عن المزوّد لتمرير Apple Pay."
       }
+    },
+    "CREATE_ACCOUNT": {
+      "ADD":                       "إنشاء حساب جديد",
+      "TITLE":                     "حساب جديد",
+      "NAME":                      "اسم الحساب",
+      "NAME_PLACEHOLDER":          "مثال: نقد BHD · فيزا · تسوية Tap",
+      "TYPE":                      "نوع الحساب",
+      "TYPE_HINT":                 "الجانب من شجرة الحسابات الذي ينتمي إليه هذا الحساب.",
+      "TYPE_BANK":                 "بنك",
+      "TYPE_CASH":                 "نقد",
+      "TYPE_CURRENT_ASSETS":       "أصول متداولة",
+      "TYPE_OTHER_CURRENT_ASSETS": "أصول متداولة أخرى"
+    },
+    "PROVIDERS": {
+      "AFS_DESC":          "قبول الدفعات عبر بوابة AFS البحرين.",
+      "BENEFIT_DESC":      "قبول مدفوعات بطاقات Benefit عبر الشبكة الوطنية البحرينية.",
+      "BENEFITPAY_DESC":   "قبول الدفعات عبر رمز QR من BenefitPay.",
+      "CREDIMAX_DESC":     "قبول Visa و Mastercard و Apple Pay عبر CrediMax البحرين.",
+      "CREDIMAX_ECR_DESC": "تكامل مع طرفية CrediMax في نقطة البيع.",
+      "APS_ECR_DESC":      "تكامل مع طرفية APS في نقطة البيع.",
+      "SWITCH_ECR_DESC":   "تكامل مع طرفية Switch في نقطة البيع.",
+      "FATOORAH_DESC":     "قبول مدفوعات البطاقات الإقليمية عبر MyFatoorah.",
+      "GATEE_DESC":        "قبول مدفوعات البطاقات الإقليمية عبر Gatee.",
+      "HESABE_DESC":       "قبول مدفوعات البطاقات الكويتية عبر Hesabe.",
+      "MAXWALLET_DESC":    "قبول مدفوعات MaxWallet.",
+      "TAP_DESC":          "قبول Visa و Mastercard و KNET و Apple Pay عبر Tap Payments.",
+      "THAWANI_DESC":      "قبول مدفوعات البطاقات العمانية عبر Thawani."
+    },
+    "BRANCH_ADVANCE": {
+      "TRIGGER":             "حساب لكل فرع",
+      "TITLE":               "حساب لكل فرع",
+      "SUB":                 "اختر حسابًا مختلفًا لفروع محددة. الفروع التي تُترك فارغة تستخدم الحساب الرئيسي للطريقة.",
+      "BRANCH":              "الفرع",
+      "ACCOUNT":             "الحساب",
+      "ACCOUNT_PLACEHOLDER": "استخدام الحساب الرئيسي",
+      "NO_BRANCHES":         "لا توجد فروع بعد في هذه الشركة."
     }
   }
 }

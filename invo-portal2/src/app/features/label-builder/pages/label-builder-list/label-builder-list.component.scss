@@ -1,145 +1,13 @@
 :host { display: block; }
 
+// Page chrome (header, search, paging) lives in `<app-list-shell>`.
+// What's left: the type-filter pill group, the row list, the bulk-
+// action bar, and locally-scoped buttons.
+
 .lbl {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-height: 0;
-
-  &__header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-
-    // 75/25 split — text on the left wraps inside its zone instead of
-    // bleeding under the action button.
-    > div:first-child {
-      flex: 0 0 75%;
-      max-width: 75%;
-      min-width: 0;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 700;
-      color: #0f172a;
-    }
-  }
-
-  &__sub {
-    margin: 4px 0 0;
-    font-size: 13px;
-    color: #64748b;
-  }
-
-  // Split "New" — picks template type before navigating to the editor.
-  &__new {
-    position: relative;
-    flex-shrink: 0;
-    align-self: flex-start;
-
-    .btn { display: inline-flex; align-items: center; gap: 6px; }
-  }
-  &__new-caret { opacity: 0.85; }
-
-  &__new-menu {
-    position: absolute;
-    top: calc(100% + 6px);
-    inset-inline-end: 0;
-    z-index: 30;
-    min-width: 220px;
-    padding: 4px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.18),
-                0 2px 6px -1px rgba(15, 23, 42, 0.08);
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  &__new-option {
-    padding: 8px 12px;
-    font: inherit;
-    font-size: 13px;
-    color: #334155;
-    background: transparent;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    text-align: start;
-
-    &:hover { background: #f1f5f9; color: #0f172a; }
-  }
-
-  // ── Filter row ──────────────────────────────────────────────
-  // Search input on the left, type-filter chip group on the right
-  // (or wrapped to the next row on narrow viewports).
-  &__filters {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  &__search {
-    position: relative;
-    flex: 1 1 280px;
-    min-width: 240px;
-    max-width: 480px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #fff;
-    transition: border-color 120ms ease, box-shadow 120ms ease;
-
-    &:focus-within {
-      border-color: var(--color-brand-500);
-      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.10);
-    }
-
-    > svg { color: #94a3b8; flex-shrink: 0; }
-
-    > input {
-      flex: 1;
-      min-width: 0;
-      border: none;
-      background: transparent;
-      outline: none;
-      font: inherit;
-      font-size: 13px;
-      color: #0f172a;
-
-      &::placeholder { color: #94a3b8; }
-    }
-  }
-
-  &__search-clear {
-    appearance: none;
-    border: none;
-    background: transparent;
-    color: #94a3b8;
-    width: 22px; height: 22px;
-    border-radius: 999px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: background 120ms ease, color 120ms ease;
-
-    &:hover { background: #f1f5f9; color: #475569; }
-  }
-
-  // Type filter — three pill-grouped buttons inside one rounded
-  // container, segmented-control style.
+  // The type-filter chips are projected as `[shellToolbarExtra]` — the
+  // shell positions them inline with the search input. Same look as
+  // before; only the wrapper changed.
   &__type-filter {
     display: inline-flex;
     padding: 3px;
@@ -172,12 +40,6 @@
     }
   }
 
-  // ── List body ───────────────────────────────────────────────
-  &__body {
-    flex: 1;
-    min-height: 0;
-  }
-
   &__list {
     list-style: none;
     margin: 0;
@@ -208,7 +70,6 @@
       border-color: var(--color-brand-300, #bae6fd);
     }
 
-    // Per-row selection checkbox. Sits to the left of the thumbnail.
     &-check {
       flex-shrink: 0;
       width: 16px;
@@ -217,10 +78,6 @@
       cursor: pointer;
     }
 
-    // Real thumbnail — sized to the longest-axis 56 px target via
-    // the component's own inline styling. We just give it a flex
-    // anchor here so it doesn't get squeezed when the row content
-    // grows, plus a comfortable hit-area for hover.
     &-thumb {
       flex-shrink: 0;
       display: inline-block;
@@ -242,13 +99,10 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        cursor: text; // hint at the dblclick affordance
+        cursor: text;
       }
     }
 
-    // Inline rename input — replaces the `<strong>` while the user
-    // is typing. Sized to occupy the same width footprint so the row
-    // doesn't reflow when entering / leaving edit mode.
     &-rename {
       flex: 1 1 220px;
       min-width: 120px;
@@ -269,7 +123,6 @@
       }
     }
 
-    // Type chip — Label = brand-blue, Kitchen = amber.
     &-type {
       flex-shrink: 0;
       padding: 2px 8px;
@@ -297,12 +150,6 @@
     }
     &-meta-dot { color: #cbd5e1; }
 
-    // Per-row overflow menu (same pattern as document-builder-list).
-    &-menu {
-      position: relative;
-      flex-shrink: 0;
-    }
-
     &-menu-trigger {
       width: 32px;
       height: 32px;
@@ -322,71 +169,14 @@
         border-color: #e5e7eb;
       }
     }
-
-    &-menu-popover {
-      position: absolute;
-      top: calc(100% + 6px);
-      inset-inline-end: 0;
-      z-index: 30;
-      min-width: 200px;
-      padding: 4px;
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.18),
-                  0 2px 6px -1px rgba(15, 23, 42, 0.08);
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    &-menu-option {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 12px;
-      font: inherit;
-      font-size: 13px;
-      color: #334155;
-      background: transparent;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      text-align: start;
-
-      > svg { color: #64748b; flex-shrink: 0; }
-
-      &:hover:not(:disabled) {
-        background: #f1f5f9;
-        color: #0f172a;
-        > svg { color: var(--color-brand-600, #0891b2); }
-      }
-
-      &:disabled { opacity: 0.45; cursor: not-allowed; }
-
-      &--danger {
-        color: #b91c1c;
-        > svg { color: #b91c1c; }
-
-        &:hover:not(:disabled) {
-          background: #fef2f2;
-          color: #991b1b;
-          > svg { color: #991b1b; }
-        }
-      }
-    }
-
-    &-menu-divider {
-      height: 1px;
-      margin: 4px 2px;
-      background: #f1f5f9;
-    }
   }
 
-  // ── Empty ──────────────────────────────────────────────────
+  // Filtered-empty + initial-empty share this dashed-card chrome. The
+  // shell wraps `[shellEmpty]` in its own `.ls-empty` centring block;
+  // we add the dashed panel on top so the message reads as an empty
+  // surface, not just centred text.
   &__empty {
-    padding: 48px 24px;
-    text-align: center;
+    padding: 32px 24px;
     background: #f9fafb;
     border: 1px dashed #e5e7eb;
     border-radius: 8px;
@@ -399,58 +189,8 @@
   }
 }
 
-// Pager footer — sits below the list, only when there's more than
-// one page. Mirrors the receipt-builder list `.pager` chrome so
-// both settings pages feel identical.
-.lbl__pager {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 4px 4px;
-  margin-inline-start: auto;
-  align-self: end;
-  width: fit-content;
-
-  &-range {
-    font-size: 12px;
-    color: #64748b;
-    margin-inline-end: 4px;
-  }
-  &-page {
-    font-size: 12px;
-    color: #475569;
-    min-width: 44px;
-    text-align: center;
-  }
-  &-btn {
-    appearance: none;
-    width: 28px;
-    height: 28px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    background: #fff;
-    color: #475569;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 120ms ease, color 120ms ease;
-    &:hover:not(:disabled) {
-      background: #f8fafc;
-      color: #0f172a;
-    }
-    &:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-  }
-}
-
-// Floating bulk-action bar — same docked-at-bottom-center pattern
-// as the products list. Visible only when at least one row is
-// selected. The host:: is intentionally outside the `.lbl` block
-// because the bar is a top-level sibling so it can render fixed-
-// position without parent transform offsets.
+// Floating bulk-action bar — top-level sibling so the `position: fixed`
+// isn't constrained by a parent transform.
 .lbl-bulkbar {
   position: fixed;
   bottom: 24px;
@@ -527,7 +267,6 @@
   to   { opacity: 1; transform: translate(-50%, 0); }
 }
 
-// Buttons — scoped so they don't leak into page chrome.
 .btn {
   padding: 8px 16px;
   font-size: 13px;

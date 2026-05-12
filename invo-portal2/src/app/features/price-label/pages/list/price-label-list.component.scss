@@ -1,156 +1,30 @@
-.pll-page {
-  position: relative;
-  padding: 24px;
-  min-height: 100vh;
-  background: #f8fafc;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+// Page chrome (header, toolbar, pager, card, loading, empty) lives in
+// `<app-list-shell>`. Only projected-content styles remain.
 
-// ── Header ──────────────────────────────────────────────────────────
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e5e7eb;
-
-  &__titles {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  &__actions {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-}
-
-.page-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: #0f172a;
-}
-.page-sub {
-  margin: 0;
-  color: #64748b;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
   font-size: 13px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 }
-
-// ── Toolbar (search + pager) ───────────────────────────────────────
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+.btn-primary {
+  background: var(--color-brand-600, #0891b2);
+  color: #fff;
+  &:hover { background: var(--color-brand-700, #0e7490); }
 }
-
-.search {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  color: #94a3b8;
-  width: 320px;
-  max-width: 60vw;
-
-  > input {
-    flex: 1 1 auto;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: #0f172a;
-    font-size: 13px;
-    &::placeholder { color: #94a3b8; }
-  }
-
-  &__clear {
-    appearance: none;
-    width: 18px; height: 18px;
-    border-radius: 999px;
-    background: transparent;
-    border: 0;
-    cursor: pointer;
-    color: #94a3b8;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    &:hover { background: #f1f5f9; color: #475569; }
-  }
-
-  &:focus-within {
-    border-color: var(--color-brand-300, #bae6fd);
-    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
-  }
+.btn-ghost {
+  background: transparent;
+  color: #475569;
+  border-color: #e2e8f0;
+  &:hover { background: #f8fafc; }
 }
-
-.pager {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-
-  &__range { font-size: 12px; color: #64748b; margin-inline-end: 4px; }
-  &__btn {
-    appearance: none;
-    width: 28px; height: 28px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    background: #fff;
-    color: #475569;
-    cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center;
-    transition: background 120ms ease, color 120ms ease;
-    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
-    &:disabled { opacity: 0.4; cursor: not-allowed; }
-  }
-}
-
-// ── Card / table ───────────────────────────────────────────────────
-.card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  // Important: NOT `overflow: hidden` here — the row-menu popover is
-  // CDK-overlaid, but a future enhancement might want a sticky header
-  // and that's easier without a clipping ancestor anyway.
-}
-
-.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 0;
-}
-.spinner {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  border: 3px solid #e2e8f0;
-  border-top-color: var(--color-brand-600);
-  animation: pll-spin .8s linear infinite;
-  display: inline-block;
-  &--lg { width: 32px; height: 32px; }
-}
-@keyframes pll-spin { to { transform: rotate(360deg); } }
-
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 60px 20px;
-  color: #64748b;
-  > svg { color: #cbd5e1; }
-  > p { margin: 0; }
-}
+.btn-sm { padding: 6px 12px; font-size: 12px; }
 
 .table {
   width: 100%;
@@ -210,79 +84,3 @@
   transition: background 120ms ease, color 120ms ease;
   &:hover { background: #f1f5f9; color: #475569; }
 }
-
-// ── Row overflow popover (CDK-overlaid, escapes any clipping) ──────
-.row-menu__popover {
-  min-width: 176px;
-  padding: 4px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.10),
-              0 0 0 1px rgba(15, 23, 42, 0.04);
-  display: flex;
-  flex-direction: column;
-}
-.row-menu__option {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  color: #334155;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-align: start;
-  transition: background 120ms ease, color 120ms ease;
-
-  > svg { color: #94a3b8; flex-shrink: 0; }
-
-  &:hover {
-    background: #f1f5f9;
-    color: #0f172a;
-    > svg { color: #475569; }
-  }
-  &--danger {
-    color: #b91c1c;
-    > svg { color: #fca5a5; }
-    &:hover {
-      background: #fef2f2;
-      color: #991b1b;
-      > svg { color: #dc2626; }
-    }
-  }
-}
-.row-menu__divider {
-  height: 1px;
-  background: #f1f5f9;
-  margin: 4px 0;
-}
-
-// ── Buttons ────────────────────────────────────────────────────────
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
-}
-.btn-primary {
-  background: var(--color-brand-600, #0891b2);
-  color: #fff;
-  &:hover { background: var(--color-brand-700, #0e7490); }
-}
-.btn-ghost {
-  background: transparent;
-  color: #475569;
-  border-color: #e2e8f0;
-  &:hover { background: #f8fafc; }
-}
-.btn-sm { padding: 6px 12px; font-size: 12px; }

@@ -1,0 +1,45 @@
+{
+  "CHART_OF_ACCOUNTS": {
+    "LIST": {
+      "TITLE":              "Chart of Accounts",
+      "SUBTITLE":           "Every account in your ledger — assets, liabilities, equity, income, and expenses.",
+      "ADD_NEW":            "Add account",
+      "SEARCH_PLACEHOLDER": "Search accounts…",
+      "NAME":               "Name",
+      "TYPE":               "Type",
+      "PARENT_TYPE":        "Parent type",
+      "CODE":               "Code",
+      "DESCRIPTION":        "Description",
+      "VIEW_TABLE":         "Table",
+      "VIEW_TREE":          "Tree",
+      "DEFAULT":            "Default",
+      "EMPTY":              "No accounts yet — add one to get started.",
+      "NO_MATCH":           "No accounts match your filter.",
+      "DELETE_TITLE":       "Delete account",
+      "DELETE_MESSAGE":     "Delete \"{{name}}\"? Posting history stays in your ledger but the account stops appearing in new entries."
+    },
+    "FIELDS": {
+      "NAME":                      "Account name",
+      "NAME_PLACEHOLDER":          "e.g. Cash · Bank · Sales",
+      "TYPE":                      "Account type",
+      "TYPE_PLACEHOLDER":          "Pick a type…",
+      "TYPE_HINT":                 "Which side of the chart of accounts this account lives on.",
+      "CODE":                      "Code",
+      "CODE_PLACEHOLDER":          "Optional GL number",
+      "CODE_HINT":                 "Optional ledger code — handy for reporting.",
+      "DESCRIPTION":               "Description",
+      "DESCRIPTION_PLACEHOLDER":   "Notes about what this account is used for…",
+      "PARENT":                    "Parent account",
+      "PARENT_PLACEHOLDER":        "None — top-level account",
+      "PARENT_HINT":               "Pick a parent to nest this account under it.",
+      "PARENT_HAS_CHILD_HINT":     "Parent can't be changed while this account has sub-accounts."
+    },
+    "FORM": {
+      "NEW_TITLE":          "New account",
+      "EDIT_TITLE":         "Edit {{name}}",
+      "DETAILS":            "Details",
+      "ERR_NAME_REQUIRED":  "Account name is required.",
+      "ERR_TYPE_REQUIRED":  "Pick an account type."
+    }
+  }
+}

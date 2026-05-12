@@ -14,7 +14,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { OverlayModule } from '@angular/cdk/overlay';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { ModalService } from '@shared/modal/modal.service';
@@ -23,9 +22,23 @@ import {
   DropdownMenuBtnComponent,
   DropdownMenuBtnItem,
 } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import { ListShellComponent } from '@shared/components/list-shell/list-shell.component';
+import {
+  QueryParamsService,
+  ParamDef,
+  IntCodec,
+  intCodec,
+  StringCodec,
+} from '@shared/services/query-params.service';
 
 import { ReceiptBuilderService } from '../../services/receipt-builder.service';
 import { ReceiptTemplateSummary, TemplateType } from '../../services/receipt-builder.types';
+
+const QP = {
+  page:     { key: 'page',  codec: IntCodec }     as ParamDef<number>,
+  pageSize: { key: 'limit', codec: intCodec(20) } as ParamDef<number>,
+  search:   { key: 'q',     codec: StringCodec }  as ParamDef<string>,
+};
 import {
   RenameTemplateModalComponent,
   RenameTemplateModalData,
@@ -44,7 +57,7 @@ import {
 @Component({
   selector: 'app-receipt-builder-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, BreadcrumbsComponent, OverlayModule, SkeletonComponent, DropdownMenuBtnComponent],
+  imports: [CommonModule, RouterModule, TranslateModule, OverlayModule, SkeletonComponent, DropdownMenuBtnComponent, ListShellComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './receipt-builder-list.component.html',
   styleUrl: './receipt-builder-list.component.scss',
@@ -55,6 +68,7 @@ export class ReceiptBuilderListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
   private modal      = inject(ModalService);
+  private qp         = inject(QueryParamsService);
 
   loading = signal<boolean>(false);
   rows    = signal<ReceiptTemplateSummary[]>([]);
@@ -85,7 +99,6 @@ export class ReceiptBuilderListComponent implements OnInit {
   }
 
   private i18nTick = signal(0);
-  private debounce?: ReturnType<typeof setTimeout>;
 
   breadcrumbs = computed<BreadcrumbItem[]>(() => {
     this.i18nTick();
@@ -118,7 +131,21 @@ export class ReceiptBuilderListComponent implements OnInit {
       .subscribe(() => this.i18nTick.update((n) => n + 1));
   }
 
-  async ngOnInit(): Promise<void> { await this.load(); }
+  async ngOnInit(): Promise<void> {
+    const p = this.qp.read(QP);
+    this.page.set(p.page);
+    this.pageSize.set(p.pageSize);
+    this.search.set(p.search);
+    await this.load();
+  }
+
+  private syncUrl(): void {
+    this.qp.write(QP, {
+      page:     this.page(),
+      pageSize: this.pageSize(),
+      search:   this.search(),
+    });
+  }
 
   async load(): Promise<void> {
     this.loading.set(true);
@@ -136,17 +163,15 @@ export class ReceiptBuilderListComponent implements OnInit {
   }
 
   // ─── Search + paging ────────────────────────────────────────────────
-  onSearchInput(value: string): void {
+  onSearch(value: string): void {
     this.search.set(value);
-    clearTimeout(this.debounce);
-    this.debounce = setTimeout(() => {
-      this.page.set(1);
-      this.load();
-    }, 300);
+    this.page.set(1);
+    this.syncUrl();
+    void this.load();
   }
-  clearSearch(): void { this.search.set(''); this.page.set(1); this.load(); }
-  goPrev(): void { if (this.page() > 1)             { this.page.update(p => p - 1); this.load(); } }
-  goNext(): void { if (this.page() < this.pageCount()) { this.page.update(p => p + 1); this.load(); } }
+  clearSearch(): void { this.search.set(''); this.page.set(1); this.syncUrl(); void this.load(); }
+  goPrev(): void { if (this.page() > 1)             { this.page.update(p => p - 1); this.syncUrl(); this.load(); } }
+  goNext(): void { if (this.page() < this.pageCount()) { this.page.update(p => p + 1); this.syncUrl(); this.load(); } }
 
   // ─── Navigation ─────────────────────────────────────────────────────
   edit(row: ReceiptTemplateSummary): void {
