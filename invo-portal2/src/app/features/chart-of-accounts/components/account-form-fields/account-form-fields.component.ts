@@ -100,6 +100,12 @@ export class AccountFormFieldsComponent implements OnChanges {
   typeDisplay  = (t: AccountType | null) => t?.name ?? '';
   typeCompare  = (a: AccountType | null, b: AccountType | null) => (a?.id ?? '') === (b?.id ?? '');
   typeToValue  = (t: AccountType | null) => t?.id ?? '';
+  /** Group function for the type dropdown — buckets entries under
+   *  their parent type (Current Assets, Equity, Operating Income,
+   *  …) so the picker mirrors the legacy grouped layout. The
+   *  registry is already authored in parent-type order so headers
+   *  emit cleanly without extra sorting. */
+  typeGroupBy  = (t: AccountType) => t.parentType;
   selectedType = (): AccountType | null =>
     this.types.find(t => t.id === this.value?.type) ?? null;
 

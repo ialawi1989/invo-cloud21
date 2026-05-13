@@ -24,11 +24,18 @@ import { PaymentAccount } from '../../services/payment-method.types';
 /**
  * Inline "Create new GL account" modal for the payment-methods flow.
  *
- * Wraps the shared `<app-account-form-fields>` in compact mode
- * (name + type only) and saves through the chart-of-accounts
- * service. Returns the saved account as a `PaymentAccount` so the
- * payment-methods form can append it to its in-memory accounts list
- * and pre-select it — same flow as the legacy popup.
+ * Renders the same fields the standalone Chart-of-Accounts form
+ * page uses (`<app-account-form-fields>` in full mode — name,
+ * type, code, description, parent) so users get one consistent
+ * surface across the modal and the dedicated
+ * `/account/chart-of-accounts` page. Page chrome (breadcrumbs /
+ * title / sticky save-bar) is omitted because the modal owns its
+ * own header + footer.
+ *
+ * Saves through the chart-of-accounts service. Returns the saved
+ * account as a `PaymentAccount` so the payment-methods form can
+ * append it to its in-memory accounts list and pre-select it —
+ * same flow as the legacy popup.
  */
 export interface CreateAccountModalData {
   /** Optional seed name — pre-fills the field if the user typed
@@ -53,7 +60,6 @@ export interface CreateAccountModalData {
     <div class="body">
       <app-account-form-fields
         [value]="account()"
-        [compact]="true"
         [namePlaceholderKey]="'PAYMENT_METHODS.CREATE_ACCOUNT.NAME_PLACEHOLDER'"
         (valueChange)="onValueChange($event)"/>
     </div>

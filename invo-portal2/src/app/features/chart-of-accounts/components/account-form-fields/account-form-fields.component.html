@@ -19,6 +19,7 @@
     [displayWith]="typeDisplay"
     [compareWith]="typeCompare"
     [toValue]="typeToValue"
+    [groupBy]="typeGroupBy"
     [value]="selectedType()"
     [clearable]="false"
     [disabled]="typeDisabled()"
@@ -28,6 +29,33 @@
 </label>
 
 @if (!compact) {
+  <!-- Parent account — optional. Only meaningful once a type is
+       picked, since the list is filtered by type. Hidden until the
+       user picks a type. Disabled when the row being edited already
+       has children (can't be moved). -->
+  @if (value?.type) {
+    <label class="aff-field">
+      <span class="aff-field__label">{{ 'CHART_OF_ACCOUNTS.FIELDS.PARENT' | translate }}</span>
+      <app-search-dropdown
+        [items]="parents()"
+        [displayWith]="parentDisplay"
+        [compareWith]="parentCompare"
+        [toValue]="parentToValue"
+        [value]="selectedParent()"
+        [clearable]="true"
+        [disabled]="!!value?.hasChild"
+        [placeholder]="'CHART_OF_ACCOUNTS.FIELDS.PARENT_PLACEHOLDER' | translate"
+        (valueChange)="setParent($event)"/>
+      <span class="aff-field__hint">
+        @if (value?.hasChild) {
+          {{ 'CHART_OF_ACCOUNTS.FIELDS.PARENT_HAS_CHILD_HINT' | translate }}
+        } @else {
+          {{ 'CHART_OF_ACCOUNTS.FIELDS.PARENT_HINT' | translate }}
+        }
+      </span>
+    </label>
+  }
+
   <!-- Code — optional GL number. -->
   <label class="aff-field">
     <span class="aff-field__label">{{ 'CHART_OF_ACCOUNTS.FIELDS.CODE' | translate }}</span>
@@ -47,29 +75,5 @@
       [value]="value?.description ?? ''"
       (input)="setDescription($any($event.target).value)"
       [placeholder]="'CHART_OF_ACCOUNTS.FIELDS.DESCRIPTION_PLACEHOLDER' | translate"></textarea>
-  </label>
-
-  <!-- Parent account — optional. Only meaningful once a type is
-       picked, since the list is filtered by type. Disabled when the
-       row being edited already has children (can't be moved). -->
-  <label class="aff-field">
-    <span class="aff-field__label">{{ 'CHART_OF_ACCOUNTS.FIELDS.PARENT' | translate }}</span>
-    <app-search-dropdown
-      [items]="parents()"
-      [displayWith]="parentDisplay"
-      [compareWith]="parentCompare"
-      [toValue]="parentToValue"
-      [value]="selectedParent()"
-      [clearable]="true"
-      [disabled]="!value?.type || !!value?.hasChild"
-      [placeholder]="'CHART_OF_ACCOUNTS.FIELDS.PARENT_PLACEHOLDER' | translate"
-      (valueChange)="setParent($event)"/>
-    <span class="aff-field__hint">
-      @if (value?.hasChild) {
-        {{ 'CHART_OF_ACCOUNTS.FIELDS.PARENT_HAS_CHILD_HINT' | translate }}
-      } @else {
-        {{ 'CHART_OF_ACCOUNTS.FIELDS.PARENT_HINT' | translate }}
-      }
-    </span>
   </label>
 }

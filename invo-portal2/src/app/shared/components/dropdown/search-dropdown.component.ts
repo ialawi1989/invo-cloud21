@@ -171,6 +171,14 @@ export class SearchDropdownComponent<T = any> implements OnDestroy, ControlValue
   /** External loading flag — useful when the parent owns the data. */
   loading = input<boolean>(false);
 
+  /** Optional grouping function. When provided, items are rendered
+   *  under sticky-style headers — one header per distinct return
+   *  value. Items must already be sorted by group on the caller's
+   *  side; we just emit a header whenever the value changes.
+   *  Example: `[groupBy]="(t) => t.parentType"` on an account-type
+   *  picker. */
+  groupBy = input<((item: T) => string) | null>(null);
+
   // ── Outputs ────────────────────────────────────────────────────────────────
   /** Fires whenever the user types into the search box. */
   searchChange = output<string>();
@@ -199,6 +207,21 @@ export class SearchDropdownComponent<T = any> implements OnDestroy, ControlValue
   loadingInternal = signal(false);
   /** Trigger width captured at the moment the panel opens. */
   triggerWidth    = signal<number>(0);
+
+  /** Returns the group label for `item` when it differs from the
+   *  previous item's group (or `null` when grouping is off / the
+   *  item is in the same group as its predecessor). The template
+   *  uses this to drop a header row above the first item of each
+   *  group while still iterating the flat `effectiveItems()`. */
+  headerFor(index: number, item: T): string | null {
+    const gb = this.groupBy();
+    if (!gb) return null;
+    const items = this.effectiveItems();
+    const label = gb(item);
+    if (index === 0) return label;
+    const prev = gb(items[index - 1]);
+    return prev === label ? null : label;
+  }
 
   // Effective items: filtered (client) or fetched (async)
   effectiveItems = computed<T[]>(() => {

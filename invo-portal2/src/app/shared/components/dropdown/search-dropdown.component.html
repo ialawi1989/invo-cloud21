@@ -137,6 +137,11 @@
       }
 
       @for (item of effectiveItems(); track $index) {
+        @if (headerFor($index, item); as header) {
+          <div class="px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            {{ header }}
+          </div>
+        }
         <button
           type="button"
           role="option"
@@ -146,6 +151,7 @@
           (mouseenter)="highlightIndex.set($index)"
           [class]="
             'w-full flex items-center gap-2 px-3 py-2 text-start text-sm transition-colors ' +
+            (groupBy() ? 'ps-6 ' : '') +
             (highlightIndex() === $index ? 'bg-brand-50 ' : 'hover:bg-slate-50 ') +
             (isSelected(item) ? 'text-brand-700 font-medium ' : 'text-slate-700 ')
           ">
