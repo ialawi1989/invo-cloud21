@@ -1,0 +1,43 @@
+<div class="track-map-popup" (click)="close()">
+  <div class="track-map-container" (click)="$event.stopPropagation()">
+
+    <!-- ── Header ────────────────────────────────────────────────── -->
+    <div class="track-map-header">
+      <div class="track-map-header-left">
+        <div class="track-map-header-avatar">
+          <i class="fas fa-motorcycle"></i>
+        </div>
+        <div>
+          <h2 class="track-map-title">{{ "Track Your Order" | translate }}</h2>
+          <p class="track-map-subtitle">
+            <small></small>
+          </p>
+        </div>
+      </div>
+      <button type="button" class="track-map-close-btn" aria-label="Close" (click)="close()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- ── Map Canvas ─────────────────────────────────────────────── -->
+    @if(hasLocation) {
+      <div #map class="track-map"></div>
+    } @else {
+      <!-- Placeholder when no driver session and no customer coordinates -->
+      <div class="track-map-placeholder">
+        <div class="placeholder-wrap">
+          <div class="placeholder-icon">📍</div>
+          @if(orderStatus == 'Pending'){
+            <h2>{{ "Your order is pending approval" | translate }}</h2>
+          }@else if(orderStatus == 'Accepted'){
+            <h2>{{ "Your order is being prepaid" | translate }}</h2>
+          }@else{
+            <h2>{{ "Tracking Not Available" | translate }}</h2>
+          }
+          <p>{{ "Live location for this order isn't available yet. Please try again later." | translate }}</p>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

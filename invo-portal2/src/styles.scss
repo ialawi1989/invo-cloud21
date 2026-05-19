@@ -340,14 +340,23 @@ body:has(.main-content.no-padding) {
 }
 
 // ── Global tooltip ────────────────────────────────────────────────────────────
-// Appended to body by TooltipDirective — works inside fixed/sticky containers
+// Appended to body by TooltipDirective — works inside fixed/sticky containers.
+// Wraps onto multiple lines with a fixed max width so explanatory tooltips
+// (e.g. SEO column hints) read like paragraphs instead of one long line that
+// spills off-screen.
 .invo-tooltip {
   position: fixed;
   background: #111827; color: #fff;
-  font-size: 12px; font-weight: 500; white-space: nowrap;
-  padding: 5px 10px; border-radius: 6px;
+  font-size: 12px; font-weight: 500;
+  line-height: 1.45;
+  max-width: 260px;
+  padding: 8px 12px; border-radius: 6px;
   pointer-events: none; z-index: 99999;
   opacity: 0; transition: opacity .15s ease;
+  text-align: start;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 .invo-tooltip.invo-tooltip--visible { opacity: 1; }
 
@@ -414,3 +423,31 @@ body:has(.main-content.no-padding) {
   font-size: 12px;
 }
 
+// ── Global disabled / readonly affordance ────────────────────────────────────
+// Every text-like input across the app should advertise its non-interactive
+// state at a glance: muted slate background, lighter text, dashed-bottom hint,
+// and a not-allowed cursor on hover. Applies to native inputs/selects/textareas
+// regardless of which feature SCSS owns them, so forms stay visually
+// consistent even where component styles forgot to handle the state. Component
+// SCSS can still override per-field if a stronger treatment is required.
+input:disabled,
+input[readonly],
+textarea:disabled,
+textarea[readonly],
+select:disabled,
+select[readonly] {
+  // Soft slate fill — clearly distinct from an editable `#fff` input but not
+  // alarming. Matches the disabled chrome the checkbox-field rows already use.
+  background-color: #f1f5f9 !important;
+  color: #64748b !important;
+  border-color: #e2e8f0 !important;
+  cursor: not-allowed;
+  // Faded placeholder so it doesn't look like a hint the user can act on.
+  &::placeholder { color: #cbd5e1; }
+}
+// Tailwind v4 / Angular CDK both honour `aria-disabled` on non-form widgets
+// (segmented toggles, dropdown triggers). Treat it the same so disabled
+// custom controls look consistent with native inputs.
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}

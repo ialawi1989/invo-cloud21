@@ -1,0 +1,34 @@
+<div class="info">
+  @if(!loading && userWallet) { @if(userWallet.balancePoints > 0) {
+  <p>
+   {{ 'PROMOTIONS.YOU_HAVE_AVAILABLE_EQUIVALENT'| translate:{userPoint: userWallet.balancePoints , currencyAmount:currency + " " + totalPointsWorth  } }}
+  </p>
+
+  } @else {
+  <p>{{ 'PROMOTIONS.NO_POINTS' | translate }}</p>
+  }
+
+  <label>
+    <p class="label">{{ 'PROMOTIONS.ENTER_POINTS' | translate }}</p>
+    <input
+      type="number"
+      min="1"
+      [max]="userWallet.balancePoints"
+      [(ngModel)]="redeemPointsAmount"
+      (ngModelChange)="onPointsChange()"
+      required
+      [disabled]="userWallet.balancePoints == 0"
+    />
+  </label>
+
+  <p>
+   {{ 'PROMOTIONS.EQUIVALENT_AMOUNT' | translate }}
+    <strong>{{ currency + " " + equivalentAmount }}</strong>
+  </p>
+  } @else {
+  <!-- Skeleton Loader -->
+  <div class="skeleton skeleton-text"></div>
+  <div class="skeleton skeleton-input"></div>
+  <div class="skeleton skeleton-text small"></div>
+  }
+</div>

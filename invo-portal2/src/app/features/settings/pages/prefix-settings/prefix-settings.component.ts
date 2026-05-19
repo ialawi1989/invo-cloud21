@@ -18,6 +18,7 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { ToastService } from '@shared/components/toast/toast.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 
 import {
@@ -77,6 +78,7 @@ export class PrefixSettingsComponent implements OnInit, CanLeaveComponent {
   private translate  = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
+  private toast      = inject(ToastService);
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
@@ -212,10 +214,17 @@ export class PrefixSettingsComponent implements OnInit, CanLeaveComponent {
       for (const r of this.rows()) {
         map[r.module] = { prefix: r.prefix.trim(), width: clamp(r.width, 1, 10) };
       }
-      const ok = await this.service.save(map);
-      if (ok) {
-        this.snapshot.set(this.rows().map(clone));
-        this.router.navigate(['/settings']);
+      try {
+        const ok = await this.service.save(map);
+        if (ok) {
+          this.snapshot.set(this.rows().map(clone));
+          this.toast.success('COMMON.SAVED_OK');
+          this.router.navigate(['/settings']);
+        } else {
+          this.toast.error('COMMON.SAVE_FAILED');
+        }
+      } catch (e: any) {
+        this.toast.error('COMMON.SAVE_FAILED', e?.message);
       }
     } finally {
       this.saving.set(false);

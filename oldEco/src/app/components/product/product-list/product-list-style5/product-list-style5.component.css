@@ -1,0 +1,249 @@
+/* =============================================
+   PRODUCT LIST — STYLE 5
+   White card · soft shadow · no hard border
+   Padded squircle image left
+   Name top-left · price bottom-left
+   Button + wishlist bottom-right
+============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+/* ── Row shell ──────────────────────────────── */
+.cl5 {
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
+  font-family: 'Nunito', sans-serif;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-height: 110px;
+  padding: 0 14px 0 0;
+  gap: 14px;
+  /* FIX: isolate stacking context so child z-indexes don't bleed over cart overlay */
+  isolation: isolate;
+}
+
+.cl5:hover {
+  transform: translateX(3px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.11);
+}
+
+/* ── Image wrapper ───────────────────────────── */
+.cl5-img-wrap {
+  flex-shrink: 0;
+}
+
+/* ── Image: flush left, rounded right side only ─ */
+.cl5-img {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  border-radius: 0 50% 50% 0 / 0 44% 44% 0;
+  overflow: hidden;
+  background: #f0ede8;
+  flex-shrink: 0;
+}
+
+.cl5-img app-lazy-image,
+.cl5-img app-lazy-image > * {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+.cl5-img app-lazy-image img,
+.cl5-img img {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+  transition: transform 0.35s ease;
+}
+
+.cl5:hover .cl5-img app-lazy-image img,
+.cl5:hover .cl5-img img {
+  transform: scale(1.06);
+}
+
+/* Invisible nav overlay */
+.cl5-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+/* ── Body ───────────────────────────────────── */
+.cl5-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px 0;
+}
+
+/* ── Top ────────────────────────────────────── */
+.cl5-top {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ── Sale badge ─────────────────────────────── */
+.cl5-sale {
+  display: inline-block;
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-family: 'Nunito', sans-serif;
+  margin-bottom: 2px;
+  width: fit-content;
+}
+
+/* ── Name ───────────────────────────────────── */
+.cl5-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: black;
+  line-height: 1.3;
+  margin: 0;
+  font-family: 'Nunito', sans-serif;
+}
+
+.cl5-name a {
+  color: inherit;
+  text-decoration: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Bottom row ─────────────────────────────── */
+.cl5-bot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* ── Price ──────────────────────────────────── */
+.cl5-price-wrap .price {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--primary-color);
+  font-family: 'Nunito', sans-serif;
+  text-decoration: underline;
+}
+
+.cl5-price-wrap .price del {
+  font-size: 11px;
+  color: #bbb;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+/* ── Actions: button + wishlist ─────────────── */
+.cl5-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Button ─────────────────────────────────── */
+.cl5-btn {
+  padding: 8px 18px;
+  border-radius: 40px;
+  border: 1px solid #e0e0e0;
+  background: #f5f5f5;
+  color: #555;
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s;
+}
+
+.cl5-btn:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+
+.cl5-btn.view-btn {
+  background: #f5f5f5;
+  color: #555;
+}
+
+.cl5-btn.view-btn:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+
+.cl5-btn.dis,
+.cl5-btn[disabled] {
+  background: #f5f5f5;
+  border-color: #e0e0e0;
+  color: #aaa;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Wishlist ────────────────────────────────── */
+.cl5-wish {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ccc;
+  flex-shrink: 0;
+  transition: all 0.18s;
+}
+
+.cl5-wish:hover,
+.cl5-wish.active {
+  color: #e00033;
+  border-color: #e00033;
+}
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 540px) {
+  .cl5 {
+    border-radius: 16px;
+    padding: 0 10px 0 0;
+    gap: 10px;
+  }
+
+  .cl5-img {
+    width: 90px;
+    height: 90px;
+    border-radius: 0 40px 40px 0 / 0 30px 30px 0;
+  }
+
+  .cl5-body { padding: 10px 0; gap: 6px; }
+  .cl5-name { font-size: 13px; }
+  .cl5-btn { padding: 6px 12px; font-size: 11px; }
+}

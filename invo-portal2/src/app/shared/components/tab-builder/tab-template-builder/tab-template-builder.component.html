@@ -65,11 +65,16 @@
       <header class="tb-editor__header">
         <input
           class="tb-editor__title-input"
+          [class.tb-editor__title-input--err]="!tpl.name.trim()"
           type="text"
+          [placeholder]="'TAB_BUILDER.TEMPLATE_NAME_PLACEHOLDER' | translate"
           [ngModel]="tpl.name"
           (ngModelChange)="updateName($event)"
         />
         <span class="chip chip--type">{{ typeKey(tpl.type) | translate }}</span>
+        @if (!tpl.name.trim()) {
+          <span class="tb-editor__err">{{ 'TAB_BUILDER.TEMPLATE_NAME_REQUIRED' | translate }}</span>
+        }
 
         <label class="switch">
           <input type="checkbox" [checked]="tpl.isActive" (change)="toggleActive($any($event.target).checked)"/>

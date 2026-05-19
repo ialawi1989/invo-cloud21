@@ -1,0 +1,393 @@
+<div class="lp-modal-close" (click)="activeModal.dismiss('')">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </svg>
+</div>
+
+<div class="lp-wrap">
+
+  <!-- ── Brand mark ──────────────────────────────────────────── -->
+  <div class="lp-brand">
+    <div class="lp-brand-dot"></div>
+    <span class="lp-brand-name">invo</span>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       LOGIN BY PHONE
+  ══════════════════════════════════════════════════════════ -->
+  @if(step == 'login-by-phone'){
+  <h2 class="lp-title">{{"Welcome back" | translate}}</h2>
+  <p class="lp-subtitle">{{"Login to continue" | translate}}</p>
+
+  <div class="lp-tabs">
+    <button class="lp-tab lp-tab--active" type="button">{{"By phone" | translate}}</button>
+    <button class="lp-tab" type="button" (click)="selectStep('login-by-email')">{{"By email" | translate}}</button>
+    <div class="lp-tab-indicator" style="left: 0; width: 50%;"></div>
+  </div>
+
+  <div class="lp-form">
+    <div class="lp-field">
+      <label class="lp-label">{{"Phone no." | translate}}</label>
+      <div class="lp-phone-row">
+        <select class="lp-phone-code" [(ngModel)]="loginData.phoneCode">
+          @for (country of countries; track $index) {
+          <option value="{{country.dial_code}}">{{country.dial_code}}</option>
+          }
+        </select>
+        <div class="lp-phone-divider"></div>
+        <input type="text" class="lp-phone-number" placeholder="Phone number" [(ngModel)]="loginData.phoneNumber" />
+      </div>
+      @if(loginData.phoneNumber && !isValidPhoneNumber(loginData.phoneNumber)){
+      <p class="lp-error">{{"Required valid phone" | translate}}</p>
+      }
+    </div>
+
+    <div class="lp-field">
+      <div class="lp-label-row">
+        <label class="lp-label">{{"Password" | translate}}</label>
+        <a class="lp-forgot" href="javascript:void(0);" (click)="selectStep('reset-password-by-phone-step1')">{{"Forgot?" | translate}}</a>
+      </div>
+      <input name="login-password" type="password" class="lp-input" [(ngModel)]="loginData.password" />
+      @if(loginData.password && !isValidPassword(loginData.password)){
+      <p class="lp-error">{{"Required valid password" | translate}}</p>
+      }
+    </div>
+  </div>
+
+  <button class="lp-btn-primary" [class.lp-btn--disabled]="!isValidPhoneNumber(loginData.phoneNumber) || !isValidPassword(loginData.password)" (click)="loginByPhone()">
+    {{"Login" | translate}}
+  </button>
+
+  <p class="lp-footer-text">
+    {{"No account?" | translate}}
+    <a href="javascript:void(0);" class="lp-link" (click)="selectStep('register-step1')">{{"Create one" | translate}}</a>
+  </p>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
+       LOGIN BY EMAIL
+  ══════════════════════════════════════════════════════════ -->
+  @if(step == 'login-by-email'){
+  <h2 class="lp-title">{{"Welcome back" | translate}}</h2>
+  <p class="lp-subtitle">{{"Login to continue" | translate}}</p>
+
+  <div class="lp-tabs">
+    <button class="lp-tab" type="button" (click)="selectStep('login-by-phone')">{{"By phone" | translate}}</button>
+    <button class="lp-tab lp-tab--active" type="button">{{"By email" | translate}}</button>
+    <div class="lp-tab-indicator" style="left: 50%; width: 50%;"></div>
+  </div>
+
+  <div class="lp-form">
+    <div class="lp-field">
+      <label class="lp-label">{{"Email" | translate}}</label>
+      <input name="login2-email" type="text" class="lp-input" placeholder="you@example.com" [(ngModel)]="loginData.email" />
+      @if(loginData.email && !isValidEmail(loginData.email)){
+      <p class="lp-error">{{"Required valid email" | translate}}</p>
+      }
+    </div>
+
+    <div class="lp-field">
+      <div class="lp-label-row">
+        <label class="lp-label">{{"Password" | translate}}</label>
+        <a class="lp-forgot" href="javascript:void(0);" (click)="selectStep('reset-password-by-email-step1')">{{"Forgot?" | translate}}</a>
+      </div>
+      <input name="login2-password" type="password" class="lp-input" [(ngModel)]="loginData.password" />
+      @if(loginData.password && !isValidPassword(loginData.password)){
+      <p class="lp-error">{{"Required valid password" | translate}}</p>
+      }
+    </div>
+  </div>
+
+  <button class="lp-btn-primary" [class.lp-btn--disabled]="!isValidEmail(loginData.email) || !isValidPassword(loginData.password)" (click)="loginByEmail()">
+    {{"Login" | translate}}
+  </button>
+
+  <p class="lp-footer-text">
+    {{"No account?" | translate}}
+    <a href="javascript:void(0);" class="lp-link" (click)="selectStep('register-step1')">{{"Create one" | translate}}</a>
+  </p>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
+       RESET PASSWORD — PHONE STEP 1
+  ══════════════════════════════════════════════════════════ -->
+  @if(step == 'reset-password-by-phone-step1'){
+  <a href="javascript:void(0);" class="lp-back" (click)="selectStep('login-by-phone')">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 13L5 8l5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    {{"Back" | translate}}
+  </a>
+  <h2 class="lp-title mb-2">{{"Reset password" | translate}}</h2>
+  <!-- <p class="lp-subtitle">{{"We'll send a code to your phone"  | translate}}</p> -->
+
+  <div class="lp-tabs">
+    <button class="lp-tab lp-tab--active" type="button">{{"By phone" | translate}}</button>
+    <button class="lp-tab" type="button" (click)="selectStep('reset-password-by-email-step1')">{{"By email" | translate}}</button>
+    <div class="lp-tab-indicator" style="left: 0; width: 50%;"></div>
+  </div>
+
+  <div class="lp-form">
+    <div class="lp-field">
+      <label class="lp-label">{{"Phone no." | translate}}</label>
+      <div class="lp-phone-row">
+        <select class="lp-phone-code" [(ngModel)]="resetPasswordData.phoneCode">
+          @for (country of countries; track $index) {
+          <option value="{{country.dial_code}}">{{country.dial_code}}</option>
+          }
+        </select>
+        <div class="lp-phone-divider"></div>
+        <input type="text" class="lp-phone-number" placeholder="Phone number" [(ngModel)]="resetPasswordData.phoneNumber" />
+      </div>
+      @if(resetPasswordData.phoneNumber && !isValidPhoneNumber(resetPasswordData.phoneNumber)){
+      <p class="lp-error">{{"Required valid phone" | translate}}</p>
+      }
+    </div>
+  </div>
+
+  <button class="lp-btn-primary" [class.lp-btn--disabled]="otpTimer || !isValidPhoneNumber(resetPasswordData.phoneNumber)" (click)="resetPasswordByPhoneStep1()">
+    {{"Send code" | translate}} @if(otpTimer){ <span class="lp-timer">({{otpTimer}})</span> }
+  </button>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
+       RESET PASSWORD — EMAIL STEP 1
+  ══════════════════════════════════════════════════════════ -->
+  @if(step == 'reset-password-by-email-step1'){
+  <a href="javascript:void(0);" class="lp-back" (click)="selectStep('login-by-email')">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 13L5 8l5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    {{"Back" | translate}}
+  </a>
+  <h2 class="lp-title mb-2">{{"Reset password"  | translate}}</h2>
+  <!-- <p class="lp-subtitle">{{"We'll send a code to your email"  | translate}}</p> -->
+
+  <div class="lp-tabs">
+    <button class="lp-tab" type="button" (click)="selectStep('reset-password-by-phone-step1')">{{"By phone"  | translate}}</button>
+    <button class="lp-tab lp-tab--active" type="button">{{"By email"  | translate}}</button>
+    <div class="lp-tab-indicator" style="left: 50%; width: 50%;"></div>
+  </div>
+
+  <div class="lp-form">
+    <div class="lp-field">
+      <label class="lp-label">{{"Email" | translate}}</label>
+      <input name="reset-email" type="text" class="lp-input" placeholder="you@example.com" [(ngModel)]="resetPasswordData.email" />
+      @if(resetPasswordData.email && !isValidEmail(resetPasswordData.email)){
+      <p class="lp-error">{{"Required valid email" | translate}}</p>
+      }
+    </div>
+  </div>
+
+  <button class="lp-btn-primary" [class.lp-btn--disabled]="otpTimer || !isValidEmail(resetPasswordData.email)" (click)="resetPasswordByEmailStep1()">
+    {{"Send code" | translate}} @if(otpTimer){ <span class="lp-timer">({{otpTimer}})</span> }
+  </button>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
+       OTP — RESET BY PHONE STEP 2
+  ══════════════════════════════════════════════════════════ -->
+  @if(step == 'reset-password-by-phone-step2'){
+  <div class="lp-otp-icon">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="6" y="4" width="16" height="20" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M10 14h8M10 18h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="14" cy="9" r="1.5" fill="currentColor"/></svg>
+  </div>
+  <h2 class="lp-title">{{"Enter OTP"  | translate}}</h2>
+  <p class="lp-subtitle">{{"Code sent to your phone"  | translate}}</p>
+
+  <div class="lp-form">
+    <div class="lp-field">
+      <label class="lp-label">{{"OTP" | translate}}</label>
+      <input name="resetpassword-otp" type="text" class="lp-input lp-input--otp" maxlength="6" placeholder="——————" [(ngModel)]="resetPasswordData.otp" />
+      @if(resetPasswordData.otp && !isValidOtp(resetPasswordData.otp)){
+      <p class="lp-error">{{"Required valid otp" | translate}}</p>
+      }
+    </div>
+  </div>
+
+  <button class="lp-btn-primary" [class.lp-btn--disabled]="!isValidOtp(resetPasswordData.otp)" (click)="resetPasswordByPhoneStep2()">
+    {{"Verify" | translate}}
+  </button>
+
+  <div class="lp-otp-actions">
+    <a href="javascript:void(0);" class="lp-link" [class.lp-link--muted]="!!otpTimer" (click)="resendResetPasswordOtp()">
+      {{"Resend" | translate}} @if(otpTimer){ <span class="lp-timer">({{otpTimer}})</span> }
+    </a>
+    <span class="lp-dot-sep">·</span>
+    <a href="javascript:void(0);" class="lp-link" (click)="selectStep('reset-password-by-phone-step1')">{{"Change phone" | translate}}</a>
+  </div>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
+       OTP — RESET BY EMAIL STEP 2
+  ══════════════════════════════════════════════════════════ -->
+  @if(step == 'reset-password-by-email-step2'){
+  <div class="lp-otp-icon">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="4" y="7" width="20" height="14" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 10l10 7 10-7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+  </div>
+  <h2 class="lp-title">{{"Enter OTP" | translate}}</h2>
+  <p class="lp-subtitle">{{"Code sent to your email" | translate}}</p>
+
+  <div class="lp-form">
+    <div class="lp-field">
+      <label class="lp-label">{{"OTP" | translate}}</label>
+      <input name="resetpassword-otp" type="text" class="lp-input lp-input--otp" maxlength="6" placeholder="——————" [(ngModel)]="resetPasswordData.otp" />
+      @if(resetPasswordData.otp && !isValidOtp(resetPasswordData.otp)){
+      <p class="lp-error">{{"Required valid otp" | translate}}</p>
+      }
+    </div>
+  </div>
+
+  <button class="lp-btn-primary" [class.lp-btn--disabled]="!isValidOtp(resetPasswordData.otp)" (click)="resetPasswordByEmailStep2()">
+    {{"Verify" | translate}}
+  </button>
+
+  <div class="lp-otp-actions">
+    <a href="javascript:void(0);" class="lp-link" [class.lp-link--muted]="!!otpTimer" (click)="resendResetPasswordOtp()">
+      {{"Resend" | translate}} @if(otpTimer){ <span class="lp-timer">({{otpTimer}})</span> }
+    </a>
+    <span class="lp-dot-sep">·</span>
+    <a href="javascript:void(0);" class="lp-link" (click)="selectStep('reset-password-by-email-step1')">{{"Change email" | translate}}</a>
+  </div>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
+       RESET PASSWORD STEP 3 — SET NEW PASSWORD
+  ══════════════════════════════════════════════════════════ -->
+  @if(step == 'reset-password-step3'){
+  <div class="lp-otp-icon">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="7" y="12" width="14" height="11" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M10 12V9a4 4 0 018 0v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="14" cy="17" r="1.5" fill="currentColor"/></svg>
+  </div>
+  <!-- <h2 class="lp-title">New password</h2>
+  <p class="lp-subtitle">{{"Choose a strong password"  | translate}}</p> -->
+
+  <div class="lp-form">
+    <div class="lp-field">
+      <label class="lp-label">{{"New password" | translate}}</label>
+      <input name="resetpassword-password" type="password" class="lp-input" [(ngModel)]="resetPasswordData.password" />
+      @if(resetPasswordData.password && !isValidPassword(resetPasswordData.password)){
+      <p class="lp-error">{{"Required valid password" | translate}}</p>
+      }
+    </div>
+    <div class="lp-field">
+      <label class="lp-label">{{"Confirm password" | translate}}</label>
+      <input name="resetpassword-cpassword" type="password" class="lp-input" [(ngModel)]="resetPasswordData.cpassword" />
+      @if(resetPasswordData.cpassword && resetPasswordData.password != resetPasswordData.cpassword){
+      <p class="lp-error">{{"Passwords do not match" | translate}}</p>
+      }
+    </div>
+  </div>
+
+  <button class="lp-btn-primary" [class.lp-btn--disabled]="!isValidPassword(resetPasswordData.password) || !isValidPassword(resetPasswordData.cpassword) || (resetPasswordData.password !== resetPasswordData.cpassword)" (click)="resetPasswordStep3()">
+    {{"Set password" | translate}}
+  </button>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
+       REGISTER STEP 1
+  ══════════════════════════════════════════════════════════ -->
+  @if(step == 'register-step1'){
+  <a href="javascript:void(0);" class="lp-back" (click)="selectStep('login-by-phone')">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 13L5 8l5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    {{"Back" | translate}}
+  </a>
+  <h2 class="lp-title">{{"Create account"  | translate}}</h2>
+  <p class="lp-subtitle">{{"Join in a few quick steps"  | translate}}</p>
+
+  <div class="lp-form">
+    <div class="lp-field">
+      <label class="lp-label">{{"Name" | translate}}</label>
+      <input name="register-name" type="text" class="lp-input" placeholder="Your name" [(ngModel)]="registerData.name" />
+      @if(registerData.name && !isValidName(registerData.name)){
+      <p class="lp-error">{{"Required valid name" | translate}}</p>
+      }
+    </div>
+    <div class="lp-field">
+      <label class="lp-label">{{"Email" | translate}}</label>
+      <input name="register-email" type="text" class="lp-input" placeholder="you@example.com" [(ngModel)]="registerData.email" />
+      @if(registerData.email && !isValidEmail(registerData.email)){
+      <p class="lp-error">{{"Required valid email" | translate}}</p>
+      }
+    </div>
+    <div class="lp-field">
+      <label class="lp-label">{{"Password" | translate}}</label>
+      <input name="register-password" type="password" class="lp-input" [(ngModel)]="registerData.password" />
+      @if(registerData.password && !isValidPassword(registerData.password)){
+      <p class="lp-error">{{"Required valid password" | translate}}</p>
+      }
+    </div>
+    <div class="lp-field">
+      <label class="lp-label">{{"Confirm password" | translate}}</label>
+      <input name="register-cpassword" type="password" class="lp-input" [(ngModel)]="registerData.cpassword" />
+      @if(registerData.cpassword && (registerData.password !== registerData.cpassword)){
+      <p class="lp-error">{{"Passwords do not match" | translate}}</p>
+      }
+    </div>
+  </div>
+
+  <button class="lp-btn-primary" [class.lp-btn--disabled]="!isValidName(registerData.name) || !isValidEmail(registerData.email) || !isValidPassword(registerData.password) || !isValidPassword(registerData.cpassword) || (registerData.password !== registerData.cpassword)" (click)="registerStep1()">
+    {{"Create" | translate}}
+  </button>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
+       REGISTER STEP 2 — PHONE
+  ══════════════════════════════════════════════════════════ -->
+  @if(step == 'register-step2'){
+  <div class="lp-step-chip">{{"Step 2 of 3"  | translate}}</div>
+  <h2 class="lp-title">{{"Add your phone"  | translate}}</h2>
+  <p class="lp-subtitle">{{"We'll send a verification code"  | translate}}</p>
+
+  <div class="lp-form">
+    <div class="lp-field">
+      <label class="lp-label">{{"Phone no." | translate}}</label>
+      <div class="lp-phone-row">
+        <select class="lp-phone-code" [(ngModel)]="registerData.phoneCode">
+          @for (country of countries; track $index) {
+          <option value="{{country.dial_code}}">{{country.dial_code}}</option>
+          }
+        </select>
+        <div class="lp-phone-divider"></div>
+        <input type="text" class="lp-phone-number" placeholder="Phone number" [(ngModel)]="registerData.phoneNumber" />
+      </div>
+      @if(registerData.phoneNumber && !isValidPhoneNumber(registerData.phoneNumber)){
+      <p class="lp-error">{{"Required valid phone" | translate}}</p>
+      }
+    </div>
+  </div>
+
+  <button class="lp-btn-primary" [class.lp-btn--disabled]="otpTimer || !isValidPhoneNumber(registerData.phoneNumber)" (click)="registerStep2()">
+    {{"Send code" | translate}} @if(otpTimer){ <span class="lp-timer">({{otpTimer}})</span> }
+  </button>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
+       REGISTER STEP 3 — OTP
+  ══════════════════════════════════════════════════════════ -->
+  @if(step == 'register-step3'){
+  <div class="lp-step-chip">{{"Step 3 of 3" | translate}}</div>
+  <div class="lp-otp-icon">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="6" y="4" width="16" height="20" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M10 14h8M10 18h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="14" cy="9" r="1.5" fill="currentColor"/></svg>
+  </div>
+  <h2 class="lp-title">{{"Verify phone" | translate}}</h2>
+  <p class="lp-subtitle">{{"Enter the 6-digit code we sent" | translate}}</p>
+
+  <div class="lp-form">
+    <div class="lp-field">
+      <label class="lp-label">{{"OTP" | translate}}</label>
+      <input name="register-otp" type="text" class="lp-input lp-input--otp" maxlength="6" placeholder="——————" [(ngModel)]="registerData.otp" />
+      @if(registerData.otp && !isValidOtp(registerData.otp)){
+      <p class="lp-error">{{"Required valid otp" | translate}}</p>
+      }
+    </div>
+  </div>
+
+  <button class="lp-btn-primary" [class.lp-btn--disabled]="!isValidOtp(registerData.otp)" (click)="registerStep3()">
+    {{"Verify & finish" | translate}}
+  </button>
+
+  <div class="lp-otp-actions">
+    <a href="javascript:void(0);" class="lp-link" [class.lp-link--muted]="!!otpTimer" (click)="registerStep2()">
+      {{"Resend" | translate}} @if(otpTimer){ <span class="lp-timer">({{otpTimer}})</span> }
+    </a>
+    <span class="lp-dot-sep">·</span>
+    <a href="javascript:void(0);" class="lp-link" (click)="selectStep('register-step2')">{{"Change phone" | translate}}</a>
+  </div>
+  }
+
+</div>

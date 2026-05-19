@@ -1,0 +1,67 @@
+<div class="card-g product mb-4" [class.has-discount]="product.discountAmount">
+
+  <!-- Image area -->
+  <div class="card-g-img">
+    @if(product.discountAmount) {
+      <span class="card-g-badge">{{"Sale!" | translate}}</span>
+    }
+    <button
+      class="card-g-wish"
+      (click)="addItemToWishlist(product)"
+      [class.active]="isInWishList(product.id)"
+      [attr.aria-label]="'Wishlist' | translate">
+      {{ isInWishList(product.id) ? '♥' : '♡' }}
+    </button>
+
+    <app-lazy-image
+      src="{{(product.mediaUrl?.defaultUrl || product.mediaUrl) + '?width=300' || 'assets/images/default-blank-image.png' }}"
+      alt=" "
+      width="100%"
+      height="180px"
+      [objectFit]="template?.settings?.product_image_size || 'cover'"
+      borderRadius="0" />
+
+    <!-- Invisible overlay link -->
+    <a href="javascript:void(0);" class="card-g-overlay" (click)="gotoProductPage(product)"></a>
+  </div>
+
+  <!-- Body -->
+  <div class="card-g-body">
+    <span class="card-g-tag">{{ product.brandName }}</span>
+
+    <h3 class="card-g-name" [class.long_product_name]="template?.settings?.long_product_name">
+      <a href="javascript:void(0);" (click)="gotoProductPage(product)">
+        {{ appService.lang === 'ar'
+            ? (product.translation?.name?.ar || product.name)
+            : product.name }}
+      </a>
+    </h3>
+
+    <div class="card-g-price-row">
+      <app-product-price
+        [product]="product"
+        [currentCurrency]="currentCurrency"
+        [companyData]="companyData">
+      </app-product-price>
+    </div>
+
+    @if(!appService.viewOnly) {
+      @if(product.showAddCartButton()) {
+        <button class="card-g-btn" (click)="addItemToCart({ productId: product.id, qty: 1, showCart: true })">
+          {{"Add to Cart" | translate}}
+        </button>
+      }
+      @if(product.showViewOptionButton()) {
+        <button class="card-g-btn" (click)="gotoProductPage(product)">
+          {{"View Product" | translate}}
+        </button>
+      }
+      @if(product.showOutOfStockButton()) {
+        <button class="card-g-btn disabled" disabled>
+          {{"Out of Stock" | translate}}
+        </button>
+      }
+    }
+  </div>
+
+</div>

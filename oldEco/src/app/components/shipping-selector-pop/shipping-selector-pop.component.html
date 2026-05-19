@@ -1,0 +1,114 @@
+<!-- ── Modal header ──────────────────────────────────────────────── -->
+<div class="ds-modal-header">
+  <div class="ds-header-left">
+    <div class="acc-avatar ds-avatar"><i class="fas fa-shipping-fast"></i></div>
+    <div>
+      <h2 class="ds-title">{{"Shipping" | translate}}</h2>
+      <p class="ds-subtitle">{{"Select your shipping country" | translate}}</p>
+    </div>
+  </div>
+  <button type="button" class="ds-close-btn" aria-label="Close" (click)="cancel()">
+    <i class="fas fa-times"></i>
+  </button>
+</div>
+
+<!-- ── Search bar ────────────────────────────────────────────────── -->
+<div class="ds-search-wrap">
+  <div class="ds-search-inner">
+    <svg class="ds-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <path d="m21 21-4.3-4.3"></path>
+    </svg>
+    <input class="ds-search-input" type="text"
+      placeholder="{{'Search country...' | translate}}"
+      [value]="searchText()"
+      (input)="onSearchChange($any($event).target.value)" />
+  </div>
+</div>
+
+<!-- ── Modal body ────────────────────────────────────────────────── -->
+<div class="ds-modal-body">
+
+  <!-- Loading -->
+  @if (displayState().type === 'loading') {
+  <div class="ds-state-wrap">
+    <div class="ds-spinner"></div>
+    <p class="ds-state-text">{{ displayState().message | translate }}</p>
+  </div>
+  }
+
+  <!-- Countries list -->
+  @if (displayState().showCountries) {
+  <div class="ds-section">
+    <span class="ds-section-label">
+      <i class="fas fa-globe ds-label-icon"></i>
+      {{"Select Country for Shipping" | translate}}
+    </span>
+    <div class="ds-country-list">
+      @for (country of filteredCountries(); track country.code) {
+      <div class="ds-country-card" (click)="onClickShippingCountry(country)">
+        <div class="ds-card-main">
+          <!-- Flag + icon -->
+          <div class="ds-country-flag-wrap">
+            <img onerror="this.src = 'assets/images/default-blank-image.png'" [src]="getCountryFlag(country.code)" [alt]="country.name"
+              class="ds-country-flag"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+            <div class="ds-country-flag-fallback" style="display:none;">
+              <i class="fas fa-globe"></i>
+            </div>
+          </div>
+          <!-- Name -->
+          <div class="ds-card-body">
+            <span class="ds-card-title">{{ country.name }}</span>
+          </div>
+        </div>
+        <i class="fas fa-chevron-right ds-card-chevron"></i>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Empty states -->
+  @if (!displayState().showCountries && !isLoading()) {
+  <div class="ds-state-wrap">
+    @if (displayState().type === 'no-countries') {
+    <div class="ds-state-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+        <path d="M2 12h20"></path>
+      </svg>
+    </div>
+    <p class="ds-state-title">{{ displayState().message | translate }}</p>
+    <p class="ds-state-sub">{{"Please contact support for shipping options" | translate}}</p>
+    }
+    @if (displayState().type === 'no-matches') {
+    <div class="ds-state-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m13.5 8.5-5 5"></path><path d="m8.5 8.5 5 5"></path>
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+    </div>
+    <p class="ds-state-title">{{ displayState().message | translate }}</p>
+    <p class="ds-state-sub">{{"Try adjusting your search terms" | translate}}</p>
+    <button class="ds-clear-btn" (click)="onSearchChange('')">
+      <i class="fas fa-times"></i> {{"Clear search" | translate}}
+    </button>
+    }
+  </div>
+  }
+
+  <!-- Results count -->
+  @if (displayState().showCountries && searchText().trim()) {
+  <div class="ds-results-count">
+    {{"Showing" | translate}} {{ filteredCountries().length }} {{"of" | translate}} {{ shippingCountries().length }} {{"countries" | translate}}
+  </div>
+  }
+  <br>
+</div>

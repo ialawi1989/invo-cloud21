@@ -1,0 +1,18 @@
+<!--lazy-image-html-->
+<div class="image-container" [style.width]="width" [style.height]="height">
+  <img 
+    #imgRef
+    [attr.alt]="alt"
+    [style.width]="width"
+    [style.height]="height"
+    [style.opacity]="imageLoaded ? '1' : '0'"
+    (load)="onImageLoad()"
+    (error)="onImageError()"
+    [src]="currentSrc"
+    [style.object-fit]="objectFit" 
+    [style.border-radius]="borderRadius"
+  >
+  @if(!imageLoaded){
+    <div  class="spinner"></div>
+  }
+</div>

@@ -9,8 +9,8 @@ import { ContentField } from '../../models/content-library.model';
 import { ManageFieldsModalComponent } from '../../components/manage-fields-modal.component';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs';
 import { SpinnerComponent } from '../../../../../shared/components/spinner';
-import { MediaPickerModalComponent, MediaPickerConfig } from '../../../../media/components/media-picker';
-import { ImageUrlModalComponent } from '../../../../media/components/image-url-modal';
+import { MediaPickerModalComponent, MediaPickerConfig } from '../../../../settings/media/components/media-picker';
+import { ImageUrlModalComponent } from '../../../../settings/media/components/image-url-modal';
 import { ReferencePickerComponent } from '../../components/reference-picker.component';
 
 @Component({

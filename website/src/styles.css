@@ -1,3 +1,6 @@
+/* @import rules must come before any other CSS per the spec. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -23,8 +26,6 @@
   --section-padding: 80px;
   --border-radius: 12px;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 body {
   font-family: var(--font-family);

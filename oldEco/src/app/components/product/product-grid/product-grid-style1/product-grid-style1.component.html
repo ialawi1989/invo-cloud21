@@ -1,0 +1,73 @@
+<div style="padding:4px; background:white; border-radius: 6px; overflow: hidden;">
+  <div class="product-wrap">
+    <div class="product product-classic product-variable">
+      <figure class="product-media">
+        <a href="javascript:void(0);" (click)="gotoProductPage(product)">
+          <!-- <img onerror="if (this.src != 'assets/images/default-blank-image.png') this.src = 'assets/images/default-blank-image.png';" [src]="product.mediaUrl+'?width=100&height=100' || 'assets/images/default-blank-image.png'" alt="product"
+            style="width:100%; height:calc(90px + 15vh);"> -->
+          <app-lazy-image src="{{(product.mediaUrl?.defaultUrl || product.mediaUrl)+'?width=300' || 'assets/images/default-blank-image.png'}}" alt=" "
+            width="100%" height="calc(90px + 15vh)" [objectFit]="template?.settings?.product_image_size || 'cover'" />
+        </a>
+      </figure>
+      <div class="product-label-group">
+        <!-- <label class="product-label label-new">new</label> -->
+        @if(product.discountAmount) {
+        <label class="product-label label-sale">{{"Sale!" | translate}}</label>
+        <!-- <label class="product-label label-sale">{{ product.discountAmount}}% OFF</label> -->
+        }
+      </div>
+      <div class="product-details">
+        <h3 class="product-name" [class.long_product_name]="template?.settings?.long_product_name">
+          <a href="javascript:void(0);" (click)="gotoProductPage(product)">
+            {{ appService.lang == 'ar' ? product.translation && product.translation.name?.ar ?
+            product.translation.name?.ar : product.name : product.name }}
+          </a>
+        </h3>
+
+        <app-product-price [product]="product" [currentCurrency]="currentCurrency"
+          [companyData]="companyData"></app-product-price>
+        <!-- <div class="ratings-container">
+          <div class="ratings-full">
+            <span class="ratings" style="width:100%"></span>
+            <span class="tooltiptext tooltip-top"></span>
+          </div>
+          <a href="javascript:void(0);" class="rating-reviews">( 12 reviews )</a>
+        </div> -->
+        <div class="product-action">
+          @if(!appService.viewOnly){
+          @if(product.showAddCartButton()) {
+          <a href="javascript:void(0);" (click)="addItemToCart({
+  productId: product.id,
+  qty: 1,
+  showCart: true
+})
+"
+            class="btn-product btn-cart" data-toggle="modal" data-target="#addCartModal" title="Add to cart">
+            <i class="d-icon-bag"></i><span>{{"Add to cart" | translate}}</span>
+          </a>
+          }
+          @if(product.showViewOptionButton()){
+          <a (click)="gotoProductPage(product)" class="btn-product btn-cart clickable" data-toggle="modal"
+            data-target="#addCartModal" title="View Product"><span>{{"View Product" |
+              translate}}</span></a>
+          }
+
+          @if(product.showOutOfStockButton()){
+          <a href="javascript:void(0);" class="btn-product btn-cart btn-disabled" data-toggle="modal"
+            data-target="#addCartModal" title="Out of stock">
+            <span>{{"Out of stock" | translate}}</span>
+          </a>
+          }
+          <a href="javascript:void(0);" class="btn-product-icon btn-wishlist" title="Add to wishlist"
+            (click)="addItemToWishlist(product)">
+            <i [class]="isInWishList(product.id) ? 'd-icon-heart-full' : 'd-icon-heart'"
+              [class.active]="isInWishList(product.id)"></i>
+          </a>
+          }
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

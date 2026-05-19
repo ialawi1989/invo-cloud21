@@ -1,0 +1,10 @@
+@if (appService.getBranchStatusValue() == 'close' || appService.getBranchStatusValue() == 'busy') {
+  <div class="alert alert-light alert-danger pb-2 pt-2">
+    <div class="container">
+      <div class="text-center">
+        <b>{{("Branch is " + appService.getBranchStatusValue()) | translate}}.</b>
+        <!-- <a class="clickable text-uppercase" (click)="changeBranch()"><b>Change Branch</b></a> -->
+      </div>
+    </div>
+  </div>
+}

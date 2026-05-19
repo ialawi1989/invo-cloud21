@@ -25,7 +25,9 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { ToastService } from '@shared/components/toast/toast.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 
 import { BusinessSettingsService } from '../../services/business-settings.service';
 
@@ -94,6 +96,7 @@ const RECEIPT_COPIES_OPTIONS: { label: string; value: number }[] =
     LoadingOverlayComponent,
     FormStickyFooterComponent,
     SearchDropdownComponent,
+    ToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './pos-options.component.html',
@@ -105,6 +108,7 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
   private translate  = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
+  private toast      = inject(ToastService);
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
@@ -120,6 +124,23 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
   readonly posToggles    = POS_TOGGLES;
   readonly printToggles  = PRINT_TOGGLES;
   readonly receiptCopies = RECEIPT_COPIES_OPTIONS;
+
+  // ─── Copies-dropdown adapters ──────────────────────────────────────────
+  // `<app-search-dropdown>` swapped in for the legacy native `<select>` so
+  // the look matches the rest of the page. Each adapter is bound by
+  // reference so OnPush sees a stable input.
+  copiesDisplay = (o: { label: string; value: number } | null) => o?.label ?? '';
+  copiesCompare = (a: { value: number } | null, b: { value: number } | null) => (a?.value ?? -1) === (b?.value ?? -1);
+  copiesToValue = (o: { value: number } | null) => o?.value ?? null;
+  /** Look up the option entry for the form control's current value. */
+  selectedCopies(controlName: string): { label: string; value: number } | null {
+    const v = this.form.get(['printingOptions', controlName])?.value;
+    return this.receiptCopies.find(o => o.value === v) ?? null;
+  }
+  /** Write the picked option back into the form. */
+  setCopies(controlName: string, opt: { value: number } | null): void {
+    this.form.get(['printingOptions', controlName])?.setValue(opt?.value ?? null);
+  }
 
   // ─── Form ──────────────────────────────────────────────────────────────
   form: FormGroup = this.fb.group({
@@ -221,10 +242,14 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
       if (res?.success) {
         this.company.set(merged);
         this.form.markAsPristine();
+        this.toast.success('COMMON.SAVED_OK');
         this.router.navigate(['/settings']);
+      } else {
+        this.toast.error('COMMON.SAVE_FAILED');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('[pos-options] save failed', e);
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
     } finally {
       this.saving.set(false);
     }

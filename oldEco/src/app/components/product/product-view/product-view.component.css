@@ -1,0 +1,638 @@
+/* ============================================
+   STICKY PRODUCT PAGE - UPDATED CSS
+   ============================================ */
+
+/* ========== STICKY WRAPPER ========== */
+.sticky-wrapper {
+  position: relative;
+}
+
+/* ========== STICKY GALLERY CONTAINER ========== */
+.sticky-gallery-container {
+  position: sticky;
+  top: 90px;
+  height: fit-content;
+  z-index: 100;
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+}
+
+/* ========== ENSURE PARENT ALLOWS STICKY ========== */
+.product.product-single {
+  overflow: visible;
+}
+
+/* ========== EXISTING BASE STYLES ========== */
+
+.d-icon-heart.active,
+.d-icon-heart-full,
+.active-btn-wishlist {
+  color: #ff0000 !important;
+}
+
+.product-details {
+  min-width: 100%;
+  overflow-x: hidden;
+}
+
+.product-image>img {
+  width: 100%;
+}
+
+.product-thumb {
+  margin-bottom: 10px;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+.product-thumb::before {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+.product-thumb>img {
+  width: 100%;
+  height: 95px;
+}
+
+.owl-carousel {
+  height: calc(100vh - 300px);
+  background: #faf8f8;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.product-img {
+  height: calc(100vh - 300px) !important;
+  object-fit: contain;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+.model-viewer {
+  width: 100%;
+  height: calc(100vh - 300px);
+}
+
+@media (max-width:500px) {
+  .owl-carousel {
+    height: 360px;
+    background: #faf8f8;
+  }
+
+  .product-img {
+    height: 360px !important;
+    object-fit: contain;
+  }
+
+  .model-viewer {
+    width: 100%;
+    height: 360px;
+  }
+}
+
+.min-height {
+  min-height: 66.6vh;
+}
+
+.product-image-full {
+  z-index: 99999 !important;
+  opacity: 1;
+}
+
+.product-image-zoom {
+  z-index: 99999 !important;
+  top: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  height: 40px;
+  color: white;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
+.product-image-3d {
+  left: 0px;
+  z-index: 99999 !important;
+  bottom: 0px;
+  background: rgba(0, 0, 0, 0.6);
+  height: 43px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
+.btn-3d {
+  font-size: 17px;
+  z-index: 99999 !important;
+}
+
+.tabs-header {
+  border-bottom: 1px solid gray;
+  margin: 0px;
+  margin-bottom: 24px;
+}
+
+.tab {
+  color: gray;
+  padding: 10px;
+  border-bottom: 4px solid transparent;
+  font-size: 18px;
+}
+
+.tab-active {
+  color: black;
+  font-weight: bold;
+  border-bottom: 4px solid var(--primary-color, #ff6b6b);
+}
+
+.zoom-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+.zoom-container img {
+  transition: transform 0.3s ease;
+  width: 100%;
+  height: auto;
+  display: block;
+  pointer-events: none;
+}
+
+#my-gallery {
+  background-color: rgb(250, 248, 248);
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  border: none;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  background: none;
+  font-size: 3.5rem;
+}
+
+.carousel-arrow:hover {
+  opacity: 1;
+}
+
+.left-arrow {
+  left: 15px;
+}
+
+.left-arrow:hover,
+.right-arrow:hover {
+  background-color: var(--primary-color, #ff6b6b);
+  color: white;
+}
+
+.right-arrow {
+  right: 15px;
+}
+
+/* ============================================
+   WISHLIST PILL BUTTON
+   ============================================ */
+
+.btn-wishlist-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  /* No fixed height — stretches to match the cart button height */
+  align-self: stretch;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+  color: #aaa;
+  font-size: 18px;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease, transform 0.15s ease;
+}
+
+.btn-wishlist-pill:hover {
+  border-color: #e53935;
+  background: #fff5f5;
+  color: #e53935 !important;
+  transform: scale(1.06);
+}
+
+.btn-wishlist-pill--active {
+  border-color: #e53935 !important;
+  background: #fff0f0 !important;
+  color: #e53935 !important;
+}
+
+.btn-wishlist-pill--active i,
+.btn-wishlist-pill--active .d-icon-heart-full {
+  color: #e53935 !important;
+}
+
+
+/* ============================================
+   PRODUCT FORM GROUP — Cart row layout
+   ============================================ */
+
+.product-form-group {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.product-form-group .btn-product.btn-cart {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ============================================
+   CART BUTTONS - MOBILE STICKY FOOTER
+   ============================================ */
+
+.cart-buttons {
+  position: fixed;
+  bottom: -12px;
+  left: 0;
+  width: 100%;
+  z-index: 500;
+  padding: 14px 16px 18px;
+  background-color: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.cart-buttons a {
+  height:50px;
+}
+
+.mobile-cart-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.mobile-qty-group {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  height: 50px;
+  background: #fff;
+}
+
+.mobile-qty-group .quantity-minus,
+.mobile-qty-group .quantity-plus {
+  width: 38px;
+  height: 100%;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 0;
+  font-size: 16px;
+  color: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.mobile-qty-group .quantity-minus:hover,
+.mobile-qty-group .quantity-plus:hover {
+  background: #e8e8e8;
+}
+
+.mobile-qty-group .quantity.form-control {
+  width: 44px !important;
+  min-width: 44px;
+  text-align: center !important;
+  border: none !important;
+  border-left: 1px solid #e8e8e8 !important;
+  border-right: 1px solid #e8e8e8 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-size: 15px !important;
+  font-weight: 600;
+  color: #111 !important;
+  background: #fff !important;
+  padding: 0 !important;
+  height: 100% !important;
+  -moz-appearance: textfield;
+}
+
+.mobile-cart-btn {
+  flex: 1;
+  min-width: 0;
+  height: 50px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px !important;
+  white-space: nowrap;
+}
+
+/* ============================================
+   PRODUCT FOOTER — Share row
+   ============================================ */
+
+.product-footer {
+  margin-top: 4px;
+}
+
+.social-links-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.share-label {
+  font-size: 13px;
+  color: #999;
+  font-weight: 500;
+  margin-right: 2px;
+}
+
+.social-share-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid #e8e8e8;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 13px;
+  text-decoration: none !important;
+  transition: border-color 0.13s, background 0.13s, color 0.13s, transform 0.1s;
+  cursor: pointer;
+}
+
+.social-share-btn:hover {
+  transform: translateY(-2px);
+}
+
+.social-share-btn.social-whatsapp:hover {
+  border-color: #25d366;
+  background: #25d366;
+  color: #fff !important;
+}
+
+.social-share-btn.social-facebook:hover {
+  border-color: #1877f2;
+  background: #1877f2;
+  color: #fff !important;
+}
+
+.social-share-btn.social-twitter:hover {
+  border-color: #1da1f2;
+  background: #1da1f2;
+  color: #fff !important;
+}
+
+/* ============================================
+   FULLSCREEN GALLERY OVERLAY
+   ============================================ */
+
+.fullscreen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fullscreen-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  background-color: #000;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 2rem;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.3s;
+}
+
+.close-btn:hover {
+  background: var(--primary-color, #ff6b6b);
+}
+
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: white;
+  font-size: 2.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  z-index: 10000;
+  user-select: none;
+  transition: background 0.3s;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.nav-btn.left {
+  left: 20px;
+}
+
+.nav-btn.right {
+  right: 20px;
+}
+
+.nav-btn.right:hover,
+.nav-btn.left:hover {
+  background-color: var(--primary-color, #ff6b6b);
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .nav-btn {
+    font-size: 1.5rem;
+    width: 30px;
+    height: 30px;
+  }
+
+  .fullscreen-image {
+    width: 100%;
+    height: 100%;
+  }
+
+  .carousel-arrow {
+    display: none;
+  }
+}
+
+/* ============================================
+   MISC INTERACTIVE STATES
+   ============================================ */
+
+.clickable:hover {
+  color: var(--primary-color, #ff6b6b);
+}
+
+.btn-cart:hover:not(.btn-disabled) {
+  background-color: #333 !important;
+  border-color: #333 !important;
+  color: white !important;
+}
+
+.low-stock {
+  background: #ff0000;
+  color: white;
+}
+
+.sticky-content.fixed.fix-top {
+  animation: fixedTop 0s;
+}
+
+/* ============================================
+   RESPONSIVE — STICKY GALLERY
+   ============================================ */
+
+@media (min-width: 1025px) {
+  .sticky-gallery-container {
+    position: sticky;
+    top: 32px;
+    height: fit-content;
+    z-index: 100;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .sticky-gallery-container {
+    position: relative;
+    top: 0;
+    height: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .sticky-gallery-container {
+    position: relative;
+    top: 0;
+    height: auto;
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .owl-carousel {
+    height: 350px;
+  }
+
+  .product-img {
+    height: 350px !important;
+  }
+}
+
+/* ============================================
+   RESPONSIVE — WISHLIST + CART ROW
+   ============================================ */
+
+@media (max-width: 480px) {
+  .btn-wishlist-pill {
+    width: 46px;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+
+  .mobile-cart-row {
+    gap: 8px;
+  }
+
+  .cart-buttons {
+    padding: 12px 14px 16px;
+  }
+
+  .social-share-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+}
+
+/* ============================================
+   PRODUCT GALLERY STRUCTURE
+   ============================================ */
+
+.product-gallery {
+  /* Do NOT add overflow: hidden here */
+}
+
+.product-gallery.pg-vertical {
+  width: 100%;
+  position: relative;
+}
+
+
+/* Mobile cart button: stacked label + price layout */
+.mobile-cart-btn-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.4;
+}
+
+.mobile-cart-total {
+  font-size:1.25rem;       /* ~12px – visually "small" */
+  font-weight: 400;
+  opacity: 0.85;
+  letter-spacing: 0.01em;
+  margin-top: 1px;
+}
+
+/* FIX: Skeleton loader animation for product loading state */
+@keyframes skeleton-pulse {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}

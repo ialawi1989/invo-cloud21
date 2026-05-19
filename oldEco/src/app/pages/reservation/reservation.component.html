@@ -1,0 +1,177 @@
+<div class="fix-top sticky-content d-md-none  d-lg-none fixed">
+  <div class="header">
+    <div class="header-middle pt-2 pb-2 header-top-custom"
+      [style.backgroundColor]="companyData.themeSettings.template?.header?.headerColor">
+      <div class="container">
+        <div class="header-left" style="display: flex; align-items: center; justify-content: center; flex: 1;">
+          <a href="javascript:void(0);" class="mobile-menu-toggle" (click)="goBack()" style="margin-right: auto;">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+          <h5 class="m-0" style="margin-left:-26px !important;">{{ 'Reservation Details' | translate }}</h5>
+          <div style="margin-left: auto;"></div>
+        </div>
+        <div class="header-right">
+          <!-- Additional content here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page-header d-md-show"
+  [style.background-color]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-image]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-attachment]="pageData?.template?.settings?.subheader_settings?.isParallax ? 'fixed' : ''"
+  [style.background-size]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'cover' : ''"
+  [style.background-position]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'center' : ''"
+  [style.background-repeat]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'no-repeat' : ''">
+  @if (pageData?.template?.settings?.subheader_settings?.overlayOpacity) {
+  <div class="section-overlay" [style.opacity]="pageData?.template?.settings?.subheader_settings?.overlayOpacity / 100"
+    [style.background-color]="pageData?.template?.settings?.subheader_settings?.overlayColor"></div>
+  }
+  <h1 class="page-title z-index-3">{{ 'Reservation Details' | translate }}</h1>
+  <ul class="breadcrumb z-index-3">
+    <li><a [routerLink]="'/'"><i class="d-icon-home"></i></a></li>
+    <li class="delimiter">/</li>
+    <li>{{ 'Reservation Details' | translate }}</li>
+  </ul>
+</div>
+
+@if(loading){
+<div class="text-center pt-10 pb-10">
+  <app-spinner></app-spinner>
+</div>
+}
+@else if (!loading && !reservation.createdAt) {
+<div class="pb-10 wishlist-empty">
+  <div class="container">
+    <div class="main-content">
+      <i class="fas fa-table wishlist-icon"></i>
+      <h2 class="wishlist-descri">{{ 'No data found' | translate }}!</h2>
+    </div>
+  </div>
+</div>
+}
+@else{
+<div class="order">
+  <div class="container mb-2 mt-6">
+
+    <!-- Customer Information Section -->
+    <div class="section-">
+      <div class="section-title">
+        <span class="icon">👤</span>
+        <span>{{ 'Customer Information' | translate }}</span>
+      </div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">{{ 'Customer Name' | translate }}</div>
+          <div class="info-value">{{ reservation?.customerName || 'N/A' }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">{{ 'Phone Number' | translate }}</div>
+          <div class="info-value">{{ reservation?.phoneNumber || reservation?.phone || 'N/A' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Reservation Details Section -->
+    <div class="section-">
+      <div class="section-title">
+        <span class="icon">🍽️</span>
+        <span>{{ 'Reservation Details' | translate }}</span>
+      </div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">{{ 'Branch Name' | translate }}</div>
+          <div class="info-value">{{ reservation?.branchName || 'N/A' }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">{{ 'Number of Guests' | translate }}</div>
+          <div class="info-value">{{ reservation?.numberOfGuests || reservation?.guests || 0 }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">{{ 'Reservation Date' | translate }}</div>
+          <div class="info-value">{{ getDateOnly(reservation?.date || reservation?.reservationDate) }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">{{ 'Reservation Time' | translate }}</div>
+          <div class="info-value highlight">{{ getTimeOnly(reservation?.date || reservation?.reservationDate) }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">{{ 'Table Number' | translate }}</div>
+          <div class="info-value">{{ reservation?.tableNumber || reservation?.tableName || ('Not Assigned' | translate)
+            }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">{{ 'Reservation Status' | translate }}</div>
+          <div class="info-value text-uppercase"
+            [class.status-accepted]="getStatusLable(reservation?.status) === 'accepted'"
+            [class.status-pending]="getStatusLable(reservation?.status) === 'placed'"
+            [class.status-cancelled]="getStatusLable(reservation?.status) === 'cancelled'">
+            {{ getStatusLable(reservation?.status) | translate }}
+          </div>
+        </div>
+      </div>
+
+      @if(reservation?.notes || reservation?.note){
+      <div class="note-box">
+        <p><strong>{{ 'Notes' | translate }}:</strong>
+          {{ reservation?.notes || reservation?.note }}</p>
+      </div>
+      }
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Timeline Section -->
+    <div>
+      <div class="section-title">
+        <span class="icon">⏱️</span>
+        <span>{{ 'Timeline' | translate }}</span>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot status-completed">✓</div>
+          <div class="timeline-content">
+            <div class="timeline-label">{{ 'Reservation Received' | translate }}</div>
+            <div class="timeline-time">{{ convertDateFormat(reservation?.createdAt) }}</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot">🔔</div>
+          <div class="timeline-content">
+            <div class="timeline-label">{{ 'Reservation Day' | translate }}</div>
+            <div class="timeline-time">{{ convertDateFormat(reservation?.date || reservation?.reservationDate) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Additional Information Section -->
+    <div>
+      <div class="section-title">
+        <span class="icon">ℹ️</span>
+        <span>{{ 'Additional Information' | translate }}</span>
+      </div>
+      <div class="note-box">
+        <p>
+          <strong>{{ 'Important Reminder' | translate }}:</strong>
+          {{ 'Please arrive 10 minutes before your reservation time' | translate }}.
+        </p>
+      </div>
+    </div>
+
+    <div class="d-md-show mt-8">
+      <a href="javascript:void(0);" routerLink=""
+        class="btn btn-icon-left btn-primary btn-back btn-rounded btn-md mb-4 " style="width:175px">
+        <i class="d-icon-arrow-left"></i> {{ 'Back to home' | translate }}
+      </a>
+    </div>
+    <br>
+  </div>
+</div>
+}

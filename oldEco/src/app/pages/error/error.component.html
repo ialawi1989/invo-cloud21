@@ -1,0 +1,24 @@
+<main class="main">
+  <div class="page-content">
+    <section class="error-section-2  error-default banner banner-fixed">
+      <figure>
+        <img src="assets/images/subpages/404_3.png" width="1903" height="804" alt="error-page"
+          style="background-color: #f8f8f8;">
+      </figure>
+      <div class="container">
+        <div class="banner-content y-50">
+          <h2 class="banner-title font-weight-bold text-secondary mb-5">
+            {{"Error!..." | translate}}
+          </h2>
+          <h3 class="banner-subtitle font-weight-bold mb-2">
+            {{errorMsg}}
+          </h3>
+
+          <a class="btn btn-dark btn-rounded mt-6 mb-1" href="javascript:void(0);" (click)="gotoHomePage()">
+            {{"Back to home" | translate}}
+          <i class="d-icon-arrow-right"></i> </a>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>

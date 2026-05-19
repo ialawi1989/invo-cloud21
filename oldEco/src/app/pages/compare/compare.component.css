@@ -1,0 +1,493 @@
+/* Compare Component Styles */
+
+.compare-empty {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.compare-icon {
+  font-size: 5rem;
+  color: #e0e6ed;
+  margin-bottom: 2rem;
+}
+
+.compare-descri {
+  color: #666;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Compare Header */
+.compare-header {
+  border-bottom: 2px solid #f8f9fa;
+  padding-bottom: 1rem;
+}
+
+/* Desktop Compare Table */
+.compare-table-wrapper {
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+.compare-table {
+  margin: 0;
+  min-width: 800px;
+}
+
+.compare-table th,
+.compare-table td {
+  vertical-align: top;
+  border: 1px solid #dee2e6;
+  padding: 1rem;
+}
+
+.compare-feature-label {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  width: 200px;
+  min-width: 200px;
+}
+
+.compare-product-column {
+  text-align: center;
+  background: #fff;
+  position: relative;
+  min-width: 200px;
+  max-width: 250px;
+}
+
+.compare-product-header {
+  position: relative;
+}
+
+.product-image-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.product-image {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  transition: transform 0.3s ease;
+}
+
+.product-image:hover {
+  transform: scale(1.05);
+}
+
+.remove-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  background: #dc3545;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.remove-btn:hover {
+  background: #c82333;
+}
+
+.product-title {
+  font-size: 0.9rem;
+  line-height: 1.3;
+  margin: 0;
+  height: 2.6rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.product-title a {
+  color: #333;
+  text-decoration: none;
+}
+
+.product-title a:hover {
+  color: #007bff;
+}
+
+/* Table Features */
+.feature-label {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  border-right: 2px solid #dee2e6;
+}
+
+.feature-value {
+  background: #fff;
+  position: relative;
+}
+
+.price-amount {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #28a745;
+}
+
+.stock-status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stock-status.in-stock {
+  background: #d4edda;
+  color: #155724;
+}
+
+.stock-status.out-of-stock {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.rating-stars {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.rating-stars .fas.fa-star {
+  color: #ddd;
+  font-size: 14px;
+}
+
+.rating-stars .fas.fa-star.filled {
+  color: #ffc107;
+}
+
+.rating-text {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.product-description {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.4;
+  max-height: 4.2rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.product-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.product-actions .btn {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+}
+
+/* Mobile Compare Cards */
+.compare-mobile {
+  display: none;
+}
+
+.compare-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.compare-card:hover {
+  transform: translateY(-2px);
+}
+
+.compare-card-header {
+  padding: 1.5rem;
+  text-align: center;
+  background: #f8f9fa;
+  position: relative;
+}
+
+.compare-card-header .product-image-wrapper {
+  margin-bottom: 1rem;
+}
+
+.compare-card-header .product-image {
+  width: 100px;
+  height: 100px;
+}
+
+.compare-card-header .product-title {
+  font-size: 1rem;
+  height: auto;
+  margin: 0;
+}
+
+.compare-card-body {
+  padding: 1.5rem;
+}
+
+.feature-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.feature-row:last-child {
+  border-bottom: none;
+}
+
+.feature-row .feature-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.feature-row .feature-value {
+  text-align: right;
+}
+
+.compare-card-actions {
+  padding: 1.5rem;
+  background: #f8f9fa;
+}
+
+/* Compare Tips */
+.compare-tips {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.tip-card {
+  background: white;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+.tip-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .compare-table-wrapper {
+    display: none !important;
+  }
+
+  .compare-mobile {
+    display: block !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .compare-header h3 {
+    font-size: 1.25rem;
+  }
+
+  .compare-tips {
+    padding: 1rem;
+  }
+
+  .tip-card {
+    margin-bottom: 1rem;
+  }
+
+  .compare-card-header,
+  .compare-card-body,
+  .compare-card-actions {
+    padding: 1rem;
+  }
+}
+
+/* Animation for adding/removing items */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.compare-card,
+.compare-product-column {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Scrollbar styling for horizontal scroll */
+.compare-table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.compare-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.compare-table-wrapper::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.compare-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Loading states */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Custom button styles for compare actions */
+.btn-compare {
+  background: linear-gradient(45deg, #007bff, #0056b3);
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-compare:hover {
+  background: linear-gradient(45deg, #0056b3, #004085);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Fix for mobile sticky header */
+@media (max-width: 992px) {
+  .pt-2.pb-10.mb-2 {
+    padding-top: 5rem !important;
+  }
+}
+
+/* Empty state improvements */
+.compare-empty .btn {
+  padding: 12px 30px;
+  font-size: 1rem;
+  border-radius: 25px;
+}
+
+/* Accessibility improvements */
+.compare-table th,
+.compare-table td {
+  position: relative;
+}
+
+.compare-table th:focus,
+.compare-table td:focus {
+  outline: 2px solid #007bff;
+  outline-offset: -2px;
+}
+
+/* Print styles */
+@media print {
+  .remove-btn,
+  .product-actions,
+  .compare-header button {
+    display: none;
+  }
+
+  .compare-table-wrapper {
+    box-shadow: none;
+  }
+}
+
+/* ── Empty state ─────────────────────────────────────────────── */
+.compare-empty-wrap {
+  padding: 48px 0;
+}
+
+.acc-empty-state {
+  text-align: center;
+  padding: 48px 16px;
+}
+
+.acc-empty-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #bbb;
+  font-size: 22px;
+  margin: 0 auto 16px;
+}
+
+.acc-empty-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #555;
+  margin: 0 0 6px;
+}
+
+.acc-empty-sub {
+  font-size: 13px;
+  color: #aaa;
+  margin: 0 0 20px;
+}
+
+.acc-btn-primary {
+  display: inline-block;
+  padding: 10px 24px;
+  background: var(--primary-color);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.acc-btn-primary:hover {
+  opacity: 0.88;
+  color: #fff;
+}

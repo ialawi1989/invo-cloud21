@@ -87,10 +87,14 @@ export class EmployeeOptionsService {
   private base = environment.backendUrl;
 
   private cached: EmployeeOptions | null = null;
+  private loaded = false;
   private pendingGet: Promise<EmployeeOptions | null> | null = null;
 
   async get(): Promise<EmployeeOptions | null> {
-    if (this.cached) return this.cached;
+    // Track loaded separately so a null/empty response doesn't trigger
+    // a re-fetch on every subsequent call — `cached` can legitimately
+    // be null when the server hasn't seen this employee before.
+    if (this.loaded) return this.cached;
     if (this.pendingGet) return this.pendingGet;
 
     this.pendingGet = (async () => {
@@ -99,8 +103,12 @@ export class EmployeeOptionsService {
           this.http.get(`${this.base}/employee/getEmployeeOptions`)
         );
         this.cached = res?.data ?? res ?? null;
+        this.loaded = true;
         return this.cached;
       } catch {
+        // A failed load still counts as "we tried" — don't hammer the
+        // endpoint on every call. The user can refresh to retry.
+        this.loaded = true;
         return null;
       } finally {
         this.pendingGet = null;
@@ -112,6 +120,7 @@ export class EmployeeOptionsService {
 
   async set(options: EmployeeOptions): Promise<void> {
     this.cached = options;
+    this.loaded = true;
     try {
       await firstValueFrom(
         this.http.post(`${this.base}/employee/setEmployeeOptions`, options)

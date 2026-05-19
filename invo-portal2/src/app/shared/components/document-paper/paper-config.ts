@@ -1,4 +1,4 @@
-import type { DocumentType } from '@features/document-builder/services/document-template.types';
+import type { DocumentType } from '@features/settings/document-builder/services/document-template.types';
 import type { DocumentRenderData } from './token-resolve';
 
 /**

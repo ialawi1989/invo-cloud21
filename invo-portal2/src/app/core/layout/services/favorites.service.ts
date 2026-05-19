@@ -40,18 +40,24 @@ export class FavoritesService {
     });
   }
 
-  addFavorite(page: FavPage): void {
+  async addFavorite(page: FavPage): Promise<void> {
+    // Lazy-load on first explicit action so we don't fetch employee
+    // options at app boot — but also don't clobber server state when
+    // the user clicks "add" before we've hydrated.
+    await this.load();
     if (this.favorites().some(f => f.link === page.link)) return;
     this.favorites.update(fs => [...fs, page]);
     this.save();
   }
 
-  removeFavorite(link: string): void {
+  async removeFavorite(link: string): Promise<void> {
+    await this.load();
     this.favorites.update(fs => fs.filter(f => f.link !== link));
     this.save();
   }
 
-  updateFavorite(link: string, label: string): void {
+  async updateFavorite(link: string, label: string): Promise<void> {
+    await this.load();
     // User-provided rename → drop the i18n key so the custom text sticks.
     this.favorites.update(fs =>
       fs.map(f => f.link === link ? { ...f, label, labelKey: undefined } : f)
@@ -65,7 +71,12 @@ export class FavoritesService {
     this.recentPages.set(
       [page, ...current.filter(p => p.link !== page.link)].slice(0, 10)
     );
-    this.save();
+    // Intentionally no save() here — recents are tracked on every
+    // NavigationEnd, and persisting them would fire setEmployeeOptions
+    // on every page change. The server only learns about recents the
+    // next time a real action (favorite add/remove/rename) flushes the
+    // current state, which is fine — recents are a UX nicety, not
+    // load-bearing data.
   }
 
   isFavorite(link: string): boolean {

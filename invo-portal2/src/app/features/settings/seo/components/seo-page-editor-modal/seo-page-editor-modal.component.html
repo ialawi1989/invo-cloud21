@@ -1,0 +1,719 @@
+<app-modal-header [title]="('SEO.PAGE_EDITOR.TITLE' | translate:{ pageName: draft().pageName })"/>
+
+<div class="seo-editor">
+  <!-- Tabs -->
+  <div class="seo-editor__tabs">
+    <app-segmented-toggle
+      size="sm"
+      [options]="tabOptions"
+      [value]="activeTab()"
+      (valueChange)="setTab($any($event))"/>
+  </div>
+
+  <!-- ═══ Assistant ══════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'assistant') {
+    <section class="assistant-card">
+      <div class="assistant-card__header">
+        <h3 class="assistant-card__title">
+          {{ 'SEO.PAGE_EDITOR.ASSISTANT_HEADER' | translate }}
+          <span class="assistant-card__badge">{{ 'SEO.PAGE_EDITOR.ASSISTANT_NEW' | translate }}</span>
+        </h3>
+        <p class="assistant-card__sub">{{ 'SEO.PAGE_EDITOR.ASSISTANT_SUBTITLE' | translate }}</p>
+      </div>
+
+      <!-- Severity tally — four side-by-side boxes -->
+      <div class="severity-row">
+        @for (sev of severityRows; track sev.key) {
+          <div class="severity-box">
+            @if (assistant().summary.failures[sev.key] === 0) {
+              <svg class="severity-box__ok" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            } @else {
+              <span class="severity-box__count">{{ assistant().summary.failures[sev.key] }}</span>
+            }
+            <span class="severity-box__label">{{ sev.labelKey | translate }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Focus keyword card -->
+      <div class="focus-card">
+        <div class="focus-card__head">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a"
+               stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span class="focus-card__title">{{ 'SEO.PAGE_EDITOR.ASSISTANT_FOCUS_KEYWORD' | translate }}</span>
+        </div>
+        <!-- Always render the input so typing doesn't unmount the field
+             mid-keystroke. The chip + Remove button render alongside as
+             an indicator once the keyword has at least one character. -->
+        @if (!draft().focusKeyword?.trim()) {
+          <p class="focus-card__hint">{{ 'SEO.PAGE_EDITOR.ASSISTANT_FOCUS_HINT' | translate }}</p>
+        }
+        <input type="text"
+               class="seo-editor__input"
+               [placeholder]="'SEO.PAGE_EDITOR.ASSISTANT_FOCUS_PH' | translate"
+               [ngModel]="draft().focusKeyword"
+               (ngModelChange)="patch({ focusKeyword: $event })"/>
+        @if (draft().focusKeyword?.trim()) {
+          <div class="focus-card__chip-row">
+            <span class="focus-card__chip">{{ draft().focusKeyword }}</span>
+            <button type="button" class="link-btn link-btn--danger"
+                    (click)="removeFocusKeyword()">
+              {{ 'SEO.PAGE_EDITOR.ASSISTANT_REMOVE_KEYWORD' | translate }}
+            </button>
+          </div>
+        }
+
+        <!-- Best practices + Get keyword ideas — twin actions mirroring
+             the Invo "Best practices" accordion next to a Semrush link. -->
+        <div class="focus-card__actions">
+          <button type="button" class="link-btn"
+                  (click)="toggleBestPractices()"
+                  [attr.aria-expanded]="bestPracticesOpen()">
+            {{ 'SEO.PAGE_EDITOR.ASSISTANT_BEST_PRACTICES' | translate }}
+          </button>
+          <a class="link-btn" target="_blank" rel="noopener noreferrer"
+             [href]="keywordIdeasUrl">
+            {{ 'SEO.PAGE_EDITOR.ASSISTANT_GET_IDEAS' | translate }}
+          </a>
+        </div>
+        @if (bestPracticesOpen()) {
+          <ul class="focus-card__tips">
+            <li>{{ 'SEO.PAGE_EDITOR.ASSISTANT_BEST_PRACTICE_1' | translate }}</li>
+            <li>{{ 'SEO.PAGE_EDITOR.ASSISTANT_BEST_PRACTICE_2' | translate }}</li>
+            <li>{{ 'SEO.PAGE_EDITOR.ASSISTANT_BEST_PRACTICE_3' | translate }}</li>
+          </ul>
+        }
+      </div>
+
+      <!-- Task list -->
+      <ul class="task-list">
+        @for (t of assistant().results; track t.task.id) {
+          <li class="task-row"
+              [class.task-row--pass]="t.passed"
+              [class.task-row--fail]="!t.passed"
+              [class.task-row--open]="expandedTaskId() === t.task.id">
+            <button type="button" class="task-row__head"
+                    (click)="toggleTask(t.task.id)"
+                    [attr.aria-expanded]="expandedTaskId() === t.task.id">
+              @if (t.passed) {
+                <span class="task-row__icon task-row__icon--pass" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </span>
+              } @else {
+                <span class="task-row__icon task-row__icon--fail" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="9"  x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    <circle cx="12" cy="12" r="10"/>
+                  </svg>
+                </span>
+              }
+              <span class="task-row__label">{{ t.task.labelKey | translate }}</span>
+              <span class="task-row__badge"
+                    [class.task-row__badge--critical]="t.task.severity === 'critical'"
+                    [class.task-row__badge--high]="t.task.severity === 'high'"
+                    [class.task-row__badge--medium]="t.task.severity === 'medium'"
+                    [class.task-row__badge--low]="t.task.severity === 'low'">
+                {{ severityBadgeKey(t.task.severity) | translate | uppercase }}
+              </span>
+            </button>
+
+            @if (expandedTaskId() === t.task.id) {
+              <div class="task-row__body">
+                <p class="task-row__desc">
+                  {{ bodyKeyFor(t.task.labelKey) | translate }}
+                </p>
+
+                <!-- Per-fix-type inline UI ────────────────────────────── -->
+                @switch (fixUiFor(t.task.id)) {
+                  @case ('index') {
+                    <div class="seo-editor__index-row">
+                      <app-toggle
+                        [checked]="draft().indexable && siteIndexingAllowed()"
+                        [disabled]="!siteIndexingAllowed()"
+                        (checkedChange)="patch({ indexable: $event })"/>
+                      <span>{{ 'SEO.PAGE_EDITOR.ASSISTANT_NOINDEX_TOGGLE' | translate }}</span>
+                    </div>
+                    @if (!siteIndexingAllowed()) {
+                      <p class="seo-editor__warn">
+                        {{ 'SEO.PAGE_EDITOR.INDEX_OFF_NOTICE' | translate }}
+                        <a routerLink="/settings/seo">{{ 'SEO.PAGE_EDITOR.GO_TO_SITE_PREFS' | translate }}</a>
+                      </p>
+                    }
+                  }
+                  @case ('title') {
+                    <label class="seo-editor__label">
+                      {{ 'SEO.PAGE_EDITOR.ASSISTANT_TITLE_TAG_LABEL' | translate }}
+                    </label>
+                    <input type="text" class="seo-editor__input"
+                           [ngModel]="draft().titleTag"
+                           (ngModelChange)="patch({ titleTag: $event })"/>
+                    <p class="task-row__hint">{{ 'SEO.ASSISTANT.TIPS.TITLE_55_65' | translate }}</p>
+                  }
+                  @case ('meta') {
+                    <label class="seo-editor__label">
+                      {{ 'SEO.PAGE_EDITOR.ASSISTANT_META_DESC_LABEL' | translate }}
+                    </label>
+                    <textarea class="seo-editor__textarea" rows="3"
+                              [ngModel]="draft().metaDescription"
+                              (ngModelChange)="patch({ metaDescription: $event })"></textarea>
+                    <p class="task-row__hint">{{ 'SEO.ASSISTANT.TIPS.META_155_165' | translate }}</p>
+                  }
+                  @case ('url') {
+                    <label class="seo-editor__label">
+                      {{ 'SEO.PAGE_EDITOR.ASSISTANT_URL_SLUG_LABEL' | translate }}
+                    </label>
+                    <input type="text" class="seo-editor__input"
+                           [ngModel]="draft().pageUrl"
+                           (ngModelChange)="patch({ pageUrl: $event })"/>
+                    <p class="task-row__hint">{{ 'SEO.ASSISTANT.TIPS.URL_DASHES' | translate }}</p>
+                  }
+                  @case ('og-title') {
+                    <label class="seo-editor__label">
+                      {{ 'SEO.PAGE_EDITOR.ASSISTANT_OG_TITLE_LABEL' | translate }}
+                    </label>
+                    <input type="text" class="seo-editor__input"
+                           [ngModel]="draft().ogTitle ?? ''"
+                           (ngModelChange)="patch({ ogTitle: $event })"/>
+                  }
+                  @case ('structured') {
+                    <button type="button" class="link-btn"
+                            (click)="jumpToStructured()">
+                      {{ 'SEO.PAGE_EDITOR.ADV_ADD_MARKUP' | translate }} →
+                    </button>
+                  }
+                  @case ('instructional') {
+                    <!-- The task body copy above is the whole UI — no
+                         editable control because the fix lives in the
+                         source page (image alt text, body text, H1 …). -->
+                  }
+                }
+
+                <div class="task-row__footer">
+                  <button type="button" class="btn-cancel" (click)="cancelTask()">
+                    {{ 'SEO.PAGE_EDITOR.ASSISTANT_CANCEL' | translate }}
+                  </button>
+                  <button type="button" class="btn-publish" (click)="applyTask()">
+                    {{ 'SEO.PAGE_EDITOR.ASSISTANT_APPLY' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+
+      @if (assistant().summary.allPassed) {
+        <p class="assistant-card__done">{{ 'SEO.PAGE_EDITOR.ASSISTANT_ALL_DONE' | translate }}</p>
+      }
+    </section>
+  }
+
+  <!-- ═══ Basics ═════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'basics') {
+    <!-- Google preview -->
+    <section class="seo-editor__section">
+      <h3 class="seo-editor__label">
+        {{ 'SEO.PAGE_EDITOR.PREVIEW_GOOGLE' | translate }}
+        <span class="seo-editor__bulb"
+              [appTooltip]="'SEO.PAGE_EDITOR.TIP_PREVIEW_GOOGLE' | translate"
+              aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3A7 7 0 0 0 12 2z"/>
+          </svg>
+        </span>
+      </h3>
+      <div class="g-preview">
+        <div class="g-preview__head">
+          <div class="g-preview__site">
+            <span class="g-preview__favicon">{{ siteInitial() }}</span>
+            <div>
+              <div class="g-preview__name">{{ siteName() }}</div>
+              <div class="g-preview__url">{{ siteHost() }}{{ draft().pageUrl }}</div>
+            </div>
+          </div>
+        </div>
+        <a class="g-preview__title" href="#">{{ previewTitle() }}</a>
+      </div>
+    </section>
+
+    <!-- Title tag -->
+    <section class="seo-editor__field">
+      <div class="seo-editor__field-head">
+        <label class="seo-editor__label">
+          {{ 'SEO.PAGE_EDITOR.TITLE_TAG_LABEL' | translate }}
+          <span class="seo-editor__tip"
+                [appTooltip]="'SEO.PAGE_EDITOR.TIP_TITLE_TAG' | translate"
+                aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </span>
+        </label>
+        <span class="seo-editor__count">{{ draft().titleTag.length }}</span>
+      </div>
+      <app-seo-var-input
+        [value]="draft().titleTag"
+        (valueChange)="patch({ titleTag: $event })"/>
+    </section>
+
+    <!-- Meta description -->
+    <section class="seo-editor__field">
+      <div class="seo-editor__field-head">
+        <label class="seo-editor__label">
+          {{ 'SEO.PAGE_EDITOR.META_DESC_LABEL' | translate }}
+          <span class="seo-editor__tip"
+                [appTooltip]="'SEO.PAGE_EDITOR.TIP_META_DESC' | translate"
+                aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </span>
+        </label>
+        <span class="seo-editor__count">{{ draft().metaDescription.length }}</span>
+      </div>
+      <app-seo-var-input
+        [textarea]="true"
+        [placeholder]="'SEO.PAGE_EDITOR.META_DESC_HINT' | translate"
+        [value]="draft().metaDescription"
+        (valueChange)="patch({ metaDescription: $event })"/>
+    </section>
+
+    <!-- Dynamic slug hint (read-only) -->
+    <section class="seo-editor__notice">
+      <p class="seo-editor__notice-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+        {{ 'SEO.PAGE_EDITOR.DYNAMIC_SLUG' | translate }}
+      </p>
+      <p class="seo-editor__notice-body">
+        {{ 'SEO.PAGE_EDITOR.DYNAMIC_SLUG_HINT' | translate }}
+        <a href="#">{{ 'SEO.PAGE_EDITOR.GO_TO_EDITOR' | translate }}</a>
+      </p>
+    </section>
+
+    <!-- Index status -->
+    <section class="seo-editor__field">
+      <label class="seo-editor__label">{{ 'SEO.PAGE_EDITOR.INDEX_STATUS' | translate }}</label>
+      <div class="seo-editor__index-row">
+        <app-toggle
+          [checked]="draft().indexable && siteIndexingAllowed()"
+          [disabled]="!siteIndexingAllowed()"
+          (checkedChange)="patch({ indexable: $event })"/>
+        <span>{{ 'SEO.PAGE_EDITOR.INDEX_PAGE_TOGGLE' | translate }}</span>
+      </div>
+      @if (!siteIndexingAllowed()) {
+        <p class="seo-editor__warn">
+          {{ 'SEO.PAGE_EDITOR.INDEX_OFF_NOTICE' | translate }}
+          <a routerLink="/settings/seo">{{ 'SEO.PAGE_EDITOR.GO_TO_SITE_PREFS' | translate }}</a>
+        </p>
+      }
+    </section>
+  }
+
+  <!-- ═══ Advanced ══════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'advanced') {
+    @if (advancedView() === 'list') {
+      <!-- Three card-link items + multilang notice -->
+      <a class="adv-card" (click)="setAdvancedView('structured')">
+        <div class="adv-card__body">
+          <h4 class="adv-card__title">{{ 'SEO.PAGE_EDITOR.ADV_STRUCTURED_TITLE' | translate }}</h4>
+          <p class="adv-card__desc">{{ 'SEO.PAGE_EDITOR.ADV_STRUCTURED_DESC' | translate }}</p>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </a>
+      <a class="adv-card" (click)="setAdvancedView('robots')">
+        <div class="adv-card__body">
+          <h4 class="adv-card__title">{{ 'SEO.PAGE_EDITOR.ADV_ROBOTS_TITLE' | translate }}</h4>
+          <p class="adv-card__desc">{{ 'SEO.PAGE_EDITOR.ADV_ROBOTS_DESC' | translate }}</p>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </a>
+      <a class="adv-card" (click)="setAdvancedView('additional')">
+        <div class="adv-card__body">
+          <h4 class="adv-card__title">{{ 'SEO.PAGE_EDITOR.ADV_ADDITIONAL_TITLE' | translate }}</h4>
+          <p class="adv-card__desc">{{ 'SEO.PAGE_EDITOR.ADV_ADDITIONAL_DESC' | translate }}</p>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </a>
+
+      <div class="adv-notice">
+        <p class="adv-notice__title">{{ 'SEO.PAGE_EDITOR.ADV_MULTILANG_TITLE' | translate }}</p>
+        <p class="adv-notice__body">{{ 'SEO.PAGE_EDITOR.ADV_MULTILANG_BODY' | translate }}</p>
+      </div>
+    }
+
+    @if (advancedView() === 'structured') {
+      <button type="button" class="adv-back" (click)="setAdvancedView('list')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        {{ 'SEO.PAGE_EDITOR.ADV_BACK' | translate }}
+      </button>
+      <h3 class="adv-detail__title">
+        {{ 'SEO.PAGE_EDITOR.ADV_STRUCTURED_TITLE' | translate }}
+        <span class="seo-editor__tip"
+              [appTooltip]="'SEO.PAGE_EDITOR.ADV_TIP_STRUCTURED' | translate"
+              aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+        </span>
+      </h3>
+      <p class="adv-detail__desc">{{ 'SEO.PAGE_EDITOR.ADV_STRUCTURED_DESC' | translate }}</p>
+
+      <ul class="markup-list">
+        @for (m of draft().structuredData ?? []; track trackMarkup($index, m); let i = $index) {
+          <li class="markup-list__item">
+            <span class="markup-list__name">{{ m.name }}</span>
+            <button type="button" class="link-btn link-btn--danger" (click)="removeMarkup(i)">
+              {{ 'SEO.PAGE_EDITOR.REMOVE_MARKUP' | translate }}
+            </button>
+          </li>
+        } @empty {
+          <li class="markup-list__empty">{{ 'SEO.PAGE_EDITOR.ADV_NO_MARKUPS' | translate }}</li>
+        }
+      </ul>
+
+      @if (!addingMarkup()) {
+        <button type="button" class="adv-add" (click)="startAddMarkup()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5"  x2="12" y2="19"/>
+            <line x1="5"  y1="12" x2="19" y2="12"/>
+          </svg>
+          {{ 'SEO.PAGE_EDITOR.ADV_ADD_MARKUP' | translate }}
+        </button>
+      } @else {
+        <div class="markup-form">
+          <div class="seo-editor__field">
+            <label class="seo-editor__label">{{ 'SEO.PAGE_EDITOR.ADV_MARKUP_NAME' | translate }}</label>
+            <input type="text" class="seo-editor__input"
+                   [placeholder]="'SEO.PAGE_EDITOR.ADV_MARKUP_NAME_PH' | translate"
+                   [ngModel]="newMarkupName()"
+                   (ngModelChange)="newMarkupName.set($event)"/>
+          </div>
+          <div class="seo-editor__field">
+            <label class="seo-editor__label">{{ 'SEO.PAGE_EDITOR.ADV_MARKUP_BODY' | translate }}</label>
+            <textarea class="seo-editor__textarea seo-editor__textarea--mono"
+                      rows="8"
+                      [placeholder]="'SEO.PAGE_EDITOR.ADV_MARKUP_BODY_PH' | translate"
+                      [ngModel]="newMarkupCode()"
+                      (ngModelChange)="newMarkupCode.set($event)"></textarea>
+          </div>
+          <div class="markup-form__footer">
+            <button type="button" class="btn-cancel" (click)="cancelAddMarkup()">
+              {{ 'SEO.PAGE_EDITOR.CANCEL_MARKUP' | translate }}
+            </button>
+            <button type="button" class="btn-publish" (click)="applyMarkup()">
+              {{ 'SEO.PAGE_EDITOR.APPLY_MARKUP' | translate }}
+            </button>
+          </div>
+        </div>
+      }
+    }
+
+    @if (advancedView() === 'robots') {
+      <button type="button" class="adv-back" (click)="setAdvancedView('list')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        {{ 'SEO.PAGE_EDITOR.ADV_BACK' | translate }}
+      </button>
+      <h3 class="adv-detail__title">{{ 'SEO.PAGE_EDITOR.ADV_ROBOTS_TITLE' | translate }}</h3>
+      <p class="adv-detail__desc">{{ 'SEO.PAGE_EDITOR.ADV_ROBOTS_DESC' | translate }}</p>
+
+      <div class="robots-grid">
+        <label class="check-row">
+          <input type="checkbox"
+                 [checked]="draft().robots?.noindex ?? false"
+                 (change)="patchRobots({ noindex: $any($event.target).checked })"/>
+          {{ 'SEO.ROBOTS_FORM.NOINDEX' | translate }}
+        </label>
+        <label class="check-row">
+          <input type="checkbox"
+                 [checked]="draft().robots?.nofollow ?? false"
+                 (change)="patchRobots({ nofollow: $any($event.target).checked })"/>
+          {{ 'SEO.ROBOTS_FORM.NOFOLLOW' | translate }}
+        </label>
+        <label class="check-row">
+          <input type="checkbox"
+                 [checked]="draft().robots?.nosnippet ?? false"
+                 (change)="patchRobots({ nosnippet: $any($event.target).checked })"/>
+          {{ 'SEO.ROBOTS_FORM.NOSNIPPET' | translate }}
+        </label>
+        <label class="check-row">
+          <input type="checkbox"
+                 [checked]="draft().robots?.noimageindex ?? false"
+                 (change)="patchRobots({ noimageindex: $any($event.target).checked })"/>
+          {{ 'SEO.ROBOTS_FORM.NOIMAGEINDEX' | translate }}
+        </label>
+        <label class="check-row">
+          <input type="checkbox"
+                 [checked]="draft().robots?.noarchive ?? false"
+                 (change)="patchRobots({ noarchive: $any($event.target).checked })"/>
+          {{ 'SEO.ROBOTS_FORM.NOARCHIVE' | translate }}
+        </label>
+      </div>
+    }
+
+    @if (advancedView() === 'additional') {
+      <button type="button" class="adv-back" (click)="setAdvancedView('list')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        {{ 'SEO.PAGE_EDITOR.ADV_BACK' | translate }}
+      </button>
+      <h3 class="adv-detail__title">{{ 'SEO.PAGE_EDITOR.ADV_ADDITIONAL_TITLE' | translate }}</h3>
+      <p class="adv-detail__desc">{{ 'SEO.PAGE_EDITOR.ADV_ADDITIONAL_DESC' | translate }}</p>
+      <!-- Per-page additional tags fall back to the per-type defaults — the
+           "Customize defaults" tab on the page-type editor owns the
+           template. Keep this view informational for now. -->
+    }
+  }
+
+  <!-- ═══ Social share ══════════════════════════════════════════════════ -->
+  @if (activeTab() === 'social') {
+    <p class="social-hint">{{ 'SEO.PAGE_EDITOR.SOCIAL_HEADER' | translate }}</p>
+
+    <!-- Two-column layout — form on the left, live preview on the
+         right. The preview re-renders against the draft on every
+         keystroke so the user can see exactly how the social card
+         will look. Collapses to a single column under 720px. -->
+    <div class="social-grid">
+      <div class="social-grid__form">
+        <!-- og:title -->
+        <section class="seo-editor__field">
+          <div class="seo-editor__field-head">
+            <label class="seo-editor__label">
+              {{ 'SEO.PAGE_EDITOR.OG_TITLE' | translate }}
+              <span class="seo-editor__tip"
+                    [appTooltip]="'SEO.PAGE_EDITOR.TIP_OG_TITLE' | translate"
+                    aria-hidden="true">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+              </span>
+            </label>
+          </div>
+          <app-seo-var-input
+            [value]="draft().ogTitle ?? ''"
+            (valueChange)="patch({ ogTitle: $event })"/>
+        </section>
+
+        <!-- og:description -->
+        <section class="seo-editor__field">
+          <div class="seo-editor__field-head">
+            <label class="seo-editor__label">
+              {{ 'SEO.PAGE_EDITOR.OG_DESC' | translate }}
+              <span class="seo-editor__tip"
+                    [appTooltip]="'SEO.PAGE_EDITOR.TIP_OG_DESC' | translate"
+                    aria-hidden="true">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+              </span>
+            </label>
+          </div>
+          <app-seo-var-input
+            [textarea]="true"
+            [placeholder]="'SEO.PAGE_EDITOR.OG_DESC_PH' | translate"
+            [value]="draft().ogDescription ?? ''"
+            (valueChange)="patch({ ogDescription: $event })"/>
+        </section>
+
+        <!-- og:image — dedicated field. Empty input falls through to
+             the product / site default at render time. -->
+        <section class="seo-editor__field">
+          <div class="seo-editor__field-head">
+            <label class="seo-editor__label">
+              {{ 'SEO.PAGE_EDITOR.OG_IMAGE' | translate }}
+              <span class="seo-editor__tip"
+                    [appTooltip]="'SEO.PAGE_EDITOR.TIP_OG_IMAGE' | translate"
+                    aria-hidden="true">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+              </span>
+            </label>
+          </div>
+          <app-seo-var-input
+            [value]="draft().ogImage ?? ''"
+            (valueChange)="patch({ ogImage: $event })"/>
+        </section>
+      </div>
+
+      <aside class="social-grid__preview">
+        <p class="seo-editor__sub-label">{{ 'SEO.PAGE_EDITOR.SOCIAL_PREVIEW' | translate }}</p>
+        <a class="link-inline" href="#">{{ 'SEO.PAGE_EDITOR.WHEN_LIVE' | translate }}</a>
+        <div class="og-preview">
+          @if (draft().ogImage) {
+            <img class="og-preview__img" [src]="draft().ogImage ?? ''" alt=""/>
+          } @else {
+            <button type="button" class="og-preview__upload">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              {{ 'SEO.PAGE_EDITOR.UPLOAD_IMAGE' | translate }}
+            </button>
+          }
+          <div class="og-preview__meta">
+            <div class="og-preview__url">{{ siteHostUpper() }}</div>
+            <div class="og-preview__title">{{ draft().ogTitle || previewTitle() }}</div>
+            @if (draft().ogDescription) {
+              <div class="og-preview__desc">{{ draft().ogDescription }}</div>
+            }
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- X Settings — collapsible -->
+    <section class="x-card">
+      <header class="x-card__head" (click)="toggleX()">
+        <h4 class="x-card__title">
+          {{ 'SEO.PAGE_EDITOR.X_SETTINGS' | translate }}
+          <span class="seo-editor__tip"
+                [appTooltip]="'SEO.PAGE_EDITOR.TIP_X_SETTINGS' | translate"
+                aria-hidden="true"
+                (click)="$event.stopPropagation()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </span>
+        </h4>
+        <svg class="x-card__chevron" [class.x-card__chevron--open]="xExpanded()"
+             width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </header>
+
+      @if (xExpanded()) {
+        <div class="x-card__body">
+          <p class="seo-editor__sub-label">{{ 'SEO.PAGE_EDITOR.PREVIEW_X' | translate }}</p>
+          <a class="link-inline" href="#">{{ 'SEO.PAGE_EDITOR.WHEN_LIVE' | translate }}</a>
+
+          <div class="og-preview og-preview--x">
+            @if (draft().xImage) {
+              <img class="og-preview__img" [src]="draft().xImage ?? ''" alt=""/>
+            } @else {
+              <button type="button" class="og-preview__upload">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                {{ 'SEO.PAGE_EDITOR.UPLOAD_IMAGE' | translate }}
+              </button>
+            }
+            <div class="og-preview__meta">
+              <div class="og-preview__title">{{ draft().xTitle || draft().ogTitle || previewTitle() }}</div>
+              <div class="og-preview__sub">{{ siteHost() }}</div>
+            </div>
+          </div>
+
+          <p class="seo-editor__sub-label">{{ 'SEO.PAGE_EDITOR.X_CARD_SIZE' | translate }}</p>
+          <!-- TODO(seo): wire card size to a draft field once the
+               backend persistence schema includes it. -->
+          <label class="radio-row">
+            <input type="radio" name="x-card-size" value="large" checked/>
+            {{ 'SEO.PAGE_EDITOR.X_CARD_LARGE' | translate }}
+          </label>
+          <label class="radio-row">
+            <input type="radio" name="x-card-size" value="small"/>
+            {{ 'SEO.PAGE_EDITOR.X_CARD_SMALL' | translate }}
+          </label>
+
+          <section class="seo-editor__field">
+            <div class="seo-editor__field-head">
+              <label class="seo-editor__label">
+                {{ 'SEO.PAGE_EDITOR.X_TITLE' | translate }}
+                <span class="seo-editor__tip"
+                      [appTooltip]="'SEO.PAGE_EDITOR.TIP_X_TITLE' | translate"
+                      aria-hidden="true">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+                </span>
+              </label>
+              <span class="seo-editor__count">{{ (draft().xTitle ?? '').length }}</span>
+            </div>
+            <app-seo-var-input
+              [value]="draft().xTitle ?? ''"
+              (valueChange)="patch({ xTitle: $event })"/>
+          </section>
+
+          <section class="seo-editor__field">
+            <div class="seo-editor__field-head">
+              <label class="seo-editor__label">
+                {{ 'SEO.PAGE_EDITOR.X_DESC' | translate }}
+                <span class="seo-editor__tip"
+                      [appTooltip]="'SEO.PAGE_EDITOR.TIP_X_DESC' | translate"
+                      aria-hidden="true">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+                </span>
+              </label>
+              <span class="seo-editor__count">{{ (draft().xDescription ?? '').length }}</span>
+            </div>
+            <app-seo-var-input
+              [textarea]="true"
+              [placeholder]="'SEO.PAGE_EDITOR.X_DESC_PH' | translate"
+              [value]="draft().xDescription ?? ''"
+              (valueChange)="patch({ xDescription: $event })"/>
+          </section>
+        </div>
+      }
+    </section>
+  }
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btn-cancel" (click)="cancel()">
+    {{ 'SEO.PAGE_EDITOR.CANCEL' | translate }}
+  </button>
+  <button type="button" class="btn-publish" (click)="publish()">
+    {{ 'SEO.PAGE_EDITOR.PUBLISH' | translate }}
+  </button>
+</app-modal-footer>

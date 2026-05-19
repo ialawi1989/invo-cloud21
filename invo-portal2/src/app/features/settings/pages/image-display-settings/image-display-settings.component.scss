@@ -93,33 +93,8 @@
   color: #64748b;
 }
 
-// ── Segmented control (Cover / Contain / Fill) ─────────────────────────
-.seg {
-  display: inline-flex;
-  background: #f1f5f9;
-  border-radius: 10px;
-  padding: 3px;
-  gap: 2px;
-
-  &__btn {
-    padding: 7px 14px;
-    border: none;
-    background: transparent;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #475569;
-    cursor: pointer;
-    transition: background 120ms ease, color 120ms ease;
-
-    &:hover { color: #0f172a; }
-    &--active {
-      background: #fff;
-      color: #0f172a;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-    }
-  }
-}
+// Segmented control (Cover / Contain / Fill) now uses
+// `<app-segmented-toggle>` — no local styles needed.
 
 // ── 3×3 position grid ──────────────────────────────────────────────────
 .pos-grid {
@@ -158,6 +133,48 @@
   &__cell--active &__dot {
     background: #32acc1;
     transform: scale(1.4);
+  }
+}
+
+// ── Demo-image picker ──────────────────────────────────────────────────
+// Same source rendered into every frame so the user reads each tile
+// as "how would THIS image crop into a 3:4 / 1:1 / 16:9 card under
+// my fit + focal settings". The picker lets them swap source images
+// without leaving the page.
+.src-picker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    margin-inline-end: 4px;
+  }
+
+  &__btn {
+    appearance: none;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+    &:hover { background: #ecfeff; border-color: #67e8f9; color: #0e7490; }
+
+    &--active,
+    &--active:hover {
+      background: #32acc1;
+      border-color: #32acc1;
+      color: #fff;
+    }
   }
 }
 

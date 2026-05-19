@@ -1,0 +1,125 @@
+<!-- ── Mobile sticky header ─────────────────────────────────────── -->
+<div class="fix-top sticky-content d-md-none d-lg-none fixed">
+  <div class="header">
+    <div class="header-middle pt-2 pb-2 header-top-custom" [style.backgroundColor]="companyData.themeSettings.template?.header?.headerColor">
+      <div class="container">
+        <div class="header-left" style="display:flex;align-items:center;justify-content:center;flex:1;">
+          <a href="javascript:void(0);" class="mobile-menu-toggle" (click)="goBack()" style="margin-right:auto;">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+          <h5 class="m-0" style="margin-left:-26px !important;">{{ "Wishlist" | translate }}</h5>
+          <div style="margin-left:auto;"></div>
+        </div>
+        <div class="header-right"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Desktop page header ──────────────────────────────────────── -->
+<div class="page-header mb-4 d-md-show"
+  [style.background-color]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-image]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-attachment]="pageData?.template?.settings?.subheader_settings?.isParallax ? 'fixed' : ''"
+  [style.background-size]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'cover' : ''"
+  [style.background-position]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'center' : ''"
+  [style.background-repeat]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'no-repeat' : ''">
+  @if (pageData?.template?.settings?.subheader_settings?.overlayOpacity) {
+  <div class="section-overlay"
+    [style.opacity]="pageData?.template?.settings?.subheader_settings?.overlayOpacity / 100"
+    [style.background-color]="pageData?.template?.settings?.subheader_settings?.overlayColor"></div>
+  }
+  <h1 class="page-title z-index-3">{{ "Wishlist" | translate }}</h1>
+  <ul class="breadcrumb z-index-3">
+    <li><a [routerLink]="'/'"><i class="d-icon-home"></i></a></li>
+    <li class="delimiter">/</li>
+    <li>{{ "Wishlist" | translate }}</li>
+  </ul>
+</div>
+
+<div class="wl-page">
+  <div class="container">
+
+    <!-- Page header -->
+    <div class="acc-page-header">
+      <div class="acc-avatar"><i class="fas fa-heart"></i></div>
+      <div class="acc-page-title-body">
+        <h2 class="acc-page-title">{{"Wishlist" | translate}}</h2>
+        @if(getWishlist().length > 0){
+        <p class="acc-page-subtitle">{{ getWishlist().length }} {{"items" | translate}}</p>
+        }
+      </div>
+    </div>
+
+    <!-- ── Empty ───────────────────────────────────────────────── -->
+    @if(getWishlist().length == 0){
+    <div class="acc-card">
+      <div class="acc-card-body">
+        <div class="acc-empty-state">
+          <div class="acc-empty-icon"><i class="fas fa-heart"></i></div>
+          <p class="acc-empty-title">{{"No products added to the wishlist" | translate}}</p>
+          <p class="acc-empty-sub">{{"Save your favourite products here for later." | translate}}</p>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- ── Wishlist table ──────────────────────────────────────── -->
+    @else{
+    <div class="acc-card">
+      <div class="acc-card-header">
+        <!-- <span class="acc-section-label">{{"Saved Items" | translate}}</span> -->
+      </div>
+      <div class="acc-card-body" style="padding:0;">
+        <table class="wl-table">
+          <thead>
+            <tr>
+              <th colspan="2">{{"Product" | translate}}</th>
+              <th>{{"Price" | translate}}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(product of getWishlist(); track $index) {
+            <tr>
+              <!-- Thumbnail -->
+              <td class="wl-thumb">
+                <a href="javascript:void(0);" [routerLink]="['product/', product.id]">
+                  <img
+                    onerror="if (this.src != 'assets/images/default-blank-image.png') this.src = 'assets/images/default-blank-image.png';"
+                    [src]="appService.productImage(product.mediaUrl, 300)"
+                    alt="product">
+                </a>
+              </td>
+
+              <!-- Name -->
+              <td class="wl-name">
+                <a href="javascript:void(0);" [routerLink]="['product/', product.id]">
+                  {{ appService.lang == 'ar' ? product.translation && product.translation.name?.ar ?
+                  product.translation.name?.ar : product.name : product.name }}
+                </a>
+              </td>
+
+              <!-- Price -->
+              <td class="wl-price">
+                <span class="wl-amount">
+                  {{ currentCurrency.symbol }} {{ getConvertedPrice(product.defaultPrice) }}
+                </span>
+              </td>
+
+              <!-- Remove -->
+              <td class="wl-remove">
+                <button class="wl-remove-btn" (click)="removeItemFromWishlist(product.id)" title="Remove">
+                  <i class="fas fa-times"></i>
+                </button>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    }
+
+  </div>
+</div>

@@ -65,6 +65,7 @@ import { AliasBarcodesComponent }        from './components/alias-barcodes/alias
 import { ProductMediaCardComponent }     from './components/product-media/product-media.component';
 import { ProductTabBuilderSectionComponent } from './components/tab-builder/tab-builder-section.component';
 import { ProductFormSkeletonComponent } from './components/product-form-skeleton/product-form-skeleton.component';
+import { SeoSettingsComponent } from './components/seo-settings/seo-settings.component';
 
 type FormStatus = 'new' | 'edit';
 
@@ -114,6 +115,7 @@ type FormStatus = 'new' | 'edit';
     ProductMediaCardComponent,
     ProductTabBuilderSectionComponent,
     ProductFormSkeletonComponent,
+    SeoSettingsComponent,
   ],
   templateUrl: './product-form.component.html',
   styleUrl: './product-form.component.scss',
@@ -423,6 +425,10 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
     if (f?.department?.isVisible || f?.category?.isVisible || f?.brand?.isVisible) ids.add('category-options');
     if (f?.aliasBarcodes?.isVisible)                              ids.add('alias-barcodes');
     if (f?.altProduct?.isVisible)                                 ids.add('alt-product');
+    // SEO section is always available — its inputs come from the
+    // product's own name / description / image, so no per-type
+    // visibility gate is required.
+    ids.add('seo');
     return ids;
   });
 
@@ -437,8 +443,15 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
         size: 'lg',
         data: {
           productType:      this.productType() || 'default',
+          // Naïve `.toUpperCase()` produces `MENUITEM` / `MENUSELECTION`,
+          // but the i18n catalog stores those as `MENU_ITEM` and
+          // `MENU_SELECTION` (screaming-snake). Insert an underscore
+          // before each interior capital first so the key resolves
+          // for every camelCase product type.
           productTypeLabel: this.translate.instant(
-            `PRODUCTS.TYPES.${(this.productType() || 'default').toUpperCase()}`,
+            `PRODUCTS.TYPES.${(this.productType() || 'default')
+              .replace(/([a-z])([A-Z])/g, '$1_$2')
+              .toUpperCase()}`,
           ),
           availableSectionIds: this.availableSectionIds(),
         },

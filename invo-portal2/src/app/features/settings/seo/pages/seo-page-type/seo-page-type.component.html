@@ -1,0 +1,193 @@
+<div class="seo-type">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <div class="page-header__row">
+      <div class="page-header__titles">
+        <h1 class="page-title">
+          {{ 'SEO.TYPE_EDITOR.TITLE' | translate:{ type: (typeDef()?.labelKey ?? typeSlug()) | translate } }}
+        </h1>
+        <p class="page-sub">
+          {{ 'SEO.TYPE_EDITOR.SUBTITLE' | translate:{ type: (typeDef()?.labelKey ?? typeSlug()) | translate } }}
+          <a class="page-sub__link" href="#">{{ 'SEO.TYPE_EDITOR.WHAT_DEFAULTS' | translate }}</a>
+        </p>
+      </div>
+      <button type="button" class="btn-help" aria-haspopup="menu">
+        {{ 'SEO.TYPE_EDITOR.NEED_HELP' | translate }}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Site-indexing-off banner (only when allowIndexing=false) -->
+  @if (!seoIndexingAllowed()) {
+    <div class="banner">
+      <p>{{ 'SEO.INDEXING_OFF_BANNER' | translate }}</p>
+      <a routerLink="/settings/seo" class="banner__btn">{{ 'SEO.TURN_ON_INDEXING' | translate }}</a>
+    </div>
+  }
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <app-segmented-toggle
+      [options]="tabOptions"
+      [value]="activeTab()"
+      (valueChange)="setTab($any($event))"/>
+  </div>
+
+  <!-- ═══ Edit by page ═══════════════════════════════════════════════════ -->
+  @if (activeTab() === 'edit-by-page') {
+    <section class="card">
+      <header class="card__head card__head--row">
+        <div>
+          <h2 class="card__title">
+            {{ 'SEO.PAGES_TABLE.TITLE' | translate:{ type: (typeDef()?.labelKey ?? typeSlug()) | translate, count: count() } }}
+          </h2>
+          <p class="card__sub">{{ 'SEO.PAGES_TABLE.SUBTITLE' | translate }}</p>
+        </div>
+        <div class="card__toolbar">
+          <button type="button" class="btn-ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            {{ 'SEO.PAGES_TABLE.FILTER' | translate }}
+          </button>
+          <div class="search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.3-4.3"/>
+            </svg>
+            <input
+              type="text"
+              [placeholder]="'SEO.PAGES_TABLE.SEARCH' | translate"
+              [value]="searchQuery()"
+              (input)="onSearchInput($event)"/>
+          </div>
+        </div>
+      </header>
+
+      <div class="table-wrap">
+        <table class="pages-table">
+          <thead>
+            <tr>
+              <th class="cb"></th>
+              <th>{{ 'SEO.PAGES_TABLE.PAGE_NAME' | translate }}</th>
+              <th>
+                <span class="th-with-tip">
+                  {{ 'SEO.PAGES_TABLE.PAGE_URL' | translate }}
+                  <span class="tip" [appTooltip]="'SEO.PAGES_TABLE.TIP_PAGE_URL' | translate" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                  </span>
+                </span>
+              </th>
+              <th>
+                <span class="th-with-tip">
+                  {{ 'SEO.PAGES_TABLE.FOCUS_KEYWORD' | translate }}
+                  <span class="tip" [appTooltip]="'SEO.PAGES_TABLE.TIP_FOCUS_KEYWORD' | translate" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                  </span>
+                </span>
+              </th>
+              <th>
+                <span class="th-with-tip">
+                  {{ 'SEO.PAGES_TABLE.TITLE_TAG' | translate }}
+                  <span class="tip" [appTooltip]="'SEO.PAGES_TABLE.TIP_TITLE_TAG' | translate" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                  </span>
+                </span>
+              </th>
+              <th>
+                <span class="th-with-tip">
+                  {{ 'SEO.PAGES_TABLE.META_DESCRIPTION' | translate }}
+                  <span class="tip" [appTooltip]="'SEO.PAGES_TABLE.TIP_META_DESCRIPTION' | translate" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                  </span>
+                </span>
+              </th>
+              <th class="ix">
+                <span class="th-with-tip">
+                  {{ 'SEO.PAGES_TABLE.INDEXABLE' | translate }}
+                  <span class="tip" [appTooltip]="'SEO.PAGES_TABLE.TIP_INDEXABLE' | translate" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                  </span>
+                </span>
+              </th>
+              <th class="actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of pages(); track row.id) {
+              <tr (click)="editRow(row)" class="pages-row">
+                <td class="cb"><input type="checkbox" (click)="$event.stopPropagation()"/></td>
+                <td class="name">{{ row.pageName }}</td>
+                <td class="url">
+                  <a [href]="liveUrl(row)"
+                     target="_blank"
+                     rel="noopener"
+                     (click)="$event.stopPropagation()"
+                     [appTooltip]="'SEO.PAGES_TABLE.VIEW_LIVE_PAGE' | translate">
+                    {{ row.pageUrl }}
+                  </a>
+                </td>
+                <td class="focus">
+                  {{ row.focusKeyword || '—' }}
+                </td>
+                <td class="title">{{ resolvedTitle(row) }}</td>
+                <td class="meta">{{ row.metaDescription || '—' }}</td>
+                <td class="ix">
+                  <span class="badge" [class.badge--off]="!resolvedIndexable(row)">
+                    @if (resolvedIndexable(row)) {
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                           stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    } @else {
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                           stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                      </svg>
+                    }
+                  </span>
+                </td>
+                <td class="actions">
+                  <button type="button" class="btn-edit" (click)="editRow(row); $event.stopPropagation()">
+                    {{ 'SEO.PAGES_TABLE.EDIT' | translate }}
+                  </button>
+                </td>
+              </tr>
+            }
+            @if (pages().length === 0 && !loading()) {
+              <tr><td colspan="8" class="empty">{{ 'SEO.PAGES_TABLE.EMPTY' | translate }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  <!-- ═══ Customize defaults ═════════════════════════════════════════════ -->
+  @if (activeTab() === 'customize-defaults') {
+    <app-seo-customize-defaults [typeSlug]="typeSlug()"/>
+  }
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

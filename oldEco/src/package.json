@@ -1,0 +1,19 @@
+{
+    "name": "invocloudfront",
+    "version": "1.0.0",
+    "description": "test to build in aws",
+    "main": "server.js",
+    "engines": {
+        "node": "18.16.0"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Ali Alabdulwahab",
+    "license": "ISC",
+    "dependencies": {
+        "epress": "^0.0.1-security",
+        "express": "^4.18.2",
+        "path": "^0.12.7"
+    }
+}

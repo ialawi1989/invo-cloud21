@@ -32,10 +32,7 @@
       @if (fieldsOptions()?.inventoryDetails?.isChildItem?.isVisible) {
         <div class="pf-field pf-field--half">
           <label class="pf-label">{{ 'PRODUCTS.FORM.IS_CHILD' | translate }}</label>
-          <label class="pf-switch">
-            <input type="checkbox" formControlName="isChild"/>
-            <span class="pf-switch__track"></span>
-          </label>
+          <app-toggle formControlName="isChild"/>
         </div>
       }
     </div>

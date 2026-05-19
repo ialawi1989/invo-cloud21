@@ -1,0 +1,240 @@
+/* =============================================
+   PRODUCT LIST — STYLE 4
+   Full-bleed photo with right-side glass panel
+   White pill CTA · frosted backdrop-filter
+============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Row shell ──────────────────────────────── */
+.cl4 {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  height: 140px;
+  font-family: 'Inter', sans-serif;
+  background: #e8e4e0;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  /* FIX: isolate stacking context so child z-indexes don't bleed over cart overlay */
+  isolation: isolate;
+}
+
+.cl4:hover {
+  transform: translateX(4px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.16);
+}
+
+/* ── Full-bleed image ───────────────────────── */
+.cl4 app-lazy-image,
+.cl4-img {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 175px !important;
+  height: 100% !important;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+  z-index: 0;
+}
+
+.cl4:hover app-lazy-image,
+.cl4:hover .cl4-img {
+  transform: scale(1.04);
+}
+
+/* ── Invisible nav overlay (left 175px image) ── */
+.cl4-nav-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 175px;
+  height: 100%;
+  z-index: 2;
+}
+
+/* ── Sale badge ─────────────────────────────── */
+.cl4-sale {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 4;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: #222;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Wishlist button ────────────────────────── */
+.cl4-wish {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.90);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  color: #aaa;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+}
+
+.cl4-wish:hover,
+.cl4-wish.active {
+  background: #fff;
+  color: #e00033;
+  border-color: #e00033;
+}
+
+/* ── Frosted glass panel — right side ────────── */
+.cl4-glass {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: calc(100% - 175px);
+  z-index: 3;
+  background: rgba(245, 243, 240, 0.82);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 0 20px 20px 0;
+  padding: 14px 14px 12px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ── Top text group ─────────────────────────── */
+.cl4-top {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cl4-cat {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: #999;
+  font-family: 'Inter', sans-serif;
+  min-height: 13px;
+}
+
+.cl4-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: black;
+  line-height: 1.25;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cl4-desc {
+  font-size: 11px;
+  color: #777;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+/* ── Bottom row ─────────────────────────────── */
+.cl4-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ── Price ──────────────────────────────────── */
+.cl4-price-wrap .price {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.cl4-price-wrap .price del {
+  font-size: 11px;
+  color: #bbb;
+  font-weight: 400;
+  display: block;
+}
+
+/* ── CTA button ─────────────────────────────── */
+.cl4-btn {
+  padding: 8px 18px;
+  border-radius: 40px;
+  border: 1.5px solid var(--primary-color);
+  background: #fff;
+  color: var(--primary-color);
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.18s;
+  letter-spacing: 0.02em;
+}
+
+.cl4-btn:hover {
+  background: var(--primary-color);
+  color: #fff;
+  transform: scale(0.97);
+}
+
+.cl4-btn.dis,
+.cl4-btn[disabled] {
+  background: #fff;
+  border-color: #ccc;
+  color: #999;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 540px) {
+  .cl4 {
+    height: 130px;
+    border-radius: 16px;
+  }
+
+  .cl4 app-lazy-image,
+  .cl4-img {
+    width: 130px !important;
+  }
+
+  .cl4-glass {
+    width: calc(100% - 130px);
+    border-radius: 0 16px 16px 0;
+    padding: 10px 10px 10px 12px;
+  }
+
+  .cl4-name { font-size: 13px; }
+  .cl4-btn { padding: 7px 12px; font-size: 10px; }
+}

@@ -25,6 +25,7 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
 import {
   TranslationModalComponent,
@@ -77,6 +78,7 @@ export class KitchenSectionFormComponent implements OnInit, CanLeaveComponent {
   private route      = inject(ActivatedRoute);
   private router     = inject(Router);
   private modal      = inject(ModalService);
+  private toast      = inject(ToastService);
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
@@ -260,10 +262,14 @@ export class KitchenSectionFormComponent implements OnInit, CanLeaveComponent {
         // doesn't fire on the post-save navigate (see branch-form for
         // the same pattern + the race-condition rationale).
         this.form.markAsPristine();
+        this.toast.success('COMMON.SAVED_OK');
         this.router.navigate(['/settings/kitchen']);
+      } else {
+        this.toast.error('COMMON.SAVE_FAILED');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('[kitchen-section-form] save failed', e);
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
     } finally {
       this.saving.set(false);
     }

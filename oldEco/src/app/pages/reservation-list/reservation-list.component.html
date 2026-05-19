@@ -1,0 +1,138 @@
+<!-- ── Mobile sticky header ─────────────────────────────────────── -->
+<div class="fix-top sticky-content d-md-none d-lg-none fixed">
+  <div class="header">
+    <div class="header-middle pt-2 pb-2 header-top-custom" [style.backgroundColor]="companyData.themeSettings.template?.header?.headerColor">
+      <div class="container">
+        <div class="header-left" style="display:flex;align-items:center;justify-content:center;flex:1;">
+          <a href="javascript:void(0);" class="mobile-menu-toggle" (click)="goBack()" style="margin-right:auto;">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+          <h5 class="m-0" style="margin-left:-26px !important;">{{ "Reservation History" | translate }}</h5>
+          <div style="margin-left:auto;"></div>
+        </div>
+        <div class="header-right"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Desktop page header ──────────────────────────────────────── -->
+<div class="page-header d-md-show"
+  [style.background-color]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-image]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-attachment]="pageData?.template?.settings?.subheader_settings?.isParallax ? 'fixed' : ''"
+  [style.background-size]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'cover' : ''"
+  [style.background-position]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'center' : ''"
+  [style.background-repeat]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'no-repeat' : ''">
+  @if (pageData?.template?.settings?.subheader_settings?.overlayOpacity) {
+  <div class="section-overlay"
+    [style.opacity]="pageData?.template?.settings?.subheader_settings?.overlayOpacity / 100"
+    [style.background-color]="pageData?.template?.settings?.subheader_settings?.overlayColor"></div>
+  }
+  <h1 class="page-title z-index-3">{{ "Reservation History" | translate }}</h1>
+  <ul class="breadcrumb z-index-3">
+    <li><a [routerLink]="'/'"><i class="d-icon-home"></i></a></li>
+    <li class="delimiter">/</li>
+    <li>{{ "Reservation History" | translate }}</li>
+  </ul>
+</div>
+
+<!-- ── Loading ──────────────────────────────────────────────────── -->
+@if(loading){
+<div class="text-center pt-10 pb-10">
+  <app-spinner></app-spinner>
+</div>
+} @else {
+
+<div class="hist-page">
+  <div class="container">
+
+    <!-- Page header -->
+    <div class="acc-page-header">
+      <div class="acc-avatar"><i class="fas fa-calendar-alt"></i></div>
+      <div class="acc-page-title-body">
+        <h2 class="acc-page-title">{{"Reservation History" | translate}}</h2>
+        @if(reservations?.length > 0){
+        <p class="acc-page-subtitle">{{ reservations?.length }} {{"reservations" | translate}}</p>
+        }
+      </div>
+    </div>
+
+    <!-- Empty -->
+    @if(reservations?.length == 0){
+    <div class="acc-card">
+      <div class="acc-card-body">
+        <div class="acc-empty-state">
+          <div class="acc-empty-icon"><i class="fas fa-calendar-times"></i></div>
+          <p class="acc-empty-title">{{"No reservations found" | translate}}</p>
+          <p class="acc-empty-sub">{{"Your reservation history will appear here." | translate}}</p>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Reservations table -->
+    @else{
+    <div class="acc-card">
+      <div class="acc-card-header">
+        <!-- <span class="acc-section-label">{{"Reservations" | translate}}</span> -->
+      </div>
+      <div class="acc-card-body" style="padding-top:0;">
+        <table class="order-table">
+          <thead>
+            <tr>
+              <th class="d-md-show">#</th>
+              <th>{{"Created" | translate}}</th>
+              <th>{{"Reservation Time" | translate}}</th>
+              <th>{{"Status" | translate}}</th>
+              <th class="d-sm-show">{{"Guests" | translate}}</th>
+              <th class="d-sm-show"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (reservation of reservations; track $index) {
+            <tr>
+              <td class="order-number d-md-show">
+                <a href="javascript:void(0);" [routerLink]="['/reservation', reservation.onlineData.onlineSessionId]">
+                  {{$index + 1}}.
+                </a>
+              </td>
+              <td class="order-date">
+                <a href="javascript:void(0);" [routerLink]="['/reservation', reservation.onlineData.onlineSessionId]">
+                  {{convertDateFormat(reservation.createdAt)}}
+                </a>
+              </td>
+              <td class="order-date">
+                <a href="javascript:void(0);" [routerLink]="['/reservation', reservation.onlineData.onlineSessionId]">
+                  {{convertDateFormat(reservation.reservationDate)}}
+                </a>
+              </td>
+              <td class="order-status">
+                <a href="javascript:void(0);" [routerLink]="['/reservation', reservation.onlineData.onlineSessionId]">
+                  <span class="acc-status-badge">{{reservation.status ? reservation.status : "Undefined"}}</span>
+                </a>
+              </td>
+              <td class="order-total d-sm-show">
+                <a href="javascript:void(0);" [routerLink]="['/reservation', reservation.onlineData.onlineSessionId]">
+                  <span class="hist-guests">
+                    <i class="fas fa-user"></i> {{reservation.guests}}
+                  </span>
+                </a>
+              </td>
+              <td class="order-action d-sm-show">
+                <a href="javascript:void(0);"
+                  [routerLink]="['/reservation', reservation.onlineData.onlineSessionId]"
+                  class="acc-view-btn">{{"View" | translate}}</a>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    }
+
+  </div>
+</div>
+
+}

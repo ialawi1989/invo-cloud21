@@ -1,0 +1,164 @@
+// Services list — mirrors the kitchen-sections-list chrome so the
+// settings family of pages all share the same row + chip vocabulary.
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: #0f172a;
+
+  thead th {
+    text-align: start;
+    padding: 10px 14px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+  }
+  tbody tr {
+    cursor: pointer;
+    transition: background 120ms ease;
+    &:hover { background: #f8fafc; }
+  }
+
+  &__name    { min-width: 200px; }
+  &__type    { width: 160px; }
+  &__default { width: 96px; }
+  &__actions { width: 92px; text-align: end; white-space: nowrap; }
+}
+
+.row-name {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+// Type chips — coloured per service type, mirroring the
+// app-product-badge approach used elsewhere.
+.type-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-brand-50, #ecfeff);
+  color: var(--color-brand-700, #0e7490);
+  font-size: 11px;
+  font-weight: 600;
+
+  &[data-type='DineIn']   { background: #ecfeff; color: #0e7490; }
+  &[data-type='PickUp']   { background: #ecfdf5; color: #047857; }
+  &[data-type='Delivery'] { background: #fef3c7; color: #92400e; }
+  &[data-type='CarHop']   { background: #ede9fe; color: #6d28d9; }
+  &[data-type='Salon']    { background: #fce7f3; color: #be185d; }
+  &[data-type='Catering'] { background: #fff7ed; color: #c2410c; }
+  &[data-type='Retail']   { background: #e0e7ff; color: #4338ca; }
+}
+
+.default-chip {
+  display: inline-flex;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.icon-btn {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 6px;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  &:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #e2e8f0;
+  }
+  &--danger:hover {
+    background: #fef2f2;
+    color: #b91c1c;
+    border-color: #fecaca;
+  }
+}
+
+// Drag-reorder layout — sits inside the list-shell's flush card,
+// so rows skip their own outer border (which was creating a
+// visible double-border above the first row). Padding around the
+// strip + transparent row borders on rest, lit only on hover and
+// while dragging. Matches the airy `tbody tr:hover` chrome of the
+// regular table mode.
+.reorder-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.reorder-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #0f172a;
+  transition: background 120ms ease, border-color 120ms ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  // CDK drag-preview lifts off the page — pop the elevation and a
+  // visible border so the row reads as the active drag target.
+  &.cdk-drag-preview {
+    background: #fff;
+    border-color: #e2e8f0;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  }
+  &.cdk-drag-placeholder { opacity: 0; }
+}
+.reorder-grip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  cursor: grab;
+  &:active { cursor: grabbing; }
+}
+.reorder-placeholder {
+  height: 44px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+}

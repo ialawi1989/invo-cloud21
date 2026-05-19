@@ -1,0 +1,166 @@
+<div class="tx">
+  <header class="tx__head">
+    <div>
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="tx__title">{{ 'BLOG.TAXONOMIES.TITLE' | translate }}</h1>
+      <p class="tx__sub">{{ 'BLOG.TAXONOMIES.SUBTITLE' | translate }}</p>
+    </div>
+    @if (tab() === 'category') {
+      <button type="button" class="tx-btn tx-btn--primary" (click)="openForm()">
+        + {{ 'BLOG.TAXONOMIES.NEW_CATEGORY' | translate }}
+      </button>
+    }
+  </header>
+
+  <app-segmented-toggle
+    [options]="tabOptions()"
+    [value]="tab()"
+    (valueChange)="setTab($event)"/>
+
+  <div class="tx__card">
+    @if (loading()) {
+      <div class="tx__loading"><span class="tx__spinner"></span></div>
+    } @else if (filteredRows().length === 0) {
+      <app-blog-empty-state
+        [icon]="tab() === 'category' ? 'tags' : tab() === 'tag' ? 'tags' : 'search'"
+        [title]="'BLOG.TAXONOMIES.EMPTY_' + tab().toUpperCase() + '_TITLE' | translate"
+        [description]="'BLOG.TAXONOMIES.EMPTY_' + tab().toUpperCase() + '_BODY' | translate"
+        [primaryLabel]="tab() === 'category' ? ('BLOG.TAXONOMIES.NEW_CATEGORY' | translate) : ''"
+        (primary)="openForm()"/>
+    } @else {
+
+      <!-- ───────── CATEGORIES ───────── -->
+      @if (tab() === 'category') {
+        <ul class="tx-list">
+          @for (t of filteredRows(); track t.id) {
+            <li class="tx-row"
+                draggable="true"
+                (dragstart)="onDragStart($event, t)"
+                (dragover)="onDragOver($event)"
+                (drop)="onDrop($event, t)"
+                [class.is-dragging]="draggingId() === t.id">
+              <span class="tx-drag" [title]="'COMMON.DRAG_TO_REORDER' | translate">⋮⋮</span>
+              <div class="tx-thumb">
+                @if (t.image) {
+                  <img [src]="t.image" alt=""/>
+                } @else {
+                  <span>{{ nameOf(t)[0]?.toUpperCase() }}</span>
+                }
+              </div>
+              <div class="tx-body">
+                <div class="tx-name">
+                  {{ nameOf(t) }}
+                  <div class="tx-langs">
+                    @for (l of langsOf(t); track l) {
+                      <span class="tx-lang">{{ l }}</span>
+                    }
+                  </div>
+                </div>
+                <div class="tx-slug">/{{ t.slug }}</div>
+              </div>
+              <div class="tx-count">{{ t.postsCount }} {{ 'BLOG.TAXONOMIES.POSTS' | translate }}</div>
+              <div class="tx-actions">
+                <button class="tx-iconBtn" (click)="openForm(t)" [title]="'COMMON.EDIT' | translate">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="tx-iconBtn tx-iconBtn--danger" (click)="confirmDelete(t)" [title]="'COMMON.DELETE' | translate">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+
+      <!-- ───────── TAGS ───────── -->
+      @if (tab() === 'tag') {
+        <div class="tx-tagAdd">
+          <input class="tx-input"
+                 [(ngModel)]="newTag"
+                 (keydown.enter)="addTag()"
+                 [placeholder]="'BLOG.TAXONOMIES.ADD_TAG_PLACEHOLDER' | translate"/>
+          <button type="button" class="tx-btn tx-btn--primary" (click)="addTag()" [disabled]="!newTag().trim()">
+            {{ 'COMMON.ADD' | translate }}
+          </button>
+        </div>
+        <ul class="tx-list">
+          @for (t of filteredRows(); track t.id) {
+            <li class="tx-row tx-row--simple">
+              <div class="tx-body" (click)="openForm(t)">
+                <div class="tx-name">
+                  {{ nameOf(t) }}
+                  <div class="tx-langs">
+                    @for (l of langsOf(t); track l) {
+                      <span class="tx-lang">{{ l }}</span>
+                    }
+                  </div>
+                </div>
+                <div class="tx-slug">/{{ t.slug }}</div>
+              </div>
+              <div class="tx-count">{{ t.usageCount }} {{ 'BLOG.TAXONOMIES.USES' | translate }}</div>
+              <div class="tx-actions">
+                <button class="tx-iconBtn" (click)="openForm(t)" [title]="'COMMON.EDIT' | translate">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="tx-iconBtn tx-iconBtn--danger" (click)="confirmDelete(t)"
+                        [disabled]="t.usageCount > 0"
+                        [title]="(t.usageCount > 0 ? 'BLOG.TAXONOMIES.TAG_IN_USE' : 'COMMON.DELETE') | translate">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+
+      <!-- ───────── HASHTAGS ───────── -->
+      @if (tab() === 'hashtag') {
+        <div class="tx-hashtagFilters">
+          <app-search-dropdown
+            [items]="langOptions()" [value]="$any(hashtagLang())"
+            [displayWith]="idDisplay" [compareWith]="idCompare" [toValue]="idToValue"
+            [clearable]="false" [searchable]="false"
+            (valueChange)="setHashtagLang($any($event))"/>
+          <app-search-dropdown
+            [items]="sortOptions()" [value]="$any(hashtagSort())"
+            [displayWith]="idDisplay" [compareWith]="idCompare" [toValue]="idToValue"
+            [clearable]="false" [searchable]="false"
+            (valueChange)="setHashtagSort($any($event))"/>
+        </div>
+
+        <ul class="tx-list">
+          @for (t of filteredRows(); track t.id) {
+            <li>
+              <div class="tx-row tx-row--simple tx-row--clickable" (click)="toggleHashtag(t)">
+                <div class="tx-body">
+                  <div class="tx-name">#{{ nameOf(t) }}</div>
+                </div>
+                <div class="tx-count">{{ t.usageCount }} {{ 'BLOG.TAXONOMIES.USES' | translate }}</div>
+                <div class="tx-hashtagDate">
+                  @if (t.lastUsedAt) { {{ t.lastUsedAt | date:'mediumDate' }} }
+                </div>
+              </div>
+              @if (expandedHashtagId() === t.id) {
+                <div class="tx-hashtagDrawer">
+                  @if (postsForHashtag() === null) {
+                    <span class="tx-spinner tx-spinner--sm"></span>
+                  } @else if (postsForHashtag()!.length === 0) {
+                    <p class="tx-hashtagEmpty">{{ 'BLOG.TAXONOMIES.NO_POSTS_HASHTAG' | translate }}</p>
+                  } @else {
+                    <ul class="tx-hashtagPosts">
+                      @for (p of postsForHashtag()!; track p.id) {
+                        <li>
+                          <a [routerLink]="['/blog/posts', p.id, 'edit']">{{ p.translations[p.defaultLanguage]?.title }}</a>
+                        </li>
+                      }
+                    </ul>
+                  }
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      }
+    }
+  </div>
+</div>

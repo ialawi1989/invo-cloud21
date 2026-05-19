@@ -292,6 +292,12 @@
               />
             }
           }
+          @case ('seo') {
+            <app-pf-seo-settings
+              [productInfo]="productInfo()"
+              [productForm]="productForm"
+            />
+          }
         }
       </ng-template>
 

@@ -1,0 +1,331 @@
+/* Base styles */
+.section-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.section-text {
+  position: relative;
+  z-index: 2 !important;
+}
+
+.section-content {
+  position: relative !important;
+  background-repeat: no-repeat !important;
+  background-position: center center !important;
+  background-size: cover !important;
+}
+
+.group-service-btn-container {
+  display: flex;
+  flex-wrap: wrap !important;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.group-service-btn {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  --tw-border-opacity: 1;
+  border-color: rgb(217 221 229 / var(--tw-border-opacity, 1));
+  border-width: 1px;
+  border-radius: 1.6rem;
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+  border-style: solid;
+  min-width: 0;
+  width: calc(25% - 15px);
+  box-sizing: border-box;
+}
+
+/* Button 0 */
+.group-service-btn[style*="--btn-color-0:"] button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-0) 20%, transparent);
+}
+.group-service-btn[style*="--btn-color-0:"]:hover button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-0) 30%, transparent);
+}
+.group-service-btn[style*="--btn-color-0:"] button .btn-container .icon svg {
+  color: color-mix(in srgb, var(--btn-color-0) 100%, transparent);
+}
+.group-service-btn[style*="--btn-color-0:"]:hover {
+  border-color: color-mix(in srgb, var(--btn-color-0) 100%, transparent);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+.group-service-btn[style*="--btn-color-0:"]:hover .lucide-arrow-right {
+  color: color-mix(in srgb, var(--btn-color-0) 100%, transparent);
+  transform: translateX(0.4rem);
+}
+
+/* Button 1 */
+.group-service-btn[style*="--btn-color-1:"] button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-1) 20%, transparent);
+}
+.group-service-btn[style*="--btn-color-1:"]:hover button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-1) 30%, transparent);
+}
+.group-service-btn[style*="--btn-color-1:"] button .btn-container .icon svg {
+  color: color-mix(in srgb, var(--btn-color-1) 100%, transparent);
+}
+.group-service-btn[style*="--btn-color-1:"]:hover {
+  border-color: color-mix(in srgb, var(--btn-color-1) 100%, transparent);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+.group-service-btn[style*="--btn-color-1:"]:hover .lucide-arrow-right {
+  color: color-mix(in srgb, var(--btn-color-1) 100%, transparent);
+  transform: translateX(0.4rem);
+}
+
+/* Button 2 */
+.group-service-btn[style*="--btn-color-2:"] button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-2) 20%, transparent);
+}
+.group-service-btn[style*="--btn-color-2:"]:hover button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-2) 30%, transparent);
+}
+.group-service-btn[style*="--btn-color-2:"] button .btn-container .icon svg {
+  color: color-mix(in srgb, var(--btn-color-2) 100%, transparent);
+}
+.group-service-btn[style*="--btn-color-2:"]:hover {
+  border-color: color-mix(in srgb, var(--btn-color-2) 100%, transparent);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+.group-service-btn[style*="--btn-color-2:"]:hover .lucide-arrow-right {
+  color: color-mix(in srgb, var(--btn-color-2) 100%, transparent);
+  transform: translateX(0.4rem);
+}
+
+/* Button 3 */
+.group-service-btn[style*="--btn-color-3:"] button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-3) 20%, transparent);
+}
+.group-service-btn[style*="--btn-color-3:"]:hover button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-3) 30%, transparent);
+}
+.group-service-btn[style*="--btn-color-3:"] button .btn-container .icon svg {
+  color: color-mix(in srgb, var(--btn-color-3) 100%, transparent);
+}
+.group-service-btn[style*="--btn-color-3:"]:hover {
+  border-color: color-mix(in srgb, var(--btn-color-3) 100%, transparent);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+.group-service-btn[style*="--btn-color-3:"]:hover .lucide-arrow-right {
+  color: color-mix(in srgb, var(--btn-color-3) 100%, transparent);
+  transform: translateX(0.4rem);
+}
+
+/* Button 4 */
+.group-service-btn[style*="--btn-color-4:"] button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-4) 20%, transparent);
+}
+.group-service-btn[style*="--btn-color-4:"]:hover button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-4) 30%, transparent);
+}
+.group-service-btn[style*="--btn-color-4:"] button .btn-container .icon svg {
+  color: color-mix(in srgb, var(--btn-color-4) 100%, transparent);
+}
+.group-service-btn[style*="--btn-color-4:"]:hover {
+  border-color: color-mix(in srgb, var(--btn-color-4) 100%, transparent);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+.group-service-btn[style*="--btn-color-4:"]:hover .lucide-arrow-right {
+  color: color-mix(in srgb, var(--btn-color-4) 100%, transparent);
+  transform: translateX(0.4rem);
+}
+
+/* Button 5 */
+.group-service-btn[style*="--btn-color-5:"] button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-5) 20%, transparent);
+}
+.group-service-btn[style*="--btn-color-5:"]:hover button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-5) 30%, transparent);
+}
+.group-service-btn[style*="--btn-color-5:"] button .btn-container .icon svg {
+  color: color-mix(in srgb, var(--btn-color-5) 100%, transparent);
+}
+.group-service-btn[style*="--btn-color-5:"]:hover {
+  border-color: color-mix(in srgb, var(--btn-color-5) 100%, transparent);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -5px rgb(0 0 0 / 0.1);
+}
+.group-service-btn[style*="--btn-color-5:"]:hover .lucide-arrow-right {
+  color: color-mix(in srgb, var(--btn-color-5) 100%, transparent);
+  transform: translateX(0.4rem);
+}
+
+/* Button 6 */
+.group-service-btn[style*="--btn-color-6:"] button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-6) 20%, transparent);
+}
+.group-service-btn[style*="--btn-color-6:"]:hover button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-6) 30%, transparent);
+}
+.group-service-btn[style*="--btn-color-6:"] button .btn-container .icon svg {
+  color: color-mix(in srgb, var(--btn-color-6) 100%, transparent);
+}
+.group-service-btn[style*="--btn-color-6:"]:hover {
+  border-color: color-mix(in srgb, var(--btn-color-6) 100%, transparent);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -6px rgb(0 0 0 / 0.1);
+}
+.group-service-btn[style*="--btn-color-6:"]:hover .lucide-arrow-right {
+  color: color-mix(in srgb, var(--btn-color-6) 100%, transparent);
+  transform: translateX(0.4rem);
+}
+
+/* Button 7 */
+.group-service-btn[style*="--btn-color-7:"] button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-7) 20%, transparent);
+}
+.group-service-btn[style*="--btn-color-7:"]:hover button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-7) 30%, transparent);
+}
+.group-service-btn[style*="--btn-color-7:"] button .btn-container .icon svg {
+  color: color-mix(in srgb, var(--btn-color-7) 100%, transparent);
+}
+.group-service-btn[style*="--btn-color-7:"]:hover {
+  border-color: color-mix(in srgb, var(--btn-color-7) 100%, transparent);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -7px rgb(0 0 0 / 0.1);
+}
+.group-service-btn[style*="--btn-color-7:"]:hover .lucide-arrow-right {
+  color: color-mix(in srgb, var(--btn-color-7) 100%, transparent);
+  transform: translateX(0.4rem);
+}
+
+/* Button 8 */
+.group-service-btn[style*="--btn-color-8:"] button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-8) 20%, transparent);
+}
+.group-service-btn[style*="--btn-color-8:"]:hover button .btn-container .icon {
+  background-color: color-mix(in srgb, var(--btn-color-8) 30%, transparent);
+}
+.group-service-btn[style*="--btn-color-8:"] button .btn-container .icon svg {
+  color: color-mix(in srgb, var(--btn-color-8) 100%, transparent);
+}
+.group-service-btn[style*="--btn-color-8:"]:hover {
+  border-color: color-mix(in srgb, var(--btn-color-8) 100%, transparent);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -8px rgb(0 0 0 / 0.1);
+}
+.group-service-btn[style*="--btn-color-8:"]:hover .lucide-arrow-right {
+  color: color-mix(in srgb, var(--btn-color-8) 100%, transparent);
+  transform: translateX(0.4rem);
+}
+
+/* Common button styles */
+.group-service-btn button {
+  font-size: 100%;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+  background-color: transparent;
+  cursor: pointer;
+  width: 100%;
+  padding: 1.5rem;
+  text-align: start;
+  border: 0;
+}
+
+.group-service-btn button .btn-container {
+  align-items: center;
+  justify-content: space-between;
+  display: flex;
+}
+
+.group-service-btn button .btn-container .icon {
+  display: flex;
+  height: 4.8rem;
+  width: 4.8rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1.2rem;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.group-service-btn button .btn-container .icon svg {
+  height: 2.4rem;
+  width: 2.4rem;
+}
+
+.group-service-btn button .btn-container .text-container {
+  flex: 1;
+  margin-left: 1.6rem;
+}
+
+.group-service-btn button .btn-container .text-container h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0;
+  color: rgb(17 24 39);
+}
+
+.group-service-btn button .btn-container .text-container p {
+  font-size: 1.4rem;
+  margin: 0;
+  color: rgb(107 114 128);
+}
+
+.group-service-btn .lucide-arrow-right {
+  height: 2rem;
+  width: 2rem;
+  color: rgb(156 163 175);
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  margin-left: 1.6rem;
+}
+
+/* DineIn button styles */
+.dinein-btn {
+  cursor: pointer;
+  border-color: var(--secondary-color);
+}
+.dinein-btn button .btn-container .icon {
+  background-color: #ddd;
+}
+.dinein-btn:hover button .btn-container .icon {
+  background-color: #ddd;
+}
+.dinein-btn button .btn-container .icon svg {
+  color: var(--secondary-color);
+}
+.dinein-btn:hover {
+  border-color: var(--secondary-color);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+.dinein-btn:hover .lucide-arrow-right {
+  color: var(--secondary-color);
+  transform: translateX(0.4rem);
+}
+.dinein-btn button .btn-container .text-container h3 {
+  color: rgb(17 24 39);
+}
+
+.text-secondary-900 {
+  color: var(--secondary-color) !important;
+}
+
+/* ── Responsive breakpoints ── */
+
+/* Tablet: 3 per row */
+@media (max-width: 1024px) {
+  .group-service-btn {
+    width: calc(33.333% - 14px) !important;
+  }
+}
+
+/* Small / landscape: 2 per row */
+@media (max-width: 767px) {
+  .group-service-btn {
+    width: calc(50% - 10px) !important;
+  }
+}
+
+/* Very small / portrait: 1 per row */
+@media (max-width: 480px) {
+  .group-service-btn {
+    width: 100% !important;
+  }
+}

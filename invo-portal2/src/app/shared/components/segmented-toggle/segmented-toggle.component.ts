@@ -2,10 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 
 /**
@@ -26,6 +28,16 @@ export interface SegmentedToggleOption<T = string> {
   /** Hide this option from the toggle. Lets callers conditionally
    *  surface a third tab without restructuring their template. */
   disabled?:  boolean;
+  /** Optional SVG inner markup (paths / rects / circles) rendered
+   *  inside a 18×18 `viewBox="0 0 24 24"` wrapper to the left of the
+   *  label. Use for filter strips with category icons (e.g. media
+   *  type tabs). Caller-owned content, not sanitized — never pass
+   *  user-supplied strings here. */
+  icon?:      string;
+  /** Optional count badge rendered to the right of the label. Use
+   *  for filter strips that surface "how many records match this
+   *  filter" (Media Manager, etc.). */
+  count?:     number | string | null;
 }
 
 /**
@@ -74,14 +86,25 @@ export interface SegmentedToggleOption<T = string> {
         <button type="button"
           role="tab"
           class="st__btn"
+          [class.st__btn--rich]="!!opt.icon || opt.count != null"
           [class.is-on]="isOn(opt.value)"
           [attr.aria-selected]="isOn(opt.value)"
           [disabled]="locked()"
           (click)="pick(opt.value)">
-          @if (opt.translate === false) {
-            {{ opt.label }}
-          } @else {
-            {{ opt.label | translate }}
+          @if (opt.icon) {
+            <svg class="st__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 [innerHTML]="safeIcon(opt.icon)"></svg>
+          }
+          <span class="st__label">
+            @if (opt.translate === false) {
+              {{ opt.label }}
+            } @else {
+              {{ opt.label | translate }}
+            }
+          </span>
+          @if (opt.count != null) {
+            <span class="st__count">{{ opt.count }}</span>
           }
         </button>
       }
@@ -134,6 +157,39 @@ export interface SegmentedToggleOption<T = string> {
     .st--sm .st__btn { padding: 4px 10px; font-size: 12px; }
     .st--vertical .st__btn { padding: 8px 12px; }
 
+    /* Rich variant — icon + label + count. Keeps the same pill
+       visual but gives the contents room to breathe. Used by media
+       manager / future category filter strips. */
+    .st__btn--rich {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+    }
+    .st__icon {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+    }
+    .st__label { line-height: 1; }
+    .st__count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      padding: 1px 7px;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: #64748b;
+      background: #e2e8f0;
+      border-radius: 999px;
+    }
+    .st__btn.is-on .st__count {
+      background: #d4f0f5;
+      color: #1c8595;
+    }
+
     /* Locked variant — selected stays highlighted, unselected
        dimmed so the user reads it as "this can't change". */
     .st.is-locked { opacity: 0.85; }
@@ -141,6 +197,8 @@ export interface SegmentedToggleOption<T = string> {
   `],
 })
 export class SegmentedToggleComponent<T = string> {
+  private sanitizer = inject(DomSanitizer);
+
   // ── Inputs ─────────────────────────────────────────────────────
   options  = input.required<SegmentedToggleOption<T>[]>();
   value    = input<T | null>(null);
@@ -153,6 +211,19 @@ export class SegmentedToggleComponent<T = string> {
 
   // ── Derived ────────────────────────────────────────────────────
   visibleOptions = computed(() => this.options().filter(o => !o.disabled));
+
+  /** Memoise the sanitiser calls so we don't re-trust the same SVG
+   *  inner string on every change-detection run — option icons are
+   *  static catalog data, not per-render values. */
+  private iconCache = new Map<string, SafeHtml>();
+  safeIcon(svg: string): SafeHtml {
+    let cached = this.iconCache.get(svg);
+    if (!cached) {
+      cached = this.sanitizer.bypassSecurityTrustHtml(svg);
+      this.iconCache.set(svg, cached);
+    }
+    return cached;
+  }
 
   isOn(v: T): boolean { return this.value() === v; }
 

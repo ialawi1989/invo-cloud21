@@ -102,7 +102,16 @@
       "SHIPPING_OPTIONS":  "الشحن",
       "CATEGORY_OPTIONS":  "الفئة والقسم",
       "ALIAS_BARCODES":    "الباركودات البديلة",
-      "ALT_PRODUCT":       "المنتج البديل"
+      "ALT_PRODUCT":       "المنتج البديل",
+      "SEO":               "تحسين محركات البحث"
+    },
+    "SEO": {
+      "SUBTITLE":         "حسّن طريقة ظهور هذا المنتج في نتائج البحث.",
+      "EDIT":             "تعديل إعدادات SEO",
+      "NO_KEYWORD":       "لا توجد كلمة مفتاحية محددة",
+      "NO_META":          "لا يوجد وصف Meta — قد تعرض محركات البحث مقتطفاً مختلفاً.",
+      "VIEW_LIVE":        "عرض الصفحة المباشرة",
+      "SAVE_AFTER_CREATE":"احفظ المنتج أولاً، ثم عدّل إعدادات SEO الخاصة به."
     },
     "BULK_PRINT": {
       "TITLE":              "طباعة باركود مجمعة",
@@ -690,6 +699,7 @@
     "CREATE_TEMPLATE": "إنشاء قالب",
     "TEMPLATE_NAME": "اسم القالب",
     "TEMPLATE_NAME_PLACEHOLDER": "مثال: المواصفات، دليل المقاسات…",
+    "TEMPLATE_NAME_REQUIRED":    "العنوان مطلوب.",
     "TAB_TYPE": "نوع التبويب",
     "ERR_DUPLICATE_NAME": "يوجد قالب بهذا الاسم بالفعل.",
     "ACTIVE": "مُفعّل",

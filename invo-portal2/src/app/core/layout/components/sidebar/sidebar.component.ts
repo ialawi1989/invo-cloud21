@@ -164,7 +164,7 @@ export const SIDE_MENU: SideMenuItem[] = [
   // ── Media ──────────────────────────────────────────────────────────
   {
     id: 11, label: 'MENU.MEDIA', icon: 'media',
-    link: '/media',
+    link: '/settings/media',
     requiredPermission: 'mediaSecurity.actions.view.access',
   },
   // ── Plugins ────────────────────────────────────────────────────────
@@ -186,10 +186,23 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 135, label: 'MENU.SUB.PAGING_SYSTEM', link: '/paging', requiredPermission: 'pagingSecurity.actions.view.access' },
     ],
   },
+  // ── Blog ───────────────────────────────────────────────────────────
+  // Top-level group. Each sub-item is privilege-gated independently;
+  // employees with only `blog.view` will see Posts only, etc.
+  {
+    id: 14, label: 'MENU.BLOG', icon: 'blog',
+    requiredPermission: '',
+    subItems: [
+      { id: 141, label: 'MENU.SUB.BLOG_POSTS',      link: '/blog/posts',      requiredPermission: 'blogSecurity.actions.view.access' },
+      { id: 142, label: 'MENU.SUB.BLOG_CATEGORIES', link: '/blog/categories', requiredPermission: 'blogSecurity.actions.manageCategories.access' },
+      { id: 143, label: 'MENU.SUB.BLOG_COMMENTS',   link: '/blog/comments',   requiredPermission: 'blogSecurity.actions.moderateComments.access' },
+      { id: 144, label: 'MENU.SUB.BLOG_SETTINGS',   link: '/blog/settings',   requiredPermission: 'blogSecurity.actions.manageSettings.access' },
+    ],
+  },
 ];
 
 /* ── IDs that get a divider above them ─────────────────────────────── */
-const DIVIDER_IDS = new Set([5, 10, 13]);
+const DIVIDER_IDS = new Set([5, 10, 13, 14]);
 
 interface FavoritePage { label: string; link: string; }
 
@@ -671,11 +684,9 @@ export class SidebarComponent implements OnInit {
         this.expandActiveParent();
         this.trackRecentPage((e as any).urlAfterRedirects ?? this.router.url);
       });
-    this.loadOptions();
-  }
-
-  private async loadOptions(): Promise<void> {
-    await this.favsService.load();
+    // No eager `favsService.load()` here — favorites are surfaced from
+    // the topbar now, so the GET is deferred until the user opens that
+    // panel or takes an explicit favorite action.
   }
 
   private trackRecentPage(url: string): void {
@@ -859,6 +870,7 @@ export class SidebarComponent implements OnInit {
       media: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
       plugin: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>`,
       web: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+      blog: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>`,
     };
     return icons[name ?? ''] ?? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/></svg>`;
   }

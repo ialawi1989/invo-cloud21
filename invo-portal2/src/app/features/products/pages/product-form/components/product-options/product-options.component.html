@@ -14,25 +14,23 @@
     <!-- ── Order by weight ─────────────────────────────────────────────── -->
     @if (showOrderByWeight()) {
       <div class="pf-field">
-        <label class="pf-switch-row">
-          <input type="checkbox" formControlName="orderByWeight"/>
-          <span class="pf-switch"><span class="pf-switch__track"></span></span>
+        <!-- Label keeps a wrapper so the optional UOM badge can sit
+             alongside the translated string. -->
+        <div class="pf-switch-row">
+          <app-toggle formControlName="orderByWeight"/>
           <span class="pf-switch-row__label">
             {{ 'PRODUCTS.FORM.ORDER_BY_WEIGHT' | translate }}
             @if (productInfo().UOM) { <span class="pf-muted">({{ productInfo().UOM }})</span> }
           </span>
-        </label>
+        </div>
       </div>
     }
 
     <!-- ── Discountable in POS ────────────────────────────────────────── -->
     @if (showDiscountableInPOS()) {
       <div class="pf-field">
-        <label class="pf-switch-row">
-          <input type="checkbox" formControlName="discountableInPOS"/>
-          <span class="pf-switch"><span class="pf-switch__track"></span></span>
-          <span class="pf-switch-row__label">{{ 'PRODUCTS.FORM.DISCOUNTABLE' | translate }}</span>
-        </label>
+        <app-toggle formControlName="discountableInPOS"
+                    [label]="'PRODUCTS.FORM.DISCOUNTABLE' | translate"/>
       </div>
     }
 
@@ -210,11 +208,8 @@
     <!-- ── Purchase item + account ──────────────────────────────────── -->
     @if (showPurchaseItem()) {
       <div class="pf-field pf-field--divider">
-        <label class="pf-switch-row">
-          <input type="checkbox" formControlName="isPurchaseItem"/>
-          <span class="pf-switch"><span class="pf-switch__track"></span></span>
-          <span class="pf-switch-row__label">{{ 'PRODUCTS.FORM.IS_PURCHASE_ITEM' | translate }}</span>
-        </label>
+        <app-toggle formControlName="isPurchaseItem"
+                    [label]="'PRODUCTS.FORM.IS_PURCHASE_ITEM' | translate"/>
       </div>
       @if (c('isPurchaseItem')?.value && purchaseReady() && purchaseItems().length > 0) {
         <div class="pf-field">
@@ -247,11 +242,8 @@
     <!-- ── Sale item + account ──────────────────────────────────────── -->
     @if (showSaleItem()) {
       <div class="pf-field">
-        <label class="pf-switch-row">
-          <input type="checkbox" formControlName="isSaleItem"/>
-          <span class="pf-switch"><span class="pf-switch__track"></span></span>
-          <span class="pf-switch-row__label">{{ 'PRODUCTS.FORM.IS_SALE_ITEM' | translate }}</span>
-        </label>
+        <app-toggle formControlName="isSaleItem"
+                    [label]="'PRODUCTS.FORM.IS_SALE_ITEM' | translate"/>
       </div>
       @if (c('isSaleItem')?.value && saleReady() && saleItems().length > 0) {
         <div class="pf-field">

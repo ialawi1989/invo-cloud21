@@ -1,0 +1,53 @@
+@if(branchId && tableId){
+<div [class]="showContainer ? 'container' :''">
+  <div class="header">
+    <h1>🍽️ {{"Service Request" | translate}}</h1>
+    <p>{{"Tap a button to call for service" | translate}}</p>
+  </div>
+
+  @if(tableNumber){
+  <div class="table-info">
+    <div class="table-number">Table: {{ tableNumber }}</div>
+  </div>
+  }
+
+  <div [class]="requestLimitClass">
+    <div class="request-counter">
+      {{"Requests made" | translate}}: {{ requestCount }}/{{ MAX_REQUESTS }} {{"per 10 minutes" | translate}}
+    </div>
+    @if (cooldownTimeDisplay) {
+    <div class="cooldown-timer">
+      {{ cooldownTimeDisplay }}
+    </div>
+    }
+  </div>
+
+  <div class="button-grid">
+    @for (service of services; track $index) {
+    <button [class]="'service-btn ripple ' + (isButtonOnCooldown(service.id) ? ' on-cooldown' : '')"
+      [disabled]="isButtonDisabled(service.id)" [attr.data-cooldown]="getButtonCooldownDisplay(service.id)"
+      (click)="callService(service.id, service)" [id]="'btn-' + service.id">
+      <div class="icon">{{ service.icon }}</div>
+      <div>{{ appService.lang == 'ar' ? service.translation?.body?.ar ? service.translation?.body?.ar : service.body :
+        service.body }}</div>
+    </button>
+    }
+  </div>
+  @if(status.show){
+  <div [class]="'status show ' + status.type">
+    {{ status.message }}<br>
+    <small>{{ status.subMessage }}</small>
+  </div>
+  }
+</div>
+}
+@else {
+<!-- Placeholder when branchId or tableId is missing -->
+<div class="container placeholder-container">
+  <div class="placeholder-content">
+    <div class="placeholder-icon">🪑</div>
+    <h2>{{"Table Not Found" | translate}}</h2>
+    <p>{{"Please try again later" | translate}}</p>
+  </div>
+</div>
+}

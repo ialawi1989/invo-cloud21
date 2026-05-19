@@ -1,0 +1,69 @@
+<div class="section-content pt-5 pb-5" [style.min-height]="section.sectionHeight == 'Full' ? 'calc(100vh - 95px)' : ''"
+  [style.background]="getBackground()"
+  [style.background-attachment]="section.sectionBackground.isParallax ? 'fixed' : ''"
+  [style.background-size]="section.sectionBackground.style == 'Image' ? 'cover' : ''"
+  [style.background-position]="section.sectionBackground.style == 'Image' ? 'center' : ''"
+  [style.background-repeat]="section.sectionBackground.style == 'Image' ? 'no-repeat' : ''"
+  [style.display]="section.sectionHeight == 'Full' ? 'flex' : ''"
+  [style.flex-direction]="section.sectionHeight == 'Full' ? 'column' : ''"
+  [style.justify-content]="section.sectionHeight == 'Full' ? 'center' : ''"
+  [style.align-items]="section.sectionHeight == 'Full' ? 'center' : ''"
+  [style.margin]="(section.marginVertical || 0) + 'px ' + (section.marginHorizontal || 0) + 'px'"
+  [style.padding]="(section.paddingVertical || 0) + 'px ' + (section.paddingHorizontal || 0) + 'px'">
+  @if(section != null && section.sectionBackground != null){
+  <div class="section-overlay" [style.opacity]="section.sectionBackground.overlayOpacity / 100"
+    [style.background-color]="section.sectionBackground.overlayColor"></div>
+  }
+  <div class="section-text">
+    <section class="contact-section">
+      <div [class]="themeBuilder?.layout?.width == 'Full' ? 'me-2 ms-2' : 'container'">
+        <div class="row">
+          <div class="col-lg-3 col-md-4 col-sm-6 ls-m mb-4">
+            <div class="grey-section d-flex align-items-center h-100 pr-2 pl-2">
+              <div>
+                <h4 class="mb-2 text-capitalize">Address</h4>
+                <p>US, Block 5531, Road 1223, Building 1729</p>
+
+                <h4 class="mb-2 text-capitalize">Phone Number</h4>
+                <p>
+                  <a href="tel:#">1.800.458.56</a><br>
+                  <a href="tel:#">1.800.458.56</a>
+                </p>
+
+                <h4 class="mb-2 text-capitalize">Support</h4>
+                <p class="mb-4">
+                  <a href="javascript:void(0);">support&#64;your-domain.com</a><br>
+                  <a href="javascript:void(0);">help&#64;your-domain.com</a><br>
+                  <a href="javascript:void(0);">Sale</a>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-9 col-md-8 col-sm-6 d-flex align-items-center mb-4">
+            <div class="w-100">
+              <div class="pl-lg-2">
+                <h4 class="ls-m font-weight-bold">Let’s Connect</h4>
+                <p>Your contact phone or email will not be published. Required fields are marked *
+                </p>
+                <div class="row mb-2">
+                  <div class="col-12 mb-4">
+                    <textarea class="form-control" placeholder="Comment*"></textarea>
+                  </div>
+                  <div class="col-md-12 mb-4">
+                    <input class="form-control" type="text" placeholder="Name *">
+                  </div>
+                  <div class="col-md-12 mb-4">
+                    <input class="form-control" type="text" placeholder="Email *">
+                  </div>
+                </div>
+                <button class="btn btn-dark btn-rounded">
+                  Send Comment<i class="d-icon-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

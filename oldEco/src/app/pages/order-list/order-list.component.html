@@ -1,0 +1,167 @@
+<!-- ── Mobile sticky header ─────────────────────────────────────── -->
+<div class="fix-top sticky-content d-md-none d-lg-none fixed">
+  <div class="header">
+    <div class="header-middle pt-2 pb-2 header-top-custom" [style.backgroundColor]="companyData.themeSettings.template?.header?.headerColor">
+      <div class="container">
+        <div class="header-left" style="display:flex;align-items:center;justify-content:center;flex:1;">
+          <a href="javascript:void(0);" class="mobile-menu-toggle" (click)="goBack()" style="margin-right:auto;">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+          <h5 class="m-0" style="margin-left:-26px !important;">{{ "Order History" | translate }}</h5>
+          <div style="margin-left:auto;"></div>
+        </div>
+        <div class="header-right"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Desktop page header ──────────────────────────────────────── -->
+<div class="page-header d-md-show"
+  [style.background-color]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-image]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-attachment]="pageData?.template?.settings?.subheader_settings?.isParallax ? 'fixed' : ''"
+  [style.background-size]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'cover' : ''"
+  [style.background-position]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'center' : ''"
+  [style.background-repeat]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'no-repeat' : ''">
+  @if (pageData?.template?.settings?.subheader_settings?.overlayOpacity) {
+  <div class="section-overlay"
+    [style.opacity]="pageData?.template?.settings?.subheader_settings?.overlayOpacity / 100"
+    [style.background-color]="pageData?.template?.settings?.subheader_settings?.overlayColor"></div>
+  }
+  <h1 class="page-title z-index-3">{{ "Order History" | translate }}</h1>
+  <ul class="breadcrumb z-index-3">
+    <li><a [routerLink]="'/'"><i class="d-icon-home"></i></a></li>
+    <li class="delimiter">/</li>
+    <li>{{ "Order History" | translate }}</li>
+  </ul>
+</div>
+
+<!-- ── Not authenticated ────────────────────────────────────────── -->
+@if(!isUserAuthenticated){
+<div class="hist-page">
+  <div class="container">
+    <div class="acc-page-header">
+      <div class="acc-avatar"><i class="fas fa-receipt"></i></div>
+      <div class="acc-page-title-body">
+        <h2 class="acc-page-title">{{"Order History" | translate}}</h2>
+      </div>
+    </div>
+    <div class="acc-card">
+      <div class="acc-card-body">
+        <div class="acc-empty-state">
+          <div class="acc-empty-icon"><i class="fas fa-clipboard-list"></i></div>
+          <p class="acc-empty-title">{{"Please login to view your order history !" | translate}}</p>
+          <a class="acc-btn-primary mt-2" (click)="openLoginPop()">{{ "Login" | translate }}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- ── Authenticated ────────────────────────────────────────────── -->
+@if(isUserAuthenticated){
+  @if(loading){
+  <div class="text-center pt-10 pb-10">
+    <app-spinner></app-spinner>
+  </div>
+  } @else {
+
+  <div class="hist-page">
+    <div class="container">
+
+      <!-- Page header -->
+      <div class="acc-page-header">
+        <div class="acc-avatar"><i class="fas fa-receipt"></i></div>
+        <div class="acc-page-title-body">
+          <h2 class="acc-page-title">{{"Order History" | translate}}</h2>
+          @if(orders.length > 0){
+          <p class="acc-page-subtitle">{{ orders.length }} {{"orders" | translate}}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Empty -->
+      @if(orders.length == 0){
+      <div class="acc-card">
+        <div class="acc-card-body">
+          <div class="acc-empty-state">
+            <div class="acc-empty-icon"><i class="fas fa-box-open"></i></div>
+            <p class="acc-empty-title">{{"No orders yet" | translate}}</p>
+            <p class="acc-empty-sub">{{"Your order history will appear here once you place an order." | translate}}</p>
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- Orders table -->
+      @else{
+      <div class="acc-card">
+        <div class="acc-card-header">
+          <!-- <span class="acc-section-label">{{"My Orders" | translate}}</span> -->
+        </div>
+        <div class="acc-card-body" style="padding-top:0;">
+          <table class="order-table">
+            <thead>
+              <tr>
+                <th>{{"Order" | translate}}</th>
+                <th>{{"Date" | translate}}</th>
+                <th class="d-sm-show">{{"Status" | translate}}</th>
+                <th>{{"Total" | translate}}</th>
+                <th class="d-sm-show"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of orders; track $index) {
+              <tr>
+                <td class="order-number">
+                  <a href="javascript:void(0);" [routerLink]="['/order', order.id]">
+                    {{$index + 1 + (currentOrderPage - 1) * ordersLimit}}. {{order.invoiceNumber}}
+                  </a>
+                </td>
+                <td class="order-date">
+                  <a href="javascript:void(0);" [routerLink]="['/order', order.id]">
+                    {{convertDateFormat(order.createdAt)}}
+                  </a>
+                </td>
+                <td class="order-status d-sm-show">
+                  <a href="javascript:void(0);" [routerLink]="['/order', order.id]">
+                    <span class="acc-status-badge">{{order.onlineData?.onlineStatus || order.status || 'Pending'}}</span>
+                  </a>
+                </td>
+                <td class="order-total">
+                  <a href="javascript:void(0);" [routerLink]="['/order', order.id]">
+                    {{ currentCurrency.symbol }} {{ getConvertedPrice(order.total) }}
+                  </a>
+                </td>
+                <td class="order-action d-sm-show">
+                  <a href="javascript:void(0);" [routerLink]="['/order', order.id]" class="acc-view-btn">
+                    {{"View" | translate}}
+                  </a>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+
+          <!-- Pagination -->
+          <div class="acc-pagination">
+            <button class="acc-page-btn" [class.acc-page-btn--disabled]="!hasPreviousOrderPage"
+              [disabled]="!hasPreviousOrderPage" (click)="previousOrderPage()" type="button">
+              <i class="fas fa-chevron-left"></i> {{"Previous" | translate}}
+            </button>
+            <button class="acc-page-btn" [class.acc-page-btn--disabled]="!hasNextOrderPage"
+              [disabled]="!hasNextOrderPage" (click)="nextOrderPage()" type="button">
+              {{"Next" | translate}} <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      }
+
+    </div>
+  </div>
+
+  }
+}

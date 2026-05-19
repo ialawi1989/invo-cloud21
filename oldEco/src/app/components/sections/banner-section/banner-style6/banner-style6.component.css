@@ -1,0 +1,374 @@
+/* ========================================
+   THEME 8 VIDEO BANNER - OPTIMIZED CSS
+   ======================================== */
+
+/* Base Typography & Global */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  margin: 0;
+  font-family: Poppins, sans-serif;
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: #666;
+}
+
+p {
+  margin: 0 0 2rem;
+  font-weight: 400;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Poppins, sans-serif;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #222;
+  margin: 0 0 2rem;
+}
+
+h3 {
+  font-size: 3rem;
+}
+
+h5 {
+  font-size: 1.8rem;
+}
+
+/* ========================================
+   SECTION STRUCTURE
+   ======================================== */
+
+.section-content {
+  position: relative;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  min-height: 350px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.section-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.section-text {
+  position: relative;
+  z-index: 2;
+}
+
+/* ========================================
+   BANNER STYLES
+   ======================================== */
+
+.banner {
+  position: relative;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  font-size: 1rem;
+  padding: 0;
+}
+
+.video-banner {
+  padding: 12.55rem 0 11.95rem;
+}
+
+.video-banner .banner-content {
+  position: relative;
+  text-align: center;
+}
+
+.banner-subtitle {
+  margin-bottom: 0.6rem;
+  font-size: 2rem;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+.banner-title {
+  margin-bottom: 2.4rem;
+  font-size: 4rem;
+  line-height: 1.125;
+  letter-spacing: -0.035em;
+}
+
+.video-banner .banner-title {
+  font-size: 5rem;
+  margin-bottom: 2.4rem;
+}
+
+/* ========================================
+   TEXT & TYPOGRAPHY UTILITIES
+   ======================================== */
+
+.text-center {
+  text-align: center !important;
+}
+
+.text-uppercase {
+  text-transform: uppercase !important;
+}
+
+.font-secondary {
+  font-family: "Oswald", sans-serif !important;
+}
+
+.font-weight-bold {
+  font-weight: 700 !important;
+}
+
+.font-weight-normal {
+  font-weight: 400 !important;
+}
+
+.ls-m {
+  letter-spacing: -0.025em !important;
+}
+
+.ls-normal {
+  letter-spacing: 0 !important;
+}
+
+/* ========================================
+   MARGIN & PADDING UTILITIES
+   ======================================== */
+
+.mb-3 {
+  margin-bottom: 1.5rem !important;
+}
+
+.mb-10 {
+  margin-bottom: 5rem !important;
+}
+
+/* ========================================
+   BUTTON STYLES
+   ======================================== */
+
+.btn {
+  display: inline-block;
+  border: 2px solid #e4eaec;
+  background-color: #e4eaec;
+  color: #222;
+  outline: 0;
+  padding: 1.22em 2.78em;
+  font-weight: 700;
+  font-size: 1.4rem;
+  font-family: Poppins, sans-serif;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: uppercase;
+  text-align: center;
+  transition: color 0.3s, border-color 0.3s, background-color 0.3s, box-shadow 0.3s;
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.btn:active,
+.btn:focus,
+.btn:hover {
+  color: #222;
+  border-color: #cfdadd;
+  background-color: #cfdadd;
+  transform: scale(1.033);
+}
+
+.btn-outline {
+  border: 2px solid #e4eaec;
+  color: #666;
+  background-color: transparent;
+}
+
+.btn-outline:active,
+.btn-outline:focus,
+.btn-outline:hover {
+  border-color: #666;
+  background-color: #666;
+  color: #fff;
+}
+
+.btn-white {
+  color: #222;
+  background-color: #fff;
+  border-color: #fff;
+}
+
+.btn-white:active,
+.btn-white:focus,
+.btn-white:hover {
+  color: #fff;
+  border-color: #ff5659;
+  background-color: #ff5659;
+  transform: scale(1.033);
+}
+
+.btn-white.btn-outline {
+  color: #fff;
+  background-color: transparent;
+  border-color: #fff;
+}
+
+.btn-white.btn-outline:active,
+.btn-white.btn-outline:focus,
+.btn-white.btn-outline:hover {
+  color: #ff5659;
+}
+
+/* ========================================
+   ANIMATION UTILITIES
+   ======================================== */
+
+@keyframes blurIn {
+  0% {
+    opacity: 0;
+    filter: blur(20px);
+    transform: scale(1.2);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+.appear-animatee {
+  animation-name: blurIn;
+}
+
+/* ========================================
+   RESPONSIVE STYLES
+   ======================================== */
+
+@media (max-width: 991px) {
+  .video-banner {
+    padding: 5rem 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .banner {
+    font-size: 0.8rem;
+  }
+
+  .video-banner .banner-title {
+    font-size: 3.6rem;
+  }
+
+  .video-banner {
+    padding: 5rem 0;
+  }
+}
+
+@media (max-width: 575px) {
+  .banner {
+    font-size: 0.7rem;
+  }
+
+  .video-banner {
+    padding: 3rem 0;
+  }
+
+  .banner-subtitle {
+    font-size: 1.6rem;
+  }
+
+  .banner-title {
+    font-size: 2.4rem;
+  }
+
+  .btn {
+    padding: 1em 2em;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .banner {
+    font-size: 0.65rem;
+  }
+
+  .video-banner {
+    padding: 2rem 0;
+  }
+
+  .banner-subtitle {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .banner-title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn {
+    padding: 0.9em 1.8em;
+    font-size: 1.1rem;
+  }
+
+  .mb-10 {
+    margin-bottom: 3rem !important;
+  }
+}
+
+/* ========================================
+   DARK THEME SUPPORT
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #151515;
+    color: #ccc;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #fff;
+  }
+
+  .btn-outline {
+    color: #fff;
+    border-color: #666;
+  }
+
+  .btn-outline:hover {
+    background-color: #666;
+  }
+}
+
+
+
+.section-youtube-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+
+  iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 220vh); 
+    height: max(100%, 80vw);
+    transform: translate(-50%, -50%);
+    border: 0;
+    pointer-events: none;
+  }
+}

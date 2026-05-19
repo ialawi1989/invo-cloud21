@@ -6,6 +6,7 @@ import { bankingOverview } from '../definitions/bankingOverview';
 import { billingPaymentsSecurity } from '../definitions/billingPaymentsSecurity';
 import { billingSecurity } from '../definitions/billingSecurity';
 import { billOfEntrySecurity } from '../definitions/billOfEntrySecurity';
+import { blogSecurity } from '../definitions/blogSecurity';
 import { branchesConnectionSecurity } from '../definitions/branchesConnectionSecurity';
 import { branchPaymentsSecurity } from '../definitions/branchPaymentsSecurity';
 import { branchSettingsSecurity } from '../definitions/branchSettingsSecurity';
@@ -170,6 +171,7 @@ export class Privilege {
   websiteBuilderSecurity         = websiteBuilderSecurity();
   pageBuilderSecurity            = pageBuilderSecurity();
   websiteSettingsSecurity        = websiteSettingsSecurity();
+  blogSecurity                   = blogSecurity();
   reportsSecurity                = reportsSecurity();
   privilegeSecurity              = privilegeSecurity();
   accountSecurity                = accountSecurity();

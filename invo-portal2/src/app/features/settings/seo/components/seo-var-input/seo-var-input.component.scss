@@ -1,0 +1,137 @@
+// SEO template input with chip rendering for `{{ token }}` markers.
+// Contenteditable field plus a "+ Add Variable" popover.
+
+:host { position: relative; display: block; }
+
+.vi {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vi__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vi__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.vi__add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-brand-700, #0e7490);
+  cursor: pointer;
+  &:hover { text-decoration: underline; }
+  span { font-size: 14px; line-height: 1; }
+}
+
+// ── Contenteditable field ───────────────────────────────────────────────
+.vi__input {
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 10px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  line-height: 1.7;            // breathing room around inline chips
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+
+  &:hover { border-color: #cbd5e1; }
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-500, #32acc1);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, .12);
+  }
+
+  // Empty-state placeholder. The contenteditable doesn't fire the
+  // `:placeholder-shown` pseudo, so we project `data-placeholder`
+  // via CSS — visible only while the node has no text or chips.
+  &:empty::before {
+    content: attr(data-placeholder);
+    color: #94a3b8;
+    pointer-events: none;
+  }
+}
+.vi__input--textarea {
+  min-height: 76px;
+  white-space: pre-wrap;
+}
+
+// ── Variable chip ───────────────────────────────────────────────────────
+// Chips are created via `document.createElement` inside the
+// contenteditable, so they don't carry Angular's `_ngcontent`
+// attribute. The component is `ViewEncapsulation.None` so this
+// rule applies globally.
+.vi__chip {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 2px 10px;
+  background: #0f172a;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  user-select: none;
+  cursor: default;
+  vertical-align: 1px;
+}
+
+// ── Popover ─────────────────────────────────────────────────────────────
+// The popover is created via `document.createElement` and appended
+// to the drawer's overlay pane (or `document.body`) so it can
+// escape the drawer's `overflow: auto`. Component uses
+// `ViewEncapsulation.None` so these rules reach the detached node.
+.vi__popover {
+  position: absolute;
+  width: min(320px, 100%);
+  max-height: 320px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, .12);
+  padding: 6px 0;
+  z-index: 50;
+}
+
+.vi__group-head {
+  padding: 8px 14px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.vi__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 8px 14px;
+  background: transparent;
+  border: 0;
+  text-align: inline-start;
+  font: inherit;
+  cursor: pointer;
+  color: #0f172a;
+  &:hover { background: #f1f5f9; }
+}
+.vi__item-title { font-size: 13px; font-weight: 500; }
+.vi__item-hint  { font-size: 11px; color: #94a3b8; margin-top: 2px; }

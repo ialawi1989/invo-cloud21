@@ -6,7 +6,7 @@ import { ModalRef, ModalService } from '../../../../shared/modal/modal.service';
 import { ContentField, ContentItemTemplate } from '../models/content-library.model';
 import { ContentLibraryService } from '../services/content-library.service';
 import { Website } from '../../models/website.model';
-import { MediaPickerModalComponent, MediaPickerConfig } from '../../../media/components/media-picker';
+import { MediaPickerModalComponent, MediaPickerConfig } from '../../../settings/media/components/media-picker';
 import { ReferencePickerComponent, RefItem } from './reference-picker.component';
 
 export interface ItemDrawerData {

@@ -94,49 +94,8 @@
     min-width: 0;
   }
 
-  // ── Layout selector ──────────────────────────────────────────
-  &__layout {
-    display: inline-flex;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 2px;
-    gap: 2px;
-  }
-
-  &__layout-btn {
-    appearance: none;
-    background: transparent;
-    border: 0;
-    padding: 4px 6px;
-    border-radius: 6px;
-    cursor: pointer;
-    color: #64748b;
-    transition: background 120ms ease, color 120ms ease;
-
-    &:hover { background: #f1f5f9; color: #0f172a; }
-    &--on {
-      background: var(--color-brand-50, #ecfeff);
-      color: var(--color-brand-700, #0e7490);
-    }
-  }
-
-  &__layout-glyph {
-    display: inline-grid;
-    width: 26px;
-    height: 14px;
-    gap: 2px;
-
-    > span {
-      background: currentColor;
-      border-radius: 2px;
-    }
-
-    &--2-1    { grid-template-columns: 2fr 1fr; }
-    &--1-1    { grid-template-columns: 1fr 1fr; }
-    &--1-2    { grid-template-columns: 1fr 2fr; }
-    &--single { grid-template-columns: 1fr; }
-  }
+  // Layout selector now uses `<app-segmented-toggle>` — no extra
+  // styles needed; the shared toggle handles the visual rhythm.
 
   &__row-remove {
     appearance: none;

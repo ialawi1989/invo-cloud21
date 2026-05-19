@@ -1,0 +1,70 @@
+<div class="mb-6">
+  <div class="product product-list pls1">
+  <figure class="pls1__img">
+    <a (click)="gotoProductPage(product)">
+      <app-lazy-image src="{{(product.mediaUrl?.defaultUrl || product.mediaUrl)+'?width=300&height=300' || 'assets/images/default-blank-image.png'}}" alt=" "
+        width="100%" height="100%" [objectFit]="template?.settings?.product_image_size || 'cover'">
+      </app-lazy-image>
+    </a>
+
+    <div class="product-label-group">
+      @if(product.discountAmount) {
+      <label class="pls1__badge">{{"Sale!" | translate}}</label>
+      }
+    </div>
+  </figure>
+
+  <div class="pls1__body">
+    <h3 class="pls1__name">
+      <a href="javascript:void(0);" (click)="gotoProductPage(product)">
+        {{ appService.lang == 'ar' ? product.translation && product.translation.name?.ar ? product.translation.name?.ar
+        : product.name : product.name }}
+      </a>
+    </h3>
+
+    <div class="pls1__price">
+      <app-product-price [product]="product" [currentCurrency]="currentCurrency"
+        [companyData]="companyData"></app-product-price>
+    </div>
+
+    <p class="pls1__desc">
+      {{ appService.lang == 'ar' ? product.translation && product.translation.description?.ar ?
+      product.translation.description?.ar : product.description : product.description }}
+    </p>
+
+    <div class="pls1__actions">
+      @if(!appService.viewOnly){
+        @if(product.showAddCartButton()) {
+        <a href="javascript:void(0);" class="pls1__btn pls1__btn--primary" data-toggle="modal"
+          data-target="#addCartModal" title="Add to cart" (click)="addItemToCart({
+            productId: product.id,
+            qty: 1,
+            showCart: true
+          })">
+          <i class="d-icon-bag mr-2"></i><span>{{"Add to cart" | translate}}</span>
+        </a>
+        }
+        @if(product.showViewOptionButton()) {
+        <a href="javascript:void(0);" (click)="gotoProductPage(product)" class="pls1__btn pls1__btn--primary clickable"
+          data-toggle="modal" data-target="#addCartModal" title="View Product">
+          <span>{{"View Product" | translate}}</span>
+        </a>
+        }
+        @if(product.showOutOfStockButton()){
+        <a href="javascript:void(0);" class="pls1__btn pls1__btn--disabled" data-toggle="modal"
+          data-target="#addCartModal" title="Add to cart">
+          <span>{{"Out of stock" | translate}}</span>
+        </a>
+        }
+
+        <a href="javascript:void(0);" class="pls1__wish" title="Add to wishlist"
+          (click)="addItemToWishlist(product)">
+          <i [class]="isInWishList(product.id) ? 'd-icon-heart-full' : 'd-icon-heart'"
+            [class.active]="isInWishList(product.id)"></i>
+        </a>
+      }
+    </div>
+  </div>
+</div>
+<hr class="d-xs-none d-sm-show">
+</div>

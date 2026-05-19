@@ -1,0 +1,71 @@
+{
+  "SERVICE_MANAGEMENT": {
+    "LIST": {
+      "TITLE":              "Service management",
+      "SUBTITLE":           "Define how the POS handles each service: dine-in, pickup, delivery, and more.",
+      "SEARCH_PLACEHOLDER": "Search services…",
+      "SERVICE_NAME":       "Service name",
+      "TYPE":               "Type",
+      "ADD_NEW":            "Add service",
+      "REORDER":            "Reorder",
+      "APPLY":              "Apply order",
+      "EMPTY":              "No services yet.",
+      "NO_MATCH":           "No services match your search.",
+      "DELETE_TITLE":       "Delete service",
+      "DELETE_MESSAGE":     "Delete \"{{name}}\"? This can't be undone."
+    },
+
+    "FORM": {
+      "NEW_TITLE":         "New service",
+      "EDIT_TITLE":        "Edit {{name}}",
+      "DETAILS":           "Details",
+      "BRANCH_SETTINGS":   "Per-branch settings",
+      "BRANCH_SETTINGS_HINT": "Configure each branch separately. Toggle the dot to disable a branch.",
+      "BRANCH_FALLBACK":   "Branch",
+      "NAME":              "Service name",
+      "NAME_PLACEHOLDER":  "e.g. Dine-in · Curbside · Express delivery",
+      "TYPE":              "Service type",
+      "TYPE_PLACEHOLDER":  "Pick a type…",
+      "TYPE_HINT":         "Determines which per-branch settings show below.",
+      "TYPE_LOCKED_HINT":  "Type can't change once a service is saved.",
+      "IMAGE_TITLE":       "Image",
+      "CHOOSE_IMAGE":      "Choose image",
+      "REPLACE_IMAGE":     "Replace image",
+      "OPTIONS_TITLE":     "Options",
+      "DEFAULT_MENU":      "Default menu",
+      "DEFAULT_MENU_PLACEHOLDER": "Pick a menu…",
+      "LOCK_MENU":         "Lock menu",
+      "LOCK_MENU_HINT":    "Cashiers can't change the menu mid-shift.",
+      "LOCK_CHANGE_SERVICE": "Lock service switch",
+      "LOCK_CHANGE_SERVICE_HINT": "Cashiers can't switch between services mid-shift.",
+      "ERR_NAME_REQUIRED": "Name is required.",
+      "ERR_TYPE_REQUIRED": "Pick a service type."
+    },
+
+    "TYPES": {
+      "DINE_IN":   "Dine-in",
+      "PICK_UP":   "Pickup",
+      "DELIVERY":  "Delivery",
+      "CAR_HOP":   "Car hop",
+      "SALON":     "Salon",
+      "CATERING":  "Catering",
+      "RETAIL":    "Retail"
+    },
+
+    "FIELDS": {
+      "CHARGE":                          "Charge",
+      "CHARGE_PLACEHOLDER":              "Pick a surcharge…",
+      "PRICE":                           "Price",
+      "PRICE_PLACEHOLDER":               "Pick a price label…",
+      "ENABLED":                         "Enabled at this branch",
+      "ENABLED_HINT":                    "Turn off to hide this service at this branch without deleting it.",
+      "SHOW_TABLE_SELECTION":            "Show table selection at checkout",
+      "ONLY_ONE_TICKET_PER_TABLE":       "Only one ticket per table",
+      "SHOW_CUSTOMER_PHONE_IN_RESERVATION": "Show customer phone in reservation",
+      "ENFORCE_GUEST_COUNT":             "Enforce guest count",
+      "DELIVERY_CHARGE":                 "Delivery charge",
+      "DRIVER_SELECTS_ORDER":            "Driver selects order",
+      "ENABLE_DRIVER_OPTIONS":           "Enable driver options"
+    }
+  }
+}

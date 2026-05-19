@@ -1,0 +1,71 @@
+{
+  "SERVICE_MANAGEMENT": {
+    "LIST": {
+      "TITLE":              "إدارة الخدمات",
+      "SUBTITLE":           "حدّد كيف تتعامل نقطة البيع مع كل خدمة: داخل المطعم، استلام، توصيل، وغيرها.",
+      "SEARCH_PLACEHOLDER": "ابحث في الخدمات…",
+      "SERVICE_NAME":       "اسم الخدمة",
+      "TYPE":               "النوع",
+      "ADD_NEW":            "إضافة خدمة",
+      "REORDER":            "إعادة الترتيب",
+      "APPLY":              "تطبيق الترتيب",
+      "EMPTY":              "لا توجد خدمات بعد.",
+      "NO_MATCH":           "لا توجد نتائج للبحث.",
+      "DELETE_TITLE":       "حذف الخدمة",
+      "DELETE_MESSAGE":     "حذف \"{{name}}\"؟ لا يمكن التراجع."
+    },
+
+    "FORM": {
+      "NEW_TITLE":         "خدمة جديدة",
+      "EDIT_TITLE":        "تعديل {{name}}",
+      "DETAILS":           "التفاصيل",
+      "BRANCH_SETTINGS":   "إعدادات حسب الفرع",
+      "BRANCH_SETTINGS_HINT": "اضبط كل فرع على حدة. أوقف النقطة لتعطيل الفرع.",
+      "BRANCH_FALLBACK":   "الفرع",
+      "NAME":              "اسم الخدمة",
+      "NAME_PLACEHOLDER":  "مثل داخل المطعم · استلام · توصيل سريع",
+      "TYPE":              "نوع الخدمة",
+      "TYPE_PLACEHOLDER":  "اختر نوعًا…",
+      "TYPE_HINT":         "يحدد إعدادات الفرع التي تظهر أدناه.",
+      "TYPE_LOCKED_HINT":  "لا يمكن تغيير النوع بعد الحفظ.",
+      "IMAGE_TITLE":       "الصورة",
+      "CHOOSE_IMAGE":      "اختيار صورة",
+      "REPLACE_IMAGE":     "استبدال الصورة",
+      "OPTIONS_TITLE":     "الخيارات",
+      "DEFAULT_MENU":      "القائمة الافتراضية",
+      "DEFAULT_MENU_PLACEHOLDER": "اختر قائمة…",
+      "LOCK_MENU":         "قفل القائمة",
+      "LOCK_MENU_HINT":    "لا يستطيع الكاشير تغيير القائمة أثناء الوردية.",
+      "LOCK_CHANGE_SERVICE": "قفل تبديل الخدمة",
+      "LOCK_CHANGE_SERVICE_HINT": "لا يستطيع الكاشير التبديل بين الخدمات أثناء الوردية.",
+      "ERR_NAME_REQUIRED": "الاسم مطلوب.",
+      "ERR_TYPE_REQUIRED": "اختر نوع الخدمة."
+    },
+
+    "TYPES": {
+      "DINE_IN":   "داخل المطعم",
+      "PICK_UP":   "استلام",
+      "DELIVERY":  "توصيل",
+      "CAR_HOP":   "Car Hop",
+      "SALON":     "صالون",
+      "CATERING":  "تموين",
+      "RETAIL":    "بيع تجزئة"
+    },
+
+    "FIELDS": {
+      "CHARGE":                          "الرسوم",
+      "CHARGE_PLACEHOLDER":              "اختر رسومًا…",
+      "PRICE":                           "السعر",
+      "PRICE_PLACEHOLDER":               "اختر قائمة أسعار…",
+      "ENABLED":                         "مفعّلة في هذا الفرع",
+      "ENABLED_HINT":                    "أوقف لإخفاء الخدمة في هذا الفرع دون حذفها.",
+      "SHOW_TABLE_SELECTION":            "إظهار اختيار الطاولة عند الدفع",
+      "ONLY_ONE_TICKET_PER_TABLE":       "تذكرة واحدة فقط لكل طاولة",
+      "SHOW_CUSTOMER_PHONE_IN_RESERVATION": "إظهار هاتف العميل في الحجز",
+      "ENFORCE_GUEST_COUNT":             "إلزام إدخال عدد الضيوف",
+      "DELIVERY_CHARGE":                 "رسوم التوصيل",
+      "DRIVER_SELECTS_ORDER":            "السائق يختار الطلب",
+      "ENABLE_DRIVER_OPTIONS":           "تفعيل خيارات السائق"
+    }
+  }
+}

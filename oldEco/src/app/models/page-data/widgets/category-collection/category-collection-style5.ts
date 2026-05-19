@@ -1,0 +1,58 @@
+import * as uuid from 'uuid';
+import { LogoImage } from '../../pageData';
+
+export class CategoryCollectionStyle5 {
+
+  title = "";
+  titleColor = "#000";
+  categories: CollectionCategoryStyle5[] = [];
+  translation:any = {};
+
+  addCollectionCategoryStyle5() {
+    this.categories.push(new CollectionCategoryStyle5());
+  }
+
+  ParseJson(json: any): void {
+    let _data: CollectionCategoryStyle5;
+    let temp;
+    for (const key in json) {
+      if (key == "categories") {
+        this.categories = [];
+        temp = json[key];
+        for (const propName in temp) {
+          _data = new CollectionCategoryStyle5();
+          _data.ParseJson(temp[propName]);
+          this.categories.push(_data);
+        }
+      } else if (key in this) {
+        this[key as keyof typeof this] = json[key];
+      }
+    }
+  }
+
+}
+
+export class CollectionCategoryStyle5 {
+  id = "";
+  categoryId = "";
+  departmentId = "";
+  url = "";
+  mediaUrl: LogoImage = new LogoImage();
+  title = "";
+  
+  constructor() {
+    this.id = uuid.v4()
+  }
+  ParseJson(json: any): void {
+    for (const key in json) {
+      if (key == "mediaUrl") {
+        const _image = new LogoImage();
+        _image.ParseJson(json[key])
+        this[key] = _image
+      } else
+        if (key in this) {
+          this[key as keyof typeof this] = json[key];
+        }
+    }
+  }
+}

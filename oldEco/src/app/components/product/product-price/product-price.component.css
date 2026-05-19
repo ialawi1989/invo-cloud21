@@ -1,0 +1,10 @@
+.price {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: var(--primary-color);
+  }
+  
+.price del {
+    color: #999999;
+    font-size: .85em;
+  }

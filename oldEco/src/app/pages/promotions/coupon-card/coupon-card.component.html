@@ -1,0 +1,106 @@
+<!-- coupon-card.component.html -->
+
+<div class="cpn-card" [class.cpn-card--expired]="coupon.status === 'EXPIRED'"
+  [class.cpn-card--used]="coupon.status === 'USED'" [class.cpn-card--inactive]="coupon.status === 'INACTIVE'"
+  [class.cpn-card--canceled]="coupon.status === 'CANCELED'" [class.cpn-card--active]="coupon.status === 'ACTIVE'"
+  (click)="onSelect()" role="button" tabindex="0" (keydown.enter)="onSelect()" (keydown.space)="onSelect()">
+
+  <!-- ── Top section ─────────────────────────────────────────── -->
+  <div class="cpn-top">
+
+    <!-- Icon + name + code -->
+    <div class="cpn-identity">
+      <div class="cpn-icon-wrap">
+        <i class="fas fa-ticket-alt"></i>
+      </div>
+      <div class="cpn-info">
+        @if (coupon.couponSet) {
+        <p class="cpn-name">
+          {{ translate(coupon.couponSet.name, appService.lang) }}
+          {{ 'PROMOTIONS.COUPON.COUPON' | translate }}
+        </p>
+        }
+        <span class="cpn-code">{{ coupon.code }}</span>
+      </div>
+    </div>
+
+    <!-- Status badge -->
+    <div class="cpn-status" [class.cpn-status--active]="coupon.status === 'ACTIVE'"
+      [class.cpn-status--used]="coupon.status === 'USED'" [class.cpn-status--expired]="coupon.status === 'EXPIRED'"
+      [class.cpn-status--inactive]="coupon.status === 'INACTIVE'"
+      [class.cpn-status--canceled]="coupon.status === 'CANCELED'">
+      {{ ('PROMOTIONS.COUPON.COUPON_STATUS.' + coupon.status) | translate }}
+    </div>
+
+  </div>
+
+  <!-- ── Perforated divider ──────────────────────────────────── -->
+  <div class="cpn-divider">
+    <div class="cpn-notch cpn-notch--left"></div>
+    <div class="cpn-dashes"></div>
+    <div class="cpn-notch cpn-notch--right"></div>
+  </div>
+
+  <!-- ── Discount body ───────────────────────────────────────── -->
+  <div class="cpn-body">
+
+    @if (isDiscountSet(coupon.couponSet)) {
+    <div class="cpn-discount-row">
+      <div class="cpn-discount-badge">
+        {{ coupon.couponSet.percentage }}%
+        <!-- <span class="cpn-off-label">{{ 'PROMOTIONS.COUPON.OFF' | translate: { percentage: '' } | trim }}</span> -->
+      </div>
+      <p class="cpn-condition">
+        @if (coupon.couponSet.minimumOrder > 0) {
+        {{
+        'PROMOTIONS.COUPON.GET_PERCENT_MIN_ORDER'
+        | translate: {
+        percentage: coupon.couponSet.percentage,
+        minimumOrder: coupon.couponSet.minimumOrder
+        }
+        }}
+        } @else {
+        {{
+        'PROMOTIONS.COUPON.GET_PERCENT_ANY_ORDER'
+        | translate: { percentage: coupon.couponSet.percentage }
+        }}
+        }
+      </p>
+    </div>
+    }
+
+    @if (isProductSet(coupon.couponSet)) {
+    <div class="cpn-discount-row">
+      <div class="cpn-discount-badge cpn-discount-badge--product">
+        @if (coupon.couponSet.products!.percentage === 100) {
+        <i class="fas fa-gift"></i>
+        <span>{{ 'Free' }}</span>
+        } @else {
+        {{ coupon.couponSet.products!.percentage }}%
+        <span class="cpn-off-label">OFF</span>
+        }
+      </div>
+      <p class="cpn-condition">
+        {{
+        coupon.couponSet.products!.productsInfo?.name
+        ? translate(coupon.couponSet.products!.productsInfo!.name, appService.lang)
+        : 'Unknown Product'
+        }}
+      </p>
+    </div>
+    }
+
+  </div>
+
+  <!-- ── Footer ──────────────────────────────────────────────── -->
+  <div class="cpn-footer">
+    <span class="cpn-expiry">
+      <i class="far fa-clock"></i>
+      {{ 'PROMOTIONS.COUPON.EXPIRES' | translate }}: {{ coupon.expiryDate | date: 'MMM d, y' }}
+    </span>
+    <span class="cpn-type-label">
+      {{ 'PROMOTIONS.COUPON.DISCOUNT' | translate }}
+    </span>
+  </div>
+
+</div>

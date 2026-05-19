@@ -204,6 +204,37 @@ export const inventoryFields: Fields = {
     isDisabled: false,
     isRequired: false,
   },
+  nutrition: {
+    isVisible: true,
+    isDisabled: false,
+    isRequired: false,
+
+    kcal: {
+      isVisible: true,
+      isDisabled: false,
+      isRequired: false,
+    },
+    fat: {
+      isVisible: true,
+      isDisabled: false,
+      isRequired: false,
+    },
+    carb: {
+      isVisible: true,
+      isDisabled: false,
+      isRequired: false,
+    },
+    protien: {
+      isVisible: true,
+      isDisabled: false,
+      isRequired: false,
+    },
+  },
+  allergens: {
+    isVisible: true,
+    isDisabled: false,
+    isRequired: false,
+  },
   branchProduct: {
     available: true,
     availableOnline: true,

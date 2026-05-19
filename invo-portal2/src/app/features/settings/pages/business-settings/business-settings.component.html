@@ -141,16 +141,10 @@
             <label class="field-label" for="bs-vat">{{ 'SETTINGS.BUSINESS.VAT_NUMBER' | translate }}</label>
             <input id="bs-vat" type="text" class="input" formControlName="vatNumber"/>
           </div>
-          <div class="field field--toggle">
-            <label class="toggle">
-              <input type="checkbox" formControlName="isInclusiveTax"/>
-              <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-              <span class="toggle__label">
-                <span class="field-label">{{ 'SETTINGS.BUSINESS.INCLUSIVE_TAX' | translate }}</span>
-                <span class="field-hint">{{ 'SETTINGS.BUSINESS.INCLUSIVE_TAX_HINT' | translate }}</span>
-              </span>
-            </label>
-          </div>
+          <app-toggle
+            formControlName="isInclusiveTax"
+            [label]="'SETTINGS.BUSINESS.INCLUSIVE_TAX' | translate"
+            [hint]="'SETTINGS.BUSINESS.INCLUSIVE_TAX_HINT' | translate"/>
         </div>
       </div>
     </section>

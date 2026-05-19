@@ -29,6 +29,8 @@ import { ModalService } from '@shared/modal/modal.service';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { TimePickerComponent } from '@shared/components/time-picker/time-picker.component';
 import { ColorPickerComponent } from '@shared/components/color-picker/color-picker.component';
+import { ToggleComponent } from '@shared/components/toggle/toggle.component';
+import { ToastService } from '@shared/components/toast/toast.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import {
@@ -78,6 +80,7 @@ import {
     DatePickerComponent,
     TimePickerComponent,
     ColorPickerComponent,
+    ToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './custom-fields-manager.component.html',
@@ -91,6 +94,7 @@ export class CustomFieldsManagerComponent implements OnInit, CanLeaveComponent {
   private router     = inject(Router);
   private cdr        = inject(ChangeDetectorRef);
   private modal      = inject(ModalService);
+  private toast      = inject(ToastService);
   private sanitizer  = inject(DomSanitizer);
 
   loading = signal<boolean>(false);
@@ -490,18 +494,25 @@ export class CustomFieldsManagerComponent implements OnInit, CanLeaveComponent {
         ...this.active().map(stripUi),
         ...this.deleted().map(stripUi),
       ];
-      const ok = await this.service.save(this.entity().type, payload);
-      if (ok) {
-        this.service.invalidate(this.entity().type);
-        // Refresh the snapshot so the leave-confirm guard sees a clean
-        // state — `saving.set(false)` in the finally block fires before
-        // the route guard runs, so without this the guard would still
-        // see "current ≠ snapshot" and prompt the user.
-        this.snapshot = {
-          active:  this.active().map(clone),
-          deleted: this.deleted().map(clone),
-        };
-        this.router.navigate(['/settings/custom-fields']);
+      try {
+        const ok = await this.service.save(this.entity().type, payload);
+        if (ok) {
+          this.service.invalidate(this.entity().type);
+          // Refresh the snapshot so the leave-confirm guard sees a clean
+          // state — `saving.set(false)` in the finally block fires before
+          // the route guard runs, so without this the guard would still
+          // see "current ≠ snapshot" and prompt the user.
+          this.snapshot = {
+            active:  this.active().map(clone),
+            deleted: this.deleted().map(clone),
+          };
+          this.toast.success('COMMON.SAVED_OK');
+          this.router.navigate(['/settings/custom-fields']);
+        } else {
+          this.toast.error('COMMON.SAVE_FAILED');
+        }
+      } catch (e: any) {
+        this.toast.error('COMMON.SAVE_FAILED', e?.message);
       }
     } finally {
       this.saving.set(false);

@@ -18,7 +18,7 @@ import {
   DOC_TYPE_TRANSACTIONAL_FIELDS,
   paperHeightCm,
   paperWidthCm,
-} from '@features/document-builder/services/document-template.types';
+} from '@features/settings/document-builder/services/document-template.types';
 import { resolveTokens, readArray, type DocumentRenderData } from './token-resolve';
 import { PAPER_LAYOUT, FIELD_TOKEN, type PaperFieldConfig } from './paper-config';
 

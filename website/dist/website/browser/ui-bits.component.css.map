@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;9854337ab35a1ecb3b8dd570e1cfa57ec513951b40ed031a17212ca333535d20;D:/Users/Invo/Downloads/angular-customizer/website/src/app/features/blog/components/ui-bits.component.ts"],
+  "sourcesContent": ["\n    :host { display: block; }\n    .empty { text-align: center; padding: 80px 24px; color: rgba(0,0,0,.55); }\n    .icon { font-size: 56px; margin-bottom: 8px; }\n    h3 { margin: 0 0 6px; }\n    p { margin: 0; }\n  "],
+  "mappings": ";AACI;AAAQ,WAAS;AAAO;AACxB,CAAC;AAAQ,cAAY;AAAQ,WAAS,KAAK;AAAM,SAAO,KAAK,CAAC,EAAC,CAAC,EAAC,CAAC,EAAC;AAAM;AACzE,CAAC;AAAO,aAAW;AAAM,iBAAe;AAAK;AAC7C;AAAK,UAAQ,EAAE,EAAE;AAAK;AACtB;AAAI,UAAQ;AAAG;",
+  "names": []
+}

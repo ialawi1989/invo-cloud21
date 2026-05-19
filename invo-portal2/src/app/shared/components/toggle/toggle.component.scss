@@ -1,0 +1,107 @@
+// Shareable toggle — iOS-style switch with brand-cyan fill when on.
+// Three size variants share the same proportions so a `--sm` toggle
+// inside a dense option list reads the same as a `--lg` one in a
+// settings panel.
+
+:host {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.t-row {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font: inherit;
+
+  &--with-text {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  &--disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+  &:focus-visible { outline: 0; }
+  &:focus-visible .t-switch {
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.25);
+  }
+}
+
+// ── Switch chrome ────────────────────────────────────────────────
+// Track + thumb. Track flips from slate to brand-cyan; thumb slides
+// across when checked. The tick glyph inside the thumb is only
+// visible when checked (matches the first screenshot).
+.t-switch {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-block;
+  background: #cbd5e1;
+  border-radius: 999px;
+  transition: background 160ms ease;
+}
+.t-thumb {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: 2px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 50%;
+  color: var(--color-brand-600, #0891b2);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+  transition: inset-inline-start 160ms ease;
+}
+.t-tick {
+  // Slight fade-in so the tick doesn't pop in jarringly the moment
+  // the thumb starts sliding; the slide duration is 160ms.
+  animation: t-tick-in 120ms ease both;
+}
+@keyframes t-tick-in {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+// Size variants — each picks track width/height and matching thumb
+// size. Width is `2 * height` so the thumb has full travel room.
+.t-switch--sm { width: 32px; height: 18px; .t-thumb { width: 14px; height: 14px; } }
+.t-switch--md { width: 40px; height: 22px; .t-thumb { width: 18px; height: 18px; } }
+.t-switch--lg { width: 52px; height: 30px; .t-thumb { width: 26px; height: 26px; } }
+
+// ── Checked state ────────────────────────────────────────────────
+// `aria-checked` doubles as the source of truth so the same rules
+// match whether the toggle is used standalone or inside a form.
+.t-row[aria-checked='true'] {
+  .t-switch { background: var(--color-brand-500, #06b6d4); }
+  .t-switch--sm .t-thumb { inset-inline-start: calc(100% - 14px - 2px); }
+  .t-switch--md .t-thumb { inset-inline-start: calc(100% - 18px - 2px); }
+  .t-switch--lg .t-thumb { inset-inline-start: calc(100% - 26px - 2px); }
+}
+
+// ── Label / hint text ────────────────────────────────────────────
+.t-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  text-align: start;
+}
+.t-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+}
+.t-hint {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.5;
+}

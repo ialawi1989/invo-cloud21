@@ -1,0 +1,117 @@
+<div class="seo-landing">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+    <h1 class="page-title">{{ 'SEO.TITLE' | translate }}</h1>
+    <p class="page-sub">{{ 'SEO.SUBTITLE' | translate }}</p>
+  </header>
+
+  <!-- Original-language notice — informational only -->
+  <section class="notice">
+    <p class="notice__title">{{ 'SEO.ORIGINAL_LANG_NOTICE_TITLE' | translate }}</p>
+    <p class="notice__body">{{ 'SEO.ORIGINAL_LANG_NOTICE_BODY' | translate }}</p>
+    <a class="notice__link" href="#">{{ 'SEO.LEARN_MORE' | translate }}</a>
+  </section>
+
+  <!-- Edit-by-page-type catalog -->
+  <section class="card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'SEO.EDIT_BY_PAGE_TYPE' | translate }}</h2>
+      <p class="card__sub">
+        {{ 'SEO.EDIT_BY_PAGE_TYPE_DESC' | translate }}
+        <a class="card__link" href="#">{{ 'SEO.LEARN_MORE' | translate }}</a>
+      </p>
+    </header>
+
+    <div class="card__body type-grid">
+      <div class="type-grid__col">
+        @for (t of leftColumn; track t.slug) {
+          <a [routerLink]="['/settings/seo', t.slug]" class="type-tile">
+            <span class="type-tile__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   [innerHTML]="icon(t)"></svg>
+            </span>
+            <span class="type-tile__label">{{ t.labelKey | translate }}</span>
+            <svg class="type-tile__chevron" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        }
+      </div>
+      <div class="type-grid__col">
+        @for (t of rightColumn; track t.slug) {
+          <a [routerLink]="['/settings/seo', t.slug]" class="type-tile">
+            <span class="type-tile__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   [innerHTML]="icon(t)"></svg>
+            </span>
+            <span class="type-tile__label">{{ t.labelKey | translate }}</span>
+            <svg class="type-tile__chevron" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Site preferences -->
+  <section class="card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'SEO.SITE_PREFERENCES' | translate }}</h2>
+    </header>
+
+    <div class="card__body prefs">
+      <div class="prefs__row">
+        <div class="prefs__copy">
+          <p class="prefs__label">{{ 'SEO.ALLOW_INDEXING' | translate }}</p>
+          <p class="prefs__hint">{{ 'SEO.ALLOW_INDEXING_HINT' | translate }}</p>
+        </div>
+        <app-toggle
+          [checked]="allowIndexing()"
+          (checkedChange)="setAllowIndexing($event)"/>
+      </div>
+
+      <div class="prefs__row">
+        <div class="prefs__copy">
+          <p class="prefs__label">{{ 'SEO.GENERAL_OG_IMAGE' | translate }}</p>
+          <p class="prefs__hint">{{ 'SEO.GENERAL_OG_IMAGE_HINT' | translate }}</p>
+        </div>
+        <div class="prefs__og-image">
+          @if (generalOgImage()) {
+            <button type="button" class="prefs__og-thumb"
+                    (click)="pickGeneralOgImage()"
+                    [attr.aria-label]="'SEO.GENERAL_OG_IMAGE_CHANGE' | translate">
+              <img [src]="generalOgImage()" alt="og:image"/>
+              <span class="prefs__og-overlay">
+                {{ 'SEO.GENERAL_OG_IMAGE_CHANGE' | translate }}
+              </span>
+            </button>
+            <button type="button" class="prefs__og-remove"
+                    (click)="clearGeneralOgImage()">
+              {{ 'SEO.GENERAL_OG_IMAGE_REMOVE' | translate }}
+            </button>
+          } @else {
+            <button type="button" class="prefs__og-empty"
+                    (click)="pickGeneralOgImage()"
+                    [attr.aria-label]="'SEO.GENERAL_OG_IMAGE_PICK' | translate">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8"  y1="12" x2="16" y2="12"/>
+              </svg>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <app-loading-overlay [show]="loading() || saving()"/>
+</div>

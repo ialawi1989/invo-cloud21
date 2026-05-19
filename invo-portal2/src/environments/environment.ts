@@ -23,24 +23,40 @@ const DEV_DASHBOARD_URL  = 'http://localhost:4700';
 const PROD_WEBSITE_URL   = '';
 const DEV_WEBSITE_URL    = 'http://localhost:4600';
 
-/** Decide whether we're on a production host. Local + LAN ranges
- *  count as dev; everything else (i.e. a real public hostname) is
- *  treated as prod. Returns `false` during SSR / tests where there's
- *  no `window` so dev defaults take over safely. */
-function isProdHost(): boolean {
-  if (typeof window === 'undefined' || !window.location) return false;
+/** Deployment tier inferred from the page's hostname.
+ *
+ *   • `local`      — `localhost`, `127.0.0.1`, or any RFC1918 LAN IP.
+ *   • `dev`        — any host that includes the `.dev.invopos.` infix
+ *                    (admin lives at `*.dev.invopos.co`, storefront at
+ *                    `*.dev.invopos.shop`).
+ *   • `test`       — same shape with `.test.invopos.`.
+ *   • `production` — anything else (real public hostname).
+ *
+ *  Returns `production` during SSR / tests where there's no `window`,
+ *  because the only consumer is the storefront URL builder and the
+ *  production fall-back is the safest default for a tile that opens
+ *  an external link.
+ */
+export type Tier = 'local' | 'dev' | 'test' | 'production';
+
+function detectTier(): Tier {
+  if (typeof window === 'undefined' || !window.location) return 'production';
   const host = window.location.hostname;
-  if (!host) return false;
-  if (host === 'localhost' || host === '127.0.0.1') return false;
-  if (/^10\./.test(host))                            return false;
-  if (/^192\.168\./.test(host))                      return false;
-  if (/^172\.(1[6-9]|2\d|3[01])\./.test(host))       return false;
-  return true;
+  if (!host) return 'production';
+  if (host === 'localhost' || host === '127.0.0.1')      return 'local';
+  if (/^10\./.test(host))                                return 'local';
+  if (/^192\.168\./.test(host))                          return 'local';
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(host))           return 'local';
+  if (host.includes('.dev.invopos.'))                    return 'dev';
+  if (host.includes('.test.invopos.'))                   return 'test';
+  return 'production';
 }
 
-const isProd = isProdHost();
+const tier   = detectTier();
+const isProd = tier === 'production';
 
 export const environment = {
+  tier,
   production:   isProd,
   backendUrl:   isProd ? PROD_BACKEND_URL   : DEV_BACKEND_URL,
   dashboardUrl: isProd ? PROD_DASHBOARD_URL : DEV_DASHBOARD_URL,

@@ -27,18 +27,10 @@
             </label>
             <p class="field-hint">{{ 'SETTINGS.IMAGE_DISPLAY.FIT_HINT' | translate }}</p>
 
-            <div class="seg">
-              @for (f of fitOptions; track f) {
-                <button
-                  type="button"
-                  class="seg__btn"
-                  [class.seg__btn--active]="fit() === f"
-                  (click)="setFit(f)"
-                >
-                  {{ fitLabel(f) }}
-                </button>
-              }
-            </div>
+            <app-segmented-toggle
+              [options]="fitToggleOptions()"
+              [value]="fit()"
+              (valueChange)="setFit($any($event))"/>
           </div>
 
           <!-- ─── Position grid ─── -->
@@ -76,15 +68,33 @@
           <p class="card__sub">{{ 'SETTINGS.IMAGE_DISPLAY.PREVIEW_DESC' | translate }}</p>
         </header>
 
-        <div class="card__body preview-grid">
-          @for (s of previewSamples; track s.id) {
-            <figure class="preview-tile">
-              <div class="preview-tile__frame" [class]="'preview-tile__frame--' + s.id">
-                <img [src]="s.src" [alt]="s.label" [style]="previewStyle()" loading="lazy"/>
-              </div>
-              <figcaption>{{ s.label }}</figcaption>
-            </figure>
-          }
+        <div class="card__body">
+          <!-- Source-image picker — same source rendered in every
+               frame below, so the user reads the differences as
+               "this is how the SAME photo gets cropped to each
+               card ratio under my settings". -->
+          <div class="src-picker">
+            <span class="src-picker__label">Demo image:</span>
+            @for (s of demoSources; track s.id) {
+              <button
+                type="button"
+                class="src-picker__btn"
+                [class.src-picker__btn--active]="demoSourceId() === s.id"
+                (click)="demoSourceId.set(s.id)"
+              >{{ s.label }}</button>
+            }
+          </div>
+
+          <div class="preview-grid">
+            @for (f of previewFrames; track f.id) {
+              <figure class="preview-tile">
+                <div class="preview-tile__frame" [class]="'preview-tile__frame--' + f.id">
+                  <img [src]="demoSrc()" [alt]="f.label" [style]="previewStyle()" loading="lazy"/>
+                </div>
+                <figcaption>{{ f.label }}</figcaption>
+              </figure>
+            }
+          </div>
         </div>
       </section>
     </div>

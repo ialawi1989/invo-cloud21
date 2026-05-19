@@ -43,7 +43,7 @@ export const routes: Routes = [
     path: 'settings/receipt-builder/:id',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/receipt-builder/pages/receipt-builder-form/receipt-builder-form.component')
+      import('./features/settings/receipt-builder/pages/receipt-builder-form/receipt-builder-form.component')
         .then(m => m.ReceiptBuilderFormComponent),
     canDeactivate: [unsavedChangesGuard],
   },
@@ -54,7 +54,7 @@ export const routes: Routes = [
     path: 'settings/document-builder/:id',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/document-builder/pages/document-builder-form/document-builder-form.component')
+      import('./features/settings/document-builder/pages/document-builder-form/document-builder-form.component')
         .then(m => m.DocumentBuilderFormComponent),
     canDeactivate: [unsavedChangesGuard],
   },
@@ -64,7 +64,7 @@ export const routes: Routes = [
     path: 'settings/label-builder/:id',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/label-builder/pages/label-builder-form/label-builder-form.component')
+      import('./features/settings/label-builder/pages/label-builder-form/label-builder-form.component')
         .then(m => m.LabelBuilderFormComponent),
     canDeactivate: [unsavedChangesGuard],
   },
@@ -191,8 +191,21 @@ export const routes: Routes = [
           import('./features/website/content-library/pages/content-item/content-item.component').then(m => m.ContentItemPageComponent),
       },
       {
+        // Media Manager lives under /settings/media (IA: it's a
+        // tenant-wide configuration of assets, alongside Image
+        // Display). Redirect the legacy /media path so any existing
+        // bookmarks / sidebar items keep working.
         path: 'media',
-        loadChildren: () => import('./features/media').then(m => m.MEDIA_ROUTES)
+        redirectTo: 'settings/media',
+        pathMatch: 'full',
+      },
+      {
+        path: 'settings/media',
+        loadChildren: () => import('./features/settings/media').then(m => m.MEDIA_ROUTES)
+      },
+      {
+        path: 'settings/seo',
+        loadChildren: () => import('./features/settings/seo/seo.routes').then(m => m.SEO_ROUTES)
       },
       {
         path: 'products',
@@ -205,25 +218,25 @@ export const routes: Routes = [
         // the URL space too.
         path: 'settings/menu-builder',
         loadChildren: () =>
-          import('./features/menu-builder/menu-builder.routes').then(m => m.MENU_BUILDER_ROUTES)
+          import('./features/settings/menu-builder/menu-builder.routes').then(m => m.MENU_BUILDER_ROUTES)
       },
       {
         // Receipt Builder — surfaced from Settings (SETTINGS.ITEMS.RECEIPT_BUILDER).
         path: 'settings/receipt-builder',
         loadChildren: () =>
-          import('./features/receipt-builder/receipt-builder.routes').then(m => m.RECEIPT_BUILDER_ROUTES)
+          import('./features/settings/receipt-builder/receipt-builder.routes').then(m => m.RECEIPT_BUILDER_ROUTES)
       },
       {
         // Document Builder — surfaced from Settings (DOCUMENT_BUILDER.LIST_TITLE).
         path: 'settings/document-builder',
         loadChildren: () =>
-          import('./features/document-builder/document-builder.routes').then(m => m.DOCUMENT_BUILDER_ROUTES)
+          import('./features/settings/document-builder/document-builder.routes').then(m => m.DOCUMENT_BUILDER_ROUTES)
       },
       {
         // Label Builder — Zebra-style label / kitchen-ticket designer.
         path: 'settings/label-builder',
         loadChildren: () =>
-          import('./features/label-builder/label-builder.routes').then(m => m.LABEL_BUILDER_ROUTES)
+          import('./features/settings/label-builder/label-builder.routes').then(m => m.LABEL_BUILDER_ROUTES)
       },
       {
         // Price Labels — named per-product price overrides (wholesale,
@@ -232,7 +245,7 @@ export const routes: Routes = [
         // convention.
         path: 'settings/price-label',
         loadChildren: () =>
-          import('./features/price-label/price-label.routes').then(m => m.PRICE_LABEL_ROUTES)
+          import('./features/settings/price-label/price-label.routes').then(m => m.PRICE_LABEL_ROUTES)
       },
       {
         // Surcharges — named fixed/percentage charges that get
@@ -240,14 +253,14 @@ export const routes: Routes = [
         // links here.
         path: 'settings/surcharge',
         loadChildren: () =>
-          import('./features/surcharge/surcharge.routes').then(m => m.SURCHARGE_ROUTES)
+          import('./features/settings/surcharge/surcharge.routes').then(m => m.SURCHARGE_ROUTES)
       },
       {
         // Covered Addresses — single-page configuration of where
         // we deliver, with per-area branch + delivery economics.
         path: 'settings/covered-address',
         loadChildren: () =>
-          import('./features/covered-address/covered-address.routes').then(m => m.COVERED_ADDRESS_ROUTES)
+          import('./features/settings/covered-address/covered-address.routes').then(m => m.COVERED_ADDRESS_ROUTES)
       },
       {
         // Covered Zones — radius-based delivery zones around each
@@ -255,14 +268,14 @@ export const routes: Routes = [
         // max distance.
         path: 'settings/covered-zone',
         loadChildren: () =>
-          import('./features/covered-zone/covered-zone.routes').then(m => m.COVERED_ZONE_ROUTES)
+          import('./features/settings/covered-zone/covered-zone.routes').then(m => m.COVERED_ZONE_ROUTES)
       },
       {
         // Shipping — cross-border zones grouping countries with
         // weight/total-based shipping rate ranges.
         path: 'settings/shipping',
         loadChildren: () =>
-          import('./features/shipping/shipping.routes').then(m => m.SHIPPING_ROUTES)
+          import('./features/settings/shipping/shipping.routes').then(m => m.SHIPPING_ROUTES)
       },
       {
         // Shipping & Delivery hub — single page that picks between
@@ -270,7 +283,7 @@ export const routes: Routes = [
         // delivery-by-radius and embeds the matching editor.
         path: 'settings/shipping-delivery',
         loadChildren: () =>
-          import('./features/shipping-delivery/shipping-delivery.routes').then(m => m.SHIPPING_DELIVERY_ROUTES)
+          import('./features/settings/shipping-delivery/shipping-delivery.routes').then(m => m.SHIPPING_DELIVERY_ROUTES)
       },
       {
         // Discounts — named per-company discounts applied at POS /
@@ -278,7 +291,7 @@ export const routes: Routes = [
         // branch scope. Automatic schedules deferred.
         path: 'settings/discounts',
         loadChildren: () =>
-          import('./features/discount/discount.routes').then(m => m.DISCOUNT_ROUTES)
+          import('./features/settings/discount/discount.routes').then(m => m.DISCOUNT_ROUTES)
       },
       {
         // Payment methods — manual Cash + Card methods (regular
@@ -287,7 +300,22 @@ export const routes: Routes = [
         // AFS is the first.
         path: 'settings/payment-methods',
         loadChildren: () =>
-          import('./features/payment-methods/payment-methods.routes').then(m => m.PAYMENT_METHODS_ROUTES)
+          import('./features/settings/payment-methods/payment-methods.routes').then(m => m.PAYMENT_METHODS_ROUTES)
+      },
+      {
+        // Service Management — POS service types (DineIn, PickUp,
+        // Delivery, CarHop, Salon, Catering, Retail) with per-branch
+        // setting overrides + drag-reorder.
+        path: 'settings/service-management',
+        loadChildren: () =>
+          import('./features/settings/service-management/service-management.routes').then(m => m.SERVICE_MANAGEMENT_ROUTES)
+      },
+      {
+        // Blog — top-level area with Posts / Categories & Tags / Comments /
+        // Settings. See `features/blog/blog.routes.ts`.
+        path: 'blog',
+        loadChildren: () =>
+          import('./features/blog/blog.routes').then(m => m.BLOG_ROUTES)
       },
       {
         // Chart of Accounts — the company's general ledger. List
@@ -299,7 +327,7 @@ export const routes: Routes = [
         // `<app-account-form-fields>` component.
         path: 'account/chart-of-accounts',
         loadChildren: () =>
-          import('./features/chart-of-accounts/chart-of-accounts.routes').then(m => m.CHART_OF_ACCOUNTS_ROUTES)
+          import('./features/settings/chart-of-accounts/chart-of-accounts.routes').then(m => m.CHART_OF_ACCOUNTS_ROUTES)
       }
       // ── Add features here as you build them ──────────────────────────────
     ],

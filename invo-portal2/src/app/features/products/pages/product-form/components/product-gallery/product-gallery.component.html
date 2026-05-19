@@ -19,20 +19,38 @@
            only rendered while under the 5-image cap. Clicking it opens
            the same picker. -->
 
-    <!-- Grid of tiles. Reorder via explicit left/right arrow buttons (drag-
-         drop was fragile across device types / CDK preview sizing). Whatever
-         sits at index 0 is the main photo — `syncToModel` writes mediaId /
-         mediaUrl after every swap. The star button is a shortcut that jumps
-         straight to position 0 (useful when the thumb is several slots deep). -->
-    <div class="pf-gallery-grid">
+    <!-- Grid of tiles. Two reorder paths:
+         • CDK drag-drop on the whole tile (sortable horizontal list,
+           wrapping into two columns).
+         • Explicit ← → buttons pinned to the bottom-left of each tile
+           — kept as the accessible fallback for keyboard / touch.
+         Whatever sits at index 0 is the main photo — `syncToModel`
+         writes `mediaId` / `mediaUrl` after every swap. -->
+    <div
+      class="pf-gallery-grid"
+      cdkDropList
+      cdkDropListOrientation="horizontal"
+      (cdkDropListDropped)="onDrop($event)">
       @for (m of media(); track m.id; let i = $index; let first = $first; let last = $last) {
         <div
           class="pf-gallery-tile"
           [class.pf-gallery-tile--hero]="first"
+          cdkDrag
+          [cdkDragData]="m"
         >
           <img [src]="m.defaultUrl || m.thumbnailUrl"
                alt=""
                class="pf-gallery-img"/>
+
+          <!-- Hover scrim — dark overlay with a move-cursor glyph in the
+               middle. Hints at the reorder affordance without committing
+               to drag-and-drop (the explicit ← → buttons below still do
+               the actual reordering — drag was fragile across devices). -->
+          <div class="pf-gallery-overlay" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 36 36" fill="currentColor">
+              <path d="M5.71 19l2.14 2.15a.5.5 0 1 1-.71.71l-3-3a.5.5 0 0 1 0-.71l3-3a.5.5 0 1 1 .71.71L5.71 18H17V6.71l-2.15 2.14a.5.5 0 1 1-.71-.71l3-3a.5.5 0 0 1 .71 0l3 3a.5.5 0 1 1-.71.71L18 6.71V18h11.29l-2.14-2.15a.5.5 0 1 1 .71-.71l3 3a.5.5 0 0 1 0 .71l-3 3a.5.5 0 1 1-.71-.71L29.29 19H18v11.29l2.15-2.14a.5.5 0 1 1 .71.71l-3 3a.5.5 0 0 1-.71 0l-3-3a.5.5 0 1 1 .71-.71L17 30.29V19H5.71z"/>
+            </svg>
+          </div>
 
           @if (first) {
             <span class="pf-gallery-main-badge">{{ 'PRODUCTS.FORM.MAIN_PHOTO' | translate }}</span>

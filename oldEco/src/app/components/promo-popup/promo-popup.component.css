@@ -1,0 +1,30 @@
+.modall{
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.modal-header {
+  height: 50px;
+  border-color: transparent;
+}
+
+.modal-body2 {
+  margin-top: -50px;
+}
+
+.modal-btn-close {
+  background: white;
+  color: black;
+  z-index: 99;
+  opacity:1;
+  font-size: 16px;
+  border: 1px solid lightBlue;
+  border-radius: 6px;
+}
+
+::ng-deep .modal-promo .modal-dialog{
+  min-height: -webkit-fill-available;
+  padding:10px;
+  /* margin:10px; */
+
+}

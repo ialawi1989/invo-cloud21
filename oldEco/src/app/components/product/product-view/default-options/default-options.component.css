@@ -1,0 +1,174 @@
+/* ============================================
+   DEFAULT OPTIONS — Redesigned CSS
+   Matches ms-* / pkg-* / og-* / meas-* system
+   ============================================ */
+
+/* ── Wrapper card ── */
+.dopt-wrapper {
+  border: 1.5px solid #e8e8e8;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* ── Header ── */
+.dopt-header {
+  padding: 10px 14px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dopt-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #888;
+}
+
+/* ── Option row ── */
+.dopt-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.dopt-row--last {
+  border-bottom: none;
+}
+
+/* ── Image ── */
+.dopt-img {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid #f0f0f0;
+}
+
+/* ── Info ── */
+.dopt-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dopt-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dopt-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2e7d32;
+  white-space: nowrap;
+}
+
+/* ── Qty area ── */
+.dopt-qty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Stepper ── */
+.dopt-qty-stepper {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  height: 34px;
+}
+
+.dopt-qty-btn {
+  width: 32px;
+  height: 100%;
+  background: #f5f5f5;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.13s;
+  flex-shrink: 0;
+}
+
+.dopt-qty-btn:hover {
+  background: #e8e8e8;
+}
+
+.dopt-qty-btn--danger {
+  color: #e53935;
+}
+
+.dopt-qty-btn--danger:hover {
+  background: #fff5f5;
+  color: #c62828;
+}
+
+.dopt-qty-value {
+  min-width: 28px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  border-left: 1px solid #e8e8e8;
+  border-right: 1px solid #e8e8e8;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dopt-qty-max {
+  font-size: 11px;
+  color: #aaa;
+}
+
+/* ── Add button ── */
+.dopt-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1b7a3f;
+  background: #f0faf4;
+  border: 1.5px solid #a5d6a7;
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.13s, border-color 0.13s;
+  height: 34px;
+}
+
+.dopt-add-btn:hover {
+  background: #e8f5e9;
+  border-color: #81c784;
+}
+
+.dopt-add-btn i {
+  font-size: 11px !important;
+}
+
+/* ── Helper ── */
+.no-margin-bottom {
+  margin-bottom: 0 !important;
+}

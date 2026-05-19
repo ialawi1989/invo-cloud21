@@ -1,0 +1,341 @@
+<!-- ────────────────────────────────────────────────────────────────────
+     Wix-style blog post composer. Three regions:
+       (1) Top bar  — back, language switcher, undo/redo, Save / Preview / Publish, more
+       (2) Left rail — vertical icon column for Add / AI Tools / Settings / SEO /
+                       Monetize / Translate / Apps. Clicking an icon toggles
+                       its side panel; clicking the active one closes it.
+       (3) Side panel + main canvas — the canvas is just a giant Title input
+                       and the rich-text editor. Everything else (cover, author,
+                       SEO, taxonomies, language) lives in the side panel.
+──────────────────────────────────────────────────────────────────── -->
+<div class="wc">
+
+  <!-- ── (1) Top bar ──────────────────────────────────────────────── -->
+  <header class="wc__top">
+    <div class="wc__topL">
+      <button class="wc__back" (click)="cancel()" [attr.aria-label]="'COMMON.BACK' | translate">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <span>{{ 'COMMON.BACK' | translate }}</span>
+      </button>
+    </div>
+
+    <div class="wc__topC">
+      <button class="wc__lang" (click)="rail.set(rail() === 'translate' ? null : 'translate')">
+        <span class="wc__langFlag">🏳</span>
+        <span class="wc__langName">{{ activeLangLabel() }}</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="wc__topR">
+      <button class="wc__iconBtn" [disabled]="!canUndo()" (click)="onUndo()" [attr.aria-label]="'BLOG.COMPOSER.UNDO' | translate">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>
+        </svg>
+      </button>
+      <button class="wc__iconBtn" [disabled]="!canRedo()" (click)="onRedo()" [attr.aria-label]="'BLOG.COMPOSER.REDO' | translate">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/>
+        </svg>
+      </button>
+      <button class="wc__ghostBtn" (click)="save()" [disabled]="!isDirty() || saving()">
+        {{ 'BLOG.COMPOSER.SAVE' | translate }}
+      </button>
+      <button class="wc__ghostBtn" (click)="preview()" [disabled]="loading()">
+        {{ 'BLOG.COMPOSER.PREVIEW' | translate }}
+      </button>
+      <button class="wc__publishBtn" (click)="publishNow()" [disabled]="saving() || loading()">
+        {{ primaryActionLabel() }}
+      </button>
+      <button class="wc__iconBtn" (click)="moreOpen.set(!moreOpen())" [attr.aria-label]="'COMMON.MORE' | translate">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+      </button>
+      @if (moreOpen()) {
+        <div class="wc__moreMenu" (click)="$event.stopPropagation()">
+          <button (click)="setStatus('draft'); moreOpen.set(false)">{{ 'BLOG.COMPOSER.SAVE_DRAFT' | translate }}</button>
+          <button (click)="rail.set('seo'); moreOpen.set(false)">{{ 'BLOG.COMPOSER.SIDE_SEO' | translate }}</button>
+          <button class="is-danger" (click)="cancel()">{{ 'COMMON.DISCARD' | translate }}</button>
+        </div>
+      }
+    </div>
+  </header>
+
+  <!-- ── (2) Workspace: rail + panel + canvas ─────────────────────── -->
+  <div class="wc__work">
+    <!-- Left icon rail -->
+    <nav class="wc__rail" [attr.aria-label]="'BLOG.COMPOSER.SIDEBAR' | translate">
+      @for (item of railItems; track item.key) {
+        <button class="wc__railBtn"
+                [class.is-active]="rail() === item.key"
+                (click)="toggleRail(item.key)"
+                [title]="item.label | translate">
+          <span class="wc__railIcon" [innerHTML]="item.icon"></span>
+          <span class="wc__railLabel">{{ item.label | translate }}</span>
+        </button>
+      }
+    </nav>
+
+    <!-- Side panel — only rendered when a rail item is open -->
+    @if (rail()) {
+      <aside class="wc__panel">
+        <header class="wc__panelHead">
+          <h2 class="wc__panelTitle">{{ panelTitle() | translate }}</h2>
+          <button class="wc__panelClose" (click)="rail.set(null)" [attr.aria-label]="'COMMON.CLOSE' | translate">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="wc__panelBody">
+
+          <!-- ─── ADD ─── -->
+          @if (rail() === 'add') {
+            @for (group of addGroups; track group.label) {
+              <h3 class="wc__panelGroup">{{ group.label | translate }}</h3>
+              <div class="wc__addGrid">
+                @for (tool of group.tools; track tool.key) {
+                  <button class="wc__addTile" (click)="onAddTool(tool.key)">
+                    <span class="wc__addIcon" [innerHTML]="tool.icon"></span>
+                    <span class="wc__addName">{{ tool.label | translate }}</span>
+                  </button>
+                }
+              </div>
+            }
+          }
+
+          <!-- ─── SETTINGS ─── (General / Categories / Tags) -->
+          @if (rail() === 'settings') {
+            <div class="wc__tabs">
+              @for (t of settingsTabs; track t.key) {
+                <button class="wc__tab"
+                        [class.is-on]="settingsTab() === t.key"
+                        (click)="settingsTab.set(t.key)">
+                  {{ t.label | translate }}
+                  @if (t.key === 'categories' && taxonomyIds().length > 0) {
+                    <span class="wc__tabBadge">{{ categoryCount() }}</span>
+                  }
+                  @if (t.key === 'tags' && tagCount() > 0) {
+                    <span class="wc__tabBadge">{{ tagCount() }}</span>
+                  }
+                </button>
+              }
+            </div>
+
+            <!-- General tab -->
+            @if (settingsTab() === 'general') {
+              <div class="wc__field">
+                <div class="wc__labelRow">
+                  <span class="wc__label">{{ 'BLOG.COMPOSER.FEATURED_IMAGE' | translate }}</span>
+                  <app-toggle [ngModel]="featuredImageOn()" (ngModelChange)="setFeaturedImageOn($event)"/>
+                </div>
+                @if (featuredImageOn()) {
+                  <div class="wc__cover">
+                    @if (coverImage()) {
+                      <img [src]="coverImage()" alt="cover"/>
+                      <div class="wc__coverActions">
+                        <button class="wc__btn--ghost" (click)="coverPicker.click()">{{ 'BLOG.COMPOSER.REPLACE' | translate }}</button>
+                        <button class="wc__btn--ghost" (click)="removeCover()">{{ 'BLOG.COMPOSER.REMOVE' | translate }}</button>
+                      </div>
+                    } @else {
+                      <button class="wc__dropzone" (click)="coverPicker.click()">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                      </button>
+                    }
+                    <input #coverPicker type="file" hidden accept="image/*" (change)="onCoverFile($any($event.target).files)"/>
+                  </div>
+                }
+              </div>
+
+              <div class="wc__field">
+                <label class="wc__label">{{ 'BLOG.COMPOSER.PUBLISH_DATE' | translate }}</label>
+                <div class="wc__inputWrap">
+                  <svg class="wc__inputIcon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <input type="datetime-local" class="wc__input"
+                         [value]="scheduledDate()"
+                         (change)="setScheduled($any($event.target).value)"
+                         [placeholder]="'BLOG.COMPOSER.PUBLISH_NOW' | translate"/>
+                </div>
+              </div>
+
+              <div class="wc__field">
+                <label class="wc__label">{{ 'BLOG.COMPOSER.WRITER' | translate }}</label>
+                <app-search-dropdown
+                  [items]="writerOptions()"
+                  [value]="$any(authorEmployeeId())"
+                  [displayWith]="idDisplay"
+                  [compareWith]="idCompare"
+                  [toValue]="idToValue"
+                  [clearable]="false"
+                  [searchable]="true"
+                  (valueChange)="setAuthor($any($event))"/>
+              </div>
+
+              <div class="wc__field">
+                <div class="wc__labelRow">
+                  <label class="wc__label">{{ 'BLOG.COMPOSER.EXCERPT' | translate }}</label>
+                  <span class="wc__count" [class.is-over]="excerptOver()">{{ excerptCount() }}/500</span>
+                </div>
+                <textarea class="wc__input wc__input--ta"
+                          rows="4"
+                          [value]="current().excerpt"
+                          (input)="setExcerpt($any($event.target).value)"
+                          [placeholder]="'BLOG.COMPOSER.EXCERPT_PLACEHOLDER' | translate"
+                          maxlength="500"></textarea>
+              </div>
+
+              <div class="wc__field">
+                <div class="wc__labelRow">
+                  <span class="wc__label">{{ 'BLOG.COMPOSER.FEATURE_POST' | translate }}</span>
+                  <app-toggle [ngModel]="isFeatured()" (ngModelChange)="setFeatured($event)"/>
+                </div>
+              </div>
+            }
+
+            <!-- Categories tab -->
+            @if (settingsTab() === 'categories') {
+              <p class="wc__hint">{{ 'BLOG.COMPOSER.CATEGORIES_HINT' | translate }}</p>
+              <app-blog-taxonomy-selector
+                mode="category"
+                [selectedIds]="taxonomyIds()"
+                [mainId]="mainTaxonomyId()"
+                [maxCount]="10"
+                [defaultLang]="defaultLanguage()"
+                (add)="addTaxonomy($event)"
+                (remove)="removeTaxonomy($event)"
+                (setMain)="setMainTaxonomy($event)"/>
+            }
+
+            <!-- Tags tab -->
+            @if (settingsTab() === 'tags') {
+              <p class="wc__hint">{{ 'BLOG.COMPOSER.TAGS_HINT' | translate }}</p>
+              <app-blog-taxonomy-selector
+                mode="tag"
+                [selectedIds]="taxonomyIds()"
+                [defaultLang]="defaultLanguage()"
+                (add)="addTaxonomy($event)"
+                (remove)="removeTaxonomy($event)"
+                (createTag)="createTagInline($event)"/>
+            }
+          }
+
+          <!-- ─── SEO ─── (functional minimum) -->
+          @if (rail() === 'seo') {
+            <div class="wc__field">
+              <label class="wc__label">{{ 'BLOG.COMPOSER.SLUG' | translate }}</label>
+              <app-blog-slug-input
+                [value]="current().slug"
+                [fromTitle]="current().title"
+                [activeLang]="active()"
+                [postId]="postId()"
+                (valueChange)="setSlug($event)"/>
+            </div>
+            <div class="wc__field">
+              <label class="wc__label">{{ 'BLOG.COMPOSER.SEO_TITLE' | translate }}</label>
+              <input class="wc__input"
+                     [value]="current().seoTitle ?? ''"
+                     (input)="setSeoTitle($any($event.target).value)"
+                     [placeholder]="current().title || ('BLOG.COMPOSER.SEO_TITLE_PLACEHOLDER' | translate)"/>
+            </div>
+            <div class="wc__field">
+              <label class="wc__label">{{ 'BLOG.COMPOSER.SEO_DESCRIPTION' | translate }}</label>
+              <textarea class="wc__input wc__input--ta" rows="3"
+                        [value]="current().seoDescription ?? ''"
+                        (input)="setSeoDescription($any($event.target).value)"
+                        [placeholder]="current().excerpt || ('BLOG.COMPOSER.SEO_DESCRIPTION_PLACEHOLDER' | translate)"></textarea>
+            </div>
+            <div class="wc__field">
+              <label class="wc__label">{{ 'BLOG.COMPOSER.OG_IMAGE' | translate }}</label>
+              <div class="wc__cover">
+                @if (ogImage()) {
+                  <img [src]="ogImage()" alt="og"/>
+                  <div class="wc__coverActions">
+                    <button class="wc__btn--ghost" (click)="ogPicker.click()">{{ 'BLOG.COMPOSER.REPLACE' | translate }}</button>
+                    <button class="wc__btn--ghost" (click)="removeOg()">{{ 'BLOG.COMPOSER.REMOVE' | translate }}</button>
+                  </div>
+                } @else {
+                  <button class="wc__dropzone wc__dropzone--small" (click)="ogPicker.click()">
+                    <span>{{ 'BLOG.COMPOSER.UPLOAD_OG' | translate }}</span>
+                  </button>
+                }
+                <input #ogPicker type="file" hidden accept="image/*" (change)="onOgFile($any($event.target).files)"/>
+              </div>
+              <p class="wc__hint">{{ 'BLOG.COMPOSER.OG_FALLBACK_HINT' | translate }}</p>
+            </div>
+          }
+
+          <!-- ─── TRANSLATE ─── -->
+          @if (rail() === 'translate') {
+            <p class="wc__hint">{{ 'BLOG.COMPOSER.TRANSLATE_HINT' | translate }}</p>
+            <h3 class="wc__panelGroup">{{ 'BLOG.COMPOSER.POST_LANGUAGE' | translate }}</h3>
+            <div class="wc__langRow">
+              <span class="wc__langChip">{{ labelForLang(defaultLanguage()) }}</span>
+              <button class="wc__btn--link" (click)="rail.set('settings')">{{ 'COMMON.CHANGE' | translate }}</button>
+            </div>
+
+            <h3 class="wc__panelGroup">{{ 'BLOG.COMPOSER.TRANSLATIONS' | translate }}</h3>
+            @for (code of activeLangs(); track code) {
+              @if (code !== defaultLanguage()) {
+                <div class="wc__langRow">
+                  <span class="wc__langChip" [class.is-on]="active() === code"
+                        (click)="active.set(code)">{{ labelForLang(code) }}</span>
+                  <button class="wc__btn--link is-danger" (click)="removeLang(code)">{{ 'COMMON.DELETE' | translate }}</button>
+                </div>
+              }
+            }
+            @for (code of addableLangs(); track code) {
+              <div class="wc__langRow">
+                <span class="wc__langChip is-muted">{{ labelForLang(code) }}</span>
+                <button class="wc__btn--link" (click)="addLang(code)">{{ 'COMMON.ADD' | translate }}</button>
+              </div>
+            }
+            @if (addableLangs().length === 0 && activeLangs().length <= 1) {
+              <p class="wc__empty">{{ 'BLOG.COMPOSER.NO_OTHER_LANGS' | translate }}</p>
+            }
+          }
+
+          <!-- ─── AI / Monetize / Apps — stubs ─── -->
+          @if (rail() === 'ai' || rail() === 'monetize' || rail() === 'apps') {
+            <div class="wc__stub">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <p>{{ 'BLOG.COMPOSER.COMING_SOON' | translate }}</p>
+            </div>
+          }
+        </div>
+      </aside>
+    }
+
+    <!-- Main canvas — title + WYSIWYG -->
+    <main class="wc__canvas" [class.is-rtl]="isRtlActive()">
+      @if (loading()) {
+        <div class="wc__loading"><span class="wc__spinner"></span></div>
+      } @else {
+        <div class="wc__canvasInner">
+          <input class="wc__title"
+                 [value]="current().title"
+                 (input)="setTitle($any($event.target).value)"
+                 [placeholder]="'BLOG.COMPOSER.ADD_TITLE' | translate"
+                 [dir]="isRtlActive() ? 'rtl' : 'ltr'"/>
+
+          <app-rich-editor
+            #editor
+            [ngModel]="current().content"
+            (ngModelChange)="setContent($event)"
+            [embedOnPaste]="true"
+            [placeholder]="'BLOG.COMPOSER.BODY_PLACEHOLDER' | translate"
+            height="520px"/>
+        </div>
+      }
+    </main>
+  </div>
+</div>

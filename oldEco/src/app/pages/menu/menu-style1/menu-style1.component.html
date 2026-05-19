@@ -1,0 +1,435 @@
+<!-- Menu Style 1 Component Template — Improved Design -->
+
+<!-- Page header -->
+<div class="page-header d-md-show"
+  [style.background-color]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-image]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-attachment]="pageData?.template?.settings?.subheader_settings?.isParallax ? 'fixed' : ''"
+  [style.background-size]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'cover' : ''"
+  [style.background-position]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'center' : ''"
+  [style.background-repeat]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'no-repeat' : ''">
+  @if (pageData?.template?.settings?.subheader_settings?.overlayOpacity) {
+  <div class="section-overlay"
+    [style.opacity]="pageData?.template?.settings?.subheader_settings?.overlayOpacity / 100"
+    [style.background-color]="pageData?.template?.settings?.subheader_settings?.overlayColor"></div>
+  }
+  <h1 class="page-title z-index-3">{{"Menu" | translate}}</h1>
+  <ul class="breadcrumb z-index-3">
+    <li><a [routerLink]="'/'"><i class="d-icon-home"></i></a></li>
+    <li class="delimiter">/</li>
+    <li>{{"Menu" | translate}}</li>
+  </ul>
+</div>
+
+@for (section of pageData?.template?.sections?.content?.sections; track $index) {
+  @if(section.sectionType == 'Banner section'){
+    <app-banner-section #lazyLoadable [style]="section.sectionStyle" [section]="section"></app-banner-section>
+  }
+}
+
+<!-- ════════════════════════════════════════════════════════════════
+     MOBILE: bottom sheet + backdrop (position:fixed — DOM placement ok here)
+     ════════════════════════════════════════════════════════════════ -->
+@if(isMobile()) {
+
+<div class="mn-sheet-backdrop"
+  [class.mn-sheet-backdrop--open]="isCategoriesSheetOpen"
+  (click)="isCategoriesSheetOpen = false"></div>
+
+<div class="mn-categories-sheet" [class.mn-categories-sheet--open]="isCategoriesSheetOpen">
+  <div class="mn-sheet-handle"><div class="mn-sheet-handle-bar"></div></div>
+  <div class="mn-sheet-header">
+    <h2 class="mn-sheet-title">{{"All Categories" | translate}}</h2>
+    <button type="button" class="mn-sheet-close" (click)="isCategoriesSheetOpen = false">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="mn-sheet-body">
+    <div class="mn-sheet-grid">
+      @for(section of sections; track section.id) {
+      <div class="mn-sheet-cat-item"
+        [class.mn-sheet-cat-item--active]="selectedSection === section.id"
+        (click)="scrollToSection(section.id); toggleMenu(section); isCategoriesSheetOpen = false">
+        <span class="mn-sheet-cat-dot"></span>
+        <span class="mn-sheet-cat-name">
+          {{ appService.lang == 'ar'
+            ? (section.translation?.name?.ar || section.name)
+            : section.name }}
+        </span>
+        @if(selectedSection === section.id) {
+        <i class="fas fa-check mn-sheet-cat-check"></i>
+        }
+      </div>
+      }
+    </div>
+  </div>
+</div>
+
+}
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     MOBILE FILTER DRAWER
+     ════════════════════════════════════════════════════════════════ -->
+<div class="mn-filter-drawer-backdrop"
+  [class.mn-filter-drawer-backdrop--open]="isMobileFilterDrawerOpen"
+  (click)="isMobileFilterDrawerOpen = false"></div>
+
+<aside class="mn-filter-drawer" [class.mn-filter-drawer--open]="isMobileFilterDrawerOpen">
+  <div class="mn-filter-drawer-header">
+    <h2 class="mn-filter-drawer-title">{{"Filters" | translate}}</h2>
+    <button type="button" class="mn-filter-drawer-close" (click)="isMobileFilterDrawerOpen = false">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="mn-filter-drawer-body">
+    <ng-container *ngTemplateOutlet="filterCards"></ng-container>
+  </div>
+</aside>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     NO ITEMS AT ALL — shown when menu has no sections/products
+     (no filter is active, the menu itself is empty for this service)
+     ════════════════════════════════════════════════════════════════ -->
+@if (!loading && sections.length === 0) {
+<div class="mn-no-service-wrap container">
+  <div class="mn-no-service">
+    <div class="mn-no-service-body">
+      <div class="mn-no-service-icon">
+        <i class="fas fa-concierge-bell"></i>
+      </div>
+      <p class="mn-no-service-title">{{ "No items available" | translate }}</p>
+      <p class="mn-no-service-sub">{{ "There are no menu items for the selected service. Try switching to a different service." | translate }}</p>
+      <button type="button" class="mn-change-service-btn" (click)="appService.showServiceSelector()">
+        <i class="fas fa-exchange-alt"></i>
+        {{ "Change Service" | translate }}
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- ════════════════════════════════════════════════════════════════
+     MAIN LAYOUT
+     ════════════════════════════════════════════════════════════════ -->
+@if (sections.length > 0) {
+<div class="container mb-4 mn-scope">
+  <div class="row main-content-wrap gutter-lg">
+
+    <!-- ── DESKTOP SIDEBAR ──────────────────────────────────────── -->
+    <aside class="col-lg-3 mb-4 mn-sidebar-desktop">
+      <div class="sticky-sidebar" data-sticky-options="{'top': 10}">
+        <div class="mn-sidebar">
+          <ng-container *ngTemplateOutlet="filterCards"></ng-container>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── MAIN CONTENT ─────────────────────────────────────────── -->
+    <div class="col-lg-9 col-12 main-content mt-0">
+
+      <!-- ══════════════════════════════════════════════════════════
+           MOBILE STICKY NAV
+           Order: [pills] [search btn] [menu btn]
+           Search button only shows when menu becomes sticky
+           ══════════════════════════════════════════════════════════ -->
+      @if(isMobile()) {
+      <div #menuWidget class="mn-mobile-nav">
+
+        <!-- Scrollable section pills -->
+        <ul #scrollContainer class="mn-mobile-nav-scroll">
+          @for(section of sections; track section.id) {
+          <li #sectionRef
+            id="section_{{section.id}}"
+            class="mn-mobile-nav-item"
+            [class.mn-mobile-nav-item--active]="selectedSection === section.id">
+            <button type="button"
+              class="mn-mobile-nav-link"
+              (click)="scrollToSection(section.id); hideMobileFilter(); toggleMenu(section);">
+              {{ appService.lang == 'ar'
+                ? (section.translation?.name?.ar || section.name)
+                : section.name }}
+            </button>
+          </li>
+          }
+        </ul>
+
+        <!-- Right: Search button (only show when menu becomes sticky) -->
+        @if(isMenuSticky) {
+        <button type="button"
+          class="mn-mobile-search-btn"
+          [class.mn-mobile-search-btn--active]="showSearch"
+          (click)="onSearchButtonClick()">
+          <i class="fas fa-search"></i>
+        </button>
+        }
+
+        <!-- Far right: Grid/Menu button (primary color) -->
+        <button type="button" class="mn-mobile-menu-btn text-black"
+          (click)="isCategoriesSheetOpen = !isCategoriesSheetOpen">
+          <i class="fas fa-th-large"></i>
+        </button>
+
+        <!-- Search overlay -->
+        <div class="mn-mobile-search-overlay" [class.mn-mobile-search-overlay--open]="showSearch">
+          <div class="mn-mobile-search-inner">
+            <i class="fas fa-search mn-mobile-search-icon"></i>
+            <input #searchBox
+              type="text"
+              class="mn-mobile-search-input"
+              [(ngModel)]="searchQueryMenu"
+              placeholder="{{'Search products...' | translate}}" />
+          </div>
+          <button type="button" class="mn-mobile-search-close" (click)="toggleSearch()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+      </div>
+      }
+
+      <!-- Mobile filter + sort bar -->
+      <div class="mn-mobile-filter-bar">
+        <button type="button" class="mn-mobile-filter-trigger" (click)="isMobileFilterDrawerOpen = true">
+          <i class="fas fa-sliders-h"></i>
+          {{"Filter" | translate}}
+          @if(activeFilterCount > 0) {
+          <span class="mn-filter-count-badge">{{ activeFilterCount }}</span>
+          }
+        </button>
+        <select class="mn-sort-select" (change)="onMenuSortChange($event, selectedSection)">
+          <option value="{sortValue: null, sortDirection: null}"
+            [selected]="sortMap.sortValue === null && sortMap.sortDirection === null">
+            {{"Default" | translate}}
+          </option>
+          <option value="{sortValue: 'name', sortDirection: 'ASC'}"
+            [selected]="sortMap.sortValue === 'name' && sortMap.sortDirection === 'ASC'">
+            A-Z
+          </option>
+          <option value="{sortValue: 'name', sortDirection: 'DESC'}"
+            [selected]="sortMap.sortValue === 'name' && sortMap.sortDirection === 'DESC'">
+            Z-A
+          </option>
+          <option value="{sortValue: 'defaultPrice', sortDirection: 'ASC'}"
+            [selected]="sortMap.sortValue === 'defaultPrice' && sortMap.sortDirection === 'ASC'">
+            {{"Price" | translate}} ↑
+          </option>
+          <option value="{sortValue: 'defaultPrice', sortDirection: 'DESC'}"
+            [selected]="sortMap.sortValue === 'defaultPrice' && sortMap.sortDirection === 'DESC'">
+            {{"Price" | translate}} ↓
+          </option>
+        </select>
+      </div>
+
+      <!-- Desktop toolbox -->
+      @if(!isMobile()) {
+      <div class="mn-toolbox mt-6 mb-4">
+        <div class="mn-toolbox-left">
+          <a href="javascript:void(0);" class="mn-filter-toggle-btn d-lg-none" (click)="showMobileFilter();">
+            <i class="fas fa-sliders-h"></i> {{"Filter" | translate}}
+          </a>
+          <div class="mn-sort-wrap">
+            <span class="mn-sort-label">{{"Sort By" | translate}}</span>
+            <select class="mn-sort-select" (change)="onMenuSortChange($event, selectedSection)" >
+              <option value="{sortValue: null, sortDirection: null}"
+                [selected]="sortMap.sortValue === null && sortMap.sortDirection === null">
+                {{"Default" | translate}}
+              </option>
+              <option value="{sortValue: 'name', sortDirection: 'ASC'}"
+                [selected]="sortMap.sortValue === 'name' && sortMap.sortDirection === 'ASC'">A–Z</option>
+              <option value="{sortValue: 'name', sortDirection: 'DESC'}"
+                [selected]="sortMap.sortValue === 'name' && sortMap.sortDirection === 'DESC'">Z–A</option>
+              <option value="{sortValue: 'defaultPrice', sortDirection: 'ASC'}"
+                [selected]="sortMap.sortValue === 'defaultPrice' && sortMap.sortDirection === 'ASC'">
+                {{"Price (Low → High)" | translate}}
+              </option>
+              <option value="{sortValue: 'defaultPrice', sortDirection: 'DESC'}"
+                [selected]="sortMap.sortValue === 'defaultPrice' && sortMap.sortDirection === 'DESC'">
+                {{"Price (High → Low)" | translate}}
+              </option>
+            </select>
+          </div>
+          @if(filteredProducts?.length) {
+          <span class="mn-count-chip">{{ filteredProducts.length }} {{"items" | translate}}</span>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- ── MOBILE: all sections stacked ──────────────────────── -->
+      @if(isMobile()) {
+       <div class="mt-2">
+         @for (sectionProducts of allSectionsProducts; track sectionProducts.menuSectionId) {
+          @if(hasMatchingProducts(sectionProducts)) {
+          <div class="product-listt">
+            <div #productSection id="products_{{sectionProducts.menuSectionId}}" style="width:100%">
+              <div class="mn-section-heading">
+                <div class="mn-section-heading-bar"></div>
+                <h4 class="mn-section-heading-text">
+                  {{ appService.lang == 'ar'
+                    ? (sectionProducts.translation?.name?.ar || sectionProducts.sectionName)
+                    : sectionProducts.sectionName }}
+                </h4>
+                <span class="mn-section-heading-count">{{ sectionProducts.products.length }}</span>
+              </div>
+              <div class="product-wrapper w-100 {{ pageData?.template?.settings?.default_view === 'list' ? 'product-lists' : 'row cols-2 cols-sm-3 cols-md-4 cols-lg-4' }}">
+                @for (product of sectionProducts.products; track $index) {
+                  @if(matchesSearch(product)) {
+                    @if (pageData?.template?.settings?.default_view === 'list') {
+                      <app-product-list [product]="product" [template]="pageData?.template"></app-product-list>
+                    } @else {
+                      <app-product-grid [product]="product" [template]="pageData?.template"></app-product-grid>
+                    }
+                  }
+                }
+              </div>
+            </div>
+          </div>
+          }
+        }
+       </div>
+      }
+
+      <!-- ── DESKTOP: paginated single section ─────────────────── -->
+      @else {
+        @if (!loading) {
+          <div class="product-wrapper {{ pageData?.template?.settings?.default_view === 'list' ? 'product-lists' : 'row cols-2 cols-sm-3 cols-md-4 cols-lg-4' }}">
+            @for (product of filteredProducts; track $index) {
+              @if (pageData?.template?.settings?.default_view === 'list') {
+                <app-product-list [product]="product" [template]="pageData?.template"></app-product-list>
+              } @else {
+                <app-product-grid [product]="product" [template]="pageData?.template"></app-product-grid>
+              }
+            }
+            <div #scrollAnchor class="scroll-anchor"></div>
+          </div>
+
+          @if(filteredProducts && filteredProducts.length === 0) {
+            @for (sectionProducts of allSectionsProducts; track sectionProducts.menuSectionId) {
+              @if(sectionProducts.menuSectionId == selectedSection) {
+                <div class="mn-empty-state">
+                  <div class="mn-empty-icon">
+                    <i class="fas fa-{{ sectionProducts.products.length == 0 ? 'box-open' : 'filter' }}"></i>
+                  </div>
+                  @if(sectionProducts.products.length == 0) {
+                    <p class="mn-empty-title">{{"No products found" | translate}}</p>
+                    <p class="mn-empty-sub">{{"This section has no products yet." | translate}}</p>
+                    <button type="button" class="mn-change-service-btn" (click)="appService.showServiceSelector()">
+                      <i class="fas fa-exchange-alt"></i>
+                      {{ "Change Service" | translate }}
+                    </button>
+                  } @else {
+                    <p class="mn-empty-title">{{"No results match your filters" | translate}}</p>
+                  }
+                </div>
+              }
+            }
+          }
+        } @else {
+          <div class="product-wrapper {{ pageData?.template?.settings?.default_view === 'list' ? 'product-lists' : 'row cols-2 cols-sm-3 cols-md-4 cols-lg-4' }}">
+            @for (item of items; track $index) {
+              <div class="{{ pageData?.template?.settings?.default_view === 'list' ? 'skel-pro skel-pro-list mb-4' : 'product-loading-overlay' }}"></div>
+            }
+          </div>
+        }
+      }
+
+    </div><!-- /col -->
+  </div><!-- /row -->
+</div><!-- /container -->
+}<!-- /sections.length > 0 -->
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SHARED FILTER CARDS TEMPLATE
+     ════════════════════════════════════════════════════════════════ -->
+<ng-template #filterCards>
+
+  <br>
+  <!-- Categories -->
+  @if(sections.length) {
+  <div class="mn-filter-card">
+    <div class="mn-filter-title"
+      [class.mn-filter-title--open]="showFilterCategories"
+      (click)="showFilterCategories = !showFilterCategories">
+      <div class="mn-filter-title-left">
+        <span class="mn-filter-icon"><i class="fas fa-th-large"></i></span>
+        <span class="mn-filter-title-text">{{"Categories" | translate}}</span>
+      </div>
+      <!-- <i class="fas fa-chevron-down mn-filter-chevron"></i> -->
+       <i class="fas fa-chevron-down"></i>
+    </div>
+    @if(showFilterCategories) {
+    <div class="mn-filter-body">
+      <ul class="mn-filter-list">
+        @for(section of sections; track section.id) {
+        <li class="mn-filter-item" [class.active]="selectedSection === section.id">
+          <a href="javascript:void(0);" (click)="hideMobileFilter(); toggleMenu(section);">
+            <span class="mn-filter-dot"></span>
+            {{ appService.lang == 'ar'
+              ? (section.translation?.name?.ar || section.name)
+              : section.name }}
+          </a>
+        </li>
+        }
+      </ul>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Tags -->
+  @if(productTags.length && pageData.template?.settings?.show_filter_by_tag !== false) {
+  <div class="mn-filter-card">
+    <div class="mn-filter-title"
+      [class.mn-filter-title--open]="showFilterTags"
+      (click)="showFilterTags = !showFilterTags">
+      <div class="mn-filter-title-left">
+        <span class="mn-filter-icon"><i class="fas fa-tag"></i></span>
+        <span class="mn-filter-title-text">{{"Tags" | translate}}</span>
+      </div>
+      <i class="fas fa-chevron-down mn-filter-chevron"></i>
+    </div>
+    @if(showFilterTags) {
+    <div class="mn-filter-body">
+      <div class="mn-tag-cloud">
+        @for(tag of productTags; track tag.tags) {
+        <a href="javascript:void(0);"
+          class="mn-tag-chip"
+          [class.mn-tag-chip--active]="productTagsSelected.includes(tag.tags)"
+          (click)="hideMobileFilter(); loadMenuProductsPerTags(tag.tags, selectedSection)">
+          {{ tag.tags }}
+        </a>
+        }
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Price -->
+  <div class="mn-filter-card">
+    <div class="mn-filter-title mn-filter-title--open">
+      <div class="mn-filter-title-left">
+        <span class="mn-filter-icon"><i class="fas fa-dollar-sign"></i></span>
+        <span class="mn-filter-title-text">{{"Price" | translate}}</span>
+      </div>
+    </div>
+    <div class="mn-filter-body mn-price-filter-body">
+      <div class="mn-price-row">
+        <span class="mn-price-val">{{ minPrice }}</span>
+        <span class="mn-price-sep">—</span>
+        <span class="mn-price-val">{{ maxPrice }}</span>
+      </div>
+      <app-price-filter [(minPrice)]="minPrice" [(maxPrice)]="maxPrice"></app-price-filter>
+      <div style="margin-top: 14px;">
+        <button type="button" class="mn-filter-apply-btn"
+          (click)="hideMobileFilter(); filterMenuByPrice(minPrice, maxPrice);">
+          <i class="fas fa-check"></i> {{"Apply" | translate}}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</ng-template>

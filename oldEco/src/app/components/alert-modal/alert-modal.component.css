@@ -1,0 +1,87 @@
+/* ==========================================================================
+   Alert Modal — self-contained version.
+   Mirrors ConfirmModalComponent's styling: a fixed-position card centered on
+   the viewport, sitting above the ng-bootstrap modal containers (which are
+   made invisible). Single primary action button instead of confirm/cancel.
+   ========================================================================== */
+
+:host {
+  display: contents;
+}
+
+/* The visible card — fixed-position overlay, centered on the viewport. */
+.newsletter-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2000;
+
+  width: 380px;
+  max-width: calc(100vw - 2rem);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  padding: 1.5rem;
+  margin: 0;
+}
+
+.newsletter-content {
+  margin: 0 auto;
+  max-width: 100%;
+  text-align: center;
+}
+
+.newsletter-content h5 {
+  margin: 0 0 0.5rem;
+  line-height: 1.4;
+  color: #1a1a1a;
+}
+
+.newsletter-content .text-grey {
+  margin: 0 0 1rem;
+  color: #6b7280;
+}
+
+.alert-modal-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.alert-modal-actions .btn {
+  /* flex: 1 1 0; */
+  min-width: 0;
+  white-space: nowrap;
+  padding: 0.6rem 2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: auto;
+}
+
+@media (max-width: 360px) {
+  .newsletter-popup { padding: 1.25rem; }
+  .alert-modal-actions { gap: 0.5rem; }
+  .alert-modal-actions .btn {
+    padding: 0.55rem 0.75rem;
+  }
+}
+
+/* Hide the ng-bootstrap modal containers so only the fixed card shows.
+   These selectors use ::ng-deep AND fall back to :host-context for
+   maximum compatibility across Angular versions. */
+:host ::ng-deep .modal-dialog,
+:host ::ng-deep .modal-content {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+}

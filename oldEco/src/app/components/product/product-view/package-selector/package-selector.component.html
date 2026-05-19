@@ -1,0 +1,149 @@
+<!-- ============================================
+     PACKAGE PRODUCTS — Redesigned HTML Template
+     ============================================ -->
+
+<div class="pkg-wrapper mb-4">
+  <h5 class="pkg-section-title">Package Products</h5>
+
+  @for (pkg of product.fixedPackage; track $index; let pkgIndex=$index) {
+  <div class="mb-4">
+
+    @for (packageGroup of pkg.packageGroups; track $index; let packageGroupIndex=$index) {
+    <div class="pkg-group-card mb-3">
+
+      <!-- ── Package Group Header ── -->
+      <div class="pkg-group-header" [class.pkg-group-header--has-content]="
+        (packageGroup.defaultOptions && packageGroup.defaultOptions.length > 0) ||
+        (packageGroup.optionGroups && packageGroup.optionGroups.length > 0)">
+        <img
+          onerror="this.src = 'assets/images/default-blank-image.png'"
+          [src]="packageGroup.mediaUrl ? packageGroup.mediaUrl : 'assets/images/default-collection-image.png'"
+          class="pkg-group-img">
+        <div class="pkg-group-info">
+          <h6 class="pkg-group-name">{{ packageGroup.productName }}</h6>
+          @if((packageGroup.defaultOptions && packageGroup.defaultOptions.length > 0) ||
+              (packageGroup.optionGroups && packageGroup.optionGroups.length > 0)){
+          <span class="pkg-group-badge">
+            <i class="fas fa-layer-group"></i>
+            Customizable
+          </span>
+          }
+        </div>
+      </div>
+
+      <!-- ── Default Options ── -->
+      @if(packageGroup.defaultOptions && packageGroup.defaultOptions.length > 0){
+      <div class="pkg-default-options">
+        <p class="pkg-section-label">Options</p>
+
+        @for (option of packageGroup.defaultOptions; track $index; let i=$index) {
+        <div class="pkg-option-row" [class.pkg-option-row--last]="i >= packageGroup.defaultOptions.length - 1">
+          <img
+            onerror="this.src = 'assets/images/default-blank-image.png'"
+            [src]="option.mediaUrl ? option.mediaUrl : 'assets/images/default-collection-image.png'"
+            class="pkg-option-img">
+          <div class="pkg-option-info">
+            <span class="pkg-option-name">{{ appService.getOptionName(option) }}</span>
+            @if (option.optionPrice) {
+            <span class="pkg-option-price">
+              + {{ currentCurrency.symbol }} {{ option.optionPrice.toFixed(currentCurrency.afterDecimal) }}
+            </span>
+            }
+          </div>
+          <div class="pkg-option-qty">
+            @if(option.tempQty > 0){
+            <div class="pkg-qty-stepper">
+              @if(option.tempQty == 1){
+              <button class="pkg-qty-btn pkg-qty-btn--danger" type="button" (click)="decreaseQty(option)">
+                <i class="far fa-trash-alt"></i>
+              </button>
+              } @else {
+              <button class="pkg-qty-btn" type="button" (click)="decreaseQty(option)">
+                <i class="d-icon-minus"></i>
+              </button>
+              }
+              <span class="pkg-qty-value">{{ option.tempQty }}</span>
+              <button class="pkg-qty-btn" type="button" (click)="increaseQty(option)">
+                <i class="d-icon-plus"></i>
+              </button>
+            </div>
+            <small class="pkg-qty-max">Max. {{ option.qty }}</small>
+            } @else {
+            <button type="button" class="pkg-add-btn" (click)="increaseQty(option)">
+              <i class="fas fa-plus"></i>
+              Add
+            </button>
+            }
+          </div>
+        </div>
+        }
+      </div>
+      }
+
+      <!-- ── Option Groups (Checkboxes) ── -->
+      @if(packageGroup.optionGroups && packageGroup.optionGroups.length > 0){
+      <div class="pkg-option-groups">
+
+        @for (group of packageGroup.optionGroups; track $index) {
+        <div class="pkg-og-block mb-3"
+          [class.pkg-og-block--error]="isPackageIsNotMinimumSelection(pkg, packageGroupIndex, packageGroup, group)">
+
+          <!-- Group header -->
+          <div class="pkg-og-header">
+            <span class="pkg-og-title">{{ appService.getOptionGroupTitle(group) }}</span>
+            <div class="pkg-og-rules">
+              @if(isPackageIsNotMinimumSelection(pkg, packageGroupIndex, packageGroup, group)){
+              <span class="pkg-og-rule pkg-og-rule--error">
+                <i class="fas fa-exclamation-circle"></i>
+                Min {{ group.minSelectable > group.options?.length ? group.options?.length : group.minSelectable }}
+              </span>
+              }
+              <span class="pkg-og-rule pkg-og-rule--info">
+                Max {{ group.maxSelectable > group.options?.length ? group.options?.length : group.maxSelectable }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Checkbox grid -->
+          <div class="pkg-checkbox-grid">
+            @for (option of group.options; track $index; let optionIndex=$index) {
+            <label class="pkg-checkbox-card"
+              [class.pkg-checkbox-card--active]="product.selectedPackageOptions['packageName=' + pkg.name + '&packageGroup=' + packageGroupIndex + '&productId=' + packageGroup.productId + '&optionGroupId=' + group.optionGroupId + '&optionId=' + option.optionId + '&optionPrice=' + option.optionPrice] == true"
+              [class.pkg-checkbox-card--disabled]="isPackageIsMaximumSelection(pkg, packageGroupIndex, packageGroup, group, option)"
+              [for]="'packageName=' + pkg.name + '&packageGroup=' + packageGroupIndex + '&productId=' + packageGroup.productId + '&optionGroupId=' + group.optionGroupId + '&optionId=' + option.optionId + '&optionPrice=' + option.optionPrice">
+              <input type="checkbox"
+                class="pkg-checkbox-input"
+                [id]="'packageName=' + pkg.name + '&packageGroup=' + packageGroupIndex + '&productId=' + packageGroup.productId + '&optionGroupId=' + group.optionGroupId + '&optionId=' + option.optionId + '&optionPrice=' + option.optionPrice"
+                [name]="'packageName=' + pkg.name + '&packageGroup=' + packageGroupIndex + '&productId=' + packageGroup.productId + '&optionGroupId=' + option.optionGroupId"
+                [disabled]="isPackageIsMaximumSelection(pkg, packageGroupIndex, packageGroup, group, option)"
+                [(ngModel)]="product.selectedPackageOptions['packageName=' + pkg.name + '&packageGroup=' + packageGroupIndex + '&productId=' + packageGroup.productId + '&optionGroupId=' + group.optionGroupId + '&optionId=' + option.optionId + '&optionPrice=' + option.optionPrice]"
+                (click)="checkPackageCheckBoxSelection(pkg, packageGroupIndex, packageGroup, group, option)">
+              <div class="pkg-checkbox-info">
+                <span class="pkg-checkbox-name">{{ appService.getOptionName(option) }}</span>
+                @if(option.optionPrice){
+                @if(product.priceModel?.model != 'fixedPrice'){
+                <span class="pkg-option-price">
+                  + {{ currentCurrency.symbol }} {{ option.optionPrice.toFixed(currentCurrency.afterDecimal) }}
+                </span>
+                }
+                }
+              </div>
+              <div class="pkg-checkbox-tick">
+                <i class="fas fa-check"></i>
+              </div>
+            </label>
+            }
+          </div>
+
+        </div>
+        }
+
+      </div>
+      }
+
+    </div>
+    }
+
+  </div>
+  }
+</div>

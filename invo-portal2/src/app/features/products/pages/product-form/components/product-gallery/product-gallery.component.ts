@@ -9,13 +9,18 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormGroup } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import {
+  CdkDragDrop,
+  DragDropModule,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 
 import { ModalService } from '@shared/modal/modal.service';
 import {
   MediaPickerModalComponent,
   MediaPickerConfig,
-} from '../../../../../media/components/media-picker/media-picker-modal.component';
-import type { Media } from '../../../../../media/models/media.model';
+} from '../../../../../settings/media/components/media-picker/media-picker-modal.component';
+import type { Media } from '../../../../../settings/media/models/media.model';
 
 import { Product, ProductMedia } from '../../../../models/product-form.model';
 import { Fields } from '../../../../models/product-fields.model';
@@ -31,7 +36,7 @@ import { Fields } from '../../../../models/product-fields.model';
 @Component({
   selector: 'app-pf-product-gallery',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, DragDropModule],
   templateUrl: './product-gallery.component.html',
   styleUrl: './product-gallery.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -150,6 +155,22 @@ export class ProductGalleryComponent {
     const target = idx + offset;
     if (idx < 0 || target < 0 || target >= list.length) return;
     [list[idx], list[target]] = [list[target], list[idx]];
+    this.media.set(list);
+    this.coverId.set(list[0]?.id ?? null);
+    this.syncToModel();
+    this.productForm().markAsDirty();
+  }
+
+  /** CDK drag-drop handler. The 2-column grid wraps, so we use
+   *  `cdkDropListOrientation="horizontal"` on the list — that
+   *  lets CDK compute drop targets row-by-row instead of treating
+   *  the whole strip as one vertical column (which mis-detected
+   *  drop slots when tiles wrapped). Whatever ends up at index 0
+   *  after the move becomes the new main photo via `syncToModel`. */
+  onDrop(event: CdkDragDrop<ProductMedia[]>): void {
+    if (event.previousIndex === event.currentIndex) return;
+    const list = [...this.media()];
+    moveItemInArray(list, event.previousIndex, event.currentIndex);
     this.media.set(list);
     this.coverId.set(list[0]?.id ?? null);
     this.syncToModel();

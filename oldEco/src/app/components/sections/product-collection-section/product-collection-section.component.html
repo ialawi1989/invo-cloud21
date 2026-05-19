@@ -1,0 +1,37 @@
+@if(style =='Style 1'){
+  <app-product-collection-style1
+    [section]="section"
+    [background]="background"
+    [products]="products"
+    (collectionNav)="gotoCollection()" />
+}
+@else if(style =='Style 2'){
+  <app-product-collection-style2
+    [section]="section"
+    [background]="background"
+    [products]="products"
+    (collectionNav)="gotoCollection()" />
+}
+@else if(style =='Style 3'){
+  <app-product-collection-style3
+    [section]="section"
+    [background]="background"
+    [products]="products"
+    (collectionNav)="gotoCollection()" />
+}
+@else if(style =='Style 4'){
+  <app-product-collection-style4
+    [section]="section"
+    [background]="background"
+    [products]="products"
+    (collectionNav)="gotoCollection()" />
+}
+@else if(style =='Style 5'){
+  <app-product-collection-style5
+    [section]="section"
+    [background]="background"
+    [products1]="products1"
+    [products2]="products2"
+    [products3]="products3"
+    (collectionNav)="gotoCollection($event)" />
+}

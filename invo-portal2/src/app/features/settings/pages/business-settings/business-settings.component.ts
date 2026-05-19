@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import {
   FormBuilder,
   FormControl,
@@ -25,11 +25,13 @@ import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { ToastService } from '@shared/components/toast/toast.service';
+import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { ModalService } from '@shared/modal/modal.service';
 
 import { BusinessSettingsService } from '../../services/business-settings.service';
-import type { MediaPickerModalComponent as MediaPickerType } from '../../../media/components/media-picker/media-picker-modal.component';
+import type { MediaPickerModalComponent as MediaPickerType } from '../../media/components/media-picker/media-picker-modal.component';
 
 /**
  * Settings → Business Settings
@@ -55,6 +57,7 @@ import type { MediaPickerModalComponent as MediaPickerType } from '../../../medi
     LoadingOverlayComponent,
     SearchDropdownComponent,
     FormStickyFooterComponent,
+    ToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './business-settings.component.html',
@@ -66,6 +69,8 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
   private translate  = inject(TranslateService);
   private modal      = inject(ModalService);
   private destroyRef = inject(DestroyRef);
+  private router     = inject(Router);
+  private toast      = inject(ToastService);
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
@@ -161,7 +166,7 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
     // Lazy-load the media picker so we don't pull it into the settings
     // chunk for users who never click "Choose logo".
     const { MediaPickerModalComponent } =
-      await import('../../../media/components/media-picker/media-picker-modal.component');
+      await import('../../media/components/media-picker/media-picker-modal.component');
     const ref = this.modal.open<MediaPickerType, any, any>(
       MediaPickerModalComponent,
       {
@@ -248,8 +253,11 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
       // Refresh the in-memory snapshot so subsequent edits diff correctly.
       this.company.set(await this.service.getCompany(true));
       this.form.markAsPristine();
-    } catch (e) {
+      this.toast.success('COMMON.SAVED_OK');
+      this.router.navigate(['/settings']);
+    } catch (e: any) {
       console.error('[business-settings] save failed', e);
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
     } finally {
       this.saving.set(false);
     }

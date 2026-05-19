@@ -1,0 +1,213 @@
+@if (showDeliverySelector()) {
+
+<!-- ── Modal header: title + close ──────────────────────────────── -->
+<div class="ds-modal-header">
+  <div class="ds-header-left">
+    <div class="acc-avatar ds-avatar"><i class="fas fa-map-marker-alt"></i></div>
+    <div>
+      <h2 class="ds-title">{{"Delivery" | translate}}</h2>
+      <p class="ds-subtitle">{{"Select your delivery area" | translate}}</p>
+    </div>
+  </div>
+  <button type="button" class="ds-close-btn" aria-label="Close" (click)="cancel()">
+    <i class="fas fa-times"></i>
+  </button>
+</div>
+
+<!-- ── Search bar ────────────────────────────────────────────────── -->
+<div class="ds-search-wrap">
+  <div class="ds-search-inner">
+    <svg class="ds-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <path d="m21 21-4.3-4.3"></path>
+    </svg>
+    <input class="ds-search-input" type="text" placeholder="{{'Search address...' | translate}}" [value]="searchText()"
+      (input)="onSearchChange($any($event).target.value)" />
+  </div>
+</div>
+
+<!-- ── Modal body ────────────────────────────────────────────────── -->
+<div class="ds-modal-body">
+
+  <!-- Loading -->
+  @if (displayState().type === 'loading') {
+  <div class="ds-state-wrap">
+    <div class="ds-spinner"></div>
+    <p class="ds-state-text">{{ displayState().message | translate }}</p>
+  </div>
+  }
+
+  @if (displayState().showAddresses) {
+
+  <!-- Saved addresses -->
+  @if(userData()?.id && userData()?.addresses?.length){
+  <div class="ds-section">
+    <span class="ds-section-label">
+      <i class="fas fa-bookmark ds-label-icon"></i>
+      {{"Your saved addresses" | translate}}
+    </span>
+    <div class="ds-address-list">
+      @for (address of filteredUserAddresses(); track $index) {
+      @if (address.title) {
+      <div class="ds-address-card ds-address-card--saved" (click)="onClickUserAddress(address)">
+        <div class="ds-card-main">
+          <div class="ds-card-icon ds-card-icon--saved">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="ds-card-body">
+            <span class="ds-card-title">{{ address.title }}</span>
+            <span class="ds-card-detail">
+              @if(address.governorate){ {{address.governorate}}, }
+              @if(address.city){ {{"City" | translate}}: {{address.city}}, }
+              @if(address.block){ {{"Block" | translate}}: {{address.block}}, }
+              @if(address.road){ {{"Road" | translate}}: {{address.road}}, }
+              @if(address.building){ {{"Building" | translate}}: {{address.building}} }
+            </span>
+          </div>
+        </div>
+        <span class="ds-badge ds-badge--saved">{{"Saved" | translate}}</span>
+      </div>
+      }
+      }
+    </div>
+  </div>
+  @if (userData()?.addresses?.length > 0 && filteredAddresses().length > 0) {
+  <div class="ds-divider"></div>
+  }
+  }
+
+  <!-- Available delivery areas -->
+  @if (filteredAddresses().length > 0) {
+  <div class="ds-section">
+    <span class="ds-section-label">
+      <i class="fas fa-truck ds-label-icon"></i>
+      {{"Available delivery areas" | translate}}
+    </span>
+    <div class="ds-address-list">
+      @for (address of filteredAddresses(); track $index) {
+      <div class="ds-address-card" (click)="onClickAddress(address)">
+        <div class="ds-card-main">
+          <div class="ds-card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+          </div>
+          <div class="ds-card-body">
+            <span class="ds-card-title">{{ getTranslatedLabel(address) }}</span>
+            <div class="ds-card-meta">
+              <!-- Min order -->
+              <span class="ds-meta-pill">
+                <small>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8" cy="21" r="1"></circle>
+                    <circle cx="19" cy="21" r="1"></circle>
+                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+                  </svg>
+                  {{"Min" | translate}}: {{ currentCurrency().symbol }} {{ getConvertedPrice(address.minimumOrder) }}
+                </small>
+              </span>
+              <!-- Delivery charge -->
+              <span class="ds-meta-pill ds-meta-pill--delivery">
+                <small>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 18V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path>
+                    <path d="M15 18H9"></path>
+                    <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path>
+                    <circle cx="17" cy="18" r="2"></circle>
+                    <circle cx="7" cy="18" r="2"></circle>
+                  </svg>
+                  {{ currentCurrency().symbol }} {{ getConvertedPrice(address.deliveryCharge) }}
+                </small>
+              </span>
+              <!-- Free delivery -->
+              @if(address.freeDeliveryOver){
+              <span class="ds-meta-pill ds-meta-pill--free">
+                <small>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                    <rect x="2" y="7" width="20" height="5"></rect>
+                    <path d="M12 22V7"></path>
+                    <path d="M7 12h10"></path>
+                  </svg>
+                  {{"Free over" | translate}} {{ currentCurrency().symbol }} {{
+                  getConvertedPrice(address.freeDeliveryOver) }}
+                </small>
+              </span>
+              }
+            </div>
+            @if(address.note){
+            <span class="ds-card-note">
+              <i class="fas fa-sticky-note"></i> {{ address.note }}
+            </span>
+            }
+          </div>
+        </div>
+        <i class="fas fa-chevron-right ds-card-chevron"></i>
+      </div>
+      }
+    </div>
+  </div>
+  }
+  }
+
+  <!-- Empty states -->
+  @if (!displayState().showAddresses && !isLoading()) {
+  <div class="ds-state-wrap">
+    @if (displayState().type === 'no-addresses') {
+    <div class="ds-state-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+        <circle cx="12" cy="10" r="3"></circle>
+      </svg>
+    </div>
+    <p class="ds-state-title">{{ displayState().message | translate }}</p>
+    <p class="ds-state-sub">{{"Please try again later or contact support" | translate}}</p>
+    }
+    @if (displayState().type === 'no-matches') {
+    <div class="ds-state-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m13.5 8.5-5 5"></path>
+        <path d="m8.5 8.5 5 5"></path>
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+    </div>
+    <p class="ds-state-title">{{ displayState().message | translate }}</p>
+    <p class="ds-state-sub">{{"Try adjusting your search terms" | translate}}</p>
+    <button class="ds-clear-btn" (click)="onSearchChange('')">
+      <i class="fas fa-times"></i> {{"Clear search" | translate}}
+    </button>
+    }
+  </div>
+  }
+
+  <!-- Results count -->
+  @if (displayState().showAddresses && searchText().trim()) {
+  <div class="ds-results-count">
+    {{"Showing" | translate}}
+    {{ filteredAddresses().length + filteredUserAddresses().length }}
+    {{"of" | translate}}
+    {{ addresses().length + (userData()?.addresses?.length || 0) }}
+    {{"addresses" | translate}}
+  </div>
+  }
+  <br>
+</div>
+}
+
+@if(showMap()) {
+<app-map [deliveryType]="deliveryType()" [zones]="zones()" [branches]="branches()" (mapClosed)="onMapClosed()">
+</app-map>
+}

@@ -1,0 +1,475 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Map Selector Popup — matches account/pickup-selector design system
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── FA icon fix ─────────────────────────────────────────────────── */
+i.fas,
+i.far,
+i.fab,
+i[class*="fa-"] {
+  font-family: "Font Awesome 5 Free" !important;
+  font-weight: 900 !important;
+  font-style: normal !important;
+  font-variant: normal !important;
+  text-rendering: auto !important;
+  -webkit-font-smoothing: antialiased !important;
+  display: inline-block !important;
+}
+
+/* ── Overlay ─────────────────────────────────────────────────────── */
+.map-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 24px;
+  animation: mapFadeIn 0.2s ease;
+}
+
+@keyframes mapFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Container ───────────────────────────────────────────────────── */
+.map-container {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  height: 78vh;
+  max-height: 700px;
+  background: #fff;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: mapSlideUp 0.25s ease;
+}
+
+@keyframes mapSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Header ──────────────────────────────────────────────────────── */
+.map-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.map-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.map-header-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.map-header-avatar i {
+  font-family: "Font Awesome 5 Free" !important;
+  font-weight: 900 !important;
+  color: #fff;
+}
+
+.map-title {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: var(--primary-color) !important;
+  margin: 0 !important;
+  line-height: 1.3;
+}
+
+.map-subtitle {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+}
+
+.map-close-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  border: none;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: background 0.13s, color 0.13s;
+}
+
+.map-close-btn:hover {
+  background: #e0e0e0;
+  color: var(--primary-color);
+}
+
+/* ── Delivery info banner ────────────────────────────────────────── */
+.map-delivery-banner {
+  position: absolute;
+  /* background: rgba(255, 255, 255, 0.95); */
+  /* border: 1.5px solid #e8e8e8; */
+  border-radius: 14px;
+  z-index: 20;
+  pointer-events: none;
+  overflow: hidden;
+  animation: mapSlideDown 0.2s ease;
+  backdrop-filter: blur(6px);
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  /* width: 400px; */
+  width: calc(100% - 110px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@keyframes mapSlideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Banner header bar — branch name */
+.map-banner-branch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.map-banner-branch-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.map-banner-branch-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Banner pills row */
+.map-banner-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px 4px;
+  flex-wrap: wrap;
+}
+
+.map-banner-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid;
+}
+
+.map-banner-pill--branch {
+  background: #f5f5f5;
+  color: var(--primary-color);
+  border-color: #e0e0e0;
+}
+
+.map-banner-pill--charge {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-color: #a5d6a7;
+}
+
+.map-banner-pill--freedeliveryover {
+  background: #fff3e0;
+  color: #ef6c00;
+  border-color: #ffcc80;
+}
+
+.map-banner-pill--min {
+  background: #e3f2fd;
+  color: #1565c0;
+  border-color: #90caf9;
+}
+
+.map-banner-pill--note {
+  background: #f3e5f5;
+  color: #6a1b9a;
+  border-color: #ce93d8;
+}
+
+/* ── Map canvas ──────────────────────────────────────────────────── */
+.map {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  position: relative;
+}
+
+/* ── Center pin (replaces MapLibre Marker) ───────────────────────── */
+.map-center-pin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  z-index: 10;
+  pointer-events: none;
+  font-size: 36px;
+  color: #FF0000;
+}
+
+/* ── Confirm box ─────────────────────────────────────────────────── */
+.map-confirm-box {
+  position: absolute;
+  bottom: 45px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  z-index: 20;
+  width: calc(100% - 40px);
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: mapSlideUp 0.2s ease;
+}
+
+/* ── Warning strip ───────────────────────────────────────────────── */
+.map-warning-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 248, 225, 0.97);
+  border: 1.5px solid #ffcc80;
+  border-radius: 12px;
+  padding: 11px 14px;
+  backdrop-filter: blur(6px);
+  animation: mapSlideUp 0.2s ease;
+  max-width: calc(100% - 72px);
+  margin: 0 auto;
+}
+
+.map-warning-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #fff3e0;
+  color: #e65100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.map-warning-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.map-warning-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #e65100;
+  margin: 0 0 2px;
+}
+
+.map-warning-text {
+  font-size: 12px;
+  color: #795548;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ── Action buttons ──────────────────────────────────────────────── */
+.map-confirm-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.map-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 46px;
+  padding: 0 22px;
+  border-radius: 10px;
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  white-space: nowrap;
+  width: auto;
+  min-width: 200px;
+  max-width: calc(100% - 72px);
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.map-btn-primary:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.map-btn-primary:disabled {
+  cursor: not-allowed;
+  transform: none;
+  background: #ccc;
+}
+
+/* ── MapTiler canvas smoothing ───────────────────────────────────── */
+.maplibregl-map canvas {
+  font-smooth: always;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Responsive — tablet ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .map-popup {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .map-container {
+    max-width: 100%;
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+    animation: mapSlideUpMobile 0.28s ease;
+  }
+
+  @keyframes mapSlideUpMobile {
+    from {
+      transform: translateY(40px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .map-modal-header {
+    border-radius: 0;
+  }
+
+  .map-confirm-box {
+    width: calc(100% - 24px);
+    gap: 8px;
+  }
+
+  .map-warning-row {
+    padding: 9px 12px;
+    gap: 8px;
+  }
+
+  .map-warning-icon {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  .map-btn-primary {
+    width: 100%;
+    height: 52px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    justify-content: center;
+  }
+}
+
+/* ── Responsive — small mobile ───────────────────────────────────── */
+@media (max-width: 480px) {
+  .map-banner-branch {
+    padding: 8px 12px 6px;
+  }
+
+  .map-banner-branch-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+
+  .map-banner-branch-name {
+    font-size: 12px;
+  }
+
+  .map-banner-pills {
+    gap: 5px;
+  }
+
+  .map-banner-pill {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+}

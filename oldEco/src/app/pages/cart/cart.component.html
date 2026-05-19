@@ -1,0 +1,314 @@
+<!-- ── Mobile sticky header ─────────────────────────────────────── -->
+<div class="fix-top sticky-content d-md-none d-lg-none fixed">
+  <div class="header">
+    <div class="header-middle pt-2 pb-2 header-top-custom" [style.backgroundColor]="companyData.themeSettings.template?.header?.headerColor">
+      <div class="container">
+        <div class="header-left" style="display:flex;align-items:center;justify-content:center;flex:1;">
+          <a href="javascript:void(0);" class="mobile-menu-toggle" (click)="goBack()" style="margin-right:auto;">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+          <h5 class="m-0" style="margin-left:-26px !important;">{{ "Shopping Cart" | translate }}</h5>
+          <div style="margin-left:auto;"></div>
+        </div>
+        <div class="header-right"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Desktop page header ──────────────────────────────────────── -->
+<div class="page-header d-md-show"
+  [style.background-color]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-image]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-attachment]="pageData?.template?.settings?.subheader_settings?.isParallax ? 'fixed' : ''"
+  [style.background-size]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'cover' : ''"
+  [style.background-position]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'center' : ''"
+  [style.background-repeat]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'no-repeat' : ''">
+  @if (pageData?.template?.settings?.subheader_settings?.overlayOpacity) {
+  <div class="section-overlay"
+    [style.opacity]="pageData?.template?.settings?.subheader_settings?.overlayOpacity / 100"
+    [style.background-color]="pageData?.template?.settings?.subheader_settings?.overlayColor"></div>
+  }
+  <h1 class="page-title z-index-3">{{"Shopping Cart" | translate}}</h1>
+  <ul class="breadcrumb z-index-3">
+    <li><a [routerLink]="'/'"><i class="d-icon-home"></i></a></li>
+    <li class="delimiter">/</li>
+    <li>{{"Shopping Cart" | translate}}</li>
+  </ul>
+</div>
+
+<!-- ── Empty cart ────────────────────────────────────────────────── -->
+@if (invoiceData?.lines?.length == 0 || appService.viewOnly) {
+<div class="cart-page">
+  <div class="container">
+    <div class="acc-page-header">
+      <div class="acc-avatar"><i class="fas fa-shopping-cart"></i></div>
+      <div class="acc-page-title-body">
+        <h2 class="acc-page-title">{{"Shopping Cart" | translate}}</h2>
+      </div>
+    </div>
+    <div class="acc-card">
+      <div class="acc-card-body">
+        <div class="acc-empty-state">
+          <div class="acc-empty-icon"><i class="d-icon-bag"></i></div>
+          <p class="acc-empty-title">{{"Your cart is empty" | translate}}</p>
+          <p class="acc-empty-sub">{{"Add some items to get started." | translate}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- ── Cart with items ───────────────────────────────────────────── -->
+@else {
+<div class="cart-page">
+  <div class="container">
+
+    <!-- Page header -->
+    <div class="acc-page-header">
+      <div class="acc-avatar"><i class="fas fa-shopping-cart"></i></div>
+      <div class="acc-page-title-body">
+        <h2 class="acc-page-title">{{"Shopping Cart" | translate}}</h2>
+        <p class="acc-page-subtitle">{{ invoiceData?.lines?.length }} {{"items" | translate}}</p>
+      </div>
+    </div>
+
+    <div class="row">
+
+      <!-- ── LEFT: Cart items ──────────────────────────────────── -->
+      <div class="col-lg-8 col-md-12 pr-lg-4">
+        <div class="acc-card mb-4 cart-items-card">
+          <div class="acc-card-header">
+            <span class="acc-section-label">{{"Items" | translate}}</span>
+          </div>
+          <div class="acc-card-body" style="padding:0;">
+            <table class="cart-tbl">
+              <thead>
+                <tr>
+                  <th colspan="2">{{"Product" | translate}}</th>
+                  <th>{{"Qty" | translate}}</th>
+                  <th class="d-md-show">{{"Price" | translate}}</th>
+                  <th class="d-md-show">{{"Discount" | translate}}</th>
+                  <th>{{"Subtotal" | translate}}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (line of invoiceData?.lines; track $index) {
+                <tr [class.cart-row--even]="$index % 2 === 0"
+                    [class.cart-row--busy]="busyLineIds.has(line.id)"
+                    [class.cart-row--removing]="removingLineIds.has(line.id)">
+                  <!-- Thumbnail -->
+                  <td class="cart-thumb">
+                    <a href="javascript:void(0);" [routerLink]="'product/'+line.productId">
+                      <img
+                        onerror="if (this.src != 'assets/images/default-blank-image.png') this.src = 'assets/images/default-blank-image.png';"
+                        [src]="appService.productImage(line.mediaUrl, 300)"
+                        alt="product">
+                    </a>
+                  </td>
+
+                  <!-- Name + options -->
+                  <td class="cart-name">
+                    <a href="javascript:void(0);" [routerLink]="'product/'+line.productId">
+                      <span class="cart-product-name">
+                        {{ appService.lang == 'ar' ? line.translation?.name?.ar ? line.translation?.name?.ar : line.productName : line.productName }}
+                      </span>
+
+                      <div class="product-option-details">
+                        @if (line.options.length) {
+                        <div class="product-options">
+                          @for (groupedOptions of appService.getGroupedOptions(line.options); track groupedOptions.optionGroupId) {
+                          <div class="option-group">
+                            @if (companyData.isInvoiceOptionGroupVisible && appService.getOptionGroupName(groupedOptions)) {
+                            <span class="option-group-name">{{appService.getOptionGroupName(groupedOptions)}}:</span>
+                            }
+                            <span class="option-items">
+                              @for (option of groupedOptions.options; track $index; let i = $index) {
+                              {{ appService.getOptionName(option) }}
+                              @if(option.qty>1){ (x{{option.qty}}) }
+                              @if(i < groupedOptions.options.length - 1){, }
+                              }
+                            </span>
+                          </div>
+                          }
+                        </div>
+                        }
+
+                        @if (line.subItems.length) {
+                        <div class="sub-items">
+                          @for (subItem of line.subItems; track $index; let i = $index) {
+                          <div class="sub-item">
+                            <span class="sub-item-bullet">•</span>
+                            <span class="sub-item-content">
+                              {{ appService.lang == 'ar' ? subItem.translation?.name?.ar ? subItem.translation?.name?.ar : subItem.productName : subItem.productName }}
+                              @if (subItem.qty > 1) { <span class="quantity">(x{{ subItem.qty }})</span> }
+                              @if (subItem.options?.length) {
+                              <span class="sub-item-options">:
+                                @for (option of subItem.options; track $index; let j = $index) {
+                                {{ appService.getOptionName(option) }}@if (j < subItem.options.length - 1){, }
+                                }
+                              </span>
+                              }
+                            </span>
+                          </div>
+                          }
+                        </div>
+                        }
+
+                        @if (line.measurements && (line.measurements | keyvalue).length) {
+                        <div class="measurements">
+                          @for (measurement of line.measurements | keyvalue; track $index) {
+                          <div class="measurement-item">
+                            <span class="measurement-bullet">•</span>
+                            <span class="measurement-content">{{ measurement.key }}: {{ measurement.value }} cm</span>
+                          </div>
+                          }
+                        </div>
+                        }
+
+                        @if (line.note) {
+                        <div class="product-note">
+                          <span class="note-label">{{ "Note:" | translate }}</span>
+                          <span class="note-content">{{ line.note }}</span>
+                        </div>
+                        }
+                      </div>
+                    </a>
+                  </td>
+
+                  <!-- Qty -->
+                  <td class="cart-qty">
+                    <div class="cart-qty-group">
+                      <button class="cart-qty-btn" [disabled]="isLineBusy(line.id)" (click)="changeQty(line.qty, line.id, 'decrease')">
+                        <i class="d-icon-minus"></i>
+                      </button>
+                      <span class="cart-qty-value">
+                        @if (busyLineIds.has(line.id)) {
+                          <span class="cart-qty-spinner" aria-label="Updating"></span>
+                        } @else {
+                          {{ line.qty }}
+                        }
+                      </span>
+                      <button class="cart-qty-btn" [disabled]="isLineBusy(line.id)" (click)="changeQty(line.qty, line.id, 'increase')">
+                        <i class="d-icon-plus"></i>
+                      </button>
+                    </div>
+                  </td>
+
+                  <!-- Price -->
+                  <td class="cart-price d-md-show">
+                    <span class="cart-amount">
+                     {{ getConvertedPrice(line.price) }}
+                      @if(line.options && line.options.length && getExtraPrice(line.options)){
+                      <span class="cart-extra-price">
+                        +{{ getConvertedPrice(getExtraPrice(line.options)) }}
+                      </span>
+                      }
+                    </span>
+                  </td>
+
+                  <!-- Discount -->
+                  <td class="cart-discount d-md-show">
+                    @if(calculateDiscountPrice(line) > 0){
+                    <span class="cart-discount-badge">
+                      @if(line.discountPercentage){
+                      -{{ line.discountAmount }}%
+                      } @else {
+                      -{{ getConvertedPrice(calculateDiscountPrice(line)) }}
+                      }
+                    </span>
+                    }
+                  </td>
+
+                  <!-- Subtotal -->
+                  <td class="cart-subtotal">
+                    <span class="cart-amount cart-amount--bold">
+                      {{ getConvertedPrice(line.total) }}
+                      @if(line.taxTotal>0 && !companyData.isInclusiveTax){
+                      <span class="cart-tax">
+                        {{"Tax" | translate}}: {{ currentCurrency.symbol }} {{ getConvertedPrice(line.taxTotal) }}
+                      </span>
+                      }
+                    </span>
+                  </td>
+
+                  <!-- Remove -->
+                  <td class="cart-remove">
+                    <button class="cart-remove-btn" [disabled]="isLineBusy(line.id)" (click)="removeItem(line.id)" title="Remove">
+                      @if (removingLineIds.has(line.id)) {
+                        <span class="cart-qty-spinner" aria-label="Removing"></span>
+                      } @else {
+                        <i class="fas fa-times"></i>
+                      }
+                    </button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Continue shopping — desktop only -->
+        <div class="d-none d-md-block d-lg-block d-xl-block mb-6">
+          <a href="javascript:void(0);" (click)="goBackToPreviousProductsPage()" class="acc-btn-secondary">
+            <i class="d-icon-arrow-left"></i> {{"Continue Shopping" | translate}}
+          </a>
+        </div>
+      </div>
+
+      <!-- ── RIGHT: Summary ────────────────────────────────────── -->
+      <aside class="col-lg-4 sticky-sidebar-wrapper">
+        <div class="sticky-sidebar">
+          <div class="acc-card cart-summary-card">
+            <div class="acc-card-header">
+              <span class="acc-section-label">{{"Cart Totals" | translate}}</span>
+            </div>
+            <div class="acc-card-body">
+
+              <div class="cart-summary-row">
+                <span class="cart-summary-label">{{"Total" | translate}}</span>
+                <span class="cart-summary-value">
+                  {{ currentCurrency.symbol }} {{ getConvertedPrice(invoiceData?.subTotal ?? 0) }}
+                </span>
+              </div>
+
+              @if(invoiceData.invoiceTaxTotal > 0){
+              <div class="cart-tax-row">
+                <span class="cart-tax-label">{{"Invoice Tax" | translate}}</span>
+                <span class="cart-tax-value">{{ currentCurrency.symbol }} {{ getConvertedPrice(invoiceData.invoiceTaxTotal ?? 0) }}</span>
+              </div>
+              }
+              <div class="d-none d-md-block d-lg-block d-xl-block">
+
+                <a href="javascript:void(0);" routerLink="/checkout"
+                  class="acc-btn-primary cart-checkout-btn">
+                  {{"Proceed to checkout" | translate}}
+                  <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</div>
+}
+
+<!-- ── Mobile sticky footer buttons ─────────────────────────────── -->
+@if(invoiceData?.lines?.length != 0){
+<div class="cart-buttons animatedd fadeInUp d-none d-sm-flex d-xs-flex pr-3 pl-3 pt-4 mb-0">
+  <a href="javascript:void(0);" (click)="goBackToPreviousProductsPage()"
+    class="btn btn-dark btn-rounded btn-icon-leftt">
+    <small>{{"Add Product" | translate}}</small>
+  </a>
+  <a href="javascript:void(0);" [routerLink]="invoiceData?.lines?.length ? '/checkout' : null"
+    [class]="!(invoiceData?.lines?.length>0) ? 'btn-disabled' : 'btn-primary'" class="btn btn-rounded btn-checkout">
+    <small>{{"Checkout" | translate}}</small>
+  </a>
+</div>
+}

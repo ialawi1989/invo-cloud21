@@ -27,13 +27,13 @@ import {
   PickedProduct,
 } from '../product-form/components/pick-product-modal/pick-product-modal.component';
 
-import { LabelBuilderService } from '../../../label-builder/services/label-builder.service';
+import { LabelBuilderService } from '../../../settings/label-builder/services/label-builder.service';
 import {
   LabelTemplate,
   LabelTemplateSummary,
-} from '../../../label-builder/services/label-template.types';
-import { renderTemplateToCanvas } from '../../../label-builder/services/png-export';
-import { LabelDataMap } from '../../../label-builder/services/token-resolver';
+} from '../../../settings/label-builder/services/label-template.types';
+import { renderTemplateToCanvas } from '../../../settings/label-builder/services/png-export';
+import { LabelDataMap } from '../../../settings/label-builder/services/token-resolver';
 import {
   PreviewAllModalComponent,
   PreviewAllModalData,

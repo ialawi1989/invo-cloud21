@@ -5,6 +5,26 @@
   <title>My Awesome Site</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--
+    Placeholder injected with Open Graph meta tags by the SSR
+    Express layer (src/server.ts). Each per-route handler runs the
+    Angular response through `.replace('<meta name="meta-tags">', ...)`
+    to splice in og:title / og:image / etc. before sending to the
+    browser. Keep this exact attribute spelling.
+  -->
+  <meta name="meta-tags">
+  <!--
+    Runtime-config injection slot. The SSR Express layer
+    (src/server.ts) replaces this with an inline <script> that sets:
+      window.__DASHBOARD_ORIGIN__   — origin the customizer iframe
+                                      accepts postMessage from
+      window.__CUSTOMIZER_ORIGINS__ — additional allowed origins
+      window.__APP_CONFIG__         — { subdomain, dashboardOrigin }
+    `environment.ts` and PreviewService read those values during
+    bundle bootstrap so the postMessage allowlist is correct on
+    first paint — no race with /assets/config.json.
+  -->
+  <meta name="runtime-config">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>

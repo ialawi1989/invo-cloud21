@@ -40,12 +40,37 @@
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   overflow: hidden;
+  cursor: grab;
+
+  &:active { cursor: grabbing; }
 
   // Main tile — thicker brand border so the user's eye lands on it first.
   &--hero {
     border: 2px solid #32acc1;
     box-shadow: 0 0 0 2px rgba(50, 172, 193, 0.15);
   }
+}
+
+// CDK drag chrome — the preview is the floating thumb that follows
+// the cursor; the placeholder is the slot left behind in the grid.
+.pf-gallery-tile.cdk-drag-preview {
+  cursor: grabbing;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.2);
+  // Snap preview to a fixed square so it doesn't inherit the grid
+  // column width (which would stretch it wide).
+  width: 160px !important;
+  height: 160px !important;
+  aspect-ratio: 1 / 1;
+}
+.pf-gallery-tile.cdk-drag-placeholder {
+  background: #e2e8f0;
+  border: 1px dashed #94a3b8;
+  // Hide the image + overlay so the placeholder reads as an empty
+  // slot the user is about to drop into.
+  > * { visibility: hidden; }
+}
+.cdk-drop-list-dragging .pf-gallery-tile:not(.cdk-drag-placeholder) {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
 }
 
 // ── Main-photo badge (on hero) ───────────────────────────────────────────
@@ -109,6 +134,38 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+// Wix-style hover scrim — dark semi-transparent overlay with a
+// centred move-cursor glyph. Lives above the image but below the
+// action buttons / main-photo badge, so the badge stays readable
+// even while the scrim fades in.
+.pf-gallery-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.45);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+.pf-gallery-tile:hover .pf-gallery-overlay,
+.pf-gallery-tile:focus-within .pf-gallery-overlay {
+  opacity: 1;
+}
+// Hero tile keeps the brand border highlight; we soften the scrim
+// so the "Main photo" badge in the corner stays legible.
+.pf-gallery-tile--hero .pf-gallery-overlay {
+  background: rgba(15, 23, 42, 0.35);
+}
+// Touch devices have no hover state — keep the scrim hidden so the
+// thumbnail stays visible. The explicit ← → buttons + ✕ delete are
+// already pinned visible by the `(hover: none)` rules below.
+@media (hover: none) {
+  .pf-gallery-overlay { display: none; }
 }
 
 .pf-gallery-actions {

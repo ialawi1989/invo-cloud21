@@ -81,6 +81,13 @@ export interface ProductMedia {
   [key: string]: any;
 }
 
+// Per-product SEO meta used to live here as `ProductSeo`. It now
+// persists in a dedicated polymorphic `SeoOverrides` row keyed by
+// (companyId, ownerType: 'product', ownerId: product.id) and is
+// fetched/saved through `SeoOverridesService` — see the SEO card on
+// the product form. Keeping this comment so future readers don't
+// look for a missing `seo` column on the Product payload.
+
 export interface CustomFieldValue {
   id: string;
   value: any;

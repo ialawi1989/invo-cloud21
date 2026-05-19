@@ -20,6 +20,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DropdownLoadFn, DropdownLoadResult } from '@shared/components/dropdown/search-dropdown.types';
+import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 
 import { ProductsService } from '../../../../services/products.service';
 import { Product } from '../../../../models/product-form.model';
@@ -43,7 +44,7 @@ interface UomItem       { label: string; value: string; }
 @Component({
   selector: 'app-pf-inventory-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, ToggleComponent],
   templateUrl: './inventory-details.component.html',
   styleUrl: './inventory-details.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

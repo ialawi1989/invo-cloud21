@@ -4,6 +4,8 @@
     "SAVING": "Saving…",
     "CANCEL": "Cancel",
     "DELETE": "Delete",
+    "DEFAULT": "Default",
+    "IMPORT": "Import",
     "DESELECT": "Deselect",
     "DESKTOP_ONLY": {
       "TITLE": "Best on a larger screen",
@@ -90,6 +92,10 @@
     "SUBMIT": "Submit",
     "CLOSE": "Close",
     "DISMISS": "Dismiss",
+    "CHANGE": "Change",
+    "DISCARD": "Discard",
+    "MORE": "More",
+    "UPLOAD_FAILED": "Upload failed",
     "ERROR": "error",
     "ERRORS": "errors",
     "UNSAVED_TITLE": "Unsaved changes",
@@ -217,6 +223,7 @@
     "MEDIA": "Media",
     "PLUGINS": "Plugins",
     "WEBSITE_CONTENT": "Website Content",
+    "BLOG": "Blog",
     "SETTINGS": "Settings",
     "DESIGN_SITE": "Design Site",
     "SUB": {
@@ -278,7 +285,12 @@
       "WEBSITE_SETTINGS": "Website Settings",
       "DOMAIN_SETTINGS": "Domain Settings",
       "PAGING_SYSTEM": "Paging System",
-      "CMS": "CMS"
+      "CMS": "CMS",
+      "BLOG_SECTION": "Blog",
+      "BLOG_POSTS": "Posts",
+      "BLOG_CATEGORIES": "Categories & Tags",
+      "BLOG_COMMENTS": "Comments",
+      "BLOG_SETTINGS": "Blog Settings"
     }
   },
   "SIDEBAR": {

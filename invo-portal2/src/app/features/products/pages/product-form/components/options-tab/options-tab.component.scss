@@ -3,53 +3,9 @@
 
 .pf-opts-header { padding-bottom: 0; }
 
-.pf-opts-tabs {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  width: 100%;
-  border-bottom: 1px solid #f1f5f9;
-  margin-top: -4px;
-}
-
-.pf-opts-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #64748b;
-  cursor: pointer;
-  transition: color 120ms ease, border-color 120ms ease;
-
-  &__icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: #f1f5f9;
-    color: #64748b;
-  }
-
-  &:hover { color: #0f172a; }
-
-  &--active {
-    color: #0e7490;
-    border-bottom-color: #32acc1;
-
-    .pf-opts-tab__icon {
-      background: #e0f2fe;
-      color: #0e7490;
-    }
-  }
-}
+// Tab strip now uses `<app-segmented-toggle>` — the shared toggle
+// handles spacing, icons, and active state, so no local rules
+// needed here.
 
 // Shared sub-section styles (consumed by quick/default/group children).
 :host ::ng-deep {

@@ -1,0 +1,317 @@
+<div class="cd">
+  <!-- ── Basics & social share ────────────────────────────────────────── -->
+  <section class="cd-card" [class.cd-card--open]="open().basics">
+    <header class="cd-card__head" (click)="toggle('basics')">
+      <div>
+        <h3 class="cd-card__title">{{ 'SEO.CUSTOMIZE_CARDS.BASICS' | translate }}</h3>
+        <p class="cd-card__sub">
+          {{ 'SEO.CUSTOMIZE_CARDS.BASICS_DESC' | translate }}
+          <a href="#">{{ 'SEO.LEARN_MORE' | translate }}</a>
+        </p>
+      </div>
+      <div class="cd-card__actions" (click)="$event.stopPropagation()">
+        @if (dirty().basics) {
+          <button type="button" class="cd-card__discard" (click)="discard('basics')">
+            {{ 'SEO.CUSTOMIZE_CARDS.DISCARD' | translate }}
+          </button>
+          <button type="button" class="cd-card__save" (click)="save('basics')">
+            {{ 'SEO.CUSTOMIZE_CARDS.SAVE' | translate }}
+          </button>
+        } @else if (!open().basics) {
+          <button type="button" class="cd-card__edit" (click)="toggle('basics')">
+            {{ 'SEO.CUSTOMIZE_CARDS.EDIT' | translate }}
+          </button>
+        }
+        <svg class="cd-card__chevron" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </header>
+
+    @if (open().basics) {
+      <div class="cd-card__body cd-grid">
+        <div class="cd-grid__form">
+          <p class="cd-section-title">{{ 'SEO.BASICS_FORM.BASICS' | translate }}</p>
+          <p class="cd-section-hint">
+            {{ 'SEO.BASICS_FORM.BASICS_HINT' | translate }}
+            <a href="#">{{ 'SEO.BASICS_FORM.WHAT_ARE_VARS' | translate }}</a>
+          </p>
+
+          <app-seo-var-input
+            [label]="'SEO.BASICS_FORM.TITLE_TAG' | translate"
+            [value]="draft().basics.titleTagTemplate"
+            (valueChange)="patchBasics({ titleTagTemplate: $event })"/>
+
+          <app-seo-var-input
+            [label]="'SEO.BASICS_FORM.META_DESC' | translate"
+            [textarea]="true"
+            [placeholder]="'SEO.BASICS_FORM.META_DESC_HINT' | translate"
+            [value]="draft().basics.metaDescTemplate"
+            (valueChange)="patchBasics({ metaDescTemplate: $event })"/>
+
+          <div class="cd-field">
+            <label>{{ 'SEO.BASICS_FORM.PAGE_URL' | translate }}</label>
+            <input type="text" class="cd-input" placeholder="https://my-site/"
+                   [ngModel]="draft().pageUrl.slugPattern"
+                   (ngModelChange)="patchPageUrl({ slugPattern: $event })"/>
+          </div>
+
+          <div class="cd-toggle-row">
+            <app-toggle
+              [checked]="draft().basics.indexable"
+              (checkedChange)="patchBasics({ indexable: $event })"/>
+            <span>{{ 'SEO.BASICS_FORM.INDEXABLE' | translate }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social share sub-section -->
+      <div class="cd-card__sub-section">
+        <p class="cd-section-title">{{ 'SEO.BASICS_FORM.SOCIAL_SHARE' | translate }}</p>
+        <p class="cd-section-hint">{{ 'SEO.BASICS_FORM.SOCIAL_SHARE_HINT' | translate }}</p>
+
+        <app-seo-var-input label="og:title"
+          [value]="draft().basics.ogTitleTemplate"
+          (valueChange)="patchBasics({ ogTitleTemplate: $event })"/>
+        <app-seo-var-input label="og:description" [textarea]="true"
+          [value]="draft().basics.ogDescTemplate"
+          (valueChange)="patchBasics({ ogDescTemplate: $event })"/>
+        <app-seo-var-input label="og:image"
+          [value]="draft().basics.ogImage"
+          (valueChange)="patchBasics({ ogImage: $event })"/>
+        <a href="#" class="cd-field__action">{{ 'SEO.BASICS_FORM.OG_IMAGE_PICK' | translate }}</a>
+
+        <p class="cd-section-title cd-section-title--mt">{{ 'SEO.BASICS_FORM.X_TITLE' | translate }}</p>
+        <p class="cd-section-hint">{{ 'SEO.BASICS_FORM.X_HINT' | translate }}</p>
+
+        <div class="cd-field">
+          <label>{{ 'SEO.BASICS_FORM.CARD_SIZE' | translate }}</label>
+          <app-segmented-toggle
+            size="sm"
+            [options]="xCardSizeOptions"
+            [value]="draft().basics.xCardSize"
+            (valueChange)="patchBasics({ xCardSize: $any($event) })"/>
+        </div>
+        <app-seo-var-input label="x:title"
+          [value]="draft().basics.xTitleTemplate"
+          (valueChange)="patchBasics({ xTitleTemplate: $event })"/>
+        <app-seo-var-input label="x:description" [textarea]="true"
+          [value]="draft().basics.xDescTemplate"
+          (valueChange)="patchBasics({ xDescTemplate: $event })"/>
+        <app-seo-var-input label="x:image"
+          [value]="draft().basics.xImage"
+          (valueChange)="patchBasics({ xImage: $event })"/>
+      </div>
+    }
+  </section>
+
+  <!-- ── Page URL ──────────────────────────────────────────────────────── -->
+  <section class="cd-card" [class.cd-card--open]="open().pageUrl">
+    <header class="cd-card__head" (click)="toggle('pageUrl')">
+      <div>
+        <h3 class="cd-card__title">{{ 'SEO.CUSTOMIZE_CARDS.PAGE_URL' | translate }}</h3>
+        <p class="cd-card__sub">{{ 'SEO.CUSTOMIZE_CARDS.PAGE_URL_DESC' | translate }}</p>
+      </div>
+      <div class="cd-card__actions" (click)="$event.stopPropagation()">
+        @if (dirty().pageUrl) {
+          <button type="button" class="cd-card__discard" (click)="discard('pageUrl')">{{ 'SEO.CUSTOMIZE_CARDS.DISCARD' | translate }}</button>
+          <button type="button" class="cd-card__save"    (click)="save('pageUrl')">   {{ 'SEO.CUSTOMIZE_CARDS.SAVE' | translate }}</button>
+        } @else if (!open().pageUrl) {
+          <button type="button" class="cd-card__edit"    (click)="toggle('pageUrl')"> {{ 'SEO.CUSTOMIZE_CARDS.EDIT' | translate }}</button>
+        }
+        <svg class="cd-card__chevron" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </header>
+    @if (open().pageUrl) {
+      <div class="cd-card__body">
+        <p class="cd-section-title">{{ 'SEO.PAGE_URL_FORM.HIERARCHY' | translate }}</p>
+        <p class="cd-section-hint">
+          {{ 'SEO.PAGE_URL_FORM.HIERARCHY_HINT' | translate }}
+          <a href="#">{{ 'SEO.PAGE_URL_FORM.WHAT_IS_HIERARCHY' | translate }}</a>
+        </p>
+
+        <div class="cd-toggle-row">
+          <app-toggle
+            [checked]="draft().pageUrl.showHierarchy"
+            (checkedChange)="patchPageUrl({ showHierarchy: $event })"/>
+          <span>{{ 'SEO.PAGE_URL_FORM.SHOW_HIERARCHY' | translate }}</span>
+        </div>
+
+        <details class="cd-advanced">
+          <summary>{{ 'SEO.PAGE_URL_FORM.ADVANCED' | translate }}</summary>
+          <p class="cd-section-title cd-section-title--mt">{{ 'SEO.PAGE_URL_FORM.ERROR_404' | translate }}</p>
+          <label class="cd-checkbox-row">
+            <input type="checkbox"
+                   [checked]="draft().pageUrl.seoFriendly404"
+                   (change)="patchPageUrl({ seoFriendly404: $any($event.target).checked })"/>
+            {{ 'SEO.PAGE_URL_FORM.FRIENDLY_404' | translate }}
+          </label>
+        </details>
+      </div>
+    }
+  </section>
+
+  <!-- ── Structured data ───────────────────────────────────────────────── -->
+  <section class="cd-card" [class.cd-card--open]="open().structured">
+    <header class="cd-card__head" (click)="toggle('structured')">
+      <div>
+        <h3 class="cd-card__title">{{ 'SEO.CUSTOMIZE_CARDS.STRUCTURED' | translate }}</h3>
+        <p class="cd-card__sub">{{ 'SEO.CUSTOMIZE_CARDS.STRUCTURED_DESC' | translate }}</p>
+      </div>
+      <div class="cd-card__actions" (click)="$event.stopPropagation()">
+        @if (dirty().structured) {
+          <button type="button" class="cd-card__discard" (click)="discard('structured')">{{ 'SEO.CUSTOMIZE_CARDS.DISCARD' | translate }}</button>
+          <button type="button" class="cd-card__save"    (click)="save('structured')">   {{ 'SEO.CUSTOMIZE_CARDS.SAVE' | translate }}</button>
+        } @else if (!open().structured) {
+          <button type="button" class="cd-card__edit"    (click)="toggle('structured')"> {{ 'SEO.CUSTOMIZE_CARDS.EDIT' | translate }}</button>
+        }
+        <svg class="cd-card__chevron" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </header>
+    @if (open().structured) {
+      <div class="cd-card__body">
+        <p class="cd-section-hint">{{ 'SEO.STRUCTURED_FORM.HINT' | translate }}</p>
+        <textarea class="cd-input cd-input--mono" rows="8"
+                  [ngModel]="draft().structuredData"
+                  (ngModelChange)="setStructured($event)"></textarea>
+      </div>
+    }
+  </section>
+
+  <!-- ── Robots meta tag ───────────────────────────────────────────────── -->
+  <section class="cd-card" [class.cd-card--open]="open().robots">
+    <header class="cd-card__head" (click)="toggle('robots')">
+      <div>
+        <h3 class="cd-card__title">{{ 'SEO.CUSTOMIZE_CARDS.ROBOTS' | translate }}</h3>
+        <p class="cd-card__sub">{{ 'SEO.CUSTOMIZE_CARDS.ROBOTS_DESC' | translate }}</p>
+      </div>
+      <div class="cd-card__actions" (click)="$event.stopPropagation()">
+        @if (dirty().robots) {
+          <button type="button" class="cd-card__discard" (click)="discard('robots')">{{ 'SEO.CUSTOMIZE_CARDS.DISCARD' | translate }}</button>
+          <button type="button" class="cd-card__save"    (click)="save('robots')">   {{ 'SEO.CUSTOMIZE_CARDS.SAVE' | translate }}</button>
+        } @else if (!open().robots) {
+          <button type="button" class="cd-card__edit"    (click)="toggle('robots')"> {{ 'SEO.CUSTOMIZE_CARDS.EDIT' | translate }}</button>
+        }
+        <svg class="cd-card__chevron" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </header>
+    @if (open().robots) {
+      <div class="cd-card__body cd-robots">
+        <label class="cd-checkbox-row">
+          <input type="checkbox"
+                 [checked]="draft().robots.noindex"
+                 (change)="patchRobots({ noindex: $any($event.target).checked })"/>
+          {{ 'SEO.ROBOTS_FORM.NOINDEX' | translate }}
+        </label>
+        <label class="cd-checkbox-row">
+          <input type="checkbox"
+                 [checked]="draft().robots.nofollow"
+                 (change)="patchRobots({ nofollow: $any($event.target).checked })"/>
+          {{ 'SEO.ROBOTS_FORM.NOFOLLOW' | translate }}
+        </label>
+        <label class="cd-checkbox-row">
+          <input type="checkbox"
+                 [checked]="draft().robots.nosnippet"
+                 (change)="patchRobots({ nosnippet: $any($event.target).checked })"/>
+          {{ 'SEO.ROBOTS_FORM.NOSNIPPET' | translate }}
+        </label>
+        <label class="cd-checkbox-row">
+          <input type="checkbox"
+                 [checked]="draft().robots.noimageindex"
+                 (change)="patchRobots({ noimageindex: $any($event.target).checked })"/>
+          {{ 'SEO.ROBOTS_FORM.NOIMAGEINDEX' | translate }}
+        </label>
+        <label class="cd-checkbox-row">
+          <input type="checkbox"
+                 [checked]="draft().robots.noarchive"
+                 (change)="patchRobots({ noarchive: $any($event.target).checked })"/>
+          {{ 'SEO.ROBOTS_FORM.NOARCHIVE' | translate }}
+        </label>
+
+        <div class="cd-field cd-field--inline">
+          <label>{{ 'SEO.ROBOTS_FORM.MAX_IMAGE_PREVIEW' | translate }}</label>
+          <app-segmented-toggle
+            size="sm"
+            [options]="maxImagePreviewOptions"
+            [value]="draft().robots.maxImagePreview"
+            (valueChange)="patchRobots({ maxImagePreview: $any($event) })"/>
+        </div>
+        <div class="cd-field cd-field--inline">
+          <label>{{ 'SEO.ROBOTS_FORM.MAX_SNIPPET' | translate }}</label>
+          <input type="number" class="cd-input cd-input--narrow"
+                 [ngModel]="draft().robots.maxSnippet"
+                 (ngModelChange)="patchRobots({ maxSnippet: +$event })"/>
+        </div>
+        <div class="cd-field cd-field--inline">
+          <label>{{ 'SEO.ROBOTS_FORM.MAX_VIDEO_PREVIEW' | translate }}</label>
+          <input type="number" class="cd-input cd-input--narrow"
+                 [ngModel]="draft().robots.maxVideoPreview"
+                 (ngModelChange)="patchRobots({ maxVideoPreview: +$event })"/>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- ── Additional meta tags ──────────────────────────────────────────── -->
+  <section class="cd-card" [class.cd-card--open]="open().additional">
+    <header class="cd-card__head" (click)="toggle('additional')">
+      <div>
+        <h3 class="cd-card__title">{{ 'SEO.CUSTOMIZE_CARDS.ADDITIONAL' | translate }}</h3>
+        <p class="cd-card__sub">{{ 'SEO.CUSTOMIZE_CARDS.ADDITIONAL_DESC' | translate }}</p>
+      </div>
+      <div class="cd-card__actions" (click)="$event.stopPropagation()">
+        @if (dirty().additional) {
+          <button type="button" class="cd-card__discard" (click)="discard('additional')">{{ 'SEO.CUSTOMIZE_CARDS.DISCARD' | translate }}</button>
+          <button type="button" class="cd-card__save"    (click)="save('additional')">   {{ 'SEO.CUSTOMIZE_CARDS.SAVE' | translate }}</button>
+        } @else if (!open().additional) {
+          <button type="button" class="cd-card__edit"    (click)="toggle('additional')"> {{ 'SEO.CUSTOMIZE_CARDS.EDIT' | translate }}</button>
+        }
+        <svg class="cd-card__chevron" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </header>
+    @if (open().additional) {
+      <div class="cd-card__body">
+        @for (tag of draft().additionalTags; track $index) {
+          <div class="cd-tag-row">
+            <input type="text" class="cd-input cd-input--narrow"
+                   placeholder="og:type"
+                   [ngModel]="tag.name"
+                   (ngModelChange)="updateTag($index, { name: $event })"/>
+            <input type="text" class="cd-input"
+                   placeholder="value"
+                   [ngModel]="tag.value"
+                   (ngModelChange)="updateTag($index, { value: $event })"/>
+            <button type="button" class="cd-tag-row__remove" (click)="removeTag($index)" aria-label="Remove">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6"  x2="6"  y2="18"/>
+                <line x1="6"  y1="6"  x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        }
+        <button type="button" class="cd-tag-add" (click)="addTag()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5"  x2="12" y2="19"/>
+            <line x1="5"  y1="12" x2="19" y2="12"/>
+          </svg>
+          {{ 'SEO.ADDITIONAL_FORM.ADD_NEW_TAG' | translate }}
+        </button>
+      </div>
+    }
+  </section>
+</div>

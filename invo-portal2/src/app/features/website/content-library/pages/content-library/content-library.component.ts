@@ -20,8 +20,8 @@ import { TooltipDirective } from '../../../../../shared/directives/tooltip.direc
 import { ExportCsvModalComponent, ExportCsvData } from '../../components/export-csv-modal.component';
 import { ImportCsvModalComponent, ImportCsvData } from '../../components/import-csv-modal.component';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs';
-import { MediaPickerModalComponent, MediaPickerConfig } from '../../../../media/components/media-picker';
-import { ImageUrlModalComponent } from '../../../../media/components/image-url-modal';
+import { MediaPickerModalComponent, MediaPickerConfig } from '../../../../settings/media/components/media-picker';
+import { ImageUrlModalComponent } from '../../../../settings/media/components/image-url-modal';
 import { ReferencePickerComponent } from '../../components/reference-picker.component';
 import {
   DropdownMenuBtnComponent,

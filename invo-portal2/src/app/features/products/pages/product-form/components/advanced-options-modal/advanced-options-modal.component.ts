@@ -20,6 +20,20 @@ import { ModalRef } from '@shared/modal/modal.service';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
+import {
+  SegmentedToggleComponent,
+  SegmentedToggleOption,
+} from '@shared/components/segmented-toggle/segmented-toggle.component';
+
+/** SVG inner markup for the row-layout glyphs (proportional column
+ *  rectangles). Filled with `currentColor` so the active-state pill
+ *  picks up the dark on-white look from the segmented toggle. */
+const LAYOUT_ICONS: Record<string, string> = {
+  '2-1':    '<rect x="3" y="6" width="12" height="12" rx="1" fill="currentColor" stroke="none"/><rect x="17" y="6" width="4"  height="12" rx="1" fill="currentColor" stroke="none"/>',
+  '1-1':    '<rect x="3" y="6" width="8"  height="12" rx="1" fill="currentColor" stroke="none"/><rect x="13" y="6" width="8"  height="12" rx="1" fill="currentColor" stroke="none"/>',
+  '1-2':    '<rect x="3" y="6" width="4"  height="12" rx="1" fill="currentColor" stroke="none"/><rect x="9"  y="6" width="12" height="12" rx="1" fill="currentColor" stroke="none"/>',
+  'single': '<rect x="3" y="6" width="18" height="12" rx="1" fill="currentColor" stroke="none"/>',
+};
 
 import {
   ProductFormPrefsService,
@@ -83,6 +97,7 @@ interface WorkingRow {
     CdkDrag,
     ModalHeaderComponent,
     ModalFooterComponent,
+    SegmentedToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './advanced-options-modal.component.html',
@@ -98,6 +113,16 @@ export class AdvancedOptionsModalComponent {
   rows = signal<WorkingRow[]>([]);
 
   layoutOptions: ProductFormRowLayout[] = ['2-1', '1-1', '1-2', 'single'];
+
+  /** Segmented-toggle options derived from `layoutOptions`. The
+   *  labels resolve from i18n at render time via the toggle's
+   *  built-in `translate` pipe — no need to re-resolve here. */
+  readonly layoutToggleOptions: SegmentedToggleOption<ProductFormRowLayout>[] =
+    this.layoutOptions.map((l) => ({
+      value: l,
+      label: this.layoutLabel(l),
+      icon:  LAYOUT_ICONS[l],
+    }));
 
   /** Hidden-but-saved counter for the footer hint. */
   hiddenCount = computed<number>(() => {

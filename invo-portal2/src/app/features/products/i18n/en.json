@@ -102,7 +102,16 @@
       "SHIPPING_OPTIONS":  "Shipping",
       "CATEGORY_OPTIONS":  "Category & department",
       "ALIAS_BARCODES":    "Alias barcodes",
-      "ALT_PRODUCT":       "Alt product"
+      "ALT_PRODUCT":       "Alt product",
+      "SEO":               "SEO"
+    },
+    "SEO": {
+      "SUBTITLE":         "Improve how this product appears in search results.",
+      "EDIT":             "Edit SEO Settings",
+      "NO_KEYWORD":       "No focus keyword set",
+      "NO_META":          "No meta description set — search engines may show a different snippet.",
+      "VIEW_LIVE":        "View live page",
+      "SAVE_AFTER_CREATE":"Save the product first, then edit its SEO settings."
     },
     "BULK_PRINT": {
       "TITLE":              "Bulk Barcode Print",
@@ -690,6 +699,7 @@
     "CREATE_TEMPLATE": "Create Template",
     "TEMPLATE_NAME": "Template Name",
     "TEMPLATE_NAME_PLACEHOLDER": "e.g. Specifications, Size Guide…",
+    "TEMPLATE_NAME_REQUIRED":    "Title is required.",
     "TAB_TYPE": "Tab Type",
     "ERR_DUPLICATE_NAME": "A template with this name already exists.",
     "ACTIVE": "Active",

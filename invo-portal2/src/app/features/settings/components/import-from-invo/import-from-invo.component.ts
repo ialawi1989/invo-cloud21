@@ -14,12 +14,12 @@ import { CompanyService } from '../../../../core/auth/company.service';
 
       <!-- Header -->
       <div class="ifi-header">
-        <h3 class="ifi-title">{{ 'GENERAL.IMPORT_FROM_INVO' | translate }}</h3>
+        <h3 class="ifi-title">{{ 'SETTINGS.ITEMS.IMPORT_FROM_INVO' | translate }}</h3>
       </div>
 
       <!-- Body -->
       <div class="ifi-body">
-        <p class="ifi-label">{{ 'GENERAL.IMPORT_INVOBK' | translate }}</p>
+        <p class="ifi-label">{{ 'SETTINGS.IMPORT_FROM_INVO.LABEL' | translate }}</p>
 
         <!-- Drop zone -->
         <div class="ifi-dropzone"
@@ -82,7 +82,7 @@ import { CompanyService } from '../../../../core/auth/company.service';
               <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.83"/>
             </svg>
           }
-          {{ 'GENERAL.IMPORT' | translate }}
+          {{ 'COMMON.IMPORT' | translate }}
         </button>
       </div>
 

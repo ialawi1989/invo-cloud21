@@ -189,17 +189,10 @@
                               />
                             }
                             @case ('boolean') {
-                              <label class="toggle">
-                                <input
-                                  type="checkbox"
-                                  [checked]="f.defaultValue === true"
-                                  (change)="patch(f.id, 'defaultValue', $any($event.target).checked)"
-                                />
-                                <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-                                <span class="toggle__label">
-                                  <span class="field-label">{{ (f.defaultValue === true ? 'COMMON.YES' : 'COMMON.NO') | translate }}</span>
-                                </span>
-                              </label>
+                              <app-toggle
+                                [checked]="f.defaultValue === true"
+                                (checkedChange)="patch(f.id, 'defaultValue', $event)"
+                                [label]="(f.defaultValue === true ? 'COMMON.YES' : 'COMMON.NO') | translate"/>
                             }
                             @case ('color') {
                               <app-color-picker
@@ -233,18 +226,11 @@
                     <!-- Validation -->
                     @if (f.activeTab === 'validation') {
                       <div class="grid grid--2">
-                        <label class="toggle">
-                          <input
-                            type="checkbox"
-                            [checked]="f.required"
-                            (change)="patch(f.id, 'required', $any($event.target).checked)"
-                          />
-                          <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-                          <span class="toggle__label">
-                            <span class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.REQUIRED' | translate }}</span>
-                            <span class="field-hint">{{ 'SETTINGS.CUSTOM_FIELDS.REQUIRED_HINT' | translate }}</span>
-                          </span>
-                        </label>
+                        <app-toggle
+                          [checked]="f.required"
+                          (checkedChange)="patch(f.id, 'required', $event)"
+                          [label]="'SETTINGS.CUSTOM_FIELDS.REQUIRED' | translate"
+                          [hint]="'SETTINGS.CUSTOM_FIELDS.REQUIRED_HINT' | translate"/>
 
                         @if (isTextual(f.type)) {
                           <div class="field-row">
@@ -293,30 +279,16 @@
                         }
 
                         @if (f.type === 'select') {
-                          <label class="toggle">
-                            <input
-                              type="checkbox"
-                              [checked]="f.selectMultiple"
-                              (change)="patch(f.id, 'selectMultiple', $any($event.target).checked)"
-                            />
-                            <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-                            <span class="toggle__label">
-                              <span class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.MULTI_SELECT' | translate }}</span>
-                              <span class="field-hint">{{ 'SETTINGS.CUSTOM_FIELDS.MULTI_SELECT_HINT' | translate }}</span>
-                            </span>
-                          </label>
-                          <label class="toggle">
-                            <input
-                              type="checkbox"
-                              [checked]="f.clearable !== false"
-                              (change)="patch(f.id, 'clearable', $any($event.target).checked)"
-                            />
-                            <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-                            <span class="toggle__label">
-                              <span class="field-label">{{ 'SETTINGS.CUSTOM_FIELDS.CLEARABLE' | translate }}</span>
-                              <span class="field-hint">{{ 'SETTINGS.CUSTOM_FIELDS.CLEARABLE_HINT' | translate }}</span>
-                            </span>
-                          </label>
+                          <app-toggle
+                            [checked]="!!f.selectMultiple"
+                            (checkedChange)="patch(f.id, 'selectMultiple', $event)"
+                            [label]="'SETTINGS.CUSTOM_FIELDS.MULTI_SELECT' | translate"
+                            [hint]="'SETTINGS.CUSTOM_FIELDS.MULTI_SELECT_HINT' | translate"/>
+                          <app-toggle
+                            [checked]="f.clearable !== false"
+                            (checkedChange)="patch(f.id, 'clearable', $event)"
+                            [label]="'SETTINGS.CUSTOM_FIELDS.CLEARABLE' | translate"
+                            [hint]="'SETTINGS.CUSTOM_FIELDS.CLEARABLE_HINT' | translate"/>
                         }
                       </div>
                     }

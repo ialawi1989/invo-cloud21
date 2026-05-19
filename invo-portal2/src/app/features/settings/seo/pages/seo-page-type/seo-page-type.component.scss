@@ -1,0 +1,255 @@
+.seo-type {
+  max-width: 1180px;
+  padding: 0 0 96px;
+}
+
+// ── Header ──────────────────────────────────────────────────────────────
+.page-header {
+  margin-bottom: 16px;
+}
+.page-header__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 6px;
+}
+.page-header__titles { flex: 1; min-width: 0; }
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 4px 0;
+}
+.page-sub {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+
+  &__link {
+    color: var(--color-brand-700);
+    margin-inline-start: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    &:hover { text-decoration: underline; }
+  }
+}
+.btn-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+
+  &:hover { background: #f8fafc; }
+}
+
+// ── Indexing-off banner ────────────────────────────────────────────────
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  margin-bottom: 14px;
+
+  p { margin: 0; flex: 1; font-size: 13px; color: #78350f; }
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: #fff;
+    border: 1px solid #d6d3d1;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1c1917;
+    text-decoration: none;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &:hover { background: #fafaf9; }
+  }
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────
+.tabs {
+  margin-bottom: 12px;
+}
+
+// ── Card shell ─────────────────────────────────────────────────────────
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+
+  &__head {
+    margin-bottom: 12px;
+
+    &--row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+  }
+  &__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+  &__sub {
+    font-size: 13px;
+    color: #64748b;
+    margin: 4px 0 0;
+  }
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-brand-700);
+  cursor: pointer;
+  &:hover { background: #f0fafc; border-color: #a6d8df; }
+}
+.search {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #94a3b8;
+
+  input {
+    border: 0;
+    outline: 0;
+    font-size: 12px;
+    color: #1e293b;
+    background: transparent;
+    width: 160px;
+  }
+}
+
+// Header info icon — small "i" badge next to the column label that
+// reveals the per-column tooltip on hover. Sits inline so the label
+// text still drives the column width.
+.th-with-tip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  .tip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    cursor: help;
+    transition: color 120ms ease;
+
+    &:hover { color: var(--color-brand-700); }
+  }
+}
+
+// ── Pages table ────────────────────────────────────────────────────────
+.table-wrap { overflow-x: auto; }
+.pages-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  thead th {
+    text-align: start;
+    font-weight: 600;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+
+    &.cb     { width: 36px; }
+    &.ix     { width: 100px; text-align: center; }
+    &.actions{ width: 72px; }
+  }
+
+  tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: top;
+
+    &.cb     { width: 36px; }
+    &.url a  {
+      color: #1e293b;
+      text-decoration: underline;
+      text-decoration-color: #cbd5e1;
+      text-underline-offset: 3px;
+    }
+    &.focus, &.meta, &.ix { color: #64748b; }
+    &.ix { text-align: center; }
+    &.actions { text-align: end; }
+  }
+
+  .pages-row {
+    cursor: pointer;
+    transition: background 120ms ease;
+    &:hover { background: #f8fafc; }
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #0f172a;
+    color: #fff;
+
+    &--off { background: #cbd5e1; color: #475569; }
+  }
+
+  .btn-edit {
+    padding: 4px 12px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-brand-700);
+    cursor: pointer;
+    &:hover { background: #f0fafc; border-color: #a6d8df; }
+  }
+
+  .empty {
+    text-align: center;
+    padding: 28px 12px;
+    color: #94a3b8;
+    font-size: 13px;
+  }
+}

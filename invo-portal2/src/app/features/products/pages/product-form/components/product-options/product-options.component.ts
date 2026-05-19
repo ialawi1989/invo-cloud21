@@ -22,6 +22,7 @@ import { AccountService, AccountMini } from '@core/layout/services/account.servi
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DropdownLoadFn } from '@shared/components/dropdown/search-dropdown.types';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
+import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { ProductsService } from '../../../../services/products.service';
 import { Product } from '../../../../models/product-form.model';
 import { Fields } from '../../../../models/product-fields.model';
@@ -58,7 +59,7 @@ interface AccountOption { label: string; value: string; group: string; }
 @Component({
   selector: 'app-pf-product-options',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, TooltipDirective],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, TooltipDirective, ToggleComponent],
   templateUrl: './product-options.component.html',
   styleUrl: './product-options.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

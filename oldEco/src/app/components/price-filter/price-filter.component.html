@@ -1,0 +1,39 @@
+
+<div class="price-filter">
+  @if (viewStyle == 'line') {
+  <div class="row">
+    <div class="col-12">
+      <div class="slider-container">
+        <div class="slider-track">
+          <div class="slider-fill" [style.width]="fillWidth" [style.left]="fillPosition"></div>
+          <input type="range" min="0" max="1000" class="slider" [maxlength]="maxPrice" [ngModel]="minPrice"
+            (ngModelChange)="onMinPriceChange($event)">
+          <input type="range" min="0" max="1000" class="slider" [minlength]="minPrice" [ngModel]="maxPrice"
+            (ngModelChange)="onMaxPriceChange($event)">
+        </div>
+      </div>
+    </div>
+    <!-- <div class="col-2" style="margin-top:-8px">
+      <a class="btn btn-link" (click)="viewStyle='inputs'">
+        <i class="far fa-edit"></i>
+      </a>
+    </div> -->
+  </div>
+  }@else if (viewStyle == 'inputs') {
+  <div class="row">
+    <div class="col-6">
+      {{"min." | translate}}
+      <input type="number" class="form-control" [(ngModel)]="minPrice" [maxlength]="maxPrice" (ngModelChange)="onMinPriceChange($event)" />
+    </div>
+    <div class="col-6">
+      {{"max." | translate}}
+      <input type="number" class="form-control" [(ngModel)]="maxPrice" [minlength]="minPrice" (ngModelChange)="onMaxPriceChange($event)" />
+    </div>
+  </div>
+  }
+
+  <p>
+    {{"Price" | translate}}: {{ currentCurrency.symbol }} <span id="minPriceValue">{{minPrice || 0}}</span> - {{
+    currentCurrency.symbol }} <span id="maxPriceValue">{{maxPrice || 0}}</span>
+  </p>
+</div>

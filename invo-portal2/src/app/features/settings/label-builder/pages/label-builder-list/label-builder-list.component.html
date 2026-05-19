@@ -1,0 +1,178 @@
+<app-list-shell
+  [title]="'LABEL_BUILDER.LIST_TITLE' | translate"
+  [subtitle]="'LABEL_BUILDER.LIST_SUBTITLE' | translate"
+  [breadcrumbs]="breadcrumbs()"
+  [search]="searchQuery()"
+  [searchPlaceholder]="'LABEL_BUILDER.SEARCH_PLACEHOLDER' | translate"
+  [page]="page()"
+  [pageCount]="pageCount()"
+  [total]="total()"
+  [rangeLabel]="rangeLabel()"
+  [loading]="loading()"
+  [hasRows]="filteredTemplates().length > 0"
+  [customLoading]="true"
+  [hideCard]="true"
+  [hideToolbar]="isEmpty()"
+  (searchChange)="onSearch($event)"
+  (searchClear)="clearSearch()"
+  (prevPage)="goPrev()"
+  (nextPage)="goNext()">
+
+  <app-dropdown-menu-btn shellActions [items]="newMenuItems()" align="end" triggerClass="btn btn-primary">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    {{ 'LABEL_BUILDER.NEW' | translate }}
+  </app-dropdown-menu-btn>
+
+  <app-segmented-toggle
+    shellToolbarExtra
+    [options]="typeFilterOptions"
+    [value]="typeFilter()"
+    (valueChange)="setTypeFilter($any($event))"/>
+
+  <ul shellLoading class="lbl__list lbl__list--skeleton">
+    @for (_ of [0,1,2,3,4]; track $index) {
+      <li class="lbl__item lbl__item--skeleton">
+        <app-skeleton variant="block" width="56px" height="56px"/>
+        <div class="lbl__item-name">
+          <app-skeleton variant="line" width="50%"/>
+          <app-skeleton variant="line" width="80px"/>
+        </div>
+        <div class="lbl__item-meta">
+          <app-skeleton variant="line" width="120px"/>
+        </div>
+      </li>
+    }
+  </ul>
+
+  <div shellEmpty class="lbl__empty">
+    @if (isFilteredEmpty()) {
+      <p>{{ 'LABEL_BUILDER.NO_MATCHES' | translate }}</p>
+      <button type="button" class="btn btn-default" (click)="clearFilters()">
+        {{ 'COMMON.CLEAR_ALL' | translate }}
+      </button>
+    } @else {
+      <p>{{ 'LABEL_BUILDER.LIST_EMPTY' | translate }}</p>
+      <button type="button" class="btn btn-default" (click)="newTemplate('label')">
+        {{ 'LABEL_BUILDER.NEW' | translate }}
+      </button>
+    }
+  </div>
+
+  <ul class="lbl__list">
+    @for (t of filteredTemplates(); track trackTemplate($index, t)) {
+      <li class="lbl__item"
+        [class.lbl__item--selected]="isSelected(t.id)"
+        (click)="openTemplate(t)">
+        <input type="checkbox" class="lbl__item-check"
+          [checked]="isSelected(t.id)"
+          (click)="$event.stopPropagation()"
+          (change)="toggleRowSelection(t, $event)"/>
+
+        <app-label-thumbnail
+          class="lbl__item-thumb"
+          (appInView)="onRowVisible(t)"
+          [template]="thumbnail(t.id)"
+          [placeholderWidth]="t.labelWidth"
+          [placeholderHeight]="t.labelHeight"
+          [placeholderDpi]="t.dpi"
+          [maxSize]="56"
+          [appTooltip]="('LABEL_BUILDER.DIMENSIONS' | translate:{ height: t.labelHeight, width: t.labelWidth })"/>
+
+        <div class="lbl__item-name">
+          @if (renamingId() === t.id) {
+            <input
+              #renameInput
+              type="text"
+              class="lbl__item-rename"
+              [ngModel]="renameDraft()"
+              (ngModelChange)="renameDraft.set($event)"
+              (keydown)="onRenameKeydown($event, t)"
+              (blur)="commitRename(t)"
+              (click)="$event.stopPropagation()"
+              [placeholder]="'LABEL_BUILDER.NAME_PLACEHOLDER' | translate"/>
+          } @else {
+            <strong (dblclick)="startRename(t, $event)"
+              [appTooltip]="'LABEL_BUILDER.RENAME_HINT' | translate">
+              {{ t.name || ('LABEL_BUILDER.UNNAMED' | translate) }}
+            </strong>
+          }
+          <span class="lbl__item-type"
+            [class.lbl__item-type--kitchen]="t.templateType === 'kitchen'">
+            {{ typeKey(t) | translate }}
+          </span>
+        </div>
+
+        <div class="lbl__item-meta">
+          <span>{{ 'LABEL_BUILDER.DIMENSIONS' | translate:{ height: t.labelHeight, width: t.labelWidth } }}</span>
+          <span class="lbl__item-meta-dot">·</span>
+          <span>{{ 'LABEL_BUILDER.DPI_LABEL' | translate:{ dpi: t.dpi } }}</span>
+          @if (t.updatedDate) {
+            <span class="lbl__item-meta-dot">·</span>
+            <span>{{ t.updatedDate | date:'medium' }}</span>
+          }
+        </div>
+
+        <div (click)="$event.stopPropagation()">
+          <app-dropdown-menu-btn
+            [items]="rowMenuItems(t)"
+            [appendToBody]="true"
+            [chevron]="false"
+            align="end"
+            triggerClass="lbl__item-menu-trigger">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="5"  cy="12" r="1.75"/>
+              <circle cx="12" cy="12" r="1.75"/>
+              <circle cx="19" cy="12" r="1.75"/>
+            </svg>
+          </app-dropdown-menu-btn>
+        </div>
+      </li>
+    }
+  </ul>
+</app-list-shell>
+
+<app-loading-overlay [show]="loading()"/>
+
+<!-- Floating bulk-action bar — same docked-at-bottom-center pattern
+     as the products list. Visible only when at least one row is
+     selected. -->
+@if (hasSelection()) {
+  <div class="lbl-bulkbar" role="toolbar">
+    <span class="lbl-bulkbar__count">
+      {{ 'COMMON.SELECTED_COUNT' | translate:{ count: selectedIds().size } }}
+    </span>
+    <div class="lbl-bulkbar__divider"></div>
+
+    <button type="button" class="lbl-bulkbar__action"
+      (click)="duplicateSelectedBulk()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2"/>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      </svg>
+      {{ 'COMMON.DUPLICATE' | translate }}
+    </button>
+
+    <button type="button" class="lbl-bulkbar__action lbl-bulkbar__action--danger"
+      (click)="deleteSelected()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6"/>
+        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+      </svg>
+      {{ 'COMMON.DELETE' | translate }}
+    </button>
+
+    <div class="lbl-bulkbar__divider"></div>
+    <button type="button" class="lbl-bulkbar__close"
+      (click)="clearSelection()"
+      [appTooltip]="'COMMON.CLEAR_ALL' | translate">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+}

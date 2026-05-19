@@ -1,0 +1,984 @@
+<!--account.component.html-->
+
+<!-- ── Mobile sticky header ──────────────────────────────────────── -->
+<div class="fix-top sticky-content d-md-none d-lg-none fixed">
+    <div class="header">
+        <div class="header-middle pt-2 pb-2 header-top-custom"
+            [style.backgroundColor]="companyData.themeSettings.template?.header?.headerColor">
+            <div class="container">
+                <div class="header-left" style="display: flex; align-items: center; justify-content: center; flex: 1;">
+                    <a href="javascript:void(0);" class="mobile-menu-toggle" (click)="goBack()"
+                        style="margin-right: auto;">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <h5 class="m-0" style="margin-left:-26px !important;">{{ "Account" | translate }}</h5>
+                    <div style="margin-left: auto;"></div>
+                </div>
+                <div class="header-right"></div>
+            </div>
+        </div>
+    </div>
+</div>
+@if (!userData) {
+  <div class="acc-skeleton">
+
+    <main class="main account">
+      <div class="page-content mt-4 mb-6">
+        <div class="container">
+          <!-- page header -->
+          <div class="acc-skel-page-header">
+            <span class="acc-skel acc-skel-avatar"></span>
+            <div class="acc-skel-header-text">
+              <span class="acc-skel acc-skel-name"></span>
+              <span class="acc-skel acc-skel-sub"></span>
+            </div>
+          </div>
+
+          <!-- mobile dropdown trigger -->
+          <div class="acc-skel-mobile-trigger">
+            <span class="acc-skel acc-skel-trigger-icon"></span>
+            <span class="acc-skel acc-skel-trigger-label"></span>
+            <span class="acc-skel acc-skel-chevron"></span>
+          </div>
+
+          <div class="acc-skel-layout">
+            <!-- sidebar -->
+            <nav class="acc-skel-nav">
+              @for (i of [80,68,74,88,100,110]; track i) {
+                <div class="acc-skel-nav-item">
+                  <span class="acc-skel acc-skel-nav-icon"></span>
+                  <span class="acc-skel acc-skel-nav-label" [style.width.px]="i"></span>
+                </div>
+              }
+            </nav>
+
+            <!-- content -->
+            <div class="acc-skel-content">
+              <!-- welcome card -->
+              <div class="acc-skel-welcome-card">
+                <div class="acc-skel-welcome-inner">
+                  <span class="acc-skel acc-skel-welcome-avatar"></span>
+                  <div class="acc-skel-welcome-lines">
+                    <span class="acc-skel acc-skel-line-a"></span>
+                    <span class="acc-skel acc-skel-line-b"></span>
+                    <span class="acc-skel acc-skel-line-c"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- addresses card -->
+              <div class="acc-skel-card">
+                <div class="acc-skel-card-header">
+                  <span class="acc-skel acc-skel-section-label"></span>
+                  <span class="acc-skel acc-skel-btn"></span>
+                </div>
+                <div class="acc-skel-card-body">
+                  @for (i of [0,1]; track i) {
+                    <div class="acc-skel-row">
+                      <span class="acc-skel acc-skel-row-icon"></span>
+                      <div class="acc-skel-row-body">
+                        <span class="acc-skel acc-skel-row-label" style="width:40%"></span>
+                        <span class="acc-skel acc-skel-row-value" style="width:65%"></span>
+                      </div>
+                      <div class="acc-skel-row-actions">
+                        <span class="acc-skel acc-skel-row-action-btn"></span>
+                        <span class="acc-skel acc-skel-row-action-btn"></span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+}
+@else{
+
+<main class="main account">
+    <div class="page-content mt-4 mb-6">
+        <div class="container">
+
+            <!-- Page header -->
+            <div class="acc-page-header">
+                <div class="acc-avatar">{{ userData?.name?.charAt(0)?.toUpperCase() }}</div>
+                <div class="acc-page-title-body">
+                    <h2 class="acc-page-title">{{"My Account" | translate}}</h2>
+                    <p class="acc-page-subtitle">{{ userData?.name }}</p>
+                </div>
+            </div>
+
+            <div class="tab tab-vertical gutter-lg">
+
+                <!-- ─── NAV TABS (desktop sidebar) ─────────────────────── -->
+                <ul class="acc-nav col-lg-3 col-md-4 mb-4" role="tablist">
+                    <li class="acc-nav-item">
+                        <a class="acc-nav-link" href="javascript:void(0);" (click)="setActiveTab('dashboard')"
+                            [class.acc-nav-link--active]="activeTab === 'dashboard'">
+                            <i class="fas fa-th-large acc-nav-icon"></i>
+                            <span>{{"Dashboard" | translate}}</span>
+                        </a>
+                    </li>
+                    @if(walletSettings?.enabled) {
+                    <li class="acc-nav-item">
+                        <a class="acc-nav-link" href="javascript:void(0);" (click)="setActiveTab('wallet')"
+                            [class.acc-nav-link--active]="activeTab === 'wallet'">
+                            <i class="fas fa-wallet acc-nav-icon"></i>
+                            <span>{{"My Wallet" | translate}}</span>
+                        </a>
+                    </li>
+                    }
+                    <li class="acc-nav-item">
+                        <a class="acc-nav-link" href="javascript:void(0);" (click)="setActiveTab('orders')"
+                            [class.acc-nav-link--active]="activeTab === 'orders'">
+                            <i class="fas fa-box acc-nav-icon"></i>
+                            <span>{{"My Orders" | translate}}</span>
+                        </a>
+                    </li>
+                    <li class="acc-nav-item">
+                        <a class="acc-nav-link" href="javascript:void(0);" (click)="setActiveTab('address')"
+                            [class.acc-nav-link--active]="activeTab === 'address'">
+                            <i class="fas fa-map-marker-alt acc-nav-icon"></i>
+                            <span>{{"My Addresses" | translate}}</span>
+                        </a>
+                    </li>
+                    
+                    <li class="acc-nav-item">
+                        <a class="acc-nav-link" href="javascript:void(0);" (click)="setActiveTab('account')"
+                            [class.acc-nav-link--active]="activeTab === 'account'">
+                            <i class="fas fa-user acc-nav-icon"></i>
+                            <span>{{"Account Details" | translate}}</span>
+                        </a>
+                    </li>
+
+                    <li class="acc-nav-item">
+                        <a class="acc-nav-link" href="javascript:void(0);" (click)="setActiveTab('password')"
+                            [class.acc-nav-link--active]="activeTab === 'password'">
+                            <i class="fas fa-lock acc-nav-icon"></i>
+                            <span>{{"Change Password" | translate}}</span>
+                        </a>
+                    </li>
+                    <li class="acc-nav-item acc-nav-item--logout">
+                        <a class="acc-nav-link acc-nav-link--logout" href="javascript:void(0);" (click)="logout()">
+                            <i class="fas fa-sign-out-alt acc-nav-icon"></i>
+                            <span>{{"Logout" | translate}}</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- ─── MOBILE DROPDOWN ────────────────────────────────── -->
+                <div class="mobile-tab-wrapper col-12" style="width:100%">
+                    <div class="mobile-tab-trigger" [class.open]="isMobileMenuOpen"
+                        (click)="isMobileMenuOpen = !isMobileMenuOpen">
+                        <div class="trigger-left">
+                            <div class="trigger-icon"><i [class]="mobileTabIcon"></i></div>
+                            <span class="trigger-label">{{ mobileTabLabel | translate }}</span>
+                        </div>
+                        <i class="fas fa-chevron-down trigger-chevron"></i>
+                    </div>
+                    <div class="mobile-tab-menu" [class.open]="isMobileMenuOpen">
+                        <div class="mobile-tab-item" (click)="selectMobileTab('dashboard')">
+                            <div class="item-icon"><i class="fas fa-th-large"></i></div>
+                            <span>{{"Dashboard" | translate}}</span>
+                            @if(activeTab === 'dashboard'){
+                            <i class="fas fa-check item-check"></i>
+                            }
+                        </div>
+                        @if(walletSettings?.enabled) {
+                        <div class="mobile-tab-item" (click)="selectMobileTab('wallet')">
+                            <div class="item-icon"><i class="fas fa-wallet"></i></div>
+                            <span>{{"My Wallet" | translate}}</span>
+                            @if(activeTab === 'wallet'){
+                            <i class="fas fa-check item-check"></i>
+                            }
+                        </div>
+                        }
+                        <div class="mobile-tab-item" (click)="selectMobileTab('orders')">
+                            <div class="item-icon"><i class="fas fa-box"></i></div>
+                            <span>{{"My Orders" | translate}}</span>
+                            @if(activeTab === 'orders'){
+                            <i class="fas fa-check item-check"></i>
+                            }
+                        </div>
+                        <div class="mobile-tab-item" (click)="selectMobileTab('address')">
+                            <div class="item-icon"><i class="fas fa-map-marker-alt"></i></div>
+                            <span>{{"My Addresses" | translate}}</span>
+                            @if(activeTab === 'address'){
+                            <i class="fas fa-check item-check"></i>
+                            }
+                        </div>
+                        
+                        <div class="mobile-tab-item" (click)="selectMobileTab('account')">
+                            <div class="item-icon"><i class="fas fa-user"></i></div>
+                            <span>{{"Account Details" | translate}}</span>
+                            @if(activeTab === 'account'){
+                            <i class="fas fa-check item-check"></i>
+                            }
+                        </div>
+                        <div class="mobile-tab-item" (click)="selectMobileTab('password')">
+                            <div class="item-icon"><i class="fas fa-lock"></i></div>
+                            <span>{{"Change Password" | translate}}</span>
+                            @if(activeTab === 'password'){
+                            <i class="fas fa-check item-check"></i>
+                            }
+                        </div>
+                        
+                        <div class="mobile-tab-item logout-item" (click)="isMobileMenuOpen = false; logout()">
+                            <div class="item-icon"><i class="fas fa-sign-out-alt"></i></div>
+                            <span>{{"Logout" | translate}}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ─── TAB CONTENT ────────────────────────────────────── -->
+                <div class="tab-content col-lg-9 col-md-8">
+
+                    <!-- ── DASHBOARD ─────────────────────────────────── -->
+                    <div class="tab-pane" [class.active]="activeTab === 'dashboard'">
+                        <div class="acc-card">
+                            <div class="acc-card-body">
+                                <div class="acc-welcome-row">
+                                    <div class="acc-welcome-avatar">{{ userData?.name?.charAt(0)?.toUpperCase() }}</div>
+                                    <div>
+                                        <p class="acc-welcome-name">{{"Hello" | translate}}, <strong>{{ userData?.name
+                                                }}</strong></p>
+                                        <p class="acc-welcome-sub">{{"From your account dashboard you can view" |
+                                            translate}}
+                                            <a class="link-to-tab acc-link">{{"your orders" | translate}}</a>,
+                                            <a class="link-to-tab acc-link">{{"your addresses" | translate}}</a>
+                                            {{"and" | translate}}
+                                            <a class="link-to-tab acc-link">{{"account details" | translate}}</a>.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── ORDERS ─────────────────────────────────────── -->
+                    <div class="tab-pane" [class.active]="activeTab === 'orders'">
+                        <div class="acc-card">
+                            <div class="acc-card-header">
+                                <span class="acc-section-label">{{"My Orders" | translate}}</span>
+                            </div>
+                            <div class="acc-card-body">
+                                @if(isLoadingOrders) {
+                                <div class="text-center p-5">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                                } @else if(orders.length === 0) {
+                                <div class="acc-empty-state">
+                                    <div class="acc-empty-icon"><i class="fas fa-box-open"></i></div>
+                                    <p class="acc-empty-title">{{"No orders yet." | translate}}</p>
+                                    <p class="acc-empty-sub">{{"The following orders will be displayed here." |
+                                        translate}}</p>
+                                </div>
+                                } @else {
+                                <table class="order-table">
+                                    <thead>
+                                        <tr>
+                                            <th>{{"Order" | translate}}</th>
+                                            <th>{{"Date" | translate}}</th>
+                                            <th class="d-sm-show">{{"Status" | translate}}</th>
+                                            <th>{{"Total" | translate}}</th>
+                                            <th class="d-sm-show"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (order of orders; track $index) {
+                                        <tr>
+                                            <td class="order-number">
+                                                <a href="javascript:void(0);" [routerLink]="['/order', order.id]">
+                                                    {{$index + 1 + (currentOrderPage - 1) * ordersLimit}}.
+                                                    {{order.invoiceNumber}}
+                                                </a>
+                                            </td>
+                                            <td class="order-date">
+                                                <a href="javascript:void(0);" [routerLink]="['/order', order.id]">
+                                                    {{convertDateFormat(order.createdAt)}}
+                                                </a>
+                                            </td>
+                                            <td class="order-status d-sm-show">
+                                                <a href="javascript:void(0);" [routerLink]="['/order', order.id]">
+                                                    <span class="acc-status-badge">{{order.onlineData ?
+                                                        order.onlineData?.onlineStatus : order.status}}</span>
+                                                </a>
+                                            </td>
+                                            <td class="order-total">
+                                                <a href="javascript:void(0);" [routerLink]="['/order', order.id]">
+                                                    {{ currentCurrency.symbol }} {{ getConvertedPrice(order.total) }}
+                                                </a>
+                                            </td>
+                                            <td class="order-action d-sm-show">
+                                                <a href="javascript:void(0);" [routerLink]="['/order', order.id]"
+                                                    class="acc-view-btn">{{"View" | translate}}</a>
+                                            </td>
+                                        </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                                <div class="acc-pagination">
+                                    <button class="acc-page-btn" [class.acc-page-btn--disabled]="!hasPreviousOrderPage"
+                                        [disabled]="!hasPreviousOrderPage" (click)="previousOrderPage()" type="button">
+                                        <i class="fas fa-chevron-left"></i> {{"Previous" | translate}}
+                                    </button>
+                                    <button class="acc-page-btn" [class.acc-page-btn--disabled]="!hasNextOrderPage"
+                                        [disabled]="!hasNextOrderPage" (click)="nextOrderPage()" type="button">
+                                        {{"Next" | translate}} <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── ORDER DETAILS MODAL ────────────────────────── -->
+                    @if(showOrderDetails && selectedOrder) {
+                    <div class="modal-backdrop fade show" style="display: block;"></div>
+                    <div class="modal fade show" tabindex="-1" style="display: block; z-index: 1050;">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content acc-modal-content">
+                                <div class="modal-header acc-modal-header">
+                                    <h5 class="modal-title">{{"Order Details" | translate}} — {{
+                                        selectedOrder.orderNumber }}</h5>
+                                    <button type="button" class="acc-modal-close" (click)="closeOrderDetails()"
+                                        aria-label="Close">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <p><strong>{{"Order Number:" | translate}}</strong> {{
+                                                selectedOrder.orderNumber }}</p>
+                                            <p><strong>{{"Order Date:" | translate}}</strong> {{
+                                                convertDateFormat(selectedOrder.createdAt) }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>{{"Status:" | translate}}</strong> <span
+                                                    class="acc-status-badge ml-1">{{ selectedOrder.status | translate
+                                                    }}</span></p>
+                                            <p><strong>{{"Total:" | translate}}</strong> {{ currentCurrency.symbol }} {{
+                                                getConvertedPrice(selectedOrder.total) }}</p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    @if(selectedOrder.items && selectedOrder.items.length > 0) {
+                                    <h6 class="mb-3">{{"Order Items" | translate}}</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>{{"Product" | translate}}</th>
+                                                    <th>{{"Quantity" | translate}}</th>
+                                                    <th>{{"Price" | translate}}</th>
+                                                    <th>{{"Subtotal" | translate}}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @for(item of selectedOrder.items; track item.productId) {
+                                                <tr>
+                                                    <td>{{ item.productName }}</td>
+                                                    <td>{{ item.quantity }}</td>
+                                                    <td>{{ currentCurrency.symbol }} {{ getConvertedPrice(item.price) }}
+                                                    </td>
+                                                    <td>{{ currentCurrency.symbol }} {{ getConvertedPrice(item.price *
+                                                        item.quantity) }}</td>
+                                                </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    } @else {
+                                    <p class="text-muted">{{"No items information available" | translate}}</p>
+                                    }
+                                </div>
+                                <div class="modal-footer acc-modal-footer">
+                                    <button type="button" class="acc-btn-secondary"
+                                        (click)="closeOrderDetails()">{{"Close" | translate}}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+
+                    <!-- ── WALLET ──────────────────────────────────────── -->
+                    <div class="tab-pane" [class.active]="activeTab === 'wallet'">
+                        <div style="margin:-16px;">
+                            <app-wallet></app-wallet>
+                        </div>
+                    </div>
+
+                    <!-- ── ADDRESSES ───────────────────────────────────── -->
+                    <div class="tab-pane" [class.active]="activeTab === 'address'">
+                        <div class="acc-card">
+                            <div class="acc-card-header">
+                                <span class="acc-section-label">{{"Delivery Addresses" | translate}}</span>
+                                @if (!isAddingAddress) {
+                                <a href="javascript:void(0);" class="acc-btn-primary" (click)="startAddAddress()">
+                                    <i class="fas fa-plus"></i> {{"Add Address" | translate}}
+                                </a>
+                                }
+                            </div>
+                            <div class="acc-card-body">
+
+                                @if (isAddingAddress) {
+                                <div class="acc-form-card acc-form-card--new mb-4">
+                                    <div class="acc-form-card-title">
+                                        <div class="acc-form-icon"><i class="fas fa-map-marker-alt"></i></div>
+                                        <span>{{"Add New Address" | translate}}</span>
+                                    </div>
+                                    <form (ngSubmit)="saveNewAddress()">
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
+                                                <label class="acc-field-label">{{"Title" | translate}} *</label>
+                                                <input class="acc-input" [(ngModel)]="newAddress.title" name="newTitle"
+                                                    placeholder="{{'e.g. Home, Work' | translate}}" required
+                                                    (ngModelChange)="onNewAddressTitleChange()" />
+                                                @if(newAddressTitleDuplicate){
+                                                <p class="acc-field-error">{{"This title is already exist." | translate}}</p>
+                                                }
+                                            </div>
+                                            @if (governorateAddresses?.length) {
+                                            <div class="col-md-6 mb-3">
+                                                <label class="acc-field-label">{{"Governorate" | translate}}</label>
+                                                <ng-select [(ngModel)]="newAddress.governorate" name="newGovernorate"
+                                                    [placeholder]="'Select Governorate' | translate" [clearable]="false"
+                                                    (change)="onNewAddressGovernorateChange()">
+                                                    @for (gov of governorateAddresses; track $index) {
+                                                    <ng-option [value]="gov.addressKey">{{ getTranslatedLabel(gov)
+                                                        }}</ng-option>
+                                                    }
+                                                </ng-select>
+                                            </div>
+                                            }
+                                            <div class="col-md-6 mb-3">
+                                                <label class="acc-field-label">{{"City" | translate}}</label>
+                                                @if (newAddressCities?.length) {
+                                                <ng-select [(ngModel)]="newAddress.city" name="newCity"
+                                                    [placeholder]="'Select City' | translate" [clearable]="false"
+                                                    (change)="onNewAddressCityChange()">
+                                                    @for (city of newAddressCities; track $index) {
+                                                    <ng-option [value]="city">{{ city }}</ng-option>
+                                                    }
+                                                </ng-select>
+                                                } @else {
+                                                <input class="acc-input" [(ngModel)]="newAddress.city" name="newCity" />
+                                                }
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="acc-field-label">{{"Block" | translate}}</label>
+                                                @if (newAddressBlocks?.length) {
+                                                <ng-select [(ngModel)]="newAddress.block" name="newBlock"
+                                                    [placeholder]="'Select Block' | translate" [clearable]="false">
+                                                    @for (block of newAddressBlocks; track $index) {
+                                                    <ng-option [value]="block">{{ block }}</ng-option>
+                                                    }
+                                                </ng-select>
+                                                } @else {
+                                                <input class="acc-input" [(ngModel)]="newAddress.block"
+                                                    name="newBlock" />
+                                                }
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="acc-field-label">{{"Building" | translate}}</label>
+                                                <input class="acc-input" [(ngModel)]="newAddress.building"
+                                                    name="newBuilding" />
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="acc-field-label">{{"Road / Street" | translate}}</label>
+                                                <input class="acc-input" [(ngModel)]="newAddress.road" name="newRoad" />
+                                            </div>
+                                        </div>
+                                        <div class="acc-form-actions">
+                                            <button type="submit" class="acc-btn-primary">{{"Save Address" |
+                                                translate}}</button>
+                                            <button type="button" class="acc-btn-secondary"
+                                                (click)="cancelAddAddress()">{{"Cancel" | translate}}</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                }
+
+                                @if (addresses && addresses.length > 0) {
+                                <div class="acc-address-list">
+                                    @for (address of addresses; track $index) {
+                                    <div class="acc-address-item">
+                                        @if (editIndex !== $index) {
+                                        <div class="acc-address-view">
+                                            <div class="acc-address-icon-wrap">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </div>
+                                            <div class="acc-address-body">
+                                                <strong class="acc-address-title">{{ address.title }}</strong>
+                                                <span class="acc-address-detail">
+                                                    @if(address.governorate){ <span><b>Gov:</b> {{ address.governorate
+                                                        }}</span> }
+                                                    @if(address.city){ <span><b>City:</b> {{ address.city }}</span> }
+                                                    @if(address.block){ <span><b>Block:</b> {{ address.block }}</span> }
+                                                    @if(address.building){ <span><b>Bldg:</b> {{ address.building
+                                                        }}</span> }
+                                                    @if(address.road){ <span><b>Street:</b> {{ address.road }}</span> }
+                                                </span>
+                                            </div>
+                                            <div class="acc-address-actions">
+                                                <a href="javascript:void(0);" class="acc-icon-btn" title="Edit"
+                                                    (click)="startEdit($index)">
+                                                    <i class="far fa-edit"></i>
+                                                </a>
+                                                <a href="javascript:void(0);" class="acc-icon-btn acc-icon-btn--danger"
+                                                    title="Delete" (click)="deleteAddress($index)">
+                                                    <i class="far fa-trash-alt"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        } @else {
+                                        <div class="acc-form-card acc-form-card--edit">
+                                            <div class="acc-form-card-title">
+                                                <div class="acc-form-icon"><i class="far fa-edit"></i></div>
+                                                <span>{{"Edit Address" | translate}}</span>
+                                            </div>
+                                            <form (ngSubmit)="saveEditAddress($index)">
+                                                <div class="row">
+                                                    <div class="col-md-12 mb-3">
+                                                        <label class="acc-field-label">{{"Title" | translate}} *</label>
+                                                        <input class="acc-input" [(ngModel)]="tempAddress!.title"
+                                                            name="title" required
+                                                            (ngModelChange)="onEditAddressTitleChange($index)" />
+                                                        @if(editAddressTitleDuplicate){
+                                                        <p class="acc-field-error">{{"This title is already exist." | translate}}</p>
+                                                        }
+                                                    </div>
+                                                    @if (governorateAddresses?.length) {
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="acc-field-label">{{"Governorate" |
+                                                            translate}}</label>
+                                                        <ng-select [(ngModel)]="tempAddress!.governorate"
+                                                            name="governorate"
+                                                            [placeholder]="'Select Governorate' | translate"
+                                                            [clearable]="false"
+                                                            (change)="onEditGovernorateChange($index)">
+                                                            @for (gov of governorateAddresses; track $index) {
+                                                            <ng-option [value]="gov.addressKey">{{
+                                                                getTranslatedLabel(gov)
+                                                                }}</ng-option>
+                                                            }
+                                                        </ng-select>
+                                                    </div>
+                                                    }
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="acc-field-label">{{"City" | translate}}</label>
+                                                        @if (editCities?.length) {
+                                                        <ng-select [(ngModel)]="tempAddress!.city" name="city"
+                                                            [placeholder]="'Select City' | translate"
+                                                            [clearable]="false" (change)="onEditCityChange($index)">
+                                                            @for (city of editCities; track $index) {
+                                                            <ng-option [value]="city">{{ city }}</ng-option>
+                                                            }
+                                                        </ng-select>
+                                                        } @else {
+                                                        <input class="acc-input" [(ngModel)]="tempAddress!.city"
+                                                            name="city" />
+                                                        }
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="acc-field-label">{{"Block" | translate}}</label>
+                                                        @if (editBlocks?.length) {
+                                                        <ng-select [(ngModel)]="tempAddress!.block" name="block"
+                                                            [placeholder]="'Select Block' | translate"
+                                                            [clearable]="false">
+                                                            @for (block of editBlocks; track $index) {
+                                                            <ng-option [value]="block">{{ block }}</ng-option>
+                                                            }
+                                                        </ng-select>
+                                                        } @else {
+                                                        <input class="acc-input" [(ngModel)]="tempAddress!.block"
+                                                            name="block" />
+                                                        }
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="acc-field-label">{{"Building" |
+                                                            translate}}</label>
+                                                        <input class="acc-input" [(ngModel)]="tempAddress!.building"
+                                                            name="building" />
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="acc-field-label">{{"Road / Street" |
+                                                            translate}}</label>
+                                                        <input class="acc-input" [(ngModel)]="tempAddress!.road"
+                                                            name="road" />
+                                                    </div>
+                                                </div>
+                                                <div class="acc-form-actions">
+                                                    <button type="submit" class="acc-btn-primary">{{"Save" |
+                                                        translate}}</button>
+                                                    <button type="button" class="acc-btn-secondary"
+                                                        (click)="cancelEdit()">{{"Cancel" | translate}}</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                                } @else if (!isAddingAddress) {
+                                <div class="acc-empty-state">
+                                    <div class="acc-empty-icon"><i class="fas fa-map-marker-alt"></i></div>
+                                    <p class="acc-empty-title">{{"No saved addresses yet." | translate}}</p>
+                                </div>
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── ACCOUNT DETAILS ─────────────────────────────── -->
+                    <div class="tab-pane" [class.active]="activeTab === 'account'">
+                        <div class="acc-card">
+                            <div class="acc-card-header">
+                                <span class="acc-section-label">{{"Account Details" | translate}}</span>
+                            </div>
+                            <div class="acc-card-body">
+
+                                <!-- Name -->
+                                <div class="account-field-row">
+                                    <div class="account-info-icon"><i class="far fa-user"></i></div>
+                                    <div class="account-info-body">
+                                        <span class="account-info-label">{{"Display Name" | translate}}</span>
+                                        @if (editingField !== 'name') {
+                                        <div class="account-field-view">
+                                            <span class="account-info-value">{{ userData?.name || '—' }}</span>
+                                            <a href="javascript:void(0);" class="acc-field-edit-btn"
+                                                (click)="startEditField('name')">
+                                                <i class="far fa-edit"></i> {{"Edit" | translate}}
+                                            </a>
+                                        </div>
+                                        } @else {
+                                        <div class="account-field-edit">
+                                            <input type="text" class="acc-input acc-input--sm"
+                                                [(ngModel)]="fieldValues['name']"
+                                                placeholder="{{'Display Name' | translate}}"
+                                                (keydown.enter)="saveField('name')"
+                                                (keydown.escape)="cancelEditField()" />
+                                            @if (!fieldValues['name']?.trim()) {
+                                            <small class="acc-error">{{"Display name is required." | translate}}</small>
+                                            }
+                                            <div class="field-action-btns">
+                                                <button type="button" class="acc-btn-primary acc-btn--sm"
+                                                    [disabled]="isSavingField || !fieldValues['name']?.trim()"
+                                                    (click)="saveField('name')">
+                                                    @if (isSavingField) { <span
+                                                        class="spinner-border spinner-border-sm mr-1"
+                                                        role="status"></span> }
+                                                    {{"Save" | translate}}
+                                                </button>
+                                                <button type="button" class="acc-btn-secondary acc-btn--sm"
+                                                    [disabled]="isSavingField" (click)="cancelEditField()">
+                                                    {{"Cancel" | translate}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                <hr class="account-divider">
+
+                                <!-- Phone -->
+                                <div class="account-field-row">
+                                    <div class="account-info-icon"><i class="fas fa-phone"></i></div>
+                                    <div class="account-info-body">
+                                        <span class="account-info-label">{{"Phone" | translate}}</span>
+                                        @if (editingField !== 'phone') {
+                                        <div class="account-field-view">
+                                            <div>
+                                                <span class="account-info-value">{{ userData?.phone || '—' }}</span><br>
+                                                @if (isPhoneValidated) {
+                                                <span class="account-verified-badge verified">
+                                                    <small><i class="fas fa-check-circle"></i> {{"Verified" |
+                                                        translate}}</small>
+                                                </span>
+                                                } @else {
+                                                <span class="account-verified-badge unverified">
+                                                    <small><i class="fas fa-exclamation-circle"></i> {{"Not Verified" |
+                                                        translate}}</small>
+                                                </span>
+                                                }
+                                            </div>
+                                            <a href="javascript:void(0);" class="acc-field-edit-btn"
+                                                (click)="startEditField('phone')">
+                                                <i class="far fa-edit"></i> {{"Edit" | translate}}
+                                            </a>
+                                        </div>
+                                        } @else {
+                                        <div class="account-field-edit">
+                                            <div class="phone-input-wrapper">
+                                                <select class="phone-code-select" [(ngModel)]="phoneCodeValue">
+                                                    @for (code of phoneCodes; track code.dial_code) {
+                                                    <option [value]="code.dial_code">{{ code.dial_code }}</option>
+                                                    }
+                                                </select>
+                                                <input type="text" class="phone-number-input"
+                                                    [(ngModel)]="phoneNumberValue"
+                                                    placeholder="{{this.userData?.phone || 'Phone no.' | translate}}"
+                                                    (keydown.enter)="saveField('phone')"
+                                                    (keydown.escape)="cancelEditField()" />
+                                            </div>
+                                            @if (phoneCodeValue && phoneNumberValue && (phoneCodeValue +
+                                            phoneNumberValue) !== userData?.phone) {
+                                            <div class="field-otp-hint">
+                                                <i class="fas fa-info-circle"></i>
+                                                {{"Changing your phone requires OTP verification." | translate}}
+                                            </div>
+                                            }
+                                            <div class="field-action-btns">
+                                                <button type="button" class="acc-btn-primary acc-btn--sm"
+                                                    [disabled]="isSavingField || !phoneCodeValue?.trim() || !phoneNumberValue?.trim()"
+                                                    (click)="saveField('phone')">
+                                                    @if (isSavingField) { <span
+                                                        class="spinner-border spinner-border-sm mr-1"
+                                                        role="status"></span> }
+                                                    {{"Save" | translate}}
+                                                </button>
+                                                <button type="button" class="acc-btn-secondary acc-btn--sm"
+                                                    [disabled]="isSavingField" (click)="cancelEditField()">
+                                                    {{"Cancel" | translate}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                <hr class="account-divider">
+
+                                <!-- Email -->
+                                <div class="account-field-row">
+                                    <div class="account-info-icon"><i class="far fa-envelope"></i></div>
+                                    <div class="account-info-body">
+                                        <span class="account-info-label">{{"Email Address" | translate}}</span>
+                                        @if (editingField !== 'email') {
+                                        <div class="account-field-view">
+                                            <div>
+                                                <span class="account-info-value">{{ userData?.email || '—' }}</span><br>
+                                                @if (isEmailValidated) {
+                                                <span class="account-verified-badge verified">
+                                                    <small><i class="fas fa-check-circle"></i> {{"Verified" |
+                                                        translate}}</small>
+                                                </span>
+                                                } @else {
+                                                <span class="account-verified-badge unverified">
+                                                    <small><i class="fas fa-exclamation-circle"></i> {{"Not Verified" |
+                                                        translate}}</small>
+                                                </span>
+                                                }
+                                            </div>
+                                            <a href="javascript:void(0);" class="acc-field-edit-btn"
+                                                (click)="startEditField('email')">
+                                                <i class="far fa-edit"></i> {{"Edit" | translate}}
+                                            </a>
+                                        </div>
+                                        } @else {
+                                        <div class="account-field-edit">
+                                            <input type="email" class="acc-input acc-input--sm"
+                                                [(ngModel)]="fieldValues['email']"
+                                                placeholder="{{'Email Address' | translate}}"
+                                                (keydown.enter)="saveField('email')"
+                                                (keydown.escape)="cancelEditField()" />
+                                            @if (fieldValues['email'] !== userData?.email) {
+                                            <div class="field-otp-hint">
+                                                <i class="fas fa-info-circle"></i>
+                                                {{"Changing your email requires OTP verification." | translate}}
+                                            </div>
+                                            }
+                                            <div class="field-action-btns">
+                                                <button type="button" class="acc-btn-primary acc-btn--sm"
+                                                    [disabled]="isSavingField || !fieldValues['email']?.trim()"
+                                                    (click)="saveField('email')">
+                                                    @if (isSavingField) { <span
+                                                        class="spinner-border spinner-border-sm mr-1"
+                                                        role="status"></span> }
+                                                    {{"Save" | translate}}
+                                                </button>
+                                                <button type="button" class="acc-btn-secondary acc-btn--sm"
+                                                    [disabled]="isSavingField" (click)="cancelEditField()">
+                                                    {{"Cancel" | translate}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── CHANGE PASSWORD ─────────────────────────────── -->
+                    <div class="tab-pane" [class.active]="activeTab === 'password'">
+                        <div class="acc-card">
+                            <div class="acc-card-header">
+                                <span class="acc-section-label">{{"Change Password" | translate}}</span>
+                            </div>
+                            <div class="acc-card-body">
+
+                                @if (passwordChangeSuccess()) {
+                                <div class="acc-alert acc-alert--success mb-4">
+                                    <i class="fas fa-check-circle"></i> {{ passwordChangeSuccess() }}
+                                </div>
+                                }
+                                @if (forgotSuccess()) {
+                                <div class="acc-alert acc-alert--success mb-4">
+                                    <i class="fas fa-check-circle"></i> {{ forgotSuccess() }}
+                                </div>
+                                }
+
+                                @if(forgotStep === 'idle') {
+                                <form [formGroup]="passwordForm" (ngSubmit)="onSubmitPassword()" novalidate>
+                                    <div class="acc-form-group">
+                                        <label class="acc-field-label">{{"Current Password" | translate}} *</label>
+                                        <div class="account-input-wrap">
+                                            <input [type]="showCurrentPassword ? 'text' : 'password'" class="acc-input"
+                                                formControlName="currentPassword">
+                                            <button type="button" class="password-toggle-btn"
+                                                (click)="showCurrentPassword = !showCurrentPassword">
+                                                <i
+                                                    [class]="showCurrentPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                            </button>
+                                        </div>
+                                        @if (passwordForm.get('currentPassword')?.invalid &&
+                                        passwordForm.get('currentPassword')?.touched) {
+                                        <small class="acc-error">{{"Current password must be at least 6 characters." |
+                                            translate}}</small>
+                                        }
+                                        <div class="mt-2">
+                                            <a href="javascript:void(0);" class="acc-forgot-link"
+                                                (click)="openForgotPassword()">
+                                                <i class="fas fa-question-circle"></i>
+                                                {{"Forgot your password?" | translate}}
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="acc-form-group">
+                                        <label class="acc-field-label">{{"New Password" | translate}} *</label>
+                                        <div class="account-input-wrap">
+                                            <input [type]="showNewPassword ? 'text' : 'password'" class="acc-input"
+                                                formControlName="newPassword">
+                                            <button type="button" class="password-toggle-btn"
+                                                (click)="showNewPassword = !showNewPassword">
+                                                <i [class]="showNewPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                            </button>
+                                        </div>
+                                        @if (passwordForm.get('newPassword')?.invalid &&
+                                        passwordForm.get('newPassword')?.touched) {
+                                        <small class="acc-error">{{"New password must be at least 6 characters." |
+                                            translate}}</small>
+                                        }
+                                    </div>
+                                    <div class="acc-form-group">
+                                        <label class="acc-field-label">{{"Confirm New Password" | translate}} *</label>
+                                        <div class="account-input-wrap">
+                                            <input [type]="showConfirmPassword ? 'text' : 'password'" class="acc-input"
+                                                formControlName="confirmPassword">
+                                            <button type="button" class="password-toggle-btn"
+                                                (click)="showConfirmPassword = !showConfirmPassword">
+                                                <i
+                                                    [class]="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                            </button>
+                                        </div>
+                                        @if (passwordForm.get('confirmPassword')?.touched &&
+                                        passwordForm.get('newPassword')?.value !==
+                                        passwordForm.get('confirmPassword')?.value) {
+                                        <small class="acc-error">{{"Passwords do not match." | translate}}</small>
+                                        }
+                                    </div>
+                                    @if (passwordChangeError()) {
+                                    <div class="acc-alert acc-alert--danger mb-3">
+                                        <i class="fas fa-exclamation-triangle"></i> {{ passwordChangeError() }}
+                                    </div>
+                                    }
+                                    <button type="submit" class="acc-btn-primary" [disabled]="isSavingPassword">
+                                        @if (isSavingPassword) { <span class="spinner-border spinner-border-sm mr-1"
+                                            role="status"></span> }
+                                        {{"Update Password" | translate}}
+                                    </button>
+                                </form>
+                                }
+
+                                @if(forgotStep === 'form') {
+                                <div class="password-otp-info mb-4">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>
+                                        @if(forgotVia === 'phone') {
+                                        {{"An OTP will be sent to your phone number" | translate}}
+                                        <strong>{{ userData?.phone }}</strong>
+                                        {{"to verify your identity before resetting your password." | translate}}
+                                        } @else {
+                                        {{"An OTP will be sent to your email address" | translate}}
+                                        <strong>{{ userData?.email }}</strong>
+                                        {{"to verify your identity before resetting your password." | translate}}
+                                        }
+                                    </span>
+                                </div>
+                                <div class="acc-form-group">
+                                    <label class="acc-field-label">{{"New Password" | translate}} *</label>
+                                    <div class="account-input-wrap">
+                                        <input [type]="showForgotNewPassword ? 'text' : 'password'" class="acc-input"
+                                            [(ngModel)]="forgotNewPassword">
+                                        <button type="button" class="password-toggle-btn"
+                                            (click)="showForgotNewPassword = !showForgotNewPassword">
+                                            <i [class]="showForgotNewPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                        </button>
+                                    </div>
+                                    @if (forgotNewPassword && forgotNewPassword.length < 6) { <small class="acc-error">
+                                        {{"Password must be at least 6 characters." | translate}}</small>
+                                        }
+                                </div>
+                                <div class="acc-form-group">
+                                    <label class="acc-field-label">{{"Confirm New Password" | translate}} *</label>
+                                    <div class="account-input-wrap">
+                                        <input [type]="showForgotConfirmPassword ? 'text' : 'password'"
+                                            class="acc-input" [(ngModel)]="forgotConfirmPassword">
+                                        <button type="button" class="password-toggle-btn"
+                                            (click)="showForgotConfirmPassword = !showForgotConfirmPassword">
+                                            <i
+                                                [class]="showForgotConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                        </button>
+                                    </div>
+                                    @if (forgotConfirmPassword && forgotNewPassword !== forgotConfirmPassword) {
+                                    <small class="acc-error">{{"Passwords do not match." | translate}}</small>
+                                    }
+                                </div>
+                                @if (forgotError()) {
+                                <div class="acc-alert acc-alert--danger mb-3">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ forgotError() }}
+                                </div>
+                                }
+                                <div class="acc-form-actions">
+                                    <button type="button" class="acc-btn-primary" (click)="submitForgotViaOtpPopup()"
+                                        [disabled]="isSavingForgotPassword || forgotNewPassword.length < 6 || forgotNewPassword !== forgotConfirmPassword">
+                                        @if(isSavingForgotPassword) { <span
+                                            class="spinner-border spinner-border-sm mr-1" role="status"></span> }
+                                        {{"Send OTP & Reset" | translate}}
+                                    </button>
+                                    <button type="button" class="acc-btn-ghost" (click)="resetForgotPasswordFlow()">
+                                        {{"Cancel" | translate}}
+                                    </button>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+}

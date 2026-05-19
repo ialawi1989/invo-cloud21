@@ -1,0 +1,78 @@
+// Shared styles for the per-branch settings sub-components. Mirrors
+// the product-form `.pf-*` chrome: paired field grid, dense toggle
+// stack with the boxed background. Inlined into each sub-component
+// via `styleUrl` so they all stay visually identical.
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bs-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bs-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.bs-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bs-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--color-brand-600, #0891b2);
+  }
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    > strong { font-size: 13px; font-weight: 600; color: #0f172a; }
+    > small  { font-size: 11px; color: #64748b; line-height: 1.5; }
+  }
+}
+
+// Plain text/number input used by Delivery / Catering's
+// `deliveryCharge` field.
+.bs-input {
+  appearance: none;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: #0f172a;
+  background: #fff;
+  &:focus {
+    outline: 0;
+    border-color: var(--color-brand-400, #7dd3fc);
+    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+  }
+}

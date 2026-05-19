@@ -140,8 +140,27 @@
     color: #1e293b;
     outline: none;
     padding: 4px 0;
+    border-bottom: 1px solid transparent;
+    transition: border-color 120ms ease;
 
-    &:focus { border-bottom: 1px solid #32acc1; }
+    &:focus { border-bottom-color: #32acc1; }
+    &::placeholder { color: #94a3b8; font-weight: 500; }
+
+    // Required-field treatment — fires when the title is empty after
+    // picking a type. Red underline + matching `.tb-editor__err` text
+    // below the row so the user sees both the visual and the reason.
+    &--err {
+      border-bottom-color: #dc2626;
+      &:focus { border-bottom-color: #dc2626; }
+    }
+  }
+
+  &__err {
+    flex: 1 0 100%;
+    font-size: 12px;
+    color: #dc2626;
+    font-weight: 600;
+    margin-top: -6px;
   }
 
   &__body {

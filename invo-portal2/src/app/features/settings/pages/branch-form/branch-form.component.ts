@@ -53,6 +53,8 @@ import {
 } from '@shared/components/translation-modal/translation-modal.component';
 import { EntityCustomFieldsComponent } from '../../components/entity-custom-fields/entity-custom-fields.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { ToastService } from '@shared/components/toast/toast.service';
+import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 
 /**
  * Settings → Branch form (edit only)
@@ -78,6 +80,7 @@ import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer
     TimePickerComponent,
     EntityCustomFieldsComponent,
     FormStickyFooterComponent,
+    ToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './branch-form.component.html',
@@ -93,6 +96,7 @@ export class BranchFormComponent implements OnInit, CanLeaveComponent {
   private companySvc = inject(CompanyService);
   private modal      = inject(ModalService);
   private sanitizer  = inject(DomSanitizer);
+  private toast      = inject(ToastService);
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
@@ -277,10 +281,14 @@ export class BranchFormComponent implements OnInit, CanLeaveComponent {
         // guard fires, so `hasUnsavedChanges()` would otherwise still
         // return true and bounce the user into the leave-confirm modal.
         this.form.markAsPristine();
+        this.toast.success('COMMON.SAVED_OK');
         this.router.navigate(['/settings/branches']);
+      } else {
+        this.toast.error('COMMON.SAVE_FAILED');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('[branch-form] save failed', e);
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
     } finally {
       this.saving.set(false);
     }

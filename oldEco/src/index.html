@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!--19/5/026/01-->
+  <meta charset="utf-8">
+  <title>Invo Ecommerce</title>
+  <base href="/">
+  <meta name="meta-tags">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Preconnect to critical origins -->
+  <link rel="preconnect" href="https://cdn.maptiler.com" crossorigin>
+
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <!-- add to homescreen for ios -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+    <!-- add to homescreen for ios -->
+    <link rel="apple-touch-icon" href="128.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/server/images/152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/server/images/192.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/server/images/192.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/server/images/192.png" />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <!-- <meta name="apple-mobile-web-app-title" content="Expo" /> -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <link rel="apple-touch-startup-image" href="/server/images/2048x2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/server/images/1668x2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/server/images/1536x2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/server/images/1668x2224.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/server/images/1620x2160.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/server/images/1284x2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/server/images/1170x2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/server/images/1125x2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/server/images/1242x2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/server/images/828x1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/server/images/1242x2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/server/images/750x1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/server/images/640x1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"> 
+
+  <!-- Deferred non-critical CSS (loaded after first paint) -->
+  <link rel="stylesheet" href="/assets/vendor/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"/>
+  <link rel="stylesheet" href="/assets/vendor/animate/animate.min.css" media="print" onload="this.media='all'"/>
+  <link rel="stylesheet" href="/assets/vendor/magnific-popup/magnific-popup.min.css" media="print" onload="this.media='all'"/>
+  <link rel="stylesheet" href="/assets/vendor/owl-carousel/owl.carousel.min.css" media="print" onload="this.media='all'"/>
+  <link href="https://cdn.maptiler.com/maptiler-sdk-js/v1.2.0/maptiler-sdk.css" rel="stylesheet" media="print" onload="this.media='all'"/>
+  <noscript>
+    <link rel="stylesheet" href="/assets/vendor/fontawesome-free/css/all.min.css"/>
+    <link rel="stylesheet" href="/assets/vendor/animate/animate.min.css"/>
+    <link rel="stylesheet" href="/assets/vendor/magnific-popup/magnific-popup.min.css"/>
+    <link rel="stylesheet" href="/assets/vendor/owl-carousel/owl.carousel.min.css"/>
+    <link rel="stylesheet" href="https://cdn.maptiler.com/maptiler-sdk-js/v1.2.0/maptiler-sdk.css"/>
+  </noscript>
+  
+  <link rel="manifest" href="/server/assets/manifest.webmanifest">
+
+  <meta name="theme-color" content="#fff">
+</head>
+<body>
+  <script>
+      (function() {
+        const path = window.location.pathname;
+        const baseHref = path.endsWith("/") ? path : path.substring(0,path.lastIndexOf('/') +1);
+        const base = document.createElement('base');
+        base.href = baseHref;
+        console.log("")
+        if(path!='' && path!=null && path!=undefined){
+          document.head.appendChild(base);
+        }
+   })();   
+  </script>
+  <app-root></app-root>
+  <noscript>Please enable JavaScript to continue using this website.</noscript>
+</body>
+</html>

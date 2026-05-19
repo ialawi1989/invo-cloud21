@@ -60,38 +60,20 @@
 
         <div class="card__body" formGroupName="invoiceOptions">
           <div class="grid grid--2">
-            <div class="field field--toggle">
-              <label class="toggle">
-                <input type="checkbox" formControlName="enableWaste"/>
-                <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-                <span class="toggle__label">
-                  <span class="field-label">{{ 'SETTINGS.INVOICE.ENABLE_WASTE' | translate }}</span>
-                  <span class="field-hint">{{ 'SETTINGS.INVOICE.ENABLE_WASTE_HINT' | translate }}</span>
-                </span>
-              </label>
-            </div>
+            <app-toggle
+              formControlName="enableWaste"
+              [label]="'SETTINGS.INVOICE.ENABLE_WASTE' | translate"
+              [hint]="'SETTINGS.INVOICE.ENABLE_WASTE_HINT' | translate"/>
 
-            <div class="field field--toggle">
-              <label class="toggle">
-                <input type="checkbox" formControlName="enableVoidReason"/>
-                <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-                <span class="toggle__label">
-                  <span class="field-label">{{ 'SETTINGS.INVOICE.ENABLE_VOID_REASON' | translate }}</span>
-                  <span class="field-hint">{{ 'SETTINGS.INVOICE.ENABLE_VOID_REASON_HINT' | translate }}</span>
-                </span>
-              </label>
-            </div>
+            <app-toggle
+              formControlName="enableVoidReason"
+              [label]="'SETTINGS.INVOICE.ENABLE_VOID_REASON' | translate"
+              [hint]="'SETTINGS.INVOICE.ENABLE_VOID_REASON_HINT' | translate"/>
 
-            <div class="field field--toggle">
-              <label class="toggle">
-                <input type="checkbox" formControlName="isInvoiceOptionGroupVisible"/>
-                <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-                <span class="toggle__label">
-                  <span class="field-label">{{ 'SETTINGS.INVOICE.OPTION_GROUP_VISIBLE' | translate }}</span>
-                  <span class="field-hint">{{ 'SETTINGS.INVOICE.OPTION_GROUP_VISIBLE_HINT' | translate }}</span>
-                </span>
-              </label>
-            </div>
+            <app-toggle
+              formControlName="isInvoiceOptionGroupVisible"
+              [label]="'SETTINGS.INVOICE.OPTION_GROUP_VISIBLE' | translate"
+              [hint]="'SETTINGS.INVOICE.OPTION_GROUP_VISIBLE_HINT' | translate"/>
           </div>
         </div>
       </section>

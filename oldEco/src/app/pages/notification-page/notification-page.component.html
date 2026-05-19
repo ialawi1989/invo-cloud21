@@ -1,0 +1,102 @@
+<div class="notification-page">
+  <div class="container">
+    @if(!isMobile() && !isSmallScreen) {
+    <!-- Header -->
+    <div class="notification-header">
+      <h1 class="page-title">{{"Notifications Page" | translate}}</h1>
+    </div>
+    }
+
+
+    <!-- Responsive body: columns on desktop, stacked on mobile -->
+    <div class="notification-body">
+      <!-- Category Sidebar -->
+      <div class="category-bar">
+        @if(isMobile() || isSmallScreen) {
+        <div class="header">
+          <div class="header-middle pt-2 pb-2">
+            <div class="container">
+              <div class="header-left" style="display: flex; align-items: center; justify-content: center; flex: 1;">
+                <a href="javascript:void(0);" class="mobile-menu-toggle" (click)="goBack()"
+                  style="margin-right: auto; margin-left: 16px;">
+                  <i class="fas fa-chevron-left"></i>
+                </a>
+                <h5 class="m-0" style="margin-left:-26px !important;">{{ "Notifications" | translate }}</h5>
+                <div style="margin-left: auto;"></div>
+              </div>
+              <div class="header-right">
+                <!-- Additional content here -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-row">
+          <h2 class="title-heading">{{"Enable Notifications" | translate}}</h2>
+
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="notificationsEnabled" (change)="onToggleNotifications()" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="scroll-wrapper">
+          @for (cat of categories; track cat) {
+          <button class="category-btn" [class.selected]="cat === selectedCategory" (click)="selectCategory(cat)">
+            {{ cat | translate }}
+          </button>
+          }
+        </div>
+        } @else {
+        <ul class="scroll-wrapper widget-body filter-items search-ul scrollable">
+          <li>
+            <div class="header-row">
+              <h2 class="title-heading">{{"Enable Notifications" | translate}}</h2>
+
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationsEnabled" (change)="onToggleNotifications()" />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </li>
+          @for (cat of categories; track cat) {
+          <li class="categories-links" [class.selected]="cat === selectedCategory" (click)="selectCategory(cat)"
+            style="cursor: pointer">
+            {{ cat | translate }}
+          </li>
+          }
+        </ul>
+        }
+
+
+      </div>
+
+      <!-- Notifications Column -->
+      <div class="notification-list">
+        @if (filteredNotifications.length > 0) {
+        @for (notif of filteredNotifications; track notif.id) {
+        <div class="notification-card mb-2" [class.unread]="!notif.read">
+          <div class="title-time">
+            <div class="title mb-2">{{ notif.title | translate}}</div>
+            <div class="time">{{ formatTime(notif.time) }}</div>
+          </div>
+          <div class="description">{{ notif.description | translate }}</div>
+        </div>
+        }
+        } @else {
+        <div class="acc-empty-state">
+          <div class="acc-empty-icon"><i class="fas fa-bell-slash"></i></div>
+          <p class="acc-empty-title">{{"No notifications to show." | translate}}</p>
+          <p class="acc-empty-sub">{{"You are all caught up! Check back later." | translate}}</p>
+        </div>
+        }
+      </div>
+    </div>
+
+    <br>
+    <br>
+    <br>
+    <br>
+
+  </div>
+</div>

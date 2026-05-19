@@ -1,0 +1,25 @@
+<div class="vi" [class.vi--textarea]="textarea()">
+  <div class="vi__head">
+    @if (label()) {
+      <label class="vi__label">{{ label() }}</label>
+    }
+    <button #addBtn type="button" class="vi__add-btn"
+            (click)="togglePopover()"
+            [attr.aria-expanded]="open()">
+      <span aria-hidden="true">+</span>
+      {{ 'SEO.VARS.ADD_VARIABLE' | translate }}
+    </button>
+  </div>
+
+  <div #field
+       class="vi__input"
+       [class.vi__input--textarea]="textarea()"
+       contenteditable="true"
+       role="textbox"
+       [attr.aria-label]="label() || null"
+       [attr.aria-multiline]="textarea() ? 'true' : 'false'"
+       [attr.data-placeholder]="placeholder() || null"
+       (input)="onInput()"
+       (keydown)="onKeydown($event)"
+       (blur)="captureRange()"></div>
+</div>

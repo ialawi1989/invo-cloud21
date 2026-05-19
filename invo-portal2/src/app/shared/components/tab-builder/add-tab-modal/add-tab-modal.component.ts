@@ -33,6 +33,7 @@ interface AddTabData {
         <input
           type="text"
           class="field__input"
+          [class.field__input--err]="showNameError()"
           [(ngModel)]="name"
           (ngModelChange)="onNameChange($event)"
           [placeholder]="'TAB_BUILDER.TEMPLATE_NAME_PLACEHOLDER' | translate"
@@ -40,6 +41,8 @@ interface AddTabData {
         />
         @if (nameError()) {
           <span class="field__error">{{ nameError() | translate }}</span>
+        } @else if (showNameError()) {
+          <span class="field__error">{{ 'TAB_BUILDER.TEMPLATE_NAME_REQUIRED' | translate }}</span>
         }
       </label>
 
@@ -51,7 +54,7 @@ interface AddTabData {
               type="button"
               class="type-card"
               [class.type-card--selected]="type() === opt.value"
-              (click)="type.set(opt.value)"
+              (click)="pickType(opt.value)"
             >
               <app-tab-type-icon [type]="opt.value" [size]="18"/>
               <div class="type-card__body">
@@ -87,7 +90,15 @@ interface AddTabData {
       font-size: 14px; outline: none;
       &:focus { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.15); }
     }
-    .field__error{ font-size: 12px; color: #dc2626; }
+    /* Required-field state — fires once the user has touched the
+       input or selected a tab type, making the missing name obvious
+       before they hit Create. Same visual language the inline
+       template editor uses for consistency. */
+    .field__input--err {
+      border-color: #dc2626;
+      &:focus { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.15); }
+    }
+    .field__error{ font-size: 12px; color: #dc2626; font-weight: 600; }
 
     .types       { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .type-card {
@@ -134,9 +145,20 @@ export class AddTabModalComponent {
   type      = signal<TabType>('specs');
   nameError = signal<string>('');
 
+  /** A tab type is always selected (defaults to `specs`), so the
+   *  rule "type without a title → red title field" applies from the
+   *  moment the modal opens. Show the empty-name state immediately
+   *  whenever the field is blank and there's no other error to
+   *  surface (duplicate-slug message takes precedence). */
+  showNameError(): boolean {
+    return !this.name().trim() && !this.nameError();
+  }
+
   canCreate(): boolean {
     return !this.nameError() && !!this.name().trim();
   }
+
+  pickType(t: TabType): void { this.type.set(t); }
 
   onNameChange(v: string): void {
     const slug = (v ?? '').toLowerCase().trim().replace(/\s+/g, '_');

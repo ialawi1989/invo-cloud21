@@ -1,0 +1,431 @@
+@charset "UTF-8";
+
+/* Core Layout & Display */
+* {
+  box-sizing: inherit;
+}
+
+html {
+  font-size: 62.5%;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  font-family: Poppins, sans-serif;
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: #666;
+}
+
+/* Utility Classes - Display */
+.d-flex {
+  display: flex !important;
+}
+
+.d-inline-flex {
+  display: inline-flex !important;
+}
+
+.display-block {
+  display: block !important;
+}
+
+.justify-content-center {
+  justify-content: center !important;
+}
+
+.align-items-center {
+  align-items: center !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.text-uppercase {
+  text-transform: uppercase !important;
+}
+
+/* Utility Classes - Spacing */
+.m-0 {
+  margin: 0 !important;
+}
+
+.mb-0 {
+  margin-bottom: 0rem !important;
+}
+
+.mb-4 {
+  margin-bottom: 2rem !important;
+}
+
+.ml-3 {
+  margin-left: 1.5rem !important;
+}
+
+.mr-3 {
+  margin-right: 1.5rem !important;
+}
+
+.mt-3 {
+  margin-top: 1.5rem !important;
+}
+
+.pt-0 {
+  padding-top: 0rem !important;
+}
+
+.pb-0 {
+  padding-bottom: 0rem !important;
+}
+
+/* Font & Typography */
+h1, h2, h3, h4, h5, h6, p {
+  font-weight: 400;
+  margin: 0 0 2rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Poppins, sans-serif;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #222;
+}
+
+h3 {
+  font-size: 3rem;
+}
+
+h4 {
+  font-size: 2.4rem;
+}
+
+p {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.font-weight-bold {
+  font-weight: 700 !important;
+}
+
+.ls-s {
+  letter-spacing: -0.01em !important;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: #1e90ff;
+}
+
+/* Section Container - MAIN */
+.section-content {
+  position: relative !important;
+  background-repeat: no-repeat !important;
+  background-position: center center !important;
+  background-size: cover !important;
+  height: 350px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.section-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.section-text {
+  position: relative;
+  z-index: 1 !important;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+/* Banner Styles */
+.banner {
+  position: relative;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  font-size: 1rem;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.video-banner {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 90%;
+}
+
+.banner-subtitle {
+  letter-spacing: -0.025em;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  font-size: 1.6rem;
+}
+
+.banner-title {
+  line-height: 1;
+  margin: 0.5rem 0 2rem 0;
+  padding: 0;
+}
+
+.video-banner .banner-subtitle {
+  font-size: 1.6em;
+  line-height: 1.13;
+  margin-bottom: 1rem;
+}
+
+.video-banner .banner-title {
+  font-size: 3em;
+  line-height: 1.4;
+  letter-spacing: 0.016em;
+  margin-bottom: 2rem;
+}
+
+/* Play Button */
+.btn-play {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 49px;
+  width: 51px;
+  height: 51px;
+  font-size: 22px;
+  border-radius: 50%;
+  border: 1px solid;
+  transition: background-color 0.3s, border-color 0.3s, transform 0.3s;
+  cursor: pointer;
+  background-color: transparent;
+  z-index: 3;
+  position: relative;
+}
+
+.btn-play:hover {
+  background: transparent !important;
+  transform: scale(1.033);
+}
+
+.btn-play:focus {
+  outline: none;
+}
+
+.video-banner .btn-play {
+  width: 61px;
+  height: 61px;
+  border: 1px solid #fff;
+}
+
+.video-banner .btn-play i {
+  color: #fff;
+  font-size: 3.5rem;
+  line-height: 1;
+}
+
+/* Icon Styling */
+i {
+  font-style: normal;
+  display: inline-block;
+}
+
+i:before {
+  margin: 0;
+}
+
+/* Animation Classes */
+.appear-animatee {
+  transform: translate3d(0, 0, 0) scale(1);
+  will-change: filter, transform, opacity;
+  opacity: 1;
+  visibility: visible;
+}
+
+.appear-animatee.show-content {
+  visibility: visible;
+  opacity: 1;
+}
+
+@keyframes fadeInUpShorter {
+  0% {
+    opacity: 0;
+    transform: translate(0, 50px);
+    transform-origin: 0 0;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.fadeInUpShorter {
+  animation-name: fadeInUpShorter;
+}
+
+/* Responsive Design */
+@media (max-width: 991px) {
+  .video-banner .banner-title {
+    font-size: 2.4em;
+  }
+
+  .video-banner .banner-subtitle {
+    font-size: 1.3em;
+  }
+}
+
+@media (max-width: 767px) {
+  .section-content {
+    height: 300px !important;
+  }
+
+  .video-banner {
+    padding: 2rem 0;
+  }
+
+  .video-banner .banner-subtitle {
+    font-size: 1.2em;
+  }
+
+  .video-banner .banner-title {
+    font-size: 2em;
+    margin-bottom: 1.5rem;
+  }
+
+  .video-banner .btn-play {
+    width: 50px;
+    height: 50px;
+  }
+
+  .video-banner .btn-play i {
+    font-size: 2.5rem;
+  }
+
+  .banner-content {
+    max-width: 95%;
+  }
+}
+
+@media (max-width: 575px) {
+  .section-content {
+    height: 280px !important;
+  }
+
+  .ml-3 {
+    margin-left: 0.75rem !important;
+  }
+
+  .mr-3 {
+    margin-right: 0.75rem !important;
+  }
+
+  .video-banner {
+    padding: 1.5rem 0;
+  }
+
+  .video-banner .banner-subtitle {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .video-banner .banner-title {
+    font-size: 1.6em;
+    margin-bottom: 1rem;
+  }
+
+  h4 {
+    font-size: 1.8rem;
+  }
+
+  h3 {
+    font-size: 2rem;
+  }
+
+  .video-banner .btn-play {
+    width: 45px;
+    height: 45px;
+  }
+
+  .video-banner .btn-play i {
+    font-size: 2rem;
+  }
+
+  .banner-content {
+    max-width: 98%;
+  }
+}
+
+@media (max-width: 479px) {
+  .section-content {
+    height: 250px !important;
+  }
+
+  .video-banner .banner-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .video-banner .banner-title {
+    font-size: 1.4em;
+  }
+
+  h4 {
+    font-size: 1.4rem;
+  }
+
+  h3 {
+    font-size: 1.6rem;
+  }
+}
+
+
+.section-youtube-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+
+  iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 220vh); 
+    height: max(100%, 80vw);
+    transform: translate(-50%, -50%);
+    border: 0;
+    pointer-events: none;
+  }
+}

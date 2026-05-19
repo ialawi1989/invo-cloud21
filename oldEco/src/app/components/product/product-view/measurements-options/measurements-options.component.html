@@ -1,0 +1,33 @@
+<!-- ============================================
+     MEASUREMENTS — Redesigned HTML Template
+     ============================================ -->
+
+<div class="meas-wrapper mb-4">
+
+  <!-- ── Section header ── -->
+  <div class="meas-header">
+    <span class="meas-title">Measurements</span>
+    <span class="meas-required-badge">
+      <i class="fas fa-asterisk"></i>
+      All fields required
+    </span>
+  </div>
+
+  <!-- ── Fields grid ── -->
+  <div class="meas-grid">
+    @for (m of product.measurementsArray; track $index; let i=$index) {
+    <div class="meas-field">
+      <label class="meas-label text-capitalize">{{ m.key }}</label>
+      <div class="meas-input-wrap">
+        <input
+          class="meas-input"
+          type="number"
+          [(ngModel)]="m.value"
+          [placeholder]="'0'">
+        <span class="meas-unit">cm</span>
+      </div>
+    </div>
+    }
+  </div>
+
+</div>

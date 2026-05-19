@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { ToastService } from '@shared/components/toast/toast.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -128,6 +129,8 @@ export class TabBuilderSettingsComponent implements OnInit, CanLeaveComponent {
   private service    = inject(TabBuilderSettingsService);
   private translate  = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
+  private router     = inject(Router);
+  private toast      = inject(ToastService);
 
   templates = signal<TabTemplate[]>([]);
   loading   = signal<boolean>(false);
@@ -196,8 +199,11 @@ export class TabBuilderSettingsComponent implements OnInit, CanLeaveComponent {
       const next = this.templates();
       await this.service.saveTemplates(next);
       this.snapshot = JSON.stringify(next);
-    } catch (e) {
+      this.toast.success('COMMON.SAVED_OK');
+      this.router.navigate(['/settings']);
+    } catch (e: any) {
       console.error('[tab-builder-settings] save failed', e);
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
     } finally {
       this.saving.set(false);
     }

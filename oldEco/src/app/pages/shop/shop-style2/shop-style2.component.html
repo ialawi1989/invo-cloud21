@@ -1,0 +1,372 @@
+<app-branch-status-alert></app-branch-status-alert>
+
+<!-- ── Page header ── -->
+<div class="page-header d-md-show"
+  [style.background-color]="getHeaderBackground(pageSection?.template?.settings?.subheader_settings)"
+  [style.background-image]="getHeaderBackground(pageSection?.template?.settings?.subheader_settings)"
+  [style.background-attachment]="pageSection?.template?.settings?.subheader_settings?.isParallax ? 'fixed' : ''"
+  [style.background-size]="pageSection?.template?.settings?.subheader_settings?.style == 'Image' ? 'cover' : ''"
+  [style.background-position]="pageSection?.template?.settings?.subheader_settings?.style == 'Image' ? 'center' : ''"
+  [style.background-repeat]="pageSection?.template?.settings?.subheader_settings?.style == 'Image' ? 'no-repeat' : ''">
+
+  @if (pageSection?.template?.settings?.subheader_settings?.overlayOpacity) {
+  <div class="section-overlay"
+    [style.opacity]="pageSection?.template?.settings?.subheader_settings?.overlayOpacity / 100"
+    [style.background-color]="pageSection?.template?.settings?.subheader_settings?.overlayColor">
+  </div>
+  }
+
+  <h1 class="page-title z-index-3">{{ "Shop" | translate }}</h1>
+  <ul class="breadcrumb z-index-3">
+    <li><a [routerLink]="'/'"><i class="d-icon-home"></i></a></li>
+    <li class="delimiter">/</li>
+    <li (click)="goBackToGrid()" style="cursor: pointer;">{{ "Shop" | translate }}</li>
+    @if (subCategoryName) {
+    <li class="delimiter">/</li>
+    <li>{{ subCategoryName }}</li>
+    }
+  </ul>
+</div>
+
+<!-- ── Banner sections ── -->
+@for (section of pageSection?.template?.sections?.content?.sections; track $index) {
+@if (section.sectionType == 'Banner section') {
+<app-banner-section #lazyLoadable [style]="section.sectionStyle" [section]="section"></app-banner-section>
+}
+}
+
+<!-- ══════════════════════════════════════════════
+     LANDING VIEW — flat category grid
+     ══════════════════════════════════════════════ -->
+@if (!selectedCategory && !selectedDepartment) {
+<div class="ms2-page">
+  <div class="ms2-container">
+
+    <!-- Loading skeleton -->
+    @if (loadingCategories) {
+    <div class="ms2-grid">
+      @for (item of items; track $index) {
+      <div class="ms2-card ms2-card--skeleton"></div>
+      }
+    </div>
+    }
+
+    <!-- Empty state -->
+    @else if (_flatCategories.length === 0) {
+    <div class="ms2-state-wrap">
+      <div class="ms2-empty">
+        <div class="ms2-empty-icon"><i class="fas fa-concierge-bell"></i></div>
+        <p class="ms2-empty-title">{{ "No items available" | translate }}</p>
+        <p class="ms2-empty-sub">{{ "There are no menu items for the selected service. Try switching to a different service." | translate }}</p>
+        <button type="button" class="mn-change-service-btn" (click)="appService.showServiceSelector()">
+          <i class="fas fa-exchange-alt"></i>
+          {{ "Change Service" | translate }}
+        </button>
+      </div>
+    </div>
+    }
+
+    <!-- Flat category cards -->
+    @else {
+    <div class="ms2-search-wrap">
+      <div class="ms2-search-inner">
+        <i class="fas fa-search ms2-search-icon"></i>
+        <input
+          type="text"
+          class="ms2-search-input"
+          [placeholder]="'Search categories...' | translate"
+          [(ngModel)]="categorySearchQuery"
+          autocomplete="off"
+        />
+        @if (categorySearchQuery) {
+        <button type="button" class="ms2-search-clear" (click)="categorySearchQuery = ''">
+          <i class="fas fa-times"></i>
+        </button>
+        }
+      </div>
+    </div>
+
+    @if (filteredFlatCategories.length === 0) {
+    <div class="ms2-state-wrap">
+      <div class="ms2-empty">
+        <div class="ms2-empty-icon"><i class="fas fa-search"></i></div>
+        <p class="ms2-empty-title">{{ "No categories found" | translate }}</p>
+        <p class="ms2-empty-sub">{{ "Try a different search term." | translate }}</p>
+      </div>
+    </div>
+    } @else {
+    <div class="ms2-grid">
+      @for (flatCat of filteredFlatCategories; track flatCat.id; let i = $index) {
+      <a (click)="showProducts(flatCat)" class="ms2-card clickable" [style.animation-delay]="(i * 60) + 'ms'">
+        <div class="ms2-card-img-wrap">
+          <img [src]="getCategoryImage(flatCat)" (error)="onImageError($event, flatCat)"
+            (load)="onImageLoad($event, flatCat)" [alt]="displayFlatName(flatCat)" loading="lazy" decoding="async"
+            class="ms2-card-img">
+          <div class="ms2-card-color-layer" [style.opacity]="$any(flatCat).isColorLoaded ? 0 : 1">
+          </div>
+          <div class="ms2-card-arrow"><i class="fas fa-arrow-right"></i></div>
+        </div>
+        <div class="ms2-card-body">
+          <h4 class="ms2-card-name">{{ displayFlatName(flatCat) }}</h4>
+          <span class="ms2-card-cta">{{ "View Products" | translate }}</span>
+        </div>
+      </a>
+      }
+    </div>
+    }
+    }
+
+  </div>
+</div>
+}
+
+<!-- ══════════════════════════════════════════════
+     PRODUCTS VIEW — shown after a category is picked
+     ══════════════════════════════════════════════ -->
+@else {
+<div class="container mb-md-10 pb-md-3">
+  <div class="row main-content-wrap gutter-lg skeleton-body">
+
+    <!-- ── Sidebar ── -->
+    <aside class="col-lg-3 sidebar sidebar-fixed sidebar-toggle-remain shop-sidebar sticky-sidebar-wrapper">
+      <div class="sidebar-overlay" (click)="hideMobileFilter()"></div>
+      <a class="sidebar-close" href="javascript:void(0);" (click)="hideMobileFilter()">
+        <i class="d-icon-times"></i>
+      </a>
+
+      <div class="sidebar-content">
+        <div class="sticky-sidebar" data-sticky-options="{'top': 10}">
+          <!-- Tags -->
+          @if (loadingTags) {
+          <div class="widget widget-collapsible mt-4" style="border-top: 0;">
+            <h3 class="widget-title"><span>{{ "Tags" | translate }}</span></h3>
+            <div class="widget-body filter-skeleton">
+              <span class="filter-skeleton-line"></span>
+              <span class="filter-skeleton-line filter-skeleton-line--short"></span>
+            </div>
+          </div>
+          } @else if (productTags.length && pageSection.template?.settings?.show_filter_by_tag !== false) {
+          <div class="widget widget-collapsible mt-4" style="border-top: 0;">
+            <h3 class="widget-title" style="display: flex; justify-content: space-between; align-items: center;"
+              (click)="showFilterTags = !showFilterTags">
+              <span>
+                {{ "Tags" | translate }}
+                @if (productTagsSelected.length > 0) {
+                  <span class="mn-filter-count-badge">{{ productTagsSelected.length }}</span>
+                }
+              </span>
+              <i [class]="showFilterTags ? 'd-icon-minus' : 'd-icon-plus'"></i>
+            </h3>
+
+            @if (showFilterTags) {
+            <ul class="widget-body filter-items scrollable">
+              @for (tag of productTags; track tag.tags) {
+              <li [class.active]="productTagsSelected.includes(tag.tags)">
+                <a href="javascript:void(0);"
+                  (click)="hideMobileFilter(); loadProductsPerTags(tag.tags, selectedDepartment, selectedCategory, productBrandsSelected)">
+                  {{ tag.tags }}
+                </a>
+              </li>
+              }
+            </ul>
+            }
+          </div>
+          }
+
+          <!-- Brands -->
+          @if (loadingBrands) {
+          <div class="widget widget-collapsible mt-4" style="border-top: 0;">
+            <h3 class="widget-title"><span>{{ "Brands" | translate }}</span></h3>
+            <div class="widget-body filter-skeleton">
+              <span class="filter-skeleton-line"></span>
+              <span class="filter-skeleton-line"></span>
+              <span class="filter-skeleton-line filter-skeleton-line--short"></span>
+            </div>
+          </div>
+          } @else if (brands.length && pageSection.template?.settings?.show_filter_by_brand !== false) {
+          <div class="widget widget-collapsible mt-4" style="border-top: 0;">
+            <h3 class="widget-title" style="display: flex; justify-content: space-between; align-items: center;"
+              (click)="showFilterBrands = !showFilterBrands">
+              <span>
+                {{ "Brands" | translate }}
+                @if (productBrandsSelected.length > 0) {
+                  <span class="mn-filter-count-badge">{{ productBrandsSelected.length }}</span>
+                }
+              </span>
+              <i [class]="showFilterBrands ? 'd-icon-minus' : 'd-icon-plus'"></i>
+            </h3>
+
+            @if (showFilterBrands) {
+            <ul class="widget-body filter-items scrollable">
+              @for (brand of brands; track brand.id) {
+              <li [class.active]="productBrandsSelected.includes(brand.id)">
+                <a href="javascript:void(0);" (click)="hideMobileFilter(); loadProductsPerBrands(brand.id)">
+                  {{ appService.lang == 'ar' && brand.translation?.name?.ar
+                  ? brand.translation.name.ar : brand.name }}
+                </a>
+              </li>
+              }
+            </ul>
+            }
+          </div>
+          }
+
+          <!-- Price filter -->
+          <div class="widget widget-collapsible mt-4" style="border-top: 0;">
+            <h3 class="widget-title mb-2">{{ "Filter by Price" | translate }}</h3>
+            <div open="true">
+              <app-price-filter [(minPrice)]="minPrice" [(maxPrice)]="maxPrice"></app-price-filter>
+              <div class="filter-actions price-range-slider mt-2">
+                <a class="btn btn-dark btn-filter btn-rounded"
+                  (click)="hideMobileFilter(); filterByPrice(minPrice, maxPrice, selectedDepartment, selectedCategory, productBrandsSelected)">
+                  {{ "Filter" | translate }}
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Main content ── -->
+    <div class="col-lg-9 main-content">
+
+      <!-- ════════════════════════════════════════════════════════
+           MOBILE FILTER BAR (back button + filter + sort)
+           ════════════════════════════════════════════════════════ -->
+      <div class="mn-mobile-filter-bar">
+
+        <!-- Back arrow button (mobile) -->
+        <a class="mn-back-arrow-btn" (click)="goBackToGrid()" title="{{ 'Back to Shop' | translate }}">
+          <i class="fas fa-arrow-left"></i>
+          <span class="mn-back-arrow-label">{{ "Back to Shop" | translate }}</span>
+        </a>
+
+        <!-- Filter trigger (mobile) -->
+        <a href="javascript:void(0);" class="mn-mobile-filter-trigger" (click)="showMobileFilter()">
+          <i class="fas fa-sliders-h"></i>
+          {{ "Filter" | translate }}
+          @if (activeFilterCount > 0) {
+            <span class="mn-filter-count-badge">{{ activeFilterCount }}</span>
+          }
+        </a>
+
+        <!-- Sort dropdown (mobile) -->
+        <select class="mn-sort-select" (change)="onSortChange($event, selectedDepartment, selectedCategory)">
+          <option value="{sortValue: null, sortDirection: null}"
+            [selected]="sortMap.sortValue === null && sortMap.sortDirection === null">
+            {{ "Default" | translate }}
+          </option>
+          <option value="{sortValue: 'name', sortDirection: 'ASC'}"
+            [selected]="sortMap.sortValue === 'name' && sortMap.sortDirection === 'ASC'">
+            A-Z
+          </option>
+          <option value="{sortValue: 'name', sortDirection: 'DESC'}"
+            [selected]="sortMap.sortValue === 'name' && sortMap.sortDirection === 'DESC'">
+            Z-A
+          </option>
+          <option value="{sortValue: 'defaultPrice', sortDirection: 'ASC'}"
+            [selected]="sortMap.sortValue === 'defaultPrice' && sortMap.sortDirection === 'ASC'">
+            {{ "Price" | translate }} ↑
+          </option>
+          <option value="{sortValue: 'defaultPrice', sortDirection: 'DESC'}"
+            [selected]="sortMap.sortValue === 'defaultPrice' && sortMap.sortDirection === 'DESC'">
+            {{ "Price" | translate }} ↓
+          </option>
+        </select>
+
+      </div>
+
+      <!-- ════════════════════════════════════════════════════════
+           DESKTOP TOOLBOX (back button + sort)
+           ════════════════════════════════════════════════════════ -->
+      <div class="mn-toolbox mt-6 mb-4">
+        <div class="mn-toolbox-left">
+
+          <!-- Back button (desktop) -->
+          <a class="mn-back-btn" (click)="goBackToGrid()">
+            <span class="mn-back-btn-icon">
+              <i class="fas fa-arrow-left"></i>
+            </span>
+            <span class="mn-back-btn-label">{{ "Back to Shop" | translate }}</span>
+          </a>
+
+          <a href="javascript:void(0);" class="mn-filter-toggle-btn d-lg-none" (click)="showMobileFilter()">
+            <i class="fas fa-sliders-h"></i> {{ "Filter" | translate }}
+          </a>
+
+          <div class="mn-sort-wrap">
+            <span class="mn-sort-label">{{ "Sort By" | translate }}</span>
+            <select class="mn-sort-select" id="sortProducts"
+              (change)="onSortChange($event, selectedDepartment, selectedCategory)">
+              <option value="{sortValue: null, sortDirection: null}" id="default"
+                [selected]="sortMap.sortValue === null && sortMap.sortDirection === null">
+                {{ "Default" | translate }}
+              </option>
+              <option value="{sortValue: 'name', sortDirection: 'ASC'}"
+                [selected]="sortMap.sortValue === 'name' && sortMap.sortDirection === 'ASC'">A–Z</option>
+              <option value="{sortValue: 'name', sortDirection: 'DESC'}"
+                [selected]="sortMap.sortValue === 'name' && sortMap.sortDirection === 'DESC'">Z–A</option>
+              <option value="{sortValue: 'defaultPrice', sortDirection: 'ASC'}"
+                [selected]="sortMap.sortValue === 'defaultPrice' && sortMap.sortDirection === 'ASC'">
+                {{ "Price (Low → High)" | translate }}
+              </option>
+              <option value="{sortValue: 'defaultPrice', sortDirection: 'DESC'}"
+                [selected]="sortMap.sortValue === 'defaultPrice' && sortMap.sortDirection === 'DESC'">
+                {{ "Price (High → Low)" | translate }}
+              </option>
+            </select>
+          </div>
+
+          @if (filteredProducts?.length) {
+          <span class="mn-count-chip">{{ filteredProducts.length }} {{ "items" | translate }}</span>
+          }
+
+        </div>
+      </div>
+
+      @if (!loading) {
+      <div
+        class="product-wrapper {{ productsLayout === 'list' ? 'product-lists' : 'row cols-2 cols-sm-3 cols-md-4 cols-lg-4' }}">
+        @for (product of filteredProducts; track $index) {
+        @if (productsLayout === 'list') {
+          <app-product-list [product]="product" [template]="pageSection?.template"></app-product-list>
+        } @else {
+          <app-product-grid [product]="product" [template]="pageSection?.template"></app-product-grid>
+        }
+        }
+      </div>
+
+      @if (filteredProducts?.length === 0 && totalProducts === 0) {
+      <div class="mn-empty-state">
+        <div class="mn-empty-icon">
+          <i class="fas fa-concierge-bell"></i>
+        </div>
+        <p class="mn-empty-title">{{ "No items available" | translate }}</p>
+        <p class="mn-empty-sub">{{ "There are no menu items for the selected service. Try switching to a different service." | translate }}</p>
+        <button type="button" class="mn-change-service-btn" (click)="appService.showServiceSelector()">
+          <i class="fas fa-exchange-alt"></i>
+          {{ "Change Service" | translate }}
+        </button>
+      </div>
+      }
+      } @else {
+      <div
+        class="product-wrapper {{ productsLayout === 'list' ? 'product-lists' : 'row cols-2 cols-sm-3 cols-md-4 cols-lg-4' }}">
+        @for (item of items; track $index) {
+        <div class="{{ productsLayout === 'grid' ? 'skel-pro skel-pro-list mb-4' : 'product-loading-overlay' }}"></div>
+        }
+      </div>
+      }
+
+      @if (totalProducts > limit) {
+      <app-pagination [startIndex]="filteredProducts.length + startIndex - 1" [lastIndex]="totalProducts"
+        [totalPages]="pageCount - 1" [clean]="clean" [pageRoute]="pageProduct">
+      </app-pagination>
+      }
+
+    </div>
+  </div>
+</div>
+}

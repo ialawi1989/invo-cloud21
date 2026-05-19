@@ -1,0 +1,131 @@
+<!--
+  Bulk style editor — every change emits a `BulkStylePatch` covering
+  ONLY the field the user touched. The parent applies it to every
+  field in the section.
+
+  Layout mirrors the legacy builder:
+    • Section heading
+    • Warning callout (these settings override per-field styles)
+    • Vertical rows, label on the left, input on the right
+    • Format + alignment buttons stacked under the colour rows
+-->
+<div class="bse">
+  @if (title()) {
+    <h4 class="bse__heading">{{ title() }}</h4>
+  }
+  @if (note()) {
+    <div class="bse__callout">
+      <svg class="bse__callout-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8"  x2="12"    y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span>{{ note() }}</span>
+    </div>
+  }
+
+  @if (showSize()) {
+    <div class="bse__row">
+      <label class="bse__label">{{ 'DOCUMENT_BUILDER.BULK.SIZE' | translate }}</label>
+      <div class="bse__control bse__size">
+        <input
+          type="number"
+          min="6"
+          max="48"
+          class="bse__input"
+          [value]="size()"
+          (input)="emit({ size: +$any($event.target).value })"
+        />
+        <span class="bse__suffix">pt</span>
+      </div>
+    </div>
+  }
+
+  @if (showColor()) {
+    <div class="bse__row">
+      <label class="bse__label">{{ 'DOCUMENT_BUILDER.BULK.VALUE_COLOR' | translate }}</label>
+      <div class="bse__control">
+        <app-color-picker
+          [ngModel]="color()"
+          [wcagAgainst]="backgroundColor() || '#ffffff'"
+          [showSpectrum]="true"
+          [showRainbowPresets]="true"
+          (ngModelChange)="emit({ color: $event })"
+        />
+      </div>
+    </div>
+  }
+
+  @if (showLabelColor()) {
+    <div class="bse__row">
+      <label class="bse__label">{{ 'DOCUMENT_BUILDER.BULK.LABEL_COLOR' | translate }}</label>
+      <div class="bse__control">
+        <app-color-picker
+          [ngModel]="labelColor()"
+          [wcagAgainst]="backgroundColor() || '#ffffff'"
+          [showSpectrum]="true"
+          [showRainbowPresets]="true"
+          (ngModelChange)="emit({ labelColor: $event })"
+        />
+      </div>
+    </div>
+  }
+
+  @if (showBackground()) {
+    <div class="bse__row">
+      <label class="bse__label">{{ 'DOCUMENT_BUILDER.BULK.BACKGROUND' | translate }}</label>
+      <div class="bse__control">
+        <app-color-picker
+          [ngModel]="backgroundColor()"
+          [showSpectrum]="true"
+          [showRainbowPresets]="true"
+          (ngModelChange)="emit({ backgroundColor: $event })"
+        />
+      </div>
+    </div>
+  }
+
+  @if (showFormat()) {
+    <div class="bse__row">
+      <label class="bse__label">{{ 'DOCUMENT_BUILDER.BULK.FORMAT' | translate }}</label>
+      <div class="bse__control">
+        <div class="bse__btn-group">
+          <button type="button"
+                  class="bse__btn"
+                  [class.bse__btn--on]="bold()"
+                  (click)="toggleBold()"
+                  [attr.aria-label]="'DOCUMENT_BUILDER.TEXT_STYLE.BOLD' | translate">
+            <strong>B</strong>
+          </button>
+          <button type="button"
+                  class="bse__btn"
+                  [class.bse__btn--on]="italic()"
+                  (click)="toggleItalic()"
+                  [attr.aria-label]="'DOCUMENT_BUILDER.TEXT_STYLE.ITALIC' | translate">
+            <em>I</em>
+          </button>
+          <button type="button"
+                  class="bse__btn"
+                  [class.bse__btn--on]="underline()"
+                  (click)="toggleUnderline()"
+                  [attr.aria-label]="'DOCUMENT_BUILDER.TEXT_STYLE.UNDERLINE' | translate">
+            <u>U</u>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showAlignment()) {
+    <div class="bse__row">
+      <label class="bse__label">{{ 'DOCUMENT_BUILDER.BULK.ALIGNMENT' | translate }}</label>
+      <div class="bse__control">
+        <app-segmented-toggle
+          size="sm"
+          [options]="alignOptions"
+          [value]="alignment()"
+          (valueChange)="setAlignment($any($event))"/>
+      </div>
+    </div>
+  }
+</div>

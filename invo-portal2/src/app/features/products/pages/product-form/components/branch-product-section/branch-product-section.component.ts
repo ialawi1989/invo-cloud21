@@ -30,6 +30,7 @@ import {
   SegmentedToggleComponent,
   SegmentedToggleOption,
 } from '@shared/components/segmented-toggle/segmented-toggle.component';
+import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 import { ProductsService } from '../../../../services/products.service';
@@ -92,6 +93,7 @@ interface PricingTypeOption { value: PricingType; labelKey: string; }
     SearchDropdownComponent,
     SkeletonComponent,
     SegmentedToggleComponent,
+    ToggleComponent,
     BranchPriceByQtyComponent,
     BranchSerialsComponent,
     BranchBatchesComponent,

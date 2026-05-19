@@ -14,8 +14,8 @@ import { ModalService } from '@shared/modal/modal.service';
 import {
   MediaPickerModalComponent,
   MediaPickerConfig,
-} from '../../../../../media/components/media-picker/media-picker-modal.component';
-import type { Media } from '../../../../../media/models/media.model';
+} from '../../../../../settings/media/components/media-picker/media-picker-modal.component';
+import type { Media } from '../../../../../settings/media/models/media.model';
 
 import { Product, ProductImage as ProductImageModel } from '../../../../models/product-form.model';
 import { Fields } from '../../../../models/product-fields.model';

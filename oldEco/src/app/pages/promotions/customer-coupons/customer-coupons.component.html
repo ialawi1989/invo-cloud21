@@ -1,0 +1,139 @@
+<!-- customer-coupons.component.html -->
+
+<!-- ── Mobile sticky header ─────────────────────────────────────── -->
+<div class="fix-top sticky-content d-md-none d-lg-none fixed">
+  <div class="header">
+    <div class="header-middle pt-2 pb-2 header-top-custom">
+      <div class="container">
+        <div class="header-left" style="display: flex; align-items: center; justify-content: center; flex: 1;">
+          <a href="javascript:void(0);" class="mobile-menu-toggle" (click)="goBack()" style="margin-right: auto;">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+          <h5 class="m-0" style="margin-left:-26px !important;">
+            {{ 'PROMOTIONS.COUPON.MY_COUPONS' | translate }}
+          </h5>
+          <div style="margin-left: auto;"></div>
+        </div>
+        <div class="header-right"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="main cc-page">
+  <div class="page-content mt-6 mb-6">
+    <div class="container">
+
+      <!-- ── Page header (desktop) ─────────────────────────────── -->
+      <div class="cc-page-header d-none d-md-flex">
+        <a href="javascript:void(0);" class="cc-back-btn" (click)="goBack()" [attr.aria-label]="'Back' | translate">
+          <i class="fas fa-chevron-left"></i>
+        </a>
+        <div class="cc-avatar">
+          <i class="fas fa-ticket-alt"></i>
+        </div>
+        <div class="cc-page-title-body">
+          <h2 class="cc-page-title">{{ 'PROMOTIONS.COUPON.MY_COUPONS' | translate }}</h2>
+        </div>
+      </div>
+
+      <!-- ── Loading skeleton ───────────────────────────────────── -->
+      @if (isLoading) {
+      <div class="cc-skeleton-wrap">
+        <!-- Filter skeleton -->
+        <div class="cc-skeleton-filters">
+          <div class="cc-skel cc-skel--filter"></div>
+          <div class="cc-skel cc-skel--filter"></div>
+          <div class="cc-skel cc-skel--filter"></div>
+        </div>
+        <!-- Cards skeleton -->
+        <div class="cc-skeleton-grid">
+          @for (i of [1,2,3,4]; track i) {
+          <div class="cc-skel-card">
+            <div class="cc-skel cc-skel--card-top"></div>
+            <div class="cc-skel cc-skel--card-div"></div>
+            <div class="cc-skel cc-skel--card-body"></div>
+            <div class="cc-skel cc-skel--card-footer"></div>
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      @if (!isLoading && couponSetsSettings) {
+
+      <!-- ═══ FEATURE DISABLED ═══ -->
+      @if (!couponSetsSettings.enabled) {
+      <div class="cc-card">
+        <div class="cc-card-body">
+          <div class="cc-empty-state">
+            <div class="cc-empty-icon"><i class="fas fa-ban"></i></div>
+            <p class="cc-empty-title">{{ 'PROMOTIONS.COUPON.COUPON_DISABLED' | translate }}</p>
+          </div>
+        </div>
+      </div>
+      }
+
+      @if (couponSetsSettings.enabled) {
+
+      <!-- ── Filter tabs ──────────────────────────────────── -->
+      <div class="cc-filter-bar mt-3">
+        <button class="cc-filter-btn" [class.cc-filter-btn--active]="activeFilter === 'all'" (click)="setFilter('all')">
+          {{ 'PROMOTIONS.COUPON.ALL' | translate }}
+          <span class="cc-filter-count">{{ coupons.length }}</span>
+        </button>
+        <button class="cc-filter-btn" [class.cc-filter-btn--active]="activeFilter === 'available'"
+          (click)="setFilter('available')">
+          <span class="cc-filter-dot cc-filter-dot--available"></span>
+          {{ 'PROMOTIONS.COUPON.AVAILABLE' | translate }}
+          <span class="cc-filter-count">{{ activeCouponsNumber }}</span>
+        </button>
+        <button class="cc-filter-btn" [class.cc-filter-btn--active]="activeFilter === 'used'"
+          (click)="setFilter('used')">
+          <span class="cc-filter-dot cc-filter-dot--used"></span>
+          {{ 'PROMOTIONS.COUPON.USED' | translate }}
+          <span class="cc-filter-count">{{ usedCouponsNumber }}</span>
+        </button>
+      </div>
+
+      <!-- ── Coupons grid ─────────────────────────────────── -->
+      <div class="cc-card mt-3">
+        <div class="cc-card-header">
+          <span class="cc-section-label">{{ 'PROMOTIONS.COUPON.MY_COUPONS' | translate }}</span>
+          <span class="cc-count-badge">{{ filteredCoupons.length }}</span>
+        </div>
+        <div class="cc-card-body">
+
+          @if (filteredCoupons.length === 0) {
+          <div class="cc-empty-state">
+            <div class="cc-empty-icon">
+              <i class="fas fa-ticket-alt"></i>
+            </div>
+            @if (activeFilter === 'all') {
+            <p class="cc-empty-title">{{ 'PROMOTIONS.COUPON.NO_COUPONS_TITLE' | translate }}</p>
+            <p class="cc-empty-sub">{{ 'PROMOTIONS.COUPON.NO_COUPONS_DESC' | translate }}</p>
+            } @else if (activeFilter === 'available') {
+            <p class="cc-empty-title">{{ 'PROMOTIONS.COUPON.NO_AVAILABLE_COUPONS' | translate }}</p>
+            } @else {
+            <p class="cc-empty-title">{{ 'PROMOTIONS.COUPON.NO_USED_COUPONS' | translate }}</p>
+            }
+          </div>
+          } @else {
+          <div class="cc-grid">
+            @for (coupon of filteredCoupons; track coupon.id) {
+            <app-coupon-card [coupon]="coupon" (select)="selectCoupon($event)">
+            </app-coupon-card>
+            }
+          </div>
+          }
+
+        </div>
+      </div>
+
+      }
+
+      }
+
+    </div>
+  </div>
+</main>

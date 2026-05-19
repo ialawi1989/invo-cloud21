@@ -1,0 +1,16 @@
+<app-branch-status-alert></app-branch-status-alert>
+
+<div class="grid-container">
+    @for (collection of collections; track $index) {
+        <div class="card clickable"  [routerLink]="[collection.slug]">
+            <img src="assets/images/default-blank-image.png" alt="Product Image">
+            <div class="card-body">
+                <h5>
+                    <a href="javascript:void(0);" [routerLink]="[collection.slug]">{{ collection.title }}</a>
+                </h5>
+                <!-- <a href="javascript:void(0);" class="btn"  [routerLink]="[collection.slug]">View Products</a> -->
+            </div>
+        </div>
+    }
+</div>
+

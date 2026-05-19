@@ -4,6 +4,8 @@
     "SAVING": "جاري الحفظ…",
     "CANCEL": "إلغاء",
     "DELETE": "حذف",
+    "DEFAULT": "افتراضي",
+    "IMPORT": "استيراد",
     "DESELECT": "إلغاء التحديد",
     "DESKTOP_ONLY": {
       "TITLE": "يُستحسن استخدام شاشة أكبر",
@@ -90,6 +92,10 @@
     "SUBMIT": "إرسال",
     "CLOSE": "إغلاق",
     "DISMISS": "تجاهل",
+    "CHANGE": "تغيير",
+    "DISCARD": "تجاهل التغييرات",
+    "MORE": "المزيد",
+    "UPLOAD_FAILED": "فشل الرفع",
     "ERROR": "خطأ",
     "ERRORS": "أخطاء",
     "UNSAVED_TITLE": "تغييرات غير محفوظة",
@@ -217,6 +223,7 @@
     "MEDIA": "الوسائط",
     "PLUGINS": "الإضافات",
     "WEBSITE_CONTENT": "محتوى الموقع",
+    "BLOG": "المدونة",
     "SETTINGS": "الإعدادات",
     "DESIGN_SITE": "تصميم الموقع",
     "SUB": {
@@ -278,7 +285,12 @@
       "WEBSITE_SETTINGS": "إعدادات الموقع",
       "DOMAIN_SETTINGS": "إعدادات النطاق",
       "PAGING_SYSTEM": "نظام الترقيم",
-      "CMS": "إدارة المحتوى"
+      "CMS": "إدارة المحتوى",
+      "BLOG_SECTION": "المدونة",
+      "BLOG_POSTS": "التدوينات",
+      "BLOG_CATEGORIES": "التصنيفات والوسوم",
+      "BLOG_COMMENTS": "التعليقات",
+      "BLOG_SETTINGS": "إعدادات المدونة"
     }
   },
   "SIDEBAR": {

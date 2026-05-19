@@ -1,0 +1,663 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Points Statement — Final
+   Design language matches account.component.css
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ps-page {
+  /* keep the rest of the theme’s vertical rhythm */
+}
+
+/* ── FontAwesome rendering fix (mirrors account page) ───────────── */
+.ps-page i.fas,
+.ps-page i.far,
+.ps-page i.fab,
+.ps-page i[class*="fa-"] {
+  font-family: "Font Awesome 5 Free" !important;
+  font-weight: 900 !important;
+  font-style: normal !important;
+  text-rendering: auto !important;
+  -webkit-font-smoothing: antialiased !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+}
+.ps-page i.far {
+  font-weight: 400 !important;
+}
+
+/* ── Page header ─────────────────────────────────────────────────── */
+.ps-page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.ps-back-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  text-decoration: none !important;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  font-size: 14px;
+}
+
+.ps-back-btn:hover {
+  background: var(--primary-color);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.ps-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.ps-page-title-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ps-page-title {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.4px;
+  color: var(--primary-color) !important;
+  margin: 0 !important;
+}
+
+.ps-page-subtitle {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+}
+
+/* ── Cards (match .acc-card) ─────────────────────────────────────── */
+.ps-card {
+  border: 1.5px solid #e8e8e8;
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.ps-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px 0;
+}
+
+.ps-card-body {
+  padding: 20px 24px 24px;
+}
+
+.ps-section-label {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #666;
+  display: block;
+}
+
+.ps-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #f5f5f5;
+  color: #555;
+  border-radius: 11px;
+  border: 1px solid #ececec;
+}
+
+/* ── Balance overview card (hero) ───────────────────────────────── */
+.ps-balance-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary-color, #444) 10%, #fff) 0%,
+    #ffffff 70%
+  );
+  border: 1.5px solid #e8e8e8;
+  border-radius: 16px;
+  padding: 22px 24px;
+}
+
+.ps-balance-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ps-balance-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.ps-balance-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ps-balance-amount {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ps-balance-amount strong {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #111;
+  line-height: 1.1;
+}
+
+.ps-balance-unit {
+  font-size: 14px;
+  font-weight: 600;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.ps-balance-equiv-line {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-color);
+  background: #fff;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--primary-color, #444) 25%, #e8e8e8);
+  display: inline-block;
+  width: fit-content;
+}
+
+/* ── Alert (warning style for expiry) ───────────────────────────── */
+.ps-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.ps-alert--warning {
+  background: #fff8e1;
+  border: 1.5px solid #ffe0a3;
+  color: #8a5a00;
+}
+
+.ps-alert-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #ffe0a3;
+  color: #b07700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.ps-alert-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ps-alert-line {
+  font-size: 14px;
+}
+
+/* ── Table (match .order-table) ─────────────────────────────────── */
+.ps-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.ps-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ps-table thead tr {
+  border-bottom: 1.5px solid #e8e8e8;
+}
+
+.ps-table th {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  color: #888 !important;
+  padding: 10px 12px !important;
+  text-align: left !important;
+  white-space: nowrap;
+}
+
+.ps-table td {
+  padding: 14px 12px !important;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #f4f4f4;
+  vertical-align: middle;
+}
+
+.ps-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ps-table tbody tr {
+  transition: background 0.12s;
+}
+
+.ps-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.ps-table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+.ps-table tbody tr:hover {
+  background: #f0f0f0 !important;
+}
+
+.ps-date-cell {
+  color: #555;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.ps-reason-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ps-reason-text {
+  color: #333;
+  font-size: 14px;
+}
+
+.ps-num-col {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ps-balance-cell {
+  color: #111;
+}
+
+.ps-pos {
+  color: #2e7d32 !important;
+}
+
+.ps-neg {
+  color: #c62828 !important;
+}
+
+/* ── Status / action badges ─────────────────────────────────────── */
+.ps-status-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f5f5f5;
+  color: #555;
+  border: 1px solid #e8e8e8;
+  text-transform: capitalize;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+/* Action-type tints (kept compatible with original .status.XYZ palette) */
+.ps-status-ADD,
+.ps-status-ACTIVATE,
+.ps-status-ACTIVE {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-color: #c8e6c9;
+}
+
+.ps-status-SPEND,
+.ps-status-SPEND_POINTS {
+  background: #e3f2fd;
+  color: #1565c0;
+  border-color: #bbdefb;
+}
+
+.ps-status-REFUND,
+.ps-status-RESTORE,
+.ps-status-RESTORE_POINTS {
+  background: #f3e5f5;
+  color: #6a1b9a;
+  border-color: #e1bee7;
+}
+
+.ps-status-CANCEL,
+.ps-status-CANCEL_POINTS,
+.ps-status-CANCELED {
+  background: #ffebee;
+  color: #c62828;
+  border-color: #ffcdd2;
+}
+
+.ps-status-EXPIRED {
+  background: #eceff1;
+  color: #455a64;
+  border-color: #cfd8dc;
+}
+
+.ps-status-EXPIRY_SOON {
+  background: #fff3e0;
+  color: #b76b00;
+  border-color: #ffd9a3;
+}
+
+.ps-status-INACTIVE {
+  background: #fff8e1;
+  color: #856404;
+  border-color: #ffe082;
+}
+
+.ps-status-EXTEND {
+  background: #ede7f6;
+  color: #4527a0;
+  border-color: #d1c4e9;
+}
+
+/* ── Mobile transaction list (cards) ────────────────────────────── */
+.ps-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ps-mobile-item {
+  border: 1.5px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.13s;
+}
+
+.ps-mobile-item:hover {
+  border-color: #ccc;
+}
+
+.ps-mobile-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ps-mobile-points {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #111;
+}
+
+.ps-mobile-reason {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.4;
+}
+
+.ps-mobile-item-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: #888;
+  border-top: 1px solid #f4f4f4;
+  padding-top: 8px;
+  flex-wrap: wrap;
+}
+
+.ps-mobile-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ps-mobile-date i {
+  font-size: 11px;
+  color: #aaa;
+}
+
+.ps-mobile-balance strong {
+  color: #111;
+  font-weight: 700;
+}
+
+/* ── Empty / error state (match .acc-empty-state) ───────────────── */
+.ps-empty-state {
+  text-align: center;
+  padding: 36px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ps-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #bbb;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.ps-empty-icon--danger {
+  background: #fff5f5;
+  color: #e53935;
+}
+
+.ps-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #555;
+  margin: 0;
+}
+
+.ps-empty-sub {
+  font-size: 13px;
+  color: #aaa;
+  margin: 0;
+  max-width: 320px;
+}
+
+/* ── Buttons (match .acc-btn-primary) ───────────────────────────── */
+.ps-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 10px;
+  background: var(--primary-color);
+  color: #fff !important;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  text-decoration: none !important;
+}
+
+.ps-btn-primary:hover:not([disabled]) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.mt-2 {
+  margin-top: 12px;
+}
+
+.mt-3 {
+  margin-top: 18px;
+}
+
+.mt-8 {
+  margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SKELETON LOADERS
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ps-skeleton-card {
+  position: relative;
+}
+
+.ps-skel {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    #ececec 0%,
+    #f6f6f6 40%,
+    #ececec 80%
+  );
+  background-size: 200% 100%;
+  animation: psShimmer 1.3s ease-in-out infinite;
+  border-radius: 8px;
+  vertical-align: middle;
+}
+
+.ps-skel--circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+}
+
+.ps-skel--line {
+  display: block;
+  height: 14px;
+  border-radius: 6px;
+}
+
+.ps-skel--h-14 { height: 14px; }
+.ps-skel--h-18 { height: 18px; }
+.ps-skel--h-28 { height: 28px; }
+
+.ps-skel--w-50  { width: 50px; }
+.ps-skel--w-60  { width: 60px; }
+.ps-skel--w-100 { width: 100px; }
+.ps-skel--w-110 { width: 110px; }
+.ps-skel--w-120 { width: 120px; }
+.ps-skel--w-160 { width: 160px; }
+.ps-skel--w-180 { width: 180px; }
+
+@keyframes psShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .ps-skel {
+    animation: none;
+    background: #ececec;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 767.98px) {
+  .ps-card-body {
+    padding: 16px !important;
+  }
+
+  .ps-card-header {
+    padding: 16px 16px 0 !important;
+  }
+
+  .ps-balance-card {
+    padding: 16px;
+  }
+
+  .ps-balance-amount strong {
+    font-size: 26px;
+  }
+
+  .ps-balance-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 17px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ps-balance-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ps-balance-equiv-line {
+    align-self: flex-start;
+  }
+}

@@ -46,23 +46,11 @@
                column so nothing disappears. Note `row.index` is
                used (not `$index`) because the layoutOptions loop
                below shadows `$index` with the layout's own index. -->
-          <div class="aom__layout">
-            @for (l of layoutOptions; track l) {
-              <button type="button" class="aom__layout-btn"
-                [class.aom__layout-btn--on]="row.layout === l"
-                (click)="setLayout(row.index, l)"
-                [title]="layoutLabel(l) | translate">
-                <span class="aom__layout-glyph aom__layout-glyph--{{l}}" aria-hidden="true">
-                  @switch (l) {
-                    @case ('2-1')    { <span></span><span></span> }
-                    @case ('1-1')    { <span></span><span></span> }
-                    @case ('1-2')    { <span></span><span></span> }
-                    @case ('single') { <span></span> }
-                  }
-                </span>
-              </button>
-            }
-          </div>
+          <app-segmented-toggle
+            size="sm"
+            [options]="layoutToggleOptions"
+            [value]="row.layout"
+            (valueChange)="setLayout(row.index, $any($event))"/>
 
           <button type="button" class="aom__row-remove"
             [disabled]="rows().length <= 1"

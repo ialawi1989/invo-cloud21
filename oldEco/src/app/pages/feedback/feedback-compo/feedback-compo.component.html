@@ -1,0 +1,162 @@
+@if(feedbackData?.id){
+<div class="fb-outer">
+  <div class="fb-wrap">
+
+    <!-- Feedback Form -->
+    @if(!submitted) {
+    <div class="fb-header">
+      <h1>{{ "Rate Our Service" | translate }}</h1>
+      <p>{{ "We'd love to know how we're doing" | translate }}</p>
+    </div>
+
+    <div class="progress-dots">
+      <div class="dot on"></div>
+      <div class="dot" [class.on]="rating > 0"></div>
+    </div>
+
+    <div class="fb-card">
+
+      <!-- Star Rating -->
+      <div class="fb-section text-center">
+        <span class="fb-label center">{{ "How would you rate our service?" | translate }}</span>
+        <div class="stars">
+          @for (star of [1, 2, 3, 4, 5]; track $index) {
+          <span
+            class="star"
+            [class.filled]="star <= (hoveredStar || rating)"
+            (click)="setRating(star)"
+            (mouseenter)="setHoveredStar(star)"
+            (mouseleave)="clearHover()">
+            ★
+          </span>
+          }
+        </div>
+      </div>
+
+      <!-- Name and Phone Inputs -->
+      @if(!(isNameDisabled && isPhoneDisabled)){
+        <!-- Name Input -->
+        <div class="fb-section">
+          <div class="input-with-icon">
+            <span class="input-icon">👤</span>
+            <input
+              id="name-input"
+              class="fb-input"
+              type="text"
+              [(ngModel)]="name"
+              (input)="onNameChange()"
+              [disabled]="isNameDisabled"
+              [placeholder]="'Your name' | translate">
+          </div>
+        </div>
+  
+        <!-- Phone Input -->
+        <div class="fb-section">
+          <div class="input-with-icon">
+            <span class="input-icon">📱</span>
+            <input
+              id="phone-input"
+              class="fb-input"
+              type="tel"
+              [(ngModel)]="phone"
+              (input)="onPhoneChange()"
+              [disabled]="isPhoneDisabled"
+              [placeholder]="'Your phone' | translate">
+          </div>
+        </div>
+      }
+
+      <!-- Comment -->
+      <div class="fb-section">
+        <div class="textarea-wrap mt-2">
+          <textarea
+            class="fb-textarea"
+            [(ngModel)]="comment"
+            [placeholder]="'Leave a comment (optional)' | translate"
+            rows="3">
+          </textarea>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button
+        class="submit-btn"
+        (click)="submitFeedback()">
+        {{ isSubmitting ? ("Sending..." | translate) : ("Send feedback" | translate) }}
+      </button>
+    </div>
+
+    <!-- Status Message -->
+    @if(status.show) {
+    <div [class]="'fb-status ' + status.type">
+      {{ status.message | translate }}
+      @if(status.subMessage) {
+      <small>{{ status.subMessage | translate }}</small>
+      }
+    </div>
+    }
+    }
+
+    <!-- Thank You Card -->
+    @if(submitted) {
+    <div class="fb-header">
+      <h1>{{ "Rate Our Service" | translate }}</h1>
+      <p>{{ "We'd love to know how we're doing" | translate }}</p>
+    </div>
+
+    <div class="progress-dots">
+      <div class="dot on"></div>
+      <div class="dot on"></div>
+    </div>
+
+    <div class="fb-card">
+      <div class="success-wrap">
+        <div class="success-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h2>{{ "Thank you!" | translate }}</h2>
+        <p>{{ "Your feedback has been successfully submitted" | translate }}</p>
+
+        <div class="rating-recap">
+          @for (star of [1, 2, 3, 4, 5]; track $index) {
+          <span class="star-recap" [class.on]="star <= rating">★</span>
+          }
+        </div>
+
+        @if(comment) {
+        <div class="comment-bubble">"{{ comment }}"</div>
+        }
+
+        @if(shouldShowGoogleFeedbackLink()) {
+        <button class="google-btn" (click)="openGoogleFeedbackLink()">
+          <span class="g-dot" style="background:#4285F4;"></span>
+          <span class="g-dot" style="background:#EA4335;"></span>
+          <span class="g-dot" style="background:#FBBC05;"></span>
+          <span class="g-dot" style="background:#34A853;"></span>
+          {{ "Rate us on Google" | translate }}
+        </button>
+        }
+      </div>
+    </div>
+    }
+
+  </div>
+</div>
+
+} @else {
+<!-- Placeholder when no order.id -->
+<div class="fb-outer">
+  <div class="fb-wrap">
+    <div class="fb-card">
+      <div class="placeholder-wrap">
+        <div class="placeholder-icon">📋</div>
+        <h2>{{ "Feedback Not Available" | translate }}</h2>
+        <p>{{ "Please try again later" | translate }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+}
+<br>

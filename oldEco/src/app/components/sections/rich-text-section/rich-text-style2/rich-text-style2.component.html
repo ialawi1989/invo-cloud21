@@ -1,0 +1,52 @@
+<div class="section-content pt-5 pb-2" [style.min-height]="section.sectionHeight == 'Full' ? 'calc(100vh - 95px)' : ''"
+  [style.background]="getBackground()"
+  [style.background-attachment]="section.sectionBackground.isParallax ? 'fixed' : ''"
+  [style.background-size]="section.sectionBackground.style == 'Image' ? 'cover' : ''"
+  [style.background-position]="section.sectionBackground.style == 'Image' ? 'center' : ''"
+  [style.background-repeat]="section.sectionBackground.style == 'Image' ? 'no-repeat' : ''"
+  [style.display]="section.sectionHeight == 'Full' ? 'flex' : ''"
+  [style.flex-direction]="section.sectionHeight == 'Full' ? 'column' : ''"
+  [style.justify-content]="section.sectionHeight == 'Full' ? 'center' : ''"
+  [style.align-items]="section.sectionHeight == 'Full' ? 'center' : ''"
+  [style.margin]="(section.marginVertical || 0) + 'px ' + (section.marginHorizontal || 0) + 'px'"
+  [style.padding]="(section.paddingVertical || 0) + 'px ' + (section.paddingHorizontal || 0) + 'px'">
+  @if (section != null && section.sectionBackground != null) {
+  <div class="section-overlay" [style.opacity]="section.sectionBackground.overlayOpacity / 100"
+    [style.background-color]="section.sectionBackground.overlayColor"></div>
+  }
+  <div class="section-text">
+    <div class="about-us">
+      <section class="customer-section">
+        <div [class]="themeBuilder.layout?.width == 'Full' ? 'me-2 ms-2' : 'container'">
+          <div class="row align-items-center">
+            <div class="col-md-6 mb-4">
+              <figure>
+                <img
+                  onerror="this.src = 'assets/images/default-blank-image.png'" [src]="section.sectionData?.image?.defaultUrl ? section.sectionData?.image?.defaultUrl : themeBuilder?.media?.defaultImage.defaultUrl ? themeBuilder.media.defaultImage.defaultUrl : 'assets/images/default-blank-image.png'"
+                  class="banner-radius style-DcrMM" style="width:100%; height:350px; object-fit:cover;" />
+              </figure>
+            </div>
+            <div class="col-md-6 mb-4">
+              <h5 class="section-subtitle lh-2 ls-md font-weight-normal" [style.color]="section.sectionData.text1Color">
+                {{appService.lang == 'ar' ? section.sectionData?.translation?.ar?.text1 ? section.sectionData?.translation?.ar?.text1 : section.sectionData.text1 : section.sectionData.text1}}
+              </h5>
+              <h3 class="section-title lh-1 font-weight-bold" [style.color]="section.sectionData.text2Color">
+                {{appService.lang == 'ar' ? section.sectionData?.translation?.ar?.text2 ? section.sectionData?.translation?.ar?.text2 : section.sectionData.text2 : section.sectionData.text2}}
+              </h3>
+              <p class="section-desc" [style.color]="section.sectionData.text3Color">
+                {{appService.lang == 'ar' ? section.sectionData?.translation?.ar?.text3 ? section.sectionData?.translation?.ar?.text3 : section.sectionData.text3 : section.sectionData.text3}}
+              </p>
+              @if(section.sectionData.buttonLink?.type && section.sectionData.buttonText){
+              <a class="btn btn-link btn-underline ls-m" href="javascript:void(0);" (click)="appService.gotoPage(section.sectionData.buttonLink)"
+                [style.color]="section.sectionData.buttonTextColor">
+                {{appService.lang == 'ar' ? section.sectionData?.translation?.ar?.buttonText ? section.sectionData?.translation?.ar?.buttonText : section.sectionData.buttonText : section.sectionData.buttonText}}
+                <i class="d-icon-arrow-right"></i>
+              </a>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

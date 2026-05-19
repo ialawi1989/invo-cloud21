@@ -1,0 +1,20 @@
+@if (template?.settings?.product_style=='Style 2' || style == 'Style 2') {
+<app-product-grid-style2 [product]="product" [slug]="slug" [companyData]="companyData" [template]="template"
+  [sectionId]="id" [gotoProductPage]="gotoProductPage.bind(this)"></app-product-grid-style2>
+}
+@else if (template?.settings?.product_style == 'Style 3' || style == 'Style 3') {
+<app-product-grid-style3 [product]="product" [slug]="slug" [companyData]="companyData" [template]="template"
+  [sectionId]="id" [gotoProductPage]="gotoProductPage.bind(this)"></app-product-grid-style3>
+}
+@else if (template?.settings?.product_style == 'Style 4' || style == 'Style 4') {
+<app-product-grid-style4 [product]="product" [slug]="slug" [companyData]="companyData" [template]="template"
+  [sectionId]="id" [gotoProductPage]="gotoProductPage.bind(this)"></app-product-grid-style4>
+} 
+@else if (template?.settings?.product_style == 'Style 5' || style == 'Style 5') {
+<app-product-grid-style5 [product]="product" [slug]="slug" [companyData]="companyData" [template]="template"
+  [sectionId]="id" [gotoProductPage]="gotoProductPage.bind(this)"></app-product-grid-style5>
+}
+@else{
+<app-product-grid-style1 [product]="product" [slug]="slug" [companyData]="companyData" [template]="template"
+  [sectionId]="id" [gotoProductPage]="gotoProductPage.bind(this)"></app-product-grid-style1>
+}

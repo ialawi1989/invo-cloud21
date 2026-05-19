@@ -1,0 +1,39 @@
+<div class="redeem-container pt-5 mb-4">
+  <h2>{{ 'PROMOTIONS.REDEEM_YOUR_BENEFITS' | translate }}</h2>
+
+<select [(ngModel)]="selectedOption" (ngModelChange)="clearMsg(true)" [disabled]="!!(cartCouponId && cartCouponId.length > 0)">
+  <option value="Choose an option">{{ 'PROMOTIONS.CHOOSE_AN_OPTION' | translate }}</option>
+
+  @for (option of options; track option.value) {
+
+    @if(option.value === 'points') {
+      @if(showPoints) {
+        <option [value]="option.value">{{'PROMOTIONS.'+ option.label | translate}}</option>
+      }
+    } @else if(option.value === 'promo') {
+      @if(showCoupons) {
+        <option [value]="option.value">{{'PROMOTIONS.'+  option.label| translate }}</option>
+      }
+    }
+
+  }
+</select>
+
+
+
+  @if (selectedOption === 'promo' || cartCouponId) {
+    
+  <app-redeem-promo [currency]="currency" (redeem)="onChildRedeem($event)" [total]="total" [branchId]="branchId" [serviceId]="serviceId" (unRedeem)="onChildUnRedeem($event)" [cartCouponId]="cartCouponId"/>
+
+  } @if (selectedOption === 'points') {
+  <app-redeem-points
+    [currency]="currency"
+    (redeem)="onChildRedeem($event)"
+    [maxPoints]="maxPoints"
+  />
+  } @if (message) {
+  <div class="message" [ngClass]="messageType">
+    {{ message }}
+  </div>
+  }
+</div>

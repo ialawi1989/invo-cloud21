@@ -138,6 +138,9 @@ export class ProductFormPrefsService {
     { id: 'product-attributes',side: 'main',  i18nKey: 'PRODUCTS.SECTIONS.ATTRIBUTES',        defaultVisible: false },
     { id: 'allergens',         side: 'main',  i18nKey: 'PRODUCTS.SECTIONS.ALLERGENS',         defaultVisible: false },
     { id: 'nutrition',         side: 'main',  i18nKey: 'PRODUCTS.SECTIONS.NUTRITION',         defaultVisible: false },
+    // SEO Assistant — opt-in by default. The card opens the shared
+    // /settings/seo editor and persists onto `product.seo`.
+    { id: 'seo',               side: 'main',  i18nKey: 'PRODUCTS.SECTIONS.SEO',               defaultVisible: false },
     // Side column
     { id: 'media',             side: 'aside', i18nKey: 'PRODUCTS.SECTIONS.MEDIA',             defaultVisible: true },
     { id: 'measurements',      side: 'aside', i18nKey: 'PRODUCTS.SECTIONS.MEASUREMENTS',      defaultVisible: true },

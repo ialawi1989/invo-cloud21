@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;aae8a4ed195d4e658fe15b7c9553a203fdeb31dd36e83d5f657943503a17f3b2;D:/Users/Invo/Downloads/angular-customizer/website/src/app/features/blog/pages/tag.component.ts"],
+  "sourcesContent": ["\n    :host { display: block; min-height: 100vh; background: var(--body-bg, #fff); color: var(--body-text, #111); }\n    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }\n    .back { display: inline-block; padding: 12px 0; color: inherit; text-decoration: none; opacity: .7; font-size: 14px; }\n    .back:hover { opacity: 1; }\n    .head { padding: 24px 0 32px; }\n    h1 { margin: 0; font-size: 32px; }\n    p { margin: 6px 0 0; opacity: .7; max-width: 700px; }\n  "],
+  "mappings": ";AACI;AAAQ,WAAS;AAAO,cAAY;AAAO,cAAY,IAAI,SAAS,EAAE;AAAO,SAAO,IAAI,WAAW,EAAE;AAAO;AAC5G,CAAC;AAAY,aAAW;AAAQ,UAAQ,EAAE;AAAM,WAAS;AAAM;AAC/D,CAAC;AAAO,WAAS;AAAc,WAAS,KAAK;AAAG,SAAO;AAAS,mBAAiB;AAAM,WAAS;AAAI,aAAW;AAAM;AACrH,CADC,IACI;AAAS,WAAS;AAAG;AAC1B,CAAC;AAAO,WAAS,KAAK,EAAE;AAAM;AAC9B;AAAK,UAAQ;AAAG,aAAW;AAAM;AACjC;AAAI,UAAQ,IAAI,EAAE;AAAG,WAAS;AAAI,aAAW;AAAO;",
+  "names": []
+}

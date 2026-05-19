@@ -3,11 +3,22 @@
     "TITLE": "Settings",
     "SUBTITLE": "Manage all your settings in one place.",
     "SEARCH_PLACEHOLDER": "Search settings…",
+    "SEARCH_DID_YOU_MEAN": "Did you mean ",
+
+    "IMPORT_FROM_INVO": {
+      "LABEL":            "Upload your Invo backup file",
+      "DROPZONE_PROMPT":  "Drop your .invobk file here",
+      "DROPZONE_BROWSE":  "or click to browse",
+      "CHANGE_FILE":      "Click to change file",
+      "ONLY_INVOBK":      "Please choose only a .invobk file.",
+      "SUCCESS":          "Successfully imported!"
+    },
 
     "GROUPS": {
       "COMPANY":   "Company Setup",
       "PRODUCTS":  "Products",
       "MEDIA":     "Media",
+      "SITE_SEO":  "Site, Domain & SEO",
       "POS":       "POS Settings",
       "INVOICE":   "Invoice Settings",
       "ESTIMATE":  "Estimate Settings",
@@ -34,6 +45,10 @@
       "PRODUCTS_TAB_BUILDER_DESC": "Define the default content tabs shown on every product.",
       "IMAGE_DISPLAY":             "Image Display",
       "IMAGE_DISPLAY_DESC":        "Set how product images are cropped and positioned across the storefront.",
+      "MEDIA_MANAGER":             "Media Library",
+      "MEDIA_MANAGER_DESC":        "Manage uploaded images, documents, videos and audio used across the storefront.",
+      "SEO_SETTINGS":              "SEO Settings",
+      "SEO_SETTINGS_DESC":         "Customize default page settings and meta tags across all page types.",
       "PREFIX_SETTINGS":           "Prefix Settings",
       "PREFIX_SETTINGS_DESC":      "Customize the prefixes for various document types.",
 

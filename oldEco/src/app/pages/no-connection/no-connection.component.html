@@ -1,0 +1,51 @@
+
+<!-- HTML Template -->
+@if(style=='2'){
+<app-no-connection-style-2 [errData]="errData" [slugList]="slugList"></app-no-connection-style-2>
+}@else {
+<div class="error-page-container">
+  <!-- Animated Icon/Image -->
+  <div class="error-icon-wrapper">
+    <img src="assets/images/subpages/404.png" alt="error 404" class="error-image">
+  </div>
+
+  <!-- Main Message -->
+  <div class="error-message">
+    <h1 class="error-title">We'll Be Right Back!</h1>
+    <p class="error-description">
+      Our site is taking a quick break. We appreciate your patience.
+      <br>
+      <span class="error-cta">Please contact the shop for immediate assistance.</span>
+    </p>
+  </div>
+
+  <br>
+  <!-- Slug List Section -->
+  @if(slugList.length){
+  <div class="suggestions-section">
+    <p class="suggestions-title">Looking for one of these websites?</p>
+    <div class="websites-grid">
+      @for (slugItem of slugList; track $index) {
+      <div class="website-card" (click)="gotoWebsite(slugItem.slug)">
+        <div class="website-info">
+          <span class="website-name">{{slugItem.name}}</span>
+        </div>
+        <div class="website-action">
+          <span class="action-text">Visit</span>
+          <i class="d-icon-arrow-right"></i>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
+  <br>
+
+  <!-- Footer -->
+  <div class="error-footer">
+    <a href="http://invopos.com" target="_blank">
+      Powered by <strong>invo</strong>
+    </a>
+  </div>
+</div>
+}

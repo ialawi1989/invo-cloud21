@@ -20,14 +20,10 @@
       <div class="card__body">
         <div class="toggle-grid">
           @for (t of posToggles; track t.controlName) {
-            <label class="toggle">
-              <input type="checkbox" [formControlName]="t.controlName"/>
-              <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-              <span class="toggle__label">
-                <span class="field-label">{{ t.labelKey | translate }}</span>
-                <span class="field-hint">{{ t.hintKey | translate }}</span>
-              </span>
-            </label>
+            <app-toggle
+              [formControlName]="t.controlName"
+              [label]="t.labelKey | translate"
+              [hint]="t.hintKey | translate"/>
           }
         </div>
 
@@ -108,40 +104,43 @@
       <div class="card__body">
         <!-- The two "copies on..." selects sit beside their related toggles. -->
         <div class="receipt-row">
-          <label class="toggle">
-            <input type="checkbox" formControlName="printReceiptOnSent"/>
-            <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-            <span class="toggle__label">
-              <span class="field-label">{{ 'SETTINGS.POS_OPTIONS.PRINT.PRINT_ON_SENT' | translate }}</span>
-              <span class="field-hint">{{ 'SETTINGS.POS_OPTIONS.PRINT.PRINT_ON_SENT_HINT' | translate }}</span>
-            </span>
-          </label>
+          <app-toggle
+            formControlName="printReceiptOnSent"
+            [label]="'SETTINGS.POS_OPTIONS.PRINT.PRINT_ON_SENT' | translate"
+            [hint]="'SETTINGS.POS_OPTIONS.PRINT.PRINT_ON_SENT_HINT' | translate"/>
           <div class="receipt-row__copies">
             <span class="field-label field-label--inline">{{ 'SETTINGS.POS_OPTIONS.PRINT.COPIES' | translate }}</span>
-            <select class="input input--narrow" formControlName="numberOfReceiptWhenSent">
-              @for (o of receiptCopies; track o.value) {
-                <option [ngValue]="o.value">{{ o.label }}</option>
-              }
-            </select>
+            <app-search-dropdown
+              class="copies-dd"
+              triggerClass="!w-20"
+              [items]="receiptCopies"
+              [displayWith]="copiesDisplay"
+              [compareWith]="copiesCompare"
+              [toValue]="copiesToValue"
+              [value]="selectedCopies('numberOfReceiptWhenSent')"
+              [clearable]="false"
+              [searchable]="false"
+              (valueChange)="setCopies('numberOfReceiptWhenSent', $any($event))"/>
           </div>
         </div>
 
         <div class="receipt-row">
-          <label class="toggle">
-            <input type="checkbox" formControlName="printReceiptOnPaid"/>
-            <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-            <span class="toggle__label">
-              <span class="field-label">{{ 'SETTINGS.POS_OPTIONS.PRINT.PRINT_ON_PAID' | translate }}</span>
-              <span class="field-hint">{{ 'SETTINGS.POS_OPTIONS.PRINT.PRINT_ON_PAID_HINT' | translate }}</span>
-            </span>
-          </label>
+          <app-toggle
+            formControlName="printReceiptOnPaid"
+            [label]="'SETTINGS.POS_OPTIONS.PRINT.PRINT_ON_PAID' | translate"
+            [hint]="'SETTINGS.POS_OPTIONS.PRINT.PRINT_ON_PAID_HINT' | translate"/>
           <div class="receipt-row__copies">
             <span class="field-label field-label--inline">{{ 'SETTINGS.POS_OPTIONS.PRINT.COPIES' | translate }}</span>
-            <select class="input input--narrow" formControlName="numberOfReceiptWhenPaid">
-              @for (o of receiptCopies; track o.value) {
-                <option [ngValue]="o.value">{{ o.label }}</option>
-              }
-            </select>
+            <app-search-dropdown
+              class="input--narrow"
+              [items]="receiptCopies"
+              [displayWith]="copiesDisplay"
+              [compareWith]="copiesCompare"
+              [toValue]="copiesToValue"
+              [value]="selectedCopies('numberOfReceiptWhenPaid')"
+              [clearable]="false"
+              [searchable]="false"
+              (valueChange)="setCopies('numberOfReceiptWhenPaid', $any($event))"/>
           </div>
         </div>
 
@@ -153,14 +152,10 @@
         <div class="toggle-grid">
           @for (t of printToggles; track t.controlName) {
             @if (t.controlName !== 'printReceiptOnSent' && t.controlName !== 'printReceiptOnPaid') {
-              <label class="toggle">
-                <input type="checkbox" [formControlName]="t.controlName"/>
-                <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-                <span class="toggle__label">
-                  <span class="field-label">{{ t.labelKey | translate }}</span>
-                  <span class="field-hint">{{ t.hintKey | translate }}</span>
-                </span>
-              </label>
+              <app-toggle
+                [formControlName]="t.controlName"
+                [label]="t.labelKey | translate"
+                [hint]="t.hintKey | translate"/>
             }
           }
         </div>

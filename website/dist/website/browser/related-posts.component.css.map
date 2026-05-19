@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;9dc3825d8f44cb1009c3b20532f7e31630261ce53a7b27d0c22f1ffda3a22b55;D:/Users/Invo/Downloads/angular-customizer/website/src/app/features/blog/components/related-posts.component.ts"],
+  "sourcesContent": ["\n    :host { display: block; }\n    .related { margin: 48px 0; }\n    h2 { font-size: 22px; margin: 0 0 16px; }\n    .row {\n      display: grid;\n      grid-template-columns: repeat(3, minmax(0, 1fr));\n      gap: 20px;\n    }\n    @media (max-width: 768px) {\n      .row { grid-auto-flow: column; grid-auto-columns: 75vw; grid-template-columns: none; overflow-x: auto; padding-bottom: 8px; }\n    }\n  "],
+  "mappings": ";AACI;AAAQ,WAAS;AAAO;AACxB,CAAC;AAAU,UAAQ,KAAK;AAAG;AAC3B;AAAK,aAAW;AAAM,UAAQ,EAAE,EAAE;AAAM;AACxC,CAAC;AACC,WAAS;AACT,yBAAuB,OAAO,CAAC,EAAE,OAAO,CAAC,EAAE;AAC3C,OAAK;AACP;AACA,QAAO,WAAY;AACjB,GAND;AAMQ,oBAAgB;AAAQ,uBAAmB;AAAM,2BAAuB;AAAM,gBAAY;AAAM,oBAAgB;AAAK;AAC9H;",
+  "names": []
+}

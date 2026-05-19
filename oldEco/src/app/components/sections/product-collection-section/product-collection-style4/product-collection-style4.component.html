@@ -1,0 +1,55 @@
+<div class="section-content pt-10 pb-10 appear-animatee"
+  [style.min-height]="section.sectionHeight == 'Full' ? 'calc(100vh - 95px)' : ''" [style.background]="getBackground()"
+  [style.background-attachment]="section.sectionBackground.isParallax ? 'fixed' : ''"
+  [style.background-size]="section.sectionBackground.style == 'Image' ? 'cover' : ''"
+  [style.background-position]="section.sectionBackground.style == 'Image' ? 'center' : ''"
+  [style.background-repeat]="section.sectionBackground.style == 'Image' ? 'no-repeat' : ''"
+  [style.display]="section.sectionHeight == 'Full' ? 'flex' : ''"
+  [style.flex-direction]="section.sectionHeight == 'Full' ? 'column' : ''"
+  [style.justify-content]="section.sectionHeight == 'Full' ? 'center' : ''"
+  [style.align-items]="section.sectionHeight == 'Full' ? 'center' : ''"
+  [style.margin]="(section.marginVertical || 0) + 'px ' + (section.marginHorizontal || 0) + 'px'"
+  [style.padding]="(section.paddingVertical || 0) + 'px ' + (section.paddingHorizontal || 0) + 'px'">
+
+  @if(section != null && section.sectionBackground != null){
+    <div class="section-overlay"
+      [style.opacity]="section.sectionBackground.overlayOpacity / 100"
+      [style.background-color]="section.sectionBackground.overlayColor"></div>
+  }
+
+  <div class="section-text">
+    <div [class]="themeBuilder?.layout?.width == 'Full' ? 'me-2 ms-2' : 'container'">
+      <section class="product-wrapper" data-animation-options="{'delay': '.3s'}">
+
+        <a href="javascript:void(0);" (click)="gotoCollection()">
+          <h2 class="title title-center" [style.color]="section.sectionData.titleColor">
+            {{ appService.lang == 'ar'
+               ? (section.sectionData?.translation?.ar?.title || section.sectionData.title)
+               : section.sectionData.title }}
+          </h2>
+        </a>
+
+        <!-- CAROUSEL MODE: 4+ products -->
+        @if(useCarousel) {
+          <owl-carousel-o [options]="customOptions">
+            @for (product of products; track $index; let indx = $index) {
+              <ng-template carouselSlide>
+                <app-product-grid [product]="product" [slug]="slug" [style]="section.sectionData?.collectionStyle"></app-product-grid>
+              </ng-template>
+            }
+          </owl-carousel-o>
+        }
+
+        <!-- GRID MODE: 1–3 products -->
+        @if(!useCarousel) {
+          <div class="products-static-grid" [attr.data-count]="products?.length">
+            @for (product of products; track $index; let indx = $index) {
+              <app-product-grid [product]="product" [slug]="slug" [style]="section.sectionData?.collectionStyle"></app-product-grid>
+            }
+          </div>
+        }
+
+      </section>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+@if(lastReservationData?.sessionId){
+<div class="alert alert-light alert-warning pb-2 pt-2 borderr-top">
+  <div class="container">
+    <div class="text-center clickable" (click)="onViewLastReservationClick()" [routerLink]="['/reservation', lastReservationData.sessionId]">
+      <b>
+        {{"Click here to view your reservation" | translate}}
+      </b>
+    </div>
+  </div>
+</div>
+}

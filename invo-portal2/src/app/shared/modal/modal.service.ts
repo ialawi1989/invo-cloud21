@@ -248,7 +248,24 @@ export class ModalService {
           // owns it now (we already prevented the duplicate push above).
           if (this.openModals.length > 0) return;
           if (history.state && history.state.invoModal) {
+            // `history.back()` triggers a popstate which Angular's
+            // router treats as a navigation. With our global
+            // `scrollPositionRestoration: 'top'`, that scrolls the
+            // page to the top — visually a "jump to top" the moment
+            // a drawer is dismissed by backdrop click. Since the
+            // pop just consumes our own sentinel (same URL, no real
+            // nav), preserve the user's scroll: snapshot before the
+            // pop and rewind any scroll-to-top the router applies
+            // afterwards. Two RAFs cover both the synchronous popstate
+            // handler and the router's async scroll step.
+            const savedX = window.scrollX;
+            const savedY = window.scrollY;
             history.back();
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              if (window.scrollX !== savedX || window.scrollY !== savedY) {
+                window.scrollTo(savedX, savedY);
+              }
+            }));
           }
         }, 0);
       }

@@ -1,0 +1,306 @@
+<div class="blog-settings-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'BLOG.SETTINGS.TITLE' | translate }}</h1>
+      <p class="page-sub">{{ 'BLOG.SETTINGS.SUBTITLE' | translate }}</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Languages ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'BLOG.SETTINGS.LANGUAGES' | translate }}</h2>
+        <p class="card__sub">{{ 'BLOG.SETTINGS.LANGUAGES_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label">{{ 'BLOG.SETTINGS.DEFAULT_LANGUAGE' | translate }}</label>
+            <app-search-dropdown
+              [items]="defaultLangOptions()"
+              [displayWith]="langDisplay"
+              [compareWith]="langCompare"
+              [toValue]="langToValue"
+              [clearable]="false"
+              [searchable]="false"
+              [value]="form.controls['defaultLanguage'].value"
+              (valueChange)="setDefaultLanguage($any($event))"
+            />
+            <p class="field-hint">{{ 'BLOG.SETTINGS.DEFAULT_LANGUAGE_HINT' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="lang-grid">
+          <p class="section-label">{{ 'BLOG.SETTINGS.SUPPORTED_LANGUAGES' | translate }}</p>
+          <p class="field-hint">{{ 'BLOG.SETTINGS.SUPPORTED_LANGUAGES_HINT' | translate }}</p>
+
+          <div class="lang-rows">
+            @for (l of availableLanguages(); track l.code) {
+              <div class="lang-row" [class.is-on]="isSupported(l.code)">
+                <label class="lang-row__main">
+                  <input type="checkbox"
+                         [checked]="isSupported(l.code)"
+                         (change)="toggleSupported(l.code)"/>
+                  <span class="lang-row__name">
+                    {{ l.nativeLabel }}
+                    <span class="lang-row__code">{{ l.code }}</span>
+                  </span>
+                </label>
+                <label class="lang-row__rtl"
+                       [class.is-disabled]="!isSupported(l.code)"
+                       [title]="'BLOG.SETTINGS.RTL_HINT' | translate">
+                  <input type="checkbox"
+                         [checked]="isRtl(l.code)"
+                         [disabled]="!isSupported(l.code)"
+                         (change)="toggleRtl(l.code)"/>
+                  <span>{{ 'BLOG.SETTINGS.RTL' | translate }}</span>
+                </label>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Layout ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'BLOG.SETTINGS.LAYOUT' | translate }}</h2>
+        <p class="card__sub">{{ 'BLOG.SETTINGS.LAYOUT_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="layout-group">
+          <p class="section-label">{{ 'BLOG.SETTINGS.MAIN_FEED' | translate }}</p>
+          <div class="layout-picker">
+            @for (l of layouts; track l) {
+              <button type="button"
+                      class="layout-card"
+                      [class.is-on]="form.controls['feedLayout'].value === l"
+                      (click)="pickFeedLayout(l, 'feedLayout')">
+                <div class="layout-card__preview" [attr.data-layout]="l">
+                  <!-- Visual shape per layout — pure CSS in the component
+                       stylesheet, no SVG to keep this dependency-free. -->
+                </div>
+                <span class="layout-card__label">{{ 'BLOG.SETTINGS.LAYOUT_' + l | uppercase | translate }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="layout-group">
+          <p class="section-label">{{ 'BLOG.SETTINGS.CATEGORY_FEED' | translate }}</p>
+          <div class="layout-picker">
+            @for (l of layouts; track l) {
+              <button type="button"
+                      class="layout-card"
+                      [class.is-on]="form.controls['categoryFeedLayout'].value === l"
+                      (click)="pickFeedLayout(l, 'categoryFeedLayout')">
+                <div class="layout-card__preview" [attr.data-layout]="l"></div>
+                <span class="layout-card__label">{{ 'BLOG.SETTINGS.LAYOUT_' + l | uppercase | translate }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label" for="bs-posts-per-page">
+              {{ 'BLOG.SETTINGS.POSTS_PER_PAGE' | translate }}
+            </label>
+            <input id="bs-posts-per-page"
+                   type="number"
+                   class="input"
+                   formControlName="postsPerPage"
+                   min="1"
+                   max="100"/>
+            <p class="field-hint">{{ 'BLOG.SETTINGS.POSTS_PER_PAGE_HINT' | translate }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Display ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'BLOG.SETTINGS.DISPLAY' | translate }}</h2>
+        <p class="card__sub">{{ 'BLOG.SETTINGS.DISPLAY_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="toggle-grid">
+          <app-toggle formControlName="showAuthor"        [label]="'BLOG.SETTINGS.SHOW_AUTHOR'         | translate"/>
+          <app-toggle formControlName="showDate"          [label]="'BLOG.SETTINGS.SHOW_DATE'           | translate"/>
+          <app-toggle formControlName="showReadingTime"   [label]="'BLOG.SETTINGS.SHOW_READING_TIME'   | translate"/>
+          <app-toggle formControlName="showCategoryLabel" [label]="'BLOG.SETTINGS.SHOW_CATEGORY_LABEL' | translate"/>
+          <app-toggle formControlName="showTags"          [label]="'BLOG.SETTINGS.SHOW_TAGS'           | translate"/>
+          <app-toggle formControlName="showHashtags"      [label]="'BLOG.SETTINGS.SHOW_HASHTAGS'       | translate"/>
+          <app-toggle formControlName="showSocialShare"   [label]="'BLOG.SETTINGS.SHOW_SOCIAL_SHARE'   | translate"/>
+          <app-toggle formControlName="showRelatedPosts"  [label]="'BLOG.SETTINGS.SHOW_RELATED_POSTS'  | translate"/>
+          <app-toggle formControlName="showCommentCount"  [label]="'BLOG.SETTINGS.SHOW_COMMENT_COUNT'  | translate"/>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Comments ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'BLOG.SETTINGS.COMMENTS' | translate }}</h2>
+        <p class="card__sub">{{ 'BLOG.SETTINGS.COMMENTS_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <app-toggle
+          formControlName="commentsEnabled"
+          [label]="'BLOG.SETTINGS.COMMENTS_ENABLED' | translate"
+          [hint]="'BLOG.SETTINGS.COMMENTS_ENABLED_HINT' | translate"/>
+
+        @if (form.controls['commentsEnabled'].value) {
+          <div class="comments-detail">
+            <div class="toggle-grid">
+              <app-toggle formControlName="requireApproval"      [label]="'BLOG.SETTINGS.REQUIRE_APPROVAL'       | translate"/>
+              <app-toggle formControlName="allowReplies"         [label]="'BLOG.SETTINGS.ALLOW_REPLIES'          | translate"/>
+              <app-toggle formControlName="allowEmployeeReplies" [label]="'BLOG.SETTINGS.ALLOW_EMPLOYEE_REPLIES' | translate"/>
+              <app-toggle formControlName="requireShopperLogin"  [label]="'BLOG.SETTINGS.REQUIRE_SHOPPER_LOGIN'  | translate"/>
+            </div>
+
+            <div class="field field--slider">
+              <label class="field-label" for="bs-max-depth">
+                {{ 'BLOG.SETTINGS.MAX_DEPTH' | translate }}
+                <span class="slider-value">{{ form.controls['maxDepth'].value }}</span>
+              </label>
+              <input id="bs-max-depth"
+                     type="range"
+                     class="slider"
+                     formControlName="maxDepth"
+                     min="1"
+                     max="5"
+                     step="1"/>
+              <p class="field-hint">{{ 'BLOG.SETTINGS.MAX_DEPTH_HINT' | translate }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- ═══ RSS ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'BLOG.SETTINGS.RSS' | translate }}</h2>
+        <p class="card__sub">{{ 'BLOG.SETTINGS.RSS_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <app-toggle
+          formControlName="rssEnabled"
+          [label]="'BLOG.SETTINGS.RSS_ENABLED' | translate"/>
+
+        @if (form.controls['rssEnabled'].value) {
+          <div class="grid grid--2" style="margin-top: 14px;">
+            <div class="field">
+              <label class="field-label">{{ 'BLOG.SETTINGS.RSS_ITEMS_COUNT' | translate }}</label>
+              <app-search-dropdown
+                [items]="rssCountOptions()"
+                [displayWith]="rssCountDisplay"
+                [compareWith]="rssCountCompare"
+                [toValue]="rssCountToValue"
+                [clearable]="false"
+                [searchable]="false"
+                [value]="form.controls['rssItemsCount'].value"
+                (valueChange)="setRssCount($any($event))"
+              />
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- ═══ SEO ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'BLOG.SETTINGS.SEO' | translate }}</h2>
+        <p class="card__sub">{{ 'BLOG.SETTINGS.SEO_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label" for="bs-title-tmpl">
+              {{ 'BLOG.SETTINGS.SEO_TITLE_TEMPLATE' | translate }}
+            </label>
+            <input id="bs-title-tmpl"
+                   type="text"
+                   class="input"
+                   formControlName="seoTitleTemplate"/>
+            <p class="field-hint">{{ 'BLOG.SETTINGS.SEO_TITLE_TEMPLATE_HINT' | translate }}</p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="bs-og-image">
+              {{ 'BLOG.SETTINGS.SEO_DEFAULT_OG_IMAGE' | translate }}
+            </label>
+            <input id="bs-og-image"
+                   type="text"
+                   class="input"
+                   formControlName="seoDefaultOgImage"
+                   placeholder="https://…"/>
+            <p class="field-hint">{{ 'BLOG.SETTINGS.SEO_DEFAULT_OG_IMAGE_HINT' | translate }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Mobile overrides ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'BLOG.SETTINGS.MOBILE' | translate }}</h2>
+        <p class="card__sub">{{ 'BLOG.SETTINGS.MOBILE_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <app-toggle
+          formControlName="mobileOverrideDesktop"
+          [label]="'BLOG.SETTINGS.MOBILE_OVERRIDE' | translate"
+          [hint]="'BLOG.SETTINGS.MOBILE_OVERRIDE_HINT' | translate"/>
+
+        @if (form.controls['mobileOverrideDesktop'].value) {
+          <div class="comments-detail">
+            <p class="section-label">{{ 'BLOG.SETTINGS.MOBILE_FEED' | translate }}</p>
+            <div class="layout-picker">
+              @for (l of layouts; track l) {
+                <button type="button"
+                        class="layout-card"
+                        [class.is-on]="form.controls['mobileFeedLayout'].value === l"
+                        (click)="pickFeedLayout(l, 'mobileFeedLayout')">
+                  <div class="layout-card__preview" [attr.data-layout]="l"></div>
+                  <span class="layout-card__label">{{ 'BLOG.SETTINGS.LAYOUT_' + l | uppercase | translate }}</span>
+                </button>
+              }
+            </div>
+
+            <div class="toggle-grid" style="margin-top: 14px;">
+              <app-toggle formControlName="mobileShowCategoryMenu" [label]="'BLOG.SETTINGS.MOBILE_SHOW_CATEGORY_MENU' | translate"/>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || form.invalid"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

@@ -215,19 +215,13 @@
           @if (fieldsOptions()?.branchProduct?.available) {
             <div class="pf-field pf-field--half pf-field--inline">
               <span class="pf-label">{{ 'PRODUCTS.FORM.AVAILABLE' | translate }}</span>
-              <label class="pf-switch">
-                <input type="checkbox" formControlName="available"/>
-                <span class="pf-switch__track"></span>
-              </label>
+              <app-toggle formControlName="available"/>
             </div>
           }
           @if (fieldsOptions()?.branchProduct?.availableOnline) {
             <div class="pf-field pf-field--half pf-field--inline">
               <span class="pf-label">{{ 'PRODUCTS.FORM.AVAILABLE_ONLINE' | translate }}</span>
-              <label class="pf-switch">
-                <input type="checkbox" formControlName="availableOnline"/>
-                <span class="pf-switch__track"></span>
-              </label>
+              <app-toggle formControlName="availableOnline"/>
             </div>
           }
         </div>

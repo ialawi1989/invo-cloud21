@@ -1,0 +1,241 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Email Verification Popup
+   Shares the same design tokens as the login popup (.lp-*)
+   ═══════════════════════════════════════════════════════════════════ */
+
+::ng-deep .ev-modal .modal-content {
+  border: none;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.14), 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+::ng-deep .ev-modal .modal-dialog {
+  max-width: 400px;
+}
+
+::ng-deep .ev-modal .modal-body,
+::ng-deep .ev-modal .modal-header {
+  padding: 0;
+  border: none;
+}
+
+/* ── Close button ────────────────────────────────────────────────── */
+
+.lp-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #888;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lp-modal-close:hover {
+  background: #ebebeb;
+  color: #333;
+}
+
+/* ── Outer wrap ──────────────────────────────────────────────────── */
+
+.lp-wrap {
+  padding: 40px 36px 32px;
+  position: relative;
+}
+
+/* ── Brand mark ──────────────────────────────────────────────────── */
+
+.lp-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.lp-brand-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--primary-color, #222);
+}
+
+.lp-brand-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: #111;
+}
+
+/* ── Icon ────────────────────────────────────────────────────────── */
+
+.lp-otp-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  margin-bottom: 16px;
+}
+
+/* ── Headings ────────────────────────────────────────────────────── */
+
+.lp-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #111;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.lp-subtitle {
+  font-size: 15px;
+  color: #999;
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+/* ── Form ────────────────────────────────────────────────────────── */
+
+.lp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.lp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lp-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #555;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+/* ── OTP input ───────────────────────────────────────────────────── */
+
+.lp-input {
+  width: 100%;
+  height: 46px;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 06px;
+  padding: 0 14px;
+  font-size: 15px;
+  color: #222;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  
+  box-sizing: border-box;
+}
+
+.lp-input:focus {
+  border-color: var(--primary-color, #444);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color, #444) 12%, transparent);
+}
+
+.lp-input--otp {
+  letter-spacing: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ── Button ──────────────────────────────────────────────────────── */
+
+.lp-btn-primary {
+  display: block;
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: var(--primary-color, #222);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  
+  letter-spacing: -0.1px;
+}
+
+.lp-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.lp-btn-primary:active {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* ── Resend row ──────────────────────────────────────────────────── */
+
+.lp-otp-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 15px;
+}
+
+.lp-link {
+  color: var(--primary-color, #222);
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.lp-link:hover {
+  opacity: 0.75;
+}
+
+.lp-link--muted {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
+.lp-timer {
+  font-variant-numeric: tabular-nums;
+  color: #aaa;
+  font-weight: 400;
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────── */
+
+@media (max-width: 520px) {
+  ::ng-deep .ev-modal .modal-dialog {
+    margin: 0;
+    max-width: 100%;
+    height: 100%;
+    align-items: flex-end;
+  }
+
+  ::ng-deep .ev-modal .modal-content {
+    border-radius: 20px 20px 0 0;
+    min-height: 50vh;
+  }
+
+  .lp-wrap {
+    padding: 32px 24px 40px;
+  }
+}

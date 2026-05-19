@@ -1,0 +1,235 @@
+/* =============================================
+   PRODUCT LIST — STYLE 3
+   Editorial / Magazine aesthetic
+   Playfair Display headings · DM Sans body
+   Dark navy primary · burnt-orange accent
+============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap');
+
+/* ── Card shell ─────────────────────────────── */
+.card-l {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid #e8e6df;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  font-family: 'DM Sans', sans-serif;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  cursor: pointer;
+  /* FIX: isolate stacking context so child z-indexes don't bleed over cart overlay */
+  isolation: isolate;
+}
+
+.card-l:hover {
+  transform: translateX(4px);
+  box-shadow: 0 8px 32px rgba(26, 26, 46, 0.1);
+}
+
+/* ── Image zone ─────────────────────────────── */
+.card-l-img {
+  width: 130px;
+  min-width: 130px;
+  height: 130px;
+  position: relative;
+  overflow: hidden;
+  background: #f0ede6;
+  flex-shrink: 0;
+}
+
+.card-l-img app-lazy-image,
+.card-l-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.card-l:hover .card-l-img img {
+  transform: scale(1.06);
+}
+
+/* ── Sale badge ─────────────────────────────── */
+.card-l-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 3;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Body ───────────────────────────────────── */
+.card-l-body {
+  flex: 1;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.card-l-top {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Category tag ───────────────────────────── */
+.card-l-tag {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9a9890;
+  font-family: 'DM Sans', sans-serif;
+  min-height: 14px;
+}
+
+/* ── Product name ───────────────────────────── */
+.card-l-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: black;
+  margin: 0;
+}
+
+.card-l-name a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── Short description ──────────────────────── */
+.card-l-desc {
+  font-size: 12px;
+  color: #9a9890;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+/* ── Bottom row ─────────────────────────────── */
+.card-l-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Price row ──────────────────────────────── */
+.card-l-price-row .price {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.card-l-price-row .price del {
+  font-size: 12px;
+  color: #9a9890;
+  font-weight: 400;
+}
+
+/* ── Action group ───────────────────────────── */
+.card-l-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── CTA button ─────────────────────────────── */
+.card-l-btn {
+  padding: 8px 16px;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+.card-l-btn:hover {
+  opacity: 0.88;
+}
+
+.card-l-btn.disabled,
+.card-l-btn[disabled] {
+  background: #eee;
+  color: #888;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Wishlist button ────────────────────────── */
+.card-l-wish {
+  width: 34px;
+  height: 34px;
+  background: #f5f4f0;
+  border-radius: 50%;
+  border: 1px solid #e8e6df;
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.card-l-wish:hover {
+  background: #ffe2e2;
+  color: red;
+}
+
+.card-l-wish.active {
+  color: red;
+  background: #ffe2e2;
+  border-color: #f9b4b4;
+}
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 540px) {
+  .card-l-img {
+    width: 100px;
+    min-width: 100px;
+    height: 120px;
+  }
+
+  .card-l-body {
+    padding: 10px 12px;
+  }
+
+  .card-l-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-l-btn {
+    padding: 7px 12px;
+    font-size: 10px;
+  }
+}

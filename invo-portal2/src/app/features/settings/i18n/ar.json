@@ -3,11 +3,22 @@
     "TITLE": "الإعدادات",
     "SUBTITLE": "إدارة جميع إعداداتك في مكان واحد.",
     "SEARCH_PLACEHOLDER": "البحث في الإعدادات…",
+    "SEARCH_DID_YOU_MEAN": "هل تقصد ",
+
+    "IMPORT_FROM_INVO": {
+      "LABEL":            "ارفع ملف نسخة Invo الاحتياطية",
+      "DROPZONE_PROMPT":  "أفلت ملف .invobk هنا",
+      "DROPZONE_BROWSE":  "أو انقر للاستعراض",
+      "CHANGE_FILE":      "انقر لتغيير الملف",
+      "ONLY_INVOBK":      "يرجى اختيار ملف .invobk فقط.",
+      "SUCCESS":          "تم الاستيراد بنجاح!"
+    },
 
     "GROUPS": {
       "COMPANY":   "إعداد الشركة",
       "PRODUCTS":  "المنتجات",
       "MEDIA":     "الوسائط",
+      "SITE_SEO":  "الموقع والنطاق و SEO",
       "POS":       "إعدادات نقطة البيع",
       "INVOICE":   "إعدادات الفاتورة",
       "ESTIMATE":  "إعدادات عرض السعر",
@@ -34,6 +45,10 @@
       "PRODUCTS_TAB_BUILDER_DESC": "حدد تبويبات المحتوى الافتراضية المعروضة على كل منتج.",
       "IMAGE_DISPLAY":             "عرض الصور",
       "IMAGE_DISPLAY_DESC":        "حدد كيف تُقصّ صور المنتجات وتُحاذى في كل صفحات المتجر.",
+      "MEDIA_MANAGER":             "مكتبة الوسائط",
+      "MEDIA_MANAGER_DESC":        "إدارة الصور والمستندات والفيديوهات والصوتيات المستخدمة في المتجر.",
+      "SEO_SETTINGS":              "إعدادات SEO",
+      "SEO_SETTINGS_DESC":         "تخصيص الإعدادات الافتراضية للصفحات ووسوم meta عبر جميع أنواع الصفحات.",
       "PREFIX_SETTINGS":           "إعدادات البادئة",
       "PREFIX_SETTINGS_DESC":      "تخصيص بادئات أنواع المستندات المختلفة.",
 

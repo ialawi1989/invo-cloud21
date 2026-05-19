@@ -1,0 +1,11 @@
+@if(invoiceData.serviceName =="DineIn"){
+<div class="alert alert-warning alert-dark alert-round alert-inline pb-2 pt-2">
+  <div class="container">
+    <div class="text-center clickable" [routerLink]="['/menu']" [queryParams]="{ branch_id: invoiceData.branchId,  service_name:'DineIn', table_id:invoiceData.tableId}">
+      <b>
+        {{"Click to continue your DineIn order" | translate}}
+      </b>
+    </div>
+  </div>
+</div>
+}

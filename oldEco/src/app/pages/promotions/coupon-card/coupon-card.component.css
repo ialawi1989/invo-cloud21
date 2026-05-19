@@ -1,0 +1,434 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Coupon Card — Ticket-style design matching points-statement system
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── FontAwesome rendering fix ───────────────────────────────────── */
+.cpn-card i.fas,
+.cpn-card i.far,
+.cpn-card i.fab,
+.cpn-card i[class*="fa-"] {
+  font-family: "Font Awesome 5 Free" !important;
+  font-weight: 900 !important;
+  font-style: normal !important;
+  text-rendering: auto !important;
+  -webkit-font-smoothing: antialiased !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+}
+
+.cpn-card i.far {
+  font-weight: 400 !important;
+}
+
+/* ── Card base ───────────────────────────────────────────────────── */
+.cpn-card {
+  position: relative;
+  background: #fff;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.cpn-card:hover,
+.cpn-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+  border-color: color-mix(in srgb, var(--primary-color, #444) 40%, #e8e8e8);
+}
+
+.cpn-card:active {
+  transform: translateY(-1px);
+}
+
+/* ── Color palette for active coupons ────────────────────────────── */
+/* Each coupon card gets a vibrant color theme via nth-child cycling  */
+
+/* Teal / Emerald */
+.cpn-card:nth-child(5n+1) {
+  background: linear-gradient(145deg, #e0f7f4 0%, #f0fdfb 60%, #fff 100%);
+  border-color: #b2dfdb;
+}
+.cpn-card:nth-child(5n+1) .cpn-icon-wrap { background: #00897b; }
+.cpn-card:nth-child(5n+1) .cpn-code { color: #00695c; background: rgba(0,137,123,0.10); }
+.cpn-card:nth-child(5n+1) .cpn-discount-badge { color: #00695c; background: #b2dfdb; }
+.cpn-card:nth-child(5n+1)::before { background: #00897b !important; }
+
+/* Violet / Purple */
+.cpn-card:nth-child(5n+2) {
+  background: linear-gradient(145deg, #ede7f6 0%, #f5f0ff 60%, #fff 100%);
+  border-color: #d1c4e9;
+}
+.cpn-card:nth-child(5n+2) .cpn-icon-wrap { background: #7b1fa2; }
+.cpn-card:nth-child(5n+2) .cpn-code { color: #6a1b9a; background: rgba(123,31,162,0.10); }
+.cpn-card:nth-child(5n+2) .cpn-discount-badge { color: #6a1b9a; background: #e1bee7; }
+.cpn-card:nth-child(5n+2)::before { background: #7b1fa2 !important; }
+
+/* Amber / Orange */
+.cpn-card:nth-child(5n+3) {
+  background: linear-gradient(145deg, #fff8e1 0%, #fffdf0 60%, #fff 100%);
+  border-color: #ffe082;
+}
+.cpn-card:nth-child(5n+3) .cpn-icon-wrap { background: #f57f17; }
+.cpn-card:nth-child(5n+3) .cpn-code { color: #e65100; background: rgba(245,127,23,0.10); }
+.cpn-card:nth-child(5n+3) .cpn-discount-badge { color: #e65100; background: #ffe0b2; }
+.cpn-card:nth-child(5n+3)::before { background: #f57f17 !important; }
+
+/* Rose / Pink */
+.cpn-card:nth-child(5n+4) {
+  background: linear-gradient(145deg, #fce4ec 0%, #fef6f8 60%, #fff 100%);
+  border-color: #f8bbd0;
+}
+.cpn-card:nth-child(5n+4) .cpn-icon-wrap { background: #c2185b; }
+.cpn-card:nth-child(5n+4) .cpn-code { color: #ad1457; background: rgba(194,24,91,0.10); }
+.cpn-card:nth-child(5n+4) .cpn-discount-badge { color: #ad1457; background: #f8bbd0; }
+.cpn-card:nth-child(5n+4)::before { background: #c2185b !important; }
+
+/* Indigo / Blue */
+.cpn-card:nth-child(5n+5) {
+  background: linear-gradient(145deg, #e3f2fd 0%, #f0f8ff 60%, #fff 100%);
+  border-color: #bbdefb;
+}
+.cpn-card:nth-child(5n+5) .cpn-icon-wrap { background: #1565c0; }
+.cpn-card:nth-child(5n+5) .cpn-code { color: #0d47a1; background: rgba(21,101,192,0.10); }
+.cpn-card:nth-child(5n+5) .cpn-discount-badge { color: #0d47a1; background: #bbdefb; }
+.cpn-card:nth-child(5n+5)::before { background: #1565c0 !important; }
+
+/* ── Status variants (override colors for non-active states) ─────── */
+.cpn-card--expired {
+  opacity: 0.65;
+  background: #fafafa !important;
+  border-color: #e8e8e8 !important;
+}
+.cpn-card--expired .cpn-icon-wrap { background: #9e9e9e !important; }
+.cpn-card--expired .cpn-code { color: #9e9e9e !important; background: #f5f5f5 !important; }
+.cpn-card--expired .cpn-discount-badge { color: #757575 !important; background: #eeeeee !important; }
+.cpn-card--expired::before { background: #cfd8dc !important; }
+
+.cpn-card--used {
+  opacity: 0.65;
+  background: #f9f9f9 !important;
+  border-color: #e8e8e8 !important;
+}
+.cpn-card--used .cpn-icon-wrap { background: #9e9e9e !important; }
+.cpn-card--used .cpn-code { color: #9e9e9e !important; background: #f5f5f5 !important; }
+.cpn-card--used .cpn-discount-badge { color: #757575 !important; background: #eeeeee !important; }
+.cpn-card--used::before { background: #cfd8dc !important; }
+
+.cpn-card--inactive {
+  opacity: 0.7;
+  background: #fafafa !important;
+  border-color: #e8e8e8 !important;
+}
+.cpn-card--inactive .cpn-icon-wrap { background: #bdbdbd !important; }
+
+.cpn-card--canceled {
+  opacity: 0.6;
+  background: #fff5f5 !important;
+  border-color: #ffd7d7 !important;
+}
+.cpn-card--canceled .cpn-icon-wrap { background: #e53935 !important; }
+.cpn-card--canceled .cpn-code { color: #c62828 !important; background: rgba(229,57,53,0.10) !important; }
+.cpn-card--canceled::before { background: #ef9a9a !important; }
+
+/* ── Top section ─────────────────────────────────────────────────── */
+.cpn-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 14px;
+}
+
+.cpn-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.cpn-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.cpn-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.cpn-name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cpn-code {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary-color);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  background: color-mix(in srgb, var(--primary-color, #444) 8%, transparent);
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* ── Status badge ────────────────────────────────────────────────── */
+.cpn-status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+
+.cpn-status--active {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-color: #c8e6c9;
+}
+
+.cpn-status--used {
+  background: #f5f5f5;
+  color: #666;
+  border-color: #e0e0e0;
+}
+
+.cpn-status--expired {
+  background: #eceff1;
+  color: #546e7a;
+  border-color: #cfd8dc;
+}
+
+.cpn-status--inactive {
+  background: #fff8e1;
+  color: #856404;
+  border-color: #ffe082;
+}
+
+.cpn-status--canceled {
+  background: #ffebee;
+  color: #c62828;
+  border-color: #ffcdd2;
+}
+
+/* ── Perforated divider ──────────────────────────────────────────── */
+.cpn-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 24px;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.cpn-notch {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #f4f4f4;
+  border: 1.5px solid #e8e8e8;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.cpn-notch--left {
+  left: -10px;
+}
+
+.cpn-notch--right {
+  right: -10px;
+}
+
+.cpn-dashes {
+  flex: 1;
+  margin: 0 14px;
+  height: 0;
+  border-top: 1.5px dashed #b6b6b69f;
+}
+
+/* ── Discount body ───────────────────────────────────────────────── */
+.cpn-body {
+  padding: 12px 16px 14px;
+  flex: 1;
+}
+
+.cpn-discount-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cpn-discount-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 26px;
+  font-weight: 800;
+  color: #2e7d32;
+  background: #e8f5e9;
+  border-radius: 10px;
+  padding: 6px 12px;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+.cpn-discount-badge--product {
+  font-size: 20px;
+  color: color-mix(in srgb, var(--primary-color, #444) 90%, #000);
+  background: color-mix(in srgb, var(--primary-color, #444) 10%, transparent);
+  gap: 6px;
+  align-items: center;
+}
+
+.cpn-off-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.75;
+  align-self: flex-end;
+  padding-bottom: 2px;
+}
+
+.cpn-condition {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────── */
+.cpn-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 16px 14px;
+  font-size: 11px;
+  color: #aaa;
+  border-top: 1px solid #f4f4f4;
+  flex-wrap: wrap;
+}
+
+.cpn-expiry {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cpn-expiry i {
+  font-size: 10px;
+  color: #bbb;
+}
+
+.cpn-type-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #ccc;
+  font-size: 10px;
+}
+
+/* ── Status-specific card left accent bar ────────────────────────── */
+.cpn-card--active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary-color);
+  border-radius: 16px 0 0 16px;
+}
+
+.cpn-card--expired::before,
+.cpn-card--used::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #cfd8dc;
+  border-radius: 16px 0 0 16px;
+}
+
+.cpn-card--canceled::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #ef9a9a;
+  border-radius: 16px 0 0 16px;
+}
+
+
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .cpn-top {
+    padding: 14px 14px 12px;
+  }
+
+  .cpn-body {
+    padding: 10px 14px 12px;
+  }
+
+  .cpn-footer {
+    padding: 8px 14px 12px;
+  }
+
+  .cpn-discount-badge {
+    font-size: 22px;
+  }
+
+  .cpn-icon-wrap {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .cpn-card {
+    transition: none;
+  }
+}

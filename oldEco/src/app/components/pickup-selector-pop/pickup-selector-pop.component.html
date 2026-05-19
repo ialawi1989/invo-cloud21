@@ -1,0 +1,220 @@
+<!--pickup-selector-pop.component.html-->
+
+<!-- ── Modal header ──────────────────────────────────────────────── -->
+<div class="ds-modal-header">
+  <div class="ds-header-left">
+    <div class="acc-avatar ds-avatar"><i class="fas fa-store"></i></div>
+    <div>
+      <h2 class="ds-title">{{"Pickup" | translate}}</h2>
+      <p class="ds-subtitle">{{"Select a branch to continue" | translate}}</p>
+    </div>
+  </div>
+  <button type="button" class="ds-close-btn" aria-label="Close" (click)="cancel()">
+    <i class="fas fa-times"></i>
+  </button>
+</div>
+
+<!-- ── Search bar ────────────────────────────────────────────────── -->
+<div class="ds-search-wrap">
+  <div class="ds-search-inner">
+    <svg class="ds-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <path d="m21 21-4.3-4.3"></path>
+    </svg>
+    <input class="ds-search-input" type="text"
+      placeholder="{{'Search branch...' | translate}}"
+      [value]="searchText()"
+      (input)="onSearchChange($any($event).target.value)" />
+  </div>
+</div>
+
+<!-- ── Modal body ────────────────────────────────────────────────── -->
+<div class="ds-modal-body">
+
+  <!-- ── Location error ─────────────────────────────────────────── -->
+  @if (displayState().type === 'location-error') {
+  <div class="ds-location-wrap">
+    <div class="ds-location-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+        <circle cx="12" cy="10" r="3"></circle>
+      </svg>
+    </div>
+    <h3 class="ds-location-title">{{"Location Access Required" | translate}}</h3>
+    <p class="ds-location-desc">
+      {{"To find pickup locations near you and calculate distances, we need access to your location." | translate}}
+    </p>
+
+    <!-- Enable button -->
+    <button class="ds-location-btn" (click)="retryLocationAccess()" [disabled]="isRetrying()">
+      @if (isRetrying()) {
+      <span class="ds-btn-spinner"></span> {{"Checking..." | translate}}
+      } @else {
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+        <circle cx="12" cy="10" r="3"></circle>
+      </svg>
+      @if (locationAttempts() === 0) { {{"Enable Location" | translate}} }
+      @else { {{"Try Again" | translate}} }
+      }
+    </button>
+
+    <!-- Instructions card -->
+    <div class="ds-instructions">
+      <div class="ds-instructions-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="m9 12 2 2 4-4"></path>
+        </svg>
+        {{"How to enable location access:" | translate}}
+      </div>
+      <div class="ds-steps">
+        <div class="ds-step">
+          <span class="ds-step-num">1</span>
+          <span class="ds-step-text">{{"Look for the location icon" | translate}} 📍 {{"in your browser's address bar" | translate}}</span>
+        </div>
+        <div class="ds-step">
+          <span class="ds-step-num">2</span>
+          <span class="ds-step-text">{{"Click on it and select 'Allow' or 'Always Allow'" | translate}}</span>
+        </div>
+        <div class="ds-step">
+          <span class="ds-step-num">3</span>
+          <span class="ds-step-text">{{"Click the 'Try Again' button above" | translate}}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Browser help -->
+    <details class="ds-browser-details">
+      <summary>{{"Need more help?" | translate}} {{"Click here for detailed instructions" | translate}}</summary>
+      <div class="ds-browser-content">
+        <p><strong>Chrome/Edge:</strong> {{"Click the location icon in the address bar, then 'Allow'" | translate}}</p>
+        <p><strong>Firefox:</strong> {{"Click 'Allow' when prompted, or click the shield icon" | translate}}</p>
+        <p><strong>Safari:</strong> {{"Go to Safari > Settings for This Website > Location > Allow" | translate}}</p>
+        <p><strong>Mobile:</strong> {{"Enable location services in your device settings, then refresh this page" | translate}}</p>
+      </div>
+    </details>
+  </div>
+  }
+
+  <!-- ── Loading ─────────────────────────────────────────────────── -->
+  @if (displayState().type === 'loading') {
+  <div class="ds-state-wrap">
+    <div class="ds-spinner"></div>
+    <p class="ds-state-text">{{ displayState().message | translate }}</p>
+  </div>
+  }
+
+  <!-- ── Branch list ─────────────────────────────────────────────── -->
+  @if (displayState().showBranches) {
+  <div class="ds-section">
+    <span class="ds-section-label">
+      <i class="fas fa-store ds-label-icon"></i>
+      {{"Select Branch to Continue" | translate}}
+    </span>
+    <div class="ds-branch-list">
+      @for (branch of filteredBranches(); track branch.id) {
+      <div class="ds-branch-card" [class.ds-branch-card--unavailable]="disableBranch(branch)"
+        (click)="onClickBranch(branch)">
+
+        <div class="ds-card-main">
+          <!-- Icon -->
+          <div class="ds-card-icon" [class.ds-card-icon--closed]="branch.currentStatus === 'closed'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </div>
+
+          <!-- Info -->
+          <div class="ds-card-body">
+            <span class="ds-card-title">{{ branch.name }}</span>
+            @if(branch.address){
+            <span class="ds-card-detail">{{ branch.address }}</span>
+            }
+            <!-- Timing -->
+            <div class="ds-card-timing">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span>{{ branch.getTodayHours() | translate }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status + distance badges -->
+        <div class="ds-card-badges">
+          <span class="ds-badge" [class.ds-badge--open]="branch.currentStatus !== 'closed'"
+            [class.ds-badge--closed]="branch.currentStatus === 'closed'">
+            {{ branch.currentStatus | translate }}
+          </span>
+          @if (branch.distanceFromLocation !== undefined) {
+          <span class="ds-distance-badge"
+            [class.ds-distance-badge--near]="!disableBranch(branch)"
+            [class.ds-distance-badge--far]="disableBranch(branch)">
+            <small>{{ branch.distanceFromLocation | mynumber }} {{"KM" | translate}}</small>
+          </span>
+          }
+        </div>
+
+        <!-- Unavailable overlay -->
+        @if (disableBranch(branch)) {
+        <div class="ds-unavailable-overlay">
+          <span class="ds-unavailable-label">{{"Out of service area" | translate}}</span>
+        </div>
+        }
+
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- ── Empty states ────────────────────────────────────────────── -->
+  @if (!displayState().showBranches && !isLoading() && !showLocationError()) {
+  <div class="ds-state-wrap">
+    @if (displayState().type === 'no-branches') {
+    <div class="ds-state-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+        <circle cx="12" cy="10" r="3"></circle>
+      </svg>
+    </div>
+    <p class="ds-state-title">{{ displayState().message | translate }}</p>
+    <p class="ds-state-sub">{{"Please try again later or contact support" | translate}}</p>
+    }
+    @if (displayState().type === 'no-matches') {
+    <div class="ds-state-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m13.5 8.5-5 5"></path><path d="m8.5 8.5 5 5"></path>
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+    </div>
+    <p class="ds-state-title">{{ displayState().message | translate }}</p>
+    <p class="ds-state-sub">{{"Try adjusting your search terms" | translate}}</p>
+    <button class="ds-clear-btn" (click)="onSearchChange('')">
+      <i class="fas fa-times"></i> {{"Clear search" | translate}}
+    </button>
+    }
+  </div>
+  }
+
+  <!-- ── Results count ───────────────────────────────────────────── -->
+  @if (displayState().showBranches && searchText().trim()) {
+  <div class="ds-results-count">
+    {{"Showing" | translate}} {{ filteredBranches().length }} {{"of" | translate}} {{ branches().length }} {{"branches" | translate}}
+  </div>
+  }
+  <br>
+</div>

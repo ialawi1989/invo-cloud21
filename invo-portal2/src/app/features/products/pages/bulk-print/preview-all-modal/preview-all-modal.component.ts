@@ -13,8 +13,8 @@ import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
 
-import { LabelTemplate } from '../../../../label-builder/services/label-template.types';
-import { renderTemplateToCanvas } from '../../../../label-builder/services/png-export';
+import { LabelTemplate } from '../../../../settings/label-builder/services/label-template.types';
+import { renderTemplateToCanvas } from '../../../../settings/label-builder/services/png-export';
 
 export interface PreviewAllModalData {
   /** Pre-rendered PNG data URLs — one per label × qty. The page

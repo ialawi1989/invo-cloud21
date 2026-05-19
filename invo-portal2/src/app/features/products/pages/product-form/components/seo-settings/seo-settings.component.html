@@ -1,0 +1,71 @@
+<section class="pf-card pf-seo">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.SECTIONS.SEO' | translate }}</h2>
+    <button type="button" class="btn btn-ghost pf-seo__edit" (click)="openEditor()">
+      {{ 'PRODUCTS.SEO.EDIT' | translate }}
+    </button>
+  </header>
+
+  <div class="pf-card__body">
+    <p class="pf-seo__sub">
+      {{ 'PRODUCTS.SEO.SUBTITLE' | translate }}
+    </p>
+
+    <!-- Severity tally — four side-by-side chips. -->
+    <div class="pf-seo__chips">
+      @for (sev of severityRows; track sev.key) {
+        <div class="pf-seo__chip"
+             [class.pf-seo__chip--ok]="assistant().summary.failures[sev.key] === 0"
+             [class.pf-seo__chip--bad]="assistant().summary.failures[sev.key] > 0">
+          @if (assistant().summary.failures[sev.key] === 0) {
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          } @else {
+            <span class="pf-seo__chip-count">{{ assistant().summary.failures[sev.key] }}</span>
+          }
+          <span class="pf-seo__chip-label">{{ sev.labelKey | translate }}</span>
+        </div>
+      }
+    </div>
+
+    <!-- Compact preview — focus keyword chip + Google-style snippet. -->
+    <div class="pf-seo__preview">
+      @if (row().focusKeyword) {
+        <span class="pf-seo__kw">{{ row().focusKeyword }}</span>
+      } @else {
+        <span class="pf-seo__kw pf-seo__kw--empty">
+          {{ 'PRODUCTS.SEO.NO_KEYWORD' | translate }}
+        </span>
+      }
+      <div class="pf-seo__snippet">
+        <div class="pf-seo__snippet-url">
+          <a [href]="liveUrl()" target="_blank" rel="noopener noreferrer">
+            {{ liveUrl() }}
+          </a>
+        </div>
+        <div class="pf-seo__snippet-title">{{ row().titleTag || row().pageName }}</div>
+        <div class="pf-seo__snippet-desc">
+          {{ row().metaDescription || ('PRODUCTS.SEO.NO_META' | translate) }}
+        </div>
+        <a class="pf-seo__view-live" [href]="liveUrl()" target="_blank" rel="noopener noreferrer">
+          {{ 'PRODUCTS.SEO.VIEW_LIVE' | translate }} ↗
+        </a>
+      </div>
+    </div>
+
+    @if (assistant().summary.allPassed) {
+      <p class="pf-seo__done">
+        {{ 'SEO.PAGE_EDITOR.ASSISTANT_ALL_DONE' | translate }}
+      </p>
+    }
+  </div>
+</section>

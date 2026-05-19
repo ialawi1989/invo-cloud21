@@ -1,0 +1,39 @@
+<main class="main">
+  <div class="page-content">
+    <section class="error-section-2  error-default banner banner-fixed">
+      <div style="height: calc(100vh - 250px);"></div>
+      <div class="container  text-center">
+        <div class="banner-content y-50">
+          <div class="error_submition box">
+            <i class="fas fa-check"></i>
+          </div>
+          <h3 class="banner-subtitle font-weight-bold mb-2">
+            {{"Great!" | translate}}
+          </h3>
+          <span class="banner-descri ls-normal font-weight-normal text-body d-block">
+            @if(isAppointment){
+            {{"Your appointment has been completed successfully." | translate}}
+            }@else {
+            {{"Your order has been completed successfully." | translate}}
+            }
+          </span>
+          @if(sessionId){
+            <a class="btn btn-primary btn-rounded mt-6 mb-1" href="javascript:void(0);" [routerLink]="['/order', sessionId]">
+            @if(isAppointment){
+            {{"View appointment" | translate}}
+            }@else{
+            {{"View order" | translate}}
+            }
+            <i class="d-icon-arrow-right"></i> </a>
+          }
+          @else {
+            <br>
+            <app-spinner></app-spinner>
+            <br>
+          }
+          
+        </div>
+      </div>
+    </section>
+  </div>
+</main>

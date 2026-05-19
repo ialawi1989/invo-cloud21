@@ -23,6 +23,8 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { ToastService } from '@shared/components/toast/toast.service';
+import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { CompanyService } from '@core/auth/company.service';
 import { ErrorService } from '@core/http/error.service';
@@ -48,6 +50,7 @@ import { InvoiceOptionsService } from '../../services/invoice-options.service';
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     FormStickyFooterComponent,
+    ToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './invoice-options.component.html',
@@ -62,6 +65,7 @@ export class InvoiceOptionsComponent implements OnInit, CanLeaveComponent {
   private router     = inject(Router);
   private location   = inject(Location);
   private destroyRef = inject(DestroyRef);
+  private toast      = inject(ToastService);
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
@@ -168,9 +172,14 @@ export class InvoiceOptionsComponent implements OnInit, CanLeaveComponent {
         // Refresh cached company settings so other pages see the updates
         await this.companyService.loadSettings(true);
         this.form.markAsPristine();
+        this.toast.success('COMMON.SAVED_OK');
+        this.router.navigate(['/settings']);
+      } else {
+        this.toast.error('COMMON.SAVE_FAILED');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('[invoice-options] save failed', e);
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
       await this.errorService.handleError(e);
     } finally {
       this.saving.set(false);

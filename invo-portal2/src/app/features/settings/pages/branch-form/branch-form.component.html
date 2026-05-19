@@ -93,10 +93,12 @@
       </header>
 
       <div class="card__body toggles">
-        <label class="toggle">
-          <input type="checkbox" formControlName="onlineAvailability"/>
-          <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-          <span class="toggle__label">
+        <!-- onlineAvailability — hint has a conditional `<em>` for the
+             "locked by default" message, so the toggle is used label-less
+             and the descriptive text lives in a sibling wrapper. -->
+        <div class="toggle-row">
+          <app-toggle formControlName="onlineAvailability"/>
+          <span class="toggle-row__text">
             <span class="field-label">{{ 'SETTINGS.BRANCHES.ONLINE_AVAILABILITY' | translate }}</span>
             <span class="field-hint">
               {{ 'SETTINGS.BRANCHES.ONLINE_AVAILABILITY_HINT' | translate }}
@@ -105,16 +107,12 @@
               }
             </span>
           </span>
-        </label>
+        </div>
 
-        <label class="toggle">
-          <input type="checkbox" formControlName="mainBranch"/>
-          <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
-          <span class="toggle__label">
-            <span class="field-label">{{ 'SETTINGS.BRANCHES.MAIN_BRANCH' | translate }}</span>
-            <span class="field-hint">{{ 'SETTINGS.BRANCHES.MAIN_BRANCH_HINT' | translate }}</span>
-          </span>
-        </label>
+        <app-toggle
+          formControlName="mainBranch"
+          [label]="'SETTINGS.BRANCHES.MAIN_BRANCH' | translate"
+          [hint]="'SETTINGS.BRANCHES.MAIN_BRANCH_HINT' | translate"/>
       </div>
     </section>
 

@@ -1,0 +1,66 @@
+.price-filter {
+  /* margin: 20px; */
+  /* font-family: Arial, sans-serif; */
+}
+
+.slider-container {
+  position: relative;
+  width: 100%;
+}
+
+.slider-track {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  background: #e9e9e9;
+  border-radius: 5px;
+}
+
+.slider-fill {
+  position: absolute;
+  height: 3px;
+  background: gray; /* Fill color */
+  top: 0;
+  left: 0;
+  z-index: 0; /* Ensure fill is behind the thumbs */
+  
+}
+
+.slider {
+  -webkit-appearance: none;
+  position: absolute;
+  pointer-events: none; /* Prevents interaction */
+  width: 100%;
+  height: 3px;
+  background: transparent; /* Make the sliders transparent */
+  outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 11px;
+  height: 16px;
+  background: #333; /* Slider thumb color */
+  cursor: pointer;
+  pointer-events: auto; /* Allow interaction */
+  z-index: 2; /* Ensure thumb is on top */
+  border-radius:2px;
+  margin-top:-3px;
+}
+
+.slider::-moz-range-thumb {
+  width: 11px;
+  height: 16px;
+  background: #333; /* Slider thumb color */
+  cursor: pointer;
+  pointer-events: auto; /* Allow interaction */
+  z-index: 2; /* Ensure thumb is on top */
+  border-radius:2px;
+}
+
+p {
+  margin-top: 30px;
+  color:black;
+  font-size: 14px;
+}

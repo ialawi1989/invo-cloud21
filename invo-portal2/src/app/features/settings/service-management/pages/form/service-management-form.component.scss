@@ -1,0 +1,331 @@
+// Service-management form chrome. Mirrors the payment-method-form
+// two-column layout so the family of settings forms reads as one
+// consistent style (Details on the left, compact option cards in a
+// sticky sidebar on the right).
+
+.sm-page {
+  padding: 16px 20px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header { display: flex; flex-direction: column; gap: 4px; }
+.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+
+.sm-body {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+.sm-main,
+.sm-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.sm-side {
+  position: sticky;
+  top: 72px;
+  max-height: calc(100dvh - 140px);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+@media (max-width: 900px) {
+  .sm-side {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+
+  &__head {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  &__title { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+  &__sub   { margin: 0; font-size: 12px; color: #64748b; line-height: 1.5; }
+  &__body  { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+
+  &--compact {
+    .card__head { padding: 12px 14px; }
+    .card__body { padding: 10px 14px 12px; gap: 10px; }
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+
+    &--with-action {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+  }
+  &__hint  { font-size: 11px; color: #94a3b8; }
+  &__err   { font-size: 11px; color: #b91c1c; font-weight: 600; }
+
+  &__input {
+    appearance: none;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #fff;
+
+    &:focus {
+      outline: 0;
+      border-color: var(--color-brand-400, #7dd3fc);
+      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    }
+    &::placeholder { color: #94a3b8; }
+    &--err {
+      border-color: #fecaca;
+      &:focus { box-shadow: 0 0 0 2px #fee2e2; }
+    }
+  }
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--color-brand-600, #0891b2);
+  }
+  &__text  { display: flex; flex-direction: column; gap: 2px; }
+  &__label { font-size: 13px; font-weight: 600; color: #0f172a; }
+  &__hint  { font-size: 11px; color: #64748b; line-height: 1.5; }
+}
+
+.translation-link {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-brand-700, #0e7490);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover { color: var(--color-brand-800, #155e75); }
+}
+
+// Per-branch settings card header — mirrors the product-form
+// `.pf-card__header` with the small icon box on the left.
+.card__head--icon {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+.card__head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: #d9f2f6;
+  color: #143742;
+  flex-shrink: 0;
+}
+
+// Branch tab strip — chip tabs sitting in a light slate track,
+// each tab carries a status dot (green = enabled, hollow = off).
+// Active tab gets the white pill + subtle shadow. Mirrors the
+// product-form `.bt` / `.bt__tab` styling so both surfaces feel
+// like one component.
+.bt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  min-height: 40px;
+  overflow: hidden;
+
+  &__tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  &__tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 32px;
+    padding: 0 12px;
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    font-size: 12.5px;
+    color: #64748b;
+    cursor: pointer;
+    overflow: hidden;
+    max-width: 200px;
+    flex-shrink: 0;
+    transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
+
+    &:hover { background: rgba(255, 255, 255, 0.6); color: #334155; }
+
+    &--active {
+      background: #fff;
+      color: #0f172a;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+    &--active:hover { background: #fff; }
+  }
+
+  &__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid #cbd5e1;
+    flex-shrink: 0;
+
+    &--on { background: #22c55e; border-color: #22c55e; }
+  }
+
+  &__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.branch-panel {
+  padding-top: 16px;
+}
+
+// Image picker — small thumbnail tile with replace/remove actions.
+.icon-field__row { display: flex; align-items: center; gap: 12px; }
+.icon-field__thumb {
+  appearance: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  padding: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  > img { width: 100%; height: 100%; object-fit: contain; border-radius: 6px; }
+
+  &:hover {
+    border-color: var(--color-brand-400, #7dd3fc);
+    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+  }
+  &--empty { background: #f8fafc; color: #94a3b8; }
+}
+.icon-field__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.icon-field__btn {
+  appearance: none;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &:hover { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
+
+  &--ghost {
+    background: transparent;
+    border-color: transparent;
+    color: #94a3b8;
+    &:hover { background: #f1f5f9; color: #b91c1c; border-color: transparent; }
+  }
+}
+
+.save-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #e2e8f0;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: sm-spin 0.7s linear infinite;
+}
+@keyframes sm-spin { to { transform: rotate(360deg); } }

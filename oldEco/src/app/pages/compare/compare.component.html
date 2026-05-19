@@ -1,0 +1,234 @@
+<div class="page-header mb-4 d-md-show"
+  [style.background-color]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-image]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-attachment]="pageData?.template?.settings?.subheader_settings?.isParallax ? 'fixed' : ''"
+  [style.background-size]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'cover' : ''"
+  [style.background-position]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'center' : ''"
+  [style.background-repeat]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'no-repeat' : ''">
+
+  @if (pageData?.template?.settings?.subheader_settings?.overlayOpacity) {
+  <div class="section-overlay" [style.opacity]="pageData?.template?.settings?.subheader_settings?.overlayOpacity / 100"
+    [style.background-color]="pageData?.template?.settings?.subheader_settings?.overlayColor"></div>
+  }
+  <h1 class="page-title z-index-3">{{ "Compare Products" | translate }}</h1>
+  <ul class="breadcrumb z-index-3">
+    <li><a [routerLink]="'/'"><i class="d-icon-home"></i></a></li>
+    <li class="delimiter">/</li>
+    <li>{{ "Compare" | translate }}</li>
+  </ul>
+</div>
+
+<div class="fix-top sticky-content d-md-none d-lg-none fixed">
+    <div class="header">
+        <div class="header-middle pt-2 pb-2">
+            <div class="container">
+                <div class="header-left" style="display: flex; align-items: center; justify-content: center; flex: 1;">
+                    <a href="javascript:void(0);" class="mobile-menu-toggle" (click)="goBack()"
+                        style="margin-right: auto;">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <h5 class="m-0" style="margin-left:-26px !important;">{{ "Compare Products" | translate }}</h5>
+                    <div style="margin-left: auto;"></div>
+                </div>
+                <div class="header-right">
+                    @if (compareItems.length > 0) {
+                    <a href="javascript:void(0);" class="text-danger" (click)="clearAllItems()">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if(compareItems.length == 0) {
+<div class="compare-empty-wrap">
+  <div class="container">
+    <div class="acc-empty-state">
+      <div class="acc-empty-icon"><i class="fas fa-balance-scale"></i></div>
+      <p class="acc-empty-title">{{'No products selected for comparison' | translate}}</p>
+      <p class="acc-empty-sub">{{'Add products to compare their features, prices, and specifications' | translate}}</p>
+      <a class="acc-btn-primary mt-3" routerLink="/shop">{{ 'Browse Products' | translate }}</a>
+    </div>
+  </div>
+</div>
+}
+@else {
+<div class="pt-2 pb-10 mb-2">
+    <div class="container mt-10">
+        <div class="compare-header d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-0">{{ 'Comparing' | translate }} {{ compareItems.length }} {{ 'Products' | translate }}</h3>
+            <button class="btn btn-outline-danger btn-sm" (click)="clearAllItems()">
+                <i class="fas fa-trash me-2"></i>{{ 'Clear All' | translate }}
+            </button>
+        </div>
+
+        <!-- Desktop Compare Table -->
+        <div class="compare-table-wrapper d-none d-md-block">
+            <table class="table compare-table">
+                <thead>
+                    <tr>
+                        <th class="compare-feature-label">{{ 'Features' | translate }}</th>
+                        @for(product of compareItems; track $index) {
+                        <th class="compare-product-column">
+                            <div class="compare-product-header">
+                                <div class="product-image-wrapper">
+                                    <a href="javascript:void(0);" [routerLink]="['product/', product.id]">
+                                        <img onerror="if (this.src != 'assets/images/default-blank-image.png') this.src = 'assets/images/default-blank-image.png';"
+                                            class="product-image"
+                                            [src]="appService.productImage(product.mediaUrl, 200)"
+                                            alt="product" style="width: 120px; height: 120px; object-fit: cover;">
+                                    </a>
+                                    <button class="btn btn-sm btn-danger remove-btn" (click)="removeFromCompare(product.id)">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <h6 class="product-title mt-2">
+                                    <a href="javascript:void(0);" [routerLink]="['product/', product.id]">
+                                        {{ appService.lang == 'ar' ? product.translation && product.translation.name?.ar ?
+                                        product.translation.name?.ar : product.name : product.name }}
+                                    </a>
+                                </h6>
+                            </div>
+                        </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="feature-label">{{ 'Price' | translate }}</td>
+                        @for(product of compareItems; track $index) {
+                        <td class="feature-value">
+                            <span class="price-amount">
+                                {{ currentCurrency.symbol }} {{ getConvertedPrice(product.defaultPrice) }}
+                            </span>
+                        </td>
+                        }
+                    </tr>
+                    <tr>
+                        <td class="feature-label">{{ 'Availability' | translate }}</td>
+                        @for(product of compareItems; track $index) {
+                        <td class="feature-value">
+                            <span class="stock-status" [class.in-stock]="!product.showOutOfStockButton()"
+                                  [class.out-of-stock]="product.showOutOfStockButton()">
+                                {{ product.showOutOfStockButton() ? ('Out Of Stock' | translate) : ('In Stock' | translate) }}
+                            </span>
+                        </td>
+                        }
+                    </tr>
+                    <tr>
+                        <td class="feature-label">{{ 'Description' | translate }}</td>
+                        @for(product of compareItems; track $index) {
+                        <td class="feature-value">
+                            <div class="product-description">
+                                {{ (appService.lang == 'ar' ? product.translation && product.translation.description?.ar ?
+                                product.translation.description?.ar : product.description : product.description) || 'No description available' }}
+                            </div>
+                        </td>
+                        }
+                    </tr>
+                    <tr>
+                        <td class="feature-label">{{ 'Actions' | translate }}</td>
+                        @for(product of compareItems; track $index) {
+                        <td class="feature-value">
+                            <div class="product-actions">
+                                @if (!product.showOutOfStockButton()) {
+                                <button class="btn btn-primary btn-sm mb-2 w-100" (click)="addToCart(product)">
+                                    <i class="fas fa-shopping-cart me-1"></i>{{ 'Add to Cart' | translate }}
+                                </button>
+                                }
+                                <button class="btn btn-outline-primary btn-sm w-100" (click)="addToWishlist(product)">
+                                    <i class="fas fa-heart me-1"></i>{{ 'Add to Wishlist' | translate }}
+                                </button>
+                            </div>
+                        </td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Compare Cards -->
+        <div class="compare-mobile d-md-none">
+            @for(product of compareItems; track $index) {
+            <div class="compare-card mb-4">
+                <div class="compare-card-header">
+                    <div class="product-image-wrapper">
+                        <a href="javascript:void(0);" [routerLink]="['product/', product.id]">
+                            <img onerror="if (this.src != 'assets/images/default-blank-image.png') this.src = 'assets/images/default-blank-image.png';"
+                                class="product-image"
+                                [src]="appService.productImage(product.mediaUrl, 200)"
+                                alt="product">
+                        </a>
+                        <button class="btn btn-sm btn-danger remove-btn" (click)="removeFromCompare(product.id)">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <h6 class="product-title">
+                        <a href="javascript:void(0);" [routerLink]="['product/', product.id]">
+                            {{ appService.lang == 'ar' ? product.translation && product.translation.name?.ar ?
+                            product.translation.name?.ar : product.name : product.name }}
+                        </a>
+                    </h6>
+                </div>
+                <div class="compare-card-body">
+                    <div class="feature-row">
+                        <span class="feature-label">{{ 'Price' | translate }}:</span>
+                        <span class="feature-value">
+                            {{ currentCurrency.symbol }} {{ getConvertedPrice(product.defaultPrice) }}
+                        </span>
+                    </div>
+                    <div class="feature-row">
+                        <span class="feature-label">{{ 'Availability' | translate }}:</span>
+                        <span class="feature-value">
+                            <span class="stock-status" [class.in-stock]="!product.showOutOfStockButton()"
+                                  [class.out-of-stock]="product.showOutOfStockButton()">
+                                {{ product.showOutOfStockButton() ? ('Out Of Stock' | translate) : ('In Stock' | translate) }}
+                            </span>
+                        </span>
+                    </div>
+                </div>
+                <div class="compare-card-actions">
+                    @if (!product.showOutOfStockButton()) {
+                    <button class="btn btn-primary btn-sm mb-2 w-100" (click)="addToCart(product)">
+                        <i class="fas fa-shopping-cart me-1"></i>{{ 'Add to Cart' | translate }}
+                    </button>
+                    }
+                    <button class="btn btn-outline-primary btn-sm w-100" (click)="addToWishlist(product)">
+                        <i class="fas fa-heart me-1"></i>{{ 'Add to Wishlist' | translate }}
+                    </button>
+                </div>
+            </div>
+            }
+        </div>
+
+        <!-- Compare Tips -->
+        <div class="compare-tips mt-5">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="tip-card text-center p-3">
+                        <i class="fas fa-balance-scale mb-2" style="font-size: 2rem; color: #007bff;"></i>
+                        <h6>{{ 'Side by Side' | translate }}</h6>
+                        <p class="text-muted small">{{ 'Compare features, prices, and specifications easily' | translate }}</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="tip-card text-center p-3">
+                        <i class="fas fa-chart-line mb-2" style="font-size: 2rem; color: #28a745;"></i>
+                        <h6>{{ 'Make Better Decisions' | translate }}</h6>
+                        <p class="text-muted small">{{ 'Find the perfect product that matches your needs' | translate }}</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="tip-card text-center p-3">
+                        <i class="fas fa-save mb-2" style="font-size: 2rem; color: #ffc107;"></i>
+                        <h6>{{ 'Save Time' | translate }}</h6>
+                        <p class="text-muted small">{{ 'No need to switch between product pages' | translate }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}

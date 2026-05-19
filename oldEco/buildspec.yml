@@ -1,0 +1,46 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 22
+    commands:
+      - echo "Installing dependencies"
+      # Increase heap memory
+      - export NODE_OPTIONS=--max_old_space_size=4096
+      - npm i -g @angular/cli@20.1.5 --force
+      - npm cache clean --force
+      - npm i --force
+  
+  pre_build:
+    commands:
+      - echo "Pre-build steps"
+      - echo "CodeBuild build number $CODEBUILD_BUILD_NUMBER"
+      # Add any pre-build checks or configurations
+
+  build:
+    commands:
+      - echo "Building the application"
+      - npm run build
+      # Surfaces the resolved release version in CI logs so a logger event
+      # can be traced back to the exact CodeBuild run that produced it.
+      - cat src/version.ts
+      - echo "Copying additional files"
+      - cp Procfile dist/invo-ecommerce-front/
+      - cp package.json dist/invo-ecommerce-front/browser/
+  
+  post_build:
+    commands:
+      - echo "Post-build steps"
+      # Add any post-build steps like testing or deployment
+      - ls -la dist  # Check the dist folder contents
+      - ls -la dist/invo-ecommerce-front
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: dist/invo-ecommerce-front
+
+cache:
+  paths:
+    - node_modules/**/*

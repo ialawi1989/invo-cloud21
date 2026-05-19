@@ -1,0 +1,405 @@
+<!-- ── Mobile sticky header ─────────────────────────────────────── -->
+<div class="fix-top sticky-content d-md-none d-lg-none fixed">
+  <div class="header">
+    <div class="header-middle pt-2 pb-2 header-top-custom" [style.backgroundColor]="companyData.themeSettings.template?.header?.headerColor">
+      <div class="container">
+        <div class="header-left" style="display:flex;align-items:center;justify-content:center;flex:1;">
+          <a href="javascript:void(0);" class="mobile-menu-toggle" (click)="goBack()" style="margin-right:auto;">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+          <h5 class="m-0" style="margin-left:-26px !important;">{{ "Create Appointment" | translate }}</h5>
+          <div style="margin-left:auto;"></div>
+        </div>
+        <div class="header-right"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Desktop page header ──────────────────────────────────────── -->
+<div class="page-header d-md-show"
+  [style.background-color]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-image]="getHeaderBackground(pageData?.template?.settings?.subheader_settings)"
+  [style.background-attachment]="pageData?.template?.settings?.subheader_settings?.isParallax ? 'fixed' : ''"
+  [style.background-size]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'cover' : ''"
+  [style.background-position]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'center' : ''"
+  [style.background-repeat]="pageData?.template?.settings?.subheader_settings?.style == 'Image' ? 'no-repeat' : ''">
+  @if (pageData?.template?.settings?.subheader_settings?.overlayOpacity) {
+  <div class="section-overlay"
+    [style.opacity]="pageData?.template?.settings?.subheader_settings?.overlayOpacity / 100"
+    [style.background-color]="pageData?.template?.settings?.subheader_settings?.overlayColor"></div>
+  }
+  <h1 class="page-title z-index-3">{{ "Appointments" | translate }}</h1>
+  <ul class="breadcrumb z-index-3">
+    <li><a [routerLink]="'/'"><i class="d-icon-home"></i></a></li>
+    <li class="delimiter">/</li>
+    <li>{{ "Create Appointment" | translate }}</li>
+  </ul>
+</div>
+
+@if(!branches.length){
+<div class="text-center pt-10 pb-10">
+  <app-spinner></app-spinner>
+</div>
+}
+@else{
+<div class="appt-page">
+  <div class="container">
+    <div class="row">
+
+      <!-- ── LEFT: Selection steps ─────────────────────────────── -->
+      <aside class="col-lg-7 col-md-12 pr-lg-4">
+        <div class="appt-sticky">
+
+          <!-- Branch confirmed -->
+          @if(branch){
+          <div class="res-confirmed-row">
+            <div class="res-confirmed-icon"><i class="fas fa-store"></i></div>
+            <div class="res-confirmed-body">
+              <span class="res-confirmed-label">{{ 'Branch' | translate }}</span>
+              <span class="res-confirmed-value">{{ branch.name }}</span>
+            </div>
+            <button type="button" [disabled]="loading" class="res-edit-btn" (click)="editBranch()">{{ 'Edit' | translate }}</button>
+          </div>
+          }
+          @else if(branches.length){
+          <div class="res-section" id="scroll-to-select-the-branch">
+            <span class="res-section-label">{{ 'Branch' | translate }}</span>
+            <div class="res-grid res-grid--branch">
+              @for (branch of branches; track $index) {
+              <div class="res-card" (click)="selectBranch(branch)">
+                <i class="fas fa-store res-card-icon"></i>
+                <span class="res-card-label">{{ branch.name }}</span>
+              </div>
+              }
+            </div>
+          </div>
+          }
+
+          <!-- Branch status alert -->
+          @if (branchStatus == 'busy' || branchStatus == 'closed' || branchStatus == 'close') {
+          <div class="res-alert res-alert--danger">
+            <i class="fas fa-exclamation-triangle"></i>
+            @if (branchStatus == 'busy') { <span>{{ 'Branch Busy!' | translate }}</span> }
+            @else { <span>{{ 'Branch Close!' | translate }}</span> }
+          </div>
+          }
+          @else {
+
+          <!-- Date confirmed -->
+          @if(date){
+          <div class="res-confirmed-row">
+            <div class="res-confirmed-icon"><i class="far fa-calendar"></i></div>
+            <div class="res-confirmed-body">
+              <span class="res-confirmed-label">{{ 'Date' | translate }}</span>
+              <span class="res-confirmed-value" dir="ltr">{{ date }}</span>
+            </div>
+            <button type="button" [disabled]="loading" class="res-edit-btn" (click)="editDate()">{{ 'Edit' | translate }}</button>
+          </div>
+          }
+          @else if(filteredDates.length){
+          <div class="res-section" id="scroll-to-select-the-date">
+            <span class="res-section-label">{{ 'Date' | translate }}</span>
+            <div class="res-grid res-grid--date">
+              @for (date of filteredDates; track $index) {
+              <div class="res-card res-card--date" (click)="selectDate(date)">
+                <span class="res-card-day">{{ getDayDescription(date) | translate }}</span>
+                <div class="res-card-sep"></div>
+                <span class="res-card-date">{{ date }}</span>
+              </div>
+              }
+            </div>
+          </div>
+          }
+
+          <!-- Team confirmed -->
+          @if(team){
+          <div class="res-confirmed-row">
+            <div class="res-confirmed-icon"><i class="fas fa-user-tie"></i></div>
+            <div class="res-confirmed-body">
+              <span class="res-confirmed-label">{{ 'Team' | translate }}</span>
+              <span class="res-confirmed-value">{{ team.employeeName || "Any" | translate }}</span>
+            </div>
+            <button type="button" [disabled]="loading" class="res-edit-btn" (click)="editTeam()">{{ 'Edit' | translate }}</button>
+          </div>
+          }
+          @else if(teams.length){
+          <div class="res-section" id="scroll-to-select-the-team">
+            <span class="res-section-label">{{ 'Team' | translate }}</span>
+            <div class="res-grid res-grid--branch">
+              <div class="res-card" (click)="selectTeam('any')">
+                <i class="fas fa-users res-card-icon"></i>
+                <span class="res-card-label">{{ "Any" | translate }}</span>
+              </div>
+              @for (team of teams; track $index) {
+              <div class="res-card" (click)="selectTeam(team)">
+                <i class="fas fa-user res-card-icon"></i>
+                <span class="res-card-label">{{ team.employeeName }}</span>
+              </div>
+              }
+            </div>
+          </div>
+          }
+
+          <!-- Time confirmed -->
+          @if(time){
+          <div class="res-confirmed-row">
+            <div class="res-confirmed-icon"><i class="far fa-clock"></i></div>
+            <div class="res-confirmed-body">
+              <span class="res-confirmed-label">{{ 'Time' | translate }}</span>
+              <span class="res-confirmed-value" dir="ltr">{{ convertToAmPm(time) }}</span>
+            </div>
+            <button type="button" [disabled]="loading" class="res-edit-btn" (click)="editTime()">{{ 'Edit' | translate }}</button>
+          </div>
+          }
+          @else {
+          @if(!filteredTimes.length && branchId && date && team){
+          <div class="res-alert res-alert--danger">
+            <i class="fas fa-clock"></i>
+            <span>{{ 'No times found!' | translate }}</span>
+          </div>
+          }
+          @if(filteredTimes.length && branchId && date && team){
+          <div class="res-section" id="scroll-to-select-the-time">
+            <span class="res-section-label">{{ 'Time' | translate }}</span>
+            <div class="res-grid res-grid--time">
+              @for (time of filteredTimes; track $index) {
+              <div class="res-card res-card--time" (click)="selectTime(time)">{{ convertToAmPm(time) }}</div>
+              }
+            </div>
+          </div>
+          }
+          }
+
+          <!-- Services -->
+          @if(!filteredServices.length && branchId && date && team && time && !loading){
+          <div class="res-alert res-alert--danger">
+            <i class="fas fa-concierge-bell"></i>
+            <span>{{ 'No services found!' | translate }}</span>
+          </div>
+          }
+          @if(filteredServices.length && branchId && date && team && time){
+          <div class="res-section" id="scroll-to-select-the-service">
+            <span class="res-section-label">{{ 'Services' | translate }}</span>
+
+            <!-- Dropdown for many services -->
+            <div [class]="filteredServices.length >= 15 ? '' : 'd-lg-none'">
+              <div class="row">
+                <div class="col-8">
+                  <ng-select class="service-select" [(ngModel)]="serviceId" style="margin:0;">
+                    @for (service of services; track $index) {
+                    <ng-option [value]="service.id">
+                      {{ appService.lang == 'ar' ? service.translation.name?.ar ? service.translation.name?.ar : service.name : service.name }}
+                    </ng-option>
+                    }
+                  </ng-select>
+                </div>
+                <div class="col-4">
+                  @if (!appService.viewOnly) {
+                  <a href="javascript:void(0);" class="appt-add-btn" (click)="addService(serviceId)">
+                    <i class="fas fa-plus"></i> {{ "Add" | translate }}
+                  </a>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Cards for fewer services -->
+            @if(filteredServices.length < 15){
+            <div [class]="filteredServices.length < 15 ? 'd-lg-show' : ''" dir="ltr">
+              <div class="appt-services-list">
+                @for (service of filteredServices; track $index) {
+                <div class="appt-service-card">
+                  <img src="assets/images/default-blank-image.png" class="appt-service-img" alt="service">
+                  <div class="appt-service-body">
+                    <span class="appt-service-name">{{ service.name }}</span>
+                    <span class="appt-service-time">
+                      <i class="far fa-clock"></i>
+                      {{ service.serviceTime }} {{ "minutes" | translate }}
+                    </span>
+                    @if(service.description){
+                    <span class="appt-service-desc">{{ service.description }}</span>
+                    }
+                  </div>
+                  @if(!appService.viewOnly){
+                  <a href="javascript:void(0);" class="appt-add-btn appt-add-btn--sm" (click)="addService(service.id)">
+                    <i class="fas fa-plus"></i>
+                  </a>
+                  }
+                </div>
+                }
+              </div>
+            </div>
+            }
+          </div>
+          }
+
+          }<!-- end branchStatus else -->
+
+          @if(loading){
+          <div class="text-center mt-4">
+            <app-spinner></app-spinner>
+          </div>
+          }
+
+        </div>
+      </aside>
+
+      <!-- ── RIGHT: Summary + customer info ────────────────────── -->
+      <aside class="col-lg-5 col-md-12">
+        <div class="res-summary-card">
+
+          <!-- Appointment summary -->
+          @if(branch && date && team && time){
+          <div class="appt-summary-info">
+            <div class="appt-summary-row">
+              <div class="appt-summary-icon"><i class="fas fa-store"></i></div>
+              <div class="appt-summary-text">
+                <span class="appt-summary-main">{{ branch.name }}</span>
+                <span class="appt-summary-sub">{{ team.employeeName || "Any" | translate }}</span>
+              </div>
+            </div>
+            <div class="appt-summary-row">
+              <div class="appt-summary-icon"><i class="far fa-calendar-alt"></i></div>
+              <div class="appt-summary-text">
+                <span class="appt-summary-main" dir="ltr">{{ date }}</span>
+                <span class="appt-summary-sub" dir="ltr">{{ convertToAmPm(time) }}</span>
+              </div>
+            </div>
+          </div>
+          }
+
+          <!-- Services list -->
+          <div class="appt-services-summary">
+            <span class="res-section-label">{{ "Services" | translate }}</span>
+            @if(appointmentCartData.lines?.length === 0){
+            <p class="appt-no-services">{{ "No services added yet" | translate }}</p>
+            }
+            @for (line of appointmentCartData.lines; track $index) {
+            @if(!line.invoiceId){
+            <div class="appt-cart-item">
+              <span class="appt-cart-name">
+                {{ appService.lang == 'ar' ? line.translation.name?.ar ? line.translation.name?.ar : line.productName : line.productName }}
+              </span>
+              <div class="appt-cart-right">
+                @if(!isQuickOrder){
+                <span class="appt-cart-price">{{ currentCurrency.symbol }} {{ getConvertedPrice(line.total) }}</span>
+                }
+                <button class="appt-cart-remove" (click)="removeService(line.id)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+            }
+            }
+          </div>
+
+          <!-- Total -->
+          @if(!isQuickOrder && appointmentCartData.lines?.length > 0){
+          <div class="appt-total-row">
+            <span class="appt-total-label">{{ "Total" | translate }}</span>
+            <span class="appt-total-value">{{ currentCurrency.symbol }} {{ getConvertedPrice(appointmentCartData.subTotal) }}</span>
+          </div>
+          @if(appointmentCartData.invoiceTaxTotal > 0){
+          <div class="appt-tax-row">
+            <span class="appt-tax-label">{{ "Invoice Tax" | translate }}</span>
+            <span class="appt-tax-value">{{ currentCurrency.symbol }} {{ getConvertedPrice(appointmentCartData.invoiceTaxTotal) }}</span>
+          </div>
+          }
+          }
+
+          <!-- Customer info -->
+          @if(!isQuickOrder){
+          @if(!appService.viewOnly){
+          <div class="appt-form-section">
+            <span class="res-section-label">{{ "Contact Info" | translate }}</span>
+
+            @if(detectedCustomerData){
+            <div class="res-detected-customer">
+              <div class="res-detected-avatar">{{ customer.name?.charAt(0)?.toUpperCase() }}</div>
+              <div class="res-detected-info">
+                <span class="res-detected-name">{{ customer.name }}</span>
+                <span class="res-detected-phone"><small>{{ customer.phone }}</small></span>
+                @if(customer.email){ <span class="res-detected-phone"><small>{{ customer.email }}</small></span> }
+              </div>
+              <i class="fas fa-check-circle res-detected-check"></i>
+            </div>
+            }
+            @else{
+            <div class="res-field mb-2">
+              <label class="res-field-label">{{ 'Name' | translate }}</label>
+              <input type="text" class="res-input" [(ngModel)]="customer.name" id="scroll-to-customer-details-name" />
+              @if(!isValidName(customer.name)){
+              <p class="res-error">{{ 'Required valid name' | translate }}</p>
+              }
+            </div>
+            <div class="res-field mb-2">
+              <label class="res-field-label">{{ 'Phone' | translate }}</label>
+              <div class="res-phone-row">
+                <select class="res-phone-code" [(ngModel)]="customer.phoneCode">
+                  @for (country of countries; track $index) {
+                  <option value="{{country.dial_code}}">{{country.dial_code}}</option>
+                  }
+                </select>
+                <div class="res-phone-divider"></div>
+                <input type="text" class="res-phone-number" placeholder="{{ 'Phone no.' | translate }}"
+                  [(ngModel)]="customer.phoneNumber" (blur)="checkPhoneValidate()" id="scroll-to-customer-details-phone" />
+              </div>
+              @if(customer.phoneNumber && !isValidPhoneNumber(customer.phoneNumber)){
+              <p class="res-error">{{ 'Required valid phone' | translate }}</p>
+              }
+            </div>
+            <!-- <div class="res-field mb-2">
+              <label class="res-field-label">{{ 'Email Address' | translate }}</label>
+              <input type="email" class="res-input" [(ngModel)]="customer.email" id="scroll-to-customer-details-email" />
+              @if(!isValidEmail(customer.email)){
+              <p class="res-error">{{ 'Please enter a valid email address' | translate }}</p>
+              }
+            </div> -->
+            }
+          </div>
+
+          <!-- Note -->
+          <div class="appt-form-section">
+            <span class="res-section-label">{{ "Additional Info" | translate }}</span>
+            <div class="res-field">
+              <label class="res-field-label">{{ 'Note (optional)' | translate }}</label>
+              <textarea class="res-input res-textarea" rows="3" [(ngModel)]="note"></textarea>
+            </div>
+          </div>
+
+          <!-- Payment methods -->
+          <div class="appt-form-section">
+            <span class="res-section-label">{{ "Payment Methods" | translate }}</span>
+            <div class="appt-payments">
+              @for (paymnt of payments; track $index) {
+              <div class="appt-payment-item" [class.appt-payment-item--active]="selectedPayment == paymnt.name"
+                (click)="selectedPayment = paymnt.name">
+                <img [src]="paymnt.image ? paymnt.image : '/assets/images/default-blank-image.png'"
+                  class="appt-payment-img" alt="payment" />
+                <span class="appt-payment-name">{{ paymnt.name == 'Cash' ? "Pay later" : paymnt.name }}</span>
+              </div>
+              }
+            </div>
+          </div>
+          }
+          }
+
+          <!-- Confirm button -->
+          @if(!appService.viewOnly){
+          <button class="res-confirm-btn"
+            [class.res-confirm-btn--disabled]="isPlacingOrder || (!branchId || (branchStatus != 'open' && branchStatus != null) || !date || !team || !time || !(appointmentCartData.lines?.length > 0) || !isValidName(customer.name) || (!isValidPhoneNumber(customer.phone) && !isValidPhoneNumber(customer.phoneNumber)) || !isValidEmail(customer.email) || !selectedPayment)"
+            [disabled]="isPlacingOrder || (!branchId || (branchStatus != 'open' && branchStatus != null) || !date || !team || !time || !(appointmentCartData.lines?.length > 0) || !isValidName(customer.name) || (!isValidPhoneNumber(customer.phone) && !isValidPhoneNumber(customer.phoneNumber)) || !isValidEmail(customer.email) || !selectedPayment)"
+            (click)="placeAppointment()">
+            <i class="fas fa-check-circle"></i>
+            {{ 'Confirm Appointment' | translate }}
+          </button>
+          }
+
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</div>
+}

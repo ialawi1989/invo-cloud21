@@ -1,0 +1,131 @@
+
+/* =================================== */
+/* CSS Styles - Copy this to your .css/.scss file */
+/* =================================== */
+
+.container-toolbar {
+  align-items: center;
+  -webkit-align-items: center;
+  background: #fff;
+  border-radius: 10px 0 0 10px;
+  bottom: 200px;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.1);
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  -webkit-justify-content: flex-start;
+  left: auto;
+  padding: 4px;
+  position: fixed;
+  right: 0;
+  width: 64px;
+  z-index: 555;
+  gap: 8px;
+}
+
+@media (max-width: 1366px) {
+  .container-toolbar {
+    width: 6rem;
+  }
+}
+
+.container-toolbar .container-toolbar-item {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.toolbar-btn {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  height: 5rem;
+  justify-content: center;
+  padding: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  width: 5rem;
+}
+
+@media (max-width: 1366px) {
+  .toolbar-btn {
+    height: 5rem;
+    width: 5rem;
+    padding: 6px;
+  }
+}
+
+.toolbar-btn:hover {
+  transform: scale(1.1);
+}
+
+.toolbar-icon {
+  height: 3.5rem;
+  width: 3.5rem;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 1366px) {
+  .toolbar-icon {
+    height: 3.5rem;
+    width: 3.5rem;
+  }
+}
+
+/* WhatsApp specific styles */
+.whatsapp-container:hover {
+  background: rgba(37, 211, 102, 0.1);
+}
+
+.whatsapp-container:hover .whatsapp-icon {
+  transform: scale(1.1);
+}
+
+/* Go to Top specific styles */
+.go-to-top-container {
+  color: #333;
+}
+
+.go-to-top-container:hover {
+  background: rgba(51, 51, 51, 0.1);
+  color: #000;
+}
+
+.go-to-top-container:hover .go-to-top-icon {
+  transform: translateY(-2px);
+}
+
+/* Request Service specific styles */
+.request-service-container {
+  color: #2196F3;
+}
+
+.request-service-container:hover {
+  background: rgba(33, 150, 243, 0.1);
+  color: #1976D2;
+}
+
+.request-service-container:hover .request-service-icon {
+  transform: scale(1.1);
+}
+
+/* Animation for smooth appearance */
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.container-toolbar {
+  animation: fadeInRight 0.5s ease-out;
+}
