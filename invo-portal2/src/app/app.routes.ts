@@ -68,6 +68,25 @@ export const routes: Routes = [
         .then(m => m.LabelBuilderFormComponent),
     canDeactivate: [unsavedChangesGuard],
   },
+  {
+    // Blog post composer — Wix-style full-page editor with its own
+    // chrome (top bar / icon rail / side panel). Sits OUTSIDE the
+    // admin's sidebar+topbar shell so it can use the whole viewport,
+    // matching the receipt / document / label / table builders above.
+    // The list page (/blog/posts) stays inside MainLayoutComponent.
+    path: 'blog/posts/new',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/blog/blog-composer.routes').then(m => m.BLOG_COMPOSER_ROUTES),
+    canDeactivate: [unsavedChangesGuard],
+  },
+  {
+    path: 'blog/posts/:id/edit',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/blog/blog-composer.routes').then(m => m.BLOG_COMPOSER_ROUTES),
+    canDeactivate: [unsavedChangesGuard],
+  },
 
   // ── Protected (requires login) ───────────────────────────────────────────
   {

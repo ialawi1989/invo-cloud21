@@ -1,15 +1,16 @@
-export type ComponentType = 
-  | 'hero' 
-  | 'features' 
-  | 'testimonials' 
-  | 'cta' 
-  | 'pricing' 
-  | 'gallery' 
-  | 'faq' 
-  | 'contact' 
+export type ComponentType =
+  | 'hero'
+  | 'features'
+  | 'testimonials'
+  | 'cta'
+  | 'pricing'
+  | 'gallery'
+  | 'faq'
+  | 'contact'
   | 'stats'
   | 'team'
-  | 'newsletter';
+  | 'newsletter'
+  | 'blog';
 
 export interface PageComponent {
   id: string;
@@ -96,5 +97,6 @@ export const COMPONENT_NAMES: Record<ComponentType, string> = {
   'contact': 'Contact',
   'stats': 'Stats',
   'team': 'Team',
-  'newsletter': 'Newsletter'
+  'newsletter': 'Newsletter',
+  'blog': 'Blog Posts'
 };

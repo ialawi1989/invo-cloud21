@@ -27,6 +27,15 @@ export class BlogSettingsService {
         this._settings.set(s);
         this._loaded.set(true);
         return s;
+      } catch {
+        // Backend unavailable (no slug, endpoint not deployed, network
+        // error) — fall back to safe defaults so SSR can still finish
+        // rendering the page chrome instead of crashing with an
+        // unhandled promise rejection and a stock Express 404.
+        const fallback = defaultPublicBlogSettings();
+        this._settings.set(fallback);
+        this._loaded.set(true);
+        return fallback;
       } finally {
         this.inflight = null;
       }

@@ -27,7 +27,7 @@ const blogRedirectMatcher: CanMatchFn = async () => {
   }
 };
 
-export const APP_ROUTES: Routes = [
+export const AAPP_ROUTES: Routes = [
   ...BLOG_ROUTES,
   {
     path: 'blog',

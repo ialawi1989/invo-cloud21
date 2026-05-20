@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -22,6 +23,18 @@ import { ToastService } from '@shared/components/toast/toast.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { RichEditorComponent } from '@shared/components/rich-editor/rich-editor.component';
+import { ModalService } from '@shared/modal/modal.service';
+import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
+import {
+  MediaPickerModalComponent,
+  MediaPickerConfig,
+} from '../../../settings/media/components/media-picker';
+import { Media } from '../../../settings/media/models/media.model';
+import { VideoEmbedModalComponent, VideoEmbedResult } from './video-embed-modal.component';
+import {
+  ChangeLanguageModalComponent,
+  ChangeLanguageModalData,
+} from './change-language-modal.component';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 
 import { BLOG_API } from '../../services/blog-api';
@@ -42,10 +55,10 @@ import {
 import { defaultBlogSettings } from '../../services/blog-settings.types';
 
 /** Vertical rail items — Wix layout. `null` means "no panel open". */
-type RailKey = 'add' | 'ai' | 'settings' | 'seo' | 'monetize' | 'translate' | 'apps';
+type RailKey = 'add' | 'settings' | 'seo' | 'translate';
 type SettingsTab = 'general' | 'categories' | 'tags';
 type AddToolKey =
-  | 'image' | 'aiImage' | 'gallery' | 'video' | 'gif' | 'file'
+  | 'image' | 'gallery' | 'video' | 'file'
   | 'divider' | 'button' | 'table' | 'expandable' | 'poll' | 'layout'
   | 'html' | 'adsense' | 'soundcloud';
 
@@ -106,6 +119,22 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   private destroyRef = inject(DestroyRef);
   private toast      = inject(ToastService);
   private langSvc    = inject(LanguageService);
+  private sanitizer  = inject(DomSanitizer);
+  private modal      = inject(ModalService);
+
+  /** Trust the inline SVG strings used for the rail + Add panel
+   *  icons so Angular's default DomSanitizer doesn't strip them when
+   *  bound via `[innerHTML]`. Cached so we don't re-trust on every
+   *  change-detection pass. */
+  private iconCache = new Map<string, SafeHtml>();
+  icon(html: string): SafeHtml {
+    let trusted = this.iconCache.get(html);
+    if (!trusted) {
+      trusted = this.sanitizer.bypassSecurityTrustHtml(html);
+      this.iconCache.set(html, trusted);
+    }
+    return trusted;
+  }
 
   @ViewChild('editor') editor!: RichEditorComponent;
 
@@ -192,15 +221,12 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   canUndo = computed(() => !this.loading());
   canRedo = computed(() => !this.loading());
 
-  /** Rail config — order matches the Wix sidebar in the screenshots. */
+  /** Rail config — Add / Settings / SEO / Translate. */
   readonly railItems: { key: RailKey; label: string; icon: string }[] = [
     { key: 'add',       label: 'BLOG.COMPOSER.SIDE_ADD',       icon: ICON.plus   },
-    { key: 'ai',        label: 'BLOG.COMPOSER.SIDE_AI',        icon: ICON.ai     },
     { key: 'settings',  label: 'BLOG.COMPOSER.SIDE_SETTINGS',  icon: ICON.cog    },
     { key: 'seo',       label: 'BLOG.COMPOSER.SIDE_SEO',       icon: ICON.search },
-    { key: 'monetize',  label: 'BLOG.COMPOSER.SIDE_MONETIZE',  icon: ICON.money  },
     { key: 'translate', label: 'BLOG.COMPOSER.SIDE_TRANSLATE', icon: ICON.globe  },
-    { key: 'apps',      label: 'BLOG.COMPOSER.SIDE_APPS',      icon: ICON.apps   },
   ];
 
   readonly settingsTabs: { key: SettingsTab; label: string }[] = [
@@ -211,12 +237,10 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
 
   readonly addGroups: { label: string; tools: { key: AddToolKey; label: string; icon: string }[] }[] = [
     { label: 'BLOG.COMPOSER.ADD_MEDIA', tools: [
-      { key: 'image',   label: 'BLOG.COMPOSER.ADD_IMAGE',   icon: ICON.image    },
-      { key: 'aiImage', label: 'BLOG.COMPOSER.ADD_AIIMAGE', icon: ICON.aiImage  },
-      { key: 'gallery', label: 'BLOG.COMPOSER.ADD_GALLERY', icon: ICON.gallery  },
-      { key: 'video',   label: 'BLOG.COMPOSER.ADD_VIDEO',   icon: ICON.video    },
-      { key: 'gif',     label: 'BLOG.COMPOSER.ADD_GIF',     icon: ICON.gif      },
-      { key: 'file',    label: 'BLOG.COMPOSER.ADD_FILE',    icon: ICON.file     },
+      { key: 'image',   label: 'BLOG.COMPOSER.ADD_IMAGE',   icon: ICON.image   },
+      { key: 'gallery', label: 'BLOG.COMPOSER.ADD_GALLERY', icon: ICON.gallery },
+      { key: 'video',   label: 'BLOG.COMPOSER.ADD_VIDEO',   icon: ICON.video   },
+      { key: 'file',    label: 'BLOG.COMPOSER.ADD_FILE',    icon: ICON.file    },
     ]},
     { label: 'BLOG.COMPOSER.ADD_ELEMENTS', tools: [
       { key: 'divider',    label: 'BLOG.COMPOSER.ADD_DIVIDER',    icon: ICON.divider    },
@@ -269,17 +293,16 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     }
 
     this.autosaveTimer = setInterval(() => this.maybeAutosave(), AUTOSAVE_INTERVAL_MS);
-    window.addEventListener('beforeunload', this.beforeUnloadHandler);
+    // No `beforeunload` guard — browser refresh / tab close lets the
+    // navigation through silently. In-app navigation (top-bar Back,
+    // sidebar, etc.) still goes through `unsavedChangesGuard` which
+    // shows the project's ConfirmModalComponent, so deliberate route
+    // changes still prompt with a styled dialog.
   }
 
   ngOnDestroy(): void {
     if (this.autosaveTimer) clearInterval(this.autosaveTimer);
-    window.removeEventListener('beforeunload', this.beforeUnloadHandler);
   }
-
-  private beforeUnloadHandler = (e: BeforeUnloadEvent): void => {
-    if (this.isDirty()) { e.preventDefault(); e.returnValue = ''; }
-  };
 
   hasUnsavedChanges(): boolean { return this.isDirty() && !this.saving(); }
 
@@ -430,15 +453,13 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   async onAddTool(key: AddToolKey): Promise<void> {
     switch (key) {
       case 'image':
-      case 'aiImage':       // AI image not wired yet — fall back to upload.
-      case 'gif':
         await this.insertImageFromPicker();
         break;
       case 'gallery':
         await this.insertGallery();
         break;
       case 'video':
-        this.insertVideoEmbed();
+        await this.insertVideoEmbed();
         break;
       case 'file':
         await this.insertFile();
@@ -471,73 +492,262 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     }
   }
 
+  /** Open the shared Media Library picker for a single image and
+   *  insert an <img> at the caret on confirm. Reuses the same modal
+   *  the product/gallery features use — no duplicate UI. */
   private async insertImageFromPicker(): Promise<void> {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async () => {
-      const f = input.files?.[0];
-      if (!f) return;
-      try {
-        const { url } = await this.api.upload(f);
-        this.editor?.insertHtml(`<p><img src="${escapeAttr(url)}" alt=""/></p>`);
-      } catch (e: any) {
-        this.toast.error('COMMON.UPLOAD_FAILED', e?.message);
-      }
-    };
-    input.click();
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      {
+        data: { contentTypes: ['image'], multiple: false, title: this.translate.instant('BLOG.COMPOSER.ADD_IMAGE') },
+        size: 'xl',
+      },
+    );
+    const result = await ref.afterClosed();
+    const picked = Array.isArray(result) ? result[0] : result;
+    if (!picked) return;
+    const url = mediaUrl(picked);
+    if (!url) { this.toast.error('COMMON.UPLOAD_FAILED'); return; }
+    // Wrap in the shared embed-figure shape so the selection toolbar
+    // (size / align / replace / delete) applies to images too.
+    this.editor?.insertHtml(
+      `<figure class="re-embed-figure re-embed-figure--image re-align-center" contenteditable="false">
+        <img src="${escapeAttr(url)}" alt="" style="display:block;width:100%;height:auto;border-radius:8px;"/>
+        <figcaption class="re-embed-caption" contenteditable="true" data-placeholder="Write a caption"></figcaption>
+      </figure>`,
+    );
   }
 
+  /** Open the shared Media Library picker in multi-select mode and
+   *  insert a responsive grid gallery of the chosen images. */
   private async insertGallery(): Promise<void> {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.multiple = true;
-    input.onchange = async () => {
-      const files = Array.from(input.files ?? []);
-      if (!files.length) return;
-      try {
-        const uploads = await Promise.all(files.map(f => this.api.upload(f)));
-        const grid = uploads.map(u => `<img src="${escapeAttr(u.url)}" alt=""/>`).join('');
-        this.editor?.insertHtml(`<div class="re-gallery" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:8px 0;">${grid}</div>`);
-      } catch (e: any) {
-        this.toast.error('COMMON.UPLOAD_FAILED', e?.message);
-      }
-    };
-    input.click();
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      {
+        data: { contentTypes: ['image'], multiple: true, title: this.translate.instant('BLOG.COMPOSER.ADD_GALLERY') },
+        size: 'xl',
+      },
+    );
+    const result = await ref.afterClosed();
+    const picked = Array.isArray(result) ? result : (result ? [result] : []);
+    if (!picked.length) return;
+    const tiles = picked
+      .map(m => mediaUrl(m))
+      .filter((u): u is string => !!u)
+      .map(u => `<img src="${escapeAttr(u)}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;"/>`)
+      .join('');
+    if (!tiles) return;
+    // Inline style keeps the gallery rendering correct even outside
+    // the editor's surface (e.g. in the public site reader), without
+    // depending on a global stylesheet being loaded. Wrapped in the
+    // shared embed-figure shape so the selection toolbar applies.
+    const cols = Math.min(3, Math.max(2, picked.length));
+    this.editor?.insertHtml(
+      `<figure class="re-embed-figure re-embed-figure--gallery re-align-center" contenteditable="false">
+        <div class="re-gallery" style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;">${tiles}</div>
+        <figcaption class="re-embed-caption" contenteditable="true" data-placeholder="Write a caption"></figcaption>
+      </figure>`,
+    );
   }
 
+  /** Open the shared Media Library picker filtered to non-image
+   *  files (docs, audio, archives, etc.) and insert a Wix-style file
+   *  card — icon + filename + "Download EXT · SIZE" + download
+   *  arrow. The whole card is a single anchor so a click anywhere
+   *  starts the download. */
   private async insertFile(): Promise<void> {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.onchange = async () => {
-      const f = input.files?.[0];
-      if (!f) return;
-      try {
-        const { url } = await this.api.upload(f);
-        this.editor?.insertHtml(`<p><a href="${escapeAttr(url)}" target="_blank" rel="noopener">${escapeText(f.name)}</a></p>`);
-      } catch (e: any) {
-        this.toast.error('COMMON.UPLOAD_FAILED', e?.message);
-      }
-    };
-    input.click();
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      {
+        data: {
+          contentTypes: ['docs', 'audio'],
+          multiple:     false,
+          title:        this.translate.instant('BLOG.COMPOSER.ADD_FILE'),
+        },
+        size: 'xl',
+      },
+    );
+    const result = await ref.afterClosed();
+    const m = Array.isArray(result) ? result[0] : result;
+    if (!m) return;
+
+    const url  = mediaUrl(m);
+    if (!url) { this.toast.error('COMMON.UPLOAD_FAILED'); return; }
+
+    const name = m.name || 'file';
+    const ext  = (m.mediaType?.extension || name.split('.').pop() || '').toUpperCase();
+    const size = m.getFormattedSize;
+    const safeUrl  = escapeAttr(url);
+    const safeName = escapeText(name);
+    const safeExt  = escapeText(ext);
+    const safeSize = escapeText(size);
+
+    // Self-contained HTML so the card renders identically inside the
+    // editor and on the public blog page — no global styles needed.
+    this.editor?.insertHtml(
+      `<a class="re-file-card" href="${safeUrl}" target="_blank" rel="noopener" download
+          style="display:flex;align-items:center;gap:14px;margin:10px 0;padding:14px 16px;border:1px solid #e2e8f0;border-radius:10px;text-decoration:none;color:inherit;background:#fff;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:48px;background:#1e293b;color:#fff;font-size:11px;font-weight:700;border-radius:4px;letter-spacing:.05em;">${safeExt}</span>
+        <span style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;">
+          <span style="font-size:14px;font-weight:500;color:#0e7490;text-decoration:underline;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;">${safeName}</span>
+          <span style="font-size:12px;color:#64748b;">Download ${safeExt}${size ? ' · ' + safeSize : ''}</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#475569;flex-shrink:0;">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </a>`,
+    );
   }
 
-  private insertVideoEmbed(): void {
-    const url = window.prompt(this.translate.instant('BLOG.COMPOSER.VIDEO_PROMPT'), 'https://');
+  /** Open the media library to pick a banner background image, then
+   *  hand the URL back to the editor's public API so it can apply
+   *  the chosen image as the section background. */
+  async onPickBannerBgImage(): Promise<void> {
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      { data: { contentTypes: ['image'], multiple: false, title: this.translate.instant('BLOG.COMPOSER.ADD_IMAGE') }, size: 'xl' },
+    );
+    const picked = await ref.afterClosed();
+    const url = mediaUrl(Array.isArray(picked) ? picked[0] : picked);
     if (!url) return;
-    // Reuse the editor's paste pipeline — set focus and call insertHtml
-    // via the same path used for paste embeds. We synthesise a YouTube
-    // iframe inline here so we don't need to re-export the helper.
-    const yt = extractYouTubeId(url);
-    const vm = extractVimeoId(url);
-    let html: string | null = null;
-    if (yt) html = responsiveIframe(`https://www.youtube.com/embed/${yt}`, 'YouTube video');
-    else if (vm) html = responsiveIframe(`https://player.vimeo.com/video/${vm}`, 'Vimeo video');
-    if (!html) {
-      this.toast.error('BLOG.COMPOSER.VIDEO_INVALID');
+    this.editor?.setBannerBgImage(url);
+  }
+
+  /** Handler for the rich-editor's `(blockReplace)` event — dispatches
+   *  to the right picker based on the figure's type marker class.
+   *  All replacement HTML preserves the figure's existing size /
+   *  alignment / wrap classes plus any caption text the user has
+   *  written, so editorial choices survive a replace. */
+  async onBlockReplace(figure: HTMLElement): Promise<void> {
+    const keepClasses = Array.from(figure.classList).filter(c =>
+      c === 're-embed-figure' || c === 're-embed-figure--image' || c === 're-embed-figure--gallery'
+      || c.startsWith('re-size-') || c.startsWith('re-align-') || c === 're-wrap-text'
+    );
+    const caption = figure.querySelector('.re-embed-caption')?.innerHTML ?? '';
+    const wrapWith = (inner: string, contentEditable = false) =>
+      `<figure class="${keepClasses.join(' ')}"${contentEditable ? ' contenteditable="false"' : ''}>
+        ${inner}
+        <figcaption class="re-embed-caption" contenteditable="true" data-placeholder="Write a caption">${caption}</figcaption>
+      </figure>`;
+
+    if (figure.classList.contains('re-embed-figure--image')) {
+      const replacement = await this.pickReplaceImage(wrapWith);
+      if (replacement) this.editor?.replaceSelectedFigure(replacement);
       return;
     }
+    if (figure.classList.contains('re-embed-figure--gallery')) {
+      const replacement = await this.pickReplaceGallery(wrapWith);
+      if (replacement) this.editor?.replaceSelectedFigure(replacement);
+      return;
+    }
+    // Default: video figure.
+    const replacement = await this.pickReplaceVideo(wrapWith);
+    if (replacement) this.editor?.replaceSelectedFigure(replacement);
+  }
+
+  private async pickReplaceImage(wrap: (inner: string, ce?: boolean) => string): Promise<string | null> {
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      { data: { contentTypes: ['image'], multiple: false, title: this.translate.instant('BLOG.COMPOSER.ADD_IMAGE') }, size: 'xl' },
+    );
+    const picked = await ref.afterClosed();
+    const url = mediaUrl(Array.isArray(picked) ? picked[0] : picked);
+    if (!url) return null;
+    return wrap(`<img src="${escapeAttr(url)}" alt="" style="display:block;width:100%;height:auto;border-radius:8px;"/>`, true);
+  }
+
+  private async pickReplaceGallery(wrap: (inner: string, ce?: boolean) => string): Promise<string | null> {
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      { data: { contentTypes: ['image'], multiple: true, title: this.translate.instant('BLOG.COMPOSER.ADD_GALLERY') }, size: 'xl' },
+    );
+    const result = await ref.afterClosed();
+    const picked = Array.isArray(result) ? result : (result ? [result] : []);
+    const tiles = picked
+      .map(m => mediaUrl(m))
+      .filter((u): u is string => !!u)
+      .map(u => `<img src="${escapeAttr(u)}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;"/>`)
+      .join('');
+    if (!tiles) return null;
+    const cols = Math.min(3, Math.max(2, picked.length));
+    return wrap(`<div class="re-gallery" style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;">${tiles}</div>`, true);
+  }
+
+  private async pickReplaceVideo(wrap: (inner: string, ce?: boolean) => string): Promise<string | null> {
+    const ref = this.modal.open<VideoEmbedModalComponent, void, VideoEmbedResult | undefined>(
+      VideoEmbedModalComponent, { size: 'sm' },
+    );
+    const result = await ref.afterClosed();
+    if (!result) return null;
+    let innerHtml: string;
+    if (result.kind === 'upload') {
+      const pickerRef = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+        MediaPickerModalComponent,
+        { data: { contentTypes: ['video'], multiple: false, title: this.translate.instant('BLOG.COMPOSER.ADD_VIDEO') }, size: 'xl' },
+      );
+      const picked = await pickerRef.afterClosed();
+      const url = mediaUrl(Array.isArray(picked) ? picked[0] : picked);
+      if (!url) return null;
+      innerHtml = `<video src="${escapeAttr(url)}" controls playsinline style="width:100%;height:100%;border:0;"></video>`;
+    } else {
+      const raw = result.url.trim();
+      const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+      const yt  = extractYouTubeId(url);
+      const vm  = extractVimeoId(url);
+      let src: string; let title: string;
+      if (yt)      { src = `https://www.youtube.com/embed/${yt}`; title = 'YouTube video'; }
+      else if (vm) { src = `https://player.vimeo.com/video/${vm}`; title = 'Vimeo video'; }
+      else         { src = url; title = 'Embedded video'; }
+      innerHtml = `<iframe src="${escapeAttr(src)}" title="${escapeAttr(title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    }
+    return wrap(`<div class="re-embed-video" contenteditable="false">${innerHtml}</div>`);
+  }
+
+  /** Open the Wix-style "Add a video" modal. Returns an embed URL
+   *  (then converted to iframe) OR signals that the user wants to
+   *  upload — in which case we hand off to the media picker. */
+  private async insertVideoEmbed(): Promise<void> {
+    const ref = this.modal.open<VideoEmbedModalComponent, void, VideoEmbedResult | undefined>(
+      VideoEmbedModalComponent,
+      { size: 'sm' },
+    );
+    const result = await ref.afterClosed();
+    if (!result) return;
+
+    if (result.kind === 'upload') {
+      // Open the shared media library scoped to video files.
+      const pickerRef = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+        MediaPickerModalComponent,
+        { data: { contentTypes: ['video'], multiple: false, title: this.translate.instant('BLOG.COMPOSER.ADD_VIDEO') }, size: 'xl' },
+      );
+      const picked = await pickerRef.afterClosed();
+      const m = Array.isArray(picked) ? picked[0] : picked;
+      const url = mediaUrl(m ?? null);
+      if (!url) return;
+      this.editor?.insertHtml(
+        `<figure class="re-embed-figure re-align-center">
+          <div class="re-embed-video" contenteditable="false">
+            <video src="${escapeAttr(url)}" controls playsinline style="width:100%;height:100%;border:0;"></video>
+          </div>
+          <figcaption class="re-embed-caption" data-placeholder="Write a caption"></figcaption>
+        </figure>`,
+      );
+      return;
+    }
+
+    // Embed branch — try YouTube, then Vimeo. Anything else falls
+    // through to a generic responsive iframe so Facebook URLs still
+    // render something useful.
+    const raw = result.url.trim();
+    const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    const yt  = extractYouTubeId(url);
+    const vm  = extractVimeoId(url);
+    let html: string;
+    if (yt)      html = responsiveIframe(`https://www.youtube.com/embed/${yt}`, 'YouTube video');
+    else if (vm) html = responsiveIframe(`https://player.vimeo.com/video/${vm}`, 'Vimeo video');
+    else         html = responsiveIframe(url, 'Embedded video');
     this.editor?.insertHtml(html);
   }
 
@@ -656,9 +866,76 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     window.open(`/${this.defaultLanguage()}/blog/${slug}?preview=1`, '_blank');
   }
 
-  cancel(): void {
-    if (this.isDirty() && !window.confirm(this.translate.instant('COMMON.UNSAVED_HINT'))) return;
+  /** Open the "Change the draft language" modal for the Translate
+   *  panel's "Change" link. Returns the new default code, or no-op
+   *  on cancel. Goes through the unsaved-changes check first so we
+   *  don't lose work by switching defaults mid-edit. */
+  async onChangeDefaultLanguage(): Promise<void> {
+    const proceed = await this.ensureSavedBefore('To change the draft language, you need to save your changes first.');
+    if (!proceed) return;
+    const ref = this.modal.open<ChangeLanguageModalComponent, ChangeLanguageModalData, string | undefined>(
+      ChangeLanguageModalComponent,
+      {
+        size: 'sm',
+        data: {
+          current:   this.defaultLanguage(),
+          active:    this.activeLangs(),
+          supported: this.supportedLangs(),
+        },
+      },
+    );
+    const picked = await ref.afterClosed();
+    if (picked && picked !== this.defaultLanguage()) this.setDefaultLang(picked);
+  }
+
+  /** Wrapper used by every Translate-panel action that needs the
+   *  draft committed first. Returns true if the caller may proceed
+   *  (post is already saved, or user just saved it from the modal),
+   *  false if the user cancelled. */
+  private async ensureSavedBefore(message: string): Promise<boolean> {
+    if (!this.isDirty()) return true;
+    const ok = await this.confirm({
+      title:   'Save your changes?',
+      message,
+      confirm: 'Save & Continue',
+    });
+    if (!ok) return false;
+    await this.save();
+    // Save can fail (validation, network) — if it's still dirty
+    // afterwards, we treat that as cancel rather than silently
+    // proceeding.
+    return !this.isDirty();
+  }
+
+  /** Wrapper for "Add translation" — saves first if dirty, then
+   *  activates the language. Mirrors Wix's behaviour. */
+  async onAddTranslation(code: string): Promise<void> {
+    const proceed = await this.ensureSavedBefore('To add a translation, you need to save your changes first.');
+    if (!proceed) return;
+    this.addLang(code);
+  }
+
+  async cancel(): Promise<void> {
+    if (this.isDirty()) {
+      const confirmed = await this.confirm({
+        title:   this.translate.instant('COMMON.UNSAVED_TITLE'),
+        message: this.translate.instant('COMMON.UNSAVED_HINT'),
+        confirm: this.translate.instant('COMMON.LEAVE'),
+        danger:  true,
+      });
+      if (!confirmed) return;
+    }
     this.router.navigate(['/blog/posts']);
+  }
+
+  /** Small wrapper around the shared ConfirmModalComponent so the
+   *  composer's prompts share one button style + dismiss UX. */
+  private async confirm(data: ConfirmModalData): Promise<boolean> {
+    const ref = this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(
+      ConfirmModalComponent,
+      { size: 'sm', data },
+    );
+    return (await ref.afterClosed()) === true;
   }
 
   @HostListener('document:click')
@@ -685,12 +962,30 @@ function toLocalInput(iso: string): string {
 function escapeAttr(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+
+/** Pull a usable URL off a Media item. Prefer the defaultUrl, fall
+ *  back to original then thumbnail — matching the MediaPicker's own
+ *  precedence. Returns null when the item has no URL at all. */
+function mediaUrl(m: Media | null | undefined): string | null {
+  if (!m) return null;
+  return m.url?.defaultUrl || m.url?.original || m.url?.thumbnail || null;
+}
 function escapeText(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function responsiveIframe(src: string, title: string): string {
-  return `<div class="re-embed-video" contenteditable="false"><iframe src="${escapeAttr(src)}" title="${escapeAttr(title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+  // The iframe block is `contenteditable=false` so users can't type
+  // inside it; the surrounding <figcaption> stays editable, matching
+  // the Wix Ricos "Write a caption" affordance.
+  return `<figure class="re-embed-figure re-align-center">
+    <div class="re-embed-video" contenteditable="false">
+      <iframe src="${escapeAttr(src)}" title="${escapeAttr(title)}" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+    </div>
+    <figcaption class="re-embed-caption" data-placeholder="Write a caption"></figcaption>
+  </figure>`;
 }
 
 function extractYouTubeId(url: string): string | null {

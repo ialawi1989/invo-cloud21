@@ -38,22 +38,10 @@ export const BLOG_ROUTES: Routes = [
     loadComponent: () =>
       import('./pages/posts-list/posts-list.component').then(m => m.PostsListComponent),
   },
-  {
-    path: 'posts/new',
-    canActivate:   [translationsLoaded, privilegeGuard],
-    canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'blogSecurity.actions.managePosts.access' },
-    loadComponent: () =>
-      import('./pages/post-composer/post-composer.component').then(m => m.PostComposerComponent),
-  },
-  {
-    path: 'posts/:id/edit',
-    canActivate:   [translationsLoaded, privilegeGuard],
-    canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'blogSecurity.actions.managePosts.access' },
-    loadComponent: () =>
-      import('./pages/post-composer/post-composer.component').then(m => m.PostComposerComponent),
-  },
+  // NOTE: `posts/new` and `posts/:id/edit` are registered at the TOP
+  // level of `app.routes.ts` (outside MainLayoutComponent) so the
+  // Wix-style composer occupies the full viewport with no admin
+  // chrome. See `blog-composer.routes.ts`.
 
   // ── Categories & Tags ─────────────────────────────────────────────────
   {

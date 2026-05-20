@@ -73,7 +73,7 @@
                 [class.is-active]="rail() === item.key"
                 (click)="toggleRail(item.key)"
                 [title]="item.label | translate">
-          <span class="wc__railIcon" [innerHTML]="item.icon"></span>
+          <span class="wc__railIcon" [innerHTML]="icon(item.icon)"></span>
           <span class="wc__railLabel">{{ item.label | translate }}</span>
         </button>
       }
@@ -100,7 +100,7 @@
               <div class="wc__addGrid">
                 @for (tool of group.tools; track tool.key) {
                   <button class="wc__addTile" (click)="onAddTool(tool.key)">
-                    <span class="wc__addIcon" [innerHTML]="tool.icon"></span>
+                    <span class="wc__addIcon" [innerHTML]="icon(tool.icon)"></span>
                     <span class="wc__addName">{{ tool.label | translate }}</span>
                   </button>
                 }
@@ -278,7 +278,7 @@
             <h3 class="wc__panelGroup">{{ 'BLOG.COMPOSER.POST_LANGUAGE' | translate }}</h3>
             <div class="wc__langRow">
               <span class="wc__langChip">{{ labelForLang(defaultLanguage()) }}</span>
-              <button class="wc__btn--link" (click)="rail.set('settings')">{{ 'COMMON.CHANGE' | translate }}</button>
+              <button class="wc__btn--link" (click)="onChangeDefaultLanguage()">{{ 'COMMON.CHANGE' | translate }}</button>
             </div>
 
             <h3 class="wc__panelGroup">{{ 'BLOG.COMPOSER.TRANSLATIONS' | translate }}</h3>
@@ -294,7 +294,7 @@
             @for (code of addableLangs(); track code) {
               <div class="wc__langRow">
                 <span class="wc__langChip is-muted">{{ labelForLang(code) }}</span>
-                <button class="wc__btn--link" (click)="addLang(code)">{{ 'COMMON.ADD' | translate }}</button>
+                <button class="wc__btn--link" (click)="onAddTranslation(code)">{{ 'COMMON.ADD' | translate }}</button>
               </div>
             }
             @if (addableLangs().length === 0 && activeLangs().length <= 1) {
@@ -302,39 +302,37 @@
             }
           }
 
-          <!-- ─── AI / Monetize / Apps — stubs ─── -->
-          @if (rail() === 'ai' || rail() === 'monetize' || rail() === 'apps') {
-            <div class="wc__stub">
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-              <p>{{ 'BLOG.COMPOSER.COMING_SOON' | translate }}</p>
-            </div>
-          }
         </div>
       </aside>
     }
 
-    <!-- Main canvas — title + WYSIWYG -->
+    <!-- Main canvas — toolbar pinned at top (inside <app-rich-editor>),
+         title projected into the editor's slot so it sits between the
+         toolbar and the editable surface, exactly like Wix. -->
     <main class="wc__canvas" [class.is-rtl]="isRtlActive()">
       @if (loading()) {
         <div class="wc__loading"><span class="wc__spinner"></span></div>
       } @else {
-        <div class="wc__canvasInner">
-          <input class="wc__title"
-                 [value]="current().title"
-                 (input)="setTitle($any($event.target).value)"
-                 [placeholder]="'BLOG.COMPOSER.ADD_TITLE' | translate"
-                 [dir]="isRtlActive() ? 'rtl' : 'ltr'"/>
-
-          <app-rich-editor
-            #editor
-            [ngModel]="current().content"
-            (ngModelChange)="setContent($event)"
-            [embedOnPaste]="true"
-            [placeholder]="'BLOG.COMPOSER.BODY_PLACEHOLDER' | translate"
-            height="520px"/>
-        </div>
+        <app-rich-editor
+          #editor
+          class="wc__editor"
+          [bare]="true"
+          [addButton]="true"
+          [ngModel]="current().content"
+          (ngModelChange)="setContent($event)"
+          (addClick)="rail.set('add')"
+          (blockReplace)="onBlockReplace($event)"
+          (bgImageClick)="onPickBannerBgImage()"
+          [embedOnPaste]="true"
+          height="calc(100vh - 220px)">
+          <div class="wc__canvasInner">
+            <input class="wc__title"
+                   [value]="current().title"
+                   (input)="setTitle($any($event.target).value)"
+                   [placeholder]="'BLOG.COMPOSER.ADD_TITLE' | translate"
+                   [dir]="isRtlActive() ? 'rtl' : 'ltr'"/>
+          </div>
+        </app-rich-editor>
       }
     </main>
   </div>
