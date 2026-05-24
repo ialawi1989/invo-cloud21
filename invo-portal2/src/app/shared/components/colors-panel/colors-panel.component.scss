@@ -1,0 +1,604 @@
+// ColorsPanel — floating card matching the reference design. All colour
+// accents use the brand token (`--color-brand-*`) so the panel inherits
+// the app's primary colour rather than baking in a hard-coded blue.
+
+:host {
+  display: block;
+  // Sensible default container size when used inside a CDK overlay or
+  // similar positioned host. Width is enforced; height is content-driven.
+  width: 320px;
+}
+
+.cp {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+  font-size: 13px;
+  color: #0f172a;
+
+  &--disabled { opacity: 0.5; pointer-events: none; }
+}
+
+// ── Header ─────────────────────────────────────────────────────────────
+.cp__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+}
+.cp__title { margin: 0; font-size: 16px; font-weight: 700; }
+.cp__close {
+  width: 28px; height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  &:hover { background: #f1f5f9; color: #0f172a; }
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────
+.cp__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #e2e8f0;
+  position: relative;
+}
+.cp__tab {
+  padding: 10px 0;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  text-align: center;
+  margin-bottom: -1px; // collapse with the row border for the underline
+  &:hover { color: #0f172a; }
+  &.is-on {
+    color: var(--color-brand-600, #2a93a6);
+    border-bottom-color: var(--color-brand-600, #2a93a6);
+  }
+}
+
+// ── Body (shared between Color + Gradient tabs) ────────────────────────
+.cp__body {
+  padding: 14px 16px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cp__section-label {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+// ── Color tab: spectrum + hue ──────────────────────────────────────────
+// HSV/saturation+value square. Three layered backgrounds:
+//   1) base hue colour
+//   2) horizontal white→transparent (saturation axis)
+//   3) vertical transparent→black (value axis)
+.cp__spectrum {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  border-radius: 10px;
+  background:
+    linear-gradient(to top, #000, transparent),
+    linear-gradient(to right, #fff, transparent),
+    var(--hue-color, #ff0000);
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+.cp__spectrum-thumb {
+  position: absolute;
+  width: 14px; height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.4);
+  pointer-events: none;
+}
+
+.cp__hue {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(to right,
+    #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%,
+    #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+.cp__hue-thumb {
+  position: absolute;
+  top: 50%;
+  width: 16px; height: 16px;
+  margin: -8px 0 0 -8px;
+  background: var(--c, #fff);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.4);
+  pointer-events: none;
+}
+
+// Format segmented (HEX / RGB / HSB) — three pill tabs. Active tab
+// has a primary-coloured outline + filled background to match the
+// reference picker.
+.cp__format-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+.cp__format-tab {
+  padding: 6px 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  text-align: center;
+  &:hover { color: #0f172a; }
+  &.is-on {
+    border-color: var(--color-brand-500, #32acc1);
+    color: var(--color-brand-700, #0f7588);
+    box-shadow: 0 0 0 2px rgba(50, 172, 193, 0.15);
+  }
+}
+
+// HEX / RGB / HSB inputs row: eyedropper · input(s) · preview · add.
+.cp__hex-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cp__triple {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  & input {
+    width: 100%;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    color: #0f172a;
+    text-align: center;
+    -moz-appearance: textfield;
+    &::-webkit-outer-spin-button, &::-webkit-inner-spin-button {
+      -webkit-appearance: none; margin: 0;
+    }
+    &:focus {
+      outline: none;
+      border-color: var(--color-brand-500, #32acc1);
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.15);
+    }
+  }
+}
+.cp__color-preview {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  flex-shrink: 0;
+}
+
+/* "No colour" clear button — fixed 32×32 chip, white square with a
+   red diagonal slash. Active state (no colour currently picked) gets
+   a brand-coloured border so it reads as the selected option. */
+.cp__no-color {
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  & svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  &:hover { border-color: #94a3b8; }
+  &.is-active {
+    border-color: var(--color-brand-500, #32acc1);
+    box-shadow: 0 0 0 2px rgba(50, 172, 193, 0.15);
+  }
+}
+.cp__icon-btn {
+  width: 32px; height: 32px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #475569;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  &:hover { background: #f1f5f9; color: #0f172a; }
+  &--ring {
+    border-color: #e2e8f0;
+    border-radius: 50%;
+    width: 28px; height: 28px;
+  }
+}
+.cp__hex-input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: #0f172a;
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-500, #32acc1);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.15);
+  }
+}
+.cp__add-btn {
+  width: 36px; height: 36px;
+  background: #0f172a;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  &:hover { background: #1e293b; }
+}
+
+// Saved colour swatches grid. Fixed cell size keeps rows consistent
+// regardless of how many colours the user adds.
+.cp__swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+.cp__swatch {
+  aspect-ratio: 1 / 1;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  &:hover { border-color: #cbd5e1; }
+  &--empty {
+    cursor: default;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    & svg { width: 100%; height: 100%; }
+  }
+}
+
+// ── Gradient tab: angle dial ───────────────────────────────────────────
+.cp__angle {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  border-radius: 10px;
+  background: #0f172a;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+
+  // Radial gradients have no meaningful "angle" — dim the dial and
+  // disable interaction so the user can still see the preview but the
+  // arm/knob read as inert.
+  &--inert {
+    cursor: not-allowed;
+    .cp__angle-circle, .cp__angle-arm, .cp__angle-knob { opacity: 0.35; }
+  }
+}
+.cp__angle-circle {
+  position: relative;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+}
+// Arm — a thin line growing from the centre outward, rotated by the
+// gradient angle. Origin is bottom-centre so rotate() spins around the
+// dial centre.
+.cp__angle-arm {
+  position: absolute;
+  left: 50%; bottom: 50%;
+  width: 2px;
+  height: 40px;
+  margin-left: -1px;
+  background: rgba(255, 255, 255, 0.85);
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+// Knob sits at the end of the arm: rotate to the angle, push outward
+// (translateY(-40px) to reach the circumference), then unrotate so the
+// knob itself stays upright. Transform-origin stays at centre.
+.cp__angle-knob {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 12px; height: 12px;
+  margin: -6px 0 0 -6px;
+  background: var(--color-brand-500, #32acc1);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #fff;
+  pointer-events: none;
+}
+
+// Type select + reverse button row.
+.cp__type-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.cp__type-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: #0f172a;
+  cursor: pointer;
+  & svg { color: #94a3b8; }
+}
+
+// Draggable stops bar — the gradient itself with one thumb per stop,
+// horizontally draggable. Click on empty bar adds a new stop.
+.cp__stops-bar {
+  position: relative;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+.cp__stops-bar-thumb {
+  position: absolute;
+  top: -4px;
+  width: 14px;
+  height: 28px;
+  margin-left: -7px;
+  padding: 0;
+  background: var(--stop-color, #000);
+  border: 2px solid #fff;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.4);
+  cursor: ew-resize;
+  &:hover { box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.6); }
+  &.is-active {
+    box-shadow:
+      0 0 0 1px rgba(15, 23, 42, 0.4),
+      0 0 0 3px var(--color-brand-300, #bae6fd);
+  }
+}
+
+// Linear-type popup menu — single column of options. The "is-on" item
+// gets the brand colour to mirror selection on the trigger chip.
+.cp__type-menu {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+  padding: 4px;
+  min-width: 140px;
+}
+.cp__type-menu-item {
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  text-align: start;
+  font: inherit;
+  font-size: 13px;
+  color: #0f172a;
+  cursor: pointer;
+  &:hover { background: #f1f5f9; }
+  // Selected menu item — filled brand background to match the reference
+  // screenshot. White text reads against the saturated fill.
+  &.is-on {
+    background: var(--color-brand-600, #2a93a6);
+    color: #fff;
+    font-weight: 600;
+    &:hover { background: var(--color-brand-700, #1f7888); }
+  }
+}
+
+// Stops section header.
+.cp__stops-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// One stop row: opacity slider · % input · colour swatch · trash.
+.cp__stop {
+  display: grid;
+  grid-template-columns: 1fr 64px 30px 24px;
+  align-items: center;
+  gap: 8px;
+}
+.cp__stop-alpha {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 16px;
+  background:
+    linear-gradient(to right, transparent, var(--c, #000)),
+    repeating-conic-gradient(#cbd5e1 0% 25%, #f1f5f9 0% 50%) 0 0 / 8px 8px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  outline: none;
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px;
+    background: var(--color-brand-600, #2a93a6);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.3);
+  }
+  &::-moz-range-thumb {
+    width: 14px; height: 14px;
+    background: var(--color-brand-600, #2a93a6);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.3);
+  }
+}
+.cp__stop-pct {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  height: 30px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  & input {
+    width: 100%;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-size: 12px;
+    color: #0f172a;
+    background: transparent;
+    text-align: end;
+    outline: none;
+    -moz-appearance: textfield;
+    &::-webkit-outer-spin-button, &::-webkit-inner-spin-button {
+      -webkit-appearance: none; margin: 0;
+    }
+  }
+  & span { font-size: 11px; color: #94a3b8; }
+}
+.cp__stop-swatch {
+  // Flat coloured button — the background-color *is* the chip. A subtle
+  // border lets a white fill stay distinguishable against the panel
+  // background. Clicking pops the nested ColorsPanel (colour-only).
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid rgba(15, 23, 42, 0.25);
+  border-radius: 6px;
+  cursor: pointer;
+  &:hover { border-color: #94a3b8; }
+}
+.cp__stop-remove {
+  width: 24px; height: 24px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  &:hover:not(:disabled) { background: #fef2f2; color: #b91c1c; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+// Saved gradients — small clickable chips arranged in a row above the
+// Save Gradient button. Each chip has a tiny × overlay (visible on
+// hover) for removing it from the saved list.
+.cp__saved-gradients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cp__saved-gradient-wrap {
+  position: relative;
+  &:hover .cp__saved-gradient-remove { opacity: 1; }
+}
+.cp__saved-gradient {
+  width: 48px; height: 18px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  padding: 0;
+  display: block;
+}
+.cp__saved-gradient-remove {
+  position: absolute;
+  top: -6px; right: -6px;
+  width: 16px; height: 16px;
+  padding: 0;
+  background: #0f172a;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  &:hover { background: #b91c1c; }
+}
+
+.cp__save-btn {
+  margin: 4px 0 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-brand-600, #2a93a6);
+  cursor: pointer;
+  &:hover { background: #e2e8f0; }
+}
+
+// ── Footer ─────────────────────────────────────────────────────────────
+.cp__footer {
+  border-top: 1px solid #e2e8f0;
+  padding: 10px 16px 14px;
+  display: flex;
+  justify-content: center;
+}
+.cp__reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-brand-600, #2a93a6);
+  cursor: pointer;
+  & svg { color: var(--color-brand-600, #2a93a6); }
+  &:hover { text-decoration: underline; }
+}

@@ -18,7 +18,8 @@ import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
-import { ColorPickerComponent } from '@shared/components/color-picker/color-picker.component';
+import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { ColorsPanelComponent } from '@shared/components/colors-panel/colors-panel.component';
 
 /**
  * Block-format options surfaced in the "Paragraph" dropdown.
@@ -91,7 +92,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
 @Component({
   selector: 'app-rich-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, OverlayModule, TooltipDirective, ColorPickerComponent],
+  imports: [CommonModule, FormsModule, OverlayModule, TooltipDirective, SearchDropdownComponent, ColorsPanelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
@@ -483,18 +484,142 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   <button type="button" class="re__figSegBtn" [class.is-on]="colBgKind() === 'color'" (click)="setColBgKind('color')">Color</button>
                   <button type="button" class="re__figSegBtn" [class.is-on]="colBgKind() === 'image'" (click)="setColBgKind('image')">Image</button>
                 </div>
-                <div class="re__figRow">
-                  <label class="re__figTbLabel">Fill color</label>
-                  <div class="re__figCtrl">
-                    <div class="re__figTbNum">
-                      <input type="number" min="0" max="100" class="re__figTbInput re__figTbInput--num"
+                @if (colBgKind() === 'color') {
+                  <!-- Colour mode — Fill color chip + swatch + opacity slider. -->
+                  <div class="re__figRow">
+                    <label class="re__figTbLabel">Fill color</label>
+                    <div class="re__figCtrl">
+                      <div class="re__figTbNum">
+                        <input type="number" min="0" max="100" class="re__figTbInput re__figTbInput--num"
+                               [ngModel]="colFillOpacity()"
+                               (ngModelChange)="setColFillOpacity($event)"/>
+                        <span class="re__figTbUnit">%</span>
+                      </div>
+                      <button #colFillSwatch="cdkOverlayOrigin" cdkOverlayOrigin
+                              type="button" class="re__figColorTrigger"
+                              [style.background]="colFillColor()"
+                              (click)="colorPanelTarget.set(colorPanelTarget() === 'colFill' ? null : 'colFill')"
+                              aria-label="Edit fill colour"></button>
+                      <input type="range" min="0" max="100"
+                             class="re__figSlider re__figSlider--opacity"
+                             [style.--c]="colFillColor() || '#000'"
                              [ngModel]="colFillOpacity()"
-                             (ngModelChange)="setColFillOpacity($event)"/>
-                      <span class="re__figTbUnit">%</span>
+                             (ngModelChange)="setColFillOpacity($event)"
+                             aria-label="Column fill opacity"/>
+                      <ng-template
+                        cdkConnectedOverlay
+                        [cdkConnectedOverlayOrigin]="colFillSwatch"
+                        [cdkConnectedOverlayOpen]="colorPanelTarget() === 'colFill'"
+                        [cdkConnectedOverlayPositions]="overlayPositions"
+                        [cdkConnectedOverlayHasBackdrop]="true"
+                        cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+                        (backdropClick)="colorPanelTarget.set(null)">
+                        <app-colors-panel
+                          [colorOnly]="true"
+                          [ngModel]="colorPanelValue()"
+                          (ngModelChange)="onColorPanelChange($event)"
+                          (closed)="colorPanelTarget.set(null)"/>
+                      </ng-template>
                     </div>
-                    <app-color-picker [ngModel]="colFillColor()" (ngModelChange)="setColFillColor($event)" class="re__figSwatch"/>
                   </div>
-                </div>
+                } @else {
+                  <!-- Image mode — same picker tile pattern as the
+                       Section background. When empty: drop tile;
+                       when filled: preview + Replace/Remove buttons. -->
+                  <div class="re__figBgImage">
+                    @if (colBgImage()) {
+                      <img [src]="colBgImage()" alt=""/>
+                      <div class="re__figBgImageActions">
+                        <button type="button" class="re__figTbBtnGhost" (click)="pickColBgImage()">Replace</button>
+                        <button type="button" class="re__figTbBtnGhost" (click)="clearColBgImage()">Remove</button>
+                      </div>
+                    } @else {
+                      <button type="button" class="re__figBgImageEmpty" (click)="pickColBgImage()">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-with="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      </button>
+                    }
+                  </div>
+                  @if (colBgImage()) {
+                    <div class="re__figRow">
+                      <label class="re__figTbLabel">Image opacity</label>
+                      <div class="re__figCtrl">
+                        <div class="re__figTbNum">
+                          <input type="number" min="0" max="100" class="re__figTbInput re__figTbInput--num"
+                                 [ngModel]="colImageOpacity()"
+                                 (ngModelChange)="setColImageOpacity($event)"/>
+                          <span class="re__figTbUnit">%</span>
+                        </div>
+                        <input type="range" min="0" max="100" class="re__figSlider"
+                               [ngModel]="colImageOpacity()"
+                               (ngModelChange)="setColImageOpacity($event)"/>
+                      </div>
+                    </div>
+                    <div class="re__figRow">
+                      <label class="re__figTbLabel" [appTooltip]="'Background overlay'">Background overlay</label>
+                      <div class="re__figCtrl">
+                        <div class="re__figTbNum">
+                          <input type="number" min="0" max="100" class="re__figTbInput re__figTbInput--num"
+                                 [ngModel]="colOverlayOpacity()"
+                                 (ngModelChange)="setColOverlayOpacity($event)"/>
+                          <span class="re__figTbUnit">%</span>
+                        </div>
+                        <button #colOverlaySwatch="cdkOverlayOrigin" cdkOverlayOrigin
+                                type="button" class="re__figColorTrigger"
+                                [style.background]="colOverlayColor()"
+                                (click)="colorPanelTarget.set(colorPanelTarget() === 'colOverlay' ? null : 'colOverlay')"
+                                aria-label="Edit overlay colour"></button>
+                        <input type="range" min="0" max="100"
+                               class="re__figSlider re__figSlider--opacity"
+                               [style.--c]="colOverlayColor() || '#000'"
+                               [ngModel]="colOverlayOpacity()"
+                               (ngModelChange)="setColOverlayOpacity($event)"/>
+                        <ng-template
+                          cdkConnectedOverlay
+                          [cdkConnectedOverlayOrigin]="colOverlaySwatch"
+                          [cdkConnectedOverlayOpen]="colorPanelTarget() === 'colOverlay'"
+                          [cdkConnectedOverlayPositions]="overlayPositions"
+                          [cdkConnectedOverlayHasBackdrop]="true"
+                          cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+                          (backdropClick)="colorPanelTarget.set(null)">
+                          <app-colors-panel
+                            [colorOnly]="true"
+                            [ngModel]="colorPanelValue()"
+                            (ngModelChange)="onColorPanelChange($event)"
+                            (closed)="colorPanelTarget.set(null)"/>
+                        </ng-template>
+                      </div>
+                    </div>
+                    <div class="re__figRow">
+                      <label class="re__figTbLabel">Image scaling</label>
+                      <div class="re__figCtrl">
+                        <app-search-dropdown
+                          class="re__figSelect"
+                          [items]="imageScalingOptions"
+                          [displayWith]="scalingDisplay"
+                          [compareWith]="scalingCompare"
+                          [toValue]="scalingToValue"
+                          [clearable]="false"
+                          [searchable]="false"
+                          [ngModel]="colImageScaling()"
+                          (ngModelChange)="setColImageScaling($any($event))"/>
+                      </div>
+                    </div>
+                    <div class="re__figRow re__figRow--posrow">
+                      <label class="re__figTbLabel">Image position</label>
+                      <div class="re__figPosGrid">
+                        @for (n of [1,2,3,4,5,6,7,8,9]; track n) {
+                          <button type="button"
+                                  class="re__figPosCell"
+                                  [class.is-on]="colImagePosition() === ('' + n)"
+                                  (click)="setColImagePosition('' + n)"
+                                  [attr.aria-label]="'Position ' + n">
+                            <span class="re__figPosDot"></span>
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+                }
                 <div class="re__figRow">
                   <label class="re__figTbLabel">Border color</label>
                   <div class="re__figCtrl">
@@ -504,7 +629,31 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                              (ngModelChange)="setColBorderOpacity($event)"/>
                       <span class="re__figTbUnit">%</span>
                     </div>
-                    <app-color-picker [ngModel]="colBorderColor()" (ngModelChange)="setColBorderColor($event)" class="re__figSwatch"/>
+                    <button #colBorderSwatch="cdkOverlayOrigin" cdkOverlayOrigin
+                            type="button" class="re__figColorTrigger"
+                            [style.background]="colBorderColor()"
+                            (click)="colorPanelTarget.set(colorPanelTarget() === 'colBorder' ? null : 'colBorder')"
+                            aria-label="Edit border colour"></button>
+                    <input type="range" min="0" max="100"
+                           class="re__figSlider re__figSlider--opacity"
+                           [style.--c]="colBorderColor() || '#000'"
+                           [ngModel]="colBorderOpacity()"
+                           (ngModelChange)="setColBorderOpacity($event)"
+                           aria-label="Column border opacity"/>
+                    <ng-template
+                      cdkConnectedOverlay
+                      [cdkConnectedOverlayOrigin]="colBorderSwatch"
+                      [cdkConnectedOverlayOpen]="colorPanelTarget() === 'colBorder'"
+                      [cdkConnectedOverlayPositions]="overlayPositions"
+                      [cdkConnectedOverlayHasBackdrop]="true"
+                      cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+                      (backdropClick)="colorPanelTarget.set(null)">
+                      <app-colors-panel
+                        [colorOnly]="true"
+                        [ngModel]="colorPanelValue()"
+                        (ngModelChange)="onColorPanelChange($event)"
+                        (closed)="colorPanelTarget.set(null)"/>
+                    </ng-template>
                   </div>
                 </div>
                 <div class="re__figRow">
@@ -536,6 +685,36 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   </div>
                 </div>
 
+                <!-- Column layout — compact label-on-left, icon-toggles
+                     on-right pattern. The active toggle is outlined in
+                     the brand colour and shows a small checkmark badge
+                     in the top-right corner. -->
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">Column layout</label>
+                  <div class="re__figCtrl re__figCtrl--toggles">
+                    <button type="button" class="re__figIconToggle"
+                            [class.is-on]="bannerColumns() === 1"
+                            (click)="setBannerColumns(1)" title="One column">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>
+                      @if (bannerColumns() === 1) {
+                        <span class="re__figIconToggleCheck" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                      }
+                    </button>
+                    <button type="button" class="re__figIconToggle"
+                            [class.is-on]="bannerColumns() === 2"
+                            (click)="setBannerColumns(2)" title="Two columns">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="8" height="16" rx="1"/><rect x="13" y="4" width="8" height="16" rx="1"/></svg>
+                      @if (bannerColumns() === 2) {
+                        <span class="re__figIconToggleCheck" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                      }
+                    </button>
+                  </div>
+                </div>
+
                 <!-- Section background -->
                 <h5 class="re__figPanelSection">Section background</h5>
                 <div class="re__figTbRow">
@@ -548,11 +727,26 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   <span class="re__figTbToggle" [class.is-on]="bannerBgShow()" (click)="setBannerBgShow(!bannerBgShow())"></span>
                 </div>
                 @if (bannerBgShow()) {
+                  <!-- Color vs Image segmented. "Color" covers both solid
+                       colour and gradient (the ColorsPanel switches
+                       between them internally); "Image" shows the image
+                       picker. Only the controls for the active mode are
+                       rendered below. -->
                   <div class="re__figSegment">
-                    <button type="button" class="re__figSegBtn" [class.is-on]="bannerBgKind() === 'color'" (click)="setBannerBgKind('color')">Color</button>
-                    <button type="button" class="re__figSegBtn" [class.is-on]="bannerBgKind() === 'image'" (click)="setBannerBgKind('image')">Image</button>
+                    <button type="button" class="re__figSegBtn"
+                            [class.is-on]="bannerBgKind() !== 'image'"
+                            (click)="switchBgMode('color')">Color</button>
+                    <button type="button" class="re__figSegBtn"
+                            [class.is-on]="bannerBgKind() === 'image'"
+                            (click)="switchBgMode('image')">Image</button>
                   </div>
-                  @if (bannerBgKind() === 'color') {
+
+                  @if (bannerBgKind() !== 'image') {
+                    <!-- Fill color row — opacity % chip + swatch trigger.
+                         Mirrors the column-fill pattern: number on the
+                         left, swatch on the right. Clicking the swatch
+                         opens the ColorsPanel (handles colour OR
+                         gradient internally). -->
                     <div class="re__figRow">
                       <label class="re__figTbLabel">Fill color</label>
                       <div class="re__figCtrl">
@@ -562,24 +756,63 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                                  (ngModelChange)="setBannerBgOpacity($event)"/>
                           <span class="re__figTbUnit">%</span>
                         </div>
-                        <app-color-picker
-                          [ngModel]="bannerBgColor()"
-                          (ngModelChange)="setBannerBgColor($event)"
-                          class="re__figSwatch"/>
+                        <button #bgTriggerOrigin="cdkOverlayOrigin"
+                                cdkOverlayOrigin
+                                type="button"
+                                class="re__figColorTrigger"
+                                [style.background]="bgTriggerPreview()"
+                                (click)="bgPanelOpen.set(!bgPanelOpen())"
+                                aria-label="Edit background colour or gradient"></button>
+                        <!-- Opacity slider popover — appears on focus-within
+                             of the row, anchored to the chip. Checker
+                             track + current colour gradient. Suppressed
+                             in gradient mode: a single-axis opacity has
+                             no meaning against a multi-stop gradient,
+                             and the --c colour binding would otherwise
+                             render the wrong preview behind the track. -->
+                        @if (bgPanelMode() !== 'gradient') {
+                          <input type="range" min="0" max="100"
+                                 class="re__figSlider re__figSlider--opacity"
+                                 [style.--c]="bannerBgColor() || '#000'"
+                                 [ngModel]="bannerBgOpacity()"
+                                 (ngModelChange)="setBannerBgOpacity($event)"
+                                 aria-label="Background fill opacity"/>
+                        }
+                        <ng-template
+                          cdkConnectedOverlay
+                          [cdkConnectedOverlayOrigin]="bgTriggerOrigin"
+                          [cdkConnectedOverlayOpen]="bgPanelOpen()"
+                          [cdkConnectedOverlayPositions]="overlayPositions"
+                          [cdkConnectedOverlayHasBackdrop]="true"
+                          cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+                          (backdropClick)="bgPanelOpen.set(false)">
+                          <app-colors-panel
+                            [initialMode]="bgPanelMode()"
+                            [ngModel]="bgPanelValue()"
+                            (ngModelChange)="onColorsPanelChange($event)"
+                            (modeChange)="onColorsPanelMode($event)"
+                            (closed)="bgPanelOpen.set(false)"/>
+                        </ng-template>
                       </div>
                     </div>
                   } @else {
+                    <!-- Image picker: drop tile when empty, preview +
+                         Replace / Remove buttons once an image is set. -->
                     <div class="re__figBgImage">
                       @if (bannerBgImage()) {
                         <img [src]="bannerBgImage()" alt=""/>
-                        <button type="button" class="re__figTbBtnGhost" (click)="pickBannerBgImage()">Replace</button>
+                        <div class="re__figBgImageActions">
+                          <button type="button" class="re__figTbBtnGhost" (click)="pickBannerBgImage()">Replace</button>
+                          <button type="button" class="re__figTbBtnGhost" (click)="clearBannerBgImage()">Remove</button>
+                        </div>
                       } @else {
                         <button type="button" class="re__figBgImageEmpty" (click)="pickBannerBgImage()">
                           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         </button>
                       }
                     </div>
-                    @if (bannerBgImage()) {
+                  }
+                  @if (bannerBgKind() === 'image' && bannerBgImage()) {
                       <div class="re__figRow">
                         <label class="re__figTbLabel">Image opacity</label>
                         <div class="re__figCtrl">
@@ -595,7 +828,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                         </div>
                       </div>
                       <div class="re__figRow">
-                        <label class="re__figTbLabel">Background overlay</label>
+                        <label class="re__figTbLabel" [appTooltip]="'Background overlay'">Background overlay</label>
                         <div class="re__figCtrl">
                           <div class="re__figTbNum">
                             <input type="number" min="0" max="100" class="re__figTbInput re__figTbInput--num"
@@ -603,21 +836,47 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                                    (ngModelChange)="setSectionOverlayOpacity($event)"/>
                             <span class="re__figTbUnit">%</span>
                           </div>
-                          <app-color-picker [ngModel]="sectionOverlayColor()" (ngModelChange)="setSectionOverlayColor($event)" class="re__figSwatch"/>
+                          <button #sectionOverlaySwatch="cdkOverlayOrigin" cdkOverlayOrigin
+                                  type="button" class="re__figColorTrigger"
+                                  [style.background]="sectionOverlayColor()"
+                                  (click)="colorPanelTarget.set(colorPanelTarget() === 'sectionOverlay' ? null : 'sectionOverlay')"
+                                  aria-label="Edit overlay colour"></button>
+                          <ng-template
+                            cdkConnectedOverlay
+                            [cdkConnectedOverlayOrigin]="sectionOverlaySwatch"
+                            [cdkConnectedOverlayOpen]="colorPanelTarget() === 'sectionOverlay'"
+                            [cdkConnectedOverlayPositions]="overlayPositions"
+                            [cdkConnectedOverlayHasBackdrop]="true"
+                            cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+                            (backdropClick)="colorPanelTarget.set(null)">
+                            <app-colors-panel
+                              [colorOnly]="true"
+                              [ngModel]="colorPanelValue()"
+                              (ngModelChange)="onColorPanelChange($event)"
+                              (closed)="colorPanelTarget.set(null)"/>
+                          </ng-template>
+                          <input type="range" min="0" max="100" class="re__figSlider re__figSlider--opacity"
+                                 [style.--c]="sectionOverlayColor() || '#000'"
+                                 [ngModel]="sectionOverlayOpacity()"
+                                 (ngModelChange)="setSectionOverlayOpacity($event)"/>
                         </div>
                       </div>
                       <div class="re__figRow">
                         <label class="re__figTbLabel">Image scaling</label>
-                        <select class="re__figSelect"
-                                [ngModel]="sectionImageScaling()"
-                                (ngModelChange)="setSectionImageScaling($event)">
-                          <option value="cover">Cover</option>
-                          <option value="contain">Contain</option>
-                          <option value="fill">Fill</option>
-                          <option value="tile">Tile</option>
-                        </select>
+                        <div class="re__figCtrl">
+                          <app-search-dropdown
+                            class="re__figSelect"
+                            [items]="imageScalingOptions"
+                            [displayWith]="scalingDisplay"
+                            [compareWith]="scalingCompare"
+                            [toValue]="scalingToValue"
+                            [clearable]="false"
+                            [searchable]="false"
+                            [ngModel]="sectionImageScaling()"
+                            (ngModelChange)="setSectionImageScaling($any($event))"/>
+                        </div>
                       </div>
-                      <div class="re__figRow re__figRow--stack">
+                      <div class="re__figRow re__figRow--posrow">
                         <label class="re__figTbLabel">Image position</label>
                         <div class="re__figPosGrid">
                           @for (n of [1,2,3,4,5,6,7,8,9]; track n) {
@@ -631,26 +890,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                           }
                         </div>
                       </div>
-                    }
                   }
                 }
-
-                <!-- Column layout -->
-                <h5 class="re__figPanelSection">Column layout</h5>
-                <div class="re__figSegment">
-                  <button type="button" class="re__figSegBtn re__figSegBtn--icon" [class.is-on]="bannerColumns() === 1" (click)="setBannerColumns(1)" title="One column">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>
-                  </button>
-                  <button type="button" class="re__figSegBtn re__figSegBtn--icon" [class.is-on]="bannerColumns() === 2" (click)="setBannerColumns(2)" title="Two columns">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="8" height="16" rx="1"/><rect x="13" y="4" width="8" height="16" rx="1"/></svg>
-                  </button>
-                </div>
               </div>
             } @else {
               <!-- Layout tab -->
               <div class="re__figPanelBody">
                 <h5 class="re__figPanelSection">Spacing</h5>
-                <!-- Column gap: cross-arrows leading icon. -->
+                <!-- Column gap: two-vertical-columns leading icon. -->
                 <div class="re__figRow">
                   <label class="re__figTbLabel re__figTbLabel--info">
                     Column gap
@@ -660,8 +907,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   </label>
                   <div class="re__figCtrl">
                     <div class="re__figTbNum">
-                      <svg class="re__figTbNumIcon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
+                      <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
+                        <path d="M8 3h2v1H8V3Zm0 12h2v-1H8v1Zm7-11v10c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1h2c.55 0 1 .45 1 1Zm-1 0h-2v10h2V4ZM7 4v10c0 .55-.45 1-1 1H4c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1h2c.55 0 1 .45 1 1ZM6 4H4v10h2V4Z"/>
                       </svg>
                       <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
                              [ngModel]="bannerColGap()"
@@ -682,39 +929,82 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                       </span>
                     </label>
-                    <button type="button" class="re__figLinkBtn" [class.is-on]="bannerPadLinked()" (click)="toggleBannerPadLinked()" title="Link X and Y">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    <button type="button" class="re__figLinkBtn"
+                            [class.is-on]="bannerPadLinked()"
+                            (click)="toggleBannerPadLinked()"
+                            [appTooltip]="bannerPadLinked() ? 'Edit individually' : 'Link all edges'">
+                      <svg viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
+                        <path d="M4 12V6H3v6h1Z"/>
+                        <path d="M6 15h6v-1H6v1Z"/>
+                        <path d="M15 12V6h-1v6h1Z"/>
+                        <path d="M6 4h6V3H6v1Z"/>
                       </svg>
                     </button>
                   </div>
-                  <div class="re__figPadPair">
-                    <div class="re__figCtrl re__figCtrl--inline">
-                      <div class="re__figTbNum re__figTbNum--wide">
-                        <svg class="re__figTbNumIcon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="4" x2="6" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="18" y1="4" x2="18" y2="20"/></svg>
+                  <!-- Toggle off (default): two chips — horizontal
+                       padding (X = left/right) on the left, vertical
+                       padding (Y = top/bottom) on the right.
+                       Toggle on: four chips, one per edge.
+                       The toggle button itself is bannerPadLinked(). -->
+                  @if (!bannerPadLinked()) {
+                    <div class="re__figPadPair re__figPadPair--quad">
+                      <div class="re__figTbNum">
+                        <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
+                          <path d="M8 3h2v1H8V3Zm0 12h2v-1H8v1Zm7-11v10c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1h2c.55 0 1 .45 1 1Zm-1 0h-2v10h2V4ZM7 4v10c0 .55-.45 1-1 1H4c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1h2c.55 0 1 .45 1 1ZM6 4H4v10h2V4Z"/>
+                        </svg>
                         <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
                                [ngModel]="bannerColPadX()"
-                               (ngModelChange)="onPadX($event)"/>
+                               (ngModelChange)="onPadX($event)"
+                               aria-label="Horizontal padding"/>
                         <span class="re__figTbUnit">px</span>
                       </div>
-                      <input type="range" min="0" max="200" class="re__figSlider"
-                             [ngModel]="bannerColPadX()"
-                             (ngModelChange)="onPadX($event)"/>
-                    </div>
-                    <div class="re__figCtrl re__figCtrl--inline">
-                      <div class="re__figTbNum re__figTbNum--wide">
-                        <svg class="re__figTbNumIcon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+                      <div class="re__figTbNum">
+                        <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
+                          <path d="M14 3H4c-.55 0-1 .45-1 1v2c0 .55.45 1 1 1h10c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1Zm0 3H4V4h10v2ZM4 10H3V8h1v2Zm10-2h1v2h-1V8Zm0 3H4c-.55 0-1 .45-1 1v2c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-2c0-.55-.45-1-1-1Zm0 3H4v-2h10v2Z"/>
+                        </svg>
                         <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
                                [ngModel]="bannerColPadY()"
-                               (ngModelChange)="onPadY($event)"/>
+                               (ngModelChange)="onPadY($event)"
+                               aria-label="Vertical padding"/>
                         <span class="re__figTbUnit">px</span>
                       </div>
-                      <input type="range" min="0" max="200" class="re__figSlider"
-                             [ngModel]="bannerColPadY()"
-                             (ngModelChange)="onPadY($event)"/>
                     </div>
-                  </div>
+                  } @else {
+                    <div class="re__figPadPair re__figPadPair--quad">
+                      <div class="re__figTbNum">
+                        <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor"><path d="M14 3H4a1 1 0 00-1 1v2a1 1 0 001 1h10a1 1 0 001-1V4a1 1 0 00-1-1zm0 1v2H4V4h10zM3 11h1V9H3v2zm7 4v-1H8v1h2zm5-4h-1V9h1v2zm-1 2h1v1a1 1 0 01-1 1h-1v-1h1v-1zM3 13h1v1h1v1H4a1 1 0 01-1-1v-1z"/></svg>
+                        <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
+                               [ngModel]="bannerColPadTop()"
+                               (ngModelChange)="setBannerPadTop($event)"
+                               aria-label="Top padding"/>
+                        <span class="re__figTbUnit">px</span>
+                      </div>
+                      <div class="re__figTbNum">
+                        <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor"><path d="M7 3v1h2V3H7zm-4 7h1V8H3v2zm4 5v-1h2v1H7zm-2-1v1H4a1 1 0 01-1-1v-1h1v1h1zM5 3v1H4v1H3V4a1 1 0 011-1h1zm6 1a1 1 0 011-1h2a1 1 0 011 1v10a1 1 0 01-1 1h-2a1 1 0 01-1-1V4zm1 0v10h2V4h-2z"/></svg>
+                        <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
+                               [ngModel]="bannerColPadRight()"
+                               (ngModelChange)="setBannerPadRight($event)"
+                               aria-label="Right padding"/>
+                        <span class="re__figTbUnit">px</span>
+                      </div>
+                      <div class="re__figTbNum">
+                        <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor"><path d="M8 3v1h2V3H8zm7 4h-1v2h1V7zM3 7h1v2H3V7zm1-2H3V4a1 1 0 011-1h1v1H4v1zm11 0h-1V4h-1V3h1a1 1 0 011 1v1zm-1 6a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2a1 1 0 011-1h10zm0 1H4v2h10v-2z"/></svg>
+                        <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
+                               [ngModel]="bannerColPadBottom()"
+                               (ngModelChange)="setBannerPadBottom($event)"
+                               aria-label="Bottom padding"/>
+                        <span class="re__figTbUnit">px</span>
+                      </div>
+                      <div class="re__figTbNum">
+                        <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor"><path d="M3 4a1 1 0 011-1h2a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm1 0v10h2V4H4zm7-1v1H9V3h2zm4 5h-1v2h1V8zm-4 7v-1H9v1h2zm2-11V3h1a1 1 0 011 1v1h-1V4h-1zm0 11v-1h1v-1h1v1a1 1 0 01-1 1h-1z"/></svg>
+                        <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
+                               [ngModel]="bannerColPadLeft()"
+                               (ngModelChange)="setBannerPadLeft($event)"
+                               aria-label="Left padding"/>
+                        <span class="re__figTbUnit">px</span>
+                      </div>
+                    </div>
+                  }
                 </div>
                 <!-- Vertical margins: horizontal-bars leading icon. -->
                 <div class="re__figRow">
@@ -726,7 +1016,9 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   </label>
                   <div class="re__figCtrl">
                     <div class="re__figTbNum">
-                      <svg class="re__figTbNumIcon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+                      <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
+                        <path d="M14 3H4c-.55 0-1 .45-1 1v2c0 .55.45 1 1 1h10c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1Zm0 3H4V4h10v2ZM4 10H3V8h1v2Zm10-2h1v2h-1V8Zm0 3H4c-.55 0-1 .45-1 1v2c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-2c0-.55-.45-1-1-1Zm0 3H4v-2h10v2Z"/>
+                      </svg>
                       <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
                              [ngModel]="bannerVMargin()"
                              (ngModelChange)="setBannerVMargin($event)"/>
@@ -747,6 +1039,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   </svg>
                 </button>
                 @if (bannerResponsiveOpen()) {
+                  <p class="re__figPanelHint">Choose how your content behaves when the screen size changes.</p>
                   <div class="re__figRow">
                     <label class="re__figTbLabel re__figTbLabel--info">
                       Behavior
@@ -754,19 +1047,39 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                       </span>
                     </label>
-                    <div class="re__figSegment re__figSegment--icon">
-                      <button type="button" class="re__figSegBtn re__figSegBtn--icon" [class.is-on]="bannerBehavior() === 'stacked'" (click)="setBannerBehavior('stacked')" title="Stack vertically">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="6" rx="1"/><rect x="4" y="13" width="16" height="6" rx="1"/></svg>
+                    <div class="re__figCtrl re__figCtrl--toggles">
+                      <button type="button" class="re__figIconToggle"
+                              [class.is-on]="bannerBehavior() === 'stacked'"
+                              (click)="setBannerBehavior('stacked')"
+                              [appTooltip]="'Stack'">
+                        <svg viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
+                          <path d="M14 3H4c-.55 0-1 .45-1 1v3c0 .55.45 1 1 1h10c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1Zm0 4H4V4h10v3Zm0 3H4c-.55 0-1 .45-1 1v3c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-3c0-.55-.45-1-1-1Zm0 4H4v-3h10v3Z"/>
+                        </svg>
+                        @if (bannerBehavior() === 'stacked') {
+                          <span class="re__figIconToggleCheck" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          </span>
+                        }
                       </button>
-                      <button type="button" class="re__figSegBtn re__figSegBtn--icon" [class.is-on]="bannerBehavior() === 'horizontal'" (click)="setBannerBehavior('horizontal')" title="Keep horizontal">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="8" height="12" rx="1"/><rect x="13" y="6" width="8" height="12" rx="1"/></svg>
+                      <button type="button" class="re__figIconToggle"
+                              [class.is-on]="bannerBehavior() === 'horizontal'"
+                              (click)="setBannerBehavior('horizontal')"
+                              [appTooltip]="'Wrap'">
+                        <svg viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
+                          <path d="M2 13.008h5.004v1H2v-1Zm11.008-5.004H2v1h11.008c1.1 0 2.001.901 2.001 2.002 0 1.101-.9 2.002-2.001 2.002h-1.781l1.14-1.151c.19-.2.19-.51 0-.71-.2-.2-.51-.19-.71 0l-2.352 2.371 2.312 2.332c.1.1.23.15.35.15.12 0 .25-.05.35-.14.2-.19.2-.51 0-.71l-1.14-1.152h1.82A2.998 2.998 0 0 0 16 10.997a2.998 2.998 0 0 0-3.002-3.002l.01.01ZM15.009 3H2v1h13.01V3Z"/>
+                        </svg>
+                        @if (bannerBehavior() === 'horizontal') {
+                          <span class="re__figIconToggleCheck" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          </span>
+                        }
                       </button>
                     </div>
                   </div>
                   <div class="re__figRow">
                     <label class="re__figTbLabel re__figTbLabel--info">
                       Breakpoint
-                      <span class="re__figInfo" [appTooltip]="'Viewport width (px) below which the banner adopts the chosen Behavior.'">
+                      <span class="re__figInfo" [appTooltip]="'Set the screen width (in pixels) where your layout changes to fit smaller screens.'">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                       </span>
                     </label>
@@ -841,10 +1154,25 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                            (ngModelChange)="onDesignBorderOpacity($event)"/>
                     <span class="re__figTbUnit">%</span>
                   </div>
-                  <app-color-picker
-                    [ngModel]="designBorderColor()"
-                    (ngModelChange)="onDesignBorderColor($event)"
-                    class="re__figSwatch"/>
+                  <button #designBorderSwatch="cdkOverlayOrigin" cdkOverlayOrigin
+                          type="button" class="re__figColorTrigger"
+                          [style.background]="designBorderColor()"
+                          (click)="colorPanelTarget.set(colorPanelTarget() === 'designBorder' ? null : 'designBorder')"
+                          aria-label="Edit border colour"></button>
+                  <ng-template
+                    cdkConnectedOverlay
+                    [cdkConnectedOverlayOrigin]="designBorderSwatch"
+                    [cdkConnectedOverlayOpen]="colorPanelTarget() === 'designBorder'"
+                    [cdkConnectedOverlayPositions]="overlayPositions"
+                    [cdkConnectedOverlayHasBackdrop]="true"
+                    cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+                    (backdropClick)="colorPanelTarget.set(null)">
+                    <app-colors-panel
+                      [colorOnly]="true"
+                      [ngModel]="colorPanelValue()"
+                      (ngModelChange)="onColorPanelChange($event)"
+                      (closed)="colorPanelTarget.set(null)"/>
+                  </ng-template>
                   <input type="range" min="0" max="100" class="re__figSlider re__figSlider--opacity"
                          [style.--c]="designBorderColor()"
                          [ngModel]="designBorderOpacity()"
@@ -934,17 +1262,88 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
            hosted video). Position tracks the selected figure's
            bounding rect. Click-outside deselects. -->
       @if (selectedFigure() && figureToolbar().show) {
-        <div class="re__figTb"
-             [style.top.px]="figureToolbar().top"
-             [style.left.px]="figureToolbar().left"
-             (mousedown)="$event.stopPropagation()">
-          <!-- Size + Align — hidden in banner mode, where the figure
-               only resizes horizontally and uses its own valign +
-               column controls. -->
-          @if (!isBannerFigure()) {
-            <!-- Size -->
+        @if (isBannerFigure()) {
+          <!-- ─── Banner toolbar ─────────────────────────────────────────
+               Distinct from image: Settings + Banner are labelled (the
+               two primary actions); VAlign, Add column, Replace, Delete
+               are icon-only with tooltips. -->
+          <div class="re__figTb re__figTb--banner"
+               [style.top.px]="figureToolbar().top"
+               [style.left.px]="figureToolbar().left"
+               (mousedown)="$event.stopPropagation()">
+            <button type="button"
+                    class="re__figTbBtn re__figTbBtn--labelled"
+                    [class.is-on]="figPanel() === 'settings' || figPanel() === 'banner-design' || figPanel() === 'banner-layout'"
+                    (click)="openFigPanel('settings')"
+                    [appTooltip]="'Open section settings'">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Settings</span>
+            </button>
+            <span class="re__figTbSep"></span>
+            <button type="button"
+                    class="re__figTbBtn re__figTbBtn--labelled is-on"
+                    (click)="toggleBanner()"
+                    [appTooltip]="'Convert back to an inline image'">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="1"/>
+                <line x1="2" y1="11" x2="22" y2="11"/>
+              </svg>
+              <span>Banner</span>
+            </button>
             <div class="re__figTbDd">
-              <button type="button" class="re__figTbBtn" (click)="toggleFigMenu($event, 'size')" title="Size">
+              <button type="button" class="re__figTbBtn"
+                      (click)="toggleFigMenu($event, 'valign')"
+                      [appTooltip]="'Vertical alignment'">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <rect x="9" y="9" width="6" height="9"/>
+                  <line x1="3" y1="20" x2="21" y2="20"/>
+                </svg>
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              @if (figMenu() === 'valign') {
+                <div class="re__figTbMenu">
+                  <button type="button" class="re__figTbItem" [class.is-on]="bannerVAlign() === 'top'"    (click)="setBannerVAlign('top')">Align top</button>
+                  <button type="button" class="re__figTbItem" [class.is-on]="bannerVAlign() === 'middle'" (click)="setBannerVAlign('middle')">Align middle</button>
+                  <button type="button" class="re__figTbItem" [class.is-on]="bannerVAlign() === 'bottom'" (click)="setBannerVAlign('bottom')">Align bottom</button>
+                </div>
+              }
+            </div>
+            <button type="button" class="re__figTbBtn"
+                    (click)="addBannerColumn()"
+                    [appTooltip]="'Add a column'">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+            <button type="button" class="re__figTbBtn re__figTbBtn--danger"
+                    (click)="deleteSelectedFigure()"
+                    [appTooltip]="'Delete banner'">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+                <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+          </div>
+        } @else {
+          <!-- ─── Image / embed toolbar ──────────────────────────────────
+               Used for inline images, embeds, hosted video. Size + Align
+               appear for sized figures; Banner toggle + Settings + Design
+               + Link + Replace + Delete are the standard set. -->
+          <div class="re__figTb re__figTb--image"
+               [style.top.px]="figureToolbar().top"
+               [style.left.px]="figureToolbar().left"
+               (mousedown)="$event.stopPropagation()">
+            <div class="re__figTbDd">
+              <button type="button" class="re__figTbBtn"
+                      (click)="toggleFigMenu($event, 'size')"
+                      [appTooltip]="'Change image size'">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="6" width="18" height="12" rx="1"/>
                 </svg>
@@ -959,9 +1358,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                 </div>
               }
             </div>
-            <!-- Align -->
             <div class="re__figTbDd">
-              <button type="button" class="re__figTbBtn" (click)="toggleFigMenu($event, 'align')" title="Alignment">
+              <button type="button" class="re__figTbBtn"
+                      (click)="toggleFigMenu($event, 'align')"
+                      [appTooltip]="'Alignment'">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="3" y1="6"  x2="21" y2="6"/>
                   <line x1="6" y1="12" x2="18" y2="12"/>
@@ -982,65 +1382,30 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                 </div>
               }
             </div>
-          }
-          <!-- Banner toggle (image only) -->
-          @if (isImageFigure()) {
-            <button type="button" class="re__figTbBtn" [class.is-on]="isBannerFigure()" (click)="toggleBanner()" title="Banner">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="6" width="20" height="12" rx="1"/>
-                <line x1="2" y1="11" x2="22" y2="11"/>
-              </svg>
-            </button>
-            @if (isBannerFigure()) {
-              <!-- Vertical-alignment dropdown (banner only) -->
-              <div class="re__figTbDd">
-                <button type="button" class="re__figTbBtn" (click)="toggleFigMenu($event, 'valign')" title="Vertical alignment">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="3" y1="6" x2="21" y2="6"/>
-                    <rect x="9" y="9" width="6" height="9"/>
-                    <line x1="3" y1="20" x2="21" y2="20"/>
-                  </svg>
-                  <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                @if (figMenu() === 'valign') {
-                  <div class="re__figTbMenu">
-                    <button type="button" class="re__figTbItem" [class.is-on]="bannerVAlign() === 'top'"    (click)="setBannerVAlign('top')">Align top</button>
-                    <button type="button" class="re__figTbItem" [class.is-on]="bannerVAlign() === 'middle'" (click)="setBannerVAlign('middle')">Align middle</button>
-                    <button type="button" class="re__figTbItem" [class.is-on]="bannerVAlign() === 'bottom'" (click)="setBannerVAlign('bottom')">Align bottom</button>
-                  </div>
-                }
-              </div>
-              <!-- Add column (banner only) -->
-              <button type="button" class="re__figTbBtn" (click)="addBannerColumn()" title="Add column">
+            @if (isImageFigure()) {
+              <button type="button"
+                      class="re__figTbBtn re__figTbBtn--labelled"
+                      [class.is-on]="figPanel() === 'settings'"
+                      (click)="openFigPanel('settings')"
+                      [appTooltip]="'Image settings'">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span>Settings</span>
+              </button>
+              <button type="button" class="re__figTbBtn"
+                      [class.is-on]="figPanel() === 'design'"
+                      (click)="openFigPanel('design')"
+                      [appTooltip]="'Design (colour, border, corners)'">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                  <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18z"/>
+                  <line x1="2" y1="2" x2="9.586" y2="9.586"/>
+                  <circle cx="11" cy="11" r="2"/>
                 </svg>
               </button>
             }
-          }
-          <!-- Settings (every figure type — opens Image panel for
-               normal images, Layout-section panel for banners). -->
-          @if (isImageFigure()) {
-            <button type="button" class="re__figTbBtn" [class.is-on]="figPanel() === 'settings' || figPanel() === 'banner-design' || figPanel() === 'banner-layout'" (click)="openFigPanel('settings')" title="Settings">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-              </svg>
-            </button>
-          }
-          <!-- Design — image-only (banner uses Layout section panel
-               accessed via Settings). -->
-          @if (isImageFigure() && !isBannerFigure()) {
-            <button type="button" class="re__figTbBtn" [class.is-on]="figPanel() === 'design'" (click)="openFigPanel('design')" title="Design">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 19l7-7 3 3-7 7-3-3z"/>
-                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18z"/>
-                <line x1="2" y1="2" x2="9.586" y2="9.586"/>
-                <circle cx="11" cy="11" r="2"/>
-              </svg>
-            </button>
-          }
           <!-- Link (normal image figures only — hidden in banner). -->
           @if (isImageFigure() && !isBannerFigure()) {
             <div class="re__figTbDd">
@@ -1092,7 +1457,9 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             </svg>
           </button>
           <!-- Delete -->
-          <button type="button" class="re__figTbBtn re__figTbBtn--danger" (click)="deleteSelectedFigure()" title="Delete">
+          <button type="button" class="re__figTbBtn re__figTbBtn--danger"
+                  (click)="deleteSelectedFigure()"
+                  [appTooltip]="'Delete'">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="3 6 5 6 21 6"/>
               <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -1101,6 +1468,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             </svg>
           </button>
         </div>
+        }
       }
 
       </div>
@@ -1392,6 +1760,15 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
     .re__figTbBtn:hover { background: #f1f5f9; color: #0f172a; }
     .re__figTbBtn--danger:hover { background: #fef2f2; color: #b91c1c; }
+    /* Labelled variant — primary actions (Settings, Banner) show the
+       label text next to the icon. Slightly more horizontal padding so
+       the chip reads as a button rather than a bare icon. */
+    .re__figTbBtn--labelled { padding: 6px 12px; font-size: 13px; font-weight: 600; }
+    .re__figTbBtn--labelled.is-on {
+      background: #e6f7fa;
+      color: #0e7490;
+    }
+    .re__figTb--banner { padding: 6px 12px; }
     .re__figTbSep { width: 1px; height: 18px; background: #e2e8f0; margin: 0 4px; }
     .re__figTbDd { position: relative; display: inline-flex; }
     .re__figTbMenu {
@@ -1499,16 +1876,18 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__figTbRow { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #1e293b; padding: 2px 0; }
     .re__figTbRow--grid { gap: 12px; }
     .re__figTbRow .re__figTbToggle { cursor: pointer; }
-    /* Number + unit combined into a single rounded "chip" — visually
-       one control. Tap the input to type, the unit on the right is
-       static muted text. */
+    /* Number + unit combined into a single rounded chip — number input
+       in the middle, "px"/"%" suffix on the right, with an optional
+       prefix icon (.re__figTbNumIcon) on the left. Same 118px Wix
+       Input width regardless of whether a prefix icon is present, so
+       chips line up vertically across every row in the panel. */
     .re__figTbNum {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 0 10px 0 12px;
-      height: 32px;
-      width: 96px;
+      gap: 6px;
+      padding: 0 10px;
+      height: 28px;
+      width: 118px;
       background: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
@@ -1575,12 +1954,79 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       z-index: 9;
       white-space: nowrap;
     }
-    /* Selected column outline — distinct from the figure outline so
-       it's clear which slot the toolbar is targeting. */
-    :host ::ng-deep .re__surface .re-banner-col.is-selected-col {
-      outline: 1.5px solid #32acc1 !important;
+    /* ─── Banner interaction states (Wix style) ─────────────────────
+       Layered on top of the existing selection / column outlines:
+
+       1. Unfocused          — clean, no decoration
+       2. Hover (not picked) — 1px brand outline at 45% alpha
+       3. Selected banner    — 1.5px brand outline at 70% alpha
+                               + e/w resize handles via .re__resizer
+       4. Hover column       — dashed brand outline inside selected banner
+       5. Selected column    — solid 2px brand outline + soft brand fill
+                               + pill drag handles at top and bottom
+       6. Active drag        — slightly heavier outline + ring shadow */
+    :host ::ng-deep .re__surface .re-banner:hover:not(.is-selected) {
+      outline: 1px solid rgba(50,172,193,.45) !important;
       outline-offset: 2px !important;
-      background: rgba(50,172,193,.04) !important;
+    }
+    :host ::ng-deep .re__surface .re-banner.is-selected {
+      outline: 1.5px solid rgba(50,172,193,.7) !important;
+      outline-offset: 2px !important;
+    }
+    :host ::ng-deep .re__surface .re-banner.is-selected .re-banner-col:hover:not(.is-selected-col) {
+      outline: 1.5px dashed rgba(50,172,193,.6) !important;
+      outline-offset: 0 !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-col.is-selected-col {
+      /* Wix doesn't draw a solid outline on the selected column —
+         it relies on the top/bottom pill handles + a soft brand tint
+         to mark the selection. An outline that spans the full banner
+         width reads as a divider stripe, especially in 1-column
+         layouts, which is why we ditched it. */
+      outline: none !important;
+      background-color: rgba(50,172,193,.06) !important;
+    }
+    /* Pill drag-handles on a selected column. These are real DOM
+       elements (.re-banner-col-handle) added on selection because
+       the column's ::before / ::after pseudos are already used for
+       the image background and overlay layers — we can't stack a
+       third use on the same pseudo. */
+    :host ::ng-deep .re__surface .re-banner-col-handle {
+      position: absolute !important;
+      left: 50% !important;
+      width: 28px !important;
+      height: 8px !important;
+      margin-left: -14px !important;
+      border-radius: 999px !important;
+      pointer-events: none !important;
+      z-index: 3 !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-col-handle--top {
+      top: -10px !important;
+      background: #32acc1 !important;
+      box-shadow: 0 1px 4px rgba(50,172,193,.4) !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-col-handle--bottom {
+      bottom: -10px !important;
+      background: #ffffff !important;
+      border: 1px solid #32acc1 !important;
+    }
+    /* Active drag state — applied while a resize handle is being
+       dragged. Heavier outline + soft ring so the live feedback reads
+       distinctly from the static "selected" outline. */
+    :host ::ng-deep .re__surface .re-banner.is-resizing,
+    :host ::ng-deep .re__surface .re-banner-col.is-resizing {
+      outline: 2px solid #32acc1 !important;
+      outline-offset: 2px !important;
+      box-shadow: 0 0 0 4px rgba(50,172,193,.18) !important;
+    }
+    /* Focused resize handle — emphasised when keyboard-focused or
+       hovered, so the user can see which axis the next drag will
+       move along. */
+    :host ::ng-deep .re__surface .re__resizer:hover,
+    :host ::ng-deep .re__surface .re__resizer:focus-visible {
+      transform: scale(1.2);
+      box-shadow: 0 2px 6px rgba(50,172,193,.4) !important;
     }
 
     /* Floating, draggable Image panel — Wix's right-side "Image"
@@ -1589,9 +2035,15 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
        on top of the canvas without disturbing the contenteditable
        text flow underneath. */
     .re__figPanel {
-      position: absolute;
-      width: 300px;
-      max-height: calc(100% - 32px);
+      /* Viewport-pinned so the panel can be dragged anywhere on the
+         page. Height is content-driven (auto) up to a viewport cap —
+         short tabs (e.g. Layout) collapse to their content height,
+         tall tabs (e.g. Design with Column + Section background)
+         grow up to the cap and then scroll internally via the body's
+         overflow-y. */
+      position: fixed;
+      width: 320px;
+      max-height: calc(100vh - 32px);
       background: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 12px;
@@ -1599,7 +2051,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      z-index: 10;
+      z-index: 1000;
     }
     .re__figPanelHead {
       display: flex;
@@ -1634,7 +2086,11 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
     .re__figPanelTab:hover { color: #0f172a; }
     .re__figPanelTab.is-on { color: #32acc1; border-bottom-color: #32acc1; }
-    .re__figPanelBody { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    .re__figPanelBody { padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    /* Sub-section hint paragraph — small grey copy beneath a section
+       heading, like the reference's "Choose how your content behaves
+       when the screen size changes." text under Responsive behavior. */
+    .re__figPanelHint { margin: -8px 0 4px; font-size: 12px; color: #64748b; line-height: 1.4; }
     .re__figPanelSection { margin: 6px 0 2px; font-size: 13px; font-weight: 700; color: #0f172a; }
 
     /* Segmented selector used inside the Layout-section panel
@@ -1663,10 +2119,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     /* Section-background image picker tile. Big "+" when empty,
        compact thumbnail + Replace button once filled. */
     .re__figBgImage { display: flex; flex-direction: column; gap: 6px; }
-    .re__figBgImage img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; }
+    /* Image preview tile — shorter aspect (16/9) so the panel doesn't
+       balloon vertically when an image is set. */
+    .re__figBgImage img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .re__figBgImageActions { display: flex; gap: 6px; }
+    .re__figBgImageActions .re__figTbBtnGhost { flex: 1; }
     .re__figBgImageEmpty {
       width: 100%;
-      aspect-ratio: 4/3;
+      aspect-ratio: 16/9;
       background: #f8fafc;
       border: 2px dashed #cbd5e1;
       border-radius: 8px;
@@ -1675,43 +2135,116 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       display: flex; align-items: center; justify-content: center;
     }
     .re__figBgImageEmpty:hover { border-color: #32acc1; color: #32acc1; }
-
-    /* Native <select> styled to match the panel inputs. */
-    .re__figSelect {
-      flex: 1;
-      padding: 6px 30px 6px 12px;
-      height: 32px;
-      font: inherit;
-      font-size: 13px;
-      color: #0f172a;
-      background: #fff url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e") no-repeat right 10px center;
+    /* Swatch chip that triggers the floating Colors panel — shows the
+       current colour or gradient as its background. Subtle border so a
+       white-on-white fill is still discoverable. The "is-active" state
+       (i.e. this swatch's colour/gradient is what's being painted, vs an
+       image taking over) gets a teal ring to make the precedence clear. */
+    .re__figBgTrigger {
+      width: 56px;
+      height: 28px;
+      padding: 0;
+      border: 1px solid rgba(15,23,42,.18);
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: inset 0 0 0 1px #fff;
+    }
+    .re__figBgTrigger.is-active { border-color: #32acc1; box-shadow: 0 0 0 2px rgba(50,172,193,.18); }
+    .re__figBgTrigger:hover { border-color: #94a3b8; }
+    /* Compact 28×28 swatch trigger — drop-in replacement for the inline
+       app-color-picker in column-fill / column-border / overlay /
+       design-border rows. Opens the ColorsPanel in colour-only mode. */
+    .re__figColorTrigger {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 1px solid rgba(15,23,42,.25);
+      border-radius: 4px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .re__figColorTrigger:hover { border-color: #94a3b8; }
+    /* Icon toggle pair — used for the Column-layout selector. Each
+       toggle is a 36×36 outlined button; the active one gets a brand
+       border + a tiny blue checkmark badge in the top-right corner. */
+    .re__figCtrl--toggles { gap: 6px; }
+    .re__figIconToggle {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      background: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
-      -webkit-appearance: none;
-      appearance: none;
+      color: #475569;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
-    .re__figSelect:focus { outline: none; border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.15); }
+    .re__figIconToggle:hover { color: #0f172a; border-color: #cbd5e1; }
+    .re__figIconToggle.is-on {
+      border-color: #32acc1;
+      color: #32acc1;
+      box-shadow: 0 0 0 1px #32acc1 inset;
+    }
+    .re__figIconToggleCheck {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 14px;
+      height: 14px;
+      background: #32acc1;
+      border: 1.5px solid #fff;
+      border-radius: 50%;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Container slot for the SearchDropdown that replaced the
+       native <select>. Width matches the panel's other right-side
+       chips so labels and controls line up. No background/chevron
+       styling — the dropdown component owns its own chrome. */
+    .re__figSelect { display: inline-flex; min-width: 140px; }
 
     /* 3x3 image-position grid. Each cell is a button with a small
        dot — clicking sets the picked position. */
     .re__figPosGrid {
       display: grid;
-      grid-template-columns: repeat(3, 28px);
-      grid-template-rows: repeat(3, 28px);
-      gap: 4px;
-      justify-content: end;
+      grid-template-columns: repeat(3, 24px);
+      grid-template-rows: repeat(3, 24px);
+      gap: 3px;
     }
     .re__figPosCell {
-      width: 28px; height: 28px;
+      width: 24px; height: 24px;
       background: #fff;
       border: 1px solid #e2e8f0;
-      border-radius: 4px;
+      border-radius: 3px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       padding: 0;
+    }
+    /* The position row is a 2-column CSS grid: label auto-sized on the
+       left, position-grid pinned to a fixed-width right column. The
+       double-class selector boosts specificity above the base
+       .re__figRow display:flex rule (which is defined later in this
+       stylesheet) so the grid display actually applies — without it
+       the row falls back to flex and the position grid bleeds into
+       the scaling row above. */
+    .re__figRow.re__figRow--posrow {
+      display: grid;
+      grid-template-columns: 1fr 84px;
+      gap: 12px;
+      align-items: center;
+      /* Ensure the row is tall enough for the 78px (3×24+gaps) position
+         grid; without this the row's flex/min-height inheritance lets
+         the grid bleed into the next row. */
+      min-height: 84px;
     }
     .re__figPosCell:hover { border-color: #cbd5e1; }
     .re__figPosCell.is-on { background: #32acc1; border-color: #32acc1; }
@@ -1719,11 +2252,21 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__figPosCell.is-on .re__figPosDot { background: #fff; opacity: 1; }
 
     /* Variants used by the new Layout-tab rows. */
-    .re__figRow--stack { flex-direction: column; align-items: stretch; gap: 6px; }
-    .re__figLabelLine { display: flex; align-items: center; justify-content: space-between; }
-    .re__figLabelLine .re__figTbLabel { flex: 1; }
+    .re__figRow--stack { flex-direction: column; align-items: stretch; gap: 4px; }
+    /* Label row above the Column-padding chip grid — label text on the
+       left, link button pushed to the right edge so it lines up with
+       the rightmost chip below. Mirrors the Wix .__labelRow rule. */
+    .re__figLabelLine {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: 8px;
+    }
+    .re__figLabelLine .re__figTbLabel { flex: 0 0 auto; }
     .re__figLinkBtn {
-      width: 26px; height: 26px;
+      width: 30px; height: 30px;
+      padding: 4px;
       background: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 6px;
@@ -1732,12 +2275,37 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
     .re__figLinkBtn:hover { color: #0f172a; border-color: #cbd5e1; }
     .re__figLinkBtn.is-on { background: #e6f7fa; color: #0e7490; border-color: #32acc1; }
-    .re__figPadPair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .re__figCtrl--inline { flex-direction: column; align-items: stretch; gap: 4px; }
-    .re__figTbNum--wide { width: 100%; }
+    /* Column-padding chip layout. Default is 2 chips side-by-side
+       (legacy X/Y mode); the --quad modifier opens it into a 2×2
+       grid for the 4-edge view (top/right/bottom/left chips). */
+    .re__figPadPair {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      align-items: center;
+    }
+    /* 2×2 chip grid for Column padding — chips span the full row
+       width (two equal columns, stretched) and the grid itself runs
+       edge-to-edge, so the rightmost chip lines up with the right
+       edge of the single-chip rows (Column gap, Vertical margins). */
+    .re__figPadPair--quad {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-auto-rows: auto;
+      gap: 6px;
+      width: 100%;
+    }
+    .re__figPadPair--quad .re__figTbNum { width: 100%; min-width: 0; }
+    .re__figCtrl--inline {
+      flex-direction: row;
+      align-items: center;
+      gap: 0;
+    }
+    .re__figTbNum--wide { width: 96px; }
     .re__figTbNumIcon { color: #94a3b8; flex-shrink: 0; }
     .re__figSegment--icon { padding: 4px; gap: 4px; }
     .re__figTbLabel--info { display: inline-flex; align-items: center; gap: 4px; }
@@ -1757,14 +2325,50 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       text-align: start;
     }
     .re__figPanelSection--toggle svg { color: #64748b; transition: transform 120ms; }
-    /* Design-tab rows — label on the LEFT, control group on the
-       RIGHT, vertically centred. The unit pill (px / %) sits INSIDE
-       the same rounded box as the number for a single visual
-       element per setting. The slider still floats in as a popover
-       on focus. */
-    .re__figRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: relative; min-height: 32px; }
-    .re__figRow > .re__figTbLabel { flex: 1; font-size: 13px; color: #1e293b; font-weight: 500; }
-    .re__figCtrl { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    /* Small "no color" button — red diagonal slash inside a white
+       square. Shown next to every colour picker; clicking sets the
+       corresponding opacity to 0 so the colour is effectively cleared. */
+    .re__figNoColor {
+      width: 28px; height: 28px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .re__figNoColor:hover { border-color: #cbd5e1; }
+    .re__figNoColor.is-on { border-color: #ef4444; box-shadow: 0 0 0 2px rgba(239,68,68,.15); }
+    /* Compact labeled slider row — label · chip · slider, all
+       inline and vertically centred. Generous gap between the
+       three elements. The label keeps natural width on the left,
+       the input chip is narrow (~80px) in the middle, the slider
+       expands to fill the remaining space. */
+    .re__figRow { display: flex; align-items: center; gap: 14px; min-height: 32px; position: relative; }
+    /* Labels are width-capped so longer copy (e.g. "Background overlay")
+       truncates with ellipsis. Hovering shows the full text via the
+       appTooltip directive on the label itself. Without the cap the
+       label would grow into the control column and push the chip/
+       dropdown off the right edge. */
+    .re__figRow > .re__figTbLabel {
+      flex: 0 0 auto;
+      font-size: 13px;
+      color: #4a4a55;
+      font-weight: 500;
+      min-width: 88px;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: default;
+    }
+    .re__figCtrl { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; justify-content: flex-end; }
+    /* Gradient picker fills the panel width — its own card chrome
+       (border + padding) provides the visual frame, so no row wrapper. */
+    .re__figGradient { display: block; width: 100%; }
     /* Squash the shared <app-color-picker> down to just its swatch.
        Keep the swatch's native size + inline-style background so the
        picked colour stays visible — only the hex text and chevron
@@ -1781,55 +2385,67 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__figSwatch ::ng-deep button > span > span:nth-child(2),
     .re__figSwatch ::ng-deep button > svg { display: none !important; }
     /* Make the colour square a touch larger so it reads as a single
-       chip rather than a tiny dot. */
+       chip rather than a tiny dot. Crisper border so even a
+       pure-white fill is distinguishable against the white panel —
+       earlier I tried an inset white box-shadow for the same
+       reason but it covered the actual colour. Border alone is
+       enough. The cp-checker "empty" pattern is also disabled so
+       the picker's Clear all action is the single source of truth
+       for transparent. */
     .re__figSwatch ::ng-deep button > span > span:first-child {
       width: 22px !important;
       height: 22px !important;
+      border: 1px solid rgba(15,23,42,.25) !important;
       border-radius: 4px !important;
+      background-image: none !important;
     }
+    /* Pop-out slider — resting state hides it entirely, focus-within
+       reveals a floating pill anchored to the right of the input
+       chip. Track is thin (3px) with primary-coloured fill and a
+       circular primary thumb; opacity variant uses a checkerboard
+       backdrop. Sub-200px panel-friendly: tucks under the row so it
+       can't escape the panel edge. */
+    /* Slider popover — fixed-positioned so it escapes any clipping
+       container. Repositioned by positionFigSlider() to sit to the
+       RIGHT of the focused chip (Wix-style "popover to the side"),
+       not below it. Narrow (88px) and wrapped in a white pill chrome
+       so it reads as a proper floating popover. */
     .re__figSlider {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      margin-top: 6px;
-      padding: 10px 12px;
+      position: fixed;
+      width: 88px;
+      padding: 8px 10px;
       background: #fff;
       border: 1px solid #e2e8f0;
-      border-radius: 10px;
+      border-radius: 999px;
       box-shadow: 0 6px 18px rgba(15,23,42,.12);
-      z-index: 12;
       -webkit-appearance: none;
       appearance: none;
-      height: auto;
+      height: 28px;
       box-sizing: border-box;
       cursor: pointer;
+      outline: none;
       opacity: 0;
       visibility: hidden;
-      transform: translateY(-4px);
+      transform: translateX(-4px) scale(.96);
+      transform-origin: center left;
       transition: opacity 120ms ease, transform 120ms ease, visibility 0s linear 120ms;
+      z-index: 9999;
     }
-    /* Reveal when the parent row has focus inside (number input OR
-       the slider itself — keeps the popover open while the user is
-       actually dragging the thumb). */
     .re__figRow:focus-within .re__figSlider {
       opacity: 1;
       visibility: visible;
-      transform: translateY(0);
+      transform: translateX(0) scale(1);
       transition: opacity 120ms ease, transform 120ms ease, visibility 0s;
     }
-    /* The native range input renders its own thin track inside the
-       popover container. */
-    .re__figSlider::-webkit-slider-runnable-track,
-    .re__figSlider::-moz-range-track {
-      height: 6px;
-      background: linear-gradient(to right, #e2e8f0, #32acc1);
+    .re__figSlider::-webkit-slider-runnable-track {
+      height: 4px;
       border-radius: 999px;
+      background: #e2e8f0;
     }
-    .re__figSlider--opacity {
-      /* Opacity track shows the active colour fading from transparent
-         to fully opaque — same visual cue Wix uses. */
-      background: linear-gradient(to right, rgba(0,0,0,0), var(--c, #000));
+    .re__figSlider::-moz-range-track {
+      height: 4px;
+      border-radius: 999px;
+      background: #e2e8f0;
     }
     .re__figSlider::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none;
@@ -1837,6 +2453,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       background: #32acc1;
       border: 2px solid #fff;
       border-radius: 50%;
+      margin-top: -6px;
       box-shadow: 0 1px 3px rgba(15,23,42,.2);
     }
     .re__figSlider::-moz-range-thumb {
@@ -1846,6 +2463,21 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       border-radius: 50%;
       box-shadow: 0 1px 3px rgba(15,23,42,.2);
     }
+    /* Opacity variant — checkerboard backdrop overlaid with the active
+       colour fading in from transparent. The thumb is dark so it stays
+       visible against the patterned track. */
+    .re__figSlider--opacity::-webkit-slider-runnable-track,
+    .re__figSlider--opacity::-moz-range-track {
+      height: 8px;
+      background:
+        linear-gradient(to right, rgba(0,0,0,0), var(--c, #000)),
+        repeating-conic-gradient(#cbd5e1 0% 25%, #f1f5f9 0% 50%) 0 0 / 8px 8px;
+    }
+    .re__figSlider--opacity::-webkit-slider-thumb,
+    .re__figSlider--opacity::-moz-range-thumb {
+      background: #0f172a;
+    }
+    .re__figSlider--opacity::-webkit-slider-thumb { margin-top: -4px; }
     /* Label + info-icon pair used in the Settings rows. The (i)
        carries an appTooltip that explains the toggle, mirroring the
        Wix help affordance the user flagged. */
@@ -1971,97 +2603,328 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface figure.re-embed-figure.re-wrap-text.re-align-left  { float: left  !important; margin: 0 16px 8px 0 !important; }
     :host ::ng-deep .re__surface figure.re-embed-figure.re-wrap-text.re-align-right { float: right !important; margin: 0 0 8px 16px !important; }
 
-    /* Banner-mode figure rendering. Drives layout from CSS vars set
-       by applyBannerStyles() so the markup stays declarative and
-       round-trips through saved HTML correctly. */
+    /* ═══════════════════════════════════════════════════════════════
+       BANNER — 5-level nested structure (matches Wix Ricos)
+       ═══════════════════════════════════════════════════════════════
+       Markup contract:
+         section.re-banner                wrapper (CSS vars only)
+           └ .re-banner-backdrop          outer image layer + T/B padding
+             └ .re-banner-resizer        positions resize handles
+               └ .re-banner-inner       inner grid + stripe layer
+                 ├ .re-banner-cell      one per column, editable content
+                 └ .re-banner-handle--* left/right/top/bottom (siblings)
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* ── Level 1: wrapper ─────────────────────────────────────────── */
+    :host ::ng-deep .re__surface section.re-banner {
+      position: relative !important;
+      /* Flex column so a vertical resize (which writes height to the
+         section) gets passed down to .re-banner-backdrop via flex 1.
+         Without this the backdrop stays at its content height and the
+         section grows around it, leaving white space below the colored
+         area and parking the left/right handles at the wrong y. */
+      display: flex !important;
+      flex-direction: column !important;
+      width: 100% !important;
+      margin-block: var(--re-banner-margin, 50px) !important;
+
+      /* Backdrop layer vars — defaults match Wix's empty state */
+      --re-banner-backdrop-color: #00000000;
+      --re-banner-backdrop-image: none;
+      --re-banner-backdrop-image-opacity: 1;
+      --re-banner-backdrop-image-scaling: cover;
+      --re-banner-backdrop-image-position: center;
+      --re-banner-backdrop-pad-top: 58px;
+      --re-banner-backdrop-pad-bottom: 58px;
+
+      /* Inner container vars */
+      --re-banner-inner-color: #00000000;
+      --re-banner-inner-image: none;
+      --re-banner-inner-image-opacity: 1;
+      --re-banner-inner-image-scaling: cover;
+      --re-banner-inner-image-position: center;
+      --re-banner-inner-cols: minmax(0, 1fr);
+      --re-banner-inner-gap: 20px;
+
+      /* Cell vars */
+      --re-banner-cell-pad-top: 18px;
+      --re-banner-cell-pad-right: 0px;
+      --re-banner-cell-pad-bottom: 18px;
+      --re-banner-cell-pad-left: 0px;
+
+      /* Side gutter for the inner container (data-breakout="normal" equivalent) */
+      --re-banner-breakout-pad: 50px;
+    }
+
+    /* Selection + hover states */
+    :host ::ng-deep .re__surface section.re-banner:hover:not(.is-selected) {
+      outline: 1px solid rgba(50, 172, 193, 0.45) !important;
+      outline-offset: 2px !important;
+    }
+    :host ::ng-deep .re__surface section.re-banner.is-selected {
+      outline: 1.5px solid rgba(50, 172, 193, 0.7) !important;
+      outline-offset: 2px !important;
+    }
+    :host ::ng-deep .re__surface section.re-banner.is-resizing {
+      outline: 2px solid #32acc1 !important;
+      outline-offset: 2px !important;
+      box-shadow: 0 0 0 4px rgba(50, 172, 193, 0.18) !important;
+    }
+
+    /* ── Level 2: backdrop ────────────────────────────────────────── */
+    :host ::ng-deep .re__surface .re-banner-backdrop {
+      position: relative !important;
+      clear: both !important;
+      background-color: var(--re-banner-backdrop-color) !important;
+      padding-top: var(--re-banner-backdrop-pad-top) !important;
+      padding-bottom: var(--re-banner-backdrop-pad-bottom) !important;
+      overflow: hidden !important;
+      /* Fill the section's height (the section is a flex column).
+         When the section has no explicit height the basis stays auto
+         so the backdrop sizes to its own content as before; when the
+         user resizes the banner taller the section gains an explicit
+         height and flex:1 makes the backdrop expand to fill it. */
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    /* Resizer fills the backdrop's available height so the inner
+       content (text) sits inside a stretchable container, and the
+       vertical-alignment classes (vtop/vmid/vbot) can push text to
+       top, center, or bottom of the resized banner. */
+    :host ::ng-deep .re__surface .re-banner-backdrop > .re-banner-resizer {
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-resizer > .re-banner-inner {
+      flex: 1 1 auto !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-backdrop::before {
+      content: "" !important;
+      position: absolute !important;
+      inset: 0 !important;
+      background-image: var(--re-banner-backdrop-image) !important;
+      background-position: var(--re-banner-backdrop-image-position) !important;
+      background-repeat: no-repeat !important;
+      background-size: var(--re-banner-backdrop-image-scaling) !important;
+      opacity: var(--re-banner-backdrop-image-opacity) !important;
+      pointer-events: none !important;
+      z-index: 0 !important;
+    }
+    /* Hide inline media (img / iframe) — banner mode uses the layer system */
+    :host ::ng-deep .re__surface section.re-banner > img,
+    :host ::ng-deep .re__surface section.re-banner > .re-embed-video {
+      display: none !important;
+    }
+
+    /* ── Level 3: resizer (positions handles) ─────────────────────── */
+    :host ::ng-deep .re__surface .re-banner-resizer {
+      position: relative !important;
+      padding-inline: var(--re-banner-breakout-pad) !important;
+      z-index: 1 !important;
+    }
+
+    /* ── Level 4: inner grid container ────────────────────────────── */
+    :host ::ng-deep .re__surface .re-banner-inner {
+      position: relative !important;
+      display: grid !important;
+      grid-template-columns: var(--re-banner-inner-cols) !important;
+      gap: var(--re-banner-inner-gap) !important;
+      width: 100% !important;
+      background-color: var(--re-banner-inner-color) !important;
+      margin: 0 auto !important;
+      min-height: 80px !important;
+      align-content: start !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-inner::before {
+      content: "" !important;
+      position: absolute !important;
+      inset: 0 !important;
+      background-image: var(--re-banner-inner-image) !important;
+      background-position: var(--re-banner-inner-image-position) !important;
+      background-repeat: no-repeat !important;
+      background-size: var(--re-banner-inner-image-scaling) !important;
+      opacity: var(--re-banner-inner-image-opacity) !important;
+      pointer-events: none !important;
+      z-index: 0 !important;
+    }
+
+    /* Vertical alignment variants drive the inner grid */
+    :host ::ng-deep .re__surface .re-banner.re-banner-vtop .re-banner-inner { align-content: start  !important; }
+    :host ::ng-deep .re__surface .re-banner.re-banner-vmid .re-banner-inner { align-content: center !important; }
+    :host ::ng-deep .re__surface .re-banner.re-banner-vbot .re-banner-inner { align-content: end    !important; }
+
+    /* ── Level 5: cell ──────────────────────────────────────────────
+       Cells are direct grid items of .re-banner-inner. The flex
+       wrapper inside (display: flex; column) lets vertical alignment
+       of cell content work without leaking onto siblings via the
+       grid's align-content. */
+    :host ::ng-deep .re__surface .re-banner-cell {
+      position: relative !important;
+      display: flex !important;
+      flex-direction: column !important;
+      min-width: 0 !important;
+      padding:
+        var(--re-banner-cell-pad-top)
+        var(--re-banner-cell-pad-right)
+        var(--re-banner-cell-pad-bottom)
+        var(--re-banner-cell-pad-left) !important;
+      z-index: 2 !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-cell > * { position: relative !important; z-index: 1 !important; }
+
+    /* Cell hover + selected states (inside selected banner) */
+    :host ::ng-deep .re__surface .re-banner.is-selected .re-banner-cell:hover:not(.is-selected-col) {
+      outline: 1.5px dashed rgba(50, 172, 193, 0.6) !important;
+      outline-offset: 0 !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-cell.is-selected-col {
+      outline: none !important;
+      background-color: rgba(50, 172, 193, 0.06) !important;
+    }
+
+    /* ── Resize handles (siblings of .re-banner-inner inside .re-banner-resizer)
+       SOLID teal pills — the standard Wix "resize this thing" affordance.
+       Distinct from the cell-handle (white pill with grab dots) so the
+       user can tell at a glance which is for the banner and which is
+       for a column. */
+    :host ::ng-deep .re__surface .re-banner-handle {
+      position: absolute !important;
+      background: #32acc1 !important;
+      border: 1.5px solid #fff !important;
+      border-radius: 4px !important;
+      z-index: 5 !important;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2) !important;
+      opacity: 0 !important;
+      transition: opacity 120ms ease, transform 120ms ease !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-handle:hover { transform: scale(1.12); }
+    :host ::ng-deep .re__surface section.re-banner.is-selected .re-banner-handle {
+      opacity: 1 !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-handle--left,
+    :host ::ng-deep .re__surface .re-banner-handle--right {
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      width: 8px !important;
+      height: 56px !important;
+      cursor: ew-resize !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-handle--left  { left: calc(var(--re-banner-breakout-pad) - 4px) !important; }
+    :host ::ng-deep .re__surface .re-banner-handle--right { right: calc(var(--re-banner-breakout-pad) - 4px) !important; }
+    :host ::ng-deep .re__surface .re-banner-handle--bottom {
+      bottom: -4px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: 32px !important;
+      height: 8px !important;
+      cursor: ns-resize !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-handle--top {
+      top: -4px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: 32px !important;
+      height: 8px !important;
+      cursor: ns-resize !important;
+    }
+
+    /* Pill cell handle — sits ABOVE the cell (outside its top edge) as
+       a "drag the column" affordance. Visually distinct from the
+       solid teal resize handles: white pill with three brand-coloured
+       dots + a soft drop-shadow so it reads as a "grab" target rather
+       than a "resize" edge. */
+    :host ::ng-deep .re__surface .re-banner-cell-handle {
+      position: absolute !important;
+      top: -14px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: 32px !important;
+      height: 20px !important;
+      background: #fff !important;
+      border: 1.5px solid #32acc1 !important;
+      border-radius: 999px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: grab !important;
+      z-index: 6 !important;
+      color: #32acc1 !important;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18) !important;
+      opacity: 0 !important;
+      transition: opacity 120ms ease, transform 120ms ease !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-cell-handle:hover { transform: translateX(-50%) scale(1.08); }
+    :host ::ng-deep .re__surface .re-banner-cell-handle:active { cursor: grabbing !important; }
+    :host ::ng-deep .re__surface .re-banner-cell.is-selected-col .re-banner-cell-handle,
+    :host ::ng-deep .re__surface .re-banner.is-selected .re-banner-cell:hover .re-banner-cell-handle {
+      opacity: 1 !important;
+    }
+
+    /* ── Legacy compat shim — keeps figure.re-banner +
+       .re-banner-overlay / .re-banner-col content rendering until
+       it's re-saved into the new shape. Maps the old CSS vars onto
+       the new ones so persisted dataset attrs still hit the right
+       layers. */
     :host ::ng-deep .re__surface figure.re-embed-figure.re-banner {
       position: relative !important;
-      min-height: 220px !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      aspect-ratio: 16 / 5 !important;
+      min-height: 180px !important;
       margin-block: var(--re-banner-margin, 50px) !important;
       overflow: hidden !important;
       background-color: var(--re-banner-bg, transparent) !important;
-      background-image: var(--re-banner-bg-image, none) !important;
-      background-size: cover !important;
-      background-position: center !important;
     }
-    :host ::ng-deep .re__surface .re-banner .re-embed-video,
-    :host ::ng-deep .re__surface .re-banner > img {
+    :host ::ng-deep .re__surface figure.re-embed-figure.re-banner > img,
+    :host ::ng-deep .re__surface figure.re-embed-figure.re-banner > .re-embed-video { display: none !important; }
+    :host ::ng-deep .re__surface figure.re-embed-figure.re-banner::before {
+      content: '' !important;
       position: absolute !important;
       inset: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: cover !important;
+      background-image: var(--re-banner-bg-image, none) !important;
+      background-size: var(--re-banner-bg-size, cover) !important;
+      background-position: var(--re-banner-bg-pos, center) !important;
+      background-repeat: var(--re-banner-bg-repeat, no-repeat) !important;
+      opacity: var(--re-banner-img-opacity, 1) !important;
       pointer-events: none !important;
+      z-index: 0 !important;
+    }
+    :host ::ng-deep .re__surface figure.re-embed-figure.re-banner::after {
+      content: '' !important;
+      position: absolute !important;
+      inset: 0 !important;
+      background: var(--re-banner-overlay, transparent) !important;
+      pointer-events: none !important;
+      z-index: 1 !important;
     }
     :host ::ng-deep .re__surface .re-banner .re-banner-overlay {
       position: relative !important;
-      z-index: 1 !important;
+      z-index: 2 !important;
       display: grid !important;
       grid-template-columns: repeat(var(--re-banner-cols, 1), 1fr) !important;
       gap: var(--re-banner-gap, 20px) !important;
-      padding: var(--re-banner-pad-y, 18px) var(--re-banner-pad-x, 0px) !important;
+      padding-top:    var(--re-banner-pad-top,    var(--re-banner-pad-y, 18px)) !important;
+      padding-right:  var(--re-banner-pad-right,  var(--re-banner-pad-x, 0px))  !important;
+      padding-bottom: var(--re-banner-pad-bottom, var(--re-banner-pad-y, 18px)) !important;
+      padding-left:   var(--re-banner-pad-left,   var(--re-banner-pad-x, 0px))  !important;
       width: 100% !important;
-      /* Stretch to the full figure height (within the column flex
-         layout) so vertical alignment has space to redistribute the
-         columns. Without this, align-items on the grid is a no-op
-         because the overlay would just shrink to content height. */
-      flex: 1 1 auto !important;
-      min-height: 220px !important;
       align-content: start !important;
       box-sizing: border-box !important;
     }
     :host ::ng-deep .re__surface .re-banner.re-banner-vtop .re-banner-overlay { align-content: start  !important; }
     :host ::ng-deep .re__surface .re-banner.re-banner-vmid .re-banner-overlay { align-content: center !important; }
     :host ::ng-deep .re__surface .re-banner.re-banner-vbot .re-banner-overlay { align-content: end    !important; }
-    /* align-content (below, on .re-banner-overlay) handles the
-       per-figure vertical alignment — using align-items here would
-       only stretch each column individually instead of moving the
-       whole row. */
-    /* Banner columns — invisible by default, like Wix. Only when the
-       banner is actively selected do we show a faint outline so the
-       user can see column boundaries while editing. Hover bumps the
-       outline to teal; selecting a specific column gets a solid
-       teal border via the .is-selected-col rule above. */
     :host ::ng-deep .re__surface .re-banner .re-banner-col {
+      position: relative !important;
       padding: 12px 16px !important;
       min-height: 60px !important;
-      border-radius: 6px !important;
-      transition: outline-color 120ms ease, background 120ms ease;
-    }
-    :host ::ng-deep .re__surface .re-banner.is-selected .re-banner-col {
-      outline: 1px solid rgba(255, 255, 255, .35) !important;
-    }
-    :host ::ng-deep .re__surface .re-banner.is-selected .re-banner-col:hover {
-      outline: 1.5px solid rgba(50, 172, 193, .8) !important;
-    }
-    /* Column background driven by CSS vars set on the figure. */
-    :host ::ng-deep .re__surface .re-banner .re-banner-col {
       background: var(--re-col-bg, transparent) !important;
       border: var(--re-col-border-w, 0px) solid var(--re-col-border, transparent) !important;
       border-radius: var(--re-col-radius, 0px) !important;
-    }
-    /* Section background image — render through ::before so the
-       overlay rgba can layer on top without a second wrapper. */
-    :host ::ng-deep .re__surface figure.re-embed-figure.re-banner {
-      background-image: var(--re-banner-bg-image, none) !important;
-      background-size: var(--re-banner-bg-size, cover) !important;
-      background-position: var(--re-banner-bg-pos, center) !important;
-      background-repeat: var(--re-banner-bg-repeat, no-repeat) !important;
-      opacity: 1 !important;
-    }
-    :host ::ng-deep .re__surface figure.re-embed-figure.re-banner::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--re-banner-overlay, transparent);
-      pointer-events: none;
-      z-index: 0;
-    }
-    /* The actual <img>/<iframe>/<video> child gets the image-opacity
-       so the section's chosen opacity is respected. */
-    :host ::ng-deep .re__surface .re-banner > .re-embed-video,
-    :host ::ng-deep .re__surface .re-banner > img {
-      opacity: var(--re-banner-img-opacity, 1) !important;
     }
 
     /* "Borderless" mode used by the Wix-style post composer — the
@@ -2336,6 +3199,10 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  Banner / Layout-section panel. The caller is expected to open
    *  its own media picker and call back into `setBannerBgImage(url)`. */
   bgImageClick = output<void>();
+  /** Emitted when the user clicks the empty/replace tile inside the
+   *  Column-background Image picker. Parent opens its media-library
+   *  modal and pipes the picked URL back via `setColBgImage()`. */
+  colBgImageClick = output<void>();
 
   disabled = signal(false);
 
@@ -2507,8 +3374,39 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   // ─── Embed-block selection ─────────────────────────────────────────────
   /** Currently-selected `figure.re-embed-figure`, or null when nothing
-   *  is selected. Drives the floating selection toolbar. */
+   *  is selected. Drives the floating selection toolbar.
+   *
+   *  Two shapes are recognised as "banners" today (see `isBannerEl`):
+   *
+   *    1. Legacy:   `<figure class="re-banner">`   — kept for content
+   *                 already saved in this shape; new banners are no
+   *                 longer created as figures.
+   *    2. Current:  `<section class="re-banner">` — semantic landmark,
+   *                 columns are real `.re-banner-col` children rather
+   *                 than CSS-grid pseudo-columns inside a figure.
+   *
+   *  All banner data lives on the root element as `data-*` attrs (kind,
+   *  colour, gradient, image, opacity, columns, gap, padding, valign,
+   *  v-margin). The data shape is identical between the two — only the
+   *  outer tag differs — so the read path can be polymorphic. */
   selectedFigure = signal<HTMLElement | null>(null);
+
+  /** True if `el` is either banner shape — drop-in replacement for
+   *  ad-hoc `classList.contains('re-banner')` checks scattered through
+   *  the read path. Lives as a static so it's callable from places that
+   *  don't have a component instance handy (e.g. parse helpers). */
+  static isBannerEl(el: HTMLElement | null | undefined): boolean {
+    return !!el && el.classList.contains('re-banner');
+  }
+
+  /** True only for the new `<section>`-based banner. Used by code paths
+   *  that need to know whether they're operating on a structural
+   *  landmark vs the legacy figure (mostly: column-children iteration,
+   *  since sections hold real `.re-banner-col` children while figure
+   *  banners use CSS-grid placement inside the figure). */
+  static isBannerSection(el: HTMLElement | null | undefined): boolean {
+    return !!el && el.tagName === 'SECTION' && el.classList.contains('re-banner');
+  }
   figMenu        = signal<'size' | 'align' | 'link' | 'settings' | 'design' | 'valign' | null>(null);
 
   // ─── Link popover state ───
@@ -2534,13 +3432,74 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   // ─── Banner Layout-section panel state ───
   bannerBgShow      = signal<boolean>(true);
-  bannerBgKind      = signal<'color' | 'image'>('color');
+  bannerBgKind      = signal<'color' | 'gradient' | 'image'>('color');
   bannerBgColor     = signal<string>('#ffffff');
   bannerBgOpacity   = signal<number>(100);
+  bannerBgGradient  = signal<string>('linear-gradient(180deg, #32acc1 0%, #ffffff 100%)');
+
+  /** Whether the floating Colors panel popover is open. */
+  bgPanelOpen = signal<boolean>(false);
+  /** Whichever tab the user last interacted with in the Colors panel —
+   *  drives both the panel's initial tab the next time it opens and the
+   *  background kind we revert to when an image is removed. */
+  bgPanelMode = signal<'color' | 'gradient'>('color');
+
+  /** Which colour-only target (column fill, column border, section
+   *  overlay, design border) is currently editing in the popover. `null`
+   *  closes the popover. One shared overlay handles all four — the
+   *  target id routes the emitted hex to the right signal. */
+  colorPanelTarget = signal<'colFill' | 'colBorder' | 'sectionOverlay' | 'designBorder' | 'colOverlay' | null>(null);
+
+  /** Hex value to show in the colour-only ColorsPanel — picks the
+   *  signal that matches the active target. */
+  colorPanelValue = computed<string>(() => {
+    switch (this.colorPanelTarget()) {
+      case 'colFill':         return this.colFillColor();
+      case 'colBorder':       return this.colBorderColor();
+      case 'sectionOverlay':  return this.sectionOverlayColor();
+      case 'designBorder':    return this.designBorderColor();
+      case 'colOverlay':      return this.colOverlayColor();
+      default:                return '#000000';
+    }
+  });
+
+  /** Route the panel's emit back into whichever setter the active
+   *  target wants. Defined as a method (not a closure) so the template
+   *  binding is cheap. */
+  onColorPanelChange(v: string): void {
+    switch (this.colorPanelTarget()) {
+      case 'colFill':         this.setColFillColor(v); break;
+      case 'colBorder':       this.setColBorderColor(v); break;
+      case 'sectionOverlay':  this.setSectionOverlayColor(v); break;
+      case 'designBorder':    this.onDesignBorderColor(v); break;
+      case 'colOverlay':      this.setColOverlayColor(v); break;
+    }
+  }
+
+  /** Value pushed into the ColorsPanel via ngModel — either the current
+   *  solid colour or the gradient CSS string, picked by `bgPanelMode`. */
+  bgPanelValue = computed<string>(() =>
+    this.bgPanelMode() === 'gradient' ? this.bannerBgGradient() : this.bannerBgColor(),
+  );
+
+  /** What the trigger swatch chip in the panel shows — mirrors the
+   *  current colour/gradient choice (NOT the image, which has its own
+   *  preview tile right below). */
+  bgTriggerPreview = computed<string>(() =>
+    this.bgPanelMode() === 'gradient' ? this.bannerBgGradient() : this.bannerBgColor(),
+  );
   bannerBgImage     = signal<string>('');
   bannerColumns     = signal<1 | 2>(1);
   bannerColGap      = signal<number>(20);
   bannerColPadX     = signal<number>(0);
+  // Per-edge padding — added on top of the legacy X / Y values so the
+  // panel can expose 4 individual chips (top/right/bottom/left).
+  // Loaded from data-padTop/padRight/padBottom/padLeft when present;
+  // otherwise seeded from padX (left + right) and padY (top + bottom).
+  bannerColPadTop    = signal<number>(0);
+  bannerColPadRight  = signal<number>(0);
+  bannerColPadBottom = signal<number>(0);
+  bannerColPadLeft   = signal<number>(0);
   bannerColPadY     = signal<number>(18);
   bannerVMargin     = signal<number>(50);
   bannerBreakpoint  = signal<number>(440);
@@ -2552,6 +3511,17 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   // ─── Column background (applied to all .re-banner-col children) ───
   colBgKind        = signal<'color' | 'image'>('color');
+  /** Per-column background image URL. Empty when no image is set —
+   *  the picker shows an empty "+" tile in that state. */
+  colBgImage       = signal<string>('');
+  /** Column image display controls — mirror of the section-background
+   *  set so the per-column image gets the same opacity / overlay /
+   *  scaling / position knobs. */
+  colImageOpacity   = signal<number>(100);
+  colOverlayColor   = signal<string>('#000000');
+  colOverlayOpacity = signal<number>(0);
+  colImageScaling   = signal<'cover' | 'contain' | 'fill' | 'tile'>('cover');
+  colImagePosition  = signal<string>('5');
   colFillColor     = signal<string>('#ffffff');
   colFillOpacity   = signal<number>(0);
   colBorderColor   = signal<string>('#000000');
@@ -2565,6 +3535,20 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   sectionOverlayOpacity = signal<number>(0);
   sectionImageScaling = signal<'cover' | 'contain' | 'fill' | 'tile'>('cover');
   sectionImagePosition = signal<string>('5'); // 1-9, where 5 is center.
+
+  /** Items + display/compare helpers for the SearchDropdown that
+   *  replaces the native <select> for Image scaling. Kept on the
+   *  class (not inline in the template) so the array reference
+   *  stays stable across change detection. */
+  readonly imageScalingOptions = [
+    { id: 'cover',   label: 'Cover'   },
+    { id: 'contain', label: 'Contain' },
+    { id: 'fill',    label: 'Fill'    },
+    { id: 'tile',    label: 'Tile'    },
+  ];
+  scalingDisplay = (v: any): string => v?.label ?? this.imageScalingOptions.find(o => o.id === v)?.label ?? v ?? '';
+  scalingCompare = (a: any, b: any) => (a?.id ?? a) === (b?.id ?? b);
+  scalingToValue = (i: { id: string; label: string }) => i.id;
 
   // ─── Draggable Image panel (Settings + Design tabs) ───
   // Lives at the top-right of the surface initially; the user can
@@ -2585,12 +3569,18 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     else                          this.seedBannerState();
     this.figMenu.set(null);
     this.figPanel.set(tab);
-    // Default position: top-right of the surface (~16px gutter).
+    // Default position: snap to the right edge of the editor surface,
+    // ~16px gutter from the top. The panel is `position: fixed`, so we
+    // compute the initial top/left in viewport coordinates from the
+    // surface's bounding rect (already viewport-relative).
     if (!this.figPanelPos()) {
       const surface = this.editable?.nativeElement;
+      const PANEL_W = 300;
       if (surface) {
         const rect = surface.getBoundingClientRect();
-        this.figPanelPos.set({ top: 16, left: Math.max(16, rect.width - 320) });
+        const left = Math.min(window.innerWidth - PANEL_W - 16, Math.max(16, rect.right - PANEL_W));
+        const top  = Math.max(16, rect.top + 16);
+        this.figPanelPos.set({ top, left });
       } else {
         this.figPanelPos.set({ top: 16, left: 16 });
       }
@@ -2606,20 +3596,31 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     ev.preventDefault();
     const pos = this.figPanelPos();
     if (!pos) return;
+    // Close any open slider popovers before the drag starts. The
+    // sliders are anchored to a chip's bounding rect at focus time;
+    // once the panel moves, that anchor goes stale and the popover
+    // floats in space. Blurring the active element flips the row's
+    // :focus-within off so the slider hides itself.
+    const active = document.activeElement as HTMLElement | null;
+    if (active && typeof active.blur === 'function' && active.closest('.re__figPanel')) {
+      active.blur();
+    }
     this.dragOffset = { x: ev.clientX - pos.left, y: ev.clientY - pos.top };
     document.addEventListener('mousemove', this.onPanelDrag);
     document.addEventListener('mouseup', this.onPanelDragEnd);
   }
   private onPanelDrag = (ev: MouseEvent): void => {
     if (!this.dragOffset) return;
-    const surface = this.editable?.nativeElement;
-    if (!surface) return;
-    const rect = surface.getBoundingClientRect();
-    // Keep the panel inside the surface bounds, with a small inset
-    // so the close button always remains reachable.
-    const left = Math.max(0, Math.min(rect.width  - 280, ev.clientX - this.dragOffset.x));
-    const top  = Math.max(0, Math.min(rect.height -  80, ev.clientY - this.dragOffset.y));
+    // Clamp to the VIEWPORT (not the editor surface) so the panel can
+    // be dragged anywhere on the page. The 20px right / 60px bottom
+    // insets ensure the close button stays clickable even when the
+    // user drags into the screen corners.
+    const PANEL_W = 300;
+    const HEADER_MIN_VISIBLE = 60;
+    const left = Math.max(0, Math.min(window.innerWidth - 20, ev.clientX - this.dragOffset.x));
+    const top  = Math.max(0, Math.min(window.innerHeight - HEADER_MIN_VISIBLE, ev.clientY - this.dragOffset.y));
     this.figPanelPos.set({ top, left });
+    void PANEL_W;
   };
   private onPanelDragEnd = (): void => {
     this.dragOffset = null;
@@ -2639,6 +3640,8 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  its "look & feel" editor. */
   onSurfaceDblClick(ev: MouseEvent): void {
     const target = ev.target as HTMLElement | null;
+    // Double-click is image-figure-only — sections don't have a design
+    // tab with corner-radius / border controls.
     const figure = target?.closest('figure.re-embed-figure') as HTMLElement | null;
     if (!figure) return;
     if (!figure.classList.contains('re-embed-figure--image')) return;
@@ -2648,6 +3651,14 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.openFigPanel('design');
   }
 
+  /** Closest selectable banner-like element from `target` — either a
+   *  legacy `<figure class="re-embed-figure">` or a new
+   *  `<section class="re-banner">`. Returned as `HTMLElement | null`
+   *  so callers can branch on type via `isBannerEl` / `isBannerSection`. */
+  private closestSelectable(target: HTMLElement | null | undefined): HTMLElement | null {
+    return (target?.closest('figure.re-embed-figure, section.re-banner') as HTMLElement | null) ?? null;
+  }
+
   /** Surface click delegate — selects the clicked embed figure or
    *  clears the selection if the click landed elsewhere. Also blocks
    *  any link navigation that would otherwise fire when an image has
@@ -2655,27 +3666,33 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  click means "select", never "follow the link". */
   onSurfaceClick(ev: MouseEvent): void {
     const target = ev.target as HTMLElement | null;
-    const figure = target?.closest('figure.re-embed-figure') as HTMLElement | null;
+    // Recognise either selectable shape: image/embed figure or banner
+    // section. Both are routed through the same `selectFigure` path —
+    // the signal is named for legacy reasons but accepts any
+    // HTMLElement (see the doc-block on `selectedFigure`).
+    const selectable = this.closestSelectable(target);
     const inAnchor = !!target?.closest('a[href]');
-    if (figure && inAnchor) {
+    if (selectable && inAnchor) {
       ev.preventDefault();
       ev.stopPropagation();
     }
     // Clicks on the editable <figcaption> inside a figure stay focused
     // on the caption (user is editing the caption text) — don't show
-    // the toolbar in that case.
+    // the toolbar in that case. Banner sections have no captions so the
+    // guard is figure-only.
     const inCaption = !!target?.closest('.re-embed-caption');
     // Banner column click — select the column and show its toolbar.
-    // Columns are nested inside the banner figure, so figure selection
-    // is also kept so the figure toolbar stays visible above.
-    const column = target?.closest('.re-banner-col') as HTMLElement | null;
-    if (figure && column) {
-      this.selectFigure(figure);
+    // Columns can live inside either a legacy figure-banner (.re-banner-col)
+    // or the new section-banner (.re-banner-cell); the banner-level
+    // selection is set either way.
+    const column = target?.closest('.re-banner-cell, .re-banner-col') as HTMLElement | null;
+    if (selectable && column) {
+      this.selectFigure(selectable);
       this.selectColumn(column);
       return;
     }
-    if (figure && !inCaption) {
-      this.selectFigure(figure);
+    if (selectable && !inCaption) {
+      this.selectFigure(selectable);
       this.clearColumnSelection();
     } else if (!target?.closest('.re__figTb') && !target?.closest('.re__colTb')) {
       this.clearFigureSelection();
@@ -2685,16 +3702,59 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   private selectColumn(col: HTMLElement): void {
     const prev = this.selectedColumn();
-    if (prev && prev !== col) prev.classList.remove('is-selected-col');
+    if (prev && prev !== col) {
+      prev.classList.remove('is-selected-col');
+      this.removeColumnHandles(prev);
+    }
     this.selectedColumn.set(col);
     col.classList.add('is-selected-col');
+    this.attachColumnHandles(col);
     this.columnMenu.set(null);
     this.refreshColumnToolbar();
   }
 
+  /** Append the transient drag-grip pill(s) to the selected column.
+   *  Two shapes are supported:
+   *   - New `.re-banner-cell` → one centred `.re-banner-cell-handle`
+   *     span carrying a kebab-dots SVG, matching the 5-level scaffold.
+   *   - Legacy `.re-banner-col` (figure-banner overlay) → the older
+   *     two-pill pattern (`.re-banner-col-handle--top/--bottom`).
+   *  Idempotent — checks for existing handles before appending. All
+   *  handles are stripped from saved HTML in `emit()` so they stay
+   *  out of the persisted shape. */
+  private attachColumnHandles(col: HTMLElement): void {
+    if (col.classList.contains('re-banner-cell')) {
+      if (col.querySelector(':scope > .re-banner-cell-handle')) return;
+      const grab = document.createElement('span');
+      grab.className = 're-banner-cell-handle';
+      grab.setAttribute('contenteditable', 'false');
+      grab.setAttribute('aria-hidden', 'true');
+      grab.innerHTML = '<svg viewBox="0 0 18 18" width="14" height="14" fill="currentColor"><circle cx="6" cy="9" r="1"/><circle cx="9" cy="9" r="1"/><circle cx="12" cy="9" r="1"/></svg>';
+      col.appendChild(grab);
+      return;
+    }
+    if (col.querySelector(':scope > .re-banner-col-handle')) return;
+    const top = document.createElement('span');
+    top.className = 're-banner-col-handle re-banner-col-handle--top';
+    top.setAttribute('contenteditable', 'false');
+    const bottom = document.createElement('span');
+    bottom.className = 're-banner-col-handle re-banner-col-handle--bottom';
+    bottom.setAttribute('contenteditable', 'false');
+    col.appendChild(top);
+    col.appendChild(bottom);
+  }
+
+  private removeColumnHandles(col: HTMLElement): void {
+    col.querySelectorAll(':scope > .re-banner-col-handle').forEach((n) => n.remove());
+    col.querySelectorAll(':scope > .re-banner-cell-handle').forEach((n) => n.remove());
+  }
+
   private clearColumnSelection(): void {
     const c = this.selectedColumn();
-    if (c) c.classList.remove('is-selected-col');
+    if (c) {
+      c.classList.remove('is-selected-col');
+      this.removeColumnHandles(c);
+    }
     this.selectedColumn.set(null);
     this.columnMenu.set(null);
     this.columnToolbar.set({ show: false, top: 0, left: 0 });
@@ -2706,8 +3766,11 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     if (!col || !editable) { this.columnToolbar.set({ show: false, top: 0, left: 0 }); return; }
     const surfaceRect = editable.getBoundingClientRect();
     const r = col.getBoundingClientRect();
-    // Park the toolbar a few px ABOVE the column, centred horizontally.
-    const top  = Math.max(8, r.top - surfaceRect.top - 36);
+    // Park the toolbar ABOVE the column, leaving ~22px of clearance below
+    // it for the `.re-banner-cell-handle` pill (which sits at top:-14px
+    // outside the cell and is ~20px tall). Without this gap the toolbar
+    // would cover the drag-pill once a column is selected.
+    const top  = Math.max(8, r.top - surfaceRect.top - 58);
     const left = r.left - surfaceRect.left + r.width / 2;
     this.columnToolbar.set({ show: true, top, left });
   }
@@ -2721,17 +3784,35 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   /** Insert a new column adjacent to the selected one. */
   addColumnBefore(): void { this.insertColumn('before'); }
   addColumnAfter():  void { this.insertColumn('after'); }
+  /** Selector that catches both the new `.re-banner-cell` (5-level
+   *  section scaffold) and the legacy `.re-banner-col` (figure-banner
+   *  overlay) so column iteration / counting / sibling-checks work
+   *  uniformly across both shapes. */
+  private static readonly COL_SELECTOR = '.re-banner-cell, .re-banner-col';
+
+  /** Build a fresh column matching the shape of `existing` — a
+   *  `.re-banner-cell` (with embedded grab-pill) when the surrounding
+   *  banner uses the new scaffold, a plain `.re-banner-col` when it
+   *  uses the legacy overlay. */
+  private cloneColumnShape(existing: HTMLElement): HTMLElement {
+    if (existing.classList.contains('re-banner-cell')) {
+      return this.buildBannerCell();
+    }
+    const next = document.createElement('div');
+    next.className = 're-banner-col';
+    next.innerHTML = '<p>Add your text</p>';
+    return next;
+  }
+
   private insertColumn(pos: 'before' | 'after'): void {
     const col = this.selectedColumn();
     const f   = this.selectedFigure();
     if (!col || !f) return;
-    const next = document.createElement('div');
-    next.className = 're-banner-col';
-    next.innerHTML = '<p>Add your text</p>';
+    const next = this.cloneColumnShape(col);
     if (pos === 'before') col.parentNode!.insertBefore(next, col);
     else                  col.parentNode!.insertBefore(next, col.nextSibling);
     // Auto-grow column-count to fit the new column.
-    const total = f.querySelectorAll('.re-banner-col').length;
+    const total = f.querySelectorAll(RichEditorComponent.COL_SELECTOR).length;
     if (total > this.bannerColumns()) this.setBannerColumns(Math.min(2, total) as 1 | 2);
     this.columnMenu.set(null);
     this.emit();
@@ -2745,7 +3826,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const sibling = dir === -1
       ? col.previousElementSibling as HTMLElement | null
       : col.nextElementSibling as HTMLElement | null;
-    if (!sibling || !sibling.classList.contains('re-banner-col')) return;
+    if (!sibling || !(sibling.classList.contains('re-banner-cell') || sibling.classList.contains('re-banner-col'))) return;
     if (dir === -1) col.parentNode!.insertBefore(col, sibling);
     else            col.parentNode!.insertBefore(sibling, col);
     this.emit();
@@ -2757,13 +3838,14 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const parent = col.parentNode;
     col.remove();
     this.clearColumnSelection();
-    // If we just deleted the last column, drop a fresh empty one so
-    // the banner overlay isn't completely blank.
-    if (parent && parent instanceof HTMLElement && !parent.querySelector('.re-banner-col')) {
-      const fresh = document.createElement('div');
-      fresh.className = 're-banner-col';
-      fresh.innerHTML = '<p>Add your text</p>';
-      parent.appendChild(fresh);
+    // If we just deleted the last column in the container, drop a
+    // fresh one in the matching shape so the banner inner isn't
+    // completely blank.
+    if (parent && parent instanceof HTMLElement && !parent.querySelector(RichEditorComponent.COL_SELECTOR)) {
+      const fresh = parent.classList.contains('re-banner-inner')
+        ? this.buildBannerCell()
+        : Object.assign(document.createElement('div'), { className: 're-banner-col', innerHTML: '<p>Add your text</p>' });
+      parent.appendChild(fresh as HTMLElement);
     }
     this.emit();
   }
@@ -2780,7 +3862,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     figure.classList.add('is-selected');
     // Keep the writable mirrors of type / banner state in sync.
     this.isImageFigure.set(figure.classList.contains('re-embed-figure--image'));
-    this.isBannerFigure.set(figure.classList.contains('re-banner'));
+    this.isBannerFigure.set(RichEditorComponent.isBannerEl(figure));
     this.attachResizeHandles(figure);
     // Read existing classes to pre-fill toolbar state.
     this.figureSize.set(
@@ -2821,17 +3903,69 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  appended as `.re__resizer` children with a `data-dir` attribute;
    *  the radius grip is `.re__radiusGrip`. Saved HTML strips both —
    *  see emit(). */
+  /** Per-instance set of `.re-banner-handle` nodes whose mousedown
+   *  has already been wired up — prevents double-binding on re-select
+   *  without persisting any flag into saved HTML. */
+  private wiredBannerHandles = new WeakSet<HTMLElement>();
+
+  /** Re-create any of the four `.re-banner-handle--*` children that
+   *  were stripped from saved HTML (see the `emit()` regex). Handles
+   *  are direct children of the section (not the resizer) so they
+   *  sit on the banner's visual top/bottom edges regardless of the
+   *  inner container's height. */
+  private ensureBannerHandles(section: HTMLElement): void {
+    const ariaMap: Record<string, string> = {
+      left: 'Resize left', right: 'Resize right',
+      top: 'Resize top',   bottom: 'Resize bottom',
+    };
+    (['left', 'right', 'top', 'bottom'] as const).forEach((dir) => {
+      if (section.querySelector(`:scope > .re-banner-handle--${dir}`)) return;
+      const h = document.createElement('span');
+      h.className = `re-banner-handle re-banner-handle--${dir}`;
+      h.setAttribute('contenteditable', 'false');
+      h.setAttribute('data-dir', dir);
+      h.setAttribute('aria-label', ariaMap[dir]);
+      section.appendChild(h);
+    });
+  }
+
   private attachResizeHandles(figure: HTMLElement): void {
     if (figure.querySelector('.re__resizer')) return;
+    // Section-banners ship their own .re-banner-handle--* children
+    // as siblings of .re-banner-inner — those are positioned by CSS
+    // (no JS coordinates needed). Wire the mousedown listeners on
+    // those existing nodes so the same `startResize` flow drives
+    // them, then bail out before the legacy `.re__resizer` dots
+    // would otherwise be appended.
+    if (RichEditorComponent.isBannerSection(figure)) {
+      // Saved HTML strips the .re-banner-handle--* siblings, so on
+      // first selection of a reloaded section we may need to (re-)add
+      // them. The four handles always live inside .re-banner-resizer.
+      this.ensureBannerHandles(figure);
+      const dirMap: Record<string, ResizeDir> = { left: 'w', right: 'e', top: 'n', bottom: 's' };
+      figure.querySelectorAll<HTMLElement>('.re-banner-handle').forEach((h) => {
+        const dirAttr = h.dataset['dir'] ?? '';
+        const dir = dirMap[dirAttr];
+        if (!dir) return;
+        // Track wired handles in a WeakSet so we don't double-bind on
+        // re-select, and crucially DON'T persist the flag into saved
+        // HTML (which would block re-wiring on reload of a fresh
+        // editor instance).
+        if (this.wiredBannerHandles.has(h)) return;
+        this.wiredBannerHandles.add(h);
+        h.addEventListener('mousedown', (ev) => this.startResize(ev, dir));
+      });
+      return;
+    }
     // Force `position: relative` so the absolutely-positioned handle
     // children anchor to the figure (not the editor surface above
     // it). `||=` could miss when a computed style sneaks in static.
     figure.style.position = 'relative';
-    // Banner figures resize horizontally only — width controls how
-    // far the banner stretches across the canvas. Vertical handles
-    // would let the user squash the banner into nothing without a
-    // useful outcome.
-    const isBanner = figure.classList.contains('re-banner');
+    // Legacy figure-banners resize horizontally only — width controls
+    // how far the banner stretches across the canvas. Vertical
+    // handles would let the user squash the banner into nothing
+    // without a useful outcome.
+    const isBanner = RichEditorComponent.isBannerEl(figure);
     const dirs: ResizeDir[] = isBanner ? ['e', 'w'] : ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
     for (const d of dirs) {
       const h = document.createElement('div');
@@ -2865,12 +3999,23 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   private removeResizeHandles(figure: HTMLElement): void {
     figure.querySelectorAll('.re__resizer').forEach(n => n.remove());
     figure.querySelectorAll('.re__radiusGrip').forEach(n => n.remove());
+    // For section-banners the .re-banner-handle--* elements live in
+    // the scaffold and stay around between selections — only the
+    // wiring is tracked in `wiredBannerHandles`. The WeakSet entries
+    // are garbage-collected automatically when the nodes detach
+    // (e.g. via deleteSelectedFigure), so no explicit cleanup here.
   }
 
   /** The element the resize handles should hug — the inner media
    *  (img / iframe / video), NOT the figure (which also contains the
-   *  caption). Falls back to the figure when no media is found. */
+   *  caption). Banners are a special case: their inner img is hidden
+   *  via `display: none` (the section background is the canonical
+   *  image source), which collapses offsetWidth/Height to 0 and
+   *  parks every handle at the figure's top-left corner. For banners
+   *  we always use the figure itself so e/w handles land on the
+   *  banner's actual edges. */
   private resizeAnchor(figure: HTMLElement): HTMLElement {
+    if (RichEditorComponent.isBannerEl(figure)) return figure;
     return (figure.querySelector('img, iframe, video') as HTMLElement | null) ?? figure;
   }
 
@@ -2957,6 +4102,10 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const f = this.selectedFigure(); if (!f) return;
     ev.preventDefault();
     ev.stopPropagation();
+    // Mark the figure as "actively dragging" — the .is-resizing class
+    // is the hook for the heavier brand outline + ring shadow that
+    // distinguishes live-drag from static-selected.
+    f.classList.add('is-resizing');
     const startX = ev.clientX;
     const startY = ev.clientY;
     const rect   = f.getBoundingClientRect();
@@ -3016,6 +4165,9 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const onUp = () => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
+      // Drop the live-drag class so the figure reverts to the static
+      // "selected" outline once the user releases the mouse.
+      f.classList.remove('is-resizing');
       this.emit();
     };
     document.addEventListener('mousemove', onMove);
@@ -3229,36 +4381,36 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   isBannerFigure = signal<boolean>(false);
 
   toggleBanner(): void {
-    const f = this.selectedFigure(); if (!f || !this.isImageFigure()) return;
-    if (f.classList.contains('re-banner')) {
-      f.classList.remove('re-banner', 're-banner-vtop', 're-banner-vmid', 're-banner-vbot');
-      f.querySelectorAll('.re-banner-overlay').forEach(o => o.remove());
-      this.isBannerFigure.set(false);
+    const f = this.selectedFigure(); if (!f) return;
+
+    // Three branches:
+    //   1. New section-banner → convert back to image-figure (extract bgImage).
+    //   2. Legacy figure-banner → revert in-place (existing class-flip path).
+    //   3. Plain image figure → convert to a new section-banner.
+    if (RichEditorComponent.isBannerSection(f)) {
+      this.sectionBannerToImageFigure(f);
+    } else if (RichEditorComponent.isBannerEl(f) && f.tagName === 'FIGURE') {
+      this.revertLegacyFigureBanner(f);
+    } else if (this.isImageFigure()) {
+      this.imageFigureToSectionBanner(f);
     } else {
-      f.classList.add('re-banner', 're-banner-vtop');
-      this.bannerVAlign.set('top');
-      if (!f.querySelector('.re-banner-overlay')) {
-        const o = document.createElement('div');
-        o.className = 're-banner-overlay';
-        o.setAttribute('contenteditable', 'true');
-        o.innerHTML = '<div class="re-banner-col"><p>Add your text</p></div>';
-        f.appendChild(o);
-      }
-      this.isBannerFigure.set(true);
+      return;
     }
+
     this.emit();
-    // Banner toggle changes which handles apply — drop + re-attach
-    // so the e/w-only set is in use when banner is on, full 8-set
-    // when it's off.
-    this.removeResizeHandles(f);
-    this.attachResizeHandles(f);
-    // If the floating panel was open, swap it to the matching kind
-    // so it doesn't keep showing Image/Settings while the figure is
-    // now a banner (or vice-versa). The user shouldn't have to
-    // deselect + reselect to see the right panel.
+    // After conversion, `selectedFigure()` points at whichever element
+    // is now selected (could be a brand-new section). Re-read it before
+    // touching resize handles and panel state.
+    const after = this.selectedFigure();
+    if (after) {
+      this.removeResizeHandles(after);
+      this.attachResizeHandles(after);
+    }
+    // Flip the open panel to the matching kind so the user doesn't
+    // have to deselect + reselect to see the right tab.
     const open = this.figPanel();
-    if (open) {
-      const isBanner = f.classList.contains('re-banner');
+    if (open && after) {
+      const isBanner = RichEditorComponent.isBannerEl(after);
       if (isBanner && (open === 'settings' || open === 'design')) {
         this.openFigPanel('banner-design');
       } else if (!isBanner && (open === 'banner-design' || open === 'banner-layout')) {
@@ -3266,6 +4418,145 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       }
     }
     queueMicrotask(() => this.refreshFigureToolbar());
+  }
+
+  /** Revert a legacy figure-banner back to an image-figure in place.
+   *  Pulls off the banner classes + overlay; leaves the original <img>
+   *  intact. */
+  private revertLegacyFigureBanner(f: HTMLElement): void {
+    f.classList.remove('re-banner', 're-banner-vtop', 're-banner-vmid', 're-banner-vbot');
+    f.querySelectorAll('.re-banner-overlay').forEach(o => o.remove());
+    f.style.removeProperty('width');
+    f.style.removeProperty('max-width');
+    f.style.removeProperty('height');
+    this.isBannerFigure.set(false);
+  }
+
+  /** Convert a plain image-figure into the new `<section class="re-banner">`
+   *  shape. The figure is replaced wholesale; the original image's `src`
+   *  carries forward as the banner's `bgImage`. */
+  private imageFigureToSectionBanner(f: HTMLElement): void {
+    const img = f.querySelector('img') as HTMLImageElement | null;
+    const src = img?.getAttribute('src') ?? '';
+
+    const section = this.buildBannerScaffold();
+    f.replaceWith(section);
+
+    // Seed banner state for the new section + persist via dataset.
+    this.bannerVAlign.set('top');
+    this.bannerBgKind.set('image');
+    this.bannerBgShow.set(true);
+    if (src && !this.bannerBgImage()) this.bannerBgImage.set(src);
+
+    // Promote the new section to the active selection so subsequent
+    // calls (applyBannerStyles, toolbar refresh) target it.
+    this.selectedFigure.set(section);
+    this.isImageFigure.set(false);
+    this.isBannerFigure.set(true);
+    section.classList.add('is-selected');
+
+    this.applyBannerStyles();
+  }
+
+  /** Build a single bare `.re-banner-cell` element with just the
+   *  placeholder paragraph. The cell drag-grip pill
+   *  (`.re-banner-cell-handle`) is intentionally NOT included here —
+   *  it's transient runtime decoration, attached by
+   *  `attachColumnHandles()` on selection and stripped on deselect
+   *  and on save so the persisted HTML stays clean. */
+  private buildBannerCell(): HTMLElement {
+    const cell = document.createElement('div');
+    cell.className = 're-banner-cell';
+    const p = document.createElement('p');
+    p.textContent = 'Add your text';
+    cell.appendChild(p);
+    return cell;
+  }
+
+  /** Build an empty 5-level banner scaffold (wrapper → backdrop →
+   *  resizer → inner → cell, plus the 4 sibling resize handles).
+   *  Used by both `insertBanner()` and `imageFigureToSectionBanner()`
+   *  so the two creation paths produce identical markup. */
+  private buildBannerScaffold(): HTMLElement {
+    const section = document.createElement('section');
+    section.className = 're-banner re-banner-vtop';
+    section.setAttribute('contenteditable', 'false');
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 're-banner-backdrop';
+    backdrop.setAttribute('contenteditable', 'false');
+
+    const resizer = document.createElement('div');
+    resizer.className = 're-banner-resizer';
+    resizer.setAttribute('contenteditable', 'false');
+
+    const inner = document.createElement('div');
+    inner.className = 're-banner-inner';
+    inner.setAttribute('contenteditable', 'true');
+
+    const cell = this.buildBannerCell();
+    inner.appendChild(cell);
+    resizer.appendChild(inner);
+    backdrop.appendChild(resizer);
+    section.appendChild(backdrop);
+    // Resize handles — direct children of the section, NOT the
+    // resizer. The resizer only sizes to the inner container's
+    // height, so handles parked at its top/bottom edge land in the
+    // middle of the banner once the backdrop's vertical padding
+    // grows. Anchoring to the section instead means top/bottom
+    // handles always sit on the banner's actual visual edges.
+    const ariaMap: Record<string, string> = {
+      left: 'Resize left', right: 'Resize right',
+      top: 'Resize top',   bottom: 'Resize bottom',
+    };
+    (['left', 'right', 'top', 'bottom'] as const).forEach((dir) => {
+      const h = document.createElement('span');
+      h.className = `re-banner-handle re-banner-handle--${dir}`;
+      h.setAttribute('contenteditable', 'false');
+      h.setAttribute('data-dir', dir);
+      h.setAttribute('aria-label', ariaMap[dir]);
+      section.appendChild(h);
+    });
+    return section;
+  }
+
+  /** Convert a section-banner back to a plain image-figure. Recovers
+   *  the image URL from three places, in order:
+   *    1. `data-bg-image` on the section (canonical persisted source)
+   *    2. The live `bannerBgImage()` signal (in-memory state)
+   *    3. The computed `--re-banner-backdrop-image` CSS var (fallback
+   *       when the dataset got out of sync — strips the surrounding
+   *       `url("...")` wrapper). */
+  private sectionBannerToImageFigure(section: HTMLElement): void {
+    let src = section.dataset['bgImage'] || this.bannerBgImage() || '';
+    if (!src) {
+      try {
+        const cssUrl = getComputedStyle(section).getPropertyValue('--re-banner-backdrop-image').trim();
+        const m = /^url\(\s*"?([^"\)]*?)"?\s*\)$/.exec(cssUrl);
+        if (m && m[1]) src = m[1];
+      } catch { /* getComputedStyle may throw in detached subtrees */ }
+    }
+
+    const figure = document.createElement('figure');
+    figure.className = 're-embed-figure re-embed-figure--image re-size-standard re-align-center';
+    figure.setAttribute('contenteditable', 'false');
+
+    if (src) {
+      const img = document.createElement('img');
+      img.setAttribute('src', src);
+      img.setAttribute('alt', '');
+      img.style.display = 'block';
+      img.style.width = '100%';
+      img.style.height = 'auto';
+      figure.appendChild(img);
+    }
+
+    section.replaceWith(figure);
+
+    this.selectedFigure.set(figure);
+    this.isImageFigure.set(true);
+    this.isBannerFigure.set(false);
+    figure.classList.add('is-selected');
   }
 
   setBannerVAlign(pos: 'top' | 'middle' | 'bottom'): void {
@@ -3280,12 +4571,17 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   addBannerColumn(): void {
     const f = this.selectedFigure(); if (!f) return;
-    const overlay = f.querySelector('.re-banner-overlay') as HTMLElement | null;
+    // Prefer the new `.re-banner-inner` container (5-level scaffold);
+    // fall back to the legacy `.re-banner-overlay` (figure-banner) for
+    // older saved content.
+    const inner = f.querySelector('.re-banner-inner') as HTMLElement | null;
+    const overlay = inner ?? (f.querySelector('.re-banner-overlay') as HTMLElement | null);
     if (!overlay) return;
-    const col = document.createElement('div');
-    col.className = 're-banner-col';
-    col.innerHTML = '<p>Add your text</p>';
-    overlay.appendChild(col);
+    const col = inner ? this.buildBannerCell() : Object.assign(
+      document.createElement('div'),
+      { className: 're-banner-col', innerHTML: '<p>Add your text</p>' },
+    );
+    overlay.appendChild(col as HTMLElement);
     // Auto-switch to 2-column layout so the new column actually
     // renders side-by-side instead of stacking under the first.
     if (this.bannerColumns() === 1) this.setBannerColumns(2);
@@ -3297,20 +4593,40 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   private seedBannerState(): void {
     const f = this.selectedFigure(); if (!f) return;
     const ds = f.dataset;
-    const bgKind = (ds['bgKind'] as 'color' | 'image' | undefined) ?? 'color';
+    const bgKind = (ds['bgKind'] as 'color' | 'gradient' | 'image' | undefined) ?? 'color';
     this.bannerBgShow.set(ds['bgShow'] !== 'false');
     this.bannerBgKind.set(bgKind);
     this.bannerBgColor.set(ds['bgColor']   || '#ffffff');
     this.bannerBgOpacity.set(num(ds['bgOpacity'], 100));
+    this.bannerBgGradient.set(ds['bgGradient'] || 'linear-gradient(180deg, #32acc1 0%, #ffffff 100%)');
     this.bannerBgImage.set(ds['bgImage']   || '');
     this.bannerColumns.set((num(ds['cols'], 1) === 2 ? 2 : 1));
     this.bannerColGap.set(num(ds['gap'], 20));
     this.bannerColPadX.set(num(ds['padX'], 0));
     this.bannerColPadY.set(num(ds['padY'], 18));
+    // 4-edge values — prefer explicit padTop/Right/Bottom/Left; fall
+    // back to seeding from the legacy padX (horizontal) / padY
+    // (vertical) so older saved banners still look right.
+    this.bannerColPadTop.set(num(ds['padTop'],    this.bannerColPadY()));
+    this.bannerColPadRight.set(num(ds['padRight'],  this.bannerColPadX()));
+    this.bannerColPadBottom.set(num(ds['padBottom'], this.bannerColPadY()));
+    this.bannerColPadLeft.set(num(ds['padLeft'],   this.bannerColPadX()));
     this.bannerVMargin.set(num(ds['vMargin'], 50));
     this.bannerBreakpoint.set(num(ds['breakpoint'], 440));
+    // Responsive behaviour — written by setBannerBehavior; seeded
+    // here so the Layout tab's segmented toggle reflects what's
+    // actually on the figure when it gets selected.
+    const behavior = ds['behavior'] as 'stacked' | 'horizontal' | undefined;
+    this.bannerBehavior.set(behavior === 'horizontal' ? 'horizontal' : 'stacked');
     // Column background
     this.colBgKind.set((ds['colBgKind'] as 'color' | 'image' | undefined) ?? 'color');
+    this.colBgImage.set(ds['colBgImage'] || '');
+    this.colImageOpacity.set(num(ds['colImgOpacity'], 100));
+    this.colOverlayColor.set(ds['colOverlayColor'] || '#000000');
+    this.colOverlayOpacity.set(num(ds['colOverlayOpacity'], 0));
+    const colScaling = (ds['colImgScaling'] as 'cover' | 'contain' | 'fill' | 'tile' | undefined) || 'cover';
+    this.colImageScaling.set(['cover','contain','fill','tile'].includes(colScaling) ? colScaling : 'cover');
+    this.colImagePosition.set(ds['colImgPos'] || '5');
     this.colFillColor.set(ds['colFillColor']     || '#ffffff');
     this.colFillOpacity.set(num(ds['colFillOpacity'], 0));
     this.colBorderColor.set(ds['colBorderColor'] || '#000000');
@@ -3328,107 +4644,223 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   }
 
   /** Push the current banner-layout state to the figure as CSS vars
-   *  + data-attrs. The figure renders against those vars (see
-   *  .re-banner styles) and round-trips through saved HTML. */
+   *  + data-attrs. Every var is written to the root `section.re-banner`
+   *  — CSS variable inheritance carries them down to `.re-banner-backdrop`
+   *  (::before), `.re-banner-inner` (::before), and every `.re-banner-cell`
+   *  child without any per-descendant queries. Dataset writes are
+   *  unchanged — they round-trip through saved HTML and feed
+   *  `seedBannerState()` on reload.
+   *
+   *  Legacy CSS-var names (`--re-banner-bg*`, `--re-col-*`, `--re-banner-cols`,
+   *  `--re-banner-gap`, `--re-banner-pad-*`) are intentionally NOT written
+   *  here — the new 5-level CSS targets the new var names only. The
+   *  compat shim retained in the stylesheet keeps existing legacy
+   *  figure-banners visible until they're re-saved into the new
+   *  scaffold (at which point this function takes over for them too). */
   private applyBannerStyles(): void {
     const f = this.selectedFigure(); if (!f) return;
 
-    // Background
-    if (this.bannerBgShow()) {
-      if (this.bannerBgKind() === 'color') {
-        const { r, g, b } = hexToRgb(this.bannerBgColor());
-        const a = Math.max(0, Math.min(1, this.bannerBgOpacity() / 100));
-        f.style.setProperty('--re-banner-bg', `rgba(${r},${g},${b},${a})`);
-        f.style.removeProperty('--re-banner-bg-image');
-      } else {
-        f.style.removeProperty('--re-banner-bg');
-        f.style.setProperty('--re-banner-bg-image', this.bannerBgImage() ? `url(${this.bannerBgImage()})` : 'none');
-      }
-      f.dataset['bgShow'] = 'true';
-    } else {
-      f.style.removeProperty('--re-banner-bg');
-      f.style.removeProperty('--re-banner-bg-image');
-      f.dataset['bgShow'] = 'false';
-    }
-    f.dataset['bgKind']    = this.bannerBgKind();
-    f.dataset['bgColor']   = this.bannerBgColor();
-    f.dataset['bgOpacity'] = String(this.bannerBgOpacity());
-    f.dataset['bgImage']   = this.bannerBgImage();
-
-    // Columns
-    f.style.setProperty('--re-banner-cols', String(this.bannerColumns()));
-    f.dataset['cols'] = String(this.bannerColumns());
-
-    // Spacing
-    f.style.setProperty('--re-banner-gap',   `${this.bannerColGap()}px`);
-    f.style.setProperty('--re-banner-pad-x', `${this.bannerColPadX()}px`);
-    f.style.setProperty('--re-banner-pad-y', `${this.bannerColPadY()}px`);
-    f.style.setProperty('--re-banner-margin', `${this.bannerVMargin()}px`);
-    f.dataset['gap']     = String(this.bannerColGap());
-    f.dataset['padX']    = String(this.bannerColPadX());
-    f.dataset['padY']    = String(this.bannerColPadY());
-    f.dataset['vMargin'] = String(this.bannerVMargin());
-    f.dataset['breakpoint'] = String(this.bannerBreakpoint());
-
-    // ─── Column background — applies to every .re-banner-col via vars
-    if (this.colBgKind() === 'color') {
-      const { r, g, b } = hexToRgb(this.colFillColor());
-      const a = Math.max(0, Math.min(1, this.colFillOpacity() / 100));
-      f.style.setProperty('--re-col-bg', `rgba(${r},${g},${b},${a})`);
-    } else {
-      f.style.setProperty('--re-col-bg', 'transparent');
-    }
-    {
-      const { r, g, b } = hexToRgb(this.colBorderColor());
-      const a = Math.max(0, Math.min(1, this.colBorderOpacity() / 100));
-      f.style.setProperty('--re-col-border', `rgba(${r},${g},${b},${a})`);
-    }
-    f.style.setProperty('--re-col-border-w', `${this.colBorderWidth()}px`);
-    f.style.setProperty('--re-col-radius',  `${this.colCornerRadius()}px`);
-    f.dataset['colBgKind']       = this.colBgKind();
-    f.dataset['colFillColor']    = this.colFillColor();
-    f.dataset['colFillOpacity']  = String(this.colFillOpacity());
-    f.dataset['colBorderColor']  = this.colBorderColor();
-    f.dataset['colBorderOpacity']= String(this.colBorderOpacity());
-    f.dataset['colBorderWidth']  = String(this.colBorderWidth());
-    f.dataset['colCornerRadius'] = String(this.colCornerRadius());
-
-    // ─── Section image extras
-    f.style.setProperty('--re-banner-img-opacity', `${this.sectionImageOpacity() / 100}`);
-    {
-      const { r, g, b } = hexToRgb(this.sectionOverlayColor());
-      const a = Math.max(0, Math.min(1, this.sectionOverlayOpacity() / 100));
-      f.style.setProperty('--re-banner-overlay', `rgba(${r},${g},${b},${a})`);
-    }
-    const sizeMap: Record<string, string> = { cover: 'cover', contain: 'contain', fill: '100% 100%', tile: 'auto' };
-    const repeatMap: Record<string, string> = { tile: 'repeat', cover: 'no-repeat', contain: 'no-repeat', fill: 'no-repeat' };
-    f.style.setProperty('--re-banner-bg-size',   sizeMap[this.sectionImageScaling()]   ?? 'cover');
-    f.style.setProperty('--re-banner-bg-repeat', repeatMap[this.sectionImageScaling()] ?? 'no-repeat');
-    const posMap: Record<string, string> = {
+    // Shared maps reused by section + inner image controls.
+    const sizeMap:  Record<string, string> = { cover: 'cover', contain: 'contain', fill: '100% 100%', tile: 'auto' };
+    const posMap:   Record<string, string> = {
       '1': 'left top',   '2': 'center top',   '3': 'right top',
       '4': 'left center','5': 'center center','6': 'right center',
       '7': 'left bottom','8': 'center bottom','9': 'right bottom',
     };
-    f.style.setProperty('--re-banner-bg-pos', posMap[this.sectionImagePosition()] ?? 'center');
+
+    // ─── Backdrop layer (section background) ──────────────────────
+    if (this.bannerBgShow()) {
+      const kind = this.bannerBgKind();
+      if (kind === 'color') {
+        const { r, g, b } = hexToRgb(this.bannerBgColor());
+        const a = Math.max(0, Math.min(1, this.bannerBgOpacity() / 100));
+        f.style.setProperty('--re-banner-backdrop-color', `rgba(${r},${g},${b},${a})`);
+        f.style.setProperty('--re-banner-backdrop-image', 'none');
+      } else if (kind === 'gradient') {
+        f.style.setProperty('--re-banner-backdrop-color', 'transparent');
+        f.style.setProperty('--re-banner-backdrop-image', this.bannerBgGradient() || 'none');
+      } else {
+        f.style.setProperty('--re-banner-backdrop-color', 'transparent');
+        const bgUrl = this.bannerBgImage();
+        f.style.setProperty('--re-banner-backdrop-image', bgUrl ? `url("${bgUrl}")` : 'none');
+      }
+      f.dataset['bgShow'] = 'true';
+    } else {
+      f.style.setProperty('--re-banner-backdrop-color', 'transparent');
+      f.style.setProperty('--re-banner-backdrop-image', 'none');
+      f.dataset['bgShow'] = 'false';
+    }
+    f.style.setProperty('--re-banner-backdrop-image-opacity',  String(this.sectionImageOpacity() / 100));
+    f.style.setProperty('--re-banner-backdrop-image-scaling',  sizeMap[this.sectionImageScaling()] ?? 'cover');
+    f.style.setProperty('--re-banner-backdrop-image-position', posMap[this.sectionImagePosition()] ?? 'center');
+    // Backdrop top/bottom padding — Wix default is 58px. No dedicated
+    // signal yet, so we hold the default in CSS; the existing
+    // bannerVMargin signal controls the section's outer margin only
+    // (`--re-banner-margin`). When a backdrop-pad signal lands later
+    // this is the single point to wire it.
+    f.style.setProperty('--re-banner-backdrop-pad-top',    '58px');
+    f.style.setProperty('--re-banner-backdrop-pad-bottom', '58px');
+
+    // Dataset round-trip for the backdrop / section settings.
+    f.dataset['bgKind']         = this.bannerBgKind();
+    f.dataset['bgColor']        = this.bannerBgColor();
+    f.dataset['bgOpacity']      = String(this.bannerBgOpacity());
+    f.dataset['bgGradient']     = this.bannerBgGradient();
+    f.dataset['bgImage']        = this.bannerBgImage();
     f.dataset['imgOpacity']     = String(this.sectionImageOpacity());
     f.dataset['overlayColor']   = this.sectionOverlayColor();
     f.dataset['overlayOpacity'] = String(this.sectionOverlayOpacity());
     f.dataset['imgScaling']     = this.sectionImageScaling();
     f.dataset['imgPos']         = this.sectionImagePosition();
+
+    // ─── Inner layer (the "stripe" / column container) ────────────
+    if (this.colBgKind() === 'color') {
+      const { r, g, b } = hexToRgb(this.colFillColor());
+      const a = Math.max(0, Math.min(1, this.colFillOpacity() / 100));
+      f.style.setProperty('--re-banner-inner-color', `rgba(${r},${g},${b},${a})`);
+      f.style.setProperty('--re-banner-inner-image', 'none');
+    } else {
+      f.style.setProperty('--re-banner-inner-color', 'transparent');
+      const colUrl = this.colBgImage();
+      f.style.setProperty('--re-banner-inner-image', colUrl ? `url("${colUrl}")` : 'none');
+    }
+    f.style.setProperty('--re-banner-inner-image-opacity',  String(this.colImageOpacity() / 100));
+    f.style.setProperty('--re-banner-inner-image-scaling',  sizeMap[this.colImageScaling()] ?? 'cover');
+    f.style.setProperty('--re-banner-inner-image-position', posMap[this.colImagePosition()] ?? 'center');
+
+    // Columns + gap — `grid-template-columns` accepts a full
+    // track-list expression, so we emit one directly.
+    const cols = this.bannerColumns();
+    f.style.setProperty(
+      '--re-banner-inner-cols',
+      cols === 1 ? 'minmax(0, 1fr)' : 'repeat(2, minmax(0, 1fr))',
+    );
+    f.style.setProperty('--re-banner-inner-gap', `${this.bannerColGap()}px`);
+    f.dataset['cols'] = String(cols);
+    f.dataset['gap']  = String(this.bannerColGap());
+
+    // Dataset round-trip for the inner / column settings.
+    f.dataset['colBgKind']         = this.colBgKind();
+    f.dataset['colBgImage']        = this.colBgImage();
+    f.dataset['colImgOpacity']     = String(this.colImageOpacity());
+    f.dataset['colOverlayColor']   = this.colOverlayColor();
+    f.dataset['colOverlayOpacity'] = String(this.colOverlayOpacity());
+    f.dataset['colImgScaling']     = this.colImageScaling();
+    f.dataset['colImgPos']         = this.colImagePosition();
+    f.dataset['colFillColor']      = this.colFillColor();
+    f.dataset['colFillOpacity']    = String(this.colFillOpacity());
+    f.dataset['colBorderColor']    = this.colBorderColor();
+    f.dataset['colBorderOpacity']  = String(this.colBorderOpacity());
+    f.dataset['colBorderWidth']    = String(this.colBorderWidth());
+    f.dataset['colCornerRadius']   = String(this.colCornerRadius());
+
+    // ─── Cell layer (padding inside each editable column) ─────────
+    f.style.setProperty('--re-banner-cell-pad-top',    `${this.bannerColPadTop()}px`);
+    f.style.setProperty('--re-banner-cell-pad-right',  `${this.bannerColPadRight()}px`);
+    f.style.setProperty('--re-banner-cell-pad-bottom', `${this.bannerColPadBottom()}px`);
+    f.style.setProperty('--re-banner-cell-pad-left',   `${this.bannerColPadLeft()}px`);
+    f.dataset['padX']      = String(this.bannerColPadX());
+    f.dataset['padY']      = String(this.bannerColPadY());
+    f.dataset['padTop']    = String(this.bannerColPadTop());
+    f.dataset['padRight']  = String(this.bannerColPadRight());
+    f.dataset['padBottom'] = String(this.bannerColPadBottom());
+    f.dataset['padLeft']   = String(this.bannerColPadLeft());
+
+    // ─── Section margins ──────────────────────────────────────────
+    f.style.setProperty('--re-banner-margin', `${this.bannerVMargin()}px`);
+    f.dataset['vMargin']    = String(this.bannerVMargin());
+    f.dataset['breakpoint'] = String(this.bannerBreakpoint());
+
+    // Overlay layer not painted by the new scaffold (the CSS doesn't
+    // ship a .re-banner-backdrop::after or .re-banner-inner::after
+    // rule yet). Keep the dataset write so the panel's overlay
+    // controls still round-trip — visual painting can be re-added by
+    // wiring the var into a new ::after pseudo when needed.
   }
 
   // Banner panel setters — each updates the mirror signal then
   // re-applies styles. Kept as one-liners so the template stays
   // readable and the side-effect is localised.
   setBannerBgShow(v: boolean): void { this.bannerBgShow.set(v); this.applyBannerStyles(); this.emit(); }
-  setBannerBgKind(v: 'color' | 'image'): void { this.bannerBgKind.set(v); this.applyBannerStyles(); this.emit(); }
-  setBannerBgColor(v: string): void { this.bannerBgColor.set(v); this.applyBannerStyles(); this.emit(); }
+  setBannerBgKind(v: 'color' | 'gradient' | 'image'): void { this.bannerBgKind.set(v); this.applyBannerStyles(); this.emit(); }
+  setBannerBgGradient(v: string): void { this.bannerBgGradient.set(v || ''); this.applyBannerStyles(); this.emit(); }
+  setBannerBgColor(v: string): void {
+    // Picker's "Clear all" emits an empty string — clear BOTH the
+    // colour signal AND the opacity so the picker's [ngModel]
+    // round-trip doesn't shove the old colour back in. Restore
+    // opacity to 100 when the user picks a real colour next.
+    if (v) {
+      this.bannerBgColor.set(v);
+      if (this.bannerBgOpacity() === 0) this.bannerBgOpacity.set(100);
+    } else {
+      this.bannerBgColor.set('');
+      this.bannerBgOpacity.set(0);
+    }
+    this.applyBannerStyles();
+    this.emit();
+  }
   setBannerBgOpacity(v: number): void { this.bannerBgOpacity.set(clamp(v, 0, 100)); this.applyBannerStyles(); this.emit(); }
+
+  /** ColorsPanel emitted a new value — route into colour or gradient
+   *  storage based on the string shape. Switches `bannerBgKind` away
+   *  from `image` only when no image is set, so an uploaded image keeps
+   *  winning until the user explicitly removes it. */
+  onColorsPanelChange(v: string): void {
+    if (!v) return;
+    const isGradient = v.startsWith('linear-gradient') || v.startsWith('radial-gradient');
+    if (isGradient) {
+      this.bannerBgGradient.set(v);
+      this.bgPanelMode.set('gradient');
+    } else {
+      this.bannerBgColor.set(v);
+      if (this.bannerBgOpacity() === 0) this.bannerBgOpacity.set(100);
+      this.bgPanelMode.set('color');
+    }
+    if (this.bannerBgKind() !== 'image') {
+      this.bannerBgKind.set(isGradient ? 'gradient' : 'color');
+    }
+    this.applyBannerStyles();
+    this.emit();
+  }
+
+  /** Panel tab switched — mirror the mode so the trigger preview tracks
+   *  the new tab even before the user edits a value. */
+  onColorsPanelMode(m: 'color' | 'gradient'): void {
+    this.bgPanelMode.set(m);
+    if (this.bannerBgKind() !== 'image') {
+      this.bannerBgKind.set(m);
+      this.applyBannerStyles();
+      this.emit();
+    }
+  }
+
+  /** Color / Image segmented switch. Picking 'color' reverts to the
+   *  last panel-mode kind (color or gradient); picking 'image' promotes
+   *  to image (the image picker handles the upload). */
+  switchBgMode(mode: 'color' | 'image'): void {
+    if (mode === 'image') {
+      this.bannerBgKind.set('image');
+    } else {
+      this.bannerBgKind.set(this.bgPanelMode());
+    }
+    this.applyBannerStyles();
+    this.emit();
+  }
+
+  /** Remove the uploaded background image and fall back to the last
+   *  colour/gradient choice. The image URL is wiped so the empty-tile
+   *  placeholder shows up again. */
+  clearBannerBgImage(): void {
+    this.bannerBgImage.set('');
+    this.bannerBgKind.set(this.bgPanelMode());
+    this.applyBannerStyles();
+    this.emit();
+  }
   setBannerColumns(v: 1 | 2): void {
     this.bannerColumns.set(v);
     // Trim extra columns if shrinking.
     const f = this.selectedFigure();
-    const cols = f?.querySelectorAll('.re-banner-col');
+    const cols = f?.querySelectorAll(RichEditorComponent.COL_SELECTOR);
     if (cols && cols.length > v) for (let i = v; i < cols.length; i++) cols[i].remove();
     this.applyBannerStyles();
     this.emit();
@@ -3436,38 +4868,135 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   setBannerGap(v: number): void { this.bannerColGap.set(clamp(v, 0, 200)); this.applyBannerStyles(); this.emit(); }
   setBannerPadX(v: number): void { this.bannerColPadX.set(clamp(v, 0, 200)); this.applyBannerStyles(); this.emit(); }
   setBannerPadY(v: number): void { this.bannerColPadY.set(clamp(v, 0, 200)); this.applyBannerStyles(); this.emit(); }
+
+  /** Per-edge padding setters — only ever fired from the 4-chip
+   *  "Edit individually" mode (bannerPadLinked() === true). Each
+   *  setter updates only its own edge; the X/Y legacy mirrors are
+   *  kept in step with the most-recent axis-mate so old consumers
+   *  reading padX / padY still get a sane value. */
+  setBannerPadTop(v: number): void {
+    const n = clamp(v, 0, 200);
+    this.bannerColPadTop.set(n);
+    this.bannerColPadY.set(Math.round((this.bannerColPadTop() + this.bannerColPadBottom()) / 2));
+    this.applyBannerStyles(); this.emit();
+  }
+  setBannerPadRight(v: number): void {
+    const n = clamp(v, 0, 200);
+    this.bannerColPadRight.set(n);
+    this.bannerColPadX.set(Math.round((this.bannerColPadLeft() + this.bannerColPadRight()) / 2));
+    this.applyBannerStyles(); this.emit();
+  }
+  setBannerPadBottom(v: number): void {
+    const n = clamp(v, 0, 200);
+    this.bannerColPadBottom.set(n);
+    this.bannerColPadY.set(Math.round((this.bannerColPadTop() + this.bannerColPadBottom()) / 2));
+    this.applyBannerStyles(); this.emit();
+  }
+  setBannerPadLeft(v: number): void {
+    const n = clamp(v, 0, 200);
+    this.bannerColPadLeft.set(n);
+    this.bannerColPadX.set(Math.round((this.bannerColPadLeft() + this.bannerColPadRight()) / 2));
+    this.applyBannerStyles(); this.emit();
+  }
   setBannerVMargin(v: number): void { this.bannerVMargin.set(clamp(v, 0, 200)); this.applyBannerStyles(); this.emit(); }
   setBannerBreakpoint(v: number): void { this.bannerBreakpoint.set(clamp(v, 200, 1600)); this.applyBannerStyles(); this.emit(); }
 
-  /** Toggle the link icon on Column padding — when enabled, X and
-   *  Y move together (single value applied to both axes). */
+  /** Toggle the link icon on Column padding. Toggle OFF (default)
+   *  shows two chips — Horizontal (X = left/right) and Vertical
+   *  (Y = top/bottom). Toggle ON opens to four chips, one per edge,
+   *  letting the user edit each side individually. */
   toggleBannerPadLinked(): void {
     const next = !this.bannerPadLinked();
     this.bannerPadLinked.set(next);
-    // When linking, sync Y to current X so the two stay in step.
-    if (next) this.setBannerPadY(this.bannerColPadX());
+    if (next) {
+      // Switching ON (individual mode): make sure the 4 edges
+      // reflect the current X/Y so the chips that just appeared
+      // show values that match what was rendering a moment ago.
+      this.bannerColPadLeft.set(this.bannerColPadX());
+      this.bannerColPadRight.set(this.bannerColPadX());
+      this.bannerColPadTop.set(this.bannerColPadY());
+      this.bannerColPadBottom.set(this.bannerColPadY());
+    }
   }
+  /** Linked-mode (default, toggle off) handlers — when the user
+   *  types into the Horizontal chip, mirror the value into both the
+   *  left and right edges so the apply path renders it on both sides.
+   *  Same for vertical mapping to top + bottom. */
   onPadX(v: number): void {
-    this.setBannerPadX(v);
-    if (this.bannerPadLinked()) this.setBannerPadY(v);
+    const n = clamp(v, 0, 200);
+    this.bannerColPadX.set(n);
+    this.bannerColPadLeft.set(n);
+    this.bannerColPadRight.set(n);
+    this.applyBannerStyles(); this.emit();
   }
   onPadY(v: number): void {
-    this.setBannerPadY(v);
-    if (this.bannerPadLinked()) this.setBannerPadX(v);
+    const n = clamp(v, 0, 200);
+    this.bannerColPadY.set(n);
+    this.bannerColPadTop.set(n);
+    this.bannerColPadBottom.set(n);
+    this.applyBannerStyles(); this.emit();
   }
 
   // ─── Column-background setters ───
   setColBgKind(v: 'color' | 'image'): void { this.colBgKind.set(v); this.applyBannerStyles(); this.emit(); }
-  setColFillColor(v: string): void { this.colFillColor.set(v); this.applyBannerStyles(); this.emit(); }
+  setColBgImage(url: string): void {
+    this.colBgImage.set(url || '');
+    if (url) this.colBgKind.set('image');
+    this.applyBannerStyles(); this.emit();
+  }
+  /** Public API for the parent to call after picking from its own
+   *  media-library modal. */
+  pickColBgImage(): void { this.colBgImageClick.emit(); }
+  clearColBgImage(): void {
+    this.colBgImage.set('');
+    this.colBgKind.set('color');
+    this.applyBannerStyles(); this.emit();
+  }
+  setColImageOpacity(v: number): void { this.colImageOpacity.set(clamp(v, 0, 100)); this.applyBannerStyles(); this.emit(); }
+  setColOverlayColor(v: string): void { this.colOverlayColor.set(v || '#000000'); this.applyBannerStyles(); this.emit(); }
+  setColOverlayOpacity(v: number): void { this.colOverlayOpacity.set(clamp(v, 0, 100)); this.applyBannerStyles(); this.emit(); }
+  setColImageScaling(v: 'cover' | 'contain' | 'fill' | 'tile'): void { this.colImageScaling.set(v); this.applyBannerStyles(); this.emit(); }
+  setColImagePosition(v: string): void { this.colImagePosition.set(v); this.applyBannerStyles(); this.emit(); }
+  setColFillColor(v: string): void {
+    if (v) {
+      this.colFillColor.set(v);
+      if (this.colFillOpacity() === 0) this.colFillOpacity.set(100);
+    } else {
+      this.colFillColor.set('');
+      this.colFillOpacity.set(0);
+    }
+    this.applyBannerStyles();
+    this.emit();
+  }
   setColFillOpacity(v: number): void { this.colFillOpacity.set(clamp(v, 0, 100)); this.applyBannerStyles(); this.emit(); }
-  setColBorderColor(v: string): void { this.colBorderColor.set(v); this.applyBannerStyles(); this.emit(); }
+  setColBorderColor(v: string): void {
+    if (v) {
+      this.colBorderColor.set(v);
+      if (this.colBorderOpacity() === 0) this.colBorderOpacity.set(100);
+    } else {
+      this.colBorderColor.set('');
+      this.colBorderOpacity.set(0);
+    }
+    this.applyBannerStyles();
+    this.emit();
+  }
   setColBorderOpacity(v: number): void { this.colBorderOpacity.set(clamp(v, 0, 100)); this.applyBannerStyles(); this.emit(); }
   setColBorderWidth(v: number): void { this.colBorderWidth.set(clamp(v, 0, 32)); this.applyBannerStyles(); this.emit(); }
   setColCornerRadius(v: number): void { this.colCornerRadius.set(clamp(v, 0, 200)); this.applyBannerStyles(); this.emit(); }
 
   // ─── Section image-extras setters ───
   setSectionImageOpacity(v: number): void { this.sectionImageOpacity.set(clamp(v, 0, 100)); this.applyBannerStyles(); this.emit(); }
-  setSectionOverlayColor(v: string): void { this.sectionOverlayColor.set(v); this.applyBannerStyles(); this.emit(); }
+  setSectionOverlayColor(v: string): void {
+    if (v) {
+      this.sectionOverlayColor.set(v);
+      if (this.sectionOverlayOpacity() === 0) this.sectionOverlayOpacity.set(100);
+    } else {
+      this.sectionOverlayColor.set('');
+      this.sectionOverlayOpacity.set(0);
+    }
+    this.applyBannerStyles();
+    this.emit();
+  }
   setSectionOverlayOpacity(v: number): void { this.sectionOverlayOpacity.set(clamp(v, 0, 100)); this.applyBannerStyles(); this.emit(); }
   setSectionImageScaling(v: 'cover' | 'contain' | 'fill' | 'tile'): void { this.sectionImageScaling.set(v); this.applyBannerStyles(); this.emit(); }
   setSectionImagePosition(v: string): void { this.sectionImagePosition.set(v); this.applyBannerStyles(); this.emit(); }
@@ -3650,9 +5179,19 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const raw = this.editable.nativeElement.innerHTML;
     const html = raw
       .replace(/\sis-selected(?=["\s])/g, '')
+      .replace(/\sis-selected-col(?=["\s])/g, '')
+      .replace(/\sis-resizing(?=["\s])/g, '')
       .replace(/<div[^>]*class="re__resizer[^"]*"[^>]*><\/div>/g, '')
       .replace(/<div[^>]*class="re__radiusGrip[^"]*"[^>]*><\/div>/g, '')
-      .replace(/<div[^>]*class="re__radiusChip[^"]*"[^>]*>[\s\S]*?<\/div>/g, '');
+      .replace(/<div[^>]*class="re__radiusChip[^"]*"[^>]*>[\s\S]*?<\/div>/g, '')
+      .replace(/<span[^>]*class="re-banner-col-handle[^"]*"[^>]*><\/span>/g, '')
+      // Section-banner interactive overlays — both the cell drag-grip
+      // (attached on selection) and the four resize handles (created
+      // by buildBannerScaffold but re-added on load if missing). Both
+      // are transient runtime decoration; the persisted markup keeps
+      // only the structural backdrop / resizer / inner / cell nodes.
+      .replace(/<span[^>]*class="re-banner-cell-handle[^"]*"[^>]*>[\s\S]*?<\/span>/g, '')
+      .replace(/<span[^>]*class="re-banner-handle[^"]*"[^>]*><\/span>/g, '');
     this.onChange(html);
     this.changed.emit(html);
   }
@@ -3714,6 +5253,34 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  "Add" panel) to inject blocks like videos, dividers, buttons,
    *  tables. The fragment is wrapped in a paragraph break on either
    *  side so it ends up as its own block in the flow. */
+  /** Insert a fresh `<section class="re-banner">` block at the caret
+   *  position. This is the public entry point for the "Banner" tile in
+   *  the Add panel — it builds the same shape that
+   *  `imageFigureToSectionBanner` produces (overlay + column with a
+   *  placeholder paragraph), so banner behaviour is identical whether
+   *  the section was inserted directly or converted from an image. */
+  insertBanner(): void {
+    const section = this.buildBannerScaffold();
+    // Sensible default colour background — the user picks an image in
+    // the Layout-section panel if they want one. Storing on dataset so
+    // applyBannerStyles round-trips cleanly the next time the section
+    // is selected.
+    section.dataset['bgShow']   = 'true';
+    section.dataset['bgKind']   = 'color';
+    section.dataset['bgColor']  = '#32ACC1';
+    section.dataset['bgOpacity'] = '100';
+
+    this.insertHtml(section.outerHTML);
+    // The HTML insert clones the node; find the just-inserted section
+    // (last `.re-banner` in the editable) and select it so the user
+    // can style it immediately.
+    const inserted = this.editable.nativeElement.querySelector('section.re-banner:last-of-type') as HTMLElement | null;
+    if (inserted) {
+      this.selectFigure(inserted);
+      this.openFigPanel('settings');
+    }
+  }
+
   insertHtml(html: string): void {
     if (!html) return;
     this.editable.nativeElement.focus();
@@ -4071,6 +5638,65 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   onDocScroll(): void {
     if (this.selectedFigure()) this.refreshFigureToolbar();
     if (this.selectedColumn()) this.refreshColumnToolbar();
+    // The chip-anchored slider popovers are position:fixed — if the
+    // page scrolls while one is visible, re-anchor it to the chip so
+    // it doesn't drift off-screen.
+    this.repositionVisibleFigSliders();
+  }
+
+  /** Sliders are `position: fixed` so they escape the panel's
+   *  overflow-clipping. That means we set their top/left explicitly,
+   *  relative to the matching chip's viewport rect, on focusin and on
+   *  scroll. The host-level focusin captures every chip in any panel
+   *  variant — no per-row plumbing. */
+  @HostListener('focusin', ['$event'])
+  onHostFocusIn(ev: FocusEvent): void {
+    const t = ev.target as HTMLElement | null;
+    if (!t) return;
+    // Either the chip's number-input or the slider itself can have
+    // focus — both should keep the popover anchored. The slider
+    // popover sits as a sibling of the chip inside `.re__figCtrl`.
+    const chip = t.closest('.re__figTbNum') as HTMLElement | null;
+    if (chip) {
+      const slider = chip.parentElement?.querySelector(':scope > .re__figSlider') as HTMLElement | null;
+      if (slider) this.positionFigSlider(chip, slider);
+      return;
+    }
+    const slider = t.closest('.re__figSlider') as HTMLElement | null;
+    if (slider) {
+      const chipSibling = slider.parentElement?.querySelector(':scope > .re__figTbNum') as HTMLElement | null;
+      if (chipSibling) this.positionFigSlider(chipSibling, slider);
+    }
+  }
+
+  private positionFigSlider(chip: HTMLElement, slider: HTMLElement): void {
+    const r = chip.getBoundingClientRect();
+    const width = slider.offsetWidth || 88;
+    const sliderH = slider.offsetHeight || 18;
+    // Place the slider 8px to the RIGHT of the chip, vertically
+    // centred on it (Wix-style side popover). If the right edge
+    // would overflow the viewport, fall back to the chip's left side
+    // — keeps the slider always reachable on narrow viewports.
+    let left = r.right + 8;
+    if (left + width > window.innerWidth - 8) left = Math.max(8, r.left - width - 8);
+    const top = r.top + (r.height - sliderH) / 2;
+    slider.style.left = `${left}px`;
+    slider.style.top  = `${top}px`;
+  }
+
+  private repositionVisibleFigSliders(): void {
+    const host = this.editable?.nativeElement?.parentElement;
+    if (!host) return;
+    const sliders = host.querySelectorAll('.re__figSlider');
+    sliders.forEach((s) => {
+      const el = s as HTMLElement;
+      // Only reposition if currently visible (focus-within made it
+      // opaque). Skip hidden ones to save layout work.
+      const cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden') return;
+      const chip = el.parentElement?.querySelector(':scope > .re__figTbNum') as HTMLElement | null;
+      if (chip) this.positionFigSlider(chip, el);
+    });
   }
 
   /** Document-level handler so the Delete / Backspace shortcut works

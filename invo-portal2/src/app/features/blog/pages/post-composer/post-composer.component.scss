@@ -192,13 +192,25 @@
 
 // Panel
 .wc__panel {
-  width: 340px;
+  // Closed state: width 0 + hidden border so the panel collapses
+  // away cleanly. width animates to 340px when --open is added, and
+  // the border fades in via its own transition. The inner content is
+  // still gated by `@if (rail())` so we don't pay rendering cost
+  // while closed.
+  width: 0;
   flex-shrink: 0;
   background: #fff;
-  border-inline-end: 1px solid #e2e8f0;
+  border-inline-end: 0 solid transparent;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: width 240ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 240ms ease;
+
+  &--open {
+    width: 340px;
+    border-inline-end: 1px solid #e2e8f0;
+  }
 }
 .wc__panelHead {
   display: flex;

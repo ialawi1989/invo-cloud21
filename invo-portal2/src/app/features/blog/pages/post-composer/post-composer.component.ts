@@ -11,7 +11,14 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -59,7 +66,7 @@ type RailKey = 'add' | 'settings' | 'seo' | 'translate';
 type SettingsTab = 'general' | 'categories' | 'tags';
 type AddToolKey =
   | 'image' | 'gallery' | 'video' | 'file'
-  | 'divider' | 'button' | 'table' | 'expandable' | 'poll' | 'layout'
+  | 'divider' | 'button' | 'table' | 'expandable' | 'poll' | 'layout' | 'banner'
   | 'html' | 'adsense' | 'soundcloud';
 
 const AUTOSAVE_INTERVAL_MS = 30_000;
@@ -89,6 +96,7 @@ const ICON = {
   expandable: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><polyline points="3 6 5 8 7 6"/></svg>',
   poll:     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg>',
   layout:   '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="18"/><rect x="11" y="3" width="6" height="18"/><rect x="19" y="3" width="2" height="18"/></svg>',
+  banner:   '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="1"/><line x1="2" y1="11" x2="22" y2="11"/></svg>',
   html:     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
   adsense:  '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 22 2 22 12 2"/></svg>',
   sound:    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 17h2v-7H2zM6 17h2V8H6zM10 17h2V5h-2zM14 17h2v-4h-2zM18 17h2V9h-2z"/></svg>',
@@ -101,6 +109,7 @@ const ICON = {
     CommonModule,
     FormsModule,
     TranslateModule,
+    ReactiveFormsModule,
     SearchDropdownComponent,
     ToggleComponent,
     SlugInputComponent,
@@ -121,6 +130,42 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   private langSvc    = inject(LanguageService);
   private sanitizer  = inject(DomSanitizer);
   private modal      = inject(ModalService);
+  private fb         = inject(NonNullableFormBuilder);
+
+  /** Per-language locale FormGroup factory — every key in
+   *  `translations.controls` is one of these. Add a new group when
+   *  the user activates a language, remove on delete. */
+  private buildLocaleGroup(seed?: Partial<PostLocale>) {
+    return this.fb.group({
+      title:          seed?.title          ?? '',
+      slug:           seed?.slug           ?? '',
+      excerpt:        seed?.excerpt        ?? '',
+      content:        seed?.content        ?? '',
+      seoTitle:       seed?.seoTitle       ?? '',
+      seoDescription: seed?.seoDescription ?? '',
+    });
+  }
+
+  /** The full post FormGroup. Single source of truth for every
+   *  editable post field — dirty / pristine / valueChanges all run
+   *  off this. The legacy signal mirrors below are kept in sync via
+   *  valueChanges so the existing template (which still reads the
+   *  signals) keeps working without a wholesale rewrite. */
+  postForm = this.fb.group({
+    defaultLanguage:  'en',
+    status:           'draft' as PostStatus,
+    scheduledDate:    '',
+    authorEmployeeId: '',
+    coverImage:       '',
+    ogImage:          '',
+    isFeatured:       false,
+    featuredImageOn:  true,
+    taxonomyIds:      this.fb.control<string[]>([]),
+    mainTaxonomyId:   this.fb.control<string | null>(null),
+    translations:     this.fb.group<Record<string, ReturnType<PostComposerComponent['buildLocaleGroup']>>>(
+      { en: this.buildLocaleGroup() } as any,
+    ),
+  });
 
   /** Trust the inline SVG strings used for the rail + Add panel
    *  icons so Angular's default DomSanitizer doesn't strip them when
@@ -249,6 +294,7 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
       { key: 'expandable', label: 'BLOG.COMPOSER.ADD_EXPANDABLE', icon: ICON.expandable },
       { key: 'poll',       label: 'BLOG.COMPOSER.ADD_POLL',       icon: ICON.poll       },
       { key: 'layout',     label: 'BLOG.COMPOSER.ADD_LAYOUT',     icon: ICON.layout     },
+      { key: 'banner',     label: 'BLOG.COMPOSER.ADD_BANNER',     icon: ICON.banner     },
     ]},
     { label: 'BLOG.COMPOSER.ADD_FROM_WEB', tools: [
       { key: 'html',       label: 'BLOG.COMPOSER.ADD_HTML',       icon: ICON.html    },
@@ -263,6 +309,62 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
       .subscribe(() => this.i18nTick.update(n => n + 1));
     this.translate.onTranslationChange.pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.i18nTick.update(n => n + 1));
+
+    // Mirror the form into the legacy signals so the existing
+    // template (which still reads signals everywhere) stays in sync
+    // with the new FormGroup. Also bridges `isDirty` to the form's
+    // own dirty flag so manual `markDirty()` calls aren't needed.
+    this.postForm.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(v => {
+        this.defaultLanguage.set(v.defaultLanguage  ?? 'en');
+        this.status.set(v.status                    ?? 'draft');
+        this.scheduledDate.set(v.scheduledDate      ?? '');
+        this.authorEmployeeId.set(v.authorEmployeeId ?? '');
+        this.coverImage.set(v.coverImage            ?? '');
+        this.ogImage.set(v.ogImage                  ?? '');
+        this.isFeatured.set(v.isFeatured            ?? false);
+        this.featuredImageOn.set(v.featuredImageOn  ?? true);
+        this.taxonomyIds.set([...(v.taxonomyIds ?? [])]);
+        this.mainTaxonomyId.set(v.mainTaxonomyId    ?? null);
+        // Translations: rebuild the plain-object signal from the
+        // nested FormGroup's value.
+        const t: Record<string, PostLocale> = {};
+        for (const [code, slice] of Object.entries(v.translations ?? {})) {
+          t[code] = {
+            title:          (slice as any)?.title          ?? '',
+            slug:           (slice as any)?.slug           ?? '',
+            excerpt:        (slice as any)?.excerpt        ?? '',
+            content:        (slice as any)?.content        ?? '',
+            seoTitle:       (slice as any)?.seoTitle       ?? '',
+            seoDescription: (slice as any)?.seoDescription ?? '',
+          };
+        }
+        this.translations.set(t);
+        this.isDirty.set(this.postForm.dirty);
+      });
+  }
+
+  /** Shorthand for the translations sub-FormGroup. Cast to the
+   *  untyped `FormGroup` because we add/remove controls dynamically
+   *  by language code — the strongly-typed wrapper would reject the
+   *  dynamic key names. */
+  private get translationsGroup(): FormGroup {
+    return this.postForm.controls.translations as unknown as FormGroup;
+  }
+
+  /** Push a value into a nested locale field + flag dirty. Used by
+   *  the template's existing `setTitle / setSlug / ...` setters so
+   *  edits flow through the form. */
+  private patchLocale(field: keyof PostLocale, value: string): void {
+    const code = this.active();
+    let group = this.translationsGroup.get(code);
+    if (!group) {
+      this.translationsGroup.addControl(code, this.buildLocaleGroup() as any);
+      group = this.translationsGroup.get(code)!;
+    }
+    group.get(field as string)?.setValue(value);
+    this.postForm.markAsDirty();
   }
 
   async ngOnInit(): Promise<void> {
@@ -331,97 +433,103 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   }
 
   private applyPost(post: BlogPost): void {
-    this.defaultLanguage.set(post.defaultLanguage);
-    this.translations.set({ ...post.translations });
-    this.status.set(post.status);
-    this.scheduledDate.set(post.scheduledDate ? toLocalInput(post.scheduledDate) : '');
-    this.authorEmployeeId.set(post.authorEmployeeId);
-    this.coverImage.set(post.coverImage ?? '');
-    this.featuredImageOn.set(!!post.coverImage);
-    this.ogImage.set(post.ogImage ?? '');
-    this.taxonomyIds.set([...post.taxonomyIds]);
-    this.mainTaxonomyId.set(post.mainTaxonomyId);
-    this.isFeatured.set(post.isFeatured);
-    this.active.set(post.defaultLanguage);
+    // Rebuild the translations FormGroup so its keys exactly match
+    // the loaded post — addControl / removeControl in a loop is the
+    // canonical way to swap a dynamic FormGroup's contents.
+    const tg = this.translationsGroup;
+    Object.keys(tg.controls).forEach(k => tg.removeControl(k));
+    for (const [code, slice] of Object.entries(post.translations)) {
+      tg.addControl(code, this.buildLocaleGroup(slice) as any);
+    }
+    this.postForm.patchValue({
+      defaultLanguage:  post.defaultLanguage,
+      status:           post.status,
+      scheduledDate:    post.scheduledDate ? toLocalInput(post.scheduledDate) : '',
+      authorEmployeeId: post.authorEmployeeId,
+      coverImage:       post.coverImage ?? '',
+      featuredImageOn:  !!post.coverImage,
+      ogImage:          post.ogImage ?? '',
+      taxonomyIds:      [...post.taxonomyIds],
+      mainTaxonomyId:   post.mainTaxonomyId,
+      isFeatured:       post.isFeatured,
+    }, { emitEvent: true });
+    // Pristine after loading — load events shouldn't count as dirt.
+    this.postForm.markAsPristine();
     this.isDirty.set(false);
+    this.active.set(post.defaultLanguage);
     this.lastSavedAt.set(post.updatedAt);
   }
 
-  // ─── Edit handlers ─────────────────────────────────────────────────
-  private setLocaleField(field: keyof PostLocale, value: string): void {
-    const next = { ...this.translations() };
-    next[this.active()] = { ...next[this.active()], [field]: value };
-    this.translations.set(next);
-    this.markDirty();
-  }
+  // ─── Edit handlers — all route through the postForm so dirty /
+  //     valueChanges tracking stays accurate. The signal mirrors
+  //     update via the form's valueChanges subscription. ─────────────
+  setTitle(v: string): void   { this.patchLocale('title', v); }
+  setSlug(v: string): void    { this.patchLocale('slug', v); }
+  setExcerpt(v: string): void { this.patchLocale('excerpt', v); }
+  setContent(v: string): void { this.patchLocale('content', v); }
+  setSeoTitle(v: string): void { this.patchLocale('seoTitle', v); }
+  setSeoDescription(v: string): void { this.patchLocale('seoDescription', v); }
 
-  setTitle(v: string): void   { this.setLocaleField('title', v); }
-  setSlug(v: string): void    { this.setLocaleField('slug', v); }
-  setExcerpt(v: string): void { this.setLocaleField('excerpt', v); }
-  setContent(v: string): void { this.setLocaleField('content', v); }
-  setSeoTitle(v: string): void { this.setLocaleField('seoTitle', v); }
-  setSeoDescription(v: string): void { this.setLocaleField('seoDescription', v); }
-
-  setStatus(v: PostStatus): void { this.status.set(v); this.markDirty(); }
+  setStatus(v: PostStatus): void { this.postForm.controls.status.setValue(v); this.postForm.markAsDirty(); }
   setAuthor(v: any): void {
     const id = (v && typeof v === 'object' ? v.id : v) ?? '';
-    this.authorEmployeeId.set(id);
-    this.markDirty();
+    this.postForm.controls.authorEmployeeId.setValue(id);
+    this.postForm.markAsDirty();
   }
-  setScheduled(v: string): void { this.scheduledDate.set(v); this.markDirty(); }
-  setFeatured(v: boolean): void { this.isFeatured.set(v); this.markDirty(); }
-  setCover(url: string): void { this.coverImage.set(url); this.markDirty(); }
-  setOg(url: string): void { this.ogImage.set(url); this.markDirty(); }
+  setScheduled(v: string): void { this.postForm.controls.scheduledDate.setValue(v); this.postForm.markAsDirty(); }
+  setFeatured(v: boolean): void { this.postForm.controls.isFeatured.setValue(v); this.postForm.markAsDirty(); }
+  setCover(url: string): void { this.postForm.controls.coverImage.setValue(url); this.postForm.markAsDirty(); }
+  setOg(url: string): void { this.postForm.controls.ogImage.setValue(url); this.postForm.markAsDirty(); }
 
   setFeaturedImageOn(v: boolean): void {
-    this.featuredImageOn.set(v);
-    if (!v && this.coverImage()) {
-      this.coverImage.set('');
-      this.markDirty();
-    }
+    this.postForm.controls.featuredImageOn.setValue(v);
+    if (!v && this.coverImage()) this.postForm.controls.coverImage.setValue('');
+    this.postForm.markAsDirty();
   }
 
   addLang(code: string): void {
-    const next = { ...this.translations() };
-    next[code] = blankLocale();
-    this.translations.set(next);
+    if (!this.translationsGroup.get(code)) {
+      this.translationsGroup.addControl(code, this.buildLocaleGroup() as any);
+    }
     this.active.set(code);
-    this.markDirty();
+    this.postForm.markAsDirty();
   }
   removeLang(code: string): void {
-    if (code === this.defaultLanguage()) return;
-    const next = { ...this.translations() };
-    delete next[code];
-    this.translations.set(next);
-    if (this.active() === code) this.active.set(this.defaultLanguage());
-    this.markDirty();
+    if (code === this.postForm.controls.defaultLanguage.value) return;
+    this.translationsGroup.removeControl(code);
+    if (this.active() === code) this.active.set(this.postForm.controls.defaultLanguage.value);
+    this.postForm.markAsDirty();
   }
   setDefaultLang(code: string): void {
-    if (!this.translations()[code]) this.addLang(code);
-    this.defaultLanguage.set(code);
-    this.markDirty();
+    if (!this.translationsGroup.get(code)) this.addLang(code);
+    this.postForm.controls.defaultLanguage.setValue(code);
+    this.postForm.markAsDirty();
   }
 
   // ─── Taxonomies ────────────────────────────────────────────────────
   addTaxonomy(t: BlogTaxonomy): void {
-    if (this.taxonomyIds().includes(t.id)) return;
+    const ids = this.postForm.controls.taxonomyIds.value;
+    if (ids.includes(t.id)) return;
     if (t.taxonomyType === 'category' && this.categoryCount() >= MAX_CATEGORIES) return;
-    this.taxonomyIds.set([...this.taxonomyIds(), t.id]);
-    if (t.taxonomyType === 'category' && !this.mainTaxonomyId()) {
-      this.mainTaxonomyId.set(t.id);
+    this.postForm.controls.taxonomyIds.setValue([...ids, t.id]);
+    if (t.taxonomyType === 'category' && !this.postForm.controls.mainTaxonomyId.value) {
+      this.postForm.controls.mainTaxonomyId.setValue(t.id);
     }
     // Cache for badge counters.
     if (!this.taxonomies().some(x => x.id === t.id)) {
       this.taxonomies.set([...this.taxonomies(), t]);
     }
-    this.markDirty();
+    this.postForm.markAsDirty();
   }
   removeTaxonomy(id: string): void {
-    this.taxonomyIds.set(this.taxonomyIds().filter(x => x !== id));
-    if (this.mainTaxonomyId() === id) this.mainTaxonomyId.set(null);
-    this.markDirty();
+    const ids = this.postForm.controls.taxonomyIds.value;
+    this.postForm.controls.taxonomyIds.setValue(ids.filter(x => x !== id));
+    if (this.postForm.controls.mainTaxonomyId.value === id) {
+      this.postForm.controls.mainTaxonomyId.setValue(null);
+    }
+    this.postForm.markAsDirty();
   }
-  setMainTaxonomy(id: string): void { this.mainTaxonomyId.set(id); this.markDirty(); }
+  setMainTaxonomy(id: string): void { this.postForm.controls.mainTaxonomyId.setValue(id); this.postForm.markAsDirty(); }
   async createTagInline(name: string): Promise<void> {
     const slug = generateSlug(name);
     const created = await this.api.saveTaxonomy({
@@ -479,6 +587,11 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
         break;
       case 'expandable':
         this.editor?.insertHtml(`<details><summary>${this.translate.instant('BLOG.COMPOSER.EXPANDABLE_TITLE')}</summary><p>${this.translate.instant('BLOG.COMPOSER.EXPANDABLE_BODY')}</p></details>`);
+        break;
+      case 'banner':
+        // First-class banner section: editor builds the <section
+        // class="re-banner"> shape and selects it for immediate styling.
+        this.editor?.insertBanner();
         break;
       case 'poll':
       case 'adsense':
@@ -613,6 +726,19 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     const url = mediaUrl(Array.isArray(picked) ? picked[0] : picked);
     if (!url) return;
     this.editor?.setBannerBgImage(url);
+  }
+
+  /** Same media-library flow as the section-background picker, but
+   *  the chosen URL is routed to the column-background slot instead. */
+  async onPickColBgImage(): Promise<void> {
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      { data: { contentTypes: ['image'], multiple: false, title: this.translate.instant('BLOG.COMPOSER.ADD_IMAGE') }, size: 'xl' },
+    );
+    const picked = await ref.afterClosed();
+    const url = mediaUrl(Array.isArray(picked) ? picked[0] : picked);
+    if (!url) return;
+    this.editor?.setColBgImage(url);
   }
 
   /** Handler for the rich-editor's `(blockReplace)` event — dispatches
@@ -770,27 +896,33 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   onRedo(): void { document.execCommand('redo'); }
 
   // ─── Save / Publish ────────────────────────────────────────────────
+  /** Legacy helper kept for callers that haven't been ported — just
+   *  marks the postForm dirty (which then drives the isDirty signal
+   *  via the valueChanges subscription). */
   private markDirty(): void {
-    if (!this.isDirty()) this.isDirty.set(true);
+    this.postForm.markAsDirty();
+    this.isDirty.set(true);
   }
 
   private buildPayload(): any {
-    const defContent = this.translations()[this.defaultLanguage()]?.content ?? '';
+    // Read straight from the form — single source of truth.
+    const v = this.postForm.getRawValue();
+    const defContent = (v.translations as any)?.[v.defaultLanguage]?.content ?? '';
     return {
       id: this.postId() ?? undefined,
-      defaultLanguage:  this.defaultLanguage(),
-      status:           this.status(),
-      authorEmployeeId: this.authorEmployeeId(),
-      coverImage:       this.coverImage() || null,
-      ogImage:          this.ogImage() || null,
-      mainTaxonomyId:   this.mainTaxonomyId(),
-      isFeatured:       this.isFeatured(),
-      publishDate:      this.status() === 'published' ? new Date().toISOString() : null,
-      scheduledDate:    this.status() === 'scheduled' && this.scheduledDate()
-                          ? new Date(this.scheduledDate()).toISOString()
+      defaultLanguage:  v.defaultLanguage,
+      status:           v.status,
+      authorEmployeeId: v.authorEmployeeId,
+      coverImage:       v.coverImage || null,
+      ogImage:          v.ogImage || null,
+      mainTaxonomyId:   v.mainTaxonomyId,
+      isFeatured:       v.isFeatured,
+      publishDate:      v.status === 'published' ? new Date().toISOString() : null,
+      scheduledDate:    v.status === 'scheduled' && v.scheduledDate
+                          ? new Date(v.scheduledDate).toISOString()
                           : null,
-      translations:     this.translations(),
-      taxonomyIds:      this.taxonomyIds(),
+      translations:     v.translations,
+      taxonomyIds:      v.taxonomyIds,
       readingTime:      estimateReadingTime(defContent),
     };
   }
@@ -834,6 +966,7 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     try {
       const saved = await this.api.savePost(this.buildPayload());
       this.postId.set(saved.id);
+      this.postForm.markAsPristine();
       this.isDirty.set(false);
       this.lastSavedAt.set(saved.updatedAt);
       this.toast.success('BLOG.COMPOSER.SAVED_OK');
@@ -854,6 +987,7 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     try {
       const saved = await this.api.savePost(this.buildPayload());
       this.postId.set(saved.id);
+      this.postForm.markAsPristine();
       this.isDirty.set(false);
       this.lastSavedAt.set(saved.updatedAt);
     } catch { /* silent */ }

@@ -154,6 +154,7 @@
       "ADD_EXPANDABLE":      "Expandable list",
       "ADD_POLL":            "Poll",
       "ADD_LAYOUT":          "Layout section",
+      "ADD_BANNER":          "Banner",
       "ADD_HTML":            "HTML code",
       "ADD_ADSENSE":         "AdSense",
       "ADD_SOUNDCLOUD":      "SoundCloud"

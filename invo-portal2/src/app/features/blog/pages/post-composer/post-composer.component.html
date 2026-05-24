@@ -79,9 +79,11 @@
       }
     </nav>
 
-    <!-- Side panel — only rendered when a rail item is open -->
-    @if (rail()) {
-      <aside class="wc__panel">
+    <!-- Side panel — always in the DOM so the open/close can animate
+         via the `--open` class on the wrapper; inner content is still
+         only rendered when there's an active rail. -->
+    <aside class="wc__panel" [class.wc__panel--open]="!!rail()" [attr.aria-hidden]="!rail()">
+      @if (rail()) {
         <header class="wc__panelHead">
           <h2 class="wc__panelTitle">{{ panelTitle() | translate }}</h2>
           <button class="wc__panelClose" (click)="rail.set(null)" [attr.aria-label]="'COMMON.CLOSE' | translate">
@@ -303,8 +305,8 @@
           }
 
         </div>
-      </aside>
-    }
+      }
+    </aside>
 
     <!-- Main canvas — toolbar pinned at top (inside <app-rich-editor>),
          title projected into the editor's slot so it sits between the
@@ -323,6 +325,7 @@
           (addClick)="rail.set('add')"
           (blockReplace)="onBlockReplace($event)"
           (bgImageClick)="onPickBannerBgImage()"
+          (colBgImageClick)="onPickColBgImage()"
           [embedOnPaste]="true"
           height="calc(100vh - 220px)">
           <div class="wc__canvasInner">

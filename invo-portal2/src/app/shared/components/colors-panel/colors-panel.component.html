@@ -1,0 +1,315 @@
+<!--
+  Colors panel — solid colour + linear gradient editor in one floating
+  card. Layout: header (title + close), tabs (Color / Gradient), tab
+  body, then a footer "Reset to Default" link. The tab body switches
+  between the colour HSV picker and the gradient editor.
+-->
+<div class="cp"
+     [class.cp--disabled]="isDisabled()"
+     [class.cp--dragging]="dragKind() === 'panel'"
+     [style.transform]="'translate(' + panelOffset().x + 'px, ' + panelOffset().y + 'px)'">
+  <!-- Header — also the drag handle for repositioning the panel. -->
+  <header #headerEl class="cp__head" (pointerdown)="startPanelDrag($event)">
+    <h3 class="cp__title">Colors</h3>
+    <button type="button" class="cp__close" (click)="close()" aria-label="Close">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- Tabs — Gradient tab is hidden in colour-only mode, leaving the
+       Color tab as the sole heading (no underline needed). -->
+  @if (!colorOnly()) {
+    <nav class="cp__tabs" role="tablist">
+      <button type="button" role="tab"
+              class="cp__tab" [class.is-on]="mode() === 'color'"
+              [attr.aria-selected]="mode() === 'color'"
+              (click)="setMode('color')">Color</button>
+      <button type="button" role="tab"
+              class="cp__tab" [class.is-on]="mode() === 'gradient'"
+              [attr.aria-selected]="mode() === 'gradient'"
+              (click)="setMode('gradient')">Gradient</button>
+    </nav>
+  }
+
+  <!-- ─────────────────────────── Color tab ─────────────────────────── -->
+  @if (mode() === 'color') {
+    <section class="cp__body">
+      <!-- HSV saturation/value picker. Background is a hue-tinted base
+           with white→transparent (saturation) and transparent→black
+           (value) overlaid via gradients — same trick every native
+           colour picker uses. -->
+      <div #spectrumEl
+           class="cp__spectrum"
+           [style.--hue-color]="spectrumStyle().hueColor"
+           (pointerdown)="startSpectrumDrag($event)">
+        <div class="cp__spectrum-thumb"
+             [style.left.%]="spectrumStyle().thumbX"
+             [style.top.%]="spectrumStyle().thumbY"></div>
+      </div>
+
+      <!-- Hue rainbow strip. -->
+      <div #hueEl class="cp__hue" (pointerdown)="startHueDrag($event)">
+        <div class="cp__hue-thumb"
+             [style.left.%]="spectrumStyle().huePos"
+             [style.--c]="spectrumStyle().hueColor"></div>
+      </div>
+
+      <!-- Format segmented (HEX / RGB / HSB). Mirrors the secondary
+           color-picker's tab row so the two stay visually consistent. -->
+      <div class="cp__format-tabs" role="tablist">
+        @for (m of ['hex','rgb','hsb']; track m) {
+          <button type="button" role="tab"
+                  class="cp__format-tab"
+                  [class.is-on]="formatMode() === m"
+                  (click)="setFormatMode($any(m))">{{ m.toUpperCase() }}</button>
+        }
+      </div>
+
+      <!-- Format-specific inputs + a "no colour" clear button on the
+           right. Empty / unrecognised hex sits in the no-colour state;
+           the placeholder reads "Enter a color" while the slash button
+           collapses any value back to empty. The "+" save action moves
+           up to the Saved Colors header so this row stays tight. -->
+      <div class="cp__hex-row">
+        @if (hasEyedropper) {
+          <button type="button" class="cp__icon-btn" (click)="useEyedropper()" title="Pick from screen" aria-label="Pick from screen">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 22l3-3"/><path d="m5 19 5-5"/><path d="m13 11 5-5"/><path d="m18 6 4-4"/><path d="m13.5 6.5 4 4"/>
+            </svg>
+          </button>
+        }
+        @switch (formatMode()) {
+          @case ('hex') {
+            <input type="text"
+                   class="cp__hex-input"
+                   [ngModel]="color()"
+                   (ngModelChange)="onHexInput($event)"
+                   (blur)="onHexBlur(($any($event).target).value)"
+                   maxlength="7"
+                   spellcheck="false"
+                   placeholder="Enter a color"
+                   aria-label="HEX value"/>
+          }
+          @case ('rgb') {
+            <div class="cp__triple">
+              <input type="number" min="0" max="255" [ngModel]="rgbValues().r" (ngModelChange)="onRgbChannel('r', $event)" aria-label="Red"/>
+              <input type="number" min="0" max="255" [ngModel]="rgbValues().g" (ngModelChange)="onRgbChannel('g', $event)" aria-label="Green"/>
+              <input type="number" min="0" max="255" [ngModel]="rgbValues().b" (ngModelChange)="onRgbChannel('b', $event)" aria-label="Blue"/>
+            </div>
+          }
+          @case ('hsb') {
+            <div class="cp__triple">
+              <input type="number" min="0" max="360" [ngModel]="hsbValues().h" (ngModelChange)="onHsbChannel('h', $event)" aria-label="Hue"/>
+              <input type="number" min="0" max="100" [ngModel]="hsbValues().s" (ngModelChange)="onHsbChannel('s', $event)" aria-label="Saturation"/>
+              <input type="number" min="0" max="100" [ngModel]="hsbValues().b" (ngModelChange)="onHsbChannel('b', $event)" aria-label="Brightness"/>
+            </div>
+          }
+        }
+        <button type="button" class="cp__no-color"
+                [class.is-active]="!color()"
+                (click)="clearColor()"
+                title="No color"
+                aria-label="No color">
+          <svg viewBox="0 0 24 24" width="100%" height="100%" preserveAspectRatio="none">
+            <line x1="0" y1="0" x2="24" y2="24" stroke="#ef4444" stroke-width="2"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Saved colours grid. Always shows the "empty" red-slash placeholder
+           as the first cell so the section never collapses to zero height. -->
+      <h4 class="cp__section-label">Saved Colors</h4>
+      <div class="cp__swatches">
+        @if (savedColors().length === 0) {
+          <span class="cp__swatch cp__swatch--empty" aria-label="No saved colours">
+            <svg viewBox="0 0 24 24" width="100%" height="100%" preserveAspectRatio="none">
+              <line x1="0" y1="0" x2="24" y2="24" stroke="#ef4444" stroke-width="2"/>
+            </svg>
+          </span>
+        } @else {
+          @for (sc of savedColors(); track sc) {
+            <button type="button" class="cp__swatch"
+                    [style.background]="sc"
+                    (click)="pickSavedColor(sc)"
+                    [attr.aria-label]="sc"></button>
+          }
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ────────────────────────── Gradient tab ────────────────────────── -->
+  @if (mode() === 'gradient') {
+    <section class="cp__body">
+      <!-- Circular angle dial. The dial's "arm" is a thin line from
+           the centre to the knob on the circumference, both rotated by
+           the gradient angle. Drag anywhere inside the dark frame to
+           rotate. For radial gradients angle is meaningless, so the
+           dial dims + ignores input. -->
+      <div #angleEl class="cp__angle"
+           [class.cp__angle--inert]="gradientType() === 'radial'"
+           [style.background]="gradientCss()"
+           (pointerdown)="gradientType() === 'radial' ? null : startAngleDrag($event)">
+        <div class="cp__angle-circle">
+          <div class="cp__angle-arm" [style.transform]="'rotate(' + angleDeg() + 'deg)'"></div>
+          <div class="cp__angle-knob"
+               [style.transform]="'rotate(' + angleDeg() + 'deg) translateY(-40px) rotate(-' + angleDeg() + 'deg)'"></div>
+        </div>
+      </div>
+
+      <!-- Type selector (Linear) + reverse-stops button. The type chip
+           opens a tiny popup — keeps the design future-proof for radial
+           etc. while still being a real interactive control today. -->
+      <div class="cp__type-row">
+        <button #linearOrigin="cdkOverlayOrigin"
+                cdkOverlayOrigin
+                type="button"
+                class="cp__type-select"
+                [class.is-open]="linearMenuOpen()"
+                (click)="linearMenuOpen.set(!linearMenuOpen())">
+          <span>{{ gradientType() === 'radial' ? 'Radial' : 'Linear' }}</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <ng-template
+          cdkConnectedOverlay
+          [cdkConnectedOverlayOrigin]="linearOrigin"
+          [cdkConnectedOverlayOpen]="linearMenuOpen()"
+          [cdkConnectedOverlayPositions]="linearMenuPositions"
+          [cdkConnectedOverlayHasBackdrop]="true"
+          cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+          (backdropClick)="linearMenuOpen.set(false)">
+          <div class="cp__type-menu">
+            @for (t of gradientTypeOptions; track t.value) {
+              <button type="button" class="cp__type-menu-item"
+                      [class.is-on]="gradientType() === t.value"
+                      (click)="pickGradientType(t.value)">{{ t.label }}</button>
+            }
+          </div>
+        </ng-template>
+        <button type="button" class="cp__icon-btn cp__icon-btn--ring" (click)="reverseStops()" title="Reverse stops" aria-label="Reverse stops">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 4 21 9 16 9"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Stops bar: the gradient itself with a draggable thumb per
+           stop. Click on empty bar space to add a new stop at that
+           position (colour interpolated from neighbours). -->
+      <div #stopsBarEl class="cp__stops-bar"
+           [style.background]="gradientCss()"
+           (pointerdown)="onStopsBarClick($event)">
+        @for (s of gradient().stops; track $index; let i = $index) {
+          <button type="button"
+                  class="cp__stops-bar-thumb"
+                  [class.is-active]="selectedStopIndex() === i"
+                  [style.left.%]="s.position"
+                  [style.--stop-color]="stopBaseHex(i)"
+                  (pointerdown)="startStopDrag(i, $event)"
+                  (click)="selectStop(i)"
+                  [attr.aria-label]="'Stop at ' + s.position + '%'"></button>
+        }
+      </div>
+
+      <!-- Stops section. -->
+      <div class="cp__stops-head">
+        <h4 class="cp__section-label">Stops</h4>
+        <button type="button" class="cp__icon-btn cp__icon-btn--ring" (click)="addStop()" aria-label="Add stop">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+      </div>
+
+      @for (s of gradient().stops; track $index; let i = $index) {
+        <div class="cp__stop">
+          <!-- Mini opacity slider with checkerboard track. -->
+          <input type="range" class="cp__stop-alpha"
+                 min="0" max="100" step="1"
+                 [style.--c]="stopBaseHex(i)"
+                 [ngModel]="stopAlphaPct(i)"
+                 (ngModelChange)="setStopAlpha(i, $event)"
+                 aria-label="Stop opacity"/>
+          <div class="cp__stop-pct">
+            <input type="number" min="0" max="100" step="1"
+                   [ngModel]="s.position"
+                   (ngModelChange)="setStopPosition(i, $event)"
+                   aria-label="Stop position"/>
+            <span>%</span>
+          </div>
+          <!-- Stop colour swatch — a flat coloured button. Clicking opens
+               a nested mini ColorsPanel popover (colour-only) so the user
+               edits this stop the same way they would any other colour
+               in the app. -->
+          <button #stopSwatch="cdkOverlayOrigin" cdkOverlayOrigin
+                  type="button"
+                  class="cp__stop-swatch"
+                  [style.background]="stopBaseHex(i)"
+                  (click)="stopPickerOpenIndex.set(stopPickerOpenIndex() === i ? -1 : i)"
+                  [attr.aria-label]="'Edit stop ' + (i + 1) + ' colour'"></button>
+          <ng-template
+            cdkConnectedOverlay
+            [cdkConnectedOverlayOrigin]="stopSwatch"
+            [cdkConnectedOverlayOpen]="stopPickerOpenIndex() === i"
+            [cdkConnectedOverlayPositions]="linearMenuPositions"
+            [cdkConnectedOverlayHasBackdrop]="true"
+            cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+            (backdropClick)="stopPickerOpenIndex.set(-1)">
+            <app-colors-panel
+              [colorOnly]="true"
+              [ngModel]="stopBaseHex(i)"
+              (ngModelChange)="setStopColor(i, $event)"
+              (closed)="stopPickerOpenIndex.set(-1)"/>
+          </ng-template>
+          <button type="button" class="cp__stop-remove"
+                  [disabled]="gradient().stops.length <= 2"
+                  (click)="removeStop(i)"
+                  aria-label="Remove stop">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>
+            </svg>
+          </button>
+        </div>
+      }
+
+      <!-- Saved gradients list — appears above Save button once non-empty.
+           Each chip is a click-to-apply, with a tiny × in the corner to
+           remove it from the saved list (matches the saved-colour grid's
+           model so the two read consistently). -->
+      @if (savedGradients().length > 0) {
+        <div class="cp__saved-gradients">
+          @for (sg of savedGradients(); track sg) {
+            <div class="cp__saved-gradient-wrap">
+              <button type="button" class="cp__saved-gradient"
+                      [style.background]="sg"
+                      (click)="applySavedGradient(sg)"
+                      aria-label="Apply saved gradient"></button>
+              <button type="button" class="cp__saved-gradient-remove"
+                      (click)="removeSavedGradient(sg)"
+                      aria-label="Remove saved gradient">
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <button type="button" class="cp__save-btn" (click)="saveGradient()">Save Gradient</button>
+    </section>
+  }
+
+  <!-- Footer: Reset to Default — same affordance in both tabs, content
+       it resets differs by active mode. -->
+  <footer class="cp__footer">
+    <button type="button" class="cp__reset" (click)="resetToDefault()">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+      </svg>
+      <span>Reset to Default</span>
+    </button>
+  </footer>
+</div>
