@@ -110,9 +110,15 @@ export class ColorsPanelComponent implements ControlValueAccessor {
   colorOnly = input<boolean>(false);
   disabledInput = input<boolean>(false, { alias: 'disabled' });
 
+  /** Optional 0–100 opacity value. When provided, a checkered alpha
+   *  slider is rendered below the hue strip (Wix-style). Set to `null`
+   *  to hide the row entirely. */
+  alpha = input<number | null>(null);
+
   // ─── Outputs ───────────────────────────────────────────────────────────
   @Output() modeChange = new EventEmitter<PanelMode>();
   @Output() closed = new EventEmitter<void>();
+  @Output() alphaChange = new EventEmitter<number>();
 
   // ─── State ─────────────────────────────────────────────────────────────
   mode = signal<PanelMode>('color');

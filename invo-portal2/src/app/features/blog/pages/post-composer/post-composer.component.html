@@ -326,8 +326,9 @@
           (blockReplace)="onBlockReplace($event)"
           (bgImageClick)="onPickBannerBgImage()"
           (colBgImageClick)="onPickColBgImage()"
+          (cellImageClick)="onPickCellImage($event)"
           [embedOnPaste]="true"
-          height="calc(100vh - 220px)">
+          height="auto">
           <div class="wc__canvasInner">
             <input class="wc__title"
                    [value]="current().title"

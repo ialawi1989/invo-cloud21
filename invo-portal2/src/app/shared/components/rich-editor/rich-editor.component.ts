@@ -8,6 +8,7 @@ import {
   OnDestroy,
   ViewChild,
   computed,
+  effect,
   forwardRef,
   inject,
   input,
@@ -16,8 +17,11 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
-import { TooltipDirective } from '@shared/directives/tooltip.directive';
+import { ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
+import { RichTooltipDirective } from './rich-tooltip.directive';
+import { RichNumSliderComponent } from './rich-num-slider.component';
+import { ModalService } from '../../modal/modal.service';
+import { BannerPresetPickerComponent, BannerPresetPickerData } from './banner-preset-picker.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ColorsPanelComponent } from '@shared/components/colors-panel/colors-panel.component';
 
@@ -92,7 +96,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
 @Component({
   selector: 'app-rich-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, OverlayModule, TooltipDirective, SearchDropdownComponent, ColorsPanelComponent],
+  imports: [CommonModule, FormsModule, OverlayModule, RichTooltipDirective, RichNumSliderComponent, SearchDropdownComponent, ColorsPanelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
@@ -102,7 +106,42 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     },
   ],
   template: `
-    <div class="re" [class.re--disabled]="disabled()" [class.re--bare]="bare()">
+    <div class="re-editor-host re"
+         [class.re--disabled]="disabled()"
+         [class.re--bare]="bare()"
+         [class.re--fullscreen]="isFullscreen()">
+      <!-- Fullscreen toggle — pinned to the top-right of the host
+           regardless of mode (HTML / wysiwyg). Square 28x28 button
+           with the Wix "expand corners" / "collapse corners" icon. -->
+      <button type="button"
+              class="re-fullscreen-toggle"
+              (mousedown)="$event.preventDefault(); toggleFullscreen()"
+              [appReTooltip]="isFullscreen() ? 'Exit fullscreen' : 'Fullscreen'"
+              [attr.aria-pressed]="isFullscreen()"
+              aria-label="Toggle fullscreen">
+        @if (isFullscreen()) {
+          <!-- Collapse corners (4 inward arrows) -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M9 3v4H5V5h2V3h2zm6 0h2v2h2v2h-4V3zM9 21H7v-2H5v-2h4v4zm6 0v-4h4v2h-2v2h-2z"/>
+          </svg>
+        } @else {
+          <!-- Expand corners (4 outward arrows) -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M5 5h4V3H3v6h2V5zm14 0v4h2V3h-6v2h4zM5 19v-4H3v6h6v-2H5zm14 0h-4v2h6v-6h-2v4z"/>
+          </svg>
+        }
+      </button>
+      <!-- Ricos-style outer shell:
+             .re-static-toolbar  — sticky, centred, full-width toolbar
+             .re-editor-page     — scroll container
+               .re-editor-column — max-width 940px, centred reading column
+                 .re-editor-title   — optional textarea (showTitle())
+                 .re-editor-content — wraps the contenteditable surface
+           The existing .re__toolbar / .re__surfaceWrap markup stays
+           inside these new wrappers so all positioning logic (floating
+           panels, popovers) continues to anchor where it did. -->
+      <div class="re-static-toolbar">
+        <div class="re-toolbar-rail">
       <!-- Toolbar — most buttons are disabled in HTML-source mode.
            Wrapped in two regions: a scrollable rail of editing
            controls and a pinned end-cap with the HTML toggle so the
@@ -110,12 +149,24 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       <div class="re__toolbar" role="toolbar" [attr.aria-disabled]="disabled()">
         <div class="re__rail">
         @if (mode() === 'wysiwyg') {
-          <!-- Block format dropdown -->
+          <!-- ── 1. Content AI (opt-in via showContentAi()) ───────── -->
+          @if (showContentAi()) {
+            <button type="button" class="re__btn re__btn--ai"
+                    (mousedown)="$event.preventDefault(); contentAiClick.emit()"
+                    [appReTooltip]="'Content AI'">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2l1.6 4.4L18 8l-4.4 1.6L12 14l-1.6-4.4L6 8l4.4-1.6L12 2zm6 10l1 2.5 2.5 1-2.5 1L18 19l-1-2.5L14.5 15.5l2.5-1L18 12z"/>
+              </svg>
+            </button>
+            <span class="re__sep"></span>
+          }
+
+          <!-- ── 2. Paragraph dropdown ────────────────────────────── -->
           <button #blockTrigger="cdkOverlayOrigin" cdkOverlayOrigin
                   type="button" class="re__btn re__btn--dd"
                   (mousedown)="toggleMenu($event, 'block')"
                   [attr.aria-expanded]="openMenu() === 'block'"
-                  [appTooltip]="'Paragraph style'">
+                  [appReTooltip]="'Paragraph style'">
             <span class="re__btn-text">{{ currentBlockLabel() }}</span>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9"/>
@@ -137,17 +188,29 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             </div>
           </ng-template>
 
-          <!-- Font-size dropdown -->
-          <button #sizeTrigger="cdkOverlayOrigin" cdkOverlayOrigin
-                  type="button" class="re__btn re__btn--dd re__btn--size"
-                  (mousedown)="toggleMenu($event, 'size')"
-                  [attr.aria-expanded]="openMenu() === 'size'"
-                  [appTooltip]="'Font size'">
-            <span class="re__btn-text">{{ currentSize() }}</span>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </button>
+          <span class="re__sep"></span>
+
+          <!-- ── 3. Font size — number input + chevron-dropdown
+                  The input commits on Enter / blur; the chevron opens
+                  the preset-list overlay. -->
+          <div #sizeTrigger="cdkOverlayOrigin" cdkOverlayOrigin
+               class="re__sizeField" [appReTooltip]="'Font size'">
+            <input type="number" inputmode="numeric" min="6" max="200"
+                   class="re__sizeInput"
+                   [value]="currentSize()"
+                   (change)="commitSizeFromInput($event)"
+                   (blur)="commitSizeFromInput($event)"
+                   (keydown)="onSizeInputKeydown($event)"
+                   aria-label="Font size">
+            <button type="button" class="re__sizeChevron"
+                    (mousedown)="toggleMenu($event, 'size')"
+                    [attr.aria-expanded]="openMenu() === 'size'"
+                    aria-label="Font size presets">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+          </div>
           <ng-template
             cdkConnectedOverlay
             [cdkConnectedOverlayOrigin]="sizeTrigger"
@@ -164,16 +227,17 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
 
           <span class="re__sep"></span>
 
+          <!-- ── 4. Bold / Italic / Underline / Color / Highlight ── -->
           <button type="button" class="re__btn" [class.is-on]="state().bold"
-                  (mousedown)="cmd($event, 'bold')" [appTooltip]="'Bold (Ctrl+B)'">
+                  (mousedown)="cmd($event, 'bold')" [appReTooltip]="'Bold (Ctrl+B)'">
             <span class="re__btn-label"><b>B</b></span>
           </button>
           <button type="button" class="re__btn" [class.is-on]="state().italic"
-                  (mousedown)="cmd($event, 'italic')" [appTooltip]="'Italic (Ctrl+I)'">
+                  (mousedown)="cmd($event, 'italic')" [appReTooltip]="'Italic (Ctrl+I)'">
             <span class="re__btn-label"><i>I</i></span>
           </button>
           <button type="button" class="re__btn" [class.is-on]="state().underline"
-                  (mousedown)="cmd($event, 'underline')" [appTooltip]="'Underline (Ctrl+U)'">
+                  (mousedown)="cmd($event, 'underline')" [appReTooltip]="'Underline (Ctrl+U)'">
             <span class="re__btn-label"><u>U</u></span>
           </button>
 
@@ -182,7 +246,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   type="button" class="re__btn re__btn--swatch"
                   (mousedown)="toggleMenu($event, 'color')"
                   [attr.aria-expanded]="openMenu() === 'color'"
-                  [appTooltip]="'Text colour'">
+                  [appReTooltip]="'Text colour'">
             <span class="re__btn-label re__btn-label--color">
               A<span class="re__swatch-bar" [style.background]="lastColor()"></span>
             </span>
@@ -208,10 +272,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   type="button" class="re__btn re__btn--swatch"
                   (mousedown)="toggleMenu($event, 'highlight')"
                   [attr.aria-expanded]="openMenu() === 'highlight'"
-                  [appTooltip]="'Highlight colour'">
+                  [appReTooltip]="'Highlight colour'">
             <span class="re__btn-label re__btn-label--color">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m9 11-6 6v3h3l6-6"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/>
+              <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+                <path d="M11.7 1.5l4.8 4.8-7.4 7.4H4.3l-2.8-2.8 1.4-1.4L9.7 3l2-1.5zm-1 2.4L3.5 11l1.4 1.4 7.2-7.1-1.4-1.4zM2 16h14v1.5H2V16z"/>
               </svg>
               <span class="re__swatch-bar" [style.background]="lastHighlight()"></span>
             </span>
@@ -235,48 +299,47 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
 
           <span class="re__sep"></span>
 
-          <button type="button" class="re__btn" (mousedown)="linkPrompt($event)" [appTooltip]="'Insert link'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          <button type="button" class="re__btn" (mousedown)="linkPrompt($event)" [appReTooltip]="'Insert link'">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+              <path d="M7.5 5h-2A3.5 3.5 0 0 0 2 8.5 3.5 3.5 0 0 0 5.5 12h2v-1.5h-2a2 2 0 1 1 0-4h2V5zm3 0v1.5h2a2 2 0 1 1 0 4h-2V12h2A3.5 3.5 0 0 0 16 8.5 3.5 3.5 0 0 0 12.5 5h-2zM6 7.75h6v1.5H6v-1.5z"/>
             </svg>
           </button>
-          <button type="button" class="re__btn" (mousedown)="pickBlock($event, 'BLOCKQUOTE')" [appTooltip]="'Quote'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M3 21c3 0 3-3 3-6V9H3v6h3"/><path d="M14 21c3 0 3-3 3-6V9h-3v6h3"/>
+          <button type="button" class="re__btn" (mousedown)="pickBlock($event, 'BLOCKQUOTE')" [appReTooltip]="'Quote'">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+              <path d="M4 4H7L5.5 7.5H7V14H2V7.5L4 4ZM11 4H14L12.5 7.5H14V14H9V7.5L11 4Z"/>
             </svg>
           </button>
-          <button type="button" class="re__btn" (mousedown)="toggleCode($event)" [appTooltip]="'Inline code'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+          <button type="button" class="re__btn" (mousedown)="toggleCode($event)" [appReTooltip]="'Inline code'">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+              <path d="M6 4.4L1.4 9 6 13.6 7.1 12.5 3.6 9l3.5-3.5L6 4.4zm6 0L10.9 5.5 14.4 9 10.9 12.5 12 13.6 16.6 9 12 4.4z"/>
             </svg>
           </button>
 
           <span class="re__sep"></span>
 
-          <button type="button" class="re__btn" [class.is-on]="state().ul"
-                  (mousedown)="cmd($event, 'insertUnorderedList')" [appTooltip]="'Bullet list'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <circle cx="4" cy="6" r="1.2"/><circle cx="4" cy="12" r="1.2"/><circle cx="4" cy="18" r="1.2"/>
-              <line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/>
-            </svg>
-          </button>
+          <!-- Numbered first, then bulleted — matches Ricos's order. -->
           <button type="button" class="re__btn" [class.is-on]="state().ol"
-                  (mousedown)="cmd($event, 'insertOrderedList')" [appTooltip]="'Numbered list'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <text x="1" y="8"  font-size="6" fill="currentColor" stroke="none" font-family="system-ui">1</text>
-              <text x="1" y="14" font-size="6" fill="currentColor" stroke="none" font-family="system-ui">2</text>
-              <text x="1" y="20" font-size="6" fill="currentColor" stroke="none" font-family="system-ui">3</text>
-              <line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/>
+                  (mousedown)="cmd($event, 'insertOrderedList')" [appReTooltip]="'Numbered list'">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+              <path d="M2 3h1v3H2V4H1V3h1zm0 5h2v1L3 10h1v1H1v-1l1-1H1V8zm0 5h2v1H2v1h2v1H1v-3zM7 3h10v2H7V3zm0 5h10v2H7V8zm0 5h10v2H7v-2z"/>
             </svg>
           </button>
+          <button type="button" class="re__btn" [class.is-on]="state().ul"
+                  (mousedown)="cmd($event, 'insertUnorderedList')" [appReTooltip]="'Bullet list'">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+              <circle cx="2.5" cy="4" r="1.3"/><circle cx="2.5" cy="9" r="1.3"/><circle cx="2.5" cy="14" r="1.3"/>
+              <path d="M7 3h10v2H7V3zm0 5h10v2H7V8zm0 5h10v2H7v-2z"/>
+            </svg>
+          </button>
+
+          <span class="re__sep"></span>
 
           <!-- Alignment dropdown -->
           <button #alignTrigger="cdkOverlayOrigin" cdkOverlayOrigin
                   type="button" class="re__btn re__btn--dd"
                   (mousedown)="toggleMenu($event, 'align')"
                   [attr.aria-expanded]="openMenu() === 'align'"
-                  [appTooltip]="'Alignment'">
+                  [appReTooltip]="'Alignment'">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path [attr.d]="currentAlignIcon()"/>
             </svg>
@@ -308,9 +371,9 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   type="button" class="re__btn re__btn--dd"
                   (mousedown)="toggleMenu($event, 'lineheight')"
                   [attr.aria-expanded]="openMenu() === 'lineheight'"
-                  [appTooltip]="'Line height'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 6H3M21 12H9M21 18H3"/><path d="M5 4v4M5 16v4"/><path d="M3 6l2-2 2 2M3 18l2 2 2-2"/>
+                  [appReTooltip]="'Line height'">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+              <path d="M6 4h10v1.5H6V4zm0 4h10v1.5H6V8zm0 4h10v1.5H6V12zm0 4h10v1.5H6V16zM2 3l2 2.5h-1.25v7.5H4L2 15.5 0 13h1.25v-7.5H0L2 3z" transform="translate(0 -1)"/>
             </svg>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9"/>
@@ -330,39 +393,29 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             </div>
           </ng-template>
 
-          <button type="button" class="re__btn" (mousedown)="cmd($event, 'outdent')" [appTooltip]="'Decrease indent'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="21" y1="6"  x2="9"  y2="6"/>
-              <line x1="21" y1="18" x2="9"  y2="18"/>
-              <line x1="21" y1="12" x2="11" y2="12"/>
-              <polyline points="7 8 3 12 7 16"/>
+          <span class="re__sep"></span>
+
+          <button type="button" class="re__btn" (mousedown)="cmd($event, 'outdent')" [appReTooltip]="'Decrease indent'">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+              <path d="M2 3h14v1.5H2V3zm5 4h9v1.5H7V7zm0 4h9v1.5H7V11zM2 15h14v1.5H2V15zm3.5-5.25L2 12 5.5 14.25v-4.5z"/>
             </svg>
           </button>
-          <button type="button" class="re__btn" (mousedown)="cmd($event, 'indent')" [appTooltip]="'Increase indent'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="3"  y1="6"  x2="21" y2="6"/>
-              <line x1="3"  y1="18" x2="21" y2="18"/>
-              <line x1="3"  y1="12" x2="13" y2="12"/>
-              <polyline points="17 8 21 12 17 16"/>
+          <button type="button" class="re__btn" (mousedown)="cmd($event, 'indent')" [appReTooltip]="'Increase indent'">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+              <path d="M2 3h14v1.5H2V3zm0 4h9v1.5H2V7zm0 4h9v1.5H2V11zm0 4h14v1.5H2V15zm10.5-5.25L16 12l-3.5 2.25v-4.5z"/>
             </svg>
           </button>
 
           <span class="re__sep"></span>
-
-          <button type="button" class="re__btn" (mousedown)="clearFormat($event)" [appTooltip]="'Clear formatting'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 7V4h16v3"/><path d="M5 20l14-16"/><path d="M9 20h6"/>
-            </svg>
-          </button>
 
           <!-- Info popover -->
           <button #infoTrigger="cdkOverlayOrigin" cdkOverlayOrigin
                   type="button" class="re__btn"
                   (mousedown)="toggleMenu($event, 'info')"
                   [attr.aria-expanded]="openMenu() === 'info'"
-                  [appTooltip]="'Keyboard shortcuts'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                  [appReTooltip]="'Keyboard shortcuts'">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+              <path d="M9 1.5A7.5 7.5 0 1 0 16.5 9 7.5 7.5 0 0 0 9 1.5zm0 13.5a6 6 0 1 1 6-6 6 6 0 0 1-6 6zm-.75-9.75h1.5V7h-1.5V5.25zm0 3h1.5v5h-1.5v-5z"/>
             </svg>
           </button>
           <ng-template
@@ -384,6 +437,16 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
               </dl>
             </div>
           </ng-template>
+
+          <!-- ── Appended after Info (not in the Ricos spec order) ─
+                 Clear formatting was kept as a trailing utility per
+                 the consumer's request. -->
+          <span class="re__sep"></span>
+          <button type="button" class="re__btn" (mousedown)="clearFormat($event)" [appReTooltip]="'Clear formatting'">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+              <path d="M4 3h11v2H4V3zm2.5 2L4.4 16h2L8 5H6.5zm4 0L8.4 16h2L12 5h-1.5zM3 14.1L13.6 3.5l1 1L4 15.1l-1-1z"/>
+            </svg>
+          </button>
         }
         </div>
 
@@ -403,6 +466,34 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
         </button>
       </div>
 
+        </div><!-- /.re-toolbar-rail -->
+      </div><!-- /.re-static-toolbar -->
+
+      <div class="re-editor-page">
+        <div class="re-editor-column">
+          @if (showTitle()) {
+            <div class="re-editor-title">
+              <textarea
+                class="re-editor-title__input"
+                placeholder="Add a title…"
+                [attr.rows]="titleRows()"
+                [attr.maxlength]="titleMaxLength()"
+                [attr.disabled]="disabled() ? 'disabled' : null"
+                [value]="titleValue()"
+                (input)="onTitleInput($event)"
+                (focus)="onTitleFocus()"
+                (blur)="onTitleBlur()"
+                spellcheck="true"
+                aria-label="Title"></textarea>
+              @if (titleFocused()) {
+                <div class="re-editor-title__counter"
+                     [class.is-near-limit]="titleValue().length >= titleMaxLength() - 10">
+                  {{ titleValue().length }}/{{ titleMaxLength() }}
+                </div>
+              }
+            </div>
+          }
+          <div class="re-editor-content">
       <!-- Optional projected content sits between the toolbar and
            the editable surface. Used by the Wix-style post composer
            to slot the giant "Add Title" input between the pinned
@@ -415,10 +506,16 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
            surface bounds (never overlapping the sticky toolbar). -->
       <div class="re__surfaceWrap">
         @if (addButton() && addBtn().show) {
+          <!-- Ricos floating add-plugin shell. Position math:
+                 left = line-left + var(--ricos-custom-editor-add-plugin-button-position-inline-start)
+               The component computes the line's left edge in pixels;
+               the host CSS owns the constant offset (-36px default)
+               so callers can re-theme by overriding the variable. -->
           <button type="button"
                   class="re__addBtn"
+                  data-hook="floating-add-plugin-menu"
                   [style.top.px]="addBtn().top"
-                  [style.left.px]="addBtn().left"
+                  [style.left]="'calc(' + addBtn().lineLeft + 'px + var(--ricos-custom-editor-add-plugin-button-position-inline-start, -36px))'"
                   (mousedown)="onAddBtn($event)"
                   aria-label="Add">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -441,6 +538,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
         (mouseup)="onSelectionMaybeChanged()"
         (keyup)="onSelectionMaybeChanged()"
         (paste)="onPaste($event)"
+        (dragover)="onEditableDragOver($event)"
+        (drop)="onEditableDrop($event)"
         (click)="onSurfaceClick($event)"
         (dblclick)="onSurfaceDblClick($event)"
       ></div>
@@ -485,27 +584,15 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   <button type="button" class="re__figSegBtn" [class.is-on]="colBgKind() === 'image'" (click)="setColBgKind('image')">Image</button>
                 </div>
                 @if (colBgKind() === 'color') {
-                  <!-- Colour mode — Fill color chip + swatch + opacity slider. -->
+                  <!-- Colour mode — swatch only; opacity lives in the picker. -->
                   <div class="re__figRow">
                     <label class="re__figTbLabel">Fill color</label>
                     <div class="re__figCtrl">
-                      <div class="re__figTbNum">
-                        <input type="number" min="0" max="100" class="re__figTbInput re__figTbInput--num"
-                               [ngModel]="colFillOpacity()"
-                               (ngModelChange)="setColFillOpacity($event)"/>
-                        <span class="re__figTbUnit">%</span>
-                      </div>
                       <button #colFillSwatch="cdkOverlayOrigin" cdkOverlayOrigin
                               type="button" class="re__figColorTrigger"
-                              [style.background]="colFillColor()"
+                              [style.--swatch-color]="composeRgba(colFillColor(), colFillOpacity())"
                               (click)="colorPanelTarget.set(colorPanelTarget() === 'colFill' ? null : 'colFill')"
                               aria-label="Edit fill colour"></button>
-                      <input type="range" min="0" max="100"
-                             class="re__figSlider re__figSlider--opacity"
-                             [style.--c]="colFillColor() || '#000'"
-                             [ngModel]="colFillOpacity()"
-                             (ngModelChange)="setColFillOpacity($event)"
-                             aria-label="Column fill opacity"/>
                       <ng-template
                         cdkConnectedOverlay
                         [cdkConnectedOverlayOrigin]="colFillSwatch"
@@ -516,8 +603,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                         (backdropClick)="colorPanelTarget.set(null)">
                         <app-colors-panel
                           [colorOnly]="true"
+                          [alpha]="colFillOpacity()"
                           [ngModel]="colorPanelValue()"
                           (ngModelChange)="onColorPanelChange($event)"
+                          (alphaChange)="setColFillOpacity($event)"
                           (closed)="colorPanelTarget.set(null)"/>
                       </ng-template>
                     </div>
@@ -555,24 +644,13 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                       </div>
                     </div>
                     <div class="re__figRow">
-                      <label class="re__figTbLabel" [appTooltip]="'Background overlay'">Background overlay</label>
+                      <label class="re__figTbLabel" [appReTooltip]="'Background overlay'">Background overlay</label>
                       <div class="re__figCtrl">
-                        <div class="re__figTbNum">
-                          <input type="number" min="0" max="100" class="re__figTbInput re__figTbInput--num"
-                                 [ngModel]="colOverlayOpacity()"
-                                 (ngModelChange)="setColOverlayOpacity($event)"/>
-                          <span class="re__figTbUnit">%</span>
-                        </div>
                         <button #colOverlaySwatch="cdkOverlayOrigin" cdkOverlayOrigin
                                 type="button" class="re__figColorTrigger"
-                                [style.background]="colOverlayColor()"
+                                [style.--swatch-color]="composeRgba(colOverlayColor(), colOverlayOpacity())"
                                 (click)="colorPanelTarget.set(colorPanelTarget() === 'colOverlay' ? null : 'colOverlay')"
                                 aria-label="Edit overlay colour"></button>
-                        <input type="range" min="0" max="100"
-                               class="re__figSlider re__figSlider--opacity"
-                               [style.--c]="colOverlayColor() || '#000'"
-                               [ngModel]="colOverlayOpacity()"
-                               (ngModelChange)="setColOverlayOpacity($event)"/>
                         <ng-template
                           cdkConnectedOverlay
                           [cdkConnectedOverlayOrigin]="colOverlaySwatch"
@@ -583,8 +661,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                           (backdropClick)="colorPanelTarget.set(null)">
                           <app-colors-panel
                             [colorOnly]="true"
+                            [alpha]="colOverlayOpacity()"
                             [ngModel]="colorPanelValue()"
                             (ngModelChange)="onColorPanelChange($event)"
+                            (alphaChange)="setColOverlayOpacity($event)"
                             (closed)="colorPanelTarget.set(null)"/>
                         </ng-template>
                       </div>
@@ -623,23 +703,11 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                 <div class="re__figRow">
                   <label class="re__figTbLabel">Border color</label>
                   <div class="re__figCtrl">
-                    <div class="re__figTbNum">
-                      <input type="number" min="0" max="100" class="re__figTbInput re__figTbInput--num"
-                             [ngModel]="colBorderOpacity()"
-                             (ngModelChange)="setColBorderOpacity($event)"/>
-                      <span class="re__figTbUnit">%</span>
-                    </div>
                     <button #colBorderSwatch="cdkOverlayOrigin" cdkOverlayOrigin
                             type="button" class="re__figColorTrigger"
-                            [style.background]="colBorderColor()"
+                            [style.--swatch-color]="composeRgba(colBorderColor(), colBorderOpacity())"
                             (click)="colorPanelTarget.set(colorPanelTarget() === 'colBorder' ? null : 'colBorder')"
                             aria-label="Edit border colour"></button>
-                    <input type="range" min="0" max="100"
-                           class="re__figSlider re__figSlider--opacity"
-                           [style.--c]="colBorderColor() || '#000'"
-                           [ngModel]="colBorderOpacity()"
-                           (ngModelChange)="setColBorderOpacity($event)"
-                           aria-label="Column border opacity"/>
                     <ng-template
                       cdkConnectedOverlay
                       [cdkConnectedOverlayOrigin]="colBorderSwatch"
@@ -650,8 +718,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                       (backdropClick)="colorPanelTarget.set(null)">
                       <app-colors-panel
                         [colorOnly]="true"
+                        [alpha]="colBorderOpacity()"
                         [ngModel]="colorPanelValue()"
                         (ngModelChange)="onColorPanelChange($event)"
+                        (alphaChange)="setColBorderOpacity($event)"
                         (closed)="colorPanelTarget.set(null)"/>
                     </ng-template>
                   </div>
@@ -715,12 +785,25 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   </div>
                 </div>
 
+                <!-- Full height toggle — when on, the column stretches
+                     to fill the banner's vertical extent instead of
+                     auto-sizing to its content. -->
+                <div class="re__figTbRow">
+                  <span class="re__figLabelGroup">
+                    Full height
+                    <span class="re__figInfo" [appReTooltip]="'Stretch the column to fill the banner\\'s full height.'">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    </span>
+                  </span>
+                  <span class="re__figTbToggle" [class.is-on]="colFullHeight()" (click)="setColFullHeight(!colFullHeight())"></span>
+                </div>
+
                 <!-- Section background -->
                 <h5 class="re__figPanelSection">Section background</h5>
                 <div class="re__figTbRow">
                   <span class="re__figLabelGroup">
                     Show background
-                    <span class="re__figInfo" [appTooltip]="'Turn off to remove the banner backdrop.'">
+                    <span class="re__figInfo" [appReTooltip]="'Turn off to remove the banner backdrop.'">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                     </span>
                   </span>
@@ -750,12 +833,6 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                     <div class="re__figRow">
                       <label class="re__figTbLabel">Fill color</label>
                       <div class="re__figCtrl">
-                        <div class="re__figTbNum">
-                          <input type="number" min="0" max="100" class="re__figTbInput re__figTbInput--num"
-                                 [ngModel]="bannerBgOpacity()"
-                                 (ngModelChange)="setBannerBgOpacity($event)"/>
-                          <span class="re__figTbUnit">%</span>
-                        </div>
                         <button #bgTriggerOrigin="cdkOverlayOrigin"
                                 cdkOverlayOrigin
                                 type="button"
@@ -763,21 +840,6 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                                 [style.background]="bgTriggerPreview()"
                                 (click)="bgPanelOpen.set(!bgPanelOpen())"
                                 aria-label="Edit background colour or gradient"></button>
-                        <!-- Opacity slider popover — appears on focus-within
-                             of the row, anchored to the chip. Checker
-                             track + current colour gradient. Suppressed
-                             in gradient mode: a single-axis opacity has
-                             no meaning against a multi-stop gradient,
-                             and the --c colour binding would otherwise
-                             render the wrong preview behind the track. -->
-                        @if (bgPanelMode() !== 'gradient') {
-                          <input type="range" min="0" max="100"
-                                 class="re__figSlider re__figSlider--opacity"
-                                 [style.--c]="bannerBgColor() || '#000'"
-                                 [ngModel]="bannerBgOpacity()"
-                                 (ngModelChange)="setBannerBgOpacity($event)"
-                                 aria-label="Background fill opacity"/>
-                        }
                         <ng-template
                           cdkConnectedOverlay
                           [cdkConnectedOverlayOrigin]="bgTriggerOrigin"
@@ -786,10 +848,16 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                           [cdkConnectedOverlayHasBackdrop]="true"
                           cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
                           (backdropClick)="bgPanelOpen.set(false)">
+                          <!-- Alpha is meaningful only in colour mode — a
+                               single-axis opacity has no meaning against
+                               a multi-stop gradient, so we hide the row
+                               by passing null in gradient mode. -->
                           <app-colors-panel
                             [initialMode]="bgPanelMode()"
+                            [alpha]="bgPanelMode() === 'gradient' ? null : bannerBgOpacity()"
                             [ngModel]="bgPanelValue()"
                             (ngModelChange)="onColorsPanelChange($event)"
+                            (alphaChange)="setBannerBgOpacity($event)"
                             (modeChange)="onColorsPanelMode($event)"
                             (closed)="bgPanelOpen.set(false)"/>
                         </ng-template>
@@ -828,17 +896,11 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                         </div>
                       </div>
                       <div class="re__figRow">
-                        <label class="re__figTbLabel" [appTooltip]="'Background overlay'">Background overlay</label>
+                        <label class="re__figTbLabel" [appReTooltip]="'Background overlay'">Background overlay</label>
                         <div class="re__figCtrl">
-                          <div class="re__figTbNum">
-                            <input type="number" min="0" max="100" class="re__figTbInput re__figTbInput--num"
-                                   [ngModel]="sectionOverlayOpacity()"
-                                   (ngModelChange)="setSectionOverlayOpacity($event)"/>
-                            <span class="re__figTbUnit">%</span>
-                          </div>
                           <button #sectionOverlaySwatch="cdkOverlayOrigin" cdkOverlayOrigin
                                   type="button" class="re__figColorTrigger"
-                                  [style.background]="sectionOverlayColor()"
+                                  [style.--swatch-color]="composeRgba(sectionOverlayColor(), sectionOverlayOpacity())"
                                   (click)="colorPanelTarget.set(colorPanelTarget() === 'sectionOverlay' ? null : 'sectionOverlay')"
                                   aria-label="Edit overlay colour"></button>
                           <ng-template
@@ -851,14 +913,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                             (backdropClick)="colorPanelTarget.set(null)">
                             <app-colors-panel
                               [colorOnly]="true"
+                              [alpha]="sectionOverlayOpacity()"
                               [ngModel]="colorPanelValue()"
                               (ngModelChange)="onColorPanelChange($event)"
+                              (alphaChange)="setSectionOverlayOpacity($event)"
                               (closed)="colorPanelTarget.set(null)"/>
                           </ng-template>
-                          <input type="range" min="0" max="100" class="re__figSlider re__figSlider--opacity"
-                                 [style.--c]="sectionOverlayColor() || '#000'"
-                                 [ngModel]="sectionOverlayOpacity()"
-                                 (ngModelChange)="setSectionOverlayOpacity($event)"/>
                         </div>
                       </div>
                       <div class="re__figRow">
@@ -901,7 +961,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                 <div class="re__figRow">
                   <label class="re__figTbLabel re__figTbLabel--info">
                     Column gap
-                    <span class="re__figInfo" [appTooltip]="'Horizontal space between columns.'">
+                    <span class="re__figInfo" [appReTooltip]="'Horizontal space between columns.'">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                     </span>
                   </label>
@@ -925,14 +985,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   <div class="re__figLabelLine">
                     <label class="re__figTbLabel re__figTbLabel--info">
                       Column padding
-                      <span class="re__figInfo" [appTooltip]="'Padding inside each column. Click the link icon to keep X and Y in sync.'">
+                      <span class="re__figInfo" [appReTooltip]="'Padding inside each column. Click the link icon to keep X and Y in sync.'">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                       </span>
                     </label>
                     <button type="button" class="re__figLinkBtn"
                             [class.is-on]="bannerPadLinked()"
                             (click)="toggleBannerPadLinked()"
-                            [appTooltip]="bannerPadLinked() ? 'Edit individually' : 'Link all edges'">
+                            [appReTooltip]="bannerPadLinked() ? 'Edit individually' : 'Link all edges'">
                       <svg viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
                         <path d="M4 12V6H3v6h1Z"/>
                         <path d="M6 15h6v-1H6v1Z"/>
@@ -971,37 +1031,61 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                     </div>
                   } @else {
                     <div class="re__figPadPair re__figPadPair--quad">
-                      <div class="re__figTbNum">
-                        <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor"><path d="M14 3H4a1 1 0 00-1 1v2a1 1 0 001 1h10a1 1 0 001-1V4a1 1 0 00-1-1zm0 1v2H4V4h10zM3 11h1V9H3v2zm7 4v-1H8v1h2zm5-4h-1V9h1v2zm-1 2h1v1a1 1 0 01-1 1h-1v-1h1v-1zM3 13h1v1h1v1H4a1 1 0 01-1-1v-1z"/></svg>
-                        <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
+                      <div class="re__figPadCell">
+                        <div class="re__figTbNum">
+                          <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor"><path d="M14 3H4a1 1 0 00-1 1v2a1 1 0 001 1h10a1 1 0 001-1V4a1 1 0 00-1-1zm0 1v2H4V4h10zM3 11h1V9H3v2zm7 4v-1H8v1h2zm5-4h-1V9h1v2zm-1 2h1v1a1 1 0 01-1 1h-1v-1h1v-1zM3 13h1v1h1v1H4a1 1 0 01-1-1v-1z"/></svg>
+                          <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
+                                 [ngModel]="bannerColPadTop()"
+                                 (ngModelChange)="setBannerPadTop($event)"
+                                 aria-label="Top padding"/>
+                          <span class="re__figTbUnit">px</span>
+                        </div>
+                        <input type="range" min="0" max="200" class="re__figSlider re__figSlider--pad"
                                [ngModel]="bannerColPadTop()"
                                (ngModelChange)="setBannerPadTop($event)"
-                               aria-label="Top padding"/>
-                        <span class="re__figTbUnit">px</span>
+                               aria-label="Top padding slider"/>
                       </div>
-                      <div class="re__figTbNum">
-                        <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor"><path d="M7 3v1h2V3H7zm-4 7h1V8H3v2zm4 5v-1h2v1H7zm-2-1v1H4a1 1 0 01-1-1v-1h1v1h1zM5 3v1H4v1H3V4a1 1 0 011-1h1zm6 1a1 1 0 011-1h2a1 1 0 011 1v10a1 1 0 01-1 1h-2a1 1 0 01-1-1V4zm1 0v10h2V4h-2z"/></svg>
-                        <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
+                      <div class="re__figPadCell">
+                        <div class="re__figTbNum">
+                          <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor"><path d="M7 3v1h2V3H7zm-4 7h1V8H3v2zm4 5v-1h2v1H7zm-2-1v1H4a1 1 0 01-1-1v-1h1v1h1zM5 3v1H4v1H3V4a1 1 0 011-1h1zm6 1a1 1 0 011-1h2a1 1 0 011 1v10a1 1 0 01-1 1h-2a1 1 0 01-1-1V4zm1 0v10h2V4h-2z"/></svg>
+                          <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
+                                 [ngModel]="bannerColPadRight()"
+                                 (ngModelChange)="setBannerPadRight($event)"
+                                 aria-label="Right padding"/>
+                          <span class="re__figTbUnit">px</span>
+                        </div>
+                        <input type="range" min="0" max="200" class="re__figSlider re__figSlider--pad"
                                [ngModel]="bannerColPadRight()"
                                (ngModelChange)="setBannerPadRight($event)"
-                               aria-label="Right padding"/>
-                        <span class="re__figTbUnit">px</span>
+                               aria-label="Right padding slider"/>
                       </div>
-                      <div class="re__figTbNum">
-                        <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor"><path d="M8 3v1h2V3H8zm7 4h-1v2h1V7zM3 7h1v2H3V7zm1-2H3V4a1 1 0 011-1h1v1H4v1zm11 0h-1V4h-1V3h1a1 1 0 011 1v1zm-1 6a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2a1 1 0 011-1h10zm0 1H4v2h10v-2z"/></svg>
-                        <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
+                      <div class="re__figPadCell">
+                        <div class="re__figTbNum">
+                          <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor"><path d="M8 3v1h2V3H8zm7 4h-1v2h1V7zM3 7h1v2H3V7zm1-2H3V4a1 1 0 011-1h1v1H4v1zm11 0h-1V4h-1V3h1a1 1 0 011 1v1zm-1 6a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2a1 1 0 011-1h10zm0 1H4v2h10v-2z"/></svg>
+                          <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
+                                 [ngModel]="bannerColPadBottom()"
+                                 (ngModelChange)="setBannerPadBottom($event)"
+                                 aria-label="Bottom padding"/>
+                          <span class="re__figTbUnit">px</span>
+                        </div>
+                        <input type="range" min="0" max="200" class="re__figSlider re__figSlider--pad"
                                [ngModel]="bannerColPadBottom()"
                                (ngModelChange)="setBannerPadBottom($event)"
-                               aria-label="Bottom padding"/>
-                        <span class="re__figTbUnit">px</span>
+                               aria-label="Bottom padding slider"/>
                       </div>
-                      <div class="re__figTbNum">
-                        <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor"><path d="M3 4a1 1 0 011-1h2a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm1 0v10h2V4H4zm7-1v1H9V3h2zm4 5h-1v2h1V8zm-4 7v-1H9v1h2zm2-11V3h1a1 1 0 011 1v1h-1V4h-1zm0 11v-1h1v-1h1v1a1 1 0 01-1 1h-1z"/></svg>
-                        <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
+                      <div class="re__figPadCell">
+                        <div class="re__figTbNum">
+                          <svg class="re__figTbNumIcon" viewBox="0 0 18 18" width="18" height="18" fill="currentColor"><path d="M3 4a1 1 0 011-1h2a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm1 0v10h2V4H4zm7-1v1H9V3h2zm4 5h-1v2h1V8zm-4 7v-1H9v1h2zm2-11V3h1a1 1 0 011 1v1h-1V4h-1zm0 11v-1h1v-1h1v1a1 1 0 01-1 1h-1z"/></svg>
+                          <input type="number" min="0" max="200" class="re__figTbInput re__figTbInput--num"
+                                 [ngModel]="bannerColPadLeft()"
+                                 (ngModelChange)="setBannerPadLeft($event)"
+                                 aria-label="Left padding"/>
+                          <span class="re__figTbUnit">px</span>
+                        </div>
+                        <input type="range" min="0" max="200" class="re__figSlider re__figSlider--pad"
                                [ngModel]="bannerColPadLeft()"
                                (ngModelChange)="setBannerPadLeft($event)"
-                               aria-label="Left padding"/>
-                        <span class="re__figTbUnit">px</span>
+                               aria-label="Left padding slider"/>
                       </div>
                     </div>
                   }
@@ -1010,7 +1094,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                 <div class="re__figRow">
                   <label class="re__figTbLabel re__figTbLabel--info">
                     Vertical margins
-                    <span class="re__figInfo" [appTooltip]="'Space above and below the banner.'">
+                    <span class="re__figInfo" [appReTooltip]="'Space above and below the banner.'">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                     </span>
                   </label>
@@ -1043,7 +1127,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   <div class="re__figRow">
                     <label class="re__figTbLabel re__figTbLabel--info">
                       Behavior
-                      <span class="re__figInfo" [appTooltip]="'How the banner reflows below the breakpoint.'">
+                      <span class="re__figInfo" [appReTooltip]="'How the banner reflows below the breakpoint.'">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                       </span>
                     </label>
@@ -1051,7 +1135,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                       <button type="button" class="re__figIconToggle"
                               [class.is-on]="bannerBehavior() === 'stacked'"
                               (click)="setBannerBehavior('stacked')"
-                              [appTooltip]="'Stack'">
+                              [appReTooltip]="'Stack'">
                         <svg viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
                           <path d="M14 3H4c-.55 0-1 .45-1 1v3c0 .55.45 1 1 1h10c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1Zm0 4H4V4h10v3Zm0 3H4c-.55 0-1 .45-1 1v3c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-3c0-.55-.45-1-1-1Zm0 4H4v-3h10v3Z"/>
                         </svg>
@@ -1064,7 +1148,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                       <button type="button" class="re__figIconToggle"
                               [class.is-on]="bannerBehavior() === 'horizontal'"
                               (click)="setBannerBehavior('horizontal')"
-                              [appTooltip]="'Wrap'">
+                              [appReTooltip]="'Wrap'">
                         <svg viewBox="0 0 18 18" width="18" height="18" fill="currentColor">
                           <path d="M2 13.008h5.004v1H2v-1Zm11.008-5.004H2v1h11.008c1.1 0 2.001.901 2.001 2.002 0 1.101-.9 2.002-2.001 2.002h-1.781l1.14-1.151c.19-.2.19-.51 0-.71-.2-.2-.51-.19-.71 0l-2.352 2.371 2.312 2.332c.1.1.23.15.35.15.12 0 .25-.05.35-.14.2-.19.2-.51 0-.71l-1.14-1.152h1.82A2.998 2.998 0 0 0 16 10.997a2.998 2.998 0 0 0-3.002-3.002l.01.01ZM15.009 3H2v1h13.01V3Z"/>
                         </svg>
@@ -1079,7 +1163,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                   <div class="re__figRow">
                     <label class="re__figTbLabel re__figTbLabel--info">
                       Breakpoint
-                      <span class="re__figInfo" [appTooltip]="'Set the screen width (in pixels) where your layout changes to fit smaller screens.'">
+                      <span class="re__figInfo" [appReTooltip]="'Set the screen width (in pixels) where your layout changes to fit smaller screens.'">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                       </span>
                     </label>
@@ -1090,6 +1174,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                                (ngModelChange)="setBannerBreakpoint($event)"/>
                         <span class="re__figTbUnit">px</span>
                       </div>
+                      <input type="range" min="200" max="1600" step="20" class="re__figSlider"
+                             [ngModel]="bannerBreakpoint()"
+                             (ngModelChange)="setBannerBreakpoint($event)"
+                             aria-label="Breakpoint slider"/>
                     </div>
                   </div>
                 }
@@ -1106,7 +1194,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
               <div class="re__figTbRow">
                 <span class="re__figLabelGroup">
                   Mark as decorative
-                  <span class="re__figInfo" [appTooltip]="'Decorative images won\\'t be announced by screen readers. Use for visual elements that don\\'t add information to the content of a page.'">
+                  <span class="re__figInfo" [appReTooltip]="'Decorative images won\\'t be announced by screen readers. Use for visual elements that don\\'t add information to the content of a page.'">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
                     </svg>
@@ -1118,7 +1206,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
               <div class="re__figTbRow">
                 <span class="re__figLabelGroup">
                   Click to expand
-                  <span class="re__figInfo" [appTooltip]="'When on, visitors can click the image to view a larger version in a lightbox.'">
+                  <span class="re__figInfo" [appReTooltip]="'When on, visitors can click the image to view a larger version in a lightbox.'">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
                     </svg>
@@ -1129,7 +1217,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
               <div class="re__figTbRow">
                 <span class="re__figLabelGroup">
                   Allow download
-                  <span class="re__figInfo" [appTooltip]="'When on, visitors can right-click and save the image to their device.'">
+                  <span class="re__figInfo" [appReTooltip]="'When on, visitors can right-click and save the image to their device.'">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
                     </svg>
@@ -1144,19 +1232,13 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             </div>
           } @else {
             <div class="re__figPanelBody">
-              <!-- Border color: opacity % + swatch + opacity slider -->
+              <!-- Border color — swatch only; opacity in the picker -->
               <div class="re__figRow">
                 <label class="re__figTbLabel">Border color</label>
                 <div class="re__figCtrl">
-                  <div class="re__figTbNum">
-                    <input type="number" min="0" max="100" class="re__figTbInput re__figTbInput--num"
-                           [ngModel]="designBorderOpacity()"
-                           (ngModelChange)="onDesignBorderOpacity($event)"/>
-                    <span class="re__figTbUnit">%</span>
-                  </div>
                   <button #designBorderSwatch="cdkOverlayOrigin" cdkOverlayOrigin
                           type="button" class="re__figColorTrigger"
-                          [style.background]="designBorderColor()"
+                          [style.--swatch-color]="composeRgba(designBorderColor(), designBorderOpacity())"
                           (click)="colorPanelTarget.set(colorPanelTarget() === 'designBorder' ? null : 'designBorder')"
                           aria-label="Edit border colour"></button>
                   <ng-template
@@ -1169,14 +1251,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                     (backdropClick)="colorPanelTarget.set(null)">
                     <app-colors-panel
                       [colorOnly]="true"
+                      [alpha]="designBorderOpacity()"
                       [ngModel]="colorPanelValue()"
                       (ngModelChange)="onColorPanelChange($event)"
+                      (alphaChange)="onDesignBorderOpacity($event)"
                       (closed)="colorPanelTarget.set(null)"/>
                   </ng-template>
-                  <input type="range" min="0" max="100" class="re__figSlider re__figSlider--opacity"
-                         [style.--c]="designBorderColor()"
-                         [ngModel]="designBorderOpacity()"
-                         (ngModelChange)="onDesignBorderOpacity($event)"/>
                 </div>
               </div>
               <!-- Border width: number + slider -->
@@ -1217,11 +1297,18 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       <!-- Banner-column toolbar — secondary floating bar that appears
            above the selected column inside a banner figure. Add /
            reorder / delete column actions. -->
-      @if (selectedColumn() && columnToolbar().show) {
+      @if (selectedColumn() && columnToolbar().show && !cellElementToolbar().type) {
         <div class="re__colTb"
-             [style.top.px]="columnToolbar().top"
-             [style.left.px]="columnToolbar().left"
+             [style.top.px]="columnToolbar().top + columnToolbarOffset().y"
+             [style.left.px]="columnToolbar().left + columnToolbarOffset().x"
              (mousedown)="$event.stopPropagation()">
+          <span class="re__tbDrag" (mousedown)="startToolbarDrag($event, 'column')" title="Drag toolbar">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
+              <circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/>
+              <circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/>
+              <circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/>
+            </svg>
+          </span>
           <div class="re__figTbDd">
             <button type="button" class="re__figTbBtn" (click)="toggleColumnMenu($event, 'add')" title="Add column">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1247,6 +1334,155 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             </svg>
           </button>
           <span class="re__figTbSep"></span>
+          <!-- Vertical alignment — top / middle / bottom for content
+               inside the selected cell. -->
+          <button type="button" class="re__figTbBtn" [class.is-on]="cellVAlign() === 'top'"
+                  (click)="setCellVAlign('top')" title="Align top">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="2"/><rect x="6" y="8" width="12" height="3"/><rect x="6" y="14" width="12" height="3"/>
+            </svg>
+          </button>
+          <button type="button" class="re__figTbBtn" [class.is-on]="cellVAlign() === 'middle'"
+                  (click)="setCellVAlign('middle')" title="Align middle">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="2"/><rect x="6" y="5" width="12" height="3"/><rect x="6" y="16" width="12" height="3"/>
+            </svg>
+          </button>
+          <button type="button" class="re__figTbBtn" [class.is-on]="cellVAlign() === 'bottom'"
+                  (click)="setCellVAlign('bottom')" title="Align bottom">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+              <rect x="3" y="19" width="18" height="2"/><rect x="6" y="7" width="12" height="3"/><rect x="6" y="13" width="12" height="3"/>
+            </svg>
+          </button>
+          <span class="re__figTbSep"></span>
+          <!-- Horizontal alignment — left / center / right text-align
+               inside the selected cell. -->
+          <button type="button" class="re__figTbBtn" [class.is-on]="cellHAlign() === 'left'"
+                  (click)="setCellHAlign('left')" title="Align left">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="3" y1="6"  x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/>
+            </svg>
+          </button>
+          <button type="button" class="re__figTbBtn" [class.is-on]="cellHAlign() === 'center'"
+                  (click)="setCellHAlign('center')" title="Align center">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="3" y1="6"  x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
+            </svg>
+          </button>
+          <button type="button" class="re__figTbBtn" [class.is-on]="cellHAlign() === 'right'"
+                  (click)="setCellHAlign('right')" title="Align right">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="3" y1="6"  x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <span class="re__figTbSep"></span>
+          <!-- Per-column Design overrides — opens a cdk-overlay popover
+               with Fill / Border / Width / Radius controls that write
+               inline styles directly on the selected cell (so this one
+               column diverges from the banner-wide defaults). -->
+          <button #colDesignOrigin="cdkOverlayOrigin" cdkOverlayOrigin
+                  type="button" class="re__figTbBtn"
+                  [class.is-on]="colDesignOpen()"
+                  (click)="toggleColDesignPanel()"
+                  title="Column design">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 1 1 4.21 16.9l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 7.04 4.31l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
+          <ng-template
+            cdkConnectedOverlay
+            [cdkConnectedOverlayOrigin]="colDesignOrigin"
+            [cdkConnectedOverlayOpen]="colDesignOpen()"
+            [cdkConnectedOverlayPositions]="overlayPositions"
+            [cdkConnectedOverlayHasBackdrop]="true"
+            cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+            (backdropClick)="colDesignOpen.set(false)">
+            <div class="re__figPanel re__figPanel--col">
+              <div class="re__figPanelHead">
+                <h4 class="re__figPanelTitle">Column overrides</h4>
+                <button type="button" class="re__figPanelClose" (click)="colDesignOpen.set(false)" aria-label="Close">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div class="re__figPanelBody">
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">Fill color</label>
+                  <div class="re__figCtrl">
+                    <button #colOvFillSwatch="cdkOverlayOrigin" cdkOverlayOrigin
+                            type="button" class="re__figColorTrigger"
+                            [style.--swatch-color]="composeRgba(colOvFillColor(), colOvFillOpacity())"
+                            (click)="colorPanelTarget.set(colorPanelTarget() === 'colOvFill' ? null : 'colOvFill')"
+                            aria-label="Edit column fill colour"></button>
+                    <ng-template
+                      cdkConnectedOverlay
+                      [cdkConnectedOverlayOrigin]="colOvFillSwatch"
+                      [cdkConnectedOverlayOpen]="colorPanelTarget() === 'colOvFill'"
+                      [cdkConnectedOverlayPositions]="overlayPositions"
+                      [cdkConnectedOverlayHasBackdrop]="true"
+                      cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+                      (backdropClick)="colorPanelTarget.set(null)">
+                      <app-colors-panel
+                        [colorOnly]="true"
+                        [alpha]="colOvFillOpacity()"
+                        [ngModel]="colorPanelValue()"
+                        (ngModelChange)="onColorPanelChange($event)"
+                        (alphaChange)="setColOvFillOpacity($event)"
+                        (closed)="colorPanelTarget.set(null)"/>
+                    </ng-template>
+                  </div>
+                </div>
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">Border color</label>
+                  <div class="re__figCtrl">
+                    <button #colOvBorderSwatch="cdkOverlayOrigin" cdkOverlayOrigin
+                            type="button" class="re__figColorTrigger"
+                            [style.--swatch-color]="composeRgba(colOvBorderColor(), colOvBorderOpacity())"
+                            (click)="colorPanelTarget.set(colorPanelTarget() === 'colOvBorder' ? null : 'colOvBorder')"
+                            aria-label="Edit column border colour"></button>
+                    <ng-template
+                      cdkConnectedOverlay
+                      [cdkConnectedOverlayOrigin]="colOvBorderSwatch"
+                      [cdkConnectedOverlayOpen]="colorPanelTarget() === 'colOvBorder'"
+                      [cdkConnectedOverlayPositions]="overlayPositions"
+                      [cdkConnectedOverlayHasBackdrop]="true"
+                      cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+                      (backdropClick)="colorPanelTarget.set(null)">
+                      <app-colors-panel
+                        [colorOnly]="true"
+                        [alpha]="colOvBorderOpacity()"
+                        [ngModel]="colorPanelValue()"
+                        (ngModelChange)="onColorPanelChange($event)"
+                        (alphaChange)="setColOvBorderOpacity($event)"
+                        (closed)="colorPanelTarget.set(null)"/>
+                    </ng-template>
+                  </div>
+                </div>
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">Border width</label>
+                  <div class="re__figCtrl">
+                    <app-re-num-slider unit="px" label="Border width"
+                                       [min]="0" [max]="32"
+                                       [value]="colOvBorderWidth()"
+                                       (valueChange)="setColOvBorderWidth($event)"/>
+                  </div>
+                </div>
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">Corner radius</label>
+                  <div class="re__figCtrl">
+                    <app-re-num-slider unit="px" label="Corner radius"
+                                       [min]="0" [max]="200"
+                                       [value]="colOvCornerRadius()"
+                                       (valueChange)="setColOvCornerRadius($event)"/>
+                  </div>
+                </div>
+                <div class="re__figPanelActions">
+                  <button type="button" class="re__figTbBtnGhost" (click)="resetColOverrides()">Reset to banner default</button>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+          <span class="re__figTbSep"></span>
           <button type="button" class="re__figTbBtn re__figTbBtn--danger" (click)="deleteSelectedColumn()" title="Delete column">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="3 6 5 6 21 6"/>
@@ -1255,27 +1491,404 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
               <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
             </svg>
           </button>
+          <!-- WP-style overflow menu — column-level operations. -->
+          <div class="re__figTbDd">
+            <button type="button" class="re__figTbBtn" (click)="toggleColumnMenu($event, 'more')" title="More options">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+                <circle cx="12" cy="5"  r="1.6"/>
+                <circle cx="12" cy="12" r="1.6"/>
+                <circle cx="12" cy="19" r="1.6"/>
+              </svg>
+            </button>
+            @if (columnMenu() === 'more') {
+              <div class="re__figTbMenu re__figTbMenu--more">
+                <button type="button" class="re__figTbItem" (click)="columnCmd('cut')">Cut <span class="re__figTbKbd">Ctrl+X</span></button>
+                <button type="button" class="re__figTbItem" (click)="columnCmd('copy')">Copy <span class="re__figTbKbd">Ctrl+C</span></button>
+                <button type="button" class="re__figTbItem" (click)="columnCmd('duplicate')">Duplicate <span class="re__figTbKbd">Ctrl+Shift+D</span></button>
+                <div class="re__figTbDivider"></div>
+                <button type="button" class="re__figTbItem" (click)="columnCmd('addBefore')">Add column before</button>
+                <button type="button" class="re__figTbItem" (click)="columnCmd('addAfter')">Add column after</button>
+                <button type="button" class="re__figTbItem" (click)="columnCmd('clear')">Clear column content</button>
+                <div class="re__figTbDivider"></div>
+                <button type="button" class="re__figTbItem is-danger" (click)="columnCmd('delete')">Delete column <span class="re__figTbKbd">Del</span></button>
+              </div>
+            }
+          </div>
         </div>
+      }
+
+      <!-- Per-element contextual toolbar — pops above a clicked
+           button/image inside a banner cell. Different action set
+           per type. Shown additively alongside the banner toolbar. -->
+      @if (cellElementToolbar().type) {
+        <div class="re__cellElemTb"
+             [style.top.px]="cellElementToolbar().top + cellElementToolbarOffset().y"
+             [style.left.px]="cellElementToolbar().left + cellElementToolbarOffset().x"
+             (mousedown)="$event.stopPropagation()">
+          <span class="re__tbDrag" (mousedown)="startToolbarDrag($event, 'cellElement')" title="Drag toolbar">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
+              <circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/>
+              <circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/>
+              <circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/>
+            </svg>
+          </span>
+          <span class="re__cellElemTbLabel">{{ cellElementToolbar().type === 'button' ? 'Button' : cellElementToolbar().type === 'image' ? 'Image' : 'Text' }}</span>
+          <span class="re__figTbSep"></span>
+          @if (cellElementToolbar().type === 'button') {
+            <div class="re__btnAlignDd">
+              <button type="button" class="re__figTbBtn" [class.is-on]="btnAlignOpen()"
+                      (mousedown)="$event.preventDefault(); toggleBtnAlign()"
+                      [appReTooltip]="'Alignment'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <line x1="6" y1="12" x2="18" y2="12"/>
+                  <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              @if (btnAlignOpen()) {
+                <div class="re__btnAlignMenu">
+                  <button type="button" [class.is-on]="btnAlign() === 'left'"   (mousedown)="$event.preventDefault(); setBtnAlign('left')">Align left</button>
+                  <button type="button" [class.is-on]="btnAlign() === 'center'" (mousedown)="$event.preventDefault(); setBtnAlign('center')">Align center</button>
+                  <button type="button" [class.is-on]="btnAlign() === 'right'"  (mousedown)="$event.preventDefault(); setBtnAlign('right')">Align right</button>
+                  <div class="re__btnAlignMenuDivider"></div>
+                  <div class="re__btnAlignMenuToggleRow">
+                    <span>Wrap text</span>
+                    <span class="re__figTbToggle" [class.is-on]="btnWrap()" (mousedown)="$event.preventDefault(); setBtnWrap(!btnWrap())"></span>
+                  </div>
+                </div>
+              }
+            </div>
+            <button type="button" class="re__figTbBtn" (mousedown)="$event.preventDefault(); editCellButtonLink()" [appReTooltip]="'Edit link'">
+              <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+                <path d="M7.5 5h-2A3.5 3.5 0 0 0 2 8.5 3.5 3.5 0 0 0 5.5 12h2v-1.5h-2a2 2 0 1 1 0-4h2V5zm3 0v1.5h2a2 2 0 1 1 0 4h-2V12h2A3.5 3.5 0 0 0 16 8.5 3.5 3.5 0 0 0 12.5 5h-2zM6 7.75h6v1.5H6v-1.5z"/>
+              </svg>
+            </button>
+            <button type="button" class="re__figTbBtn" [class.is-on]="buttonSettingsOpen()"
+                    (mousedown)="$event.preventDefault(); buttonSettingsOpen() ? closeButtonSettings() : openButtonSettings()"
+                    [appReTooltip]="'Button settings'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </button>
+          }
+          @if (cellElementToolbar().type === 'image') {
+            <button type="button" class="re__figTbBtn" (mousedown)="$event.preventDefault(); replaceCellImage()" [appReTooltip]="'Replace image'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              </svg>
+            </button>
+          }
+          @if (cellElementToolbar().type === 'text') {
+            <button type="button" class="re__figTbBtn" (mousedown)="$event.preventDefault(); clearCellTextFormatting()" [appReTooltip]="'Clear formatting'">
+              <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+                <path d="M4 3h11v2H4V3zm2.5 2L4.4 16h2L8 5H6.5zm4 0L8.4 16h2L12 5h-1.5zM3 14.1L13.6 3.5l1 1L4 15.1l-1-1z"/>
+              </svg>
+            </button>
+          }
+          <button type="button" class="re__figTbBtn re__figTbBtn--danger" (mousedown)="$event.preventDefault(); deleteCellElement()" [appReTooltip]="'Delete'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6"/>
+              <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+          <!-- WP-style overflow menu — per-element operations. -->
+          <div class="re__figTbDd">
+            <button type="button" class="re__figTbBtn"
+                    (mousedown)="$event.preventDefault(); cellElementMoreOpen.set(!cellElementMoreOpen())"
+                    [appReTooltip]="'More options'">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+                <circle cx="12" cy="5"  r="1.6"/>
+                <circle cx="12" cy="12" r="1.6"/>
+                <circle cx="12" cy="19" r="1.6"/>
+              </svg>
+            </button>
+            @if (cellElementMoreOpen()) {
+              <div class="re__figTbMenu re__figTbMenu--more">
+                <button type="button" class="re__figTbItem" (mousedown)="$event.preventDefault(); cellElementCmd('cut')">Cut <span class="re__figTbKbd">Ctrl+X</span></button>
+                <button type="button" class="re__figTbItem" (mousedown)="$event.preventDefault(); cellElementCmd('copy')">Copy <span class="re__figTbKbd">Ctrl+C</span></button>
+                <button type="button" class="re__figTbItem" (mousedown)="$event.preventDefault(); cellElementCmd('duplicate')">Duplicate <span class="re__figTbKbd">Ctrl+Shift+D</span></button>
+                <div class="re__figTbDivider"></div>
+                <button type="button" class="re__figTbItem is-danger" (mousedown)="$event.preventDefault(); cellElementCmd('delete')">Delete <span class="re__figTbKbd">Del</span></button>
+              </div>
+            }
+          </div>
+        </div>
+        <!-- Link panel — pops out of the cell-element toolbar's
+             link icon when a button is picked. Mirrors the Wix Link
+             modal: Link-to dropdown, URL input, four rel/target
+             toggles, Cancel/Save footer. Header doubles as a drag
+             handle, like the Button settings panel. -->
+        @if (buttonLinkOpen() && cellElementToolbar().type === 'button') {
+          <div class="re__figPanel re__figPanel--btn re__figPanel--link"
+               [style.top.px]="cellElementToolbar().top + cellElementToolbarOffset().y + 40 + btnLinkOffset().y"
+               [style.left.px]="cellElementToolbar().left + cellElementToolbarOffset().x + btnLinkOffset().x"
+               (mousedown)="$event.stopPropagation()">
+            <header class="re__figPanelHead" (mousedown)="startToolbarDrag($event, 'btnLink')">
+              <h4>Link</h4>
+              <button type="button" class="re__figPanelClose" (click)="cancelCellButtonLink()" (mousedown)="$event.stopPropagation()" aria-label="Close">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </header>
+            <div class="re__figPanelBody">
+              <div class="re__figRow re__figRow--stack">
+                <label class="re__figTbLabel">Link to</label>
+                <app-search-dropdown
+                  class="re__figSelect"
+                  [items]="linkKindOptions"
+                  [displayWith]="linkKindDisplay"
+                  [compareWith]="linkKindCompare"
+                  [toValue]="linkKindToValue"
+                  [clearable]="false"
+                  [searchable]="false"
+                  [ngModel]="linkKind()"
+                  (ngModelChange)="pickLinkKind($any($event))"/>
+              </div>
+              @if (linkKind() === 'web') {
+                <div class="re__figRow re__figRow--stack">
+                  <label class="re__figTbLabel">URL</label>
+                  <input type="text" class="re__figTbInput re__figLinkUrl"
+                         placeholder="Enter or paste a link"
+                         [value]="linkUrl()" (input)="linkUrl.set($any($event.target).value)"/>
+                </div>
+              } @else if (linkKind() === 'section') {
+                <div class="re__figRow re__figRow--stack">
+                  <label class="re__figTbLabel">Select a section to link to</label>
+                  @if (linkSections().length === 0) {
+                    <div class="re__figLinkEmpty">No sections in this post yet — add a heading first.</div>
+                  } @else {
+                    <div class="re__figLinkSectionList">
+                      @for (s of linkSections(); track s.id) {
+                        <button type="button" [class.is-on]="linkUrl() === '#' + s.id" (click)="linkUrl.set('#' + s.id)">
+                          <span class="re__figLinkSectionTag">{{ s.tag }}</span>
+                          <span class="re__figLinkSectionLabel">{{ s.label }}</span>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="re__figRow re__figRow--stack">
+                  <label class="re__figTbLabel">{{ linkKind() === 'page' ? 'Page' : linkKind() === 'blog' ? 'Post' : 'Dynamic page' }}</label>
+                  <div class="re__figLinkEmpty">{{ linkKind() === 'page' ? 'No pages available — wire the host to populate.' : linkKind() === 'blog' ? 'No posts available — wire the host to populate.' : 'No dynamic items available — wire the host to populate.' }}</div>
+                </div>
+              }
+              <div class="re__figTbRow">
+                <span class="re__figLabelGroup">Open link in a new tab</span>
+                <span class="re__figTbToggle" [class.is-on]="linkNewTab()" (mousedown)="$event.preventDefault(); linkNewTab.set(!linkNewTab())"></span>
+              </div>
+              <div class="re__figTbRow">
+                <span class="re__figLabelGroup">
+                  Noreferrer
+                  <span class="re__figInfo" [appReTooltip]="'The destination site will not receive the referring URL.'">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  </span>
+                </span>
+                <span class="re__figTbToggle" [class.is-on]="linkNoReferrer()" (mousedown)="$event.preventDefault(); linkNoReferrer.set(!linkNoReferrer())"></span>
+              </div>
+              <div class="re__figTbRow">
+                <span class="re__figLabelGroup">
+                  Nofollow
+                  <span class="re__figInfo" [appReTooltip]="'Tells search engines not to follow this link for ranking.'">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  </span>
+                </span>
+                <span class="re__figTbToggle" [class.is-on]="linkNoFollow()" (mousedown)="$event.preventDefault(); linkNoFollow.set(!linkNoFollow())"></span>
+              </div>
+              <div class="re__figTbRow">
+                <span class="re__figLabelGroup">
+                  Sponsored
+                  <span class="re__figInfo" [appReTooltip]="'Marks the link as paid/sponsored content.'">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  </span>
+                </span>
+                <span class="re__figTbToggle" [class.is-on]="linkSponsored()" (mousedown)="$event.preventDefault(); linkSponsored.set(!linkSponsored())"></span>
+              </div>
+            </div>
+            <footer class="re__figPanelFoot">
+              <button type="button" class="re__figFootBtn"
+                      (mousedown)="$event.preventDefault(); $event.stopPropagation()"
+                      (click)="cancelCellButtonLink()">Cancel</button>
+              <button type="button" class="re__figFootBtn re__figFootBtn--primary"
+                      (mousedown)="$event.preventDefault(); $event.stopPropagation()"
+                      (click)="saveCellButtonLink()">Save</button>
+            </footer>
+          </div>
+        }
+        @if (buttonSettingsOpen() && cellElementToolbar().type === 'button') {
+          <!-- Button settings popover — uses the same .re__figPanel*
+               chrome as the Layout section panel so the two share
+               typography / spacing / tabs / chip styling. Width is
+               capped a bit smaller than the Layout panel because the
+               button panel has fewer fields. -->
+          <div class="re__figPanel re__figPanel--btn"
+               [style.top.px]="cellElementToolbar().top + cellElementToolbarOffset().y + 40 + btnPanelOffset().y"
+               [style.left.px]="cellElementToolbar().left + cellElementToolbarOffset().x + btnPanelOffset().x"
+               (mousedown)="$event.stopPropagation()">
+            <header class="re__figPanelHead" (mousedown)="startToolbarDrag($event, 'btnPanel')">
+              <h4>Button</h4>
+              <button type="button" class="re__figPanelClose" (click)="closeButtonSettings()" (mousedown)="$event.stopPropagation()" aria-label="Close">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </header>
+            <nav class="re__figPanelTabs">
+              <button type="button" class="re__figPanelTab" [class.is-on]="btnPanelTab() === 'settings'" (click)="btnPanelTab.set('settings')">Settings</button>
+              <button type="button" class="re__figPanelTab" [class.is-on]="btnPanelTab() === 'design'"   (click)="btnPanelTab.set('design')">Design</button>
+            </nav>
+            <div class="re__figPanelBody">
+              @if (btnPanelTab() === 'settings') {
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">Button text</label>
+                  <div class="re__figCtrl">
+                    <input type="text" class="re__figTbInput" [value]="btnText()" (input)="setBtnText($any($event.target).value)"/>
+                  </div>
+                </div>
+              } @else {
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">Button size</label>
+                  <div class="re__figCtrl re__figCtrl--toggles">
+                    <button type="button" class="re__figIconToggle" [class.is-on]="btnSize() === 'small'"  (click)="setBtnSize('small')" title="Small">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="10" width="10" height="4" rx="1"/></svg>
+                      @if (btnSize() === 'small') {<span class="re__figIconToggleCheck"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>}
+                    </button>
+                    <button type="button" class="re__figIconToggle" [class.is-on]="btnSize() === 'medium'" (click)="setBtnSize('medium')" title="Medium">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="9" width="14" height="6" rx="1"/></svg>
+                      @if (btnSize() === 'medium') {<span class="re__figIconToggleCheck"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>}
+                    </button>
+                    <button type="button" class="re__figIconToggle" [class.is-on]="btnSize() === 'large'"  (click)="setBtnSize('large')" title="Large">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="8" rx="1"/></svg>
+                      @if (btnSize() === 'large') {<span class="re__figIconToggleCheck"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>}
+                    </button>
+                  </div>
+                </div>
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">Fill color</label>
+                  <div class="re__figCtrl">
+                    <button #btnFillSwatch="cdkOverlayOrigin" cdkOverlayOrigin
+                            type="button" class="re__figColorTrigger"
+                            [style.--swatch-color]="composeRgba(btnFillColor(), btnFillOpacity())"
+                            (click)="colorPanelTarget.set(colorPanelTarget() === 'btnFill' ? null : 'btnFill')"
+                            aria-label="Edit fill colour"></button>
+                    <ng-template cdkConnectedOverlay
+                                 [cdkConnectedOverlayOrigin]="btnFillSwatch"
+                                 [cdkConnectedOverlayOpen]="colorPanelTarget() === 'btnFill'"
+                                 [cdkConnectedOverlayPositions]="overlayPositions"
+                                 [cdkConnectedOverlayHasBackdrop]="true"
+                                 cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+                                 (backdropClick)="colorPanelTarget.set(null)">
+                      <app-colors-panel
+                        [colorOnly]="true"
+                        [alpha]="btnFillOpacity()"
+                        [ngModel]="colorPanelValue()"
+                        (ngModelChange)="onColorPanelChange($event)"
+                        (alphaChange)="setBtnFillOpacity($event)"
+                        (closed)="colorPanelTarget.set(null)"/>
+                    </ng-template>
+                  </div>
+                </div>
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">Text color</label>
+                  <div class="re__figCtrl">
+                    <button #btnTextSwatch="cdkOverlayOrigin" cdkOverlayOrigin
+                            type="button" class="re__figColorTrigger"
+                            [style.--swatch-color]="composeRgba(btnTextColor(), btnTextOpacity())"
+                            (click)="colorPanelTarget.set(colorPanelTarget() === 'btnText' ? null : 'btnText')"
+                            aria-label="Edit text colour"></button>
+                    <ng-template cdkConnectedOverlay
+                                 [cdkConnectedOverlayOrigin]="btnTextSwatch"
+                                 [cdkConnectedOverlayOpen]="colorPanelTarget() === 'btnText'"
+                                 [cdkConnectedOverlayPositions]="overlayPositions"
+                                 [cdkConnectedOverlayHasBackdrop]="true"
+                                 cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+                                 (backdropClick)="colorPanelTarget.set(null)">
+                      <app-colors-panel
+                        [colorOnly]="true"
+                        [alpha]="btnTextOpacity()"
+                        [ngModel]="colorPanelValue()"
+                        (ngModelChange)="onColorPanelChange($event)"
+                        (alphaChange)="setBtnTextOpacity($event)"
+                        (closed)="colorPanelTarget.set(null)"/>
+                    </ng-template>
+                  </div>
+                </div>
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">Border color</label>
+                  <div class="re__figCtrl">
+                    <button #btnBorderSwatch="cdkOverlayOrigin" cdkOverlayOrigin
+                            type="button" class="re__figColorTrigger"
+                            [style.--swatch-color]="composeRgba(btnBorderColor(), btnBorderOpacity())"
+                            (click)="colorPanelTarget.set(colorPanelTarget() === 'btnBorder' ? null : 'btnBorder')"
+                            aria-label="Edit border colour"></button>
+                    <ng-template cdkConnectedOverlay
+                                 [cdkConnectedOverlayOrigin]="btnBorderSwatch"
+                                 [cdkConnectedOverlayOpen]="colorPanelTarget() === 'btnBorder'"
+                                 [cdkConnectedOverlayPositions]="overlayPositions"
+                                 [cdkConnectedOverlayHasBackdrop]="true"
+                                 cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+                                 (backdropClick)="colorPanelTarget.set(null)">
+                      <app-colors-panel
+                        [colorOnly]="true"
+                        [alpha]="btnBorderOpacity()"
+                        [ngModel]="colorPanelValue()"
+                        (ngModelChange)="onColorPanelChange($event)"
+                        (alphaChange)="setBtnBorderOpacity($event)"
+                        (closed)="colorPanelTarget.set(null)"/>
+                    </ng-template>
+                  </div>
+                </div>
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">Border width</label>
+                  <div class="re__figCtrl">
+                    <app-re-num-slider unit="px" label="Border width"
+                                       [min]="0" [max]="32"
+                                       [value]="btnBorderWidth()"
+                                       (valueChange)="setBtnBorderWidth($event)"/>
+                  </div>
+                </div>
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">Corner radius</label>
+                  <div class="re__figCtrl">
+                    <app-re-num-slider unit="px" label="Corner radius"
+                                       [min]="0" [max]="200"
+                                       [value]="btnCornerRadius()"
+                                       (valueChange)="setBtnCornerRadius($event)"/>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
       }
 
       <!-- Floating selection toolbar for embed blocks (video iframe,
            hosted video). Position tracks the selected figure's
            bounding rect. Click-outside deselects. -->
-      @if (selectedFigure() && figureToolbar().show) {
+      @if (selectedFigure() && figureToolbar().show && !cellElementToolbar().type) {
         @if (isBannerFigure()) {
           <!-- ─── Banner toolbar ─────────────────────────────────────────
                Distinct from image: Settings + Banner are labelled (the
                two primary actions); VAlign, Add column, Replace, Delete
                are icon-only with tooltips. -->
           <div class="re__figTb re__figTb--banner"
-               [style.top.px]="figureToolbar().top"
-               [style.left.px]="figureToolbar().left"
+               [style.top.px]="figureToolbar().top + figureToolbarOffset().y"
+               [style.left.px]="figureToolbar().left + figureToolbarOffset().x"
                (mousedown)="$event.stopPropagation()">
+            <span class="re__tbDrag" (mousedown)="startToolbarDrag($event, 'figure')" title="Drag toolbar">
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
+                <circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/>
+                <circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/>
+                <circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/>
+              </svg>
+            </span>
             <button type="button"
                     class="re__figTbBtn re__figTbBtn--labelled"
                     [class.is-on]="figPanel() === 'settings' || figPanel() === 'banner-design' || figPanel() === 'banner-layout'"
                     (click)="openFigPanel('settings')"
-                    [appTooltip]="'Open section settings'">
+                    [appReTooltip]="'Open section settings'">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -1286,7 +1899,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             <button type="button"
                     class="re__figTbBtn re__figTbBtn--labelled is-on"
                     (click)="toggleBanner()"
-                    [appTooltip]="'Convert back to an inline image'">
+                    [appReTooltip]="'Convert back to an inline image'">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="6" width="20" height="12" rx="1"/>
                 <line x1="2" y1="11" x2="22" y2="11"/>
@@ -1296,7 +1909,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             <div class="re__figTbDd">
               <button type="button" class="re__figTbBtn"
                       (click)="toggleFigMenu($event, 'valign')"
-                      [appTooltip]="'Vertical alignment'">
+                      [appReTooltip]="'Vertical alignment'">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="3" y1="6" x2="21" y2="6"/>
                   <rect x="9" y="9" width="6" height="9"/>
@@ -1314,7 +1927,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             </div>
             <button type="button" class="re__figTbBtn"
                     (click)="addBannerColumn()"
-                    [appTooltip]="'Add a column'">
+                    [appReTooltip]="'Add a column'">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
@@ -1322,7 +1935,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             </button>
             <button type="button" class="re__figTbBtn re__figTbBtn--danger"
                     (click)="deleteSelectedFigure()"
-                    [appTooltip]="'Delete banner'">
+                    [appReTooltip]="'Delete banner'">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="3 6 5 6 21 6"/>
                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -1330,6 +1943,31 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                 <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
               </svg>
             </button>
+            <!-- WP-style overflow menu — block-level operations that
+                 don't need their own first-class toolbar button. -->
+            <div class="re__figTbDd">
+              <button type="button" class="re__figTbBtn"
+                      (click)="toggleFigMenu($event, 'more')"
+                      [appReTooltip]="'More options'">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+                  <circle cx="12" cy="5"  r="1.6"/>
+                  <circle cx="12" cy="12" r="1.6"/>
+                  <circle cx="12" cy="19" r="1.6"/>
+                </svg>
+              </button>
+              @if (figMenu() === 'more') {
+                <div class="re__figTbMenu re__figTbMenu--more">
+                  <button type="button" class="re__figTbItem" (click)="figureCmd('cut')">Cut <span class="re__figTbKbd">Ctrl+X</span></button>
+                  <button type="button" class="re__figTbItem" (click)="figureCmd('copy')">Copy <span class="re__figTbKbd">Ctrl+C</span></button>
+                  <button type="button" class="re__figTbItem" (click)="figureCmd('duplicate')">Duplicate <span class="re__figTbKbd">Ctrl+Shift+D</span></button>
+                  <div class="re__figTbDivider"></div>
+                  <button type="button" class="re__figTbItem" (click)="figureCmd('before')">Add empty paragraph before</button>
+                  <button type="button" class="re__figTbItem" (click)="figureCmd('after')">Add empty paragraph after</button>
+                  <div class="re__figTbDivider"></div>
+                  <button type="button" class="re__figTbItem is-danger" (click)="figureCmd('delete')">Delete <span class="re__figTbKbd">Del</span></button>
+                </div>
+              }
+            </div>
           </div>
         } @else {
           <!-- ─── Image / embed toolbar ──────────────────────────────────
@@ -1337,13 +1975,20 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                appear for sized figures; Banner toggle + Settings + Design
                + Link + Replace + Delete are the standard set. -->
           <div class="re__figTb re__figTb--image"
-               [style.top.px]="figureToolbar().top"
-               [style.left.px]="figureToolbar().left"
+               [style.top.px]="figureToolbar().top + figureToolbarOffset().y"
+               [style.left.px]="figureToolbar().left + figureToolbarOffset().x"
                (mousedown)="$event.stopPropagation()">
+            <span class="re__tbDrag" (mousedown)="startToolbarDrag($event, 'figure')" title="Drag toolbar">
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
+                <circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/>
+                <circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/>
+                <circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/>
+              </svg>
+            </span>
             <div class="re__figTbDd">
               <button type="button" class="re__figTbBtn"
                       (click)="toggleFigMenu($event, 'size')"
-                      [appTooltip]="'Change image size'">
+                      [appReTooltip]="'Change image size'">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="6" width="18" height="12" rx="1"/>
                 </svg>
@@ -1361,7 +2006,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             <div class="re__figTbDd">
               <button type="button" class="re__figTbBtn"
                       (click)="toggleFigMenu($event, 'align')"
-                      [appTooltip]="'Alignment'">
+                      [appReTooltip]="'Alignment'">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="3" y1="6"  x2="21" y2="6"/>
                   <line x1="6" y1="12" x2="18" y2="12"/>
@@ -1387,7 +2032,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                       class="re__figTbBtn re__figTbBtn--labelled"
                       [class.is-on]="figPanel() === 'settings'"
                       (click)="openFigPanel('settings')"
-                      [appTooltip]="'Image settings'">
+                      [appReTooltip]="'Image settings'">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="3"/>
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -1397,7 +2042,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
               <button type="button" class="re__figTbBtn"
                       [class.is-on]="figPanel() === 'design'"
                       (click)="openFigPanel('design')"
-                      [appTooltip]="'Design (colour, border, corners)'">
+                      [appReTooltip]="'Design (colour, border, corners)'">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 19l7-7 3 3-7 7-3-3z"/>
                   <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18z"/>
@@ -1459,7 +2104,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
           <!-- Delete -->
           <button type="button" class="re__figTbBtn re__figTbBtn--danger"
                   (click)="deleteSelectedFigure()"
-                  [appTooltip]="'Delete'">
+                  [appReTooltip]="'Delete'">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="3 6 5 6 21 6"/>
               <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -1467,6 +2112,30 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
               <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
             </svg>
           </button>
+          <!-- WP-style overflow menu — block-level operations. -->
+          <div class="re__figTbDd">
+            <button type="button" class="re__figTbBtn"
+                    (click)="toggleFigMenu($event, 'more')"
+                    [appReTooltip]="'More options'">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+                <circle cx="12" cy="5"  r="1.6"/>
+                <circle cx="12" cy="12" r="1.6"/>
+                <circle cx="12" cy="19" r="1.6"/>
+              </svg>
+            </button>
+            @if (figMenu() === 'more') {
+              <div class="re__figTbMenu re__figTbMenu--more">
+                <button type="button" class="re__figTbItem" (click)="figureCmd('cut')">Cut <span class="re__figTbKbd">Ctrl+X</span></button>
+                <button type="button" class="re__figTbItem" (click)="figureCmd('copy')">Copy <span class="re__figTbKbd">Ctrl+C</span></button>
+                <button type="button" class="re__figTbItem" (click)="figureCmd('duplicate')">Duplicate <span class="re__figTbKbd">Ctrl+Shift+D</span></button>
+                <div class="re__figTbDivider"></div>
+                <button type="button" class="re__figTbItem" (click)="figureCmd('before')">Add empty paragraph before</button>
+                <button type="button" class="re__figTbItem" (click)="figureCmd('after')">Add empty paragraph after</button>
+                <div class="re__figTbDivider"></div>
+                <button type="button" class="re__figTbItem is-danger" (click)="figureCmd('delete')">Delete <span class="re__figTbKbd">Del</span></button>
+              </div>
+            }
+          </div>
         </div>
         }
       }
@@ -1486,21 +2155,181 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
           spellcheck="false"
         ></textarea>
       }
+          </div><!-- /.re-editor-content -->
+        </div><!-- /.re-editor-column -->
+      </div><!-- /.re-editor-page -->
     </div>
   `,
   styles: [`
     :host { display: block; }
 
+    /* ── Ricos-style outer shell ─────────────────────────────────────
+       Wraps the existing .re box with three structural layers:
+         .re-editor-host     — the new outer (also has the old .re class)
+         .re-static-toolbar  — pins the toolbar to the top of the host
+           .re-toolbar-rail  — flex row that holds the existing .re__toolbar
+         .re-editor-page     — vertical scroll container for the canvas
+           .re-editor-column — max-940px reading column (centered)
+             .re-editor-title   — optional <textarea> title slot
+             .re-editor-content — wraps existing .re__slot + .re__surfaceWrap
+       The previous one-flat-box layout stayed visually similar in
+       step 1 — these wrappers exist mainly so step 2+ (banner DOM,
+       toolbar reorder, fullscreen, etc.) have stable anchor points. */
+    .re-editor-host {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+
+      /* ── Ricos theme variables ─────────────────────────────────────
+         These are the Ricos --ricos-custom-* entry points the parent
+         app can override to re-theme the editor (settings-action-color
+         is the primary accent, p-color is the body text colour, etc.).
+         Defaults match the editor's existing hardcoded palette so
+         pages without overrides render identically.
+
+         Add new theme overrides via:
+           .my-app-shell { --ricos-custom-settings-action-color: #ff5722; }
+         and the matching CSS rules below will pick them up.
+
+         The legacy --re-banner-* vars are NOT renamed — those describe
+         internal banner state, not theme overrides. They keep being
+         driven by applyBannerStyles() via the --ricos-internal-layout-*
+         aliases declared in the banner section block. */
+      --ricos-custom-settings-action-color: #32acc1;     /* primary accent (selection / focus ring) */
+      --ricos-custom-action-color:          #116DFF;     /* secondary accent (add-plugin, AI button) */
+      --ricos-custom-settings-icons-color:  #0f172a;     /* toolbar icon colour */
+      --ricos-custom-p-color:               #0f172a;     /* body text colour */
+      --ricos-custom-bg-color:              #ffffff;     /* canvas background */
+      --ricos-custom-border-color:          #e2e8f0;     /* divider / chip border */
+      --ricos-custom-muted-color:           #64748b;     /* secondary text / placeholder */
+    }
+    .re-static-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .re-toolbar-rail {
+      display: flex;
+      align-items: stretch;
+      width: 100%;
+    }
+    /* The editor flows with the document — no internal scroll
+       container. Scrolling happens on body/window so the page-level
+       scrollbar is the only one the user sees. The sticky toolbar
+       above still works because position:sticky tracks the nearest
+       scrolling ancestor (the viewport). */
+    .re-editor-page {
+      display: flex;
+      justify-content: center;
+    }
+    .re-editor-column {
+      width: 100%;
+      max-width: 940px;
+      display: flex;
+      flex-direction: column;
+    }
+    .re-editor-content {
+      display: flex;
+      flex-direction: column;
+    }
+    /* Title slot — opt-in via showTitle(). Auto-grows via the rows
+       attribute (driven by titleRows()) plus field-sizing as a
+       progressive enhancement where supported. */
+    .re-editor-title {
+      position: relative;
+      padding: 16px 24px 4px;
+    }
+    .re-editor-title__input {
+      width: 100%;
+      border: none;
+      outline: none;
+      resize: none;
+      background: transparent;
+      font: 600 32px/1.2 inherit;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+      field-sizing: content;
+      padding: 0;
+    }
+    .re-editor-title__input::placeholder { color: #94a3b8; font-weight: 600; }
+    .re-editor-title__counter {
+      position: absolute;
+      right: 24px;
+      bottom: 8px;
+      font-size: 11px;
+      color: #94a3b8;
+      pointer-events: none;
+    }
+    .re-editor-title__counter.is-near-limit { color: #dc2626; }
+    /* When the editor sits inside a Wix-style bare composer, the
+       outer .re class strips its own border so the host shell flows
+       into the surrounding page. */
+    .re--bare.re-editor-host { background: transparent; }
+    .re--bare .re-static-toolbar { background: #ffffff; }
+
+    /* Fullscreen toggle button — pinned at the top-right corner of
+       the editor host. 28×28 square with the Wix expand/collapse
+       glyph. Sits above the sticky toolbar's z-index so it stays
+       reachable even when the toolbar is positioned over content. */
+    .re-fullscreen-toggle {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      background: var(--ricos-custom-bg-color, #ffffff);
+      color: var(--ricos-custom-settings-icons-color, #0f172a);
+      border: 1px solid var(--ricos-custom-border-color, #e2e8f0);
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 30;
+      transition: background-color .12s, border-color .12s, color .12s;
+    }
+    .re-fullscreen-toggle:hover {
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 8%, var(--ricos-custom-bg-color, #ffffff));
+      border-color: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 30%, var(--ricos-custom-border-color, #e2e8f0));
+      color: var(--ricos-custom-settings-action-color, #32acc1);
+    }
+    .re-fullscreen-toggle:active { transform: scale(.95); }
+
+    /* Fullscreen mode — pin the host to the viewport. The toolbar's
+       sticky-top works against the new scroll container (the page
+       div) so it keeps tracking the top of the visible area. */
+    .re-editor-host.re--fullscreen {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 9999 !important;
+      width: auto !important;
+      height: auto !important;
+      max-width: none !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      background: var(--ricos-custom-bg-color, #ffffff);
+    }
+    /* Body scroll lock — the host fills the viewport so we don't want
+       the background page also scrolling. Targets the :host element
+       so consumer-supplied wrappers don't fight the layout. */
+    :host:has(.re-editor-host.re--fullscreen) {
+      position: relative;
+      z-index: 9999;
+    }
+
     .re {
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--ricos-custom-border-color, #d1d5db);
       border-radius: 8px;
-      background: #fff;
+      background: var(--ricos-custom-bg-color, #fff);
       overflow: hidden;
       transition: border-color .12s, box-shadow .12s;
     }
     .re:focus-within {
-      border-color: #32acc1;
-      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.15);
+      border-color: var(--ricos-custom-settings-action-color, #32acc1);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 15%, transparent);
     }
     .re--disabled { opacity: .65; pointer-events: none; }
 
@@ -1585,11 +2414,69 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__sep {
       width: 1px;
       align-self: stretch;
-      background: #e2e8f0;
+      background: var(--ricos-custom-border-color, #e2e8f0);
       margin: 2px 4px;
       flex-shrink: 0;
     }
+
     .re__btn--toggle { flex-shrink: 0; margin-inline-start: 4px; }
+
+    /* Content AI button — slightly larger touch target, brand colour
+       to mark it as the entry point to AI features. */
+    .re__btn.re__btn--ai {
+      color: var(--ricos-custom-action-color, #116DFF);
+    }
+    .re__btn.re__btn--ai:hover {
+      background: color-mix(in srgb, var(--ricos-custom-action-color, #116DFF) 8%, transparent);
+    }
+
+    /* Font-size field — Ricos pattern: a number input with an inline
+       chevron that opens the preset overlay. Typing a number commits
+       on Enter / blur via commitSizeFromInput(). */
+    .re__sizeField {
+      display: inline-flex;
+      align-items: stretch;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      height: 28px;
+      padding: 0 2px 0 6px;
+      gap: 2px;
+      transition: background-color .12s, border-color .12s;
+    }
+    .re__sizeField:hover { background: #eef2f6; }
+    .re__sizeField:focus-within {
+      background: #fff;
+      border-color: #cbd5e1;
+    }
+    .re__sizeInput {
+      width: 30px;
+      border: none;
+      outline: none;
+      background: transparent;
+      font: 13px/1 inherit;
+      color: #0f172a;
+      text-align: center;
+      padding: 0;
+      -moz-appearance: textfield;
+    }
+    .re__sizeInput::-webkit-outer-spin-button,
+    .re__sizeInput::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .re__sizeChevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 0;
+    }
+    .re__sizeChevron:hover { background: #e2e8f0; color: #0f172a; }
 
     /* ── Dropdowns ─────────────────────────────────────────────── */
     /* Menu styling — rendered inside the CDK overlay container, so
@@ -1708,26 +2595,40 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     /* Wraps the editable surface so the floating "+" button is
        absolutely positioned against the surface only — guarantees it
        can never overlap the sticky toolbar above. */
-    .re__surfaceWrap { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    /* Surface wrap — flow with content (no flex grow). Page-level
+       scrolling is preferred so the editor doesn't carry its own
+       internal scrollbar. */
+    .re__surfaceWrap { position: relative; display: flex; flex-direction: column; }
 
-    /* Floating "+" button — same layout idea as Wix Ricos. Lives
-       above the surface, positioned by the component based on the
-       active block's bounding rect. */
+    /* Floating "+" button — Ricos floating-add-plugin shell. The
+       horizontal position is composed in the template via
+         calc(<line-left>px + var(--ricos-custom-editor-add-plugin-button-position-inline-start, -36px))
+       so callers can re-theme the offset by overriding the CSS var
+       at any ancestor (default -36px parks the button outside the
+       line's left edge with a small gap). Plus-icon colour uses the
+       Wix brand blue #116DFF. */
+    .re-editor-host {
+      --ricos-custom-editor-add-plugin-button-position-inline-start: -36px;
+    }
     .re__addBtn {
       position: absolute;
       width: 26px; height: 26px;
       display: inline-flex; align-items: center; justify-content: center;
-      background: #fff;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
+      background: var(--ricos-custom-bg-color, #fff);
+      color: var(--ricos-custom-action-color, #116DFF);
+      border: 1px solid var(--ricos-custom-border-color, #e2e8f0);
       border-radius: 50%;
       cursor: pointer;
-      box-shadow: 0 1px 3px rgba(15,23,42,.06);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
       transition: transform 120ms ease, background 120ms ease, color 120ms ease, border-color 120ms ease;
       z-index: 5;
     }
-    .re__addBtn:hover { background: #e6f7fa; color: #32acc1; border-color: #a6d8df; transform: scale(1.05); }
-    .re__addBtn:active { transform: scale(.95); }
+    .re__addBtn:hover {
+      background: color-mix(in srgb, var(--ricos-custom-action-color, #116DFF) 6%, var(--ricos-custom-bg-color, #fff));
+      border-color: color-mix(in srgb, var(--ricos-custom-action-color, #116DFF) 25%, var(--ricos-custom-border-color, #e2e8f0));
+      transform: scale(1.05);
+    }
+    .re__addBtn:active { transform: scale(0.95); }
 
     /* Floating selection toolbar for embed blocks (videos). Mirrors
        the project's pill-button look so it slots into the same
@@ -1769,6 +2670,400 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       color: #0e7490;
     }
     .re__figTb--banner { padding: 6px 12px; }
+
+    /* Per-element contextual mini-toolbar — same chrome family as the
+       figure / column toolbars but smaller. Shows the element type
+       as a small label, then the type-specific actions. */
+    .re__cellElemTb {
+      position: absolute;
+      transform: translateX(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+      z-index: 11;
+      white-space: nowrap;
+    }
+    .re__cellElemTbLabel {
+      font: 600 11px/1 inherit;
+      color: var(--ricos-custom-settings-action-color, #32acc1);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0 4px;
+    }
+    /* Button-settings popover — pops out of the cell-element
+       toolbar's gear icon when a button is picked. Small in-place
+       panel with the essential button-design controls. */
+    .re__btnSettings {
+      position: absolute;
+      transform: translateX(-50%);
+      width: 240px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+      z-index: 12;
+    }
+    .re__btnSettingsHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      cursor: grab;
+      user-select: none;
+    }
+    .re__btnSettingsHead:active { cursor: grabbing; }
+    .re__btnSettingsHead h4 { margin: 0; font: 600 14px/1 inherit; color: #0f172a; }
+    .re__btnSettingsClose {
+      width: 24px; height: 24px;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: #475569;
+      cursor: pointer;
+    }
+    .re__btnSettingsClose:hover { background: #f1f5f9; color: #0f172a; }
+    /* Top-level tabs across the popover head — Settings | Design.
+       Underline on the active tab matches the Wix layout. */
+    .re__btnTabs {
+      display: flex;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0 12px;
+    }
+    .re__btnTab {
+      flex: 1;
+      padding: 10px 0;
+      background: transparent;
+      border: none;
+      font: 500 13px/1 inherit;
+      color: #475569;
+      cursor: pointer;
+      position: relative;
+      transition: color .12s;
+    }
+    .re__btnTab:hover { color: #0f172a; }
+    .re__btnTab.is-on { color: var(--ricos-custom-settings-action-color, #32acc1); }
+    .re__btnTab.is-on::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: -1px;
+      height: 2px;
+      background: var(--ricos-custom-settings-action-color, #32acc1);
+    }
+    /* Normal / Hover sub-toggle — segmented pill at the top of the
+       Design tab. */
+    .re__btnStateGroup {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      padding: 0;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      margin-bottom: 4px;
+    }
+    .re__btnStateGroup button {
+      padding: 7px 0;
+      background: transparent;
+      border: none;
+      font: 500 12px/1 inherit;
+      color: #475569;
+      cursor: pointer;
+    }
+    .re__btnStateGroup button.is-on {
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 6%, #fff);
+      border: 1px solid var(--ricos-custom-settings-action-color, #32acc1);
+      color: var(--ricos-custom-settings-action-color, #32acc1);
+      border-radius: 5px;
+    }
+    .re__btnSettingsBody {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 12px 12px;
+    }
+    .re__btnField {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+      font: 500 12px/1 inherit;
+      color: #0f172a;
+    }
+    .re__btnField > span { color: #475569; }
+    .re__btnField--row { align-items: center; }
+    .re__btnField input[type="text"],
+    .re__btnField input[type="number"] {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font: inherit;
+      color: inherit;
+      outline: none;
+    }
+    .re__btnField input[type="text"]:focus,
+    .re__btnField input[type="number"]:focus {
+      border-color: var(--ricos-custom-settings-action-color, #32acc1);
+    }
+    .re__btnField input[type="color"] {
+      width: 32px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      background: transparent;
+      cursor: pointer;
+    }
+    /* Per-element popovers (button settings, link panel) live inside
+       the surface-wrap and anchor to surface-relative coords coming
+       out of cellElementToolbar(). Override the base .re__figPanel's
+       position:fixed (which expects viewport-relative coords) so the
+       popover sits exactly where the math points. Also narrow the
+       width since these panels have fewer fields than the Layout
+       section. */
+    .re__figPanel.re__figPanel--btn,
+    .re__figPanel.re__figPanel--link {
+      position: absolute !important;
+      width: 260px;
+      transform: translateX(-50%);
+    }
+
+    /* When a native <input type="color"> sits INSIDE a swatch label,
+       it just provides the picker UX — visually hide it so only the
+       swatch button shows. Clicking the label opens the picker. */
+    .re__figColorTrigger > .re__figColorNative {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+    .re__figColorTrigger { position: relative; overflow: hidden; }
+
+    /* Link panel — stacked rows (label above input) + a footer row
+       with Cancel/Save. */
+    .re__figRow--stack {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 6px;
+    }
+    /* Section picker list. */
+    .re__figLinkSectionList {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 4px;
+    }
+    .re__figLinkSectionList button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .re__figLinkSectionList button:hover { background: #f1f5f9; }
+    .re__figLinkSectionList button.is-on {
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 12%, #fff);
+      color: var(--ricos-custom-settings-action-color, #32acc1);
+    }
+    .re__figLinkSectionTag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px; height: 22px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #475569;
+      font: 700 10px/1 inherit;
+      text-transform: uppercase;
+    }
+    .re__figLinkSectionLabel { font: 500 13px/1.2 inherit; color: #0f172a; }
+    .re__figLinkEmpty {
+      padding: 12px;
+      border: 1px dashed #e2e8f0;
+      border-radius: 6px;
+      font: 400 12px/1.4 inherit;
+      color: #64748b;
+      background: #f8fafc;
+    }
+    .re__figLinkUrl {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font: 400 13px/1 inherit;
+      color: #0f172a;
+      outline: none;
+    }
+    .re__figLinkUrl:focus { border-color: var(--ricos-custom-settings-action-color, #32acc1); }
+    .re__figPanelFoot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid #e2e8f0;
+      background: #fff;
+    }
+    .re__figFootBtn {
+      padding: 6px 16px;
+      border: 1px solid var(--ricos-custom-settings-action-color, #32acc1);
+      border-radius: 999px;
+      background: #fff;
+      font: 600 13px/1 inherit;
+      color: var(--ricos-custom-settings-action-color, #32acc1);
+      cursor: pointer;
+    }
+    .re__figFootBtn:hover {
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 6%, #fff);
+    }
+    .re__figFootBtn.re__figFootBtn--primary {
+      background: var(--ricos-custom-settings-action-color, #32acc1);
+      color: #ffffff;
+    }
+    .re__figFootBtn.re__figFootBtn--primary:hover {
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 85%, #000);
+    }
+    /* Button-size selector — 3 icon toggles (rectangles of
+       increasing size). Matches the Wix Design-tab layout. */
+    .re__btnSizeGroup {
+      display: inline-flex;
+      gap: 4px;
+    }
+    .re__btnSizeGroup button {
+      width: 32px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      color: #475569;
+      cursor: pointer;
+      position: relative;
+      transition: border-color .12s, background-color .12s, color .12s;
+    }
+    .re__btnSizeGroup button:hover { background: #f1f5f9; color: #0f172a; }
+    .re__btnSizeGroup button.is-on {
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 8%, #fff);
+      border-color: var(--ricos-custom-settings-action-color, #32acc1);
+      color: var(--ricos-custom-settings-action-color, #32acc1);
+    }
+    /* Tiny brand checkmark on the active size — matches Wix. */
+    .re__btnSizeGroup button.is-on::after {
+      content: '';
+      position: absolute;
+      top: -4px; right: -4px;
+      width: 12px; height: 12px;
+      background: var(--ricos-custom-settings-action-color, #32acc1);
+      border-radius: 50%;
+      border: 2px solid #fff;
+    }
+
+    /* Alignment dropdown — sibling of the link/settings buttons in
+       the cell-element toolbar. Menu opens below the trigger. */
+    .re__btnAlignDd { position: relative; display: inline-flex; }
+    .re__btnAlignMenu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      min-width: 140px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.15);
+      padding: 4px;
+      z-index: 13;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .re__btnAlignMenu button {
+      display: block;
+      width: 100%;
+      padding: 6px 10px;
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      font: 500 12px/1 inherit;
+      color: #0f172a;
+      text-align: left;
+      cursor: pointer;
+    }
+    .re__btnAlignMenu button:hover { background: #f1f5f9; }
+    .re__btnAlignMenu button.is-on {
+      background: var(--ricos-custom-settings-action-color, #32acc1);
+      color: #ffffff;
+    }
+    .re__btnAlignMenuDivider {
+      height: 1px;
+      background: #e2e8f0;
+      margin: 4px -4px;
+    }
+    .re__btnAlignMenuToggleRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      font: 500 12px/1 inherit;
+      color: #0f172a;
+    }
+
+    /* Selection ring on the picked cell-element — uses the editor's
+       primary brand teal (settings-action-color) so it sits in the
+       same colour family as the banner / column / handle chrome
+       instead of competing with the Wix-blue action-color. */
+    :host ::ng-deep .re__surface .re-cell-elem-active {
+      outline: 2px solid var(--ricos-custom-settings-action-color, #32acc1) !important;
+      outline-offset: 2px !important;
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 15%, transparent) !important;
+      border-radius: inherit;
+    }
+    /* Picked element while being dragged — fade it out so the user
+       can see the drop indicator and target blocks underneath. */
+    :host ::ng-deep .re__surface .re-cell-elem-dragging {
+      opacity: 0.4 !important;
+      cursor: grabbing !important;
+    }
+
+    /* Drag-handle grip — small dots column at the start of any
+       floating toolbar. Lets the user pull the toolbar out of the
+       way when it covers content. Cursor flips to grabbing while
+       the drag is active (set by the JS handler on body). */
+    .re__tbDrag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 24px;
+      color: #94a3b8;
+      cursor: grab;
+      border-radius: 4px;
+      transition: background-color .12s, color .12s;
+      flex-shrink: 0;
+    }
+    .re__tbDrag:hover { background: #f1f5f9; color: #0f172a; }
+    .re__tbDrag:active { cursor: grabbing; }
     .re__figTbSep { width: 1px; height: 18px; background: #e2e8f0; margin: 0 4px; }
     .re__figTbDd { position: relative; display: inline-flex; }
     .re__figTbMenu {
@@ -1808,6 +3103,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
     .re__figTbItem:hover { background: #f1f5f9; }
     .re__figTbItem.is-on { background: #32acc1; color: #fff; }
+    .re__figTbItem.is-danger { color: #dc2626; }
+    .re__figTbItem.is-danger:hover { background: #fef2f2; }
+    .re__figTbKbd {
+      font-size: 11px;
+      color: #94a3b8;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .re__figTbMenu--more { min-width: 220px; }
     .re__figTbDivider { height: 1px; background: #e2e8f0; margin: 4px 6px; }
     .re__figTbToggle {
       display: inline-block;
@@ -2034,16 +3337,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
        positioned absolutely against the surface wrap so it floats
        on top of the canvas without disturbing the contenteditable
        text flow underneath. */
+
     .re__figPanel {
       /* Viewport-pinned so the panel can be dragged anywhere on the
-         page. Height is content-driven (auto) up to a viewport cap —
-         short tabs (e.g. Layout) collapse to their content height,
-         tall tabs (e.g. Design with Column + Section background)
-         grow up to the cap and then scroll internally via the body's
-         overflow-y. */
+         page. Capped at min(640px, viewport-32px) so it never grows
+         taller than that — content scrolls inside the body instead. */
       position: fixed;
       width: 320px;
-      max-height: calc(100vh - 32px);
+      max-height: min(640px, calc(100vh - 32px));
       background: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 12px;
@@ -2086,7 +3387,19 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
     .re__figPanelTab:hover { color: #0f172a; }
     .re__figPanelTab.is-on { color: #32acc1; border-bottom-color: #32acc1; }
-    .re__figPanelBody { padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    .re__figPanelBody {
+      padding: 12px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      /* flex:1 + min-height:0 lets the body fill the remaining
+         vertical space inside the capped panel and actually scroll
+         when the content exceeds that space (without these, the
+         body grows beyond the panel's max-height and overflows). */
+      flex: 1 1 auto;
+      min-height: 0;
+    }
     /* Sub-section hint paragraph — small grey copy beneath a section
        heading, like the reference's "Choose how your content behaves
        when the screen size changes." text under Responsive behavior. */
@@ -2162,6 +3475,17 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       border-radius: 4px;
       cursor: pointer;
       flex-shrink: 0;
+      /* Two-layer paint: the chosen colour (--swatch-color) painted
+         as a flat gradient ON TOP, with a checkerboard underneath.
+         When the colour is fully opaque it hides the checkers; as
+         opacity drops the checkers show through, giving the user
+         direct visual feedback of the alpha value. The colour is
+         carried via a custom property so callers can bind to it
+         without a background-image clobbering the checkerboard. */
+      background-image:
+        linear-gradient(var(--swatch-color, transparent), var(--swatch-color, transparent)),
+        repeating-conic-gradient(#cbd5e1 0% 25%, #f1f5f9 0% 50%);
+      background-size: auto, 8px 8px;
     }
     .re__figColorTrigger:hover { border-color: #94a3b8; }
     /* Icon toggle pair — used for the Column-layout selector. Each
@@ -2296,10 +3620,36 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-auto-rows: auto;
-      gap: 6px;
+      gap: 10px 6px;
       width: 100%;
     }
     .re__figPadPair--quad .re__figTbNum { width: 100%; min-width: 0; }
+    /* Each padding cell stacks its number input + slider vertically.
+       The slider hides until the cell is focused so the 2×2 grid
+       stays compact when nothing is being edited. */
+    .re__figPadCell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    /* Padding sliders — the 4 padding cells live inside the same
+       .re__figRow, so the general .re__figRow:focus-within rule
+       would reveal ALL four sliders when ANY chip is focused. Hide
+       padding sliders by default (overriding the broader rule) and
+       only reveal the one inside the focused cell. */
+    .re__figRow:focus-within .re__figSlider.re__figSlider--pad {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      transform: translateX(-4px) scale(.96) !important;
+      transition: opacity 120ms ease, transform 120ms ease, visibility 0s linear 120ms !important;
+    }
+    .re__figRow:focus-within .re__figPadCell:focus-within .re__figSlider.re__figSlider--pad {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: translateX(0) scale(1) !important;
+      transition: opacity 120ms ease, transform 120ms ease, visibility 0s !important;
+    }
     .re__figCtrl--inline {
       flex-direction: row;
       align-items: center;
@@ -2410,7 +3760,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
        RIGHT of the focused chip (Wix-style "popover to the side"),
        not below it. Narrow (88px) and wrapped in a white pill chrome
        so it reads as a proper floating popover. */
-    .re__figSlider {
+    /* ::ng-deep on these rules so they also style the slider input
+       rendered inside the shared <app-re-slider> component (whose
+       host attribute differs from RichEditorComponent's). */
+    :host ::ng-deep .re__figSlider {
       position: fixed;
       width: 88px;
       padding: 8px 10px;
@@ -2431,23 +3784,35 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       transition: opacity 120ms ease, transform 120ms ease, visibility 0s linear 120ms;
       z-index: 9999;
     }
-    .re__figRow:focus-within .re__figSlider {
+    /* Reveal the slider only when the input chip OR the slider itself
+       has focus — NOT when a sibling color-swatch button does. The
+       slider is position:fixed and overlays the area to the right
+       of the chip, so an unconditional :focus-within would steal
+       clicks on the swatch trigger.
+       The is-active class is added by JS (onHostFocusIn) so it
+       works through the app-re-slider wrapper too — relying on
+       a sibling selector across the wrapper proved unreliable
+       under Angular view encapsulation. */
+    :host ::ng-deep .re__figRow .re__figTbNum:focus-within ~ .re__figSlider,
+    :host ::ng-deep .re__figRow .re__figSlider:focus,
+    :host ::ng-deep .re__figRow .re__figSlider:focus-within,
+    :host ::ng-deep .re__figSlider.is-active {
       opacity: 1;
       visibility: visible;
       transform: translateX(0) scale(1);
       transition: opacity 120ms ease, transform 120ms ease, visibility 0s;
     }
-    .re__figSlider::-webkit-slider-runnable-track {
+    :host ::ng-deep .re__figSlider::-webkit-slider-runnable-track {
       height: 4px;
       border-radius: 999px;
       background: #e2e8f0;
     }
-    .re__figSlider::-moz-range-track {
+    :host ::ng-deep .re__figSlider::-moz-range-track {
       height: 4px;
       border-radius: 999px;
       background: #e2e8f0;
     }
-    .re__figSlider::-webkit-slider-thumb {
+    :host ::ng-deep .re__figSlider::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none;
       width: 16px; height: 16px;
       background: #32acc1;
@@ -2456,7 +3821,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       margin-top: -6px;
       box-shadow: 0 1px 3px rgba(15,23,42,.2);
     }
-    .re__figSlider::-moz-range-thumb {
+    :host ::ng-deep .re__figSlider::-moz-range-thumb {
       width: 16px; height: 16px;
       background: #32acc1;
       border: 2px solid #fff;
@@ -2627,33 +3992,87 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       flex-direction: column !important;
       width: 100% !important;
       margin-block: var(--re-banner-margin, 50px) !important;
+      /* Establish a containment context so the per-banner @container
+         rule (emitted inline by bannerStackRule) can query *this*
+         banner's width — without this, the rule would resolve against
+         the nearest container ancestor (likely the editor surface)
+         and never fire on small banners inside a wide editor. */
+      container-type: inline-size !important;
 
-      /* Backdrop layer vars — defaults match Wix's empty state */
-      --re-banner-backdrop-color: #00000000;
-      --re-banner-backdrop-image: none;
-      --re-banner-backdrop-image-opacity: 1;
-      --re-banner-backdrop-image-scaling: cover;
-      --re-banner-backdrop-image-position: center;
-      --re-banner-backdrop-pad-top: 58px;
-      --re-banner-backdrop-pad-bottom: 58px;
+      /* Variable aliases — applyBannerStyles() writes the canonical
+         --ricos-internal-layout-* vars (matching Wix Ricos's data
+         contract). The legacy --re-banner-* names are kept as
+         aliases so existing CSS rules in this file continue to work
+         while the rest of the migration happens. Default-fall-throughs
+         match Wix's empty-state values. */
 
-      /* Inner container vars */
-      --re-banner-inner-color: #00000000;
-      --re-banner-inner-image: none;
-      --re-banner-inner-image-opacity: 1;
-      --re-banner-inner-image-scaling: cover;
-      --re-banner-inner-image-position: center;
-      --re-banner-inner-cols: minmax(0, 1fr);
-      --re-banner-inner-gap: 20px;
+      /* Backdrop (carried on the data-layout-wrapper) */
+      --re-banner-backdrop-color:          var(--ricos-internal-layout-backdrop-color, #00000000);
+      --re-banner-backdrop-image:          var(--ricos-internal-layout-backdrop-image-src, none);
+      --re-banner-backdrop-image-opacity:  var(--ricos-internal-layout-backdrop-image-opacity, 1);
+      --re-banner-backdrop-image-scaling:  var(--ricos-internal-layout-backdrop-image-scaling, cover);
+      --re-banner-backdrop-image-position: var(--ricos-internal-layout-backdrop-image-position, center);
+      --re-banner-backdrop-pad-top:        var(--ricos-internal-layout-backdrop-padding-top, 0px);
+      --re-banner-backdrop-pad-bottom:     var(--ricos-internal-layout-backdrop-padding-bottom, 0px);
 
-      /* Cell vars */
-      --re-banner-cell-pad-top: 18px;
-      --re-banner-cell-pad-right: 0px;
-      --re-banner-cell-pad-bottom: 18px;
-      --re-banner-cell-pad-left: 0px;
+      /* Cell padding (carried on the wrapper, applied to each
+         data-layout-cell) */
+      --re-banner-cell-pad-top:    var(--ricos-internal-layout-cell-padding-top, 18px);
+      --re-banner-cell-pad-right:  var(--ricos-internal-layout-cell-padding-right, 0px);
+      --re-banner-cell-pad-bottom: var(--ricos-internal-layout-cell-padding-bottom, 18px);
+      --re-banner-cell-pad-left:   var(--ricos-internal-layout-cell-padding-left, 0px);
 
       /* Side gutter for the inner container (data-breakout="normal" equivalent) */
-      --re-banner-breakout-pad: 50px;
+      --re-banner-breakout-pad: 0px;
+    }
+
+    /* Inner container vars live on [data-layout-container] per the
+       Ricos contract. The legacy aliases here cover any rule that
+       still reads --re-banner-inner-* from the inner element. */
+    :host ::ng-deep .re__surface .re-banner-inner,
+    :host ::ng-deep .re__surface [data-layout-container] {
+      --re-banner-inner-color:          var(--ricos-internal-layout-background-color, #00000000);
+      --re-banner-inner-image:          var(--ricos-internal-layout-background-image-src, none);
+      --re-banner-inner-image-opacity:  var(--ricos-internal-layout-background-image-opacity, 1);
+      --re-banner-inner-image-scaling:  var(--ricos-internal-layout-background-image-scaling, cover);
+      --re-banner-inner-image-position: var(--ricos-internal-layout-background-image-position, center);
+      --re-banner-inner-cols:           var(--ricos-internal-layout-column-template, minmax(0, 1fr));
+      --re-banner-inner-gap:            var(--ricos-internal-layout-gap, 20px);
+    }
+
+    /* Cell internal structure — the data-layout-cell DOM has two
+       children: a contenteditable=false handle wrapper and an
+       editable content wrapper. The wrapper is positioned absolutely
+       (pointer-events:none) so it doesn't interfere with the cell's
+       padding/flow; only the button inside re-enables pointer events
+       on itself. */
+    :host ::ng-deep .re__surface .re-banner-cell-handle-wrap {
+      position: absolute !important;
+      inset: 0 !important;
+      pointer-events: none !important;
+      z-index: 6 !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-cell-handle-wrap > .re-banner-cell-handle {
+      pointer-events: auto !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-cell-content,
+    :host ::ng-deep .re__surface [data-layout-cell-content] {
+      flex: 1 1 auto !important;
+      min-width: 0 !important;
+      position: relative !important;
+      /* Kill the browser's default contenteditable focus ring — it
+         paints a thick black rectangle around the editable wrapper
+         and reads as a competing border vs. the banner's own outline. */
+      outline: none !important;
+    }
+    /* Also suppress focus rings on the editable layout container
+       and the inner grid so nothing inside a banner shows a stacked
+       black box on focus. */
+    :host ::ng-deep .re__surface .re-banner-inner:focus,
+    :host ::ng-deep .re__surface [data-layout-container]:focus,
+    :host ::ng-deep .re__surface .re-banner-cell-content:focus,
+    :host ::ng-deep .re__surface [data-layout-cell-content]:focus {
+      outline: none !important;
     }
 
     /* Selection + hover states */
@@ -2678,29 +4097,73 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       background-color: var(--re-banner-backdrop-color) !important;
       padding-top: var(--re-banner-backdrop-pad-top) !important;
       padding-bottom: var(--re-banner-backdrop-pad-bottom) !important;
-      overflow: hidden !important;
-      /* Fill the section's height (the section is a flex column).
-         When the section has no explicit height the basis stays auto
-         so the backdrop sizes to its own content as before; when the
-         user resizes the banner taller the section gains an explicit
-         height and flex:1 makes the backdrop expand to fill it. */
-      flex: 1 1 auto !important;
-      min-height: 0 !important;
+      /* Wix breakout=normal horizontal padding — caps the column at
+         --ricos-content-max-width (740px default) and centres it.
+         max(0, …) clamps to 0 when the banner is narrower than the
+         cap so the column doesn't get negative padding. The two var
+         names below match Wix's contract exactly so a theme override
+         flows through. */
+      --ricos-breakout-normal-padding-start: max(0px, calc((100% - var(--ricos-content-max-width, 740px)) / 2)) !important;
+      --ricos-breakout-normal-padding-end:   max(0px, calc((100% - var(--ricos-content-max-width, 740px)) / 2)) !important;
+      padding-inline-start: var(--ricos-breakout-normal-padding-start) !important;
+      padding-inline-end:   var(--ricos-breakout-normal-padding-end) !important;
+      box-sizing: border-box !important;
+      /* Flex container — when the user drags the bottom handle shorter
+         than the cell content's natural height, the inner overflows
+         symmetrically above and below (matching Wix). Vertical-align
+         classes on the section toggle align-items so the user can
+         anchor the overflow to top / middle / bottom. */
       display: flex !important;
       flex-direction: column !important;
+      align-items: stretch !important;
+      justify-content: flex-start !important;
+      /* No overflow:hidden — cells need to be visible past the
+         backdrop's edges when it's shorter than their content. The
+         ::before that paints the background image is itself inset:0
+         so it stays clipped to the backdrop box. */
     }
-    /* Resizer fills the backdrop's available height so the inner
-       content (text) sits inside a stretchable container, and the
-       vertical-alignment classes (vtop/vmid/vbot) can push text to
-       top, center, or bottom of the resized banner. */
+    /* Vertical-alignment classes: switch where the inner sits when the
+       backdrop is taller than content, AND which way it overflows when
+       the backdrop is shorter. */
+    :host ::ng-deep .re__surface section.re-banner.re-banner-vtop > .re-banner-backdrop { justify-content: flex-start !important; }
+    :host ::ng-deep .re__surface section.re-banner.re-banner-vmid > .re-banner-backdrop { justify-content: center     !important; }
+    :host ::ng-deep .re__surface section.re-banner.re-banner-vbot > .re-banner-backdrop { justify-content: flex-end   !important; }
+    /* Resizer sizes naturally to its content — NO flex:1 so it does
+       NOT stretch to fill the backdrop. When the backdrop is shorter
+       than the resizer, the resizer overflows symmetrically (the
+       backdrop's justify-content rules above decide which way). */
     :host ::ng-deep .re__surface .re-banner-backdrop > .re-banner-resizer {
+      flex: 0 0 auto !important;
+      width: 100% !important;
+    }
+    /* Full-height mode — the column stretches to fill the banner's
+       full vertical extent edge-to-edge. */
+    /* 1. Zero out the backdrop's top/bottom padding wells so the
+          column reaches all the way to the section's edges instead
+          of stopping at the vertical-margin wells. */
+    :host ::ng-deep .re__surface section.re-banner.is-full-height > .re-banner-backdrop {
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+    /* 2. Resizer fills the backdrop. */
+    :host ::ng-deep .re__surface section.re-banner.is-full-height > .re-banner-backdrop > .re-banner-resizer {
       flex: 1 1 auto !important;
-      min-height: 0 !important;
+      align-self: stretch !important;
       display: flex !important;
       flex-direction: column !important;
+      min-height: 100% !important;
     }
-    :host ::ng-deep .re__surface .re-banner-resizer > .re-banner-inner {
+    /* 3. Inner grid fills the resizer. */
+    :host ::ng-deep .re__surface section.re-banner.is-full-height .re-banner-inner {
       flex: 1 1 auto !important;
+      min-height: 0 !important;
+      align-content: stretch !important;
+      grid-auto-rows: 1fr !important;
+    }
+    /* 4. Cells use 100% height so their bg/border/radius reach edges. */
+    :host ::ng-deep .re__surface section.re-banner.is-full-height .re-banner-cell {
+      height: 100% !important;
+      min-height: 0 !important;
     }
     :host ::ng-deep .re__surface .re-banner-backdrop::before {
       content: "" !important;
@@ -2714,17 +4177,37 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       pointer-events: none !important;
       z-index: 0 !important;
     }
+    /* Background overlay — painted via ::after on the backdrop so it
+       sits ABOVE the background image (::before) but BELOW the cell
+       content (which gets z-index:2). Colour + alpha composed by
+       applyBannerStyles() into --re-banner-overlay-color (rgba). */
+    :host ::ng-deep .re__surface .re-banner-backdrop::after {
+      content: "" !important;
+      position: absolute !important;
+      inset: 0 !important;
+      background-color: var(--re-banner-overlay-color, transparent) !important;
+      pointer-events: none !important;
+      z-index: 1 !important;
+    }
     /* Hide inline media (img / iframe) — banner mode uses the layer system */
     :host ::ng-deep .re__surface section.re-banner > img,
     :host ::ng-deep .re__surface section.re-banner > .re-embed-video {
       display: none !important;
     }
 
-    /* ── Level 3: resizer (positions handles) ─────────────────────── */
+    /* ── Level 3: resizer (the [data-resize-container]) ─────────────
+       Width comes from --ricos-internal-layout-width (written inline
+       by the column markers on horizontal drag). Centred within the
+       backdrop's content box via margin-inline:auto so shrinking
+       pulls equally from both sides. The horizontal breakout padding
+       lives on the backdrop now (Wix's data-breakout=normal pattern),
+       so the resizer itself has no padding-inline. */
     :host ::ng-deep .re__surface .re-banner-resizer {
       position: relative !important;
-      padding-inline: var(--re-banner-breakout-pad) !important;
       z-index: 1 !important;
+      max-width: var(--ricos-internal-layout-width, 100%) !important;
+      margin-inline: auto !important;
+      box-sizing: border-box !important;
     }
 
     /* ── Level 4: inner grid container ────────────────────────────── */
@@ -2736,7 +4219,6 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       width: 100% !important;
       background-color: var(--re-banner-inner-color) !important;
       margin: 0 auto !important;
-      min-height: 80px !important;
       align-content: start !important;
     }
     :host ::ng-deep .re__surface .re-banner-inner::before {
@@ -2772,15 +4254,46 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
         var(--re-banner-cell-pad-right)
         var(--re-banner-cell-pad-bottom)
         var(--re-banner-cell-pad-left) !important;
+      /* Background + border + radius all driven by the column-bg
+         panel. The bg lives on the cell itself (NOT the inner grid)
+         so the cell's border-radius clips the fill correctly — no
+         square fill bleeding past the rounded corners. */
+      background-color: var(--re-cell-bg-color, transparent) !important;
+      border: var(--re-cell-border-width, 0px) solid var(--re-cell-border-color, transparent) !important;
+      border-radius: var(--re-cell-radius, 0px) !important;
+      overflow: hidden !important;
+      /* border-box so the column-padding (e.g. 27px each side) stays
+         INSIDE the cell's grid-track width. Without this, in a 2-col
+         layout each cell's outer box = track + padding, which makes
+         neighbouring cells visually overlap when the columns are
+         narrow. */
+      box-sizing: border-box !important;
       z-index: 2 !important;
     }
+    /* Image-fill layer — painted via ::before so it can carry its own
+       opacity / scaling / position without affecting the cell's bg
+       color. Inset:0 clips to the cell's padding-box; the cell's
+       overflow:hidden + border-radius rounds the image too. */
+    :host ::ng-deep .re__surface .re-banner-cell::before {
+      content: '' !important;
+      position: absolute !important;
+      inset: 0 !important;
+      background-image: var(--re-cell-bg-image, none) !important;
+      background-size: var(--re-cell-bg-image-scaling, cover) !important;
+      background-position: var(--re-cell-bg-image-position, center) !important;
+      background-repeat: no-repeat !important;
+      opacity: var(--re-cell-bg-image-opacity, 1) !important;
+      pointer-events: none !important;
+      z-index: 0 !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-cell > * { position: relative; z-index: 1; }
     :host ::ng-deep .re__surface .re-banner-cell > * { position: relative !important; z-index: 1 !important; }
 
-    /* Cell hover + selected states (inside selected banner) */
-    :host ::ng-deep .re__surface .re-banner.is-selected .re-banner-cell:hover:not(.is-selected-col) {
-      outline: 1.5px dashed rgba(50, 172, 193, 0.6) !important;
-      outline-offset: 0 !important;
-    }
+    /* Cell hover + selected states (inside selected banner). The
+       dashed hover outline was removed — the inner-grid's solid
+       border (top + bottom + vertical guide lines via markers)
+       already shows the column's extent, so a dashed hover ring on
+       top would just look noisy. */
     :host ::ng-deep .re__surface .re-banner-cell.is-selected-col {
       outline: none !important;
       background-color: rgba(50, 172, 193, 0.06) !important;
@@ -2805,62 +4318,244 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface section.re-banner.is-selected .re-banner-handle {
       opacity: 1 !important;
     }
-    :host ::ng-deep .re__surface .re-banner-handle--left,
-    :host ::ng-deep .re__surface .re-banner-handle--right {
-      top: 50% !important;
-      transform: translateY(-50%) !important;
-      width: 8px !important;
-      height: 56px !important;
-      cursor: ew-resize !important;
-    }
-    :host ::ng-deep .re__surface .re-banner-handle--left  { left: calc(var(--re-banner-breakout-pad) - 4px) !important; }
-    :host ::ng-deep .re__surface .re-banner-handle--right { right: calc(var(--re-banner-breakout-pad) - 4px) !important; }
-    :host ::ng-deep .re__surface .re-banner-handle--bottom {
-      bottom: -4px !important;
+    /* Bottom resize handle — the ONLY resize affordance on a banner.
+       Wix model: banners are resizable vertically only. Dragging this
+       pill writes height to the .re-banner-backdrop so the colored
+       area shrinks / grows with the cursor; the section auto-sizes
+       around the backdrop, so this pill always sits on the visual
+       bottom edge regardless of how short/tall the user dragged.
+       Visual style matches Wix Ricos: a small white pill with a
+       brand-coloured fill on the inner bar and a soft drop shadow. */
+    :host ::ng-deep .re__surface section.re-banner > .re-banner-handle--bottom {
+      bottom: -7px !important;
       left: 50% !important;
       transform: translateX(-50%) !important;
-      width: 32px !important;
-      height: 8px !important;
+      width: 36px !important;
+      height: 14px !important;
+      background: #ffffff !important;
+      border: 1px solid var(--ricos-custom-settings-action-color, #32acc1) !important;
+      border-radius: 999px !important;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12) !important;
       cursor: ns-resize !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
     }
-    :host ::ng-deep .re__surface .re-banner-handle--top {
-      top: -4px !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: 32px !important;
-      height: 8px !important;
-      cursor: ns-resize !important;
+    :host ::ng-deep .re__surface section.re-banner > .re-banner-handle--bottom::after {
+      content: '' !important;
+      display: block !important;
+      width: 18px !important;
+      height: 4px !important;
+      background: var(--ricos-custom-settings-action-color, #32acc1) !important;
+      border-radius: 2px !important;
+      opacity: 0 !important;
+      transition: opacity 120ms ease !important;
+    }
+    /* Inner bar appears only on hover or during an active drag —
+       resting state shows just the white pill. */
+    :host ::ng-deep .re__surface section.re-banner > .re-banner-handle--bottom:hover::after,
+    :host ::ng-deep .re__surface section.re-banner.is-resizing > .re-banner-handle--bottom::after {
+      opacity: 1 !important;
+    }
+    :host ::ng-deep .re__surface section.re-banner > .re-banner-handle--bottom:hover {
+      transform: translateX(-50%) scale(1.04) !important;
     }
 
-    /* Pill cell handle — sits ABOVE the cell (outside its top edge) as
-       a "drag the column" affordance. Visually distinct from the
-       solid teal resize handles: white pill with three brand-coloured
-       dots + a soft drop-shadow so it reads as a "grab" target rather
-       than a "resize" edge. */
+    /* Column selection markers — vertical guide lines on the column's
+       left/right edges, with a small circle at vertical centre. The
+       markers are children of the inner-grid ([data-layout-container]),
+       so top:0/bottom:0 makes them track the GRID's height (= the
+       column's height), and left:0/right:0 hugs the column edges
+       (not the section's outer edges). Decorative only (no drag). */
+    :host ::ng-deep .re__surface .re-banner-marker {
+      position: absolute !important;
+      top: 50% !important;
+      bottom: auto !important;
+      width: 14px !important;
+      height: 14px !important;
+      background: transparent !important;
+      pointer-events: auto !important;
+      cursor: ew-resize !important;
+      opacity: 0 !important;
+      transition: opacity 120ms ease !important;
+      z-index: 7 !important;
+    }
+    /* No vertical guide line — the inner-grid's single solid outline
+       already provides the column's edges. Markers are just the
+       drag-affordance circle painted via ::after. */
+    :host ::ng-deep .re__surface .re-banner-marker::after {
+      content: '' !important;
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      width: 10px !important;
+      height: 10px !important;
+      background: #ffffff !important;
+      border: 1.5px solid var(--ricos-custom-settings-action-color, #32acc1) !important;
+      border-radius: 50% !important;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
+      transform: translate(-50%, -50%) !important;
+    }
+    /* Visibility is gated by banner-selected (markers live in the
+       inner-grid now, so the ancestor selector reaches up to the
+       wrapping section). */
+    :host ::ng-deep .re__surface section.re-banner.is-selected .re-banner-marker {
+      opacity: 1 !important;
+    }
+    /* Per-side transform — the marker's CENTRE must sit on the
+       column edge. Left uses translate(-50%) so its centre lands on
+       left:0; right uses translate(50%) so its centre lands on
+       right:0. Without these explicit transforms, the right marker
+       drifts inward by half its width. */
+    :host ::ng-deep .re__surface .re-banner-marker--left  {
+      left: 0 !important;
+      right: auto !important;
+      transform: translate(-50%, -50%) !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-marker--right {
+      right: 0 !important;
+      left: auto !important;
+      transform: translate(50%, -50%) !important;
+    }
+    /* Inner-grid needs position:relative so the markers anchor to it. */
+    :host ::ng-deep .re__surface .re-banner-inner,
+    :host ::ng-deep .re__surface [data-layout-container] {
+      position: relative !important;
+    }
+    /* Column borders — each individual cell gets its own outline so
+       a 2-col banner shows two separately-bordered boxes with the
+       grid gap between them. Matches Wix's selection chrome where
+       every column reads as its own bordered card. */
+    :host ::ng-deep .re__surface section.re-banner.is-selected .re-banner-cell,
+    :host ::ng-deep .re__surface section.re-banner.is-selected [data-layout-cell] {
+      outline: 1px solid color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 50%, transparent) !important;
+      outline-offset: 0 !important;
+    }
+
+    /* Pill cell handle — sits ABOVE the cell as a "drag column"
+       affordance. Three visual states:
+         1. Default / banner-selected, cell not hovered:
+              white pill, brand-coloured border + dots, soft shadow.
+         2. Cell hover (inside selected banner):
+              white pill with light brand tint + brand border + dots.
+         3. Selected column (.is-selected-col):
+              SOLID brand-coloured pill with WHITE dots — matches
+              Wix Ricos's "focused column" state. */
     :host ::ng-deep .re__surface .re-banner-cell-handle {
       position: absolute !important;
+      /* Full pill, sits with its bottom edge resting on the column
+         outline (top: -height) so it visually "lifts off" the column
+         top — half pill above, half pill clipped by the outline line
+         from the user's perspective. */
       top: -14px !important;
       left: 50% !important;
       transform: translateX(-50%) !important;
-      width: 32px !important;
-      height: 20px !important;
-      background: #fff !important;
-      border: 1.5px solid #32acc1 !important;
+      width: 36px !important;
+      height: 14px !important;
+      background: #ffffff !important;
+      border: 1px solid var(--ricos-custom-settings-action-color, #32acc1) !important;
       border-radius: 999px !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
       cursor: grab !important;
       z-index: 6 !important;
-      color: #32acc1 !important;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18) !important;
+      color: var(--ricos-custom-settings-action-color, #32acc1) !important;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12) !important;
       opacity: 0 !important;
-      transition: opacity 120ms ease, transform 120ms ease !important;
+      transition: opacity 120ms ease, transform 120ms ease,
+                  background-color 120ms ease, color 120ms ease !important;
     }
+    /* Hover state — light tint of the primary color, dots stay brand.
+       :not(.is-selected-col) means hovering an already-selected column
+       does NOT change the handle's appearance; the solid focused
+       state below stays put. */
+    :host ::ng-deep .re__surface .re-banner.is-selected .re-banner-cell:not(.is-selected-col):hover .re-banner-cell-handle {
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 8%, #ffffff) !important;
+      transform: translateX(-50%) scale(1.05) !important;
+    }
+    /* Focused state — solid primary color with white dots. */
+    :host ::ng-deep .re__surface .re-banner-cell.is-selected-col .re-banner-cell-handle {
+      background: var(--ricos-custom-settings-action-color, #32acc1) !important;
+      color: #ffffff !important;
+      border-color: var(--ricos-custom-settings-action-color, #32acc1) !important;
+    }
+
+    /* ── Column divider — sits between the two cells inside
+       .re-banner-inner. A thin, full-height invisible hit-zone that
+       reveals a teal grab-pill on hover/drag. The divider's left%
+       comes from --re-banner-col-divider-left (written on drag) and
+       on initial paint from the .re-banner-inner ratio. */
+    :host ::ng-deep .re__surface .re-banner-col-divider {
+      position: absolute !important;
+      top: 0 !important;
+      bottom: 0 !important;
+      width: 14px !important;
+      transform: translateX(-50%) !important;
+      z-index: 4 !important;
+      cursor: ew-resize !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      opacity: 0 !important;
+      transition: opacity 120ms ease !important;
+      left: var(--re-banner-col-divider-left, 50%) !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-col-divider::before {
+      content: '' !important;
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      width: 4px !important;
+      height: 40px !important;
+      background: #32acc1 !important;
+      border: 1.5px solid #fff !important;
+      border-radius: 999px !important;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2) !important;
+      transform: translate(-50%, -50%) !important;
+      transition: transform 120ms ease !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-col-divider:hover::before {
+      transform: translate(-50%, -50%) scaleY(1.15) !important;
+    }
+    :host ::ng-deep .re__surface section.re-banner.is-selected .re-banner-col-divider {
+      opacity: 1 !important;
+    }
+    :host ::ng-deep .re__surface .re-banner-col-divider.is-dragging::before {
+      transform: translate(-50%, -50%) scaleY(1.2) !important;
+    }
+    /* Snap-highlight — when the cursor lands on a smart-guide ratio
+       (1/4, 1/3, 1/2, 2/3, 3/4), the inner bar pops to the primary
+       brand color so the user knows the snap fired. */
+    :host ::ng-deep .re__surface .re-banner-col-divider.is-snapped::before {
+      background: var(--ricos-custom-action-color, #116DFF) !important;
+      transform: translate(-50%, -50%) scaleY(1.25) !important;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--ricos-custom-action-color, #116DFF) 25%, transparent) !important;
+    }
+    /* Ratio-label chip — shows the current column percentages while
+       dragging. Sits just above the divider so it doesn't overlap
+       the dragged bar; styled to match the Ricos dark tooltip look. */
+    :host ::ng-deep .re__surface .re-banner-col-divider-label {
+      position: absolute !important;
+      bottom: calc(100% + 8px) !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      padding: 4px 8px !important;
+      background: #162D3D !important;
+      color: #ffffff !important;
+      font: 500 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      white-space: nowrap !important;
+      border-radius: 4px !important;
+      pointer-events: none !important;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2) !important;
+      z-index: 10 !important;
+    }
+
     :host ::ng-deep .re__surface .re-banner-cell-handle:hover { transform: translateX(-50%) scale(1.08); }
     :host ::ng-deep .re__surface .re-banner-cell-handle:active { cursor: grabbing !important; }
     :host ::ng-deep .re__surface .re-banner-cell.is-selected-col .re-banner-cell-handle,
-    :host ::ng-deep .re__surface .re-banner.is-selected .re-banner-cell:hover .re-banner-cell-handle {
+    :host ::ng-deep .re__surface .re-banner.is-selected .re-banner-cell:hover .re-banner-cell-handle,
+    :host ::ng-deep .re__surface section.re-banner.is-selected .re-banner-cell-handle {
       opacity: 1 !important;
     }
 
@@ -2936,11 +4631,13 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re--bare { border: 0; border-radius: 0; display: flex; flex-direction: column; height: 100%; min-height: 0; }
     .re--bare .re__toolbar { background: #fff; flex-shrink: 0; }
     .re--bare .re__slot { flex-shrink: 0; }
-    .re--bare .re__surfaceWrap { flex: 1 1 0; min-height: 0; }
+    /* In bare mode the editor flows with the document body —
+       scrolling happens at the page level, so neither the surface
+       wrap nor the contenteditable surface gets its own scrollbar. */
+    .re--bare .re__surfaceWrap { flex: 0 0 auto; }
     .re--bare .re__surface {
-      flex: 1 1 0 !important;
-      min-height: 0 !important;
-      overflow-y: auto !important;
+      flex: 0 0 auto !important;
+      overflow: visible !important;
     }
 
     /* ── WYSIWYG surface ─────────────────────────────────────── */
@@ -2990,7 +4687,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface ul ul { list-style-type: circle !important; }
     :host ::ng-deep .re__surface ul ul ul { list-style-type: square !important; }
 
-    :host ::ng-deep .re__surface a { color: #32acc1 !important; text-decoration: underline !important; }
+    /* Inline links default to the editor's teal + underline. Button
+       anchors (.re-btn-block) opt out — they style themselves via
+       inline styles set by insertButton() + the Button settings
+       panel, so the !important on link colour was overriding the
+       user's chosen text color. */
+    :host ::ng-deep .re__surface a:not(.re-btn-block) { color: #32acc1 !important; text-decoration: underline !important; }
     :host ::ng-deep .re__surface blockquote {
       margin: 8px 0 !important;
       padding: 8px 14px !important;
@@ -3125,15 +4827,16 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
     :host ::ng-deep .re__surface .re-embed-caption:focus:empty::before { opacity: .55 !important; }
 
+    /* .re-btn-block — picks up inline styles set by insertButton()
+       (background-color, color, padding, border-radius, font-size).
+       The class only contributes layout (inline-block, margin,
+       font-weight, no underline) so the Button settings panel can
+       freely override colour / radius / padding via element.style.* */
     :host ::ng-deep .re__surface .re-btn-block {
-      display: inline-block !important;
-      margin: 8px 0 !important;
-      padding: 8px 18px !important;
-      background: #0f172a !important;
-      color: #fff !important;
-      border-radius: 999px !important;
-      font-weight: 600 !important;
-      text-decoration: none !important;
+      display: inline-block;
+      margin: 8px 0;
+      font-weight: 600;
+      text-decoration: none;
     }
     :host ::ng-deep .re__surface .re-html-raw {
       display: block !important;
@@ -3183,6 +4886,34 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  emits `addClick` — the composer wires this to opening the Add
    *  panel, matching the Wix Ricos UX. */
   addButton = input<boolean>(false);
+  /** When true, the Content AI button is rendered at the start of the
+   *  toolbar (matching Wix Ricos's order). Click emits `contentAiClick`
+   *  so the caller can open its own AI panel. */
+  showContentAi  = input<boolean>(false);
+  contentAiClick = output<void>();
+  /** Fullscreen toggle — pins the editor at `position: fixed; inset: 0;
+   *  z-index: 9999` so it covers the whole viewport. Toggled by the
+   *  expand-corners button at the top-right of the editor host. */
+  isFullscreen = signal<boolean>(false);
+  toggleFullscreen(): void { this.isFullscreen.update(v => !v); }
+  /** When true, render a built-in title <textarea> above the editable
+   *  surface (sits inside `.re-editor-column` above `.re-editor-content`).
+   *  Off by default — consumers that already provide their own title
+   *  field (e.g. post-composer) leave this off. */
+  showTitle      = input<boolean>(false);
+  /** Maximum length for the built-in title. Hard-clamped via maxlength
+   *  on the textarea. */
+  titleMaxLength = input<number>(200);
+  /** Two-way bind for the built-in title value. Use [(title)] or
+   *  (titleChange) — keeps the field controlled while the textarea
+   *  auto-grows. */
+  title          = input<string>('');
+  titleChange    = output<string>();
+  /** Internal mirror of the title input so we can auto-grow the
+   *  textarea + show the character counter without forcing the caller
+   *  to wire two-way binding. Seeded from the input via effect(). */
+  titleValue     = signal<string>('');
+  titleFocused   = signal<boolean>(false);
   /** Lets the parent observe blur/commit events (on top of CVA onChange). */
   changed = output<string>();
   /** Fired when the floating "+" button (see `addButton` input) is
@@ -3203,6 +4934,12 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  Column-background Image picker. Parent opens its media-library
    *  modal and pipes the picked URL back via `setColBgImage()`. */
   colBgImageClick = output<void>();
+  /** Fires when the user clicks an "Add image" placeholder inside a
+   *  cell. Hosts can hook this to launch their own media library and
+   *  then call `replaceCellImagePlaceholder(el, url)`. If nothing
+   *  detaches the placeholder, the editor falls back to a native
+   *  file picker. */
+  cellImageClick  = output<HTMLElement>();
 
   disabled = signal(false);
 
@@ -3255,6 +4992,14 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   private onTouched: () => void = () => {};
   private pendingValue = '';
   private viewReady = false;
+
+  constructor() {
+    // Mirror the [title] input into the internal titleValue signal so
+    // the textarea (which binds to titleValue for auto-grow + counter)
+    // stays in sync with the caller's bound value without forcing
+    // two-way wiring at every consumer.
+    effect(() => { this.titleValue.set(this.title() ?? ''); });
+  }
 
   ngAfterViewInit(): void {
     this.viewReady = true;
@@ -3323,7 +5068,9 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   /** Position + visibility for the floating "+" button. Recomputed
    *  on every selection / input event when `addButton` is enabled. */
-  addBtn = signal<{ show: boolean; top: number; left: number }>({ show: false, top: 0, left: 0 });
+  addBtn = signal<{ show: boolean; top: number; left: number; lineLeft: number }>(
+    { show: false, top: 0, left: 0, lineLeft: 0 },
+  );
 
   private refreshAddBtn(): void {
     if (!this.addButton()) return;
@@ -3346,14 +5093,17 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
     const surfaceRect = editable.getBoundingClientRect();
     const blockRect   = block.getBoundingClientRect();
-    // Centre on the line, parked just inside the surface's left edge.
-    const top  = blockRect.top  - surfaceRect.top + (blockRect.height - 26) / 2;
-    const left = Math.max(2, blockRect.left - surfaceRect.left - 32);
-    this.addBtn.set({ show: true, top, left });
+    // Centre on the line. `lineLeft` is the block's left edge in
+    // surface coords; the template adds the Ricos inline-start var
+    // (-36px default) to position the button to the left of the line.
+    const top      = blockRect.top  - surfaceRect.top + (blockRect.height - 26) / 2;
+    const lineLeft = blockRect.left - surfaceRect.left;
+    const left     = Math.max(2, lineLeft - 32);
+    this.addBtn.set({ show: true, top, left, lineLeft });
   }
 
   private hideAddBtn(): void {
-    if (this.addBtn().show) this.addBtn.set({ show: false, top: 0, left: 0 });
+    if (this.addBtn().show) this.addBtn.set({ show: false, top: 0, left: 0, lineLeft: 0 });
   }
 
   /** Click handler for the floating "+". Stops the default mousedown
@@ -3370,7 +5120,66 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  that floats above the column. */
   selectedColumn = signal<HTMLElement | null>(null);
   columnToolbar  = signal<{ show: boolean; top: number; left: number }>({ show: false, top: 0, left: 0 });
-  columnMenu     = signal<'add' | null>(null);
+  /** User-adjusted offsets for the floating toolbars — added on top
+   *  of the auto-computed positions so the user can drag a toolbar
+   *  out of the way when it covers content. Reset on every fresh
+   *  selection so it doesn't follow into the wrong context. */
+  columnToolbarOffset      = signal<{ x: number; y: number }>({ x: 0, y: 0 });
+  figureToolbarOffset      = signal<{ x: number; y: number }>({ x: 0, y: 0 });
+  cellElementToolbarOffset = signal<{ x: number; y: number }>({ x: 0, y: 0 });
+  /** Drag offset for the button-settings panel that pops out of the
+   *  cell-element toolbar's gear icon. */
+  btnPanelOffset           = signal<{ x: number; y: number }>({ x: 0, y: 0 });
+  /** Open/close state + drag offset for the button-LINK panel. */
+  buttonLinkOpen           = signal<boolean>(false);
+  btnLinkOffset            = signal<{ x: number; y: number }>({ x: 0, y: 0 });
+  /** Sponsored rel toggle (in addition to the existing nofollow /
+   *  noreferrer / new-tab signals that the main toolbar already uses). */
+  linkSponsored            = signal<boolean>(false);
+  /** "Link to" kind — selects which target picker the panel shows.
+   *  - web:     plain URL input (default).
+   *  - section: list of headings inside the editable surface.
+   *  - page / blog / dynamic: stub picker; the host can populate
+   *    via the (linkTargetsRequest) output. */
+  linkKind                 = signal<'web' | 'section' | 'page' | 'blog' | 'dynamic'>('web');
+  /** Headings found in the editable surface when the user opens the
+   *  Section kind — refreshed each time the panel opens or kind
+   *  changes. Used as the "Select a section to link to" options. */
+  linkSections             = signal<Array<{ id: string; label: string; tag: string }>>([]);
+
+  /** Generic drag handler for a floating toolbar. The toolbar's
+   *  base position is signal-driven (auto-tracking the selected
+   *  element); this drag adds a user offset that the template adds
+   *  on top of the base. The `which` arg picks which offset signal
+   *  to mutate. */
+  startToolbarDrag(ev: MouseEvent, which: 'column' | 'figure' | 'cellElement' | 'btnPanel' | 'btnLink'): void {
+    ev.preventDefault();
+    ev.stopPropagation();
+    const target = which === 'column'
+      ? this.columnToolbarOffset
+      : which === 'figure'
+        ? this.figureToolbarOffset
+        : which === 'cellElement'
+          ? this.cellElementToolbarOffset
+          : which === 'btnPanel'
+            ? this.btnPanelOffset
+            : this.btnLinkOffset;
+    const startX = ev.clientX;
+    const startY = ev.clientY;
+    const start  = target();
+    const onMove = (m: MouseEvent) => {
+      target.set({ x: start.x + (m.clientX - startX), y: start.y + (m.clientY - startY) });
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+    };
+    document.body.style.cursor = 'grabbing';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+  columnMenu     = signal<'add' | 'more' | null>(null);
 
   // ─── Embed-block selection ─────────────────────────────────────────────
   /** Currently-selected `figure.re-embed-figure`, or null when nothing
@@ -3407,7 +5216,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   static isBannerSection(el: HTMLElement | null | undefined): boolean {
     return !!el && el.tagName === 'SECTION' && el.classList.contains('re-banner');
   }
-  figMenu        = signal<'size' | 'align' | 'link' | 'settings' | 'design' | 'valign' | null>(null);
+  figMenu        = signal<'size' | 'align' | 'link' | 'settings' | 'design' | 'valign' | 'more' | null>(null);
 
   // ─── Link popover state ───
   linkUrl       = signal<string>('');
@@ -3428,7 +5237,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   designBorderOpacity = signal<number>(100);
 
   // ─── Banner state ───
-  bannerVAlign = signal<'top' | 'middle' | 'bottom'>('top');
+  bannerVAlign = signal<'top' | 'middle' | 'bottom'>('middle');
 
   // ─── Banner Layout-section panel state ───
   bannerBgShow      = signal<boolean>(true);
@@ -3448,7 +5257,20 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  overlay, design border) is currently editing in the popover. `null`
    *  closes the popover. One shared overlay handles all four — the
    *  target id routes the emitted hex to the right signal. */
-  colorPanelTarget = signal<'colFill' | 'colBorder' | 'sectionOverlay' | 'designBorder' | 'colOverlay' | null>(null);
+  colorPanelTarget = signal<'colFill' | 'colBorder' | 'sectionOverlay' | 'designBorder' | 'colOverlay' | 'btnFill' | 'btnText' | 'btnBorder' | 'colOvFill' | 'colOvBorder' | null>(null);
+
+  // ─── Per-column Design overrides ────────────────────────────────────
+  /** Whether the per-column design popover is open. Anchored to the
+   *  Design button on the column toolbar. Edits inline styles on the
+   *  selected `.re-banner-cell` so the override applies only to that
+   *  column, not the banner-wide defaults. */
+  colDesignOpen = signal<boolean>(false);
+  colOvFillColor    = signal<string>('#ffffff');
+  colOvFillOpacity  = signal<number>(0);
+  colOvBorderColor  = signal<string>('#000000');
+  colOvBorderOpacity = signal<number>(100);
+  colOvBorderWidth  = signal<number>(0);
+  colOvCornerRadius = signal<number>(0);
 
   /** Hex value to show in the colour-only ColorsPanel — picks the
    *  signal that matches the active target. */
@@ -3459,6 +5281,11 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       case 'sectionOverlay':  return this.sectionOverlayColor();
       case 'designBorder':    return this.designBorderColor();
       case 'colOverlay':      return this.colOverlayColor();
+      case 'btnFill':         return this.btnFillColor();
+      case 'btnText':         return this.btnTextColor();
+      case 'btnBorder':       return this.btnBorderColor();
+      case 'colOvFill':       return this.colOvFillColor();
+      case 'colOvBorder':     return this.colOvBorderColor();
       default:                return '#000000';
     }
   });
@@ -3473,6 +5300,11 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       case 'sectionOverlay':  this.setSectionOverlayColor(v); break;
       case 'designBorder':    this.onDesignBorderColor(v); break;
       case 'colOverlay':      this.setColOverlayColor(v); break;
+      case 'btnFill':         this.setBtnFillColor(v); break;
+      case 'btnText':         this.setBtnTextColor(v); break;
+      case 'btnBorder':       this.setBtnBorderColor(v); break;
+      case 'colOvFill':       this.setColOvFillColor(v); break;
+      case 'colOvBorder':     this.setColOvBorderColor(v); break;
     }
   }
 
@@ -3486,10 +5318,17 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  current colour/gradient choice (NOT the image, which has its own
    *  preview tile right below). */
   bgTriggerPreview = computed<string>(() =>
-    this.bgPanelMode() === 'gradient' ? this.bannerBgGradient() : this.bannerBgColor(),
+    this.bgPanelMode() === 'gradient'
+      ? this.bannerBgGradient()
+      : this.composeRgba(this.bannerBgColor(), this.bannerBgOpacity()),
   );
   bannerBgImage     = signal<string>('');
   bannerColumns     = signal<1 | 2>(1);
+  /** Ratio of the first column's width over the inner container's
+   *  total width, in the range [0.15, 0.85]. 0.5 = equal-width columns.
+   *  Driven by dragging the `.re-banner-col-divider` between the two
+   *  cells. Persisted to `dataset['colRatio']`. */
+  bannerColRatio    = signal<number>(0.5);
   bannerColGap      = signal<number>(20);
   bannerColPadX     = signal<number>(0);
   // Per-edge padding — added on top of the legacy X / Y values so the
@@ -3528,6 +5367,16 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   colBorderOpacity = signal<number>(0);
   colBorderWidth   = signal<number>(0);
   colCornerRadius  = signal<number>(0);
+  /** When true, the column stretches to fill the banner's full
+   *  height — cells use the resizer's available height instead of
+   *  auto-sizing to content. Toggled from the Column-design panel. */
+  colFullHeight    = signal<boolean>(false);
+  /** Per-cell content alignment — driven by the column toolbar.
+   *  vertical maps to the cell's flex justify-content; horizontal
+   *  maps to text-align. Both are read from / written to the
+   *  selected cell so different columns can have different alignment. */
+  cellVAlign = signal<'top' | 'middle' | 'bottom'>('top');
+  cellHAlign = signal<'left' | 'center' | 'right'>('left');
 
   // ─── Section background image extras ───
   sectionImageOpacity = signal<number>(100);
@@ -3540,6 +5389,22 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  replaces the native <select> for Image scaling. Kept on the
    *  class (not inline in the template) so the array reference
    *  stays stable across change detection. */
+  /** Options for the "Link to" picker in the cell-button Link panel.
+   *  Matches the Wix kind list: web / section / page / blog post /
+   *  dynamic page. Only web + section are fully wired in-editor; the
+   *  others stub out to "No options available" until the host
+   *  populates them. */
+  readonly linkKindOptions = [
+    { id: 'web',     label: 'Web address' },
+    { id: 'section', label: 'Section' },
+    { id: 'page',    label: 'Page' },
+    { id: 'blog',    label: 'Blog post' },
+    { id: 'dynamic', label: 'Dynamic page' },
+  ];
+  linkKindDisplay = (v: any): string => v?.label ?? this.linkKindOptions.find(o => o.id === v)?.label ?? '';
+  linkKindCompare = (a: any, b: any) => (a?.id ?? a) === (b?.id ?? b);
+  linkKindToValue = (i: { id: string; label: string }) => i.id;
+
   readonly imageScalingOptions = [
     { id: 'cover',   label: 'Cover'   },
     { id: 'contain', label: 'Contain' },
@@ -3628,6 +5493,575 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     document.removeEventListener('mouseup', this.onPanelDragEnd);
   };
   figureToolbar  = signal<{ show: boolean; top: number; left: number }>({ show: false, top: 0, left: 0 });
+
+  /** Per-element contextual toolbar — appears above a clicked
+   *  button/anchor, image, or text block INSIDE a banner cell.
+   *  Different action set per element type. Cleared when the user
+   *  clicks elsewhere or the banner deselects. */
+  cellElementToolbar = signal<{ type: 'button' | 'image' | 'text' | null; top: number; left: number }>({ type: null, top: 0, left: 0 });
+  private cellElementRef: HTMLElement | null = null;
+
+  /** Open/close state for the button-settings popover that pops out
+   *  of the cell-element toolbar's gear icon when a button is picked. */
+  buttonSettingsOpen = signal<boolean>(false);
+  /** Open state for the per-element toolbar's 3-dot overflow menu
+   *  (Cut / Copy / Duplicate / Delete). */
+  cellElementMoreOpen = signal<boolean>(false);
+  /** Top-level tab inside the popover — Settings (text only) or
+   *  Design (size + colors + border + radius). */
+  btnPanelTab = signal<'settings' | 'design'>('settings');
+  /** Mirror signals for the picked button's properties — bound by the
+   *  popover's inputs. Read/written via syncButtonState() and the
+   *  set* handlers below. */
+  btnText         = signal<string>('');
+  btnFillColor    = signal<string>('#0f172a');
+  btnFillOpacity  = signal<number>(100);
+  btnTextColor    = signal<string>('#ffffff');
+  btnTextOpacity  = signal<number>(100);
+  btnCornerRadius = signal<number>(4);
+  btnBorderWidth  = signal<number>(0);
+  btnBorderColor  = signal<string>('#0f172a');
+  btnBorderOpacity= signal<number>(100);
+  /** Button size preset — small / medium / large. Drives padding +
+   *  font-size on the picked button. */
+  btnSize        = signal<'small' | 'medium' | 'large'>('medium');
+  /** Open/close state for the alignment dropdown that lives next to
+   *  the button-settings gear in the cell-element toolbar. */
+  btnAlignOpen   = signal<boolean>(false);
+  /** Horizontal alignment of the button within its parent flow.
+   *  Maps to the parent block's text-align (since buttons are
+   *  inline-block by default in our presets). */
+  btnAlign       = signal<'left' | 'center' | 'right'>('left');
+  /** Wrap text toggle in the alignment dropdown — when true, the
+   *  button uses `display: inline-block` so text flows around it
+   *  (the default for buttons inside paragraphs). When false, the
+   *  button becomes `display: block` so it occupies its own line. */
+  btnWrap        = signal<boolean>(true);
+
+  /** Read the picked button's inline styles into the mirror signals
+   *  so the popover's inputs show the button's actual current values. */
+  private syncButtonState(): void {
+    const el = this.cellElementRef as HTMLElement | null;
+    if (!el) return;
+    this.btnText.set(el.textContent?.trim() ?? '');
+    const cs = getComputedStyle(el);
+    // Use computed style for fill/colour so user-visible values match
+    // even when set via a CSS class.
+    this.btnFillColor.set(rgbToHex(cs.backgroundColor) || '#0f172a');
+    this.btnFillOpacity.set(Math.round(rgbaAlphaPct(cs.backgroundColor)));
+    this.btnTextColor.set(rgbToHex(cs.color) || '#ffffff');
+    this.btnTextOpacity.set(Math.round(rgbaAlphaPct(cs.color)));
+    const radius = parseInt(cs.borderRadius, 10);
+    this.btnCornerRadius.set(Number.isFinite(radius) ? radius : 4);
+    const bw = parseInt(cs.borderTopWidth, 10);
+    this.btnBorderWidth.set(Number.isFinite(bw) ? bw : 0);
+    this.btnBorderColor.set(rgbToHex(cs.borderTopColor) || '#0f172a');
+    // Size — infer from font-size since the preset map writes that.
+    const fs = parseInt(cs.fontSize, 10);
+    this.btnSize.set(fs <= 12 ? 'small' : fs >= 16 ? 'large' : 'medium');
+    // Alignment — read the parent block's text-align.
+    const parent = el.parentElement;
+    const ta = parent ? getComputedStyle(parent).textAlign : '';
+    this.btnAlign.set(ta === 'center' ? 'center' : ta === 'right' ? 'right' : 'left');
+    // Wrap text — inline-block flows with surrounding text;
+    // block forces its own line.
+    const disp = cs.display;
+    this.btnWrap.set(disp !== 'block');
+  }
+
+  openButtonSettings(): void {
+    this.syncButtonState();
+    // Mutually exclusive — close the Link panel so the two never
+    // render on top of each other at the same coords.
+    this.buttonLinkOpen.set(false);
+    this.buttonSettingsOpen.set(true);
+  }
+  closeButtonSettings(): void { this.buttonSettingsOpen.set(false); }
+
+  /** Mutate the picked button's text content. Preserves child anchor
+   *  structure: if the button is an <a>, the new text replaces its
+   *  inner text but keeps existing icon spans. */
+  setBtnText(v: string): void {
+    this.btnText.set(v);
+    const el = this.cellElementRef; if (!el) return;
+    // Replace text node children only; keep nested icons/spans.
+    const children = Array.from(el.childNodes);
+    const textNode = children.find((n) => n.nodeType === Node.TEXT_NODE) as Text | null;
+    if (textNode) { textNode.textContent = v; }
+    else el.textContent = v;
+    this.emit();
+  }
+  composeRgba(hex: string, opacityPct: number): string {
+    const { r, g, b } = hexToRgb(hex);
+    const a = Math.max(0, Math.min(1, opacityPct / 100));
+    return `rgba(${r},${g},${b},${a})`;
+  }
+  private applyBtnFill(): void {
+    if (this.cellElementRef) (this.cellElementRef as HTMLElement).style.backgroundColor = this.composeRgba(this.btnFillColor(), this.btnFillOpacity());
+  }
+  private applyBtnText(): void {
+    if (this.cellElementRef) (this.cellElementRef as HTMLElement).style.color = this.composeRgba(this.btnTextColor(), this.btnTextOpacity());
+  }
+  setBtnFillColor(v: string): void {
+    this.btnFillColor.set(v);
+    this.applyBtnFill();
+    this.emit();
+  }
+  setBtnFillOpacity(v: number): void {
+    this.btnFillOpacity.set(Math.max(0, Math.min(100, Number(v) || 0)));
+    this.applyBtnFill();
+    this.emit();
+  }
+  setBtnTextColor(v: string): void {
+    this.btnTextColor.set(v);
+    this.applyBtnText();
+    this.emit();
+  }
+  setBtnTextOpacity(v: number): void {
+    this.btnTextOpacity.set(Math.max(0, Math.min(100, Number(v) || 0)));
+    this.applyBtnText();
+    this.emit();
+  }
+  setBtnBorderOpacity(v: number): void {
+    this.btnBorderOpacity.set(Math.max(0, Math.min(100, Number(v) || 0)));
+    const el = this.cellElementRef as HTMLElement | null;
+    if (el && this.btnBorderWidth() > 0) {
+      el.style.borderColor = this.composeRgba(this.btnBorderColor(), this.btnBorderOpacity());
+    }
+    this.emit();
+  }
+  setBtnCornerRadius(v: number): void {
+    const r = Math.max(0, Math.min(200, Number(v) || 0));
+    this.btnCornerRadius.set(r);
+    if (this.cellElementRef) (this.cellElementRef as HTMLElement).style.borderRadius = `${r}px`;
+    this.emit();
+  }
+  setBtnBorderWidth(v: number): void {
+    const w = Math.max(0, Math.min(32, Number(v) || 0));
+    this.btnBorderWidth.set(w);
+    const el = this.cellElementRef as HTMLElement | null; if (!el) return;
+    el.style.borderWidth = `${w}px`;
+    el.style.borderStyle = w > 0 ? 'solid' : '';
+    if (w > 0) el.style.borderColor = this.composeRgba(this.btnBorderColor(), this.btnBorderOpacity());
+    this.emit();
+  }
+  setBtnBorderColor(v: string): void {
+    this.btnBorderColor.set(v);
+    const el = this.cellElementRef as HTMLElement | null;
+    if (el && this.btnBorderWidth() > 0) {
+      el.style.borderColor = this.composeRgba(this.btnBorderColor(), this.btnBorderOpacity());
+    }
+    this.emit();
+  }
+  /** Button size preset — writes inline padding + font-size so the
+   *  preset survives any later inline-style edits the user makes. */
+  setBtnSize(v: 'small' | 'medium' | 'large'): void {
+    this.btnSize.set(v);
+    const el = this.cellElementRef as HTMLElement | null; if (!el) return;
+    const map: Record<typeof v, { padding: string; font: string }> = {
+      small:  { padding: '6px 14px',  font: '12px' },
+      medium: { padding: '8px 20px',  font: '14px' },
+      large:  { padding: '12px 28px', font: '16px' },
+    };
+    el.style.padding  = map[v].padding;
+    el.style.fontSize = map[v].font;
+    this.emit();
+  }
+  /** Set the horizontal alignment of the picked button within its
+   *  parent block by writing text-align on the parent. Closes the
+   *  alignment dropdown after the choice. */
+  setBtnAlign(v: 'left' | 'center' | 'right'): void {
+    this.btnAlign.set(v);
+    const el = this.cellElementRef as HTMLElement | null;
+    const parent = el?.parentElement;
+    if (parent) parent.style.textAlign = v;
+    this.btnAlignOpen.set(false);
+    this.emit();
+  }
+  toggleBtnAlign(): void { this.btnAlignOpen.update((v) => !v); }
+  /** Toggle wrap-text behaviour on the picked button. inline-block
+   *  (default) lets text flow around it; block forces it onto its
+   *  own line — useful for hero-style centered buttons. */
+  setBtnWrap(v: boolean): void {
+    this.btnWrap.set(v);
+    const el = this.cellElementRef as HTMLElement | null; if (!el) return;
+    el.style.display = v ? 'inline-block' : 'block';
+    this.emit();
+  }
+
+  /** Compute toolbar position above the given element and set the
+   *  signal so the floating chrome renders. Also tags the element
+   *  with `.re-cell-elem-active` so CSS can paint a selection ring
+   *  around it — without that, users have no visual cue for which
+   *  element the floating toolbar is acting on. */
+  private showCellElementToolbar(type: 'button' | 'image' | 'text', el: HTMLElement): void {
+    const surface = this.editable?.nativeElement;
+    if (!surface) return;
+    // Strip the active class off any previously-picked element before
+    // moving the toolbar to the new one.
+    if (this.cellElementRef && this.cellElementRef !== el) {
+      this.cellElementRef.classList.remove('re-cell-elem-active');
+      this.cellElementRef.removeAttribute('draggable');
+    }
+    el.classList.add('re-cell-elem-active');
+    // Make the picked element draggable so the user can move it
+    // elsewhere in the document. The element-level dragstart wires
+    // up a custom data payload so the editable surface's drop
+    // handler can move the actual DOM node (not just dump its text).
+    this.attachCellElementDrag(el);
+    const sr = surface.getBoundingClientRect();
+    const er = el.getBoundingClientRect();
+    this.cellElementRef = el;
+    // Preferred: 40px above the element. Fallback: below the element
+    // if there isn't enough room above (e.g. a button parked near the
+    // top of the surface would land behind the static editor toolbar).
+    const toolbarH = 36;
+    const aboveTop = er.top - sr.top - toolbarH - 4;
+    const top = aboveTop >= 8 ? aboveTop : (er.bottom - sr.top + 8);
+    this.cellElementToolbar.set({
+      type,
+      top,
+      left: er.left - sr.left + er.width / 2,
+    });
+  }
+  /** Per-element drag wiring — tracks which elements have already
+   *  been wired so we don't double-bind dragstart listeners every
+   *  time the user re-picks the same element. */
+  private wiredDragHandlers = new WeakSet<HTMLElement>();
+  /** Element currently being dragged via the cell-element drag flow. */
+  private draggingCellElement: HTMLElement | null = null;
+
+  /** Wire native HTML5 drag on a picked cell-element so the user can
+   *  move it elsewhere in the document. The actual DOM move happens
+   *  on the editable's drop handler (see onEditableDragOver / Drop). */
+  private attachCellElementDrag(el: HTMLElement): void {
+    el.setAttribute('draggable', 'true');
+    if (this.wiredDragHandlers.has(el)) return;
+    this.wiredDragHandlers.add(el);
+    el.addEventListener('dragstart', (ev) => {
+      this.draggingCellElement = el;
+      el.classList.add('re-cell-elem-dragging');
+      // Set a payload so the browser treats it as a real drag — we
+      // ignore the value and move the live element on drop.
+      ev.dataTransfer?.setData('text/plain', 're-cell-elem');
+      if (ev.dataTransfer) ev.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('re-cell-elem-dragging');
+      this.draggingCellElement = null;
+      this.removeDropIndicator();
+    });
+  }
+
+  /** Drop indicator — a thin teal line that shows between blocks
+   *  during a drag, telling the user where the element will land. */
+  private dropIndicator: HTMLElement | null = null;
+  private ensureDropIndicator(): HTMLElement {
+    if (!this.dropIndicator) {
+      const el = document.createElement('div');
+      el.className = 're-drop-indicator';
+      el.style.cssText = 'position:absolute;height:3px;background:var(--ricos-custom-settings-action-color,#32acc1);border-radius:2px;pointer-events:none;z-index:30;transition:opacity .08s ease;';
+      const surfaceWrap = this.editable?.nativeElement?.parentElement;
+      surfaceWrap?.appendChild(el);
+      this.dropIndicator = el;
+    }
+    return this.dropIndicator;
+  }
+  private removeDropIndicator(): void {
+    if (this.dropIndicator) {
+      this.dropIndicator.remove();
+      this.dropIndicator = null;
+    }
+  }
+
+  /** Walk the editable for the nearest block-level child whose top
+   *  edge is closest to the drop y. Returns { target, insertBefore }
+   *  where insertBefore=true means drop above target. */
+  private resolveDropTarget(y: number): { target: HTMLElement; before: boolean } | null {
+    const editable = this.editable?.nativeElement;
+    if (!editable) return null;
+    const blocks = Array.from(editable.querySelectorAll<HTMLElement>(':scope > p, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6, :scope > blockquote, :scope > ul, :scope > ol, :scope > section, :scope > figure, :scope > div, :scope > pre'));
+    if (blocks.length === 0) return null;
+    let best: { target: HTMLElement; before: boolean; dist: number } | null = null;
+    for (const b of blocks) {
+      const r = b.getBoundingClientRect();
+      const midpoint = r.top + r.height / 2;
+      const dist = Math.abs(midpoint - y);
+      const before = y < midpoint;
+      if (!best || dist < best.dist) best = { target: b, before, dist };
+    }
+    return best ? { target: best.target, before: best.before } : null;
+  }
+
+  /** Editable dragover — show the drop indicator + allow drop. */
+  onEditableDragOver(ev: DragEvent): void {
+    if (!this.draggingCellElement) return;
+    ev.preventDefault();
+    if (ev.dataTransfer) ev.dataTransfer.dropEffect = 'move';
+    const hit = this.resolveDropTarget(ev.clientY);
+    if (!hit) { this.removeDropIndicator(); return; }
+    const indicator = this.ensureDropIndicator();
+    const surface = this.editable!.nativeElement;
+    const sr = surface.getBoundingClientRect();
+    const r = hit.target.getBoundingClientRect();
+    const top = (hit.before ? r.top : r.bottom) - sr.top;
+    const left = r.left - sr.left;
+    indicator.style.top  = `${top - 1}px`;
+    indicator.style.left = `${left}px`;
+    indicator.style.width = `${r.width}px`;
+  }
+
+  /** Editable drop — move the dragged element to the drop position. */
+  onEditableDrop(ev: DragEvent): void {
+    if (!this.draggingCellElement) return;
+    ev.preventDefault();
+    const el = this.draggingCellElement;
+    const hit = this.resolveDropTarget(ev.clientY);
+    if (hit && hit.target !== el && !el.contains(hit.target)) {
+      // For block-level elements, move the element itself. For
+      // inline elements (button/image), move their nearest block
+      // ancestor (a <p> wrapping a button moves as one chunk).
+      const moveNode = el.matches('a, button, img')
+        ? (el.closest('p, h1, h2, h3, h4, h5, h6, blockquote, li, div') as HTMLElement | null) ?? el
+        : el;
+      const parent = hit.target.parentNode;
+      if (parent) {
+        if (hit.before) parent.insertBefore(moveNode, hit.target);
+        else            parent.insertBefore(moveNode, hit.target.nextSibling);
+        this.emit();
+      }
+    }
+    this.removeDropIndicator();
+    this.draggingCellElement = null;
+    el.classList.remove('re-cell-elem-dragging');
+  }
+
+  private clearCellElementToolbar(): void {
+    if (this.cellElementRef) {
+      this.cellElementRef.classList.remove('re-cell-elem-active');
+      this.cellElementRef.removeAttribute('draggable');
+    }
+    this.cellElementRef = null;
+    this.cellElementToolbar.set({ type: null, top: 0, left: 0 });
+    // Reset user drag offset so the next picked element starts at the
+    // auto-tracked position above it rather than carrying over the
+    // previous element's manual nudge.
+    this.cellElementToolbarOffset.set({ x: 0, y: 0 });
+    // Close any open per-element popover (currently only the button
+    // settings panel uses one) so it doesn't linger on an unpicked
+    // element.
+    this.buttonSettingsOpen.set(false);
+    this.btnAlignOpen.set(false);
+    this.btnPanelOffset.set({ x: 0, y: 0 });
+    this.buttonLinkOpen.set(false);
+    this.btnLinkOffset.set({ x: 0, y: 0 });
+  }
+
+  /** Action: open the Link panel for the picked button. Seeds the
+   *  existing link-state signals (url + new-tab + rel toggles) from
+   *  the button's current attributes, then reveals the popover. */
+  editCellButtonLink(): void {
+    const el = this.cellElementRef as HTMLAnchorElement | HTMLButtonElement | null;
+    if (!el) return;
+    if (el.tagName === 'A') {
+      const a = el as HTMLAnchorElement;
+      const href = a.getAttribute('href') ?? '';
+      this.linkUrl.set(href);
+      this.linkNewTab.set(a.target === '_blank');
+      const rel = (a.getAttribute('rel') ?? '').split(/\s+/);
+      this.linkNoReferrer.set(rel.includes('noreferrer'));
+      this.linkNoFollow.set(rel.includes('nofollow'));
+      this.linkSponsored.set(rel.includes('sponsored'));
+      // Kind round-trip: prefer the explicit data-link-kind written
+      // on save (so Page / Blog / Dynamic survive a reload — those
+      // have empty hrefs and would otherwise infer to Web). Fall
+      // back to href-shape inference for older buttons that don't
+      // carry the attribute yet.
+      const savedKind = a.getAttribute('data-link-kind');
+      if (savedKind === 'web' || savedKind === 'section' || savedKind === 'page' || savedKind === 'blog' || savedKind === 'dynamic') {
+        this.linkKind.set(savedKind);
+      } else {
+        this.linkKind.set((href.length > 1 && href.startsWith('#')) ? 'section' : 'web');
+      }
+    } else {
+      // <button> — no existing href; start with sensible defaults.
+      this.linkUrl.set('');
+      this.linkNewTab.set(true);
+      this.linkNoReferrer.set(true);
+      this.linkNoFollow.set(false);
+      this.linkSponsored.set(false);
+      this.linkKind.set('web');
+    }
+    // Always refresh the section list so the picker is populated
+    // when/if the user switches to Section.
+    this.scanLinkSections();
+    // Mutually exclusive — close the Settings panel so the Link
+    // panel isn't hidden behind it.
+    this.buttonSettingsOpen.set(false);
+    this.buttonLinkOpen.set(true);
+  }
+
+  /** Cancel the link edit — close the popover without writing. */
+  cancelCellButtonLink(): void {
+    this.buttonLinkOpen.set(false);
+  }
+
+  /** Switch the "Link to" kind from the Link panel dropdown. On
+   *  selecting `section`, scan the editor surface for headings so the
+   *  Section list has options. Resets the URL when switching kinds
+   *  so a stale `#sectionId` doesn't leak into a Web-address pick. */
+  pickLinkKind(kind: 'web' | 'section' | 'page' | 'blog' | 'dynamic'): void {
+    this.linkKind.set(kind);
+    if (kind === 'section') {
+      this.scanLinkSections();
+      // Clear non-anchor URLs so the user starts fresh.
+      if (this.linkUrl() && !this.linkUrl().startsWith('#')) this.linkUrl.set('');
+    } else if (kind === 'web') {
+      // Drop any `#section` anchor when switching back to web.
+      if (this.linkUrl().startsWith('#')) this.linkUrl.set('');
+    } else {
+      // Page / Blog / Dynamic — host should populate; clear meanwhile.
+      this.linkUrl.set('');
+    }
+  }
+
+  /** Walk the editable surface for headings (h1–h6) and populate
+   *  the Section picker list. Gives each heading without an `id` a
+   *  stable slug-style id so the picked anchor stays consistent
+   *  across reloads. */
+  private scanLinkSections(): void {
+    const editable = this.editable?.nativeElement;
+    if (!editable) { this.linkSections.set([]); return; }
+    const heads = Array.from(editable.querySelectorAll('h1, h2, h3, h4, h5, h6')) as HTMLElement[];
+    const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'section';
+    const used = new Set<string>();
+    const list = heads.map((h) => {
+      let id = h.id;
+      if (!id) {
+        let base = slug(h.textContent ?? '');
+        let candidate = base;
+        let n = 1;
+        while (used.has(candidate)) { candidate = `${base}-${++n}`; }
+        id = candidate;
+        h.id = id;
+      }
+      used.add(id);
+      return {
+        id,
+        tag: h.tagName,
+        label: (h.textContent ?? '').trim() || `(empty ${h.tagName.toLowerCase()})`,
+      };
+    });
+    this.linkSections.set(list);
+  }
+
+  /** Save the link panel state to the picked button: write href +
+   *  target + composed rel. If the target is a <button>, swap it for
+   *  an <a> so the link is followable in the rendered post. */
+  saveCellButtonLink(): void {
+    let el = this.cellElementRef as HTMLAnchorElement | HTMLButtonElement | null;
+    if (!el) return;
+    const url = (this.linkUrl() || '').trim() || '#';
+    const rel = [
+      this.linkNoReferrer() ? 'noreferrer' : '',
+      this.linkNoFollow()   ? 'nofollow'   : '',
+      this.linkSponsored()  ? 'sponsored'  : '',
+      this.linkNewTab()     ? 'noopener'   : '',
+    ].filter(Boolean).join(' ');
+    if (el.tagName !== 'A') {
+      const a = document.createElement('a');
+      a.style.cssText = (el as HTMLElement).style.cssText;
+      a.className = (el as HTMLElement).className;
+      a.innerHTML = (el as HTMLElement).innerHTML;
+      el.replaceWith(a);
+      el = a;
+      this.cellElementRef = a;
+    }
+    (el as HTMLAnchorElement).setAttribute('href', url);
+    if (this.linkNewTab()) (el as HTMLAnchorElement).setAttribute('target', '_blank');
+    else (el as HTMLAnchorElement).removeAttribute('target');
+    if (rel) (el as HTMLAnchorElement).setAttribute('rel', rel);
+    else (el as HTMLAnchorElement).removeAttribute('rel');
+    // Persist the user's "Link to" choice so a Page / Blog / Dynamic
+    // pick (which doesn't yet write a non-# href) round-trips. Also
+    // ensures a Web-with-`#` doesn't get re-interpreted as a Section
+    // on reopen.
+    (el as HTMLAnchorElement).setAttribute('data-link-kind', this.linkKind());
+    this.buttonLinkOpen.set(false);
+    this.emit();
+  }
+
+  /** Action: ask the host to open its media library to replace the
+   *  currently-selected cell image. Reuses the cellImageClick output;
+   *  the host calls replaceCellImagePlaceholder on the wrapping
+   *  [data-cell-image] container (or the img itself). */
+  replaceCellImage(): void {
+    const el = this.cellElementRef;
+    if (!el) return;
+    // Prefer the wrapping [data-cell-image] container — that's what
+    // the host expects to swap. Fall back to the img itself.
+    const slot = (el.closest('[data-cell-image]') as HTMLElement | null) ?? el;
+    this.cellImageClick.emit(slot);
+  }
+
+  /** Action: clear inline formatting on the currently-picked text
+   *  block. Removes inline `style` and any common formatting wrappers
+   *  (font/span with styles) while preserving the text content. */
+  clearCellTextFormatting(): void {
+    const el = this.cellElementRef;
+    if (!el) return;
+    el.removeAttribute('style');
+    // Unwrap inline formatting tags (span/font/strong/em/u/b/i) so the
+    // text reads as plain prose. Preserve anchors so links survive.
+    el.querySelectorAll('span, font, strong, em, u, b, i').forEach((node) => {
+      const parent = node.parentNode;
+      if (!parent) return;
+      while (node.firstChild) parent.insertBefore(node.firstChild, node);
+      parent.removeChild(node);
+    });
+    this.emit();
+  }
+
+  /** Action: delete the currently-selected cell element. */
+  deleteCellElement(): void {
+    const el = this.cellElementRef;
+    if (!el) return;
+    // For images inside a data-cell-image wrapper, remove the wrapper
+    // too so we don't leave an empty placeholder div behind.
+    const slot = el.closest('[data-cell-image]') as HTMLElement | null;
+    (slot ?? el).remove();
+    this.clearCellElementToolbar();
+    this.emit();
+  }
+
+  /** WP-style overflow-menu command for the per-element toolbar.
+   *  Operates on the currently-picked cell element (button / image /
+   *  text wrapper). */
+  cellElementCmd(cmd: 'cut' | 'copy' | 'duplicate' | 'delete'): void {
+    this.cellElementMoreOpen.set(false);
+    const el = this.cellElementRef;
+    if (!el) return;
+    const slot = el.closest('[data-cell-image]') as HTMLElement | null;
+    const target = slot ?? el;
+    switch (cmd) {
+      case 'copy': {
+        navigator.clipboard?.writeText(target.outerHTML).catch(() => {});
+        break;
+      }
+      case 'cut': {
+        navigator.clipboard?.writeText(target.outerHTML).catch(() => {});
+        this.deleteCellElement();
+        break;
+      }
+      case 'duplicate': {
+        const clone = target.cloneNode(true) as HTMLElement;
+        target.parentNode?.insertBefore(clone, target.nextSibling);
+        this.emit();
+        break;
+      }
+      case 'delete': this.deleteCellElement(); break;
+    }
+  }
   // Mirrored signal state so the toolbar's active dot updates without
   // re-querying the DOM on every change-detection pass.
   figureSize  = signal<'compact' | 'standard' | 'extended' | 'original'>('standard');
@@ -3666,6 +6100,53 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  click means "select", never "follow the link". */
   onSurfaceClick(ev: MouseEvent): void {
     const target = ev.target as HTMLElement | null;
+    // Add-image placeholder click — opens a file picker scoped to the
+    // clicked cell. Reading the file as a data URL and swapping the
+    // placeholder for an <img> tag keeps this self-contained without
+    // a server upload step.
+    const addImgBtn = target?.closest('[data-add-image]') as HTMLElement | null;
+    if (addImgBtn) {
+      ev.preventDefault();
+      this.pickCellImage(addImgBtn);
+      return;
+    }
+    // Detect per-element clicks. Buttons + images get the contextual
+    // toolbar anywhere inside the editable surface (so a button
+    // inserted via the side panel into the document body still has
+    // its settings UI). Text blocks are restricted to inside cells
+    // so the toolbar doesn't pop on every plain-paragraph click.
+    const editable = this.editable?.nativeElement;
+    const inSurface = !!target && !!editable && editable.contains(target);
+    // Editor chrome — floating toolbars / popovers / panels. Clicks on
+    // these manage their own state; we MUST NOT clear the contextual
+    // selection or the panels they open will immediately close on
+    // their own button presses (e.g. the Link icon would open the
+    // Link panel which the bubbled click would then dismiss).
+    const inChrome = !!target?.closest('.re__cellElemTb, .re__figPanel, .re__colTb, .re__figTb, .re__btnAlignMenu');
+    if (!inChrome) {
+      if (inSurface) {
+        const btn = target?.closest('a, button:not([data-add-image]):not(.re-banner-cell-handle)') as HTMLElement | null;
+        const img = target?.closest('img') as HTMLElement | null;
+        const inCellContent = target?.closest('[data-layout-cell-content], .re-banner-cell-content');
+        const textBlock = inCellContent
+          ? (target?.closest('h1, h2, h3, h4, h5, h6, p, blockquote, ul, ol') as HTMLElement | null)
+          : null;
+        // Exclude images that are the picked figure-banner / embed-figure
+        // — those have their own dedicated figure toolbar.
+        const imgInFigure = !!img?.closest('figure.re-embed-figure');
+        if (btn) {
+          this.showCellElementToolbar('button', btn);
+        } else if (img && !imgInFigure) {
+          this.showCellElementToolbar('image', img);
+        } else if (textBlock) {
+          this.showCellElementToolbar('text', textBlock);
+        } else {
+          this.clearCellElementToolbar();
+        }
+      } else {
+        this.clearCellElementToolbar();
+      }
+    }
     // Recognise either selectable shape: image/embed figure or banner
     // section. Both are routed through the same `selectFigure` path —
     // the signal is named for legacy reasons but accepts any
@@ -3694,7 +6175,14 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     if (selectable && !inCaption) {
       this.selectFigure(selectable);
       this.clearColumnSelection();
-    } else if (!target?.closest('.re__figTb') && !target?.closest('.re__colTb')) {
+    } else if (!inChrome && !this.cellElementToolbar().type) {
+      // Skip the figure/column deselect when:
+      //  - the click landed on editor chrome (its handlers manage state)
+      //  - OR the detection block above just picked a cell-element
+      //    (button / image / text in or out of a banner). Without the
+      //    cellElementToolbar check, picking a standalone button would
+      //    set the toolbar and then clearFigureSelection would wipe it
+      //    in the same tick.
       this.clearFigureSelection();
       this.clearColumnSelection();
     }
@@ -3710,6 +6198,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     col.classList.add('is-selected-col');
     this.attachColumnHandles(col);
     this.columnMenu.set(null);
+    this.syncCellAlignment(col);
     this.refreshColumnToolbar();
   }
 
@@ -3724,6 +6213,12 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  out of the persisted shape. */
   private attachColumnHandles(col: HTMLElement): void {
     if (col.classList.contains('re-banner-cell')) {
+      // New Ricos-shape cells ship a structural handle button inside
+      // .re-banner-cell-handle-wrap — nothing to attach, the CSS
+      // shows/hides it via the .is-selected-col / banner hover state.
+      if (col.querySelector(':scope > .re-banner-cell-handle-wrap')) return;
+      // Legacy cells (pre-step-2) had no structural handle — fall
+      // back to attaching the transient span so they still get one.
       if (col.querySelector(':scope > .re-banner-cell-handle')) return;
       const grab = document.createElement('span');
       grab.className = 're-banner-cell-handle';
@@ -3758,6 +6253,11 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.selectedColumn.set(null);
     this.columnMenu.set(null);
     this.columnToolbar.set({ show: false, top: 0, left: 0 });
+    this.colDesignOpen.set(false);
+    // Reset user drag offset so the next selection starts at the
+    // auto-tracked position rather than carrying over the previous
+    // column's manual offset.
+    this.columnToolbarOffset.set({ x: 0, y: 0 });
   }
 
   private refreshColumnToolbar(): void {
@@ -3766,16 +6266,17 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     if (!col || !editable) { this.columnToolbar.set({ show: false, top: 0, left: 0 }); return; }
     const surfaceRect = editable.getBoundingClientRect();
     const r = col.getBoundingClientRect();
-    // Park the toolbar ABOVE the column, leaving ~22px of clearance below
-    // it for the `.re-banner-cell-handle` pill (which sits at top:-14px
-    // outside the cell and is ~20px tall). Without this gap the toolbar
-    // would cover the drag-pill once a column is selected.
-    const top  = Math.max(8, r.top - surfaceRect.top - 58);
+    // Park the toolbar just above the cell-handle pill. The pill is
+    // 14px tall and sits at top:-8 of the cell (centre on the cell's
+    // top edge), so its top is at cell-top - 8. We want the toolbar's
+    // bottom ~4px above the pill's top. With a ~36px toolbar height:
+    //   toolbar.top = cell-top - 8 - 4 - 36 = cell-top - 48
+    const top  = Math.max(8, r.top - surfaceRect.top - 48);
     const left = r.left - surfaceRect.left + r.width / 2;
     this.columnToolbar.set({ show: true, top, left });
   }
 
-  toggleColumnMenu(ev: Event, key: 'add'): void {
+  toggleColumnMenu(ev: Event, key: 'add' | 'more'): void {
     ev.preventDefault();
     ev.stopPropagation();
     this.columnMenu.set(this.columnMenu() === key ? null : key);
@@ -3784,6 +6285,41 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   /** Insert a new column adjacent to the selected one. */
   addColumnBefore(): void { this.insertColumn('before'); }
   addColumnAfter():  void { this.insertColumn('after'); }
+
+  /** WP-style overflow-menu command for the column toolbar. Operates
+   *  on the currently-selected `.re-banner-cell`. */
+  columnCmd(cmd: 'cut' | 'copy' | 'duplicate' | 'addBefore' | 'addAfter' | 'clear' | 'delete'): void {
+    this.columnMenu.set(null);
+    const cell = this.selectedColumn();
+    if (!cell) return;
+    switch (cmd) {
+      case 'copy': {
+        navigator.clipboard?.writeText(cell.outerHTML).catch(() => {});
+        break;
+      }
+      case 'cut': {
+        navigator.clipboard?.writeText(cell.outerHTML).catch(() => {});
+        this.deleteSelectedColumn();
+        break;
+      }
+      case 'duplicate': {
+        const clone = cell.cloneNode(true) as HTMLElement;
+        cell.parentNode?.insertBefore(clone, cell.nextSibling);
+        this.emit();
+        break;
+      }
+      case 'addBefore': this.addColumnBefore(); break;
+      case 'addAfter':  this.addColumnAfter();  break;
+      case 'clear': {
+        // Drop a fresh empty paragraph as the cell's only content.
+        const target = (cell.querySelector(':scope > [data-layout-cell-content]') as HTMLElement | null) ?? cell;
+        target.innerHTML = '<p><br></p>';
+        this.emit();
+        break;
+      }
+      case 'delete': this.deleteSelectedColumn(); break;
+    }
+  }
   /** Selector that catches both the new `.re-banner-cell` (5-level
    *  section scaffold) and the legacy `.re-banner-col` (figure-banner
    *  overlay) so column iteration / counting / sibling-checks work
@@ -3815,6 +6351,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const total = f.querySelectorAll(RichEditorComponent.COL_SELECTOR).length;
     if (total > this.bannerColumns()) this.setBannerColumns(Math.min(2, total) as 1 | 2);
     this.columnMenu.set(null);
+    if (RichEditorComponent.isBannerSection(f)) this.ensureColDivider(f);
     this.emit();
     queueMicrotask(() => this.refreshColumnToolbar());
   }
@@ -3833,6 +6370,137 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     queueMicrotask(() => this.refreshColumnToolbar());
   }
 
+  // ─── Per-column Design panel ───────────────────────────────────────
+  /** Open / close the per-column design popover. On open, seeds the
+   *  override signals from the selected column's current inline
+   *  styles so the controls reflect what's actually applied. */
+  toggleColDesignPanel(): void {
+    const next = !this.colDesignOpen();
+    if (next) this.seedColOverrides();
+    this.colDesignOpen.set(next);
+    if (!next) this.colorPanelTarget.set(null);
+  }
+
+  /** Pull the selected cell's inline background / border / radius
+   *  into the override signals. Falls back to neutral defaults when
+   *  the cell has no override yet — same baseline as the banner's
+   *  Column background defaults. */
+  private seedColOverrides(): void {
+    const cell = this.selectedColumn();
+    if (!cell) return;
+    const bg = parseColor(cell.style.backgroundColor);
+    if (bg) {
+      this.colOvFillColor.set(bg.hex);
+      this.colOvFillOpacity.set(Math.round(bg.alpha * 100));
+    } else {
+      this.colOvFillColor.set('#ffffff');
+      this.colOvFillOpacity.set(0);
+    }
+    const bc = parseColor(cell.style.borderColor);
+    if (bc) {
+      this.colOvBorderColor.set(bc.hex);
+      this.colOvBorderOpacity.set(Math.round(bc.alpha * 100));
+    } else {
+      this.colOvBorderColor.set('#000000');
+      this.colOvBorderOpacity.set(100);
+    }
+    const bw = parseInt(cell.style.borderWidth || '0', 10);
+    const cr = parseInt(cell.style.borderRadius || '0', 10);
+    this.colOvBorderWidth.set(Number.isFinite(bw) ? bw : 0);
+    this.colOvCornerRadius.set(Number.isFinite(cr) ? cr : 0);
+  }
+
+  setColOvFillColor(hex: string): void { this.colOvFillColor.set(hex || '#ffffff'); this.applyColOvFill(); }
+  setColOvFillOpacity(v: number): void { this.colOvFillOpacity.set(Math.max(0, Math.min(100, +v || 0))); this.applyColOvFill(); }
+  setColOvBorderColor(hex: string): void { this.colOvBorderColor.set(hex || '#000000'); this.applyColOvBorder(); }
+  setColOvBorderOpacity(v: number): void { this.colOvBorderOpacity.set(Math.max(0, Math.min(100, +v || 0))); this.applyColOvBorder(); }
+  setColOvBorderWidth(v: number): void {
+    this.colOvBorderWidth.set(Math.max(0, +v || 0));
+    const cell = this.selectedColumn(); if (!cell) return;
+    cell.style.borderWidth = `${this.colOvBorderWidth()}px`;
+    cell.style.borderStyle = this.colOvBorderWidth() > 0 ? 'solid' : '';
+    this.applyColOvBorder();
+    this.emit();
+  }
+  setColOvCornerRadius(v: number): void {
+    this.colOvCornerRadius.set(Math.max(0, +v || 0));
+    const cell = this.selectedColumn(); if (!cell) return;
+    cell.style.borderRadius = `${this.colOvCornerRadius()}px`;
+    this.emit();
+  }
+
+  private applyColOvFill(): void {
+    const cell = this.selectedColumn(); if (!cell) return;
+    cell.style.backgroundColor = this.composeRgba(this.colOvFillColor(), this.colOvFillOpacity());
+    this.emit();
+  }
+  private applyColOvBorder(): void {
+    const cell = this.selectedColumn(); if (!cell) return;
+    if (this.colOvBorderWidth() <= 0) return;
+    cell.style.borderColor = this.composeRgba(this.colOvBorderColor(), this.colOvBorderOpacity());
+    this.emit();
+  }
+
+  /** Wipe all per-column overrides so the cell falls back to the
+   *  banner-wide defaults. */
+  resetColOverrides(): void {
+    const cell = this.selectedColumn(); if (!cell) return;
+    cell.style.removeProperty('background-color');
+    cell.style.removeProperty('border-color');
+    cell.style.removeProperty('border-width');
+    cell.style.removeProperty('border-style');
+    cell.style.removeProperty('border-radius');
+    this.seedColOverrides();
+    this.emit();
+  }
+
+  /** WP-style block-level command shared by the figure toolbar's
+   *  3-dot overflow menu. Operates on the currently-selected figure
+   *  (banner or image) without leaving the editor. */
+  figureCmd(cmd: 'cut' | 'copy' | 'duplicate' | 'before' | 'after' | 'delete'): void {
+    const f = this.selectedFigure();
+    this.figMenu.set(null);
+    if (!f) return;
+    switch (cmd) {
+      case 'copy': {
+        navigator.clipboard?.writeText(f.outerHTML).catch(() => {});
+        break;
+      }
+      case 'cut': {
+        navigator.clipboard?.writeText(f.outerHTML).catch(() => {});
+        this.deleteSelectedFigure();
+        break;
+      }
+      case 'duplicate': {
+        const clone = f.cloneNode(true) as HTMLElement;
+        f.parentNode?.insertBefore(clone, f.nextSibling);
+        this.ensureBannerBookends();
+        this.emit();
+        break;
+      }
+      case 'before': {
+        const p = document.createElement('p');
+        p.appendChild(document.createElement('br'));
+        f.parentNode?.insertBefore(p, f);
+        this.placeCaretAtStart(p);
+        this.emit();
+        break;
+      }
+      case 'after': {
+        const p = document.createElement('p');
+        p.appendChild(document.createElement('br'));
+        f.parentNode?.insertBefore(p, f.nextSibling);
+        this.placeCaretAtStart(p);
+        this.emit();
+        break;
+      }
+      case 'delete': {
+        this.deleteSelectedFigure();
+        break;
+      }
+    }
+  }
+
   deleteSelectedColumn(): void {
     const col = this.selectedColumn(); if (!col) return;
     const parent = col.parentNode;
@@ -3846,6 +6514,18 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
         ? this.buildBannerCell()
         : Object.assign(document.createElement('div'), { className: 're-banner-col', innerHTML: '<p>Add your text</p>' });
       parent.appendChild(fresh as HTMLElement);
+    }
+    // Falling back to one column → drop the divider; ratio resets so
+    // a future re-add to 2 cols starts evenly.
+    const f = this.selectedFigure();
+    if (f && RichEditorComponent.isBannerSection(f)) {
+      const cellCount = f.querySelectorAll(RichEditorComponent.COL_SELECTOR).length;
+      if (cellCount <= 1) {
+        this.bannerColumns.set(1);
+        this.bannerColRatio.set(0.5);
+        this.applyBannerStyles();
+      }
+      this.ensureColDivider(f);
     }
     this.emit();
   }
@@ -3889,6 +6569,12 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.isBannerFigure.set(false);
     this.figMenu.set(null);
     this.figureToolbar.set({ show: false, top: 0, left: 0 });
+    // Reset the user's manual toolbar offset on deselect so the next
+    // figure doesn't inherit the previous figure's drag offset.
+    this.figureToolbarOffset.set({ x: 0, y: 0 });
+    // Per-element toolbar belongs to the selected banner — clear it
+    // when the banner deselects.
+    this.clearCellElementToolbar();
     // Floating panels are tied to the selection — close them on
     // deselect so they don't linger on the canvas with no anchor.
     this.figPanel.set(null);
@@ -3907,26 +6593,154 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  has already been wired up — prevents double-binding on re-select
    *  without persisting any flag into saved HTML. */
   private wiredBannerHandles = new WeakSet<HTMLElement>();
+  private wiredColDividers   = new WeakSet<HTMLElement>();
 
-  /** Re-create any of the four `.re-banner-handle--*` children that
-   *  were stripped from saved HTML (see the `emit()` regex). Handles
-   *  are direct children of the section (not the resizer) so they
-   *  sit on the banner's visual top/bottom edges regardless of the
-   *  inner container's height. */
-  private ensureBannerHandles(section: HTMLElement): void {
-    const ariaMap: Record<string, string> = {
-      left: 'Resize left', right: 'Resize right',
-      top: 'Resize top',   bottom: 'Resize bottom',
+  /** Ensure / remove the vertical divider between the two cells of a
+   *  2-column banner. Idempotent: re-callable on selection or after
+   *  switching cols. The divider is transient — stripped from saved
+   *  HTML by the emit() regex and re-attached on selection. */
+  private ensureColDivider(section: HTMLElement): void {
+    const inner = section.querySelector<HTMLElement>(':scope > .re-banner-backdrop > .re-banner-resizer > .re-banner-inner');
+    if (!inner) return;
+    const existing = inner.querySelector<HTMLElement>(':scope > .re-banner-col-divider');
+    const isTwoCol = inner.querySelectorAll(':scope > .re-banner-cell, :scope > .re-banner-col').length >= 2;
+    if (!isTwoCol) { existing?.remove(); return; }
+    if (existing) {
+      this.positionColDivider(section);
+      return;
+    }
+    const div = document.createElement('span');
+    div.className = 're-banner-col-divider';
+    div.setAttribute('contenteditable', 'false');
+    div.setAttribute('aria-label', 'Resize columns');
+    inner.appendChild(div);
+    this.positionColDivider(section);
+    if (!this.wiredColDividers.has(div)) {
+      this.wiredColDividers.add(div);
+      div.addEventListener('mousedown', (ev) => this.startColDividerDrag(ev, section));
+    }
+  }
+
+  /** Sync the divider's CSS-var left% with the current ratio so it
+   *  paints on the gap between the two cells before any drag. */
+  private positionColDivider(section: HTMLElement): void {
+    const inner = section.querySelector<HTMLElement>(':scope > .re-banner-backdrop > .re-banner-resizer > .re-banner-inner');
+    const div   = inner?.querySelector<HTMLElement>(':scope > .re-banner-col-divider');
+    if (!inner || !div) return;
+    const r = clamp(this.bannerColRatio(), 0.15, 0.85);
+    div.style.setProperty('--re-banner-col-divider-left', `${(r * 100).toFixed(3)}%`);
+  }
+
+  private startColDividerDrag(ev: MouseEvent, section: HTMLElement): void {
+    ev.preventDefault();
+    ev.stopPropagation();
+    const inner = section.querySelector<HTMLElement>(':scope > .re-banner-backdrop > .re-banner-resizer > .re-banner-inner');
+    const div   = inner?.querySelector<HTMLElement>(':scope > .re-banner-col-divider');
+    if (!inner || !div) return;
+    div.classList.add('is-dragging');
+
+    // Smart-guide snap points — common column ratios. When the
+    // cursor is within `SNAP_THRESHOLD` of any of these, the drag
+    // snaps to the value and the divider gets `.is-snapped` so the
+    // CSS can flash a stronger highlight.
+    const SNAP_POINTS = [0.25, 1 / 3, 0.5, 2 / 3, 0.75];
+    const SNAP_THRESHOLD = 0.025; // 2.5 % of inner width
+
+    // Transient ratio-label chip — shows the live percentages while
+    // dragging (e.g. "50% / 50%"). Lives inside the divider so it
+    // tracks the divider's position automatically.
+    const label = document.createElement('span');
+    label.className = 're-banner-col-divider-label';
+    label.setAttribute('contenteditable', 'false');
+    div.appendChild(label);
+
+    const applyRatio = (ratio: number) => {
+      div.style.setProperty('--re-banner-col-divider-left', `${(ratio * 100).toFixed(3)}%`);
+      inner.style.setProperty(
+        '--ricos-internal-layout-column-template',
+        `minmax(0, ${ratio.toFixed(3)}fr) minmax(0, ${(1 - ratio).toFixed(3)}fr)`,
+      );
+      label.textContent = `${Math.round(ratio * 100)}% / ${Math.round((1 - ratio) * 100)}%`;
     };
-    (['left', 'right', 'top', 'bottom'] as const).forEach((dir) => {
-      if (section.querySelector(`:scope > .re-banner-handle--${dir}`)) return;
+
+    const onMove = (m: MouseEvent) => {
+      const rect = inner.getBoundingClientRect();
+      if (rect.width <= 0) return;
+      const raw   = (m.clientX - rect.left) / rect.width;
+      let ratio   = clamp(raw, 0.15, 0.85);
+      // Snap to the nearest snap-point if within threshold.
+      let snapped = false;
+      for (const snap of SNAP_POINTS) {
+        if (Math.abs(ratio - snap) < SNAP_THRESHOLD) {
+          ratio = snap;
+          snapped = true;
+          break;
+        }
+      }
+      div.classList.toggle('is-snapped', snapped);
+      applyRatio(ratio);
+    };
+    const onUp = (m: MouseEvent) => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      div.classList.remove('is-dragging');
+      div.classList.remove('is-snapped');
+      label.remove();
+      const rect = inner.getBoundingClientRect();
+      if (rect.width > 0) {
+        const raw = (m.clientX - rect.left) / rect.width;
+        let ratio = clamp(raw, 0.15, 0.85);
+        for (const snap of SNAP_POINTS) {
+          if (Math.abs(ratio - snap) < SNAP_THRESHOLD) { ratio = snap; break; }
+        }
+        this.bannerColRatio.set(ratio);
+      }
+      this.applyBannerStyles();
+      this.emit();
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+
+  /** Re-create the bottom resize handle on a banner section that was
+   *  loaded from saved HTML (transient handle markup is stripped by
+   *  emit()'s regex). Wix model: banners resize vertically only via
+   *  a single bottom pill. Older scaffolds that shipped left/right/top
+   *  handles get cleaned up here too. */
+  private ensureBannerHandles(section: HTMLElement): void {
+    // Sweep any legacy left/right/top handles wherever they live —
+    // they're no longer part of the model.
+    section.querySelectorAll('.re-banner-handle--left, .re-banner-handle--right, .re-banner-handle--top').forEach(n => n.remove());
+
+    if (!section.querySelector(':scope > .re-banner-handle--bottom')) {
       const h = document.createElement('span');
-      h.className = `re-banner-handle re-banner-handle--${dir}`;
+      h.className = 're-banner-handle re-banner-handle--bottom';
       h.setAttribute('contenteditable', 'false');
-      h.setAttribute('data-dir', dir);
-      h.setAttribute('aria-label', ariaMap[dir]);
+      h.setAttribute('data-dir', 'bottom');
+      h.setAttribute('data-resize-handle', 'bottom');
+      h.setAttribute('aria-label', 'Resize banner height');
       section.appendChild(h);
-    });
+    }
+    // Sweep any legacy markers that lived as direct section children
+    // (older scaffold versions). The new markers sit inside the inner
+    // grid so they anchor to the column's edges, not the section's.
+    section.querySelectorAll(':scope > .re-banner-marker').forEach(n => n.remove());
+    // Left + right column resize handles — children of the inner
+    // grid so they anchor to the column's left/right edges. Dragging
+    // resizes the column width.
+    const inner = section.querySelector<HTMLElement>(':scope > .re-banner-backdrop > .re-banner-resizer > .re-banner-inner');
+    if (inner) {
+      (['left', 'right'] as const).forEach((dir) => {
+        if (inner.querySelector(`:scope > .re-banner-marker--${dir}`)) return;
+        const m = document.createElement('span');
+        m.className = `re-banner-marker re-banner-marker--${dir}`;
+        m.setAttribute('contenteditable', 'false');
+        m.setAttribute('aria-hidden', 'true');
+        m.setAttribute('data-dir', dir);
+        m.setAttribute('data-resize-handle', dir);
+        inner.appendChild(m);
+      });
+    }
   }
 
   private attachResizeHandles(figure: HTMLElement): void {
@@ -3938,22 +6752,35 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     // them, then bail out before the legacy `.re__resizer` dots
     // would otherwise be appended.
     if (RichEditorComponent.isBannerSection(figure)) {
-      // Saved HTML strips the .re-banner-handle--* siblings, so on
-      // first selection of a reloaded section we may need to (re-)add
-      // them. The four handles always live inside .re-banner-resizer.
+      // Saved HTML strips the transient handle markup, so on first
+      // selection of a reloaded section we may need to (re-)add it.
       this.ensureBannerHandles(figure);
-      const dirMap: Record<string, ResizeDir> = { left: 'w', right: 'e', top: 'n', bottom: 's' };
-      figure.querySelectorAll<HTMLElement>('.re-banner-handle').forEach((h) => {
-        const dirAttr = h.dataset['dir'] ?? '';
-        const dir = dirMap[dirAttr];
-        if (!dir) return;
-        // Track wired handles in a WeakSet so we don't double-bind on
-        // re-select, and crucially DON'T persist the flag into saved
-        // HTML (which would block re-wiring on reload of a fresh
-        // editor instance).
+      // Two-cell banners also get a vertical divider between cells.
+      this.ensureColDivider(figure);
+      // Bottom resize handle — vertical resize of the backdrop height.
+      figure.querySelectorAll<HTMLElement>(':scope > .re-banner-handle--bottom').forEach((h) => {
         if (this.wiredBannerHandles.has(h)) return;
         this.wiredBannerHandles.add(h);
-        h.addEventListener('mousedown', (ev) => this.startResize(ev, dir));
+        h.addEventListener('mousedown', (ev) => this.startResize(ev, 's'));
+      });
+      // Left + right column markers — wire as HORIZONTAL column
+      // resize handles. They live inside the inner-grid and drive
+      // --ricos-internal-layout-width on the resize-container. The
+      // section's own width stays at 100% so the banner is fixed-width;
+      // only the column narrows / widens.
+      figure.querySelectorAll<HTMLElement>('.re-banner-marker').forEach((h) => {
+        if (this.wiredBannerHandles.has(h)) return;
+        this.wiredBannerHandles.add(h);
+        const dir = h.dataset['dir'] === 'left' ? 'w' : 'e';
+        h.addEventListener('mousedown', (ev) => this.startColWidthDrag(ev, dir));
+      });
+      // Cell drag-handle (⋯) — wire each as a drag-to-swap handle so
+      // the user can grab a column and drop it on another to reorder.
+      figure.querySelectorAll<HTMLElement>('.re-banner-cell-handle').forEach((btn) => {
+        if (this.wiredCellHandles.has(btn)) return;
+        this.wiredCellHandles.add(btn);
+        const cell = btn.closest('.re-banner-cell') as HTMLElement | null;
+        if (cell) btn.addEventListener('mousedown', (ev) => this.startColumnDrag(ev, cell));
       });
       return;
     }
@@ -4098,6 +6925,91 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   /** Mouse-down on a handle starts a drag. Bound listeners run on the
    *  document so the user can keep dragging past the figure's edges
    *  without losing the resize. */
+  private wiredCellHandles = new WeakSet<HTMLElement>();
+
+  /** Drag-to-swap handler for the cell drag-handle (⋯) button. The
+   *  user grabs a column's handle and drops it over another column's
+   *  area — the two columns swap places (or the dragged one slots
+   *  in at the drop target's position). Works for 2+ columns; bails
+   *  out silently in 1-column banners. */
+  private startColumnDrag(ev: MouseEvent, cell: HTMLElement): void {
+    ev.preventDefault();
+    ev.stopPropagation();
+    const inner = cell.closest('.re-banner-inner') as HTMLElement | null;
+    if (!inner) return;
+    const allCells = Array.from(inner.querySelectorAll<HTMLElement>(':scope > .re-banner-cell'));
+    if (allCells.length < 2) return;
+
+    cell.classList.add('is-dragging-cell');
+    document.body.style.cursor = 'grabbing';
+
+    const findTarget = (m: MouseEvent): HTMLElement | null => {
+      const el = document.elementFromPoint(m.clientX, m.clientY) as HTMLElement | null;
+      const t  = el?.closest('.re-banner-cell') as HTMLElement | null;
+      return t && t !== cell && allCells.includes(t) ? t : null;
+    };
+
+    const onMove = (m: MouseEvent) => {
+      const target = findTarget(m);
+      allCells.forEach((c) => c.classList.toggle('is-drop-target', c === target));
+    };
+    const onUp = (m: MouseEvent) => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      cell.classList.remove('is-dragging-cell');
+      allCells.forEach((c) => c.classList.remove('is-drop-target'));
+      document.body.style.cursor = '';
+
+      const target = findTarget(m);
+      if (target) {
+        const cellIndex   = allCells.indexOf(cell);
+        const targetIndex = allCells.indexOf(target);
+        if (cellIndex < targetIndex) {
+          inner.insertBefore(cell, target.nextSibling);
+        } else {
+          inner.insertBefore(cell, target);
+        }
+        this.emit();
+      }
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+
+  /** Drag handler for the column-edge markers on a section banner.
+   *  Writes --ricos-internal-layout-width to the [data-resize-container]
+   *  so the column narrows / widens. The wrapping section keeps its
+   *  width:100% — only the inner column is affected. The column is
+   *  centred via margin-inline:auto, so dragging either side toward the
+   *  centre shrinks the column symmetrically by 2 * dx. */
+  private startColWidthDrag(ev: MouseEvent, dir: 'w' | 'e'): void {
+    const f = this.selectedFigure(); if (!f) return;
+    if (!RichEditorComponent.isBannerSection(f)) return;
+    const resizer = f.querySelector(':scope > .re-banner-backdrop > [data-resize-container]') as HTMLElement | null;
+    if (!resizer) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    f.classList.add('is-resizing');
+    const startX = ev.clientX;
+    const startW = resizer.getBoundingClientRect().width;
+    const onMove = (m: MouseEvent) => {
+      const dx = m.clientX - startX;
+      // Symmetric shrink/grow: both edges move equally so the
+      // centered column tracks the cursor. West drag right ⇒ narrower.
+      const delta = dir === 'e' ? dx * 2 : -dx * 2;
+      const w = Math.max(120, startW + delta);
+      resizer.style.setProperty('--ricos-internal-layout-width', `${Math.round(w)}px`);
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      f.classList.remove('is-resizing');
+      this.emit();
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+
   private startResize(ev: MouseEvent, dir: ResizeDir): void {
     const f = this.selectedFigure(); if (!f) return;
     ev.preventDefault();
@@ -4120,6 +7032,20 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     // figure should follow the cursor, not snap back to a preset.
     f.classList.remove('re-size-compact', 're-size-standard', 're-size-extended', 're-size-original');
 
+    // Section-banner resize semantics (Wix model — vertical only):
+    //   - Bottom drag (s) → writes height to the .re-banner-backdrop
+    //     (the colored layer). The section auto-sizes around it so
+    //     the handle always sits on the backdrop's actual bottom edge.
+    //   - No left/right/top handles on banners.
+    // Legacy figures keep the original full-direction resize.
+    const isSectionBanner = RichEditorComponent.isBannerSection(f);
+    const heightTarget: HTMLElement = isSectionBanner
+      ? (f.querySelector(':scope > .re-banner-backdrop') as HTMLElement | null) ?? f
+      : f;
+    const startTargetH = isSectionBanner
+      ? heightTarget.getBoundingClientRect().height
+      : startH;
+
     // Lock the image to fill the figure with object-fit:cover. The
     // image's intrinsic `height: auto` would otherwise ignore any
     // vertical drag, leaving the figure box short while the image
@@ -4137,6 +7063,24 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const onMove = (m: MouseEvent) => {
       const dx = m.clientX - startX;
       const dy = m.clientY - startY;
+
+      if (isSectionBanner) {
+        // Wix model — vertical-only resize. Bottom drag adjusts the
+        // colored backdrop's height; everything else is ignored.
+        // Minimum is the tallest column's natural content height plus
+        // the backdrop's top/bottom padding wells, so dragging shorter
+        // never clips a column — the banner can never be smaller than
+        // its tallest column needs.
+        if (dir === 's') {
+          const minH = this.minBannerBackdropHeight(f, heightTarget);
+          const targetH = Math.max(minH, startTargetH + dy);
+          heightTarget.style.setProperty('height', `${Math.round(targetH)}px`, 'important');
+        }
+        this.refreshFigureToolbar();
+        return;
+      }
+
+      // ── Legacy / image-figure resize (unchanged) ──────────────────
       let w = startW;
       let h = startH;
       if (dir.includes('e')) w = startW + dx;
@@ -4144,14 +7088,10 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       if (dir.includes('s')) h = startH + dy;
       if (dir.includes('n')) h = startH - dy;
       if (isCorner) {
-        // Lock to original aspect — let width drive height.
         h = Math.max(40, w / aspect);
       }
       w = Math.max(60, w);
       h = Math.max(40, h);
-      // The base CSS forces `width: 100% !important` on figures, so
-      // a plain inline `style.width = ...` would lose to it. Use
-      // setProperty with the !important priority so the drag wins.
       f.style.setProperty('width', `${Math.round(w)}px`, 'important');
       f.style.setProperty('max-width', 'none', 'important');
       if (isCorner) {
@@ -4192,7 +7132,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  — classList mutations would otherwise be invisible to Angular. */
   isImageFigure = signal<boolean>(false);
 
-  toggleFigMenu(ev: Event, key: 'size' | 'align' | 'link' | 'settings' | 'design' | 'valign'): void {
+  toggleFigMenu(ev: Event, key: 'size' | 'align' | 'link' | 'settings' | 'design' | 'valign' | 'more'): void {
     ev.preventDefault();
     ev.stopPropagation();
     const next = this.figMenu() === key ? null : key;
@@ -4206,6 +7146,24 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   private getFigureImg(): HTMLImageElement | null {
     return (this.selectedFigure()?.querySelector('img') as HTMLImageElement | null) ?? null;
+  }
+
+  /** Minimum allowed height for a banner backdrop during south-handle
+   *  drag — the tallest column's natural (scroll) height plus the
+   *  backdrop's own top + bottom padding. Returned in CSS pixels so
+   *  the caller can clamp the dragged height directly. */
+  private minBannerBackdropHeight(section: HTMLElement, backdrop: HTMLElement): number {
+    // Backdrop padding pulled live from computed style — banners can
+    // be configured with arbitrary vertical wells.
+    const cs = getComputedStyle(backdrop);
+    const padTop = parseFloat(cs.paddingTop) || 0;
+    const padBottom = parseFloat(cs.paddingBottom) || 0;
+    const cells = section.querySelectorAll<HTMLElement>(
+      ':scope > .re-banner-backdrop > .re-banner-resizer > .re-banner-inner > .re-banner-cell',
+    );
+    let tallest = 40; // floor matches the prior hard-coded minimum
+    cells.forEach((c) => { tallest = Math.max(tallest, c.scrollHeight); });
+    return tallest + padTop + padBottom;
   }
 
   private seedLinkState(): void {
@@ -4458,18 +7416,94 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.applyBannerStyles();
   }
 
-  /** Build a single bare `.re-banner-cell` element with just the
-   *  placeholder paragraph. The cell drag-grip pill
-   *  (`.re-banner-cell-handle`) is intentionally NOT included here —
-   *  it's transient runtime decoration, attached by
-   *  `attachColumnHandles()` on selection and stripped on deselect
-   *  and on save so the persisted HTML stays clean. */
-  private buildBannerCell(): HTMLElement {
+  /** Monotonic counter for unique cell ids. Each cell gets a stable
+   *  `data-layout-cell="cell-<n>"` so the structural drag-handle's
+   *  `data-layout-cell-handle` can reference it by id (matches the
+   *  Ricos contract). The counter is process-local — saved markup
+   *  retains its ids; new cells get fresh ones from this counter. */
+  private cellIdCounter = 0;
+  private genCellId(): string { return `cell-${Date.now().toString(36)}-${++this.cellIdCounter}`; }
+
+  /** Scope id for a banner's @container rule. Stored on the wrapper
+   *  as `data-layout-scope="banner-<id>-<bp>-STACK"` — the trailing
+   *  breakpoint lets the inline <style> address its own scope without
+   *  cross-banner leakage. */
+  private bannerScopeCounter = 0;
+  private genBannerScopeBase(): string { return `banner-${Date.now().toString(36)}-${++this.bannerScopeCounter}`; }
+  /** Compose the scope value from a stable base id and the current
+   *  breakpoint. Both the data-attribute and the inline <style>'s
+   *  selector use this exact string. */
+  private bannerScopeValue(base: string, bp: number): string { return `${base}-${bp}-STACK`; }
+
+  /** Render the @container rule that applies below the breakpoint.
+   *  Two modes (driven by `bannerBehavior`):
+   *    - stacked    → collapse to one column (minmax(0,1fr)), hide
+   *                   the cell drag-handles. Standard Wix "Stack".
+   *    - horizontal → keep columns side-by-side but use
+   *                   repeat(auto-fit, minmax(120px, 1fr)) so they
+   *                   shrink and wrap onto multiple rows as needed
+   *                   (Wix "Wrap"). */
+  private bannerStackRule(scope: string, bp: number, behavior: 'stacked' | 'horizontal' = 'stacked'): string {
+    if (behavior === 'horizontal') {
+      return (
+        `@container (width < ${bp}px) {`
+        + ` [data-layout-scope="${scope}"] [data-layout-container] {`
+        +   ' --ricos-internal-layout-column-template: repeat(auto-fit, minmax(120px, 1fr)) !important;'
+        +   ' --ricos-internal-layout-gap: 8px !important;'
+        + ' }'
+        + ' }'
+      );
+    }
+    return (
+      `@container (width < ${bp}px) {`
+      + ` [data-layout-scope="${scope}"] [data-layout-container] {`
+      +   ' --ricos-internal-layout-column-template: minmax(0, 1fr) !important;'
+      +   ' --ricos-internal-layout-gap: 8px !important;'
+      + ' }'
+      + ` [data-layout-scope="${scope}"] .re-banner-cell-handle-wrap { display: none !important; }`
+      + ' }'
+    );
+  }
+
+  /** Build a single `.re-banner-cell` matching the Ricos data-layout
+   *  shape: outer `[data-layout-cell]`, structural handle button in a
+   *  contenteditable=false wrapper, and an editable
+   *  `[data-layout-cell-content]` wrapper that holds the user's text.
+   *  The `.re-banner-cell-handle` class is preserved so existing
+   *  selection / hover CSS still targets the handle. */
+  private buildBannerCell(id?: string): HTMLElement {
+    const cellId = id ?? this.genCellId();
     const cell = document.createElement('div');
     cell.className = 're-banner-cell';
+    cell.setAttribute('data-layout-cell', cellId);
+
+    // Structural handle — wrapped in a contenteditable=false div so
+    // the button never participates in the inner container's editable
+    // tree. The kebab-dots SVG matches the prior transient handle so
+    // the visual stays identical.
+    const handleWrap = document.createElement('div');
+    handleWrap.className = 're-banner-cell-handle-wrap';
+    handleWrap.setAttribute('contenteditable', 'false');
+    const handleBtn = document.createElement('button');
+    handleBtn.type = 'button';
+    handleBtn.className = 're-banner-cell-handle';
+    handleBtn.setAttribute('data-layout-cell-handle', cellId);
+    handleBtn.setAttribute('aria-label', 'Drag column');
+    handleBtn.innerHTML =
+      '<svg viewBox="0 0 18 18" width="14" height="14" fill="currentColor" aria-hidden="true">' +
+      '<circle cx="6" cy="9" r="1"/><circle cx="9" cy="9" r="1"/><circle cx="12" cy="9" r="1"/>' +
+      '</svg>';
+    handleWrap.appendChild(handleBtn);
+
+    const content = document.createElement('div');
+    content.className = 're-banner-cell-content';
+    content.setAttribute('data-layout-cell-content', '');
     const p = document.createElement('p');
     p.textContent = 'Add your text';
-    cell.appendChild(p);
+    content.appendChild(p);
+
+    cell.appendChild(handleWrap);
+    cell.appendChild(content);
     return cell;
   }
 
@@ -4478,44 +7512,93 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  Used by both `insertBanner()` and `imageFigureToSectionBanner()`
    *  so the two creation paths produce identical markup. */
   private buildBannerScaffold(): HTMLElement {
+    // Outer layout wrapper — Ricos's `data-layout-wrapper` is the
+    // anchor for the backdrop/cell-padding CSS variables. The
+    // `.re-banner` class is kept so selection / hover / handle CSS
+    // still targets it.
     const section = document.createElement('section');
-    section.className = 're-banner re-banner-vtop';
+    section.className = 're-banner re-banner-vmid';
     section.setAttribute('contenteditable', 'false');
+    section.setAttribute('data-layout-wrapper', '');
+    section.setAttribute('data-layout-banner', 'true');
+    section.setAttribute('data-breakout', 'fullWidth');
 
+    // Per-banner @container scope — a stable base id is generated
+    // once at scaffold time and combined with the active breakpoint
+    // on every applyBannerStyles() so the inline <style> rule can
+    // address only this banner without touching siblings on the page.
+    const scopeBase = this.genBannerScopeBase();
+    section.dataset['scopeBase'] = scopeBase;
+    const bp = this.bannerBreakpoint();
+    section.setAttribute('data-layout-scope', this.bannerScopeValue(scopeBase, bp));
+
+    // Inline <style> with the @container rule — saved to HTML so the
+    // responsive collapse persists when the banner is reloaded.
+    const styleEl = document.createElement('style');
+    styleEl.setAttribute('data-banner-stack', '');
+    styleEl.textContent = this.bannerStackRule(section.getAttribute('data-layout-scope')!, bp, this.bannerBehavior());
+    section.appendChild(styleEl);
+
+    // Level 2 — backdrop (carries the section background + the
+    // top/bottom padding wells). `data-breakout="normal"` constrains
+    // the inner content to the editor's reading column even though
+    // the wrapper is full-width.
     const backdrop = document.createElement('div');
     backdrop.className = 're-banner-backdrop';
     backdrop.setAttribute('contenteditable', 'false');
+    backdrop.setAttribute('data-breakout', 'normal');
 
+    // Level 3 — resize container. The Ricos --ricos-internal-layout-width
+    // var drives its max-width; we default to 100% so the banner spans
+    // the column. The left/right resize handles live INSIDE this
+    // container (sibling of the inner grid), matching Wix's contract.
     const resizer = document.createElement('div');
     resizer.className = 're-banner-resizer';
     resizer.setAttribute('contenteditable', 'false');
+    resizer.setAttribute('data-resize-container', '');
+    resizer.style.setProperty('--ricos-internal-layout-width', '100%');
 
+    // Level 4 — the grid container ([data-layout-container]). This is
+    // where the column-template / gap / background image vars live.
     const inner = document.createElement('div');
     inner.className = 're-banner-inner';
     inner.setAttribute('contenteditable', 'true');
+    inner.setAttribute('data-layout-container', '');
 
+    // Level 5 — at least one cell. Subsequent cells get added by
+    // setBannerColumns(2) / insertColumn().
     const cell = this.buildBannerCell();
     inner.appendChild(cell);
     resizer.appendChild(inner);
     backdrop.appendChild(resizer);
     section.appendChild(backdrop);
-    // Resize handles — direct children of the section, NOT the
-    // resizer. The resizer only sizes to the inner container's
-    // height, so handles parked at its top/bottom edge land in the
-    // middle of the banner once the backdrop's vertical padding
-    // grows. Anchoring to the section instead means top/bottom
-    // handles always sit on the banner's actual visual edges.
-    const ariaMap: Record<string, string> = {
-      left: 'Resize left', right: 'Resize right',
-      top: 'Resize top',   bottom: 'Resize bottom',
-    };
-    (['left', 'right', 'top', 'bottom'] as const).forEach((dir) => {
-      const h = document.createElement('span');
-      h.className = `re-banner-handle re-banner-handle--${dir}`;
-      h.setAttribute('contenteditable', 'false');
-      h.setAttribute('data-dir', dir);
-      h.setAttribute('aria-label', ariaMap[dir]);
-      section.appendChild(h);
+
+    // Bottom handle — the ONLY resize affordance on a banner (Wix
+    // model: banners are resizable vertically only, via this pill).
+    // Dragging it changes the backdrop's height so the colored area
+    // shrinks / grows with the cursor.
+    const bottomHandle = document.createElement('span');
+    bottomHandle.className = 're-banner-handle re-banner-handle--bottom';
+    bottomHandle.setAttribute('contenteditable', 'false');
+    bottomHandle.setAttribute('data-dir', 'bottom');
+    bottomHandle.setAttribute('data-resize-handle', 'bottom');
+    bottomHandle.setAttribute('aria-label', 'Resize banner height');
+    section.appendChild(bottomHandle);
+
+    // Left + right column resize handles — circles at vertical centre
+    // with thin guide lines spanning the column's height. Placed as
+    // children of the inner-grid so they anchor to the column's
+    // left/right edges. Dragging adjusts the column width via
+    // --ricos-internal-layout-width on the resize-container (the
+    // CSS already consumes this var for max-width).
+    (['left', 'right'] as const).forEach((dir) => {
+      const m = document.createElement('span');
+      m.className = `re-banner-marker re-banner-marker--${dir}`;
+      m.setAttribute('contenteditable', 'false');
+      m.setAttribute('aria-hidden', 'true');
+      m.setAttribute('data-dir', dir);
+      m.setAttribute('data-resize-handle', dir);
+      inner.appendChild(m);
     });
     return section;
   }
@@ -4601,6 +7684,8 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.bannerBgGradient.set(ds['bgGradient'] || 'linear-gradient(180deg, #32acc1 0%, #ffffff 100%)');
     this.bannerBgImage.set(ds['bgImage']   || '');
     this.bannerColumns.set((num(ds['cols'], 1) === 2 ? 2 : 1));
+    const savedRatio = parseFloat(ds['colRatio'] ?? '');
+    this.bannerColRatio.set(Number.isFinite(savedRatio) ? clamp(savedRatio, 0.15, 0.85) : 0.5);
     this.bannerColGap.set(num(ds['gap'], 20));
     this.bannerColPadX.set(num(ds['padX'], 0));
     this.bannerColPadY.set(num(ds['padY'], 18));
@@ -4633,6 +7718,8 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.colBorderOpacity.set(num(ds['colBorderOpacity'], 0));
     this.colBorderWidth.set(num(ds['colBorderWidth'], 0));
     this.colCornerRadius.set(num(ds['colCornerRadius'], 0));
+    const fullH = ds['colFullHeight'] === 'true' || f.classList.contains('is-full-height');
+    this.colFullHeight.set(fullH);
     // Section image extras
     this.sectionImageOpacity.set(num(ds['imgOpacity'], 100));
     this.sectionOverlayColor.set(ds['overlayColor'] || '#000000');
@@ -4668,38 +7755,50 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       '7': 'left bottom','8': 'center bottom','9': 'right bottom',
     };
 
+    // Resolve the layout container (the `data-layout-container` div,
+    // matching Wix Ricos's element model). When the markup is the new
+    // 5-level scaffold we always have one; fall back to the section
+    // itself for legacy figure-banners so the writes never blackhole.
+    const inner = (f.querySelector('[data-layout-container]') as HTMLElement | null)
+      ?? (f.querySelector('.re-banner-inner') as HTMLElement | null);
+
+    // Each Ricos variable is written once on the element the Ricos
+    // contract owns (backdrop / cell-padding → wrapper; column-template
+    // / background / gap → container). The legacy `--re-banner-*` aliases
+    // are mapped in CSS so old rules still work for one release.
+
     // ─── Backdrop layer (section background) ──────────────────────
     if (this.bannerBgShow()) {
       const kind = this.bannerBgKind();
       if (kind === 'color') {
         const { r, g, b } = hexToRgb(this.bannerBgColor());
         const a = Math.max(0, Math.min(1, this.bannerBgOpacity() / 100));
-        f.style.setProperty('--re-banner-backdrop-color', `rgba(${r},${g},${b},${a})`);
-        f.style.setProperty('--re-banner-backdrop-image', 'none');
+        f.style.setProperty('--ricos-internal-layout-backdrop-color', `rgba(${r},${g},${b},${a})`);
+        f.style.setProperty('--ricos-internal-layout-backdrop-image-src', 'none');
       } else if (kind === 'gradient') {
-        f.style.setProperty('--re-banner-backdrop-color', 'transparent');
-        f.style.setProperty('--re-banner-backdrop-image', this.bannerBgGradient() || 'none');
+        f.style.setProperty('--ricos-internal-layout-backdrop-color', 'transparent');
+        f.style.setProperty('--ricos-internal-layout-backdrop-image-src', this.bannerBgGradient() || 'none');
       } else {
-        f.style.setProperty('--re-banner-backdrop-color', 'transparent');
+        f.style.setProperty('--ricos-internal-layout-backdrop-color', 'transparent');
         const bgUrl = this.bannerBgImage();
-        f.style.setProperty('--re-banner-backdrop-image', bgUrl ? `url("${bgUrl}")` : 'none');
+        f.style.setProperty('--ricos-internal-layout-backdrop-image-src', bgUrl ? `url("${bgUrl}")` : 'none');
       }
       f.dataset['bgShow'] = 'true';
     } else {
-      f.style.setProperty('--re-banner-backdrop-color', 'transparent');
-      f.style.setProperty('--re-banner-backdrop-image', 'none');
+      f.style.setProperty('--ricos-internal-layout-backdrop-color', 'transparent');
+      f.style.setProperty('--ricos-internal-layout-backdrop-image-src', 'none');
       f.dataset['bgShow'] = 'false';
     }
-    f.style.setProperty('--re-banner-backdrop-image-opacity',  String(this.sectionImageOpacity() / 100));
-    f.style.setProperty('--re-banner-backdrop-image-scaling',  sizeMap[this.sectionImageScaling()] ?? 'cover');
-    f.style.setProperty('--re-banner-backdrop-image-position', posMap[this.sectionImagePosition()] ?? 'center');
-    // Backdrop top/bottom padding — Wix default is 58px. No dedicated
-    // signal yet, so we hold the default in CSS; the existing
-    // bannerVMargin signal controls the section's outer margin only
-    // (`--re-banner-margin`). When a backdrop-pad signal lands later
-    // this is the single point to wire it.
-    f.style.setProperty('--re-banner-backdrop-pad-top',    '58px');
-    f.style.setProperty('--re-banner-backdrop-pad-bottom', '58px');
+    f.style.setProperty('--ricos-internal-layout-backdrop-image-opacity',  String(this.sectionImageOpacity() / 100));
+    f.style.setProperty('--ricos-internal-layout-backdrop-image-scaling',  sizeMap[this.sectionImageScaling()] ?? 'cover');
+    f.style.setProperty('--ricos-internal-layout-backdrop-image-position', posMap[this.sectionImagePosition()] ?? 'center');
+    // Backdrop top/bottom padding wells — Wix calls this "Vertical
+    // margins" in the panel. It adjusts the inset of the column inside
+    // the banner (NOT the banner's outer margin). bannerVMargin is the
+    // single source of truth; section margin-block is set to 0 below.
+    const vmar = this.bannerVMargin();
+    f.style.setProperty('--ricos-internal-layout-backdrop-padding-top',    `${vmar}px`);
+    f.style.setProperty('--ricos-internal-layout-backdrop-padding-bottom', `${vmar}px`);
 
     // Dataset round-trip for the backdrop / section settings.
     f.dataset['bgKind']         = this.bannerBgKind();
@@ -4713,31 +7812,41 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     f.dataset['imgScaling']     = this.sectionImageScaling();
     f.dataset['imgPos']         = this.sectionImagePosition();
 
-    // ─── Inner layer (the "stripe" / column container) ────────────
+    // ─── Inner layer (the `[data-layout-container]` grid) ─────────
+    // The "Column background" panel paints the FILL on each cell
+    // (so the cell's border-radius clips it). The Ricos contract var
+    // --ricos-internal-layout-background-color is left transparent on
+    // the inner grid; the actual fill goes to --re-cell-bg-color
+    // which .re-banner-cell consumes for background-color/-image.
+    const target = inner ?? f;
+    target.style.setProperty('--ricos-internal-layout-background-color', 'transparent');
+    target.style.setProperty('--ricos-internal-layout-background-image-src', 'none');
     if (this.colBgKind() === 'color') {
       const { r, g, b } = hexToRgb(this.colFillColor());
       const a = Math.max(0, Math.min(1, this.colFillOpacity() / 100));
-      f.style.setProperty('--re-banner-inner-color', `rgba(${r},${g},${b},${a})`);
-      f.style.setProperty('--re-banner-inner-image', 'none');
+      f.style.setProperty('--re-cell-bg-color', `rgba(${r},${g},${b},${a})`);
+      f.style.setProperty('--re-cell-bg-image', 'none');
     } else {
-      f.style.setProperty('--re-banner-inner-color', 'transparent');
+      f.style.setProperty('--re-cell-bg-color', 'transparent');
       const colUrl = this.colBgImage();
-      f.style.setProperty('--re-banner-inner-image', colUrl ? `url("${colUrl}")` : 'none');
+      f.style.setProperty('--re-cell-bg-image', colUrl ? `url("${colUrl}")` : 'none');
     }
-    f.style.setProperty('--re-banner-inner-image-opacity',  String(this.colImageOpacity() / 100));
-    f.style.setProperty('--re-banner-inner-image-scaling',  sizeMap[this.colImageScaling()] ?? 'cover');
-    f.style.setProperty('--re-banner-inner-image-position', posMap[this.colImagePosition()] ?? 'center');
+    f.style.setProperty('--re-cell-bg-image-opacity',  String(this.colImageOpacity() / 100));
+    f.style.setProperty('--re-cell-bg-image-scaling',  sizeMap[this.colImageScaling()] ?? 'cover');
+    f.style.setProperty('--re-cell-bg-image-position', posMap[this.colImagePosition()] ?? 'center');
 
-    // Columns + gap — `grid-template-columns` accepts a full
-    // track-list expression, so we emit one directly.
+    // Columns + gap — Ricos emits the full grid-template-columns
+    // expression in `--ricos-internal-layout-column-template`.
     const cols = this.bannerColumns();
-    f.style.setProperty(
-      '--re-banner-inner-cols',
-      cols === 1 ? 'minmax(0, 1fr)' : 'repeat(2, minmax(0, 1fr))',
-    );
-    f.style.setProperty('--re-banner-inner-gap', `${this.bannerColGap()}px`);
-    f.dataset['cols'] = String(cols);
-    f.dataset['gap']  = String(this.bannerColGap());
+    const ratio = clamp(this.bannerColRatio(), 0.15, 0.85);
+    const colsTrack = cols === 1
+      ? 'minmax(0, 1fr)'
+      : `minmax(0, ${ratio.toFixed(3)}fr) minmax(0, ${(1 - ratio).toFixed(3)}fr)`;
+    target.style.setProperty('--ricos-internal-layout-column-template', colsTrack);
+    target.style.setProperty('--ricos-internal-layout-gap', `${this.bannerColGap()}px`);
+    f.dataset['cols']     = String(cols);
+    f.dataset['colRatio'] = ratio.toFixed(3);
+    f.dataset['gap']      = String(this.bannerColGap());
 
     // Dataset round-trip for the inner / column settings.
     f.dataset['colBgKind']         = this.colBgKind();
@@ -4754,11 +7863,28 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     f.dataset['colBorderWidth']    = String(this.colBorderWidth());
     f.dataset['colCornerRadius']   = String(this.colCornerRadius());
 
-    // ─── Cell layer (padding inside each editable column) ─────────
-    f.style.setProperty('--re-banner-cell-pad-top',    `${this.bannerColPadTop()}px`);
-    f.style.setProperty('--re-banner-cell-pad-right',  `${this.bannerColPadRight()}px`);
-    f.style.setProperty('--re-banner-cell-pad-bottom', `${this.bannerColPadBottom()}px`);
-    f.style.setProperty('--re-banner-cell-pad-left',   `${this.bannerColPadLeft()}px`);
+    // Column border / radius — written as CSS vars so .re-banner-cell
+    // can pick them up. Previously the panel updated only the dataset
+    // (no visual effect on new cells); now the vars actually drive
+    // the cell's border + radius.
+    const bWidth = clamp(this.colBorderWidth(), 0, 32);
+    const bColorHex = this.colBorderColor();
+    const bAlpha = clamp(this.colBorderOpacity(), 0, 100) / 100;
+    if (bWidth > 0 && bColorHex && bAlpha > 0) {
+      const { r, g, b } = hexToRgb(bColorHex);
+      f.style.setProperty('--re-cell-border-color', `rgba(${r},${g},${b},${bAlpha})`);
+      f.style.setProperty('--re-cell-border-width', `${bWidth}px`);
+    } else {
+      f.style.setProperty('--re-cell-border-color', 'transparent');
+      f.style.setProperty('--re-cell-border-width', '0px');
+    }
+    f.style.setProperty('--re-cell-radius', `${clamp(this.colCornerRadius(), 0, 200)}px`);
+
+    // ─── Cell layer (padding inside each `[data-layout-cell]`) ────
+    f.style.setProperty('--ricos-internal-layout-cell-padding-top',    `${this.bannerColPadTop()}px`);
+    f.style.setProperty('--ricos-internal-layout-cell-padding-right',  `${this.bannerColPadRight()}px`);
+    f.style.setProperty('--ricos-internal-layout-cell-padding-bottom', `${this.bannerColPadBottom()}px`);
+    f.style.setProperty('--ricos-internal-layout-cell-padding-left',   `${this.bannerColPadLeft()}px`);
     f.dataset['padX']      = String(this.bannerColPadX());
     f.dataset['padY']      = String(this.bannerColPadY());
     f.dataset['padTop']    = String(this.bannerColPadTop());
@@ -4766,16 +7892,52 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     f.dataset['padBottom'] = String(this.bannerColPadBottom());
     f.dataset['padLeft']   = String(this.bannerColPadLeft());
 
-    // ─── Section margins ──────────────────────────────────────────
-    f.style.setProperty('--re-banner-margin', `${this.bannerVMargin()}px`);
+    // ─── Section outer margin ─────────────────────────────────────
+    // bannerVMargin is now routed to the BACKDROP padding (above),
+    // not the section's outer margin. The section keeps a minimal
+    // default block-margin so consecutive banners don't visually
+    // collide. dataset still persists vMargin for round-trip.
+    f.style.setProperty('--re-banner-margin', '0px');
     f.dataset['vMargin']    = String(this.bannerVMargin());
     f.dataset['breakpoint'] = String(this.bannerBreakpoint());
 
-    // Overlay layer not painted by the new scaffold (the CSS doesn't
-    // ship a .re-banner-backdrop::after or .re-banner-inner::after
-    // rule yet). Keep the dataset write so the panel's overlay
-    // controls still round-trip — visual painting can be re-added by
-    // wiring the var into a new ::after pseudo when needed.
+    // ─── Responsive @container rule — refresh scope + inline style
+    // Each banner carries a stable `scopeBase` (generated by the
+    // scaffold builder). Reloaded banners that pre-date step 3 won't
+    // have one, so we mint one lazily here. The active breakpoint is
+    // appended to make the scope value so the rule re-emits whenever
+    // the breakpoint setter fires.
+    if (RichEditorComponent.isBannerSection(f)) {
+      let scopeBase = f.dataset['scopeBase'];
+      if (!scopeBase) {
+        scopeBase = this.genBannerScopeBase();
+        f.dataset['scopeBase'] = scopeBase;
+      }
+      const bp = this.bannerBreakpoint();
+      const scope = this.bannerScopeValue(scopeBase, bp);
+      f.setAttribute('data-layout-scope', scope);
+      let styleEl = f.querySelector<HTMLStyleElement>(':scope > style[data-banner-stack]');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.setAttribute('data-banner-stack', '');
+        f.appendChild(styleEl);
+      }
+      const nextRule = this.bannerStackRule(scope, bp, this.bannerBehavior());
+      if (styleEl.textContent !== nextRule) styleEl.textContent = nextRule;
+    }
+
+    // Overlay layer — compose rgba from sectionOverlayColor +
+    // sectionOverlayOpacity and write to --re-banner-overlay-color.
+    // The CSS .re-banner-backdrop::after pseudo paints it above the
+    // background image but below the cell content (z-index 1).
+    const overlayHex = this.sectionOverlayColor();
+    const overlayAlpha = clamp(this.sectionOverlayOpacity(), 0, 100) / 100;
+    if (overlayHex && overlayAlpha > 0) {
+      const { r, g, b } = hexToRgb(overlayHex);
+      f.style.setProperty('--re-banner-overlay-color', `rgba(${r},${g},${b},${overlayAlpha})`);
+    } else {
+      f.style.setProperty('--re-banner-overlay-color', 'transparent');
+    }
   }
 
   // Banner panel setters — each updates the mirror signal then
@@ -4858,11 +8020,35 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   }
   setBannerColumns(v: 1 | 2): void {
     this.bannerColumns.set(v);
-    // Trim extra columns if shrinking.
     const f = this.selectedFigure();
-    const cols = f?.querySelectorAll(RichEditorComponent.COL_SELECTOR);
-    if (cols && cols.length > v) for (let i = v; i < cols.length; i++) cols[i].remove();
+    const cols = f?.querySelectorAll<HTMLElement>(RichEditorComponent.COL_SELECTOR);
+    // Going from 2 → 1: MERGE the extra column(s) into the first one
+    // instead of deleting them. Move each extra cell's content
+    // children into the first cell so the user's text isn't lost.
+    // (Matches Wix's "Merged" semantics — the merge button combines
+    // columns, it doesn't drop their content.)
+    if (cols && cols.length > v) {
+      const keep = cols[0];
+      const keepContent = (keep.querySelector(':scope > [data-layout-cell-content]') as HTMLElement | null) ?? keep;
+      for (let i = v; i < cols.length; i++) {
+        const extra = cols[i];
+        const extraContent = (extra.querySelector(':scope > [data-layout-cell-content]') as HTMLElement | null) ?? extra;
+        // Move every child of the extra cell's content into the
+        // surviving cell's content. Iterates with a static snapshot
+        // because the live NodeList shifts as we append.
+        Array.from(extraContent.childNodes).forEach((node) => {
+          // Skip empty text nodes — they're just whitespace artifacts.
+          if (node.nodeType === Node.TEXT_NODE && !(node.textContent ?? '').trim()) return;
+          keepContent.appendChild(node);
+        });
+        extra.remove();
+      }
+    }
+    // Reset ratio when going to 1-col so a future switch back to 2-col
+    // doesn't surprise the user with a remembered uneven split.
+    if (v === 1) this.bannerColRatio.set(0.5);
     this.applyBannerStyles();
+    if (f) this.ensureColDivider(f);
     this.emit();
   }
   setBannerGap(v: number): void { this.bannerColGap.set(clamp(v, 0, 200)); this.applyBannerStyles(); this.emit(); }
@@ -4947,6 +8133,23 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   /** Public API for the parent to call after picking from its own
    *  media-library modal. */
   pickColBgImage(): void { this.colBgImageClick.emit(); }
+
+  /** Emits `cellImageClick` so the host can launch its own media
+   *  library. The host then calls `replaceCellImagePlaceholder` with
+   *  the chosen URL to swap the placeholder for an <img>. No native
+   *  file-picker fallback — picking always goes through the host. */
+  pickCellImage(placeholderEl: HTMLElement): void {
+    this.cellImageClick.emit(placeholderEl);
+  }
+
+  /** Replace an "Add image" placeholder slot with an <img> element
+   *  whose `src` is the given URL. Keeps the wrapping `data-cell-image`
+   *  container so subsequent clicks can re-open the picker. */
+  replaceCellImagePlaceholder(placeholderEl: HTMLElement, url: string): void {
+    const slot = (placeholderEl.closest('[data-cell-image]') as HTMLElement | null) ?? placeholderEl.parentElement ?? placeholderEl;
+    slot.innerHTML = `<img src="${url}" alt="" style="display:block;width:100%;height:auto;border-radius:4px;" />`;
+    this.emit();
+  }
   clearColBgImage(): void {
     this.colBgImage.set('');
     this.colBgKind.set('color');
@@ -4983,6 +8186,55 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   setColBorderOpacity(v: number): void { this.colBorderOpacity.set(clamp(v, 0, 100)); this.applyBannerStyles(); this.emit(); }
   setColBorderWidth(v: number): void { this.colBorderWidth.set(clamp(v, 0, 32)); this.applyBannerStyles(); this.emit(); }
   setColCornerRadius(v: number): void { this.colCornerRadius.set(clamp(v, 0, 200)); this.applyBannerStyles(); this.emit(); }
+  /** Apply vertical-content alignment to the selected cell. Writes
+   *  inline `justify-content` since the cell is a flex column, and
+   *  persists via `data-valign` on the cell so it round-trips. */
+  setCellVAlign(v: 'top' | 'middle' | 'bottom'): void {
+    this.cellVAlign.set(v);
+    // Apply per-cell: justifyContent on the flex column. Only visible
+    // when the cell has extra vertical space (e.g. full-height mode
+    // or a tall sibling pushing the row), but kept so 2-col banners
+    // with mismatched content heights still respect per-cell choice.
+    const col = this.selectedColumn();
+    if (col) {
+      const jc = v === 'top' ? 'flex-start' : v === 'bottom' ? 'flex-end' : 'center';
+      col.style.justifyContent = jc;
+      col.dataset['valign'] = v;
+    }
+    // Also drive the banner-level vertical alignment so the toolbar
+    // button has an immediately visible effect on a normal-height
+    // banner (where the cell itself has no extra height to use).
+    this.setBannerVAlign(v === 'top' ? 'top' : v === 'bottom' ? 'bottom' : 'middle');
+  }
+  /** Apply horizontal-content alignment (text-align) to the selected
+   *  cell. Cascades into every text node inside. */
+  setCellHAlign(v: 'left' | 'center' | 'right'): void {
+    this.cellHAlign.set(v);
+    const col = this.selectedColumn();
+    if (!col) return;
+    col.style.textAlign = v;
+    col.dataset['halign'] = v;
+    this.emit();
+  }
+  /** Seed cellVAlign / cellHAlign signals from the selected cell so
+   *  the toolbar reflects the cell's current state on selection. */
+  private syncCellAlignment(col: HTMLElement | null): void {
+    if (!col) { this.cellVAlign.set('top'); this.cellHAlign.set('left'); return; }
+    const v = col.dataset['valign'] as 'top' | 'middle' | 'bottom' | undefined;
+    const h = col.dataset['halign'] as 'left' | 'center' | 'right' | undefined;
+    this.cellVAlign.set(v ?? 'top');
+    this.cellHAlign.set(h ?? 'left');
+  }
+
+  setColFullHeight(v: boolean): void {
+    this.colFullHeight.set(v);
+    const f = this.selectedFigure();
+    if (f) {
+      f.classList.toggle('is-full-height', v);
+      f.dataset['colFullHeight'] = v ? 'true' : 'false';
+    }
+    this.emit();
+  }
 
   // ─── Section image-extras setters ───
   setSectionImageOpacity(v: number): void { this.sectionImageOpacity.set(clamp(v, 0, 100)); this.applyBannerStyles(); this.emit(); }
@@ -5005,6 +8257,9 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.bannerBehavior.set(v);
     const f = this.selectedFigure();
     if (f) f.dataset['behavior'] = v;
+    // Re-emit the @container rule so the new behavior takes effect
+    // (bannerStackRule reads bannerBehavior()).
+    this.applyBannerStyles();
     this.emit();
   }
 
@@ -5168,6 +8423,10 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const next = html || '<p><br></p>';
     if (this.editable.nativeElement.innerHTML !== next) {
       this.editable.nativeElement.innerHTML = next;
+      // Loaded HTML may contain banners without editable bookends —
+      // add empty paragraphs around them so the user can reach the
+      // caret position immediately before/after each banner.
+      this.ensureBannerBookends();
     }
   }
 
@@ -5181,6 +8440,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       .replace(/\sis-selected(?=["\s])/g, '')
       .replace(/\sis-selected-col(?=["\s])/g, '')
       .replace(/\sis-resizing(?=["\s])/g, '')
+      .replace(/\sre-cell-elem-active(?=["\s])/g, '')
       .replace(/<div[^>]*class="re__resizer[^"]*"[^>]*><\/div>/g, '')
       .replace(/<div[^>]*class="re__radiusGrip[^"]*"[^>]*><\/div>/g, '')
       .replace(/<div[^>]*class="re__radiusChip[^"]*"[^>]*>[\s\S]*?<\/div>/g, '')
@@ -5191,7 +8451,9 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       // are transient runtime decoration; the persisted markup keeps
       // only the structural backdrop / resizer / inner / cell nodes.
       .replace(/<span[^>]*class="re-banner-cell-handle[^"]*"[^>]*>[\s\S]*?<\/span>/g, '')
-      .replace(/<span[^>]*class="re-banner-handle[^"]*"[^>]*><\/span>/g, '');
+      .replace(/<span[^>]*class="re-banner-handle[^"]*"[^>]*><\/span>/g, '')
+      .replace(/<span[^>]*class="re-banner-marker[^"]*"[^>]*><\/span>/g, '')
+      .replace(/<span[^>]*class="re-banner-col-divider[^"]*"[^>]*><\/span>/g, '');
     this.onChange(html);
     this.changed.emit(html);
   }
@@ -5203,6 +8465,32 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.refreshAddBtn();
   }
   onBlur(): void { this.onTouched(); this.emit(); }
+
+  /** Built-in title textarea handlers. The textarea is opt-in via the
+   *  showTitle() input. We mirror to the titleValue signal (drives the
+   *  auto-grow rows + char counter) and emit titleChange so the caller
+   *  can two-way bind. Clamping to titleMaxLength is also enforced by
+   *  the textarea's maxlength attribute. */
+  onTitleInput(ev: Event): void {
+    const ta = ev.target as HTMLTextAreaElement;
+    const max = Math.max(1, this.titleMaxLength());
+    const next = (ta.value ?? '').slice(0, max);
+    if (next !== ta.value) ta.value = next;
+    this.titleValue.set(next);
+    this.titleChange.emit(next);
+  }
+  onTitleFocus(): void { this.titleFocused.set(true); }
+  onTitleBlur():  void { this.titleFocused.set(false); }
+  /** Roughly compute textarea rows from the current value so the
+   *  field grows with content. Uses newline count + a coarse wrap
+   *  estimate; the textarea also has `field-sizing: content` in CSS
+   *  as a progressive enhancement for browsers that support it. */
+  titleRows = computed<number>(() => {
+    const v = this.titleValue();
+    const explicit = (v.match(/\n/g)?.length ?? 0) + 1;
+    const wrapped  = Math.ceil(v.length / 60);
+    return Math.max(1, Math.min(8, Math.max(explicit, wrapped)));
+  });
 
   // ─── HTML source view ───────────────────────────────────────────────────
   /** Toolbar action — flip between WYSIWYG and raw HTML textarea. */
@@ -5259,21 +8547,154 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  `imageFigureToSectionBanner` produces (overlay + column with a
    *  placeholder paragraph), so banner behaviour is identical whether
    *  the section was inserted directly or converted from an image. */
+  /** Built-in banner presets. Each one wraps a config that the
+   *  insert flow applies to the freshly-scaffolded section: bg,
+   *  columns, padding, cell content. Designed to be a small,
+   *  curated set (matches the Wix preset row). */
+  readonly bannerPresets = [
+    {
+      id: 'hero-card',
+      name: 'Hero card',
+      description: 'Soft background + centred title card',
+      config: {
+        bgColor: '#e0f2fe', columns: 1 as 1, vAlign: 'middle' as const,
+        colFillColor: '#ffffff', colFillOpacity: 100, colCornerRadius: 8,
+        padTop: 32, padRight: 40, padBottom: 32, padLeft: 40, vMargin: 24,
+        cells: [{
+          html: '<h2 style="margin:0 0 8px;text-align:center;">WELCOME</h2>'
+              + '<p style="margin:0 0 16px;text-align:center;color:#475569;">Discover what makes us different. Start your journey with us today.</p>'
+              + '<p style="text-align:center;"><a href="#" style="display:inline-block;padding:8px 20px;background:#0f172a;color:#fff;border-radius:4px;text-decoration:none;font-size:14px;">Read more</a></p>',
+        }],
+      },
+    },
+    {
+      id: 'minimal',
+      name: 'Minimal centered',
+      description: 'Clean light background, centred content',
+      config: {
+        bgColor: '#f1f5f9', columns: 1 as 1, vAlign: 'middle' as const,
+        colCornerRadius: 0,
+        padTop: 32, padRight: 40, padBottom: 32, padLeft: 40, vMargin: 0,
+        cells: [{
+          html: '<h2 style="margin:0 0 8px;text-align:center;">Grow Your Vision</h2>'
+              + '<p style="margin:0 0 16px;text-align:center;color:#475569;font-size:14px;">A short sentence explaining your purpose and value.</p>'
+              + '<p style="text-align:center;"><a href="#" style="display:inline-block;padding:8px 20px;background:#0f172a;color:#fff;border-radius:4px;text-decoration:none;font-size:14px;">Read more</a></p>',
+        }],
+      },
+    },
+    {
+      id: 'split',
+      name: 'Text + image',
+      description: 'Two columns: text on the left, image on the right',
+      config: {
+        bgColor: '#ffffff', columns: 2 as 2, vAlign: 'middle' as const,
+        padTop: 24, padRight: 24, padBottom: 24, padLeft: 24, vMargin: 16,
+        cells: [
+          {
+            html: '<h2 style="margin:0 0 8px;color:#b45309;">Empower Growth</h2>'
+                + '<p style="margin:0 0 16px;color:#475569;font-size:14px;">A short paragraph explaining your offering.</p>'
+                + '<p><a href="#" style="display:inline-block;padding:8px 20px;background:#0f172a;color:#fff;border-radius:4px;text-decoration:none;font-size:14px;">Read more</a></p>',
+          },
+          {
+            html: '<div data-cell-image contenteditable="false" style="background:#e6f7fa;height:160px;border-radius:4px;overflow:hidden;">'
+                + '<button type="button" data-add-image style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:transparent;border:none;color:#32acc1;font:500 14px/1.2 inherit;cursor:pointer;">'
+                +   '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M19 5h-3l-1.5-2h-5L8 5H5C3.9 5 3 5.9 3 7v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-7 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/></svg>'
+                +   '<span>Add image</span>'
+                + '</button>'
+                + '</div>',
+          },
+        ],
+      },
+    },
+    {
+      id: 'dark',
+      name: 'Dark hero',
+      description: 'Dark background with bold title and supporting text',
+      config: {
+        bgColor: '#1f2937', columns: 2 as 2, vAlign: 'middle' as const,
+        padTop: 32, padRight: 32, padBottom: 32, padLeft: 32, vMargin: 24,
+        cells: [
+          { html: '<h2 style="margin:0;color:#ffffff;font-size:24px;line-height:1.2;">Welcome<br>to Our Site</h2>' },
+          { html: '<p style="margin:0;color:#cbd5e1;font-size:14px;line-height:1.6;">A short paragraph that supports the headline. Replace this with your own content.</p>' },
+        ],
+      },
+    },
+    {
+      id: 'blank',
+      name: 'Blank',
+      description: 'Start with an empty banner',
+      config: {
+        bgColor: '#ffffff', columns: 1 as 1, vAlign: 'middle' as const,
+        padTop: 18, padRight: 0, padBottom: 18, padLeft: 0, vMargin: 0,
+        cells: [{ html: '<p>Add your text</p>' }],
+      },
+    },
+  ] as const;
+
+  private modalService = inject(ModalService);
+
+  /** Open the preset picker via the project's ModalService — the
+   *  picker emits the chosen preset id through ModalRef.close(); we
+   *  then build the banner from that preset. Dismiss (close button /
+   *  backdrop) returns undefined, no insert happens. */
   insertBanner(): void {
+    const ref = this.modalService.open<BannerPresetPickerComponent, BannerPresetPickerData, string>(
+      BannerPresetPickerComponent,
+      {
+        size: 'md',
+        data: { presets: this.bannerPresets.map(p => ({ id: p.id, name: p.name, description: p.description })) },
+      },
+    );
+    ref.afterClosed().then((id) => {
+      if (id) this.applyBannerPreset(id);
+    });
+  }
+
+  /** Apply a chosen preset (or `null` for "Blank") then insert the
+   *  resulting banner at the caret. Replaces the cell content with
+   *  the preset's sample HTML so the inserted banner looks polished
+   *  out of the box. */
+  applyBannerPreset(presetId: string): void {
+    const preset = this.bannerPresets.find((p) => p.id === presetId) ?? this.bannerPresets[this.bannerPresets.length - 1];
+    const cfg = preset.config;
+
     const section = this.buildBannerScaffold();
-    // Sensible default colour background — the user picks an image in
-    // the Layout-section panel if they want one. Storing on dataset so
-    // applyBannerStyles round-trips cleanly the next time the section
-    // is selected.
-    section.dataset['bgShow']   = 'true';
-    section.dataset['bgKind']   = 'color';
-    section.dataset['bgColor']  = '#32ACC1';
+    section.dataset['bgShow']    = 'true';
+    section.dataset['bgKind']    = 'color';
+    section.dataset['bgColor']   = cfg.bgColor ?? '#ffffff';
     section.dataset['bgOpacity'] = '100';
+    section.dataset['cols']      = String(cfg.columns);
+    section.dataset['vAlign']    = cfg.vAlign ?? 'middle';
+    if (cfg.padTop    !== undefined) section.dataset['padTop']    = String(cfg.padTop);
+    if (cfg.padRight  !== undefined) section.dataset['padRight']  = String(cfg.padRight);
+    if (cfg.padBottom !== undefined) section.dataset['padBottom'] = String(cfg.padBottom);
+    if (cfg.padLeft   !== undefined) section.dataset['padLeft']   = String(cfg.padLeft);
+    if (cfg.vMargin   !== undefined) section.dataset['vMargin']   = String(cfg.vMargin);
+    if ('colFillColor' in cfg)   section.dataset['colFillColor']   = (cfg as { colFillColor?: string }).colFillColor ?? '';
+    if ('colFillOpacity' in cfg) section.dataset['colFillOpacity'] = String((cfg as { colFillOpacity?: number }).colFillOpacity ?? 0);
+    if ('colCornerRadius' in cfg) section.dataset['colCornerRadius'] = String((cfg as { colCornerRadius?: number }).colCornerRadius ?? 0);
+
+    // Vertical-align class — cast through string so TS doesn't narrow
+    // cfg.vAlign down to a single literal (all presets happen to use
+    // 'middle', but future presets may pick top/bottom).
+    section.classList.remove('re-banner-vtop', 're-banner-vmid', 're-banner-vbot');
+    const va = (cfg.vAlign as string) ?? 'middle';
+    section.classList.add(va === 'top' ? 're-banner-vtop' : va === 'bottom' ? 're-banner-vbot' : 're-banner-vmid');
+
+    // Rebuild cells from the preset spec.
+    const inner = section.querySelector(':scope > .re-banner-backdrop > .re-banner-resizer > .re-banner-inner') as HTMLElement | null;
+    if (inner) {
+      // Clear the default cell and re-add one per preset spec.
+      Array.from(inner.querySelectorAll(':scope > .re-banner-cell')).forEach((c) => c.remove());
+      cfg.cells.forEach((cellSpec) => {
+        const cell = this.buildBannerCell();
+        const content = cell.querySelector(':scope > .re-banner-cell-content') as HTMLElement | null;
+        if (content) content.innerHTML = cellSpec.html;
+        inner.appendChild(cell);
+      });
+    }
 
     this.insertHtml(section.outerHTML);
-    // The HTML insert clones the node; find the just-inserted section
-    // (last `.re-banner` in the editable) and select it so the user
-    // can style it immediately.
     const inserted = this.editable.nativeElement.querySelector('section.re-banner:last-of-type') as HTMLElement | null;
     if (inserted) {
       this.selectFigure(inserted);
@@ -5281,10 +8702,75 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     }
   }
 
+
   insertHtml(html: string): void {
     if (!html) return;
     this.editable.nativeElement.focus();
     const sel = window.getSelection();
+    const tpl = document.createElement('template');
+    tpl.innerHTML = html;
+    const frag = tpl.content.cloneNode(true) as DocumentFragment;
+    const lastNode = frag.lastChild;
+
+    // Block banner-inside-banner: if the new content includes a
+    // banner section AND the insertion target is inside an existing
+    // banner, escape to AFTER the outer banner so we never produce
+    // a nested layout-wrapper tree.
+    const fragHasBanner = !!(tpl.content.querySelector('section.re-banner, [data-layout-banner]'));
+    if (fragHasBanner) {
+      const col = this.selectedColumn();
+      const caretEl = sel && sel.rangeCount > 0
+        ? (sel.getRangeAt(0).startContainer.nodeType === Node.ELEMENT_NODE
+            ? sel.getRangeAt(0).startContainer as Element
+            : sel.getRangeAt(0).startContainer.parentElement)
+        : null;
+      const outerBanner = (col?.closest('section.re-banner') as HTMLElement | null)
+                       ?? (caretEl?.closest('section.re-banner') as HTMLElement | null)
+                       ?? (this.cellElementRef?.closest('section.re-banner') as HTMLElement | null);
+      if (outerBanner && outerBanner.parentNode) {
+        const insertedFirst = frag.firstChild as Node | null;
+        outerBanner.parentNode.insertBefore(frag, outerBanner.nextSibling);
+        this.ensureBannerBookends();
+        // Drop the caret into the bookend AFTER the new banner so the
+        // user has a reachable cursor position instead of landing on
+        // the banner itself (contenteditable=false → no caret).
+        const newBanner = (insertedFirst && insertedFirst.nodeType === Node.ELEMENT_NODE && (insertedFirst as Element).matches('section.re-banner'))
+          ? insertedFirst as HTMLElement
+          : (lastNode && lastNode.nodeType === Node.ELEMENT_NODE && (lastNode as Element).matches('section.re-banner'))
+              ? lastNode as HTMLElement
+              : null;
+        const trailing = newBanner?.nextElementSibling as HTMLElement | null;
+        if (trailing && trailing.tagName === 'P') this.placeCaretAtStart(trailing);
+        this.emit();
+        this.refreshState();
+        return;
+      }
+    }
+
+    // If a banner column is currently selected (the user just focused
+    // a cell), insert INTO that cell's content area instead of at the
+    // document caret. Without this, picking "Image" or "Button" from
+    // the side panel would drop the element at the top-level after
+    // the banner, not inside the focused column.
+    const col = this.selectedColumn();
+    if (col) {
+      const target = (col.querySelector(':scope > [data-layout-cell-content]') as HTMLElement | null) ?? col;
+      target.appendChild(frag);
+      // Park caret at the end of the appended content so subsequent
+      // typing continues inside the cell.
+      if (lastNode) {
+        const after = document.createRange();
+        after.setStartAfter(lastNode);
+        after.collapse(true);
+        sel?.removeAllRanges();
+        sel?.addRange(after);
+      }
+      this.normalizeBlockNesting();
+      this.emit();
+      this.refreshState();
+      return;
+    }
+
     if (!sel || sel.rangeCount === 0) {
       // No caret yet — append at the end.
       this.editable.nativeElement.insertAdjacentHTML('beforeend', html);
@@ -5292,17 +8778,58 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       this.refreshState();
       return;
     }
+
+    // Check if the caret sits inside an element that CAN'T hold the
+    // inserted block (an <a>, <button>, <img>, etc. — inline / void
+    // wrappers). If so, escape to the nearest block ancestor and
+    // insert AFTER it, so a Banner doesn't end up wedged inside a
+    // button's anchor markup. Picked-element ref also forces this
+    // route since clicking a button doesn't always move the caret.
     const range = sel.getRangeAt(0);
     if (!range.collapsed) range.deleteContents();
+    const anchorEl = range.startContainer.nodeType === Node.ELEMENT_NODE
+      ? (range.startContainer as Element)
+      : (range.startContainer.parentElement as Element | null);
+    const inlineWrap = (anchorEl?.closest('a, button, img') as HTMLElement | null)
+                    ?? (this.cellElementRef && (this.cellElementRef.matches('a, button, img') ? this.cellElementRef : null));
+    if (inlineWrap && this.editable.nativeElement.contains(inlineWrap)) {
+      const block = (inlineWrap.closest('p, h1, h2, h3, h4, h5, h6, blockquote, li, div, section, figure') as HTMLElement | null) ?? inlineWrap;
+      // Insert AFTER the block — keeps the inserted content as a
+      // sibling of the host paragraph rather than nesting it inside
+      // the inline button/anchor wrapper.
+      const parent = block.parentNode;
+      if (parent) {
+        parent.insertBefore(frag, block.nextSibling);
+        if (lastNode) {
+          const after = document.createRange();
+          after.setStartAfter(lastNode);
+          after.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(after);
+        }
+        this.normalizeBlockNesting();
+        this.emit();
+        this.refreshState();
+        return;
+      }
+    }
 
-    const tpl = document.createElement('template');
-    tpl.innerHTML = html;
-    const frag = tpl.content.cloneNode(true) as DocumentFragment;
-    // Track the last inserted node so we can park the caret after it.
-    const lastNode = frag.lastChild;
+    const insertedFirst = frag.firstChild as Node | null;
     range.insertNode(frag);
 
-    if (lastNode) {
+    // If the inserted content is (or contains) a banner, drop the
+    // caret into the editable bookend after it so the user can keep
+    // typing/pressing Enter — banners themselves are contenteditable
+    // =false and won't accept the caret.
+    const insertedBanner = (insertedFirst && insertedFirst.nodeType === Node.ELEMENT_NODE
+        && (insertedFirst as Element).matches('section.re-banner, [data-layout-banner]'))
+      ? insertedFirst as HTMLElement
+      : null;
+    this.ensureBannerBookends();
+    if (insertedBanner) {
+      const trailing = insertedBanner.nextElementSibling as HTMLElement | null;
+      if (trailing && trailing.tagName === 'P') this.placeCaretAtStart(trailing);
+    } else if (lastNode) {
       const after = document.createRange();
       after.setStartAfter(lastNode);
       after.collapse(true);
@@ -5325,6 +8852,51 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.normalizeBlockNesting();
     this.emit();
     this.refreshState();
+  }
+
+  /** Banners (and other top-level contenteditable=false blocks) reject
+   *  the caret, so without an editable paragraph immediately before /
+   *  after them the user can't position the cursor next to the block
+   *  to type or press Enter. Walk every banner and add empty
+   *  `<p><br></p>` bookends where missing. Safe to call repeatedly —
+   *  only inserts a bookend when the neighbour is missing or another
+   *  contenteditable=false block. */
+  private ensureBannerBookends(): void {
+    const editable = this.editable?.nativeElement;
+    if (!editable) return;
+    const banners = editable.querySelectorAll<HTMLElement>('section.re-banner, [data-layout-banner]');
+    const makeBookend = (): HTMLElement => {
+      const p = document.createElement('p');
+      p.appendChild(document.createElement('br'));
+      return p;
+    };
+    const needsBookend = (n: ChildNode | null): boolean => {
+      if (!n) return true;
+      if (n.nodeType !== Node.ELEMENT_NODE) return false;
+      const el = n as Element;
+      // An adjacent text/inline content keeps the caret reachable; only
+      // bookend when the neighbour is another non-editable block.
+      if (el.matches('section.re-banner, [data-layout-banner], figure, hr')) return true;
+      return false;
+    };
+    banners.forEach((b) => {
+      const parent = b.parentElement;
+      if (!parent) return;
+      if (needsBookend(b.previousSibling)) parent.insertBefore(makeBookend(), b);
+      if (needsBookend(b.nextSibling))     parent.insertBefore(makeBookend(), b.nextSibling);
+    });
+  }
+
+  /** Place the caret at the very start of a node — used to drop the
+   *  user into a freshly-created bookend paragraph after inserting a
+   *  banner so they immediately have a reachable editable spot. */
+  private placeCaretAtStart(node: Node): void {
+    const sel = window.getSelection(); if (!sel) return;
+    const r = document.createRange();
+    r.setStart(node, 0);
+    r.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(r);
   }
 
   /** Fix invalid block-level nesting introduced by execCommand —
@@ -5441,7 +9013,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     sel.addRange(range);
   }
 
-  /** Font-size dropdown — wraps the selection in a `<span style="font-size: Xpx">`.
+  /** Font-size dropdown — wraps the selection in a span style font-size Xpx.
    *  Falls back to `execCommand('fontSize', '1-7')` only if no selection. */
   pickSize(ev: Event, sizePx: string): void {
     ev.preventDefault();
@@ -5450,6 +9022,33 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.currentSize.set(sizePx);
     this.closeMenu();
     this.emit();
+  }
+
+  /** Commit a font-size from the toolbar's number input (Ricos pattern
+   *  — typing a number then Enter / blur applies it to the selection).
+   *  Clamps to a sane range and only commits valid integers; an empty
+   *  value or non-numeric input is ignored (caret formatting stays). */
+  commitSizeFromInput(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const raw = (input.value ?? '').trim();
+    if (!raw) { input.value = this.currentSize(); return; }
+    const n = Math.round(Number(raw));
+    if (!Number.isFinite(n) || n <= 0) { input.value = this.currentSize(); return; }
+    const clamped = Math.max(6, Math.min(200, n));
+    const sizePx = String(clamped);
+    input.value = sizePx;
+    this.editable.nativeElement.focus();
+    this.applyInlineStyle('font-size', `${sizePx}px`);
+    this.currentSize.set(sizePx);
+    this.emit();
+  }
+  /** Pressing Enter inside the size input commits + blurs (closes the
+   *  keyboard on touch devices and gives a clear "committed" affordance). */
+  onSizeInputKeydown(ev: KeyboardEvent): void {
+    if (ev.key === 'Enter') {
+      ev.preventDefault();
+      (ev.target as HTMLInputElement).blur();
+    }
   }
 
   /** Wraps the current selection in a `<span>` carrying the given
@@ -5654,25 +9253,65 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const t = ev.target as HTMLElement | null;
     if (!t) return;
     // Either the chip's number-input or the slider itself can have
-    // focus — both should keep the popover anchored. The slider
-    // popover sits as a sibling of the chip inside `.re__figCtrl`.
+    // focus — both should keep the popover anchored.
     const chip = t.closest('.re__figTbNum') as HTMLElement | null;
     if (chip) {
-      const slider = chip.parentElement?.querySelector(':scope > .re__figSlider') as HTMLElement | null;
-      if (slider) this.positionFigSlider(chip, slider);
+      const row = chip.closest('.re__figRow') as HTMLElement | null;
+      const slider = (chip.parentElement?.querySelector(':scope > .re__figSlider') as HTMLElement | null)
+                  ?? (row?.querySelector('.re__figSlider') as HTMLElement | null);
+      if (slider) {
+        this.activateFigSlider(slider);
+        this.positionFigSlider(chip, slider);
+      }
       return;
     }
     const slider = t.closest('.re__figSlider') as HTMLElement | null;
     if (slider) {
-      const chipSibling = slider.parentElement?.querySelector(':scope > .re__figTbNum') as HTMLElement | null;
-      if (chipSibling) this.positionFigSlider(chipSibling, slider);
+      const row = slider.closest('.re__figRow') as HTMLElement | null;
+      const chipSibling = (slider.parentElement?.querySelector(':scope > .re__figTbNum') as HTMLElement | null)
+                       ?? (row?.querySelector('.re__figTbNum') as HTMLElement | null);
+      if (chipSibling) {
+        this.activateFigSlider(slider);
+        this.positionFigSlider(chipSibling, slider);
+      }
     }
+  }
+
+  @HostListener('focusout', ['$event'])
+  onHostFocusOut(ev: FocusEvent): void {
+    const t = ev.target as HTMLElement | null;
+    if (!t) return;
+    const row = t.closest('.re__figRow') as HTMLElement | null;
+    if (!row) return;
+    const slider = row.querySelector('.re__figSlider') as HTMLElement | null;
+    if (!slider) return;
+    // Defer to next tick so focus moving from chip → slider (or
+    // slider → chip) within the same row doesn't briefly hide the
+    // popover.
+    setTimeout(() => {
+      if (!row.contains(document.activeElement)) {
+        slider.classList.remove('is-active');
+        slider.style.opacity = '';
+        slider.style.visibility = '';
+        slider.style.transform = '';
+      }
+    }, 0);
+  }
+
+  private activateFigSlider(slider: HTMLElement): void {
+    slider.classList.add('is-active');
+    // Inline overrides bypass any CSS specificity surprises from
+    // Angular's view-encapsulation rewrite when the slider is
+    // rendered inside the <app-re-slider> child component.
+    slider.style.opacity = '1';
+    slider.style.visibility = 'visible';
+    slider.style.transform = 'translateX(0) scale(1)';
   }
 
   private positionFigSlider(chip: HTMLElement, slider: HTMLElement): void {
     const r = chip.getBoundingClientRect();
     const width = slider.offsetWidth || 88;
-    const sliderH = slider.offsetHeight || 18;
+    const sliderH = slider.offsetHeight || 28;
     // Place the slider 8px to the RIGHT of the chip, vertically
     // centred on it (Wix-style side popover). If the right edge
     // would overflow the viewport, fall back to the chip's left side
@@ -5680,6 +9319,10 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     let left = r.right + 8;
     if (left + width > window.innerWidth - 8) left = Math.max(8, r.left - width - 8);
     const top = r.top + (r.height - sliderH) / 2;
+    // Inline position:fixed defends against any encapsulation case
+    // where the base CSS rule isn't applying through the wrapper.
+    slider.style.position = 'fixed';
+    slider.style.zIndex = '9999';
     slider.style.left = `${left}px`;
     slider.style.top  = `${top}px`;
   }
@@ -5694,7 +9337,12 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       // opaque). Skip hidden ones to save layout work.
       const cs = getComputedStyle(el);
       if (cs.visibility === 'hidden') return;
-      const chip = el.parentElement?.querySelector(':scope > .re__figTbNum') as HTMLElement | null;
+      // Chip lookup — direct sibling for the legacy inline slider, or
+      // the chip in the same row when the slider is wrapped in
+      // <app-re-slider>.
+      const row = el.closest('.re__figRow') as HTMLElement | null;
+      const chip = (el.parentElement?.querySelector(':scope > .re__figTbNum') as HTMLElement | null)
+                ?? (row?.querySelector('.re__figTbNum') as HTMLElement | null);
       if (chip) this.positionFigSlider(chip, el);
     });
   }
@@ -5709,10 +9357,18 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   @HostListener('document:keydown', ['$event'])
   onDocKeydown(e: KeyboardEvent): void {
     if (e.key !== 'Delete' && e.key !== 'Backspace') return;
-    if (!this.selectedFigure()) return;
     const target = e.target as HTMLElement | null;
     const inInput = !!target?.closest('input, textarea, [contenteditable="true"]');
     if (inInput) return;
+    // Per-element toolbar takes priority — if a button/image inside
+    // a cell is picked, Delete removes that element instead of the
+    // whole banner.
+    if (this.cellElementToolbar().type && this.cellElementRef) {
+      e.preventDefault();
+      this.deleteCellElement();
+      return;
+    }
+    if (!this.selectedFigure()) return;
     e.preventDefault();
     this.deleteSelectedFigure();
   }
@@ -5724,39 +9380,128 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       this.linkPrompt(e);
       return;
     }
+
+    // Keep ArrowUp / ArrowDown inside the editable surface even when
+    // the caret is at the very first / last position. Without this,
+    // pressing ArrowUp at the top edge of the editor can hand focus
+    // back to the previous tab-stop (the page title input or one of
+    // the toolbar buttons), at which point a follow-up Enter
+    // accidentally activates that button or submits the input.
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      const editable = this.editable?.nativeElement;
+      const sel = window.getSelection();
+      if (editable && sel && sel.rangeCount > 0 && editable.contains(sel.anchorNode)) {
+        // Make sure there's always an editable bookend the caret can
+        // land in at the boundary, then let the browser do its
+        // normal caret traversal. Stay-in-bounds is enforced by the
+        // bookend (a `<p><br></p>` sibling of whatever non-editable
+        // block sits at the edge).
+        this.ensureBannerBookends();
+      }
+      return;
+    }
+
     if (e.key !== 'Enter' || e.shiftKey) return;
 
     const editable = this.editable?.nativeElement;
     const sel = window.getSelection();
     if (!editable || !sel || sel.rangeCount === 0) return;
 
-    const block = this.nearestBlock(sel.anchorNode, editable);
-
-    // Inside <li>: empty <li> → exit list (replace with <p> below the
-    // list); non-empty <li> → let the browser create the next list
-    // item. Owning the empty-exit case is essential because Chromium
-    // sometimes refuses to break out, especially after the first
-    // Enter when we just normalized the list out of a wrapping <p>.
-    if (block?.tagName === 'LI') {
-      const isEmpty = (block.textContent ?? '').trim() === '';
-      if (!isEmpty) return;
+    // Look for an <li> ancestor first — the caret may be inside a
+    // <p>/<div> nested inside the <li> (some browsers and paste paths
+    // produce `<li><p>…</p></li>`), in which case `nearestBlock`
+    // would return the inner block and miss the list. Empty <li> →
+    // exit list; non-empty <li> → split the <li> at the caret so a
+    // fresh sibling <li> is created deterministically (Chromium's
+    // default Enter inside lists is the same `insertParagraph` path
+    // that's been flaky for plain blocks).
+    const li = this.findAncestor(sel.anchorNode, editable, 'LI');
+    if (li) {
+      const isEmpty = (li.textContent ?? '').trim() === '';
       e.preventDefault();
-      this.exitListAtCaret(block);
+      if (isEmpty) {
+        this.exitListAtCaret(li);
+      } else {
+        this.splitListItemAtCaret(li);
+      }
       this.normalizeBlockNesting();
       this.emit();
       this.refreshState();
       return;
     }
 
+    const block = this.nearestBlock(sel.anchorNode, editable);
+
     e.preventDefault();
     // If there's no block ancestor yet (fresh editor, raw text
     // nodes), wrap the current line in <p> before splitting so the
     // resulting structure stays valid.
     if (!block) document.execCommand('formatBlock', false, '<p>');
-    this.insertParagraphAtCaret();
+
+    // When the caret is at the very start (or end) of a paragraph
+    // that wraps a styled inline like `<a class="re-btn-block">`,
+    // splitting via extractContents() clones the wrapper and leaves
+    // a hollow empty copy behind (e.g. an empty styled button chip).
+    // Detect those edge positions and instead create a fresh
+    // `<p><br></p>` sibling — keeps the original block intact.
+    //
+    // Only fire this path when the block actually has substantive
+    // content (text or a styled inline). For an already-empty
+    // paragraph, fall through to the standard split — otherwise
+    // every Enter press in an empty `<p><br></p>` would spawn a
+    // new empty sibling and stack them indefinitely.
+    const range = sel.getRangeAt(0);
+    const liveBlock = this.nearestBlock(sel.anchorNode, editable);
+    if (liveBlock && this.blockHasSubstance(liveBlock)
+        && this.caretAtStartOfBlock(range, liveBlock)) {
+      this.insertEmptyParagraph('before', liveBlock);
+    } else if (liveBlock && this.blockHasSubstance(liveBlock)
+        && this.caretAtEndOfBlock(range, liveBlock)) {
+      this.insertEmptyParagraph('after', liveBlock);
+    } else {
+      this.insertParagraphAtCaret();
+    }
     this.normalizeBlockNesting();
     this.emit();
     this.refreshState();
+  }
+
+  /** True when the block contains real content — visible text or a
+   *  styled inline wrapper that we don't want extractContents() to
+   *  clone on split. Used to gate the "Enter at start/end of block"
+   *  shortcut so it never fires inside a placeholder `<p><br></p>`. */
+  private blockHasSubstance(block: HTMLElement): boolean {
+    if ((block.textContent ?? '').trim().length > 0) return true;
+    return !!block.querySelector('a.re-btn-block, img, button, video, iframe');
+  }
+
+  /** True when nothing of substance sits between the block's start
+   *  and the caret — used to detect "Enter before this element"
+   *  positions where splitting would clone styled inline wrappers
+   *  (e.g. an `<a class="re-btn-block">`). */
+  private caretAtStartOfBlock(range: Range, block: HTMLElement): boolean {
+    const r = document.createRange();
+    r.setStart(block, 0);
+    r.setEnd(range.startContainer, range.startOffset);
+    return (r.cloneContents().textContent ?? '').length === 0;
+  }
+  private caretAtEndOfBlock(range: Range, block: HTMLElement): boolean {
+    const r = document.createRange();
+    r.setStart(range.endContainer, range.endOffset);
+    if (block.lastChild) r.setEndAfter(block.lastChild); else r.setEnd(block, 0);
+    return (r.cloneContents().textContent ?? '').length === 0;
+  }
+  /** Insert an empty `<p><br></p>` sibling of `block` on the chosen
+   *  side and park the caret in it. Leaves `block` untouched so
+   *  styled inlines inside it aren't cloned by a split. */
+  private insertEmptyParagraph(where: 'before' | 'after', block: HTMLElement): void {
+    const newP = document.createElement('p');
+    newP.appendChild(document.createElement('br'));
+    const parent = block.parentNode;
+    if (!parent) return;
+    if (where === 'before') parent.insertBefore(newP, block);
+    else                    parent.insertBefore(newP, block.nextSibling);
+    this.placeCaretAtStart(newP);
   }
 
   /** Pull the caret out of an empty `<li>` and park it in a new
@@ -5779,6 +9524,56 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     r.collapse(true);
     sel.removeAllRanges();
     sel.addRange(r);
+  }
+
+  /** Walk up from `start` to find the nearest ancestor with the
+   *  given tag, bounded by `editable`. Used by Enter handling to
+   *  detect an `<li>` even when a `<p>`/`<div>` sits between the
+   *  caret and the list item. */
+  private findAncestor(start: Node | null, editable: HTMLElement, tag: string): HTMLElement | null {
+    let node: Node | null = start;
+    while (node && node !== editable) {
+      if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === tag) {
+        return node as HTMLElement;
+      }
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  /** Split the current `<li>` at the caret and create a fresh
+   *  sibling `<li>` after it that owns the tail content. Caret is
+   *  parked at the start of the new item. Owning this rather than
+   *  relying on Chromium's default Enter keeps list-item creation
+   *  deterministic even when the caret sits in a nested `<p>` or
+   *  inline span. */
+  private splitListItemAtCaret(li: HTMLElement): void {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    if (!range.collapsed) range.deleteContents();
+
+    // Tail = everything from the caret to the end of the <li>.
+    const tail = document.createRange();
+    tail.setStart(range.startContainer, range.startOffset);
+    tail.setEndAfter(li.lastChild ?? li);
+
+    const newLi = document.createElement('li');
+    newLi.appendChild(tail.extractContents());
+    if (!newLi.textContent && newLi.children.length === 0) {
+      newLi.appendChild(document.createElement('br'));
+    }
+    // If the source <li> just emptied, keep it visible with a <br>.
+    if (!li.textContent && li.children.length === 0) {
+      li.appendChild(document.createElement('br'));
+    }
+    li.parentNode!.insertBefore(newLi, li.nextSibling);
+
+    const caret = document.createRange();
+    caret.setStart(newLi, 0);
+    caret.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(caret);
   }
 
   /** Walk up from `start` to find the nearest block-level ancestor
@@ -5967,6 +9762,30 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
     g: parseInt(h.slice(2, 4), 16),
     b: parseInt(h.slice(4, 6), 16),
   };
+}
+
+/** Parse a CSS rgb(...) / rgba(...) string and return a #rrggbb hex.
+ *  Returns the empty string when the input doesn't look like a colour
+ *  the editor can round-trip (transparent, currentColor, etc.). */
+function rgbToHex(rgb: string): string {
+  const s = (rgb || '').trim();
+  if (!s || s === 'transparent') return '';
+  const m = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(s);
+  if (!m) return '';
+  const to = (n: string) => Math.max(0, Math.min(255, Number(n))).toString(16).padStart(2, '0');
+  return `#${to(m[1])}${to(m[2])}${to(m[3])}`;
+}
+
+/** Read the alpha channel from an rgba(...) CSS string and return it
+ *  as a 0–100 percentage. rgb(...) (no alpha) or unparseable inputs
+ *  default to 100. */
+function rgbaAlphaPct(rgb: string): number {
+  const s = (rgb || '').trim();
+  if (!s || s === 'transparent') return 0;
+  const m = /rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*([0-9.]+)\s*\)/.exec(s);
+  if (!m) return 100;
+  const a = Number(m[1]);
+  return Number.isFinite(a) ? Math.max(0, Math.min(100, a * 100)) : 100;
 }
 
 /** Parse the limited subset of CSS colour strings we round-trip on

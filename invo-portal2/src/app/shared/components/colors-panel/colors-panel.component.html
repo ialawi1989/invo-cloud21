@@ -56,6 +56,19 @@
              [style.--c]="spectrumStyle().hueColor"></div>
       </div>
 
+      <!-- Optional alpha slider — checkerboard backdrop with
+           transparent→solid gradient of the current colour. Rendered
+           only when the caller provides an `alpha` value (Wix-style
+           opacity row). -->
+      @if (alpha() !== null) {
+        <input type="range" min="0" max="100"
+               class="cp__alpha"
+               [style.--c]="color() || '#000'"
+               [ngModel]="alpha()"
+               (ngModelChange)="alphaChange.emit(+$event)"
+               aria-label="Opacity"/>
+      }
+
       <!-- Format segmented (HEX / RGB / HSB). Mirrors the secondary
            color-picker's tab row so the two stay visually consistent. -->
       <div class="cp__format-tabs" role="tablist">

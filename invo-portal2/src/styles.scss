@@ -191,6 +191,52 @@ body:has(.main-content.no-padding) {
   height: 100vh;
 }
 
+/* Post composer — Wix-Ricos-style internal container scroll:
+   - body / html are locked to the viewport (no document scroll)
+   - the canvas is the scrollable area
+   - the toolbar (sticky inside the editor) pins to the top of the
+     scroll viewport so it stays visible while content scrolls
+   - rail + side panel stay fixed alongside the canvas
+   This avoids the body-scroll quirks (sticky positioning fights
+   with transformed ancestors, scrollbars jumping between viewport
+   and page, etc.) and gives a predictable, app-like layout. */
+body:has(.wc) {
+  overflow: hidden;
+  height: 100vh;
+}
+body:has(.wc) .main-content,
+body:has(.wc) .main-content.no-padding {
+  height: calc(100vh - 56px) !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+body:has(.wc) .wc {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
+body:has(.wc) .wc__work {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+/* The canvas is the actual scroll container. Title + editor scroll
+   together inside it; the editor's sticky toolbar stays pinned to
+   its top because the canvas is the nearest scroll ancestor. */
+body:has(.wc) .wc__canvas {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+body:has(.wc) .wc__editor {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
 .invo-modal-panel {
   border-radius: 16px;
   overflow: visible !important;

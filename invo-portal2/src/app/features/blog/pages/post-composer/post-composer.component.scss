@@ -14,10 +14,12 @@
 .wc {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   background: #fff;
-  min-height: 600px;
-  overflow: hidden;
+  // No height-cap + overflow:hidden — the editor flows with the
+  // document body so scrolling lives on window/body, not on this
+  // wrapper. The top bar and toolbar still pin to the top via
+  // position:sticky inside their own elements.
 }
 
 // ── (1) Top bar ────────────────────────────────────────────────────
@@ -452,7 +454,7 @@
 .wc__canvas {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
+  // No internal overflow — content scrolls at the body level.
   display: flex;
   flex-direction: column;
   background: #fff;

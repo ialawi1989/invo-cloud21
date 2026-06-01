@@ -132,6 +132,55 @@
   pointer-events: none;
 }
 
+// Alpha slider — checkerboard backdrop overlaid with a transparent→
+// solid gradient of the current colour. Sits directly under the hue
+// strip when the caller passes an `alpha` value.
+// IMPORTANT: pseudo-element rules for ::-webkit-* and ::-moz-* MUST be
+// in separate selector lists — grouping them in one list causes
+// browsers to discard the rule entirely (they reject the foreign
+// vendor pseudo as a syntax error).
+.cp__alpha {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+.cp__alpha::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 999px;
+  background:
+    linear-gradient(to right, rgba(0,0,0,0), var(--c, #000)),
+    repeating-conic-gradient(#cbd5e1 0% 25%, #f1f5f9 0% 50%) 0 0 / 8px 8px;
+}
+.cp__alpha::-moz-range-track {
+  height: 10px;
+  border-radius: 999px;
+  background:
+    linear-gradient(to right, rgba(0,0,0,0), var(--c, #000)),
+    repeating-conic-gradient(#cbd5e1 0% 25%, #f1f5f9 0% 50%) 0 0 / 8px 8px;
+}
+.cp__alpha::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px;
+  background: var(--c, #fff);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  margin-top: -3px;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.4);
+}
+.cp__alpha::-moz-range-thumb {
+  width: 16px; height: 16px;
+  background: var(--c, #fff);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.4);
+}
+
 // Format segmented (HEX / RGB / HSB) — three pill tabs. Active tab
 // has a primary-coloured outline + filled background to match the
 // reference picker.

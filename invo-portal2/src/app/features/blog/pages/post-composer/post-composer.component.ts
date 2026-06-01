@@ -741,6 +741,21 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     this.editor?.setColBgImage(url);
   }
 
+  /** Cell-level image picker — fires when the user clicks an "Add
+   *  image" placeholder inside a banner cell. Opens the media library
+   *  modal; on selection, swaps the placeholder for an <img> via the
+   *  editor's public helper. */
+  async onPickCellImage(placeholderEl: HTMLElement): Promise<void> {
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      { data: { contentTypes: ['image'], multiple: false, title: this.translate.instant('BLOG.COMPOSER.ADD_IMAGE') }, size: 'xl' },
+    );
+    const picked = await ref.afterClosed();
+    const url = mediaUrl(Array.isArray(picked) ? picked[0] : picked);
+    if (!url) return;
+    this.editor?.replaceCellImagePlaceholder(placeholderEl, url);
+  }
+
   /** Handler for the rich-editor's `(blockReplace)` event — dispatches
    *  to the right picker based on the figure's type marker class.
    *  All replacement HTML preserves the figure's existing size /
@@ -878,11 +893,20 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   }
 
   private insertButton(): void {
-    const label = window.prompt(this.translate.instant('BLOG.COMPOSER.BUTTON_TEXT_PROMPT'), 'Click me') ?? '';
-    if (!label.trim()) return;
-    const url = window.prompt(this.translate.instant('BLOG.COMPOSER.BUTTON_URL_PROMPT'), 'https://') ?? '';
-    if (!url.trim()) return;
-    this.editor?.insertHtml(`<p><a class="re-btn-block" href="${escapeAttr(url)}" target="_blank" rel="noopener">${escapeText(label)}</a></p>`);
+    // Insert a button-styled anchor with inline styles that the
+    // editor's contextual button-settings panel can read back via
+    // syncButtonState() (which reads computed styles). The href
+    // defaults to '#' so the Link panel can be used to set it.
+    const style = [
+      'display:inline-block',
+      'padding:8px 20px',
+      'background-color:#0f172a',
+      'color:#ffffff',
+      'border-radius:4px',
+      'text-decoration:none',
+      'font-size:14px',
+    ].join(';');
+    this.editor?.insertHtml(`<p><a class="re-btn-block" href="#" style="${style}">Click me</a></p>`);
   }
 
   private insertRawHtml(): void {
