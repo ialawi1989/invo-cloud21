@@ -3,7 +3,7 @@ import { Directive, ElementRef, HostListener, Input, OnDestroy } from '@angular/
 /**
  * Ricos-style tooltip for the rich-editor toolbar.
  *
- * Renders a popover with the Wix Ricos data-hook contract:
+ * Renders a popover with the the rich editor data-hook contract:
  *   <div data-content-hook="popover-content--N" class="re__tooltip-root re__tooltip--dark re__tooltip--small">
  *     <div class="re__tooltip-element" data-hook="popover-element">
  *       <span>...label...</span>

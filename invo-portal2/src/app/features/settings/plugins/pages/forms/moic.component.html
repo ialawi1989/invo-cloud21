@@ -1,0 +1,137 @@
+<app-plugin-form-shell
+  [title]="'PLUGINS.MOIC.TITLE' | translate"
+  [intro]="'PLUGINS.MOIC.INTRO' | translate"
+  [breadcrumbs]="breadcrumbs()"
+  [loading]="loading()" [saving]="saving()"
+  (save)="save()" (back)="back()">
+
+  <div class="pf-card">
+    <div class="pf-toggle-row">
+      <div class="pf-toggle-row__text">
+        <div class="pf-toggle-row__title">{{ 'PLUGINS.MOIC.SYNC_BY_BRANCH' | translate }}</div>
+      </div>
+      <label class="pf-switch">
+        <input type="checkbox" [(ngModel)]="syncByBranch" name="syncByBranch"/>
+        <span class="pf-switch__track"><span class="pf-switch__thumb"></span></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Global config -->
+  @if (!syncByBranch) {
+    <div class="pf-card">
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PLUGINS.MOIC.URL' | translate }}</label>
+        <input class="pf-input" type="text" name="url"
+               [(ngModel)]="plugin.settings.moic_url" (ngModelChange)="markDirty()"/>
+      </div>
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PLUGINS.MOIC.RESTAURANT_ID' | translate }}</label>
+        <input class="pf-input" type="text" name="rid"
+               [(ngModel)]="plugin.settings.moic_resturant_id" (ngModelChange)="markDirty()"/>
+      </div>
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PLUGINS.MOIC.USERNAME' | translate }}</label>
+        <input class="pf-input" type="text" name="uname"
+               [(ngModel)]="plugin.settings.moic_username" (ngModelChange)="markDirty()"/>
+      </div>
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PLUGINS.MOIC.PASSWORD' | translate }}</label>
+        <input class="pf-input" type="password" name="pwd" autocomplete="new-password"
+               [(ngModel)]="plugin.settings.moic_password"
+               (ngModelChange)="markSecretDirty('moic_password')"
+               [placeholder]="isNew ? '' : ('PLUGINS.COMMON.SECRET_KEEP_HINT' | translate)"/>
+      </div>
+    </div>
+  } @else {
+    <!-- Per-branch config -->
+    <div class="pf-card">
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PLUGINS.MOIC.SYNC_BY_BRANCH' | translate }}</label>
+        <app-search-dropdown
+          [items]="branches()" [displayWith]="branchLabel" [compareWith]="branchEquals"
+          [value]="branchById(activeBranchId())" (valueChange)="activeBranchId.set($any($event)?.id ?? '')"/>
+      </div>
+
+      @if (activeBranch; as br) {
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.MOIC.URL' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="br.moic_url" (ngModelChange)="markDirty()" name="b_url"/>
+        </div>
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.MOIC.RESTAURANT_ID' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="br.moic_resturant_id" (ngModelChange)="markDirty()" name="b_rid"/>
+        </div>
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.MOIC.USERNAME' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="br.moic_username" (ngModelChange)="markDirty()" name="b_uname"/>
+        </div>
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.MOIC.PASSWORD' | translate }}</label>
+          <input class="pf-input" type="password" autocomplete="new-password"
+                 [(ngModel)]="br.moic_password" (ngModelChange)="markDirty()" name="b_pwd"
+                 [placeholder]="isNew ? '' : ('PLUGINS.COMMON.SECRET_KEEP_HINT' | translate)"/>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Manual sync -->
+  <div class="pf-card">
+    <h3 class="pf-section-title">{{ 'PLUGINS.MOIC.MANUAL_SYNC' | translate }}</h3>
+    <div class="pf-row" style="align-items:end;">
+      <div class="pf-field" style="margin:0;">
+        <app-date-picker
+          [value]="syncDate()" (valueChange)="syncDate.set($any($event))"
+          displayFormat="dd/MM/yyyy" placeholder="dd/mm/yyyy"/>
+      </div>
+      <div class="pf-field" style="margin:0;">
+        <button type="button" class="btn btn-default" [disabled]="syncing()"
+                (click)="runSync(syncByBranch ? activeBranchId() : '')">
+          {{ 'PLUGINS.MOIC.SYNC' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enable -->
+  <div class="pf-card">
+    <div class="pf-toggle-row">
+      <div class="pf-toggle-row__text">
+        <div class="pf-toggle-row__title">{{ 'PLUGINS.COMMON.ENABLE' | translate }}</div>
+        <div class="pf-toggle-row__hint">{{ 'PLUGINS.COMMON.ENABLED_HINT' | translate }}</div>
+      </div>
+      <label class="pf-switch">
+        <input type="checkbox" [(ngModel)]="plugin.settings.enable" (ngModelChange)="markDirty()" name="enable"/>
+        <span class="pf-switch__track"><span class="pf-switch__thumb"></span></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Logs -->
+  @if (plugin.logs?.length) {
+    <div class="pf-card">
+      <h3 class="pf-section-title">{{ 'PLUGINS.MOIC.LOGS_TITLE' | translate }}</h3>
+      <table class="pf-logs">
+        <thead>
+          <tr>
+            <th>{{ 'PLUGINS.MOIC.LOG_DATE' | translate }}</th>
+            <th>{{ 'PLUGINS.MOIC.LOG_TYPE' | translate }}</th>
+            <th>{{ 'PLUGINS.MOIC.LOG_TOTAL' | translate }}</th>
+            <th>{{ 'PLUGINS.MOIC.LOG_SALES' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of plugin.logs; track $index) {
+            <tr>
+              <td>{{ formatLogDate(log.date) }}</td>
+              <td>{{ (log.manual ? 'PLUGINS.MOIC.LOG_MANUAL' : 'PLUGINS.MOIC.LOG_AUTO') | translate }}</td>
+              <td>{{ log.totalInvoices ?? log.total ?? 0 }}</td>
+              <td>{{ log.totalSales ?? 0 }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</app-plugin-form-shell>

@@ -153,7 +153,7 @@ export const MENU_ITEMS: MenuItem[] = [
     privilege: 'mediaSecurity.actions.view',
   },
   {
-    id: 64, label: 'Plugins', icon: 'plugin', link: '/plugins',
+    id: 64, label: 'Plugins', icon: 'plugin', link: '/settings/plugins',
     privilege: 'pluginsSecurity.actions.view',
   },
 

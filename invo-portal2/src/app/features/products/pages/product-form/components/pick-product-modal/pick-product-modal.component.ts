@@ -131,6 +131,10 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
         searchTerm: this.search().trim(),
         sortBy: { sortValue: 'name', sortDirection: 'asc' },
         filter: { types: this.data.types ?? [] },
+        // Without an explicit columns set the backend returns a reduced row
+        // shape (no image/price). Request only the fields this picker maps
+        // (PickedProduct) so thumbnails + prices come back without over-fetching.
+        columns: ['name', 'image', 'barcode', 'SKU', 'UOM', 'unitCost', 'defaultPrice', 'type'],
       });
       const rows: PickedProduct[] = (res.list ?? []).map((r: any) => ({
         id:       r.id ?? r._id,
@@ -141,7 +145,9 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
         unitCost: r.unitCost ?? 0,
         price:    r.defaultPrice ?? 0,
         type:     r.type,
-        thumbnailUrl: r.mediaUrl?.thumbnailUrl ?? r.mediaUrl?.defaultUrl ?? r.thumbnailUrl ?? undefined,
+        // `r.image` is the canonical thumbnail the products-list page renders;
+        // keep the mediaUrl/thumbnailUrl fallbacks for older response shapes.
+        thumbnailUrl: r.mediaUrl?.thumbnailUrl ?? r.mediaUrl?.defaultUrl ?? r.thumbnailUrl ?? r.image ?? undefined,
       }));
       if (page === 1) this.rows.set(rows);
       else this.rows.update((prev) => [...prev, ...rows]);

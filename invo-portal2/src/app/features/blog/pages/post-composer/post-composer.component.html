@@ -132,7 +132,12 @@
             @if (settingsTab() === 'general') {
               <div class="wc__field">
                 <div class="wc__labelRow">
-                  <span class="wc__label">{{ 'BLOG.COMPOSER.FEATURED_IMAGE' | translate }}</span>
+                  <span class="wc__label">
+                    {{ 'BLOG.COMPOSER.FEATURED_IMAGE' | translate }}
+                    <span class="wc__info" [appTooltip]="'BLOG.COMPOSER.FEATURED_IMAGE_HINT' | translate">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    </span>
+                  </span>
                   <app-toggle [ngModel]="featuredImageOn()" (ngModelChange)="setFeaturedImageOn($event)"/>
                 </div>
                 @if (featuredImageOn()) {
@@ -140,32 +145,28 @@
                     @if (coverImage()) {
                       <img [src]="coverImage()" alt="cover"/>
                       <div class="wc__coverActions">
-                        <button class="wc__btn--ghost" (click)="coverPicker.click()">{{ 'BLOG.COMPOSER.REPLACE' | translate }}</button>
+                        <button class="wc__btn--ghost" (click)="onPickFeaturedImage()">{{ 'BLOG.COMPOSER.REPLACE' | translate }}</button>
                         <button class="wc__btn--ghost" (click)="removeCover()">{{ 'BLOG.COMPOSER.REMOVE' | translate }}</button>
                       </div>
                     } @else {
-                      <button class="wc__dropzone" (click)="coverPicker.click()">
+                      <button class="wc__dropzone" (click)="onPickFeaturedImage()">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                         </svg>
                       </button>
                     }
-                    <input #coverPicker type="file" hidden accept="image/*" (change)="onCoverFile($any($event.target).files)"/>
                   </div>
                 }
               </div>
 
               <div class="wc__field">
                 <label class="wc__label">{{ 'BLOG.COMPOSER.PUBLISH_DATE' | translate }}</label>
-                <div class="wc__inputWrap">
-                  <svg class="wc__inputIcon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
-                  <input type="datetime-local" class="wc__input"
-                         [value]="scheduledDate()"
-                         (change)="setScheduled($any($event.target).value)"
-                         [placeholder]="'BLOG.COMPOSER.PUBLISH_NOW' | translate"/>
-                </div>
+                <app-date-picker
+                  [value]="scheduledDateObj()"
+                  [showTime]="true"
+                  [placeholder]="'BLOG.COMPOSER.PUBLISH_NOW' | translate"
+                  triggerClass="wc__input"
+                  (valueChange)="setScheduledDate($any($event))"/>
               </div>
 
               <div class="wc__field">
@@ -173,7 +174,7 @@
                 <app-search-dropdown
                   [items]="writerOptions()"
                   [value]="$any(authorEmployeeId())"
-                  [displayWith]="idDisplay"
+                  [displayWith]="writerDisplay"
                   [compareWith]="idCompare"
                   [toValue]="idToValue"
                   [clearable]="false"
@@ -183,7 +184,12 @@
 
               <div class="wc__field">
                 <div class="wc__labelRow">
-                  <label class="wc__label">{{ 'BLOG.COMPOSER.EXCERPT' | translate }}</label>
+                  <label class="wc__label">
+                    {{ 'BLOG.COMPOSER.EXCERPT' | translate }}
+                    <span class="wc__info" [appTooltip]="'BLOG.COMPOSER.EXCERPT_HINT' | translate">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    </span>
+                  </label>
                   <span class="wc__count" [class.is-over]="excerptOver()">{{ excerptCount() }}/500</span>
                 </div>
                 <textarea class="wc__input wc__input--ta"
@@ -196,8 +202,42 @@
 
               <div class="wc__field">
                 <div class="wc__labelRow">
+                  <label class="wc__label">
+                    {{ 'BLOG.COMPOSER.RELATED_POSTS' | translate }}
+                    <span class="wc__info" [appTooltip]="'BLOG.COMPOSER.RELATED_POSTS_HINT' | translate">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    </span>
+                  </label>
+                  <span class="wc__count">{{ relatedPostIds().length }}/3</span>
+                </div>
+                <app-search-dropdown
+                  [items]="relatedPostOptions()"
+                  [value]="$any(relatedPostIds())"
+                  [multiple]="true"
+                  [displayWith]="relatedDisplay"
+                  [compareWith]="idCompare"
+                  [toValue]="idToValue"
+                  [searchable]="true"
+                  [placeholder]="'BLOG.COMPOSER.CHOOSE_POSTS' | translate"
+                  (valueChange)="setRelatedPosts($any($event))"/>
+              </div>
+
+              <div class="wc__field">
+                <div class="wc__labelRow">
                   <span class="wc__label">{{ 'BLOG.COMPOSER.FEATURE_POST' | translate }}</span>
                   <app-toggle [ngModel]="isFeatured()" (ngModelChange)="setFeatured($event)"/>
+                </div>
+              </div>
+
+              <div class="wc__field">
+                <div class="wc__labelRow">
+                  <span class="wc__label">
+                    {{ 'BLOG.COMPOSER.ALLOW_COMMENTS' | translate }}
+                    <span class="wc__info" [appTooltip]="'BLOG.COMPOSER.ALLOW_COMMENTS_HINT' | translate">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    </span>
+                  </span>
+                  <app-toggle [ngModel]="allowComments()" (ngModelChange)="setAllowComments($event)"/>
                 </div>
               </div>
             }
@@ -211,9 +251,11 @@
                 [mainId]="mainTaxonomyId()"
                 [maxCount]="10"
                 [defaultLang]="defaultLanguage()"
+                [aiContent]="current().content"
                 (add)="addTaxonomy($event)"
                 (remove)="removeTaxonomy($event)"
-                (setMain)="setMainTaxonomy($event)"/>
+                (setMain)="setMainTaxonomy($event)"
+                (createCategory)="createCategoryInline($event)"/>
             }
 
             <!-- Tags tab -->
@@ -223,6 +265,7 @@
                 mode="tag"
                 [selectedIds]="taxonomyIds()"
                 [defaultLang]="defaultLanguage()"
+                [aiContent]="current().content"
                 (add)="addTaxonomy($event)"
                 (remove)="removeTaxonomy($event)"
                 (createTag)="createTagInline($event)"/>
@@ -320,13 +363,19 @@
           class="wc__editor"
           [bare]="true"
           [addButton]="true"
+          [showContentAi]="true"
+          [slashCommands]="slashCommands"
           [ngModel]="current().content"
           (ngModelChange)="setContent($event)"
           (addClick)="rail.set('add')"
+          (slashSelect)="onAddTool($any($event))"
           (blockReplace)="onBlockReplace($event)"
           (bgImageClick)="onPickBannerBgImage()"
           (colBgImageClick)="onPickColBgImage()"
+          (pollBgImageClick)="onPickPollBgImage()"
+          (productPickClick)="onPickProduct()"
           (cellImageClick)="onPickCellImage($event)"
+          (galleryAddImages)="onGalleryAddImages($event)"
           [embedOnPaste]="true"
           height="auto">
           <div class="wc__canvasInner">

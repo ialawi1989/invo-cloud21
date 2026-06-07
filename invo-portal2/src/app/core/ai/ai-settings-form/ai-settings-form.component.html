@@ -1,0 +1,78 @@
+<div class="pf-field">
+  <label class="pf-label">{{ 'PLUGINS.AI.PROVIDER' | translate }}</label>
+  <app-search-dropdown
+    [items]="options()" [displayWith]="optionLabel" [compareWith]="optionEquals"
+    [placeholder]="'PLUGINS.AI.PROVIDER_PLACEHOLDER' | translate"
+    [value]="selectedOption()"
+    (valueChange)="onProviderChange($any($event))"/>
+  @if (submitted() && errProvider()) {
+    <span class="pf-error">{{ 'PLUGINS.AI.PROVIDER_REQUIRED' | translate }}</span>
+  }
+  @if (providerHelp(); as h) {
+    <div class="ai-help">
+      <a class="ai-help__link" [href]="h.keys" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="3.5"/><path d="m10 13 9-9 2 2-2 2 2 2-3 3-2-2-2 2"/></svg>
+        {{ 'PLUGINS.AI.GET_KEY' | translate }}
+        <svg class="ai-help__ext" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+      <span class="ai-help__sep"></span>
+      <a class="ai-help__link" [href]="h.models" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        {{ 'PLUGINS.AI.BROWSE_MODELS' | translate }}
+        <svg class="ai-help__ext" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+    </div>
+  } @else if (isCustom) {
+    <span class="pf-hint">{{ 'PLUGINS.AI.CUSTOM_HELP' | translate }}</span>
+  }
+</div>
+
+<div class="pf-row">
+  <div class="pf-field">
+    <label class="pf-label">{{ 'PLUGINS.AI.BASE_URL' | translate }}</label>
+    <input class="pf-input" type="text" name="aiBaseUrl"
+           [class.is-invalid]="submitted() && errCustom() && !baseUrl().trim()"
+           [ngModel]="baseUrl()" (ngModelChange)="baseUrl.set($event); touch()"/>
+  </div>
+  <div class="pf-field">
+    <label class="pf-label">{{ 'PLUGINS.AI.MODEL' | translate }}</label>
+    <input class="pf-input" type="text" name="aiModel"
+           [class.is-invalid]="submitted() && errCustom() && !model().trim()"
+           [ngModel]="model()" (ngModelChange)="model.set($event); touch()"/>
+  </div>
+</div>
+@if (submitted() && errCustom()) {
+  <span class="pf-error">{{ 'PLUGINS.AI.CUSTOM_REQUIRED' | translate }}</span>
+}
+
+<div class="pf-field">
+  <label class="pf-label">{{ 'PLUGINS.AI.API_KEY' | translate }}</label>
+
+  @if (keyStored && !replacingKey()) {
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span class="pf-status pf-status--ok">{{ 'PLUGINS.AI.KEY_STORED' | translate }}</span>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="toggleReplaceKey()">
+        {{ 'PLUGINS.AI.REPLACE_KEY' | translate }}
+      </button>
+    </div>
+  }
+
+  @if (showKeyInput) {
+    <input class="pf-input" type="password" name="aiApiKey" autocomplete="new-password"
+           [placeholder]="keyHint()"
+           [ngModel]="apiKey()" (ngModelChange)="apiKey.set($event); touch()"/>
+    @if (keyStored) {
+      <span class="pf-hint">{{ 'PLUGINS.COMMON.SECRET_KEEP_HINT' | translate }}</span>
+    }
+  }
+</div>
+
+<div class="pf-toggle-row" style="margin-top:8px;">
+  <div class="pf-toggle-row__text">
+    <div class="pf-toggle-row__title">{{ 'PLUGINS.AI.ENABLE' | translate }}</div>
+  </div>
+  <label class="pf-switch">
+    <input type="checkbox" [ngModel]="enabled()" (ngModelChange)="enabled.set($event); touch()" name="aiEnabled"/>
+    <span class="pf-switch__track"><span class="pf-switch__thumb"></span></span>
+  </label>
+</div>

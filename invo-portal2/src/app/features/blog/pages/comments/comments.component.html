@@ -1,149 +1,173 @@
 <div class="cm">
   <header class="cm__head">
-    <div>
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <div class="cm__headText">
       <h1 class="cm__title">{{ 'BLOG.COMMENTS.TITLE' | translate }}</h1>
       <p class="cm__sub">{{ 'BLOG.COMMENTS.SUBTITLE' | translate }}</p>
     </div>
+    <div class="cm__headActions">
+      <app-dropdown-menu-btn
+        [items]="moreActionsMenu()"
+        [appendToBody]="true"
+        align="end"
+        triggerClass="cm-btn cm-btn--ghost">
+        {{ 'BLOG.COMMENTS.MORE_ACTIONS' | translate }}
+      </app-dropdown-menu-btn>
+      <button type="button" class="cm-btn cm-btn--primary" (click)="openModerationRules()">
+        {{ 'BLOG.COMMENTS.MODERATION_RULES' | translate }}
+      </button>
+    </div>
   </header>
 
-  <div class="cm__tabs">
-    <app-segmented-toggle
-      [options]="tabOptions()"
-      [value]="statusTab()"
-      (valueChange)="setTab($event)"/>
-  </div>
+  <nav class="cm__tabs" role="tablist">
+    @for (t of tabOptions(); track t.value) {
+      <button type="button" class="cm__tab" role="tab"
+              [class.is-on]="statusTab() === t.value"
+              (click)="setTab(t.value)">
+        {{ t.label }} <span class="cm__tabCount">({{ t.count }})</span>
+      </button>
+    }
+  </nav>
 
-  <div class="cm__filters">
-    <app-search-dropdown
-      [items]="postOptionsForDropdown()" [value]="$any(postId())"
-      [displayWith]="idDisplay" [compareWith]="idCompare" [toValue]="idToValue"
-      [clearable]="false" [searchable]="true"
-      (valueChange)="setPost($any($event))"/>
-    <app-search-dropdown
-      [items]="langOptions()" [value]="$any(language())"
-      [displayWith]="idDisplay" [compareWith]="idCompare" [toValue]="idToValue"
-      [clearable]="false" [searchable]="false"
-      (valueChange)="setLang($any($event))"/>
-    <label class="cm__date">
-      {{ 'BLOG.COMMENTS.FROM' | translate }}
-      <input type="date" [value]="dateFrom()" (change)="setDateFrom($any($event.target).value)"/>
-    </label>
-    <label class="cm__date">
-      {{ 'BLOG.COMMENTS.TO' | translate }}
-      <input type="date" [value]="dateTo()" (change)="setDateTo($any($event.target).value)"/>
-    </label>
-    <app-list-search
-      [value]="search()"
-      [placeholder]="'BLOG.COMMENTS.SEARCH_PLACEHOLDER' | translate"
-      (search)="setSearch($event)"
-      (clear)="clearSearch()"/>
-  </div>
-
-  @if (hasSelection()) {
-    <div class="cm__bulkBar">
-      <span class="cm__bulkText">
-        {{ 'BLOG.COMMENTS.SELECTED_COUNT' | translate:{ count: selected().size } }}
-      </span>
-      <button class="cm-btn" (click)="bulk('approve')">{{ 'BLOG.COMMENTS.APPROVE' | translate }}</button>
-      <button class="cm-btn" (click)="bulk('flag')">{{ 'BLOG.COMMENTS.FLAG' | translate }}</button>
-      <button class="cm-btn cm-btn--danger" (click)="bulk('delete')">{{ 'COMMON.DELETE' | translate }}</button>
-    </div>
-  }
-
-  @if (loading()) {
-    <div class="cm__loading"><span class="cm__spinner"></span></div>
-  } @else if (comments().length === 0) {
-    <app-blog-empty-state
-      icon="comments"
-      [title]="emptyMessage()"
-      [description]="'BLOG.COMMENTS.EMPTY_BODY' | translate"/>
-  } @else {
-    <div class="cm__list">
-      <label class="cm__selectAll">
-        <input type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll($any($event.target).checked)"/>
-        {{ 'BLOG.COMMENTS.SELECT_ALL' | translate }}
+  <div class="cm__card">
+    <div class="cm__toolbar">
+      <app-search-dropdown
+        [items]="postOptionsForDropdown()" [value]="$any(postId())"
+        [displayWith]="idDisplay" [compareWith]="idCompare" [toValue]="idToValue"
+        [clearable]="false" [searchable]="true"
+        (valueChange)="setPost($any($event))"/>
+      <app-search-dropdown
+        [items]="langOptions()" [value]="$any(language())"
+        [displayWith]="idDisplay" [compareWith]="idCompare" [toValue]="idToValue"
+        [clearable]="false" [searchable]="false"
+        (valueChange)="setLang($any($event))"/>
+      <label class="cm__date">
+        {{ 'BLOG.COMMENTS.FROM' | translate }}
+        <input type="date" [value]="dateFrom()" (change)="setDateFrom($any($event.target).value)"/>
       </label>
-
-      @for (c of comments(); track c.id) {
-        <article class="cm-item" [class.is-reply]="!!c.parentCommentId">
-          <input type="checkbox" class="cm-item__check"
-                 [checked]="selected().has(c.id)"
-                 (change)="toggleSelect(c.id, $any($event.target).checked)"/>
-
-          <div class="cm-item__avatar" [class.is-employee]="c.authorKind === 'employee'">
-            @if (c.authorAvatar) {
-              <img [src]="c.authorAvatar" alt=""/>
-            } @else {
-              <span>{{ c.authorName[0]?.toUpperCase() }}</span>
-            }
-          </div>
-
-          <div class="cm-item__body">
-            <div class="cm-item__meta">
-              <span class="cm-item__name">{{ c.authorName }}</span>
-              <span class="cm-item__kind">{{ (c.authorKind === 'employee' ? 'BLOG.COMMENTS.KIND_STAFF' : 'BLOG.COMMENTS.KIND_CUSTOMER') | translate }}</span>
-              <span class="cm-item__on">
-                {{ 'BLOG.COMMENTS.ON_POST' | translate }}
-                <a class="cm-item__post" [routerLink]="['/blog/posts', c.postId, 'edit']">«{{ c.postTitle }}»</a>
-              </span>
-              <span class="cm-item__when">· {{ ago(c) }}</span>
-              <app-blog-status-badge [status]="c.status"/>
-            </div>
-
-            @if (c.parentCommentId) {
-              <div class="cm-item__quote">
-                <strong>{{ c.parentAuthor }}:</strong>
-                <span>{{ c.parentExcerpt }}</span>
-              </div>
-            }
-
-            <div class="cm-item__content">
-              <app-hashtag-text [text]="contentDisplay(c)"/>
-              @if (c.content.length > 200) {
-                <button type="button" class="cm-item__expand" (click)="toggleView(c.id)">
-                  {{ (isExpanded(c.id) ? 'COMMON.COLLAPSE' : 'COMMON.EXPAND') | translate }}
-                </button>
-              }
-            </div>
-
-            <div class="cm-item__actions">
-              @if (c.status === 'pending') {
-                <button type="button" class="cm-link cm-link--ok" (click)="approve(c)">
-                  ✓ {{ 'BLOG.COMMENTS.APPROVE' | translate }}
-                </button>
-              }
-              @if (c.status !== 'flagged') {
-                <button type="button" class="cm-link" (click)="flag(c)">⚑ {{ 'BLOG.COMMENTS.FLAG' | translate }}</button>
-              }
-              @if (c.status !== 'deleted') {
-                <button type="button" class="cm-link cm-link--danger" (click)="remove(c)">🗑 {{ 'COMMON.DELETE' | translate }}</button>
-              }
-              <button type="button" class="cm-link" (click)="openReply(c)">↩ {{ 'BLOG.COMMENTS.REPLY' | translate }}</button>
-            </div>
-
-            @if (expandedReply() === c.id) {
-              <div class="cm-item__replyBox">
-                <textarea
-                  rows="2"
-                  [value]="replyDraft()"
-                  (input)="replyDraft.set($any($event.target).value)"
-                  [placeholder]="'BLOG.COMMENTS.REPLY_PLACEHOLDER' | translate"></textarea>
-                <div class="cm-item__replyActions">
-                  <button type="button" class="cm-btn cm-btn--ghost" (click)="expandedReply.set(null)">
-                    {{ 'COMMON.CANCEL' | translate }}
-                  </button>
-                  <button type="button" class="cm-btn cm-btn--primary"
-                          [disabled]="!replyDraft().trim()"
-                          (click)="submitReply(c)">
-                    {{ 'BLOG.COMMENTS.SEND_REPLY' | translate }}
-                  </button>
-                </div>
-              </div>
-            }
-          </div>
-        </article>
-      }
+      <label class="cm__date">
+        {{ 'BLOG.COMMENTS.TO' | translate }}
+        <input type="date" [value]="dateTo()" (change)="setDateTo($any($event.target).value)"/>
+      </label>
+      <app-list-search
+        [value]="search()"
+        [placeholder]="'BLOG.COMMENTS.SEARCH_PLACEHOLDER' | translate"
+        (search)="setSearch($event)"
+        (clear)="clearSearch()"/>
     </div>
-  }
+
+    @if (hasSelection()) {
+      <div class="cm__bulkBar">
+        <span class="cm__bulkText">
+          {{ 'BLOG.COMMENTS.SELECTED_COUNT' | translate:{ count: selected().size } }}
+        </span>
+        @if (statusTab() === 'deleted') {
+          <button class="cm-btn" (click)="bulk('restore')">{{ 'BLOG.COMMENTS.RESTORE' | translate }}</button>
+          <button class="cm-btn cm-btn--danger" (click)="bulk('deleteForever')">{{ 'BLOG.COMMENTS.DELETE_FOREVER' | translate }}</button>
+        } @else {
+          <button class="cm-btn" (click)="bulk('approve')">{{ 'BLOG.COMMENTS.APPROVE' | translate }}</button>
+          <button class="cm-btn" (click)="bulk('flag')">{{ 'BLOG.COMMENTS.FLAG' | translate }}</button>
+          <button class="cm-btn cm-btn--danger" (click)="bulk('delete')">{{ 'BLOG.COMMENTS.MOVE_TRASH' | translate }}</button>
+        }
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="cm__loading"><span class="cm__spinner"></span></div>
+    } @else if (comments().length === 0) {
+      <app-blog-empty-state
+        icon="comments"
+        [title]="emptyMessage()"
+        [description]="emptyBody()"/>
+    } @else {
+      <div class="cm__list">
+        <label class="cm__selectAll">
+          <input type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll($any($event.target).checked)"/>
+          {{ 'BLOG.COMMENTS.SELECT_ALL' | translate }}
+        </label>
+
+        @for (c of comments(); track c.id) {
+          <article class="cm-item" [class.is-reply]="!!c.parentCommentId">
+            <input type="checkbox" class="cm-item__check"
+                   [checked]="selected().has(c.id)"
+                   (change)="toggleSelect(c.id, $any($event.target).checked)"/>
+
+            <div class="cm-item__avatar" [class.is-employee]="c.authorKind === 'employee'">
+              @if (c.authorAvatar) {
+                <img [src]="c.authorAvatar" alt=""/>
+              } @else {
+                <span>{{ c.authorName[0]?.toUpperCase() }}</span>
+              }
+            </div>
+
+            <div class="cm-item__body">
+              <div class="cm-item__meta">
+                <span class="cm-item__name">{{ c.authorName }}</span>
+                <span class="cm-item__kind">{{ (c.authorKind === 'employee' ? 'BLOG.COMMENTS.KIND_STAFF' : 'BLOG.COMMENTS.KIND_CUSTOMER') | translate }}</span>
+                <span class="cm-item__on">
+                  {{ 'BLOG.COMMENTS.ON_POST' | translate }}
+                  <a class="cm-item__post" [routerLink]="['/blog/posts', c.postId, 'edit']">«{{ c.postTitle }}»</a>
+                </span>
+                <span class="cm-item__when">· {{ ago(c) }}</span>
+                <app-blog-status-badge [status]="c.status"/>
+              </div>
+
+              @if (c.parentCommentId) {
+                <div class="cm-item__quote">
+                  <strong>{{ c.parentAuthor }}:</strong>
+                  <span>{{ c.parentExcerpt }}</span>
+                </div>
+              }
+
+              <div class="cm-item__content">
+                <app-hashtag-text [text]="contentDisplay(c)"/>
+                @if (c.content.length > 200) {
+                  <button type="button" class="cm-item__expand" (click)="toggleView(c.id)">
+                    {{ (isExpanded(c.id) ? 'COMMON.COLLAPSE' : 'COMMON.EXPAND') | translate }}
+                  </button>
+                }
+              </div>
+
+              <div class="cm-item__actions">
+                @if (c.status === 'deleted') {
+                  <button type="button" class="cm-link cm-link--ok" (click)="restore(c)">↺ {{ 'BLOG.COMMENTS.RESTORE' | translate }}</button>
+                  <button type="button" class="cm-link cm-link--danger" (click)="deleteForever(c)">🗑 {{ 'BLOG.COMMENTS.DELETE_FOREVER' | translate }}</button>
+                } @else {
+                  @if (c.status === 'pending') {
+                    <button type="button" class="cm-link cm-link--ok" (click)="approve(c)">
+                      ✓ {{ 'BLOG.COMMENTS.APPROVE' | translate }}
+                    </button>
+                  }
+                  @if (c.status !== 'flagged') {
+                    <button type="button" class="cm-link" (click)="flag(c)">⚑ {{ 'BLOG.COMMENTS.FLAG' | translate }}</button>
+                  }
+                  <button type="button" class="cm-link cm-link--danger" (click)="remove(c)">🗑 {{ 'BLOG.COMMENTS.MOVE_TRASH' | translate }}</button>
+                  <button type="button" class="cm-link" (click)="openReply(c)">↩ {{ 'BLOG.COMMENTS.REPLY' | translate }}</button>
+                }
+              </div>
+
+              @if (expandedReply() === c.id) {
+                <div class="cm-item__replyBox">
+                  <textarea
+                    rows="2"
+                    [value]="replyDraft()"
+                    (input)="replyDraft.set($any($event.target).value)"
+                    [placeholder]="'BLOG.COMMENTS.REPLY_PLACEHOLDER' | translate"></textarea>
+                  <div class="cm-item__replyActions">
+                    <button type="button" class="cm-btn cm-btn--ghost" (click)="expandedReply.set(null)">
+                      {{ 'COMMON.CANCEL' | translate }}
+                    </button>
+                    <button type="button" class="cm-btn cm-btn--primary"
+                            [disabled]="!replyDraft().trim()"
+                            (click)="submitReply(c)">
+                      {{ 'BLOG.COMMENTS.SEND_REPLY' | translate }}
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </div>
 </div>

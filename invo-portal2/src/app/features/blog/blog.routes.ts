@@ -51,6 +51,66 @@ export const BLOG_ROUTES: Routes = [
     loadComponent: () =>
       import('./pages/taxonomies/taxonomies.component').then(m => m.TaxonomiesComponent),
   },
+  {
+    path: 'categories/new',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'blogSecurity.actions.manageCategories.access' },
+    loadComponent: () =>
+      import('./pages/taxonomies/taxonomy-edit.component').then(m => m.TaxonomyEditComponent),
+  },
+  {
+    path: 'categories/:id/edit',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'blogSecurity.actions.manageCategories.access' },
+    loadComponent: () =>
+      import('./pages/taxonomies/taxonomy-edit.component').then(m => m.TaxonomyEditComponent),
+  },
+  {
+    path: 'tags/new',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'blogSecurity.actions.manageCategories.access' },
+    loadComponent: () =>
+      import('./pages/taxonomies/taxonomy-edit.component').then(m => m.TaxonomyEditComponent),
+  },
+  {
+    path: 'tags/:id/edit',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'blogSecurity.actions.manageCategories.access' },
+    loadComponent: () =>
+      import('./pages/taxonomies/taxonomy-edit.component').then(m => m.TaxonomyEditComponent),
+  },
+
+  // ── Analytics ─────────────────────────────────────────────────────────
+  {
+    path: 'analytics',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'blogSecurity.actions.view.access' },
+    loadComponent: () =>
+      import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent),
+  },
+
+  // ── Comments — moderation rules ───────────────────────────────────────
+  {
+    path: 'comments/rules',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'blogSecurity.actions.moderateComments.access' },
+    loadComponent: () =>
+      import('./pages/moderation-rules/moderation-rules.component').then(m => m.ModerationRulesComponent),
+  },
+  {
+    path: 'comments/rules/new',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'blogSecurity.actions.moderateComments.access' },
+    loadComponent: () =>
+      import('./pages/moderation-rules/moderation-rule-form.component').then(m => m.ModerationRuleFormComponent),
+  },
+  {
+    path: 'comments/rules/:id/edit',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'blogSecurity.actions.moderateComments.access' },
+    loadComponent: () =>
+      import('./pages/moderation-rules/moderation-rule-form.component').then(m => m.ModerationRuleFormComponent),
+  },
 
   // ── Comments ──────────────────────────────────────────────────────────
   {

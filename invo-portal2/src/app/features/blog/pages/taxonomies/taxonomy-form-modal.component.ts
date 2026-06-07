@@ -27,6 +27,8 @@ import { generateSlug } from '../../utils/blog-utils';
 interface ModalInput {
   taxonomyType: TaxonomyType;
   existing:     BlogTaxonomy | null;
+  /** Language to author a NEW taxonomy in (from the create-language modal). */
+  initialLang?: string;
 }
 
 @Component({
@@ -187,10 +189,11 @@ export class TaxonomyFormModalComponent {
   private id: string | null = this.data.existing?.id ?? null;
 
   // ── Per-language form slices ────────────────────────────────────────
-  defaultLang  = signal<string>(this.data.existing?.defaultLanguage ?? 'en');
-  active       = signal<string>(this.data.existing?.defaultLanguage ?? 'en');
+  private startLang = this.data.existing?.defaultLanguage ?? this.data.initialLang ?? 'en';
+  defaultLang  = signal<string>(this.startLang);
+  active       = signal<string>(this.startLang);
   private translations = signal<Record<string, TaxonomyLocale>>(
-    this.data.existing?.translations ?? { en: { name: '', slug: '' } },
+    this.data.existing?.translations ?? { [this.startLang]: { name: '', slug: '' } },
   );
 
   imageUrl = signal<string>(this.data.existing?.image ?? '');

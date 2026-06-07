@@ -1,0 +1,68 @@
+<div class="mr">
+  <header class="mr__head">
+    <nav class="mr__crumbs">
+      <a [routerLink]="['/blog/comments']">{{ 'BLOG.COMMENTS.TITLE' | translate }}</a>
+      <span class="mr__crumbSep">›</span>
+      <span>{{ 'BLOG.MODERATION.TITLE' | translate }}</span>
+    </nav>
+    <div class="mr__titleRow">
+      <button type="button" class="mr__back" [routerLink]="['/blog/comments']" aria-label="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="mr__titleText">
+        <h1 class="mr__title">{{ 'BLOG.MODERATION.TITLE' | translate }}</h1>
+        <p class="mr__sub">{{ 'BLOG.MODERATION.SUBTITLE' | translate }}</p>
+      </div>
+      <button type="button" class="mr-btn mr-btn--primary" (click)="addRule()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        {{ 'BLOG.MODERATION.ADD_RULE' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <div class="mr__card">
+    <div class="mr__cardHead">{{ 'BLOG.MODERATION.RULES' | translate }}</div>
+
+    @if (loading()) {
+      <div class="mr__state">{{ 'COMMON.LOADING' | translate }}…</div>
+    } @else if (rules().length === 0) {
+      <div class="mr__state">{{ 'BLOG.MODERATION.EMPTY' | translate }}</div>
+    } @else {
+      <table class="mr__table">
+        <thead>
+          <tr>
+            <th>{{ 'BLOG.MODERATION.COL_NAME' | translate }}</th>
+            <th>{{ 'BLOG.MODERATION.COL_GROUP' | translate }}</th>
+            <th>{{ 'BLOG.MODERATION.COL_TRIGGER' | translate }}</th>
+            <th>{{ 'BLOG.MODERATION.COL_ACTION' | translate }}</th>
+            <th>{{ 'BLOG.MODERATION.COL_EXCEPTIONS' | translate }}</th>
+            <th>{{ 'BLOG.MODERATION.COL_STATUS' | translate }}</th>
+            <th class="mr__num"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rules(); track r.id) {
+            <tr>
+              <td class="mr__name">{{ r.name }}</td>
+              <td><span class="mr__chip">{{ groupLabel(r.group) }}</span></td>
+              <td><span class="mr__chip">{{ triggerLabel(r.trigger) }}</span></td>
+              <td><span class="mr__chip">{{ actionLabel(r.action) }}</span></td>
+              <td class="mr__exc">{{ r.excludedMemberIds.length ? r.excludedMemberIds.length : '—' }}</td>
+              <td>
+                <div class="mr__status">
+                  <app-toggle [ngModel]="r.active" (ngModelChange)="toggle(r, $event)"/>
+                  <span [class.is-on]="r.active">{{ (r.active ? 'BLOG.MODERATION.ACTIVE' : 'BLOG.MODERATION.INACTIVE') | translate }}</span>
+                </div>
+              </td>
+              <td class="mr__num" (click)="$event.stopPropagation()">
+                <app-dropdown-menu-btn [items]="rowMenu(r)" align="end" [appendToBody]="true" [chevron]="false" triggerClass="mr-more">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                </app-dropdown-menu-btn>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>

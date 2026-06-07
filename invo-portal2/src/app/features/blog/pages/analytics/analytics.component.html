@@ -1,0 +1,271 @@
+<div class="an">
+  <header class="an__head">
+    <h1 class="an__title">{{ 'BLOG.ANALYTICS.TITLE' | translate }}</h1>
+    <p class="an__sub">{{ 'BLOG.ANALYTICS.SUBTITLE' | translate }}</p>
+  </header>
+
+  <!-- Date range -->
+  <div class="an__range">
+    <app-date-picker
+      mode="range"
+      [presets]="presets()"
+      [value]="range()"
+      (valueChange)="onRange($event)"
+    />
+    @if (prevPeriodLabel()) {
+      <span class="an__compare">
+        {{ 'BLOG.ANALYTICS.COMPARE_PREV' | translate }} ({{ prevPeriodLabel() }})
+      </span>
+    }
+  </div>
+
+  <div class="an__grid">
+    <!-- Summary + chart -->
+    <section class="an__card an__metrics">
+      <div class="an__tabs">
+        <button type="button" class="an__tab" [class.is-on]="metric() === 'views'" (click)="setMetric('views')">
+          <span class="an__tabLabel">{{ 'BLOG.ANALYTICS.POST_VIEWS' | translate }}</span>
+          <span class="an__tabValue">{{ num(totals()?.totalViews) }}</span>
+        </button>
+        <button type="button" class="an__tab" [class.is-on]="metric() === 'visitors'" (click)="setMetric('visitors')">
+          <span class="an__tabLabel">{{ 'BLOG.ANALYTICS.VISITORS' | translate }}</span>
+          <span class="an__tabValue">{{ totals()?.uniqueVisitors == null ? '—' : num(totals()?.uniqueVisitors) }}</span>
+        </button>
+        <button type="button" class="an__tab" [class.is-on]="metric() === 'engagement'" (click)="setMetric('engagement')">
+          <span class="an__tabLabel">{{ 'BLOG.ANALYTICS.ENGAGEMENT' | translate }}</span>
+          <span class="an__tabValue">{{ num(engagementTotal()) }}</span>
+        </button>
+      </div>
+      @if (chartHasData()) {
+        <div class="an__chart">
+          <svg class="an__chartSvg" viewBox="0 0 640 200" preserveAspectRatio="none" role="img">
+            <defs>
+              <linearGradient id="anTrendFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00aab3" stop-opacity="0.22"/>
+                <stop offset="100%" stop-color="#00aab3" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path [attr.d]="trendArea()" fill="url(#anTrendFill)"/>
+            <path [attr.d]="trendLine()" fill="none" stroke="#00aab3" stroke-width="2"
+                  stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <div class="an__chartAxis">
+            <span>{{ chartStartLabel() }}</span>
+            <span class="an__chartMax">{{ 'BLOG.ANALYTICS.PEAK' | translate }}: {{ num(chartMax()) }}</span>
+            <span>{{ chartEndLabel() }}</span>
+          </div>
+        </div>
+      } @else {
+        <div class="an__chartPh">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          <span>{{ 'BLOG.ANALYTICS.PB_EMPTY_TITLE' | translate }}</span>
+        </div>
+      }
+    </section>
+
+    <!-- Time of day -->
+    <aside class="an__card">
+      <h2 class="an__cardTitle">{{ 'BLOG.ANALYTICS.BY_TIME' | translate }}</h2>
+      @if (hourlyHasData()) {
+        <div class="an__heat">
+          @for (row of heatGrid(); track $index) {
+            <div class="an__heatRow">
+              <span class="an__heatDow">{{ weekdayLabels()[$index] }}</span>
+              <div class="an__heatCells">
+                @for (cell of row; track $index) {
+                  <span class="an__heatCell" [style.background]="heatColor(cell)"></span>
+                }
+              </div>
+            </div>
+          }
+          <div class="an__heatRuler">
+            <span class="an__heatDow"></span>
+            <div class="an__heatTicks">
+              @for (t of heatHourTicks; track t) {
+                <span class="an__heatTick">{{ t }}:00</span>
+              }
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="an__chartPh an__chartPh--sm">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+          <span>{{ 'BLOG.ANALYTICS.PB_EMPTY_TITLE' | translate }}</span>
+        </div>
+      }
+    </aside>
+  </div>
+
+  <!-- Posts by … -->
+  <section class="an__card an__pb">
+    <!-- Left rail -->
+    <aside class="an__pbRail">
+      <h2 class="an__pbTitle">{{ 'BLOG.ANALYTICS.POSTS_BY' | translate }}</h2>
+      <nav class="an__pbTabs">
+        @for (t of postsByTabs; track t.key) {
+          <button type="button" class="an__pbTab" [class.is-on]="postsBy() === t.key" (click)="setPostsBy(t.key)">
+            <span class="an__pbIco">
+              @switch (t.key) {
+                @case ('publishDate') { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> }
+                @case ('views') { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> }
+                @case ('clicks') { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 9 5 12 1.8-5.2L21 14Z"/><path d="M7.2 2.2 8 5.1M5.1 8 2.2 7.2M14 4.1 12 6M6 12l-1.9 2"/></svg> }
+                @case ('readingTime') { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> }
+                @case ('engagement') { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg> }
+              }
+            </span>
+            <span class="an__pbLabel">{{ t.labelKey | translate }}</span>
+          </button>
+        }
+      </nav>
+    </aside>
+
+    <!-- Right panel -->
+    <div class="an__pbBody">
+      @if (loading()) {
+        <div class="an__pbState"><span>{{ 'COMMON.LOADING' | translate }}…</span></div>
+      } @else if (postsBy() === 'clicks') {
+        <!-- Clicks needs click tracking enabled -->
+        <div class="an__pbEmpty">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 9 5 12 1.8-5.2L21 14Z"/><path d="M7.2 2.2 8 5.1M5.1 8 2.2 7.2M14 4.1 12 6M6 12l-1.9 2"/></svg>
+          <h3>{{ 'BLOG.ANALYTICS.CLICKS_TITLE' | translate }}</h3>
+          <p>{{ 'BLOG.ANALYTICS.CLICKS_HINT' | translate }}</p>
+          <button type="button" class="an__pbCta" disabled>{{ 'BLOG.ANALYTICS.CLICKS_ENABLE' | translate }}</button>
+          <span class="an__soon">{{ 'BLOG.ANALYTICS.SOON' | translate }}</span>
+        </div>
+      } @else if (!postsByHasData()) {
+        <!-- No data for this metric / period -->
+        <div class="an__pbEmpty">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          <h3>{{ 'BLOG.ANALYTICS.PB_EMPTY_TITLE' | translate }}</h3>
+          <p>{{ 'BLOG.ANALYTICS.PB_EMPTY_HINT' | translate }}</p>
+        </div>
+      } @else {
+        <table class="an__table">
+          <thead>
+            <tr>
+              <th>{{ 'BLOG.ANALYTICS.COL_POST' | translate }}</th>
+              <th class="an__num">{{ 'BLOG.ANALYTICS.COL_VIEWS' | translate }}</th>
+              @switch (postsBy()) {
+                @case ('readingTime') { <th class="an__num">{{ 'BLOG.ANALYTICS.COL_READ_TIME' | translate }}</th> }
+                @case ('engagement')  { <th class="an__num">{{ 'BLOG.ANALYTICS.COL_ENGAGEMENT' | translate }}</th> }
+                @default              { <th class="an__num">{{ 'BLOG.ANALYTICS.COL_READ_TIME' | translate }}</th> }
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of postsByRows(); track p.id) {
+              <tr>
+                <td>
+                  <div class="an__pbPost">
+                    @if (p.cover) {
+                      <img class="an__pbCover" [src]="p.cover" alt="" />
+                    } @else {
+                      <span class="an__pbCover an__pbCover--ph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></span>
+                    }
+                    <div class="an__pbPostMeta">
+                      <a class="an__postLink" [routerLink]="['/blog/posts', p.id, 'edit']">
+                        {{ p.title || '(untitled)' }}
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+                      </a>
+                      @if (p.publishDate) {
+                        <span class="an__pbSub">{{ 'BLOG.ANALYTICS.PUBLISHED_ON' | translate }} {{ p.publishDate | date:'mediumDate' }}</span>
+                      }
+                    </div>
+                  </div>
+                </td>
+                <td class="an__num">{{ num(p.views) }}</td>
+                @switch (postsBy()) {
+                  @case ('readingTime') { <td class="an__num">{{ readTime(p.avgReadTime) }}</td> }
+                  @case ('engagement')  { <td class="an__num">{{ num(engagementOf(p)) }}</td> }
+                  @default              { <td class="an__num">{{ readTime(p.avgReadTime) }}</td> }
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </section>
+
+  <div class="an__grid">
+    <!-- Google Search Console -->
+    <section class="an__card an__gsc">
+      <h2 class="an__cardTitle">{{ 'BLOG.ANALYTICS.GSC_TITLE' | translate }}</h2>
+      @if (search(); as gsc) {
+        <div class="an__gscStats">
+          <div class="an__stat">
+            <span class="an__statVal">{{ num(gsc.impressions) }}</span>
+            <span class="an__statLbl">{{ 'BLOG.ANALYTICS.GSC_IMPRESSIONS' | translate }}</span>
+          </div>
+          <div class="an__stat">
+            <span class="an__statVal">{{ num(gsc.clicks) }}</span>
+            <span class="an__statLbl">{{ 'BLOG.ANALYTICS.GSC_CLICKS' | translate }}</span>
+          </div>
+          <div class="an__stat">
+            <span class="an__statVal">{{ pct(gsc.ctr * 100) }}</span>
+            <span class="an__statLbl">{{ 'BLOG.ANALYTICS.GSC_CTR' | translate }}</span>
+          </div>
+          <div class="an__stat">
+            <span class="an__statVal">{{ gsc.avgPosition | number:'1.1-1' }}</span>
+            <span class="an__statLbl">{{ 'BLOG.ANALYTICS.GSC_POSITION' | translate }}</span>
+          </div>
+        </div>
+        @if (gsc.topQueries.length) {
+          <table class="an__table an__gscQueries">
+            <thead>
+              <tr>
+                <th>{{ 'BLOG.ANALYTICS.GSC_QUERY' | translate }}</th>
+                <th class="an__num">{{ 'BLOG.ANALYTICS.GSC_CLICKS' | translate }}</th>
+                <th class="an__num">{{ 'BLOG.ANALYTICS.GSC_IMPRESSIONS' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (q of gsc.topQueries; track q.query) {
+                <tr>
+                  <td class="an__qText">{{ q.query }}</td>
+                  <td class="an__num">{{ num(q.clicks) }}</td>
+                  <td class="an__num">{{ num(q.impressions) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      } @else {
+        <div class="an__gscBody">
+          <p>{{ 'BLOG.ANALYTICS.GSC_HINT' | translate }}</p>
+          <a class="an__connect" [routerLink]="['/settings/plugins/google-search-console', '0']">{{ 'BLOG.ANALYTICS.GSC_CONNECT' | translate }}</a>
+        </div>
+      }
+    </section>
+
+    <!-- Traffic sources -->
+    <aside class="an__card">
+      <h2 class="an__cardTitle">{{ 'BLOG.ANALYTICS.TRAFFIC' | translate }}</h2>
+      <div class="an__srcFilter">
+        <app-search-dropdown
+          [items]="trafficPostOptions()"
+          [displayWith]="trafficLabel"
+          [toValue]="trafficValue"
+          [compareWith]="trafficCompare"
+          [searchable]="trafficPostOptions().length > 8"
+          [clearable]="false"
+          [value]="$any(trafficPost())"
+          (valueChange)="onTrafficPost($any($event))"
+          [placeholder]="'BLOG.ANALYTICS.ALL_POSTS' | translate"
+        />
+      </div>
+      <ul class="an__sources">
+        @for (s of trafficSources(); track s.label) {
+          <li>
+            <span class="an__srcName">{{ s.label }}</span>
+            <span class="an__srcVals">
+              <b>{{ num(s.sessions) }}</b>
+              <em class="an__srcPct">{{ pct(s.pct) }}</em>
+            </span>
+          </li>
+        }
+      </ul>
+      <span class="an__soon">{{ 'BLOG.ANALYTICS.SOON' | translate }}</span>
+    </aside>
+  </div>
+</div>

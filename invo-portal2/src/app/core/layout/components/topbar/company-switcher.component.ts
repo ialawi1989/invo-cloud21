@@ -9,7 +9,8 @@ import { AuthService } from '../../../auth/auth.service';
 import { CompanyService } from '../../../auth/company.service';
 import { Company, resolveEmployeeName, resolveInitials } from '../../../auth/auth.models';
 import { MODAL_REF } from '../../../../shared/modal/modal.tokens';
-import { ModalRef } from '../../../../shared/modal/modal.service';
+import { ModalRef, ModalService } from '../../../../shared/modal/modal.service';
+import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/employee-ai-override.component';
 
 @Component({
   selector: 'app-company-switcher',
@@ -50,6 +51,14 @@ import { ModalRef } from '../../../../shared/modal/modal.service';
           </svg>
           {{ 'COMPANY_SWITCHER.COMPANIES_OVERVIEW' | translate }}
         </a>
+
+        <button type="button" class="btn-act" (click)="openAiOverride()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/>
+          </svg>
+          {{ 'COMPANY_SWITCHER.AI_OVERRIDE' | translate }}
+        </button>
 
         <button class="btn-act btn-act--danger"
                 (click)="onLogout()" [disabled]="loggingOut()">
@@ -231,6 +240,7 @@ import { ModalRef } from '../../../../shared/modal/modal.service';
 })
 export class CompanySwitcherComponent implements OnInit {
   private auth   = inject(AuthService);
+  private modal  = inject(ModalService);
   ref            = inject<ModalRef>(MODAL_REF);
   companyService = inject(CompanyService);
 
@@ -242,6 +252,13 @@ export class CompanySwitcherComponent implements OnInit {
   employee    = signal(this.auth.currentEmployee);
   displayName = computed(() => resolveEmployeeName(this.employee()));
   initials    = computed(() => resolveInitials(this.employee()));
+
+  /** Open the per-employee Content AI override (personal key that
+   *  overrides the company-wide Content AI plugin). */
+  openAiOverride(): void {
+    this.ref.dismiss();
+    this.modal.open(EmployeeAiOverrideComponent, { size: 'md', closeOnBackdrop: true });
+  }
 
   async ngOnInit(): Promise<void> {
     if (this.companyService.companies().length === 0) {

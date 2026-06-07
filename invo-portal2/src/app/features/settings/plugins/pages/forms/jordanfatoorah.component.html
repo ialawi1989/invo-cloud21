@@ -1,0 +1,131 @@
+<app-plugin-form-shell
+  [title]="'PLUGINS.JOFOTARA.TITLE' | translate"
+  [intro]="'PLUGINS.JOFOTARA.INTRO' | translate"
+  [breadcrumbs]="breadcrumbs()"
+  [loading]="loading()" [saving]="saving()"
+  (save)="save()" (back)="back()">
+
+  <!-- Configuration -->
+  <div class="pf-card">
+    <h3 class="pf-section-title">{{ 'PLUGINS.COMMON.CONFIGURATION' | translate }}</h3>
+    <div class="pf-row">
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PLUGINS.JOFOTARA.TAX_NAME' | translate }}</label>
+        <input class="pf-input" type="text" name="taxName" [class.is-invalid]="submitted() && errors.taxName"
+               [(ngModel)]="plugin.settings.taxName" (ngModelChange)="onChange()"/>
+        @if (submitted() && errors.taxName) { <span class="pf-error">{{ 'PLUGINS.COMMON.REQUIRED' | translate }}</span> }
+      </div>
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PLUGINS.JOFOTARA.CLIENT_ID' | translate }}</label>
+        <input class="pf-input" type="text" name="clientId" [class.is-invalid]="submitted() && errors.clientId"
+               [(ngModel)]="plugin.settings.clientId" (ngModelChange)="onChange()"/>
+        @if (submitted() && errors.clientId) { <span class="pf-error">{{ 'PLUGINS.COMMON.REQUIRED' | translate }}</span> }
+      </div>
+    </div>
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PLUGINS.JOFOTARA.SECRET_KEY' | translate }}</label>
+      <input class="pf-input" type="password" name="secretKey" autocomplete="new-password"
+             [(ngModel)]="plugin.settings.secretKey" (ngModelChange)="markSecretDirty('secretKey'); onChange()"
+             [placeholder]="isNew ? '' : ('PLUGINS.COMMON.SECRET_KEEP_HINT' | translate)"/>
+      @if (!isNew) { <span class="pf-hint">{{ 'PLUGINS.COMMON.SECRET_KEEP_HINT' | translate }}</span> }
+    </div>
+    <div class="pf-row">
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PLUGINS.JOFOTARA.TAX_NUMBER' | translate }}</label>
+        <input class="pf-input" type="text" name="taxNumber" [class.is-invalid]="submitted() && errors.taxNumber"
+               [(ngModel)]="plugin.settings.taxNumber" (ngModelChange)="onChange()"/>
+        @if (submitted() && errors.taxNumber) { <span class="pf-error">{{ 'PLUGINS.COMMON.REQUIRED' | translate }}</span> }
+      </div>
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PLUGINS.JOFOTARA.ACTIVITY_NUMBER' | translate }}</label>
+        <input class="pf-input" type="text" name="activityNumber" [class.is-invalid]="submitted() && errors.activityNumber"
+               [(ngModel)]="plugin.settings.activityNumber" (ngModelChange)="onChange()"/>
+        @if (submitted() && errors.activityNumber) { <span class="pf-error">{{ 'PLUGINS.COMMON.REQUIRED' | translate }}</span> }
+      </div>
+    </div>
+  </div>
+
+  <!-- Enable -->
+  <div class="pf-card">
+    <div class="pf-toggle-row">
+      <div class="pf-toggle-row__text">
+        <div class="pf-toggle-row__title">{{ 'PLUGINS.COMMON.ENABLE' | translate }}</div>
+        <div class="pf-toggle-row__hint">{{ 'PLUGINS.COMMON.ENABLED_HINT' | translate }}</div>
+      </div>
+      <label class="pf-switch">
+        <input type="checkbox" [(ngModel)]="plugin.settings.enable" (ngModelChange)="markDirty()" name="enable"/>
+        <span class="pf-switch__track"><span class="pf-switch__thumb"></span></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Invoice tracking -->
+  <div class="pf-card">
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+      <h3 class="pf-section-title" style="margin:0;">{{ 'PLUGINS.INVOICES.TITLE' | translate }}</h3>
+      <input class="pf-input" style="max-width:220px; margin-inline-start:auto;" type="search"
+             [placeholder]="'PLUGINS.INVOICES.SEARCH' | translate"
+             [ngModel]="search()" (ngModelChange)="onSearch($event)" name="invSearch"/>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-bottom:12px;">
+      @for (s of statuses.options; track s) {
+        <button type="button" class="pf-pill"
+                [class.pf-pill--on]="statuses.isOn(s)" (click)="toggleStatus(s)">
+          {{ statusKey(s) | translate }}
+        </button>
+      }
+    </div>
+
+    @if (invoices().length === 0) {
+      <p class="pf-hint">{{ 'PLUGINS.INVOICES.EMPTY' | translate }}</p>
+    } @else {
+      <table class="pf-table">
+        <thead>
+          <tr>
+            <th>{{ 'PLUGINS.INVOICES.INVOICE_NO' | translate }}</th>
+            <th>{{ 'PLUGINS.INVOICES.CUSTOMER' | translate }}</th>
+            <th>{{ 'PLUGINS.INVOICES.TOTAL' | translate }}</th>
+            <th>{{ 'PLUGINS.INVOICES.DATE' | translate }}</th>
+            <th>{{ 'PLUGINS.INVOICES.STATUS' | translate }}</th>
+            <th>{{ 'PLUGINS.INVOICES.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inv of invoices(); track inv.id) {
+            <tr>
+              <td>{{ inv.invoiceNumber }}</td>
+              <td>{{ inv.customerName }}</td>
+              <td>{{ +inv.total | mycurrency }}</td>
+              <td>{{ inv.invoiceDate | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <span [class]="statusClass(inv.jofotara_status)">{{ statusKey(inv.jofotara_status) | translate }}</span>
+                @if ((inv.jofotara_status || '') === 'FAILED' && inv.jofotara_info) {
+                  <div class="pf-error" style="margin-top:2px;">{{ inv.jofotara_info }}</div>
+                }
+              </td>
+              <td>
+                <button type="button" class="btn btn-ghost btn-sm" (click)="viewInvoice(inv.id)">
+                  {{ 'PLUGINS.INVOICES.VIEW' | translate }}
+                </button>
+                @if ((inv.jofotara_status || '') === 'FAILED') {
+                  <button type="button" class="btn btn-ghost btn-sm" [disabled]="inv.isResyncing" (click)="resync(inv)">
+                    {{ (inv.isResyncing ? 'PLUGINS.INVOICES.RESYNCING' : 'PLUGINS.INVOICES.RESYNC') | translate }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (pageCount() > 1) {
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+          <button type="button" class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">‹</button>
+          <span style="font-size:13px; color:#64748b; align-self:center;">{{ page() }} / {{ pageCount() }}</span>
+          <button type="button" class="btn btn-ghost btn-sm" [disabled]="page() >= pageCount()" (click)="nextPage()">›</button>
+        </div>
+      }
+    }
+  </div>
+</app-plugin-form-shell>

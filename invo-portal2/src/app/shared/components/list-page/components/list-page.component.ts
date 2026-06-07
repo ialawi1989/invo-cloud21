@@ -117,7 +117,7 @@ import {
       background-color: #ffffff;
       transition: background-color 150ms ease;
     }
-    tr.list-row:hover .list-sticky-cell { background-color: #f8fafc; }
+    tr.list-row:hover .list-sticky-cell { background-color: #f4fbfb; }
     tr.list-row-expanded .list-sticky-cell { background-color: #ecfafd; }
 
     /* Drop shadow on the right edge of the last start-side sticky column
@@ -125,46 +125,103 @@ import {
        the .list-has-scroll-start parent class (set by the scroll-affordance
        state) so the shadow only appears when there's actually content
        scrolled behind the sticky column - matches the Wix table pattern. */
-    .list-sticky-col {
-      transition: box-shadow 140ms ease;
-    }
-    .list-has-scroll-start .list-sticky-col {
-      box-shadow: 6px 0 8px -4px rgba(15, 23, 42, 0.08);
-    }
-    :host-context([dir="rtl"]) .list-has-scroll-start .list-sticky-col {
-      box-shadow: -6px 0 8px -4px rgba(15, 23, 42, 0.08);
-    }
-
-    /* Transparent sticky cell for the actions column — only the buttons
-       inside carry visible styling so they appear to float over scrolled
-       content rather than sitting in a solid cell. */
-    .list-floating-actions {
-      background: transparent;
-    }
-
-    /* ── Horizontal-scroll affordance ───────────────────────────────────
-       Absolute-positioned overlay pinned to the end edge of the table
-       wrapper. Shows a fading shadow so the user can see that scrolled-away
-       columns exist. pointer-events: none so clicks fall through to whatever
-       is below (the sticky action buttons, typically). */
-    .list-scroll-fade-end {
+    /* Right-edge fade on the frozen start (Post) column. Painted INSIDE the
+       cell via ::after so no overflow:hidden ancestor can clip it, and it
+       sits above the scrolling cells because the sticky cell is a z-indexed
+       positioning context. Revealed only once the table is scrolled. */
+    .list-sticky-col::after {
+      content: "";
       position: absolute;
       top: 0;
+      right: 0;
       bottom: 0;
-      inset-inline-end: 0;
-      width: 28px;
+      width: 16px;
+      transform: translateX(100%);
+      /* Drop shadow CAST BY the frozen column onto the scrolling content:
+         darkest at the column edge, fading to transparent (dark stop first). */
+      background: linear-gradient(to right, rgba(15, 23, 42, 0.10), rgba(15, 23, 42, 0));
       pointer-events: none;
-      z-index: 1;
       opacity: 0;
-      transition: opacity 140ms ease;
-      background: linear-gradient(to left, rgba(15, 23, 42, 0.12), rgba(15, 23, 42, 0));
+      transition: opacity 0.15s ease;
+      z-index: 3;
     }
-    :host-context([dir="rtl"]) .list-scroll-fade-end {
-      background: linear-gradient(to right, rgba(15, 23, 42, 0.12), rgba(15, 23, 42, 0));
+    .list-has-scroll-start .list-sticky-col::after { opacity: 1; }
+    :host-context([dir="rtl"]) .list-sticky-col::after {
+      right: auto;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(to left, rgba(15, 23, 42, 0.10), rgba(15, 23, 42, 0));
     }
-    /* Reveal the end-edge fade only when the scroll container has
-       more horizontal content beyond the visible area. */
-    .list-has-scroll-end .list-scroll-fade-end { opacity: 1; }
+
+    /* Pinned Actions column — SOLID white so content scrolls cleanly under
+       it (no left-edge fade/shadow). The header cell keeps the teal tint. */
+    .list-floating-actions { background: #ffffff; }
+    tr.list-row:hover .list-floating-actions { background-color: #f4fbfb; }
+
+    /* ── Themed table (thead + tbody) ───────────────────────────────────
+       Soft teal header, roomy cells, subtle dividers, teal accent. Applies
+       to every list page since the table lives in this shared component. */
+    .list-page-container thead th {
+      background: #d6f0f1 !important;
+      color: #4a5163 !important;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 13px 18px !important;
+      white-space: nowrap;
+      border-bottom: 0 !important;
+    }
+    /* Body cells. --row-pad-y tunes vertical density in one place. */
+    .list-page-container { --row-pad-y: 12px; }
+    .list-page-container tbody td {
+      padding: var(--row-pad-y, 12px) 18px !important;
+      font-size: 14px;
+      color: #4a5163;
+      white-space: nowrap;
+    }
+    /* Subtle row dividers (recolour the Tailwind divide-y borders) */
+    .list-page-container tbody tr { border-top-color: #e6e8ee !important; }
+    /* Row hover (override Tailwind hover:bg-slate-50) */
+    .list-page-container tbody tr.list-row:hover { background-color: #f4fbfb !important; }
+    /* Teal accent — checkboxes + link-styled values */
+    .list-page-container input[type="checkbox"] { accent-color: #00aab3; }
+    .list-page-container .list-interactive-cell { color: #00aab3; }
+
+    /* Card container — clean rounded corners (clip the inner square-cornered
+       scroll area) + a soft, layered slate shadow tuned for the near-white
+       (#f8fafc) page background. */
+    .list-card {
+      border-radius: 14px !important;
+      overflow: hidden;
+      border-color: #eef1f5 !important;
+      box-shadow:
+        0 1px 2px rgba(15, 23, 42, 0.04),
+        0 4px 12px rgba(15, 23, 42, 0.06),
+        0 12px 32px rgba(15, 23, 42, 0.05) !important;
+    }
+
+    /* Force the table to its natural (nowrap) width so it overflows the
+       scroll container when there are many columns — without this the
+       w-full table just shrinks to fit and the sticky-column shadows
+       never trigger (scrollWidth === clientWidth). */
+    .list-page-container table { min-width: max-content; }
+
+    /* Lock the frozen columns to a constant width (min = max) so they can't
+       reflow narrower/wider during horizontal scroll — keeps the Post
+       column's right divider (and its shadow) in a fixed position. The
+       checkbox column's width matches the Post column's left: 3rem offset. */
+    .list-page-container th.start-0,
+    .list-page-container td.start-0 {
+      width: 48px; min-width: 48px; max-width: 48px;
+      padding-left: 16px !important; padding-right: 0 !important;
+    }
+    .list-page-container th.list-sticky-col,
+    .list-page-container td.list-sticky-col {
+      width: 300px; min-width: 300px; max-width: 300px;
+    }
+    .list-page-container td.list-floating-actions,
+    .list-page-container th.list-actions-th {
+      width: 184px; min-width: 184px; max-width: 184px;
+    }
   `]
 })
 export class ListPageComponent<T = any> implements OnInit, OnDestroy {
@@ -353,14 +410,10 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
   showFilters = signal(false);
   showFilterModal = signal(false);
 
-  /** Horizontal-scroll affordance flags — track whether the table's
-   *  scroll container has content tucked behind the sticky-start
-   *  column (`hasScrollStart`) and/or scrollable content to the
-   *  right (`hasScrollEnd`). Shadows are gated on these so they
-   *  only appear when there's actually something to indicate
-   *  (matches the Wix table pattern). */
+  /** Horizontal-scroll affordance flag — true once the table is scrolled
+   *  right, so the frozen start (Post) column can cast its right-edge
+   *  shadow over the content tucked behind it. */
   hasScrollStart = signal<boolean>(false);
-  hasScrollEnd   = signal<boolean>(false);
 
   /** ViewChild reference to the horizontally-scrolling table
    *  container — used by the data-change effect to recompute the
@@ -375,10 +428,8 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
     const node = el as HTMLElement | null;
     if (!node) return;
     const left = Math.abs(node.scrollLeft);
-    const max  = node.scrollWidth - node.clientWidth;
-    // 1px slack so floating-point rounding doesn't flicker the end shadow.
+    // 1px slack so floating-point rounding doesn't flicker the shadow.
     this.hasScrollStart.set(left > 1);
-    this.hasScrollEnd.set(max - left > 1);
   }
 
   /** Recompute on resize — column widths can change when the

@@ -33,31 +33,9 @@ export type VideoEmbedResult =
     <app-modal-header [title]="'BLOG.COMPOSER.VIDEO_MODAL_TITLE' | translate" />
 
     <div class="vm__body">
-      <p class="vm__label">{{ 'BLOG.COMPOSER.VIDEO_SELECT_SOURCE' | translate }}</p>
-      <div class="vm__tabs">
-        <button type="button"
-                class="vm__tab"
-                [class.is-on]="tab() === 'embed'"
-                (click)="tab.set('embed')">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-          </svg>
-          {{ 'BLOG.COMPOSER.VIDEO_EMBED' | translate }}
-        </button>
-        <button type="button"
-                class="vm__tab"
-                [class.is-on]="tab() === 'upload'"
-                (click)="tab.set('upload')">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          {{ 'BLOG.COMPOSER.VIDEO_UPLOAD' | translate }}
-        </button>
-      </div>
-
+      <!-- TODO(upload): video upload isn't implemented yet, so the source
+           tabs are hidden and the modal is embed-only. Restore the
+           vm__label + vm__tabs block (Embed / Upload) once upload lands. -->
       @if (tab() === 'embed') {
         <p class="vm__hint">{{ 'BLOG.COMPOSER.VIDEO_PASTE_HINT' | translate }}</p>
         <input class="vm__input"

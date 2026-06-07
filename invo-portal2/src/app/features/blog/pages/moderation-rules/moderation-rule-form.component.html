@@ -1,0 +1,66 @@
+<div class="rf">
+  <header class="rf__head">
+    <nav class="rf__crumbs">
+      <a [routerLink]="['/blog/comments']">{{ 'BLOG.COMMENTS.TITLE' | translate }}</a>
+      <span class="rf__crumbSep">›</span>
+      <a [routerLink]="['/blog/comments/rules']">{{ 'BLOG.MODERATION.TITLE' | translate }}</a>
+      <span class="rf__crumbSep">›</span>
+      <span>{{ pageTitle() }}</span>
+    </nav>
+    <div class="rf__titleRow">
+      <button type="button" class="rf__back" [routerLink]="['/blog/comments/rules']" aria-label="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <h1 class="rf__title">{{ pageTitle() }}</h1>
+      <div class="rf__actions">
+        <button type="button" class="rf-btn rf-btn--ghost" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+        <button type="button" class="rf-btn rf-btn--primary" [disabled]="!canSave()" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="rf__card">
+    <div class="rf__cardHead">
+      <h2>{{ 'BLOG.MODERATION.DEFINE_TITLE' | translate }}</h2>
+      <p>{{ 'BLOG.MODERATION.DEFINE_HINT' | translate }}</p>
+    </div>
+
+    <label class="rf__label">{{ 'BLOG.MODERATION.RULE_NAME' | translate }} <span class="rf__req">*</span></label>
+    <input class="rf__input" type="text" maxlength="120"
+           [ngModel]="name()" (ngModelChange)="name.set($event)"
+           [placeholder]="'BLOG.MODERATION.RULE_NAME_PH' | translate"/>
+
+    <label class="rf__label">{{ 'BLOG.MODERATION.Q_GROUP' | translate }} <span class="rf__req">*</span></label>
+    <app-search-dropdown
+      [items]="groupOptions()" [value]="$any(group())"
+      [displayWith]="idDisplay" [compareWith]="idCompare" [toValue]="idToValue"
+      [clearable]="false" [searchable]="false"
+      (valueChange)="group.set($any($event))"/>
+
+    <label class="rf__label">{{ 'BLOG.MODERATION.Q_TRIGGER' | translate }} <span class="rf__req">*</span></label>
+    <app-search-dropdown
+      [items]="triggerOptions()" [value]="$any(trigger())"
+      [displayWith]="idDisplay" [compareWith]="idCompare" [toValue]="idToValue"
+      [clearable]="false" [searchable]="false"
+      (valueChange)="trigger.set($any($event))"/>
+
+    <label class="rf__label">{{ 'BLOG.MODERATION.Q_ACTION' | translate }} <span class="rf__req">*</span></label>
+    <app-search-dropdown
+      [items]="actionOptions()" [value]="$any(action())"
+      [displayWith]="idDisplay" [compareWith]="idCompare" [toValue]="idToValue"
+      [clearable]="false" [searchable]="false"
+      (valueChange)="action.set($any($event))"/>
+  </section>
+
+  <section class="rf__card">
+    <div class="rf__cardHead">
+      <h2>{{ 'BLOG.MODERATION.EXCLUDE_TITLE' | translate }}</h2>
+      <p>{{ 'BLOG.MODERATION.EXCLUDE_HINT' | translate }}</p>
+    </div>
+    <div class="rf__excludeRow">
+      <span>{{ 'BLOG.MODERATION.EXCLUDE_MEMBERS' | translate }}</span>
+      <button type="button" class="rf__excludeBtn" disabled>{{ 'BLOG.MODERATION.SELECT' | translate }}</button>
+    </div>
+    <span class="rf__soon">{{ 'BLOG.MODERATION.EXCLUDE_SOON' | translate }}</span>
+  </section>
+</div>

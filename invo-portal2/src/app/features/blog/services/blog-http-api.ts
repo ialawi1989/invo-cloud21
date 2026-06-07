@@ -6,9 +6,15 @@ import { environment } from '../../../../environments/environment';
 import { BlogApi } from './blog-api';
 import {
   BlogComment,
+  BlogModerationRule,
+  ModerationRuleSavePayload,
   BlogPost,
   BlogTaxonomy,
   BlogWriter,
+  BlogReport,
+  BlogReportParams,
+  BulkResult,
+  ImportPostsResult,
   CommentListParams,
   CommentListResult,
   PostListParams,
@@ -97,9 +103,10 @@ export class BlogHttpApi extends BlogApi {
     };
     const data = await this.post<any>('blog/getPostList', body);
     return {
-      list:      Array.isArray(data?.list) ? data.list : [],
-      count:     Number(data?.count ?? 0),
-      pageCount: Number(data?.pageCount ?? 1),
+      list:         Array.isArray(data?.list) ? data.list : [],
+      count:        Number(data?.count ?? 0),
+      pageCount:    Number(data?.pageCount ?? 1),
+      statusCounts: data?.statusCounts ?? undefined,
     };
   }
 
@@ -117,12 +124,32 @@ export class BlogHttpApi extends BlogApi {
     return true;
   }
 
+  // Soft delete (status='trash', reversible). The DELETE path-param variant
+  // above is the permanent delete (only allowed when already in Trash).
+  async trashPost(id: string):   Promise<BlogPost> { return this.post('blog/trashPost',   { id }); }
+  async restorePost(id: string): Promise<BlogPost> { return this.post('blog/restorePost', { id }); }
+  async pinPost(id: string, pinned: boolean, order?: number): Promise<BlogPost> {
+    return this.post('blog/pinPost', order != null ? { id, pinned, order } : { id, pinned });
+  }
+  async bulkUpdateStatus(ids: string[], status: any): Promise<BulkResult> {
+    return this.post('blog/bulkUpdateStatus', { ids, status });
+  }
+  async bulkDelete(ids: string[], force?: boolean): Promise<BulkResult> {
+    return this.post('blog/bulkDelete', force ? { ids, force } : { ids });
+  }
+
   async publishPost(id: string):   Promise<BlogPost> { return this.post('blog/publishPost',   { id }); }
   async unpublishPost(id: string): Promise<BlogPost> { return this.post('blog/unpublishPost', { id }); }
   async schedulePost(id: string, scheduledDate: string): Promise<BlogPost> {
     return this.post('blog/schedulePost', { id, scheduledDate });
   }
   async duplicatePost(id: string): Promise<BlogPost> { return this.post('blog/duplicatePost', { id }); }
+  async importPosts(body: any): Promise<ImportPostsResult> {
+    // Multipart FormData (file) goes through postRaw; JSON {source,posts} via post.
+    return body instanceof FormData
+      ? this.postRaw('blog/importPosts', body)
+      : this.post('blog/importPosts', body);
+  }
 
   // ─── Taxonomies ──────────────────────────────────────────────────────
 
@@ -199,8 +226,59 @@ export class BlogHttpApi extends BlogApi {
   async replyToComment(id: string, content: string): Promise<BlogComment> {
     return this.post('blog/replyComment', { id, content });
   }
+  async restoreComment(id: string): Promise<BlogComment> { return this.post('blog/restoreComment', { id }); }
+  async hardDeleteComment(id: string, force?: boolean): Promise<boolean> {
+    await this.post('blog/hardDeleteComment', force ? { id, force } : { id });
+    return true;
+  }
+  async bulkUpdateCommentStatus(ids: string[], status: any): Promise<BulkResult> {
+    return this.post('blog/bulkUpdateCommentStatus', { ids, status });
+  }
+  async bulkDeleteComments(ids: string[], force?: boolean): Promise<BulkResult> {
+    return this.post('blog/bulkDeleteComments', force ? { ids, force } : { ids });
+  }
+
+  // ─── Moderation rules ────────────────────────────────────────────────
+  async listModerationRules(): Promise<BlogModerationRule[]> {
+    const data = await this.post<any>('blog/getModerationRules', {});
+    return Array.isArray(data?.list) ? data.list : (Array.isArray(data) ? data : []);
+  }
+  async getModerationRule(id: string): Promise<BlogModerationRule | null> {
+    return (await this.get<BlogModerationRule>(`blog/getModerationRule/${encodeURIComponent(id)}`)) ?? null;
+  }
+  async saveModerationRule(payload: ModerationRuleSavePayload): Promise<BlogModerationRule> {
+    return this.post('blog/saveModerationRule', payload);
+  }
+  async deleteModerationRule(id: string): Promise<boolean> {
+    await this.post('blog/deleteModerationRule', { id });
+    return true;
+  }
+  async toggleModerationRule(id: string, active: boolean): Promise<BlogModerationRule> {
+    return this.post('blog/toggleModerationRule', { id, active });
+  }
 
   // ─── Writers / Settings / Uploads ────────────────────────────────────
+
+  async getReport(params?: BlogReportParams): Promise<BlogReport> {
+    const qs = new URLSearchParams();
+    if (params?.from) qs.set('from', params.from);
+    if (params?.to)   qs.set('to', params.to);
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    const data = await this.get<any>(`blog/getReport${suffix}`);
+    return {
+      totals: data?.totals ?? {
+        totalPosts: 0, totalViews: 0, totalComments: 0,
+        publishedCount: 0, draftCount: 0, pendingCount: 0, scheduledCount: 0, trashCount: 0,
+      },
+      topPosts: Array.isArray(data?.topPosts) ? data.topPosts : [],
+      series:   Array.isArray(data?.series)  ? data.series  : undefined,
+      hourly:   Array.isArray(data?.hourly)  ? data.hourly  : undefined,
+      traffic:  Array.isArray(data?.traffic) ? data.traffic : undefined,
+      search:   data?.search ?? null,
+      integrations: data?.integrations ?? undefined,
+      range:    data?.range ?? undefined,
+    };
+  }
 
   async listWriters(): Promise<BlogWriter[]> {
     const data = await this.get<any>('blog/getWriters');

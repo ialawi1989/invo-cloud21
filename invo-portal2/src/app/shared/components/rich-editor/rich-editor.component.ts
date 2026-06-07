@@ -14,22 +14,36 @@ import {
   input,
   output,
   signal,
+  WritableSignal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
 import { RichTooltipDirective } from './rich-tooltip.directive';
 import { RichNumSliderComponent } from './rich-num-slider.component';
+import { RichLinkPanelComponent, RichLinkValue } from './rich-link-panel.component';
+import {
+  RichGalleryPanelComponent, GalleryConfig, GalleryImage, GalleryLayout,
+  DEFAULT_GALLERY_CONFIG,
+} from './rich-gallery-panel.component';
 import { ModalService } from '../../modal/modal.service';
 import { BannerPresetPickerComponent, BannerPresetPickerData } from './banner-preset-picker.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ColorsPanelComponent } from '@shared/components/colors-panel/colors-panel.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { RichAiPanelComponent } from './rich-ai-panel.component';
+import { AiRequest, RICH_EDITOR_AI_PROVIDER } from './rich-editor-ai';
+import { Subscription } from 'rxjs';
 
 /**
  * Block-format options surfaced in the "Paragraph" dropdown.
  * Mapped 1:1 onto `formatBlock` execCommand values.
  */
 interface BlockOption { tag: 'P' | 'H1' | 'H2' | 'H3' | 'H4' | 'H5' | 'H6' | 'BLOCKQUOTE' | 'PRE'; label: string; cls: string; }
+
+/** Table border configurations applied across a cell selection. */
+type TableBorderMode = 'all' | 'outer' | 'inner' | 'top' | 'bottom' | 'left' | 'right' | 'horizontal' | 'vertical' | 'none';
 
 /**
  * Alignment options in the toolbar's align dropdown — each maps to
@@ -96,7 +110,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
 @Component({
   selector: 'app-rich-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, OverlayModule, RichTooltipDirective, RichNumSliderComponent, SearchDropdownComponent, ColorsPanelComponent],
+  imports: [CommonModule, FormsModule, OverlayModule, TranslateModule, RichTooltipDirective, RichNumSliderComponent, RichLinkPanelComponent, RichGalleryPanelComponent, SearchDropdownComponent, ColorsPanelComponent, RichAiPanelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
@@ -112,7 +126,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
          [class.re--fullscreen]="isFullscreen()">
       <!-- Fullscreen toggle — pinned to the top-right of the host
            regardless of mode (HTML / wysiwyg). Square 28x28 button
-           with the Wix "expand corners" / "collapse corners" icon. -->
+           with the "expand corners" / "collapse corners" icon. -->
       <button type="button"
               class="re-fullscreen-toggle"
               (mousedown)="$event.preventDefault(); toggleFullscreen()"
@@ -149,11 +163,13 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       <div class="re__toolbar" role="toolbar" [attr.aria-disabled]="disabled()">
         <div class="re__rail">
         @if (mode() === 'wysiwyg') {
-          <!-- ── 1. Content AI (opt-in via showContentAi()) ───────── -->
-          @if (showContentAi()) {
-            <button type="button" class="re__btn re__btn--ai"
-                    (mousedown)="$event.preventDefault(); contentAiClick.emit()"
-                    [appReTooltip]="'Content AI'">
+          <!-- ── 1. Content AI (opt-in via showContentAi() + an injected
+                  AI provider; the button only appears where both hold) ── -->
+          @if (showContentAi() && aiAvailable) {
+            <button type="button" class="re__btn re__btn--ai" [class.is-on]="aiPanelOpen()"
+                    [disabled]="!aiReady"
+                    (mousedown)="$event.preventDefault(); aiReady && openAiPanel()"
+                    [appReTooltip]="aiReady ? 'Content AI' : ('PLUGINS.AI.DISABLED_TOOLTIP' | translate)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M12 2l1.6 4.4L18 8l-4.4 1.6L12 14l-1.6-4.4L6 8l4.4-1.6L12 2zm6 10l1 2.5 2.5 1-2.5 1L18 19l-1-2.5L14.5 15.5l2.5-1L18 12z"/>
               </svg>
@@ -450,20 +466,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
         }
         </div>
 
-        <!-- Mode toggle — pinned to the right, always visible -->
-        <button type="button"
-                class="re__btn re__btn--toggle"
-                [class.re__btn--toggle-on]="mode() === 'html'"
-                (mousedown)="toggleMode($event)"
-                [title]="mode() === 'html' ? 'Visual view' : 'HTML source'">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="16 18 22 12 16 6"/>
-            <polyline points="8 6 2 12 8 18"/>
-          </svg>
-          <span class="re__btn-label re__btn-label--text">
-            {{ mode() === 'html' ? 'Visual' : 'HTML' }}
-          </span>
-        </button>
+        <!-- HTML source toggle removed from the toolbar by request. The
+             toggleMode()/mode() logic is left intact for re-enabling. -->
       </div>
 
         </div><!-- /.re-toolbar-rail -->
@@ -495,7 +499,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
           }
           <div class="re-editor-content">
       <!-- Optional projected content sits between the toolbar and
-           the editable surface. Used by the Wix-style post composer
+           the editable surface. Used by the composer-style post composer
            to slot the giant "Add Title" input between the pinned
            toolbar and the body text, so the toolbar stays at the top
            of the canvas. -->
@@ -522,6 +526,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
           </button>
+          <!-- Focused-empty-line hint. Non-interactive overlay positioned
+               at the same line as the "+" so it never lands in saved
+               content (no class/text added to the contenteditable). -->
+          @if (linePlaceholder()) {
+            <div class="re__linePh" aria-hidden="true"
+                 [style.top.px]="addBtn().top"
+                 [style.left.px]="addBtn().lineLeft">{{ linePlaceholder() }}</div>
+          }
         }
 
       <div
@@ -536,18 +548,586 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
         (blur)="onBlur()"
         (focus)="onSelectionMaybeChanged()"
         (mouseup)="onSelectionMaybeChanged()"
+        (keydown)="onSlashKeydown($event)"
         (keyup)="onSelectionMaybeChanged()"
         (paste)="onPaste($event)"
+        (dragstart)="onEditableDragStart($event)"
         (dragover)="onEditableDragOver($event)"
         (drop)="onEditableDrop($event)"
+        (mousedown)="onSurfaceMouseDown($event)"
+        (mousemove)="onSurfaceMouseMove($event)"
         (click)="onSurfaceClick($event)"
         (dblclick)="onSurfaceDblClick($event)"
       ></div>
+
+      <!-- "/" slash menu — insertable elements at the caret. Items come
+           from the host via [slashCommands]; picking one emits
+           (slashSelect). mousedown is prevented so the editor keeps its
+           caret/selection while the user clicks. -->
+      @if (slashOpen() && slashFiltered().length) {
+        <div class="re__slash" [style.top.px]="slashPos().top" [style.left.px]="slashPos().left"
+             (mousedown)="$event.preventDefault()">
+          <div class="re__slashHead">Commonly Used</div>
+          @for (cmd of slashFiltered(); track cmd.key; let i = $index) {
+            <button type="button" class="re__slashItem" [class.is-active]="i === slashActive()"
+                    (mousedown)="$event.preventDefault(); chooseSlash(cmd)"
+                    (mouseenter)="slashActive.set(i)">
+              <span class="re__slashIcon" [innerHTML]="slashIcon(cmd.icon)"></span>
+              <span class="re__slashLabel">{{ cmd.label | translate }}</span>
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Expandable-list floating toolbar (Settings · Delete). -->
+      @if (expandToolbar().show) {
+        <div class="re__expandTb" [style.top.px]="expandToolbar().top" [style.left.px]="expandToolbar().left"
+             (mousedown)="$event.preventDefault()">
+          <span class="re__tbDrag" (mousedown)="startGenericPanelDrag($event, expandToolbar)" title="Drag toolbar">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/></svg>
+          </span>
+          <button type="button" class="re__expandTb__btn" (click)="openExpandSettings()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+          </button>
+          <span class="re__expandTb__sep"></span>
+          <button type="button" class="re__expandTb__btn re__expandTb__btn--danger" (click)="deleteExpand()" aria-label="Delete">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      }
+
+      <!-- Expandable-list settings popover. Anchored beside the selected
+           group; controls expand-by-default, one-at-a-time, direction. -->
+      @if (expandPanel().show) {
+        <div class="re__expandPanel" [style.top.px]="expandPanel().top" [style.left.px]="expandPanel().left"
+             (mousedown)="$event.preventDefault()">
+          <div class="re__expandPanel__head re__panelDragHead"
+               (mousedown)="$any($event).target.closest('button') || startGenericPanelDrag($event, expandPanel)">
+            <span>Expandable list</span>
+            <button type="button" class="re__expandPanel__close" (click)="closeExpand()" aria-label="Close">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="re__expandPanel__body">
+            <div class="re__expandPanel__label">Number of items expanded by default</div>
+            <label class="re__expandRadio"><input type="radio" name="expDefault" [checked]="expDefault() === 'all'"   (change)="setExpandDefault('all')"/>   <span>All</span></label>
+            <label class="re__expandRadio"><input type="radio" name="expDefault" [checked]="expDefault() === 'first'" (change)="setExpandDefault('first')"/> <span>First item only</span></label>
+            <label class="re__expandRadio"><input type="radio" name="expDefault" [checked]="expDefault() === 'none'"  (change)="setExpandDefault('none')"/>  <span>None</span></label>
+            <label class="re__expandRow">
+              <span>Expand one item at a time</span>
+              <input type="checkbox" [checked]="expSingle()" (change)="setExpandSingle(!expSingle())"/>
+            </label>
+            <div class="re__expandPanel__label">List direction</div>
+            <div class="re__expandDir">
+              <button type="button" [class.is-on]="expDir() === 'left'"  (click)="setExpandDir('left')">Left</button>
+              <button type="button" [class.is-on]="expDir() === 'right'" (click)="setExpandDir('right')">Right</button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- HTML embed toolbar (Edit HTML · Width · Height · Align · Delete). -->
+      @if (embedToolbar().show) {
+        <div class="re__embedTb" [style.top.px]="embedToolbar().top" [style.left.px]="embedToolbar().left"
+             (mousedown)="$event.preventDefault()">
+          <span class="re__tbDrag" (mousedown)="startGenericPanelDrag($event, embedToolbar)" title="Drag toolbar">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/></svg>
+          </span>
+          <button type="button" class="re__embedTb__btn" (click)="openEmbedEdit()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+            Edit HTML
+          </button>
+          <span class="re__embedTb__sep"></span>
+          <button type="button" class="re__embedTb__btn" (click)="openEmbedSize('width')" title="Width">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 7 4 12 8 17"/><polyline points="16 7 20 12 16 17"/><line x1="4" y1="12" x2="20" y2="12"/></svg>
+          </button>
+          <button type="button" class="re__embedTb__btn" (click)="openEmbedSize('height')" title="Height">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 8 12 4 17 8"/><polyline points="7 16 12 20 17 16"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+          </button>
+          <button type="button" class="re__embedTb__btn" (click)="toggleEmbedAlignMenu()" title="Align">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <span class="re__embedTb__sep"></span>
+          <button type="button" class="re__embedTb__btn re__embedTb__btn--danger" (click)="deleteEmbed()" aria-label="Delete">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+
+          @if (embedAlignOpen()) {
+            <div class="re__embedAlignMenu">
+              <button type="button" [class.is-on]="embedAlign() === 'left'"   (click)="setEmbedAlign('left'); toggleEmbedAlignMenu()">Align left</button>
+              <button type="button" [class.is-on]="embedAlign() === 'center'" (click)="setEmbedAlign('center'); toggleEmbedAlignMenu()">Align center</button>
+              <button type="button" [class.is-on]="embedAlign() === 'right'"  (click)="setEmbedAlign('right'); toggleEmbedAlignMenu()">Align right</button>
+              <label class="re__embedWrap">
+                <span>Wrap text</span>
+                <input type="checkbox" [checked]="embedWrap()" (change)="toggleEmbedWrap()"/>
+              </label>
+            </div>
+          }
+
+          @if (embedSize().kind) {
+            <div class="re__embedSize">
+              <div class="re__embedSize__head">{{ embedSize().kind === 'width' ? 'Width' : 'Height' }}</div>
+              <div class="re__embedSize__row">
+                <input type="range" min="100" [max]="embedSize().kind === 'width' ? 1000 : 1200"
+                       [value]="embedSize().value" (input)="setEmbedSizeValue(+$any($event.target).value)"/>
+                <input type="number" class="re__embedSize__num" [value]="embedSize().value"
+                       (input)="setEmbedSizeValue(+$any($event.target).value)"/>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Edit-HTML panel — HTML / Link tabs (HTTPS only). -->
+      @if (embedEdit().show) {
+        <div class="re__embedPanel" [style.top.px]="embedPanelPos().top" [style.left.px]="embedPanelPos().left"
+             (mousedown)="$event.stopPropagation()">
+          <div class="re__embedPanel__head re__panelDragHead"
+               (mousedown)="$any($event).target.closest('button') || startGenericPanelDrag($event, embedPanelPos)">
+            <span>Edit HTML</span>
+            <button type="button" class="re__embedPanel__close" (click)="embedEdit.update(s => ({ ...s, show: false }))" aria-label="Close">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="re__embedTabs">
+            <button type="button" [class.is-on]="embedEdit().tab === 'html'" (click)="setEmbedTab('html')">&lt;/&gt; HTML</button>
+            <button type="button" [class.is-on]="embedEdit().tab === 'link'" (click)="setEmbedTab('link')">🔗 Link</button>
+          </div>
+          @if (embedEdit().tab === 'html') {
+            <textarea class="re__embedCode" rows="6" placeholder="Paste your code (HTTPS only)"
+                      [value]="embedEdit().code" (input)="setEmbedCode($any($event.target).value)"></textarea>
+          } @else {
+            <input class="re__embedUrl" type="url" placeholder="https://…"
+                   [value]="embedEdit().url" (input)="setEmbedUrl($any($event.target).value)"/>
+          }
+          @if (embedEdit().error) { <div class="re__embedErr">{{ embedEdit().error }}</div> }
+          <div class="re__embedPanel__foot">
+            <button type="button" class="btn btn-ghost" (click)="embedEdit.update(s => ({ ...s, show: false }))">Cancel</button>
+            <button type="button" class="btn btn-primary" (click)="saveEmbedCode()">Save</button>
+          </div>
+        </div>
+      }
+
+      <!-- Poll toolbar (Settings · Layout dropdown · Delete). -->
+      @if (pollToolbar().show) {
+        <div class="re__pollTb" [style.top.px]="pollToolbar().top" [style.left.px]="pollToolbar().left"
+             (mousedown)="$event.preventDefault()">
+          <span class="re__tbDrag" (mousedown)="startGenericPanelDrag($event, pollToolbar)" title="Drag toolbar">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/></svg>
+          </span>
+          <button type="button" class="re__pollTb__btn" (click)="openPollPanel('settings')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+          </button>
+          <span class="re__pollTb__sep"></span>
+          <button type="button" class="re__pollTb__btn" (click)="togglePollLayoutMenu()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="3" y="13" width="8" height="7" rx="1"/><rect x="13" y="13" width="8" height="7" rx="1"/></svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <span class="re__pollTb__sep"></span>
+          <button type="button" class="re__pollTb__btn re__pollTb__btn--danger" (click)="deletePoll()" aria-label="Delete">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+          @if (pollLayoutOpen()) {
+            <div class="re__pollLayoutMenu">
+              <button type="button" [class.is-on]="pollLayout() === 'grid'" (click)="setPollLayout('grid')">Grid</button>
+              <button type="button" [class.is-on]="pollLayout() === 'list'" (click)="setPollLayout('list')">List</button>
+              <span class="re__pollLayoutMenu__sep"></span>
+              <button type="button" (click)="openPollPanel('layout')">Customize</button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Poll settings panel — Layout / Design / Settings tabs. -->
+      @if (pollPanel().show) {
+        <div class="re__pollPanel" [style.top.px]="pollPanel().top" [style.left.px]="pollPanel().left"
+             (mousedown)="$event.stopPropagation()">
+          <div class="re__pollPanel__head re__panelDragHead"
+               (mousedown)="$any($event).target.closest('button') || startGenericPanelDrag($event, pollPanel)">
+            <span>Poll</span>
+            <button type="button" class="re__pollPanel__close" (click)="closePoll()" aria-label="Close">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="re__pollTabs">
+            <button type="button" [class.is-on]="pollPanel().tab === 'layout'"   (click)="openPollPanel('layout')">Layout</button>
+            <button type="button" [class.is-on]="pollPanel().tab === 'design'"   (click)="openPollPanel('design')">Design</button>
+            <button type="button" [class.is-on]="pollPanel().tab === 'settings'" (click)="openPollPanel('settings')">Settings</button>
+          </div>
+
+          @if (pollPanel().tab === 'layout') {
+            <div class="re__pollBody">
+              <div class="re__pollRow"><span>Add an image to the question</span>
+                <input type="checkbox" [checked]="pollQImage()" (change)="togglePollQImage()"/></div>
+              <div class="re__pollLabel">Answers — choose a layout</div>
+              <div class="re__pollSeg">
+                <button type="button" [class.is-on]="pollLayout() === 'list'" (click)="setPollLayout('list')">List</button>
+                <button type="button" [class.is-on]="pollLayout() === 'grid'" (click)="setPollLayout('grid')">Grid</button>
+              </div>
+              <div class="re__pollRow"><span>Add an image to each answer</span>
+                <input type="checkbox" [checked]="pollAImage()" (change)="togglePollAImage()"/></div>
+              <div class="re__pollLabel">Poll direction</div>
+              <div class="re__pollSeg">
+                <button type="button" [class.is-on]="pollDir() === 'left'"  (click)="setPollDir('left')">Left</button>
+                <button type="button" [class.is-on]="pollDir() === 'right'" (click)="setPollDir('right')">Right</button>
+              </div>
+            </div>
+          } @else if (pollPanel().tab === 'design') {
+            <div class="re__pollBody">
+              <div class="re__pollLabel">Background</div>
+              <div class="re__pollSeg" style="margin-bottom:10px;">
+                <button type="button" [class.is-on]="pollBgKind() === 'color'"    (click)="setPollBgKind('color')">Color</button>
+                <button type="button" [class.is-on]="pollBgKind() === 'gradient'" (click)="setPollBgKind('gradient')">Gradient</button>
+                <button type="button" [class.is-on]="pollBgKind() === 'image'"    (click)="setPollBgKind('image')">Image</button>
+              </div>
+              @if (pollBgKind() !== 'image') {
+                <div class="re__figRow">
+                  <label class="re__figTbLabel">{{ pollBgKind() === 'gradient' ? 'Gradient' : 'Color' }}</label>
+                  <div class="re__figCtrl">
+                    <button #pollBgSwatch="cdkOverlayOrigin" cdkOverlayOrigin type="button" class="re__figColorTrigger"
+                            [style.background]="pollBgValue()"
+                            (click)="colorPanelTarget.set(colorPanelTarget() === 'pollBg' ? null : 'pollBg')"
+                            aria-label="Edit background"></button>
+                    <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="pollBgSwatch"
+                                 [cdkConnectedOverlayOpen]="colorPanelTarget() === 'pollBg'"
+                                 [cdkConnectedOverlayPositions]="overlayPositions" [cdkConnectedOverlayHasBackdrop]="true"
+                                 cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop" (backdropClick)="colorPanelTarget.set(null)">
+                      <app-colors-panel [colorOnly]="false" [initialMode]="pollBgKind() === 'gradient' ? 'gradient' : 'color'"
+                                        [ngModel]="colorPanelValue()"
+                                        (ngModelChange)="onColorPanelChange($event)"
+                                        (closed)="colorPanelTarget.set(null)"/>
+                    </ng-template>
+                  </div>
+                </div>
+              } @else {
+                <div class="re__pollBgImage">
+                  @if (pollBgImage()) {
+                    <img [src]="pollBgImage()" alt=""/>
+                    <div class="re__pollBgImageActions">
+                      <button type="button" (click)="pickPollBgImage()">Replace</button>
+                      <button type="button" (click)="removePollBgImage()">Remove</button>
+                    </div>
+                  } @else {
+                    <button type="button" class="re__pollBgImageEmpty" (click)="pickPollBgImage()">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      <span>Choose from media</span>
+                    </button>
+                  }
+                </div>
+              }
+              <div class="re__pollLabel">Poll corner radius</div>
+              <div class="re__pollSlider">
+                <input type="range" min="0" max="40" class="re__figSlider"
+                       [ngModel]="pollRadius()" (ngModelChange)="setPollRadius(+$event)"/>
+                <div class="re__figTbNum re__pollNum">
+                  <input type="number" min="0" max="40" class="re__figTbInput re__figTbInput--num"
+                         [ngModel]="pollRadius()" (ngModelChange)="setPollRadius(+$event)"/>
+                  <span class="re__figTbUnit">px</span>
+                </div>
+              </div>
+              <div class="re__pollLabel">Answers corner radius</div>
+              <div class="re__pollSlider">
+                <input type="range" min="0" max="40" class="re__figSlider"
+                       [ngModel]="pollAnsRadius()" (ngModelChange)="setPollAnsRadius(+$event)"/>
+                <div class="re__figTbNum re__pollNum">
+                  <input type="number" min="0" max="40" class="re__figTbInput re__figTbInput--num"
+                         [ngModel]="pollAnsRadius()" (ngModelChange)="setPollAnsRadius(+$event)"/>
+                  <span class="re__figTbUnit">px</span>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="re__pollBody">
+              <div class="re__pollLabel">Who can vote?</div>
+              <label class="re__pollRadio"><input type="radio" name="pVote" [checked]="pollVoteWho() === 'members'"  (change)="setPollVoteWho('members')"/> <span>Site members</span></label>
+              <label class="re__pollRadio"><input type="radio" name="pVote" [checked]="pollVoteWho() === 'everyone'" (change)="setPollVoteWho('everyone')"/> <span>Everyone</span></label>
+              <div class="re__pollRow"><span>Allow multiple answers</span>
+                <input type="checkbox" [checked]="pollMulti()" (change)="togglePollMulti()"/></div>
+              <div class="re__pollLabel">Who can see the results?</div>
+              <label class="re__pollRadio"><input type="radio" name="pRes" [checked]="pollResults() === 'everyone'" (change)="setPollResults('everyone')"/> <span>Everyone</span></label>
+              <label class="re__pollRadio"><input type="radio" name="pRes" [checked]="pollResults() === 'voters'"   (change)="setPollResults('voters')"/> <span>Voters</span></label>
+              <label class="re__pollRadio"><input type="radio" name="pRes" [checked]="pollResults() === 'onlyme'"   (change)="setPollResults('onlyme')"/> <span>Only me</span></label>
+              <div class="re__pollRow"><span>Show vote count</span>
+                <input type="checkbox" [checked]="pollShowCount()" (change)="togglePollShowCount()"/></div>
+              <div class="re__pollRow"><span>Show what each person voted for</span>
+                <input type="checkbox" [checked]="pollShowVoters()" (change)="togglePollShowVoters()"/></div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── Product element — floating toolbar ── -->
+      @if (prodToolbar().show) {
+        <div class="re__prodTb" [style.top.px]="prodToolbar().top" [style.left.px]="prodToolbar().left"
+             (mousedown)="$event.preventDefault()">
+          <span class="re__tbDrag" (mousedown)="startGenericPanelDrag($event, prodToolbar)" title="Drag toolbar">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/></svg>
+          </span>
+          <button type="button" class="re__pollTb__btn" (click)="toggleProdPresetMenu()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="3" y="13" width="8" height="7" rx="1"/><rect x="13" y="13" width="8" height="7" rx="1"/></svg>
+            Presets
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <span class="re__pollTb__sep"></span>
+          <button type="button" class="re__pollTb__btn" (click)="toggleProdSizeMenu()" title="Change size">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="1"/></svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <span class="re__pollTb__sep"></span>
+          <button type="button" class="re__pollTb__btn" (click)="changeProduct()" title="Change product">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+          <span class="re__pollTb__sep"></span>
+          <button type="button" class="re__pollTb__btn" (click)="openProdPanel('settings')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+          <span class="re__pollTb__sep"></span>
+          <button type="button" class="re__pollTb__btn re__pollTb__btn--danger" (click)="deleteProduct()" aria-label="Delete">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+          @if (prodPresetOpen()) {
+            <div class="re__prodPresetMenu">
+              <div class="re__prodPresetGrid">
+                @for (p of prodPresets; track p.id) {
+                  <button type="button" class="re__prodPresetTile" [title]="p.name" (click)="applyProdPreset(p.id)">
+                    <span class="re__prodPresetThumb" [innerHTML]="p.thumb"></span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+          @if (prodSizeOpen()) {
+            <div class="re__pollLayoutMenu re__prodSizeMenu">
+              <button type="button" [class.is-on]="prodSize() === 'compact'"  (click)="setProdSize('compact')">Compact</button>
+              <button type="button" [class.is-on]="prodSize() === 'standard'" (click)="setProdSize('standard')">Standard</button>
+              <button type="button" [class.is-on]="prodSize() === 'extended'" (click)="setProdSize('extended')">Extended</button>
+              <button type="button" [class.is-on]="prodSize() === 'original'" (click)="setProdSize('original')">Original size</button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── Product element — Settings / Layout / Design panel ── -->
+      @if (prodPanel().show) {
+        <div class="re__prodPanel" [style.top.px]="prodPanel().top" [style.left.px]="prodPanel().left"
+             (mousedown)="$event.stopPropagation()">
+          <div class="re__pollPanel__head re__panelDragHead"
+               (mousedown)="$any($event).target.closest('button') || startGenericPanelDrag($event, prodPanel)">
+            <span>Product</span>
+            <button type="button" class="re__pollPanel__close" (click)="closeProduct()" aria-label="Close">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="re__pollTabs">
+            <button type="button" [class.is-on]="prodPanel().tab === 'settings'" (click)="openProdPanel('settings')">Settings</button>
+            <button type="button" [class.is-on]="prodPanel().tab === 'layout'"   (click)="openProdPanel('layout')">Layout</button>
+            <button type="button" [class.is-on]="prodPanel().tab === 'design'"   (click)="openProdPanel('design')">Design</button>
+          </div>
+
+          @if (prodPanel().tab === 'settings') {
+            <div class="re__pollBody">
+              <div class="re__pollRow"><span>Image</span>
+                <input type="checkbox" [checked]="prodShowImage()" (change)="toggleProdImage()"/></div>
+              <div class="re__pollRow"><span>Price</span>
+                <input type="checkbox" [checked]="prodShowPrice()" (change)="toggleProdPrice()"/></div>
+              <div class="re__pollRow"><span>Button</span>
+                <input type="checkbox" [checked]="prodShowButton()" (change)="toggleProdButton()"/></div>
+              @if (prodShowButton()) {
+                <div class="re__pollLabel">Button text</div>
+                <input class="re__prodInput" type="text" [ngModel]="prodBtnText()" (ngModelChange)="setProdBtnText($event)"/>
+              }
+              <div class="re__pollRow"><span>Ribbon</span>
+                <input type="checkbox" [checked]="prodShowRibbon()" (change)="toggleProdRibbon()"/></div>
+              @if (prodShowRibbon()) {
+                <div class="re__pollLabel">Ribbon text</div>
+                <input class="re__prodInput" type="text" [ngModel]="prodRibbonText()" (ngModelChange)="setProdRibbonText($event)"/>
+              }
+              <button type="button" class="re__prodReset" (click)="resetProdSettings()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                Reset Settings
+              </button>
+            </div>
+          } @else if (prodPanel().tab === 'layout') {
+            <div class="re__pollBody">
+              <div class="re__pollLabel">Image position</div>
+              <div class="re__pollSeg">
+                <button type="button" [class.is-on]="prodImgPos() === 'left'"  (click)="setProdImgPos('left')">Left</button>
+                <button type="button" [class.is-on]="prodImgPos() === 'top'"   (click)="setProdImgPos('top')">Top</button>
+                <button type="button" [class.is-on]="prodImgPos() === 'right'" (click)="setProdImgPos('right')">Right</button>
+              </div>
+              <div class="re__pollLabel">Image ratio</div>
+              <div class="re__pollSeg">
+                <button type="button" [class.is-on]="prodImgRatio() === 'square'"    (click)="setProdImgRatio('square')">Square</button>
+                <button type="button" [class.is-on]="prodImgRatio() === 'landscape'" (click)="setProdImgRatio('landscape')">Landscape</button>
+              </div>
+              <div class="re__pollLabel">Image resizing</div>
+              <div class="re__pollSeg">
+                <button type="button" [class.is-on]="prodImgFit() === 'fill'" (click)="setProdImgFit('fill')">Fill</button>
+                <button type="button" [class.is-on]="prodImgFit() === 'fit'"  (click)="setProdImgFit('fit')">Fit</button>
+              </div>
+              <div class="re__pollLabel">Information alignment</div>
+              <div class="re__pollSeg">
+                <button type="button" [class.is-on]="prodAlign() === 'left'"   (click)="setProdAlign('left')">Left</button>
+                <button type="button" [class.is-on]="prodAlign() === 'center'" (click)="setProdAlign('center')">Center</button>
+                <button type="button" [class.is-on]="prodAlign() === 'right'"  (click)="setProdAlign('right')">Right</button>
+              </div>
+              <div class="re__pollLabel">Title &amp; price layout</div>
+              <div class="re__pollSeg">
+                <button type="button" [class.is-on]="prodTpLayout() === 'stack'"  (click)="setProdTpLayout('stack')">Stacked</button>
+                <button type="button" [class.is-on]="prodTpLayout() === 'inline'" (click)="setProdTpLayout('inline')">Inline</button>
+              </div>
+              <div class="re__pollLabel">Ribbon placement</div>
+              <div class="re__pollSeg">
+                <button type="button" [class.is-on]="prodRibbonPlace() === 'image'" (click)="setProdRibbonPlace('image')">On image</button>
+                <button type="button" [class.is-on]="prodRibbonPlace() === 'info'"  (click)="setProdRibbonPlace('info')">In info</button>
+              </div>
+              <button type="button" class="re__prodReset" (click)="resetProdLayout()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                Reset Layout
+              </button>
+            </div>
+          } @else {
+            <div class="re__pollBody">
+              <div class="re__pollLabel">Text</div>
+              <div class="re__figRow">
+                <label class="re__figTbLabel">Primary color</label>
+                <div class="re__figCtrl">
+                  <button #prodPrimarySwatch="cdkOverlayOrigin" cdkOverlayOrigin type="button" class="re__figColorTrigger"
+                          [style.background]="prodPrimary()"
+                          (click)="colorPanelTarget.set(colorPanelTarget() === 'prodPrimary' ? null : 'prodPrimary')" aria-label="Primary color"></button>
+                  <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="prodPrimarySwatch"
+                               [cdkConnectedOverlayOpen]="colorPanelTarget() === 'prodPrimary'"
+                               [cdkConnectedOverlayPositions]="overlayPositions" [cdkConnectedOverlayHasBackdrop]="true"
+                               cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop" (backdropClick)="colorPanelTarget.set(null)">
+                    <app-colors-panel [colorOnly]="true" [ngModel]="colorPanelValue()"
+                                      (ngModelChange)="onColorPanelChange($event)" (closed)="colorPanelTarget.set(null)"/>
+                  </ng-template>
+                </div>
+              </div>
+              <div class="re__figRow">
+                <label class="re__figTbLabel">Secondary color</label>
+                <div class="re__figCtrl">
+                  <button #prodSecondarySwatch="cdkOverlayOrigin" cdkOverlayOrigin type="button" class="re__figColorTrigger"
+                          [style.background]="prodSecondary()"
+                          (click)="colorPanelTarget.set(colorPanelTarget() === 'prodSecondary' ? null : 'prodSecondary')" aria-label="Secondary color"></button>
+                  <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="prodSecondarySwatch"
+                               [cdkConnectedOverlayOpen]="colorPanelTarget() === 'prodSecondary'"
+                               [cdkConnectedOverlayPositions]="overlayPositions" [cdkConnectedOverlayHasBackdrop]="true"
+                               cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop" (backdropClick)="colorPanelTarget.set(null)">
+                    <app-colors-panel [colorOnly]="true" [ngModel]="colorPanelValue()"
+                                      (ngModelChange)="onColorPanelChange($event)" (closed)="colorPanelTarget.set(null)"/>
+                  </ng-template>
+                </div>
+              </div>
+              <div class="re__pollLabel">Card</div>
+              <div class="re__figRow">
+                <label class="re__figTbLabel">Fill color</label>
+                <div class="re__figCtrl">
+                  <button #prodFillSwatch="cdkOverlayOrigin" cdkOverlayOrigin type="button" class="re__figColorTrigger"
+                          [style.background]="prodFill() || 'transparent'"
+                          (click)="colorPanelTarget.set(colorPanelTarget() === 'prodFill' ? null : 'prodFill')" aria-label="Fill color"></button>
+                  <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="prodFillSwatch"
+                               [cdkConnectedOverlayOpen]="colorPanelTarget() === 'prodFill'"
+                               [cdkConnectedOverlayPositions]="overlayPositions" [cdkConnectedOverlayHasBackdrop]="true"
+                               cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop" (backdropClick)="colorPanelTarget.set(null)">
+                    <app-colors-panel [colorOnly]="true" [ngModel]="colorPanelValue()"
+                                      (ngModelChange)="onColorPanelChange($event)" (closed)="colorPanelTarget.set(null)"/>
+                  </ng-template>
+                </div>
+              </div>
+              <div class="re__figRow">
+                <label class="re__figTbLabel">Border color</label>
+                <div class="re__figCtrl">
+                  <button #prodBorderSwatch="cdkOverlayOrigin" cdkOverlayOrigin type="button" class="re__figColorTrigger"
+                          [style.background]="prodBorderColor()"
+                          (click)="colorPanelTarget.set(colorPanelTarget() === 'prodBorder' ? null : 'prodBorder')" aria-label="Border color"></button>
+                  <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="prodBorderSwatch"
+                               [cdkConnectedOverlayOpen]="colorPanelTarget() === 'prodBorder'"
+                               [cdkConnectedOverlayPositions]="overlayPositions" [cdkConnectedOverlayHasBackdrop]="true"
+                               cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop" (backdropClick)="colorPanelTarget.set(null)">
+                    <app-colors-panel [colorOnly]="true" [ngModel]="colorPanelValue()"
+                                      (ngModelChange)="onColorPanelChange($event)" (closed)="colorPanelTarget.set(null)"/>
+                  </ng-template>
+                </div>
+              </div>
+              <div class="re__pollLabel">Border width</div>
+              <div class="re__pollSlider">
+                <input type="range" min="0" max="10" class="re__figSlider"
+                       [ngModel]="prodBorderWidth()" (ngModelChange)="setProdBorderWidth(+$event)"/>
+                <div class="re__figTbNum re__pollNum">
+                  <input type="number" min="0" max="10" class="re__figTbInput re__figTbInput--num"
+                         [ngModel]="prodBorderWidth()" (ngModelChange)="setProdBorderWidth(+$event)"/>
+                  <span class="re__figTbUnit">px</span>
+                </div>
+              </div>
+              <div class="re__pollLabel">Corner radius</div>
+              <div class="re__pollSlider">
+                <input type="range" min="0" max="40" class="re__figSlider"
+                       [ngModel]="prodRadius()" (ngModelChange)="setProdRadius(+$event)"/>
+                <div class="re__figTbNum re__pollNum">
+                  <input type="number" min="0" max="40" class="re__figTbInput re__figTbInput--num"
+                         [ngModel]="prodRadius()" (ngModelChange)="setProdRadius(+$event)"/>
+                  <span class="re__figTbUnit">px</span>
+                </div>
+              </div>
+              <div class="re__pollRow"><span>Add padding</span>
+                <input type="checkbox" [checked]="prodPad()" (change)="toggleProdPad()"/></div>
+              <button type="button" class="re__prodReset" (click)="resetProdDesign()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                Reset Design
+              </button>
+            </div>
+          }
+        </div>
+      }
 
       <!-- Draggable floating Image panel (Settings + Design tabs).
            Lives in the surface wrap so it positions against the
            editor canvas. Title bar is grabbable; the panel can be
            moved anywhere within the surface bounds. -->
+      <!-- Gallery panel — shared <app-re-gallery-panel>, anchored to
+           the selected gallery figure's toolbar. Draggable via header. -->
+      @if (galleryPanelOpen() && isGalleryFigure() && selectedFigure() && galleryPanelPos()) {
+        <div class="re__figPanel re__figPanel--gallery"
+             [style.top.px]="(galleryPanelPos()?.top || 0) + galleryPanelOffset().y"
+             [style.left.px]="(galleryPanelPos()?.left || 0) + galleryPanelOffset().x"
+             (mousedown)="$event.stopPropagation()">
+          <app-re-gallery-panel
+            [config]="galleryConfig()"
+            [images]="galleryImages()"
+            (configChange)="onGalleryConfigChange($event)"
+            (addImages)="onGalleryAddImages()"
+            (removeImage)="onGalleryRemove($event)"
+            (reorder)="onGalleryReorder($event)"
+            (headerPointerDown)="startToolbarDrag($event, 'gallery')"
+            (close)="galleryPanelOpen.set(false)"/>
+        </div>
+      }
+
+      <!-- Content AI panel — shared <app-re-ai-panel>, shown when the
+           toolbar ✨ is clicked (blog only). Draggable via its header. -->
+      @if (aiPanelOpen() && aiPanelPos()) {
+        <div class="re__figPanel re__figPanel--ai"
+             [style.top.px]="(aiPanelPos()?.top || 0) + aiPanelOffset().y"
+             [style.left.px]="(aiPanelPos()?.left || 0) + aiPanelOffset().x"
+             (mousedown)="$event.stopPropagation()">
+          <app-re-ai-panel
+            [streaming]="aiStreaming()"
+            [busy]="aiBusy()"
+            [hasSelection]="aiHasSelection()"
+            [error]="aiError()"
+            (run)="runAi($event)"
+            (accept)="acceptAi($event)"
+            (stop)="stopAi()"
+            (discard)="discardAi()"
+            (headerPointerDown)="startToolbarDrag($event, 'ai')"
+            (close)="closeAiPanel()"/>
+        </div>
+      }
+
       @if (figPanel() && figPanelPos()) {
         <div class="re__figPanel"
              [style.top.px]="figPanelPos()?.top"
@@ -777,6 +1357,26 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                             (click)="setBannerColumns(2)" title="Two columns">
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="8" height="16" rx="1"/><rect x="13" y="4" width="8" height="16" rx="1"/></svg>
                       @if (bannerColumns() === 2) {
+                        <span class="re__figIconToggleCheck" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                      }
+                    </button>
+                    <button type="button" class="re__figIconToggle"
+                            [class.is-on]="bannerColumns() === 3"
+                            (click)="setBannerColumns(3)" title="Three columns">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="9.5" y="4" width="5" height="16" rx="1"/><rect x="16" y="4" width="5" height="16" rx="1"/></svg>
+                      @if (bannerColumns() === 3) {
+                        <span class="re__figIconToggleCheck" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                      }
+                    </button>
+                    <button type="button" class="re__figIconToggle"
+                            [class.is-on]="bannerColumns() === 4"
+                            (click)="setBannerColumns(4)" title="Four columns">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="3.5" height="16" rx="1"/><rect x="8" y="4" width="3.5" height="16" rx="1"/><rect x="13" y="4" width="3.5" height="16" rx="1"/><rect x="18" y="4" width="3" height="16" rx="1"/></svg>
+                      @if (bannerColumns() === 4) {
                         <span class="re__figIconToggleCheck" aria-hidden="true">
                           <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                         </span>
@@ -1619,7 +2219,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
           </div>
         </div>
         <!-- Link panel — pops out of the cell-element toolbar's
-             link icon when a button is picked. Mirrors the Wix Link
+             link icon when a button is picked. Mirrors the Link
              modal: Link-to dropdown, URL input, four rel/target
              toggles, Cancel/Save footer. Header doubles as a drag
              handle, like the Button settings panel. -->
@@ -1628,95 +2228,15 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                [style.top.px]="cellElementToolbar().top + cellElementToolbarOffset().y + 40 + btnLinkOffset().y"
                [style.left.px]="cellElementToolbar().left + cellElementToolbarOffset().x + btnLinkOffset().x"
                (mousedown)="$event.stopPropagation()">
-            <header class="re__figPanelHead" (mousedown)="startToolbarDrag($event, 'btnLink')">
-              <h4>Link</h4>
-              <button type="button" class="re__figPanelClose" (click)="cancelCellButtonLink()" (mousedown)="$event.stopPropagation()" aria-label="Close">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </header>
-            <div class="re__figPanelBody">
-              <div class="re__figRow re__figRow--stack">
-                <label class="re__figTbLabel">Link to</label>
-                <app-search-dropdown
-                  class="re__figSelect"
-                  [items]="linkKindOptions"
-                  [displayWith]="linkKindDisplay"
-                  [compareWith]="linkKindCompare"
-                  [toValue]="linkKindToValue"
-                  [clearable]="false"
-                  [searchable]="false"
-                  [ngModel]="linkKind()"
-                  (ngModelChange)="pickLinkKind($any($event))"/>
-              </div>
-              @if (linkKind() === 'web') {
-                <div class="re__figRow re__figRow--stack">
-                  <label class="re__figTbLabel">URL</label>
-                  <input type="text" class="re__figTbInput re__figLinkUrl"
-                         placeholder="Enter or paste a link"
-                         [value]="linkUrl()" (input)="linkUrl.set($any($event.target).value)"/>
-                </div>
-              } @else if (linkKind() === 'section') {
-                <div class="re__figRow re__figRow--stack">
-                  <label class="re__figTbLabel">Select a section to link to</label>
-                  @if (linkSections().length === 0) {
-                    <div class="re__figLinkEmpty">No sections in this post yet — add a heading first.</div>
-                  } @else {
-                    <div class="re__figLinkSectionList">
-                      @for (s of linkSections(); track s.id) {
-                        <button type="button" [class.is-on]="linkUrl() === '#' + s.id" (click)="linkUrl.set('#' + s.id)">
-                          <span class="re__figLinkSectionTag">{{ s.tag }}</span>
-                          <span class="re__figLinkSectionLabel">{{ s.label }}</span>
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
-              } @else {
-                <div class="re__figRow re__figRow--stack">
-                  <label class="re__figTbLabel">{{ linkKind() === 'page' ? 'Page' : linkKind() === 'blog' ? 'Post' : 'Dynamic page' }}</label>
-                  <div class="re__figLinkEmpty">{{ linkKind() === 'page' ? 'No pages available — wire the host to populate.' : linkKind() === 'blog' ? 'No posts available — wire the host to populate.' : 'No dynamic items available — wire the host to populate.' }}</div>
-                </div>
-              }
-              <div class="re__figTbRow">
-                <span class="re__figLabelGroup">Open link in a new tab</span>
-                <span class="re__figTbToggle" [class.is-on]="linkNewTab()" (mousedown)="$event.preventDefault(); linkNewTab.set(!linkNewTab())"></span>
-              </div>
-              <div class="re__figTbRow">
-                <span class="re__figLabelGroup">
-                  Noreferrer
-                  <span class="re__figInfo" [appReTooltip]="'The destination site will not receive the referring URL.'">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  </span>
-                </span>
-                <span class="re__figTbToggle" [class.is-on]="linkNoReferrer()" (mousedown)="$event.preventDefault(); linkNoReferrer.set(!linkNoReferrer())"></span>
-              </div>
-              <div class="re__figTbRow">
-                <span class="re__figLabelGroup">
-                  Nofollow
-                  <span class="re__figInfo" [appReTooltip]="'Tells search engines not to follow this link for ranking.'">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  </span>
-                </span>
-                <span class="re__figTbToggle" [class.is-on]="linkNoFollow()" (mousedown)="$event.preventDefault(); linkNoFollow.set(!linkNoFollow())"></span>
-              </div>
-              <div class="re__figTbRow">
-                <span class="re__figLabelGroup">
-                  Sponsored
-                  <span class="re__figInfo" [appReTooltip]="'Marks the link as paid/sponsored content.'">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  </span>
-                </span>
-                <span class="re__figTbToggle" [class.is-on]="linkSponsored()" (mousedown)="$event.preventDefault(); linkSponsored.set(!linkSponsored())"></span>
-              </div>
-            </div>
-            <footer class="re__figPanelFoot">
-              <button type="button" class="re__figFootBtn"
-                      (mousedown)="$event.preventDefault(); $event.stopPropagation()"
-                      (click)="cancelCellButtonLink()">Cancel</button>
-              <button type="button" class="re__figFootBtn re__figFootBtn--primary"
-                      (mousedown)="$event.preventDefault(); $event.stopPropagation()"
-                      (click)="saveCellButtonLink()">Save</button>
-            </footer>
+            <app-re-link-panel
+              [value]="linkPanelValue()"
+              [sections]="linkSections()"
+              [pages]="linkPages()"
+              [blogPosts]="linkBlogPosts()"
+              [dynamicItems]="linkDynamicItems()"
+              (headerPointerDown)="startToolbarDrag($event, 'btnLink')"
+              (cancel)="cancelCellButtonLink()"
+              (save)="onCellButtonLinkSave($event)"/>
           </div>
         }
         @if (buttonSettingsOpen() && cellElementToolbar().type === 'button') {
@@ -1862,6 +2382,298 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             </div>
           </div>
         }
+      }
+
+      <!-- Divider toolbar — shown when an <hr> is selected. Style /
+           Size / Alignment dropdowns + delete, reusing the cell-element
+           toolbar chrome + align-menu styles. -->
+      @if (selectedDivider() && dividerToolbar().show) {
+        <div class="re__cellElemTb re__dividerTb"
+             [style.top.px]="dividerToolbar().top + dividerToolbarOffset().y"
+             [style.left.px]="dividerToolbar().left + dividerToolbarOffset().x"
+             (mousedown)="$event.stopPropagation()">
+          <span class="re__tbDrag" (mousedown)="startToolbarDrag($event, 'divider')" title="Drag toolbar">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
+              <circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/>
+              <circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/>
+              <circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/>
+            </svg>
+          </span>
+          <!-- Style -->
+          <div class="re__btnAlignDd">
+            <button type="button" class="re__figTbBtn" [class.is-on]="dividerStyleOpen()"
+                    (mousedown)="$event.preventDefault(); toggleDividerMenu('style')" [appReTooltip]="'Style'">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"/></svg>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            @if (dividerStyleOpen()) {
+              <div class="re__btnAlignMenu">
+                <button type="button" [class.is-on]="dividerStyle() === 'line'"   (mousedown)="$event.preventDefault(); setDividerStyle('line')">Line</button>
+                <button type="button" [class.is-on]="dividerStyle() === 'double'" (mousedown)="$event.preventDefault(); setDividerStyle('double')">Double line</button>
+                <button type="button" [class.is-on]="dividerStyle() === 'dashed'" (mousedown)="$event.preventDefault(); setDividerStyle('dashed')">Dashed line</button>
+                <button type="button" [class.is-on]="dividerStyle() === 'dotted'" (mousedown)="$event.preventDefault(); setDividerStyle('dotted')">Dotted line</button>
+              </div>
+            }
+          </div>
+          <!-- Size (width) -->
+          <div class="re__btnAlignDd">
+            <button type="button" class="re__figTbBtn" [class.is-on]="dividerSizeOpen()"
+                    (mousedown)="$event.preventDefault(); toggleDividerMenu('size')" [appReTooltip]="'Size'">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 9 4 4 9 4"/><polyline points="20 9 20 4 15 4"/><polyline points="4 15 4 20 9 20"/><polyline points="20 15 20 20 15 20"/></svg>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            @if (dividerSizeOpen()) {
+              <div class="re__btnAlignMenu">
+                <button type="button" [class.is-on]="dividerSize() === 'small'"    (mousedown)="$event.preventDefault(); setDividerSize('small')">Small</button>
+                <button type="button" [class.is-on]="dividerSize() === 'standard'" (mousedown)="$event.preventDefault(); setDividerSize('standard')">Standard</button>
+                <button type="button" [class.is-on]="dividerSize() === 'extended'" (mousedown)="$event.preventDefault(); setDividerSize('extended')">Extended</button>
+              </div>
+            }
+          </div>
+          <!-- Alignment -->
+          <div class="re__btnAlignDd">
+            <button type="button" class="re__figTbBtn" [class.is-on]="dividerAlignOpen()"
+                    (mousedown)="$event.preventDefault(); toggleDividerMenu('align')" [appReTooltip]="'Alignment'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            @if (dividerAlignOpen()) {
+              <div class="re__btnAlignMenu">
+                <button type="button" [class.is-on]="dividerAlign() === 'left'"   (mousedown)="$event.preventDefault(); setDividerAlign('left')">Align left</button>
+                <button type="button" [class.is-on]="dividerAlign() === 'center'" (mousedown)="$event.preventDefault(); setDividerAlign('center')">Align center</button>
+                <button type="button" [class.is-on]="dividerAlign() === 'right'"  (mousedown)="$event.preventDefault(); setDividerAlign('right')">Align right</button>
+              </div>
+            }
+          </div>
+          <span class="re__figTbSep"></span>
+          <button type="button" class="re__figTbBtn re__figTbBtn--danger" (mousedown)="$event.preventDefault(); deleteDivider()" [appReTooltip]="'Delete'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      }
+
+      <!-- Table toolbar — shown when one or more table cells are selected.
+           Background / Borders / H-align / V-align / Insert / Move / Merge
+           + overflow (delete). Reuses the cell-element toolbar chrome. -->
+      @if (tableEl() && tableToolbar().show) {
+        <div class="re__cellElemTb re__tableTb"
+             [style.top.px]="tableToolbar().top + tableToolbarOffset().y"
+             [style.left.px]="tableToolbar().left + tableToolbarOffset().x"
+             (mousedown)="$event.stopPropagation()">
+          <span class="re__tbDrag" (mousedown)="startToolbarDrag($event, 'table')" title="Drag toolbar">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
+              <circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/>
+            </svg>
+          </span>
+          <!-- Move table — drag to reposition the whole table among the
+               document blocks. Reuses the cell-element drag/drop engine. -->
+          <button type="button" class="re__figTbBtn re__tableMoveBtn" draggable="true"
+                  (dragstart)="startTableDrag($event)" (dragend)="endTableDrag()"
+                  [appReTooltip]="'Drag to move table'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/>
+              <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
+            </svg>
+          </button>
+          <span class="re__figTbSep"></span>
+          <!-- Background color -->
+          <div class="re__btnAlignDd">
+            <button type="button" class="re__figTbBtn" [class.is-on]="tableMenu() === 'bg'" (mousedown)="$event.preventDefault(); toggleTableMenu('bg')" [appReTooltip]="'Background color'">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11l-8-8-8.5 8.5a2 2 0 0 0 0 2.8l5.2 5.2a2 2 0 0 0 2.8 0L19 11z"/><path d="M5 13h14"/></svg>
+            </button>
+            @if (tableMenu() === 'bg') {
+              <div class="re__btnAlignMenu re__tableMenu--pad">
+                <div class="re__tableSwatches">
+                  @for (c of tableSwatches; track c) {
+                    <button type="button" class="re__tableSwatch" [style.background]="c || 'transparent'" [class.is-none]="!c" (mousedown)="$event.preventDefault(); setTblBg(c)" [title]="c || 'None'"></button>
+                  }
+                </div>
+                <button #tblBgSwatch="cdkOverlayOrigin" cdkOverlayOrigin type="button" class="re__tableCustomColor"
+                        [style.--swatch-color]="tableBgColor()"
+                        (mousedown)="$event.preventDefault()"
+                        (click)="colorPanelTarget.set(colorPanelTarget() === 'tableBg' ? null : 'tableBg')">
+                  <span class="re__tableCustomDot"></span> Custom colour…
+                </button>
+                <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="tblBgSwatch"
+                             [cdkConnectedOverlayOpen]="colorPanelTarget() === 'tableBg'"
+                             [cdkConnectedOverlayPositions]="overlayPositions" [cdkConnectedOverlayHasBackdrop]="true"
+                             cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop" (backdropClick)="colorPanelTarget.set(null)">
+                  <app-colors-panel [colorOnly]="true" [ngModel]="colorPanelValue()"
+                                    (ngModelChange)="onColorPanelChange($event)" (closed)="colorPanelTarget.set(null)"/>
+                </ng-template>
+              </div>
+            }
+          </div>
+          <!-- Borders -->
+          <div class="re__btnAlignDd">
+            <button type="button" class="re__figTbBtn" [class.is-on]="tableMenu() === 'border'" (mousedown)="$event.preventDefault(); toggleTableMenu('border')" [appReTooltip]="'Borders'">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+            </button>
+            @if (tableMenu() === 'border') {
+              <div class="re__btnAlignMenu re__tableMenu--pad re__bordersPop">
+                <div class="re__bordersHead">
+                  <span class="re__bordersTitle">Borders</span>
+                  <button type="button" class="re__bordersClose" (mousedown)="$event.preventDefault(); tableMenu.set(null)" title="Close">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+                <div class="re__bdGrid">
+                  @for (m of tableBorderModes; track m.id) {
+                    <button type="button" class="re__bdBtn" [class.is-on]="tableBorderMode() === m.id"
+                            (mousedown)="$event.preventDefault(); setTblBorders(m.id)" [title]="m.label">
+                      <svg viewBox="0 0 18 18" width="22" height="22" stroke-linecap="square">
+                        <g stroke="#cbd5e1" stroke-width="1">
+                          <line x1="1" y1="1" x2="17" y2="1"/><line x1="1" y1="17" x2="17" y2="17"/>
+                          <line x1="1" y1="1" x2="1" y2="17"/><line x1="17" y1="1" x2="17" y2="17"/>
+                          <line x1="1" y1="9" x2="17" y2="9"/><line x1="9" y1="1" x2="9" y2="17"/>
+                        </g>
+                        <g stroke="#1f2937" stroke-width="1.8">
+                          @for (l of borderIconLines(m.id); track $index) {
+                            <line [attr.x1]="l.x1" [attr.y1]="l.y1" [attr.x2]="l.x2" [attr.y2]="l.y2"/>
+                          }
+                        </g>
+                      </svg>
+                    </button>
+                  }
+                </div>
+                <div class="re__tableBorderField">
+                  <span>Border color</span>
+                  <input class="re__bdOpacity" type="number" min="0" max="100" [ngModel]="tableBorderOpacity()"
+                         (ngModelChange)="tableBorderOpacity.set(+$event); applyTblBorders()"/><span class="re__bdUnit">%</span>
+                  <button #tblBdSwatch="cdkOverlayOrigin" cdkOverlayOrigin type="button" class="re__figColorTrigger"
+                          [style.--swatch-color]="composeRgba(tableBorderColor(), tableBorderOpacity())"
+                          (click)="colorPanelTarget.set(colorPanelTarget() === 'tableBorder' ? null : 'tableBorder')"></button>
+                  <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="tblBdSwatch"
+                               [cdkConnectedOverlayOpen]="colorPanelTarget() === 'tableBorder'"
+                               [cdkConnectedOverlayPositions]="overlayPositions" [cdkConnectedOverlayHasBackdrop]="true"
+                               cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop" (backdropClick)="colorPanelTarget.set(null)">
+                    <app-colors-panel [colorOnly]="true" [alpha]="tableBorderOpacity()" [ngModel]="colorPanelValue()"
+                                      (ngModelChange)="onColorPanelChange($event)"
+                                      (alphaChange)="tableBorderOpacity.set($event); applyTblBorders()"
+                                      (closed)="colorPanelTarget.set(null)"/>
+                  </ng-template>
+                </div>
+                <div class="re__tableBorderField">
+                  <span>Border width</span>
+                  <input type="number" min="0" max="10" [ngModel]="tableBorderWidth()" (ngModelChange)="tableBorderWidth.set($event); applyTblBorders()"/><span>px</span>
+                </div>
+              </div>
+            }
+          </div>
+          <span class="re__figTbSep"></span>
+          <!-- Horizontal alignment -->
+          <div class="re__btnAlignDd">
+            <button type="button" class="re__figTbBtn" [class.is-on]="tableMenu() === 'halign'" (mousedown)="$event.preventDefault(); toggleTableMenu('halign')" [appReTooltip]="'Alignment'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            @if (tableMenu() === 'halign') {
+              <div class="re__btnAlignMenu">
+                <button type="button" (mousedown)="$event.preventDefault(); setTblAlign('left')">Align left</button>
+                <button type="button" (mousedown)="$event.preventDefault(); setTblAlign('center')">Align center</button>
+                <button type="button" (mousedown)="$event.preventDefault(); setTblAlign('right')">Align right</button>
+                <button type="button" (mousedown)="$event.preventDefault(); setTblAlign('justify')">Justify</button>
+              </div>
+            }
+          </div>
+          <!-- Vertical alignment -->
+          <div class="re__btnAlignDd">
+            <button type="button" class="re__figTbBtn" [class.is-on]="tableMenu() === 'valign'" (mousedown)="$event.preventDefault(); toggleTableMenu('valign')" [appReTooltip]="'Vertical alignment'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="4" x2="21" y2="4"/><rect x="9" y="8" width="6" height="12"/></svg>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            @if (tableMenu() === 'valign') {
+              <div class="re__btnAlignMenu">
+                <button type="button" (mousedown)="$event.preventDefault(); setTblVAlign('top')">Align top</button>
+                <button type="button" (mousedown)="$event.preventDefault(); setTblVAlign('middle')">Align middle</button>
+                <button type="button" (mousedown)="$event.preventDefault(); setTblVAlign('bottom')">Align bottom</button>
+              </div>
+            }
+          </div>
+          <!-- Insert row / column -->
+          <div class="re__btnAlignDd">
+            <button type="button" class="re__figTbBtn" [class.is-on]="tableMenu() === 'insert'" (mousedown)="$event.preventDefault(); toggleTableMenu('insert')" [appReTooltip]="'Insert row or column'">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            @if (tableMenu() === 'insert') {
+              <div class="re__btnAlignMenu">
+                <button type="button" (mousedown)="$event.preventDefault(); insertTableRow('above')">Insert row above</button>
+                <button type="button" (mousedown)="$event.preventDefault(); insertTableRow('below')">Insert row below</button>
+                <button type="button" (mousedown)="$event.preventDefault(); insertTableCol('left')">Insert column left</button>
+                <button type="button" (mousedown)="$event.preventDefault(); insertTableCol('right')">Insert column right</button>
+              </div>
+            }
+          </div>
+          <!-- Move column -->
+          <button type="button" class="re__figTbBtn" (mousedown)="$event.preventDefault(); moveTableCol('left')" [appReTooltip]="'Move column left'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          </button>
+          <button type="button" class="re__figTbBtn" (mousedown)="$event.preventDefault(); moveTableCol('right')" [appReTooltip]="'Move column right'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+          <span class="re__figTbSep"></span>
+          <!-- Merge / Unmerge -->
+          <button type="button" class="re__figTbBtn" (mousedown)="$event.preventDefault(); mergeCells()" [appReTooltip]="'Merge cells'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M9 5v14M15 5v14" opacity=".4"/><path d="M8 12h8M13 9l3 3-3 3"/></svg>
+          </button>
+          <button type="button" class="re__figTbBtn" (mousedown)="$event.preventDefault(); unmergeCells()" [appReTooltip]="'Unmerge cells'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1"/><line x1="12" y1="5" x2="12" y2="19"/></svg>
+          </button>
+          <span class="re__figTbSep"></span>
+          <!-- More -->
+          <div class="re__btnAlignDd">
+            <button type="button" class="re__figTbBtn" [class.is-on]="tableMenu() === 'more'" (mousedown)="$event.preventDefault(); toggleTableMenu('more')" [appReTooltip]="'More'">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+            </button>
+            @if (tableMenu() === 'more') {
+              <div class="re__btnAlignMenu">
+                <button type="button" class="re__figTbItem" (mousedown)="$event.preventDefault(); tableCmd('cut')">Cut <span class="re__figTbKbd">Ctrl+X</span></button>
+                <button type="button" class="re__figTbItem" (mousedown)="$event.preventDefault(); tableCmd('copy')">Copy <span class="re__figTbKbd">Ctrl+C</span></button>
+                <button type="button" class="re__figTbItem" (mousedown)="$event.preventDefault(); tableCmd('duplicate')">Duplicate <span class="re__figTbKbd">Ctrl+Shift+D</span></button>
+                <span class="re__figTbDiv"></span>
+                <button type="button" (mousedown)="$event.preventDefault(); deleteTableRow()">Delete row</button>
+                <button type="button" (mousedown)="$event.preventDefault(); deleteTableCol()">Delete column</button>
+                <button type="button" class="is-danger" (mousedown)="$event.preventDefault(); deleteTable()">Delete table</button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Table header tabs — click to select a whole row (left) or
+           column (top). -->
+      @if (tableEl() && tableRect(); as tr) {
+        @for (rh of rowHandles(); track rh.idx) {
+          <button type="button" class="re__tableHandle re__tableHandle--row"
+                  [style.top.px]="rh.top" [style.left.px]="tr.left - 20"
+                  (mousedown)="$event.preventDefault(); $event.stopPropagation(); selectTableRow(rh.idx)"
+                  [appReTooltip]="'Select row'">
+            <svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor"><circle cx="8" cy="4" r="1.4"/><circle cx="8" cy="8" r="1.4"/><circle cx="8" cy="12" r="1.4"/></svg>
+          </button>
+        }
+        @for (ch of colHandles(); track $index) {
+          <button type="button" class="re__tableHandle re__tableHandle--col"
+                  [style.left.px]="ch.left" [style.top.px]="tr.top - 20"
+                  (mousedown)="$event.preventDefault(); $event.stopPropagation(); selectTableColByCell(ch.cell)"
+                  [appReTooltip]="'Select column'">
+            <svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor"><circle cx="4" cy="8" r="1.4"/><circle cx="8" cy="8" r="1.4"/><circle cx="12" cy="8" r="1.4"/></svg>
+          </button>
+        }
+      }
+
+      <!-- Table edge +-handles — add a column (right) / row (bottom). -->
+      @if (tableEl() && tableRect(); as tr) {
+        <button type="button" class="re__tableAdd re__tableAdd--col"
+                [style.top.px]="tr.top + tr.height / 2 - 18"
+                [style.left.px]="tr.left + tr.width + 6"
+                (mousedown)="$event.preventDefault(); $event.stopPropagation(); addTableColEnd()"
+                [appReTooltip]="'Add column'">+</button>
+        <button type="button" class="re__tableAdd re__tableAdd--row"
+                [style.top.px]="tr.top + tr.height + 6"
+                [style.left.px]="tr.left + tr.width / 2 - 18"
+                (mousedown)="$event.preventDefault(); $event.stopPropagation(); addTableRowEnd()"
+                [appReTooltip]="'Add row'">+</button>
       }
 
       <!-- Floating selection toolbar for embed blocks (video iframe,
@@ -2027,6 +2839,17 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                 </div>
               }
             </div>
+            @if (isHtmlFigure()) {
+              <!-- Custom HTML block — WordPress-style HTML / Preview toggle. -->
+              <button type="button" class="re__figTbBtn re__figTbBtn--labelled" [class.is-on]="htmlCodeMode()"
+                      (mousedown)="$event.preventDefault(); toggleHtmlMode()"
+                      [appReTooltip]="htmlCodeMode() ? 'Show rendered preview' : 'Edit HTML'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+                </svg>
+                <span>{{ htmlCodeMode() ? 'Preview' : 'HTML' }}</span>
+              </button>
+            }
             @if (isImageFigure()) {
               <button type="button"
                       class="re__figTbBtn re__figTbBtn--labelled"
@@ -2051,6 +2874,21 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                 </svg>
               </button>
             }
+            @if (isGalleryFigure()) {
+              <!-- Gallery "Manage" — opens the shared gallery panel
+                   (Media / Layout / Settings tabs). -->
+              <button type="button"
+                      class="re__figTbBtn re__figTbBtn--labelled"
+                      [class.is-on]="galleryPanelOpen()"
+                      (click)="openGalleryPanel()"
+                      [appReTooltip]="'Manage gallery'">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/>
+                  <rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/>
+                </svg>
+                <span>Manage</span>
+              </button>
+            }
           <!-- Link (normal image figures only — hidden in banner). -->
           @if (isImageFigure() && !isBannerFigure()) {
             <div class="re__figTbDd">
@@ -2061,34 +2899,15 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
                 </svg>
               </button>
               @if (figMenu() === 'link') {
-                <div class="re__figTbPanel re__figTbPanel--lg">
-                  <div class="re__figTbPanelHead">
-                    <h4>Link</h4>
-                    <button type="button" class="re__figTbPanelClose" (click)="figMenu.set(null)" aria-label="Close">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                  </div>
-                  <label class="re__figTbLabel">URL</label>
-                  <input type="url" class="re__figTbInput"
-                         placeholder="Enter or paste a link"
-                         [ngModel]="linkUrl()"
-                         (ngModelChange)="linkUrl.set($event)"/>
-                  <div class="re__figTbRow">
-                    <span>Open link in a new tab</span>
-                    <span class="re__figTbToggle" [class.is-on]="linkNewTab()" (click)="linkNewTab.set(!linkNewTab())"></span>
-                  </div>
-                  <div class="re__figTbRow">
-                    <span>Noreferrer</span>
-                    <span class="re__figTbToggle" [class.is-on]="linkNoReferrer()" (click)="linkNoReferrer.set(!linkNoReferrer())"></span>
-                  </div>
-                  <div class="re__figTbRow">
-                    <span>Nofollow</span>
-                    <span class="re__figTbToggle" [class.is-on]="linkNoFollow()" (click)="linkNoFollow.set(!linkNoFollow())"></span>
-                  </div>
-                  <div class="re__figTbActions">
-                    <button type="button" class="re__figTbBtnGhost" (click)="figMenu.set(null)">Cancel</button>
-                    <button type="button" class="re__figTbBtnPrimary" (click)="applyLink()">Save</button>
-                  </div>
+                <div class="re__figTbPanel re__figTbPanel--lg re__figTbPanel--bare">
+                  <app-re-link-panel
+                    [value]="linkPanelValue()"
+                    [sections]="linkSections()"
+                    [pages]="linkPages()"
+                    [blogPosts]="linkBlogPosts()"
+                    [dynamicItems]="linkDynamicItems()"
+                    (cancel)="figMenu.set(null)"
+                    (save)="onImageLinkSave($event)"/>
                 </div>
               }
             </div>
@@ -2196,7 +3015,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
          driven by applyBannerStyles() via the --ricos-internal-layout-*
          aliases declared in the banner section block. */
       --ricos-custom-settings-action-color: #32acc1;     /* primary accent (selection / focus ring) */
-      --ricos-custom-action-color:          #116DFF;     /* secondary accent (add-plugin, AI button) */
+      --ricos-custom-action-color:          var(--color-brand-600, #2691a4);     /* primary accent (add-plugin, AI button) */
       --ricos-custom-settings-icons-color:  #0f172a;     /* toolbar icon colour */
       --ricos-custom-p-color:               #0f172a;     /* body text colour */
       --ricos-custom-bg-color:              #ffffff;     /* canvas background */
@@ -2263,14 +3082,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       pointer-events: none;
     }
     .re-editor-title__counter.is-near-limit { color: #dc2626; }
-    /* When the editor sits inside a Wix-style bare composer, the
+    /* When the editor sits inside a composer-style bare composer, the
        outer .re class strips its own border so the host shell flows
        into the surrounding page. */
     .re--bare.re-editor-host { background: transparent; }
     .re--bare .re-static-toolbar { background: #ffffff; }
 
     /* Fullscreen toggle button — pinned at the top-right corner of
-       the editor host. 28×28 square with the Wix expand/collapse
+       the editor host. 28×28 square with the expand/collapse
        glyph. Sits above the sticky toolbar's z-index so it stays
        reachable even when the toolbar is positioned over content. */
     .re-fullscreen-toggle {
@@ -2606,7 +3425,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
        so callers can re-theme the offset by overriding the CSS var
        at any ancestor (default -36px parks the button outside the
        line's left edge with a small gap). Plus-icon colour uses the
-       Wix brand blue #116DFF. */
+       brand blue #116DFF. */
     .re-editor-host {
       --ricos-custom-editor-add-plugin-button-position-inline-start: -36px;
     }
@@ -2629,6 +3448,392 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       transform: scale(1.05);
     }
     .re__addBtn:active { transform: scale(0.95); }
+    .re__tableMoveBtn { cursor: grab; }
+    .re__tableMoveBtn:active { cursor: grabbing; }
+
+    /* "/" slash menu — caret-anchored insert list. */
+    .re__slash {
+      position: absolute;
+      z-index: 40;
+      min-width: 240px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 6px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+    }
+    .re__slashHead {
+      padding: 6px 10px 4px;
+      font-size: 11px; font-weight: 700; letter-spacing: .04em;
+      text-transform: uppercase; color: #94a3b8;
+    }
+    .re__slashItem {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; padding: 8px 10px;
+      border: 0; border-radius: 8px; background: transparent;
+      font: inherit; font-size: 14px; color: #0f172a; text-align: left; cursor: pointer;
+    }
+    .re__slashItem.is-active, .re__slashItem:hover { background: #f1f5f9; }
+    .re__slashIcon { display: inline-flex; width: 18px; height: 18px; color: #475569; flex-shrink: 0; }
+    .re__slashIcon :where(svg) { width: 18px; height: 18px; }
+    .re__slashLabel { flex: 1; min-width: 0; }
+
+    /* ── Expandable list block ── */
+    :host ::ng-deep .re__surface .re-expand-group {
+      border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin: 14px 0;
+    }
+    :host ::ng-deep .re__surface .re-expand + .re-expand { border-top: 1px solid #eef2f6; }
+    :host ::ng-deep .re__surface .re-expand__head {
+      display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+    }
+    :host ::ng-deep .re__surface .re-expand-group[data-dir="right"] .re-expand__head { flex-direction: row-reverse; }
+    :host ::ng-deep .re__surface .re-expand-group[data-dir="right"] .re-expand__title { text-align: right; }
+    :host ::ng-deep .re__surface .re-expand__drag { color: #cbd5e1; cursor: grab; display: inline-flex; flex-shrink: 0; }
+    :host ::ng-deep .re__surface .re-expand__chev {
+      border: 0; background: transparent; padding: 0; color: #64748b; cursor: pointer;
+      display: inline-flex; flex-shrink: 0; transition: transform .15s ease;
+    }
+    :host ::ng-deep .re__surface .re-expand[data-open="false"] .re-expand__chev { transform: rotate(-90deg); }
+    :host ::ng-deep .re__surface .re-expand__title { flex: 1; min-width: 0; font-weight: 600; outline: none; }
+    :host ::ng-deep .re__surface .re-expand__body { padding: 0 12px 12px 40px; outline: none; }
+    :host ::ng-deep .re__surface .re-expand[data-open="false"] .re-expand__body { display: none; }
+    :host ::ng-deep .re__surface .re-expand__title:empty::before,
+    :host ::ng-deep .re__surface .re-expand__body:empty::before {
+      content: attr(data-placeholder); color: #94a3b8; pointer-events: none;
+    }
+    :host ::ng-deep .re__surface .re-expand__add {
+      padding: 10px 12px; border-top: 1px solid #eef2f6; cursor: pointer;
+      font-weight: 600; color: var(--color-brand-600, #2691a4); user-select: none;
+    }
+    :host ::ng-deep .re__surface .re-expand__add:hover { background: #f8fafc; }
+
+    /* Expandable floating toolbar. */
+    .re__expandTb {
+      position: absolute; z-index: 35; display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+    }
+    .re__expandTb__btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      border: 0; background: transparent; padding: 6px 10px; border-radius: 7px;
+      font: inherit; font-size: 13px; color: #334155; cursor: pointer;
+    }
+    .re__expandTb__btn:hover { background: #f1f5f9; }
+    .re__expandTb__btn--danger { color: #dc2626; }
+    .re__expandTb__sep { width: 1px; height: 20px; background: #e2e8f0; }
+
+    /* Expandable settings popover. */
+    .re__expandPanel {
+      position: absolute; z-index: 40; width: 260px;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+    }
+    .re__expandPanel__head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-weight: 700; color: #0f172a;
+    }
+    .re__expandPanel__close { border: 0; background: transparent; color: #64748b; cursor: pointer; padding: 2px; }
+    .re__expandPanel__body { padding: 12px 14px; }
+    .re__expandPanel__label { font-size: 12px; font-weight: 700; color: #475569; margin: 10px 0 6px; }
+    .re__expandPanel__label:first-child { margin-top: 0; }
+    .re__expandRadio { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #334155; padding: 4px 0; cursor: pointer; }
+    .re__expandRow { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #334155; margin: 8px 0; }
+    .re__expandDir { display: flex; gap: 8px; }
+    .re__expandDir button {
+      flex: 1; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 8px;
+      background: #fff; color: #475569; font: inherit; font-size: 13px; cursor: pointer;
+    }
+    .re__expandDir button.is-on { border-color: var(--color-brand-600, #2691a4); color: var(--color-brand-700, #2691a4); font-weight: 600; }
+
+    /* ── HTML embed block ── */
+    :host ::ng-deep .re__surface .re-embed {
+      max-width: 100%; margin: 14px auto; box-sizing: border-box;
+    }
+    :host ::ng-deep .re__surface .re-embed[data-align="left"]   { margin-left: 0; margin-right: auto; }
+    :host ::ng-deep .re__surface .re-embed[data-align="right"]  { margin-left: auto; margin-right: 0; }
+    :host ::ng-deep .re__surface .re-embed[data-align="center"] { margin-left: auto; margin-right: auto; }
+    :host ::ng-deep .re__surface .re-embed[data-wrap="true"][data-align="left"]  { float: left;  margin: 4px 16px 12px 0; }
+    :host ::ng-deep .re__surface .re-embed[data-wrap="true"][data-align="right"] { float: right; margin: 4px 0 12px 16px; }
+    :host ::ng-deep .re__surface .re-embed__frame { width: 100%; overflow: hidden; }
+    :host ::ng-deep .re__surface .re-embed__frame > iframe { display: block; width: 100%; }
+    /* Empty placeholder is a small 100px box — it grows to fit the
+       content once HTML/an embed is added (or via the Height handle). */
+    :host ::ng-deep .re__surface .re-embed--empty .re-embed__frame {
+      height: 100px; background: #f1f5f9; border-radius: 4px;
+    }
+    :host ::ng-deep .re__surface .re-embed.is-selected { outline: 2px solid var(--color-brand-500, #32acc1); outline-offset: 2px; }
+
+    /* Embed toolbar + popovers. */
+    .re__embedTb {
+      position: absolute; z-index: 35; display: inline-flex; align-items: center; gap: 2px;
+      padding: 4px 6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+    }
+    .re__embedTb__btn {
+      display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent;
+      padding: 6px 8px; border-radius: 7px; font: inherit; font-size: 13px; color: #334155; cursor: pointer;
+    }
+    .re__embedTb__btn:hover { background: #f1f5f9; }
+    .re__embedTb__btn--danger { color: #dc2626; }
+    .re__embedTb__sep { width: 1px; height: 20px; background: #e2e8f0; margin: 0 2px; }
+    .re__embedAlignMenu, .re__embedSize {
+      position: absolute; top: calc(100% + 6px); left: 0; min-width: 180px;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 6px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.14);
+    }
+    .re__embedAlignMenu button {
+      display: block; width: 100%; text-align: left; border: 0; background: transparent;
+      padding: 7px 10px; border-radius: 6px; font: inherit; font-size: 13px; color: #334155; cursor: pointer;
+    }
+    .re__embedAlignMenu button:hover, .re__embedAlignMenu button.is-on { background: #f1f5f9; }
+    .re__embedWrap { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; font-size: 13px; color: #334155; border-top: 1px solid #f1f5f9; margin-top: 4px; }
+    .re__embedSize { min-width: 240px; }
+    .re__embedSize__head { font-weight: 700; color: #0f172a; padding: 4px 6px 8px; }
+    .re__embedSize__row { display: flex; align-items: center; gap: 10px; padding: 0 6px 4px; }
+    .re__embedSize__row input[type="range"] { flex: 1; }
+    .re__embedSize__num { width: 64px; padding: 5px 8px; border: 1px solid #e2e8f0; border-radius: 6px; font: inherit; text-align: center; }
+
+    .re__embedPanel {
+      position: absolute; z-index: 40; width: 320px;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16); padding: 14px;
+    }
+    .re__panelDragHead { cursor: move; user-select: none; }
+    .re__embedPanel__head { display: flex; align-items: center; justify-content: space-between; font-weight: 700; color: #0f172a; margin-bottom: 10px; }
+    .re__embedPanel__close { border: 0; background: transparent; color: #64748b; cursor: pointer; padding: 2px; }
+    .re__embedTabs { display: flex; gap: 6px; margin-bottom: 10px; }
+    .re__embedTabs button {
+      flex: 1; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 8px;
+      background: #fff; color: #475569; font: inherit; font-size: 13px; cursor: pointer;
+    }
+    .re__embedTabs button.is-on { border-color: var(--color-brand-600, #2691a4); color: var(--color-brand-700, #2691a4); font-weight: 600; }
+    .re__embedCode, .re__embedUrl {
+      width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1;
+      border-radius: 8px; font: inherit; font-size: 13px; resize: vertical;
+    }
+    .re__embedCode { font-family: ui-monospace, Menlo, Consolas, monospace; }
+    .re__embedErr { color: #dc2626; font-size: 12px; margin-top: 6px; }
+    .re__embedPanel__foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+    /* ── Poll block ── */
+    :host ::ng-deep .re__surface .re-poll {
+      margin: 14px 0; padding: 28px 24px; border-radius: 0; color: #fff;
+      background-color: #0f172a; background-size: cover; background-position: center;
+      --poll-ans-radius: 0px;
+    }
+    :host ::ng-deep .re__surface .re-poll.is-selected { outline: 2px solid var(--color-brand-500, #32acc1); outline-offset: 2px; }
+    :host ::ng-deep .re__surface .re-poll__inner { max-width: 680px; margin: 0 auto; }
+    :host ::ng-deep .re__surface .re-poll[data-dir="right"] .re-poll__inner { text-align: right; }
+    :host ::ng-deep .re__surface .re-poll__qimg { margin: 0 0 16px; border-radius: 6px; overflow: hidden; }
+    :host ::ng-deep .re__surface .re-poll__q { font-size: 24px; font-weight: 600; text-align: center; outline: none; margin-bottom: 18px; }
+    :host ::ng-deep .re__surface .re-poll__q:empty::before,
+    :host ::ng-deep .re__surface .re-poll__ans-text:empty::before {
+      content: attr(data-placeholder); color: rgba(255,255,255,.5); pointer-events: none;
+    }
+    :host ::ng-deep .re__surface .re-poll__answers { display: flex; flex-direction: column; gap: 10px; }
+    :host ::ng-deep .re__surface .re-poll[data-layout="grid"] .re-poll__answers {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    :host ::ng-deep .re__surface .re-poll__ans {
+      position: relative; display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.14); border-radius: var(--poll-ans-radius, 0px); padding: 14px 16px;
+    }
+    :host ::ng-deep .re__surface .re-poll[data-layout="grid"] .re-poll__ans { flex-direction: column; align-items: stretch; padding: 0; overflow: hidden; }
+    :host ::ng-deep .re__surface .re-poll[data-layout="grid"] .re-poll__ans-text { padding: 12px 14px; }
+    :host ::ng-deep .re__surface .re-poll__aimg { background: rgba(255,255,255,.08); }
+    :host ::ng-deep .re__surface .re-poll[data-layout="list"] .re-poll__aimg { width: 56px; height: 56px; border-radius: 6px; overflow: hidden; flex-shrink: 0; }
+    :host ::ng-deep .re__surface .re-poll[data-layout="grid"] .re-poll__aimg { width: 100%; height: 130px; }
+    :host ::ng-deep .re__surface .re-poll__ans-text { flex: 1; outline: none; }
+    :host ::ng-deep .re__surface .re-poll__ans-remove {
+      background: transparent; border: 0; color: rgba(255,255,255,.7); cursor: pointer; padding: 2px;
+      display: inline-flex; flex-shrink: 0;
+    }
+    :host ::ng-deep .re__surface .re-poll[data-layout="grid"] .re-poll__ans-remove { position: absolute; top: 6px; right: 6px; }
+    :host ::ng-deep .re__surface .re-poll__ans-remove:hover { color: #fff; }
+    :host ::ng-deep .re__surface .re-poll__add {
+      margin-top: 4px; padding: 14px 16px; border: 1px dashed rgba(255,255,255,.4);
+      border-radius: var(--poll-ans-radius, 0px); background: transparent; color: rgba(255,255,255,.85);
+      cursor: pointer; font: inherit; text-align: center;
+    }
+    :host ::ng-deep .re__surface .re-poll[data-layout="grid"] .re-poll__add { grid-column: 1 / -1; }
+    :host ::ng-deep .re__surface .re-poll__add:hover { background: rgba(255,255,255,.08); }
+
+    /* Poll toolbar + dropdown + panel. */
+    .re__pollTb {
+      position: absolute; z-index: 35; display: inline-flex; align-items: center; gap: 2px;
+      padding: 4px 6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+    }
+    .re__pollTb__btn { display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent; padding: 6px 8px; border-radius: 7px; font: inherit; font-size: 13px; color: #334155; cursor: pointer; }
+    .re__pollTb__btn:hover { background: #f1f5f9; }
+    .re__pollTb__btn--danger { color: #dc2626; }
+    .re__pollTb__sep { width: 1px; height: 20px; background: #e2e8f0; margin: 0 2px; }
+    .re__pollLayoutMenu {
+      position: absolute; top: calc(100% + 6px); left: 0; min-width: 160px; padding: 6px;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 8px 22px rgba(15,23,42,.14);
+    }
+    .re__pollLayoutMenu button { display: block; width: 100%; text-align: left; border: 0; background: transparent; padding: 7px 10px; border-radius: 6px; font: inherit; font-size: 13px; color: #334155; cursor: pointer; }
+    .re__pollLayoutMenu button:hover, .re__pollLayoutMenu button.is-on { background: #f1f5f9; }
+    .re__pollLayoutMenu__sep { display: block; height: 1px; background: #f1f5f9; margin: 4px 0; }
+
+    .re__pollPanel {
+      position: absolute; z-index: 40; width: 300px;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 12px 28px rgba(15,23,42,.16);
+    }
+    .re__pollPanel__head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-weight: 700; color: #0f172a; }
+    .re__pollPanel__close { border: 0; background: transparent; color: #64748b; cursor: pointer; padding: 2px; }
+    .re__pollTabs { display: flex; gap: 4px; padding: 8px 10px 0; }
+    .re__pollTabs button { flex: 1; padding: 7px 6px; border: 0; border-bottom: 2px solid transparent; background: transparent; font: inherit; font-size: 13px; color: #64748b; cursor: pointer; }
+    .re__pollTabs button.is-on { color: var(--color-brand-700, #2691a4); border-bottom-color: var(--color-brand-600, #2691a4); font-weight: 600; }
+    .re__pollBody { padding: 12px 14px; }
+    .re__pollLabel { font-size: 12px; font-weight: 700; color: #475569; margin: 12px 0 6px; }
+    .re__pollLabel:first-child { margin-top: 0; }
+    .re__pollRow { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #334155; margin: 8px 0; gap: 12px; }
+    .re__pollRadio { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #334155; padding: 4px 0; cursor: pointer; }
+    .re__pollSeg { display: flex; gap: 8px; }
+    .re__pollSeg button { flex: 1; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; font: inherit; font-size: 13px; color: #475569; cursor: pointer; }
+    .re__pollSeg button.is-on { border-color: var(--color-brand-600, #2691a4); color: var(--color-brand-700, #2691a4); font-weight: 600; }
+    .re__pollColor { width: 100%; height: 36px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; }
+    /* Stacked slider row (label above) — the narrow poll panel can't fit
+       the figure-panel's inline label+slider+number on one line. */
+    .re__pollSlider { display: flex; align-items: center; gap: 10px; }
+    .re__pollSlider .re__figSlider { flex: 1; min-width: 0; }
+    .re__pollNum { width: 84px; flex-shrink: 0; }
+    .re__pollBgImage { position: relative; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+    .re__pollBgImage img { display: block; width: 100%; height: 110px; object-fit: cover; }
+    .re__pollBgImageActions { display: flex; gap: 6px; padding: 6px; }
+    .re__pollBgImageActions button { flex: 1; padding: 6px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; font: inherit; font-size: 12px; color: #475569; cursor: pointer; }
+    .re__pollBgImageActions button:hover { background: #f8fafc; }
+    .re__pollBgImageEmpty {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; height: 96px; border: 0; background: #f8fafc; color: #64748b; cursor: pointer; font: inherit; font-size: 13px;
+    }
+    .re__pollBgImageEmpty:hover { background: #f1f5f9; }
+
+    /* ── Product element chrome (toolbar / preset popover / panel) ── */
+    .re__prodTb {
+      position: absolute; z-index: 35; display: inline-flex; align-items: center; gap: 2px;
+      padding: 4px 6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+    }
+    .re__prodPresetMenu {
+      position: absolute; top: calc(100% + 6px); left: 0; width: 230px; padding: 10px;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(15,23,42,.16);
+    }
+    .re__prodPresetGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .re__prodPresetTile {
+      padding: 6px; border: 1.5px solid #e2e8f0; border-radius: 8px; background: #fff;
+      cursor: pointer; transition: border-color .1s, background .1s;
+    }
+    .re__prodPresetTile:hover { border-color: var(--color-brand-600, #2691a4); background: #f0fafc; }
+    .re__prodPresetThumb { display: block; width: 100%; height: 46px; }
+    .re__prodPanel {
+      position: absolute; z-index: 40; width: 300px;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(15,23,42,.16);
+    }
+    .re__prodInput {
+      width: 100%; padding: 8px 10px; font: inherit; font-size: 13px;
+      border: 1px solid #e2e8f0; border-radius: 8px; color: #0f172a;
+    }
+    .re__prodInput:focus { outline: none; border-color: var(--color-brand-600, #2691a4); box-shadow: 0 0 0 3px rgba(38,145,164,.15); }
+    .re__prodReset {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 14px;
+      border: 0; background: transparent; padding: 6px 0; font: inherit; font-size: 13px;
+      color: var(--color-brand-700, #2691a4); cursor: pointer;
+    }
+    .re__prodReset:hover { text-decoration: underline; }
+
+    /* ── Product card (in-surface render) ── */
+    :host ::ng-deep .re__surface .re-product {
+      margin: 14px 0; background: #fff;
+    }
+    :host ::ng-deep .re__surface .re-product.is-selected {
+      outline: 2px solid var(--color-brand-500, #32acc1); outline-offset: 2px;
+    }
+    /* Width presets — mirror the figure size control. */
+    :host ::ng-deep .re__surface .re-product.re-size-compact  { max-width: 50%;  width: 50%;  }
+    :host ::ng-deep .re__surface .re-product.re-size-standard { max-width: 100%; width: 100%; }
+    :host ::ng-deep .re__surface .re-product.re-size-extended {
+      max-width: none; width: calc(100% + 64px); margin-left: -32px; margin-right: -32px;
+    }
+    :host ::ng-deep .re__surface .re-product.re-size-original { width: fit-content; max-width: 100%; }
+    .re__prodSizeMenu { min-width: 150px; }
+    :host ::ng-deep .re__surface .re-product__card {
+      display: flex; align-items: stretch; gap: 18px; padding: 16px;
+    }
+    :host ::ng-deep .re__surface .re-product[data-pad="false"] .re-product__card { padding: 0; }
+    :host ::ng-deep .re__surface .re-product[data-img-pos="left"]  .re-product__card { flex-direction: row; }
+    :host ::ng-deep .re__surface .re-product[data-img-pos="right"] .re-product__card { flex-direction: row-reverse; }
+    :host ::ng-deep .re__surface .re-product[data-img-pos="top"]   .re-product__card { flex-direction: column; }
+    :host ::ng-deep .re__surface .re-product__media {
+      position: relative; flex: 0 0 42%; overflow: hidden; border-radius: 6px; background: #f1f5f9;
+    }
+    :host ::ng-deep .re__surface .re-product[data-img-pos="top"] .re-product__media { flex: 0 0 auto; width: 100%; }
+    :host ::ng-deep .re__surface .re-product[data-img-ratio="square"]    .re-product__media { aspect-ratio: 1 / 1; }
+    :host ::ng-deep .re__surface .re-product[data-img-ratio="landscape"] .re-product__media { aspect-ratio: 16 / 10; }
+    :host ::ng-deep .re__surface .re-product__media img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    :host ::ng-deep .re__surface .re-product[data-img-fit="fit"] .re-product__media img { object-fit: contain; }
+    :host ::ng-deep .re__surface .re-product__noimg {
+      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #cbd5e1;
+    }
+    :host ::ng-deep .re__surface .re-product[data-show-image="false"] .re-product__media { display: none; }
+    :host ::ng-deep .re__surface .re-product__info {
+      flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; justify-content: center;
+    }
+    :host ::ng-deep .re__surface .re-product[data-align="left"]   .re-product__info { text-align: left;   align-items: flex-start; }
+    :host ::ng-deep .re__surface .re-product[data-align="center"] .re-product__info { text-align: center; align-items: center; }
+    :host ::ng-deep .re__surface .re-product[data-align="right"]  .re-product__info { text-align: right;  align-items: flex-end; }
+    :host ::ng-deep .re__surface .re-product[data-tp-layout="inline"] .re-product__info {
+      flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 6px 14px;
+    }
+    :host ::ng-deep .re__surface .re-product__title {
+      font-size: 16px; font-weight: 700; color: var(--rp-primary, #0f172a); line-height: 1.3;
+    }
+    :host ::ng-deep .re__surface .re-product__price {
+      font-size: 15px; font-weight: 600; color: var(--rp-secondary, #475569);
+    }
+    :host ::ng-deep .re__surface .re-product[data-show-price="false"] .re-product__price { display: none; }
+    :host ::ng-deep .re__surface .re-product__btn {
+      display: inline-block; margin-top: 4px; padding: 9px 18px; border-radius: 4px;
+      background: var(--rp-primary, #0f172a); color: #fff; font-size: 13px; font-weight: 600;
+      text-decoration: none; cursor: pointer; width: fit-content;
+    }
+    :host ::ng-deep .re__surface .re-product[data-tp-layout="inline"] .re-product__btn { flex-basis: 100%; }
+    :host ::ng-deep .re__surface .re-product[data-show-button="false"] .re-product__btn { display: none; }
+    :host ::ng-deep .re__surface .re-product__ribbon {
+      position: absolute; top: 10px; left: 10px; z-index: 1;
+      padding: 3px 10px; border-radius: 3px; font-size: 12px; font-weight: 700;
+      background: var(--rp-primary, #0f172a); color: #fff;
+    }
+    :host ::ng-deep .re__surface .re-product__ribbon--info {
+      position: static; align-self: flex-start;
+    }
+    :host ::ng-deep .re__surface .re-product[data-show-ribbon="false"] .re-product__ribbon { display: none; }
+    :host ::ng-deep .re__surface .re-product[data-ribbon-place="info"]  .re-product__ribbon--img  { display: none; }
+    :host ::ng-deep .re__surface .re-product[data-ribbon-place="image"] .re-product__ribbon--info { display: none; }
+
+    /* Focused-empty-line placeholder. Non-interactive overlay aligned to
+       the line (matches the surface body font) — purely visual, never
+       part of the saved content. */
+    .re__linePh {
+      position: absolute;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      line-height: 1.55;
+      color: #cbd5e1;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+      z-index: 1;
+    }
 
     /* Floating selection toolbar for embed blocks (videos). Mirrors
        the project's pill-button look so it slots into the same
@@ -2731,7 +3936,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
     .re__btnSettingsClose:hover { background: #f1f5f9; color: #0f172a; }
     /* Top-level tabs across the popover head — Settings | Design.
-       Underline on the active tab matches the Wix layout. */
+       Underline on the active tab matches the intended layout. */
     .re__btnTabs {
       display: flex;
       border-bottom: 1px solid #e2e8f0;
@@ -2943,7 +4148,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 85%, #000);
     }
     /* Button-size selector — 3 icon toggles (rectangles of
-       increasing size). Matches the Wix Design-tab layout. */
+       increasing size). Matches the design-tab layout. */
     .re__btnSizeGroup {
       display: inline-flex;
       gap: 4px;
@@ -2969,7 +4174,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       border-color: var(--ricos-custom-settings-action-color, #32acc1);
       color: var(--ricos-custom-settings-action-color, #32acc1);
     }
-    /* Tiny brand checkmark on the active size — matches Wix. */
+    /* Tiny brand checkmark on the active size — matches the design. */
     .re__btnSizeGroup button.is-on::after {
       content: '';
       position: absolute;
@@ -3015,6 +4220,72 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       background: var(--ricos-custom-settings-action-color, #32acc1);
       color: #ffffff;
     }
+    .re__btnAlignMenu button.is-danger { color: #dc2626; }
+    /* Table toolbar menus (background / borders). */
+    .re__tableMenu--pad { padding: 10px !important; gap: 8px !important; min-width: 180px; }
+    .re__tableSwatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .re__btnAlignMenu .re__tableSwatch {
+      width: 24px !important; height: 24px !important; padding: 0 !important;
+      border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;
+    }
+    .re__btnAlignMenu .re__tableSwatch.is-none { position: relative; background: #fff !important; }
+    .re__btnAlignMenu .re__tableSwatch.is-none::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(to top right, transparent 46%, #ef4444 47%, #ef4444 53%, transparent 54%);
+    }
+    /* Custom-colour trigger row in the background menu. */
+    .re__btnAlignMenu .re__tableCustomColor {
+      display: flex !important; align-items: center; gap: 8px; width: 100% !important;
+      padding: 7px 8px; border: 1px solid #e2e8f0 !important; border-radius: 6px; background: #fff; cursor: pointer;
+      font: 500 12px/1 inherit; color: #475569; text-align: left !important;
+    }
+    .re__btnAlignMenu .re__tableCustomColor:hover { background: #f8fafc; }
+    .re__tableCustomDot { width: 18px; height: 18px; border-radius: 4px; border: 1px solid #cbd5e1; background: var(--swatch-color, #000); }
+    /* 3×3 border-side configuration grid. */
+    .re__bdGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .re__btnAlignMenu .re__bdBtn {
+      display: flex !important; align-items: center; justify-content: center; width: auto !important;
+      padding: 5px !important; border: 1px solid #e2e8f0 !important; border-radius: 6px; background: #fff; cursor: pointer;
+    }
+    .re__btnAlignMenu .re__bdBtn:hover { background: #f1f5f9; }
+    .re__btnAlignMenu .re__bdBtn.is-on { border-color: #2563eb !important; background: #eef2ff; color: #2563eb; }
+    /* WIX-style "Borders" popover. */
+    .re__bordersPop { min-width: 230px !important; gap: 12px !important; }
+    .re__bordersHead { display: flex; align-items: center; justify-content: space-between; }
+    .re__bordersTitle { font-size: 15px; font-weight: 700; color: #0f172a; }
+    .re__bordersClose {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; border: 1px solid #e2e8f0; border-radius: 999px;
+      background: #fff; color: #64748b; cursor: pointer; padding: 0;
+    }
+    .re__bordersClose:hover { background: #f1f5f9; color: #0f172a; }
+    .re__bordersPop .re__bdGrid { gap: 8px; }
+    .re__bordersPop .re__bdBtn { padding: 8px !important; border-radius: 8px; }
+    .re__tableBorderField { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; }
+    /* Label takes the slack; the controls sit flush-right (WIX layout). */
+    .re__tableBorderField > span:first-child { flex: 1; min-width: 0; white-space: nowrap; }
+    .re__tableBorderField .re__bdUnit { color: #94a3b8; flex-shrink: 0; }
+    .re__tableBorderField input[type="color"] { width: 36px; height: 26px; border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px; cursor: pointer; }
+    .re__tableBorderField input[type="number"] { width: 54px; padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 8px; font: inherit; text-align: center; }
+    .re__tableBorderField .re__bdOpacity { width: 56px; }
+    /* Table edge +-handles. */
+    .re__tableAdd {
+      position: absolute; z-index: 12; display: flex; align-items: center; justify-content: center;
+      border: 1px solid #c7dcf7; background: #fff; color: #4475c5; cursor: pointer;
+      font-size: 18px; line-height: 1; box-shadow: 0 1px 4px rgba(15,23,42,.1);
+    }
+    .re__tableAdd:hover { background: #eef4ff; border-color: #9bbcf0; }
+    .re__tableAdd--col { width: 22px; height: 36px; border-radius: 999px; }
+    .re__tableAdd--row { width: 36px; height: 22px; border-radius: 999px; }
+    /* Table row/column header tabs. */
+    .re__tableHandle {
+      position: absolute; z-index: 12; display: flex; align-items: center; justify-content: center;
+      border: 1px solid #c7dcf7; background: #fff; color: #6b7b90; cursor: pointer;
+      box-shadow: 0 1px 4px rgba(15,23,42,.1);
+    }
+    .re__tableHandle:hover { background: #eef4ff; border-color: #9bbcf0; color: #4475c5; }
+    .re__tableHandle--row { width: 16px; height: 24px; border-radius: 6px; }
+    .re__tableHandle--col { width: 24px; height: 16px; border-radius: 6px; }
     .re__btnAlignMenuDivider {
       height: 1px;
       background: #e2e8f0;
@@ -3032,7 +4303,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     /* Selection ring on the picked cell-element — uses the editor's
        primary brand teal (settings-action-color) so it sits in the
        same colour family as the banner / column / handle chrome
-       instead of competing with the Wix-blue action-color. */
+       instead of competing with the blue action-color. */
     :host ::ng-deep .re__surface .re-cell-elem-active {
       outline: 2px solid var(--ricos-custom-settings-action-color, #32acc1) !important;
       outline-offset: 2px !important;
@@ -3153,6 +4424,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       z-index: 9;
     }
     .re__figTbPanel--lg { min-width: 280px; }
+    /* Bare variant — the panel hosts a self-chromed child component
+       (e.g. <app-re-link-panel>) that brings its own padding/header/
+       footer, so strip the wrapper's padding + gap to avoid doubling. */
+    .re__figTbPanel--bare { padding: 0; gap: 0; overflow: hidden; }
     .re__figTbPanelHead {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 2px;
@@ -3181,7 +4456,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__figTbRow .re__figTbToggle { cursor: pointer; }
     /* Number + unit combined into a single rounded chip — number input
        in the middle, "px"/"%" suffix on the right, with an optional
-       prefix icon (.re__figTbNumIcon) on the left. Same 118px Wix
+       prefix icon (.re__figTbNumIcon) on the left. Same 118px 
        Input width regardless of whether a prefix icon is present, so
        chips line up vertically across every row in the panel. */
     .re__figTbNum {
@@ -3257,7 +4532,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       z-index: 9;
       white-space: nowrap;
     }
-    /* ─── Banner interaction states (Wix style) ─────────────────────
+    /* ─── Banner interaction states (style) ─────────────────────
        Layered on top of the existing selection / column outlines:
 
        1. Unfocused          — clean, no decoration
@@ -3281,7 +4556,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       outline-offset: 0 !important;
     }
     :host ::ng-deep .re__surface .re-banner-col.is-selected-col {
-      /* Wix doesn't draw a solid outline on the selected column —
+      /* we intentionally don't draw a solid outline on the selected column —
          it relies on the top/bottom pill handles + a soft brand tint
          to mark the selection. An outline that spans the full banner
          width reads as a divider stripe, especially in 1-column
@@ -3332,7 +4607,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       box-shadow: 0 2px 6px rgba(50,172,193,.4) !important;
     }
 
-    /* Floating, draggable Image panel — Wix's right-side "Image"
+    /* Floating, draggable Image panel — the right-side "Image"
        window with Settings + Design tabs. The whole panel is
        positioned absolutely against the surface wrap so it floats
        on top of the canvas without disturbing the contenteditable
@@ -3468,11 +4743,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
        app-color-picker in column-fill / column-border / overlay /
        design-border rows. Opens the ColorsPanel in colour-only mode. */
     .re__figColorTrigger {
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       padding: 0;
-      border: 1px solid rgba(15,23,42,.25);
-      border-radius: 4px;
+      border: 1px solid rgba(15,23,42,.18);
+      border-radius: 7px;
+      box-shadow: 0 1px 2px rgba(15,23,42,.06);
       cursor: pointer;
       flex-shrink: 0;
       /* Two-layer paint: the chosen colour (--swatch-color) painted
@@ -3579,7 +4855,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__figRow--stack { flex-direction: column; align-items: stretch; gap: 4px; }
     /* Label row above the Column-padding chip grid — label text on the
        left, link button pushed to the right edge so it lines up with
-       the rightmost chip below. Mirrors the Wix .__labelRow rule. */
+       the rightmost chip below. Mirrors the .__labelRow rule. */
     .re__figLabelLine {
       display: flex;
       align-items: center;
@@ -3757,7 +5033,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
        can't escape the panel edge. */
     /* Slider popover — fixed-positioned so it escapes any clipping
        container. Repositioned by positionFigSlider() to sit to the
-       RIGHT of the focused chip (Wix-style "popover to the side"),
+       RIGHT of the focused chip (composer-style "popover to the side"),
        not below it. Narrow (88px) and wrapped in a white pill chrome
        so it reads as a proper floating popover. */
     /* ::ng-deep on these rules so they also style the slider input
@@ -3845,7 +5121,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__figSlider--opacity::-webkit-slider-thumb { margin-top: -4px; }
     /* Label + info-icon pair used in the Settings rows. The (i)
        carries an appTooltip that explains the toggle, mirroring the
-       Wix help affordance the user flagged. */
+       help affordance the user flagged. */
     .re__figLabelGroup { display: inline-flex; align-items: center; gap: 4px; }
     .re__figInfo {
       display: inline-flex;
@@ -3901,7 +5177,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
 
     /* Inline radius drag-grip — small square handle that sits on the
        rounded corner curve. Dragging diagonally inward / outward
-       adjusts the corner radius live, the same way Wix exposes it. */
+       adjusts the corner radius live, exposing it inline. */
     :host ::ng-deep .re__surface .re__radiusGrip {
       position: absolute !important;
       width: 10px !important;
@@ -3917,7 +5193,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface .re__radiusGrip:hover { background: #e6f7fa !important; }
 
     /* Transient "Radius N" feedback chip — same visual language as
-       the size indicator that appears on Wix's media blocks while
+       the size indicator that appears on the media blocks while
        you tweak the corner radius. Auto-removed by JS after 900ms. */
     :host ::ng-deep .re__surface .re__radiusChip {
       position: absolute !important;
@@ -3969,7 +5245,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface figure.re-embed-figure.re-wrap-text.re-align-right { float: right !important; margin: 0 0 8px 16px !important; }
 
     /* ═══════════════════════════════════════════════════════════════
-       BANNER — 5-level nested structure (matches Wix Ricos)
+       BANNER — 5-level nested structure (matches the rich editor)
        ═══════════════════════════════════════════════════════════════
        Markup contract:
          section.re-banner                wrapper (CSS vars only)
@@ -4000,11 +5276,11 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       container-type: inline-size !important;
 
       /* Variable aliases — applyBannerStyles() writes the canonical
-         --ricos-internal-layout-* vars (matching Wix Ricos's data
+         --ricos-internal-layout-* vars (matching the editor's data
          contract). The legacy --re-banner-* names are kept as
          aliases so existing CSS rules in this file continue to work
          while the rest of the migration happens. Default-fall-throughs
-         match Wix's empty-state values. */
+         match the empty-state values. */
 
       /* Backdrop (carried on the data-layout-wrapper) */
       --re-banner-backdrop-color:          var(--ricos-internal-layout-backdrop-color, #00000000);
@@ -4097,11 +5373,11 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       background-color: var(--re-banner-backdrop-color) !important;
       padding-top: var(--re-banner-backdrop-pad-top) !important;
       padding-bottom: var(--re-banner-backdrop-pad-bottom) !important;
-      /* Wix breakout=normal horizontal padding — caps the column at
+      /* breakout=normal horizontal padding — caps the column at
          --ricos-content-max-width (740px default) and centres it.
          max(0, …) clamps to 0 when the banner is narrower than the
          cap so the column doesn't get negative padding. The two var
-         names below match Wix's contract exactly so a theme override
+         names below match the contract exactly so a theme override
          flows through. */
       --ricos-breakout-normal-padding-start: max(0px, calc((100% - var(--ricos-content-max-width, 740px)) / 2)) !important;
       --ricos-breakout-normal-padding-end:   max(0px, calc((100% - var(--ricos-content-max-width, 740px)) / 2)) !important;
@@ -4110,7 +5386,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       box-sizing: border-box !important;
       /* Flex container — when the user drags the bottom handle shorter
          than the cell content's natural height, the inner overflows
-         symmetrically above and below (matching Wix). Vertical-align
+         symmetrically above and below (as intended). Vertical-align
          classes on the section toggle align-items so the user can
          anchor the overflow to top / middle / bottom. */
       display: flex !important;
@@ -4200,7 +5476,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
        by the column markers on horizontal drag). Centred within the
        backdrop's content box via margin-inline:auto so shrinking
        pulls equally from both sides. The horizontal breakout padding
-       lives on the backdrop now (Wix's data-breakout=normal pattern),
+       lives on the backdrop now (the data-breakout=normal pattern),
        so the resizer itself has no padding-inline. */
     :host ::ng-deep .re__surface .re-banner-resizer {
       position: relative !important;
@@ -4300,7 +5576,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
 
     /* ── Resize handles (siblings of .re-banner-inner inside .re-banner-resizer)
-       SOLID teal pills — the standard Wix "resize this thing" affordance.
+       SOLID teal pills — the standard "resize this thing" affordance.
        Distinct from the cell-handle (white pill with grab dots) so the
        user can tell at a glance which is for the banner and which is
        for a column. */
@@ -4319,12 +5595,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       opacity: 1 !important;
     }
     /* Bottom resize handle — the ONLY resize affordance on a banner.
-       Wix model: banners are resizable vertically only. Dragging this
+       layout model: banners are resizable vertically only. Dragging this
        pill writes height to the .re-banner-backdrop so the colored
        area shrinks / grows with the cursor; the section auto-sizes
        around the backdrop, so this pill always sits on the visual
        bottom edge regardless of how short/tall the user dragged.
-       Visual style matches Wix Ricos: a small white pill with a
+       Visual style matches the rich editor: a small white pill with a
        brand-coloured fill on the inner bar and a soft drop shadow. */
     :host ::ng-deep .re__surface section.re-banner > .re-banner-handle--bottom {
       bottom: -7px !important;
@@ -4402,6 +5678,16 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface section.re-banner.is-selected .re-banner-marker {
       opacity: 1 !important;
     }
+    /* Column-width resize (edge markers + divider) only applies to a
+       2-column ratio split. 1-col and 3-col (equal) have no resize. */
+    :host ::ng-deep .re__surface section.re-banner[data-cols="1"] .re-banner-marker,
+    :host ::ng-deep .re__surface section.re-banner[data-cols="3"] .re-banner-marker,
+    :host ::ng-deep .re__surface section.re-banner[data-cols="4"] .re-banner-marker,
+    :host ::ng-deep .re__surface section.re-banner[data-cols="1"] .re-banner-col-divider,
+    :host ::ng-deep .re__surface section.re-banner[data-cols="3"] .re-banner-col-divider,
+    :host ::ng-deep .re__surface section.re-banner[data-cols="4"] .re-banner-col-divider {
+      display: none !important;
+    }
     /* Per-side transform — the marker's CENTRE must sit on the
        column edge. Left uses translate(-50%) so its centre lands on
        left:0; right uses translate(50%) so its centre lands on
@@ -4424,7 +5710,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
     /* Column borders — each individual cell gets its own outline so
        a 2-col banner shows two separately-bordered boxes with the
-       grid gap between them. Matches Wix's selection chrome where
+       grid gap between them. Matches the selection chrome where
        every column reads as its own bordered card. */
     :host ::ng-deep .re__surface section.re-banner.is-selected .re-banner-cell,
     :host ::ng-deep .re__surface section.re-banner.is-selected [data-layout-cell] {
@@ -4440,7 +5726,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
               white pill with light brand tint + brand border + dots.
          3. Selected column (.is-selected-col):
               SOLID brand-coloured pill with WHITE dots — matches
-              Wix Ricos's "focused column" state. */
+              the editor's "focused column" state. */
     :host ::ng-deep .re__surface .re-banner-cell-handle {
       position: absolute !important;
       /* Full pill, sits with its bottom edge resting on the column
@@ -4622,7 +5908,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       border-radius: var(--re-col-radius, 0px) !important;
     }
 
-    /* "Borderless" mode used by the Wix-style post composer — the
+    /* "Borderless" mode used by the composer-style post composer — the
        editor sheds its border, padding, and toolbar background so it
        blends into the canvas. Toggle by adding [class.re--bare] on
        the host element. Also turns the layout into a true flex
@@ -4744,7 +6030,44 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       width: 100% !important;
       height: 100% !important;
       border: 0 !important;
+      z-index: 1 !important; /* sits above the loading placeholder */
     }
+    /* "Loading video…" placeholder — sits BEHIND the (initially transparent)
+       iframe, so it shows while the video loads and is covered once the
+       player paints. Pure CSS: no JS, so it works in the published post too. */
+    :host ::ng-deep .re__surface .re-embed-video__loading {
+      position: absolute !important; inset: 0 !important; z-index: 0 !important;
+      display: flex !important; flex-direction: column !important;
+      align-items: center !important; justify-content: center !important;
+      gap: 4px !important; text-align: center !important;
+      background: #494d68 !important; color: #fff !important;
+      font-size: 13px !important;
+    }
+    :host ::ng-deep .re__surface .re-embed-video__loadingTitle { font-weight: 700 !important; }
+    :host ::ng-deep .re__surface .re-embed-video__loadingSub { opacity: .85 !important; }
+    /* Audio embeds (SoundCloud / Spotify / uploaded files) — short fixed-height
+       bars, not 16:9. Height comes from the inline style on the wrapper. */
+    :host ::ng-deep .re__surface .re-embed-audio {
+      position: relative !important;
+      width: 100% !important;
+      margin: 12px 0 !important;
+      border-radius: 10px !important;
+      overflow: hidden !important;
+    }
+    :host ::ng-deep .re__surface .re-embed-audio iframe,
+    :host ::ng-deep .re__surface .re-embed-audio audio {
+      display: block !important;
+      width: 100% !important;
+      height: 100% !important;
+      border: 0 !important;
+    }
+    :host ::ng-deep .re__surface .re-embed-audio audio { height: auto !important; }
+    :host ::ng-deep .re__surface .re-embed-video__spinner {
+      width: 26px !important; height: 26px !important; margin-bottom: 8px !important;
+      border: 2.5px solid rgba(255,255,255,.35) !important; border-top-color: #fff !important;
+      border-radius: 50% !important; animation: re-embed-spin .8s linear infinite !important;
+    }
+    @keyframes re-embed-spin { to { transform: rotate(360deg); } }
     :host ::ng-deep .re__surface .re-embed-card {
       display: block !important;
       margin: 10px 0 !important;
@@ -4764,7 +6087,97 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface .re-embed-card__host { font-size: 12px !important; font-weight: 600 !important; color: #64748b !important; text-transform: uppercase !important; letter-spacing: .04em !important; }
     :host ::ng-deep .re__surface .re-embed-card__url  { font-size: 13px !important; color: #0f172a !important; word-break: break-all !important; }
 
-    /* Video / iframe block + caption — Wix-style "Write a caption"
+    /* Table — editable bordered grid. Cells are contenteditable (inherit
+       from the surface). Phase 2 adds the cell-selection toolbar. */
+    :host ::ng-deep .re__surface .re-table {
+      border-collapse: collapse !important; width: 100% !important;
+      margin: 16px 0 !important; table-layout: fixed !important;
+    }
+    :host ::ng-deep .re__surface .re-table td,
+    :host ::ng-deep .re__surface .re-table th {
+      border: 1px solid var(--ricos-custom-border-color, #d7dde3) !important;
+      padding: 8px 10px !important; vertical-align: top !important;
+      min-width: 40px !important; min-height: 24px !important; word-break: break-word !important;
+    }
+    :host ::ng-deep .re__surface .re-table th { font-weight: 600 !important; background: #f8fafc !important; }
+    /* Presets (re-table--*). Per-cell inline styles from the toolbar always
+       win over these defaults. */
+    :host ::ng-deep .re__surface .re-table--header tbody tr:first-child td { font-weight: 600 !important; background: #f1f5f9 !important; }
+    :host ::ng-deep .re__surface .re-table--striped tbody tr:nth-child(even) td { background: #f8fafc !important; }
+    :host ::ng-deep .re__surface .re-table--minimal td { border-left: 0 !important; border-right: 0 !important; }
+    :host ::ng-deep .re__surface .re-table--borderless td { border-color: transparent !important; }
+    /* Per-cell selection highlight (set by the table toolbar in phase 2). */
+    :host ::ng-deep .re__surface .re-table td.re-cell-sel,
+    :host ::ng-deep .re__surface .re-table th.re-cell-sel { box-shadow: inset 0 0 0 2px #32acc1 !important; background: #eaf7fb !important; }
+    /* Hovered draggable boundary — bold the single edge under the cursor
+       (a column's right edge or a row's bottom edge), full span, so it's
+       clear that border can be dragged to resize. Inset shadow so it
+       shows over the cell's own !important border. */
+    :host ::ng-deep .re__surface .re-table td.re-col-edge,
+    :host ::ng-deep .re__surface .re-table th.re-col-edge { box-shadow: inset -2px 0 0 0 var(--color-brand-600, #32acc1); }
+    :host ::ng-deep .re__surface .re-table td.re-row-edge,
+    :host ::ng-deep .re__surface .re-table th.re-row-edge { box-shadow: inset 0 -2px 0 0 var(--color-brand-600, #32acc1); }
+
+    /* Custom HTML block — renders raw user HTML; the figure toolbar's
+       HTML/Preview toggle swaps the rendered preview for an editable code
+       textarea (the textarea is transient, stripped from saved HTML). */
+    :host ::ng-deep .re__surface .re-embed-figure--html { display: block !important; }
+    :host ::ng-deep .re__surface .re-html-render { display: block !important; min-height: 24px !important; }
+    :host ::ng-deep .re__surface .re-html-render > * { max-width: 100% !important; }
+    :host ::ng-deep .re__surface .re-embed-figure--html.is-html-editing .re-html-render { display: none !important; }
+    /* Let a click select the block instead of being swallowed by its
+       content (e.g. an iframe); restored once selected. */
+    :host ::ng-deep .re__surface .re-embed-figure--html:not(.is-selected) .re-html-render { pointer-events: none !important; }
+    :host ::ng-deep .re__surface .re-html-render:empty::before {
+      content: "Empty HTML block — select it and click “HTML” to add code." !important;
+      color: #94a3b8 !important; font-size: 13px !important;
+    }
+    :host ::ng-deep .re__surface textarea.re-html-code {
+      display: block !important; width: 100% !important; min-height: 160px !important;
+      box-sizing: border-box !important; padding: 12px !important;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+      font-size: 13px !important; line-height: 1.5 !important; color: #0f172a !important;
+      background: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important;
+      resize: vertical !important; white-space: pre !important; tab-size: 2 !important;
+    }
+    :host ::ng-deep .re__surface textarea.re-html-code:focus {
+      outline: none !important; border-color: #32acc1 !important; box-shadow: 0 0 0 3px rgba(50,172,193,.15) !important;
+    }
+
+    /* Divider — a clean hairline (replaces the browser's default beveled
+       <hr>). Style / width / alignment come from data-* attrs set by the
+       divider toolbar; plain <hr> (no attrs) falls back to a full-width
+       single line. */
+    :host ::ng-deep .re__surface hr {
+      -webkit-appearance: none !important; appearance: none !important;
+      border: 0 !important; border-top: 1px solid var(--ricos-custom-border-color, #dcdce1) !important;
+      height: 0 !important; width: 100% !important; margin: 26px auto !important;
+      background: none !important; box-sizing: border-box !important;
+      position: relative !important; cursor: pointer !important;
+    }
+    /* The line is only ~1px tall, which is almost impossible to click.
+       Expand the hit area ±11px (clicks still target the <hr>, so the
+       toolbar opens) without moving the visible line. */
+    :host ::ng-deep .re__surface hr::before {
+      content: "" !important; position: absolute !important;
+      left: 0 !important; right: 0 !important; top: -11px !important; bottom: -11px !important;
+    }
+    /* Style */
+    :host ::ng-deep .re__surface hr[data-divider-style="double"] { border-top-width: 4px !important; border-top-style: double !important; }
+    :host ::ng-deep .re__surface hr[data-divider-style="dashed"] { border-top-style: dashed !important; }
+    :host ::ng-deep .re__surface hr[data-divider-style="dotted"] { border-top-width: 2px !important; border-top-style: dotted !important; }
+    /* Size (width) */
+    :host ::ng-deep .re__surface hr[data-divider-size="small"]    { width: 30% !important; }
+    :host ::ng-deep .re__surface hr[data-divider-size="standard"] { width: 65% !important; }
+    :host ::ng-deep .re__surface hr[data-divider-size="extended"] { width: 100% !important; }
+    /* Alignment (visible once narrower than full width) */
+    :host ::ng-deep .re__surface hr[data-divider-align="left"]   { margin-left: 0 !important; margin-right: auto !important; }
+    :host ::ng-deep .re__surface hr[data-divider-align="center"] { margin-left: auto !important; margin-right: auto !important; }
+    :host ::ng-deep .re__surface hr[data-divider-align="right"]  { margin-left: auto !important; margin-right: 0 !important; }
+    /* Selected state */
+    :host ::ng-deep .re__surface hr.is-selected { outline: 2px solid #32acc1 !important; outline-offset: 6px !important; }
+
+    /* Video / iframe block + caption — composer-style "Write a caption"
        affordance. The caption stays contenteditable inside the
        editor; the iframe wrapper is non-editable so users can't type
        on top of the video. Uses margin-block only — the inline
@@ -4787,7 +6200,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
     /* Hover hint — a darker outline so the container box is clearly
        visible before the user commits to selecting it. Mirrors the
-       Wix UX where hovering a media block previews its bounds with
+       the UX where hovering a media block previews its bounds with
        a near-black ring. */
     :host ::ng-deep .re__surface figure.re-embed-figure:not(.is-selected):hover {
       outline: 1px solid rgba(15,23,42,.6) !important;
@@ -4826,6 +6239,223 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       pointer-events: none;
     }
     :host ::ng-deep .re__surface .re-embed-caption:focus:empty::before { opacity: .55 !important; }
+
+    /* ── Gallery layouts ──────────────────────────────────────────────
+       The gallery panel writes .re-gallery--<layout> + data-crop +
+       data-ratio + --re-gal-cols / --re-gal-ratio. Each layout below
+       reads those. Defaults (no class) behave like grid. */
+    :host ::ng-deep .re__surface .re-gallery { --re-gal-cols: 3; --re-gal-ratio: 1 / 1; --re-gal-gap: 6px; }
+    /* Each image lives in a .re-gallery-item container (layout model) —
+       the CONTAINER is the layout unit (gets aspect-ratio / grid-span
+       / flex-basis), the <img> just fills it. This keeps sizing
+       robust regardless of the image's intrinsic dimensions. */
+    :host ::ng-deep .re__surface .re-gallery-item {
+      display: block; overflow: hidden; line-height: 0; border-radius: 2px;
+    }
+    :host ::ng-deep .re__surface .re-gallery-item img {
+      display: block; width: 100% !important; height: 100% !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery[data-crop="crop"] .re-gallery-item img { object-fit: cover !important; }
+    :host ::ng-deep .re__surface .re-gallery[data-crop="fit"]  .re-gallery-item img { object-fit: contain !important; background: #f1f5f9; }
+
+    /* All layouts read the spacing var (--re-gal-gap, default 6px). */
+    /* Grid — equal cells, fixed aspect-ratio per tile. */
+    :host ::ng-deep .re__surface .re-gallery--grid {
+      display: grid !important;
+      grid-template-columns: repeat(var(--re-gal-cols), 1fr) !important;
+      gap: var(--re-gal-gap, 6px) !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--grid .re-gallery-item {
+      aspect-ratio: var(--re-gal-ratio) !important;
+    }
+
+    /* Columns — equal-width, FULL-HEIGHT vertical columns laid side by
+       side, cover-cropped to fill (matches the reference cube-type-fill
+       columns). flex:1 keeps them fitting the gallery width (never
+       overflows sideways); the row's height comes from an aspect-ratio
+       on the container (~the reference 740:500) and align-items:stretch
+       makes every column the same full height. */
+    :host ::ng-deep .re__surface .re-gallery--columns {
+      display: flex !important; flex-direction: row !important;
+      align-items: stretch !important;
+      gap: var(--re-gal-gap, 6px) !important;
+      width: 100% !important;
+      /* aspect-ratio is the DEFAULT height; flex:1 + min-height:0 let the
+         gallery fill the figure so dragging the n/s handle (which sets the
+         figure height) actually resizes the columns instead of being
+         ignored by a locked aspect-ratio. */
+      aspect-ratio: 3 / 2 !important;
+      flex: 1 1 auto !important; min-height: 0 !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--columns .re-gallery-item {
+      flex: 1 1 0 !important; min-width: 0 !important; height: auto !important; margin: 0 !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--columns .re-gallery-item img {
+      display: block !important; width: 100% !important; height: 100% !important; object-fit: cover !important;
+    }
+
+    /* Collage — square-cell mosaic. JS (layoutGalleryCollage) computes
+       the column count + cell size from Column width; CSS assigns a
+       repeating span pattern so some tiles are 2×2 / elongated, giving
+       the dynamic collage feel. Images crop to fill (object-fit cover). */
+    :host ::ng-deep .re__surface .re-gallery--collage {
+      display: grid !important;
+      grid-template-columns: repeat(var(--collage-cols, 3), 1fr) !important;
+      grid-auto-rows: var(--collage-cell, 160px) !important;
+      grid-auto-flow: dense !important;
+      gap: var(--re-gal-gap, 6px) !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--collage .re-gallery-item { aspect-ratio: auto !important; height: auto !important; }
+    :host ::ng-deep .re__surface .re-gallery--collage .re-gallery-item img { height: 100% !important; object-fit: cover !important; }
+    /* Lead feature tile is always a 2×2 hero. */
+    :host ::ng-deep .re__surface .re-gallery--collage .re-gallery-item:nth-child(6n+1) { grid-column: span 2 !important; grid-row: span 2 !important; }
+    /* Image orientation drives the secondary feature tile: horizontal
+       (default) elongates it WIDE (span 2 columns); vertical makes it
+       TALL (span 2 rows). */
+    :host ::ng-deep .re__surface .re-gallery--collage .re-gallery-item:nth-child(6n+4) { grid-column: span 2 !important; grid-row: auto !important; }
+    :host ::ng-deep .re__surface .re-gallery--collage[data-orientation="vertical"] .re-gallery-item:nth-child(6n+4) { grid-column: auto !important; grid-row: span 2 !important; }
+    /* Scroll direction — horizontal packs the mosaic into a fixed number
+       of rows (--collage-rows) that overflow sideways and scroll, instead
+       of wrapping downward into new rows. */
+    :host ::ng-deep .re__surface .re-gallery--collage[data-scroll-dir="horizontal"] {
+      grid-template-columns: none !important;
+      grid-template-rows: repeat(var(--collage-rows, 3), var(--collage-cell, 160px)) !important;
+      grid-auto-columns: var(--collage-cell, 160px) !important;
+      grid-auto-flow: column dense !important;
+      overflow-x: auto !important;
+    }
+
+    /* Thumbnails — a large "stage" image (the active one) carrying
+       prev/next arrows, with the remaining images shown as a thumbnail
+       strip. This is a static preview in the editor; the active-image
+       navigation is wired up on the live site. The active item carries
+       .is-active and the arrows are injected transiently (applyGalleryNav),
+       so neither leaks into the saved HTML — only data-active persists.
+       Strip side is driven by data-thumb-placement (bottom default /
+       top / left / right). */
+    :host ::ng-deep .re__surface .re-gallery--thumbnails {
+      --re-gal-thumb: 120px; /* match the reference thumbnail size */
+      display: flex !important; flex-wrap: wrap !important;
+      gap: var(--re-gal-gap, 6px) !important;
+      position: relative !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--thumbnails .re-gallery-item {
+      flex: 0 0 var(--re-gal-thumb, 120px) !important;
+      width: var(--re-gal-thumb, 120px) !important; height: var(--re-gal-thumb, 120px) !important;
+      aspect-ratio: auto !important; order: 2 !important; cursor: pointer !important;
+      opacity: .7 !important; transition: opacity .15s ease !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--thumbnails .re-gallery-item:hover { opacity: 1 !important; }
+    /* Strip thumbs always crop to a clean square (cover), like the
+       reference — independent of the gallery's Crop/Fit setting. */
+    :host ::ng-deep .re__surface .re-gallery--thumbnails .re-gallery-item:not(.is-active) img { object-fit: cover !important; }
+    :host ::ng-deep .re__surface .re-gallery--thumbnails .re-gallery-item.is-active {
+      flex: 0 0 100% !important; width: auto !important; height: auto !important;
+      aspect-ratio: 16 / 9 !important; order: 1 !important; cursor: default !important; opacity: 1 !important;
+    }
+    /* Top placement — strip sits above the stage. */
+    :host ::ng-deep .re__surface .re-gallery--thumbnails[data-thumb-placement="top"] .re-gallery-item { order: 1 !important; }
+    :host ::ng-deep .re__surface .re-gallery--thumbnails[data-thumb-placement="top"] .re-gallery-item.is-active { order: 2 !important; }
+    /* Left / right placement — a large stage beside a FIXED-width vertical
+       thumbnail column (square thumbs hug the side), matching the
+       reference side-thumbnail layout. The stage takes the remaining
+       width and spans the column's full height; thumbs auto-flow into the
+       narrow column on the chosen side. */
+    :host ::ng-deep .re__surface .re-gallery--thumbnails[data-thumb-placement="left"],
+    :host ::ng-deep .re__surface .re-gallery--thumbnails[data-thumb-placement="right"] {
+      display: grid !important; align-items: start !important; align-content: start !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--thumbnails[data-thumb-placement="left"]  { grid-template-columns: var(--re-gal-thumb, 72px) 1fr !important; }
+    :host ::ng-deep .re__surface .re-gallery--thumbnails[data-thumb-placement="right"] { grid-template-columns: 1fr var(--re-gal-thumb, 72px) !important; }
+    :host ::ng-deep .re__surface .re-gallery--thumbnails[data-thumb-placement="left"]  .re-gallery-item.is-active { grid-column: 2 !important; grid-row: 1 / 99 !important; width: auto !important; height: auto !important; aspect-ratio: auto !important; align-self: stretch !important; }
+    :host ::ng-deep .re__surface .re-gallery--thumbnails[data-thumb-placement="right"] .re-gallery-item.is-active { grid-column: 1 !important; grid-row: 1 / 99 !important; width: auto !important; height: auto !important; aspect-ratio: auto !important; align-self: stretch !important; }
+    /* Nav arrows — circular overlay buttons centred on the stage edges
+       (placed via JS in positionGalleryNav); shared by Thumbnails +
+       Slideshow. */
+    :host ::ng-deep .re__surface .re-gallery .re-gal-nav {
+      position: absolute !important; z-index: 5 !important;
+      width: 40px !important; height: 40px !important; padding: 0 !important;
+      display: flex !important; align-items: center !important; justify-content: center !important;
+      border: none !important; border-radius: 999px !important;
+      background: rgba(255, 255, 255, .9) !important; color: #1a1a1a !important;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, .25) !important;
+      cursor: pointer !important; transform: translateY(-50%) !important;
+      transition: background .15s ease, box-shadow .15s ease !important; -webkit-user-select: none !important; user-select: none !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery .re-gal-nav:hover { background: #fff !important; box-shadow: 0 2px 8px rgba(0, 0, 0, .3) !important; }
+
+    /* Masonry — layout model. Horizontal orientation (default) = justified
+       rows: every tile is --re-gal-row-h tall and grows to fill the
+       row width, cropping via object-fit:cover. Vertical orientation =
+       Pinterest columns (natural heights). */
+    :host ::ng-deep .re__surface .re-gallery--masonry {
+      display: flex !important; flex-wrap: wrap !important;
+      gap: var(--re-gal-gap, 6px) !important; align-content: flex-start !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--masonry .re-gallery-item {
+      height: var(--re-gal-row-h, 300px) !important; flex: 1 1 auto !important; margin: 0 !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--masonry .re-gallery-item img {
+      height: 100% !important; width: 100% !important; object-fit: cover !important;
+    }
+    /* Vertical orientation → fixed-column masonry. The slider now drives
+       each column-cell's HEIGHT ("Column height"), with a fixed number of
+       columns; images crop to fill via object-fit:cover. */
+    :host ::ng-deep .re__surface .re-gallery--masonry[data-orientation="vertical"] {
+      display: block !important;
+      column-count: var(--re-gal-cols, 3) !important;
+      column-gap: var(--re-gal-gap, 6px) !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--masonry[data-orientation="vertical"] .re-gallery-item {
+      height: var(--re-gal-row-h, 300px) !important; margin: 0 0 var(--re-gal-gap, 6px) !important; break-inside: avoid !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--masonry[data-orientation="vertical"] .re-gallery-item img {
+      height: 100% !important; width: 100% !important; object-fit: cover !important;
+    }
+
+    /* Panorama — full-width images stacked vertically. */
+    :host ::ng-deep .re__surface .re-gallery--panorama {
+      display: flex !important; flex-direction: column !important; gap: var(--re-gal-gap, 6px) !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--panorama .re-gallery-item img { height: auto !important; }
+
+    /* Carousel (internal id "slider") — a horizontal row of tiles with
+       prev/next arrows. A static preview in the editor: the row is
+       clipped (overflow:hidden) rather than scrollable so the overlaid
+       arrows stay put; paging is wired up on the live site. Arrows +
+       any transient state are added by applyGalleryNav. */
+    :host ::ng-deep .re__surface .re-gallery--slider {
+      display: flex !important; gap: var(--re-gal-gap, 6px) !important;
+      overflow: hidden !important; position: relative !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--slider .re-gallery-item {
+      flex: 0 0 calc((100% - (var(--re-gal-cols) - 1) * var(--re-gal-gap, 6px)) / var(--re-gal-cols)) !important;
+      aspect-ratio: var(--re-gal-ratio) !important;
+    }
+
+    /* Slideshow — one full-width image per view, fills the viewport
+       at the chosen ratio, horizontal snap, scrollbar hidden (swipe /
+       trackpad to advance). */
+    /* Slideshow — one full-bleed image (the active stage) with prev/next
+       arrows and no thumbnail strip (matches the reference slideshow:
+       galleryThumbnailsAlignment:none). A static preview in the editor;
+       paging is wired up on the live site. The arrows + .is-active are
+       injected/derived transiently by applyGalleryNav. */
+    :host ::ng-deep .re__surface .re-gallery--slideshow {
+      display: block !important; position: relative !important; border-radius: 4px;
+    }
+    :host ::ng-deep .re__surface .re-gallery--slideshow .re-gallery-item { display: none !important; }
+    :host ::ng-deep .re__surface .re-gallery--slideshow .re-gallery-item.is-active {
+      display: block !important; width: 100% !important; aspect-ratio: var(--re-gal-ratio) !important;
+    }
+    /* Gallery panel — same fixed-panel chrome, sized for the tabs. */
+    :host ::ng-deep .re__figPanel--gallery { width: 320px; }
+    /* AI panel brings its own chrome (border/shadow), so the wrapper is a
+       bare positioned container. */
+    :host ::ng-deep .re__figPanel--ai {
+      width: auto !important; background: transparent !important; border: none !important;
+      box-shadow: none !important; padding: 0 !important; overflow: visible !important;
+    }
 
     /* .re-btn-block — picks up inline styles set by insertButton()
        (background-color, color, padding, border-radius, font-size).
@@ -4869,28 +6499,195 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
 })
 export class RichEditorComponent implements ControlValueAccessor, AfterViewInit, OnDestroy {
   private cdr  = inject(ChangeDetectorRef);
+  private elRef = inject(ElementRef<HTMLElement>);
+  private translate = inject(TranslateService);
+  private sanitizer = inject(DomSanitizer);
 
   /** Optional placeholder shown when the editor is empty. */
   placeholder = input<string>('');
+  /** Hint shown on the focused empty line (next to the "+"). */
+  linePlaceholder = input<string>('Start writing or type / for plugins');
+  /** Insertable elements for the "/" slash menu. Each item's `label` is
+   *  run through `| translate`; `icon` is raw SVG markup. When empty the
+   *  slash menu is disabled. Supplied by the host (e.g. the blog
+   *  composer flattens its add-tool groups). */
+  slashCommands = input<{ key: string; label: string; icon: string }[]>([]);
   /** Minimum editor height. Defaults to 220px — override per usage. */
   height      = input<string>('220px');
   /** When true, pasted URLs on their own line are converted to embed cards
    *  (YouTube/Vimeo iframe; generic link card otherwise). */
   embedOnPaste = input<boolean>(false);
   /** "Bare" mode — drops the editor's border/background so it blends
-   *  into a larger canvas (Wix-style composer). The toolbar still
+   *  into a larger canvas (composer-style composer). The toolbar still
    *  pins to the top; the surface fills the rest. */
   bare = input<boolean>(false);
   /** When true, an "Add plugin" floating button appears to the left
    *  of empty paragraphs while the caret is on that line. Click
    *  emits `addClick` — the composer wires this to opening the Add
-   *  panel, matching the Wix Ricos UX. */
+   *  panel, matching the the rich editor UX. */
   addButton = input<boolean>(false);
+
+  // ─── "Link to" target lists (host-provided) ─────────────────────────
+  // TODO(link-targets): these three kinds are scaffolded but their data
+  // sources don't exist in the app yet. The Link panel already shows
+  // the picker UI; when the host gains real pages / blog posts /
+  // dynamic-page collections, bind them via these inputs and the panel
+  // will render a selectable list instead of the "not available" note.
+  //   - Each item: { id: string; label: string; url: string }
+  //   - `url` is what gets written to the button's href on select.
+  //   - Leaving an input empty keeps the current "wire the host" note.
+  // The selection plumbing (saveCellButtonLink / editCellButtonLink +
+  // data-link-kind round-trip) already handles arbitrary hrefs, so no
+  // extra wiring is needed once the lists are passed in.
+  /** TODO(link-targets): site pages for the "Page" link kind. */
+  linkPages        = input<Array<{ id: string; label: string; url: string }>>([]);
+  /** TODO(link-targets): blog posts for the "Blog post" link kind. */
+  linkBlogPosts    = input<Array<{ id: string; label: string; url: string }>>([]);
+  /** TODO(link-targets): dynamic-page items for the "Dynamic page" kind. */
+  linkDynamicItems = input<Array<{ id: string; label: string; url: string }>>([]);
   /** When true, the Content AI button is rendered at the start of the
-   *  toolbar (matching Wix Ricos's order). Click emits `contentAiClick`
-   *  so the caller can open its own AI panel. */
+   *  toolbar — but it only actually appears if an AI provider is also
+   *  injected (see aiProvider). Clicking it opens the built-in AI panel. */
   showContentAi  = input<boolean>(false);
+  /** Legacy: still emitted on AI-button click for any host that wants to
+   *  handle AI itself. Built-in panel is preferred when a provider exists. */
   contentAiClick = output<void>();
+
+  // ─── Content AI ─────────────────────────────────────────────────────
+  /** Optional — supplied by the host (e.g. blog composer) via
+   *  RICH_EDITOR_AI_PROVIDER. AI is only available where it's injected. */
+  private readonly aiProvider = inject(RICH_EDITOR_AI_PROVIDER, { optional: true });
+  /** True when AI features can run (a provider was injected). */
+  get aiAvailable(): boolean { return !!this.aiProvider; }
+  /** True when the button is actually usable — provider present AND, if
+   *  the provider reports readiness, it says Content AI is configured.
+   *  When the provider omits `available`, the button stays enabled. */
+  get aiReady(): boolean {
+    if (!this.aiProvider) return false;
+    return this.aiProvider.available ? this.aiProvider.available() : true;
+  }
+  aiPanelOpen     = signal(false);
+  aiPanelPos      = signal<{ top: number; left: number } | null>(null);
+  aiPanelOffset   = signal<{ x: number; y: number }>({ x: 0, y: 0 });
+  aiStreaming     = signal('');
+  aiBusy          = signal(false);
+  aiError         = signal<string | null>(null);
+  aiHasSelection  = signal(false);
+  /** Saved selection range to insert/replace into once the user accepts. */
+  private aiRange: Range | null = null;
+  private aiSelectedText = '';
+  private aiSub: Subscription | null = null;
+
+  /** Open the Content AI panel — capture the current selection (so we can
+   *  insert / replace once the user accepts) and anchor the panel under
+   *  the toolbar's ✨ button. Emits the legacy contentAiClick too. */
+  openAiPanel(): void {
+    this.contentAiClick.emit();
+    if (!this.aiAvailable) return;
+    if (this.aiPanelOpen()) { this.closeAiPanel(); return; }
+
+    // Capture the live selection range + text (only if it's inside the editor).
+    const editable = this.editable?.nativeElement;
+    const sel = window.getSelection();
+    this.aiRange = null;
+    this.aiSelectedText = '';
+    if (editable && sel && sel.rangeCount > 0) {
+      const r = sel.getRangeAt(0);
+      if (editable.contains(r.commonAncestorContainer)) {
+        this.aiRange = r.cloneRange();
+        this.aiSelectedText = r.toString().trim();
+      }
+    }
+    this.aiHasSelection.set(!!this.aiSelectedText);
+    this.aiStreaming.set('');
+    this.aiError.set(null);
+    this.aiBusy.set(false);
+    this.aiPanelOffset.set({ x: 0, y: 0 });
+
+    // Anchor under the ✨ button; clamp into the viewport.
+    const host = this.elRef.nativeElement as HTMLElement;
+    const btn = host.querySelector('.re__btn--ai') as HTMLElement | null;
+    const PANEL_W = 320;
+    if (btn) {
+      const r = btn.getBoundingClientRect();
+      const left = Math.max(12, Math.min(r.left, window.innerWidth - PANEL_W - 12));
+      this.aiPanelPos.set({ top: r.bottom + 6, left });
+    } else {
+      this.aiPanelPos.set({ top: 90, left: 90 });
+    }
+    this.aiPanelOpen.set(true);
+  }
+
+  closeAiPanel(): void {
+    this.stopAi();
+    this.aiPanelOpen.set(false);
+    this.aiStreaming.set('');
+    this.aiError.set(null);
+    this.aiRange = null;
+    this.aiSelectedText = '';
+  }
+
+  /** Run a request through the injected provider and stream the result
+   *  into the panel preview. */
+  runAi(req: AiRequest): void {
+    if (!this.aiProvider) return;
+    this.aiSub?.unsubscribe();
+    // Preset tasks act on the selection if present, otherwise the whole post.
+    const editable = this.editable?.nativeElement;
+    const content = this.aiSelectedText || (editable?.innerText ?? '').trim();
+    const full: AiRequest = { task: req.task, prompt: req.prompt, content };
+    this.aiStreaming.set('');
+    this.aiError.set(null);
+    this.aiBusy.set(true);
+    this.aiSub = this.aiProvider.generate(full).subscribe({
+      next: (text) => this.aiStreaming.set(text),
+      error: (err) => {
+        this.aiBusy.set(false);
+        this.aiError.set(err?.message || 'AI request failed. Please try again.');
+      },
+      complete: () => this.aiBusy.set(false),
+    });
+  }
+
+  /** Abort the in-flight request, keeping whatever text streamed so far. */
+  stopAi(): void {
+    this.aiSub?.unsubscribe();
+    this.aiSub = null;
+    this.aiBusy.set(false);
+  }
+
+  /** Clear the preview and go back to the action menu. */
+  discardAi(): void {
+    this.stopAi();
+    this.aiStreaming.set('');
+    this.aiError.set(null);
+  }
+
+  /** Apply the generated text — insert at the cursor or replace the
+   *  original selection — then close the panel and emit the change. */
+  acceptAi(mode: 'insert' | 'replace'): void {
+    const text = this.aiStreaming().trim();
+    const editable = this.editable?.nativeElement;
+    if (!text || !editable) { this.closeAiPanel(); return; }
+
+    editable.focus();
+    const sel = window.getSelection();
+    if (sel && this.aiRange) {
+      sel.removeAllRanges();
+      const range = this.aiRange.cloneRange();
+      // Insert collapses to the end of the original selection; replace
+      // overwrites the selected text.
+      if (mode === 'insert') range.collapse(false);
+      sel.addRange(range);
+    }
+    // execCommand keeps this in the editor's existing undo stack and lets
+    // contenteditable build the block markup (paragraphs / line breaks).
+    document.execCommand('insertText', false, text);
+    this.normalizeBlockNesting();
+    this.emit();
+    this.refreshState();
+    this.closeAiPanel();
+  }
   /** Fullscreen toggle — pins the editor at `position: fixed; inset: 0;
    *  z-index: 9999` so it covers the whole viewport. Toggled by the
    *  expand-corners button at the top-right of the editor host. */
@@ -4921,6 +6718,11 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  owns — typically an Add panel listing image / video / divider
    *  / table / etc. */
   addClick = output<void>();
+  /** Fired when the user picks an item from the "/" slash menu. Emits
+   *  the command `key`; the host inserts the element (same handler the
+   *  Add panel uses). The editor has already removed the typed "/query"
+   *  and left the caret on the now-empty line. */
+  slashSelect = output<string>();
   /** Fired when the user clicks the "Replace" action on a selected
    *  embed block (video iframe / hosted video). The caller is
    *  responsible for opening its own picker / modal and calling
@@ -4934,6 +6736,13 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  Column-background Image picker. Parent opens its media-library
    *  modal and pipes the picked URL back via `setColBgImage()`. */
   colBgImageClick = output<void>();
+  /** Poll background image — host opens its media library and pipes the
+   *  chosen URL back via `setPollBgImageUrl()`. */
+  pollBgImageClick = output<void>();
+  /** Product card — host opens its product picker and pipes the chosen
+   *  product back via `setProductCard()`. Emitted both for the initial
+   *  insert and the toolbar "Change product" action. */
+  productPickClick = output<void>();
   /** Fires when the user clicks an "Add image" placeholder inside a
    *  cell. Hosts can hook this to launch their own media library and
    *  then call `replaceCellImagePlaceholder(el, url)`. If nothing
@@ -5015,7 +6824,8 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   }
 
   ngOnDestroy(): void {
-    // Nothing to clean up — listeners are template-bound.
+    // Abort any in-flight AI request; other listeners are template-bound.
+    this.aiSub?.unsubscribe();
   }
 
   // ─── CVA ────────────────────────────────────────────────────────────────
@@ -5063,7 +6873,11 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   onSelectionMaybeChanged(): void {
     this.refreshState();
+    // Keep a real line after a trailing table so focusing below it lands
+    // on a proper block (placeholder + slash work there).
+    this.ensureTrailingBlock();
     this.refreshAddBtn();
+    this.updateSlashMenu();
   }
 
   /** Position + visibility for the floating "+" button. Recomputed
@@ -5078,28 +6892,95 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     if (!editable) { this.hideAddBtn(); return; }
 
     // The button only shows when the caret is on an empty block —
-    // mirroring Wix's "click + to add a plugin" UX. Anything else
+    // mirroring the "click + to add a plugin" UX. Anything else
     // hides it so the toolbar above and the typed text below stay
     // uncluttered. Coordinates are relative to the SURFACE element
     // (its parent in the DOM), so the button can never escape into
     // the toolbar above it.
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) { this.hideAddBtn(); return; }
-    if (!editable.contains(sel.anchorNode)) { this.hideAddBtn(); return; }
-
-    const block = this.nearestBlock(sel.anchorNode, editable);
-    const isEmpty = block ? (block.textContent ?? '').trim() === '' : false;
-    if (!block || !isEmpty) { this.hideAddBtn(); return; }
+    const line = this.resolveEditLine();
+    if (!line || line.text.trim() !== '') { this.hideAddBtn(); return; }
 
     const surfaceRect = editable.getBoundingClientRect();
-    const blockRect   = block.getBoundingClientRect();
-    // Centre on the line. `lineLeft` is the block's left edge in
-    // surface coords; the template adds the Ricos inline-start var
-    // (-36px default) to position the button to the left of the line.
-    const top      = blockRect.top  - surfaceRect.top + (blockRect.height - 26) / 2;
-    const lineLeft = blockRect.left - surfaceRect.left;
+    const r = line.rect;
+    // Belt-and-suspenders: if the resolved line's box vertically overlaps
+    // any table, don't show — covers edge cases (e.g. backspacing into a
+    // table) where the caret line's rect lands on the grid.
+    for (const t of Array.from(editable.querySelectorAll<HTMLElement>('table'))) {
+      const tr = t.getBoundingClientRect();
+      if (r.top < tr.bottom && r.bottom > tr.top) { this.hideAddBtn(); return; }
+    }
+    // Centre on the line. `lineLeft` is the line's left edge in surface
+    // coords; the template adds the Ricos inline-start var (-36px
+    // default) to position the button to the left of the line.
+    const top      = r.top  - surfaceRect.top + (Math.max(r.height, 21) - 26) / 2;
+    const lineLeft = r.left - surfaceRect.left;
     const left     = Math.max(2, lineLeft - 32);
     this.addBtn.set({ show: true, top, left, lineLeft });
+  }
+
+  /** Resolve the current edit line from the caret — handling three
+   *  cases that all need the same line text + rect:
+   *    1. a block-level element (p / h1.. / li / …),
+   *    2. a bare top-level text node (an unwrapped line — common on the
+   *       first line and after tables, where `nearestBlock` returns null),
+   *    3. the caret sitting directly in the editable (empty line).
+   *  Returns null when there's no usable line or the caret is on a table
+   *  (the +/placeholder/slash menu must never render over the grid). */
+  private resolveEditLine(): { text: string; rect: DOMRect; block: HTMLElement | null; bare: Text | null } | null {
+    const editable = this.editable?.nativeElement;
+    const sel = window.getSelection();
+    if (!editable || !sel || sel.rangeCount === 0 || !editable.contains(sel.anchorNode)) return null;
+    const anchor = sel.anchorNode;
+
+    const block = this.nearestBlock(anchor, editable);
+    if (block) {
+      // Never surface the +/placeholder/slash on a table or an
+      // expandable list — those manage their own inline placeholders.
+      if (block.closest('table') || block.querySelector('table')
+          || block.closest('.re-expand-group') || block.querySelector('.re-expand-group')
+          || block.closest('.re-embed') || block.querySelector('.re-embed')
+          || block.closest('.re-poll') || block.querySelector('.re-poll')
+          || block.closest('.re-product') || block.querySelector('.re-product')) return null;
+      return { text: block.textContent ?? '', rect: block.getBoundingClientRect(), block, bare: null };
+    }
+    if (anchor && anchor.nodeType === Node.TEXT_NODE && anchor.parentNode === editable) {
+      const bare = anchor as Text;
+      const rng = document.createRange();
+      rng.selectNodeContents(bare);
+      return { text: bare.textContent ?? '', rect: rng.getBoundingClientRect(), block: null, bare };
+    }
+    if (anchor === editable) {
+      // Caret sits between top-level children (common right after a
+      // table). Resolve the actual node at the caret offset so the hint
+      // + slash query reflect the real line — NOT a blanket empty line.
+      const off  = sel.getRangeAt(0).startOffset;
+      const node = (editable.childNodes[off] ?? editable.childNodes[off - 1]) as Node | undefined;
+      if (node) {
+        if (node.nodeType === Node.TEXT_NODE && node.parentNode === editable) {
+          const bare = node as Text;
+          const rng = document.createRange();
+          rng.selectNodeContents(bare);
+          return { text: bare.textContent ?? '', rect: rng.getBoundingClientRect(), block: null, bare };
+        }
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const el = node as HTMLElement;
+          if (el.tagName === 'TABLE' || el.closest('table') || el.querySelector('table')) return null;
+          return { text: el.textContent ?? '', rect: el.getBoundingClientRect(), block: el, bare: null };
+        }
+      }
+      // Truly empty editor — synthesize a one-line rect at the content
+      // top-left (a 0×0 collapsed-range rect would otherwise center the
+      // hint mid-surface).
+      if (editable.childNodes.length === 0) {
+        const er = editable.getBoundingClientRect();
+        const cs = getComputedStyle(editable);
+        const padTop  = parseFloat(cs.paddingTop)  || 0;
+        const padLeft = parseFloat(cs.paddingLeft) || 0;
+        return { text: '', rect: new DOMRect(er.left + padLeft, er.top + padTop, 0, 21), block: null, bare: null };
+      }
+      return null;
+    }
+    return null;
   }
 
   private hideAddBtn(): void {
@@ -5112,6 +6993,106 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   onAddBtn(ev: MouseEvent): void {
     ev.preventDefault();
     this.addClick.emit();
+  }
+
+  // ─── "/" slash menu ──────────────────────────────────────────────────────
+  slashOpen   = signal(false);
+  slashQuery  = signal('');
+  slashPos    = signal<{ top: number; left: number }>({ top: 0, left: 0 });
+  slashActive = signal(0);
+  /** The block element holding the typed "/query" — cleared on select. */
+  private slashBlock: HTMLElement | null = null;
+  /** Bare text node holding the typed "/query" (unwrapped line). */
+  private slashBareNode: Text | null = null;
+
+  /** Commands filtered by the typed query (matched against the
+   *  translated label or the raw key). */
+  slashFiltered = computed(() => {
+    const q = this.slashQuery().toLowerCase().trim();
+    const items = this.slashCommands();
+    if (!q) return items;
+    return items.filter(i =>
+      this.translate.instant(i.label).toLowerCase().includes(q) ||
+      i.key.toLowerCase().includes(q),
+    );
+  });
+
+  /** Render a command's raw SVG markup safely. */
+  slashIcon(svg: string): SafeHtml { return this.sanitizer.bypassSecurityTrustHtml(svg || ''); }
+
+  /** Recompute slash-menu state from the caret. Opens when the current
+   *  block's text starts with "/"; closes otherwise. Called on input +
+   *  selection change. */
+  /** Set when the user dismisses the menu (Escape) so it doesn't pop
+   *  straight back open on the next caret event while the "/" is still
+   *  there — letting them type a literal "/". Cleared once the line no
+   *  longer starts with "/". */
+  private slashDismissed = false;
+
+  private updateSlashMenu(): void {
+    if (!this.slashCommands().length) { this.closeSlash(); return; }
+    const editable = this.editable?.nativeElement;
+    const line = this.resolveEditLine();
+    if (!editable || !line || !line.text.startsWith('/')) {
+      // Not a slash line anymore — re-arm so a future "/" opens again.
+      this.slashDismissed = false;
+      this.closeSlash();
+      return;
+    }
+
+    const query = line.text.slice(1);
+    // Any whitespace in the query (regular space OR the &nbsp; the browser
+    // inserts at line end), or an Escape-dismissed line, means the user
+    // wants a literal slash — hide the menu. `\s` also matches  .
+    if (/\s/.test(query) || this.slashDismissed) { this.closeSlash(); return; }
+    // Reset the highlighted row only when first opening or the query
+    // changed — NOT on every caret event (would break arrow-key nav).
+    if (!this.slashOpen() || query !== this.slashQuery()) this.slashActive.set(0);
+    this.slashBlock = line.block;
+    this.slashBareNode = line.bare;
+    this.slashQuery.set(query);
+
+    const surfaceRect = editable.getBoundingClientRect();
+    this.slashPos.set({ top: line.rect.bottom - surfaceRect.top + 4, left: line.rect.left - surfaceRect.left });
+    this.slashOpen.set(true);
+  }
+
+  closeSlash(): void {
+    if (this.slashOpen()) this.slashOpen.set(false);
+    this.slashBlock = null;
+    this.slashBareNode = null;
+  }
+
+  /** Pick a command: remove the typed "/query", then emit the key so
+   *  the host inserts the element at the now-empty line. */
+  chooseSlash(cmd: { key: string }): void {
+    if (this.slashBlock) {
+      this.slashBlock.innerHTML = '<br>';
+      this.placeCaretAtStart(this.slashBlock);
+    } else if (this.slashBareNode) {
+      // Unwrapped line — clear the text node and drop the caret into it.
+      const bare = this.slashBareNode;
+      bare.textContent = '';
+      const rng = document.createRange();
+      rng.setStart(bare, 0); rng.collapse(true);
+      const sel = window.getSelection();
+      sel?.removeAllRanges(); sel?.addRange(rng);
+    }
+    this.closeSlash();
+    this.emit();
+    this.slashSelect.emit(cmd.key);
+  }
+
+  /** Keyboard nav while the slash menu is open. */
+  onSlashKeydown(ev: KeyboardEvent): void {
+    if (!this.slashOpen()) return;
+    const items = this.slashFiltered();
+    switch (ev.key) {
+      case 'ArrowDown': ev.preventDefault(); this.slashActive.set(Math.min(items.length - 1, this.slashActive() + 1)); break;
+      case 'ArrowUp':   ev.preventDefault(); this.slashActive.set(Math.max(0, this.slashActive() - 1)); break;
+      case 'Enter':     if (items.length) { ev.preventDefault(); this.chooseSlash(items[this.slashActive()]); } break;
+      case 'Escape':    ev.preventDefault(); this.slashDismissed = true; this.closeSlash(); break;
+    }
   }
 
   // ─── Banner-column selection ───────────────────────────────────────────
@@ -5152,7 +7133,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  element); this drag adds a user offset that the template adds
    *  on top of the base. The `which` arg picks which offset signal
    *  to mutate. */
-  startToolbarDrag(ev: MouseEvent, which: 'column' | 'figure' | 'cellElement' | 'btnPanel' | 'btnLink'): void {
+  startToolbarDrag(ev: MouseEvent, which: 'column' | 'figure' | 'cellElement' | 'btnPanel' | 'btnLink' | 'gallery' | 'ai' | 'divider' | 'table'): void {
     ev.preventDefault();
     ev.stopPropagation();
     const target = which === 'column'
@@ -5163,7 +7144,15 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
           ? this.cellElementToolbarOffset
           : which === 'btnPanel'
             ? this.btnPanelOffset
-            : this.btnLinkOffset;
+            : which === 'gallery'
+              ? this.galleryPanelOffset
+              : which === 'ai'
+                ? this.aiPanelOffset
+                : which === 'divider'
+                  ? this.dividerToolbarOffset
+                  : which === 'table'
+                    ? this.tableToolbarOffset
+                    : this.btnLinkOffset;
     const startX = ev.clientX;
     const startY = ev.clientY;
     const start  = target();
@@ -5257,7 +7246,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  overlay, design border) is currently editing in the popover. `null`
    *  closes the popover. One shared overlay handles all four — the
    *  target id routes the emitted hex to the right signal. */
-  colorPanelTarget = signal<'colFill' | 'colBorder' | 'sectionOverlay' | 'designBorder' | 'colOverlay' | 'btnFill' | 'btnText' | 'btnBorder' | 'colOvFill' | 'colOvBorder' | null>(null);
+  colorPanelTarget = signal<'colFill' | 'colBorder' | 'sectionOverlay' | 'designBorder' | 'colOverlay' | 'btnFill' | 'btnText' | 'btnBorder' | 'colOvFill' | 'colOvBorder' | 'tableBorder' | 'tableBg' | 'pollBg' | 'prodPrimary' | 'prodSecondary' | 'prodFill' | 'prodBorder' | null>(null);
 
   // ─── Per-column Design overrides ────────────────────────────────────
   /** Whether the per-column design popover is open. Anchored to the
@@ -5286,6 +7275,13 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       case 'btnBorder':       return this.btnBorderColor();
       case 'colOvFill':       return this.colOvFillColor();
       case 'colOvBorder':     return this.colOvBorderColor();
+      case 'tableBorder':     return this.tableBorderColor();
+      case 'tableBg':         return this.tableBgColor();
+      case 'pollBg':          return this.pollBgValue();
+      case 'prodPrimary':     return this.prodPrimary();
+      case 'prodSecondary':   return this.prodSecondary();
+      case 'prodFill':        return this.prodFill() || '#ffffff';
+      case 'prodBorder':      return this.prodBorderColor();
       default:                return '#000000';
     }
   });
@@ -5305,6 +7301,13 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       case 'btnBorder':       this.setBtnBorderColor(v); break;
       case 'colOvFill':       this.setColOvFillColor(v); break;
       case 'colOvBorder':     this.setColOvBorderColor(v); break;
+      case 'tableBorder':     this.tableBorderColor.set(v); this.applyTblBorders(); break;
+      case 'tableBg':         this.tableBgColor.set(v); this.setTblBg(v); break;
+      case 'pollBg':          this.setPollBgColor(v); break;
+      case 'prodPrimary':     this.setProdPrimary(v); break;
+      case 'prodSecondary':   this.setProdSecondary(v); break;
+      case 'prodFill':        this.setProdFill(v); break;
+      case 'prodBorder':      this.setProdBorderColor(v); break;
     }
   }
 
@@ -5323,7 +7326,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       : this.composeRgba(this.bannerBgColor(), this.bannerBgOpacity()),
   );
   bannerBgImage     = signal<string>('');
-  bannerColumns     = signal<1 | 2>(1);
+  bannerColumns     = signal<1 | 2 | 3 | 4>(1);
   /** Ratio of the first column's width over the inner container's
    *  total width, in the range [0.15, 0.85]. 0.5 = equal-width columns.
    *  Driven by dragging the `.re-banner-col-divider` between the two
@@ -5343,7 +7346,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   bannerVMargin     = signal<number>(50);
   bannerBreakpoint  = signal<number>(440);
   /** When true, the X / Y padding inputs move together (single value
-   *  applied to both). Mirrors the link-button in Wix's spacing UI. */
+   *  applied to both). Mirrors the link-button in the spacing UI. */
   bannerPadLinked      = signal<boolean>(false);
   bannerResponsiveOpen = signal<boolean>(false);
   bannerBehavior       = signal<'stacked' | 'horizontal'>('stacked');
@@ -5390,7 +7393,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  class (not inline in the template) so the array reference
    *  stays stable across change detection. */
   /** Options for the "Link to" picker in the cell-button Link panel.
-   *  Matches the Wix kind list: web / section / page / blog post /
+   *  Matches the kind list: web / section / page / blog post /
    *  dynamic page. Only web + section are fully wired in-editor; the
    *  others stub out to "No options available" until the host
    *  populates them. */
@@ -5404,6 +7407,53 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   linkKindDisplay = (v: any): string => v?.label ?? this.linkKindOptions.find(o => o.id === v)?.label ?? '';
   linkKindCompare = (a: any, b: any) => (a?.id ?? a) === (b?.id ?? b);
   linkKindToValue = (i: { id: string; label: string }) => i.id;
+
+  /** The host-provided item list for the currently-selected link kind
+   *  (page / blog / dynamic). Empty for web / section (which have their
+   *  own pickers) and until the host wires the corresponding input.
+   *  TODO(link-targets): see the linkPages / linkBlogPosts /
+   *  linkDynamicItems inputs. */
+  activeLinkTargets = computed<Array<{ id: string; label: string; url: string }>>(() => {
+    switch (this.linkKind()) {
+      case 'page':    return this.linkPages();
+      case 'blog':    return this.linkBlogPosts();
+      case 'dynamic': return this.linkDynamicItems();
+      default:        return [];
+    }
+  });
+
+  /** Snapshot of the current link signals as the value object the
+   *  shared <app-re-link-panel> consumes. */
+  linkPanelValue = computed<RichLinkValue>(() => ({
+    kind: this.linkKind(),
+    url: this.linkUrl(),
+    newTab: this.linkNewTab(),
+    noReferrer: this.linkNoReferrer(),
+    noFollow: this.linkNoFollow(),
+    sponsored: this.linkSponsored(),
+  }));
+
+  /** Push a value emitted by the shared link panel back into the
+   *  editor's link signals so the existing save methods (which read
+   *  those signals) apply it unchanged. */
+  private applyLinkPanelValue(v: RichLinkValue): void {
+    this.linkKind.set(v.kind);
+    this.linkUrl.set(v.url);
+    this.linkNewTab.set(v.newTab);
+    this.linkNoReferrer.set(v.noReferrer);
+    this.linkNoFollow.set(v.noFollow);
+    this.linkSponsored.set(v.sponsored);
+  }
+
+  /** Shared link panel Save handlers — one per consumer surface. */
+  onCellButtonLinkSave(v: RichLinkValue): void {
+    this.applyLinkPanelValue(v);
+    this.saveCellButtonLink();
+  }
+  onImageLinkSave(v: RichLinkValue): void {
+    this.applyLinkPanelValue(v);
+    this.applyLink();
+  }
 
   readonly imageScalingOptions = [
     { id: 'cover',   label: 'Cover'   },
@@ -5474,6 +7524,22 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     document.addEventListener('mousemove', this.onPanelDrag);
     document.addEventListener('mouseup', this.onPanelDragEnd);
   }
+
+  /** Generic header-drag for a floating panel whose position lives in a
+   *  `{ top, left, … }` signal (embed Edit-HTML, expandable settings). */
+  startGenericPanelDrag<T extends { top: number; left: number }>(ev: MouseEvent, sig: WritableSignal<T>): void {
+    ev.preventDefault();
+    const start = sig();
+    const offX = ev.clientX - start.left;
+    const offY = ev.clientY - start.top;
+    const move = (m: MouseEvent) => sig.set({ ...sig(), left: m.clientX - offX, top: m.clientY - offY });
+    const up = () => {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    };
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  }
   private onPanelDrag = (ev: MouseEvent): void => {
     if (!this.dragOffset) return;
     // Clamp to the VIEWPORT (not the editor surface) so the panel can
@@ -5500,6 +7566,626 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  clicks elsewhere or the banner deselects. */
   cellElementToolbar = signal<{ type: 'button' | 'image' | 'text' | null; top: number; left: number }>({ type: null, top: 0, left: 0 });
   private cellElementRef: HTMLElement | null = null;
+
+  // ─── Divider (<hr>) selection + toolbar ─────────────────────────────
+  selectedDivider      = signal<HTMLElement | null>(null);
+  dividerToolbar       = signal<{ show: boolean; top: number; left: number }>({ show: false, top: 0, left: 0 });
+  dividerToolbarOffset = signal<{ x: number; y: number }>({ x: 0, y: 0 });
+  dividerStyleOpen     = signal(false);
+  dividerSizeOpen      = signal(false);
+  dividerAlignOpen     = signal(false);
+
+  /** Current divider settings (read off the selected <hr>'s data-* attrs,
+   *  with the same defaults applied at insert time). */
+  dividerStyle(): string { return this.selectedDivider()?.dataset['dividerStyle'] || 'line'; }
+  dividerSize():  string { return this.selectedDivider()?.dataset['dividerSize']  || 'extended'; }
+  dividerAlign(): string { return this.selectedDivider()?.dataset['dividerAlign'] || 'center'; }
+
+  /** Select an <hr> and float the divider toolbar above it (falling back
+   *  to below when there's no room). Clears any figure/column/cell pick. */
+  private selectDivider(hr: HTMLElement): void {
+    this.clearCellElementToolbar();
+    this.clearFigureSelection();
+    this.clearColumnSelection();
+    this.selectedDivider()?.classList.remove('is-selected');
+    this.selectedDivider.set(hr);
+    hr.classList.add('is-selected');
+    const surface = this.editable?.nativeElement;
+    if (!surface) return;
+    const sr = surface.getBoundingClientRect();
+    const er = hr.getBoundingClientRect();
+    const toolbarH = 36;
+    const aboveTop = er.top - sr.top - toolbarH - 8;
+    const top = aboveTop >= 8 ? aboveTop : (er.bottom - sr.top + 8);
+    this.dividerToolbar.set({ show: true, top, left: er.left - sr.left + er.width / 2 });
+    this.dividerToolbarOffset.set({ x: 0, y: 0 });
+    this.dividerStyleOpen.set(false);
+    this.dividerSizeOpen.set(false);
+    this.dividerAlignOpen.set(false);
+  }
+
+  clearDividerSelection(): void {
+    const hr = this.selectedDivider();
+    if (hr) { hr.classList.remove('is-selected'); this.selectedDivider.set(null); }
+    if (this.dividerToolbar().show) this.dividerToolbar.set({ show: false, top: 0, left: 0 });
+    this.dividerStyleOpen.set(false);
+    this.dividerSizeOpen.set(false);
+    this.dividerAlignOpen.set(false);
+  }
+
+  /** Open one divider dropdown at a time (toggle). */
+  toggleDividerMenu(which: 'style' | 'size' | 'align'): void {
+    this.dividerStyleOpen.set(which === 'style' ? !this.dividerStyleOpen() : false);
+    this.dividerSizeOpen.set(which === 'size' ? !this.dividerSizeOpen() : false);
+    this.dividerAlignOpen.set(which === 'align' ? !this.dividerAlignOpen() : false);
+  }
+
+  setDividerStyle(v: string): void {
+    const hr = this.selectedDivider(); if (!hr) return;
+    hr.dataset['dividerStyle'] = v;
+    this.dividerStyleOpen.set(false);
+    this.emit();
+  }
+  setDividerSize(v: string): void {
+    const hr = this.selectedDivider(); if (!hr) return;
+    hr.dataset['dividerSize'] = v;
+    this.dividerSizeOpen.set(false);
+    this.emit();
+    // Width changed → re-anchor the toolbar to the new bounds.
+    queueMicrotask(() => { const el = this.selectedDivider(); if (el) this.selectDivider(el); });
+  }
+  setDividerAlign(v: string): void {
+    const hr = this.selectedDivider(); if (!hr) return;
+    hr.dataset['dividerAlign'] = v;
+    this.dividerAlignOpen.set(false);
+    this.emit();
+    queueMicrotask(() => { const el = this.selectedDivider(); if (el) this.selectDivider(el); });
+  }
+  deleteDivider(): void {
+    const hr = this.selectedDivider(); if (!hr) return;
+    hr.remove();
+    this.clearDividerSelection();
+    this.emit();
+  }
+
+  // ─── Table editing ──────────────────────────────────────────────────
+  tableEl            = signal<HTMLTableElement | null>(null);
+  selectedCells      = signal<HTMLTableCellElement[]>([]);
+  /** Selected table's box (surface-relative) — drives the edge +-handles. */
+  tableRect          = signal<{ top: number; left: number; width: number; height: number } | null>(null);
+  /** Row-select tabs (left edge) — one per <tr>, surface-relative. */
+  rowHandles         = signal<{ top: number; idx: number }[]>([]);
+  /** Column-select tabs (top edge) — one per first-row cell, surface-relative. */
+  colHandles         = signal<{ left: number; cell: HTMLTableCellElement }[]>([]);
+  tableToolbar       = signal<{ show: boolean; top: number; left: number }>({ show: false, top: 0, left: 0 });
+  tableToolbarOffset = signal<{ x: number; y: number }>({ x: 0, y: 0 });
+  tableMenu          = signal<'bg' | 'border' | 'halign' | 'valign' | 'insert' | 'more' | null>(null);
+  tableBorderColor   = signal('#d7dde3');
+  tableBorderOpacity = signal(100);
+  tableBorderWidth   = signal(1);
+  tableBorderMode    = signal<TableBorderMode>('all');
+  tableBgColor       = signal('#000000');
+  readonly tableSwatches = ['', '#ffffff', '#f1f5f9', '#fde68a', '#bbf7d0', '#bfdbfe', '#fbcfe8', '#fecaca', '#1f2937'];
+  readonly tableBorderModes: { id: TableBorderMode; label: string }[] = [
+    { id: 'all', label: 'All' }, { id: 'outer', label: 'Outer' }, { id: 'inner', label: 'Inner' },
+    { id: 'left', label: 'Left' }, { id: 'right', label: 'Right' }, { id: 'horizontal', label: 'Horizontal' },
+    { id: 'vertical', label: 'Vertical' }, { id: 'top', label: 'Top' }, { id: 'bottom', label: 'Bottom' },
+  ];
+  private tableDragAnchor: HTMLTableCellElement | null = null;
+
+  /** Mousedown inside a table cell starts a (possible) drag range-select.
+   *  A plain click that doesn't leave the cell falls through to normal
+   *  caret placement; dragging across cells selects a rectangle. */
+  onSurfaceMouseDown(ev: MouseEvent): void {
+    // Expandable item grip → pointer-based reorder (before table logic).
+    const grip = (ev.target as HTMLElement | null)?.closest('.re-expand__drag') as HTMLElement | null;
+    if (grip) { this.startExpandDrag(ev, grip); return; }
+    const cell = (ev.target as HTMLElement | null)?.closest('.re-table td, .re-table th') as HTMLTableCellElement | null;
+    if (!cell) return;
+    const table = cell.closest('.re-table') as HTMLTableElement | null;
+    if (!table) return;
+    // Edge-drag resize: near the right edge → resize the column, near the
+    // bottom edge → resize the row. Takes priority over cell selection.
+    const EDGE = 6;
+    const rect = cell.getBoundingClientRect();
+    if (ev.clientX >= rect.right - EDGE) { this.startColResize(ev, cell, table); return; }
+    if (ev.clientY >= rect.bottom - EDGE) { this.startRowResize(ev, cell); return; }
+    this.tableDragAnchor = cell;
+    let dragged = false;
+    const onMove = (m: MouseEvent) => {
+      const over = (m.target as HTMLElement | null)?.closest('.re-table td, .re-table th') as HTMLTableCellElement | null;
+      if (!over || over === this.tableDragAnchor) return;
+      dragged = true;
+      m.preventDefault();
+      window.getSelection()?.removeAllRanges();
+      this.selectTableCells(this.cellsInRect(table, this.tableDragAnchor!, over), table);
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      if (!dragged) this.selectTableCells([cell], table);
+      this.tableDragAnchor = null;
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+
+  /** Hover hint — show a col/row-resize cursor near a table cell's
+   *  right / bottom edge. */
+  onSurfaceMouseMove(ev: MouseEvent): void {
+    const cell = (ev.target as HTMLElement | null)?.closest('.re-table td, .re-table th') as HTMLTableCellElement | null;
+    if (!cell) { this.clearHoverHighlight(); return; }
+    const EDGE = 6;
+    const r = cell.getBoundingClientRect();
+    // Near the right edge → column boundary (drag to resize the column);
+    // near the bottom edge → row boundary. Mirror the resize cursor.
+    const kind: 'col' | 'row' | null = ev.clientX >= r.right - EDGE ? 'col'
+      : ev.clientY >= r.bottom - EDGE ? 'row' : null;
+    cell.style.cursor = kind === 'col' ? 'col-resize' : kind === 'row' ? 'row-resize' : '';
+    this.highlightHoverEdge(cell, kind);
+  }
+
+  /** Cells whose edge is currently bolded to show a draggable boundary. */
+  private edgeHi: HTMLElement[] = [];
+  private edgeKey = '';
+
+  /** Bold ONLY the hovered boundary (a column's right edge or a row's
+   *  bottom edge), full span, so it's clear that border can be dragged
+   *  to resize. Transient (stripped from saved HTML); recomputed only
+   *  when the hovered boundary changes. */
+  private highlightHoverEdge(cell: HTMLTableCellElement, kind: 'col' | 'row' | null): void {
+    const table = cell.closest('.re-table') as HTMLTableElement | null;
+    if (!table || !kind) { this.clearHoverHighlight(); return; }
+    const g = this.tableGrid(table);
+    const info = g.info.get(cell);
+    if (!info) { this.clearHoverHighlight(); return; }
+
+    const key = kind === 'col' ? `col:${info.c + info.cs - 1}` : `row:${info.r + info.rs - 1}`;
+    if (key === this.edgeKey) return;
+    this.clearHoverHighlight();
+
+    const cells: HTMLElement[] = [];
+    if (kind === 'col') {
+      const C = info.c + info.cs - 1;          // boundary = right edge of this column
+      for (let r = 0; r < g.rows; r++) {
+        const cc = g.matrix[r]?.[C];
+        const i2 = cc && g.info.get(cc);
+        if (cc && i2 && i2.c + i2.cs - 1 === C) cells.push(cc as HTMLElement);
+      }
+      cells.forEach(c => c.classList.add('re-col-edge'));
+    } else {
+      const R = info.r + info.rs - 1;          // boundary = bottom edge of this row
+      for (let c = 0; c < g.cols; c++) {
+        const cc = g.matrix[R]?.[c];
+        const i2 = cc && g.info.get(cc);
+        if (cc && i2 && i2.r + i2.rs - 1 === R) cells.push(cc as HTMLElement);
+      }
+      cells.forEach(c => c.classList.add('re-row-edge'));
+    }
+    this.edgeHi = cells;
+    this.edgeKey = key;
+  }
+
+  private clearHoverHighlight(): void {
+    if (!this.edgeHi.length) { this.edgeKey = ''; return; }
+    this.edgeHi.forEach(c => c.classList.remove('re-col-edge', 're-row-edge'));
+    this.edgeHi = [];
+    this.edgeKey = '';
+  }
+
+  /** Drag the cell's right edge to resize its whole column (table-layout
+   *  is fixed, so a width on the column's cells defines it). */
+  private startColResize(ev: MouseEvent, cell: HTMLTableCellElement, table: HTMLTableElement): void {
+    ev.preventDefault(); ev.stopPropagation();
+    const g = this.tableGrid(table);
+    const colIdx = g.info.get(cell)!.c + g.info.get(cell)!.cs - 1;
+    const colCells = Array.from(g.info.entries())
+      .filter(([, i]) => i.cs === 1 && i.c === colIdx).map(([el]) => el);
+    const startX = ev.clientX, startW = cell.offsetWidth;
+    const onMove = (m: MouseEvent) => {
+      const w = Math.max(30, startW + (m.clientX - startX));
+      colCells.forEach(c => c.style.width = `${w}px`);
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      this.emit(); this.refreshTableToolbar();
+    };
+    document.body.style.cursor = 'col-resize';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+
+  /** Drag the cell's bottom edge to resize its row height. */
+  private startRowResize(ev: MouseEvent, cell: HTMLTableCellElement): void {
+    ev.preventDefault(); ev.stopPropagation();
+    const row = cell.closest('tr'); if (!row) return;
+    const startY = ev.clientY, startH = row.offsetHeight;
+    const onMove = (m: MouseEvent) => { row.style.height = `${Math.max(24, startH + (m.clientY - startY))}px`; };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      this.emit(); this.refreshTableToolbar();
+    };
+    document.body.style.cursor = 'row-resize';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+
+  /** Mark a set of cells selected, anchor the table toolbar above the table. */
+  private selectTableCells(cells: HTMLTableCellElement[], table: HTMLTableElement): void {
+    this.clearFigureSelection();
+    this.clearDividerSelection();
+    this.selectedCells().forEach(c => c.classList.remove('re-cell-sel'));
+    cells.forEach(c => c.classList.add('re-cell-sel'));
+    this.selectedCells.set(cells);
+    this.tableEl.set(table);
+    this.tableMenu.set(null);
+    this.tableToolbarOffset.set({ x: 0, y: 0 });
+    const surface = this.editable?.nativeElement;
+    if (surface) {
+      const sr = surface.getBoundingClientRect();
+      const tr = table.getBoundingClientRect();
+      const aboveTop = tr.top - sr.top - 40;
+      const top = aboveTop >= 8 ? aboveTop : (tr.top - sr.top + 8);
+      this.tableToolbar.set({ show: true, top, left: tr.left - sr.left + tr.width / 2 });
+      this.tableRect.set({ top: tr.top - sr.top, left: tr.left - sr.left, width: tr.width, height: tr.height });
+      // Header tabs — measure each row (left) and each first-row cell (top).
+      this.rowHandles.set(Array.from(table.rows).map((row, idx) => {
+        const rr = row.getBoundingClientRect();
+        return { top: rr.top - sr.top + rr.height / 2 - 12, idx };
+      }));
+      const firstRow = table.rows[0];
+      this.colHandles.set(firstRow ? Array.from(firstRow.cells).map(cell => {
+        const cr = cell.getBoundingClientRect();
+        return { left: cr.left - sr.left + cr.width / 2 - 12, cell };
+      }) : []);
+    }
+  }
+
+  /** Select an entire row / column via its header tab. */
+  selectTableRow(idx: number): void {
+    const table = this.tableEl(); const row = table?.rows[idx];
+    if (!table || !row) return;
+    this.selectTableCells(Array.from(row.cells), table);
+  }
+  selectTableColByCell(cell: HTMLTableCellElement): void {
+    const table = this.tableEl(); if (!table) return;
+    const g = this.tableGrid(table);
+    const info = g.info.get(cell); if (!info) return;
+    const set = new Set<HTMLTableCellElement>();
+    for (let r = 0; r < g.rows; r++) for (let c = info.c; c < info.c + info.cs; c++) { const cc = g.matrix[r]?.[c]; if (cc) set.add(cc); }
+    this.selectTableCells([...set], table);
+  }
+
+  clearTableSelection(): void {
+    this.selectedCells().forEach(c => c.classList.remove('re-cell-sel'));
+    this.selectedCells.set([]);
+    this.tableEl.set(null);
+    this.tableMenu.set(null);
+    this.tableRect.set(null);
+    this.rowHandles.set([]);
+    this.colHandles.set([]);
+    if (this.tableToolbar().show) this.tableToolbar.set({ show: false, top: 0, left: 0 });
+  }
+
+  /** Append a column at the right edge / a row at the bottom — the table's
+   *  edge +-handles, independent of the current cell selection. */
+  addTableColEnd(): void {
+    const table = this.tableEl(); if (!table) return;
+    Array.from(table.rows).forEach(tr => { const td = document.createElement('td'); td.innerHTML = '&nbsp;'; tr.appendChild(td); });
+    this.emit(); this.refreshTableToolbar();
+  }
+  addTableRowEnd(): void {
+    const table = this.tableEl(); if (!table) return;
+    const cols = this.tableGrid(table).cols;
+    const tr = document.createElement('tr');
+    for (let c = 0; c < cols; c++) { const td = document.createElement('td'); td.innerHTML = '&nbsp;'; tr.appendChild(td); }
+    (table.tBodies[0] ?? table).appendChild(tr);
+    this.emit(); this.refreshTableToolbar();
+  }
+
+  toggleTableMenu(m: 'bg' | 'border' | 'halign' | 'valign' | 'insert' | 'more'): void {
+    this.tableMenu.set(this.tableMenu() === m ? null : m);
+  }
+
+  private refreshTableToolbar(): void {
+    const t = this.tableEl(); if (t) this.selectTableCells(this.selectedCells().filter(c => t.contains(c)), t);
+  }
+
+  /** Logical grid map — resolves rowspan/colspan so column/row ops and
+   *  merges work on logical coordinates, not raw DOM cell order. */
+  private tableGrid(table: HTMLTableElement): {
+    matrix: (HTMLTableCellElement | null)[][];
+    info: Map<HTMLTableCellElement, { r: number; c: number; rs: number; cs: number }>;
+    rows: number; cols: number;
+  } {
+    const matrix: (HTMLTableCellElement | null)[][] = [];
+    const info = new Map<HTMLTableCellElement, { r: number; c: number; rs: number; cs: number }>();
+    const rowEls = Array.from(table.rows);
+    rowEls.forEach((tr, r) => {
+      if (!matrix[r]) matrix[r] = [];
+      let c = 0;
+      Array.from(tr.cells).forEach(cellEl => {
+        const cell = cellEl;
+        while (matrix[r][c]) c++;
+        const rs = cellEl.rowSpan || 1, cs = cellEl.colSpan || 1;
+        info.set(cell, { r, c, rs, cs });
+        for (let dr = 0; dr < rs; dr++) {
+          if (!matrix[r + dr]) matrix[r + dr] = [];
+          for (let dc = 0; dc < cs; dc++) matrix[r + dr][c + dc] = cell;
+        }
+        c += cs;
+      });
+    });
+    const cols = matrix.reduce((m, row) => Math.max(m, row.length), 0);
+    return { matrix, info, rows: rowEls.length, cols };
+  }
+
+  private cellsInRect(table: HTMLTableElement, a: HTMLTableCellElement, b: HTMLTableCellElement): HTMLTableCellElement[] {
+    const g = this.tableGrid(table);
+    const ai = g.info.get(a), bi = g.info.get(b);
+    if (!ai || !bi) return [a];
+    const r1 = Math.min(ai.r, bi.r), r2 = Math.max(ai.r + ai.rs - 1, bi.r + bi.rs - 1);
+    const c1 = Math.min(ai.c, bi.c), c2 = Math.max(ai.c + ai.cs - 1, bi.c + bi.cs - 1);
+    const set = new Set<HTMLTableCellElement>();
+    for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) { const cell = g.matrix[r]?.[c]; if (cell) set.add(cell); }
+    return [...set];
+  }
+
+  // ── Cell styling (tbl* prefix avoids the banner-cell setCell* methods) ──
+  /** Background fill — swatch passes a color (or '' for none); the colour
+   *  picker live-updates via onColorPanelChange. */
+  setTblBg(color: string): void {
+    this.tableBgColor.set(color || '#000000');
+    // Inline `!important` so it beats the default `th { background … !important }`
+    // and the striped/header preset rules on header cells.
+    this.selectedCells().forEach(c => {
+      if (color) c.style.setProperty('background-color', color, 'important');
+      else c.style.removeProperty('background-color');
+    });
+    this.emit();
+  }
+  setTblAlign(a: 'left' | 'center' | 'right' | 'justify'): void {
+    this.selectedCells().forEach(c => c.style.textAlign = a);
+    this.tableMenu.set(null);
+    this.emit();
+  }
+  setTblVAlign(v: 'top' | 'middle' | 'bottom'): void {
+    // Default rule sets `vertical-align: top !important`, so override inline.
+    this.selectedCells().forEach(c => c.style.setProperty('vertical-align', v, 'important'));
+    this.tableMenu.set(null);
+    this.emit();
+  }
+  /** Dark line segments to draw for a border-mode icon (viewBox 0 0 18 18). */
+  borderIconLines(mode: TableBorderMode): { x1: number; y1: number; x2: number; y2: number }[] {
+    const T = { x1: 1, y1: 1, x2: 17, y2: 1 }, B = { x1: 1, y1: 17, x2: 17, y2: 17 };
+    const L = { x1: 1, y1: 1, x2: 1, y2: 17 }, R = { x1: 17, y1: 1, x2: 17, y2: 17 };
+    const H = { x1: 1, y1: 9, x2: 17, y2: 9 }, V = { x1: 9, y1: 1, x2: 9, y2: 17 };
+    switch (mode) {
+      case 'all':        return [T, B, L, R, H, V];
+      case 'outer':      return [T, B, L, R];
+      case 'inner':      return [H, V];
+      case 'top':        return [T];
+      case 'bottom':     return [B];
+      case 'left':       return [L];
+      case 'right':      return [R];
+      case 'horizontal': return [H];
+      case 'vertical':   return [V];
+      default:           return [];
+    }
+  }
+
+  /** Pick a border configuration; re-applied live when colour/width change. */
+  setTblBorders(mode: TableBorderMode): void {
+    this.tableBorderMode.set(mode);
+    this.applyTblBorders();
+  }
+  /** Apply the current border mode/colour/width per-side across the
+   *  selection rectangle (outer = boundary edges, inner = between cells…). */
+  applyTblBorders(): void {
+    const table = this.tableEl(); const cells = this.selectedCells();
+    if (!table || !cells.length) return;
+    const g = this.tableGrid(table);
+    const infos = cells.map(c => g.info.get(c)!).filter(Boolean);
+    const r1 = Math.min(...infos.map(i => i.r)), r2 = Math.max(...infos.map(i => i.r + i.rs - 1));
+    const c1 = Math.min(...infos.map(i => i.c)), c2 = Math.max(...infos.map(i => i.c + i.cs - 1));
+    const mode = this.tableBorderMode();
+    const line = `${this.tableBorderWidth()}px solid ${this.composeRgba(this.tableBorderColor(), this.tableBorderOpacity())}`;
+    cells.forEach(cell => {
+      const i = g.info.get(cell)!;
+      const isTop = i.r === r1, isBottom = i.r + i.rs - 1 === r2, isLeft = i.c === c1, isRight = i.c + i.cs - 1 === c2;
+      let top = false, right = false, bottom = false, left = false;
+      switch (mode) {
+        case 'all':        top = right = bottom = left = true; break;
+        case 'none':       break;
+        case 'outer':      top = isTop; bottom = isBottom; left = isLeft; right = isRight; break;
+        case 'inner':      top = !isTop; bottom = !isBottom; left = !isLeft; right = !isRight; break;
+        case 'top':        top = isTop; break;
+        case 'bottom':     bottom = isBottom; break;
+        case 'left':       left = isLeft; break;
+        case 'right':      right = isRight; break;
+        case 'horizontal': top = !isTop; bottom = !isBottom; break;
+        case 'vertical':   left = !isLeft; right = !isRight; break;
+      }
+      // The default `.re-table td/th { border: …!important }` rule would
+      // otherwise override inline styles, so set these per-side borders
+      // as inline `!important` — inline !important still beats a
+      // stylesheet !important, letting the toolbar's width/colour/mode win.
+      cell.style.setProperty('border-top',    top    ? line : 'none', 'important');
+      cell.style.setProperty('border-right',  right  ? line : 'none', 'important');
+      cell.style.setProperty('border-bottom', bottom ? line : 'none', 'important');
+      cell.style.setProperty('border-left',   left   ? line : 'none', 'important');
+    });
+    this.emit();
+  }
+
+  // ── Structure ──
+  insertTableRow(where: 'above' | 'below'): void {
+    const table = this.tableEl(); const cells = this.selectedCells();
+    if (!table || !cells.length) return;
+    const g = this.tableGrid(table);
+    const rsArr = cells.map(c => g.info.get(c)!).filter(Boolean);
+    const r = where === 'above' ? Math.min(...rsArr.map(i => i.r)) : Math.max(...rsArr.map(i => i.r + i.rs - 1));
+    const tr = document.createElement('tr');
+    for (let c = 0; c < g.cols; c++) { const td = document.createElement('td'); td.innerHTML = '&nbsp;'; tr.appendChild(td); }
+    const refRow = table.rows[where === 'above' ? r : r + 1];
+    if (refRow) refRow.parentNode!.insertBefore(tr, refRow);
+    else (table.tBodies[0] ?? table).appendChild(tr);
+    this.tableMenu.set(null); this.emit(); this.refreshTableToolbar();
+  }
+  insertTableCol(where: 'left' | 'right'): void {
+    const table = this.tableEl(); const cells = this.selectedCells();
+    if (!table || !cells.length) return;
+    const g = this.tableGrid(table);
+    const infos = cells.map(c => g.info.get(c)!).filter(Boolean);
+    const col = where === 'left' ? Math.min(...infos.map(i => i.c)) : Math.max(...infos.map(i => i.c + i.cs - 1)) + 1;
+    for (let r = 0; r < g.rows; r++) {
+      const occupying = g.matrix[r]?.[col];
+      // A cell spanning across the insertion column just grows by one.
+      if (occupying) {
+        const ci = g.info.get(occupying)!;
+        if (ci.c < col && ci.c + ci.cs > col) { if (ci.r === r) occupying.colSpan = ci.cs + 1; continue; }
+      }
+      const td = document.createElement('td'); td.innerHTML = '&nbsp;';
+      const ref = (occupying && g.info.get(occupying)!.r === r) ? occupying : null;
+      if (ref) ref.parentNode!.insertBefore(td, ref); else table.rows[r]?.appendChild(td);
+    }
+    this.tableMenu.set(null); this.emit(); this.refreshTableToolbar();
+  }
+  moveTableCol(dir: 'left' | 'right'): void {
+    const table = this.tableEl(); const cells = this.selectedCells();
+    if (!table || !cells.length) return;
+    const g = this.tableGrid(table);
+    const col = g.info.get(cells[0])!.c;
+    const target = dir === 'left' ? col - 1 : col + 1;
+    if (target < 0 || target >= g.cols) return;
+    for (let r = 0; r < g.rows; r++) {
+      const a = g.matrix[r]?.[col] ?? null;
+      const b = g.matrix[r]?.[target] ?? null;
+      if (!a || !b || a === b) continue;
+      if (g.info.get(a)!.r !== r || g.info.get(b)!.r !== r) continue; // skip spanned rows
+      if (dir === 'left') a.parentNode!.insertBefore(a, b); else b.parentNode!.insertBefore(b, a);
+    }
+    this.emit(); this.refreshTableToolbar();
+  }
+  deleteTableRow(): void {
+    const table = this.tableEl(); const cells = this.selectedCells();
+    if (!table || !cells.length) return;
+    const g = this.tableGrid(table);
+    const rowIdx = [...new Set(cells.map(c => g.info.get(c)!.r))].sort((x, y) => y - x);
+    rowIdx.forEach(r => table.rows[r]?.remove());
+    if (table.rows.length === 0) { this.deleteTable(); return; }
+    this.tableMenu.set(null); this.emit(); this.clearTableSelection();
+  }
+  deleteTableCol(): void {
+    const table = this.tableEl(); const cells = this.selectedCells();
+    if (!table || !cells.length) return;
+    const g = this.tableGrid(table);
+    const colIdx = [...new Set(cells.map(c => g.info.get(c)!.c))];
+    const toRemove = new Set<HTMLElement>();
+    for (let r = 0; r < g.rows; r++) for (const c of colIdx) { const cell = g.matrix[r]?.[c]; if (cell) toRemove.add(cell); }
+    toRemove.forEach(c => c.remove());
+    if (table.rows[0] && table.rows[0].cells.length === 0) { this.deleteTable(); return; }
+    this.tableMenu.set(null); this.emit(); this.clearTableSelection();
+  }
+  deleteTable(): void {
+    const table = this.tableEl(); if (!table) return;
+    table.remove();
+    this.clearTableSelection();
+    this.emit();
+  }
+
+  /** Begin dragging the whole table to reposition it. Reuses the
+   *  cell-element drag engine (onEditableDragOver / onEditableDrop) by
+   *  pointing `draggingCellElement` at the table itself. */
+  startTableDrag(ev: DragEvent): void {
+    const table = this.tableEl();
+    if (!table) return;
+    this.draggingCellElement = table;
+    table.classList.add('re-cell-elem-dragging');
+    ev.dataTransfer?.setData('text/plain', 're-table');
+    if (ev.dataTransfer) ev.dataTransfer.effectAllowed = 'move';
+  }
+  endTableDrag(): void {
+    this.tableEl()?.classList.remove('re-cell-elem-dragging');
+    this.draggingCellElement = null;
+    this.removeDropIndicator();
+    // The table moved; recompute the toolbar/handle positions.
+    this.refreshTableToolbar();
+  }
+
+  /** Whole-table Cut / Copy / Duplicate — mirrors `figureCmd` so tables
+   *  behave like the other block elements. */
+  tableCmd(cmd: 'cut' | 'copy' | 'duplicate'): void {
+    const table = this.tableEl();
+    this.tableMenu.set(null);
+    if (!table) return;
+    switch (cmd) {
+      case 'copy':
+        navigator.clipboard?.writeText(table.outerHTML).catch(() => {});
+        break;
+      case 'cut':
+        navigator.clipboard?.writeText(table.outerHTML).catch(() => {});
+        this.deleteTable();
+        break;
+      case 'duplicate': {
+        const clone = table.cloneNode(true) as HTMLElement;
+        table.parentNode?.insertBefore(clone, table.nextSibling);
+        this.emit();
+        break;
+      }
+    }
+  }
+
+  // ── Merge / Unmerge ──
+  mergeCells(): void {
+    const table = this.tableEl(); const cells = this.selectedCells();
+    if (!table || cells.length < 2) return;
+    const g = this.tableGrid(table);
+    const infos = cells.map(c => g.info.get(c)!).filter(Boolean);
+    const r1 = Math.min(...infos.map(i => i.r)), r2 = Math.max(...infos.map(i => i.r + i.rs - 1));
+    const c1 = Math.min(...infos.map(i => i.c)), c2 = Math.max(...infos.map(i => i.c + i.cs - 1));
+    const target = g.matrix[r1]?.[c1] ?? null;
+    if (!target) return;
+    const inRect = new Set<HTMLTableCellElement>();
+    for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) { const cell = g.matrix[r]?.[c]; if (cell) inRect.add(cell); }
+    inRect.forEach(cell => {
+      if (cell === target) return;
+      const html = cell.innerHTML.trim();
+      if (html && html !== '&nbsp;') target.innerHTML += ' ' + html;
+      cell.remove();
+    });
+    target.rowSpan = r2 - r1 + 1;
+    target.colSpan = c2 - c1 + 1;
+    this.emit();
+    this.selectTableCells([target], table);
+  }
+  unmergeCells(): void {
+    const table = this.tableEl(); if (!table) return;
+    let changed = false;
+    [...this.selectedCells()].forEach(cell => {
+      const rs = cell.rowSpan || 1, cs = cell.colSpan || 1;
+      if (rs <= 1 && cs <= 1) return;
+      changed = true;
+      const info = this.tableGrid(table).info.get(cell);
+      if (!info) return;
+      const tag = cell.tagName.toLowerCase() === 'th' ? 'th' : 'td';
+      const mk = () => { const td = document.createElement(tag); td.innerHTML = '&nbsp;'; return td; };
+      cell.rowSpan = 1; cell.colSpan = 1;
+      for (let i = 1; i < cs; i++) cell.insertAdjacentElement('afterend', mk());
+      for (let dr = 1; dr < rs; dr++) {
+        const tr = table.rows[info.r + dr]; if (!tr) continue;
+        const rg = this.tableGrid(table);
+        let ref: HTMLElement | null = null;
+        for (let c = info.c; c < rg.cols; c++) { const cc = rg.matrix[info.r + dr]?.[c]; if (cc && rg.info.get(cc)!.r === info.r + dr) { ref = cc as HTMLElement; break; } }
+        for (let i = 0; i < cs; i++) { const td = mk(); if (ref) tr.insertBefore(td, ref); else tr.appendChild(td); }
+      }
+    });
+    if (changed) { this.emit(); this.refreshTableToolbar(); }
+  }
 
   /** Open/close state for the button-settings popover that pops out
    *  of the cell-element toolbar's gear icon when a button is picked. */
@@ -5780,7 +8466,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   private resolveDropTarget(y: number): { target: HTMLElement; before: boolean } | null {
     const editable = this.editable?.nativeElement;
     if (!editable) return null;
-    const blocks = Array.from(editable.querySelectorAll<HTMLElement>(':scope > p, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6, :scope > blockquote, :scope > ul, :scope > ol, :scope > section, :scope > figure, :scope > div, :scope > pre'));
+    const blocks = Array.from(editable.querySelectorAll<HTMLElement>(':scope > p, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6, :scope > blockquote, :scope > ul, :scope > ol, :scope > section, :scope > figure, :scope > div, :scope > pre, :scope > table'));
     if (blocks.length === 0) return null;
     let best: { target: HTMLElement; before: boolean; dist: number } | null = null;
     for (const b of blocks) {
@@ -5791,6 +8477,41 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       if (!best || dist < best.dist) best = { target: b, before, dist };
     }
     return best ? { target: best.target, before: best.before } : null;
+  }
+
+  /** Native-DnD hook kept for other draggables; the expandable list uses
+   *  a pointer-based reorder instead (see `startExpandDrag`) because
+   *  HTML5 drag of a contenteditable=false handle inside the editable is
+   *  unreliable and can corrupt the DOM. */
+  onEditableDragStart(_ev: DragEvent): void { /* no-op */ }
+
+  /** Pointer-based reorder of an expandable item by its grip. Avoids
+   *  native HTML5 DnD (which crashed inside the contenteditable). */
+  private startExpandDrag(ev: MouseEvent, grip: HTMLElement): void {
+    const item = grip.closest('.re-expand') as HTMLElement | null;
+    const group = item?.closest('.re-expand-group') as HTMLElement | null;
+    if (!item || !group) return;
+    ev.preventDefault();
+    item.classList.add('re-cell-elem-dragging');
+    const onMove = (m: MouseEvent) => {
+      const siblings = [...group.querySelectorAll<HTMLElement>(':scope > .re-expand')].filter(x => x !== item);
+      for (const it of siblings) {
+        const r = it.getBoundingClientRect();
+        const mid = r.top + r.height / 2;
+        if (m.clientY < mid) { group.insertBefore(item, it); return; }
+      }
+      // Past the last item — drop before the "Add another" button.
+      const addBtn = group.querySelector(':scope > .re-expand__add');
+      if (addBtn) group.insertBefore(item, addBtn);
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      item.classList.remove('re-cell-elem-dragging');
+      this.emit();
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
   }
 
   /** Editable dragover — show the drop indicator + allow drop. */
@@ -5816,6 +8537,28 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     if (!this.draggingCellElement) return;
     ev.preventDefault();
     const el = this.draggingCellElement;
+
+    // Expandable item — reorder WITHIN its group (never let it escape
+    // the group wrapper).
+    if (el.classList.contains('re-expand')) {
+      const group = el.closest('.re-expand-group') as HTMLElement | null;
+      if (group) {
+        const items = [...group.querySelectorAll<HTMLElement>(':scope > .re-expand')].filter(x => x !== el);
+        let target: HTMLElement | null = null, before = false;
+        for (const it of items) {
+          const r = it.getBoundingClientRect();
+          target = it; before = ev.clientY < r.top + r.height / 2;
+          if (before) break;
+        }
+        if (target) group.insertBefore(el, before ? target : target.nextSibling);
+        this.emit();
+      }
+      this.removeDropIndicator();
+      el.classList.remove('re-cell-elem-dragging');
+      this.draggingCellElement = null;
+      return;
+    }
+
     const hit = this.resolveDropTarget(ev.clientY);
     if (hit && hit.target !== el && !el.contains(hit.target)) {
       // For block-level elements, move the element itself. For
@@ -6070,7 +8813,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   /** Double-click on an image figure opens the Design tab of the
    *  floating panel, jumping straight to the corner-radius / border
-   *  controls — matches the Wix UX where dbl-click on media opens
+   *  controls — matches the UX where dbl-click on media opens
    *  its "look & feel" editor. */
   onSurfaceDblClick(ev: MouseEvent): void {
     const target = ev.target as HTMLElement | null;
@@ -6110,6 +8853,53 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       this.pickCellImage(addImgBtn);
       return;
     }
+    // ── Expandable list interactions ──
+    const expChev = target?.closest('.re-expand__chev') as HTMLElement | null;
+    if (expChev) {
+      ev.preventDefault();
+      const item = expChev.closest('.re-expand') as HTMLElement | null;
+      if (item) this.toggleExpandItem(item);
+      return;
+    }
+    const expAdd = target?.closest('.re-expand__add') as HTMLElement | null;
+    if (expAdd) {
+      ev.preventDefault();
+      const group = expAdd.closest('.re-expand-group') as HTMLElement | null;
+      if (group) this.addExpandItem(group, expAdd);
+      return;
+    }
+    {
+      const expGroup = target?.closest('.re-expand-group') as HTMLElement | null;
+      if (expGroup) this.selectExpand(expGroup);
+      else if (!target?.closest('.re__expandPanel, .re__expandTb')) this.closeExpand();
+    }
+    {
+      const embed = target?.closest('.re-embed') as HTMLElement | null;
+      if (embed) this.selectEmbed(embed);
+      else if (!target?.closest('.re__embedTb, .re__embedPanel')) this.closeEmbed();
+    }
+    {
+      const pollAdd = target?.closest('.re-poll__add') as HTMLElement | null;
+      const pollRem = target?.closest('.re-poll__ans-remove') as HTMLElement | null;
+      const poll = target?.closest('.re-poll') as HTMLElement | null;
+      if (pollRem) { ev.preventDefault(); const a = pollRem.closest('.re-poll__ans') as HTMLElement | null; if (a) this.removePollAnswer(a); }
+      else if (pollAdd) { ev.preventDefault(); if (poll) this.selectPoll(poll); this.addPollAnswer(); }
+      else if (poll) this.selectPoll(poll);
+      else if (!target?.closest('.re__pollTb, .re__pollPanel')) this.closePoll();
+    }
+    {
+      // Product card — the "Buy Now" link is a static preview, so block
+      // its navigation; clicking anywhere on the card selects it.
+      const prodBtn = target?.closest('.re-product__btn') as HTMLElement | null;
+      if (prodBtn) ev.preventDefault();
+      const product = target?.closest('.re-product') as HTMLElement | null;
+      if (product) this.selectProduct(product);
+      else if (!target?.closest('.re__prodTb, .re__prodPanel')) this.closeProduct();
+    }
+    // The thumbnails-gallery arrows + strip are a static preview in the
+    // editor — clicking them just selects the gallery figure like any
+    // other click. The active-image navigation is wired up later when
+    // the gallery is rendered on the live site, not here.
     // Detect per-element clicks. Buttons + images get the contextual
     // toolbar anywhere inside the editable surface (so a button
     // inserted via the side panel into the document body still has
@@ -6122,10 +8912,22 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     // selection or the panels they open will immediately close on
     // their own button presses (e.g. the Link icon would open the
     // Link panel which the bubbled click would then dismiss).
-    const inChrome = !!target?.closest('.re__cellElemTb, .re__figPanel, .re__colTb, .re__figTb, .re__btnAlignMenu');
+    const inChrome = !!target?.closest('.re__cellElemTb, .re__figPanel, .re__colTb, .re__figTb, .re__btnAlignMenu, .re__dividerTb, .re__tableTb, .re__tableAdd, .re__tableHandle');
+    // Divider — clicking an <hr> opens its toolbar (and skips the
+    // figure/cell selection logic below); clicks elsewhere clear it.
+    const dividerEl = target?.closest('hr') as HTMLElement | null;
+    if (dividerEl && inSurface) {
+      ev.preventDefault();
+      this.selectDivider(dividerEl);
+      return;
+    }
+    if (!inChrome) this.clearDividerSelection();
+    // Table cell selection is driven by onSurfaceMouseDown; here we only
+    // clear it when the click lands outside any table and its toolbar.
+    if (!inChrome && !target?.closest('.re-table')) this.clearTableSelection();
     if (!inChrome) {
       if (inSurface) {
-        const btn = target?.closest('a, button:not([data-add-image]):not(.re-banner-cell-handle)') as HTMLElement | null;
+        const btn = target?.closest('a, button:not([data-add-image]):not(.re-banner-cell-handle):not(.re-gal-nav)') as HTMLElement | null;
         const img = target?.closest('img') as HTMLElement | null;
         const inCellContent = target?.closest('[data-layout-cell-content], .re-banner-cell-content');
         const textBlock = inCellContent
@@ -6349,7 +9151,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     else                  col.parentNode!.insertBefore(next, col.nextSibling);
     // Auto-grow column-count to fit the new column.
     const total = f.querySelectorAll(RichEditorComponent.COL_SELECTOR).length;
-    if (total > this.bannerColumns()) this.setBannerColumns(Math.min(2, total) as 1 | 2);
+    if (total > this.bannerColumns()) this.setBannerColumns(Math.min(4, total) as 1 | 2 | 3 | 4);
     this.columnMenu.set(null);
     if (RichEditorComponent.isBannerSection(f)) this.ensureColDivider(f);
     this.emit();
@@ -6503,28 +9305,30 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   deleteSelectedColumn(): void {
     const col = this.selectedColumn(); if (!col) return;
-    const parent = col.parentNode;
+    const parent = col.parentNode as HTMLElement | null;
+    const f = this.selectedFigure();
+    const isBanner = !!f && RichEditorComponent.isBannerSection(f);
+    // Deleting the LAST column removes the whole layout/banner (so its
+    // toolbars don't linger over an empty shell). For non-banner column
+    // containers, keep the legacy "re-seed a blank column" behaviour.
+    const remaining = (parent?.querySelectorAll(RichEditorComponent.COL_SELECTOR).length ?? 1) - 1;
+    if (isBanner && remaining <= 0) { this.deleteSelectedFigure(); return; }
+
     col.remove();
     this.clearColumnSelection();
-    // If we just deleted the last column in the container, drop a
-    // fresh one in the matching shape so the banner inner isn't
-    // completely blank.
-    if (parent && parent instanceof HTMLElement && !parent.querySelector(RichEditorComponent.COL_SELECTOR)) {
+    if (!isBanner && parent && !parent.querySelector(RichEditorComponent.COL_SELECTOR)) {
       const fresh = parent.classList.contains('re-banner-inner')
         ? this.buildBannerCell()
         : Object.assign(document.createElement('div'), { className: 're-banner-col', innerHTML: '<p>Add your text</p>' });
       parent.appendChild(fresh as HTMLElement);
     }
-    // Falling back to one column → drop the divider; ratio resets so
-    // a future re-add to 2 cols starts evenly.
-    const f = this.selectedFigure();
-    if (f && RichEditorComponent.isBannerSection(f)) {
+    // Sync the column count to the remaining cells so the grid template
+    // matches (e.g. 3 → 2 collapses to a 2-col split, 4 → 3 to thirds).
+    if (f && isBanner) {
       const cellCount = f.querySelectorAll(RichEditorComponent.COL_SELECTOR).length;
-      if (cellCount <= 1) {
-        this.bannerColumns.set(1);
-        this.bannerColRatio.set(0.5);
-        this.applyBannerStyles();
-      }
+      this.bannerColumns.set(Math.max(1, Math.min(4, cellCount)) as 1 | 2 | 3 | 4);
+      if (cellCount <= 1) this.bannerColRatio.set(0.5);
+      this.applyBannerStyles();
       this.ensureColDivider(f);
     }
     this.emit();
@@ -6543,6 +9347,10 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     // Keep the writable mirrors of type / banner state in sync.
     this.isImageFigure.set(figure.classList.contains('re-embed-figure--image'));
     this.isBannerFigure.set(RichEditorComponent.isBannerEl(figure));
+    this.isGalleryFigure.set(figure.classList.contains('re-embed-figure--gallery'));
+    this.isHtmlFigure.set(figure.classList.contains('re-embed-figure--html'));
+    this.htmlCodeMode.set(false);
+    this.clearTableSelection();
     this.attachResizeHandles(figure);
     // Read existing classes to pre-fill toolbar state.
     this.figureSize.set(
@@ -6563,10 +9371,18 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   private clearFigureSelection(): void {
     const f = this.selectedFigure();
+    // If a Custom-HTML block was in code-edit mode, commit + restore it
+    // back to preview before deselecting.
+    if (f && this.htmlCodeMode()) this.exitHtmlCodeMode(f);
     if (f) { f.classList.remove('is-selected'); this.removeResizeHandles(f); }
     this.selectedFigure.set(null);
     this.isImageFigure.set(false);
     this.isBannerFigure.set(false);
+    this.isGalleryFigure.set(false);
+    this.isHtmlFigure.set(false);
+    this.htmlCodeMode.set(false);
+    this.galleryPanelOpen.set(false);
+    this.galleryPanelPos.set(null);
     this.figMenu.set(null);
     this.figureToolbar.set({ show: false, top: 0, left: 0 });
     // Reset the user's manual toolbar offset on deselect so the next
@@ -6603,7 +9419,9 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const inner = section.querySelector<HTMLElement>(':scope > .re-banner-backdrop > .re-banner-resizer > .re-banner-inner');
     if (!inner) return;
     const existing = inner.querySelector<HTMLElement>(':scope > .re-banner-col-divider');
-    const isTwoCol = inner.querySelectorAll(':scope > .re-banner-cell, :scope > .re-banner-col').length >= 2;
+    // The draggable ratio-divider applies ONLY to a 2-column split. 1-col
+    // and 3-col (equal) modes have no resizable divider.
+    const isTwoCol = inner.querySelectorAll(':scope > .re-banner-cell, :scope > .re-banner-col').length === 2;
     if (!isTwoCol) { existing?.remove(); return; }
     if (existing) {
       this.positionColDivider(section);
@@ -6704,7 +9522,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   /** Re-create the bottom resize handle on a banner section that was
    *  loaded from saved HTML (transient handle markup is stripped by
-   *  emit()'s regex). Wix model: banners resize vertically only via
+   *  emit()'s regex). layout model: banners resize vertically only via
    *  a single bottom pill. Older scaffolds that shipped left/right/top
    *  handles get cleaned up here too. */
   private ensureBannerHandles(section: HTMLElement): void {
@@ -6843,6 +9661,13 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  banner's actual edges. */
   private resizeAnchor(figure: HTMLElement): HTMLElement {
     if (RichEditorComponent.isBannerEl(figure)) return figure;
+    // Galleries hold many inner <img>s of differing sizes (a single
+    // column, a thumb, a collage tile…). Hugging the first one would
+    // size the handle ring to that one tile instead of the gallery. Use
+    // the gallery container box so the handles wrap the whole gallery.
+    if (figure.classList.contains('re-embed-figure--gallery')) {
+      return (figure.querySelector('.re-gallery') as HTMLElement | null) ?? figure;
+    }
     return (figure.querySelector('img, iframe, video') as HTMLElement | null) ?? figure;
   }
 
@@ -7032,7 +9857,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     // figure should follow the cursor, not snap back to a preset.
     f.classList.remove('re-size-compact', 're-size-standard', 're-size-extended', 're-size-original');
 
-    // Section-banner resize semantics (Wix model — vertical only):
+    // Section-banner resize semantics (layout model — vertical only):
     //   - Bottom drag (s) → writes height to the .re-banner-backdrop
     //     (the colored layer). The section auto-sizes around it so
     //     the handle always sits on the backdrop's actual bottom edge.
@@ -7065,7 +9890,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       const dy = m.clientY - startY;
 
       if (isSectionBanner) {
-        // Wix model — vertical-only resize. Bottom drag adjusts the
+        // layout model — vertical-only resize. Bottom drag adjusts the
         // colored backdrop's height; everything else is ignored.
         // Minimum is the tallest column's natural content height plus
         // the backdrop's top/bottom padding wells, so dragging shorter
@@ -7108,6 +9933,12 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       // Drop the live-drag class so the figure reverts to the static
       // "selected" outline once the user releases the mouse.
       f.classList.remove('is-resizing');
+      // Gallery width changed → re-pack any width-dependent layout.
+      if (f.classList.contains('re-embed-figure--gallery')) {
+        const g = f.querySelector('.re-gallery') as HTMLElement | null;
+        this.layoutGalleryMasonry(g);
+        this.layoutGalleryCollage(g);
+      }
       this.emit();
     };
     document.addEventListener('mousemove', onMove);
@@ -7131,6 +9962,60 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  / video). Writable signal for the same reason as isBannerFigure
    *  — classList mutations would otherwise be invisible to Angular. */
   isImageFigure = signal<boolean>(false);
+  isGalleryFigure = signal<boolean>(false);
+
+  // ─── Custom HTML block ──────────────────────────────────────────────
+  /** True when the selected figure is a Custom HTML block (renders raw
+   *  HTML the user can edit). */
+  isHtmlFigure = signal<boolean>(false);
+  /** True while the selected HTML block shows its code editor (textarea)
+   *  instead of the rendered preview — WordPress-style HTML/Preview toggle. */
+  htmlCodeMode = signal<boolean>(false);
+
+  /** Toggle a Custom HTML block between Preview (rendered) and HTML
+   *  (an editable <textarea> of the raw markup). */
+  toggleHtmlMode(): void {
+    const f = this.selectedFigure();
+    if (!f || !this.isHtmlFigure()) return;
+    if (this.htmlCodeMode()) { this.exitHtmlCodeMode(f); return; }
+    const render = f.querySelector('.re-html-render') as HTMLElement | null;
+    if (!render) return;
+    // Swap in a transient code textarea pre-filled with the current markup.
+    const ta = document.createElement('textarea');
+    ta.className = 're-html-code';
+    ta.setAttribute('spellcheck', 'false');
+    ta.value = render.innerHTML.trim();
+    f.insertBefore(ta, render);
+    f.classList.add('is-html-editing');
+    this.htmlCodeMode.set(true);
+    queueMicrotask(() => { ta.focus(); this.positionResizeHandles(f); });
+  }
+
+  /** Commit the code textarea back into the rendered preview and drop it. */
+  private exitHtmlCodeMode(f: HTMLElement): void {
+    const ta = f.querySelector('textarea.re-html-code') as HTMLTextAreaElement | null;
+    const render = f.querySelector('.re-html-render') as HTMLElement | null;
+    if (ta && render) render.innerHTML = ta.value;
+    ta?.remove();
+    f.classList.remove('is-html-editing');
+    this.htmlCodeMode.set(false);
+    this.emit();
+    queueMicrotask(() => this.positionResizeHandles(f));
+  }
+
+  // ─── Gallery panel state (shared <app-re-gallery-panel>) ───────────
+  galleryPanelOpen = signal<boolean>(false);
+  galleryConfig    = signal<GalleryConfig>({ ...DEFAULT_GALLERY_CONFIG });
+  galleryImages    = signal<GalleryImage[]>([]);
+  galleryPanelOffset = signal<{ x: number; y: number }>({ x: 0, y: 0 });
+  /** Fixed (viewport) position captured once when the gallery panel
+   *  opens. Stays put while the gallery resizes — the panel is NOT
+   *  re-anchored to the toolbar (which moves as the figure grows). */
+  galleryPanelPos = signal<{ top: number; left: number } | null>(null);
+  /** Host hook: open the media library to append images to the
+   *  selected gallery. The host calls appendGalleryImages() with the
+   *  picked URLs. Emits the gallery figure so the host has context. */
+  galleryAddImages = output<HTMLElement>();
 
   toggleFigMenu(ev: Event, key: 'size' | 'align' | 'link' | 'settings' | 'design' | 'valign' | 'more'): void {
     ev.preventDefault();
@@ -7168,18 +10053,30 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
 
   private seedLinkState(): void {
     const f = this.selectedFigure(); if (!f) return;
+    // The Section picker needs the current heading list regardless of
+    // which kind ends up selected.
+    this.scanLinkSections();
     const a = f.querySelector('a[href]') as HTMLAnchorElement | null;
     if (a) {
-      this.linkUrl.set(a.getAttribute('href') ?? '');
+      const href = a.getAttribute('href') ?? '';
+      this.linkUrl.set(href);
       this.linkNewTab.set(a.target === '_blank');
       const rel = (a.getAttribute('rel') ?? '').split(/\s+/);
       this.linkNoReferrer.set(rel.includes('noreferrer'));
       this.linkNoFollow.set(rel.includes('nofollow'));
+      // Prefer an explicit persisted kind; else infer from the href
+      // (a real `#anchor` ⇒ section, anything else ⇒ web).
+      const savedKind = a.dataset['linkKind'] as
+        'web' | 'section' | 'page' | 'blog' | 'dynamic' | undefined;
+      this.linkKind.set(
+        savedKind ?? ((href.length > 1 && href.startsWith('#')) ? 'section' : 'web'),
+      );
     } else {
       this.linkUrl.set('');
       this.linkNewTab.set(true);
       this.linkNoReferrer.set(true);
       this.linkNoFollow.set(false);
+      this.linkKind.set('web');
     }
   }
 
@@ -7257,16 +10154,19 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const rel = [
       this.linkNoReferrer() ? 'noreferrer' : '',
       this.linkNoFollow()   ? 'nofollow'   : '',
+      this.linkSponsored()  ? 'sponsored'  : '',
       this.linkNewTab()     ? 'noopener'   : '',
     ].filter(Boolean).join(' ');
 
     if (existing) {
       existing.setAttribute('href', url);
+      existing.dataset['linkKind'] = this.linkKind();
       if (this.linkNewTab()) existing.setAttribute('target', '_blank'); else existing.removeAttribute('target');
       if (rel) existing.setAttribute('rel', rel); else existing.removeAttribute('rel');
     } else {
       const a = document.createElement('a');
       a.setAttribute('href', url);
+      a.dataset['linkKind'] = this.linkKind();
       if (this.linkNewTab()) a.setAttribute('target', '_blank');
       if (rel) a.setAttribute('rel', rel);
       img.parentNode!.insertBefore(a, img);
@@ -7438,11 +10338,11 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   /** Render the @container rule that applies below the breakpoint.
    *  Two modes (driven by `bannerBehavior`):
    *    - stacked    → collapse to one column (minmax(0,1fr)), hide
-   *                   the cell drag-handles. Standard Wix "Stack".
+   *                   the cell drag-handles. Standard "Stack".
    *    - horizontal → keep columns side-by-side but use
    *                   repeat(auto-fit, minmax(120px, 1fr)) so they
    *                   shrink and wrap onto multiple rows as needed
-   *                   (Wix "Wrap"). */
+   *                   ("Wrap"). */
   private bannerStackRule(scope: string, bp: number, behavior: 'stacked' | 'horizontal' = 'stacked'): string {
     if (behavior === 'horizontal') {
       return (
@@ -7551,7 +10451,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     // Level 3 — resize container. The Ricos --ricos-internal-layout-width
     // var drives its max-width; we default to 100% so the banner spans
     // the column. The left/right resize handles live INSIDE this
-    // container (sibling of the inner grid), matching Wix's contract.
+    // container (sibling of the inner grid), matching the contract.
     const resizer = document.createElement('div');
     resizer.className = 're-banner-resizer';
     resizer.setAttribute('contenteditable', 'false');
@@ -7573,7 +10473,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     backdrop.appendChild(resizer);
     section.appendChild(backdrop);
 
-    // Bottom handle — the ONLY resize affordance on a banner (Wix
+    // Bottom handle — the ONLY resize affordance on a banner (
     // model: banners are resizable vertically only, via this pill).
     // Dragging it changes the backdrop's height so the colored area
     // shrinks / grows with the cursor.
@@ -7683,7 +10583,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.bannerBgOpacity.set(num(ds['bgOpacity'], 100));
     this.bannerBgGradient.set(ds['bgGradient'] || 'linear-gradient(180deg, #32acc1 0%, #ffffff 100%)');
     this.bannerBgImage.set(ds['bgImage']   || '');
-    this.bannerColumns.set((num(ds['cols'], 1) === 2 ? 2 : 1));
+    this.bannerColumns.set((c => (c === 4 ? 4 : c === 3 ? 3 : c === 2 ? 2 : 1))(num(ds['cols'], 1)));
     const savedRatio = parseFloat(ds['colRatio'] ?? '');
     this.bannerColRatio.set(Number.isFinite(savedRatio) ? clamp(savedRatio, 0.15, 0.85) : 0.5);
     this.bannerColGap.set(num(ds['gap'], 20));
@@ -7756,7 +10656,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     };
 
     // Resolve the layout container (the `data-layout-container` div,
-    // matching Wix Ricos's element model). When the markup is the new
+    // matching the editor's element model). When the markup is the new
     // 5-level scaffold we always have one; fall back to the section
     // itself for legacy figure-banners so the writes never blackhole.
     const inner = (f.querySelector('[data-layout-container]') as HTMLElement | null)
@@ -7792,7 +10692,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     f.style.setProperty('--ricos-internal-layout-backdrop-image-opacity',  String(this.sectionImageOpacity() / 100));
     f.style.setProperty('--ricos-internal-layout-backdrop-image-scaling',  sizeMap[this.sectionImageScaling()] ?? 'cover');
     f.style.setProperty('--ricos-internal-layout-backdrop-image-position', posMap[this.sectionImagePosition()] ?? 'center');
-    // Backdrop top/bottom padding wells — Wix calls this "Vertical
+    // Backdrop top/bottom padding wells — calls this "Vertical
     // margins" in the panel. It adjusts the inset of the column inside
     // the banner (NOT the banner's outer margin). bannerVMargin is the
     // single source of truth; section margin-block is set to 0 below.
@@ -7841,7 +10741,9 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const ratio = clamp(this.bannerColRatio(), 0.15, 0.85);
     const colsTrack = cols === 1
       ? 'minmax(0, 1fr)'
-      : `minmax(0, ${ratio.toFixed(3)}fr) minmax(0, ${(1 - ratio).toFixed(3)}fr)`;
+      : cols >= 3
+        ? `repeat(${cols}, minmax(0, 1fr))`                 // 3/4 = equal tracks (no custom ratio)
+        : `minmax(0, ${ratio.toFixed(3)}fr) minmax(0, ${(1 - ratio).toFixed(3)}fr)`;
     target.style.setProperty('--ricos-internal-layout-column-template', colsTrack);
     target.style.setProperty('--ricos-internal-layout-gap', `${this.bannerColGap()}px`);
     f.dataset['cols']     = String(cols);
@@ -8018,14 +10920,22 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.applyBannerStyles();
     this.emit();
   }
-  setBannerColumns(v: 1 | 2): void {
+  setBannerColumns(v: 1 | 2 | 3 | 4): void {
     this.bannerColumns.set(v);
     const f = this.selectedFigure();
+    // Add cells when increasing the column count (the merge branch below
+    // handles decreasing). The grid template in applyBannerStyles drives
+    // the visible layout; here we just keep the cell count in sync.
+    const inner = f?.querySelector('[data-layout-container], .re-banner-inner') as HTMLElement | null;
+    let existing = f?.querySelectorAll<HTMLElement>(RichEditorComponent.COL_SELECTOR);
+    if (inner && existing && existing.length < v) {
+      for (let i = existing.length; i < v; i++) inner.appendChild(this.buildBannerCell());
+    }
     const cols = f?.querySelectorAll<HTMLElement>(RichEditorComponent.COL_SELECTOR);
     // Going from 2 → 1: MERGE the extra column(s) into the first one
     // instead of deleting them. Move each extra cell's content
     // children into the first cell so the user's text isn't lost.
-    // (Matches Wix's "Merged" semantics — the merge button combines
+    // (Matches the "Merged" semantics — the merge button combines
     // columns, it doesn't drop their content.)
     if (cols && cols.length > v) {
       const keep = cols[0];
@@ -8048,7 +10958,12 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     // doesn't surprise the user with a remembered uneven split.
     if (v === 1) this.bannerColRatio.set(0.5);
     this.applyBannerStyles();
-    if (f) this.ensureColDivider(f);
+    // The draggable divider + ratio resize only applies to the 2-col
+    // split. 1-col and 3-col (equal) modes carry no divider.
+    if (f) {
+      if (v === 2) this.ensureColDivider(f);
+      else f.querySelectorAll('.re-banner-col-divider').forEach(d => d.remove());
+    }
     this.emit();
   }
   setBannerGap(v: number): void { this.bannerColGap.set(clamp(v, 0, 200)); this.applyBannerStyles(); this.emit(); }
@@ -8278,6 +11193,366 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.bgImageClick.emit();
   }
 
+  // ─── Gallery ───────────────────────────────────────────────────────
+  /** CSS aspect-ratio value for each gallery ratio id. */
+  private static readonly GALLERY_RATIO: Record<string, string> = {
+    '16:9': '16 / 9', '4:3': '4 / 3', '1:1': '1 / 1', '3:4': '3 / 4', '9:16': '9 / 16',
+  };
+
+  /** Open the shared gallery panel, seeding config + image list from
+   *  the selected gallery figure. */
+  openGalleryPanel(): void {
+    if (this.galleryPanelOpen()) { this.galleryPanelOpen.set(false); return; }
+    this.seedGalleryState();
+    this.figMenu.set(null);
+    // Capture a STABLE viewport position once — the panel is
+    // position:fixed and must not follow the toolbar as the gallery
+    // resizes. Prefer the space left of the figure; fall back to its
+    // right, then clamp into the viewport.
+    const f = this.selectedFigure();
+    const PANEL_W = 320;
+    if (f) {
+      const r = f.getBoundingClientRect();
+      let left = r.left - PANEL_W - 12;
+      if (left < 12) left = Math.min(r.right + 12, window.innerWidth - PANEL_W - 12);
+      if (left < 12) left = 12;
+      const top = Math.max(12, Math.min(r.top, window.innerHeight - 360));
+      this.galleryPanelPos.set({ top, left });
+    } else {
+      this.galleryPanelPos.set({ top: 80, left: 80 });
+    }
+    this.galleryPanelOffset.set({ x: 0, y: 0 });
+    this.galleryPanelOpen.set(true);
+  }
+
+  /** Read the gallery figure's data-* config + <img> tiles into the
+   *  signals that drive the shared panel. */
+  private seedGalleryState(): void {
+    const f = this.selectedFigure(); if (!f) return;
+    const ds = f.dataset;
+    this.galleryConfig.set({
+      layout: (ds['layout'] as GalleryLayout) || 'grid',
+      crop: ds['crop'] !== 'fit',
+      ratio: (ds['ratio'] as GalleryConfig['ratio']) || '1:1',
+      cols: Math.max(1, Math.min(6, parseInt(ds['cols'] || '3', 10) || 3)),
+      spacing: Math.max(0, Math.min(40, parseInt(ds['spacing'] || '5', 10) || 0)),
+      rowHeight: Math.max(100, Math.min(600, parseInt(ds['rowHeight'] || '300', 10) || 300)),
+      columnWidth: Math.max(100, Math.min(600, parseInt(ds['columnWidth'] || '300', 10) || 300)),
+      orientation: (ds['orientation'] as GalleryConfig['orientation']) || 'horizontal',
+      scrollDir: (ds['scrollDir'] as GalleryConfig['scrollDir']) || 'vertical',
+      thumbPlacement: (ds['thumbPlacement'] as GalleryConfig['thumbPlacement']) || 'bottom',
+      clickExpand: ds['clickExpand'] === 'true',
+      allowDownload: ds['allowDownload'] === 'true',
+    });
+    const imgs = Array.from(f.querySelectorAll('.re-gallery img')) as HTMLImageElement[];
+    const list = imgs.map((img, i) => ({
+      id: img.dataset['gid'] || `g${i}`,
+      url: img.getAttribute('src') || '',
+      alt: img.getAttribute('alt') || '',
+      mediaId: img.dataset['mediaId'] || undefined,
+    }));
+    this.galleryImages.set(list);
+    // Normalize legacy galleries (direct <img> children, no wrapper)
+    // into the .re-gallery-item container model so the layout CSS —
+    // which now targets the container — applies to them too.
+    const gal = f.querySelector('.re-gallery') as HTMLElement | null;
+    if (gal && gal.querySelector(':scope > img')) this.writeGalleryImages(list);
+  }
+
+  /** Apply the panel's config to the selected gallery figure — writes
+   *  data-* attributes, the layout class, crop/ratio attrs and the
+   *  --re-gal-cols / --re-gal-ratio CSS vars on the inner .re-gallery. */
+  onGalleryConfigChange(cfg: GalleryConfig): void {
+    // NOTE: don't push cfg back into galleryConfig() here — the panel
+    // owns its working state, and re-feeding it via [config] would
+    // churn the round-trip. galleryConfig is only seeded on open.
+    const f = this.selectedFigure(); if (!f) return;
+    f.dataset['layout']        = cfg.layout;
+    f.dataset['crop']          = cfg.crop ? 'crop' : 'fit';
+    f.dataset['ratio']         = cfg.ratio;
+    f.dataset['cols']          = String(cfg.cols);
+    f.dataset['spacing']       = String(cfg.spacing);
+    f.dataset['rowHeight']     = String(cfg.rowHeight);
+    f.dataset['columnWidth']   = String(cfg.columnWidth);
+    f.dataset['orientation']   = cfg.orientation;
+    f.dataset['scrollDir']     = cfg.scrollDir;
+    f.dataset['thumbPlacement'] = cfg.thumbPlacement;
+    f.dataset['clickExpand']   = cfg.clickExpand ? 'true' : 'false';
+    f.dataset['allowDownload'] = cfg.allowDownload ? 'true' : 'false';
+    const gal = f.querySelector('.re-gallery') as HTMLElement | null;
+    if (gal) {
+      gal.className = `re-gallery re-gallery--${cfg.layout}`;
+      gal.dataset['crop']  = cfg.crop ? 'crop' : 'fit';
+      gal.dataset['ratio'] = cfg.ratio;
+      gal.dataset['orientation'] = cfg.orientation;
+      gal.dataset['scrollDir'] = cfg.scrollDir;
+      gal.dataset['thumbPlacement'] = cfg.thumbPlacement;
+      gal.style.setProperty('--re-gal-cols', String(cfg.cols));
+      gal.style.setProperty('--re-gal-ratio', RichEditorComponent.GALLERY_RATIO[cfg.ratio] || '1 / 1');
+      gal.style.setProperty('--re-gal-gap', `${cfg.spacing}px`);
+      gal.style.setProperty('--re-gal-row-h', `${cfg.rowHeight}px`);
+      gal.style.setProperty('--re-gal-col-w', `${cfg.columnWidth}px`);
+    }
+    this.emit();
+    // The gallery's height changes with layout / cols / ratio — re-snap
+    // the resize handles + toolbar to the new bounds so the handle
+    // squares don't stick at the old position.
+    queueMicrotask(() => {
+      this.layoutGalleryMasonry(gal);
+      this.layoutGalleryCollage(gal);
+      this.applyGalleryNav(gal);
+      this.refreshFigureToolbar();
+      this.positionResizeHandles(f);
+    });
+  }
+
+  /** Justified-rows masonry (layout model). For horizontal orientation we
+   *  pack items into rows that each fill the container width while the
+   *  images keep their natural aspect ratios — so row heights vary.
+   *  Pure CSS can't do this (needs each image's intrinsic ratio), so we
+   *  compute it here and write inline width/height per .re-gallery-item.
+   *  Vertical orientation uses the CSS multi-column rules instead. */
+  /** Re-run the width-dependent layouts (justified masonry + collage
+   *  mosaic) for every gallery on the surface — used after content
+   *  loads and on resize so they re-pack to the current width. */
+  private layoutAllMasonry(): void {
+    const host = this.editable?.nativeElement;
+    if (!host) return;
+    host.querySelectorAll('.re-gallery--masonry').forEach(g => this.layoutGalleryMasonry(g as HTMLElement));
+    host.querySelectorAll('.re-gallery--collage').forEach(g => this.layoutGalleryCollage(g as HTMLElement));
+    host.querySelectorAll('.re-gallery--thumbnails, .re-gallery--slideshow, .re-gallery--slider').forEach(g => this.applyGalleryNav(g as HTMLElement));
+  }
+
+  /** Re-pack width-dependent galleries when the viewport changes. */
+  @HostListener('window:resize')
+  onWindowResize(): void { this.layoutAllMasonry(); }
+
+  /** Collage mosaic — compute the column count + square cell size from
+   *  the Column-width setting so the CSS span pattern renders as a
+   *  balanced mosaic that fills the container width. */
+  private layoutGalleryCollage(gal: HTMLElement | null): void {
+    if (!gal || !gal.classList.contains('re-gallery--collage')) return;
+    const cs = getComputedStyle(gal);
+    const gap = parseFloat(cs.getPropertyValue('--re-gal-gap')) || 6;
+    const colW = parseFloat(cs.getPropertyValue('--re-gal-col-w')) || 200;
+    const containerW = gal.clientWidth;
+    if (!containerW) return;
+    if (gal.dataset['scrollDir'] === 'horizontal') {
+      // Horizontal scroll — the mosaic flows into a fixed number of rows
+      // that overflow sideways. The Column-width control sizes each cell
+      // directly (wider value = bigger tiles); rows derive from how many
+      // cells fit the current width so the strip stays balanced.
+      const rows = Math.max(2, Math.round((containerW + gap) / (colW + gap)));
+      const cell = (containerW - gap * (rows - 1)) / rows;
+      gal.style.setProperty('--collage-rows', String(rows));
+      gal.style.setProperty('--collage-cell', `${Math.floor(cell)}px`);
+      return;
+    }
+    const cols = Math.max(2, Math.round((containerW + gap) / (colW + gap)));
+    const cell = (containerW - gap * (cols - 1)) / cols;
+    gal.style.setProperty('--collage-cols', String(cols));
+    gal.style.setProperty('--collage-cell', `${Math.floor(cell)}px`);
+  }
+
+  /** Thumbnails + Slideshow + Carousel layouts — overlay prev/next nav
+   *  arrows. Thumbnails/Slideshow also promote one image to a large
+   *  "stage" (.is-active, index in the persisted data-active); the
+   *  Carousel shows a row of tiles with no single stage. The .is-active
+   *  class + the arrow buttons are transient (stripped from saved HTML,
+   *  re-derived here on every render / resize / content load). Idempotent:
+   *  clears prior arrows + active marks first, then re-applies. */
+  private applyGalleryNav(gal: HTMLElement | null): void {
+    if (!gal) return;
+    // Clear any previous transient state so this is safe to call after a
+    // layout switch (className change leaves stale arrows/markers behind).
+    gal.querySelectorAll(':scope > .re-gal-nav').forEach(b => b.remove());
+    const items = Array.from(gal.querySelectorAll(':scope > .re-gallery-item')) as HTMLElement[];
+    items.forEach(it => it.classList.remove('is-active'));
+    const hasStage = gal.classList.contains('re-gallery--thumbnails')
+      || gal.classList.contains('re-gallery--slideshow');
+    const hasNav = hasStage || gal.classList.contains('re-gallery--slider');
+    if (!hasNav || !items.length) return;
+    if (hasStage) {
+      // Promote the active image to the stage (Carousel has no single stage).
+      let active = parseInt(gal.dataset['active'] || '0', 10);
+      if (isNaN(active) || active < 0) active = 0;
+      if (active >= items.length) active = items.length - 1;
+      gal.dataset['active'] = String(active);
+      items[active].classList.add('is-active');
+    }
+    // Arrows only make sense with more than one image.
+    if (items.length > 1) {
+      const arrow = (dir: 'prev' | 'next') => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = `re-gal-nav re-gal-nav--${dir}`;
+        b.setAttribute('contenteditable', 'false');
+        b.dataset['nav'] = dir;
+        const pts = dir === 'prev' ? '15 18 9 12 15 6' : '9 18 15 12 9 6';
+        b.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="${pts}"/></svg>`;
+        return b;
+      };
+      gal.appendChild(arrow('prev'));
+      gal.appendChild(arrow('next'));
+    }
+    this.positionGalleryNav(gal);
+  }
+
+  /** Place the nav arrows over the vertical centre, hugging the left /
+   *  right edges. For a stage layout (Thumbnails / Slideshow) it reads the
+   *  active item's box (works for every Thumbnails placement); for the
+   *  Carousel (no single stage) it centres on the gallery viewport. */
+  private positionGalleryNav(gal: HTMLElement): void {
+    const prev = gal.querySelector(':scope > .re-gal-nav--prev') as HTMLElement | null;
+    const next = gal.querySelector(':scope > .re-gal-nav--next') as HTMLElement | null;
+    if (!prev || !next) return;
+    const active = gal.querySelector(':scope > .re-gallery-item.is-active') as HTMLElement | null;
+    const box = active
+      ? { top: active.offsetTop, left: active.offsetLeft, w: active.offsetWidth, h: active.offsetHeight }
+      : { top: 0, left: 0, w: gal.clientWidth, h: gal.clientHeight };
+    const cy = box.top + box.h / 2;
+    prev.style.top = next.style.top = `${cy}px`;
+    prev.style.left = `${box.left + 10}px`;
+    next.style.left = `${box.left + box.w - 10 - next.offsetWidth}px`;
+  }
+
+  private layoutGalleryMasonry(gal: HTMLElement | null): void {
+    if (!gal) return;
+    const isMasonry = gal.classList.contains('re-gallery--masonry');
+    const items = Array.from(gal.querySelectorAll(':scope > .re-gallery-item')) as HTMLElement[];
+    // Switching away from masonry (or to vertical) — clear any inline
+    // sizing we previously stamped so the other layouts' CSS wins.
+    if (!isMasonry || gal.dataset['orientation'] === 'vertical') {
+      items.forEach(it => { it.style.removeProperty('width'); it.style.removeProperty('height'); it.style.removeProperty('flex'); });
+      return;
+    }
+    if (!items.length) return;
+    const cs = getComputedStyle(gal);
+    const gap = parseFloat(cs.getPropertyValue('--re-gal-gap')) || 6;
+    // Target row height — read from the figure's data-row-height (the
+    // source of truth set when the panel changes), falling back to the
+    // inline CSS var then a default. Reading the dataset avoids any
+    // getComputedStyle quirk with inline custom properties so the
+    // Row-height control reliably drives the packing.
+    const fig = gal.closest('figure.re-embed-figure') as HTMLElement | null;
+    const targetH =
+      parseFloat(fig?.dataset['rowHeight'] || '')
+      || parseFloat(gal.style.getPropertyValue('--re-gal-row-h'))
+      || parseFloat(cs.getPropertyValue('--re-gal-row-h'))
+      || 300;
+    const containerW = gal.clientWidth;
+    if (!containerW) return;
+    const imgs = items.map(it => it.querySelector('img') as HTMLImageElement | null);
+    // Need natural dimensions — if any image hasn't loaded yet, recompute
+    // once it does.
+    let pending = false;
+    imgs.forEach(img => {
+      if (img && !img.complete) {
+        pending = true;
+        img.addEventListener('load', () => this.layoutGalleryMasonry(gal), { once: true });
+      }
+    });
+    const aspects = imgs.map(img => {
+      const w = img?.naturalWidth || 0, h = img?.naturalHeight || 0;
+      return w > 0 && h > 0 ? w / h : 1; // square fallback until loaded
+    });
+    if (pending) { /* still size with current (fallback) aspects below */ }
+
+    // Greedy row packing: add items until the row (at targetH) would
+    // overflow the container, then scale that row to fit exactly.
+    const rows: number[][] = [];
+    let row: number[] = [];
+    let aSum = 0;
+    for (let i = 0; i < items.length; i++) {
+      row.push(i);
+      aSum += aspects[i];
+      const rowW = aSum * targetH + gap * (row.length - 1);
+      if (rowW >= containerW) { rows.push(row); row = []; aSum = 0; }
+    }
+    if (row.length) rows.push(row);
+
+    rows.forEach((r) => {
+      const aspectSum = r.reduce((s, idx) => s + aspects[idx], 0) || 1;
+      const avail = containerW - gap * (r.length - 1);
+      // A row that already fills the width is justified (height derived
+      // so it fits exactly). A trailing row that doesn't fill the width
+      // keeps the target row height instead of stretching — so the
+      // Row-height control directly sizes those rows.
+      const fillsWidth = aspectSum * targetH >= avail;
+      const h = fillsWidth ? avail / aspectSum : targetH;
+      r.forEach(idx => {
+        const it = items[idx];
+        it.style.flex = '0 0 auto';
+        it.style.height = `${Math.round(h)}px`;
+        it.style.width = `${Math.floor(aspects[idx] * h)}px`;
+      });
+    });
+  }
+
+  /** Rebuild the gallery's <img> tiles from a list of image specs.
+   *  Used by remove / reorder / append so the DOM stays the single
+   *  source of truth (re-seed reads it back). */
+  private writeGalleryImages(list: GalleryImage[]): void {
+    const f = this.selectedFigure(); if (!f) return;
+    const gal = f.querySelector('.re-gallery') as HTMLElement | null;
+    if (!gal) return;
+    gal.innerHTML = list.map(img => {
+      const mid = img.mediaId ? ` data-media-id="${escapeAttr(img.mediaId)}"` : '';
+      return `<div class="re-gallery-item"><img src="${escapeAttr(img.url)}" alt="${escapeAttr(img.alt)}" data-gid="${escapeAttr(img.id)}"${mid}/></div>`;
+    }).join('');
+    this.galleryImages.set(list);
+    this.emit();
+    queueMicrotask(() => {
+      this.layoutGalleryMasonry(gal);
+      this.layoutGalleryCollage(gal);
+      this.applyGalleryNav(gal);
+      this.refreshFigureToolbar();
+      this.positionResizeHandles(f);
+    });
+  }
+
+  onGalleryRemove(id: string): void {
+    this.writeGalleryImages(this.galleryImages().filter(i => i.id !== id));
+  }
+  onGalleryReorder(e: { from: number; to: number }): void {
+    const list = [...this.galleryImages()];
+    const [moved] = list.splice(e.from, 1);
+    if (!moved) return;
+    list.splice(e.to, 0, moved);
+    this.writeGalleryImages(list);
+  }
+  onGalleryAddImages(): void {
+    const f = this.selectedFigure(); if (!f) return;
+    this.galleryAddImages.emit(f);
+  }
+
+  /** Media ids of the current gallery images — the host passes these as
+   *  the media picker's preSelectedIds so re-opening "Add media" shows
+   *  the current selection (manage mode). */
+  currentGalleryMediaIds(): string[] {
+    return this.galleryImages().map(i => i.mediaId).filter((id): id is string => !!id);
+  }
+
+  /** Host callback: replace the gallery with the picker's full
+   *  selection (manage mode). Existing images that are still selected
+   *  keep their order + caption; newly-picked ones are appended. */
+  setGalleryImages(items: Array<{ url: string; alt?: string; mediaId?: string }>): void {
+    const existing = this.galleryImages();
+    const selectedMedia = new Set(items.map(i => i.mediaId).filter(Boolean) as string[]);
+    // Keep still-selected existing images in their current order.
+    const kept = existing.filter(e => e.mediaId && selectedMedia.has(e.mediaId));
+    const keptMedia = new Set(kept.map(e => e.mediaId));
+    // Append newly-picked images (those not already kept).
+    let seq = 0;
+    const added: GalleryImage[] = items
+      .filter(i => !i.mediaId || !keptMedia.has(i.mediaId))
+      .map(i => ({ id: `g-${i.mediaId ?? `new${seq++}`}`, url: i.url, alt: i.alt ?? '', mediaId: i.mediaId }));
+    const next = [...kept, ...added];
+    if (!next.length) return; // never empty the gallery from the picker
+    this.writeGalleryImages(next);
+    this.seedGalleryState();
+  }
+
   applyImageSettings(): void {
     const f = this.selectedFigure(); if (!f) return;
     const img = this.getFigureImg(); if (!img) return;
@@ -8290,7 +11565,9 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     }
     f.dataset['clickExpand']   = this.imageClickExpand()  ? 'true' : 'false';
     f.dataset['allowDownload'] = this.imageAllowDownload() ? 'true' : 'false';
-    this.figMenu.set(null);
+    // The Settings panel is driven by figPanel(), not figMenu() — close
+    // the right one so Save actually dismisses the panel.
+    this.closeFigPanel();
     this.emit();
   }
 
@@ -8413,6 +11690,35 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   }
 
   // ─── Helpers ────────────────────────────────────────────────────────────
+  /** Strip transient selection-state classes + interactive overlay
+   *  nodes so they don't leak into the persisted post content. Used by
+   *  both emit() (what we save) and setHtml() (what we compare against
+   *  the live DOM) — keeping them in sync is what prevents a
+   *  self-originated ngModel round-trip from rebuilding the editor. */
+  private stripTransient(raw: string): string {
+    return raw
+      .replace(/\sis-selected(?=["\s])/g, '')
+      .replace(/\sis-selected-col(?=["\s])/g, '')
+      .replace(/\sis-resizing(?=["\s])/g, '')
+      .replace(/\sis-active(?=["\s])/g, '')
+      .replace(/\sis-html-editing(?=["\s])/g, '')
+      .replace(/\sre-cell-sel(?=["\s])/g, '')
+      .replace(/\sre-col-edge(?=["\s])/g, '')
+      .replace(/\sre-row-edge(?=["\s])/g, '')
+      .replace(/\sre-cell-elem-active(?=["\s])/g, '')
+      .replace(/\sre-cell-elem-dragging(?=["\s])/g, '')
+      .replace(/<button[^>]*class="re-gal-nav[^"]*"[^>]*>[\s\S]*?<\/button>/g, '')
+      .replace(/<textarea[^>]*class="re-html-code"[^>]*>[\s\S]*?<\/textarea>/g, '')
+      .replace(/<div[^>]*class="re__resizer[^"]*"[^>]*><\/div>/g, '')
+      .replace(/<div[^>]*class="re__radiusGrip[^"]*"[^>]*><\/div>/g, '')
+      .replace(/<div[^>]*class="re__radiusChip[^"]*"[^>]*>[\s\S]*?<\/div>/g, '')
+      .replace(/<span[^>]*class="re-banner-col-handle[^"]*"[^>]*><\/span>/g, '')
+      .replace(/<span[^>]*class="re-banner-cell-handle[^"]*"[^>]*>[\s\S]*?<\/span>/g, '')
+      .replace(/<span[^>]*class="re-banner-handle[^"]*"[^>]*><\/span>/g, '')
+      .replace(/<span[^>]*class="re-banner-marker[^"]*"[^>]*><\/span>/g, '')
+      .replace(/<span[^>]*class="re-banner-col-divider[^"]*"[^>]*><\/span>/g, '');
+  }
+
   private setHtml(html: string): void {
     if (!this.editable) return;
     // Seed an empty editor with a single empty paragraph so the caret
@@ -8421,48 +11727,55 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     // toolbar commands (formatBlock, lists, align) become no-ops on
     // first use.
     const next = html || '<p><br></p>';
-    if (this.editable.nativeElement.innerHTML !== next) {
+    // Compare against the CLEANED live DOM, not the raw one. An edit we
+    // just made (e.g. dragging the gallery "images per row" slider)
+    // round-trips back through ngModel as cleaned HTML; if we compared
+    // it to the raw live DOM (which still carries is-selected + resize
+    // handles) it would always differ and we'd rebuild innerHTML —
+    // detaching the very figure the user is editing and crashing the
+    // open panel. Cleaning both sides makes a self-originated change a
+    // no-op so the live DOM + selection survive.
+    const liveClean = this.stripTransient(this.editable.nativeElement.innerHTML);
+    if (liveClean !== next) {
       this.editable.nativeElement.innerHTML = next;
       // Loaded HTML may contain banners without editable bookends —
       // add empty paragraphs around them so the user can reach the
       // caret position immediately before/after each banner.
       this.ensureBannerBookends();
+      // Justified masonry galleries need their rows re-packed to the
+      // current width once the loaded markup is in the DOM.
+      queueMicrotask(() => this.layoutAllMasonry());
     }
   }
 
   private emit(): void {
-    // Strip transient selection-state classes AND resize handle nodes
-    // from the saved HTML so they don't leak into the persisted post
-    // content. Selection / handles are re-applied via DOM when a
-    // figure is reselected.
-    const raw = this.editable.nativeElement.innerHTML;
-    const html = raw
-      .replace(/\sis-selected(?=["\s])/g, '')
-      .replace(/\sis-selected-col(?=["\s])/g, '')
-      .replace(/\sis-resizing(?=["\s])/g, '')
-      .replace(/\sre-cell-elem-active(?=["\s])/g, '')
-      .replace(/<div[^>]*class="re__resizer[^"]*"[^>]*><\/div>/g, '')
-      .replace(/<div[^>]*class="re__radiusGrip[^"]*"[^>]*><\/div>/g, '')
-      .replace(/<div[^>]*class="re__radiusChip[^"]*"[^>]*>[\s\S]*?<\/div>/g, '')
-      .replace(/<span[^>]*class="re-banner-col-handle[^"]*"[^>]*><\/span>/g, '')
-      // Section-banner interactive overlays — both the cell drag-grip
-      // (attached on selection) and the four resize handles (created
-      // by buildBannerScaffold but re-added on load if missing). Both
-      // are transient runtime decoration; the persisted markup keeps
-      // only the structural backdrop / resizer / inner / cell nodes.
-      .replace(/<span[^>]*class="re-banner-cell-handle[^"]*"[^>]*>[\s\S]*?<\/span>/g, '')
-      .replace(/<span[^>]*class="re-banner-handle[^"]*"[^>]*><\/span>/g, '')
-      .replace(/<span[^>]*class="re-banner-marker[^"]*"[^>]*><\/span>/g, '')
-      .replace(/<span[^>]*class="re-banner-col-divider[^"]*"[^>]*><\/span>/g, '');
+    const html = this.stripTransient(this.editable.nativeElement.innerHTML);
     this.onChange(html);
     this.changed.emit(html);
   }
 
   onInput(): void {
     this.normalizeBlockNesting();
+    this.ensureTrailingBlock();
     this.emit();
     this.refreshState();
     this.refreshAddBtn();
+    this.updateSlashMenu();
+  }
+
+  /** Guarantee an editable line after a trailing table (or figure) so
+   *  the caret + line placeholder land *after* the element instead of
+   *  overlapping it — a table can't be the very last node or there's
+   *  nowhere to type below it. Idempotent: only appends when needed. */
+  private ensureTrailingBlock(): void {
+    const editable = this.editable?.nativeElement;
+    if (!editable) return;
+    const last = editable.lastElementChild;
+    if (last && (last.tagName === 'TABLE' || last.tagName === 'FIGURE')) {
+      const p = document.createElement('p');
+      p.appendChild(document.createElement('br'));
+      editable.appendChild(p);
+    }
   }
   onBlur(): void { this.onTouched(); this.emit(); }
 
@@ -8537,7 +11850,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   }
 
   /** Public API — insert an arbitrary HTML fragment at the current
-   *  caret position. Used by parent components (e.g. the Wix-style
+   *  caret position. Used by parent components (e.g. the composer-style
    *  "Add" panel) to inject blocks like videos, dividers, buttons,
    *  tables. The fragment is wrapped in a paragraph break on either
    *  side so it ends up as its own block in the flow. */
@@ -8550,7 +11863,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   /** Built-in banner presets. Each one wraps a config that the
    *  insert flow applies to the freshly-scaffolded section: bg,
    *  columns, padding, cell content. Designed to be a small,
-   *  curated set (matches the Wix preset row). */
+   *  curated set (matches the preset row). */
   readonly bannerPresets = [
     {
       id: 'hero-card',
@@ -8629,6 +11942,66 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
         cells: [{ html: '<p>Add your text</p>' }],
       },
     },
+    // ── Layout section presets (blank columns + multi-image) ──────────
+    {
+      id: 'lay-2col',
+      name: '2 columns',
+      description: 'Two blank columns',
+      config: {
+        bgColor: '#ffffff', columns: 2 as 2, vAlign: 'top' as const,
+        padTop: 12, padRight: 0, padBottom: 12, padLeft: 0, vMargin: 12,
+        cells: [{ html: '<p><br></p>' }, { html: '<p><br></p>' }],
+      },
+    },
+    {
+      id: 'lay-3col',
+      name: '3 columns',
+      description: 'Three blank columns',
+      config: {
+        bgColor: '#ffffff', columns: 3 as 3, vAlign: 'top' as const,
+        padTop: 12, padRight: 0, padBottom: 12, padLeft: 0, vMargin: 12,
+        cells: [{ html: '<p><br></p>' }, { html: '<p><br></p>' }, { html: '<p><br></p>' }],
+      },
+    },
+    {
+      id: 'lay-3img',
+      name: '3 images',
+      description: 'Three image columns with captions',
+      config: {
+        bgColor: '#ffffff', columns: 3 as 3, vAlign: 'top' as const,
+        padTop: 12, padRight: 0, padBottom: 12, padLeft: 0, vMargin: 12,
+        cells: [
+          { html: LAYOUT_IMG_CELL },
+          { html: LAYOUT_IMG_CELL },
+          { html: LAYOUT_IMG_CELL },
+        ],
+      },
+    },
+    {
+      id: 'lay-4col',
+      name: '4 columns',
+      description: 'Four blank columns',
+      config: {
+        bgColor: '#ffffff', columns: 4 as 4, vAlign: 'top' as const,
+        padTop: 12, padRight: 0, padBottom: 12, padLeft: 0, vMargin: 12,
+        cells: [{ html: '<p><br></p>' }, { html: '<p><br></p>' }, { html: '<p><br></p>' }, { html: '<p><br></p>' }],
+      },
+    },
+    {
+      id: 'lay-4img',
+      name: '4 images',
+      description: 'Four image columns with captions',
+      config: {
+        bgColor: '#ffffff', columns: 4 as 4, vAlign: 'top' as const,
+        padTop: 12, padRight: 0, padBottom: 12, padLeft: 0, vMargin: 12,
+        cells: [
+          { html: LAYOUT_IMG_CELL },
+          { html: LAYOUT_IMG_CELL },
+          { html: LAYOUT_IMG_CELL },
+          { html: LAYOUT_IMG_CELL },
+        ],
+      },
+    },
   ] as const;
 
   private modalService = inject(ModalService);
@@ -8702,9 +12075,744 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     }
   }
 
+  // ─── Expandable list ──────────────────────────────────────────────────────
+  /** Currently-selected expandable group (drives the toolbar + popover). */
+  selectedExpand = signal<HTMLElement | null>(null);
+  expandToolbar  = signal<{ show: boolean; top: number; left: number }>({ show: false, top: 0, left: 0 });
+  expandPanel    = signal<{ show: boolean; top: number; left: number }>({ show: false, top: 0, left: 0 });
+  /** Settings mirrors for the selected group. */
+  expDefault     = signal<'all' | 'first' | 'none'>('first');
+  expSingle      = signal<boolean>(false);
+  expDir         = signal<'left' | 'right'>('left');
+
+  private readonly EXP_CHEV = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+  private readonly EXP_DRAG = `<svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/></svg>`;
+
+  /** One accordion item. `open` controls the initial expanded state. */
+  private expandItemHtml(open: boolean): string {
+    return `<div class="re-expand" data-open="${open}">` +
+      `<div class="re-expand__head" contenteditable="false">` +
+        `<span class="re-expand__drag" title="Drag to reorder">${this.EXP_DRAG}</span>` +
+        `<button type="button" class="re-expand__chev" title="Collapse">${this.EXP_CHEV}</button>` +
+        `<span class="re-expand__title" contenteditable="true" data-placeholder="Write a title"></span>` +
+      `</div>` +
+      `<div class="re-expand__body" contenteditable="true" data-placeholder="Add content to expand"></div>` +
+    `</div>`;
+  }
+
+  /** Insert a fresh expandable list (one item + "Add another"). */
+  insertExpandable(): void {
+    const html =
+      `<div class="re-expand-group" data-default="first" data-single="false" data-dir="left">` +
+        this.expandItemHtml(true) +
+        `<div class="re-expand__add" contenteditable="false" role="button" tabindex="-1">+ Add another expandable item</div>` +
+      `</div>`;
+    this.insertHtml(html);
+    queueMicrotask(() => {
+      const title = this.editable?.nativeElement
+        .querySelector('.re-expand-group:last-of-type .re-expand__title') as HTMLElement | null;
+      if (title) this.placeCaretAtStart(title);
+    });
+  }
+
+  /** Toggle an item open/closed. Respects the group's "one at a time". */
+  toggleExpandItem(item: HTMLElement): void {
+    const open = item.getAttribute('data-open') !== 'false';
+    const group = item.closest('.re-expand-group') as HTMLElement | null;
+    if (group?.getAttribute('data-single') === 'true' && open === false) {
+      group.querySelectorAll<HTMLElement>('.re-expand').forEach(it => it.setAttribute('data-open', 'false'));
+    }
+    item.setAttribute('data-open', open ? 'false' : 'true');
+    this.emit();
+  }
+
+  /** Append a new empty item before the group's "Add another" button. */
+  addExpandItem(group: HTMLElement, addBtn: HTMLElement): void {
+    const tpl = document.createElement('template');
+    tpl.innerHTML = this.expandItemHtml(true);
+    const item = tpl.content.firstElementChild as HTMLElement;
+    group.insertBefore(item, addBtn);
+    this.emit();
+    const title = item.querySelector('.re-expand__title') as HTMLElement | null;
+    if (title) this.placeCaretAtStart(title);
+  }
+
+  /** Select a group → show its floating toolbar (Settings · Delete). */
+  selectExpand(group: HTMLElement): void {
+    if (this.selectedExpand() === group && this.expandToolbar().show) return;
+    this.selectedExpand.set(group);
+    const wrap = this.editable?.nativeElement?.parentElement;
+    if (!wrap) return;
+    const wr = wrap.getBoundingClientRect();
+    const gr = group.getBoundingClientRect();
+    this.expandToolbar.set({ show: true, top: Math.max(0, gr.top - wr.top - 40), left: gr.left - wr.left });
+    // Re-position an already-open settings panel, but don't auto-open it.
+    if (this.expandPanel().show) this.openExpandSettings();
+  }
+
+  /** Open the settings popover for the selected group (from the toolbar). */
+  openExpandSettings(): void {
+    const group = this.selectedExpand();
+    const wrap = this.editable?.nativeElement?.parentElement;
+    if (!group || !wrap) return;
+    this.expDefault.set((group.getAttribute('data-default') as any) ?? 'first');
+    this.expSingle.set(group.getAttribute('data-single') === 'true');
+    this.expDir.set((group.getAttribute('data-dir') as any) ?? 'left');
+    // Open just below the toolbar (draggable afterward), matching the
+    // other element settings panels.
+    const tb = this.expandToolbar();
+    this.expandPanel.set({ show: true, top: tb.top + 44, left: tb.left });
+  }
+
+  /** Delete the selected expandable group. */
+  deleteExpand(): void {
+    this.selectedExpand()?.remove();
+    this.closeExpand();
+    this.emit();
+  }
+
+  /** Clear selection + hide the toolbar and settings panel. */
+  closeExpand(): void {
+    this.selectedExpand.set(null);
+    if (this.expandToolbar().show) this.expandToolbar.set({ show: false, top: 0, left: 0 });
+    if (this.expandPanel().show) this.expandPanel.set({ show: false, top: 0, left: 0 });
+  }
+
+  setExpandDefault(v: 'all' | 'first' | 'none'): void {
+    this.expDefault.set(v);
+    const g = this.selectedExpand(); if (!g) return;
+    g.setAttribute('data-default', v);
+    const items = [...g.querySelectorAll<HTMLElement>('.re-expand')];
+    items.forEach((it, i) => it.setAttribute('data-open',
+      v === 'all' ? 'true' : v === 'none' ? 'false' : (i === 0 ? 'true' : 'false')));
+    this.emit();
+  }
+  setExpandSingle(v: boolean): void {
+    this.expSingle.set(v);
+    const g = this.selectedExpand(); if (!g) return;
+    g.setAttribute('data-single', String(v));
+    if (v) {
+      // Collapse all but the first open item.
+      let kept = false;
+      g.querySelectorAll<HTMLElement>('.re-expand').forEach(it => {
+        const open = it.getAttribute('data-open') !== 'false';
+        if (open && !kept) { kept = true; } else { it.setAttribute('data-open', 'false'); }
+      });
+    }
+    this.emit();
+  }
+  setExpandDir(v: 'left' | 'right'): void {
+    this.expDir.set(v);
+    const g = this.selectedExpand(); if (!g) return;
+    g.setAttribute('data-dir', v);
+    this.emit();
+  }
+
+  // ─── HTML embed element ───────────────────────────────────────────────────
+  selectedEmbed = signal<HTMLElement | null>(null);
+  embedToolbar  = signal<{ show: boolean; top: number; left: number }>({ show: false, top: 0, left: 0 });
+  /** Edit-HTML panel state. */
+  embedEdit     = signal<{ show: boolean; tab: 'html' | 'link'; code: string; url: string; error: string }>(
+    { show: false, tab: 'html', code: '', url: '', error: '' });
+  /** Edit-HTML panel position (draggable). */
+  embedPanelPos = signal<{ top: number; left: number }>({ top: 0, left: 0 });
+  /** Width / Height slider popovers. */
+  embedSize     = signal<{ kind: 'width' | 'height' | null; value: number }>({ kind: null, value: 0 });
+  embedAlignOpen = signal<boolean>(false);
+  embedAlign    = signal<'left' | 'center' | 'right'>('center');
+  embedWrap     = signal<boolean>(false);
+
+  /** Insert an empty HTML embed (placeholder until the user adds code). */
+  insertHtmlEmbed(): void {
+    const html =
+      `<div class="re-embed re-embed--empty" contenteditable="false" data-align="center" data-wrap="false" style="width:350px;">` +
+        `<div class="re-embed__frame"></div>` +
+      `</div>`;
+    this.insertHtml(html);
+    queueMicrotask(() => {
+      const el = this.editable?.nativeElement.querySelector('.re-embed:last-of-type') as HTMLElement | null;
+      if (el) { this.selectEmbed(el); this.openEmbedEdit(); }
+    });
+  }
+
+  selectEmbed(el: HTMLElement): void {
+    if (this.selectedEmbed() && this.selectedEmbed() !== el) this.selectedEmbed()!.classList.remove('is-selected');
+    el.classList.add('is-selected');
+    this.selectedEmbed.set(el);
+    this.embedAlign.set((el.getAttribute('data-align') as any) ?? 'center');
+    this.embedWrap.set(el.getAttribute('data-wrap') === 'true');
+    const wrap = this.editable?.nativeElement?.parentElement;
+    if (!wrap) return;
+    const wr = wrap.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    this.embedToolbar.set({ show: true, top: Math.max(0, r.bottom - wr.top + 8), left: r.left - wr.left });
+  }
+  closeEmbed(): void {
+    this.selectedEmbed()?.classList.remove('is-selected');
+    this.selectedEmbed.set(null);
+    this.embedToolbar.set({ show: false, top: 0, left: 0 });
+    this.embedEdit.update(s => ({ ...s, show: false }));
+    this.embedSize.set({ kind: null, value: 0 });
+    this.embedAlignOpen.set(false);
+  }
+
+  openEmbedEdit(): void {
+    const el = this.selectedEmbed(); if (!el) return;
+    const frame = el.querySelector('.re-embed__frame') as HTMLElement | null;
+    const iframe = frame?.querySelector('iframe');
+    this.embedEdit.set({
+      show: true,
+      tab: iframe ? 'link' : 'html',
+      code: iframe ? '' : (frame?.innerHTML.trim() ?? ''),
+      url: iframe?.getAttribute('src') ?? '',
+      error: '',
+    });
+    const tb = this.embedToolbar();
+    this.embedPanelPos.set({ top: tb.top + 44, left: tb.left });
+    this.embedSize.set({ kind: null, value: 0 });
+    this.embedAlignOpen.set(false);
+  }
+  setEmbedTab(tab: 'html' | 'link'): void { this.embedEdit.update(s => ({ ...s, tab, error: '' })); }
+  setEmbedCode(v: string): void { this.embedEdit.update(s => ({ ...s, code: v })); }
+  setEmbedUrl(v: string): void { this.embedEdit.update(s => ({ ...s, url: v })); }
+
+  saveEmbedCode(): void {
+    const el = this.selectedEmbed(); if (!el) return;
+    const frame = el.querySelector('.re-embed__frame') as HTMLElement | null; if (!frame) return;
+    const e = this.embedEdit();
+    if (e.tab === 'link') {
+      const url = e.url.trim();
+      if (!/^https:\/\/\S+$/i.test(url)) { this.embedEdit.update(s => ({ ...s, error: 'Enter a valid HTTPS URL.' })); return; }
+      frame.innerHTML = `<iframe src="${url}" style="width:100%;height:360px;border:0;" loading="lazy" referrerpolicy="no-referrer" allowfullscreen></iframe>`;
+    } else {
+      const code = e.code.trim();
+      if (!code) { this.embedEdit.update(s => ({ ...s, error: 'Paste some HTML to embed.' })); return; }
+      // HTTPS-only: reject insecure http:// resource refs.
+      if (/\b(src|href)\s*=\s*["']http:\/\//i.test(code)) {
+        this.embedEdit.update(s => ({ ...s, error: 'Embed code must use HTTPS resources.' })); return;
+      }
+      frame.innerHTML = code;
+    }
+    el.classList.toggle('re-embed--empty', !frame.innerHTML.trim());
+    this.embedEdit.update(s => ({ ...s, show: false, error: '' }));
+    this.emit();
+  }
+
+  openEmbedSize(kind: 'width' | 'height'): void {
+    const el = this.selectedEmbed(); if (!el) return;
+    const frame = el.querySelector('.re-embed__frame') as HTMLElement | null;
+    const ifr = frame?.querySelector('iframe') as HTMLElement | null;
+    const cur = kind === 'width'
+      ? parseInt(el.style.width || '350', 10) || 350
+      : parseInt((ifr?.style.height || frame?.style.height || '360'), 10) || 360;
+    this.embedSize.set({ kind, value: cur });
+    this.embedEdit.update(s => ({ ...s, show: false }));
+    this.embedAlignOpen.set(false);
+  }
+  setEmbedSizeValue(v: number): void {
+    const el = this.selectedEmbed(); const s = this.embedSize();
+    this.embedSize.set({ ...s, value: v });
+    if (!el) return;
+    if (s.kind === 'width') { el.style.width = `${v}px`; return; }
+    // Height drives the iframe (link embeds) or the frame box (HTML snippets).
+    const f = el.querySelector('.re-embed__frame') as HTMLElement | null;
+    const ifr = f?.querySelector('iframe') as HTMLElement | null;
+    if (ifr) ifr.style.height = `${v}px`;
+    else if (f) f.style.height = `${v}px`;
+    this.emit();
+  }
+
+  toggleEmbedAlignMenu(): void {
+    this.embedAlignOpen.update(v => !v);
+    this.embedEdit.update(s => ({ ...s, show: false }));
+    this.embedSize.set({ kind: null, value: 0 });
+  }
+  setEmbedAlign(a: 'left' | 'center' | 'right'): void {
+    this.embedAlign.set(a);
+    const el = this.selectedEmbed(); if (el) { el.setAttribute('data-align', a); this.emit(); }
+  }
+  toggleEmbedWrap(): void {
+    const v = !this.embedWrap();
+    this.embedWrap.set(v);
+    const el = this.selectedEmbed(); if (el) { el.setAttribute('data-wrap', String(v)); this.emit(); }
+  }
+  deleteEmbed(): void { this.selectedEmbed()?.remove(); this.closeEmbed(); this.emit(); }
+
+  // ─── Poll element ─────────────────────────────────────────────────────────
+  selectedPoll = signal<HTMLElement | null>(null);
+  pollToolbar  = signal<{ show: boolean; top: number; left: number }>({ show: false, top: 0, left: 0 });
+  pollLayoutOpen = signal<boolean>(false);
+  pollPanel    = signal<{ show: boolean; top: number; left: number; tab: 'layout' | 'design' | 'settings' }>(
+    { show: false, top: 0, left: 0, tab: 'layout' });
+  // Settings mirrors (read from / written to the poll's data-*).
+  pollLayout   = signal<'list' | 'grid'>('list');
+  pollQImage   = signal<boolean>(false);
+  pollAImage   = signal<boolean>(false);
+  pollDir      = signal<'left' | 'right'>('left');
+  pollBgKind   = signal<'color' | 'gradient' | 'image'>('color');
+  pollBgValue  = signal<string>('#0f172a');   // hex (color) or CSS gradient string
+  pollBgImage  = signal<string>('');          // data URL / image src
+  pollRadius   = signal<number>(0);
+  pollAnsRadius = signal<number>(0);
+  pollVoteWho  = signal<'members' | 'everyone'>('everyone');
+  pollMulti    = signal<boolean>(false);
+  pollResults  = signal<'everyone' | 'voters' | 'onlyme'>('voters');
+  pollShowCount = signal<boolean>(true);
+  pollShowVoters = signal<boolean>(true);
+
+  private pollAnswerHtml(withImg: boolean): string {
+    return `<div class="re-poll__ans">` +
+      (withImg ? `<div class="re-poll__aimg" data-cell-image contenteditable="false">${POLL_ADD_IMG}</div>` : '') +
+      `<span class="re-poll__ans-text" contenteditable="true" data-placeholder="Write an answer"></span>` +
+      `<button type="button" class="re-poll__ans-remove" contenteditable="false" title="Remove answer">` +
+        `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>` +
+      `</button>` +
+    `</div>`;
+  }
+
+  /** Insert a poll. type: 'simple' (list), 'image' (question image + list),
+   *  'grid' (answer cards with images). */
+  insertPoll(type: 'simple' | 'image' | 'grid'): void {
+    const layout: 'list' | 'grid' = type === 'grid' ? 'grid' : 'list';
+    const qImage = type === 'image';
+    const aImage = type === 'grid';
+    const ans = this.pollAnswerHtml(aImage);
+    const html =
+      `<div class="re-poll" contenteditable="false" data-layout="${layout}" data-q-image="${qImage}" data-a-image="${aImage}" ` +
+        `data-dir="left" data-bg-kind="color" data-bg-value="#0f172a" data-bg-image="" data-poll-radius="0" data-ans-radius="0" ` +
+        `data-vote-who="everyone" data-multi="false" data-results-who="voters" data-show-count="true" data-show-voters="true" ` +
+        `style="background-color:#0f172a;">` +
+        `<div class="re-poll__inner">` +
+          (qImage ? `<div class="re-poll__qimg" data-cell-image contenteditable="false">${POLL_ADD_IMG}</div>` : '') +
+          `<div class="re-poll__q" contenteditable="true" data-placeholder="Ask your question"></div>` +
+          `<div class="re-poll__answers">${ans}${ans}` +
+            `<button type="button" class="re-poll__add" contenteditable="false">+ Add answer</button>` +
+          `</div>` +
+        `</div>` +
+      `</div>`;
+    this.insertHtml(html);
+    queueMicrotask(() => {
+      const el = this.editable?.nativeElement.querySelector('.re-poll:last-of-type') as HTMLElement | null;
+      if (el) { this.selectPoll(el); const q = el.querySelector('.re-poll__q') as HTMLElement | null; if (q) this.placeCaretAtStart(q); }
+    });
+  }
+
+  selectPoll(el: HTMLElement): void {
+    if (this.selectedPoll() && this.selectedPoll() !== el) this.selectedPoll()!.classList.remove('is-selected');
+    el.classList.add('is-selected');
+    this.selectedPoll.set(el);
+    // Seed mirrors from data-*.
+    this.pollLayout.set((el.getAttribute('data-layout') as any) ?? 'list');
+    this.pollQImage.set(el.getAttribute('data-q-image') === 'true');
+    this.pollAImage.set(el.getAttribute('data-a-image') === 'true');
+    this.pollDir.set((el.getAttribute('data-dir') as any) ?? 'left');
+    this.pollBgKind.set((el.getAttribute('data-bg-kind') as any) ?? 'color');
+    this.pollBgValue.set(el.getAttribute('data-bg-value') || el.getAttribute('data-bg-color') || '#0f172a');
+    this.pollBgImage.set(el.getAttribute('data-bg-image') || '');
+    this.pollRadius.set(+(el.getAttribute('data-poll-radius') || 0));
+    this.pollAnsRadius.set(+(el.getAttribute('data-ans-radius') || 0));
+    this.pollVoteWho.set((el.getAttribute('data-vote-who') as any) ?? 'everyone');
+    this.pollMulti.set(el.getAttribute('data-multi') === 'true');
+    this.pollResults.set((el.getAttribute('data-results-who') as any) ?? 'voters');
+    this.pollShowCount.set(el.getAttribute('data-show-count') !== 'false');
+    this.pollShowVoters.set(el.getAttribute('data-show-voters') !== 'false');
+    const wrap = this.editable?.nativeElement?.parentElement;
+    if (!wrap) return;
+    const wr = wrap.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    this.pollToolbar.set({ show: true, top: Math.max(0, r.top - wr.top - 40), left: r.left - wr.left });
+  }
+  closePoll(): void {
+    this.selectedPoll()?.classList.remove('is-selected');
+    this.selectedPoll.set(null);
+    this.pollToolbar.set({ show: false, top: 0, left: 0 });
+    this.pollPanel.update(s => ({ ...s, show: false }));
+    this.pollLayoutOpen.set(false);
+  }
+  openPollPanel(tab: 'layout' | 'design' | 'settings'): void {
+    const tb = this.pollToolbar();
+    this.pollPanel.set({ show: true, top: tb.top + 44, left: tb.left, tab });
+    this.pollLayoutOpen.set(false);
+  }
+  togglePollLayoutMenu(): void { this.pollLayoutOpen.update(v => !v); }
+  deletePoll(): void { this.selectedPoll()?.remove(); this.closePoll(); this.emit(); }
+
+  addPollAnswer(): void {
+    const el = this.selectedPoll(); if (!el) return;
+    const list = el.querySelector('.re-poll__answers'); const addBtn = el.querySelector('.re-poll__add');
+    if (!list || !addBtn) return;
+    const tpl = document.createElement('template');
+    tpl.innerHTML = this.pollAnswerHtml(this.pollAImage());
+    const ans = tpl.content.firstElementChild as HTMLElement;
+    list.insertBefore(ans, addBtn);
+    this.emit();
+    const t = ans.querySelector('.re-poll__ans-text') as HTMLElement | null; if (t) this.placeCaretAtStart(t);
+  }
+  removePollAnswer(ansEl: HTMLElement): void {
+    const el = this.selectedPoll();
+    // Keep at least one answer.
+    if (el && el.querySelectorAll('.re-poll__ans').length <= 1) return;
+    ansEl.remove();
+    this.emit();
+  }
+
+  /** Generic data-attr setter + signal sync + emit. */
+  private setPollAttr(name: string, value: string): void {
+    const el = this.selectedPoll(); if (!el) return;
+    el.setAttribute(name, value);
+    this.emit();
+  }
+  setPollLayout(v: 'list' | 'grid'): void { this.pollLayout.set(v); this.setPollAttr('data-layout', v); this.pollLayoutOpen.set(false); }
+  setPollDir(v: 'left' | 'right'): void { this.pollDir.set(v); this.setPollAttr('data-dir', v); }
+
+  /** Apply the current background (color / gradient / image) to the poll. */
+  private applyPollBg(): void {
+    const el = this.selectedPoll(); if (!el) return;
+    const kind = this.pollBgKind();
+    el.setAttribute('data-bg-kind', kind);
+    el.setAttribute('data-bg-value', this.pollBgValue());
+    el.setAttribute('data-bg-image', this.pollBgImage());
+    if (kind === 'image' && this.pollBgImage()) {
+      el.style.backgroundColor = '';
+      el.style.backgroundImage = `url("${this.pollBgImage()}")`;
+    } else if (kind === 'gradient') {
+      el.style.backgroundImage = '';
+      el.style.background = this.pollBgValue();
+    } else {
+      el.style.backgroundImage = '';
+      el.style.backgroundColor = this.pollBgValue();
+    }
+    this.emit();
+  }
+  /** Color/gradient value from the shared colors-panel. */
+  setPollBgColor(v: string): void {
+    this.pollBgValue.set(v);
+    this.pollBgKind.set(v.includes('gradient') ? 'gradient' : 'color');
+    this.applyPollBg();
+  }
+  setPollBgKind(k: 'color' | 'gradient' | 'image'): void {
+    this.pollBgKind.set(k);
+    if (k === 'gradient' && !this.pollBgValue().includes('gradient')) {
+      this.pollBgValue.set('linear-gradient(180deg, #0f172a 0%, #334155 100%)');
+    } else if (k === 'color' && this.pollBgValue().includes('gradient')) {
+      this.pollBgValue.set('#0f172a');
+    }
+    this.applyPollBg();
+  }
+  /** Ask the host to open its media library for the poll background. */
+  pickPollBgImage(): void { this.pollBgImageClick.emit(); }
+  /** Host callback with the chosen media URL. */
+  setPollBgImageUrl(url: string): void {
+    if (!url) return;
+    this.pollBgImage.set(url);
+    this.pollBgKind.set('image');
+    this.applyPollBg();
+  }
+  removePollBgImage(): void { this.pollBgImage.set(''); this.pollBgKind.set('color'); this.applyPollBg(); }
+  setPollRadius(v: number): void { this.pollRadius.set(v); const el = this.selectedPoll(); if (el) { el.setAttribute('data-poll-radius', String(v)); el.style.borderRadius = `${v}px`; this.emit(); } }
+  setPollAnsRadius(v: number): void { this.pollAnsRadius.set(v); const el = this.selectedPoll(); if (el) { el.setAttribute('data-ans-radius', String(v)); el.style.setProperty('--poll-ans-radius', `${v}px`); this.emit(); } }
+  setPollVoteWho(v: 'members' | 'everyone'): void { this.pollVoteWho.set(v); this.setPollAttr('data-vote-who', v); }
+  togglePollMulti(): void { const v = !this.pollMulti(); this.pollMulti.set(v); this.setPollAttr('data-multi', String(v)); }
+  setPollResults(v: 'everyone' | 'voters' | 'onlyme'): void { this.pollResults.set(v); this.setPollAttr('data-results-who', v); }
+  togglePollShowCount(): void { const v = !this.pollShowCount(); this.pollShowCount.set(v); this.setPollAttr('data-show-count', String(v)); }
+  togglePollShowVoters(): void { const v = !this.pollShowVoters(); this.pollShowVoters.set(v); this.setPollAttr('data-show-voters', String(v)); }
+
+  /** Toggle question / answer images — rebuilds the affected cells. */
+  togglePollQImage(): void {
+    const el = this.selectedPoll(); if (!el) return;
+    const v = !this.pollQImage(); this.pollQImage.set(v); el.setAttribute('data-q-image', String(v));
+    const inner = el.querySelector('.re-poll__inner'); const q = el.querySelector('.re-poll__q');
+    const existing = el.querySelector('.re-poll__qimg');
+    if (v && !existing && inner && q) {
+      const d = document.createElement('div'); d.className = 're-poll__qimg'; d.setAttribute('data-cell-image', ''); d.setAttribute('contenteditable', 'false'); d.innerHTML = POLL_ADD_IMG;
+      inner.insertBefore(d, q);
+    } else if (!v && existing) existing.remove();
+    this.emit();
+  }
+  togglePollAImage(): void {
+    const el = this.selectedPoll(); if (!el) return;
+    const v = !this.pollAImage(); this.pollAImage.set(v); el.setAttribute('data-a-image', String(v));
+    el.querySelectorAll('.re-poll__ans').forEach(a => {
+      const existing = a.querySelector('.re-poll__aimg');
+      if (v && !existing) {
+        const d = document.createElement('div'); d.className = 're-poll__aimg'; d.setAttribute('data-cell-image', ''); d.setAttribute('contenteditable', 'false'); d.innerHTML = POLL_ADD_IMG;
+        a.insertBefore(d, a.firstChild);
+      } else if (!v && existing) existing.remove();
+    });
+    this.emit();
+  }
+
+  // ─── Product element ──────────────────────────────────────────────────────
+  selectedProduct = signal<HTMLElement | null>(null);
+  prodToolbar     = signal<{ show: boolean; top: number; left: number }>({ show: false, top: 0, left: 0 });
+  prodPresetOpen  = signal<boolean>(false);
+  prodSizeOpen    = signal<boolean>(false);
+  prodSize        = signal<'compact' | 'standard' | 'extended' | 'original'>('standard');
+  prodPanel       = signal<{ show: boolean; top: number; left: number; tab: 'settings' | 'layout' | 'design' }>(
+    { show: false, top: 0, left: 0, tab: 'settings' });
+  /** The product the next picker result should fill — null = insert new. */
+  private prodPendingReplace: HTMLElement | null = null;
+
+  // Settings mirrors (read from / written to the card's data-*).
+  prodShowImage   = signal<boolean>(true);
+  prodShowPrice   = signal<boolean>(true);
+  prodShowButton  = signal<boolean>(true);
+  prodBtnText     = signal<string>('Buy Now');
+  prodShowRibbon  = signal<boolean>(false);
+  prodRibbonText  = signal<string>('Sale');
+  // Layout mirrors.
+  prodImgPos      = signal<'left' | 'top' | 'right'>('left');
+  prodImgRatio    = signal<'square' | 'landscape'>('square');
+  prodImgFit      = signal<'fill' | 'fit'>('fill');
+  prodAlign       = signal<'left' | 'center' | 'right'>('left');
+  prodTpLayout    = signal<'stack' | 'inline'>('stack');
+  prodRibbonPlace = signal<'image' | 'info'>('info');
+  // Design mirrors.
+  prodPrimary     = signal<string>('#0f172a');
+  prodSecondary   = signal<string>('#475569');
+  prodFill        = signal<string>('');   // '' = transparent
+  prodBorderColor = signal<string>('#e2e8f0');
+  prodBorderWidth = signal<number>(1);
+  prodRadius      = signal<number>(0);
+  prodPad         = signal<boolean>(true);
+
+  /** Layout presets shown in the toolbar "Presets" popover. Each one is a
+   *  combination of image position + title/price layout + alignment. */
+  readonly prodPresets: { id: number; name: string; pos: 'left' | 'top' | 'right'; tp: 'stack' | 'inline'; align: 'left' | 'center' | 'right'; thumb: SafeHtml }[] = [
+    { id: 1, name: 'Image left',          pos: 'left',  tp: 'stack',  align: 'left',   thumb: this.prodPresetThumb('left',  'stack') },
+    { id: 2, name: 'Image top',           pos: 'top',   tp: 'stack',  align: 'left',   thumb: this.prodPresetThumb('top',   'stack') },
+    { id: 3, name: 'Image right',         pos: 'right', tp: 'stack',  align: 'left',   thumb: this.prodPresetThumb('right', 'stack') },
+    { id: 4, name: 'Image top, inline',   pos: 'top',   tp: 'inline', align: 'center', thumb: this.prodPresetThumb('top',   'inline') },
+    { id: 5, name: 'Image top, centered', pos: 'top',   tp: 'stack',  align: 'center', thumb: this.prodPresetThumb('top',   'stack') },
+  ];
+  private prodPresetThumb(pos: 'left' | 'top' | 'right', tp: 'stack' | 'inline'): SafeHtml {
+    const img = pos === 'top'
+      ? '<rect x="6" y="6" width="76" height="30" rx="3" fill="#cbd5e1"/>'
+      : pos === 'right'
+        ? '<rect x="50" y="6" width="32" height="44" rx="3" fill="#cbd5e1"/>'
+        : '<rect x="6" y="6" width="32" height="44" rx="3" fill="#cbd5e1"/>';
+    const ix = pos === 'right' ? 6 : pos === 'left' ? 44 : 6;
+    const iy = pos === 'top' ? 42 : 12;
+    const line = (y: number, w: number, c: string) => `<rect x="${ix}" y="${y}" width="${w}" height="4" rx="2" fill="${c}"/>`;
+    const info = tp === 'inline'
+      ? line(iy, 40, '#94a3b8') + `<rect x="${ix + 44}" y="${iy}" width="16" height="4" rx="2" fill="#2563eb"/>`
+      : line(iy, 36, '#94a3b8') + line(iy + 9, 18, '#2563eb');
+    const btn = `<rect x="${ix}" y="${iy + (tp === 'inline' ? 12 : 21)}" width="24" height="8" rx="2" fill="#0f172a"/>`;
+    return this.sanitizer.bypassSecurityTrustHtml(`<svg viewBox="0 0 88 56" width="100%" height="100%">${img}${info}${btn}</svg>`);
+  }
+
+  /** Build the product-card HTML from a picked product. */
+  private buildProductCard(d: { id: string; name: string; price: string; image: string }): string {
+    const img = d.image
+      ? `<img src="${escapeAttr(d.image)}" alt=""/>`
+      : `<div class="re-product__noimg"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>`;
+    return `<div class="re-product re-size-standard" contenteditable="false" data-pid="${escapeAttr(d.id)}" ` +
+      `data-show-image="true" data-show-price="true" data-show-button="true" data-show-ribbon="false" ` +
+      `data-btn-text="Buy Now" data-ribbon-text="Sale" data-size="standard" ` +
+      `data-img-pos="left" data-img-ratio="square" data-img-fit="fill" ` +
+      `data-align="left" data-tp-layout="stack" data-ribbon-place="info" ` +
+      `data-primary="#0f172a" data-secondary="#475569" data-fill="" data-border-color="#e2e8f0" data-border-width="1" data-radius="0" data-pad="true" ` +
+      `style="--rp-primary:#0f172a;--rp-secondary:#475569;border:1px solid #e2e8f0;border-radius:0;">` +
+        `<div class="re-product__card">` +
+          `<div class="re-product__media"><span class="re-product__ribbon re-product__ribbon--img">Sale</span>${img}</div>` +
+          `<div class="re-product__info">` +
+            `<span class="re-product__ribbon re-product__ribbon--info">Sale</span>` +
+            `<div class="re-product__title">${escapeText(d.name)}</div>` +
+            `<div class="re-product__price">${escapeText(d.price)}</div>` +
+            `<a class="re-product__btn" href="#" onclick="return false">Buy Now</a>` +
+          `</div>` +
+        `</div>` +
+      `</div>`;
+  }
+
+  /** Public — host calls this after the user picks a product. Either
+   *  inserts a new card or replaces the product in the selected one. */
+  setProductCard(d: { id: string; name: string; price: string; image: string }): void {
+    const replace = this.prodPendingReplace;
+    this.prodPendingReplace = null;
+    if (replace) {
+      replace.setAttribute('data-pid', d.id);
+      const titleEl = replace.querySelector('.re-product__title');
+      const priceEl = replace.querySelector('.re-product__price');
+      const mediaEl = replace.querySelector('.re-product__media');
+      if (titleEl) titleEl.textContent = d.name;
+      if (priceEl) priceEl.textContent = d.price;
+      if (mediaEl) {
+        const oldImg = mediaEl.querySelector('img, .re-product__noimg');
+        const ribbon = mediaEl.querySelector('.re-product__ribbon--img')?.outerHTML ?? '';
+        mediaEl.innerHTML = ribbon + (d.image
+          ? `<img src="${escapeAttr(d.image)}" alt=""/>`
+          : `<div class="re-product__noimg"></div>`);
+        void oldImg;
+      }
+      this.emit();
+      return;
+    }
+    this.insertHtml(this.buildProductCard(d));
+    queueMicrotask(() => {
+      const el = this.editable?.nativeElement.querySelector('.re-product:last-of-type') as HTMLElement | null;
+      if (el) this.selectProduct(el);
+    });
+  }
+
+  /** Host asks to open the picker (initial insert). */
+  insertProduct(): void { this.prodPendingReplace = null; this.productPickClick.emit(); }
+  /** Toolbar "Change product" — keep current card, swap its product. */
+  changeProduct(): void { this.prodPendingReplace = this.selectedProduct(); this.productPickClick.emit(); }
+
+  selectProduct(el: HTMLElement): void {
+    if (this.selectedProduct() && this.selectedProduct() !== el) this.selectedProduct()!.classList.remove('is-selected');
+    el.classList.add('is-selected');
+    this.selectedProduct.set(el);
+    this.prodShowImage.set(el.getAttribute('data-show-image') !== 'false');
+    this.prodShowPrice.set(el.getAttribute('data-show-price') !== 'false');
+    this.prodShowButton.set(el.getAttribute('data-show-button') !== 'false');
+    this.prodBtnText.set(el.getAttribute('data-btn-text') || 'Buy Now');
+    this.prodShowRibbon.set(el.getAttribute('data-show-ribbon') === 'true');
+    this.prodRibbonText.set(el.getAttribute('data-ribbon-text') || 'Sale');
+    this.prodImgPos.set((el.getAttribute('data-img-pos') as any) ?? 'left');
+    this.prodImgRatio.set((el.getAttribute('data-img-ratio') as any) ?? 'square');
+    this.prodImgFit.set((el.getAttribute('data-img-fit') as any) ?? 'fill');
+    this.prodAlign.set((el.getAttribute('data-align') as any) ?? 'left');
+    this.prodTpLayout.set((el.getAttribute('data-tp-layout') as any) ?? 'stack');
+    this.prodRibbonPlace.set((el.getAttribute('data-ribbon-place') as any) ?? 'info');
+    this.prodPrimary.set(el.getAttribute('data-primary') || '#0f172a');
+    this.prodSecondary.set(el.getAttribute('data-secondary') || '#475569');
+    this.prodFill.set(el.getAttribute('data-fill') || '');
+    this.prodBorderColor.set(el.getAttribute('data-border-color') || '#e2e8f0');
+    this.prodBorderWidth.set(+(el.getAttribute('data-border-width') || 1));
+    this.prodRadius.set(+(el.getAttribute('data-radius') || 0));
+    this.prodPad.set(el.getAttribute('data-pad') !== 'false');
+    this.prodSize.set((el.getAttribute('data-size') as any) ?? 'standard');
+    const wrap = this.editable?.nativeElement?.parentElement;
+    if (!wrap) return;
+    const wr = wrap.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    this.prodToolbar.set({ show: true, top: Math.max(0, r.top - wr.top - 40), left: r.left - wr.left });
+  }
+  closeProduct(): void {
+    this.selectedProduct()?.classList.remove('is-selected');
+    this.selectedProduct.set(null);
+    this.prodToolbar.set({ show: false, top: 0, left: 0 });
+    this.prodPanel.update(s => ({ ...s, show: false }));
+    this.prodPresetOpen.set(false);
+    this.prodSizeOpen.set(false);
+  }
+  openProdPanel(tab: 'settings' | 'layout' | 'design'): void {
+    const tb = this.prodToolbar();
+    this.prodPanel.set({ show: true, top: tb.top + 44, left: tb.left, tab });
+    this.prodPresetOpen.set(false);
+    this.prodSizeOpen.set(false);
+  }
+  toggleProdPresetMenu(): void { this.prodSizeOpen.set(false); this.prodPresetOpen.update(v => !v); }
+  toggleProdSizeMenu(): void { this.prodPresetOpen.set(false); this.prodSizeOpen.update(v => !v); }
+  /** Width preset — mirrors the figure size control (Compact / Standard /
+   *  Extended / Original), applied to the whole product card. */
+  setProdSize(v: 'compact' | 'standard' | 'extended' | 'original'): void {
+    const el = this.selectedProduct(); if (!el) return;
+    el.classList.remove('re-size-compact', 're-size-standard', 're-size-extended', 're-size-original');
+    el.classList.add(`re-size-${v}`);
+    el.setAttribute('data-size', v);
+    this.prodSize.set(v);
+    this.prodSizeOpen.set(false);
+    this.emit();
+  }
+  deleteProduct(): void { this.selectedProduct()?.remove(); this.closeProduct(); this.emit(); }
+
+  /** Generic data-attr setter (CSS-driven layout/visibility) + emit. */
+  private setProdAttr(name: string, value: string): void {
+    const el = this.selectedProduct(); if (!el) return;
+    el.setAttribute(name, value);
+    this.emit();
+  }
+  // Settings.
+  toggleProdImage(): void  { const v = !this.prodShowImage();  this.prodShowImage.set(v);  this.setProdAttr('data-show-image', String(v)); }
+  toggleProdPrice(): void  { const v = !this.prodShowPrice();  this.prodShowPrice.set(v);  this.setProdAttr('data-show-price', String(v)); }
+  toggleProdButton(): void { const v = !this.prodShowButton(); this.prodShowButton.set(v); this.setProdAttr('data-show-button', String(v)); }
+  toggleProdRibbon(): void { const v = !this.prodShowRibbon(); this.prodShowRibbon.set(v); this.setProdAttr('data-show-ribbon', String(v)); }
+  setProdBtnText(v: string): void {
+    this.prodBtnText.set(v);
+    const el = this.selectedProduct(); if (!el) return;
+    el.setAttribute('data-btn-text', v);
+    const b = el.querySelector('.re-product__btn'); if (b) b.textContent = v || 'Buy Now';
+    this.emit();
+  }
+  setProdRibbonText(v: string): void {
+    this.prodRibbonText.set(v);
+    const el = this.selectedProduct(); if (!el) return;
+    el.setAttribute('data-ribbon-text', v);
+    el.querySelectorAll('.re-product__ribbon').forEach(r => r.textContent = v || 'Sale');
+    this.emit();
+  }
+  // Layout.
+  setProdImgPos(v: 'left' | 'top' | 'right'): void   { this.prodImgPos.set(v);   this.setProdAttr('data-img-pos', v); }
+  setProdImgRatio(v: 'square' | 'landscape'): void   { this.prodImgRatio.set(v); this.setProdAttr('data-img-ratio', v); }
+  setProdImgFit(v: 'fill' | 'fit'): void             { this.prodImgFit.set(v);   this.setProdAttr('data-img-fit', v); }
+  setProdAlign(v: 'left' | 'center' | 'right'): void { this.prodAlign.set(v);    this.setProdAttr('data-align', v); }
+  setProdTpLayout(v: 'stack' | 'inline'): void       { this.prodTpLayout.set(v); this.setProdAttr('data-tp-layout', v); }
+  setProdRibbonPlace(v: 'image' | 'info'): void      { this.prodRibbonPlace.set(v); this.setProdAttr('data-ribbon-place', v); }
+  applyProdPreset(id: number): void {
+    const p = this.prodPresets.find(x => x.id === id); if (!p) return;
+    this.setProdImgPos(p.pos);
+    this.setProdTpLayout(p.tp);
+    this.setProdAlign(p.align);
+    this.prodPresetOpen.set(false);
+  }
+  // Design.
+  private applyProdDesign(): void {
+    const el = this.selectedProduct(); if (!el) return;
+    el.style.setProperty('--rp-primary', this.prodPrimary());
+    el.style.setProperty('--rp-secondary', this.prodSecondary());
+    el.style.background = this.prodFill() || 'transparent';
+    el.style.border = this.prodBorderWidth() > 0 ? `${this.prodBorderWidth()}px solid ${this.prodBorderColor()}` : 'none';
+    el.style.borderRadius = `${this.prodRadius()}px`;
+    el.setAttribute('data-primary', this.prodPrimary());
+    el.setAttribute('data-secondary', this.prodSecondary());
+    el.setAttribute('data-fill', this.prodFill());
+    el.setAttribute('data-border-color', this.prodBorderColor());
+    el.setAttribute('data-border-width', String(this.prodBorderWidth()));
+    el.setAttribute('data-radius', String(this.prodRadius()));
+    this.emit();
+  }
+  setProdPrimary(v: string): void     { this.prodPrimary.set(v);     this.applyProdDesign(); }
+  setProdSecondary(v: string): void   { this.prodSecondary.set(v);   this.applyProdDesign(); }
+  setProdFill(v: string): void        { this.prodFill.set(v);        this.applyProdDesign(); }
+  setProdBorderColor(v: string): void { this.prodBorderColor.set(v); this.applyProdDesign(); }
+  setProdBorderWidth(v: number): void { this.prodBorderWidth.set(v); this.applyProdDesign(); }
+  setProdRadius(v: number): void      { this.prodRadius.set(v);      this.applyProdDesign(); }
+  toggleProdPad(): void { const v = !this.prodPad(); this.prodPad.set(v); this.setProdAttr('data-pad', String(v)); }
+  // Resets.
+  resetProdSettings(): void {
+    this.prodShowImage.set(true);  this.setProdAttr('data-show-image', 'true');
+    this.prodShowPrice.set(true);  this.setProdAttr('data-show-price', 'true');
+    this.prodShowButton.set(true); this.setProdAttr('data-show-button', 'true');
+    this.setProdBtnText('Buy Now');
+    this.prodShowRibbon.set(false); this.setProdAttr('data-show-ribbon', 'false');
+    this.setProdRibbonText('Sale');
+  }
+  resetProdLayout(): void {
+    this.setProdImgPos('left'); this.setProdImgRatio('square'); this.setProdImgFit('fill');
+    this.setProdAlign('left');  this.setProdTpLayout('stack');  this.setProdRibbonPlace('info');
+  }
+  resetProdDesign(): void {
+    this.prodPrimary.set('#0f172a'); this.prodSecondary.set('#475569');
+    this.prodFill.set(''); this.prodBorderColor.set('#e2e8f0');
+    this.prodBorderWidth.set(1); this.prodRadius.set(0);
+    this.applyProdDesign();
+    this.prodPad.set(true); this.setProdAttr('data-pad', 'true');
+  }
 
   insertHtml(html: string): void {
     if (!html) return;
+    // After the inserted DOM + caret settle (this method has many early
+    // returns), recompute the floating "+"/placeholder and slash state so
+    // a stale hint never lingers over freshly-inserted content (e.g. a
+    // table dropped on the first line).
+    queueMicrotask(() => {
+      this.ensureTrailingBlock();
+      this.refreshAddBtn();
+      this.updateSlashMenu();
+    });
     this.editable.nativeElement.focus();
     const sel = window.getSelection();
     const tpl = document.createElement('template');
@@ -9313,7 +13421,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const width = slider.offsetWidth || 88;
     const sliderH = slider.offsetHeight || 28;
     // Place the slider 8px to the RIGHT of the chip, vertically
-    // centred on it (Wix-style side popover). If the right edge
+    // centred on it (composer-style side popover). If the right edge
     // would overflow the viewport, fall back to the chip's left side
     // — keeps the slider always reachable on narrow viewports.
     let left = r.right + 8;
@@ -9507,7 +13615,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   /** Pull the caret out of an empty `<li>` and park it in a new
    *  `<p>` directly after the parent list. The empty `<li>` is
    *  removed; if it was the only item in the list, the entire list
-   *  is removed too. Matches the Google Docs / Wix Ricos "press
+   *  is removed too. Matches the Google Docs / the rich editor "press
    *  Enter twice to exit a list" UX. */
   private exitListAtCaret(emptyLi: HTMLElement): void {
     const list = emptyLi.parentElement;
@@ -9596,7 +13704,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   /** Split the current block at the caret and place the cursor at
    *  the start of the new sibling block. Always produces a fresh
    *  `<p>` so heading/quote/pre blocks return to plain paragraphs on
-   *  Enter — matches the behaviour of Google Docs / Wix Ricos. */
+   *  Enter — matches the behaviour of Google Docs / the rich editor. */
   private insertParagraphAtCaret(): void {
     const editable = this.editable.nativeElement;
     const sel = window.getSelection();
@@ -9652,9 +13760,13 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
  *  card, not an inline link. */
 function isStandaloneUrl(text: string): boolean {
   if (/\s/.test(text)) return false;
+  // Accept scheme-less URLs (e.g. "youtube.com/watch?v=…") by trying an
+  // https:// prefix. Require a dotted host so plain words aren't treated
+  // as links.
+  const candidate = /^https?:\/\//i.test(text) ? text : `https://${text}`;
   try {
-    const u = new URL(text);
-    return u.protocol === 'http:' || u.protocol === 'https:';
+    const u = new URL(candidate);
+    return (u.protocol === 'http:' || u.protocol === 'https:') && /\.[a-z]{2,}$/i.test(u.hostname);
   } catch {
     return false;
   }
@@ -9665,22 +13777,25 @@ function isStandaloneUrl(text: string): boolean {
  *  "link card" showing the URL and host. Returns null for inputs
  *  that aren't safely embeddable. */
 function buildEmbedHtml(url: string): string | null {
-  const safe = escapeAttr(url);
-  const yt = parseYouTubeId(url);
+  // Normalise scheme-less input (e.g. "youtube.com/watch?v=…") so URL
+  // parsing + provider detection work.
+  const normalized = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  const safe = escapeAttr(normalized);
+  const yt = parseYouTubeId(normalized);
   if (yt) {
     return responsiveIframe(`https://www.youtube.com/embed/${yt}`, 'YouTube video');
   }
-  const vm = parseVimeoId(url);
+  const vm = parseVimeoId(normalized);
   if (vm) {
     return responsiveIframe(`https://player.vimeo.com/video/${vm}`, 'Vimeo video');
   }
   // Generic bare-link card.
   let host = '';
-  try { host = new URL(url).host.replace(/^www\./, ''); } catch { host = url; }
+  try { host = new URL(normalized).host.replace(/^www\./, ''); } catch { host = normalized; }
   return `<div class="re-embed-card" contenteditable="false" data-embed-url="${safe}">
     <a href="${safe}" target="_blank" rel="noopener noreferrer">
       <span class="re-embed-card__host">${escapeText(host)}</span>
-      <span class="re-embed-card__url">${escapeText(url)}</span>
+      <span class="re-embed-card__url">${escapeText(normalized)}</span>
     </a>
   </div>`;
 }
@@ -9690,6 +13805,11 @@ function responsiveIframe(src: string, title: string): string {
   const safeTitle = escapeAttr(title);
   return `<figure class="re-embed-figure re-align-center">
     <div class="re-embed-video" contenteditable="false">
+      <div class="re-embed-video__loading" aria-hidden="true">
+        <span class="re-embed-video__spinner"></span>
+        <span class="re-embed-video__loadingTitle">Loading video…</span>
+        <span class="re-embed-video__loadingSub">This may take a few seconds.</span>
+      </div>
       <iframe src="${safeSrc}" title="${safeTitle}"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -9809,3 +13929,18 @@ function parseColor(input: string): { hex: string; alpha: number } | null {
   }
   return null;
 }
+
+/** Add-image placeholder cell reused by the multi-image layout presets. */
+const LAYOUT_IMG_CELL =
+  '<div data-cell-image contenteditable="false" style="background:#e6f7fa;height:140px;border-radius:4px;overflow:hidden;">' +
+    '<button type="button" data-add-image style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:transparent;border:none;color:#32acc1;font:500 14px/1.2 inherit;cursor:pointer;">' +
+      '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M19 5h-3l-1.5-2h-5L8 5H5C3.9 5 3 5.9 3 7v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-7 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/></svg>' +
+      '<span>Add image</span>' +
+    '</button>' +
+  '</div><p style="margin:8px 0 0;color:#475569;font-size:13px;">This is a placeholder paragraph.</p>';
+
+/** Add-image button used inside poll question/answer image cells. */
+const POLL_ADD_IMG =
+  '<button type="button" data-add-image style="width:100%;height:100%;min-height:120px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.7);cursor:pointer;">' +
+    '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M19 5h-3l-1.5-2h-5L8 5H5C3.9 5 3 5.9 3 7v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-7 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/></svg>' +
+  '</button>';

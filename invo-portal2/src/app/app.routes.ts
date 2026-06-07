@@ -322,6 +322,14 @@ export const routes: Routes = [
           import('./features/settings/payment-methods/payment-methods.routes').then(m => m.PAYMENT_METHODS_ROUTES)
       },
       {
+        // Plugins — per-company integrations grouped by type
+        // (delivery aggregators, notification gateways, fiscal
+        // utilities, Content AI). Catalogue list + per-plugin forms.
+        path: 'settings/plugins',
+        loadChildren: () =>
+          import('./features/settings/plugins/plugins.routes').then(m => m.PLUGINS_ROUTES)
+      },
+      {
         // Service Management — POS service types (DineIn, PickUp,
         // Delivery, CarHop, Salon, Catering, Retail) with per-branch
         // setting overrides + drag-reorder.

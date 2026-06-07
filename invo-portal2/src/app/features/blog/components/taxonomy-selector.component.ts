@@ -1,18 +1,21 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   computed,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { BLOG_API } from '../services/blog-api';
 import { BlogTaxonomy } from '../services/blog.types';
+import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-editor-ai';
 
 /**
  * Multi-select for categories / tags shown as chips below the picker.
@@ -81,6 +84,36 @@ import { BlogTaxonomy } from '../services/blog.types';
           <span class="ts__empty">{{ emptyLabel() | translate }}</span>
         }
       </div>
+
+      @if (aiAvailable()) {
+        <button type="button" class="ts__aiBtn" (click)="toggleAi()">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
+          {{ 'BLOG.COMPOSER.CREATE_WITH_AI' | translate }}
+        </button>
+      }
+
+      @if (aiOpen()) {
+        <div class="ts__ai">
+          @if (aiLoading()) {
+            <div class="ts__aiLoading"><span class="ts__aiSpin"></span>{{ 'BLOG.COMPOSER.AI_THINKING' | translate }}</div>
+          } @else if (aiError()) {
+            <p class="ts__aiError">{{ aiError() }}</p>
+            <button type="button" class="ts__aiRetry" (click)="runAi()">{{ 'COMMON.RETRY' | translate }}</button>
+          } @else if (aiSuggestions().length) {
+            <p class="ts__aiHint">{{ (mode() === 'category' ? 'BLOG.COMPOSER.AI_PICK_CATEGORIES' : 'BLOG.COMPOSER.AI_PICK_TAGS') | translate }}</p>
+            @for (s of aiSuggestions(); track s.name; let i = $index) {
+              <label class="ts__aiItem">
+                <input type="checkbox" [checked]="s.checked" (change)="toggleSuggestion(i)"/>
+                <span>{{ s.name }}</span>
+              </label>
+            }
+            <div class="ts__aiActions">
+              <button type="button" class="ts__aiAdd" [disabled]="!anyChecked()" (click)="addAiSelected()">{{ 'COMMON.ADD' | translate }}</button>
+              <button type="button" class="ts__aiRegen" (click)="runAi()">{{ 'BLOG.COMPOSER.AI_REGENERATE' | translate }}</button>
+            </div>
+          }
+        </div>
+      }
 
       @if (mode() === 'category' && maxCount()) {
         <p class="ts__count" [class.is-warn]="selectedIds().length >= (maxCount() ?? 99)">
@@ -195,13 +228,51 @@ import { BlogTaxonomy } from '../services/blog.types';
     .ts__empty { font-size: 12px; color: #94a3b8; padding: 4px 8px; }
     .ts__count { margin: 0; font-size: 11px; color: #94a3b8; }
     .ts__count.is-warn { color: #b45309; font-weight: 500; }
+
+    /* ── Create with AI ── */
+    .ts__aiBtn {
+      display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+      padding: 4px 2px; background: transparent; border: 0; cursor: pointer;
+      font-size: 13px; font-weight: 600; color: var(--color-brand-600, #2691a4);
+    }
+    .ts__aiBtn:hover { text-decoration: underline; }
+    .ts__ai {
+      border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px;
+      background: #f8fdfe; display: flex; flex-direction: column; gap: 8px;
+    }
+    .ts__aiHint { margin: 0 0 2px; font-size: 12px; color: #475569; }
+    .ts__aiItem { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #0f172a; cursor: pointer; padding: 3px 0; border-top: 1px solid #f1f5f9; }
+    .ts__aiItem:first-of-type { border-top: 0; }
+    .ts__aiItem input { accent-color: var(--color-brand-600, #2691a4); }
+    .ts__aiActions { display: flex; gap: 8px; margin-top: 4px; }
+    .ts__aiAdd {
+      padding: 7px 16px; border: 0; border-radius: 999px; background: var(--color-brand-600, #2691a4); color: #fff;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .ts__aiAdd:disabled { opacity: .5; cursor: not-allowed; }
+    .ts__aiRegen, .ts__aiRetry {
+      padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 999px; background: #fff;
+      font-size: 13px; color: #475569; cursor: pointer;
+    }
+    .ts__aiError { margin: 0; font-size: 12px; color: #b91c1c; }
+    .ts__aiLoading { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b; }
+    .ts__aiSpin {
+      width: 14px; height: 14px; border: 2px solid #cbeef4; border-top-color: var(--color-brand-600, #2691a4);
+      border-radius: 50%; animation: ts-spin .7s linear infinite;
+    }
+    @keyframes ts-spin { to { transform: rotate(360deg); } }
   `],
 })
 export class TaxonomySelectorComponent {
   private api = inject(BLOG_API);
+  private destroyRef = inject(DestroyRef);
+  /** Content-AI provider (blog composer supplies it). AI is hidden when absent. */
+  private aiProvider = inject(RICH_EDITOR_AI_PROVIDER, { optional: true });
 
   mode        = input.required<'category' | 'tag'>();
   selectedIds = input.required<string[]>();
+  /** Post body (HTML) used as context for AI suggestions. */
+  aiContent   = input<string>('');
   /** Main category id — only meaningful in `category` mode. */
   mainId      = input<string | null>(null);
   /** Maximum selection. Enforced visually; the picker still emits and
@@ -219,6 +290,8 @@ export class TaxonomySelectorComponent {
   setMain = output<string>();
   /** Tag mode only — request to create a new tag with this raw name. */
   createTag = output<string>();
+  /** Category mode — request to create a new category with this raw name. */
+  createCategory = output<string>();
 
   // ── Local state ────────────────────────────────────────────────────
   open  = signal(false);
@@ -286,5 +359,73 @@ export class TaxonomySelectorComponent {
     }
     this.draft.set('');
     this.open.set(false);
+  }
+
+  // ── Create with AI ─────────────────────────────────────────────────
+  aiOpen        = signal(false);
+  aiLoading     = signal(false);
+  aiError       = signal<string>('');
+  aiSuggestions = signal<{ name: string; checked: boolean }[]>([]);
+
+  aiAvailable = computed(() => !!this.aiProvider?.available?.());
+  anyChecked  = computed(() => this.aiSuggestions().some(s => s.checked));
+
+  toggleAi(): void {
+    const next = !this.aiOpen();
+    this.aiOpen.set(next);
+    if (next && !this.aiSuggestions().length && !this.aiLoading()) this.runAi();
+  }
+
+  toggleSuggestion(i: number): void {
+    this.aiSuggestions.update(list => list.map((s, idx) => idx === i ? { ...s, checked: !s.checked } : s));
+  }
+
+  /** Ask the AI for category/tag suggestions based on the post content. */
+  runAi(): void {
+    if (!this.aiProvider) return;
+    this.aiLoading.set(true);
+    this.aiError.set('');
+    this.aiSuggestions.set([]);
+    const kind = this.mode() === 'category' ? 'category' : 'tag';
+    const content = (this.aiContent() || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 6000);
+    const prompt =
+      `Suggest 6 concise blog ${kind} names for the post below. ` +
+      `Each should be 1-3 words, Title Case, broad enough to group related posts. ` +
+      `Return ONLY the names, one per line, with no numbering, bullets, or extra text.`;
+    let last = '';
+    this.aiProvider.generate({ task: 'custom', prompt, content })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (full) => { last = full; },
+        error: (err) => { this.aiLoading.set(false); this.aiError.set(err?.message || 'AI request failed.'); },
+        complete: () => { this.aiLoading.set(false); this.aiSuggestions.set(this.parseSuggestions(last)); },
+      });
+  }
+
+  /** Split the streamed text into a clean, deduped list of names. */
+  private parseSuggestions(text: string): { name: string; checked: boolean }[] {
+    const seen = new Set<string>();
+    return text.split(/\r?\n/)
+      .map(l => l.replace(/^[\s\-*•\d.)\]]+/, '').replace(/^["']|["']$/g, '').trim())
+      .filter(l => l.length > 0 && l.length <= 40)
+      .filter(l => { const k = l.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; })
+      .slice(0, 8)
+      .map(name => ({ name, checked: false }));
+  }
+
+  /** Add every checked suggestion: reuse an existing taxonomy by name,
+   *  otherwise ask the parent to create it. */
+  async addAiSelected(): Promise<void> {
+    const picks = this.aiSuggestions().filter(s => s.checked).map(s => s.name);
+    if (!picks.length) return;
+    await this.ensureLoaded();
+    for (const name of picks) {
+      const existing = this.all().find(t => this.nameOf(t).toLowerCase() === name.toLowerCase());
+      if (existing) { this.add.emit(existing); continue; }
+      if (this.mode() === 'tag') this.createTag.emit(name);
+      else this.createCategory.emit(name);
+    }
+    this.aiOpen.set(false);
+    this.aiSuggestions.set([]);
   }
 }

@@ -1,0 +1,83 @@
+<app-plugin-form-shell
+  [title]="'PLUGINS.FOOTFALL.TITLE' | translate"
+  [intro]="'PLUGINS.FOOTFALL.INTRO' | translate"
+  [breadcrumbs]="breadcrumbs()"
+  [loading]="loading()" [saving]="saving()"
+  [showFooter]="tokenValid"
+  (save)="save()" (back)="back()">
+
+  @if (!tokenValid) {
+    <!-- Login -->
+    <div class="pf-card">
+      @if (loginError()) { <p class="pf-error" style="margin-bottom:12px;">{{ loginError() }}</p> }
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PLUGINS.FOOTFALL.EMAIL' | translate }}</label>
+        <input class="pf-input" type="email" [ngModel]="email()" (ngModelChange)="email.set($event)" name="email"/>
+      </div>
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PLUGINS.FOOTFALL.PASSWORD' | translate }}</label>
+        <input class="pf-input" type="password" autocomplete="new-password"
+               [ngModel]="password()" (ngModelChange)="password.set($event)" name="password"/>
+      </div>
+      <button type="button" class="btn btn-primary"
+              [disabled]="!email().trim() || !password().trim()" (click)="login()">
+        {{ 'PLUGINS.FOOTFALL.LOGIN' | translate }}
+      </button>
+    </div>
+  } @else {
+    <!-- Token status + manual sync -->
+    <div class="pf-card">
+      <div class="pf-toggle-row">
+        <div class="pf-toggle-row__text">
+          <div class="pf-toggle-row__title">
+            {{ 'PLUGINS.FOOTFALL.TOKEN_VALID' | translate: { date: (plugin.settings.tokenExpiration | date:'dd/MM/yyyy') } }}
+          </div>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="regenerateToken()">
+          {{ 'PLUGINS.FOOTFALL.REGENERATE' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <div class="pf-card">
+      <h3 class="pf-section-title">{{ 'PLUGINS.FOOTFALL.MANUAL_SYNC' | translate }}</h3>
+      <div class="pf-row" style="align-items:end;">
+        <div class="pf-field" style="margin:0;">
+          <app-date-picker
+            [value]="syncDate()" (valueChange)="syncDate.set($any($event))"
+            displayFormat="dd/MM/yyyy" placeholder="dd/mm/yyyy"/>
+        </div>
+        <div class="pf-field" style="margin:0;">
+          <button type="button" class="btn btn-default" [disabled]="syncing()" (click)="runSync()">
+            {{ 'PLUGINS.FOOTFALL.SYNC' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Per-branch site codes -->
+    <div class="pf-card">
+      <h3 class="pf-section-title">{{ 'PLUGINS.FOOTFALL.SITE_CODE' | translate }}</h3>
+      @for (br of branchRows(); track br.branchId) {
+        <div class="pf-field">
+          <label class="pf-label">{{ br.branchName }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="br.siteCode" (ngModelChange)="markDirty()"
+                 [name]="'site_' + br.branchId"/>
+        </div>
+      }
+    </div>
+
+    <!-- Enable -->
+    <div class="pf-card">
+      <div class="pf-toggle-row">
+        <div class="pf-toggle-row__text">
+          <div class="pf-toggle-row__title">{{ 'PLUGINS.COMMON.ENABLE' | translate }}</div>
+        </div>
+        <label class="pf-switch">
+          <input type="checkbox" [(ngModel)]="plugin.settings.enable" (ngModelChange)="markDirty()" name="enable"/>
+          <span class="pf-switch__track"><span class="pf-switch__thumb"></span></span>
+        </label>
+      </div>
+    </div>
+  }
+</app-plugin-form-shell>

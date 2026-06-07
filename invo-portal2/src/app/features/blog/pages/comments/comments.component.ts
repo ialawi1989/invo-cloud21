@@ -9,14 +9,12 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
-import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { SegmentedToggleComponent } from '@shared/components/segmented-toggle/segmented-toggle.component';
+import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ListSearchComponent } from '@shared/components/list-search/list-search.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -43,8 +41,7 @@ type StatusTab = CommentStatus | 'all';
     FormsModule,
     RouterModule,
     TranslateModule,
-    BreadcrumbsComponent,
-    SegmentedToggleComponent,
+    DropdownMenuBtnComponent,
     SearchDropdownComponent,
     ListSearchComponent,
     StatusBadgeComponent,
@@ -60,9 +57,10 @@ export class CommentsComponent implements OnInit {
   private translate  = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
   private toast      = inject(ToastService);
+  private router     = inject(Router);
 
   // ── Filter state ────────────────────────────────────────────────────
-  statusTab = signal<StatusTab>('all');
+  statusTab = signal<StatusTab>('visible');
   postId    = signal<string>('');
   language  = signal<string>('');
   dateFrom  = signal<string>('');
@@ -84,25 +82,16 @@ export class CommentsComponent implements OnInit {
   private i18nTick = signal(0);
 
   // ── Derived ─────────────────────────────────────────────────────────
-  breadcrumbs = computed<BreadcrumbItem[]>(() => {
-    this.i18nTick();
-    return [
-      { label: this.translate.instant('MENU.BLOG'), routerLink: '/blog/posts' },
-      { label: this.translate.instant('BLOG.COMMENTS.TITLE') },
-    ];
-  });
-
+  /** Wix-style status tabs (Published / Pending / Reported / Trash). */
   tabOptions = computed(() => {
     this.i18nTick();
     const c = this.statusCounts();
-    const tabs: { value: StatusTab; label: string; count?: number | null }[] = [
-      { value: 'all',     label: 'BLOG.COMMENTS.TAB_ALL',     count: c.all     },
-      { value: 'visible', label: 'BLOG.COMMENTS.TAB_VISIBLE', count: c.visible },
-      { value: 'pending', label: 'BLOG.COMMENTS.TAB_PENDING', count: c.pending },
-      { value: 'flagged', label: 'BLOG.COMMENTS.TAB_FLAGGED', count: c.flagged },
-      { value: 'deleted', label: 'BLOG.COMMENTS.TAB_DELETED', count: c.deleted },
+    return [
+      { value: 'visible' as StatusTab, label: this.translate.instant('BLOG.COMMENTS.TAB_VISIBLE'), count: c.visible },
+      { value: 'pending' as StatusTab, label: this.translate.instant('BLOG.COMMENTS.TAB_PENDING'), count: c.pending },
+      { value: 'flagged' as StatusTab, label: this.translate.instant('BLOG.COMMENTS.TAB_FLAGGED'), count: c.flagged },
+      { value: 'deleted' as StatusTab, label: this.translate.instant('BLOG.COMMENTS.TAB_DELETED'), count: c.deleted },
     ];
-    return tabs;
   });
 
   emptyMessage = computed(() => {
@@ -115,6 +104,25 @@ export class CommentsComponent implements OnInit {
       default:        return this.translate.instant('BLOG.COMMENTS.EMPTY_ALL');
     }
   });
+  emptyBody = computed(() => {
+    this.i18nTick();
+    switch (this.statusTab()) {
+      case 'pending': return this.translate.instant('BLOG.COMMENTS.EMPTY_BODY_PENDING');
+      case 'flagged': return this.translate.instant('BLOG.COMMENTS.EMPTY_BODY_FLAGGED');
+      case 'deleted': return this.translate.instant('BLOG.COMMENTS.EMPTY_BODY_DELETED');
+      case 'visible': return this.translate.instant('BLOG.COMMENTS.EMPTY_BODY_VISIBLE');
+      default:        return this.translate.instant('BLOG.COMMENTS.EMPTY_BODY');
+    }
+  });
+
+  /** Header "More Actions" dropdown → Comment settings. */
+  moreActionsMenu(): DropdownMenuBtnItem[] {
+    return [
+      { label: 'BLOG.COMMENTS.COMMENT_SETTINGS', click: () => this.router.navigate(['/blog/settings']),
+        iconPath: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z' },
+    ];
+  }
+  openModerationRules(): void { void this.router.navigate(['/blog/comments/rules']); }
 
   langOptions = computed(() => {
     this.i18nTick();
@@ -214,23 +222,39 @@ export class CommentsComponent implements OnInit {
   }
   async remove(c: BlogComment): Promise<void> {
     if (!window.confirm(this.translate.instant('BLOG.COMMENTS.CONFIRM_DELETE'))) return;
-    try { await this.api.deleteComment(c.id); this.toast.success('COMMON.DELETED_OK'); await this.reload(); }
+    try { await this.api.deleteComment(c.id); this.toast.success('BLOG.COMMENTS.TRASHED_OK'); await this.reload(); }
+    catch (e: any) { this.toast.error('COMMON.DELETE_FAILED', e?.message); }
+  }
+  /** Trash tab — restore a deleted comment. */
+  async restore(c: BlogComment): Promise<void> {
+    try { await this.api.restoreComment(c.id); this.toast.success('BLOG.COMMENTS.RESTORED_OK'); await this.reload(); }
+    catch (e: any) { this.toast.error('COMMON.SAVE_FAILED', e?.message); }
+  }
+  /** Trash tab — permanently delete (irreversible). */
+  async deleteForever(c: BlogComment): Promise<void> {
+    if (!window.confirm(this.translate.instant('BLOG.COMMENTS.CONFIRM_DELETE_FOREVER'))) return;
+    try { await this.api.hardDeleteComment(c.id); this.toast.success('COMMON.DELETED_OK'); await this.reload(); }
     catch (e: any) { this.toast.error('COMMON.DELETE_FAILED', e?.message); }
   }
 
-  // ── Bulk ────────────────────────────────────────────────────────────
-  async bulk(action: 'approve' | 'flag' | 'delete'): Promise<void> {
+  // ── Bulk (single-request endpoints) ─────────────────────────────────
+  async bulk(action: 'approve' | 'flag' | 'delete' | 'restore' | 'deleteForever'): Promise<void> {
     const ids = [...this.selected()];
     if (ids.length === 0) return;
-    if (action === 'delete' && !window.confirm(this.translate.instant('BLOG.COMMENTS.CONFIRM_BULK_DELETE', { count: ids.length }))) {
+    if (action === 'deleteForever' && !window.confirm(this.translate.instant('BLOG.COMMENTS.CONFIRM_BULK_DELETE', { count: ids.length }))) {
       return;
     }
     try {
-      await Promise.all(ids.map(id =>
-        action === 'approve' ? this.api.approveComment(id)
-        : action === 'flag'  ? this.api.flagComment(id)
-        : this.api.deleteComment(id),
-      ));
+      if (action === 'deleteForever') {
+        await this.api.bulkDeleteComments(ids);
+      } else {
+        const status: CommentStatus =
+          action === 'approve' ? 'visible'
+          : action === 'flag'  ? 'flagged'
+          : action === 'restore' ? 'visible'
+          : 'deleted';
+        await this.api.bulkUpdateCommentStatus(ids, status);
+      }
       this.toast.success('BLOG.COMMENTS.BULK_DONE');
       await this.reload();
     } catch (e: any) {

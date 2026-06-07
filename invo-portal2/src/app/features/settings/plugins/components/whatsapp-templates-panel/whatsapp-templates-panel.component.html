@@ -1,0 +1,74 @@
+<section class="tp">
+  <div class="tp__head">
+    <h3 class="tp__title">{{ 'PLUGINS.TEMPLATES.TITLE' | translate }}</h3>
+    @if (providerLabelKey()) {
+      <span class="tp-badge tp-badge--mute">{{ providerLabelKey() | translate }}</span>
+    }
+    <button type="button" class="btn btn-ghost btn-sm tp__refresh" (click)="loadSynced()">
+      {{ 'PLUGINS.TEMPLATES.REFRESH' | translate }}
+    </button>
+  </div>
+
+  @if (!pluginEnabled) {
+    <p class="tp__warn">{{ 'PLUGINS.TEMPLATES.DISABLED_WARNING' | translate }}</p>
+  }
+
+  <div class="tp__cols">
+    <!-- Local → sync (only when the parent supplied local templates) -->
+    @if (localTemplates.length) {
+      <div class="tp__col">
+        <h4 class="tp__col-title">{{ 'PLUGINS.TEMPLATES.LOCAL_TITLE' | translate }}</h4>
+        @if (unsynced.length === 0) {
+          <p class="tp__empty">{{ 'PLUGINS.TEMPLATES.ALL_SYNCED' | translate }}</p>
+        } @else {
+          <ul class="tp-list">
+            @for (t of unsynced; track t.id) {
+              <li class="tp-row">
+                <span class="tp-row__name">{{ t.title }}</span>
+                <button type="button" class="btn btn-default btn-sm"
+                        [disabled]="!pluginEnabled || syncing()[t.id]"
+                        (click)="sync(t)">
+                  {{ 'PLUGINS.TEMPLATES.SYNC' | translate }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+
+    <!-- Synced templates -->
+    <div class="tp__col">
+      <h4 class="tp__col-title">{{ 'PLUGINS.TEMPLATES.SYNCED_TITLE' | translate }}</h4>
+      @if (loadingSynced()) {
+        <p class="tp__empty">…</p>
+      } @else if (error()) {
+        <p class="tp__warn">{{ error() }}</p>
+      } @else if (synced().length === 0) {
+        <p class="tp__empty">{{ 'PLUGINS.TEMPLATES.SYNCED_EMPTY' | translate }}</p>
+      } @else {
+        <ul class="tp-list">
+          @for (t of synced(); track t.name) {
+            <li class="tp-row">
+              <div class="tp-row__main">
+                <span class="tp-row__name">{{ t.name }}</span>
+                <span class="tp-row__meta">{{ t.category }} · {{ t.language }}</span>
+              </div>
+              <span [class]="statusBadgeClass(t.status)">{{ t.status }}</span>
+              <button type="button" class="btn btn-ghost btn-sm"
+                      [disabled]="!pluginEnabled || !canResync(t) || resyncing()[t.name]"
+                      (click)="resync(t)">
+                {{ 'PLUGINS.TEMPLATES.RESYNC' | translate }}
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm tp-row__del"
+                      [disabled]="!pluginEnabled || deleting()[t.name]"
+                      (click)="remove(t)">
+                {{ 'PLUGINS.TEMPLATES.DELETE' | translate }}
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </div>
+</section>

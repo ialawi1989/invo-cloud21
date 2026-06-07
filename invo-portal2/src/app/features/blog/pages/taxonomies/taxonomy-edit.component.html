@@ -1,0 +1,92 @@
+<div class="te">
+  <!-- Breadcrumb + title + actions -->
+  <header class="te__head">
+    <nav class="te__crumbs">
+      <a [routerLink]="['/blog/categories']" [queryParams]="isCategory() ? null : { tab: 'tag' }">
+        {{ (isCategory() ? 'BLOG.TAXONOMIES.CRUMB_CATEGORIES' : 'BLOG.TAXONOMIES.CRUMB_TAGS') | translate }} ({{ lang() }})
+      </a>
+      <span class="te__crumbSep">›</span>
+      <span>{{ pageTitle() }}</span>
+    </nav>
+    <div class="te__titleRow">
+      <button type="button" class="te__back" (click)="cancel()" aria-label="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="te__titleText">
+        <h1 class="te__title">{{ pageTitle() }}</h1>
+        <p class="te__sub">{{ 'BLOG.TAXONOMIES.EDIT_HINT' | translate }}</p>
+      </div>
+      <div class="te__actions">
+        <button type="button" class="te-btn te-btn--ghost" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+        <button type="button" class="te-btn te-btn--primary" [disabled]="!canSave()" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="te__grid">
+    <!-- Edit panel -->
+    <section class="te__card">
+      <div class="te__cardHead">
+        <h2>{{ (isCategory() ? 'BLOG.TAXONOMIES.EDIT_CATEGORY' : 'BLOG.TAXONOMIES.EDIT_TAG') | translate }}</h2>
+        <span class="te__lang">{{ lang() === 'ar' ? '🇸🇦' : '🇺🇸' }} {{ lang() | uppercase }}</span>
+      </div>
+
+      <div class="te__cols">
+        <div class="te__fields">
+          <label class="te__label">{{ 'BLOG.TAXONOMIES.FIELD_NAME' | translate }}</label>
+          <input class="te__input" type="text" maxlength="35"
+                 [ngModel]="name()" (ngModelChange)="onName($event)"
+                 [placeholder]="'BLOG.TAXONOMIES.NAME_PLACEHOLDER' | translate"/>
+
+          <label class="te__label">{{ 'BLOG.TAXONOMIES.FIELD_DESCRIPTION' | translate }}</label>
+          <textarea class="te__input te__input--ta" rows="5" maxlength="500"
+                    [ngModel]="description()" (ngModelChange)="description.set($event)"
+                    [placeholder]="'BLOG.TAXONOMIES.DESCRIPTION_PLACEHOLDER' | translate"></textarea>
+        </div>
+
+        <div class="te__imageCol">
+          <label class="te__label">{{ 'BLOG.TAXONOMIES.FIELD_IMAGE' | translate }}</label>
+          @if (image()) {
+            <div class="te__image">
+              <img [src]="image()" alt="" (click)="pickImage()" [title]="'BLOG.COMPOSER.REPLACE' | translate"/>
+              <button type="button" class="te__imageRemove" (click)="removeImage()" aria-label="Remove">×</button>
+            </div>
+          } @else {
+            <button type="button" class="te__imageDrop" (click)="pickImage()">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- SEO panel -->
+    <aside class="te__card te__seo">
+      <div class="te__cardHead"><h2>{{ 'BLOG.TAXONOMIES.SEO_TITLE' | translate }}</h2></div>
+
+      <label class="te__label">{{ 'BLOG.TAXONOMIES.URL_SLUG' | translate }}</label>
+      <div class="te__slug">
+        <span class="te__slugBase">/{{ lang() }}/blog/{{ isCategory() ? 'categories' : 'tags' }}/</span>
+        <input class="te__input te__input--slug" type="text"
+               [ngModel]="slug()" (ngModelChange)="onSlug($event)" placeholder="slug"/>
+      </div>
+
+      <label class="te__label">{{ 'BLOG.TAXONOMIES.SEO_META_TITLE' | translate }}</label>
+      <input class="te__input" type="text"
+             [ngModel]="seoTitle()" (ngModelChange)="seoTitle.set($event)"
+             [placeholder]="pageTitle()"/>
+
+      <label class="te__label">{{ 'BLOG.TAXONOMIES.SEO_META_DESC' | translate }}</label>
+      <textarea class="te__input te__input--ta" rows="3"
+                [ngModel]="seoDescription()" (ngModelChange)="seoDescription.set($event)"
+                [placeholder]="'BLOG.TAXONOMIES.SEO_META_DESC_PH' | translate"></textarea>
+
+      <label class="te__label">{{ 'BLOG.TAXONOMIES.GOOGLE_PREVIEW' | translate }}</label>
+      <div class="te__gp">
+        <div class="te__gpUrl">{{ previewUrl() }}</div>
+        <div class="te__gpTitle">{{ seoTitle() || pageTitle() }}</div>
+        <div class="te__gpDesc">{{ seoDescription() || (description() || ('BLOG.TAXONOMIES.GP_FALLBACK' | translate)) }}</div>
+      </div>
+    </aside>
+  </div>
+</div>

@@ -50,7 +50,27 @@ export class BranchTabsComponent {
   /** Emits whenever the active branch changes — parent uses it to swap FormGroups. */
   activeChange = output<string>();
 
+  /** Whether tabs show a close (×) button. Off for pure selectors
+   *  (e.g. ZATCA branch registration) where tabs aren't dismissible. */
+  closable = input<boolean>(true);
+
+  /** Max tabs rendered inline before the rest fold behind "Find branch".
+   *  Defaults to 5 (product form). */
+  maxVisible = input<number>(VISIBLE_TABS);
+
+  /** Optional narrower cap applied on small viewports (< 640px). Null
+   *  keeps `maxVisible` at all sizes. */
+  maxVisibleMobile = input<number | null>(null);
+
   popoverOpen = signal<boolean>(false);
+  private narrow = signal<boolean>(
+    typeof window !== 'undefined' && window.innerWidth < 640,
+  );
+
+  @HostListener('window:resize')
+  onResize(): void {
+    if (typeof window !== 'undefined') this.narrow.set(window.innerWidth < 640);
+  }
 
   @ViewChild('findTrigger') findTrigger?: ElementRef<HTMLButtonElement>;
 
@@ -75,11 +95,19 @@ export class BranchTabsComponent {
   openTabs = this.store.openTabs;
   activeId = this.store.activeTabId;
 
-  visibleTabs = computed<BranchTabRef[]>(() => this.openTabs().slice(0, VISIBLE_TABS));
+  /** Effective inline cap — honours the mobile override on narrow screens. */
+  private effectiveMax = computed<number>(() => {
+    const m = this.narrow() && this.maxVisibleMobile() != null
+      ? (this.maxVisibleMobile() as number)
+      : this.maxVisible();
+    return Math.max(1, m);
+  });
+
+  visibleTabs = computed<BranchTabRef[]>(() => this.openTabs().slice(0, this.effectiveMax()));
   hiddenCount = computed<number>(() => Math.max(0, this.branches().length - this.visibleTabs().length));
 
-  /** Compact mode flag — when 6–8 tabs are open, names ellipsize and shrink. */
-  compact = computed<boolean>(() => this.openTabs().length > VISIBLE_TABS);
+  /** Compact mode flag — when more tabs are open than fit inline, names ellipsize and shrink. */
+  compact = computed<boolean>(() => this.openTabs().length > this.effectiveMax());
 
   // ── Actions ──────────────────────────────────────────────────────
   selectTab(id: string): void { this.store.setActive(id); }

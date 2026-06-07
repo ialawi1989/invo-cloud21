@@ -1,0 +1,75 @@
+.te { width: 100%; }
+
+/* Header */
+.te__crumbs { font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.te__crumbs a { color: var(--color-brand-700, #2691a4); text-decoration: none; }
+.te__crumbs a:hover { text-decoration: underline; }
+.te__crumbSep { color: #cbd5e1; }
+
+.te__titleRow { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.te__back {
+  width: 32px; height: 32px; flex-shrink: 0;
+  border: 0; background: transparent; color: #475569; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;
+  &:hover { background: #eef2f6; color: #0f172a; }
+}
+.te__titleText { flex: 1; min-width: 0; }
+.te__title { margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; }
+.te__sub { margin: 2px 0 0; font-size: 13px; color: #64748b; }
+.te__actions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+.te-btn {
+  padding: 9px 20px; border-radius: 999px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: 1px solid transparent;
+}
+.te-btn--ghost { background: #fff; color: #334155; border-color: #e2e8f0; &:hover { background: #f8fafc; } }
+.te-btn--primary {
+  background: var(--color-brand-600, #2691a4); color: #fff;
+  box-shadow: 0 6px 16px -6px rgba(38, 145, 164, .55);
+  &:hover:not(:disabled) { background: var(--color-brand-700, #2691a4); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+/* Layout */
+.te__grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .te__grid { grid-template-columns: 1fr; } }
+
+.te__card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px 20px; }
+.te__cardHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.te__cardHead h2 { margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; }
+.te__lang { font-size: 13px; color: #475569; font-weight: 600; }
+
+.te__cols { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 20px; }
+@media (max-width: 700px) { .te__cols { grid-template-columns: 1fr; } }
+
+.te__label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin: 14px 0 6px; &:first-child { margin-top: 0; } }
+.te__input {
+  width: 100%; padding: 9px 12px; font: inherit; font-size: 14px;
+  border: 1px solid #e2e8f0; border-radius: 8px; color: #0f172a; background: #fff;
+  &:focus { outline: none; border-color: var(--color-brand-600, #2691a4); box-shadow: 0 0 0 3px rgba(38,145,164,.15); }
+}
+.te__input--ta { resize: vertical; }
+
+.te__imageCol { min-width: 0; }
+.te__imageDrop {
+  width: 100%; aspect-ratio: 4 / 3;
+  border: 1.5px dashed #cbd5e1; border-radius: 10px; background: #f8fafc;
+  color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  &:hover { border-color: var(--color-brand-500, #32acc1); color: var(--color-brand-600, #2691a4); background: #f4fafb; }
+}
+.te__image { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; }
+.te__image img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.te__imageRemove {
+  position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border: 0; border-radius: 999px;
+  background: rgba(15,23,42,.6); color: #fff; cursor: pointer; font-size: 16px; line-height: 1;
+}
+
+/* SEO */
+.te__slug { display: flex; align-items: stretch; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+.te__slugBase { display: inline-flex; align-items: center; padding: 0 8px; background: #f8fafc; color: #94a3b8; font-size: 12px; white-space: nowrap; border-inline-end: 1px solid #e2e8f0; }
+.te__input--slug { border: 0; border-radius: 0; box-shadow: none !important; }
+
+.te__gp { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+.te__gpUrl { font-size: 12px; color: #475569; word-break: break-all; }
+.te__gpTitle { font-size: 16px; color: #1a0dab; margin: 3px 0 2px; }
+.te__gpDesc { font-size: 12px; color: #4d5156; line-height: 1.5; }

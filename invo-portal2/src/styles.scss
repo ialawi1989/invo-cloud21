@@ -222,18 +222,53 @@ body:has(.wc) .wc__work {
   min-height: 0 !important;
   overflow: hidden !important;
 }
-/* The canvas is the actual scroll container. Title + editor scroll
-   together inside it; the editor's sticky toolbar stays pinned to
-   its top because the canvas is the nearest scroll ancestor. */
+/* The canvas + editor host are pure layout passthroughs that fill the
+   available height. They do NOT scroll — the editor's own
+   `.re-editor-page` is the scroll container (matches how the editor
+   was designed), so the sticky toolbar sits ABOVE the scroll area
+   and stays put while content scrolls. */
 body:has(.wc) .wc__canvas {
   flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
   min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+body:has(.wc) .wc__editor,
+body:has(.wc) .wc__editor .re-editor-host {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+/* Toolbar is a fixed-height sibling above the scroll area. */
+body:has(.wc) .wc__editor .re-static-toolbar {
+  flex: 0 0 auto !important;
+}
+/* THE scroll container. Fills the height left under the toolbar and
+   scrolls vertically when content (title + surface) exceeds it. */
+body:has(.wc) .wc__editor .re-editor-page {
+  flex: 1 1 auto !important;
   min-height: 0 !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
 }
-body:has(.wc) .wc__editor {
-  flex: 1 1 auto !important;
+/* Inner column chain fills the scroll viewport when content is short
+   (so the whole area is clickable to focus the editor) but grows past
+   it when content is tall. `flex: 1 0 auto` = grow to fill, never
+   shrink below content height. */
+body:has(.wc) .wc__editor .re-editor-content,
+body:has(.wc) .wc__editor .re__surfaceWrap {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 0 auto !important;
+  min-height: 0 !important;
+}
+body:has(.wc) .wc__editor .re__surface {
+  flex: 1 0 auto !important;
   min-height: 0 !important;
 }
 

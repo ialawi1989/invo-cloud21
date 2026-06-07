@@ -1,0 +1,163 @@
+<app-plugin-form-shell
+  [title]="'PLUGINS.ZATCA.TITLE' | translate"
+  [intro]="'PLUGINS.ZATCA.INTRO' | translate"
+  [breadcrumbs]="breadcrumbs()"
+  [loading]="loading()"
+  [showFooter]="false"
+  (back)="back()">
+
+  <!-- Branch registration -->
+  <div class="pf-card">
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PLUGINS.ZATCA.OU' | translate }}</label>
+      <app-pf-branch-tabs
+        [branches]="branchRefs()"
+        [closable]="false"
+        [maxVisible]="3"
+        [maxVisibleMobile]="1"
+        (activeChange)="onBranchChange($event)"/>
+    </div>
+
+    @if (activeEgs; as egs) {
+      <div class="pf-row">
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.ZATCA.ORGANIZATION' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="egs.VAT_name" name="vatName"/>
+        </div>
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.ZATCA.OU' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="egs.branch_name" name="branchName"/>
+        </div>
+      </div>
+      <div class="pf-row">
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.ZATCA.BUSINESS_CATEGORY' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="egs.branch_industry" name="industry"/>
+        </div>
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.ZATCA.VAT_NUMBER' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="egs.VAT_number" name="vatNumber"
+                 placeholder="Ex. 300000000000003"/>
+        </div>
+      </div>
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PLUGINS.ZATCA.CRN' | translate }}</label>
+        <input class="pf-input" type="text" [(ngModel)]="egs.CRN_number" name="crn"/>
+      </div>
+
+      <h3 class="pf-section-title" style="margin-top:8px;">{{ 'PLUGINS.ZATCA.CITY' | translate }}</h3>
+      <div class="pf-row">
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.ZATCA.CITY' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="egs.location.city" name="city"/>
+        </div>
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.ZATCA.CITY_SUB' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="egs.location.city_subdivision" name="citySub"/>
+        </div>
+      </div>
+      <div class="pf-row">
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.ZATCA.STREET' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="egs.location.street" name="street"/>
+        </div>
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.ZATCA.PLOT' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="egs.location.plot_identification" name="plot"/>
+        </div>
+      </div>
+      <div class="pf-row">
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.ZATCA.BUILDING' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="egs.location.building" name="building"/>
+        </div>
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.ZATCA.POSTAL' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="egs.location.postal_zone" name="postal"/>
+        </div>
+      </div>
+
+      <div class="pf-row" style="align-items:end;">
+        <div class="pf-field" style="margin:0;">
+          <label class="pf-label">{{ 'PLUGINS.ZATCA.OTP' | translate }}</label>
+          <input class="pf-input" type="text" [ngModel]="otp()" (ngModelChange)="otp.set($event)" name="otp"/>
+        </div>
+        <div class="pf-field" style="margin:0;">
+          <button type="button" class="btn btn-primary" [disabled]="registering()" (click)="register()">
+            {{ (isRegistered() ? 'PLUGINS.ZATCA.RE_REGISTER' : 'PLUGINS.ZATCA.REGISTER') | translate }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Invoice tracking -->
+  <div class="pf-card">
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+      <h3 class="pf-section-title" style="margin:0;">{{ 'PLUGINS.INVOICES.TITLE' | translate }}</h3>
+      <input class="pf-input" style="max-width:220px; margin-inline-start:auto;" type="search"
+             [placeholder]="'PLUGINS.INVOICES.SEARCH' | translate"
+             [ngModel]="search()" (ngModelChange)="onSearch($event)" name="invSearch"/>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-bottom:12px;">
+      @for (s of statuses.options; track s) {
+        <button type="button" class="pf-pill"
+                [class.pf-pill--on]="statuses.isOn(s)" (click)="toggleStatus(s)">
+          {{ statusKey(s) | translate }}
+        </button>
+      }
+    </div>
+
+    @if (invoices().length === 0) {
+      <p class="pf-hint">{{ 'PLUGINS.INVOICES.EMPTY' | translate }}</p>
+    } @else {
+      <table class="pf-table">
+        <thead>
+          <tr>
+            <th>{{ 'PLUGINS.INVOICES.INVOICE_NO' | translate }}</th>
+            <th>{{ 'PLUGINS.INVOICES.CUSTOMER' | translate }}</th>
+            <th>{{ 'PLUGINS.INVOICES.TOTAL' | translate }}</th>
+            <th>{{ 'PLUGINS.INVOICES.DATE' | translate }}</th>
+            <th>{{ 'PLUGINS.INVOICES.STATUS' | translate }}</th>
+            <th>{{ 'PLUGINS.INVOICES.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inv of invoices(); track inv.id) {
+            <tr>
+              <td>{{ inv.invoiceNumber }}</td>
+              <td>{{ inv.customerName }}</td>
+              <td>{{ +inv.total | mycurrency }}</td>
+              <td>{{ inv.invoiceDate | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <span [class]="statusClass(inv.zatca_status)">{{ statusKey(inv.zatca_status) | translate }}</span>
+                @if ((inv.zatca_status || '') === 'FAILED') {
+                  <div class="pf-error" style="margin-top:2px;">{{ inv.zatca_info || ('PLUGINS.INVOICES.NO_REASON' | translate) }}</div>
+                }
+              </td>
+              <td>
+                <button type="button" class="btn btn-ghost btn-sm" (click)="viewInvoice(inv.id)">
+                  {{ 'PLUGINS.INVOICES.VIEW' | translate }}
+                </button>
+                @if ((inv.zatca_status || '') === 'FAILED') {
+                  <button type="button" class="btn btn-ghost btn-sm" [disabled]="inv.isResyncing" (click)="resync(inv)">
+                    {{ (inv.isResyncing ? 'PLUGINS.INVOICES.RESYNCING' : 'PLUGINS.INVOICES.RESYNC') | translate }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (pageCount() > 1) {
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+          <button type="button" class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">‹</button>
+          <span style="font-size:13px; color:#64748b; align-self:center;">{{ page() }} / {{ pageCount() }}</span>
+          <button type="button" class="btn btn-ghost btn-sm" [disabled]="page() >= pageCount()" (click)="nextPage()">›</button>
+        </div>
+      }
+    }
+  </div>
+</app-plugin-form-shell>

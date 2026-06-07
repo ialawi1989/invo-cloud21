@@ -33,7 +33,7 @@
   <!-- ══════════════════════════════════════════════════════════════ -->
   <!-- SEARCH & TOOLBAR -->
   <!-- ══════════════════════════════════════════════════════════════ -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 list-card">
 
     <!-- Search & Controls Bar -->
     <div class="bg-slate-50 border-b border-slate-200">
@@ -207,8 +207,7 @@
     <!-- ══════════════════════════════════════════════════════════════ -->
     @if (viewMode() === 'table') {
     <div class="relative"
-      [class.list-has-scroll-start]="hasScrollStart()"
-      [class.list-has-scroll-end]="hasScrollEnd()">
+      [class.list-has-scroll-start]="hasScrollStart()">
     <div class="overflow-x-auto"
       #scrollHost
       (scroll)="updateScrollState($event.target)">
@@ -320,7 +319,7 @@
             <!-- Actions Column — header label scrolls with the table; the
                  body-cell buttons float sticky to the end edge. -->
             @if (rowActions.length > 0 || getRowActionsTemplate()) {
-            <th class="px-6 py-3 text-end text-sm font-medium text-slate-500">{{ 'COMMON.ACTIONS_LABEL' | translate }}</th>
+            <th class="px-6 py-3 text-end text-sm font-medium text-slate-500 sticky end-0 z-20 list-actions-th">{{ 'COMMON.ACTIONS_LABEL' | translate }}</th>
             }
           </tr>
         </thead>
@@ -458,9 +457,6 @@
       </table>
       }
     </div>
-      <!-- End-edge scroll fade: sits above scrolled content but below the
-           sticky Actions buttons (z-1 vs the buttons' z-10). -->
-      <div class="list-scroll-fade-end" aria-hidden="true"></div>
     </div>
     }
 

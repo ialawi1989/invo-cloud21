@@ -1,177 +1,132 @@
-<app-list-shell
-  [title]="'BLOG.LIST.TITLE' | translate"
-  [subtitle]="'BLOG.LIST.SUBTITLE' | translate"
-  [search]="search()"
-  [searchPlaceholder]="'BLOG.LIST.SEARCH_PLACEHOLDER' | translate"
-  [page]="page()"
-  [pageCount]="pageCount()"
-  [total]="total()"
-  [rangeLabel]="rangeLabel()"
-  [loading]="loading()"
-  [hasRows]="posts().length > 0"
-  [cardFlush]="true"
-  (searchChange)="onSearch($event)"
-  (searchClear)="onClearSearch()"
-  (prevPage)="prevPage()"
-  (nextPage)="nextPage()">
+<div class="bp-wrap">
+  <!-- Page header: title + language + More Actions + Create New Post -->
+  <header class="bp-head">
+    <h1 class="bp-h1">{{ 'BLOG.LIST.TITLE' | translate }}</h1>
+    <div class="bp-head__actions">
+      @if (canManage()) {
+        <app-dropdown-menu-btn
+          [items]="moreActionsMenu()"
+          [appendToBody]="true"
+          align="end"
+          triggerClass="bp-btn bp-btn--ghost">
+          {{ 'BLOG.LIST.MORE_ACTIONS' | translate }}
+        </app-dropdown-menu-btn>
+        <button type="button" class="bp-btn bp-btn--primary" (click)="goNew()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          {{ 'BLOG.LIST.NEW_POST' | translate }}
+        </button>
+      }
+    </div>
+  </header>
 
-  <ng-container shellActions>
-    @if (canManage()) {
-      <button type="button" class="bp-btn bp-btn--primary" (click)="goNew()">
-        + {{ 'BLOG.LIST.NEW_POST' | translate }}
-      </button>
-    }
-  </ng-container>
-
-  <div shellToolbarExtra class="bp-filters">
+  <!-- Status tabs + language selector -->
+  <div class="bp-tabsRow">
+    <nav class="bp-tabs" role="tablist">
+      @for (t of statusTabs(); track t.key) {
+        @let count = tabCount(t.key);
+        <button type="button" class="bp-tab" role="tab"
+                [class.is-on]="statusTab() === t.key"
+                (click)="setTab(t.key)">
+          {{ t.label }}
+          @if (count > 0) {
+            <span class="bp-tab__count" [class.bp-tab__count--idle]="statusTab() !== t.key">{{ count }}</span>
+          }
+        </button>
+      }
+    </nav>
     <app-search-dropdown
-      [items]="statusOptions()"
-      [value]="$any(status())"
-      [displayWith]="idDisplay"
-      [compareWith]="idCompare"
-      [toValue]="idToValue"
-      [clearable]="false"
-      [searchable]="false"
-      (valueChange)="setFilter('status', $any($event))"/>
-    <app-search-dropdown
+      class="bp-lang"
       [items]="languageOptions()"
       [value]="$any(language())"
-      [displayWith]="idDisplay"
+      [displayWith]="langDisplay"
       [compareWith]="idCompare"
       [toValue]="idToValue"
       [clearable]="false"
       [searchable]="false"
-      (valueChange)="setFilter('language', $any($event))"/>
-    <app-search-dropdown
-      [items]="authorOptions()"
-      [value]="$any(author())"
-      [displayWith]="idDisplay"
-      [compareWith]="idCompare"
-      [toValue]="idToValue"
-      [clearable]="false"
-      [searchable]="true"
-      (valueChange)="setFilter('author', $any($event))"/>
-    <app-search-dropdown
-      [items]="categoryOptions()"
-      [value]="$any(category())"
-      [displayWith]="idDisplay"
-      [compareWith]="idCompare"
-      [toValue]="idToValue"
-      [clearable]="false"
-      [searchable]="true"
-      (valueChange)="setFilter('category', $any($event))"/>
+      (valueChange)="setLanguage($any($event))"/>
   </div>
 
-  <ng-container shellEmpty>
-    @if (error()) {
-      <app-blog-empty-state
-        icon="error"
-        tone="error"
-        [title]="'BLOG.LIST.ERROR_TITLE' | translate"
-        [description]="'BLOG.LIST.ERROR_BODY' | translate"
-        [primaryLabel]="'BLOG.LIST.RETRY' | translate"
-        (primary)="reload()"/>
-    } @else {
-      <app-blog-empty-state
-        icon="posts"
-        [title]="'BLOG.LIST.EMPTY_TITLE' | translate"
-        [description]="'BLOG.LIST.EMPTY_BODY' | translate"
-        [primaryLabel]="canManage() ? ('BLOG.LIST.NEW_POST' | translate) : ''"
-        (primary)="goNew()"/>
-    }
-  </ng-container>
+  <app-list-page
+    [pageTitle]="''"
+    [columns]="columns"
+    [dataSource]="loadPosts"
+    [pagination]="paginationConfig"
+    [search]="searchConfig"
+    [sorting]="sortingConfig"
+    [filters]="filters"
+    [bulkActions]="bulkActions()"
+    [selectable]="true"
+    [entityType]="'blogPost'"
+    [emptyState]="emptyState()"
+    (rowClicked)="onRowClick($event)"
+    (selectionChanged)="selected.set($any($event).selectedRows)">
 
-  <table class="bp-table">
-    <thead>
-      <tr>
-        <th class="bp-cell--cover"></th>
-        <th class="bp-sortable" (click)="toggleSort('title')">
-          {{ 'BLOG.LIST.COL_TITLE' | translate }}
-          <span class="bp-sortIcon">{{ sortIcon('title') }}</span>
-        </th>
-        <th>{{ 'BLOG.LIST.COL_AUTHOR' | translate }}</th>
-        <th>{{ 'BLOG.LIST.COL_STATUS' | translate }}</th>
-        <th class="bp-sortable" (click)="toggleSort('publishDate')">
-          {{ 'BLOG.LIST.COL_DATE' | translate }}
-          <span class="bp-sortIcon">{{ sortIcon('publishDate') }}</span>
-        </th>
-        <th class="bp-sortable bp-cell--num" (click)="toggleSort('views')">
-          {{ 'BLOG.LIST.COL_VIEWS' | translate }}
-          <span class="bp-sortIcon">{{ sortIcon('views') }}</span>
-        </th>
-        <th class="bp-cell--num">{{ 'BLOG.LIST.COL_COMMENTS' | translate }}</th>
-        <th class="bp-cell--actions"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (p of posts(); track p.id) {
-        <tr (click)="goEdit(p)" class="bp-row">
-          <td class="bp-cell--cover">
-            @if (p.coverImage) {
-              <img [src]="p.coverImage" alt="" class="bp-thumb"/>
-            } @else {
-              <div class="bp-thumb bp-thumb--empty">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                  <circle cx="9" cy="9" r="2"/>
-                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-                </svg>
-              </div>
-            }
-          </td>
-          <td>
-            <div class="bp-title">
-              {{ titleOf(p) }}
-              @if (p.isFeatured) {
-                <span class="bp-feat" title="Featured">★</span>
-              }
-            </div>
-            <div class="bp-langs">
-              @for (l of languagesOf(p); track l) {
-                <span class="bp-langPill" [class.is-default]="l === p.defaultLanguage">{{ l }}</span>
-              }
-            </div>
-          </td>
-          <td>
-            <div class="bp-author">
-              <div class="bp-avatar">
-                @if (p.authorAvatar) {
-                  <img [src]="p.authorAvatar" alt=""/>
-                } @else {
-                  <span>{{ p.authorName?.[0]?.toUpperCase() }}</span>
-                }
-              </div>
-              {{ p.authorName }}
-            </div>
-          </td>
-          <td><app-blog-status-badge [status]="p.status"/></td>
-          <td class="bp-when">{{ whenLabel(p) }}</td>
-          <td class="bp-cell--num">{{ p.views }}</td>
-          <td class="bp-cell--num">{{ p.commentsCount }}</td>
-          <td class="bp-cell--actions" (click)="$event.stopPropagation()">
-            @if (canManage()) {
-              <button type="button" class="bp-action" (click)="goEdit(p)" [title]="'COMMON.EDIT' | translate">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              </button>
-              @if (p.status !== 'scheduled') {
-                <button type="button" class="bp-action" (click)="togglePublish(p)" [title]="publishLabelFor(p) | translate">
-                  @if (p.status === 'published') {
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                  } @else {
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  }
-                </button>
-              }
-              <button type="button" class="bp-action" (click)="duplicate(p)" [title]="'COMMON.DUPLICATE' | translate">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              </button>
-              <button type="button" class="bp-action bp-action--danger" (click)="confirmDelete(p)" [title]="'COMMON.DELETE' | translate">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
-              </button>
-            }
-          </td>
-        </tr>
+    <!-- Post cell: cover thumbnail + title + status badge -->
+    <ng-template listCellTemplate="title" let-row>
+      <div class="bp-postCell">
+        @if (row.coverImage) {
+          <img [src]="row.coverImage" alt="" class="bp-thumb"/>
+        } @else {
+          <div class="bp-thumb bp-thumb--empty">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          </div>
+        }
+        <div class="bp-postCell__main">
+          <span class="bp-title list-interactive-cell">
+            {{ titleOf(row) }}
+            @if (row.isFeatured) { <span class="bp-feat" title="Featured">★</span> }
+          </span>
+          <app-blog-status-badge [status]="row.status"/>
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-template listCellTemplate="publishDate" let-row>{{ whenLabel(row) }}</ng-template>
+    <ng-template listCellTemplate="translations" let-row>
+      <span class="bp-trans">{{ translationsLabel(row) }}</span>
+    </ng-template>
+    <ng-template listCellTemplate="views" let-row>
+      <span class="bp-metric">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        {{ row.views ?? 0 }}
+      </span>
+    </ng-template>
+    <ng-template listCellTemplate="commentsCount" let-row>
+      <span class="bp-metric">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        {{ row.commentsCount ?? 0 }}
+      </span>
+    </ng-template>
+    <ng-template listCellTemplate="likesCount" let-row>
+      <span class="bp-metric">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        {{ row.likesCount ?? 0 }}
+      </span>
+    </ng-template>
+    <ng-template listCellTemplate="taxonomyIds" let-row>
+      <span class="bp-cats">{{ categoriesOf(row) }}</span>
+    </ng-template>
+
+    <!-- Row actions: inline Edit pill + "⋯ More" menu -->
+    <ng-template listRowActions let-row>
+      @if (canManage()) {
+        <div class="bp-rowActions" (click)="$event.stopPropagation()">
+          <button type="button" class="bp-edit md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity" (click)="goEdit(row)">
+            {{ 'COMMON.ACTIONS.EDIT' | translate }}
+          </button>
+          <button type="button" class="bp-share md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity" (click)="shareRow(row)" [title]="'BLOG.LIST.MENU_SHARE' | translate">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </button>
+          <app-dropdown-menu-btn
+            [items]="rowMenu(row)"
+            align="end"
+            [appendToBody]="true"
+            [chevron]="false"
+            triggerClass="bp-more">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+          </app-dropdown-menu-btn>
+        </div>
       }
-    </tbody>
-  </table>
-</app-list-shell>
+    </ng-template>
+  </app-list-page>
+</div>

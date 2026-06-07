@@ -1,0 +1,97 @@
+<app-list-shell
+  [title]="'PLUGINS.LIST.TITLE' | translate"
+  [subtitle]="'PLUGINS.LIST.SUBTITLE' | translate"
+  [breadcrumbs]="breadcrumbs()"
+  [search]="search()"
+  [searchPlaceholder]="'PLUGINS.LIST.SEARCH_PLACEHOLDER' | translate"
+  [searchLive]="true"
+  [loading]="loading()"
+  [hasRows]="hasRows()"
+  [customLoading]="true"
+  [hideCard]="true"
+  (searchChange)="onSearch($event)"
+  (searchClear)="clearSearch()">
+
+  <ul shellLoading class="pl-rows pl-rows--skeleton" aria-busy="true">
+    @for (_ of [0,1,2,3,4]; track $index) {
+      <li class="pl-card">
+        <app-skeleton variant="block" width="40px" height="40px"/>
+        <app-skeleton variant="line" width="35%"/>
+        <app-skeleton variant="line" width="44px"/>
+      </li>
+    }
+  </ul>
+
+  <div shellEmpty>
+    <p>{{ (search() ? 'PLUGINS.LIST.NO_MATCH' : 'PLUGINS.LIST.EMPTY') | translate }}</p>
+  </div>
+
+  <div class="pl-groups">
+    @for (group of groups(); track trackGroup($index, group)) {
+      <section class="pl-group">
+        <h2 class="pl-group__title">{{ groupLabel(group.type) | translate }}</h2>
+        <ul class="pl-rows">
+          @for (plugin of group.list; track trackRow($index, plugin)) {
+            <li class="pl-card"
+                [class.pl-card--clickable]="canClick(plugin)"
+                (click)="open(plugin)">
+              @if (logo(plugin); as src) {
+                <img class="pl-card__logo" [src]="src" [alt]="displayName(plugin)"/>
+              } @else if (isAi(plugin)) {
+                <div class="pl-card__logo pl-card__logo--ai" aria-hidden="true">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l1.8 5L19 8.8l-5.2 1.8L12 16l-1.8-5.4L5 8.8 10.2 7 12 2z"/>
+                    <path d="M19 13l.9 2.6L22 16.5l-2.1.9L19 20l-.9-2.6L16 16.5l2.1-.9L19 13z"/>
+                  </svg>
+                </div>
+              } @else {
+                <div class="pl-card__logo pl-card__logo--placeholder" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/>
+                    <path d="M12 8v4l3 2"/>
+                  </svg>
+                </div>
+              }
+
+              <div class="pl-card__main">
+                <strong class="pl-card__name">{{ displayName(plugin) }}</strong>
+                @if (desc(plugin); as d) {
+                  <span class="pl-card__desc">
+                    {{ d | translate }}@if (plugin.note) { <span class="pl-card__note"> · {{ plugin.note | translate }}</span> }
+                  </span>
+                }
+              </div>
+
+              @if (isAi(plugin)) {
+                <span [class]="aiBadge().cls">{{ aiBadge().key | translate }}</span>
+              } @else {
+                <label class="pl-toggle" (click)="$event.stopPropagation()">
+                  <input type="checkbox"
+                    [checked]="plugin.settings.enable"
+                    (change)="toggle(plugin, $event)"/>
+                  <span class="pl-toggle__track" aria-hidden="true">
+                    <span class="pl-toggle__thumb"></span>
+                  </span>
+                </label>
+              }
+
+              @if (canClick(plugin)) {
+                <button type="button" class="pl-card__configure"
+                        (click)="$event.stopPropagation(); open(plugin)">
+                  {{ 'PLUGINS.COMMON.CONFIGURE' | translate }}
+                </button>
+                <svg class="pl-card__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+</app-list-shell>
+
+<app-loading-overlay [show]="loading()"/>

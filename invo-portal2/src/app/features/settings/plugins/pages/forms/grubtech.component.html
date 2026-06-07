@@ -1,0 +1,88 @@
+<app-plugin-form-shell
+  [title]="'PLUGINS.GRUBTECH.TITLE' | translate"
+  [intro]="'PLUGINS.GRUBTECH.INTRO' | translate"
+  [breadcrumbs]="breadcrumbs()"
+  [loading]="loading()" [saving]="saving()"
+  (save)="save()" (back)="back()">
+
+  <div class="pf-card">
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PLUGINS.GRUBTECH.TOKEN' | translate }}</label>
+      <input class="pf-input" type="password" name="token" autocomplete="new-password"
+             [(ngModel)]="plugin.settings.Token" (ngModelChange)="markSecretDirty('Token')"
+             [placeholder]="isNew ? '' : ('PLUGINS.COMMON.SECRET_KEEP_HINT' | translate)"/>
+      @if (!isNew) { <span class="pf-hint">{{ 'PLUGINS.COMMON.SECRET_KEEP_HINT' | translate }}</span> }
+    </div>
+  </div>
+
+  <div class="pf-card">
+    <h3 class="pf-section-title">{{ 'PLUGINS.GRUBTECH.SERVICES' | translate }}</h3>
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PLUGINS.GRUBTECH.TALABAT' | translate }}</label>
+      <app-search-dropdown
+        [items]="services()" [displayWith]="serviceLabel" [compareWith]="serviceEquals"
+        [placeholder]="'PLUGINS.GRUBTECH.PICK_SERVICE' | translate"
+        [value]="serviceById(plugin.settings.services!.Talabat)"
+        (valueChange)="plugin.settings.services!.Talabat = $any($event)?.id ?? null; markDirty()"/>
+    </div>
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PLUGINS.GRUBTECH.JAHEZ' | translate }}</label>
+      <app-search-dropdown
+        [items]="services()" [displayWith]="serviceLabel" [compareWith]="serviceEquals"
+        [placeholder]="'PLUGINS.GRUBTECH.PICK_SERVICE' | translate"
+        [value]="serviceById(plugin.settings.services!.Jahez)"
+        (valueChange)="plugin.settings.services!.Jahez = $any($event)?.id ?? null; markDirty()"/>
+    </div>
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PLUGINS.GRUBTECH.CHATFOOD' | translate }}</label>
+      <app-search-dropdown
+        [items]="services()" [displayWith]="serviceLabel" [compareWith]="serviceEquals"
+        [placeholder]="'PLUGINS.GRUBTECH.PICK_SERVICE' | translate"
+        [value]="serviceById(plugin.settings.services!.ChatFood)"
+        (valueChange)="plugin.settings.services!.ChatFood = $any($event)?.id ?? null; markDirty()"/>
+    </div>
+  </div>
+
+  <!-- Per-branch store + menu -->
+  @for (br of branchRows(); track br.branchId) {
+    <div class="pf-card">
+      <h3 class="pf-section-title">{{ br.branchName }}</h3>
+      <div class="pf-row">
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.GRUBTECH.STORE_ID' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="br.storeId" (ngModelChange)="markDirty()"
+                 [name]="'store_' + br.branchId"/>
+        </div>
+        <div class="pf-field">
+          <label class="pf-label">{{ 'PLUGINS.GRUBTECH.MENU' | translate }}</label>
+          <input class="pf-input" type="text" [(ngModel)]="br.menuId" (ngModelChange)="markDirty()"
+                 [disabled]="!br.storeId" [name]="'menu_' + br.branchId"/>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+        @if (br.isSynced) {
+          <span class="pf-status pf-status--ok">{{ 'PLUGINS.GRUBTECH.ALREADY_SYNCED' | translate }}</span>
+        }
+        <button type="button" class="btn btn-default btn-sm"
+                [disabled]="!br.storeId || syncing()[br.branchId]"
+                (click)="syncBranch(br)">
+          {{ (br.isSynced ? 'PLUGINS.GRUBTECH.RESYNC' : 'PLUGINS.GRUBTECH.SYNC') | translate }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Enable -->
+  <div class="pf-card">
+    <div class="pf-toggle-row">
+      <div class="pf-toggle-row__text">
+        <div class="pf-toggle-row__title">{{ 'PLUGINS.COMMON.ENABLE' | translate }}</div>
+        <div class="pf-toggle-row__hint">{{ 'PLUGINS.COMMON.ENABLED_HINT' | translate }}</div>
+      </div>
+      <label class="pf-switch">
+        <input type="checkbox" [(ngModel)]="plugin.settings.enable" (ngModelChange)="markDirty()" name="enable"/>
+        <span class="pf-switch__track"><span class="pf-switch__thumb"></span></span>
+      </label>
+    </div>
+  </div>
+</app-plugin-form-shell>

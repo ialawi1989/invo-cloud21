@@ -30,6 +30,8 @@ import { ToastService } from '@shared/components/toast/toast.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { RichEditorComponent } from '@shared/components/rich-editor/rich-editor.component';
+import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-editor-ai';
+import { BlogAiService } from '../../services/blog-ai.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 import {
@@ -38,6 +40,20 @@ import {
 } from '../../../settings/media/components/media-picker';
 import { Media } from '../../../settings/media/models/media.model';
 import { VideoEmbedModalComponent, VideoEmbedResult } from './video-embed-modal.component';
+import { AudioEmbedModalComponent, AudioEmbedResult } from './audio-embed-modal.component';
+import { AddTableModalComponent, AddTableResult } from './add-table-modal.component';
+import { LayoutSectionModalComponent } from './layout-section-modal.component';
+import { PollTypeModalComponent, PollType } from './poll-type-modal.component';
+import {
+  PickProductModalComponent,
+  PickProductModalData,
+  PickProductResult,
+} from '../../../products/pages/product-form/components/pick-product-modal/pick-product-modal.component';
+import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { ProductsService } from '../../../products/services/products.service';
+import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
+import { AuthService } from '@core/auth/auth.service';
 import {
   ChangeLanguageModalComponent,
   ChangeLanguageModalData,
@@ -67,7 +83,7 @@ type SettingsTab = 'general' | 'categories' | 'tags';
 type AddToolKey =
   | 'image' | 'gallery' | 'video' | 'file'
   | 'divider' | 'button' | 'table' | 'expandable' | 'poll' | 'layout' | 'banner'
-  | 'html' | 'adsense' | 'soundcloud';
+  | 'html' | 'soundcloud' | 'product';
 
 const AUTOSAVE_INTERVAL_MS = 30_000;
 const EXCERPT_RECOMMENDED  = 500;
@@ -90,7 +106,7 @@ const ICON = {
   video:    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><polygon points="23 7 16 12 23 17 23 7"/></svg>',
   gif:      '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><text x="6" y="16" font-size="7" font-weight="700" fill="currentColor" stroke="none">GIF</text></svg>',
   file:     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>',
-  divider:  '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>',
+  divider:  '<svg viewBox="0 0 36 36" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M30 25.5V27H4.5v-1.5H30zm-12.75-9c1.243 0 2.25 1.007 2.25 2.25S18.493 21 17.25 21 15 19.993 15 18.75s1.007-2.25 2.25-2.25zM12 18v1.5H4.5V18H12zm18 0v1.5h-7.5V18H30zm-12.75 0c-.414 0-.75.336-.75.75s.336.75.75.75.75-.336.75-.75-.336-.75-.75-.75zM30 10.5V12H4.5v-1.5H30z"/></svg>',
   button:   '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3"/></svg>',
   table:    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="4" x2="9" y2="20"/></svg>',
   expandable: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><polyline points="3 6 5 8 7 6"/></svg>',
@@ -98,8 +114,8 @@ const ICON = {
   layout:   '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="18"/><rect x="11" y="3" width="6" height="18"/><rect x="19" y="3" width="2" height="18"/></svg>',
   banner:   '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="1"/><line x1="2" y1="11" x2="22" y2="11"/></svg>',
   html:     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
-  adsense:  '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 22 2 22 12 2"/></svg>',
   sound:    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 17h2v-7H2zM6 17h2V8H6zM10 17h2V5h-2zM14 17h2v-4h-2zM18 17h2V9h-2z"/></svg>',
+  product:  '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
 } as const;
 
 @Component({
@@ -115,10 +131,20 @@ const ICON = {
     SlugInputComponent,
     TaxonomySelectorComponent,
     RichEditorComponent,
+    DatePickerComponent,
+    TooltipDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './post-composer.component.html',
   styleUrl: './post-composer.component.scss',
+  // Scope Content AI to the blog: supplying RICH_EDITOR_AI_PROVIDER here (and
+  // only here) is what lights up the editor's ✨ button. Other editors that
+  // reuse <app-rich-editor> don't provide it, so they stay AI-free.
+  providers: [
+    BlogAiService,
+    { provide: RICH_EDITOR_AI_PROVIDER, useExisting: BlogAiService },
+    MycurrencyPipe,
+  ],
 })
 export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveComponent {
   private api        = inject(BLOG_API);
@@ -128,6 +154,9 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   private destroyRef = inject(DestroyRef);
   private toast      = inject(ToastService);
   private langSvc    = inject(LanguageService);
+  private mycurrency = inject(MycurrencyPipe);
+  private products   = inject(ProductsService);
+  private auth       = inject(AuthService);
   private sanitizer  = inject(DomSanitizer);
   private modal      = inject(ModalService);
   private fb         = inject(NonNullableFormBuilder);
@@ -160,6 +189,8 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     ogImage:          '',
     isFeatured:       false,
     featuredImageOn:  true,
+    allowComments:    true,
+    relatedPostIds:   this.fb.control<string[]>([]),
     taxonomyIds:      this.fb.control<string[]>([]),
     mainTaxonomyId:   this.fb.control<string | null>(null),
     translations:     this.fb.group<Record<string, ReturnType<PostComposerComponent['buildLocaleGroup']>>>(
@@ -201,6 +232,10 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   mainTaxonomyId   = signal<string | null>(null);
   isFeatured       = signal<boolean>(false);
   featuredImageOn  = signal<boolean>(true);
+  allowComments    = signal<boolean>(true);
+  relatedPostIds   = signal<string[]>([]);
+  /** Post options for the "Related posts" picker (loaded once). */
+  relatedPostOptions = signal<{ id: string; label: string }[]>([]);
 
   // ─── UI state ──────────────────────────────────────────────────────
   active       = signal<string>('en');
@@ -234,6 +269,27 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   idDisplay = (v: any) => v?.label ?? v ?? '';
   idCompare = (a: any, b: any) => (a?.id ?? a) === (b?.id ?? b);
   idToValue = (i: { id: string; label: string }) => i.id;
+  /** Writer dropdown displays the writer's name. The bound value is the
+   *  raw id (UUID), so resolve it back to a name via the writers list —
+   *  otherwise the trigger shows the UUID. */
+  writerDisplay = (v: any) => {
+    const id = v?.id ?? v;
+    return this.writers().find(w => w.id === id)?.name ?? v?.label ?? '';
+  };
+  /** Related-posts dropdown — resolve a post id back to its title. */
+  relatedDisplay = (v: any) => {
+    const id = v?.id ?? v;
+    return this.relatedPostOptions().find(p => p.id === id)?.label ?? v?.label ?? '';
+  };
+
+  /** Publish date as a Date for the shared date picker (form stores an
+   *  ISO/local string; null when unset). */
+  scheduledDateObj = computed<Date | null>(() => {
+    const s = this.scheduledDate();
+    if (!s) return null;
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  });
 
   /** Active rail item's label, used in the panel header. */
   panelTitle = computed(() => {
@@ -285,7 +341,8 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
       { key: 'image',   label: 'BLOG.COMPOSER.ADD_IMAGE',   icon: ICON.image   },
       { key: 'gallery', label: 'BLOG.COMPOSER.ADD_GALLERY', icon: ICON.gallery },
       { key: 'video',   label: 'BLOG.COMPOSER.ADD_VIDEO',   icon: ICON.video   },
-      { key: 'file',    label: 'BLOG.COMPOSER.ADD_FILE',    icon: ICON.file    },
+      // TODO(upload): re-add the File tool once file upload is implemented.
+      // { key: 'file',    label: 'BLOG.COMPOSER.ADD_FILE',    icon: ICON.file    },
     ]},
     { label: 'BLOG.COMPOSER.ADD_ELEMENTS', tools: [
       { key: 'divider',    label: 'BLOG.COMPOSER.ADD_DIVIDER',    icon: ICON.divider    },
@@ -296,12 +353,20 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
       { key: 'layout',     label: 'BLOG.COMPOSER.ADD_LAYOUT',     icon: ICON.layout     },
       { key: 'banner',     label: 'BLOG.COMPOSER.ADD_BANNER',     icon: ICON.banner     },
     ]},
+    { label: 'BLOG.COMPOSER.ADD_FROM_SITE', tools: [
+      { key: 'product',    label: 'BLOG.COMPOSER.ADD_PRODUCT',    icon: ICON.product },
+    ]},
     { label: 'BLOG.COMPOSER.ADD_FROM_WEB', tools: [
       { key: 'html',       label: 'BLOG.COMPOSER.ADD_HTML',       icon: ICON.html    },
-      { key: 'adsense',    label: 'BLOG.COMPOSER.ADD_ADSENSE',    icon: ICON.adsense },
       { key: 'soundcloud', label: 'BLOG.COMPOSER.ADD_SOUNDCLOUD', icon: ICON.sound   },
     ]},
   ];
+
+  /** Flat list of insert commands for the editor's "/" slash menu —
+   *  reuses the Add-panel groups so the two stay in sync. */
+  get slashCommands(): { key: string; label: string; icon: string }[] {
+    return this.addGroups.flatMap(g => g.tools);
+  }
 
   constructor() {
     withTranslations('blog');
@@ -325,6 +390,8 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
         this.ogImage.set(v.ogImage                  ?? '');
         this.isFeatured.set(v.isFeatured            ?? false);
         this.featuredImageOn.set(v.featuredImageOn  ?? true);
+        this.allowComments.set(v.allowComments      ?? true);
+        this.relatedPostIds.set([...(v.relatedPostIds ?? [])]);
         this.taxonomyIds.set([...(v.taxonomyIds ?? [])]);
         this.mainTaxonomyId.set(v.mainTaxonomyId    ?? null);
         // Translations: rebuild the plain-object signal from the
@@ -371,8 +438,15 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     // Load lookups in parallel.
     void this.api.listWriters().then(rows => {
       this.writers.set(rows);
-      if (!this.authorEmployeeId() && rows[0]) this.authorEmployeeId.set(rows[0].id);
+      // New post → default the writer to the current user (fall back to the
+      // first writer if the logged-in user isn't in the writers list).
+      if (this.isNew() && !this.postForm.controls.authorEmployeeId.value) {
+        const me = this.auth.currentEmployee?.id;
+        const def = (me && rows.some(r => r.id === me)) ? me : rows[0]?.id;
+        if (def) this.postForm.controls.authorEmployeeId.setValue(def);
+      }
     });
+    void this.loadRelatedPostOptions();
     void this.api.getSettings().then(s => {
       this.supportedLangs.set(s.template.languages.supported);
       this.rtlLangs.set(s.template.languages.rtlLanguages);
@@ -438,7 +512,21 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     // canonical way to swap a dynamic FormGroup's contents.
     const tg = this.translationsGroup;
     Object.keys(tg.controls).forEach(k => tg.removeControl(k));
-    for (const [code, slice] of Object.entries(post.translations)) {
+    // Reconstruct the translations map. The backend may send a `translations`
+    // object keyed by language, OR flatten the default-language fields onto
+    // the post row — handle both so the editor always has at least one locale.
+    const rawT = (post.translations && typeof post.translations === 'object') ? post.translations : null;
+    const entries = rawT && Object.keys(rawT).length
+      ? Object.entries(rawT)
+      : [[post.defaultLanguage || 'en', {
+          title:          (post as any).title ?? '',
+          slug:           (post as any).slug ?? '',
+          content:        (post as any).content ?? '',
+          excerpt:        (post as any).excerpt ?? '',
+          seoTitle:       (post as any).seoTitle ?? '',
+          seoDescription: (post as any).seoDescription ?? '',
+        }]] as [string, any][];
+    for (const [code, slice] of entries) {
       tg.addControl(code, this.buildLocaleGroup(slice) as any);
     }
     this.postForm.patchValue({
@@ -449,9 +537,11 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
       coverImage:       post.coverImage ?? '',
       featuredImageOn:  !!post.coverImage,
       ogImage:          post.ogImage ?? '',
-      taxonomyIds:      [...post.taxonomyIds],
+      taxonomyIds:      Array.isArray(post.taxonomyIds) ? [...post.taxonomyIds] : [],
       mainTaxonomyId:   post.mainTaxonomyId,
       isFeatured:       post.isFeatured,
+      allowComments:    post.allowComments ?? true,
+      relatedPostIds:   Array.isArray(post.relatedPostIds) ? [...post.relatedPostIds] : [],
     }, { emitEvent: true });
     // Pristine after loading — load events shouldn't count as dirt.
     this.postForm.markAsPristine();
@@ -477,7 +567,15 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     this.postForm.markAsDirty();
   }
   setScheduled(v: string): void { this.postForm.controls.scheduledDate.setValue(v); this.postForm.markAsDirty(); }
+  /** Date picker emits a Date — persist it as an ISO string. */
+  setScheduledDate(d: Date | null): void { this.setScheduled(d ? d.toISOString() : ''); }
   setFeatured(v: boolean): void { this.postForm.controls.isFeatured.setValue(v); this.postForm.markAsDirty(); }
+  setAllowComments(v: boolean): void { this.postForm.controls.allowComments.setValue(v); this.postForm.markAsDirty(); }
+  setRelatedPosts(ids: any): void {
+    const list = (Array.isArray(ids) ? ids : []).map((x: any) => x?.id ?? x).slice(0, 3);
+    this.postForm.controls.relatedPostIds.setValue(list);
+    this.postForm.markAsDirty();
+  }
   setCover(url: string): void { this.postForm.controls.coverImage.setValue(url); this.postForm.markAsDirty(); }
   setOg(url: string): void { this.postForm.controls.ogImage.setValue(url); this.postForm.markAsDirty(); }
 
@@ -542,6 +640,19 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     });
     this.addTaxonomy(created);
   }
+  /** Create + assign a new category (used by the AI suggestions picker). */
+  async createCategoryInline(name: string): Promise<void> {
+    const slug = generateSlug(name);
+    const created = await this.api.saveTaxonomy({
+      taxonomyType: 'category',
+      defaultLanguage: 'en',
+      slug,
+      order: 0,
+      image: null,
+      translations: { en: { name, slug } },
+    });
+    this.addTaxonomy(created);
+  }
 
   // ─── Cover / OG upload ─────────────────────────────────────────────
   async onCoverFile(files: FileList | null): Promise<void> {
@@ -556,6 +667,34 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   }
   removeCover(): void { this.setCover(''); }
   removeOg(): void { this.setOg(''); }
+
+  /** Featured image — pick from the shared media library (replaces the
+   *  old hidden file input so it matches every other image picker). */
+  async onPickFeaturedImage(): Promise<void> {
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      { data: { contentTypes: ['image'], multiple: false, title: this.translate.instant('BLOG.COMPOSER.FEATURED_IMAGE') }, size: 'xl' },
+    );
+    const picked = await ref.afterClosed();
+    const url = mediaUrl(Array.isArray(picked) ? picked[0] : picked);
+    if (!url) return;
+    this.setCover(url);
+  }
+
+  /** Load post titles once for the Related-posts picker. */
+  private async loadRelatedPostOptions(): Promise<void> {
+    try {
+      const res = await this.api.listPosts({ limit: 100, sortBy: 'publishDate', sortDir: 'desc' });
+      const def = this.defaultLanguage();
+      const opts = (res.list ?? [])
+        .filter(p => p.id !== this.postId())
+        .map(p => ({
+          id: p.id,
+          label: p.translations?.[def]?.title || Object.values(p.translations ?? {})[0]?.title || p.id,
+        }));
+      this.relatedPostOptions.set(opts);
+    } catch { /* picker stays empty on failure */ }
+  }
 
   // ─── Add panel — insert blocks into the editor ─────────────────────
   async onAddTool(key: AddToolKey): Promise<void> {
@@ -573,34 +712,37 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
         await this.insertFile();
         break;
       case 'divider':
-        this.editor?.insertHtml('<hr/>');
+        this.editor?.insertHtml('<hr data-divider-style="line" data-divider-size="extended" data-divider-align="center"/>');
         break;
       case 'button':
         this.insertButton();
         break;
       case 'table':
-        this.editor?.insertHtml(`
-          <table>
-            <thead><tr><th>Col 1</th><th>Col 2</th></tr></thead>
-            <tbody><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr></tbody>
-          </table>`);
+        await this.insertTable();
         break;
       case 'expandable':
-        this.editor?.insertHtml(`<details><summary>${this.translate.instant('BLOG.COMPOSER.EXPANDABLE_TITLE')}</summary><p>${this.translate.instant('BLOG.COMPOSER.EXPANDABLE_BODY')}</p></details>`);
+        this.editor?.insertExpandable();
         break;
       case 'banner':
         // First-class banner section: editor builds the <section
         // class="re-banner"> shape and selects it for immediate styling.
         this.editor?.insertBanner();
         break;
-      case 'poll':
-      case 'adsense':
-      case 'soundcloud':
       case 'layout':
-        this.toast.info('BLOG.COMPOSER.COMING_SOON');
+        await this.insertLayoutSection();
+        break;
+      case 'poll':
+        await this.insertPoll();
+        break;
+      case 'soundcloud':
+        await this.insertAudioEmbed();
+        break;
+      case 'product':
+        // Emits productPickClick → onPickProduct opens the picker.
+        this.editor?.insertProduct();
         break;
       case 'html':
-        this.insertRawHtml();
+        this.editor?.insertHtmlEmbed();
         break;
     }
   }
@@ -644,23 +786,54 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     const result = await ref.afterClosed();
     const picked = Array.isArray(result) ? result : (result ? [result] : []);
     if (!picked.length) return;
-    const tiles = picked
-      .map(m => mediaUrl(m))
-      .filter((u): u is string => !!u)
-      .map(u => `<img src="${escapeAttr(u)}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;"/>`)
+    const items = picked
+      .map(m => ({ url: mediaUrl(m), id: m.id }))
+      .filter((x): x is { url: string; id: string | null } => !!x.url);
+    if (!items.length) return;
+    const tiles = items
+      .map((x, i) => {
+        const mid = x.id ? ` data-media-id="${escapeAttr(x.id)}"` : '';
+        return `<div class="re-gallery-item"><img src="${escapeAttr(x.url!)}" alt="" data-gid="g${i}"${mid}/></div>`;
+      })
       .join('');
-    if (!tiles) return;
-    // Inline style keeps the gallery rendering correct even outside
-    // the editor's surface (e.g. in the public site reader), without
-    // depending on a global stylesheet being loaded. Wrapped in the
-    // shared embed-figure shape so the selection toolbar applies.
-    const cols = Math.min(3, Math.max(2, picked.length));
+    // Default config: grid, 1:1, crop, up-to-3 columns. The gallery
+    // panel (Manage) edits these via data-* + the .re-gallery class.
+    const cols = Math.min(3, Math.max(2, items.length));
     this.editor?.insertHtml(
-      `<figure class="re-embed-figure re-embed-figure--gallery re-align-center" contenteditable="false">
-        <div class="re-gallery" style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;">${tiles}</div>
+      `<figure class="re-embed-figure re-embed-figure--gallery re-align-center" contenteditable="false"
+               data-layout="grid" data-crop="crop" data-ratio="1:1" data-cols="${cols}"
+               data-click-expand="true" data-allow-download="false">
+        <div class="re-gallery re-gallery--grid" data-crop="crop" data-ratio="1:1" style="--re-gal-cols:${cols};--re-gal-ratio:1 / 1;">${tiles}</div>
         <figcaption class="re-embed-caption" contenteditable="true" data-placeholder="Write a caption"></figcaption>
       </figure>`,
     );
+  }
+
+  /** Gallery "Manage media" — open the media library with the
+   *  gallery's current images PRE-SELECTED, so the picker reflects
+   *  what's already in the gallery. The returned selection replaces
+   *  the gallery (add by selecting more, remove by deselecting). */
+  async onGalleryAddImages(_fig: HTMLElement): Promise<void> {
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      {
+        data: {
+          contentTypes: ['image'],
+          multiple: true,
+          title: this.translate.instant('BLOG.COMPOSER.ADD_GALLERY'),
+          preSelectedIds: this.editor?.currentGalleryMediaIds() ?? [],
+        },
+        size: 'xl',
+      },
+    );
+    const result = await ref.afterClosed();
+    const picked = Array.isArray(result) ? result : (result ? [result] : []);
+    // Undefined result = cancelled → leave the gallery untouched.
+    if (result === undefined) return;
+    const items = picked
+      .map(m => ({ url: mediaUrl(m), mediaId: m.id ?? undefined }))
+      .filter((x): x is { url: string; mediaId: string | undefined } => !!x.url);
+    this.editor?.setGalleryImages(items);
   }
 
   /** Open the shared Media Library picker filtered to non-image
@@ -741,6 +914,47 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     this.editor?.setColBgImage(url);
   }
 
+  /** Poll background image — open the media library and pipe the chosen
+   *  URL back to the editor. */
+  async onPickPollBgImage(): Promise<void> {
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      { data: { contentTypes: ['image'], multiple: false, title: this.translate.instant('BLOG.COMPOSER.ADD_IMAGE') }, size: 'xl' },
+    );
+    const picked = await ref.afterClosed();
+    const url = mediaUrl(Array.isArray(picked) ? picked[0] : picked);
+    if (!url) return;
+    this.editor?.setPollBgImageUrl(url);
+  }
+
+  /** Product card — open the shared product picker (single-select) and
+   *  pipe the chosen product back to the editor. Fired both for the
+   *  initial insert and the toolbar "Change product" action; the editor
+   *  decides whether to insert a new card or swap the selected one. */
+  async onPickProduct(): Promise<void> {
+    const ref = this.modal.open<PickProductModalComponent, PickProductModalData, PickProductResult | undefined>(
+      PickProductModalComponent,
+      { data: { multiple: false, title: this.translate.instant('BLOG.COMPOSER.ADD_PRODUCT') }, size: 'md' },
+    );
+    const result = await ref.afterClosed();
+    const p = result?.added?.[0];
+    if (!p) return;
+    // The list thumbnail is a small/cropped variant; fetch the full product
+    // to use its original image (mediaUrl.defaultUrl). Fall back to the
+    // picker thumbnail if the detail call fails or has no media.
+    let image = p.thumbnailUrl ?? '';
+    try {
+      const full = await this.products.getProduct(p.id);
+      image = full?.mediaUrl?.defaultUrl || full?.mediaUrl?.thumbnailUrl || image;
+    } catch { /* keep the thumbnail fallback */ }
+    this.editor?.setProductCard({
+      id:    p.id,
+      name:  p.name,
+      price: this.mycurrency.transform(p.price ?? 0),
+      image,
+    });
+  }
+
   /** Cell-level image picker — fires when the user clicks an "Add
    *  image" placeholder inside a banner cell. Opens the media library
    *  modal; on selection, swaps the placeholder for an <img> via the
@@ -806,14 +1020,11 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     );
     const result = await ref.afterClosed();
     const picked = Array.isArray(result) ? result : (result ? [result] : []);
-    const tiles = picked
-      .map(m => mediaUrl(m))
-      .filter((u): u is string => !!u)
-      .map(u => `<img src="${escapeAttr(u)}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;"/>`)
-      .join('');
-    if (!tiles) return null;
-    const cols = Math.min(3, Math.max(2, picked.length));
-    return wrap(`<div class="re-gallery" style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;">${tiles}</div>`, true);
+    const urls = picked.map(m => mediaUrl(m)).filter((u): u is string => !!u);
+    if (!urls.length) return null;
+    const tiles = urls.map((u, i) => `<div class="re-gallery-item"><img src="${escapeAttr(u)}" alt="" data-gid="g${i}"/></div>`).join('');
+    const cols = Math.min(3, Math.max(2, urls.length));
+    return wrap(`<div class="re-gallery re-gallery--grid" data-crop="crop" data-ratio="1:1" style="--re-gal-cols:${cols};--re-gal-ratio:1 / 1;">${tiles}</div>`, true);
   }
 
   private async pickReplaceVideo(wrap: (inner: string, ce?: boolean) => string): Promise<string | null> {
@@ -892,6 +1103,50 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     this.editor?.insertHtml(html);
   }
 
+  /** Open the Wix-style "Add audio file" modal. The audio twin of
+   *  {@link insertVideoEmbed}: converts a SoundCloud / Spotify URL into
+   *  the right player iframe, or hands off to the media picker for an
+   *  uploaded audio file. */
+  private async insertAudioEmbed(): Promise<void> {
+    const ref = this.modal.open<AudioEmbedModalComponent, void, AudioEmbedResult | undefined>(
+      AudioEmbedModalComponent,
+      { size: 'sm' },
+    );
+    const result = await ref.afterClosed();
+    if (!result) return;
+
+    if (result.kind === 'upload') {
+      // Open the shared media library scoped to audio files.
+      const pickerRef = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+        MediaPickerModalComponent,
+        { data: { contentTypes: ['audio'], multiple: false, title: this.translate.instant('BLOG.COMPOSER.AUDIO_MODAL_TITLE') }, size: 'xl' },
+      );
+      const picked = await pickerRef.afterClosed();
+      const m = Array.isArray(picked) ? picked[0] : picked;
+      const url = mediaUrl(m ?? null);
+      if (!url) return;
+      this.editor?.insertHtml(
+        `<figure class="re-embed-figure re-align-center">
+          <div class="re-embed-audio" contenteditable="false">
+            <audio src="${escapeAttr(url)}" controls style="width:100%;"></audio>
+          </div>
+          <figcaption class="re-embed-caption" data-placeholder="Write a caption"></figcaption>
+        </figure>`,
+      );
+      return;
+    }
+
+    // Embed branch — SoundCloud or Spotify. Anything else falls through
+    // to the SoundCloud widget URL so a bare track link still renders.
+    const raw = result.url.trim();
+    const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    const sp = spotifyEmbedUrl(url);
+    const html = sp
+      ? responsiveAudioIframe(sp, 'Spotify player', 152)
+      : responsiveAudioIframe(soundcloudEmbedUrl(url), 'SoundCloud player', 166);
+    this.editor?.insertHtml(html);
+  }
+
   private insertButton(): void {
     // Insert a button-styled anchor with inline styles that the
     // editor's contextual button-settings panel can read back via
@@ -909,11 +1164,40 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     this.editor?.insertHtml(`<p><a class="re-btn-block" href="#" style="${style}">Click me</a></p>`);
   }
 
-  private insertRawHtml(): void {
-    const html = window.prompt(this.translate.instant('BLOG.COMPOSER.HTML_PROMPT'), '<!-- paste HTML here -->');
-    if (!html) return;
-    this.editor?.insertHtml(`<div class="re-html-raw">${html}</div>`);
+  /** Open the "Add a table" dialog, then insert an editable table of the
+   *  chosen size. */
+  private async insertTable(): Promise<void> {
+    const ref = this.modal.open<AddTableModalComponent, void, AddTableResult | undefined>(
+      AddTableModalComponent, { size: 'sm' },
+    );
+    const res = await ref.afterClosed();
+    if (!res) return;
+    const cols = Math.max(1, res.cols);
+    const rows = Math.max(1, res.rows);
+    const cells = `<td>&nbsp;</td>`.repeat(cols);
+    const body  = `<tr>${cells}</tr>`.repeat(rows);
+    this.editor?.insertHtml(`<table class="re-table re-table--${res.preset}"><tbody>${body}</tbody></table>`);
   }
+
+  /** Open the "Layout section" picker, then insert a multi-column banner
+   *  from the chosen preset (reuses the banner engine). */
+  private async insertLayoutSection(): Promise<void> {
+    const ref = this.modal.open<LayoutSectionModalComponent, void, string | undefined>(
+      LayoutSectionModalComponent, { size: 'md' },
+    );
+    const id = await ref.afterClosed();
+    if (id) this.editor?.applyBannerPreset(id);
+  }
+
+  /** Open the "Choose a Poll Type" dialog, then insert the chosen poll. */
+  private async insertPoll(): Promise<void> {
+    const ref = this.modal.open<PollTypeModalComponent, void, PollType | undefined>(
+      PollTypeModalComponent, { size: 'md' },
+    );
+    const type = await ref.afterClosed();
+    if (type) this.editor?.insertPoll(type);
+  }
+
 
   // ─── Undo / Redo (browser-native) ──────────────────────────────────
   onUndo(): void { document.execCommand('undo'); }
@@ -947,6 +1231,8 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
                           : null,
       translations:     v.translations,
       taxonomyIds:      v.taxonomyIds,
+      relatedPostIds:   v.relatedPostIds ?? [],
+      allowComments:    v.allowComments ?? true,
       readingTime:      estimateReadingTime(defContent),
     };
   }
@@ -1144,6 +1430,48 @@ function responsiveIframe(src: string, title: string): string {
     </div>
     <figcaption class="re-embed-caption" data-placeholder="Write a caption"></figcaption>
   </figure>`;
+}
+
+/** Fixed-height embed for audio players (SoundCloud / Spotify). Unlike
+ *  {@link responsiveIframe} (16:9 video), audio players are short bars,
+ *  so the wrapper uses an explicit height instead of an aspect ratio. */
+function responsiveAudioIframe(src: string, title: string, height: number): string {
+  return `<figure class="re-embed-figure re-align-center">
+    <div class="re-embed-audio" contenteditable="false" style="height:${height}px;">
+      <iframe src="${escapeAttr(src)}" title="${escapeAttr(title)}" frameborder="0"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              allowfullscreen></iframe>
+    </div>
+    <figcaption class="re-embed-caption" data-placeholder="Write a caption"></figcaption>
+  </figure>`;
+}
+
+/** Build the SoundCloud widget player URL from any soundcloud.com link. */
+function soundcloudEmbedUrl(url: string): string {
+  const params = new URLSearchParams({
+    url,
+    color: '#ff5500',
+    auto_play: 'false',
+    hide_related: 'false',
+    show_comments: 'true',
+    show_user: 'true',
+    show_reposts: 'false',
+    show_teaser: 'true',
+  });
+  return `https://w.soundcloud.com/player/?${params.toString()}`;
+}
+
+/** Convert an open.spotify.com share link into its /embed/ player URL.
+ *  Returns null for non-Spotify URLs so the caller falls back to
+ *  SoundCloud. Handles track / album / playlist / episode / show. */
+function spotifyEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (!/(^|\.)spotify\.com$/.test(u.hostname.replace(/^www\./, ''))) return null;
+    if (u.pathname.startsWith('/embed/')) return `https://open.spotify.com${u.pathname}`;
+    const m = u.pathname.match(/^\/(track|album|playlist|episode|show|artist)\/([\w-]+)/);
+    return m ? `https://open.spotify.com/embed/${m[1]}/${m[2]}` : null;
+  } catch { return null; }
 }
 
 function extractYouTubeId(url: string): string | null {

@@ -1,0 +1,228 @@
+// Shared field styling for plugin configuration forms.
+
+.pf-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+.pf-card + .pf-card { margin-top: 16px; }
+
+.pf-field { margin-bottom: 16px; }
+.pf-field:last-child { margin-bottom: 0; }
+
+.pf-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+.pf-hint {
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+.pf-error {
+  display: block;
+  font-size: 12px;
+  color: #dc2626;
+  margin-top: 4px;
+}
+
+.pf-input,
+.pf-select {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-400, #38bdf8);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+  &.is-invalid { border-color: #f87171; }
+  &:disabled { background: #f8fafc; color: #94a3b8; }
+}
+
+.pf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+// Inline enable/status toggle row
+.pf-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.pf-toggle-row__text { flex: 1; min-width: 0; }
+.pf-toggle-row__title { font-size: 14px; font-weight: 600; color: #0f172a; }
+.pf-toggle-row__hint  { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+
+.pf-switch {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  cursor: pointer;
+  input { position: absolute; opacity: 0; width: 0; height: 0; }
+  &__track {
+    width: 44px; height: 24px; border-radius: 999px; background: #cbd5e1;
+    transition: background 140ms ease; display: inline-flex; align-items: center; padding: 2px;
+  }
+  &__thumb {
+    width: 20px; height: 20px; border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .2); transition: transform 140ms ease;
+  }
+  input:checked + &__track { background: var(--color-brand-500, #06b6d4); }
+  input:checked + &__track &__thumb { transform: translateX(20px); }
+  :host-context([dir='rtl']) input:checked + &__track &__thumb { transform: translateX(-20px); }
+}
+
+.pf-section-title {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .04em; color: #64748b; margin: 0 0 12px;
+}
+
+// Compact data table (MOIC logs, invoice tracking)
+.pf-logs,
+.pf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  th, td {
+    text-align: start;
+    padding: 8px 10px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  th {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .03em; color: #94a3b8;
+  }
+  td { color: #334155; }
+  tbody tr:hover { background: #f8fafc; }
+}
+
+// Invoice tracking table — pin the Status (5th) and Actions (6th)
+// columns so they don't resize when a Failed row adds an error line.
+.pf-table {
+  th:nth-child(5), td:nth-child(5) { width: 220px; }
+  th:nth-child(6), td:nth-child(6) { width: 150px; }
+  // Let the failed-invoice reason wrap inside the fixed column instead
+  // of stretching it.
+  td:nth-child(5) .pf-error { white-space: normal; }
+}
+
+// Invoice status filter pills — clear on/off states.
+.pf-pill {
+  appearance: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &:hover { background: #f8fafc; }
+
+  &--on {
+    background: var(--color-brand-500, #06b6d4);
+    border-color: var(--color-brand-500, #06b6d4);
+    color: #fff;
+  }
+}
+
+.pf-status {
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  background: #f1f5f9; color: #475569; white-space: nowrap;
+  &--ok   { background: #dcfce7; color: #166534; }
+  &--warn { background: #fef9c3; color: #854d0e; }
+  &--err  { background: #fee2e2; color: #991b1b; }
+  &--info { background: #e0f2fe; color: #075985; }
+}
+
+/* AI provider help — a highlighted callout so the "get an API key" /
+   "browse models" links actually draw the user's eye (instead of grey hint text). */
+.ai-help {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 8px;
+  padding: 9px 12px;
+  background: #eff8fa;
+  border: 1px solid #cdeaf0;
+  border-radius: 8px;
+}
+.ai-help__sep { width: 1px; height: 16px; background: #cdeaf0; }
+.ai-help__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-brand-700, #2691a4);
+  text-decoration: none;
+}
+.ai-help__link:hover { color: var(--color-brand-800, #1f7d8e); text-decoration: underline; }
+.ai-help__ext { opacity: .65; }
+
+/* "How to link …" instructional callout — numbered steps that walk the
+   user through connecting an external provider (GA4 / Search Console). */
+.pf-howto {
+  background: #eff8fa;
+  border: 1px solid #cdeaf0;
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.pf-howto__title {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 0 10px;
+  font-size: 14px; font-weight: 700; color: var(--color-brand-800, #1f7d8e);
+}
+.pf-howto__steps {
+  margin: 0; padding-inline-start: 20px;
+  display: flex; flex-direction: column; gap: 7px;
+  font-size: 13px; line-height: 1.5; color: #334155;
+}
+.pf-howto__steps li::marker { color: var(--color-brand-600, #2691a4); font-weight: 700; }
+.pf-howto__docs {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px;
+  font-size: 13px; font-weight: 600; color: var(--color-brand-700, #2691a4);
+  text-decoration: none;
+}
+.pf-howto__docs:hover { color: var(--color-brand-800, #1f7d8e); text-decoration: underline; }
+.pf-howto__docs svg { opacity: .65; }
+
+/* JSON service-key paste area. */
+.pf-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #0f172a;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  resize: vertical;
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-400, #38bdf8);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+  &.is-invalid { border-color: #f87171; }
+}

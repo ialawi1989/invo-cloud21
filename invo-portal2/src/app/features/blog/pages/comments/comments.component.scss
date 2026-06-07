@@ -1,23 +1,48 @@
 .cm {
-  max-width: 920px;
-  margin: 0 auto;
-  padding: 16px 24px 64px;
+  width: 100%;
+  padding: 0 0 40px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 0;
 }
 
-.cm__head { display: flex; justify-content: space-between; }
-.cm__title { margin: 8px 0 4px; font-size: 22px; font-weight: 700; color: #0f172a; }
-.cm__sub   { margin: 0; font-size: 13px; color: #64748b; }
+/* Header — matches the posts list. */
+.cm__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.cm__headText { min-width: 0; }
+.cm__title { margin: 0 0 4px; font-size: 28px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; }
+.cm__sub   { margin: 0; font-size: 14px; color: #64748b; }
+.cm__headActions { display: inline-flex; align-items: center; gap: 12px; }
 
-.cm__tabs { display: flex; }
+/* Underline tabs with (count). */
+.cm__tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid #e2e8f0; margin-bottom: 16px; }
+.cm__tab {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 16px; border: 0; background: transparent;
+  font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer;
+  border-bottom: 2.5px solid transparent; margin-bottom: -1px;
+  transition: color 120ms ease;
+  &:hover { color: #0f172a; }
+  &.is-on { color: var(--color-brand-700, #2691a4); border-bottom-color: var(--color-brand-600, #2691a4); }
+}
+.cm__tabCount { color: #94a3b8; font-weight: 600; }
+.cm__tab.is-on .cm__tabCount { color: var(--color-brand-600, #2691a4); }
 
-.cm__filters {
+/* White card wrapping the toolbar + list, like the posts list. */
+.cm__card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.cm__toolbar {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
 
   ::ng-deep app-search-dropdown { min-width: 160px; max-width: 220px; }
   ::ng-deep app-list-search { flex: 1; min-width: 200px; }
@@ -225,3 +250,22 @@
   border-color: #fecaca;
   &:hover { background: #fef2f2; }
 }
+
+/* Header action buttons rendered as pills (matches the posts list). */
+.cm__headActions {
+  ::ng-deep .cm-btn { padding: 11px 22px; border-radius: 999px; font-size: 14px; font-weight: 600; }
+  ::ng-deep .cm-btn--ghost {
+    background: #fff; color: var(--color-brand-700, #2691a4);
+    border: 1px solid #d6e6ea; box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+  }
+  .cm-btn--primary {
+    padding: 11px 22px; border-radius: 999px; font-size: 14px; font-weight: 600;
+    background: var(--color-brand-600, #2691a4);
+    box-shadow: 0 6px 16px -6px rgba(38, 145, 164, .55);
+  }
+}
+
+/* Card body spacing. */
+.cm__card .cm__bulkBar { padding: 12px 16px; margin: 0; }
+.cm__card .cm__list    { padding: 8px 16px 16px; }
+.cm__card .cm__loading { padding: 56px 0; }

@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -24,8 +24,11 @@ import { ModalService } from '@shared/modal/modal.service';
 import { BLOG_API } from '../../services/blog-api';
 import { BlogPost, BlogTaxonomy, TaxonomyType } from '../../services/blog.types';
 import { TaxonomyFormModalComponent } from './taxonomy-form-modal.component';
+import { TaxonomyLanguageModalComponent, TaxonomyLanguageModalData } from './taxonomy-language-modal.component';
 import { EmptyStateComponent } from '../../components/empty-state.component';
 import { generateSlug } from '../../utils/blog-utils';
+import { BlogAiService } from '../../services/blog-ai.service';
+import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-editor-ai';
 
 type Tab = 'category' | 'tag' | 'hashtag';
 
@@ -43,6 +46,12 @@ type Tab = 'category' | 'tag' | 'hashtag';
     EmptyStateComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Scope Content AI to this page so "Create with AI" reuses the same
+  // provider as the post composer (see BlogAiService / RICH_EDITOR_AI_PROVIDER).
+  providers: [
+    BlogAiService,
+    { provide: RICH_EDITOR_AI_PROVIDER, useExisting: BlogAiService },
+  ],
   templateUrl: './taxonomies.component.html',
   styleUrl: './taxonomies.component.scss',
 })
@@ -52,6 +61,9 @@ export class TaxonomiesComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private toast      = inject(ToastService);
   private modal      = inject(ModalService);
+  private router     = inject(Router);
+  private route      = inject(ActivatedRoute);
+  private aiProvider = inject(RICH_EDITOR_AI_PROVIDER, { optional: true });
 
   tab     = signal<Tab>('category');
   loading = signal<boolean>(false);
@@ -121,7 +133,11 @@ export class TaxonomiesComponent implements OnInit {
       .subscribe(() => this.i18nTick.update(n => n + 1));
   }
 
-  ngOnInit(): void { void this.reload(); }
+  ngOnInit(): void {
+    const t = this.route.snapshot.queryParamMap.get('tab') as Tab | null;
+    if (t === 'category' || t === 'tag' || t === 'hashtag') this.tab.set(t);
+    void this.reload();
+  }
 
   // ── Loading ─────────────────────────────────────────────────────────
   async reload(): Promise<void> {
@@ -147,8 +163,109 @@ export class TaxonomiesComponent implements OnInit {
 
   langsOf(t: BlogTaxonomy): string[] { return Object.keys(t.translations); }
 
+  // ── Create with AI (suggest → choose → add) ─────────────────────────
+  aiPanelOpen   = signal<boolean>(false);
+  aiBusy        = signal<boolean>(false);
+  aiError       = signal<string>('');
+  aiSuggestions = signal<{ name: string; checked: boolean }[]>([]);
+  anyAiChecked  = computed(() => this.aiSuggestions().some(s => s.checked));
+
+  /** "Create with AI" — opens a panel and asks the provider for names.
+   *  Nothing is created until the user picks suggestions and clicks Add. */
+  aiCreate(): void {
+    if (!this.aiProvider?.available?.()) { this.toast.info('BLOG.LIST.COMING_SOON'); return; }
+    this.aiPanelOpen.set(true);
+    this.runAi();
+  }
+
+  runAi(): void {
+    if (!this.aiProvider) return;
+    const kind = this.tab() === 'category' ? 'category' : 'tag';
+    const prompt =
+      `Suggest 6 concise blog ${kind} names. Each 1-3 words, Title Case, broad enough ` +
+      `to group related posts. Return ONLY the names, one per line, no numbering or extra text.`;
+    this.aiBusy.set(true);
+    this.aiError.set('');
+    this.aiSuggestions.set([]);
+    let last = '';
+    this.aiProvider.generate({ task: 'custom', prompt, content: '' })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (full) => { last = full; },
+        error: (e: any) => { this.aiBusy.set(false); this.aiError.set(e?.message || 'AI request failed.'); },
+        complete: () => { this.aiBusy.set(false); this.aiSuggestions.set(this.parseSuggestions(last)); },
+      });
+  }
+
+  private parseSuggestions(text: string): { name: string; checked: boolean }[] {
+    const seen = new Set(this.rows().map(r => this.nameOf(r).toLowerCase()));
+    return text.split(/\r?\n/)
+      .map(l => l.replace(/^[\s\-*•\d.)\]]+/, '').replace(/^["']|["']$/g, '').trim())
+      .filter(l => l.length > 0 && l.length <= 40)
+      .filter(l => { const k = l.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; })
+      .slice(0, 8)
+      .map(name => ({ name, checked: false }));
+  }
+
+  toggleAiSuggestion(i: number): void {
+    this.aiSuggestions.update(list => list.map((s, idx) => idx === i ? { ...s, checked: !s.checked } : s));
+  }
+  closeAiPanel(): void { this.aiPanelOpen.set(false); this.aiSuggestions.set([]); this.aiError.set(''); }
+
+  /** Create only the suggestions the user checked. */
+  async addAiSelected(): Promise<void> {
+    const picks = this.aiSuggestions().filter(s => s.checked).map(s => s.name);
+    if (!picks.length) return;
+    this.aiBusy.set(true);
+    try {
+      for (const name of picks) {
+        await this.api.saveTaxonomy({
+          taxonomyType: this.tab() as TaxonomyType,
+          defaultLanguage: 'en',
+          slug: generateSlug(name),
+          order: 0,
+          image: null,
+          translations: { en: { name, slug: generateSlug(name) } },
+        });
+      }
+      this.toast.success('COMMON.SAVED_OK');
+      this.closeAiPanel();
+      await this.reload();
+    } catch (e: any) {
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
+    } finally {
+      this.aiBusy.set(false);
+    }
+  }
+
+  /** Supported authoring languages for the create-language picker. */
+  private readonly LANGS = [
+    { code: 'ar', label: 'العربية (Arabic)', flag: '🇸🇦' },
+    { code: 'en', label: 'English',           flag: '🇺🇸' },
+  ];
+
+  /** "Create" → pick a language (Wix-style) → open the form in it. */
+  async createNew(): Promise<void> {
+    const kind = this.tab() === 'tag' ? 'tag' : 'category';
+    const langRef = this.modal.open<TaxonomyLanguageModalComponent, TaxonomyLanguageModalData, string | undefined>(
+      TaxonomyLanguageModalComponent,
+      { size: 'sm', data: { kind, languages: this.LANGS } },
+    );
+    const lang = await langRef.afterClosed();
+    if (!lang) return;
+    // Categories + tags both edit on the full page (with the SEO panel).
+    const base = this.tab() === 'tag' ? '/blog/tags/new' : '/blog/categories/new';
+    void this.router.navigate([base], { queryParams: { lang, type: this.tab() } });
+  }
+
+  /** Category + tag rows open the full edit/SEO page. */
+  editTaxonomy(t: BlogTaxonomy): void {
+    const base = this.tab() === 'tag' ? '/blog/tags' : '/blog/categories';
+    void this.router.navigate([base, t.id, 'edit']);
+  }
+
   // ── Categories: edit / delete ───────────────────────────────────────
-  async openForm(existing?: BlogTaxonomy): Promise<void> {
+  async openForm(existing?: BlogTaxonomy, initialLang?: string): Promise<void> {
     const ref = this.modal.open<TaxonomyFormModalComponent, any, BlogTaxonomy | null>(
       TaxonomyFormModalComponent,
       {
@@ -156,6 +273,7 @@ export class TaxonomiesComponent implements OnInit {
         data: {
           taxonomyType: this.tab(),
           existing:     existing ? structuredClone(existing) : null,
+          initialLang,
         },
         closeOnBackdrop: false,
       },

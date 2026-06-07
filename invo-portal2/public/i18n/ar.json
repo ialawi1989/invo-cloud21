@@ -78,6 +78,7 @@
     "COLLAPSE": "طي",
     "EDIT": "تعديل",
     "ADD": "إضافة",
+    "RETRY": "حاول مرة أخرى",
     "SEARCH": "بحث",
     "LOADING": "جاري التحميل...",
     "NO_DATA": "لا توجد بيانات",
@@ -290,6 +291,7 @@
       "BLOG_POSTS": "التدوينات",
       "BLOG_CATEGORIES": "التصنيفات والوسوم",
       "BLOG_COMMENTS": "التعليقات",
+      "BLOG_ANALYTICS": "التحليلات",
       "BLOG_SETTINGS": "إعدادات المدونة"
     }
   },
@@ -373,6 +375,7 @@
   },
   "COMPANY_SWITCHER": {
     "MY_ACCOUNT": "حسابي",
+    "AI_OVERRIDE": "تجاوز الذكاء الاصطناعي",
     "COMPANIES_OVERVIEW": "نظرة عامة على الشركات",
     "LOGOUT": "تسجيل الخروج",
     "SWITCH_COMPANY": "تبديل الشركة",

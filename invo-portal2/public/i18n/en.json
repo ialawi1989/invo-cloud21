@@ -78,6 +78,7 @@
     "COLLAPSE": "Collapse",
     "EDIT": "Edit",
     "ADD": "Add",
+    "RETRY": "Try again",
     "SEARCH": "Search",
     "LOADING": "Loading...",
     "NO_DATA": "No data found",
@@ -290,6 +291,7 @@
       "BLOG_POSTS": "Posts",
       "BLOG_CATEGORIES": "Categories & Tags",
       "BLOG_COMMENTS": "Comments",
+      "BLOG_ANALYTICS": "Analytics",
       "BLOG_SETTINGS": "Blog Settings"
     }
   },
@@ -373,6 +375,7 @@
   },
   "COMPANY_SWITCHER": {
     "MY_ACCOUNT": "My Account",
+    "AI_OVERRIDE": "AI Override",
     "COMPANIES_OVERVIEW": "Companies Overview",
     "LOGOUT": "Logout",
     "SWITCH_COMPANY": "Switch Company",

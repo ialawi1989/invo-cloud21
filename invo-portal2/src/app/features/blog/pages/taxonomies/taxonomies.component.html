@@ -1,14 +1,22 @@
 <div class="tx">
   <header class="tx__head">
-    <div>
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="tx__title">{{ 'BLOG.TAXONOMIES.TITLE' | translate }}</h1>
+    <div class="tx__headText">
+      <h1 class="tx__title">
+        {{ 'BLOG.TAXONOMIES.TITLE' | translate }}
+        <span class="tx__count">{{ filteredRows().length }}</span>
+      </h1>
       <p class="tx__sub">{{ 'BLOG.TAXONOMIES.SUBTITLE' | translate }}</p>
     </div>
-    @if (tab() === 'category') {
-      <button type="button" class="tx-btn tx-btn--primary" (click)="openForm()">
-        + {{ 'BLOG.TAXONOMIES.NEW_CATEGORY' | translate }}
-      </button>
+    @if (tab() !== 'hashtag') {
+      <div class="tx__headActions">
+        <button type="button" class="tx-btn tx-btn--ai" (click)="aiCreate()">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
+          {{ 'BLOG.TAXONOMIES.CREATE_WITH_AI' | translate }}
+        </button>
+        <button type="button" class="tx-btn tx-btn--primary" (click)="createNew()">
+          + {{ (tab() === 'category' ? 'BLOG.TAXONOMIES.NEW_CATEGORY' : 'BLOG.TAXONOMIES.NEW_TAG') | translate }}
+        </button>
+      </div>
     }
   </header>
 
@@ -16,6 +24,38 @@
     [options]="tabOptions()"
     [value]="tab()"
     (valueChange)="setTab($event)"/>
+
+  @if (aiPanelOpen()) {
+    <div class="tx__ai">
+      <div class="tx__aiHead">
+        <span class="tx__aiTitle">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
+          {{ (tab() === 'category' ? 'BLOG.TAXONOMIES.AI_PICK_CATEGORIES' : 'BLOG.TAXONOMIES.AI_PICK_TAGS') | translate }}
+        </span>
+        <button type="button" class="tx__aiClose" (click)="closeAiPanel()" aria-label="Close">×</button>
+      </div>
+
+      @if (aiBusy()) {
+        <div class="tx__aiLoading"><span class="tx-spinner tx-spinner--sm"></span>{{ 'BLOG.TAXONOMIES.AI_THINKING' | translate }}</div>
+      } @else if (aiError()) {
+        <p class="tx__aiError">{{ aiError() }}</p>
+        <button type="button" class="tx-btn tx-btn--ai" (click)="runAi()">{{ 'COMMON.RETRY' | translate }}</button>
+      } @else {
+        @for (s of aiSuggestions(); track s.name; let i = $index) {
+          <label class="tx__aiItem">
+            <input type="checkbox" [checked]="s.checked" (change)="toggleAiSuggestion(i)"/>
+            <span>{{ s.name }}</span>
+          </label>
+        }
+        <div class="tx__aiActions">
+          <button type="button" class="tx-btn tx-btn--primary" [disabled]="!anyAiChecked() || aiBusy()" (click)="addAiSelected()">
+            {{ 'COMMON.ADD' | translate }}
+          </button>
+          <button type="button" class="tx-btn tx-btn--ai" (click)="runAi()">{{ 'BLOG.TAXONOMIES.AI_REGENERATE' | translate }}</button>
+        </div>
+      }
+    </div>
+  }
 
   <div class="tx__card">
     @if (loading()) {
@@ -26,7 +66,7 @@
         [title]="'BLOG.TAXONOMIES.EMPTY_' + tab().toUpperCase() + '_TITLE' | translate"
         [description]="'BLOG.TAXONOMIES.EMPTY_' + tab().toUpperCase() + '_BODY' | translate"
         [primaryLabel]="tab() === 'category' ? ('BLOG.TAXONOMIES.NEW_CATEGORY' | translate) : ''"
-        (primary)="openForm()"/>
+        (primary)="createNew()"/>
     } @else {
 
       <!-- ───────── CATEGORIES ───────── -->
@@ -34,12 +74,18 @@
         <ul class="tx-list">
           @for (t of filteredRows(); track t.id) {
             <li class="tx-row"
-                draggable="true"
+                [draggable]="!t.isDefault"
                 (dragstart)="onDragStart($event, t)"
                 (dragover)="onDragOver($event)"
                 (drop)="onDrop($event, t)"
                 [class.is-dragging]="draggingId() === t.id">
-              <span class="tx-drag" [title]="'COMMON.DRAG_TO_REORDER' | translate">⋮⋮</span>
+              @if (t.isDefault) {
+                <span class="tx-drag tx-drag--lock" [title]="'BLOG.TAXONOMIES.LOCKED' | translate">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </span>
+              } @else {
+                <span class="tx-drag" [title]="'COMMON.DRAG_TO_REORDER' | translate">⋮⋮</span>
+              }
               <div class="tx-thumb">
                 @if (t.image) {
                   <img [src]="t.image" alt=""/>
@@ -60,12 +106,14 @@
               </div>
               <div class="tx-count">{{ t.postsCount }} {{ 'BLOG.TAXONOMIES.POSTS' | translate }}</div>
               <div class="tx-actions">
-                <button class="tx-iconBtn" (click)="openForm(t)" [title]="'COMMON.EDIT' | translate">
+                <button class="tx-iconBtn" (click)="editTaxonomy(t)" [title]="'COMMON.EDIT' | translate">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button class="tx-iconBtn tx-iconBtn--danger" (click)="confirmDelete(t)" [title]="'COMMON.DELETE' | translate">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
-                </button>
+                @if (!t.isDefault) {
+                  <button class="tx-iconBtn tx-iconBtn--danger" (click)="confirmDelete(t)" [title]="'COMMON.DELETE' | translate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+                  </button>
+                }
               </div>
             </li>
           }
@@ -86,7 +134,7 @@
         <ul class="tx-list">
           @for (t of filteredRows(); track t.id) {
             <li class="tx-row tx-row--simple">
-              <div class="tx-body" (click)="openForm(t)">
+              <div class="tx-body" (click)="editTaxonomy(t)">
                 <div class="tx-name">
                   {{ nameOf(t) }}
                   <div class="tx-langs">
@@ -99,7 +147,7 @@
               </div>
               <div class="tx-count">{{ t.usageCount }} {{ 'BLOG.TAXONOMIES.USES' | translate }}</div>
               <div class="tx-actions">
-                <button class="tx-iconBtn" (click)="openForm(t)" [title]="'COMMON.EDIT' | translate">
+                <button class="tx-iconBtn" (click)="editTaxonomy(t)" [title]="'COMMON.EDIT' | translate">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
                 <button class="tx-iconBtn tx-iconBtn--danger" (click)="confirmDelete(t)"

@@ -468,6 +468,8 @@ export class SettingsComponent {
           i18nPrefix: 'PAYMENT_METHODS' },
         { label: 'SETTINGS.ITEMS.SERVICE_MANAGEMENT', description: 'SETTINGS.ITEMS.SERVICE_MANAGEMENT_DESC', link: '/settings/service-management', privilege: 'serviceSecurity.actions.view.access',
           i18nPrefix: 'SERVICE_MANAGEMENT' },
+        { label: 'SETTINGS.ITEMS.PLUGINS', description: 'SETTINGS.ITEMS.PLUGINS_DESC', link: '/settings/plugins', privilege: 'pluginsSecurity.actions.view.access',
+          i18nPrefix: 'PLUGINS' },
         { label: 'SETTINGS.ITEMS.IMPORT_FROM_INVO',   description: 'SETTINGS.ITEMS.IMPORT_FROM_INVO_DESC',   privilege: 'companySettingsSecurity.access',
           i18nPrefix: 'SETTINGS.IMPORT_FROM_INVO',
           popup: { component: () => import('./components/import-from-invo/import-from-invo.component').then(m => m.ImportFromInvoComponent), size: 'md' } },

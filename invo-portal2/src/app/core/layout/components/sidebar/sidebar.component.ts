@@ -170,7 +170,7 @@ export const SIDE_MENU: SideMenuItem[] = [
   // ── Plugins ────────────────────────────────────────────────────────
   {
     id: 12, label: 'MENU.PLUGINS', icon: 'plugin',
-    link: '/plugins',
+    link: '/settings/plugins',
     requiredPermission: 'pluginsSecurity.actions.view.access',
   },
   // ── Website Content ────────────────────────────────────────────────
@@ -196,6 +196,7 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 141, label: 'MENU.SUB.BLOG_POSTS',      link: '/blog/posts',      requiredPermission: 'blogSecurity.actions.view.access' },
       { id: 142, label: 'MENU.SUB.BLOG_CATEGORIES', link: '/blog/categories', requiredPermission: 'blogSecurity.actions.manageCategories.access' },
       { id: 143, label: 'MENU.SUB.BLOG_COMMENTS',   link: '/blog/comments',   requiredPermission: 'blogSecurity.actions.moderateComments.access' },
+      { id: 145, label: 'MENU.SUB.BLOG_ANALYTICS',  link: '/blog/analytics',  requiredPermission: 'blogSecurity.actions.view.access' },
       { id: 144, label: 'MENU.SUB.BLOG_SETTINGS',   link: '/blog/settings',   requiredPermission: 'blogSecurity.actions.manageSettings.access' },
     ],
   },
