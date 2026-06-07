@@ -1,0 +1,56 @@
+<app-modal-header [title]="data.title ?? ('BLOG.MODERATION.PICK_MEMBERS' | translate)"/>
+
+<div class="pmm-body">
+  <label class="pmm-search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input
+      type="text"
+      [value]="search()"
+      (input)="onSearchInput($any($event.target).value)"
+      [placeholder]="'BLOG.MODERATION.MEMBER_SEARCH_PH' | translate"
+    />
+  </label>
+
+  <div class="pmm-list">
+    @if (rows().length === 0 && !loading()) {
+      <div class="pmm-empty">{{ 'BLOG.MODERATION.NO_MEMBERS' | translate }}</div>
+    }
+
+    @for (row of rows(); track row.id) {
+      <label class="pmm-row" [class.pmm-row--selected]="isSelected(row.id)">
+        <input type="checkbox" [checked]="isSelected(row.id)" (change)="toggle(row.id)"/>
+        <div class="pmm-row__avatar" aria-hidden="true">{{ initials(row.name) }}</div>
+        <div class="pmm-row__main">
+          <div class="pmm-row__name">{{ row.name || ('BLOG.MODERATION.UNNAMED_MEMBER' | translate) }}</div>
+          <div class="pmm-row__meta">
+            @if (row.email) { <span>{{ row.email }}</span> }
+            @if (row.phone) { <span>· {{ row.phone }}</span> }
+          </div>
+        </div>
+      </label>
+    }
+
+    <div #scrollSentinel class="pmm-sentinel" aria-hidden="true">
+      @if (loading() && rows().length > 0) {
+        <span class="pmm-spinner"></span>
+        <span class="pmm-loadtxt">{{ 'COMMON.LOADING' | translate }}</span>
+      }
+    </div>
+  </div>
+</div>
+
+<footer class="pmm-footer">
+  <div class="pmm-footer__count">
+    {{ 'COMMON.SELECTED_COUNT' | translate: { count: selectedCount() } }}
+  </div>
+  <div class="pmm-footer__actions">
+    <button type="button" class="pmm-btn pmm-btn--ghost" (click)="cancel()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="pmm-btn pmm-btn--primary" (click)="confirm()">
+      {{ 'COMMON.SUBMIT' | translate }}
+    </button>
+  </div>
+</footer>

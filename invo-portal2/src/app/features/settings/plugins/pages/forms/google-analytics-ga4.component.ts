@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { PluginFormShellComponent } from '../../components/plugin-form-shell/plugin-form-shell.component';
@@ -17,7 +18,7 @@ const MEASUREMENT = /^G-[A-Z0-9]{6,}$/i;
 @Component({
   selector: 'app-plugin-google-analytics-ga4',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, PluginFormShellComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, PluginFormShellComponent],
   styleUrls: ['./plugin-fields.scss'],
   template: `
     <app-plugin-form-shell
@@ -42,9 +43,9 @@ const MEASUREMENT = /^G-[A-Z0-9]{6,}$/i;
           <li>{{ 'PLUGINS.GA4.STEP_5' | translate }}</li>
           <li>{{ 'PLUGINS.GA4.STEP_6' | translate }}</li>
         </ol>
-        <a class="pf-howto__docs" href="https://support.google.com/analytics/answer/9304153" target="_blank" rel="noopener">
-          {{ 'PLUGINS.GA4.DOCS' | translate }}
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+        <a class="pf-howto__docs" [routerLink]="['/settings/plugins/google-setup']">
+          {{ 'PLUGINS.GUIDE.FULL_GUIDE' | translate }}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
       </div>
 
@@ -82,6 +83,35 @@ const MEASUREMENT = /^G-[A-Z0-9]{6,}$/i;
         </div>
       </div>
 
+      <!-- Test connection -->
+      <div class="pf-card pf-test">
+        <div class="pf-test__row">
+          <div class="pf-test__text">
+            <div class="pf-toggle-row__title">{{ 'PLUGINS.COMMON.TEST_TITLE' | translate }}</div>
+            <div class="pf-toggle-row__hint">{{ 'PLUGINS.COMMON.TEST_HINT' | translate }}</div>
+          </div>
+          <button type="button" class="pf-test__btn" [disabled]="testing()" (click)="test()">
+            @if (testing()) {
+              <span class="pf-test__spin" aria-hidden="true"></span>
+              {{ 'PLUGINS.COMMON.TESTING' | translate }}
+            } @else {
+              {{ 'PLUGINS.COMMON.TEST' | translate }}
+            }
+          </button>
+        </div>
+        @if (testResult(); as r) {
+          <div class="pf-test__result" [class.is-ok]="r.ok" [class.is-err]="!r.ok">
+            @if (r.ok) {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>{{ r.message || ('PLUGINS.COMMON.TEST_OK' | translate) }}</span>
+            } @else {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+              <span>{{ r.message || ('PLUGINS.COMMON.TEST_FAILED' | translate) }}</span>
+            }
+          </div>
+        }
+      </div>
+
       <div class="pf-card">
         <div class="pf-toggle-row">
           <div class="pf-toggle-row__text">
@@ -116,7 +146,7 @@ export class GoogleAnalyticsGa4Component extends PluginFormBase implements OnIni
       : this.translate.instant('PLUGINS.COMMON.SECRET_KEEP_HINT');
   }
 
-  onChange(): void { this.markDirty(); if (this.submitted()) this.validate(); }
+  onChange(): void { this.markDirty(); this.clearTestResult(); if (this.submitted()) this.validate(); }
 
   private validate(): boolean {
     const s = this.plugin.settings;
@@ -129,9 +159,8 @@ export class GoogleAnalyticsGa4Component extends PluginFormBase implements OnIni
     return !this.errors.measurementId && !this.errors.propertyId && !this.errors.serviceKey;
   }
 
-  save(): void {
-    this.submitted.set(true);
-    if (!this.validate()) return;
+  /** Build the save/test payload (untouched secret omitted). */
+  private buildPayload(): Record<string, unknown> {
     const s = this.plugin.settings;
     const settings: Record<string, unknown> = {
       enable: !!s.enable,
@@ -141,6 +170,18 @@ export class GoogleAnalyticsGa4Component extends PluginFormBase implements OnIni
     if (this.shouldSendSecret('ga4_serviceKey') && (s.ga4_serviceKey ?? '').trim()) {
       settings['ga4_serviceKey'] = (s.ga4_serviceKey ?? '').trim();
     }
-    void this.persist({ ...this.basePayload(), settings });
+    return { ...this.basePayload(), settings };
+  }
+
+  test(): void {
+    this.submitted.set(true);
+    if (!this.validate()) return;
+    void this.runTest(this.buildPayload());
+  }
+
+  save(): void {
+    this.submitted.set(true);
+    if (!this.validate()) return;
+    void this.persist(this.buildPayload());
   }
 }

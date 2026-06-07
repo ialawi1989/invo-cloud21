@@ -355,6 +355,13 @@ export const routes: Routes = [
         path: 'account/chart-of-accounts',
         loadChildren: () =>
           import('./features/settings/chart-of-accounts/chart-of-accounts.routes').then(m => m.CHART_OF_ACCOUNTS_ROUTES)
+      },
+      {
+        // Analytics — store-wide GA4 traffic + e-commerce + realtime and
+        // GSC search. Distinct from the blog-scoped `/blog/analytics`.
+        path: 'analytics',
+        loadChildren: () =>
+          import('./features/analytics/analytics.routes').then(m => m.ANALYTICS_ROUTES)
       }
       // ── Add features here as you build them ──────────────────────────────
     ],

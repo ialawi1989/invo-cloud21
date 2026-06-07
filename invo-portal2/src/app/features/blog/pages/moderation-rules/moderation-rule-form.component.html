@@ -59,8 +59,31 @@
     </div>
     <div class="rf__excludeRow">
       <span>{{ 'BLOG.MODERATION.EXCLUDE_MEMBERS' | translate }}</span>
-      <button type="button" class="rf__excludeBtn" disabled>{{ 'BLOG.MODERATION.SELECT' | translate }}</button>
+      <button type="button" class="rf__excludeBtn" (click)="openMemberPicker()">{{ 'BLOG.MODERATION.SELECT' | translate }}</button>
     </div>
-    <span class="rf__soon">{{ 'BLOG.MODERATION.EXCLUDE_SOON' | translate }}</span>
+
+    @if (excludedMemberIds().length) {
+      <div class="rf__chips">
+        @for (m of excludedMembers(); track m.id) {
+          <span class="rf__chip">
+            {{ m.name || ('BLOG.MODERATION.UNNAMED_MEMBER' | translate) }}
+            <button type="button" class="rf__chipX" (click)="removeMember(m.id)" aria-label="Remove">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </span>
+        }
+        @if (extraExcludedCount() > 0) {
+          <span class="rf__chip rf__chip--muted">
+            @if (excludedMembers().length) {
+              {{ 'BLOG.MODERATION.MORE_EXCLUDED' | translate: { count: extraExcludedCount() } }}
+            } @else {
+              {{ 'BLOG.MODERATION.MEMBERS_EXCLUDED' | translate: { count: extraExcludedCount() } }}
+            }
+          </span>
+        }
+      </div>
+    } @else {
+      <span class="rf__soon">{{ 'BLOG.MODERATION.EXCLUDE_NONE' | translate }}</span>
+    }
   </section>
 </div>

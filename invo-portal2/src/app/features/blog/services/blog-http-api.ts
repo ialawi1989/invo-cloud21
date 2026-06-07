@@ -8,6 +8,8 @@ import {
   BlogComment,
   BlogModerationRule,
   ModerationRuleSavePayload,
+  ShopperListParams,
+  ShopperListResult,
   BlogPost,
   BlogTaxonomy,
   BlogWriter,
@@ -208,7 +210,7 @@ export class BlogHttpApi extends BlogApi {
     };
     const data = await this.post<any>('blog/getCommentList', body);
     return {
-      list:         Array.isArray(data?.list) ? data.list : [],
+      list:         (Array.isArray(data?.list) ? data.list : []).map((c: any) => normalizeComment(c)),
       count:        Number(data?.count ?? 0),
       pageCount:    Number(data?.pageCount ?? 1),
       statusCounts: data?.statusCounts ?? data?.counts ?? {
@@ -217,16 +219,16 @@ export class BlogHttpApi extends BlogApi {
     };
   }
 
-  async approveComment(id: string): Promise<BlogComment> { return this.post('blog/approveComment', { id }); }
-  async flagComment(id: string):    Promise<BlogComment> { return this.post('blog/flagComment',    { id }); }
+  async approveComment(id: string): Promise<BlogComment> { return normalizeComment(await this.post('blog/approveComment', { id })); }
+  async flagComment(id: string):    Promise<BlogComment> { return normalizeComment(await this.post('blog/flagComment',    { id })); }
   async deleteComment(id: string):  Promise<boolean> {
     await this.post('blog/deleteComment', { id });
     return true;
   }
   async replyToComment(id: string, content: string): Promise<BlogComment> {
-    return this.post('blog/replyComment', { id, content });
+    return normalizeComment(await this.post('blog/replyComment', { id, content }));
   }
-  async restoreComment(id: string): Promise<BlogComment> { return this.post('blog/restoreComment', { id }); }
+  async restoreComment(id: string): Promise<BlogComment> { return normalizeComment(await this.post('blog/restoreComment', { id })); }
   async hardDeleteComment(id: string, force?: boolean): Promise<boolean> {
     await this.post('blog/hardDeleteComment', force ? { id, force } : { id });
     return true;
@@ -255,6 +257,19 @@ export class BlogHttpApi extends BlogApi {
   }
   async toggleModerationRule(id: string, active: boolean): Promise<BlogModerationRule> {
     return this.post('blog/toggleModerationRule', { id, active });
+  }
+
+  async getShopperList(params: ShopperListParams = {}): Promise<ShopperListResult> {
+    const data = await this.post<any>('blog/getShopperList', {
+      page:       params.page  ?? 1,
+      limit:      params.limit ?? 20,
+      searchTerm: params.searchTerm ?? '',
+    });
+    return {
+      list:      Array.isArray(data?.list) ? data.list : [],
+      count:     Number(data?.count ?? 0),
+      pageCount: Number(data?.pageCount ?? 1),
+    };
   }
 
   // ─── Writers / Settings / Uploads ────────────────────────────────────
@@ -354,4 +369,31 @@ function stripEmpty<T extends Record<string, unknown>>(obj: T): Partial<T> {
     out[k] = v;
   }
   return out;
+}
+
+/**
+ * Map a `getCommentList` row to the flat `BlogComment` the UI binds to. The
+ * backend returns a nested shape — `author.{type,id,name,image}`,
+ * `post.{id,slug,title}`, `parent.{content,author.name}` — so flatten it.
+ */
+function normalizeComment(c: any): BlogComment {
+  const a = c?.author ?? {};
+  return {
+    id:               String(c?.id ?? ''),
+    postId:           String(c?.postId ?? c?.post?.id ?? ''),
+    postTitle:        c?.post?.title ?? c?.postTitle ?? '',
+    shopperId:        a.type === 'shopper'  ? (a.id ?? null) : (c?.shopperId ?? null),
+    authorEmployeeId: a.type === 'employee' ? (a.id ?? null) : (c?.authorEmployeeId ?? null),
+    authorName:       a.name ?? c?.authorName ?? '',
+    authorAvatar:     a.image ?? c?.authorAvatar ?? null,
+    authorKind:       (a.type ?? c?.authorKind ?? 'shopper') as 'shopper' | 'employee',
+    content:          c?.content ?? '',
+    parentCommentId:  c?.parentCommentId ?? null,
+    parentExcerpt:    c?.parent?.content ?? c?.parentExcerpt,
+    parentAuthor:     c?.parent?.author?.name ?? c?.parentAuthor,
+    status:           c?.status,
+    language:         c?.language ?? null,
+    createdAt:        c?.createdAt ?? '',
+    updatedAt:        c?.updatedAt ?? '',
+  };
 }

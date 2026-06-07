@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -58,13 +58,12 @@ export class CommentsComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private toast      = inject(ToastService);
   private router     = inject(Router);
+  private route      = inject(ActivatedRoute);
 
   // ── Filter state ────────────────────────────────────────────────────
   statusTab = signal<StatusTab>('visible');
   postId    = signal<string>('');
   language  = signal<string>('');
-  dateFrom  = signal<string>('');
-  dateTo    = signal<string>('');
   search    = signal<string>('');
 
   // ── Data ────────────────────────────────────────────────────────────
@@ -160,13 +159,26 @@ export class CommentsComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    // Build the post selector from the post list (top 50 by date).
-    const posts = await this.api.listPosts({ page: 1, limit: 50 });
-    this.postOptions.set(posts.list.map(p => ({
-      id: p.id,
-      label: this.titleOf(p),
-    })));
+    // Deep-link from the posts list: ?postId=… pre-filters to that post.
+    const postId = this.route.snapshot.queryParamMap.get('postId');
+    if (postId) this.postId.set(postId);
+
+    // Build the post selector from the post list (top 50 by date). This is a
+    // nice-to-have filter — never let it block (or fail) the comment list.
+    try {
+      const posts = await this.api.listPosts({ page: 1, limit: 50 });
+      this.postOptions.set(posts.list.map(p => ({ id: p.id, label: this.titleOf(p) })));
+    } catch {
+      /* leave the post filter at "All posts" */
+    }
     await this.reload();
+
+    // Ensure a deep-linked post shows its title in the selector even if it's
+    // outside the top-50 — derive the title from the loaded comments.
+    if (postId && !this.postOptions().some(o => o.id === postId)) {
+      const title = this.comments().find(c => c.postId === postId)?.postTitle;
+      if (title) this.postOptions.update(opts => [{ id: postId, label: title }, ...opts]);
+    }
   }
 
   async reload(): Promise<void> {
@@ -178,8 +190,6 @@ export class CommentsComponent implements OnInit {
         postId:   this.postId() || undefined,
         language: this.language() || undefined,
         search:   this.search() || undefined,
-        dateFrom: this.dateFrom() || undefined,
-        dateTo:   this.dateTo() || undefined,
         limit:    50,
       });
       this.comments.set(res.list);
@@ -197,8 +207,6 @@ export class CommentsComponent implements OnInit {
   setLang(v: any): void { this.language.set((v && typeof v === 'object' ? v.id : v) ?? ''); void this.reload(); }
   setSearch(v: string): void { this.search.set(v); void this.reload(); }
   clearSearch(): void { this.search.set(''); void this.reload(); }
-  setDateFrom(v: string): void { this.dateFrom.set(v); void this.reload(); }
-  setDateTo(v: string): void { this.dateTo.set(v); void this.reload(); }
 
   // ── Selection ───────────────────────────────────────────────────────
   toggleSelect(id: string, checked: boolean): void {
@@ -210,6 +218,8 @@ export class CommentsComponent implements OnInit {
     if (!checked) { this.selected.set(new Set()); return; }
     this.selected.set(new Set(this.comments().map(c => c.id)));
   }
+
+  clearSelection(): void { this.selected.set(new Set()); }
 
   // ── Actions ─────────────────────────────────────────────────────────
   async approve(c: BlogComment): Promise<void> {
@@ -287,7 +297,11 @@ export class CommentsComponent implements OnInit {
 
   // ── Helpers ─────────────────────────────────────────────────────────
   titleOf(p: BlogPost): string {
-    return p.translations[p.defaultLanguage]?.title ?? Object.values(p.translations)[0]?.title ?? '(untitled)';
+    const t = (p as any)?.translations;
+    if (t && typeof t === 'object') {
+      return t[p.defaultLanguage]?.title ?? (Object.values(t)[0] as any)?.title ?? (p as any).title ?? '(untitled)';
+    }
+    return (p as any).title ?? '(untitled)';
   }
   ago(c: BlogComment): string { return timeAgo(c.createdAt); }
 

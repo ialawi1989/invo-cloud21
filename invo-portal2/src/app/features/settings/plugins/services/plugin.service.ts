@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from '@core/http';
-import { Plugin, PluginSettings, emptyPluginSettings } from './plugin.types';
+import { Plugin, PluginSettings, PluginTestResult, emptyPluginSettings } from './plugin.types';
 
 /**
  * Wraps the legacy `company/*` + `accounts/*` plugin endpoints:
@@ -70,6 +70,22 @@ export class PluginService {
   async setEnabled(plugin: Plugin): Promise<boolean> {
     const res = await this.api.request<any>(this.api.post('company/savePlugin', plugin));
     return !!res?.success;
+  }
+
+  /**
+   * Test a plugin's credentials/connection WITHOUT saving. Sends the same
+   * payload shape as `save` (untouched secrets omitted → backend falls back
+   * to the stored value), and returns whether the provider responded.
+   *
+   * `POST company/testPlugin` → `{ ok: boolean, message?: string }`.
+   */
+  async testConnection(payload: Plugin | Record<string, unknown>): Promise<PluginTestResult> {
+    const res = await this.api.request<any>(this.api.post('company/testPlugin', payload));
+    const data = res?.data ?? res ?? {};
+    return {
+      ok:      !!(data.ok ?? res?.success),
+      message: data.message ?? res?.msg ?? undefined,
+    };
   }
 
   // ─── MOIC ───────────────────────────────────────────────────────────

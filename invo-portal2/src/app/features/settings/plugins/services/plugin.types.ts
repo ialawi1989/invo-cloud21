@@ -110,7 +110,9 @@ export interface PluginSettings {
   ga4_serviceKeySet?: boolean;
 
   // Google Search Console (GSC)
-  /** Property/site URL — either a URL-prefix (https://example.com/) or a domain property (sc-domain:example.com). */
+  /** The tenant's OWN verified property — URL-prefix (https://example.com/)
+   *  or domain property (sc-domain:example.com). Only needed for a custom
+   *  domain; the shared slug property is combined server-side. */
   gsc_siteUrl?:       string;
   /** Service-account JSON key (secret) for the Search Console API. */
   gsc_serviceKey?:    string;
@@ -142,4 +144,10 @@ export interface PluginGroup {
 
 export function emptyPluginSettings(): PluginSettings {
   return { enable: false, branches: [] };
+}
+
+/** Result of a plugin connection test (`company/testPlugin`). */
+export interface PluginTestResult {
+  ok:       boolean;
+  message?: string;
 }

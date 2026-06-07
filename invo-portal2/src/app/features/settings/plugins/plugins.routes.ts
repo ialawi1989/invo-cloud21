@@ -112,6 +112,12 @@ export const PLUGINS_ROUTES: Routes = [
 
   // ── Analytics ────────────────────────────────────────────────────────
   {
+    path: 'google-setup',
+    canActivate: [translationsLoaded],
+    loadComponent: () =>
+      import('./pages/forms/google-setup-guide.component').then(m => m.GoogleSetupGuideComponent),
+  },
+  {
     path: 'google-analytics-ga4/:id',
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],

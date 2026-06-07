@@ -256,6 +256,29 @@ export interface BlogModerationRule {
 export type ModerationRuleSavePayload =
   Omit<BlogModerationRule, 'id' | 'createdAt' | 'updatedAt'> & { id?: string };
 
+/** A site member (shopper) the admin can exclude from a moderation rule.
+ *  Returned by `blog/getShopperList` — scoped to shoppers who have interacted
+ *  with this company (a customer record or a blog comment). */
+export interface BlogShopper {
+  id:          string;
+  name:        string;
+  email?:      string;
+  phone?:      string;
+  customerId?: string | null;
+}
+
+export interface ShopperListParams {
+  page?:       number;
+  limit?:      number;
+  searchTerm?: string;
+}
+
+export interface ShopperListResult {
+  list:      BlogShopper[];
+  count:     number;
+  pageCount: number;
+}
+
 // ── Comments ──────────────────────────────────────────────────────────
 
 export interface BlogComment {

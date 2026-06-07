@@ -7,7 +7,7 @@ import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 
 import { PluginService } from '../../services/plugin.service';
-import { Plugin, emptyPluginSettings } from '../../services/plugin.types';
+import { Plugin, PluginTestResult, emptyPluginSettings } from '../../services/plugin.types';
 import { findPluginBySlug, findPluginByName } from '../../utils/plugin-registry';
 
 /**
@@ -46,6 +46,10 @@ export abstract class PluginFormBase implements CanLeaveComponent {
   loading   = signal(false);
   saving    = signal(false);
   submitted = signal(false);
+  /** Connection-test in flight. */
+  testing   = signal(false);
+  /** Last connection-test outcome (null until tested). */
+  testResult = signal<PluginTestResult | null>(null);
   private dirty = signal(false);
   private saved = signal(false);
 
@@ -138,6 +142,25 @@ export abstract class PluginFormBase implements CanLeaveComponent {
     } finally {
       this.saving.set(false);
     }
+  }
+
+  /** Run a connection test for the given payload (same shape as save).
+   *  Subclasses call this after validating + building their settings. */
+  protected async runTest(payload: Record<string, unknown>): Promise<void> {
+    this.testing.set(true);
+    this.testResult.set(null);
+    try {
+      this.testResult.set(await this.service.testConnection(payload as any));
+    } catch (e: any) {
+      this.testResult.set({ ok: false, message: e?.message });
+    } finally {
+      this.testing.set(false);
+    }
+  }
+
+  /** Clear the last test result (call when the user edits a field). */
+  clearTestResult(): void {
+    if (this.testResult()) this.testResult.set(null);
   }
 
   back(): void {

@@ -1,0 +1,58 @@
+{
+  "ANALYTICS": {
+    "TITLE":        "Analytics",
+    "SUBTITLE":     "Traffic, sales and search performance across your whole store.",
+
+    "TODAY":        "Today",
+    "YESTERDAY":    "Yesterday",
+    "LAST_7":       "Last 7 days",
+    "LAST_14":      "Last 14 days",
+    "LAST_30":      "Last 30 days",
+    "LAST_90":      "Last 90 days",
+    "THIS_MONTH":   "This month",
+    "THIS_YEAR":    "This year",
+    "COMPARE_PREV": "compared to previous period",
+    "PEAK":         "Peak",
+    "NO_DATA":      "No data for this period.",
+
+    "GA4_CONNECT_TITLE": "Connect Google Analytics 4",
+    "GA4_CONNECT_HINT":  "Connect GA4 to see traffic, visitors and e-commerce performance for your whole site.",
+    "CONNECT_GA4":       "Connect GA4",
+    "GSC_CONNECT_TITLE": "Connect Google Search Console",
+    "GSC_CONNECT_HINT":  "Connect Search Console to see how your store performs in Google search results.",
+    "CONNECT_GSC":       "Connect Search Console",
+
+    "ACTIVE_NOW":        "Active users now",
+    "LAST_30_MIN":       "Active users per minute (last 30 min)",
+    "TOP_ACTIVE_PAGES":  "Top active pages",
+
+    "SEC_TRAFFIC":     "Web traffic",
+    "USERS":           "Users",
+    "SESSIONS":        "Sessions",
+    "PAGEVIEWS":       "Pageviews",
+    "ENGAGEMENT_RATE": "Engagement rate",
+    "AVG_DURATION":    "Avg. session",
+    "TREND":           "Trend",
+    "TOP_PAGES":       "Top pages",
+    "PAGE":            "Page",
+    "SOURCES":         "Traffic sources",
+
+    "SEC_ECOMMERCE": "E-commerce",
+    "REVENUE":       "Revenue",
+    "TRANSACTIONS":  "Transactions",
+    "CONVERSION":    "Conversion rate",
+    "AOV":           "Avg. order value",
+    "TOP_PRODUCTS":  "Top-selling products",
+    "PRODUCT":       "Product",
+    "ITEMS_SOLD":    "Items sold",
+    "ECOM_EMPTY":    "No purchases recorded for this period. E-commerce metrics appear once GA4 receives purchase events from your store.",
+
+    "SEC_SEARCH":  "Google search",
+    "IMPRESSIONS": "Impressions",
+    "CLICKS":      "Clicks",
+    "CTR":         "CTR",
+    "POSITION":    "Avg. position",
+    "TOP_QUERIES": "Top queries",
+    "QUERY":       "Query"
+  }
+}

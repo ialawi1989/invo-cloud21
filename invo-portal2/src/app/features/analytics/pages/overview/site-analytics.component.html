@@ -1,0 +1,227 @@
+<div class="sa">
+  <header class="sa__head">
+    <div>
+      <h1 class="sa__title">{{ 'ANALYTICS.TITLE' | translate }}</h1>
+      <p class="sa__sub">{{ 'ANALYTICS.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="sa__range">
+      <app-date-picker
+        mode="range"
+        [presets]="presets()"
+        [value]="range()"
+        (valueChange)="onRange($event)"
+      />
+      @if (prevPeriodLabel()) {
+        <span class="sa__compare">{{ 'ANALYTICS.COMPARE_PREV' | translate }} ({{ prevPeriodLabel() }})</span>
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <!-- Loading — skeleton, no connect prompts yet -->
+    <div class="sa__skel">
+      <app-skeleton variant="block" height="86px"/>
+      <div class="sa__kpis">
+        <app-skeleton variant="block" height="78px"/>
+        <app-skeleton variant="block" height="78px"/>
+        <app-skeleton variant="block" height="78px"/>
+        <app-skeleton variant="block" height="78px"/>
+      </div>
+      <app-skeleton variant="block" height="240px"/>
+      <div class="sa__grid">
+        <app-skeleton variant="block" height="220px"/>
+        <app-skeleton variant="block" height="220px"/>
+      </div>
+    </div>
+  } @else {
+
+  <!-- GA4 not connected -->
+  @if (!integrations().ga4Enabled) {
+    <div class="sa__connect">
+      <div class="sa__connectIco">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+      </div>
+      <div class="sa__connectBody">
+        <h2>{{ 'ANALYTICS.GA4_CONNECT_TITLE' | translate }}</h2>
+        <p>{{ 'ANALYTICS.GA4_CONNECT_HINT' | translate }}</p>
+      </div>
+      <a class="sa__connectBtn" [routerLink]="['/settings/plugins/google-analytics-ga4', '0']">{{ 'ANALYTICS.CONNECT_GA4' | translate }}</a>
+    </div>
+  }
+
+  <!-- Realtime -->
+  @if (integrations().ga4Enabled && realtime(); as rt) {
+    <section class="sa__card sa__rt">
+      <div class="sa__rtMain">
+        <div class="sa__rtDot"></div>
+        <div>
+          <div class="sa__rtNum">{{ num(rt.activeUsers) }}</div>
+          <div class="sa__rtLbl">{{ 'ANALYTICS.ACTIVE_NOW' | translate }}</div>
+        </div>
+      </div>
+      <div class="sa__rtSpark">
+        <div class="sa__rtSparkLbl">{{ 'ANALYTICS.LAST_30_MIN' | translate }}</div>
+        <div class="sa__rtBars">
+          @for (b of realtimeBars(); track $index) {
+            <span class="sa__rtBar" [style.height.%]="b.h" [title]="b.users"></span>
+          }
+        </div>
+      </div>
+      @if (rt.topPages?.length) {
+        <div class="sa__rtPages">
+          <div class="sa__rtSparkLbl">{{ 'ANALYTICS.TOP_ACTIVE_PAGES' | translate }}</div>
+          <ul>
+            @for (p of rt.topPages!.slice(0, 4); track p.path) {
+              <li><span class="sa__rtPath">{{ p.path }}</span><b>{{ num(p.activeUsers) }}</b></li>
+            }
+          </ul>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- ── Web traffic ─────────────────────────────────────────────────── -->
+  @if (integrations().ga4Enabled) {
+    <h2 class="sa__section">{{ 'ANALYTICS.SEC_TRAFFIC' | translate }}</h2>
+    @if (traffic(); as tr) {
+      <div class="sa__kpis">
+        <div class="sa__kpi"><span class="sa__kpiVal">{{ num(tr.users) }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.USERS' | translate }}</span></div>
+        <div class="sa__kpi"><span class="sa__kpiVal">{{ num(tr.sessions) }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.SESSIONS' | translate }}</span></div>
+        <div class="sa__kpi"><span class="sa__kpiVal">{{ num(tr.pageviews) }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.PAGEVIEWS' | translate }}</span></div>
+        <div class="sa__kpi"><span class="sa__kpiVal">{{ tr.engagementRate == null ? '—' : pct(tr.engagementRate * 100) }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.ENGAGEMENT_RATE' | translate }}</span></div>
+        <div class="sa__kpi"><span class="sa__kpiVal">{{ tr.avgSessionDuration == null ? '—' : duration(tr.avgSessionDuration) }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.AVG_DURATION' | translate }}</span></div>
+      </div>
+
+      <!-- Trend -->
+      <section class="sa__card">
+        <div class="sa__chartHead">
+          <h3 class="sa__cardTitle">{{ 'ANALYTICS.TREND' | translate }}</h3>
+          <div class="sa__seg">
+            <button type="button" [class.is-on]="trafficMetric() === 'users'" (click)="setTrafficMetric('users')">{{ 'ANALYTICS.USERS' | translate }}</button>
+            <button type="button" [class.is-on]="trafficMetric() === 'sessions'" (click)="setTrafficMetric('sessions')">{{ 'ANALYTICS.SESSIONS' | translate }}</button>
+            <button type="button" [class.is-on]="trafficMetric() === 'pageviews'" (click)="setTrafficMetric('pageviews')">{{ 'ANALYTICS.PAGEVIEWS' | translate }}</button>
+          </div>
+        </div>
+        @if (chartHasData()) {
+          <svg class="sa__chartSvg" viewBox="0 0 640 200" preserveAspectRatio="none" role="img">
+            <defs>
+              <linearGradient id="saTrendFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00aab3" stop-opacity="0.22"/>
+                <stop offset="100%" stop-color="#00aab3" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path [attr.d]="trendArea()" fill="url(#saTrendFill)"/>
+            <path [attr.d]="trendLine()" fill="none" stroke="#00aab3" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <div class="sa__chartAxis">
+            <span>{{ chartStartLabel() }}</span>
+            <span class="sa__chartMax">{{ 'ANALYTICS.PEAK' | translate }}: {{ num(chartMax()) }}</span>
+            <span>{{ chartEndLabel() }}</span>
+          </div>
+        } @else {
+          <div class="sa__ph"><span>{{ 'ANALYTICS.NO_DATA' | translate }}</span></div>
+        }
+      </section>
+
+      <div class="sa__grid">
+        <!-- Top pages -->
+        <section class="sa__card">
+          <h3 class="sa__cardTitle">{{ 'ANALYTICS.TOP_PAGES' | translate }}</h3>
+          @if (tr.topPages.length) {
+            <table class="sa__table">
+              <thead><tr><th>{{ 'ANALYTICS.PAGE' | translate }}</th><th class="sa__num">{{ 'ANALYTICS.PAGEVIEWS' | translate }}</th></tr></thead>
+              <tbody>
+                @for (p of tr.topPages; track p.path) {
+                  <tr>
+                    <td><span class="sa__pagePath" [title]="p.title || p.path">{{ p.title || p.path }}</span></td>
+                    <td class="sa__num">{{ num(p.views) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else { <div class="sa__ph sa__ph--sm"><span>{{ 'ANALYTICS.NO_DATA' | translate }}</span></div> }
+        </section>
+
+        <!-- Traffic sources -->
+        <aside class="sa__card">
+          <h3 class="sa__cardTitle">{{ 'ANALYTICS.SOURCES' | translate }}</h3>
+          @if (trafficSources().length) {
+            <ul class="sa__sources">
+              @for (s of trafficSources(); track s.source) {
+                <li>
+                  <span class="sa__srcName">{{ s.source }}</span>
+                  <span class="sa__srcVals"><b>{{ num(s.sessions) }}</b><em>{{ pct(s.pct) }}</em></span>
+                </li>
+              }
+            </ul>
+          } @else { <div class="sa__ph sa__ph--sm"><span>{{ 'ANALYTICS.NO_DATA' | translate }}</span></div> }
+        </aside>
+      </div>
+    } @else {
+      <section class="sa__card"><div class="sa__ph"><span>{{ 'ANALYTICS.NO_DATA' | translate }}</span></div></section>
+    }
+
+    <!-- ── E-commerce ────────────────────────────────────────────────── -->
+    <h2 class="sa__section">{{ 'ANALYTICS.SEC_ECOMMERCE' | translate }}</h2>
+    @if (ecommerce(); as ec) {
+      <div class="sa__kpis">
+        <div class="sa__kpi sa__kpi--accent"><span class="sa__kpiVal">{{ ec.revenue | mycurrency }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.REVENUE' | translate }}</span></div>
+        <div class="sa__kpi"><span class="sa__kpiVal">{{ num(ec.transactions) }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.TRANSACTIONS' | translate }}</span></div>
+        <div class="sa__kpi"><span class="sa__kpiVal">{{ ec.conversionRate == null ? '—' : pct(ec.conversionRate * 100) }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.CONVERSION' | translate }}</span></div>
+        <div class="sa__kpi"><span class="sa__kpiVal">{{ ec.avgOrderValue == null ? '—' : (ec.avgOrderValue | mycurrency) }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.AOV' | translate }}</span></div>
+      </div>
+      <section class="sa__card">
+        <h3 class="sa__cardTitle">{{ 'ANALYTICS.TOP_PRODUCTS' | translate }}</h3>
+        @if (ec.topProducts.length) {
+          <table class="sa__table">
+            <thead><tr><th>{{ 'ANALYTICS.PRODUCT' | translate }}</th><th class="sa__num">{{ 'ANALYTICS.ITEMS_SOLD' | translate }}</th><th class="sa__num">{{ 'ANALYTICS.REVENUE' | translate }}</th></tr></thead>
+            <tbody>
+              @for (p of ec.topProducts; track p.name) {
+                <tr><td>{{ p.name }}</td><td class="sa__num">{{ num(p.itemsSold) }}</td><td class="sa__num">{{ p.revenue | mycurrency }}</td></tr>
+              }
+            </tbody>
+          </table>
+        } @else { <div class="sa__ph sa__ph--sm"><span>{{ 'ANALYTICS.ECOM_EMPTY' | translate }}</span></div> }
+      </section>
+    } @else {
+      <section class="sa__card"><div class="sa__ph sa__ph--sm"><span>{{ 'ANALYTICS.ECOM_EMPTY' | translate }}</span></div></section>
+    }
+  }
+
+  <!-- ── Search (GSC) ──────────────────────────────────────────────────── -->
+  <h2 class="sa__section">{{ 'ANALYTICS.SEC_SEARCH' | translate }}</h2>
+  @if (search(); as gsc) {
+    <div class="sa__kpis">
+      <div class="sa__kpi"><span class="sa__kpiVal">{{ num(gsc.impressions) }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.IMPRESSIONS' | translate }}</span></div>
+      <div class="sa__kpi"><span class="sa__kpiVal">{{ num(gsc.clicks) }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.CLICKS' | translate }}</span></div>
+      <div class="sa__kpi"><span class="sa__kpiVal">{{ pct(gsc.ctr * 100) }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.CTR' | translate }}</span></div>
+      <div class="sa__kpi"><span class="sa__kpiVal">{{ gsc.avgPosition | number:'1.1-1' }}</span><span class="sa__kpiLbl">{{ 'ANALYTICS.POSITION' | translate }}</span></div>
+    </div>
+    <section class="sa__card">
+      <h3 class="sa__cardTitle">{{ 'ANALYTICS.TOP_QUERIES' | translate }}</h3>
+      @if (gsc.topQueries.length) {
+        <table class="sa__table">
+          <thead><tr><th>{{ 'ANALYTICS.QUERY' | translate }}</th><th class="sa__num">{{ 'ANALYTICS.CLICKS' | translate }}</th><th class="sa__num">{{ 'ANALYTICS.IMPRESSIONS' | translate }}</th></tr></thead>
+          <tbody>
+            @for (q of gsc.topQueries; track q.query) {
+              <tr><td><span class="sa__pagePath">{{ q.query }}</span></td><td class="sa__num">{{ num(q.clicks) }}</td><td class="sa__num">{{ num(q.impressions) }}</td></tr>
+            }
+          </tbody>
+        </table>
+      } @else { <div class="sa__ph sa__ph--sm"><span>{{ 'ANALYTICS.NO_DATA' | translate }}</span></div> }
+    </section>
+  } @else {
+    <div class="sa__connect">
+      <div class="sa__connectIco">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </div>
+      <div class="sa__connectBody">
+        <h2>{{ 'ANALYTICS.GSC_CONNECT_TITLE' | translate }}</h2>
+        <p>{{ 'ANALYTICS.GSC_CONNECT_HINT' | translate }}</p>
+      </div>
+      <a class="sa__connectBtn" [routerLink]="['/settings/plugins/google-search-console', '0']">{{ 'ANALYTICS.CONNECT_GSC' | translate }}</a>
+    </div>
+  }
+
+  }
+</div>

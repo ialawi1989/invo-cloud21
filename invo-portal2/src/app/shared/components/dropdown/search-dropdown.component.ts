@@ -245,11 +245,27 @@ export class SearchDropdownComponent<T = any> implements OnDestroy, ControlValue
     if (v == null) return '';
     if (Array.isArray(v)) {
       if (v.length === 0) return '';
-      if (v.length === 1) return display(v[0]);
-      return `${display(v[0])} +${v.length - 1}`;
+      if (v.length === 1) return display(this.resolveForDisplay(v[0]));
+      return `${display(this.resolveForDisplay(v[0]))} +${v.length - 1}`;
     }
-    return display(v);
+    return display(this.resolveForDisplay(v));
   });
+
+  /**
+   * Map a stored value back to its item for display. When `toValue` is used
+   * the bound value is a primitive (id/uuid), which `displayWith` can't render
+   * — find the matching item via `compareWith` so the trigger shows its label.
+   * Objects (the historical default) and unmatched values pass through as-is.
+   */
+  private resolveForDisplay(val: any): T {
+    if (val != null && typeof val === 'object') return val as T;
+    const compare = this.compareWith();
+    const pool = this.loadFn() ? this.loadedItems() : this.items();
+    const found = pool.find((it) => {
+      try { return compare(it, val as any); } catch { return false; }
+    });
+    return (found ?? val) as T;
+  }
 
   hasValue = computed(() => {
     const v = this.value();

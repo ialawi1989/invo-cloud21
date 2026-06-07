@@ -207,6 +207,35 @@
 .pf-howto__docs:hover { color: var(--color-brand-800, #1f7d8e); text-decoration: underline; }
 .pf-howto__docs svg { opacity: .65; }
 
+/* Test-connection card. */
+.pf-test__row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.pf-test__text { flex: 1; min-width: 0; }
+.pf-test__btn {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 18px; border-radius: 8px;
+  border: 1px solid var(--color-brand-500, #06b6d4);
+  background: #fff; color: var(--color-brand-700, #2691a4);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: background 120ms ease;
+  &:hover:not(:disabled) { background: #eff8fa; }
+  &:disabled { opacity: .6; cursor: default; }
+}
+.pf-test__spin {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid rgba(38, 145, 164, .3);
+  border-top-color: var(--color-brand-600, #2691a4);
+  animation: pf-spin .7s linear infinite;
+}
+@keyframes pf-spin { to { transform: rotate(360deg); } }
+.pf-test__result {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 12px; padding: 9px 12px; border-radius: 8px;
+  font-size: 13px; font-weight: 500;
+  &.is-ok  { background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; }
+  &.is-err { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+}
+
 /* JSON service-key paste area. */
 .pf-textarea {
   width: 100%;

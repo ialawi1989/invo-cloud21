@@ -99,6 +99,7 @@ import { terminalSecurity } from '../definitions/terminalSecurity';
 import { vatPayment } from '../definitions/vatPayment';
 import { waitingListSecurity } from '../definitions/waitingListSecurity';
 import { websiteBuilderSecurity } from '../definitions/websiteBuilderSecurity';
+import { websiteAnalyticsSecurity } from '../definitions/websiteAnalyticsSecurity';
 import { websiteSettingsSecurity } from '../definitions/websiteSettingsSecurity';
 import { workOrderSecurity } from '../definitions/workOrderSecurity';
 
@@ -169,6 +170,7 @@ export class Privilege {
   inventoryPhysicalCountsSecurity = inventoryPhysicalCountsSecurity();
   inventoryTransferSecurity      = inventoryTransferSecurity();
   websiteBuilderSecurity         = websiteBuilderSecurity();
+  websiteAnalyticsSecurity       = websiteAnalyticsSecurity();
   pageBuilderSecurity            = pageBuilderSecurity();
   websiteSettingsSecurity        = websiteSettingsSecurity();
   blogSecurity                   = blogSecurity();

@@ -38,5 +38,21 @@
 ::ng-deep app-search-dropdown { display: block; }
 
 .rf__excludeRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; color: #334155; }
-.rf__excludeBtn { background: transparent; border: 0; color: var(--color-brand-700, #2691a4); font: inherit; font-weight: 600; cursor: not-allowed; opacity: .6; }
+.rf__excludeBtn { background: transparent; border: 0; color: var(--color-brand-700, #2691a4); font: inherit; font-weight: 600; cursor: pointer; }
+.rf__excludeBtn:hover { text-decoration: underline; }
 .rf__soon { display: inline-block; margin-top: 8px; font-size: 11px; color: #94a3b8; font-style: italic; }
+
+.rf__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.rf__chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 6px 5px 12px; border-radius: 999px;
+  background: #e8f3f5; color: var(--color-brand-800, #1f7d8e);
+  font-size: 13px; font-weight: 500;
+}
+.rf__chip--muted { padding: 5px 12px; background: #f1f5f9; color: #64748b; }
+.rf__chipX {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border: 0; border-radius: 50%;
+  background: rgba(15, 23, 42, .08); color: inherit; cursor: pointer;
+}
+.rf__chipX:hover { background: rgba(15, 23, 42, .18); }

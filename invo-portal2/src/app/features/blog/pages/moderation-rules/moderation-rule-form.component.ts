@@ -14,9 +14,16 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { withTranslations } from '@core/i18n/with-translations';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { ModalService } from '@shared/modal/modal.service';
 
 import { BLOG_API } from '../../services/blog-api';
 import { BlogModerationRule, ModerationAction, ModerationGroup } from '../../services/blog.types';
+import {
+  PickMemberModalComponent,
+  PickMemberModalData,
+  PickMemberResult,
+  PickedMember,
+} from './pick-member-modal.component';
 
 @Component({
   selector: 'app-blog-moderation-rule-form',
@@ -32,6 +39,7 @@ export class ModerationRuleFormComponent implements OnInit {
   private router    = inject(Router);
   private translate = inject(TranslateService);
   private toast     = inject(ToastService);
+  private modal     = inject(ModalService);
 
   private id: string | null = null;
   private existing: BlogModerationRule | null = null;
@@ -43,6 +51,14 @@ export class ModerationRuleFormComponent implements OnInit {
   group   = signal<ModerationGroup>('everyone');
   trigger = signal<string>('spam');
   action  = signal<ModerationAction>('pending');
+
+  /** Excluded member ids (source of truth, persisted). */
+  excludedMemberIds = signal<string[]>([]);
+  /** Members whose names we know (picked this session) — for chip labels. */
+  excludedMembers   = signal<PickedMember[]>([]);
+  /** Excluded ids with no known name yet (e.g. loaded from an existing rule). */
+  extraExcludedCount = computed(() =>
+    Math.max(0, this.excludedMemberIds().length - this.excludedMembers().length));
 
   private i18nTick = signal(0);
 
@@ -84,10 +100,44 @@ export class ModerationRuleFormComponent implements OnInit {
         this.group.set(r.group);
         this.trigger.set(r.trigger);
         this.action.set(r.action);
+        this.excludedMemberIds.set(Array.isArray(r.excludedMemberIds) ? [...r.excludedMemberIds] : []);
       }
     } finally {
       this.loading.set(false);
     }
+  }
+
+  /** Open the site-member picker; merge the result into the exclusion list. */
+  async openMemberPicker(): Promise<void> {
+    const ref = this.modal.open<PickMemberModalComponent, PickMemberModalData, PickMemberResult>(
+      PickMemberModalComponent,
+      {
+        data: {
+          excludedIds: this.excludedMemberIds(),
+          title: this.translate.instant('BLOG.MODERATION.PICK_MEMBERS'),
+        },
+        size: 'md',
+      },
+    );
+    const result = await ref.afterClosed();
+    if (!result) return;
+
+    const removed = new Set(result.removed);
+    const ids = this.excludedMemberIds().filter(id => !removed.has(id));
+    for (const m of result.added) if (!ids.includes(m.id)) ids.push(m.id);
+    this.excludedMemberIds.set(ids);
+
+    // Keep known names in sync for the chips.
+    this.excludedMembers.update(prev => {
+      const next = prev.filter(m => !removed.has(m.id));
+      for (const m of result.added) if (!next.some(x => x.id === m.id)) next.push(m);
+      return next.filter(m => ids.includes(m.id));
+    });
+  }
+
+  removeMember(id: string): void {
+    this.excludedMemberIds.update(ids => ids.filter(x => x !== id));
+    this.excludedMembers.update(ms => ms.filter(m => m.id !== id));
   }
 
   async save(): Promise<void> {
@@ -100,7 +150,7 @@ export class ModerationRuleFormComponent implements OnInit {
         group: this.group(),
         trigger: this.trigger().trim(),
         action: this.action(),
-        excludedMemberIds: this.existing?.excludedMemberIds ?? [],
+        excludedMemberIds: this.excludedMemberIds(),
         active: this.existing?.active ?? true,
       });
       this.toast.success('COMMON.SAVED_OK');

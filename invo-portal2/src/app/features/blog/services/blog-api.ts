@@ -5,6 +5,8 @@ import {
   CommentStatus,
   BlogModerationRule,
   ModerationRuleSavePayload,
+  ShopperListParams,
+  ShopperListResult,
   BlogPost,
   BlogTaxonomy,
   BlogWriter,
@@ -81,6 +83,8 @@ export abstract class BlogApi {
   abstract saveModerationRule(payload: ModerationRuleSavePayload): Promise<BlogModerationRule>;
   abstract deleteModerationRule(id: string): Promise<boolean>;
   abstract toggleModerationRule(id: string, active: boolean): Promise<BlogModerationRule>;
+  /** Site members (shoppers) eligible to be excluded from a rule. */
+  abstract getShopperList(params?: ShopperListParams): Promise<ShopperListResult>;
 
   // ── Analytics ───────────────────────────────────────────────────────
   abstract getReport(params?: BlogReportParams): Promise<BlogReport>;
