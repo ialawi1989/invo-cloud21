@@ -153,8 +153,10 @@ export class CommentSectionComponent implements OnChanges {
   }
 
   totalCount(): number {
-    const walk = (n: BlogCommentNode[]): number =>
-      n.reduce((sum, x) => sum + (x.isDeleted ? 0 : 1) + walk(x.replies ?? []), 0);
+    const walk = (n: BlogCommentNode[] | null | undefined): number =>
+      (Array.isArray(n) ? n : []).reduce(
+        (sum, x) => sum + (x.isDeleted ? 0 : 1) + walk(x.replies), 0,
+      );
     return walk(this.comments());
   }
 
@@ -169,8 +171,12 @@ export class CommentSectionComponent implements OnChanges {
     if (!this.settings.enabled) return;
     this.loading.set(true);
     try {
-      const list = await this.api.listPostComments(this.postId, this.lang);
-      this.comments.set(list ?? []);
+      // Tolerate either a bare array or a paginated `{ data, pagination }`
+      // envelope from the backend so a shape change can't crash the tree.
+      const res = await this.api.listPostComments(this.postId, this.lang) as
+        BlogCommentNode[] | { data?: BlogCommentNode[] } | null;
+      const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
+      this.comments.set(list);
     } catch {
       this.comments.set([]);
     } finally {
