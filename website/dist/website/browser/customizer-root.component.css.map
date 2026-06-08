@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["angular:styles/component:css;1179d1274e95d3ab58d87e27db236954cd133325bdd38209fb3edba119a17941;D:/Users/Invo/Downloads/angular-customizer/website/src/app/customizer-root.component.ts"],
-  "sourcesContent": ["\n    .empty-page { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center; opacity: .5; }\n  "],
-  "mappings": ";AACI,CAAC;AAAa,WAAS;AAAM,kBAAgB;AAAQ,eAAa;AAAQ,mBAAiB;AAAQ,cAAY;AAAM,cAAY;AAAQ,WAAS;AAAI;",
-  "names": []
-}

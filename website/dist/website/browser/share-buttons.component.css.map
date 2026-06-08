@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["angular:styles/component:css;fb4769adb30910619a68ff4f2c5abf1845c0a34faa5671681c8b21e72870da49;D:/Users/Invo/Downloads/angular-customizer/website/src/app/features/blog/components/share-buttons.component.ts"],
-  "sourcesContent": ["\n    :host { display: block; }\n    .share { display: flex; flex-wrap: wrap; gap: 8px; }\n    .btn {\n      padding: 8px 14px;\n      border-radius: 6px;\n      border: 1px solid rgba(0,0,0,.12);\n      background: transparent;\n      color: inherit;\n      text-decoration: none;\n      font: inherit;\n      font-size: 13px;\n      cursor: pointer;\n    }\n    .btn:hover { background: rgba(0,0,0,.04); }\n    @media (min-width: 769px) { .mobile-only { display: none; } }\n  "],
-  "mappings": ";AACI;AAAQ,WAAS;AAAO;AACxB,CAAC;AAAQ,WAAS;AAAM,aAAW;AAAM,OAAK;AAAK;AACnD,CAAC;AACC,WAAS,IAAI;AACb,iBAAe;AACf,UAAQ,IAAI,MAAM,KAAK,CAAC,EAAC,CAAC,EAAC,CAAC,EAAC;AAC7B,cAAY;AACZ,SAAO;AACP,mBAAiB;AACjB,QAAM;AACN,aAAW;AACX,UAAQ;AACV;AACA,CAXC,GAWG;AAAS,cAAY,KAAK,CAAC,EAAC,CAAC,EAAC,CAAC,EAAC;AAAM;AAC1C,QAAO,WAAY;AAAS,GAAC;AAAc,aAAS;AAAM;AAAE;",
-  "names": []
-}

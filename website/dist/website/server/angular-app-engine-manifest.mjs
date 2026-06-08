@@ -1,7 +1,9 @@
 
 export default {
   basePath: '/',
-  allowedHosts: [],
+  allowedHosts: [
+  "*"
+],
   supportedLocales: {
   "en-US": ""
 },

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["angular:styles/component:css;49385703b51962ac104e06e99ead5d1b2d8c0832ae924b023f20957cbde99ade;D:/Users/Invo/Downloads/angular-customizer/website/src/app/features/blog/components/pagination.component.ts"],
-  "sourcesContent": ["\n    :host { display: block; }\n    .pager {\n      display: flex; flex-wrap: wrap; justify-content: center;\n      gap: 6px; padding: 32px 0;\n    }\n    .btn {\n      min-width: 36px; height: 36px; padding: 0 12px;\n      background: transparent;\n      border: 1px solid rgba(0,0,0,.12);\n      border-radius: 6px;\n      cursor: pointer;\n      font: inherit;\n      color: inherit;\n    }\n    .btn:not(:disabled):hover { background: rgba(0,0,0,.04); }\n    .btn:disabled { opacity: .4; cursor: not-allowed; }\n    .btn.active { background: var(--primary, #6366f1); color: #fff; border-color: transparent; }\n    .ellipsis { padding: 0 6px; align-self: center; opacity: .6; }\n  "],
-  "mappings": ";AACI;AAAQ,WAAS;AAAO;AACxB,CAAC;AACC,WAAS;AAAM,aAAW;AAAM,mBAAiB;AACjD,OAAK;AAAK,WAAS,KAAK;AAC1B;AACA,CAAC;AACC,aAAW;AAAM,UAAQ;AAAM,WAAS,EAAE;AAC1C,cAAY;AACZ,UAAQ,IAAI,MAAM,KAAK,CAAC,EAAC,CAAC,EAAC,CAAC,EAAC;AAC7B,iBAAe;AACf,UAAQ;AACR,QAAM;AACN,SAAO;AACT;AACA,CATC,GASG,KAAK,UAAU;AAAS,cAAY,KAAK,CAAC,EAAC,CAAC,EAAC,CAAC,EAAC;AAAM;AACzD,CAVC,GAUG;AAAY,WAAS;AAAI,UAAQ;AAAa;AAClD,CAXC,GAWG,CAAC;AAAS,cAAY,IAAI,SAAS,EAAE;AAAU,SAAO;AAAM,gBAAc;AAAa;AAC3F,CAAC;AAAW,WAAS,EAAE;AAAK,cAAY;AAAQ,WAAS;AAAI;",
-  "names": []
-}
