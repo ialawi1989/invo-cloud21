@@ -1427,6 +1427,12 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   }
 
   private async saveAt(targetStatus: PostStatus): Promise<void> {
+    // buildPayload() reads `status` from the form, but publishNow() only
+    // flips the `status` signal — without this the payload still carries
+    // the old status and Publish saves the post as a draft.
+    if (this.postForm.controls.status.value !== targetStatus) {
+      this.postForm.controls.status.setValue(targetStatus, { emitEvent: false });
+    }
     if (targetStatus !== 'draft') {
       const v = this.validateDefault();
       if (!v.ok) {
