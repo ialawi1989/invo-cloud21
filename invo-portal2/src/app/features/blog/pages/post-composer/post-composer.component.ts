@@ -54,6 +54,7 @@ import { ProductsService } from '../../../products/services/products.service';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { AuthService } from '@core/auth/auth.service';
+import { StorefrontUrlService } from '@core/auth/storefront-url.service';
 import {
   ChangeLanguageModalComponent,
   ChangeLanguageModalData,
@@ -162,6 +163,7 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   private mycurrency = inject(MycurrencyPipe);
   private products   = inject(ProductsService);
   private auth       = inject(AuthService);
+  private storefront = inject(StorefrontUrlService);
   private sanitizer  = inject(DomSanitizer);
   private modal      = inject(ModalService);
   private fb         = inject(NonNullableFormBuilder);
@@ -1475,7 +1477,10 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     if (this.isDirty()) await this.save();
     const slug = this.translations()[this.defaultLanguage()]?.slug;
     if (!slug) { this.toast.error('BLOG.COMPOSER.PREVIEW_NEEDS_SLUG'); return; }
-    window.open(`/${this.defaultLanguage()}/blog/${slug}?preview=1`, '_blank');
+    // Open on the live storefront (its own host/port/domain), never the
+    // dashboard origin — StorefrontUrlService resolves dev/test/prod and
+    // custom domains.
+    window.open(this.storefront.pageUrl(`/${this.defaultLanguage()}/blog/${slug}?preview=1`), '_blank');
   }
 
   // ── More-menu actions ───────────────────────────────────────────────
@@ -1484,7 +1489,7 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     this.moreOpen.set(false);
     const slug = this.translations()[this.defaultLanguage()]?.slug;
     if (!slug) { this.toast.error('BLOG.COMPOSER.PREVIEW_NEEDS_SLUG'); return; }
-    const url = `${location.origin}/${this.defaultLanguage()}/blog/${slug}`;
+    const url = this.storefront.pageUrl(`/${this.defaultLanguage()}/blog/${slug}`);
     try {
       await navigator.clipboard.writeText(url);
       this.toast.success('BLOG.COMPOSER.LINK_COPIED');

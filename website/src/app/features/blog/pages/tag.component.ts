@@ -150,7 +150,7 @@ export class TagPage implements OnInit {
   }
 
   private applySeo(r: TagPostsResult): void {
-    const origin = environment.siteOrigin || '';
+    const origin = this.settingsSvc.originUrl();
     const lang = this.lang();
     const thin = (r.pagination.total ?? r.data.length) < 3;
     this.seo.apply({

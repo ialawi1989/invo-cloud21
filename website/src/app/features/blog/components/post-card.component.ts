@@ -1,9 +1,10 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 import { PostSummary } from '../models/blog.types';
 import { PublicBlogDisplaySettings } from '../models/blog-settings.types';
+import { BlogAnalyticsService } from '../services/blog-analytics.service';
 import { formatDate, formatNumber, t } from '../i18n/i18n';
 
 /**
@@ -26,6 +27,7 @@ import { formatDate, formatNumber, t } from '../i18n/i18n';
       @if (post.coverImage && variant !== 'editorial-mini') {
         <a class="cover"
            [routerLink]="['/', lang, 'blog', post.slug]"
+           (click)="onPostClick()"
            [attr.aria-label]="post.title">
           <img
             [src]="post.coverImage"
@@ -49,7 +51,7 @@ import { formatDate, formatNumber, t } from '../i18n/i18n';
         }
 
         <h3 class="title">
-          <a [routerLink]="['/', lang, 'blog', post.slug]">{{ post.title }}</a>
+          <a [routerLink]="['/', lang, 'blog', post.slug]" (click)="onPostClick()">{{ post.title }}</a>
         </h3>
 
         @if (variant !== 'compact' && post.excerpt) {
@@ -210,12 +212,17 @@ import { formatDate, formatNumber, t } from '../i18n/i18n';
   `],
 })
 export class PostCardComponent {
+  private analytics = inject(BlogAnalyticsService);
+
   @Input({ required: true }) post!: PostSummary;
   @Input({ required: true }) lang!: string;
   @Input({ required: true }) display!: PublicBlogDisplaySettings;
   @Input() variant: 'default' | 'compact' | 'hero' | 'list' | 'side' | 'magazine-medium' | 'editorial' | 'editorial-mini' | 'masonry' = 'default';
   @Input() reverseSide = false;
   @Input() eagerLoadCover = false;
+
+  /** Report the post click to GA4 (no-op unless click tracking is on). */
+  onPostClick(): void { this.analytics.trackPostClick(this.post); }
 
   t(key: string, vars?: Record<string, string | number>) { return t(this.lang, key, vars); }
   formatDate = formatDate;

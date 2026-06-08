@@ -61,6 +61,27 @@ export interface PublicBlogMobileSettings {
   showCategoryMenu: boolean;
 }
 
+export interface PublicBlogTrackingSettings {
+  /** When true, post/link clicks fire GA4 `select_content` events
+   *  (only meaningful once `ga4MeasurementId` is set). */
+  clicksEnabled:     boolean;
+  /** GA4 measurement id (e.g. `G-XXXXXXXX`). When present we load
+   *  gtag.js and report page views; otherwise analytics stays off. */
+  ga4MeasurementId?: string;
+  /** Google Search Console site-verification token. When present we
+   *  render `<meta name="google-site-verification">` in <head>. */
+  gscVerification?:  string;
+}
+
+export interface PublicBlogSeoSettings {
+  /** Page-title template for posts. Supports `{postTitle}` and
+   *  `{siteName}` placeholders. */
+  titleTemplate:   string;
+  /** OG image used when a post has neither its own OG image nor a
+   *  cover (and as a fallback for feed pages with no image). */
+  defaultOgImage?: string;
+}
+
 export interface PublicBlogSettings {
   languages: PublicBlogLanguagesSettings;
   layouts:   PublicBlogLayoutsSettings;
@@ -68,11 +89,16 @@ export interface PublicBlogSettings {
   comments:  PublicBlogCommentsSettings;
   rss:       PublicBlogRssSettings;
   mobile:    PublicBlogMobileSettings;
+  tracking:  PublicBlogTrackingSettings;
+  seo:       PublicBlogSeoSettings;
   /** Optional storefront-level fields the backend may inject. */
   siteName?: string;
   heroImage?: string;
   defaultOgImage?: string;
   tagline?: string;
+  /** Absolute storefront origin (no trailing slash) used to build
+   *  canonical / og:url. Falls back to environment when absent. */
+  siteUrl?: string;
 }
 
 export function defaultPublicBlogSettings(): PublicBlogSettings {
@@ -94,6 +120,8 @@ export function defaultPublicBlogSettings(): PublicBlogSettings {
     comments: { enabled: true, allowReplies: true, maxDepth: 3, requireShopperLogin: true },
     rss:      { enabled: true, itemsCount: 20 },
     mobile:   { overrideDesktop: false, feedLayout: 'list', showCategoryMenu: true },
+    tracking: { clicksEnabled: false },
+    seo:      { titleTemplate: '{postTitle} | {siteName}' },
   };
 }
 
@@ -147,9 +175,29 @@ export function normalizePublicBlogSettings(raw: any): PublicBlogSettings {
       feedLayout:       coerceLayout(raw.mobile?.feedLayout, d.mobile.feedLayout),
       showCategoryMenu: raw.mobile?.showCategoryMenu !== false,
     },
+    tracking: {
+      clicksEnabled:    !!raw.tracking?.clicksEnabled,
+      ga4MeasurementId: nonEmptyString(raw.tracking?.ga4MeasurementId),
+      gscVerification:  nonEmptyString(raw.tracking?.gscVerification),
+    },
+    seo: {
+      titleTemplate:  nonEmptyString(raw.seo?.titleTemplate) ?? d.seo.titleTemplate,
+      // Accept the nested `seo.defaultOgImage`, falling back to the
+      // legacy top-level `defaultOgImage` the backend may still send.
+      defaultOgImage: nonEmptyString(raw.seo?.defaultOgImage) ?? nonEmptyString(raw.defaultOgImage),
+    },
     siteName:       raw.siteName       != null ? String(raw.siteName)       : undefined,
     heroImage:      raw.heroImage      != null ? String(raw.heroImage)      : undefined,
     defaultOgImage: raw.defaultOgImage != null ? String(raw.defaultOgImage) : undefined,
     tagline:        raw.tagline        != null ? String(raw.tagline)        : undefined,
+    // Trim a trailing slash so `${siteUrl}/path` never double-slashes.
+    siteUrl:        nonEmptyString(raw.siteUrl)?.replace(/\/+$/, ''),
   };
+}
+
+/** Coerce to a trimmed string, or undefined when null/blank. */
+function nonEmptyString(v: any): string | undefined {
+  if (v == null) return undefined;
+  const s = String(v).trim();
+  return s ? s : undefined;
 }

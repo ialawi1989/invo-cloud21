@@ -173,7 +173,7 @@ export class SearchPage implements OnInit {
   }
 
   private applySeo(): void {
-    const origin = environment.siteOrigin || '';
+    const origin = this.settingsSvc.originUrl();
     const q = this.query();
     this.seo.apply({
       title: q ? `Search: ${q} | ${this.t(this.lang(), 'blog')}` : `Search | ${this.t(this.lang(), 'blog')}`,

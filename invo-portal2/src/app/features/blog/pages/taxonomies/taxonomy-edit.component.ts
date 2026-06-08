@@ -13,6 +13,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
+import { StorefrontUrlService } from '@core/auth/storefront-url.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { MediaPickerModalComponent, MediaPickerConfig } from '../../../settings/media/components/media-picker';
@@ -44,6 +45,7 @@ export class TaxonomyEditComponent implements OnInit {
   private toast      = inject(ToastService);
   private modal      = inject(ModalService);
   private destroyRef = inject(DestroyRef);
+  private storefront = inject(StorefrontUrlService);
 
   type = signal<TaxonomyType>('category');
   lang = signal<string>('en');
@@ -65,9 +67,13 @@ export class TaxonomyEditComponent implements OnInit {
   isCategory = computed(() => this.type() === 'category');
   pageTitle  = computed(() => this.name().trim() || this.translate.instant('BLOG.TAXONOMIES.UNTITLED'));
 
-  /** Google-preview URL — relative path under the blog. */
+  /** Google-preview URL — absolute live-storefront URL (dev/test/prod
+   *  or custom domain via StorefrontUrlService). Path mirrors the
+   *  website routes: `/:lang/blog/category|tag/:slug`. */
   previewUrl = computed(() =>
-    `/${this.lang()}/blog/${this.isCategory() ? 'categories' : 'tags'}/${this.slug() || 'untitled'}`,
+    this.storefront.pageUrl(
+      `/${this.lang()}/blog/${this.isCategory() ? 'category' : 'tag'}/${this.slug() || 'untitled'}`,
+    ),
   );
 
   constructor() {

@@ -171,7 +171,7 @@ export class AuthorPage implements OnInit {
   }
 
   private applySeo(r: AuthorProfileResult): void {
-    const origin = environment.siteOrigin || '';
+    const origin = this.settingsSvc.originUrl();
     const lang = this.lang();
     const url = `${origin}/${lang}/blog/authors/${this.authorEmployeeId()}`;
     this.seo.apply({

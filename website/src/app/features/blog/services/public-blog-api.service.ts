@@ -14,6 +14,7 @@ import {
   TagPostsResult,
 } from '../models/blog.types';
 import { PublicBlogSettings, normalizePublicBlogSettings } from '../models/blog-settings.types';
+import { TenantService } from './tenant.service';
 
 interface ApiEnvelope<T> {
   success: boolean;
@@ -45,6 +46,7 @@ interface ApiEnvelope<T> {
 @Injectable({ providedIn: 'root' })
 export class PublicBlogApiService {
   private http = inject(HttpClient);
+  private tenant = inject(TenantService);
   private base = environment.apiBase;
 
   private url(action: string): string {
@@ -62,13 +64,9 @@ export class PublicBlogApiService {
    *      Bare IPs / localhost give a literal value the backend
    *      probably can't resolve; set the override in dev. */
   private resolveCompany(): string {
-    if (typeof window !== 'undefined') {
-      const override = (window as any).__BLOG_SUBDOMAIN__;
-      if (typeof override === 'string' && override.length) return override;
-      const host = window.location?.hostname ?? '';
-      return host.split('.')[0] ?? '';
-    }
-    return '';
+    // Resolved once at bootstrap by TenantService (override → config.json →
+    // localhost ?tenant → *.invopos.shop label → custom-domain lookup).
+    return this.tenant.slug();
   }
 
   private headers(): HttpHeaders {
@@ -133,8 +131,11 @@ export class PublicBlogApiService {
     });
   }
 
-  getPublicPost(slug: string, language: string): Promise<BlogPost> {
-    return this.call<BlogPost>('getPost', { slug, language });
+  /** Fetch a single post. `preview` asks the backend to return it even
+   *  when unpublished (draft/scheduled) — used by the dashboard's
+   *  Preview action via `?preview=1`. Backend must honour the flag. */
+  getPublicPost(slug: string, language: string, preview = false): Promise<BlogPost> {
+    return this.call<BlogPost>('getPost', { slug, language, ...(preview ? { preview: true } : {}) });
   }
 
   // ── Taxonomies ─────────────────────────────────────────────────────

@@ -67,9 +67,8 @@ export class StorefrontUrlService {
   /** Public storefront origin for the current tenant. */
   baseUrl(): string {
     const company = this.companies.currentCompany() as
-      | (Record<string, unknown> & { slug?: string; domain?: DomainConfig | null })
+      | (Record<string, unknown> & { domain?: DomainConfig | null })
       | null;
-    const slug   = (company?.slug ?? '').trim();
     const domain = company?.domain ?? null;
 
     if (this.isActiveDomain(domain)) {
@@ -79,17 +78,49 @@ export class StorefrontUrlService {
       return `https://${host}`;
     }
 
-    return this.tierBase(environment.tier as Tier, slug);
+    return this.tierBase(environment.tier as Tier, this.companySlug());
   }
 
   /** Resolve a storefront path against `baseUrl()`. Empty path
    *  yields the bare origin; otherwise the leading slash is
-   *  normalised so callers don't have to remember it. */
+   *  normalised so callers don't have to remember it.
+   *
+   *  Local dev: the storefront host (localhost / LAN IP) carries no
+   *  tenant slug, so the website can't tell which company to load and
+   *  every API call 404s on `/v1/ecommerce//…`. Pass the slug
+   *  explicitly via `?tenant=<slug>` — the storefront reads it and
+   *  remembers it in localStorage. */
   pageUrl(path: string = ''): string {
     const base = this.baseUrl();
-    if (!path) return base;
-    const p = path.startsWith('/') ? path : `/${path}`;
-    return base + p;
+    let url = path ? base + (path.startsWith('/') ? path : `/${path}`) : base;
+
+    if (environment.tier === 'local') {
+      const slug = this.companySlug();
+      if (slug) {
+        url += (url.includes('?') ? '&' : '?') + `tenant=${encodeURIComponent(slug)}`;
+      } else {
+        console.warn(
+          '[StorefrontUrlService] Local preview: no company slug found on ' +
+          'currentCompany()/settings(). The storefront will load without a ' +
+          'tenant (→ /v1/ecommerce//…). Open the storefront once with ' +
+          '?tenant=<slug> (it is remembered), or verify the slug field name ' +
+          'in the company payload.',
+        );
+      }
+    }
+    return url;
+  }
+
+  /** Active tenant's company slug (trimmed, '' when none). Checks the
+   *  company identity AND the full company settings, since the cached
+   *  `currentCompany` can predate `slug` being populated. Tolerates a
+   *  few key spellings the backend might use. */
+  private companySlug(): string {
+    const pick = (o: Record<string, any> | null | undefined): string =>
+      String(o?.['slug'] ?? o?.['subDomain'] ?? o?.['subdomain'] ?? '');
+    const fromCompany  = pick(this.companies.currentCompany() as Record<string, any> | null);
+    const fromSettings = pick(this.companies.settings() as Record<string, any> | null);
+    return (fromCompany || fromSettings).trim();
   }
 
   /** Whether the company already has a *usable* custom domain. */
@@ -108,14 +139,21 @@ export class StorefrontUrlService {
 
   private tierBase(tier: Tier, slug: string): string {
     switch (tier) {
-      // Local dev: storefront runs on its own port. Keep in sync with
-      // `DEV_WEBSITE_URL` in environment.ts so developers see the
-      // right host both in /settings/seo and via the receipt-builder
-      // QR helper.
-      case 'local':      return 'http://localhost:4600';
+      // Local dev: storefront runs on its own port (4600) on the SAME
+      // host the dashboard is opened from. We derive the host from the
+      // page rather than hardcoding `localhost` so previews work when
+      // the dashboard is reached over the LAN (e.g. http://10.2.2.89:4700
+      // → http://10.2.2.89:4600). Falls back to localhost during SSR.
+      case 'local':      return `http://${this.localHost()}:4600`;
       case 'dev':        return slug ? `https://${slug}.dev.invopos.shop`  : 'https://dev.invopos.shop';
       case 'test':       return slug ? `https://${slug}.test.invopos.shop` : 'https://test.invopos.shop';
       case 'production': return slug ? `https://${slug}.invopos.shop`      : 'https://invopos.shop';
     }
+  }
+
+  /** Hostname the dashboard is currently served from (no port), so the
+   *  local-tier storefront link targets the same machine. */
+  private localHost(): string {
+    return (typeof window !== 'undefined' && window.location?.hostname) || 'localhost';
   }
 }

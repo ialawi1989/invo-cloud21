@@ -209,7 +209,7 @@ export class BlogIndexPage implements OnInit {
   }
 
   private applySeo(): void {
-    const origin = environment.siteOrigin || '';
+    const origin = this.settingsSvc.originUrl();
     const lang = this.lang();
     const alts = this.supportedLangs().map(l => ({ lang: l, url: `${origin}/${l}/blog` }));
     this.seo.apply({

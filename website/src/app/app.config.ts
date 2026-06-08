@@ -1,4 +1,5 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, provideAppInitializer, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideClientHydration, withEventReplay, withHttpTransferCacheOptions } from '@angular/platform-browser';
 import { HttpClient, provideHttpClient, withFetch } from '@angular/common/http';
@@ -7,6 +8,8 @@ import { catchError } from 'rxjs/operators';
 
 import { APP_ROUTES } from './app.routes';
 import { APP_CONFIG, AppConfig } from './app-config.token';
+import { TenantService } from './features/blog/services/tenant.service';
+import { BlogSettingsService } from './features/blog/services/blog-settings.service';
 
 /**
  * Loads tenant config from the SSR-rendered `/assets/config.json`.
@@ -43,6 +46,23 @@ export const appConfig: ApplicationConfig = {
       useFactory: (http: HttpClient) => getAppConfig(http),
       deps: [HttpClient],
     },
+
+    // Resolve the tenant slug once, before routing fires any blog request.
+    // Mirrors oldEco's initializeApp (subdomain / localhost / custom domain).
+    provideAppInitializer(() => inject(TenantService).resolve()),
+
+    // Warm blog settings on every route (browser only) so site-wide
+    // analytics (GA4 / Search Console) initialise even on non-blog
+    // pages like the storefront root. MUST await tenant resolution first
+    // — otherwise this races resolve() and fires getSettings with an
+    // empty slug (→ /v1/ecommerce//…), 404ing and poisoning the one-shot
+    // settings cache. resolve() is idempotent (shared promise), so this
+    // doesn't duplicate the work. Fire-and-forget after that.
+    provideAppInitializer(async () => {
+      if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+      await inject(TenantService).resolve();
+      void inject(BlogSettingsService).load();
+    }),
 
     provideRouter(
       APP_ROUTES,

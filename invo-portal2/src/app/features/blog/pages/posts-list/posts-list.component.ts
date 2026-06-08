@@ -15,6 +15,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
+import { StorefrontUrlService } from '@core/auth/storefront-url.service';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import {
   TableColumn,
@@ -72,6 +73,7 @@ export class PostsListComponent implements OnInit {
   private toast      = inject(ToastService);
   private privilege  = inject(PrivilegeService);
   private modal      = inject(ModalService);
+  private storefront = inject(StorefrontUrlService);
 
   /** Handle to the shared list-page so tab/language changes can trigger
    *  a reload (the dataSource reads our signals when it runs). */
@@ -362,10 +364,19 @@ export class PostsListComponent implements OnInit {
   shareRow(p: BlogPost): void {
     const lang = p.defaultLanguage || 'en';
     const slug = (p as any).slug || p.id;
-    const url = `/${lang}/blog/${slug}`;
+    const url = this.storefront.pageUrl(`/${lang}/blog/${slug}`);
     navigator.clipboard?.writeText(url)
       .then(() => this.toast.success('BLOG.LIST.LINK_COPIED'))
       .catch(() => this.toast.info('BLOG.LIST.COMING_SOON'));
+  }
+  /** Open the post on the live storefront in a new tab. `preview=1` asks
+   *  the storefront to render it even when it isn't published yet.
+   *  StorefrontUrlService targets the right host per environment /
+   *  custom domain. */
+  previewRow(p: BlogPost): void {
+    const lang = p.defaultLanguage || 'en';
+    const slug = (p as any).slug || p.id;
+    window.open(this.storefront.pageUrl(`/${lang}/blog/${slug}?preview=1`), '_blank');
   }
   onRowClick(e: { row: BlogPost }): void { this.goEdit(e.row); }
 
@@ -457,7 +468,7 @@ export class PostsListComponent implements OnInit {
   /** Per-row "⋯ More" menu — supported actions are live, Wix extras stub. */
   rowMenu(p: BlogPost): DropdownMenuBtnItem[] {
     const items: DropdownMenuBtnItem[] = [
-      { label: 'BLOG.LIST.MENU_VIEW',         click: () => this.comingSoon(), iconPath: 'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' },
+      { label: 'BLOG.LIST.MENU_PREVIEW',      click: () => this.previewRow(p), iconPath: 'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' },
       { label: 'BLOG.LIST.MENU_SHARE',        click: () => this.comingSoon(), iconPath: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8 M16 6l-4-4-4 4 M12 2v13' },
       { label: p.isPinned ? 'BLOG.LIST.MENU_UNPIN' : 'BLOG.LIST.MENU_PIN', click: () => this.togglePin(p), iconPath: 'M12 17v5 M5 17h14l-1.5-9H6.5z M9 8V5a3 3 0 0 1 6 0v3' },
       { label: 'BLOG.LIST.MENU_REPORT',       click: () => this.comingSoon(), iconPath: 'M3 3v18h18 M7 16V9 M12 16V5 M17 16v-3' },

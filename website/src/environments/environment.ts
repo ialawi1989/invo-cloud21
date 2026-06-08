@@ -114,7 +114,14 @@ export const environment = {
   // ── Blog feature (separate API base) ─────────────────────────────
   apiBase:    resolveApiBase(isProd),
   siteOrigin: resolveSiteOrigin(),
-  /** Default site name used in <title> templates when settings don't
-   *  override. Wire this to the customizer's siteTitle at runtime. */
-  siteName:   'Blog',
+  /** Last-resort fallback for the storefront name in <title> templates and the
+   *  blog header. The real value is the ecommerce store's name from
+   *  getSettings (`settings.siteName`); this only shows if the backend doesn't
+   *  send one. Kept generic — NOT "Blog", since this is the whole storefront. */
+  siteName:   'Store',
+  /** Dev-only tenant fallback. On localhost / LAN IPs the slug can't be
+   *  derived from the host, so TenantService uses this (after `?tenant=` and
+   *  localStorage). Mirrors oldEco's `Config.subDomain` dev override; ignored
+   *  on real subdomains / custom domains. Set to your dev merchant slug. */
+  devTenant:  'shussain',
 };

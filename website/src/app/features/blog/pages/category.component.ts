@@ -163,7 +163,7 @@ export class CategoryPage implements OnInit {
   }
 
   private applySeo(r: CategoryPostsResult): void {
-    const origin = environment.siteOrigin || '';
+    const origin = this.settingsSvc.originUrl();
     const lang = this.lang();
     const alts = this.supportedLangs().map(l => ({
       lang: l,

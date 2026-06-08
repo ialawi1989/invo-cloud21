@@ -78,6 +78,41 @@ import { formatDate, formatNumber, nativeLanguageName, t } from '../i18n/i18n';
             </div>
           }
 
+          <header class="head">
+            @if (display().showCategoryLabel && p.mainCategory; as cat) {
+              <a class="cat" [routerLink]="['/', lang(), 'blog', 'category', cat.slug]">{{ cat.name }}</a>
+            }
+            <h1>{{ p.title }}</h1>
+            <div class="meta">
+              @if (display().showAuthor && p.author) {
+                <span class="author">
+                  @if (p.author.image) { <img [src]="p.author.image" alt="" class="avatar"> }
+                  @if (p.author.id) {
+                    <a [routerLink]="['/', lang(), 'blog', 'authors', p.author.id]">{{ p.author.name }}</a>
+                  } @else { <span>{{ p.author.name }}</span> }
+                  @if (p.author.publicTitle) { <span class="title">· {{ p.author.publicTitle }}</span> }
+                </span>
+              }
+              @if (display().showDate) {
+                <time class="date" [attr.datetime]="p.publishDate">{{ formatDate(lang(), p.publishDate) }}</time>
+              }
+              @if (display().showReadingTime && p.readingTime > 0) {
+                <span class="reading">{{ p.readingTime }} {{ t(lang(), 'min_read') }}</span>
+              }
+              @if (display().showCommentCount && p.commentsCount > 0) {
+                <span class="comments-count">💬 {{ formatNumber(lang(), p.commentsCount) }}</span>
+              }
+              <span class="views">👁 {{ formatNumber(lang(), p.views) }}</span>
+            </div>
+            @if (display().showTags && p.tags.length) {
+              <div class="tags">
+                @for (tagRef of p.tags; track tagRef.id) {
+                  <a class="chip" [routerLink]="['/', lang(), 'blog', 'tag', tagRef.slug]">{{ tagRef.name }}</a>
+                }
+              </div>
+            }
+          </header>
+
           @if (p.coverImage) {
             <figure class="cover">
               <img [src]="p.coverImage"
@@ -88,36 +123,6 @@ import { formatDate, formatNumber, nativeLanguageName, t } from '../i18n/i18n';
           } @else {
             <div class="cover-fallback"></div>
           }
-
-          <header class="head">
-            @if (p.mainCategory; as cat) {
-              <a class="cat" [routerLink]="['/', lang(), 'blog', 'category', cat.slug]">{{ cat.name }}</a>
-            }
-            <h1>{{ p.title }}</h1>
-            <div class="meta">
-              @if (p.author) {
-                <span class="author">
-                  @if (p.author.image) { <img [src]="p.author.image" alt="" class="avatar"> }
-                  @if (p.author.id) {
-                    <a [routerLink]="['/', lang(), 'blog', 'authors', p.author.id]">{{ p.author.name }}</a>
-                  } @else { <span>{{ p.author.name }}</span> }
-                  @if (p.author.publicTitle) { <span class="title">· {{ p.author.publicTitle }}</span> }
-                </span>
-              }
-              <time class="date" [attr.datetime]="p.publishDate">{{ formatDate(lang(), p.publishDate) }}</time>
-              @if (p.readingTime > 0) {
-                <span class="reading">{{ p.readingTime }} {{ t(lang(), 'min_read') }}</span>
-              }
-              <span class="views" aria-hidden="true">👁 {{ formatNumber(lang(), p.views) }}</span>
-            </div>
-            @if (p.tags.length) {
-              <div class="tags">
-                @for (tagRef of p.tags; track tagRef.id) {
-                  <a class="chip" [routerLink]="['/', lang(), 'blog', 'tag', tagRef.slug]">{{ tagRef.name }}</a>
-                }
-              </div>
-            }
-          </header>
 
           <app-post-content [html]="p.content" [lang]="lang()"></app-post-content>
 
@@ -152,7 +157,13 @@ import { formatDate, formatNumber, nativeLanguageName, t } from '../i18n/i18n';
     }
   `,
   styles: [`
-    :host { display: block; min-height: 100vh; background: var(--body-bg, #fff); color: var(--body-text, #111); }
+    :host {
+      display: block; min-height: 100vh;
+      background: var(--body-bg, #fff); color: var(--body-text, #1a1a1a);
+      --read: 760px;
+      --hair: color-mix(in srgb, var(--body-text, #1a1a1a) 12%, transparent);
+      --muted: color-mix(in srgb, var(--body-text, #1a1a1a) 60%, transparent);
+    }
     .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
     .loading { text-align: center; padding: 80px 0; opacity: .6; }
     .not-found { text-align: center; padding: 80px 24px; }
@@ -164,48 +175,60 @@ import { formatDate, formatNumber, nativeLanguageName, t } from '../i18n/i18n';
     }
 
     .post-top {
+      max-width: var(--read); margin: 0 auto;
       display: flex; gap: 16px; align-items: center;
       flex-wrap: wrap; justify-content: space-between;
-      padding: 16px 0;
+      padding: 8px 0 4px;
     }
 
-    .cover { margin: 0 0 32px; }
-    .cover img {
-      width: 100%; max-height: 60vh; object-fit: cover;
-      border-radius: 12px; display: block;
-    }
-    .cover-fallback {
-      height: 220px; border-radius: 12px;
-      background: linear-gradient(135deg, var(--primary, #6366f1), #8b5cf6);
-      margin-bottom: 32px;
-    }
-
-    .head { max-width: 820px; margin: 0 auto 32px; }
+    /* Title block sits ABOVE the cover (magazine style). */
+    .head { max-width: var(--read); margin: 8px auto 28px; }
     .cat {
       display: inline-block;
-      font-size: 13px; font-weight: 600;
-      text-transform: uppercase; letter-spacing: .04em;
+      font-size: 12.5px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .08em;
       color: var(--primary, #6366f1); text-decoration: none;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
-    h1 { margin: 0 0 16px; font-size: 40px; line-height: 1.2; }
+    h1 {
+      margin: 0 0 20px;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 46px; line-height: 1.12; font-weight: 800; letter-spacing: -.015em;
+    }
     .meta {
-      display: flex; flex-wrap: wrap; gap: 16px;
-      font-size: 14px; color: rgba(0,0,0,.65);
+      display: flex; flex-wrap: wrap; gap: 10px 14px;
+      font-size: 14px; color: var(--muted);
       align-items: center;
     }
-    .author { display: inline-flex; align-items: center; gap: 8px; }
-    .author a { color: inherit; text-decoration: none; }
+    /* Dot separators between meta items. */
+    .meta > * + *::before { content: '·'; margin-inline-end: 14px; color: var(--hair); }
+    .author { display: inline-flex; align-items: center; gap: 9px; }
+    .author a { color: var(--body-text, #1a1a1a); font-weight: 600; text-decoration: none; }
     .author a:hover { text-decoration: underline; }
-    .author .title { opacity: .7; }
-    .avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-    .chip { font-size: 12px; padding: 4px 10px; border-radius: 100px; background: rgba(0,0,0,.05); color: inherit; text-decoration: none; }
+    .author .title { opacity: .7; font-weight: 400; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 18px; }
+    .chip {
+      font-size: 12px; padding: 5px 12px; border-radius: 100px;
+      border: 1px solid var(--hair); color: var(--muted); text-decoration: none;
+      transition: border-color .15s ease, color .15s ease;
+    }
+    .chip:hover { border-color: var(--primary, #6366f1); color: var(--primary, #6366f1); }
 
-    .share-row { max-width: 720px; margin: 32px auto; padding: 20px 0; border-block: 1px solid rgba(0,0,0,.08); }
+    .cover { margin: 0 auto 44px; max-width: 960px; }
+    .cover img {
+      width: 100%; max-height: 64vh; object-fit: cover;
+      border-radius: 16px; display: block;
+    }
+    .cover-fallback {
+      height: 200px; border-radius: 16px; max-width: 960px; margin: 0 auto 44px;
+      background: linear-gradient(135deg, var(--primary, #6366f1), #8b5cf6);
+    }
+
+    .share-row { max-width: var(--read); margin: 44px auto; padding: 20px 0; border-block: 1px solid var(--hair); }
 
     .fallback-notice {
-      max-width: 820px; margin: 0 auto 24px;
+      max-width: var(--read); margin: 0 auto 24px;
       padding: 10px 16px;
       background: rgba(255, 200, 0, .12);
       border-inline-start: 4px solid #f5a623;
@@ -215,7 +238,8 @@ import { formatDate, formatNumber, nativeLanguageName, t } from '../i18n/i18n';
     }
 
     @media (max-width: 768px) {
-      h1 { font-size: 28px; }
+      h1 { font-size: 32px; }
+      .cover img { border-radius: 12px; }
     }
   `],
 })
@@ -253,7 +277,7 @@ export class PostPage implements OnInit {
   };
 
   canonicalUrl(): string {
-    const origin = environment.siteOrigin || '';
+    const origin = this.settingsSvc.originUrl();
     const p = this.post();
     return p?.seo?.canonical || `${origin}/${this.lang()}/blog/${this.slug()}`;
   }
@@ -302,7 +326,10 @@ export class PostPage implements OnInit {
     this.error.set(null);
     this.notFound.set(false);
     try {
-      const p = await this.api.getPublicPost(this.slug(), this.lang());
+      // `?preview=1` (set by the dashboard's Preview action) asks the
+      // backend to return the post even when it isn't published yet.
+      const preview = this.route.snapshot.queryParamMap.get('preview') === '1';
+      const p = await this.api.getPublicPost(this.slug(), this.lang(), preview);
       if (!p) { this.notFound.set(true); return; }
       this.post.set(p);
       const fullUrl = this.canonicalUrl();

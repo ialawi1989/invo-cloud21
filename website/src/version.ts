@@ -3,4 +3,4 @@
 // the patch is auto-bumped on every `npm run build` / `build:ssr`.
 // Imported by:
 //   - src/logger/index.ts                          (SSR Logger)
-export const RELEASE = 'v0.0.1';
+export const RELEASE = 'v0.0.6';

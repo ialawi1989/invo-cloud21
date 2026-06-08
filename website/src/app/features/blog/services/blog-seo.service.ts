@@ -4,6 +4,7 @@ import { isPlatformBrowser, DOCUMENT } from '@angular/common';
 
 import { environment } from '../../../../environments/environment';
 import { BlogPost } from '../models/blog.types';
+import { BlogSettingsService } from './blog-settings.service';
 
 export interface SeoConfig {
   title:       string;
@@ -37,6 +38,7 @@ export class BlogSeoService {
   private meta  = inject(Meta);
   private title = inject(Title);
   private doc   = inject(DOCUMENT);
+  private settings = inject(BlogSettingsService);
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
 
@@ -44,6 +46,8 @@ export class BlogSeoService {
     this.title.setTitle(cfg.title);
 
     const ogLocale = cfg.locale ? this.toOgLocale(cfg.locale) : 'en_US';
+    // Fall back to the configured default OG image when the page has none.
+    const image = cfg.image ?? this.settings.settings().seo.defaultOgImage ?? undefined;
     const og: Record<string, string | undefined> = {
       'description': cfg.description,
       'robots':      cfg.noindex ? 'noindex, nofollow' : 'index, follow',
@@ -52,14 +56,14 @@ export class BlogSeoService {
       'og:description': cfg.description,
       'og:url':         cfg.url,
       'og:type':        cfg.type ?? 'website',
-      'og:image':       cfg.image ?? undefined,
+      'og:image':       image,
       'og:locale':      ogLocale,
       'og:site_name':   cfg.siteName ?? environment.siteName,
 
-      'twitter:card':        cfg.image ? 'summary_large_image' : 'summary',
+      'twitter:card':        image ? 'summary_large_image' : 'summary',
       'twitter:title':       cfg.title,
       'twitter:description': cfg.description,
-      'twitter:image':       cfg.image ?? undefined,
+      'twitter:image':       image,
     };
 
     if (cfg.type === 'article') {
@@ -88,7 +92,7 @@ export class BlogSeoService {
 
   applyForPost(post: BlogPost, lang: string, fullUrl: string, rssUrl?: string): void {
     this.apply({
-      title:       post.seo?.title       || post.title,
+      title:       this.postTitle(post),
       description: post.seo?.description || post.excerpt,
       url:         post.seo?.canonical   || fullUrl,
       image:       post.seo?.ogImage     || post.coverImage,
@@ -104,6 +108,18 @@ export class BlogSeoService {
       this.articleJsonLd(post, fullUrl, lang),
       this.breadcrumbJsonLd(post, lang),
     ]);
+  }
+
+  /** Resolve the post's <title>. An author-set SEO title wins verbatim;
+   *  otherwise expand the configured template (`{postTitle}` /
+   *  `{siteName}`). */
+  private postTitle(post: BlogPost): string {
+    if (post.seo?.title) return post.seo.title;
+    const s = this.settings.settings();
+    const siteName = s.siteName ?? environment.siteName;
+    return (s.seo.titleTemplate || '{postTitle} | {siteName}')
+      .replace(/\{postTitle\}/g, post.title)
+      .replace(/\{siteName\}/g, siteName);
   }
 
   setJsonLd(blocks: object[]): void {
@@ -205,7 +221,7 @@ export class BlogSeoService {
 
   private breadcrumbJsonLd(post: BlogPost, lang: string): object {
     const main = post.categories.find(c => c.isMain) ?? post.categories[0];
-    const origin = environment.siteOrigin || (this.isBrowser ? window.location.origin : '');
+    const origin = this.settings.originUrl();
     const items: { name: string; url: string }[] = [
       { name: 'Home', url: `${origin}/${lang}` },
       { name: 'Blog', url: `${origin}/${lang}/blog` },
