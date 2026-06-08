@@ -183,10 +183,17 @@ interface LightboxState { items: LightboxItem[]; index: number; }
     .prose ::ng-deep .re-expand-group { margin: 28px 0; display: flex; flex-direction: column; gap: 10px; }
     .prose ::ng-deep .re-expand__head {
       display: flex; align-items: center; gap: 10px; justify-content: space-between;
-      padding: 16px 18px; font-weight: 600;
+      padding: 16px 18px; font-weight: 600; cursor: pointer; user-select: none;
     }
+    /* Editor-only affordances — never on the public site. */
+    .prose ::ng-deep .re-expand__drag,
+    .prose ::ng-deep .re-expand__chev,
+    .prose ::ng-deep .re-expand__add { display: none !important; }
+    .prose ::ng-deep .re-expand__title { flex: 1; text-align: start; min-width: 0; }
+    /* Our own rotating chevron, driven by data-open. */
     .prose ::ng-deep .re-expand__head::after {
-      content: '⌄'; font-size: 18px; color: var(--muted); transition: transform .2s ease;
+      content: '⌄'; font-size: 18px; line-height: 1; color: var(--muted);
+      transition: transform .2s ease; flex: none;
     }
     .prose ::ng-deep .re-expand:not([data-open="true"]) .re-expand__body { display: none; }
     .prose ::ng-deep .re-expand:not([data-open="true"]) .re-expand__head::after { transform: rotate(-90deg); }
@@ -375,21 +382,26 @@ export class PostContentComponent implements OnChanges {
     }
 
     // ── Image / gallery lightbox (data-click-expand) ──
-    const img = el.closest('img') as HTMLImageElement | null;
-    if (!img || !img.closest('[data-click-expand="true"]')) return;
+    // Trigger from anywhere inside the figure/gallery, not just the image
+    // pixels, so clicking padding/captions still opens it.
+    const expandRoot = el.closest('[data-click-expand="true"]') as HTMLElement | null;
+    if (!expandRoot) return;
+
+    const gallery = (el.closest('.re-gallery') ?? expandRoot.querySelector('.re-gallery')) as HTMLElement | null;
+    const scope = gallery ?? expandRoot;
+    const imgs = Array.from(scope.querySelectorAll<HTMLImageElement>('img'));
+    if (!imgs.length) return;
     ev.preventDefault();
 
-    const allowDownload = !!img.closest('[data-allow-download="true"]');
-    const gallery = img.closest('.re-gallery');
-    const imgs = gallery
-      ? Array.from(gallery.querySelectorAll<HTMLImageElement>('img'))
-      : [img];
+    const allowDownload = !!el.closest('[data-allow-download="true"]')
+      || expandRoot.getAttribute('data-allow-download') === 'true';
+    const clicked = el.closest('img') as HTMLImageElement | null;
     const items: LightboxItem[] = imgs.map(i => ({
-      src: i.currentSrc || i.getAttribute('src') || '',
+      src: i.getAttribute('src') || i.currentSrc || '',
       alt: i.alt || '',
       download: allowDownload,
     }));
-    this.lb.set({ items, index: Math.max(0, imgs.indexOf(img)) });
+    this.lb.set({ items, index: clicked ? Math.max(0, imgs.indexOf(clicked)) : 0 });
     this.lockScroll(true);
   }
 
