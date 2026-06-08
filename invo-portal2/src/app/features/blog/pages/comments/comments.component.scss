@@ -47,6 +47,20 @@
   ::ng-deep app-search-dropdown { min-width: 160px; max-width: 220px; }
   ::ng-deep app-list-search { flex: 1; min-width: 200px; }
 }
+
+/* Post-filter picker button (opens the modal). */
+.cm__postBtn {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-width: 180px; max-width: 240px;
+  padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px;
+  background: #fff; color: #0f172a; font: inherit; font-size: 14px; cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  &:hover { border-color: #cbd5e1; }
+  &:focus-visible { outline: none; border-color: var(--color-brand-400, #38bdf8); box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12); }
+}
+.cm__postBtnIco { color: #8a91a3; flex-shrink: 0; }
+.cm__postBtnLabel { flex: 1; text-align: start; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cm__postBtnChev { color: #94a3b8; flex-shrink: 0; }
 .cm__date {
   display: inline-flex;
   align-items: center;

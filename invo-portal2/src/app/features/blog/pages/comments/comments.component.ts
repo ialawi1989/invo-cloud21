@@ -18,6 +18,9 @@ import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/component
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ListSearchComponent } from '@shared/components/list-search/list-search.component';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
+import { ModalService } from '@shared/modal/modal.service';
+import { PickPostModalComponent, PickPostModalData, PickedPost } from './pick-post-modal.component';
 
 import { BLOG_API } from '../../services/blog-api';
 import {
@@ -44,6 +47,7 @@ type StatusTab = CommentStatus | 'all';
     DropdownMenuBtnComponent,
     SearchDropdownComponent,
     ListSearchComponent,
+    TooltipDirective,
     StatusBadgeComponent,
     HashtagTextComponent,
     EmptyStateComponent,
@@ -59,6 +63,7 @@ export class CommentsComponent implements OnInit {
   private toast      = inject(ToastService);
   private router     = inject(Router);
   private route      = inject(ActivatedRoute);
+  private modal      = inject(ModalService);
 
   // ── Filter state ────────────────────────────────────────────────────
   statusTab = signal<StatusTab>('visible');
@@ -70,7 +75,14 @@ export class CommentsComponent implements OnInit {
   loading      = signal<boolean>(false);
   comments     = signal<BlogComment[]>([]);
   statusCounts = signal<Record<StatusTab, number>>({ all: 0, visible: 0, pending: 0, flagged: 0, deleted: 0 });
-  postOptions  = signal<{ id: string; label: string }[]>([]);
+  /** Title of the selected post filter ('' = All posts) — shown on the picker button. */
+  postLabel    = signal<string>('');
+
+  /** Picker-button label: the selected post title, or "All posts". */
+  selectedPostLabel = computed(() => {
+    this.i18nTick();
+    return this.postId() ? (this.postLabel() || this.postId()) : this.translate.instant('BLOG.COMMENTS.ALL_POSTS');
+  });
 
   // ── Bulk selection + inline reply ───────────────────────────────────
   selected     = signal<Set<string>>(new Set());
@@ -132,11 +144,6 @@ export class CommentsComponent implements OnInit {
     ];
   });
 
-  postOptionsForDropdown = computed(() => {
-    this.i18nTick();
-    return [{ id: '', label: this.translate.instant('BLOG.COMMENTS.ALL_POSTS') }, ...this.postOptions()];
-  });
-
   idDisplay = (v: any) => v?.label ?? v ?? '';
   idCompare = (a: any, b: any) => (a?.id ?? a) === (b?.id ?? b);
   idToValue = (i: { id: string; label: string }) => i.id;
@@ -163,21 +170,13 @@ export class CommentsComponent implements OnInit {
     const postId = this.route.snapshot.queryParamMap.get('postId');
     if (postId) this.postId.set(postId);
 
-    // Build the post selector from the post list (top 50 by date). This is a
-    // nice-to-have filter — never let it block (or fail) the comment list.
-    try {
-      const posts = await this.api.listPosts({ page: 1, limit: 50 });
-      this.postOptions.set(posts.list.map(p => ({ id: p.id, label: this.titleOf(p) })));
-    } catch {
-      /* leave the post filter at "All posts" */
-    }
     await this.reload();
 
-    // Ensure a deep-linked post shows its title in the selector even if it's
-    // outside the top-50 — derive the title from the loaded comments.
-    if (postId && !this.postOptions().some(o => o.id === postId)) {
+    // Show the deep-linked post's title on the picker button — derive it from
+    // the loaded comments (which carry `postTitle`).
+    if (postId && !this.postLabel()) {
       const title = this.comments().find(c => c.postId === postId)?.postTitle;
-      if (title) this.postOptions.update(opts => [{ id: postId, label: title }, ...opts]);
+      if (title) this.postLabel.set(title);
     }
   }
 
@@ -203,7 +202,18 @@ export class CommentsComponent implements OnInit {
 
   // ── Filter handlers ─────────────────────────────────────────────────
   setTab(t: StatusTab): void { this.statusTab.set(t); void this.reload(); }
-  setPost(v: any): void { this.postId.set((v && typeof v === 'object' ? v.id : v) ?? ''); void this.reload(); }
+  /** Open the post picker modal; apply the chosen post (or "All posts"). */
+  async openPostPicker(): Promise<void> {
+    const ref = this.modal.open<PickPostModalComponent, PickPostModalData, PickedPost>(
+      PickPostModalComponent,
+      { data: { selectedId: this.postId() }, size: 'md' },
+    );
+    const picked = await ref.afterClosed();
+    if (!picked) return;
+    this.postId.set(picked.id);
+    this.postLabel.set(picked.title);
+    void this.reload();
+  }
   setLang(v: any): void { this.language.set((v && typeof v === 'object' ? v.id : v) ?? ''); void this.reload(); }
   setSearch(v: string): void { this.search.set(v); void this.reload(); }
   clearSearch(): void { this.search.set(''); void this.reload(); }
@@ -304,6 +314,18 @@ export class CommentsComponent implements OnInit {
     return (p as any).title ?? '(untitled)';
   }
   ago(c: BlogComment): string { return timeAgo(c.createdAt); }
+
+  /** Display name with a fallback for empty shopper names (Guest / Customer). */
+  displayName(name: string | null | undefined, kind?: 'shopper' | 'employee'): string {
+    const n = (name ?? '').trim();
+    if (n) return n;
+    return this.translate.instant(kind === 'employee' ? 'BLOG.COMMENTS.STAFF_MEMBER' : 'BLOG.COMMENTS.GUEST');
+  }
+
+  /** First letter for the avatar bubble, falling back to the Guest initial. */
+  displayInitial(c: BlogComment): string {
+    return this.displayName(c.authorName, c.authorKind).charAt(0).toUpperCase();
+  }
 
   toggleView(id: string): void {
     const next = new Set(this.expandedView());

@@ -59,6 +59,9 @@ export interface PostListParams {
   taxonomyId?:       string;
   authorEmployeeId?: string;
   search?:           string;
+  /** Publish-date range filter (ISO yyyy-mm-dd), inclusive. */
+  dateFrom?:         string;
+  dateTo?:           string;
   page?:             number;
   limit?:            number;
   sortBy?:           'publishDate' | 'views' | 'title';
@@ -136,6 +139,39 @@ export interface BlogReportParams {
   from?: string;
   /** ISO date (YYYY-MM-DD), inclusive. */
   to?:   string;
+}
+
+// ── Post history / versions ───────────────────────────────────────────
+
+/** A row in the Post History list. */
+export interface BlogPostVersion {
+  id:           string;
+  /** 'Current version' | 'Published' | 'Draft' | 'Autosave' … */
+  label:        string;
+  editedByName: string | null;
+  createdAt:    string;
+  isCurrent:    boolean;
+}
+
+// ── Post editor notes ─────────────────────────────────────────────────
+
+export type NoteStatus = 'open' | 'resolved';
+
+/** A private editor note on a post (Wix-style): author + content + status,
+ *  with optional threaded replies. Not shown to readers. */
+export interface BlogPostNote {
+  id:               string;
+  postId:           string;
+  parentNoteId:     string | null;
+  authorEmployeeId: string | null;
+  authorName:       string;
+  authorAvatar:     string | null;
+  content:          string;
+  status:           NoteStatus;
+  createdAt:        string;
+  updatedAt:        string;
+  /** Threaded replies (only on top-level notes). */
+  replies?:         BlogPostNote[];
 }
 
 /** A row in the analytics "Posts by …" panel. Only `views` is currently
@@ -224,6 +260,14 @@ export interface TaxonomyListParams {
   taxonomyType: TaxonomyType;
   language?:    string;
   search?:      string;
+  page?:        number;
+  limit?:       number;
+}
+
+export interface TaxonomyListResult {
+  list:      BlogTaxonomy[];
+  count:     number;
+  pageCount: number;
 }
 
 export type TaxonomySavePayload = Omit<BlogTaxonomy,

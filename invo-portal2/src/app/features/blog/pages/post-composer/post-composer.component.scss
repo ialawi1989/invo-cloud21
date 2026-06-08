@@ -31,7 +31,9 @@
   border-bottom: 1px solid #e2e8f0;
   background: #fff;
   position: relative;
-  z-index: 4;
+  /* Above the editor's sticky toolbar (z-index: 20) so the history /
+     more-actions dropdowns overlay it instead of sliding behind. */
+  z-index: 60;
 }
 .wc__topL { display: flex; align-items: center; }
 .wc__topC { display: flex; justify-content: center; }
@@ -83,6 +85,42 @@
   &:disabled { opacity: .35; cursor: not-allowed; }
 }
 
+/* History (undo milestones) dropdown — timeline style */
+.wc__histWrap { position: relative; display: inline-flex; }
+.wc__histBackdrop { position: fixed; inset: 0; z-index: 40; }
+.wc__histMenu {
+  position: absolute; top: calc(100% + 8px); inset-inline-end: 0; z-index: 50;
+  width: 280px; max-height: 360px; overflow-y: auto;
+  background: #fff; border: 1px solid #e7ebf0; border-radius: 12px;
+  box-shadow: 0 12px 32px -10px rgba(15, 23, 42, .28); padding: 6px;
+}
+.wc__histTitle {
+  padding: 8px 10px 10px; margin-bottom: 2px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  color: #94a3b8; border-bottom: 1px solid #f1f5f9;
+}
+.wc__histItem {
+  position: relative;
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 9px 12px; border: 0; background: transparent; border-radius: 8px;
+  text-align: start; cursor: pointer; font-size: 13px; color: #475569;
+  transition: background 120ms ease, color 120ms ease;
+  &:hover { background: #f6fafb; color: #0f172a; }
+  &.is-current { background: #eaf6f8; color: var(--color-brand-700, #2691a4); font-weight: 600; }
+}
+/* Vertical connector line through the dots (skip the last row). */
+.wc__histItem:not(:last-child) .wc__histDot::after {
+  content: ''; position: absolute; top: 13px; left: 50%; transform: translateX(-50%);
+  width: 2px; height: calc(100% + 4px); background: #e8edf2;
+}
+.wc__histDot {
+  position: relative; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  background: #fff; border: 2px solid #cbd5e1; z-index: 1;
+}
+.wc__histDot.is-on { border-color: var(--color-brand-600, #2691a4); background: var(--color-brand-600, #2691a4); box-shadow: 0 0 0 3px rgba(38, 145, 164, .15); }
+.wc__histLabel { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wc__histAgo { font-size: 11px; color: #94a3b8; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+
 .wc__ghostBtn {
   padding: 6px 14px;
   background: transparent;
@@ -98,16 +136,17 @@
 
 .wc__publishBtn {
   padding: 7px 18px;
-  background: #c7d0db;
+  background: var(--color-brand-600, #2691a4);
   color: #fff;
   border: none;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 120ms ease;
-  &:hover:not(:disabled) { background: #475569; }
-  &:disabled { opacity: .5; cursor: not-allowed; }
+  box-shadow: 0 6px 16px -6px rgba(38, 145, 164, .55);
+  transition: background 120ms ease, box-shadow 120ms ease;
+  &:hover:not(:disabled) { background: var(--color-brand-700, #207484); box-shadow: 0 8px 20px -6px rgba(38, 145, 164, .6); }
+  &:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
 }
 
 .wc__moreMenu {
@@ -123,6 +162,7 @@
   z-index: 50;
   display: flex;
   flex-direction: column;
+  min-width: 220px;
   button {
     padding: 8px 12px;
     background: transparent;
@@ -136,6 +176,24 @@
     &.is-danger { color: #dc2626; }
   }
 }
+.wc__moreSep { height: 1px; background: #f1f5f9; margin: 4px 0; }
+.wc__moreToggleRow {
+  display: flex !important; align-items: center; justify-content: space-between; gap: 12px;
+}
+.wc__moreToggleText { display: flex; flex-direction: column; gap: 1px; }
+.wc__moreToggleText small { font-size: 11px; color: #94a3b8; font-weight: 400; }
+.wc__miniSwitch {
+  flex-shrink: 0; width: 34px; height: 20px; border-radius: 999px;
+  background: #cbd5e1; display: inline-flex; align-items: center; padding: 2px;
+  transition: background 140ms ease;
+}
+.wc__miniSwitch.is-on { background: var(--color-brand-600, #2691a4); }
+.wc__miniSwitchDot {
+  width: 16px; height: 16px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 2px rgba(15,23,42,.2); transition: transform 140ms ease;
+}
+.wc__miniSwitch.is-on .wc__miniSwitchDot { transform: translateX(14px); }
+:host-context([dir='rtl']) .wc__miniSwitch.is-on .wc__miniSwitchDot { transform: translateX(-14px); }
 
 // ── (2) Workspace ──────────────────────────────────────────────────
 .wc__work {
@@ -424,6 +482,18 @@
   padding: 6px 0;
   gap: 8px;
 }
+.wc__langActions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.wc__btn--ai {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: var(--color-brand-700, #2691a4) !important;
+}
+.wc__btn--ai:disabled { opacity: .6; cursor: default; }
+.wc__aiSpin {
+  width: 12px; height: 12px; border: 2px solid #cbeef4;
+  border-top-color: var(--color-brand-600, #2691a4); border-radius: 50%;
+  animation: wc-ai-spin .7s linear infinite;
+}
+@keyframes wc-ai-spin { to { transform: rotate(360deg); } }
 .wc__langChip {
   display: inline-flex;
   align-items: center;

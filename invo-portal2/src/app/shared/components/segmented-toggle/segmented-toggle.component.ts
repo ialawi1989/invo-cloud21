@@ -118,9 +118,12 @@ export interface SegmentedToggleOption<T = string> {
       /* Center-align so the toggle sits flush with an adjacent
          input when the parent uses align-items: stretch. */
       align-items: center;
-      padding: 3px;
-      background: #f1f5f9;
-      border-radius: 8px;
+      padding: 4px;
+      /* Brighter than the gray app canvas (#eef2f6) so the toggle lifts off
+         the page; a faint teal tint ties it to the filled-teal active pill. */
+      background: #f5fbfc;
+      border: 1px solid #e3eef0;
+      border-radius: 9px;
       align-self: flex-start;
       flex-shrink: 0;
     }
@@ -149,9 +152,10 @@ export interface SegmentedToggleOption<T = string> {
     }
     .st__btn:hover:not(:disabled):not(.is-on) { color: #334155; }
     .st__btn.is-on {
-      background: #fff;
-      color: #0f172a;
-      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+      background: var(--color-brand-600, #2691a4);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 2px 6px -1px rgba(38, 145, 164, 0.45);
     }
     .st__btn:disabled { cursor: not-allowed; }
     .st--sm .st__btn { padding: 4px 10px; font-size: 12px; }
@@ -186,8 +190,8 @@ export interface SegmentedToggleOption<T = string> {
       border-radius: 999px;
     }
     .st__btn.is-on .st__count {
-      background: #d4f0f5;
-      color: #1c8595;
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
     }
 
     /* Locked variant — selected stays highlighted, unselected

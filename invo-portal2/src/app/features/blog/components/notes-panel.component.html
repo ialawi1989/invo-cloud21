@@ -1,0 +1,99 @@
+<div class="np">
+  <div class="np__filter">
+    <app-segmented-toggle
+      [options]="filterOptions"
+      [value]="filter()"
+      (valueChange)="filter.set($any($event))"/>
+  </div>
+
+  @if (!postId()) {
+    <div class="np__empty">
+      <p class="np__emptyTitle">{{ 'BLOG.NOTES.SAVE_FIRST_TITLE' | translate }}</p>
+      <p class="np__emptyText">{{ 'BLOG.NOTES.SAVE_FIRST_TEXT' | translate }}</p>
+    </div>
+  } @else {
+    <div class="np__list">
+      @if (loading()) {
+        <div class="np__loading"><span class="np__spin"></span></div>
+      } @else if (threaded().length === 0) {
+        <div class="np__empty">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+          <p class="np__emptyTitle">{{ (filter() === 'open' ? 'BLOG.NOTES.EMPTY_OPEN' : 'BLOG.NOTES.EMPTY_RESOLVED') | translate }}</p>
+          <p class="np__emptyText">{{ 'BLOG.NOTES.EMPTY_TEXT' | translate }}</p>
+        </div>
+      } @else {
+        @for (n of threaded(); track n.id) {
+          <article class="np__note">
+            <div class="np__noteHead">
+              <span class="np__avatar">{{ initial(n.authorName) }}</span>
+              <div class="np__who">
+                <span class="np__name">{{ n.authorName }}</span>
+                <span class="np__time">{{ ago(n) }}</span>
+              </div>
+              @if (n.status === 'open') {
+                <button class="np__icon" [appTooltip]="'BLOG.NOTES.RESOLVE' | translate" (click)="setStatus(n, 'resolved')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                </button>
+              }
+              <div class="np__menuWrap">
+                <button class="np__icon" (click)="toggleMenu(n.id)" aria-label="more">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                </button>
+                @if (menuId() === n.id) {
+                  <div class="np__menu">
+                    @if (n.status === 'open') {
+                      <button (click)="startEdit(n)">{{ 'COMMON.EDIT' | translate }}</button>
+                    } @else {
+                      <button (click)="setStatus(n, 'open')">{{ 'BLOG.NOTES.REOPEN' | translate }}</button>
+                    }
+                    <button class="is-danger" (click)="remove(n)">{{ 'COMMON.DELETE' | translate }}</button>
+                  </div>
+                  <div class="np__menuBackdrop" (click)="menuId.set(null)"></div>
+                }
+              </div>
+            </div>
+
+            @if (editingId() === n.id) {
+              <textarea class="np__input" rows="2" [(ngModel)]="editDraft"></textarea>
+              <div class="np__editActions">
+                <button class="np__btn--link" (click)="cancelEdit()">{{ 'COMMON.CANCEL' | translate }}</button>
+                <button class="np__btn--primary" [disabled]="!editDraft().trim()" (click)="saveEdit(n)">{{ 'COMMON.SAVE' | translate }}</button>
+              </div>
+            } @else {
+              <p class="np__body">{{ n.content }}</p>
+              <button class="np__reply" (click)="startReply(n.id)">{{ 'BLOG.NOTES.REPLY' | translate }}</button>
+            }
+
+            <!-- Replies -->
+            @for (r of n.replies; track r.id) {
+              <div class="np__replyItem">
+                <span class="np__avatar np__avatar--sm">{{ initial(r.authorName) }}</span>
+                <div class="np__replyBody">
+                  <span class="np__name">{{ r.authorName }}</span>
+                  <span class="np__time">{{ ago(r) }}</span>
+                  <p class="np__body">{{ r.content }}</p>
+                </div>
+              </div>
+            }
+
+            @if (replyingId() === n.id) {
+              <div class="np__replyCompose">
+                <textarea class="np__input" rows="2" [(ngModel)]="replyDraft" [placeholder]="'BLOG.NOTES.REPLY_PH' | translate"></textarea>
+                <div class="np__editActions">
+                  <button class="np__btn--link" (click)="cancelReply()">{{ 'COMMON.CANCEL' | translate }}</button>
+                  <button class="np__btn--primary" [disabled]="!replyDraft().trim()" (click)="sendReply(n.id)">{{ 'BLOG.NOTES.REPLY' | translate }}</button>
+                </div>
+              </div>
+            }
+          </article>
+        }
+      }
+    </div>
+
+    <!-- Composer -->
+    <div class="np__compose">
+      <textarea class="np__input" rows="2" [(ngModel)]="draft" [placeholder]="'BLOG.NOTES.WRITE_PH' | translate"></textarea>
+      <button class="np__btn--primary np__addBtn" [disabled]="!draft().trim()" (click)="addNote()">{{ 'BLOG.NOTES.ADD' | translate }}</button>
+    </div>
+  }
+</div>

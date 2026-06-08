@@ -2,11 +2,16 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
+  OnDestroy,
+  OnInit,
   computed,
+  effect,
   inject,
   input,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
@@ -16,6 +21,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BLOG_API } from '../services/blog-api';
 import { BlogTaxonomy } from '../services/blog.types';
 import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-editor-ai';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 
 /**
  * Multi-select for categories / tags shown as chips below the picker.
@@ -31,7 +37,7 @@ import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-edi
 @Component({
   selector: 'app-blog-taxonomy-selector',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, TooltipDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="ts">
@@ -41,7 +47,7 @@ import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-edi
           [placeholder]="placeholder()"
           [(ngModel)]="draft"
           (ngModelChange)="onDraftChange($event)"
-          (focus)="open.set(true)"
+          (focus)="onFocus()"
           (keydown)="onKey($event)"/>
         @if (mode() === 'tag') {
           <button type="button" class="ts__addBtn" (click)="addFromDraft()" [disabled]="!draft().trim()">
@@ -50,9 +56,9 @@ import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-edi
         }
       </div>
 
-      @if (open() && filtered().length > 0) {
-        <div class="ts__menu">
-          @for (t of filtered(); track t.id) {
+      @if (open()) {
+        <div class="ts__menu" #menu>
+          @for (t of menuItems(); track t.id) {
             <button type="button" class="ts__menuItem" (click)="pick(t)">
               {{ nameOf(t) }}
               <span class="ts__menuCount">
@@ -60,6 +66,13 @@ import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-edi
               </span>
             </button>
           }
+          @if (menuItems().length === 0 && !loading()) {
+            <div class="ts__menuEmpty">{{ 'COMMON.NO_DATA' | translate }}</div>
+          }
+          <!-- Infinite-scroll sentinel -->
+          <div #scrollSentinel class="ts__sentinel">
+            @if (loading()) { <span class="ts__aiSpin"></span> }
+          </div>
         </div>
       }
 
@@ -72,7 +85,7 @@ import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-edi
                 <button type="button"
                         class="ts__star"
                         [class.is-on]="id === mainId()"
-                        [title]="'BLOG.COMPOSER.SET_MAIN' | translate"
+                        [appTooltip]="'BLOG.COMPOSER.SET_MAIN' | translate"
                         (click)="setMain.emit(id)">★</button>
               }
               {{ nameOf(tax) }}
@@ -80,7 +93,7 @@ import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-edi
             </span>
           }
         }
-        @if (selectedIds().length === 0) {
+        @if (modeSelectedCount() === 0) {
           <span class="ts__empty">{{ emptyLabel() | translate }}</span>
         }
       </div>
@@ -116,8 +129,8 @@ import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-edi
       }
 
       @if (mode() === 'category' && maxCount()) {
-        <p class="ts__count" [class.is-warn]="selectedIds().length >= (maxCount() ?? 99)">
-          {{ selectedIds().length }} / {{ maxCount() }}
+        <p class="ts__count" [class.is-warn]="modeSelectedCount() >= (maxCount() ?? 99)">
+          {{ modeSelectedCount() }} / {{ maxCount() }}
           {{ 'BLOG.COMPOSER.CATEGORIES_SELECTED' | translate }}
         </p>
       }
@@ -179,6 +192,8 @@ import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-edi
     }
     .ts__menuItem:hover { background: #f1f5f9; }
     .ts__menuCount { font-size: 11px; color: #94a3b8; }
+    .ts__menuEmpty { padding: 10px; text-align: center; font-size: 12px; color: #94a3b8; }
+    .ts__sentinel { display: flex; align-items: center; justify-content: center; min-height: 8px; padding: 4px 0; }
 
     .ts__chips {
       display: flex;
@@ -206,12 +221,16 @@ import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-edi
       border-color: #a5f3fc;
     }
     .ts__star {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: 16px; height: 16px;
       padding: 0;
       background: transparent;
       border: none;
       color: #cbd5e1;
-      font-size: 14px;
+      font-size: 13px;
+      line-height: 1;
       cursor: pointer;
     }
     .ts__star.is-on { color: #f59e0b; }
@@ -263,7 +282,7 @@ import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-edi
     @keyframes ts-spin { to { transform: rotate(360deg); } }
   `],
 })
-export class TaxonomySelectorComponent {
+export class TaxonomySelectorComponent implements OnInit, OnDestroy {
   private api = inject(BLOG_API);
   private destroyRef = inject(DestroyRef);
   /** Content-AI provider (blog composer supplies it). AI is hidden when absent. */
@@ -279,6 +298,9 @@ export class TaxonomySelectorComponent {
    *  the parent should ignore extras. */
   maxCount    = input<number | null>(null);
   defaultLang = input<string>('en');
+  /** Already-known taxonomies (e.g. the composer's full list) used to resolve
+   *  selected-chip names even when they're outside the loaded pages. */
+  known       = input<BlogTaxonomy[]>([]);
 
   /** When `placeholder` is omitted we render the i18n default. */
   placeholderOverride = input<string>('');
@@ -294,21 +316,59 @@ export class TaxonomySelectorComponent {
   createCategory = output<string>();
 
   // ── Local state ────────────────────────────────────────────────────
-  open  = signal(false);
-  draft = signal<string>('');
-  private all = signal<BlogTaxonomy[]>([]);
-  private allLoaded = false;
+  open    = signal(false);
+  draft   = signal<string>('');
+  loading = signal(false);
+  private all     = signal<BlogTaxonomy[]>([]);
+  private page    = signal(1);
+  private hasMore = signal(true);
+  private readonly LIMIT = 20;
+  private debounce?: ReturnType<typeof setTimeout>;
 
-  byId = computed(() => new Map(this.all().map(t => [t.id, t])));
-
-  filtered = computed(() => {
-    const q = this.draft().trim().toLowerCase();
-    const selected = new Set(this.selectedIds());
-    return this.all()
-      .filter(t => !selected.has(t.id))
-      .filter(t => !q || this.nameOf(t).toLowerCase().includes(q))
-      .slice(0, 20);
+  // Chips resolve from loaded pages + the parent-provided `known` list — but
+  // ONLY for this picker's mode, so the category picker never renders tag
+  // chips and vice-versa (selectedIds holds both types combined).
+  byId = computed(() => {
+    const mode = this.mode();
+    const m = new Map<string, BlogTaxonomy>();
+    for (const t of this.known()) if (t.taxonomyType === mode) m.set(t.id, t);
+    for (const t of this.all()) if (t.taxonomyType === mode) m.set(t.id, t);
+    return m;
   });
+
+  /** Menu rows = loaded taxonomies of this mode, minus already-selected ones. */
+  menuItems = computed(() => {
+    const mode = this.mode();
+    const selected = new Set(this.selectedIds());
+    return this.all().filter(t => t.taxonomyType === mode && !selected.has(t.id));
+  });
+
+  /** Count of selected ids belonging to THIS mode (selectedIds is combined). */
+  modeSelectedCount = computed(() => {
+    const ids = this.byId();
+    return this.selectedIds().filter(id => ids.has(id)).length;
+  });
+
+  private readonly scrollSentinel = viewChild<ElementRef<HTMLElement>>('scrollSentinel');
+  private observer?: IntersectionObserver;
+
+  constructor() {
+    // (Re)attach the IntersectionObserver whenever the sentinel enters/leaves
+    // the DOM (the menu is conditionally rendered).
+    effect(() => {
+      const el = this.scrollSentinel()?.nativeElement;
+      this.observer?.disconnect();
+      if (!el) return;
+      this.observer = new IntersectionObserver(
+        entries => { if (entries.some(e => e.isIntersecting)) this.loadMore(); },
+        { root: el.closest('.ts__menu') as Element | null, rootMargin: '80px' },
+      );
+      this.observer.observe(el);
+    });
+  }
+
+  ngOnInit(): void { void this.loadPage(1); }
+  ngOnDestroy(): void { this.observer?.disconnect(); clearTimeout(this.debounce); }
 
   placeholder = computed(() => this.placeholderOverride() || (this.mode() === 'category' ? 'Pick a category…' : 'Type a tag…'));
   emptyLabel  = computed(() => this.emptyLabelOverride()  || (this.mode() === 'category' ? 'BLOG.COMPOSER.NO_CATEGORIES_SELECTED' : 'BLOG.COMPOSER.NO_TAGS_SELECTED'));
@@ -316,21 +376,51 @@ export class TaxonomySelectorComponent {
   // ── Behaviour ──────────────────────────────────────────────────────
   nameOf(t: BlogTaxonomy): string {
     const def = this.defaultLang();
-    return t.translations[def]?.name
-        ?? Object.values(t.translations)[0]?.name
-        ?? t.slug;
+    const tr = (t as any)?.translations;
+    if (tr && typeof tr === 'object') {
+      return tr[def]?.name ?? (Object.values(tr)[0] as any)?.name ?? (t as any).name ?? t.slug;
+    }
+    return (t as any).name ?? t.slug;
   }
 
-  async ensureLoaded(): Promise<void> {
-    if (this.allLoaded) return;
-    this.allLoaded = true;
-    const rows = await this.api.listTaxonomies({ taxonomyType: this.mode() });
-    this.all.set(rows);
+  /** Load a page of taxonomies (server-side search + pagination). page 1
+   *  replaces the list; later pages append. */
+  async loadPage(page: number): Promise<void> {
+    if (this.loading()) return;
+    this.loading.set(true);
+    try {
+      const res = await this.api.listTaxonomiesPage({
+        taxonomyType: this.mode(),
+        search:       this.draft().trim() || undefined,
+        page,
+        limit:        this.LIMIT,
+      });
+      this.all.update(prev => page === 1 ? res.list : [...prev, ...res.list]);
+      this.page.set(page);
+      this.hasMore.set(page < res.pageCount);
+    } catch {
+      this.hasMore.set(false);
+    } finally {
+      this.loading.set(false);
+    }
   }
 
-  async onDraftChange(_: string): Promise<void> {
-    await this.ensureLoaded();
+  loadMore(): void {
+    if (this.loading() || !this.hasMore()) return;
+    void this.loadPage(this.page() + 1);
+  }
+
+  /** Open + ensure the first page is present when the picker is focused. */
+  onFocus(): void {
     this.open.set(true);
+    if (this.all().length === 0) void this.loadPage(1);
+  }
+
+  /** Debounced server-side search — resets to page 1. */
+  onDraftChange(_: string): void {
+    this.open.set(true);
+    clearTimeout(this.debounce);
+    this.debounce = setTimeout(() => void this.loadPage(1), 300);
   }
 
   pick(t: BlogTaxonomy): void {
@@ -350,7 +440,7 @@ export class TaxonomySelectorComponent {
   async addFromDraft(): Promise<void> {
     const name = this.draft().trim().replace(/,$/, '');
     if (!name) return;
-    await this.ensureLoaded();
+    // Match against what the (search-filtered) page has loaded.
     const existing = this.all().find(t => this.nameOf(t).toLowerCase() === name.toLowerCase());
     if (existing) {
       this.add.emit(existing);
@@ -418,7 +508,6 @@ export class TaxonomySelectorComponent {
   async addAiSelected(): Promise<void> {
     const picks = this.aiSuggestions().filter(s => s.checked).map(s => s.name);
     if (!picks.length) return;
-    await this.ensureLoaded();
     for (const name of picks) {
       const existing = this.all().find(t => this.nameOf(t).toLowerCase() === name.toLowerCase());
       if (existing) { this.add.emit(existing); continue; }

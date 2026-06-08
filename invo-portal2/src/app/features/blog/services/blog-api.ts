@@ -7,6 +7,9 @@ import {
   ModerationRuleSavePayload,
   ShopperListParams,
   ShopperListResult,
+  BlogPostNote,
+  NoteStatus,
+  BlogPostVersion,
   BlogPost,
   BlogTaxonomy,
   BlogWriter,
@@ -21,6 +24,7 @@ import {
   PostSavePayload,
   PostStatus,
   TaxonomyListParams,
+  TaxonomyListResult,
   TaxonomySavePayload,
   UploadResult,
 } from './blog.types';
@@ -57,6 +61,8 @@ export abstract class BlogApi {
 
   // ── Taxonomies ──────────────────────────────────────────────────────
   abstract listTaxonomies(params: TaxonomyListParams): Promise<BlogTaxonomy[]>;
+  /** Paginated variant for the on-scroll taxonomy picker. */
+  abstract listTaxonomiesPage(params: TaxonomyListParams): Promise<TaxonomyListResult>;
   abstract getTaxonomy(id: string): Promise<BlogTaxonomy | null>;
   abstract saveTaxonomy(payload: TaxonomySavePayload): Promise<BlogTaxonomy>;
   abstract deleteTaxonomy(id: string, reassignToId?: string | null): Promise<boolean>;
@@ -85,6 +91,18 @@ export abstract class BlogApi {
   abstract toggleModerationRule(id: string, active: boolean): Promise<BlogModerationRule>;
   /** Site members (shoppers) eligible to be excluded from a rule. */
   abstract getShopperList(params?: ShopperListParams): Promise<ShopperListResult>;
+
+  // ── Post editor notes ────────────────────────────────────────────────
+  abstract listPostNotes(postId: string): Promise<BlogPostNote[]>;
+  abstract addPostNote(postId: string, content: string, parentNoteId?: string | null): Promise<BlogPostNote>;
+  abstract updatePostNote(id: string, content: string): Promise<BlogPostNote>;
+  abstract setPostNoteStatus(id: string, status: NoteStatus): Promise<BlogPostNote>;
+  abstract deletePostNote(id: string): Promise<boolean>;
+
+  // ── Post history / versions ──────────────────────────────────────────
+  abstract getPostHistory(postId: string): Promise<BlogPostVersion[]>;
+  abstract getPostVersion(id: string): Promise<BlogPost | null>;
+  abstract restorePostVersion(postId: string, versionId: string): Promise<BlogPost>;
 
   // ── Analytics ───────────────────────────────────────────────────────
   abstract getReport(params?: BlogReportParams): Promise<BlogReport>;

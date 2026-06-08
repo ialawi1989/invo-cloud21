@@ -17,6 +17,7 @@ import { withTranslations } from '@core/i18n/with-translations';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { SegmentedToggleComponent } from '@shared/components/segmented-toggle/segmented-toggle.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
@@ -44,6 +45,7 @@ type Tab = 'category' | 'tag' | 'hashtag';
     SegmentedToggleComponent,
     SearchDropdownComponent,
     EmptyStateComponent,
+    TooltipDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Scope Content AI to this page so "Create with AI" reuses the same
@@ -162,6 +164,16 @@ export class TaxonomiesComponent implements OnInit {
   }
 
   langsOf(t: BlogTaxonomy): string[] { return Object.keys(t.translations); }
+
+  /** Post title — null-safe (hashtag-post rows may carry a flat `title`
+   *  instead of a `translations` map). */
+  postTitle(p: any): string {
+    const t = p?.translations;
+    if (t && typeof t === 'object') {
+      return t[p.defaultLanguage]?.title ?? (Object.values(t)[0] as any)?.title ?? p.title ?? '(untitled)';
+    }
+    return p?.title ?? '(untitled)';
+  }
 
   // ── Create with AI (suggest → choose → add) ─────────────────────────
   aiPanelOpen   = signal<boolean>(false);
@@ -329,16 +341,28 @@ export class TaxonomiesComponent implements OnInit {
   }
 
   // ── Categories: drag reorder ────────────────────────────────────────
+  /** Row currently hovered as the drop target (drives the placeholder line). */
+  dragOverId = signal<string | null>(null);
+
   onDragStart(e: DragEvent, t: BlogTaxonomy): void {
     this.draggingId.set(t.id);
     e.dataTransfer?.setData('text/plain', t.id);
     e.dataTransfer!.effectAllowed = 'move';
   }
-  onDragOver(e: DragEvent): void { e.preventDefault(); }
+  onDragOver(e: DragEvent, target?: BlogTaxonomy): void {
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    // Highlight the hovered row (skip the locked default + the dragged row).
+    if (target && !target.isDefault && target.id !== this.draggingId()) {
+      if (this.dragOverId() !== target.id) this.dragOverId.set(target.id);
+    }
+  }
+  onDragEnd(): void { this.draggingId.set(null); this.dragOverId.set(null); }
   async onDrop(e: DragEvent, target: BlogTaxonomy): Promise<void> {
     e.preventDefault();
     const sourceId = this.draggingId();
     this.draggingId.set(null);
+    this.dragOverId.set(null);
     if (!sourceId || sourceId === target.id) return;
 
     const rows = this.rows().slice();

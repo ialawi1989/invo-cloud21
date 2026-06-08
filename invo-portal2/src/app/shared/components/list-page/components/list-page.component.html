@@ -36,7 +36,7 @@
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 list-card">
 
     <!-- Search & Controls Bar -->
-    <div class="bg-slate-50 border-b border-slate-200">
+    <div class="bg-white border-b border-slate-200">
       <div class="flex flex-wrap gap-3 items-center justify-between p-4">
 
         <!-- Search input — submit-on-Enter / magnifier click. Typing
@@ -143,7 +143,7 @@
                (e.g. a Tree view on Chart of Accounts) render after.
                Grid can be opted out via `[showGridView]`. -->
           @if (!isMobile()) {
-          <div class="flex gap-1 bg-slate-200 rounded-lg p-1">
+          <div class="flex gap-1 bg-slate-100 rounded-lg p-1">
             <button (click)="setViewMode('table')"
               [appTooltip]="'COMMON.TABLE_VIEW' | translate"
               [class]="

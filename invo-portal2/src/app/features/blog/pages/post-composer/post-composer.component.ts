@@ -70,6 +70,8 @@ import {
 } from '../../services/blog.types';
 import { SlugInputComponent } from '../../components/slug-input.component';
 import { TaxonomySelectorComponent } from '../../components/taxonomy-selector.component';
+import { NotesPanelComponent } from '../../components/notes-panel.component';
+import { PostHistoryModalComponent, PostHistoryModalData } from '../../components/post-history-modal.component';
 import {
   estimateReadingTime,
   generateSlug,
@@ -78,14 +80,15 @@ import {
 import { defaultBlogSettings } from '../../services/blog-settings.types';
 
 /** Vertical rail items — Wix layout. `null` means "no panel open". */
-type RailKey = 'add' | 'settings' | 'seo' | 'translate';
+type RailKey = 'add' | 'settings' | 'seo' | 'translate' | 'notes';
 type SettingsTab = 'general' | 'categories' | 'tags';
 type AddToolKey =
   | 'image' | 'gallery' | 'video' | 'file'
   | 'divider' | 'button' | 'table' | 'expandable' | 'poll' | 'layout' | 'banner'
   | 'html' | 'soundcloud' | 'product';
 
-const AUTOSAVE_INTERVAL_MS = 30_000;
+const AUTOSAVE_INTERVAL_MS = 60_000;
+const AUTOSAVE_PREF_KEY = 'blog.composer.autosave';
 const EXCERPT_RECOMMENDED  = 500;
 const MAX_CATEGORIES       = 10;
 
@@ -93,6 +96,7 @@ const MAX_CATEGORIES       = 10;
  *  (not template) so each item's row is a single object literal. */
 const ICON = {
   plus:     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  note:     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>',
   ai:       '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M5 19l1-2 2-1-2-1-1-2-1 2-2 1 2 1z"/></svg>',
   cog:      '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
   search:   '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
@@ -130,6 +134,7 @@ const ICON = {
     ToggleComponent,
     SlugInputComponent,
     TaxonomySelectorComponent,
+    NotesPanelComponent,
     RichEditorComponent,
     DatePickerComponent,
     TooltipDirective,
@@ -160,6 +165,9 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   private sanitizer  = inject(DomSanitizer);
   private modal      = inject(ModalService);
   private fb         = inject(NonNullableFormBuilder);
+  /** Content-AI provider (BlogAiService, supplied via this component's
+   *  providers) — used to auto-translate a post into another language. */
+  private aiProvider = inject(RICH_EDITOR_AI_PROVIDER, { optional: true });
 
   /** Per-language locale FormGroup factory — every key in
    *  `translations.controls` is one of these. Add a new group when
@@ -251,6 +259,18 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
 
   private i18nTick    = signal(0);
   private autosaveTimer: any = null;
+  /** Auto-save drafts every minute when there are changes. On by default;
+   *  the choice is remembered per browser. */
+  autosaveEnabled = signal<boolean>(this.readAutosavePref());
+
+  private readAutosavePref(): boolean {
+    try { return localStorage.getItem(AUTOSAVE_PREF_KEY) !== 'off'; } catch { return true; }
+  }
+  toggleAutosave(): void {
+    const next = !this.autosaveEnabled();
+    this.autosaveEnabled.set(next);
+    try { localStorage.setItem(AUTOSAVE_PREF_KEY, next ? 'on' : 'off'); } catch { /* ignore */ }
+  }
 
   // ─── Derived ───────────────────────────────────────────────────────
   isNew       = computed(() => this.postId() === null);
@@ -316,11 +336,28 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     return this.translate.instant('BLOG.COMPOSER.PUBLISH');
   });
 
-  // Undo/redo are delegated to the contenteditable host (browser undo
-  // stack), so for now these are stubbed always-enabled and call
-  // execCommand. Wiring a proper history stack belongs in a follow-up.
-  canUndo = computed(() => !this.loading());
-  canRedo = computed(() => !this.loading());
+  // ── Undo/redo history (composer-level snapshots of the whole form) ──
+  /** Captured form-state milestones, oldest → newest. */
+  history    = signal<{ value: any; ts: number; label: string }[]>([]);
+  /** Index of the currently-applied snapshot within `history`. */
+  historyPtr = signal<number>(-1);
+  /** Milestone dropdown open state. */
+  historyMenuOpen = signal(false);
+  /** True while applying a snapshot, so the restore doesn't record itself. */
+  private restoring = false;
+  private historyDebounce?: ReturnType<typeof setTimeout>;
+  private readonly HISTORY_CAP = 60;
+
+  canUndo = computed(() => !this.loading() && this.historyPtr() > 0);
+  canRedo = computed(() => !this.loading() && this.historyPtr() < this.history().length - 1);
+
+  /** Milestones for the dropdown — newest first, current one flagged. */
+  historyMilestones = computed(() => {
+    const cur = this.historyPtr();
+    return this.history()
+      .map((h, i) => ({ index: i, label: h.label, ts: h.ts, current: i === cur }))
+      .reverse();
+  });
 
   /** Rail config — Add / Settings / SEO / Translate. */
   readonly railItems: { key: RailKey; label: string; icon: string }[] = [
@@ -328,6 +365,7 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     { key: 'settings',  label: 'BLOG.COMPOSER.SIDE_SETTINGS',  icon: ICON.cog    },
     { key: 'seo',       label: 'BLOG.COMPOSER.SIDE_SEO',       icon: ICON.search },
     { key: 'translate', label: 'BLOG.COMPOSER.SIDE_TRANSLATE', icon: ICON.globe  },
+    { key: 'notes',     label: 'BLOG.COMPOSER.SIDE_NOTES',     icon: ICON.note   },
   ];
 
   readonly settingsTabs: { key: SettingsTab; label: string }[] = [
@@ -409,6 +447,11 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
         }
         this.translations.set(t);
         this.isDirty.set(this.postForm.dirty);
+        // Capture an undo snapshot (debounced) — skip while restoring/loading.
+        if (!this.restoring && !this.loading()) {
+          clearTimeout(this.historyDebounce);
+          this.historyDebounce = setTimeout(() => this.recordSnapshot(), 600);
+        }
       });
   }
 
@@ -467,6 +510,8 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
       this.postId.set(id);
       await this.load(id);
     }
+    // Seed the undo history with the initial state (loaded post or blank new).
+    this.initHistory();
 
     this.autosaveTimer = setInterval(() => this.maybeAutosave(), AUTOSAVE_INTERVAL_MS);
     // No `beforeunload` guard — browser refresh / tab close lets the
@@ -478,6 +523,7 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
 
   ngOnDestroy(): void {
     if (this.autosaveTimer) clearInterval(this.autosaveTimer);
+    clearTimeout(this.historyDebounce);
   }
 
   hasUnsavedChanges(): boolean { return this.isDirty() && !this.saving(); }
@@ -532,7 +578,11 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     this.postForm.patchValue({
       defaultLanguage:  post.defaultLanguage,
       status:           post.status,
-      scheduledDate:    post.scheduledDate ? toLocalInput(post.scheduledDate) : '',
+      // The "Publish date" picker reflects scheduledDate (scheduled posts) or
+      // the actual publishDate (already-published posts) so editing shows the
+      // real date instead of resetting it.
+      scheduledDate:    post.scheduledDate ? toLocalInput(post.scheduledDate)
+                          : post.publishDate ? toLocalInput(post.publishDate) : '',
       authorEmployeeId: post.authorEmployeeId,
       coverImage:       post.coverImage ?? '',
       featuredImageOn:  !!post.coverImage,
@@ -681,6 +731,18 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     this.setCover(url);
   }
 
+  /** Pick the OG/social-share image from the media library (same picker as cover). */
+  async onPickOgImage(): Promise<void> {
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      { data: { contentTypes: ['image'], multiple: false, title: this.translate.instant('BLOG.COMPOSER.OG_IMAGE') }, size: 'xl' },
+    );
+    const picked = await ref.afterClosed();
+    const url = mediaUrl(Array.isArray(picked) ? picked[0] : picked);
+    if (!url) return;
+    this.setOg(url);
+  }
+
   /** Load post titles once for the Related-posts picker. */
   private async loadRelatedPostOptions(): Promise<void> {
     try {
@@ -690,7 +752,12 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
         .filter(p => p.id !== this.postId())
         .map(p => ({
           id: p.id,
-          label: p.translations?.[def]?.title || Object.values(p.translations ?? {})[0]?.title || p.id,
+          // List rows carry a flat `title`; fall back to it (and only then the
+          // id) so the picker shows readable names, not UUIDs.
+          label: p.translations?.[def]?.title
+            || (Object.values(p.translations ?? {})[0] as any)?.title
+            || (p as any).title
+            || p.id,
         }));
       this.relatedPostOptions.set(opts);
     } catch { /* picker stays empty on failure */ }
@@ -1200,8 +1267,90 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
 
 
   // ─── Undo / Redo (browser-native) ──────────────────────────────────
-  onUndo(): void { document.execCommand('undo'); }
-  onRedo(): void { document.execCommand('redo'); }
+  onUndo(): void { if (this.canUndo()) this.applyHistory(this.historyPtr() - 1); }
+  onRedo(): void { if (this.canRedo()) this.applyHistory(this.historyPtr() + 1); }
+  /** Jump straight to a milestone from the dropdown. */
+  jumpToHistory(index: number): void {
+    if (index < 0 || index >= this.history().length || index === this.historyPtr()) return;
+    this.applyHistory(index);
+  }
+
+  /** Seed the history with the current form as the baseline (after load /
+   *  for a fresh post). Called once the form reflects the initial state. */
+  private initHistory(): void {
+    clearTimeout(this.historyDebounce);
+    const value = this.cloneFormValue();
+    this.history.set([{ value, ts: Date.now(), label: this.translate.instant('BLOG.COMPOSER.HISTORY_INITIAL') }]);
+    this.historyPtr.set(0);
+  }
+
+  /** Push a new snapshot if the form changed since the last one. */
+  private recordSnapshot(): void {
+    if (this.restoring) return;
+    const value = this.cloneFormValue();
+    const hist = this.history().slice(0, this.historyPtr() + 1);
+    const prev = hist[hist.length - 1];
+    if (prev && JSON.stringify(prev.value) === JSON.stringify(value)) return;
+    hist.push({ value, ts: Date.now(), label: this.changeLabel(prev?.value, value) });
+    const capped = hist.slice(-this.HISTORY_CAP);
+    this.history.set(capped);
+    this.historyPtr.set(capped.length - 1);
+  }
+
+  /** Apply the snapshot at `index` to the form without recording it. */
+  private applyHistory(index: number): void {
+    const entry = this.history()[index];
+    if (!entry) return;
+    this.historyPtr.set(index);
+    this.restoring = true;
+    clearTimeout(this.historyDebounce);
+    try {
+      const v = entry.value;
+      const tg = this.translationsGroup;
+      Object.keys(tg.controls).forEach(k => tg.removeControl(k));
+      for (const [code, slice] of Object.entries(v.translations ?? {})) {
+        tg.addControl(code, this.buildLocaleGroup(slice as any) as any);
+      }
+      this.postForm.patchValue(v, { emitEvent: true });
+      this.postForm.markAsDirty();
+      if (!this.translationsGroup.get(this.active())) {
+        this.active.set(v.defaultLanguage ?? 'en');
+      }
+    } finally {
+      // Let the patch's valueChanges flush before re-enabling capture.
+      setTimeout(() => { this.restoring = false; }, 0);
+    }
+  }
+
+  private cloneFormValue(): any {
+    return JSON.parse(JSON.stringify(this.postForm.getRawValue()));
+  }
+
+  /** Short label describing what changed between two snapshots. */
+  private changeLabel(prev: any, next: any): string {
+    const t = (k: string) => this.translate.instant(k);
+    if (!prev) return t('BLOG.COMPOSER.HISTORY_EDIT');
+    const lang = this.active();
+    const pT = prev.translations?.[lang] ?? {};
+    const nT = next.translations?.[lang] ?? {};
+    if (pT.content !== nT.content)     return t('BLOG.COMPOSER.HISTORY_CONTENT');
+    if (pT.title !== nT.title)         return t('BLOG.COMPOSER.HISTORY_TITLE');
+    if (pT.excerpt !== nT.excerpt)     return t('BLOG.COMPOSER.HISTORY_EXCERPT');
+    if (JSON.stringify(prev.taxonomyIds) !== JSON.stringify(next.taxonomyIds)) return t('BLOG.COMPOSER.HISTORY_CATEGORIES');
+    if (prev.coverImage !== next.coverImage) return t('BLOG.COMPOSER.HISTORY_COVER');
+    if (prev.status !== next.status)   return t('BLOG.COMPOSER.HISTORY_STATUS');
+    return t('BLOG.COMPOSER.HISTORY_EDIT');
+  }
+
+  /** "2m ago" style relative label for a milestone timestamp. */
+  historyAgo(ts: number): string {
+    const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+    if (s < 5)  return this.translate.instant('BLOG.COMPOSER.HISTORY_NOW');
+    if (s < 60) return `${s}s`;
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m`;
+    return `${Math.floor(m / 60)}h`;
+  }
 
   // ─── Save / Publish ────────────────────────────────────────────────
   /** Legacy helper kept for callers that haven't been ported — just
@@ -1216,25 +1365,41 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     // Read straight from the form — single source of truth.
     const v = this.postForm.getRawValue();
     const defContent = (v.translations as any)?.[v.defaultLanguage]?.content ?? '';
-    return {
+    // The "Publish date" picker drives this (held in the scheduledDate control).
+    const pickedDate = v.scheduledDate ? new Date(v.scheduledDate).toISOString() : null;
+    // Keep the main category consistent with the selection: it must be one of
+    // the chosen taxonomyIds (and a category, not a tag). Otherwise drop it to
+    // the first selected category, or null — a main that isn't in the list
+    // confuses the backend's link sync.
+    const taxonomyIds = Array.isArray(v.taxonomyIds) ? v.taxonomyIds : [];
+    const catIds = new Set(this.taxonomies().filter(t => t.taxonomyType === 'category').map(t => t.id));
+    let mainTaxonomyId = v.mainTaxonomyId;
+    if (!mainTaxonomyId || !taxonomyIds.includes(mainTaxonomyId)) {
+      mainTaxonomyId = taxonomyIds.find(id => catIds.has(id)) ?? null;
+    }
+    const payload: any = {
       id: this.postId() ?? undefined,
       defaultLanguage:  v.defaultLanguage,
       status:           v.status,
       authorEmployeeId: v.authorEmployeeId,
       coverImage:       v.coverImage || null,
       ogImage:          v.ogImage || null,
-      mainTaxonomyId:   v.mainTaxonomyId,
+      taxonomyIds,
+      mainTaxonomyId,
       isFeatured:       v.isFeatured,
-      publishDate:      v.status === 'published' ? new Date().toISOString() : null,
-      scheduledDate:    v.status === 'scheduled' && v.scheduledDate
-                          ? new Date(v.scheduledDate).toISOString()
-                          : null,
+      // Scheduled posts route the picked date to scheduledDate.
+      scheduledDate:    v.status === 'scheduled' ? pickedDate : null,
       translations:     v.translations,
-      taxonomyIds:      v.taxonomyIds,
       relatedPostIds:   v.relatedPostIds ?? [],
       allowComments:    v.allowComments ?? true,
       readingTime:      estimateReadingTime(defContent),
     };
+    // "Publish date" picker → publishDate for any non-scheduled status (works
+    // for drafts too / back-dating). Per the backend contract: send the ISO
+    // string to set it, OMIT the field when empty to leave the stored value
+    // alone (and let the server auto-stamp now() on a fresh publish).
+    if (v.status !== 'scheduled' && pickedDate) payload.publishDate = pickedDate;
+    return payload;
   }
 
   private validateDefault(): { ok: boolean; field?: string } {
@@ -1291,11 +1456,14 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   }
 
   async maybeAutosave(): Promise<void> {
+    if (!this.autosaveEnabled()) return;
     if (!this.isDirty() || this.saving() || this.loading()) return;
     if (!this.postId()) return;
     if (this.status() !== 'draft') return;
     try {
-      const saved = await this.api.savePost(this.buildPayload());
+      // Flag auto-saves so the backend can label them "Autosave" and collapse
+      // consecutive ones instead of flooding Post History every minute.
+      const saved = await this.api.savePost({ ...this.buildPayload(), autosave: true } as any);
       this.postId.set(saved.id);
       this.postForm.markAsPristine();
       this.isDirty.set(false);
@@ -1308,6 +1476,86 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     const slug = this.translations()[this.defaultLanguage()]?.slug;
     if (!slug) { this.toast.error('BLOG.COMPOSER.PREVIEW_NEEDS_SLUG'); return; }
     window.open(`/${this.defaultLanguage()}/blog/${slug}?preview=1`, '_blank');
+  }
+
+  // ── More-menu actions ───────────────────────────────────────────────
+  /** Copy the public post URL to the clipboard. */
+  async shareLink(): Promise<void> {
+    this.moreOpen.set(false);
+    const slug = this.translations()[this.defaultLanguage()]?.slug;
+    if (!slug) { this.toast.error('BLOG.COMPOSER.PREVIEW_NEEDS_SLUG'); return; }
+    const url = `${location.origin}/${this.defaultLanguage()}/blog/${slug}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      this.toast.success('BLOG.COMPOSER.LINK_COPIED');
+    } catch {
+      this.toast.error('COMMON.COPY_FAILED');
+    }
+  }
+
+  /** Open the in-session change-history dropdown (undo milestones). */
+  openHistoryMenu(): void { this.moreOpen.set(false); this.historyMenuOpen.set(true); }
+
+  /** Open the full-screen Post History (saved server versions + restore). */
+  async openPostHistory(): Promise<void> {
+    this.moreOpen.set(false);
+    const proceed = await this.ensureSavedBefore('To view history, save your changes first.');
+    if (!proceed || !this.postId()) return;
+    const ref = this.modal.open<PostHistoryModalComponent, PostHistoryModalData, BlogPost | undefined>(
+      PostHistoryModalComponent,
+      { size: 'fullscreen', data: { postId: this.postId()! } },
+    );
+    const restored = await ref.afterClosed();
+    if (restored) {
+      this.applyPost(restored);
+      this.initHistory();
+      this.toast.success('BLOG.HISTORY.RESTORED');
+    }
+  }
+
+  /** Duplicate this post into a new draft and open it. */
+  async duplicate(): Promise<void> {
+    this.moreOpen.set(false);
+    const proceed = await this.ensureSavedBefore('To duplicate, save your changes first.');
+    if (!proceed || !this.postId()) return;
+    try {
+      const copy = await this.api.duplicatePost(this.postId()!);
+      this.toast.success('BLOG.COMPOSER.DUPLICATED');
+      this.postForm.markAsPristine();
+      this.isDirty.set(false);
+      this.router.navigate(['/blog/posts', copy.id, 'edit']);
+    } catch (e: any) {
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
+    }
+  }
+
+  /** Flip a published/scheduled post back to draft and save. */
+  async revertToDraft(): Promise<void> {
+    this.moreOpen.set(false);
+    this.setStatus('draft');
+    await this.saveAt('draft');
+  }
+
+  /** Move the post to trash and return to the list. */
+  async moveToTrash(): Promise<void> {
+    this.moreOpen.set(false);
+    if (!this.postId()) { this.router.navigate(['/blog/posts']); return; }
+    const ok = await this.confirm({
+      title:   this.translate.instant('BLOG.COMPOSER.TRASH_CONFIRM_TITLE'),
+      message: this.translate.instant('BLOG.COMPOSER.TRASH_CONFIRM_MSG'),
+      confirm: this.translate.instant('BLOG.COMPOSER.MOVE_TRASH'),
+      danger:  true,
+    });
+    if (!ok) return;
+    try {
+      await this.api.trashPost(this.postId()!);
+      this.postForm.markAsPristine();
+      this.isDirty.set(false);
+      this.toast.success('BLOG.COMPOSER.TRASHED');
+      this.router.navigate(['/blog/posts']);
+    } catch (e: any) {
+      this.toast.error('COMMON.DELETE_FAILED', e?.message);
+    }
   }
 
   /** Open the "Change the draft language" modal for the Translate
@@ -1357,6 +1605,64 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
     const proceed = await this.ensureSavedBefore('To add a translation, you need to save your changes first.');
     if (!proceed) return;
     this.addLang(code);
+  }
+
+  // ── AI translation ──────────────────────────────────────────────────
+  /** Whether Content AI is configured (drives the "Translate with AI" button). */
+  aiTranslateAvailable = computed(() => !!this.aiProvider?.available?.());
+  /** Language code currently being AI-translated (for the inline spinner). */
+  translatingLang = signal<string | null>(null);
+
+  /** Translate the default-language title/excerpt/content into `code` with AI
+   *  and populate that locale. Creates the locale if it doesn't exist yet. */
+  async translateWithAi(code: string): Promise<void> {
+    if (!this.aiProvider || this.translatingLang()) return;
+
+    // New locale → save first (same gate as Add), then create it.
+    if (!this.translationsGroup.get(code)) {
+      const proceed = await this.ensureSavedBefore('To add a translation, you need to save your changes first.');
+      if (!proceed) return;
+      this.addLang(code);
+    }
+
+    const src = this.translations()[this.defaultLanguage()] ?? blankLocale();
+    const lang = this.labelForLang(code);
+    this.translatingLang.set(code);
+    try {
+      const [title, content, excerpt] = await Promise.all([
+        this.aiTranslate(src.title, lang, 'text'),
+        this.aiTranslate(src.content, lang, 'html'),
+        src.excerpt ? this.aiTranslate(src.excerpt, lang, 'text') : Promise.resolve(''),
+      ]);
+      this.active.set(code);
+      if (title)   this.patchLocale('title', title);
+      if (content) this.patchLocale('content', content);
+      if (excerpt) this.patchLocale('excerpt', excerpt);
+      if (title)   this.patchLocale('slug', generateSlug(title));
+      this.toast.success('BLOG.COMPOSER.AI_TRANSLATED');
+    } catch (e: any) {
+      this.toast.error('BLOG.COMPOSER.AI_TRANSLATE_FAILED', e?.message);
+    } finally {
+      this.translatingLang.set(null);
+    }
+  }
+
+  /** One AI translation call; resolves with the streamed result. */
+  private aiTranslate(text: string, lang: string, kind: 'text' | 'html'): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      if (!this.aiProvider || !(text ?? '').trim()) { resolve(''); return; }
+      const prompt = kind === 'html'
+        ? `Translate the following blog post HTML into ${lang}. Preserve every HTML tag, attribute and structure exactly — translate only the human-readable text. Do not add commentary. Return ONLY the translated HTML.`
+        : `Translate the following text into ${lang}. Return ONLY the translation — no quotes, labels, or extra text.`;
+      let last = '';
+      this.aiProvider.generate({ task: 'custom', prompt, content: text })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next:  (full: string) => { last = full; },
+          error: (err: any) => reject(err),
+          complete: () => resolve((last ?? '').trim()),
+        });
+    });
   }
 
   async cancel(): Promise<void> {

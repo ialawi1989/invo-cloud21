@@ -42,23 +42,61 @@
           <path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/>
         </svg>
       </button>
-      <button class="wc__ghostBtn" (click)="save()" [disabled]="!isDirty() || saving()">
+
+      <!-- History milestones -->
+      <div class="wc__histWrap">
+        <button class="wc__iconBtn" [disabled]="history().length <= 1"
+                (click)="historyMenuOpen.set(!historyMenuOpen())"
+                [attr.aria-label]="'BLOG.COMPOSER.HISTORY' | translate">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 2"/></svg>
+        </button>
+        @if (historyMenuOpen()) {
+          <div class="wc__histMenu">
+            <div class="wc__histTitle">{{ 'BLOG.COMPOSER.HISTORY' | translate }}</div>
+            @for (m of historyMilestones(); track m.index) {
+              <button type="button" class="wc__histItem" [class.is-current]="m.current"
+                      (click)="jumpToHistory(m.index); historyMenuOpen.set(false)">
+                <span class="wc__histDot" [class.is-on]="m.current"></span>
+                <span class="wc__histLabel">{{ m.label }}</span>
+                <span class="wc__histAgo">{{ historyAgo(m.ts) }}</span>
+              </button>
+            }
+          </div>
+          <div class="wc__histBackdrop" (click)="historyMenuOpen.set(false)"></div>
+        }
+      </div>
+      <button class="wc__ghostBtn" (click)="save()" [disabled]="!isDirty() || saving()"
+              [appTooltip]="(autosaveEnabled() ? 'BLOG.COMPOSER.AUTOSAVE_ON_TIP' : 'BLOG.COMPOSER.AUTOSAVE_OFF_TIP') | translate">
         {{ 'BLOG.COMPOSER.SAVE' | translate }}
-      </button>
-      <button class="wc__ghostBtn" (click)="preview()" [disabled]="loading()">
-        {{ 'BLOG.COMPOSER.PREVIEW' | translate }}
       </button>
       <button class="wc__publishBtn" (click)="publishNow()" [disabled]="saving() || loading()">
         {{ primaryActionLabel() }}
       </button>
-      <button class="wc__iconBtn" (click)="moreOpen.set(!moreOpen())" [attr.aria-label]="'COMMON.MORE' | translate">
+      <button class="wc__iconBtn" (click)="$event.stopPropagation(); moreOpen.set(!moreOpen())" [attr.aria-label]="'COMMON.MORE' | translate">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
       </button>
       @if (moreOpen()) {
         <div class="wc__moreMenu" (click)="$event.stopPropagation()">
+          <button (click)="preview()">{{ 'BLOG.COMPOSER.PREVIEW_POST' | translate }}</button>
+          <button (click)="shareLink()">{{ 'BLOG.COMPOSER.SHARE_POST' | translate }}</button>
+          <div class="wc__moreSep"></div>
+          <button (click)="rail.set('notes'); moreOpen.set(false)">{{ 'BLOG.COMPOSER.SIDE_NOTES' | translate }}</button>
+          <button (click)="openPostHistory()">{{ 'BLOG.COMPOSER.POST_HISTORY' | translate }}</button>
           <button (click)="setStatus('draft'); moreOpen.set(false)">{{ 'BLOG.COMPOSER.SAVE_DRAFT' | translate }}</button>
-          <button (click)="rail.set('seo'); moreOpen.set(false)">{{ 'BLOG.COMPOSER.SIDE_SEO' | translate }}</button>
-          <button class="is-danger" (click)="cancel()">{{ 'COMMON.DISCARD' | translate }}</button>
+          <div class="wc__moreSep"></div>
+          <button (click)="duplicate()">{{ 'BLOG.COMPOSER.DUPLICATE_POST' | translate }}</button>
+          <button (click)="revertToDraft()">{{ 'BLOG.COMPOSER.REVERT_DRAFT' | translate }}</button>
+          <button class="is-danger" (click)="moveToTrash()">{{ 'BLOG.COMPOSER.MOVE_TRASH' | translate }}</button>
+          <div class="wc__moreSep"></div>
+          <button class="wc__moreToggleRow" (click)="toggleAutosave()">
+            <span class="wc__moreToggleText">
+              {{ 'BLOG.COMPOSER.AUTOSAVE' | translate }}
+              <small>{{ 'BLOG.COMPOSER.AUTOSAVE_HINT' | translate }}</small>
+            </span>
+            <span class="wc__miniSwitch" [class.is-on]="autosaveEnabled()"><span class="wc__miniSwitchDot"></span></span>
+          </button>
+          <div class="wc__moreSep"></div>
+          <button class="is-danger" (click)="cancel()">{{ 'BLOG.COMPOSER.DISCARD_CHANGES' | translate }}</button>
         </div>
       }
     </div>
@@ -72,7 +110,7 @@
         <button class="wc__railBtn"
                 [class.is-active]="rail() === item.key"
                 (click)="toggleRail(item.key)"
-                [title]="item.label | translate">
+                [appTooltip]="item.label | translate">
           <span class="wc__railIcon" [innerHTML]="icon(item.icon)"></span>
           <span class="wc__railLabel">{{ item.label | translate }}</span>
         </button>
@@ -248,6 +286,7 @@
               <app-blog-taxonomy-selector
                 mode="category"
                 [selectedIds]="taxonomyIds()"
+                [known]="taxonomies()"
                 [mainId]="mainTaxonomyId()"
                 [maxCount]="10"
                 [defaultLang]="defaultLanguage()"
@@ -264,6 +303,7 @@
               <app-blog-taxonomy-selector
                 mode="tag"
                 [selectedIds]="taxonomyIds()"
+                [known]="taxonomies()"
                 [defaultLang]="defaultLanguage()"
                 [aiContent]="current().content"
                 (add)="addTaxonomy($event)"
@@ -303,15 +343,14 @@
                 @if (ogImage()) {
                   <img [src]="ogImage()" alt="og"/>
                   <div class="wc__coverActions">
-                    <button class="wc__btn--ghost" (click)="ogPicker.click()">{{ 'BLOG.COMPOSER.REPLACE' | translate }}</button>
+                    <button class="wc__btn--ghost" (click)="onPickOgImage()">{{ 'BLOG.COMPOSER.REPLACE' | translate }}</button>
                     <button class="wc__btn--ghost" (click)="removeOg()">{{ 'BLOG.COMPOSER.REMOVE' | translate }}</button>
                   </div>
                 } @else {
-                  <button class="wc__dropzone wc__dropzone--small" (click)="ogPicker.click()">
+                  <button class="wc__dropzone wc__dropzone--small" (click)="onPickOgImage()">
                     <span>{{ 'BLOG.COMPOSER.UPLOAD_OG' | translate }}</span>
                   </button>
                 }
-                <input #ogPicker type="file" hidden accept="image/*" (change)="onOgFile($any($event.target).files)"/>
               </div>
               <p class="wc__hint">{{ 'BLOG.COMPOSER.OG_FALLBACK_HINT' | translate }}</p>
             </div>
@@ -332,19 +371,48 @@
                 <div class="wc__langRow">
                   <span class="wc__langChip" [class.is-on]="active() === code"
                         (click)="active.set(code)">{{ labelForLang(code) }}</span>
-                  <button class="wc__btn--link is-danger" (click)="removeLang(code)">{{ 'COMMON.DELETE' | translate }}</button>
+                  <span class="wc__langActions">
+                    @if (aiTranslateAvailable()) {
+                      <button class="wc__btn--link wc__btn--ai" (click)="translateWithAi(code)" [disabled]="!!translatingLang()">
+                        @if (translatingLang() === code) {
+                          <span class="wc__aiSpin"></span>{{ 'BLOG.COMPOSER.AI_TRANSLATING' | translate }}
+                        } @else {
+                          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
+                          {{ 'BLOG.COMPOSER.TRANSLATE_AI' | translate }}
+                        }
+                      </button>
+                    }
+                    <button class="wc__btn--link is-danger" (click)="removeLang(code)">{{ 'COMMON.DELETE' | translate }}</button>
+                  </span>
                 </div>
               }
             }
             @for (code of addableLangs(); track code) {
               <div class="wc__langRow">
                 <span class="wc__langChip is-muted">{{ labelForLang(code) }}</span>
-                <button class="wc__btn--link" (click)="onAddTranslation(code)">{{ 'COMMON.ADD' | translate }}</button>
+                <span class="wc__langActions">
+                  @if (aiTranslateAvailable()) {
+                    <button class="wc__btn--link wc__btn--ai" (click)="translateWithAi(code)" [disabled]="!!translatingLang()">
+                      @if (translatingLang() === code) {
+                        <span class="wc__aiSpin"></span>{{ 'BLOG.COMPOSER.AI_TRANSLATING' | translate }}
+                      } @else {
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
+                        {{ 'BLOG.COMPOSER.TRANSLATE_AI' | translate }}
+                      }
+                    </button>
+                  }
+                  <button class="wc__btn--link" (click)="onAddTranslation(code)">{{ 'COMMON.ADD' | translate }}</button>
+                </span>
               </div>
             }
             @if (addableLangs().length === 0 && activeLangs().length <= 1) {
               <p class="wc__empty">{{ 'BLOG.COMPOSER.NO_OTHER_LANGS' | translate }}</p>
             }
+          }
+
+          <!-- ─── NOTES ─── -->
+          @if (rail() === 'notes') {
+            <app-blog-notes-panel [postId]="postId()"/>
           }
 
         </div>

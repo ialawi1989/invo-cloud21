@@ -30,11 +30,11 @@
 
   <div class="cm__card">
     <div class="cm__toolbar">
-      <app-search-dropdown
-        [items]="postOptionsForDropdown()" [value]="$any(postId())"
-        [displayWith]="idDisplay" [compareWith]="idCompare" [toValue]="idToValue"
-        [clearable]="false" [searchable]="true"
-        (valueChange)="setPost($any($event))"/>
+      <button type="button" class="cm__postBtn" (click)="openPostPicker()">
+        <svg class="cm__postBtnIco" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        <span class="cm__postBtnLabel">{{ selectedPostLabel() }}</span>
+        <svg class="cm__postBtnChev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
       <app-search-dropdown
         [items]="langOptions()" [value]="$any(language())"
         [displayWith]="idDisplay" [compareWith]="idCompare" [toValue]="idToValue"
@@ -71,13 +71,13 @@
               @if (c.authorAvatar) {
                 <img [src]="c.authorAvatar" alt=""/>
               } @else {
-                <span>{{ c.authorName[0]?.toUpperCase() }}</span>
+                <span>{{ displayInitial(c) }}</span>
               }
             </div>
 
             <div class="cm-item__body">
               <div class="cm-item__meta">
-                <span class="cm-item__name">{{ c.authorName }}</span>
+                <span class="cm-item__name">{{ displayName(c.authorName, c.authorKind) }}</span>
                 <span class="cm-item__kind">{{ (c.authorKind === 'employee' ? 'BLOG.COMMENTS.KIND_STAFF' : 'BLOG.COMMENTS.KIND_CUSTOMER') | translate }}</span>
                 <span class="cm-item__on">
                   {{ 'BLOG.COMMENTS.ON_POST' | translate }}
@@ -89,7 +89,7 @@
 
               @if (c.parentCommentId) {
                 <div class="cm-item__quote">
-                  <strong>{{ c.parentAuthor }}:</strong>
+                  <strong>{{ displayName(c.parentAuthor) }}:</strong>
                   <span>{{ c.parentExcerpt }}</span>
                 </div>
               }
@@ -105,19 +105,19 @@
 
               <div class="cm-item__actions">
                 @if (c.status === 'deleted') {
-                  <button type="button" class="cm-link cm-link--ok" (click)="restore(c)">↺ {{ 'BLOG.COMMENTS.RESTORE' | translate }}</button>
-                  <button type="button" class="cm-link cm-link--danger" (click)="deleteForever(c)">🗑 {{ 'BLOG.COMMENTS.DELETE_FOREVER' | translate }}</button>
+                  <button type="button" class="cm-link cm-link--ok" (click)="restore(c)" [appTooltip]="'BLOG.COMMENTS.TIP_RESTORE' | translate">↺ {{ 'BLOG.COMMENTS.RESTORE' | translate }}</button>
+                  <button type="button" class="cm-link cm-link--danger" (click)="deleteForever(c)" [appTooltip]="'BLOG.COMMENTS.TIP_DELETE_FOREVER' | translate">🗑 {{ 'BLOG.COMMENTS.DELETE_FOREVER' | translate }}</button>
                 } @else {
                   @if (c.status === 'pending') {
-                    <button type="button" class="cm-link cm-link--ok" (click)="approve(c)">
+                    <button type="button" class="cm-link cm-link--ok" (click)="approve(c)" [appTooltip]="'BLOG.COMMENTS.TIP_APPROVE' | translate">
                       ✓ {{ 'BLOG.COMMENTS.APPROVE' | translate }}
                     </button>
                   }
                   @if (c.status !== 'flagged') {
-                    <button type="button" class="cm-link" (click)="flag(c)">⚑ {{ 'BLOG.COMMENTS.FLAG' | translate }}</button>
+                    <button type="button" class="cm-link" (click)="flag(c)" [appTooltip]="'BLOG.COMMENTS.TIP_FLAG' | translate">⚑ {{ 'BLOG.COMMENTS.FLAG' | translate }}</button>
                   }
-                  <button type="button" class="cm-link cm-link--danger" (click)="remove(c)">🗑 {{ 'BLOG.COMMENTS.MOVE_TRASH' | translate }}</button>
-                  <button type="button" class="cm-link" (click)="openReply(c)">↩ {{ 'BLOG.COMMENTS.REPLY' | translate }}</button>
+                  <button type="button" class="cm-link cm-link--danger" (click)="remove(c)" [appTooltip]="'BLOG.COMMENTS.TIP_TRASH' | translate">🗑 {{ 'BLOG.COMMENTS.MOVE_TRASH' | translate }}</button>
+                  <button type="button" class="cm-link" (click)="openReply(c)" [appTooltip]="'BLOG.COMMENTS.TIP_REPLY' | translate">↩ {{ 'BLOG.COMMENTS.REPLY' | translate }}</button>
                 }
               </div>
 

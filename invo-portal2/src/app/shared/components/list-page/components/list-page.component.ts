@@ -18,7 +18,7 @@ import {
   HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, switchMap, catchError, of, tap, from, isObservable } from 'rxjs';
@@ -168,7 +168,10 @@ import {
       font-weight: 600;
       padding: 13px 18px !important;
       white-space: nowrap;
-      border-bottom: 0 !important;
+      /* Wix-style framed header band: a soft teal rule above and below so the
+         header reads as a distinct band over the teal fill. */
+      border-top: 1px solid #aeded3 !important;
+      border-bottom: 1px solid #aeded3 !important;
     }
     /* Body cells. --row-pad-y tunes vertical density in one place. */
     .list-page-container { --row-pad-y: 12px; }
@@ -192,11 +195,10 @@ import {
     .list-card {
       border-radius: 14px !important;
       overflow: hidden;
-      border-color: #eef1f5 !important;
-      box-shadow:
-        0 1px 2px rgba(15, 23, 42, 0.04),
-        0 4px 12px rgba(15, 23, 42, 0.06),
-        0 12px 32px rgba(15, 23, 42, 0.05) !important;
+      /* Borderless, flat: the white card reads against the light-gray app
+         canvas (.main-content) — no border, no shadow. */
+      border: 0 !important;
+      box-shadow: none !important;
     }
 
     /* Force the table to its natural (nowrap) width so it overflows the
@@ -231,6 +233,7 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private modalService = inject(ModalService);
+  private translate = inject(TranslateService);
   private listPrefs = inject(ListPreferencesService);
 
   protected readonly Math = Math;
@@ -1036,6 +1039,19 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
         return `${this.formatDate(from)} - ${this.formatDate(to)}`;
       }
       return '';
+    }
+
+    if (filter.type === 'date-preset') {
+      const s = String(value);
+      if (s.startsWith('custom:')) {
+        const [from, to] = s.slice(7).split('..');
+        const fmt = (d: string) => d ? this.formatDate(d) : '…';
+        return `${fmt(from)} - ${fmt(to)}`;
+      }
+      const codeLabels: Record<string, string> = {
+        last7: 'COMMON.PERIOD_LAST_7', last14: 'COMMON.PERIOD_LAST_14', last30: 'COMMON.PERIOD_LAST_30',
+      };
+      return codeLabels[s] ? this.translate.instant(codeLabels[s]) : s;
     }
 
     // Try to find label from static options

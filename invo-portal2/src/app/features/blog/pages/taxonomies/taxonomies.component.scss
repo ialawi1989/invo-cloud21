@@ -115,6 +115,21 @@
   &:hover { background: #fafbfc; }
   &.is-dragging { opacity: .4; }
   &--clickable { cursor: pointer; }
+
+  /* Drop placeholder — a teal insertion line + tint where the row will land. */
+  &.is-dropTarget {
+    position: relative;
+    background: #f0fbfc;
+  }
+  &.is-dropTarget::before {
+    content: '';
+    position: absolute;
+    inset-inline: 8px;
+    top: -1px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-brand-500, #32acc1);
+  }
 }
 
 .tx-drag {
@@ -166,6 +181,14 @@
   font-size: 12px;
   color: #64748b;
   white-space: nowrap;
+}
+.tx-count--link {
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 4px 8px;
+  transition: background 120ms ease, color 120ms ease;
+  &:hover { background: #eef7f8; color: var(--color-brand-700, #2691a4); }
 }
 .tx-hashtagDate { font-size: 11px; color: #94a3b8; min-width: 80px; text-align: end; }
 

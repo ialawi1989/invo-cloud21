@@ -141,6 +141,7 @@ export type FilterConfig =
   | DropdownFilterConfig
   | SearchDropdownFilterConfig
   | DateRangeFilterConfig
+  | DatePresetFilterConfig
   | CheckboxGroupFilterConfig
   | MultiSelectFilterConfig;
 
@@ -182,6 +183,16 @@ export interface DateRangeFilterConfig {
   label: string;
   defaultFrom?: Date;
   defaultTo?: Date;
+}
+
+/**
+ * Period filter with Wix-style presets (All / Last 7 / Last 14 / Last 30 days)
+ * plus a Custom from–to range. Stored in a single filter `key` as either a
+ * preset code (`'last7' | 'last14' | 'last30'`) or, for Custom, an object
+ * `{ from, to }` (ISO yyyy-mm-dd). The consuming dataSource resolves it.
+ */
+export interface DatePresetFilterConfig extends BaseFilterConfig {
+  type: 'date-preset';
 }
 
 export interface CheckboxGroupFilterConfig extends BaseFilterConfig {

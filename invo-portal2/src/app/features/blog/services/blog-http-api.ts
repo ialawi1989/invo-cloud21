@@ -10,6 +10,9 @@ import {
   ModerationRuleSavePayload,
   ShopperListParams,
   ShopperListResult,
+  BlogPostNote,
+  NoteStatus,
+  BlogPostVersion,
   BlogPost,
   BlogTaxonomy,
   BlogWriter,
@@ -23,6 +26,7 @@ import {
   PostListResult,
   PostSavePayload,
   TaxonomyListParams,
+  TaxonomyListResult,
   TaxonomySavePayload,
   UploadResult,
 } from './blog.types';
@@ -101,6 +105,8 @@ export class BlogHttpApi extends BlogApi {
         taxonomyId:       params.taxonomyId,
         authorEmployeeId: params.authorEmployeeId,
         search:           params.search,
+        dateFrom:         params.dateFrom,
+        dateTo:           params.dateTo,
       }),
     };
     const data = await this.post<any>('blog/getPostList', body);
@@ -113,12 +119,12 @@ export class BlogHttpApi extends BlogApi {
   }
 
   async getPost(id: string): Promise<BlogPost | null> {
-    const data = await this.get<BlogPost>(`blog/getPost/${encodeURIComponent(id)}`);
-    return data ?? null;
+    const data = await this.get<any>(`blog/getPost/${encodeURIComponent(id)}`);
+    return data ? normalizePostTaxonomies(data) : null;
   }
 
   async savePost(payload: PostSavePayload): Promise<BlogPost> {
-    return this.post<BlogPost>('blog/savePost', payload);
+    return normalizePostTaxonomies(await this.post<any>('blog/savePost', payload));
   }
 
   async deletePost(id: string): Promise<boolean> {
@@ -163,6 +169,25 @@ export class BlogHttpApi extends BlogApi {
     });
     const data = await this.post<any>('blog/getTaxonomyList', body);
     return Array.isArray(data?.list) ? data.list : (Array.isArray(data) ? data : []);
+  }
+
+  async listTaxonomiesPage(params: TaxonomyListParams): Promise<TaxonomyListResult> {
+    const limit = params.limit ?? 20;
+    const body = stripEmpty({
+      taxonomyType: params.taxonomyType,
+      language:     params.language,
+      search:       params.search,
+      page:         params.page ?? 1,
+      limit,
+    });
+    const data = await this.post<any>('blog/getTaxonomyList', body);
+    const list = Array.isArray(data?.list) ? data.list : (Array.isArray(data) ? data : []);
+    return {
+      list,
+      count:     Number(data?.count ?? list.length),
+      // Fall back to a length heuristic when the backend omits pageCount.
+      pageCount: Number(data?.pageCount ?? (list.length < limit ? (params.page ?? 1) : (params.page ?? 1) + 1)),
+    };
   }
 
   async getTaxonomy(id: string): Promise<BlogTaxonomy | null> {
@@ -272,6 +297,41 @@ export class BlogHttpApi extends BlogApi {
     };
   }
 
+  // ─── Post editor notes ───────────────────────────────────────────────
+  async listPostNotes(postId: string): Promise<BlogPostNote[]> {
+    const data = await this.post<any>('blog/getPostNotes', { postId });
+    return Array.isArray(data?.list) ? data.list : (Array.isArray(data) ? data : []);
+  }
+  async addPostNote(postId: string, content: string, parentNoteId?: string | null): Promise<BlogPostNote> {
+    return this.post('blog/addPostNote', { postId, content, parentNoteId: parentNoteId ?? null });
+  }
+  async updatePostNote(id: string, content: string): Promise<BlogPostNote> {
+    return this.post('blog/updatePostNote', { id, content });
+  }
+  async setPostNoteStatus(id: string, status: NoteStatus): Promise<BlogPostNote> {
+    return this.post('blog/setPostNoteStatus', { id, status });
+  }
+  async deletePostNote(id: string): Promise<boolean> {
+    await this.post('blog/deletePostNote', { id });
+    return true;
+  }
+
+  // ─── Post history / versions ─────────────────────────────────────────
+  async getPostHistory(postId: string): Promise<BlogPostVersion[]> {
+    const data = await this.post<any>('blog/getPostHistory', { postId });
+    return Array.isArray(data?.list) ? data.list : (Array.isArray(data) ? data : []);
+  }
+  async getPostVersion(id: string): Promise<BlogPost | null> {
+    const data = await this.post<any>('blog/getPostVersion', { id });
+    // The version wraps the point-in-time post in `snapshot` (toPostDetail
+    // payload); fall back to the row itself if unwrapped.
+    const snap = data?.snapshot ?? data;
+    return snap ? normalizePostTaxonomies(snap) : null;
+  }
+  async restorePostVersion(postId: string, versionId: string): Promise<BlogPost> {
+    return normalizePostTaxonomies(await this.post<any>('blog/restorePostVersion', { postId, versionId }));
+  }
+
   // ─── Writers / Settings / Uploads ────────────────────────────────────
 
   async getReport(params?: BlogReportParams): Promise<BlogReport> {
@@ -360,6 +420,25 @@ export class BlogHttpApi extends BlogApi {
   private async delete(path: string): Promise<void> {
     await firstValueFrom(this.http.delete<any>(`${this.base}${path}`));
   }
+}
+
+/**
+ * Ensure a post response exposes flat `taxonomyIds` + `mainTaxonomyId` the UI
+ * binds to. The backend may return a nested `taxonomies` array
+ * (`[{id, isMain, …}]`) instead — derive the flat fields from it so categories
+ * show after save/load regardless of the response shape.
+ */
+function normalizePostTaxonomies(p: any): BlogPost {
+  if (p && Array.isArray(p.taxonomies)) {
+    if (!Array.isArray(p.taxonomyIds)) {
+      p.taxonomyIds = p.taxonomies.map((t: any) => t.id).filter(Boolean);
+    }
+    if (p.mainTaxonomyId == null) {
+      p.mainTaxonomyId = p.taxonomies.find((t: any) => t.isMain)?.id ?? null;
+    }
+  }
+  if (p && !Array.isArray(p.taxonomyIds)) p.taxonomyIds = [];
+  return p as BlogPost;
 }
 
 function stripEmpty<T extends Record<string, unknown>>(obj: T): Partial<T> {

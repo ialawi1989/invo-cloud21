@@ -1,0 +1,45 @@
+<app-modal-header [title]="data.title ?? ('BLOG.COMMENTS.PICK_POST' | translate)"/>
+
+<div class="ppm-body">
+  <label class="ppm-search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" [value]="search()" (input)="onSearchInput($any($event.target).value)"
+           [placeholder]="'BLOG.COMMENTS.POST_SEARCH_PH' | translate"/>
+  </label>
+
+  <div class="ppm-list">
+    <!-- All posts (clear filter) -->
+    <button type="button" class="ppm-row ppm-row--all" [class.ppm-row--selected]="selectedId === ''" (click)="pickAll()">
+      <span class="ppm-row__icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      </span>
+      <span class="ppm-row__title">{{ 'BLOG.COMMENTS.ALL_POSTS' | translate }}</span>
+    </button>
+
+    @if (rows().length === 0 && !loading()) {
+      <div class="ppm-empty">{{ 'COMMON.NO_DATA' | translate }}</div>
+    }
+
+    @for (row of rows(); track row.id) {
+      <button type="button" class="ppm-row" [class.ppm-row--selected]="selectedId === row.id" (click)="pick(row)">
+        <span class="ppm-row__icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+        </span>
+        <span class="ppm-row__title">{{ row.title }}</span>
+      </button>
+    }
+
+    <div #scrollSentinel class="ppm-sentinel" aria-hidden="true">
+      @if (loading() && rows().length > 0) {
+        <span class="ppm-spinner"></span>
+        <span class="ppm-loadtxt">{{ 'COMMON.LOADING' | translate }}</span>
+      }
+    </div>
+  </div>
+</div>
+
+<footer class="ppm-footer">
+  <button type="button" class="ppm-btn ppm-btn--ghost" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+</footer>

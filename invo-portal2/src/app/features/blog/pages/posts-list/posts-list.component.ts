@@ -181,6 +181,7 @@ export class PostsListComponent implements OnInit {
   private buildFilters(): void {
     const t = (k: string) => this.translate.instant(k);
     this.filters = [
+      { key: 'datePeriod', label: t('BLOG.LIST.COL_DATE'), type: 'date-preset' },
       {
         key: 'authorEmployeeId', label: t('BLOG.LIST.COL_AUTHOR'), type: 'dropdown',
         options: this.writers().map(w => ({ value: w.id, label: w.name })),
@@ -192,8 +193,26 @@ export class PostsListComponent implements OnInit {
     ];
   }
 
+  /** Resolve a date-preset filter value to a publish-date {from,to} window. */
+  private resolvePeriod(period: unknown): { from?: string; to?: string } {
+    if (!period) return {};
+    const iso = (d: Date) => { const p = (n: number) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
+    const s = String(period);
+    if (s.startsWith('custom:')) {
+      const [from, to] = s.slice(7).split('..');
+      return { from: from || undefined, to: to || undefined };
+    }
+    const days: Record<string, number> = { last7: 7, last14: 14, last30: 30 };
+    const n = days[s];
+    if (!n) return {};
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const start = new Date(today); start.setDate(start.getDate() - (n - 1));
+    return { from: iso(start), to: iso(today) };
+  }
+
   // ── Data source (read by the list-page on every load) ───────────────
   loadPosts = async (params: ListQueryParams): Promise<ListResponse<BlogPost>> => {
+    const period = this.resolvePeriod(params.filter?.['datePeriod']);
     const res = await this.api.listPosts({
       page:             params.page,
       limit:            params.limit,
@@ -202,6 +221,8 @@ export class PostsListComponent implements OnInit {
       sortDir:          params.sortBy?.sortDirection,
       authorEmployeeId: params.filter?.['authorEmployeeId'] || undefined,
       taxonomyId:       params.filter?.['taxonomyId'] || undefined,
+      dateFrom:         period.from,
+      dateTo:           period.to,
       // 'pending'/'trash' aren't in PostListParams['status'] yet (stubs).
       status:           (this.statusTab() || undefined) as any,
       language:         this.language() || undefined,
@@ -426,7 +447,6 @@ export class PostsListComponent implements OnInit {
   moreActionsMenu(): DropdownMenuBtnItem[] {
     return [
       { label: 'BLOG.LIST.MA_CREATE_CATEGORY', click: () => this.router.navigate(['/blog/categories']), iconPath: 'M3 3h7v7H3z M14 3h7v7h-7z M14 14h7v7h-7z M3 14h7v7H3z' },
-      { label: 'BLOG.LIST.MA_ADD_WRITER',      click: () => this.comingSoon(), iconPath: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M19 8v6 M22 11h-6' },
       { label: 'BLOG.LIST.MA_IMPORT',          click: () => this.openImport(), iconPath: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3' },
       { label: 'BLOG.LIST.MA_IMPORT_FILE',     click: () => this.importFromFile(), iconPath: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M9 13h6 M9 17h6' },
       { label: 'BLOG.LIST.MA_REPORTS',         click: () => this.router.navigate(['/blog/analytics']), separator: true, iconPath: 'M3 3v18h18 M7 16V9 M12 16V5 M17 16v-3' },

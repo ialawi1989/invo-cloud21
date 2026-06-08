@@ -34,7 +34,9 @@ import { TopbarComponent } from './components/topbar/topbar.component';
       margin-left: 240px;
       min-height: calc(100vh - 56px);
       padding: 24px;
-      background: #f8fafc;
+      /* Light-gray app canvas so white cards/tables read as distinct surfaces
+         without needing a border or drop shadow. */
+      background: #eef2f6;
       transition: margin-left .25s ease;
     }
     .main-content.collapsed { margin-left: 56px; }
