@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { linkifyHashtags } from '../utils/hashtag-linker';
+import { neutralizeEditable } from '../utils/neutralize-editable';
 
 /**
  * Renders post HTML with hashtag auto-linking applied. We trust the
@@ -204,6 +205,8 @@ export class PostContentComponent implements OnChanges {
 
   ngOnChanges(_: SimpleChanges): void {
     const linked = linkifyHashtags(this.html, this.lang);
-    this.safe = this.sanitizer.bypassSecurityTrustHtml(linked);
+    // Render strictly read-only — no contenteditable regions or live
+    // form controls leaking through from the editor's saved markup.
+    this.safe = this.sanitizer.bypassSecurityTrustHtml(neutralizeEditable(linked));
   }
 }
