@@ -42,6 +42,15 @@ export interface GalleryConfig {
   thumbPlacement: GalleryThumbPlacement;
   clickExpand: boolean;
   allowDownload: boolean;
+  /** Autoplay (thumbnails/slideshow stage). */
+  autoplay: boolean;
+  slideDuration: number;
+  stopOnClick: boolean;
+  stopOnMouse: boolean;
+  stopOnMedia: boolean;
+  resumeOnClick: boolean;
+  resumeOnMouse: boolean;
+  resumeOnMedia: boolean;
 }
 export interface GalleryImage { id: string; url: string; alt: string; mediaId?: string; }
 
@@ -50,6 +59,9 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
   spacing: 5, rowHeight: 300, columnWidth: 300,
   orientation: 'horizontal', scrollDir: 'vertical', thumbPlacement: 'bottom',
   clickExpand: true, allowDownload: false,
+  autoplay: false, slideDuration: 5000,
+  stopOnClick: true, stopOnMouse: false, stopOnMedia: true,
+  resumeOnClick: false, resumeOnMouse: false, resumeOnMedia: true,
 };
 
 /**
@@ -236,6 +248,7 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
       font-weight: 400; font-size: 13px; line-height: 1.3; color: #1e293b;
     }
     .re-gal-labelGroup { display: inline-flex; align-items: center; gap: 4px; }
+    .re-gal-autoHead { font-weight: 700; font-size: 14px; color: #0f172a; margin-top: 14px; padding-top: 14px; border-top: 1px solid #eef2f6; }
     .re-gal-info { display: inline-flex; align-items: center; justify-content: center;
       width: 16px; height: 16px; color: #94a3b8; cursor: help; }
     .re-gal-toggle {
@@ -363,6 +376,40 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
               </span>
               <span class="re-gal-toggle" [class.is-on]="cfg().allowDownload" (mousedown)="$event.preventDefault(); setAllowDownload(!cfg().allowDownload)"></span>
             </div>
+
+            @if (cfg().layout === 'thumbnails') {
+              <div class="re-gal-autoHead">Autoplay</div>
+              <div class="re-gal-toggleRow">
+                <span class="re-gal-labelGroup">Autoplay
+                  <span class="re-gal-info" [appReTooltip]="'Automatically advance the main image.'">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  </span>
+                </span>
+                <span class="re-gal-toggle" [class.is-on]="cfg().autoplay" (mousedown)="$event.preventDefault(); setAutoplay(!cfg().autoplay)"></span>
+              </div>
+              @if (cfg().autoplay) {
+                <div class="re-gal-labelGroup">Slide duration (ms)</div>
+                <div class="re-gal-row">
+                  <input type="number" min="1000" max="30000" step="500" class="re-gal-num" [ngModel]="cfg().slideDuration" (ngModelChange)="setDuration($event)"/>
+                </div>
+                <div class="re-gal-toggleRow">
+                  <span class="re-gal-labelGroup">Pause on hover</span>
+                  <span class="re-gal-toggle" [class.is-on]="cfg().stopOnMouse" (mousedown)="$event.preventDefault(); setAuto('stopOnMouse', !cfg().stopOnMouse)"></span>
+                </div>
+                <div class="re-gal-toggleRow">
+                  <span class="re-gal-labelGroup">Resume after hover</span>
+                  <span class="re-gal-toggle" [class.is-on]="cfg().resumeOnMouse" (mousedown)="$event.preventDefault(); setAuto('resumeOnMouse', !cfg().resumeOnMouse)"></span>
+                </div>
+                <div class="re-gal-toggleRow">
+                  <span class="re-gal-labelGroup">Pause on interaction</span>
+                  <span class="re-gal-toggle" [class.is-on]="cfg().stopOnClick" (mousedown)="$event.preventDefault(); setAuto('stopOnClick', !cfg().stopOnClick)"></span>
+                </div>
+                <div class="re-gal-toggleRow">
+                  <span class="re-gal-labelGroup">Resume after interaction</span>
+                  <span class="re-gal-toggle" [class.is-on]="cfg().resumeOnClick" (mousedown)="$event.preventDefault(); setAuto('resumeOnClick', !cfg().resumeOnClick)"></span>
+                </div>
+              }
+            }
           }
         }
       </div>
@@ -587,6 +634,9 @@ export class RichGalleryPanelComponent {
   setThumbPlacement(thumbPlacement: GalleryThumbPlacement): void { this.commit({ thumbPlacement }); }
   setClickExpand(v: boolean): void { this.commit({ clickExpand: v }); }
   setAllowDownload(v: boolean): void { this.commit({ allowDownload: v }); }
+  setAutoplay(v: boolean): void { this.commit({ autoplay: v }); }
+  setDuration(v: number): void { this.commit({ slideDuration: Math.max(1000, Math.min(30000, +v || 5000)) }); }
+  setAuto(key: 'stopOnMouse' | 'resumeOnMouse' | 'stopOnClick' | 'resumeOnClick' | 'stopOnMedia' | 'resumeOnMedia', v: boolean): void { this.commit({ [key]: v }); }
 
   // Drag-to-reorder within the Media strip.
   onDragStart(i: number): void { this.dragFrom = i; }

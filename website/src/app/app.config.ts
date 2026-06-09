@@ -58,10 +58,15 @@ export const appConfig: ApplicationConfig = {
     // empty slug (→ /v1/ecommerce//…), 404ing and poisoning the one-shot
     // settings cache. resolve() is idempotent (shared promise), so this
     // doesn't duplicate the work. Fire-and-forget after that.
-    provideAppInitializer(async () => {
+    provideAppInitializer(() => {
       if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
-      await inject(TenantService).resolve();
-      void inject(BlogSettingsService).load();
+      // Capture services synchronously — the injection context is lost
+      // after an await, so we can't inject() past the first tick. Then
+      // warm settings once the tenant slug resolves (resolve() is a
+      // shared promise, so this doesn't duplicate the work).
+      const tenant = inject(TenantService);
+      const settings = inject(BlogSettingsService);
+      void tenant.resolve().then(() => settings.load());
     }),
 
     provideRouter(

@@ -536,6 +536,21 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
           }
         }
 
+        <!-- Wix-style hover insert line: appears in the gap next to a
+             block widget; click drops a new editable line there. -->
+        @if (insertGap(); as g) {
+          <div class="re__insertLine"
+               [style.top.px]="g.top"
+               [style.left.px]="g.left"
+               [style.width.px]="g.width"
+               (mousedown)="onInsertGapClick($event, g.before)"
+               title="Click to add">
+            <span class="re__insertLine-btn">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </span>
+          </div>
+        }
+
       <div
         #editable
         class="re__surface"
@@ -556,6 +571,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
         (drop)="onEditableDrop($event)"
         (mousedown)="onSurfaceMouseDown($event)"
         (mousemove)="onSurfaceMouseMove($event)"
+        (mouseleave)="insertGap.set(null)"
         (click)="onSurfaceClick($event)"
         (dblclick)="onSurfaceDblClick($event)"
       ></div>
@@ -3451,6 +3467,22 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__tableMoveBtn { cursor: grab; }
     .re__tableMoveBtn:active { cursor: grabbing; }
 
+    /* Wix-style hover insert line between block widgets. */
+    .re__insertLine {
+      position: absolute; height: 0; z-index: 6; cursor: pointer;
+      transform: translateY(-1px); display: flex; align-items: center;
+      border-top: 2px solid var(--ricos-custom-action-color, #32acc1);
+    }
+    .re__insertLine::after {
+      content: ''; position: absolute; inset: -9px 0; /* fat hover target */
+    }
+    .re__insertLine-btn {
+      position: absolute; left: -13px; top: 50%; transform: translateY(-50%);
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--ricos-custom-action-color, #32acc1); color: #fff;
+      display: grid; place-items: center; box-shadow: 0 1px 4px rgba(15, 23, 42, .2);
+    }
+
     /* "/" slash menu — caret-anchored insert list. */
     .re__slash {
       position: absolute;
@@ -6294,35 +6326,45 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       display: block !important; width: 100% !important; height: 100% !important; object-fit: cover !important;
     }
 
-    /* Collage — square-cell mosaic. JS (layoutGalleryCollage) computes
-       the column count + cell size from Column width; CSS assigns a
-       repeating span pattern so some tiles are 2×2 / elongated, giving
-       the dynamic collage feel. Images crop to fill (object-fit cover). */
+    /* Collage — Wix-style; the mode is driven by scroll direction + image
+       orientation (matches the website renderer).
+         • vertical scroll (default): fixed-width columns by Column-width,
+           images at natural heights.
+         • horizontal scroll: one full-height row that scrolls sideways. */
     :host ::ng-deep .re__surface .re-gallery--collage {
-      display: grid !important;
-      grid-template-columns: repeat(var(--collage-cols, 3), 1fr) !important;
-      grid-auto-rows: var(--collage-cell, 160px) !important;
-      grid-auto-flow: dense !important;
-      gap: var(--re-gal-gap, 6px) !important;
+      display: block !important; grid-template-columns: none !important;
+      columns: var(--re-gal-col-w, 240px) auto !important;
+      column-gap: var(--re-gal-gap, 6px) !important;
     }
-    :host ::ng-deep .re__surface .re-gallery--collage .re-gallery-item { aspect-ratio: auto !important; height: auto !important; }
-    :host ::ng-deep .re__surface .re-gallery--collage .re-gallery-item img { height: 100% !important; object-fit: cover !important; }
-    /* Lead feature tile is always a 2×2 hero. */
-    :host ::ng-deep .re__surface .re-gallery--collage .re-gallery-item:nth-child(6n+1) { grid-column: span 2 !important; grid-row: span 2 !important; }
-    /* Image orientation drives the secondary feature tile: horizontal
-       (default) elongates it WIDE (span 2 columns); vertical makes it
-       TALL (span 2 rows). */
-    :host ::ng-deep .re__surface .re-gallery--collage .re-gallery-item:nth-child(6n+4) { grid-column: span 2 !important; grid-row: auto !important; }
-    :host ::ng-deep .re__surface .re-gallery--collage[data-orientation="vertical"] .re-gallery-item:nth-child(6n+4) { grid-column: auto !important; grid-row: span 2 !important; }
-    /* Scroll direction — horizontal packs the mosaic into a fixed number
-       of rows (--collage-rows) that overflow sideways and scroll, instead
-       of wrapping downward into new rows. */
+    :host ::ng-deep .re__surface .re-gallery--collage .re-gallery-item {
+      break-inside: avoid !important; margin: 0 0 var(--re-gal-gap, 6px) !important;
+      width: 100% !important; height: auto !important; aspect-ratio: auto !important;
+      grid-column: auto !important; grid-row: auto !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--collage .re-gallery-item img {
+      display: block !important; width: 100% !important; height: auto !important;
+      aspect-ratio: auto !important; object-fit: cover !important;
+    }
     :host ::ng-deep .re__surface .re-gallery--collage[data-scroll-dir="horizontal"] {
-      grid-template-columns: none !important;
-      grid-template-rows: repeat(var(--collage-rows, 3), var(--collage-cell, 160px)) !important;
-      grid-auto-columns: var(--collage-cell, 160px) !important;
-      grid-auto-flow: column dense !important;
-      overflow-x: auto !important;
+      display: flex !important; flex-wrap: nowrap !important; columns: auto !important;
+      gap: var(--re-gal-gap, 6px) !important; overflow-x: auto !important;
+      height: var(--re-gal-row-h, 420px) !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--collage[data-scroll-dir="horizontal"] .re-gallery-item {
+      flex: 0 0 auto !important; height: 100% !important; width: auto !important; margin: 0 !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--collage[data-scroll-dir="horizontal"] .re-gallery-item img {
+      height: 100% !important; width: auto !important; object-fit: cover !important;
+    }
+    /* Vertical scroll + horizontal orientation → justified rows. Tile
+       sizes come from layoutGalleryMasonry (!important inline); this just
+       makes the container a wrapping flex row. */
+    :host ::ng-deep .re__surface .re-gallery--collage[data-orientation="horizontal"]:not([data-scroll-dir="horizontal"]) {
+      display: flex !important; flex-wrap: wrap !important; columns: auto !important;
+      gap: var(--re-gal-gap, 6px) !important; align-content: flex-start !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--collage[data-orientation="horizontal"]:not([data-scroll-dir="horizontal"]) .re-gallery-item img {
+      width: 100% !important; height: 100% !important; object-fit: cover !important;
     }
 
     /* Thumbnails — a large "stage" image (the active one) carrying
@@ -6393,7 +6435,9 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       gap: var(--re-gal-gap, 6px) !important; align-content: flex-start !important;
     }
     :host ::ng-deep .re__surface .re-gallery--masonry .re-gallery-item {
-      height: var(--re-gal-row-h, 300px) !important; flex: 1 1 auto !important; margin: 0 !important;
+      /* JS (layoutGalleryMasonry) sets per-tile width/height/flex for the
+         justified rows — don't override them with !important here. */
+      margin: 0 !important; overflow: hidden;
     }
     :host ::ng-deep .re__surface .re-gallery--masonry .re-gallery-item img {
       height: 100% !important; width: 100% !important; object-fit: cover !important;
@@ -6407,10 +6451,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       column-gap: var(--re-gal-gap, 6px) !important;
     }
     :host ::ng-deep .re__surface .re-gallery--masonry[data-orientation="vertical"] .re-gallery-item {
-      height: var(--re-gal-row-h, 300px) !important; margin: 0 0 var(--re-gal-gap, 6px) !important; break-inside: avoid !important;
+      /* Natural heights → true Pinterest columns, matching the website
+         (varied heights), not fixed-height cells. */
+      height: auto !important; margin: 0 0 var(--re-gal-gap, 6px) !important; break-inside: avoid !important;
     }
     :host ::ng-deep .re__surface .re-gallery--masonry[data-orientation="vertical"] .re-gallery-item img {
-      height: 100% !important; width: 100% !important; object-fit: cover !important;
+      height: auto !important; aspect-ratio: auto !important; width: 100% !important; object-fit: cover !important;
     }
 
     /* Panorama — full-width images stacked vertically. */
@@ -6795,6 +6841,9 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   ];
 
   @ViewChild('editable', { static: true }) editable!: ElementRef<HTMLDivElement>;
+  /** Re-packs justified galleries when the surface width changes (panels
+   *  open/close), which `window:resize` doesn't catch. */
+  private galleryResizeObserver?: ResizeObserver;
 
   // ControlValueAccessor plumbing
   private onChange: (v: string) => void = () => {};
@@ -6821,11 +6870,26 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     try { document.execCommand('styleWithCSS', false, 'true'); } catch { /* legacy API */ }
     this.setHtml(this.pendingValue);
     this.refreshState();
+
+    // Re-pack width-dependent galleries when the editing surface width
+    // changes (side panels open/close) — `window:resize` misses these.
+    const el = this.editable?.nativeElement;
+    if (el && typeof ResizeObserver !== 'undefined') {
+      let lastW = el.clientWidth;
+      this.galleryResizeObserver = new ResizeObserver(() => {
+        const w = el.clientWidth;
+        if (w === lastW) return;
+        lastW = w;
+        this.layoutAllMasonry();
+      });
+      this.galleryResizeObserver.observe(el);
+    }
   }
 
   ngOnDestroy(): void {
     // Abort any in-flight AI request; other listeners are template-bound.
     this.aiSub?.unsubscribe();
+    this.galleryResizeObserver?.disconnect();
   }
 
   // ─── CVA ────────────────────────────────────────────────────────────────
@@ -6885,6 +6949,77 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   addBtn = signal<{ show: boolean; top: number; left: number; lineLeft: number }>(
     { show: false, top: 0, left: 0, lineLeft: 0 },
   );
+
+  /** Wix-style "insert line": shown on hover near a boundary next to a
+   *  non-editable block, where you otherwise can't click to add a line.
+   *  `before` is the child index to insert the new paragraph before. */
+  insertGap = signal<{ top: number; left: number; width: number; before: number } | null>(null);
+
+  /** Is an element a non-editable block widget (gallery, accordion,
+   *  banner, poll, product, embed, table, image figure…)? */
+  private isBlockObject(el: Element | null | undefined): boolean {
+    return !!el && el.nodeType === 1 &&
+      ((el as HTMLElement).getAttribute('contenteditable') === 'false'
+        || el.tagName === 'TABLE' || el.tagName === 'FIGURE');
+  }
+
+  /** Surface-relative position of the nearest insertable gap to the
+   *  cursor (between/around block widgets), or null. */
+  private updateInsertGap(ev: MouseEvent): void {
+    const editable = this.editable?.nativeElement;
+    const wrap = editable?.parentElement;
+    if (!editable || !wrap) { this.insertGap.set(null); return; }
+    const blocks = Array.from(editable.children) as HTMLElement[];
+    if (!blocks.length) { this.insertGap.set(null); return; }
+
+    const wrapRect = wrap.getBoundingClientRect();
+    const y = ev.clientY;
+    const THRESH = 18;
+
+    // Candidate boundaries: a gap is insertable when one side is a block.
+    const cands: { y: number; before: number }[] = [];
+    for (let i = 0; i < blocks.length; i++) {
+      if (this.isBlockObject(blocks[i]) || this.isBlockObject(blocks[i - 1])) {
+        cands.push({ y: blocks[i].getBoundingClientRect().top, before: i });
+      }
+    }
+    const last = blocks[blocks.length - 1];
+    if (this.isBlockObject(last)) cands.push({ y: last.getBoundingClientRect().bottom, before: blocks.length });
+
+    let best: { y: number; before: number } | null = null;
+    let bestDist = THRESH + 1;
+    for (const c of cands) {
+      const d = Math.abs(y - c.y);
+      if (d <= THRESH && d < bestDist) { best = c; bestDist = d; }
+    }
+
+    if (best) {
+      const r0 = blocks[0].getBoundingClientRect();
+      this.insertGap.set({
+        top: best.y - wrapRect.top,
+        left: r0.left - wrapRect.left,
+        width: r0.width,
+        before: best.before,
+      });
+    } else {
+      this.insertGap.set(null);
+    }
+  }
+
+  /** Click the insert line → drop an empty paragraph at that gap, focus
+   *  it, and surface the "+" so the user can type or add a plugin. */
+  onInsertGapClick(ev: MouseEvent, before: number): void {
+    ev.preventDefault();
+    const editable = this.editable?.nativeElement;
+    if (!editable) return;
+    const p = document.createElement('p');
+    p.appendChild(document.createElement('br'));
+    editable.insertBefore(p, editable.children[before] ?? null);
+    this.placeCaretAtStart(p);
+    this.insertGap.set(null);
+    this.onInput();
+    this.onSelectionMaybeChanged();
+  }
 
   private refreshAddBtn(): void {
     if (!this.addButton()) return;
@@ -7713,6 +7848,7 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   /** Hover hint — show a col/row-resize cursor near a table cell's
    *  right / bottom edge. */
   onSurfaceMouseMove(ev: MouseEvent): void {
+    this.updateInsertGap(ev);
     const cell = (ev.target as HTMLElement | null)?.closest('.re-table td, .re-table th') as HTMLTableCellElement | null;
     if (!cell) { this.clearHoverHighlight(); return; }
     const EDGE = 6;
@@ -11243,6 +11379,14 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       thumbPlacement: (ds['thumbPlacement'] as GalleryConfig['thumbPlacement']) || 'bottom',
       clickExpand: ds['clickExpand'] === 'true',
       allowDownload: ds['allowDownload'] === 'true',
+      autoplay: ds['autoplay'] === 'true',
+      slideDuration: Math.max(1000, Math.min(30000, parseInt(ds['slideDuration'] || '5000', 10) || 5000)),
+      stopOnClick: ds['stopOnClick'] !== 'false',
+      stopOnMouse: ds['stopOnMouse'] === 'true',
+      stopOnMedia: ds['stopOnMedia'] !== 'false',
+      resumeOnClick: ds['resumeOnClick'] === 'true',
+      resumeOnMouse: ds['resumeOnMouse'] === 'true',
+      resumeOnMedia: ds['resumeOnMedia'] !== 'false',
     });
     const imgs = Array.from(f.querySelectorAll('.re-gallery img')) as HTMLImageElement[];
     const list = imgs.map((img, i) => ({
@@ -11279,6 +11423,15 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     f.dataset['thumbPlacement'] = cfg.thumbPlacement;
     f.dataset['clickExpand']   = cfg.clickExpand ? 'true' : 'false';
     f.dataset['allowDownload'] = cfg.allowDownload ? 'true' : 'false';
+    const bool = (b: boolean) => (b ? 'true' : 'false');
+    f.dataset['autoplay']      = bool(cfg.autoplay);
+    f.dataset['slideDuration'] = String(cfg.slideDuration);
+    f.dataset['stopOnClick']   = bool(cfg.stopOnClick);
+    f.dataset['stopOnMouse']   = bool(cfg.stopOnMouse);
+    f.dataset['stopOnMedia']   = bool(cfg.stopOnMedia);
+    f.dataset['resumeOnClick'] = bool(cfg.resumeOnClick);
+    f.dataset['resumeOnMouse'] = bool(cfg.resumeOnMouse);
+    f.dataset['resumeOnMedia'] = bool(cfg.resumeOnMedia);
     const gal = f.querySelector('.re-gallery') as HTMLElement | null;
     if (gal) {
       gal.className = `re-gallery re-gallery--${cfg.layout}`;
@@ -11287,6 +11440,14 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       gal.dataset['orientation'] = cfg.orientation;
       gal.dataset['scrollDir'] = cfg.scrollDir;
       gal.dataset['thumbPlacement'] = cfg.thumbPlacement;
+      gal.dataset['autoplay']      = bool(cfg.autoplay);
+      gal.dataset['slideDuration'] = String(cfg.slideDuration);
+      gal.dataset['stopOnClick']   = bool(cfg.stopOnClick);
+      gal.dataset['stopOnMouse']   = bool(cfg.stopOnMouse);
+      gal.dataset['stopOnMedia']   = bool(cfg.stopOnMedia);
+      gal.dataset['resumeOnClick'] = bool(cfg.resumeOnClick);
+      gal.dataset['resumeOnMouse'] = bool(cfg.resumeOnMouse);
+      gal.dataset['resumeOnMedia'] = bool(cfg.resumeOnMedia);
       gal.style.setProperty('--re-gal-cols', String(cfg.cols));
       gal.style.setProperty('--re-gal-ratio', RichEditorComponent.GALLERY_RATIO[cfg.ratio] || '1 / 1');
       gal.style.setProperty('--re-gal-gap', `${cfg.spacing}px`);
@@ -11318,9 +11479,9 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   private layoutAllMasonry(): void {
     const host = this.editable?.nativeElement;
     if (!host) return;
-    host.querySelectorAll('.re-gallery--masonry').forEach(g => this.layoutGalleryMasonry(g as HTMLElement));
+    host.querySelectorAll('.re-gallery--masonry, .re-gallery--collage[data-orientation="horizontal"]:not([data-scroll-dir="horizontal"])').forEach(g => this.layoutGalleryMasonry(g as HTMLElement));
     host.querySelectorAll('.re-gallery--collage').forEach(g => this.layoutGalleryCollage(g as HTMLElement));
-    host.querySelectorAll('.re-gallery--thumbnails, .re-gallery--slideshow, .re-gallery--slider').forEach(g => this.applyGalleryNav(g as HTMLElement));
+    host.querySelectorAll('.re-gallery--thumbnails, .re-gallery--slideshow, .re-gallery--slider, .re-gallery--collage[data-scroll-dir="horizontal"]').forEach(g => this.applyGalleryNav(g as HTMLElement));
   }
 
   /** Re-pack width-dependent galleries when the viewport changes. */
@@ -11370,7 +11531,8 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     items.forEach(it => it.classList.remove('is-active'));
     const hasStage = gal.classList.contains('re-gallery--thumbnails')
       || gal.classList.contains('re-gallery--slideshow');
-    const hasNav = hasStage || gal.classList.contains('re-gallery--slider');
+    const hasNav = hasStage || gal.classList.contains('re-gallery--slider')
+      || (gal.classList.contains('re-gallery--collage') && gal.dataset['scrollDir'] === 'horizontal');
     if (!hasNav || !items.length) return;
     if (hasStage) {
       // Promote the active image to the stage (Carousel has no single stage).
@@ -11419,10 +11581,17 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
   private layoutGalleryMasonry(gal: HTMLElement | null): void {
     if (!gal) return;
     const isMasonry = gal.classList.contains('re-gallery--masonry');
+    // Collage with horizontal image-orientation + vertical scroll uses the
+    // same justified-rows packing as masonry-horizontal.
+    const isCollageJustified = gal.classList.contains('re-gallery--collage')
+      && gal.dataset['orientation'] === 'horizontal'
+      && gal.dataset['scrollDir'] !== 'horizontal';
+    const shouldJustify =
+      (isMasonry && gal.dataset['orientation'] !== 'vertical') || isCollageJustified;
     const items = Array.from(gal.querySelectorAll(':scope > .re-gallery-item')) as HTMLElement[];
-    // Switching away from masonry (or to vertical) — clear any inline
-    // sizing we previously stamped so the other layouts' CSS wins.
-    if (!isMasonry || gal.dataset['orientation'] === 'vertical') {
+    // Not a justified layout — clear any inline sizing we previously
+    // stamped so the other layouts' CSS wins.
+    if (!shouldJustify) {
       items.forEach(it => { it.style.removeProperty('width'); it.style.removeProperty('height'); it.style.removeProperty('flex'); });
       return;
     }
@@ -11458,33 +11627,35 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     });
     if (pending) { /* still size with current (fallback) aspects below */ }
 
-    // Greedy row packing: add items until the row (at targetH) would
-    // overflow the container, then scale that row to fit exactly.
+    // Justified row packing (Wix-style): start a NEW row before adding an
+    // item that would overflow the container at the target height, then
+    // scale every row to fill the width exactly (heights vary by aspect).
     const rows: number[][] = [];
     let row: number[] = [];
     let aSum = 0;
     for (let i = 0; i < items.length; i++) {
+      const wouldW = (aSum + aspects[i]) * targetH + gap * row.length;
+      if (row.length && wouldW > containerW) { rows.push(row); row = []; aSum = 0; }
       row.push(i);
       aSum += aspects[i];
-      const rowW = aSum * targetH + gap * (row.length - 1);
-      if (rowW >= containerW) { rows.push(row); row = []; aSum = 0; }
     }
     if (row.length) rows.push(row);
 
     rows.forEach((r) => {
       const aspectSum = r.reduce((s, idx) => s + aspects[idx], 0) || 1;
       const avail = containerW - gap * (r.length - 1);
-      // A row that already fills the width is justified (height derived
-      // so it fits exactly). A trailing row that doesn't fill the width
-      // keeps the target row height instead of stretching — so the
-      // Row-height control directly sizes those rows.
-      const fillsWidth = aspectSum * targetH >= avail;
-      const h = fillsWidth ? avail / aspectSum : targetH;
-      r.forEach(idx => {
+      const h = avail / aspectSum; // justify: stretch the row to fill the width
+      let used = 0;
+      r.forEach((idx, j) => {
         const it = items[idx];
-        it.style.flex = '0 0 auto';
-        it.style.height = `${Math.round(h)}px`;
-        it.style.width = `${Math.floor(aspects[idx] * h)}px`;
+        let w = Math.floor(aspects[idx] * h);
+        if (j === r.length - 1) w = Math.max(1, Math.round(avail - used)); // absorb rounding
+        used += w;
+        // !important so these beat the layout CSS's own !important rules
+        // (the collage base sizes items width:100% !important).
+        it.style.setProperty('flex', '0 0 auto', 'important');
+        it.style.setProperty('height', `${Math.round(h)}px`, 'important');
+        it.style.setProperty('width', `${w}px`, 'important');
       });
     });
   }
@@ -11742,6 +11913,10 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       // add empty paragraphs around them so the user can reach the
       // caret position immediately before/after each banner.
       this.ensureBannerBookends();
+      // Add empty editable lines around / between ALL non-editable blocks
+      // (galleries, accordions, polls, product cards, embeds, tables…) so
+      // the caret can always land between adjacent widgets to insert.
+      this.ensureTrailingBlock();
       // Justified masonry galleries need their rows re-packed to the
       // current width once the loaded markup is in the DOM.
       queueMicrotask(() => this.layoutAllMasonry());
@@ -11767,14 +11942,41 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  the caret + line placeholder land *after* the element instead of
    *  overlapping it — a table can't be the very last node or there's
    *  nowhere to type below it. Idempotent: only appends when needed. */
+  /** Guarantee an editable paragraph at the start, BETWEEN, and after
+   *  non-editable block widgets (galleries, accordions, banners, polls,
+   *  product cards, embeds, tables…). Without this, two such blocks sit
+   *  adjacent with no caret position between them — so you can't click in
+   *  to add anything. The empty line also surfaces the floating "+" insert
+   *  affordance there. */
   private ensureTrailingBlock(): void {
     const editable = this.editable?.nativeElement;
     if (!editable) return;
-    const last = editable.lastElementChild;
-    if (last && (last.tagName === 'TABLE' || last.tagName === 'FIGURE')) {
+
+    const isBlock = (el: Element | null): boolean =>
+      !!el && el.nodeType === 1 &&
+      (el.getAttribute('contenteditable') === 'false' || el.tagName === 'TABLE');
+
+    const para = (): HTMLParagraphElement => {
       const p = document.createElement('p');
       p.appendChild(document.createElement('br'));
-      editable.appendChild(p);
+      return p;
+    };
+
+    // Open with an editable line if the content starts with a block.
+    if (isBlock(editable.firstElementChild)) {
+      editable.insertBefore(para(), editable.firstElementChild);
+    }
+    // Drop an editable line between any two adjacent blocks.
+    let node: Element | null = editable.firstElementChild;
+    while (node) {
+      if (isBlock(node) && isBlock(node.nextElementSibling)) {
+        editable.insertBefore(para(), node.nextElementSibling);
+      }
+      node = node.nextElementSibling;
+    }
+    // Trailing line after a final block.
+    if (isBlock(editable.lastElementChild)) {
+      editable.appendChild(para());
     }
   }
   onBlur(): void { this.onTouched(); this.emit(); }
