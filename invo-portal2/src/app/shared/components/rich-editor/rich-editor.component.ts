@@ -574,6 +574,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
         (mouseleave)="insertGap.set(null)"
         (click)="onSurfaceClick($event)"
         (dblclick)="onSurfaceDblClick($event)"
+        (contextmenu)="onSurfaceContextMenu($event)"
       ></div>
 
       <!-- "/" slash menu — insertable elements at the caret. Items come
@@ -1120,6 +1121,21 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
             (reorder)="onGalleryReorder($event)"
             (headerPointerDown)="startToolbarDrag($event, 'gallery')"
             (close)="galleryPanelOpen.set(false)"/>
+        </div>
+      }
+
+      <!-- Right-click actions menu, positioned at the cursor. -->
+      @if (ctxMenu(); as cm) {
+        <div class="re__ctxBackdrop" (mousedown)="ctxMenu.set(null)" (contextmenu)="$event.preventDefault(); ctxMenu.set(null)"></div>
+        <div class="re__ctxMenu" [style.top.px]="cm.y" [style.left.px]="cm.x" (mousedown)="$event.stopPropagation()">
+          <button type="button" class="re__figTbItem" (click)="runCtxCmd('cut')">Cut <span class="re__figTbKbd">Ctrl+X</span></button>
+          <button type="button" class="re__figTbItem" (click)="runCtxCmd('copy')">Copy <span class="re__figTbKbd">Ctrl+C</span></button>
+          <button type="button" class="re__figTbItem" (click)="runCtxCmd('duplicate')">Duplicate <span class="re__figTbKbd">Ctrl+Shift+D</span></button>
+          <div class="re__figTbDivider"></div>
+          <button type="button" class="re__figTbItem" (click)="runCtxCmd('before')">Add empty paragraph before</button>
+          <button type="button" class="re__figTbItem" (click)="runCtxCmd('after')">Add empty paragraph after</button>
+          <div class="re__figTbDivider"></div>
+          <button type="button" class="re__figTbItem is-danger" (click)="runCtxCmd('delete')">Delete <span class="re__figTbKbd">Del</span></button>
         </div>
       }
 
@@ -4369,6 +4385,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__tbDrag:active { cursor: grabbing; }
     .re__figTbSep { width: 1px; height: 18px; background: #e2e8f0; margin: 0 4px; }
     .re__figTbDd { position: relative; display: inline-flex; }
+    /* Right-click actions menu (cursor-positioned). */
+    .re__ctxBackdrop { position: fixed; inset: 0; z-index: 1000; }
+    .re__ctxMenu {
+      position: fixed; z-index: 1001; min-width: 220px; padding: 6px;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(15,23,42,.18);
+      display: flex; flex-direction: column; gap: 2px;
+    }
     .re__figTbMenu {
       position: absolute;
       /* Open upward — the toolbar sits below the figure and often
@@ -6312,15 +6336,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       align-items: stretch !important;
       gap: var(--re-gal-gap, 6px) !important;
       width: 100% !important;
-      /* aspect-ratio is the DEFAULT height; flex:1 + min-height:0 let the
-         gallery fill the figure so dragging the n/s handle (which sets the
-         figure height) actually resizes the columns instead of being
-         ignored by a locked aspect-ratio. */
-      aspect-ratio: 3 / 2 !important;
-      flex: 1 1 auto !important; min-height: 0 !important;
+      /* Fixed-width, full-height columns scrolled horizontally (Wix-style);
+         a static clipped preview in the editor. */
+      height: var(--re-gal-row-h, 420px) !important;
+      overflow: hidden !important;
     }
     :host ::ng-deep .re__surface .re-gallery--columns .re-gallery-item {
-      flex: 1 1 0 !important; min-width: 0 !important; height: auto !important; margin: 0 !important;
+      flex: 0 0 var(--re-gal-col-w, 200px) !important; min-width: 0 !important;
+      height: 100% !important; margin: 0 !important;
     }
     :host ::ng-deep .re__surface .re-gallery--columns .re-gallery-item img {
       display: block !important; width: 100% !important; height: 100% !important; object-fit: cover !important;
@@ -6459,11 +6482,16 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       height: auto !important; aspect-ratio: auto !important; width: 100% !important; object-fit: cover !important;
     }
 
-    /* Panorama — full-width images stacked vertically. */
+    /* Panorama — full-width images stacked vertically (Wix-style). */
     :host ::ng-deep .re__surface .re-gallery--panorama {
       display: flex !important; flex-direction: column !important; gap: var(--re-gal-gap, 6px) !important;
     }
-    :host ::ng-deep .re__surface .re-gallery--panorama .re-gallery-item img { height: auto !important; }
+    :host ::ng-deep .re__surface .re-gallery--panorama .re-gallery-item {
+      width: 100% !important; height: auto !important; aspect-ratio: auto !important; flex: 0 0 auto !important;
+    }
+    :host ::ng-deep .re__surface .re-gallery--panorama .re-gallery-item img {
+      width: 100% !important; height: auto !important; aspect-ratio: auto !important; object-fit: cover !important;
+    }
 
     /* Carousel (internal id "slider") — a horizontal row of tiles with
        prev/next arrows. A static preview in the editor: the row is
@@ -8964,6 +8992,31 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.openFigPanel('design');
   }
 
+  /** Right-click on an embed/banner element → select it and open the same
+   *  actions menu as the toolbar's 3-dots (Cut / Copy / Duplicate / Add
+   *  paragraph / Delete). On plain text it falls through to the native menu. */
+  onSurfaceContextMenu(ev: MouseEvent): void {
+    const target = ev.target as HTMLElement | null;
+    const selectable = this.closestSelectable(target);
+    if (!selectable) return;            // plain text / empty → native browser menu
+    ev.preventDefault();
+    this.selectFigure(selectable);
+    this.clearColumnSelection();
+    this.figMenu.set(null);
+    // Open the actions menu AT the cursor (clamped into the viewport).
+    const x = Math.min(ev.clientX, window.innerWidth - 230);
+    const y = Math.min(ev.clientY, window.innerHeight - 280);
+    this.ctxMenu.set({ x: Math.max(8, x), y: Math.max(8, y) });
+  }
+
+  /** Right-click actions menu position (viewport coords), or null when closed. */
+  ctxMenu = signal<{ x: number; y: number } | null>(null);
+  /** Run a 3-dots action from the right-click menu, then close it. */
+  runCtxCmd(cmd: 'cut' | 'copy' | 'duplicate' | 'before' | 'after' | 'delete'): void {
+    this.ctxMenu.set(null);
+    this.figureCmd(cmd);
+  }
+
   /** Closest selectable banner-like element from `target` — either a
    *  legacy `<figure class="re-embed-figure">` or a new
    *  `<section class="re-banner">`. Returned as `HTMLElement | null`
@@ -9503,6 +9556,25 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     this.figureWrap.set(figure.classList.contains('re-wrap-text'));
     this.figMenu.set(null);
     this.refreshFigureToolbar();
+
+    // If the gallery settings panel is open and the user clicked a DIFFERENT
+    // figure, retarget the panel to the newly-selected gallery (re-seed its
+    // config + reposition) — or close it when the new selection isn't a
+    // gallery. Otherwise the panel keeps editing with the old gallery's data.
+    if (prev !== figure && this.galleryPanelOpen()) {
+      if (this.isGalleryFigure()) {
+        this.seedGalleryState();
+        const r = figure.getBoundingClientRect();
+        const PANEL_W = 320;
+        let left = r.left - PANEL_W - 12;
+        if (left < 12) left = Math.min(r.right + 12, window.innerWidth - PANEL_W - 12);
+        if (left < 12) left = 12;
+        this.galleryPanelPos.set({ top: Math.max(12, Math.min(r.top, window.innerHeight - 360)), left });
+        this.galleryPanelOffset.set({ x: 0, y: 0 });
+      } else {
+        this.galleryPanelOpen.set(false);
+      }
+    }
   }
 
   private clearFigureSelection(): void {

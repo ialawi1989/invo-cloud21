@@ -144,13 +144,13 @@ interface LightboxState { items: LightboxItem[]; index: number; }
     /* :not(.re-gal-track) so the Swiper track (which also directly holds
        .re-gallery-item tiles) doesn't inherit the gallery grid + 32px margin
        — that margin shifted the track down inside the clipped viewport. */
-    .prose ::ng-deep div:has(> .re-gallery-item):not(.re-gal-track):not(.re-thumb-track):not(.re-gallery--thumbnails) {
+    .prose ::ng-deep div:has(> .re-gallery-item):not(.re-gal-track):not(.re-thumb-track):not(.re-gallery--thumbnails):not(.re-gallery--columns):not(.re-gallery--panorama) {
       display: grid;
       grid-template-columns: repeat(var(--re-gal-cols, 3), minmax(0, 1fr));
       gap: var(--re-gal-gap, 8px); margin: 32px 0;
     }
     /* Galleries with no configured column count fall back to auto-fit. */
-    .prose ::ng-deep div:has(> .re-gallery-item):not([style*="--re-gal-cols"]):not(.re-gal-track):not(.re-thumb-track):not(.re-gallery--thumbnails) {
+    .prose ::ng-deep div:has(> .re-gallery-item):not([style*="--re-gal-cols"]):not(.re-gal-track):not(.re-thumb-track):not(.re-gallery--thumbnails):not(.re-gallery--columns):not(.re-gallery--panorama) {
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
     .prose ::ng-deep .re-gallery-item { margin: 0; overflow: hidden; border-radius: 10px; }
@@ -284,15 +284,16 @@ interface LightboxState { items: LightboxItem[]; index: number; }
     .prose ::ng-deep figure.re-embed-figure:not([data-click-expand="false"]):hover::after { opacity: 1; }
     /* Thumbnails supplies its own enlarge button ON the stage — hide the
        figure-level glyph (it sits at the figure's top-right, above the strip). */
-    .prose ::ng-deep figure.re-embed-figure:has(.re-gallery--thumbnails)::after { content: none !important; }
-    .prose ::ng-deep .re-gallery--thumbnails .re-thumb-expand {
+    .prose ::ng-deep figure.re-embed-figure:has(.re-gallery--thumbnails)::after,
+    .prose ::ng-deep figure.re-embed-figure:has(.re-gallery--slideshow)::after { content: none !important; }
+    .prose ::ng-deep .re-thumb-expand {
       position: absolute; top: 12px; inset-inline-end: 12px; z-index: 4;
       width: 32px; height: 32px; border-radius: 50%; border: 0; padding: 0;
       background: rgba(255, 255, 255, .92); box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
       cursor: pointer; display: grid; place-items: center;
       opacity: 0; transition: opacity .15s ease;
     }
-    .prose ::ng-deep .re-gallery--thumbnails .re-thumb-stage:hover .re-thumb-expand { opacity: 1; }
+    .prose ::ng-deep .re-thumb-stage:hover .re-thumb-expand { opacity: 1; }
     @media (max-width: 768px) {
       .prose ::ng-deep .re-size-compact,
       .prose ::ng-deep .re-size-extended { width: 100%; max-width: 100%; margin-inline: 0; }
@@ -312,17 +313,33 @@ interface LightboxState { items: LightboxItem[]; index: number; }
     .prose ::ng-deep .re-gallery[data-crop="fit"] .re-gallery-item img { object-fit: contain; }
 
     /* Masonry / Columns — multi-column, natural heights. */
-    .prose ::ng-deep .re-gallery.re-gallery--masonry,
-    .prose ::ng-deep .re-gallery.re-gallery--columns {
+    .prose ::ng-deep .re-gallery.re-gallery--masonry {
       display: block; column-count: var(--re-gal-cols, 3); column-gap: var(--re-gal-gap, 8px);
     }
-    .prose ::ng-deep .re-gallery.re-gallery--masonry .re-gallery-item,
-    .prose ::ng-deep .re-gallery.re-gallery--columns .re-gallery-item {
+    .prose ::ng-deep .re-gallery.re-gallery--masonry .re-gallery-item {
       break-inside: avoid; margin: 0 0 var(--re-gal-gap, 8px);
     }
-    .prose ::ng-deep .re-gallery.re-gallery--masonry .re-gallery-item img,
-    .prose ::ng-deep .re-gallery.re-gallery--columns .re-gallery-item img {
+    .prose ::ng-deep .re-gallery.re-gallery--masonry .re-gallery-item img {
       height: auto; aspect-ratio: auto;
+    }
+
+    /* Columns — fixed-width, full-height columns scrolled horizontally
+       (Wix-style); a swiper strip like collage-horizontal but each tile is a
+       uniform Column-width (cover-cropped), built by buildSwiper. */
+    .prose ::ng-deep .re-gallery.re-gallery--columns {
+      display: flex; gap: var(--re-gal-gap, 8px); height: var(--re-gal-row-h, 420px);
+      overflow-x: auto; column-count: initial;
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .prose ::ng-deep .re-gallery.re-gallery--columns::-webkit-scrollbar { display: none; }
+    .prose ::ng-deep .re-gallery--columns .re-gallery-item {
+      flex: 0 0 var(--re-gal-col-w, 200px); height: 100%; margin: 0; border-radius: 10px; overflow: hidden;
+    }
+    .prose ::ng-deep .re-gallery--columns .re-gallery-item img {
+      width: 100%; height: 100%; object-fit: cover; aspect-ratio: auto; border-radius: 10px;
+    }
+    .prose ::ng-deep .re-gal-swiper.re-gallery--columns .re-gallery-item img {
+      width: 100% !important; height: 100% !important; object-fit: cover !important;
     }
 
     /* Collage — Wix-style; the mode depends on scroll direction + image
@@ -364,23 +381,31 @@ interface LightboxState { items: LightboxItem[]; index: number; }
       width: 100%; height: 100%; object-fit: cover; aspect-ratio: auto;
     }
 
-    /* Panorama / Slider / Carousel — horizontal scroll strip. */
-    .prose ::ng-deep .re-gallery.re-gallery--panorama,
+    /* Slider / Carousel — horizontal scroll strip. */
     .prose ::ng-deep .re-gallery.re-gallery--slider,
     .prose ::ng-deep .re-gallery.re-gallery--carousel {
       display: flex; gap: var(--re-gal-gap, 8px);
       overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch; padding-bottom: 6px;
     }
-    .prose ::ng-deep .re-gallery.re-gallery--panorama .re-gallery-item,
     .prose ::ng-deep .re-gallery.re-gallery--slider .re-gallery-item,
     .prose ::ng-deep .re-gallery.re-gallery--carousel .re-gallery-item {
       flex: 0 0 auto; width: clamp(220px, 46%, 460px); scroll-snap-align: start;
     }
-    .prose ::ng-deep .re-gallery.re-gallery--panorama .re-gallery-item img,
     .prose ::ng-deep .re-gallery.re-gallery--slider .re-gallery-item img,
     .prose ::ng-deep .re-gallery.re-gallery--carousel .re-gallery-item img {
       aspect-ratio: var(--re-gal-ratio, 4 / 3);
+    }
+
+    /* Panorama — full-width images stacked vertically (Wix-style: each image
+       spans the full container width at its natural height). */
+    .prose ::ng-deep .re-gallery.re-gallery--panorama {
+      display: flex !important; flex-direction: column; gap: var(--re-gal-gap, 8px);
+      grid-template-columns: none !important; overflow: visible;
+    }
+    .prose ::ng-deep .re-gallery--panorama .re-gallery-item { flex: 0 0 auto; width: 100%; border-radius: 10px; overflow: hidden; }
+    .prose ::ng-deep .re-gallery--panorama .re-gallery-item img {
+      width: 100%; height: auto; object-fit: cover; aspect-ratio: auto; border-radius: 10px; display: block;
     }
 
     /* Nav arrows injected on scroll-based galleries. */
@@ -419,19 +444,16 @@ interface LightboxState { items: LightboxItem[]; index: number; }
     /* Carousel galleries — snap to tiles, hide the scrollbar. */
     .prose ::ng-deep .re-gallery--slideshow,
     .prose ::ng-deep .re-gallery--carousel,
-    .prose ::ng-deep .re-gallery--panorama,
     .prose ::ng-deep .re-gallery--slider,
     .prose ::ng-deep .re-gallery--collage[data-scroll-dir="horizontal"] {
       scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none;
     }
     .prose ::ng-deep .re-gallery--slideshow::-webkit-scrollbar,
     .prose ::ng-deep .re-gallery--carousel::-webkit-scrollbar,
-    .prose ::ng-deep .re-gallery--panorama::-webkit-scrollbar,
     .prose ::ng-deep .re-gallery--slider::-webkit-scrollbar,
     .prose ::ng-deep .re-gallery--collage[data-scroll-dir="horizontal"]::-webkit-scrollbar { display: none; }
     .prose ::ng-deep .re-gallery--slideshow .re-gallery-item,
     .prose ::ng-deep .re-gallery--carousel .re-gallery-item,
-    .prose ::ng-deep .re-gallery--panorama .re-gallery-item,
     .prose ::ng-deep .re-gallery--slider .re-gallery-item,
     .prose ::ng-deep .re-gallery--collage[data-scroll-dir="horizontal"] .re-gallery-item { scroll-snap-align: start; }
 
@@ -456,18 +478,21 @@ interface LightboxState { items: LightboxItem[]; index: number; }
       display: flex !important; flex-wrap: wrap !important;
       grid-template-columns: none !important; gap: var(--re-gal-gap, 8px); position: relative;
     }
-    /* The big stage — a one-image-per-view DRAGGABLE slider (swipe to change). */
-    .prose ::ng-deep .re-gallery--thumbnails .re-thumb-stage {
+    /* Slideshow — just the big stage (no thumb strip). */
+    .prose ::ng-deep .re-gallery.re-gallery--slideshow { display: block !important; position: relative; }
+    /* The big stage — a one-image-per-view DRAGGABLE slider (swipe to change).
+       Shared by Thumbnails + Slideshow (the .re-thumb-* classes are unique). */
+    .prose ::ng-deep .re-thumb-stage {
       flex: 0 0 100%; order: 1; position: relative; aspect-ratio: 16 / 9; min-width: 0;
       border-radius: 12px; overflow: hidden; cursor: grab;
       user-select: none; -webkit-user-select: none; touch-action: pan-y;
     }
-    .prose ::ng-deep .re-gallery--thumbnails .re-thumb-stage.re-thumb-dragging { cursor: grabbing; }
-    .prose ::ng-deep .re-gallery--thumbnails .re-thumb-stage-track {
+    .prose ::ng-deep .re-thumb-stage.re-thumb-dragging { cursor: grabbing; }
+    .prose ::ng-deep .re-thumb-stage-track {
       display: flex; flex-wrap: nowrap; width: 100%; height: 100%; will-change: transform;
     }
-    .prose ::ng-deep .re-gallery--thumbnails .re-thumb-slide { flex: 0 0 100%; height: 100%; }
-    .prose ::ng-deep .re-gallery--thumbnails .re-thumb-slide img {
+    .prose ::ng-deep .re-thumb-slide { flex: 0 0 100%; height: 100%; }
+    .prose ::ng-deep .re-thumb-slide img {
       width: 100%; height: 100%; object-fit: cover; display: block;
     }
     /* Strip — clickable thumbs in a transform track, slid by prev/next arrows
@@ -533,15 +558,15 @@ interface LightboxState { items: LightboxItem[]; index: number; }
     .prose ::ng-deep .re-gallery--thumbnails .re-thumb-strip-wrap--v .re-thumb-strip { position: absolute; inset: 0; overflow: hidden; touch-action: pan-x; }
     .prose ::ng-deep .re-gallery--thumbnails .re-thumb-strip-wrap--v .re-thumb-track { flex-direction: column; width: auto; }
     /* Stage nav arrows (injected by buildThumbnails, positioned over the stage). */
-    .prose ::ng-deep .re-gallery--thumbnails .re-thumb-nav {
+    .prose ::ng-deep .re-thumb-nav {
       position: absolute; top: 50%; z-index: 3; width: 38px; height: 38px; border: 0; border-radius: 999px;
       background: rgba(255, 255, 255, .92); box-shadow: 0 1px 6px rgba(0, 0, 0, .22);
       cursor: pointer; display: grid; place-items: center; transform: translateY(-50%);
       opacity: .9; transition: opacity .15s ease;
     }
-    .prose ::ng-deep .re-gallery--thumbnails .re-thumb-nav:hover { opacity: 1; }
-    .prose ::ng-deep .re-gallery--thumbnails .re-thumb-nav--prev { left: 12px; }
-    .prose ::ng-deep .re-gallery--thumbnails .re-thumb-nav--next { right: 12px; }
+    .prose ::ng-deep .re-thumb-nav:hover { opacity: 1; }
+    .prose ::ng-deep .re-thumb-nav--prev { left: 12px; }
+    .prose ::ng-deep .re-thumb-nav--next { right: 12px; }
 
     /* ── Divider variants (data-divider-*) ───────────────────────── */
     .prose ::ng-deep hr[data-divider-size="compact"]  { width: 30%; }
@@ -696,7 +721,7 @@ export class PostContentComponent implements OnChanges, AfterViewChecked, OnDest
     // Horizontal layouts → Swiper-style transform slider (buildSwiper).
     // Bail-safe: it measures the native tile sizes and only upgrades when
     // they're known, retrying on image load — so it can't break the layout.
-    const scrollSel = '.re-gallery--slideshow, .re-gallery--carousel, .re-gallery--panorama, .re-gallery--slider, .re-gallery--collage[data-scroll-dir="horizontal"]';
+    const scrollSel = '.re-gallery--carousel, .re-gallery--slider, .re-gallery--columns, .re-gallery--collage[data-scroll-dir="horizontal"]';
     root.querySelectorAll<HTMLElement>(scrollSel).forEach(g => {
       if (g.dataset['swiper'] === '1') return;
       const tryBuild = () => this.buildSwiper(g);
@@ -709,7 +734,9 @@ export class PostContentComponent implements OnChanges, AfterViewChecked, OnDest
     });
 
     // Thumbnails — interactive stage + clickable thumbnail strip.
-    root.querySelectorAll<HTMLElement>('.re-gallery--thumbnails').forEach(g => this.buildThumbnails(g));
+    // Thumbnails (stage + thumb strip) and Slideshow (stage only) both use
+    // the big-image stage slider.
+    root.querySelectorAll<HTMLElement>('.re-gallery--thumbnails, .re-gallery--slideshow').forEach(g => this.buildThumbnails(g));
   }
 
   /** Wix-style justified masonry: pack images into rows at the target row
@@ -731,9 +758,12 @@ export class PostContentComponent implements OnChanges, AfterViewChecked, OnDest
     const items = (Array.from(g.children) as HTMLElement[]).filter(c => c.classList?.contains('re-gallery-item'));
     if (!items.length) return;
 
-    // Wait until every image is fully loaded so natural sizes are known.
     const imgEls = items.map(it => it.querySelector('img') as HTMLImageElement | null);
-    if (imgEls.some(im => !im || !im.complete || !im.naturalWidth)) return;
+    // Columns use a FIXED column width, so they don't need natural image sizes
+    // and can build immediately; every other strip sizes each tile by its
+    // image aspect, so it must wait until the images have loaded.
+    const isColumns = g.classList.contains('re-gallery--columns');
+    if (!isColumns && imgEls.some(im => !im || !im.complete || !im.naturalWidth)) return;
 
     // Size from STABLE inputs so a cold refresh and an HMR rebuild agree:
     // the row height from the gallery's own CSS-driven box, and each image's
@@ -741,7 +771,8 @@ export class PostContentComponent implements OnChanges, AfterViewChecked, OnDest
     // item rects mid-load was racy → tiles came out huge on a cold refresh.
     const tileH = Math.round(g.getBoundingClientRect().height);
     if (tileH < 8) return;   // not laid out yet → retry later
-    const widths = imgEls.map(im => Math.round((im!.naturalWidth / im!.naturalHeight) * tileH));
+    const colW = Math.round(parseFloat(getComputedStyle(g).getPropertyValue('--re-gal-col-w')) || 200);
+    const widths = imgEls.map(im => isColumns ? colW : Math.round(((im?.naturalWidth || 1) / (im?.naturalHeight || 1)) * tileH));
     if (widths.some(w => w < 4)) return;
 
     g.dataset['swiper'] = '1';
@@ -900,26 +931,35 @@ export class PostContentComponent implements OnChanges, AfterViewChecked, OnDest
     g.insertBefore(stage, items[0]);
 
     // ── Thumb strip: clickable thumbs in a transform track, slid by its own
-    //    prev/next arrows (no scrollbar, no drag). Vertical for left/right. ──
-    const vertical = g.dataset['thumbPlacement'] === 'left' || g.dataset['thumbPlacement'] === 'right';
+    //    prev/next arrows (no scrollbar). Vertical for left/right. SLIDESHOW
+    //    has no strip — just the big stage. ──
+    const isSlideshow = g.classList.contains('re-gallery--slideshow');
+    let scroller: { reveal: (el: HTMLElement) => void } | null = null;
     const stripWrap = this.doc.createElement('div');
-    stripWrap.className = 're-thumb-strip-wrap' + (vertical ? ' re-thumb-strip-wrap--v' : '');
-    const strip = this.doc.createElement('div');
-    strip.className = 're-thumb-strip' + (vertical ? ' re-thumb-strip--v' : '');
-    const track = this.doc.createElement('div');
-    track.className = 're-thumb-track';
-    items.forEach(it => { it.querySelectorAll('img').forEach(im => im.setAttribute('draggable', 'false')); track.appendChild(it); });
-    strip.appendChild(track);
-    stripWrap.appendChild(strip);
-    g.appendChild(stripWrap);
-    const scroller = this.attachThumbStripScroller(strip, track, stripWrap, vertical);
+    if (!isSlideshow) {
+      const vertical = g.dataset['thumbPlacement'] === 'left' || g.dataset['thumbPlacement'] === 'right';
+      stripWrap.className = 're-thumb-strip-wrap' + (vertical ? ' re-thumb-strip-wrap--v' : '');
+      const strip = this.doc.createElement('div');
+      strip.className = 're-thumb-strip' + (vertical ? ' re-thumb-strip--v' : '');
+      const track = this.doc.createElement('div');
+      track.className = 're-thumb-track';
+      items.forEach(it => { it.querySelectorAll('img').forEach(im => im.setAttribute('draggable', 'false')); track.appendChild(it); });
+      strip.appendChild(track);
+      stripWrap.appendChild(strip);
+      g.appendChild(stripWrap);
+      scroller = this.attachThumbStripScroller(strip, track, stripWrap, vertical);
+    } else {
+      // Slideshow: the original tiles aren't shown (the stage slides are);
+      // drop them so they don't render under the stage.
+      items.forEach(it => it.remove());
+    }
 
     const W = () => stage.clientWidth || 1;
     const drawStage = (anim: boolean, px: number) => {
       stageTrack.style.transition = anim ? 'transform .38s cubic-bezier(.22, .61, .36, 1)' : 'none';
       stageTrack.style.transform = `translate3d(${Math.round(px)}px, 0, 0)`;
     };
-    const revealThumb = () => scroller.reveal(items[active]);
+    const revealThumb = () => scroller?.reveal(items[active]);
     const goTo = (i: number, anim = true) => {
       active = Math.max(0, Math.min(N - 1, i));
       drawStage(anim, -active * W());

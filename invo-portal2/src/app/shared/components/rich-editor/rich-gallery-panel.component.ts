@@ -352,8 +352,13 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
                 <ng-container [ngTemplateOutlet]="tplThumbResize"></ng-container>
                 <ng-container [ngTemplateOutlet]="tplImageRatio"></ng-container>
               }
+              @case ('columns') {
+                <ng-container [ngTemplateOutlet]="tplColumnWidth"></ng-container>
+                <ng-container [ngTemplateOutlet]="tplRowHeight"></ng-container>
+                <ng-container [ngTemplateOutlet]="tplSpacing"></ng-container>
+              }
               @default {
-                <!-- panorama / columns -->
+                <!-- panorama -->
                 <ng-container [ngTemplateOutlet]="tplSpacing"></ng-container>
               }
             }
@@ -377,7 +382,7 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
               <span class="re-gal-toggle" [class.is-on]="cfg().allowDownload" (mousedown)="$event.preventDefault(); setAllowDownload(!cfg().allowDownload)"></span>
             </div>
 
-            @if (cfg().layout === 'thumbnails') {
+            @if (cfg().layout === 'thumbnails' || cfg().layout === 'slideshow') {
               <div class="re-gal-autoHead">Autoplay</div>
               <div class="re-gal-toggleRow">
                 <span class="re-gal-labelGroup">Autoplay
