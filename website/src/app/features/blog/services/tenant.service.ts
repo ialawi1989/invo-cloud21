@@ -66,11 +66,14 @@ export class TenantService {
     // 3. Local/dev — no derivable slug from an IP/localhost host. Take an
     //    explicit hint (?tenant= → remembered), else the env dev fallback.
     if (this.isLocal(host)) {
-      const q = new URLSearchParams(window.location.search).get('tenant') ?? '';
+      // Tenant slugs are lowercase (subdomain-style); a shared preview link
+      // may carry any case (e.g. ?tenant=SHussain) so normalise it — otherwise
+      // it won't match the backend slug on a PC with no remembered tenant.
+      const q = (new URLSearchParams(window.location.search).get('tenant') ?? '').trim().toLowerCase();
       if (q) { try { localStorage.setItem('blogTenant', q); } catch { /* ignore */ } this._slug = q; return; }
       let stored = '';
-      try { stored = localStorage.getItem('blogTenant') ?? ''; } catch { /* ignore */ }
-      this._slug = stored || (environment as any).devTenant || '';
+      try { stored = (localStorage.getItem('blogTenant') ?? '').toLowerCase(); } catch { /* ignore */ }
+      this._slug = stored || ((environment as any).devTenant || '').toLowerCase();
       if (!this._slug) {
         console.warn('[TenantService] Local dev: no tenant set. Append ?tenant=<slug> to the URL once (remembered), or set environment.devTenant.');
       }

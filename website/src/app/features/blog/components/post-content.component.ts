@@ -8,6 +8,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { linkifyHashtags } from '../utils/hashtag-linker';
 import { neutralizeEditable } from '../utils/neutralize-editable';
 import { normalizeGalleryHtml } from '../utils/normalize-gallery';
+import { normalizeLinkHrefs } from '../utils/normalize-links';
 
 interface LightboxItem { src: string; alt: string; download: boolean; }
 interface LightboxState { items: LightboxItem[]; index: number; }
@@ -673,7 +674,7 @@ export class PostContentComponent implements OnChanges, AfterViewChecked, OnDest
     // and strip the editor's baked-in gallery tile sizing so the site's
     // responsive layout CSS applies.
     this.safe = this.sanitizer.bypassSecurityTrustHtml(
-      normalizeGalleryHtml(neutralizeEditable(linked)),
+      normalizeLinkHrefs(normalizeGalleryHtml(neutralizeEditable(linked))),
     );
   }
 

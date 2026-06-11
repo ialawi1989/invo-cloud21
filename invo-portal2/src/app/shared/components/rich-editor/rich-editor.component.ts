@@ -6912,12 +6912,16 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       });
       this.galleryResizeObserver.observe(el);
     }
+
+    // Keep the selected figure's toolbar clamped in view as the page scrolls.
+    window.addEventListener('scroll', this.onWindowScrollForToolbar, { capture: true, passive: true });
   }
 
   ngOnDestroy(): void {
     // Abort any in-flight AI request; other listeners are template-bound.
     this.aiSub?.unsubscribe();
     this.galleryResizeObserver?.disconnect();
+    window.removeEventListener('scroll', this.onWindowScrollForToolbar, { capture: true } as EventListenerOptions);
   }
 
   // ─── CVA ────────────────────────────────────────────────────────────────
@@ -7601,11 +7605,22 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
    *  those signals) apply it unchanged. */
   private applyLinkPanelValue(v: RichLinkValue): void {
     this.linkKind.set(v.kind);
-    this.linkUrl.set(v.url);
+    this.linkUrl.set(v.kind === 'web' ? RichEditorComponent.normalizeWebUrl(v.url) : v.url);
     this.linkNewTab.set(v.newTab);
     this.linkNoReferrer.set(v.noReferrer);
     this.linkNoFollow.set(v.noFollow);
     this.linkSponsored.set(v.sponsored);
+  }
+
+  /** A bare web address like `www.google.com` has no scheme, so the browser
+   *  treats it as a RELATIVE path (→ /en/www.google.com). Prepend https://
+   *  unless it already has a scheme / is an anchor / root- or
+   *  protocol-relative / mailto / tel. */
+  private static normalizeWebUrl(url: string): string {
+    const u = (url || '').trim();
+    if (!u) return u;
+    if (/^(https?:\/\/|\/\/|mailto:|tel:|\/|#|\?)/i.test(u)) return u;
+    return 'https://' + u;
   }
 
   /** Shared link panel Save handlers — one per consumer surface. */
@@ -8562,6 +8577,8 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     const sr = surface.getBoundingClientRect();
     const er = el.getBoundingClientRect();
     this.cellElementRef = el;
+    // Buttons are edited via the Settings panel only — block inline typing.
+    if (el.classList.contains('re-btn-block')) el.setAttribute('contenteditable', 'false');
     // Preferred: 40px above the element. Fallback: below the element
     // if there isn't enough room above (e.g. a button parked near the
     // top of the surface would land behind the static editor toolbar).
@@ -10160,11 +10177,27 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
     if (!figure || !editable) { this.figureToolbar.set({ show: false, top: 0, left: 0 }); return; }
     const surfaceRect = editable.getBoundingClientRect();
     const fRect = figure.getBoundingClientRect();
-    // Sit a few pixels below the figure, centred horizontally.
-    const top  = fRect.bottom - surfaceRect.top + 8;
-    const left = fRect.left   - surfaceRect.left + (fRect.width / 2);
+    const TB_H = 46;
+    // Preferred spot: a few px below the figure. But CLAMP to the viewport so
+    // the toolbar stays reachable even when the figure is taller than the
+    // screen — pin it to the viewport bottom (or top if the figure is
+    // scrolled above). Recomputed on scroll (onWindowScrollForToolbar).
+    let vpTop = fRect.bottom + 8;
+    const maxVp = window.innerHeight - TB_H - 12;
+    if (vpTop > maxVp) vpTop = maxVp;
+    if (vpTop < 12)    vpTop = 12;
+    const top  = vpTop - surfaceRect.top;
+    const left = fRect.left - surfaceRect.left + (fRect.width / 2);
     this.figureToolbar.set({ show: true, top, left });
   }
+
+  /** Re-clamp the figure toolbar to the viewport as the page scrolls (rAF
+   *  throttled). Only active while a figure is selected. */
+  private toolbarScrollRaf = 0;
+  private onWindowScrollForToolbar = (): void => {
+    if (!this.selectedFigure() || this.toolbarScrollRaf) return;
+    this.toolbarScrollRaf = requestAnimationFrame(() => { this.toolbarScrollRaf = 0; this.refreshFigureToolbar(); });
+  };
 
   /** True when the selected figure renders a single <img> (vs gallery
    *  / video). Writable signal for the same reason as isBannerFigure
@@ -11985,6 +12018,9 @@ export class RichEditorComponent implements ControlValueAccessor, AfterViewInit,
       // add empty paragraphs around them so the user can reach the
       // caret position immediately before/after each banner.
       this.ensureBannerBookends();
+      // Buttons are edited via the Settings panel only — never inline.
+      this.editable.nativeElement.querySelectorAll('a.re-btn-block')
+        .forEach(b => b.setAttribute('contenteditable', 'false'));
       // Add empty editable lines around / between ALL non-editable blocks
       // (galleries, accordions, polls, product cards, embeds, tables…) so
       // the caret can always land between adjacent widgets to insert.

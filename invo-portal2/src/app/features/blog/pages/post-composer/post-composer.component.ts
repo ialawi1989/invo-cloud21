@@ -605,7 +605,20 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   // ─── Edit handlers — all route through the postForm so dirty /
   //     valueChanges tracking stays accurate. The signal mirrors
   //     update via the form's valueChanges subscription. ─────────────
-  setTitle(v: string): void   { this.patchLocale('title', v); }
+  setTitle(v: string): void   {
+    const code = this.active();
+    const prevTitle = this.translations()[code]?.title ?? '';
+    const prevSlug  = this.translations()[code]?.slug ?? '';
+    this.patchLocale('title', v);
+    // Auto-derive the slug from the title unless the user set a custom one.
+    // The slug-input that normally does this lives in the SEO rail and may
+    // never be mounted, so the slug would otherwise stay empty → publish
+    // fails with "missing slug". Regenerate when the slug is empty or was
+    // itself auto-derived from the previous title (i.e. not hand-edited).
+    if (!prevSlug || prevSlug === generateSlug(prevTitle)) {
+      this.patchLocale('slug', generateSlug(v));
+    }
+  }
   setSlug(v: string): void    { this.patchLocale('slug', v); }
   setExcerpt(v: string): void { this.patchLocale('excerpt', v); }
   setContent(v: string): void { this.patchLocale('content', v); }
