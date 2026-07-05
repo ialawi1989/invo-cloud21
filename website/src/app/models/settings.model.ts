@@ -1,3 +1,5 @@
+import type { NavMenu, MobileIconBar } from '../features/navigation/models/navigation.types';
+
 export type ComponentType =
   | 'hero'
   | 'features'
@@ -76,13 +78,20 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   stickyHeader: true
 };
 
+/** Navigation payload pushed by the dashboard customizer (live preview). */
+export interface NavigationPreview {
+  menus?: NavMenu[];
+  mobileBar?: MobileIconBar | null;
+}
+
 export interface MessagePayload {
-  type: 'setting-change' | 'sync-all' | 'preview-ready' | 'element-click' | 'reset' | 'page-data' | 'scroll-to-component';
+  type: 'setting-change' | 'sync-all' | 'preview-ready' | 'element-click' | 'reset' | 'page-data' | 'scroll-to-component' | 'navigation';
   key?: string;
   value?: any;
   settings?: GlobalSettings;
   pageData?: PageData;
   componentId?: string;
+  navigation?: NavigationPreview;
 }
 
 // Component name mapping for display

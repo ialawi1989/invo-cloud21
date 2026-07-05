@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;95af66f8985ce3c837dbaecc35d2b952e1c9491035f536583c17fddc169e6983;D:/Users/Invo/Downloads/angular-customizer/website/src/app/features/navigation/components/mobile-icon-bar.component.ts"],
+  "sourcesContent": ["\n    .mbar { position:fixed; left:0; right:0; bottom:0; z-index:300; display:none; align-items:stretch; justify-content:space-around; background:var(--header-bg,#fff); border-top:1px solid rgba(0,0,0,.1); padding:6px 4px env(safe-area-inset-bottom,6px); }\n    .mbar-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:4px 2px; color:var(--header-text); text-decoration:none; opacity:.8; }\n    .mbar-item:hover { opacity:1; color:var(--primary); }\n    .mbar-icon { display:inline-flex; }\n    .mbar-icon svg { width:22px; height:22px; }\n    .mbar-label { font-size:10px; line-height:1; }\n    @media (max-width:768px) { .mbar { display:flex; } }\n  "],
+  "mappings": ";AACI,CAAC;AAAO,YAAS;AAAO,QAAK;AAAG,SAAM;AAAG,UAAO;AAAG,WAAQ;AAAK,WAAQ;AAAM,eAAY;AAAS,mBAAgB;AAAc,cAAW,IAAI,WAAW,CAAC;AAAO,cAAW,IAAI,MAAM,KAAK,CAAC,EAAC,CAAC,EAAC,CAAC,EAAC;AAAK,WAAQ,IAAI,IAAI,IAAI,sBAAsB,EAAC;AAAM;AACzP,CAAC;AAAY,QAAK;AAAG,WAAQ;AAAM,kBAAe;AAAQ,eAAY;AAAQ,OAAI;AAAK,WAAQ,IAAI;AAAK,SAAM,IAAI;AAAgB,mBAAgB;AAAM,WAAQ;AAAI;AACpK,CADC,SACS;AAAS,WAAQ;AAAG,SAAM,IAAI;AAAY;AACpD,CAAC;AAAY,WAAQ;AAAa;AAClC,CADC,UACU;AAAM,SAAM;AAAM,UAAO;AAAM;AAC1C,CAAC;AAAa,aAAU;AAAM,eAAY;AAAG;AAC7C,QAAO,WAAW;AAAS,GAN1B;AAMkC,aAAQ;AAAM;AAAE;",
+  "names": []
+}

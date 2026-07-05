@@ -209,6 +209,22 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/website/content-library/pages/content-item/content-item.component').then(m => m.ContentItemPageComponent),
       },
+      // ── Navigation (menus + mobile icon bar) ─────────────────────────────
+      {
+        path: 'navigation-list',
+        loadComponent: () =>
+          import('./features/website/navigation/pages/navigation-list/navigation-list.component').then(m => m.NavigationListComponent),
+      },
+      {
+        path: 'navigation-list/:id',
+        loadComponent: () =>
+          import('./features/website/navigation/pages/navigation-builder/navigation-builder.component').then(m => m.NavigationBuilderComponent),
+      },
+      {
+        path: 'mobile-icon-bar/:id',
+        loadComponent: () =>
+          import('./features/website/navigation/pages/mobile-icon-bar/mobile-icon-bar.component').then(m => m.MobileIconBarComponent),
+      },
       {
         // Media Manager lives under /settings/media (IA: it's a
         // tenant-wide configuration of assets, alongside Image

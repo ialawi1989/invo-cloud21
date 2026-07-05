@@ -1,8 +1,11 @@
-import { Component, computed } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 
 import { PreviewService } from './services/preview.service';
+import { NavigationService } from './features/navigation/services/navigation.service';
+import { SiteNavComponent } from './features/navigation/components/site-nav.component';
+import { MobileIconBarComponent } from './features/navigation/components/mobile-icon-bar.component';
 
 /**
  * Root layout shell. Owns the site-wide header and footer so every
@@ -17,7 +20,7 @@ import { PreviewService } from './services/preview.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [CommonModule, RouterOutlet, SiteNavComponent, MobileIconBarComponent],
   template: `
     <div class="site-wrapper">
       @if (settings().showHeader) {
@@ -30,14 +33,18 @@ import { PreviewService } from './services/preview.service';
               </svg>
               <span>{{ settings().siteTitle }}</span>
             </div>
-            <nav class="main-nav">
-              <a href="/">Home</a>
-              <a href="#">Features</a>
-              <a href="#">Pricing</a>
-              <a href="#">About</a>
-              <a href="/blog">Blog</a>
-              <a href="#">Contact</a>
-            </nav>
+            @if (navHasMenu()) {
+              <app-site-nav />
+            } @else {
+              <nav class="main-nav">
+                <a href="/">Home</a>
+                <a href="#">Features</a>
+                <a href="#">Pricing</a>
+                <a href="#">About</a>
+                <a href="/blog">Blog</a>
+                <a href="#">Contact</a>
+              </nav>
+            }
             <div class="header-actions">
               <a href="#" class="btn btn-secondary">Sign In</a>
               <a href="#" class="btn btn-primary">Get Started</a>
@@ -57,6 +64,8 @@ import { PreviewService } from './services/preview.service';
           </div>
         </footer>
       }
+
+      <app-mobile-icon-bar />
 
       @if (isCustomizeMode) {
         <div class="customize-badge">Preview Mode</div>
@@ -84,9 +93,14 @@ import { PreviewService } from './services/preview.service';
   `],
 })
 export class AppComponent {
+  private navigationService = inject(NavigationService);
+
   isCustomizeMode = false;
   constructor(private previewService: PreviewService) {
     this.isCustomizeMode = this.previewService.isCustomizeMode();
   }
   get settings() { return this.previewService.globalSettings; }
+
+  /** True once a published/preview menu exists; gates the default links. */
+  navHasMenu = computed(() => this.navigationService.hasMenu());
 }

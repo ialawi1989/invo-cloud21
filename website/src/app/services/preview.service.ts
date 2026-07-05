@@ -4,6 +4,7 @@ import {
   GlobalSettings,
   DEFAULT_GLOBAL_SETTINGS,
   MessagePayload,
+  NavigationPreview,
   PageData,
   PageComponent
 } from '../models/settings.model';
@@ -43,10 +44,13 @@ export class PreviewService {
   private _isCustomizeMode = signal<boolean>(false);
   private _globalSettings = signal<GlobalSettings>({ ...DEFAULT_GLOBAL_SETTINGS });
   private _components = signal<PageComponent[]>([]);
+  private _navigation = signal<NavigationPreview | null>(null);
 
   isCustomizeMode = computed(() => this._isCustomizeMode());
   globalSettings = computed(() => this._globalSettings());
   components = computed(() => this._components());
+  /** Navigation pushed by the dashboard during live preview (null until sent). */
+  navigation = computed(() => this._navigation());
 
   constructor() {
     this.init();
@@ -142,6 +146,7 @@ export class PreviewService {
         if (data.pageData) {
           this.applyPageData(data.pageData);
         }
+        if (data.navigation) this._navigation.set(data.navigation);
         break;
       case 'sync-all':
         if (data.settings) {
@@ -153,11 +158,15 @@ export class PreviewService {
           this.scrollToComponent(data.componentId);
         }
         break;
+      case 'navigation':
+        if (data.navigation) this._navigation.set(data.navigation);
+        break;
       case 'reset':
         this.applyPageData({
           globalSettings: DEFAULT_GLOBAL_SETTINGS,
           components: []
         });
+        this._navigation.set(null);
         break;
     }
   }

@@ -10,6 +10,7 @@ import { APP_ROUTES } from './app.routes';
 import { APP_CONFIG, AppConfig } from './app-config.token';
 import { TenantService } from './features/blog/services/tenant.service';
 import { BlogSettingsService } from './features/blog/services/blog-settings.service';
+import { NavigationService } from './features/navigation/services/navigation.service';
 
 /**
  * Loads tenant config from the SSR-rendered `/assets/config.json`.
@@ -67,6 +68,17 @@ export const appConfig: ApplicationConfig = {
       const tenant = inject(TenantService);
       const settings = inject(BlogSettingsService);
       void tenant.resolve().then(() => settings.load());
+    }),
+
+    // Warm the storefront navigation (browser only) after the tenant
+    // slug resolves, so the header paints the published menu without a
+    // per-route fetch. In customize mode load() no-ops (menus stream in
+    // over postMessage instead). Fire-and-forget — nav is non-critical.
+    provideAppInitializer(() => {
+      if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+      const tenant = inject(TenantService);
+      const navigation = inject(NavigationService);
+      void tenant.resolve().then(() => navigation.load());
     }),
 
     provideRouter(

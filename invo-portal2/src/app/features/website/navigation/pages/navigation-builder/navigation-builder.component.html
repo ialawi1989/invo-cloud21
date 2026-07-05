@@ -1,0 +1,221 @@
+<app-breadcrumbs [items]="breadcrumbs" navClass="mb-2" />
+
+@if (loading()) {
+  <div class="loading"><app-spinner size="sm" /> {{ 'COMMON.LOADING' | translate }}</div>
+} @else {
+  <!-- Header bar -->
+  <div class="builder-head">
+    <div class="head-fields">
+      <input class="name-input" [(ngModel)]="menu.name" [placeholder]="'NAV.BUILDER.NAME_PLACEHOLDER' | translate" />
+      <app-segmented-toggle
+        size="sm"
+        [options]="locationOptions"
+        [value]="location"
+        (valueChange)="setLocation($event)" />
+    </div>
+    <div class="head-actions">
+      <button type="button" class="btn btn-outline" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
+        @if (saving()) { <app-spinner size="sm" /> }
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <div class="builder-grid">
+    <!-- ── Left: link sources ───────────────────────────────────────── -->
+    <aside class="sources">
+      <h3 class="panel-title">{{ 'NAV.BUILDER.ADD_TO_MENU' | translate }}</h3>
+      @for (opt of linkOptions; track opt.abbr) {
+        <div class="source-group" [class.open]="expandedSource() === opt.abbr">
+          <button type="button" class="source-head" (click)="toggleSource(opt.abbr)">
+            <span>{{ ('NAV.SOURCE.' + opt.abbr) | translate }}</span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          @if (expandedSource() === opt.abbr) {
+            <div class="source-body">
+              @if (opt.abbr === 'custom') {
+                <input class="form-input" [(ngModel)]="customLink.title" [placeholder]="'NAV.BUILDER.LINK_TEXT' | translate" />
+                <input class="form-input" [(ngModel)]="customLink.url" placeholder="https://" />
+                <button type="button" class="add-btn" (click)="addCustomLink()" [disabled]="!customLink.title || !customLink.url">
+                  {{ 'NAV.BUILDER.ADD_LINK' | translate }}
+                </button>
+              } @else if (opt.abbr === 'mega') {
+                <input class="form-input" [(ngModel)]="megaMenuTitle" [placeholder]="'NAV.BUILDER.MEGA_TITLE' | translate" />
+                <button type="button" class="add-btn" (click)="addMegaMenu()" [disabled]="!megaMenuTitle">
+                  {{ 'NAV.BUILDER.ADD_MEGA' | translate }}
+                </button>
+              } @else if (opt.child.length) {
+                @for (child of opt.child; track child.uId) {
+                  <button type="button" class="source-item" (click)="addToMenu(child)">
+                    <span class="item-icon" [innerHTML]="itemIcon(child.type)"></span>
+                    <span class="item-label">{{ child.name }}</span>
+                    <span class="plus">+</span>
+                  </button>
+                }
+              } @else {
+                <p class="empty-src">{{ 'NAV.BUILDER.NO_ITEMS' | translate }}</p>
+              }
+            </div>
+          }
+        </div>
+      }
+    </aside>
+
+    <!-- ── Right: menu structure ────────────────────────────────────── -->
+    <section class="structure">
+      <h3 class="panel-title">{{ 'NAV.BUILDER.MENU_STRUCTURE' | translate }}</h3>
+
+      @if (!menu.template.list.length) {
+        <div class="empty-structure">{{ 'NAV.BUILDER.EMPTY' | translate }}</div>
+      }
+
+      <div class="menu-list" cdkDropList [cdkDropListData]="menu.template.list" (cdkDropListDropped)="onDrop($event)">
+        @for (item of menu.template.list; track item.uId) {
+          <div class="menu-row-wrap" cdkDrag [cdkDragData]="item" [style.margin-left.px]="item.depth * 28">
+            <div class="menu-row" [class.is-mega]="item.isMegaMenu">
+              <span class="drag-handle" cdkDragHandle>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+              </span>
+              <span class="item-icon" [innerHTML]="itemIcon(item.type)"></span>
+              <span class="row-name">{{ item.name }}</span>
+
+              <span class="row-tools">
+                <button type="button" class="tool" [disabled]="item.depth === 0" (click)="moveLeft(item)" title="Outdent">⟨</button>
+                <button type="button" class="tool" [disabled]="!canMoveRight(item)" (click)="moveRight(item)" title="Indent">⟩</button>
+                @if (!item.isMegaMenu) {
+                  <button type="button" class="tool" (click)="convertToMegaMenu(item)" [title]="'NAV.BUILDER.TO_MEGA' | translate">
+                    <span class="item-icon sm" [innerHTML]="itemIcon('mega')"></span>
+                  </button>
+                  <button type="button" class="tool" (click)="editItem(item)" title="Edit">✎</button>
+                } @else {
+                  <button type="button" class="tool" (click)="editMegaMenu(item)" title="Edit mega menu">✎</button>
+                }
+                <button type="button" class="tool" (click)="translateItem(item)" title="Translate">文</button>
+                <button type="button" class="tool danger" (click)="removeItem(item)" title="Remove">✕</button>
+              </span>
+            </div>
+
+            <!-- Inline edit (simple item) -->
+            @if (editingItemId() === item.uId && !item.isMegaMenu) {
+              <div class="edit-form">
+                <label>{{ 'NAV.BUILDER.LABEL' | translate }}</label>
+                <input class="form-input" [(ngModel)]="item.name" />
+                <label>{{ 'NAV.BUILDER.URL' | translate }}</label>
+                <input class="form-input" [(ngModel)]="item.customUrl" placeholder="https://" />
+                <div class="edit-actions">
+                  <button type="button" class="btn btn-primary btn-sm" (click)="saveEdit()">{{ 'COMMON.DONE' | translate }}</button>
+                </div>
+              </div>
+            }
+
+            <!-- Inline edit (mega menu) -->
+            @if (editingMegaMenuId() === item.uId && item.isMegaMenu) {
+              <div class="mega-edit">
+                <div class="mega-settings">
+                  <label>{{ 'NAV.BUILDER.WIDTH' | translate }}</label>
+                  <app-segmented-toggle
+                    size="sm"
+                    [options]="megaWidthOptions"
+                    [value]="item.megaWidth || 'container'"
+                    (valueChange)="item.megaWidth = $event" />
+                  @if (item.megaWidth === 'custom') {
+                    <input class="form-input narrow" type="number" [(ngModel)]="item.customWidth" placeholder="px" />
+                  }
+                </div>
+
+                <div class="mega-columns">
+                  @for (column of item.megaColumns; track column.uId; let ci = $index) {
+                    <div class="mega-column">
+                      <div class="col-head">
+                        <input class="form-input" [(ngModel)]="column.title" [placeholder]="'NAV.BUILDER.COLUMN_TITLE' | translate" />
+                        <input class="form-input narrow" type="number" [(ngModel)]="column.width" placeholder="%" />
+                        @if (item.megaColumns && item.megaColumns.length > 1) {
+                          <button type="button" class="tool danger" (click)="removeMegaColumn(item, ci)">✕</button>
+                        }
+                      </div>
+
+                      <div class="col-items" cdkDropList [cdkDropListData]="column.items" (cdkDropListDropped)="onColumnItemDrop($event, column)">
+                        @for (colItem of column.items; track colItem.uId; let ii = $index) {
+                          <div class="col-item" cdkDrag [cdkDragData]="colItem">
+                            <span class="drag-handle sm" cdkDragHandle>⋮⋮</span>
+                            @if (colItem.type === 'image') {
+                              <img class="col-thumb" [src]="colItem.mediaUrl?.defaultUrl || ''" alt="" />
+                            } @else {
+                              <span class="item-icon sm" [innerHTML]="itemIcon(colItem.type)"></span>
+                            }
+                            <span class="col-item-name">{{ colItem.name }}</span>
+                            <button type="button" class="tool danger" (click)="removeColumnItem(column, ii)">✕</button>
+                          </div>
+                        }
+                        @if (!column.items.length) {
+                          <div class="col-empty">{{ 'NAV.BUILDER.COLUMN_EMPTY' | translate }}</div>
+                        }
+                      </div>
+
+                      <div class="col-actions">
+                        <button type="button" class="btn btn-sm btn-outline" (click)="openColumnPicker(column)">{{ 'NAV.BUILDER.ADD_ITEM' | translate }}</button>
+                        <button type="button" class="btn btn-sm btn-outline" (click)="addImage(column)">{{ 'NAV.BUILDER.ADD_IMAGE' | translate }}</button>
+                      </div>
+                    </div>
+                  }
+                  <button type="button" class="add-col" (click)="addMegaColumn(item)"
+                          [disabled]="(item.megaColumns?.length || 0) >= maxCol">
+                    + {{ 'NAV.BUILDER.ADD_COLUMN' | translate }}
+                  </button>
+                </div>
+
+                <div class="edit-actions">
+                  <button type="button" class="btn btn-primary btn-sm" (click)="saveMegaEdit()">{{ 'COMMON.DONE' | translate }}</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+
+  <!-- ── Column item picker overlay ───────────────────────────────────── -->
+  @if (pickerColumn()) {
+    <div class="picker-backdrop" (click)="closeColumnPicker()">
+      <div class="picker" (click)="$event.stopPropagation()">
+        <div class="picker-head">
+          <h4>{{ 'NAV.BUILDER.PICK_ITEM' | translate }}</h4>
+          <button type="button" class="tool" (click)="closeColumnPicker()">✕</button>
+        </div>
+        <div class="picker-tabs">
+          @for (tab of pickerTabs(); track tab.abbr) {
+            <button type="button" class="picker-tab" [class.active]="pickerTab() === tab.abbr" (click)="pickerTab.set(tab.abbr)">
+              {{ ('NAV.SOURCE.' + tab.abbr) | translate }}
+            </button>
+          }
+          <button type="button" class="picker-tab" [class.active]="pickerTab() === 'custom'" (click)="pickerTab.set('custom')">
+            {{ 'NAV.SOURCE.custom' | translate }}
+          </button>
+        </div>
+        <div class="picker-body">
+          @if (pickerTab() === 'custom') {
+            <input class="form-input" [(ngModel)]="pickerCustom.title" [placeholder]="'NAV.BUILDER.LINK_TEXT' | translate" />
+            <input class="form-input" [(ngModel)]="pickerCustom.url" placeholder="https://" />
+            <button type="button" class="add-btn" (click)="addCustomToColumn()" [disabled]="!pickerCustom.title || !pickerCustom.url">
+              {{ 'NAV.BUILDER.ADD_LINK' | translate }}
+            </button>
+          } @else {
+            <input class="form-input" [(ngModel)]="pickerSearch" [placeholder]="'NAV.LIST.SEARCH' | translate" />
+            <div class="picker-items">
+              @for (it of pickerItems(); track it.uId) {
+                <button type="button" class="source-item" (click)="addItemToColumn(it)">
+                  <span class="item-icon" [innerHTML]="itemIcon(it.type)"></span>
+                  <span class="item-label">{{ it.name }}</span>
+                  <span class="plus">+</span>
+                </button>
+              }
+              @if (!pickerItems().length) { <p class="empty-src">{{ 'NAV.BUILDER.NO_ITEMS' | translate }}</p> }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+}

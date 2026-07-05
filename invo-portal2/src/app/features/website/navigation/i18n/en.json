@@ -1,0 +1,78 @@
+{
+  "NAV": {
+    "LIST": {
+      "TITLE": "Navigation",
+      "SUBTITLE": "Build the menus shoppers use to move around your site.",
+      "SEARCH": "Search menus",
+      "ADD": "Add menu",
+      "UNTITLED": "Untitled menu",
+      "MOBILE_BAR": "Mobile Icon Bar",
+      "CONFIGURE": "Configure",
+      "COL_NAME": "Name",
+      "COL_LOCATION": "Location",
+      "COL_ITEMS": "Items",
+      "EMPTY_TITLE": "No menus yet",
+      "EMPTY_SUB": "Create your first navigation menu to get started.",
+      "DELETE_CONFIRM": "Delete \"{{name}}\"? This cannot be undone.",
+      "DELETED": "Menu deleted",
+      "DELETE_FAILED": "Could not delete the menu",
+      "LOAD_FAILED": "Could not load navigation"
+    },
+    "LOCATION": {
+      "primary": "Primary",
+      "footer": "Footer",
+      "mobile": "Mobile"
+    },
+    "SOURCE": {
+      "plus": "Online Store",
+      "collections": "Collections",
+      "pages": "Pages",
+      "orders": "Orders",
+      "reservations": "Reservations",
+      "services": "Services",
+      "custom": "Custom link",
+      "mega": "Mega menu"
+    },
+    "BUILDER": {
+      "NAME_PLACEHOLDER": "Menu name",
+      "ADD_TO_MENU": "Add to menu",
+      "MENU_STRUCTURE": "Menu structure",
+      "EMPTY": "Add items from the left to build your menu.",
+      "LOC_PRIMARY": "Primary",
+      "LOC_FOOTER": "Footer",
+      "LINK_TEXT": "Link text",
+      "ADD_LINK": "Add link",
+      "MEGA_TITLE": "Mega menu title",
+      "ADD_MEGA": "Add mega menu",
+      "NO_ITEMS": "Nothing here yet.",
+      "TO_MEGA": "Convert to mega menu",
+      "LABEL": "Label",
+      "URL": "URL",
+      "WIDTH": "Width",
+      "WIDTH_CONTAINER": "Container",
+      "WIDTH_FULL": "Full width",
+      "WIDTH_CUSTOM": "Custom",
+      "COLUMN_TITLE": "Column title",
+      "COLUMN_EMPTY": "Drop or add items here",
+      "ADD_ITEM": "Add item",
+      "ADD_IMAGE": "Add image",
+      "ADD_COLUMN": "Add column",
+      "PICK_ITEM": "Add an item",
+      "CHOOSE_IMAGE": "Choose image",
+      "TRANSLATE": "Translate",
+      "NAME_REQUIRED": "Please name the menu before saving.",
+      "SAVED": "Menu saved",
+      "SAVE_FAILED": "Could not save the menu",
+      "LOAD_FAILED": "Could not load the menu"
+    },
+    "MOBILE": {
+      "TITLE": "Mobile Icon Bar",
+      "SUBTITLE": "Choose up to {{max}} shortcuts for the bottom bar on phones.",
+      "ENABLE": "Click to enable this item",
+      "DISABLE": "Click to disable this item",
+      "LIMIT": "You can enable up to {{max}} items. Disable another first.",
+      "SAVED": "Mobile icon bar saved",
+      "SAVE_FAILED": "Could not save the mobile icon bar"
+    }
+  }
+}
