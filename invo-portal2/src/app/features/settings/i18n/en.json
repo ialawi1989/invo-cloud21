@@ -72,6 +72,8 @@
 
       "ESTIMATE_BUILDER":          "Estimate Builder",
       "ESTIMATE_BUILDER_DESC":     "Build your estimate template.",
+      "ESTIMATE_OPTIONS":          "Estimate Options",
+      "ESTIMATE_OPTIONS_DESC":     "Configure estimate options, default notes, terms and conditions.",
 
       "EXPENSE_BUILDER":           "Expense Builder",
       "EXPENSE_BUILDER_DESC":      "Build your expense template.",
@@ -602,6 +604,17 @@
       "ENABLE_VOID_REASON_HINT":   "Force users to provide a reason when voiding invoice items.",
       "OPTION_GROUP_VISIBLE":      "Show option groups",
       "OPTION_GROUP_VISIBLE_HINT": "Display product option groups as separate sections on invoices."
+    },
+
+    "ESTIMATE": {
+      "DEFAULT_CONTENT":           "Default Content",
+      "DEFAULT_CONTENT_DESC":      "Set default note and terms that appear on all estimates.",
+      "NOTE":                      "Estimate Note",
+      "NOTE_HINT":                 "e.g. Thank you for considering our quote",
+      "NOTE_DESCRIPTION":          "This note will appear on every estimate.",
+      "TERM":                      "Terms and Conditions",
+      "TERM_HINT":                 "e.g. This estimate is valid for 30 days",
+      "TERM_DESCRIPTION":          "These terms will appear on every estimate."
     },
 
     "TAX": {

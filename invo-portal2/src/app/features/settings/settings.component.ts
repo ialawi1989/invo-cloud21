@@ -392,6 +392,8 @@ export class SettingsComponent {
       items: [
         { label: 'SETTINGS.ITEMS.ESTIMATE_BUILDER', description: 'SETTINGS.ITEMS.ESTIMATE_BUILDER_DESC', link: '/settings/document-builder', queryParams: { type: 'estimate' }, privilege: 'estimateBuilderSecurity.access',
           i18nPrefix: 'DOCUMENT_BUILDER' },
+        { label: 'SETTINGS.ITEMS.ESTIMATE_OPTIONS', description: 'SETTINGS.ITEMS.ESTIMATE_OPTIONS_DESC', link: '/settings/estimate-options', privilege: 'companySettingsSecurity.actions.estimateOptions.access',
+          i18nPrefix: 'SETTINGS.ESTIMATE' },
       ],
     },
     {

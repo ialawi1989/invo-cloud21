@@ -175,6 +175,13 @@ export const routes: Routes = [
         canDeactivate: [unsavedChangesGuard],
       },
       {
+        path: 'settings/estimate-options',
+        loadComponent: () =>
+          import('./features/settings/pages/estimate-options/estimate-options.component')
+            .then(m => m.EstimateOptionsComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
+      {
         path: 'settings/tax',
         loadComponent: () =>
           import('./features/settings/pages/tax-settings/tax-settings.component')

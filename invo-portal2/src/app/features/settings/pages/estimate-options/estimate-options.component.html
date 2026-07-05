@@ -1,0 +1,76 @@
+<div class="estimate-options-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'SETTINGS.ITEMS.ESTIMATE_OPTIONS' | translate }}</h1>
+      <p class="page-sub">{{ 'SETTINGS.ITEMS.ESTIMATE_OPTIONS_DESC' | translate }}</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <form [formGroup]="form">
+      <!-- ═══ Default Content ═══ -->
+      <section class="card">
+        <header class="card__head">
+          <h2 class="card__title">{{ 'SETTINGS.ESTIMATE.DEFAULT_CONTENT' | translate }}</h2>
+          <p class="card__sub">{{ 'SETTINGS.ESTIMATE.DEFAULT_CONTENT_DESC' | translate }}</p>
+        </header>
+
+        <div class="card__body" formGroupName="estimateOptions">
+          <div class="grid grid--1">
+            <div class="field">
+              <label class="field-label" for="estimate-note">
+                {{ 'SETTINGS.ESTIMATE.NOTE' | translate }}
+              </label>
+              <textarea
+                id="estimate-note"
+                class="textarea"
+                formControlName="note"
+                rows="4"
+                placeholder="{{ 'SETTINGS.ESTIMATE.NOTE_HINT' | translate }}"
+              ></textarea>
+              <p class="field-hint">{{ 'SETTINGS.ESTIMATE.NOTE_DESCRIPTION' | translate }}</p>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="estimate-term">
+                {{ 'SETTINGS.ESTIMATE.TERM' | translate }}
+              </label>
+              <textarea
+                id="estimate-term"
+                class="textarea"
+                formControlName="term"
+                rows="4"
+                placeholder="{{ 'SETTINGS.ESTIMATE.TERM_HINT' | translate }}"
+              ></textarea>
+              <p class="field-hint">{{ 'SETTINGS.ESTIMATE.TERM_DESCRIPTION' | translate }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </form>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button
+      type="button"
+      class="btn btn-cancel"
+      (click)="back()"
+      [disabled]="saving()"
+    >
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || form.invalid"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>
