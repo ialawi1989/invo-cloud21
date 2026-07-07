@@ -1,0 +1,96 @@
+// Page chrome (header, toolbar, pager, card, loading, empty) lives in
+// `<app-list-shell>`. Only projected-content styles remain.
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 12px 14px;
+    text-align: start;
+    font-size: 13px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background 100ms ease;
+    &:hover { background: #f8fafc; }
+    &:last-child td { border-bottom: 0; }
+  }
+
+  &__name    { width: 50%; }
+  &__barcode { width: 25%; }
+  &__price   { width: 25%; color: #0f172a; font-weight: 600; }
+  &__actions { width: 60px; text-align: end; }
+}
+
+.row-name { font-weight: 600; color: #0f172a; }
+
+// Sortable column header. The dot/arrow is a pseudo-CSS arrow
+// drawn from `border` so we don't ship another SVG inline.
+.th-sort {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &:hover { color: #0f172a; }
+  &.is-sorted { color: #0f172a; }
+
+  &__arrow {
+    width: 8px;
+    height: 8px;
+    position: relative;
+    opacity: 0.35;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-inline: 4px solid transparent;
+    }
+    &::before { top: 0;    border-bottom: 4px solid currentColor; }
+    &::after  { bottom: 0; border-top:    4px solid currentColor; }
+
+    &[data-dir='asc']  { opacity: 1; &::after  { opacity: 0.2; } }
+    &[data-dir='desc'] { opacity: 1; &::before { opacity: 0.2; } }
+  }
+}
+
+.icon-btn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover { background: #f1f5f9; color: #0f172a; }
+}

@@ -1,0 +1,55 @@
+<app-modal-header [title]="'MATRIX.BARCODE_CHANGE.TITLE' | translate"/>
+
+<div class="bcm__body">
+  <!-- Warning banner -->
+  <div class="bcm__warning">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <span>{{ 'MATRIX.BARCODE_CHANGE.WARNING' | translate }}</span>
+  </div>
+
+  <p class="bcm__desc">{{ 'MATRIX.BARCODE_CHANGE.DESCRIPTION' | translate }}</p>
+
+  <div class="bcm__table-wrap">
+    <table class="bcm__table">
+      <thead>
+        <tr>
+          <th>{{ 'MATRIX.FORM.COL_NAME' | translate }}</th>
+          <th>{{ 'MATRIX.BARCODE_CHANGE.OLD_BARCODE' | translate }}</th>
+          <th>{{ 'MATRIX.BARCODE_CHANGE.NEW_BARCODE' | translate }}</th>
+          <th>{{ 'MATRIX.BARCODE_CHANGE.OLD_SKU' | translate }}</th>
+          <th>{{ 'MATRIX.BARCODE_CHANGE.NEW_SKU' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows; track $index) {
+          <tr>
+            <td class="bcm__name">{{ row.name }}</td>
+            <td class="bcm__old"><code>{{ row.oldBarcode || '—' }}</code></td>
+            <td class="bcm__new"><code>{{ row.newBarcode || '—' }}</code></td>
+            <td class="bcm__old"><code>{{ row.oldSku || '—' }}</code></td>
+            <td class="bcm__new"><code>{{ row.newSku || '—' }}</code></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bcm__note">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+    </svg>
+    <span>{{ 'MATRIX.BARCODE_CHANGE.NOTE' | translate }}</span>
+  </div>
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btn btn-ghost" (click)="cancel()">
+    {{ 'MATRIX.BARCODE_CHANGE.CANCEL' | translate }}
+  </button>
+  <button type="button" class="btn btn-primary" (click)="confirm()">
+    {{ 'MATRIX.BARCODE_CHANGE.CONFIRM' | translate }}
+  </button>
+</app-modal-footer>

@@ -1,0 +1,112 @@
+<div class="dims">
+  <div class="dims__head">
+    <div class="dims__title">
+      <span>{{ 'MATRIX.DIMENSION.DIMENSIONS' | translate }}</span>
+      <small>{{ 'MATRIX.FORM.MAX_DIMENSIONS_HINT' | translate }}</small>
+    </div>
+
+    @if (!disabled()) {
+      <div class="dims__actions">
+        @if (dimensions().length > 0) {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="openBulkTranslation()">
+            {{ 'MATRIX.DIMENSION.BULK_TRANSLATE' | translate }}
+          </button>
+        }
+        <button type="button" class="btn btn-ghost btn-sm" (click)="openPicker()">
+          {{ 'MATRIX.DIMENSION.PICK_EXISTING' | translate }}
+        </button>
+        <button type="button" class="btn btn-primary btn-sm"
+          [disabled]="atMax"
+          [title]="atMax ? ('MATRIX.DIMENSION.MAX_REACHED' | translate) : ''"
+          (click)="openAddDimension()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          {{ 'MATRIX.DIMENSION.ADD_DIMENSION' | translate }}
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (dimensions().length === 0) {
+    <div class="dims__empty">
+      <h4>{{ 'MATRIX.DIMENSION.NO_DIMENSIONS' | translate }}</h4>
+      <p>{{ 'MATRIX.DIMENSION.NO_DIMENSIONS_DESC' | translate }}</p>
+      @if (!disabled()) {
+        <button type="button" class="btn btn-primary btn-sm" (click)="openAddDimension()">
+          {{ 'MATRIX.DIMENSION.ADD_FIRST_DIMENSION' | translate }}
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="dim-list">
+      @for (dim of dimensions(); track dim.id; let di = $index) {
+        <div class="dim-card">
+          <div class="dim-card__head">
+            <div class="dim-card__name">
+              <span class="dim-card__label">{{ dim.name }}</span>
+              @if (!disabled()) {
+                <button type="button" class="link-btn" (click)="translateDimension(di)">
+                  {{ 'MATRIX.FORM.TRANSLATE' | translate }}
+                </button>
+              }
+            </div>
+
+            @if (!disabled()) {
+              <div class="dim-card__tools">
+                <app-segmented-toggle
+                  [options]="displayTypeOptions"
+                  [value]="dim.displayType"
+                  size="sm"
+                  (valueChange)="setDisplayType(di, $event)" />
+                <button type="button" class="icon-btn danger"
+                  [title]="'MATRIX.DIMENSION.REMOVE' | translate"
+                  (click)="removeDimension(di)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="dim-card__attrs">
+            @for (attr of dim.attributes; track $index; let ai = $index) {
+              <span class="attr-chip" [class.attr-chip--radio]="dim.displayType === 'radio'">
+                @if (isColorDimension(dim)) {
+                  <span class="attr-chip__swatch" [style.background]="attr.value"></span>
+                }
+                <span class="attr-chip__name">{{ attr.name }}</span>
+                <span class="attr-chip__code">{{ attr.code }}</span>
+                @if (!disabled()) {
+                  <button type="button" class="attr-chip__x" (click)="translateAttribute(di, ai)"
+                    [title]="'MATRIX.FORM.TRANSLATE' | translate">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M4 5h7M9 3v2c0 4-2 7-5 8M5 9c0 2 3 4 6 4"/><path d="M14 20l4-9 4 9M15.5 17h5"/>
+                    </svg>
+                  </button>
+                  <button type="button" class="attr-chip__x" (click)="removeAttribute(di, ai)"
+                    [title]="'MATRIX.ATTRIBUTE.REMOVE' | translate">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                }
+              </span>
+            }
+
+            @if (!disabled()) {
+              <button type="button" class="attr-add" (click)="openAttribute(di)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                {{ 'MATRIX.ATTRIBUTE.ADD_ATTRIBUTES' | translate }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

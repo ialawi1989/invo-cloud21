@@ -21,6 +21,7 @@
             [items]="uomOptions"
             [displayWith]="uomDisplay"
             [compareWith]="compareByValue"
+            [toValue]="toValueId"
             [placeholder]="'PRODUCTS.FORM.UOM' | translate"
           />
           @if (c('UOM').touched && c('UOM').errors?.['required']) {

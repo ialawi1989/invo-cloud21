@@ -87,7 +87,10 @@
           <div class="form-group">
             <div class="label-row">
               <label for="login-pass">Password</label>
-              <a href="javascript:void(0)" (click)="switchMode('forgetPassword')" class="forgot-link">Forgot password?</a>
+              <!-- tabindex="-1" keeps the link mouse-clickable but out of the
+                   Tab sequence, so Tab flows email → password directly instead
+                   of stopping on this link (which sits between the two inputs). -->
+              <a href="javascript:void(0)" tabindex="-1" (click)="switchMode('forgetPassword')" class="forgot-link">Forgot password?</a>
             </div>
             <div class="input-wrapper" [class.has-error]="submitted() && loginForm.controls['password'].errors">
               <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

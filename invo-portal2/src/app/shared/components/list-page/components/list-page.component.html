@@ -177,6 +177,10 @@
             }
           </div>
           }
+
+          <!-- Consumer toolbar-end slot (e.g. a mobile language icon that
+               should sit on the search row). Optional; empty by default. -->
+          <ng-content select="[listToolbarEnd]"/>
         </div>
       </div>
 
@@ -205,11 +209,13 @@
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- TABLE VIEW -->
     <!-- ══════════════════════════════════════════════════════════════ -->
-    @if (viewMode() === 'table') {
+    @if (viewMode() === 'table' && !useMobileCards()) {
     <div class="relative"
-      [class.list-has-scroll-start]="hasScrollStart()">
-    <div class="overflow-x-auto"
+      [class.list-has-scroll-start]="stickyColumns && hasScrollStart()"
+      [class.list-has-scroll-end]="stickyColumns && hasScrollEnd()">
+    <div [class.overflow-x-auto]="stickyColumns"
       #scrollHost
+      [style.max-height.px]="stickyColumns ? scrollMaxHeight() : null"
       (scroll)="updateScrollState($event.target)">
 
       <!-- Loading Skeleton -->
@@ -286,7 +292,7 @@
           <tr>
             <!-- Selection Checkbox -->
             @if (selectable) {
-            <th class="px-6 py-3 text-start w-12 sticky start-0 z-20 bg-white">
+            <th [class]="'px-6 py-3 text-start w-12 bg-white ' + (stickyColumns ? 'sticky start-0 z-20' : '')">
               <input type="checkbox" [checked]="allSelected()" [indeterminate]="someSelected()"
                 (change)="toggleAllSelection()">
             </th>
@@ -295,12 +301,12 @@
             <!-- Column Headers -->
             @for (column of displayColumns(); track column.key; let colIdx = $index) {
             <th [class]="
-                      'px-6 py-3 text-start text-sm font-medium text-slate-500 ' +
+                      'px-6 py-3 text-sm font-medium text-slate-500 ' + getAlignClass(column) + ' ' +
                       (column.sortable ? 'cursor-pointer hover:text-brand-600 transition-colors select-none ' : '') +
-                      (colIdx === 0 ? (selectable ? 'sticky start-12 z-20 bg-white list-sticky-col' : 'sticky start-0 z-20 bg-white list-sticky-col') : '')"
+                      (colIdx === 0 && stickyColumns ? (selectable ? 'sticky start-12 z-20 bg-white list-sticky-col' : 'sticky start-0 z-20 bg-white list-sticky-col') : '')"
               [style.min-width]="column.width"
               (click)="column.sortable ? onColumnSort(column) : null">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2" [class.justify-end]="column.align === 'end'">
                 {{ column.label }}
                 @if (column.primary || (column.groupedItems && hasPrimaryItem(column))) {
                   <span class="inline-flex flex-shrink-0" [appTooltip]="'COMMON.PRIMARY_COLUMN' | translate">
@@ -319,7 +325,7 @@
             <!-- Actions Column — header label scrolls with the table; the
                  body-cell buttons float sticky to the end edge. -->
             @if (rowActions.length > 0 || getRowActionsTemplate()) {
-            <th class="px-6 py-3 text-end text-sm font-medium text-slate-500 sticky end-0 z-20 list-actions-th">{{ 'COMMON.ACTIONS_LABEL' | translate }}</th>
+            <th [class]="'px-6 py-3 text-end text-sm font-medium text-slate-500 ' + (stickyColumns ? 'sticky end-0 z-20 list-actions-th' : '')">{{ 'COMMON.ACTIONS_LABEL' | translate }}</th>
             }
           </tr>
         </thead>
@@ -340,7 +346,7 @@
 
             <!-- Selection Checkbox -->
             @if (selectable) {
-            <td class="px-6 py-4 sticky start-0 z-10 list-sticky-cell" (click)="$event.stopPropagation()">
+            <td [class]="'px-6 py-4 ' + (stickyColumns ? 'sticky start-0 z-10 list-sticky-cell' : '')" (click)="$event.stopPropagation()">
               <input type="checkbox" [checked]="isRowSelected(row)" (change)="toggleRowSelection(row)">
             </td>
             }
@@ -349,8 +355,8 @@
                  configs know which column was hit) and stops propagation so
                  the row-level click doesn't fire a second time. -->
             @for (column of displayColumns(); track column.key; let colIdx = $index) {
-            <td [class]="'px-6 py-4 text-sm text-slate-900 ' + getCellClass(row, column) +
-                        (colIdx === 0 ? (selectable ? ' sticky start-12 z-10 list-sticky-cell list-sticky-col' : ' sticky start-0 z-10 list-sticky-cell list-sticky-col') : '')"
+            <td [class]="'px-6 py-4 text-sm text-slate-900 ' + getAlignClass(column) + ' ' + getCellClass(row, column) +
+                        (colIdx === 0 && stickyColumns ? (selectable ? ' sticky start-12 z-10 list-sticky-cell list-sticky-col' : ' sticky start-0 z-10 list-sticky-cell list-sticky-col') : '')"
               [style.min-width]="column.width"
               (click)="onRowClick(row, column, $event); $event.stopPropagation()">
 
@@ -358,7 +364,7 @@
                    of inline-joined items inside one cell. -->
               @if (column.groupedRows) {
                 @for (groupRow of column.groupedRows; track $index; let firstRow = $first) {
-                  <div class="flex flex-wrap items-center gap-x-2" [class.mt-1]="!firstRow">
+                  <div class="flex flex-wrap items-center gap-x-2" [class.mt-1]="!firstRow" [class.justify-end]="column.align === 'end'">
                     @for (item of groupRow; track item.key) {
                       <ng-container [ngTemplateOutlet]="cellContent"
                         [ngTemplateOutletContext]="{ row: row, col: item }"></ng-container>
@@ -375,7 +381,7 @@
             <!-- Actions Cell — transparent sticky cell so only the buttons
                  inside float to the end edge (with their own shadow). -->
             @if (rowActions.length > 0 || getRowActionsTemplate()) {
-            <td class="px-6 py-4 text-end sticky end-0 z-10 list-floating-actions" (click)="$event.stopPropagation()">
+            <td [class]="'px-6 py-4 text-end ' + (stickyColumns ? 'sticky end-0 z-10 list-floating-actions' : '')" (click)="$event.stopPropagation()">
               @if (getRowActionsTemplate()) {
               <ng-container [ngTemplateOutlet]="$any(getRowActionsTemplate())"
                 [ngTemplateOutletContext]="{ $implicit: row }">
@@ -403,13 +409,16 @@
           <!-- Expanded child rows -->
           @if (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length) {
             @for (child of $any(row)[childrenKey]; track $index) {
-            <tr class="bg-brand-50/30 border-s-4 border-s-brand-500 border-b border-brand-100 hover:bg-brand-50/60 transition-colors cursor-pointer"
+            <tr class="list-child-row bg-brand-50/30 border-s-4 border-s-brand-500 border-b border-brand-100 hover:bg-brand-50/60 transition-colors cursor-pointer"
                 (click)="onRowClick(child, undefined, $event)">
               @if (selectable) {
-              <td class="px-6 py-3"></td>
+              <td [class]="'px-6 py-3' + (stickyColumns ? ' sticky start-0 z-10 list-sticky-cell' : '')"></td>
               }
               @for (column of displayColumns(); track column.key; let ci = $index) {
-              <td class="px-6 py-3 text-sm text-slate-600" [style.min-width]="column.width">
+              <td class="px-6 py-3 text-sm text-slate-600"
+                [class]="getAlignClass(column) +
+                        (ci === 0 && stickyColumns ? (selectable ? ' sticky start-12 z-10 list-sticky-cell list-sticky-col' : ' sticky start-0 z-10 list-sticky-cell list-sticky-col') : '')"
+                [style.min-width]="column.width">
                 @if (ci === 0) {
                   <div class="flex items-start gap-2 ps-6">
                     <span class="w-4 border-l-2 border-b-2 border-slate-300 h-3 rounded-bl-sm flex-shrink-0 mt-2"></span>
@@ -432,7 +441,7 @@
                 } @else {
                   @if (column.groupedRows) {
                     @for (groupRow of column.groupedRows; track $index; let firstRow = $first) {
-                      <div class="flex flex-wrap items-center gap-x-2" [class.mt-1]="!firstRow">
+                      <div class="flex flex-wrap items-center gap-x-2" [class.mt-1]="!firstRow" [class.justify-end]="column.align === 'end'">
                         @for (item of groupRow; track item.key) {
                           <ng-container [ngTemplateOutlet]="cellContent"
                             [ngTemplateOutletContext]="{ row: child, col: item }"></ng-container>
@@ -447,7 +456,29 @@
               </td>
               }
               @if (rowActions.length > 0 || getRowActionsTemplate()) {
-              <td class="px-6 py-3"></td>
+              <td [class]="'px-6 py-3 text-end' + (stickyColumns ? ' sticky end-0 z-10 list-floating-actions' : '')"
+                (click)="$event.stopPropagation()">
+                @if (getRowActionsTemplate()) {
+                <ng-container [ngTemplateOutlet]="$any(getRowActionsTemplate())"
+                  [ngTemplateOutletContext]="{ $implicit: child }">
+                </ng-container>
+                }
+                @else {
+                <div class="flex items-center justify-end gap-1">
+                  @for (action of rowActions; track action.id) {
+                  <button type="button" (click)="onRowAction(action, child, $event)" [disabled]="isActionDisabled(action)"
+                    [class]="
+                'p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ' +
+                (action.color === 'danger' ? 'text-slate-400 hover:text-red-600 hover:bg-red-50' : 'text-slate-400 hover:text-brand-600 hover:bg-brand-50')"
+                    [appTooltip]="action.label">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <!-- Icon -->
+                    </svg>
+                  </button>
+                  }
+                </div>
+                }
+              </td>
               }
             </tr>
             }
@@ -457,6 +488,23 @@
       </table>
       }
     </div>
+
+    <!-- Fixed phantom horizontal scrollbar — the real scrollbar sits at the
+         bottom of the (tall) table, off-screen for any list longer than a
+         viewport. This track is position: fixed, pinned to the viewport
+         bottom while the table is in view (sticky is defeated here by
+         .list-card's overflow: hidden), and two-way synced with the scroll
+         host. Geometry (left/width/bottom) tracks the host's bounding rect
+         via updatePhantomGeometry() on page scroll / resize / data load. -->
+    @if (stickyColumns && phantomVisible()) {
+      <div class="lp-hscroll" #hscrollPhantom
+        [style.left.px]="phantomLeft()"
+        [style.width.px]="phantomWidth()"
+        [style.bottom.px]="phantomBottom()"
+        (scroll)="syncFromPhantom(hscrollPhantom)">
+        <div [style.width.px]="hostScrollWidth()"></div>
+      </div>
+    }
     </div>
     }
 
@@ -469,9 +517,84 @@
     }
 
     <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- MOBILE CARD VIEW (opt-in via [mobileCardConfig], < 768px) -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    @if (useMobileCards()) {
+      @if (isLoading()) {
+        <div class="lp-mcards">
+          @for (r of [1,2,3,4,5,6]; track r) {
+            <div class="lp-mcard lp-mcard--skel">
+              <div class="lp-mcard__thumb lp-skel"></div>
+              <div class="lp-mcard__body">
+                <div class="lp-skel h-3.5 rounded" [style.width.%]="50 + (r % 3) * 12"></div>
+                <div class="lp-skel h-3 rounded mt-2" style="width:70%"></div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else if (data().length === 0) {
+        <div class="flex flex-col items-center justify-center py-16 px-6 text-center">
+          <h3 class="text-base font-semibold text-slate-900 mb-1">{{ emptyState.title }}</h3>
+          @if (emptyState.message) { <p class="text-sm text-slate-500 mb-4">{{ emptyState.message }}</p> }
+          @if (emptyState.actionLabel && emptyState.actionHandler) {
+            <button (click)="emptyState.actionHandler!()" class="px-5 py-2.5 bg-brand-600 text-white rounded-lg text-sm font-medium">{{ emptyState.actionLabel }}</button>
+          }
+        </div>
+      } @else {
+        <div class="lp-mcards">
+          @for (row of data(); track trackByFn($index, row)) {
+            <div class="lp-mcard" (click)="onRowClick(row, undefined, $event)">
+              <!-- Thumbnail -->
+              @if (mobileCardConfig?.showThumbnail !== false) {
+                <div class="lp-mcard__thumb">
+                  @if (getMobileThumbTemplate()) {
+                    <ng-container [ngTemplateOutlet]="getMobileThumbTemplate()!" [ngTemplateOutletContext]="{ $implicit: row, row: row }"/>
+                  } @else {
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-300"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                  }
+                </div>
+              }
+              <!-- Body -->
+              <div class="lp-mcard__body">
+                <div class="lp-mcard__line1">
+                  @if (getMobileTitleTemplate()) {
+                    <ng-container [ngTemplateOutlet]="getMobileTitleTemplate()!" [ngTemplateOutletContext]="{ $implicit: row, row: row }"/>
+                  } @else {
+                    <span class="lp-mcard__title">{{ getCellValue(row, displayColumns()[0]) }}</span>
+                  }
+                </div>
+                <div class="lp-mcard__line2">
+                  <div class="lp-mcard__metrics">
+                    @for (mk of (mobileCardConfig?.metricKeys || []); track mk) {
+                      <ng-container [ngTemplateOutlet]="cellContent" [ngTemplateOutletContext]="{ row: row, col: colByKey(mk) }"/>
+                    }
+                    @if (getMobileChipTemplate()) {
+                      <ng-container [ngTemplateOutlet]="getMobileChipTemplate()!" [ngTemplateOutletContext]="{ $implicit: row, row: row }"/>
+                    }
+                  </div>
+                  @if (mobileCardConfig?.secondaryKey) {
+                    <span class="lp-mcard__secondary">
+                      <ng-container [ngTemplateOutlet]="cellContent" [ngTemplateOutletContext]="{ row: row, col: colByKey(mobileCardConfig!.secondaryKey!) }"/>
+                    </span>
+                  }
+                </div>
+              </div>
+              <!-- Actions -->
+              @if (getRowActionsTemplate()) {
+                <div class="lp-mcard__actions" (click)="$event.stopPropagation()">
+                  <ng-container [ngTemplateOutlet]="getRowActionsTemplate()!" [ngTemplateOutletContext]="{ $implicit: row }"/>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- GRID VIEW -->
     <!-- ══════════════════════════════════════════════════════════════ -->
-    @if (viewMode() === 'grid') {
+    @if (viewMode() === 'grid' && !useMobileCards()) {
 
       <!-- Loading Skeleton -->
       @if (isLoading()) {

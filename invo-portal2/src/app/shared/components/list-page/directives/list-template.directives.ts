@@ -46,3 +46,31 @@ export class ListHeaderTemplateDirective {
 export class ListRowActionsDirective {
   constructor(public template: TemplateRef<any>) {}
 }
+
+/**
+ * Mobile-card thumbnail slot (left, ~38×31). Absent → a default placeholder.
+ * Usage: <ng-template listMobileThumb let-row> … </ng-template>
+ */
+@Directive({ selector: '[listMobileThumb]', standalone: true })
+export class ListMobileThumbDirective {
+  constructor(public template: TemplateRef<any>) {}
+}
+
+/**
+ * Mobile-card line-1 slot — title text (truncated by the frame) + status badge.
+ * Usage: <ng-template listMobileTitle let-row> … </ng-template>
+ */
+@Directive({ selector: '[listMobileTitle]', standalone: true })
+export class ListMobileTitleDirective {
+  constructor(public template: TemplateRef<any>) {}
+}
+
+/**
+ * Mobile-card line-2 conditional chip(s) (e.g. "1/2 translated"). Self-guard
+ * with @if so nothing renders when irrelevant.
+ * Usage: <ng-template listMobileChip let-row> … </ng-template>
+ */
+@Directive({ selector: '[listMobileChip]', standalone: true })
+export class ListMobileChipDirective {
+  constructor(public template: TemplateRef<any>) {}
+}

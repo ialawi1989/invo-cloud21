@@ -1,0 +1,57 @@
+<app-modal-header [title]="'MATRIX.DIMENSION.PICK_EXISTING' | translate"/>
+
+<div class="pdm__body">
+  <label class="pdm__search">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text"
+      [value]="search()"
+      (input)="onSearchInput($any($event.target).value)"
+      [placeholder]="'MATRIX.DIMENSION.SEARCH_PLACEHOLDER' | translate"/>
+  </label>
+
+  <div class="pdm__bar">
+    <label class="pdm__selectall">
+      <input type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll()"/>
+      <span>{{ 'MATRIX.DIMENSION.SELECT_ALL' | translate }}</span>
+    </label>
+    <span class="pdm__count">{{ pickedCount() }}</span>
+  </div>
+
+  <ul class="pdm__list">
+    @for (row of rows(); track row.id) {
+      <li class="pdm__row"
+        [class.is-picked]="isPicked(row.id)"
+        [class.is-taken]="isTaken(row.id)"
+        (click)="toggle(row)">
+        <input type="checkbox"
+          [checked]="isPicked(row.id) || isTaken(row.id)"
+          [disabled]="isTaken(row.id)"
+          (click)="$event.stopPropagation()"
+          (change)="toggle(row)"/>
+        <div class="pdm__main">
+          <strong class="pdm__name">{{ row.name || '—' }}</strong>
+          <span class="pdm__meta">{{ 'DIMENSIONS.LIST.ATTRIBUTES_COUNT' | translate:{ count: row.attributesCount } }}</span>
+        </div>
+      </li>
+    }
+    @if (rows().length === 0 && !loading()) {
+      <li class="pdm__empty">{{ 'DIMENSIONS.LIST.NO_MATCH' | translate }}</li>
+    }
+    <li #scrollSentinel class="pdm__sentinel" aria-hidden="true"></li>
+    @if (loading()) {
+      <li class="pdm__loading"><span class="spinner" aria-hidden="true"></span></li>
+    }
+  </ul>
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btn btn-ghost" (click)="cancel()">
+    {{ 'MATRIX.FORM.CANCEL' | translate }}
+  </button>
+  <button type="button" class="btn btn-primary" (click)="confirm()" [disabled]="saving()">
+    @if (saving()) { <span class="spinner spinner--light" aria-hidden="true"></span> }
+    {{ 'MATRIX.FORM.SAVE' | translate }} ({{ pickedCount() }})
+  </button>
+</app-modal-footer>

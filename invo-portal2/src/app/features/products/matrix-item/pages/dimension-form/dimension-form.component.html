@@ -1,0 +1,98 @@
+<div class="df-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="page-title">{{ pageTitle() }}</h1>
+  </header>
+
+  <div class="df-body">
+    <section class="card">
+      <div class="card__body">
+        <!-- Name + translate -->
+        <div class="field">
+          <span class="field__label">
+            {{ 'DIMENSIONS.FORM.NAME' | translate }}
+            @if (nameValidating()) {
+              <span class="field__validating" aria-hidden="true"></span>
+            }
+          </span>
+          <div class="name-row">
+            <input class="field__input"
+              type="text"
+              [value]="dimension().name"
+              (input)="setName($any($event.target).value)"
+              [placeholder]="'DIMENSIONS.FORM.NAME_PLACEHOLDER' | translate"
+              [class.field__input--err]="!!nameError() && dimension().name.length > 0"/>
+            <button type="button" class="btn btn-default" (click)="openTranslate()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/>
+                <path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/>
+              </svg>
+              {{ 'DIMENSIONS.FORM.TRANSLATE' | translate }}
+            </button>
+          </div>
+          @if (nameError() && dimension().name.length > 0) {
+            <span class="field__err">{{ nameError() | translate }}</span>
+          }
+        </div>
+
+        <!-- Display type -->
+        <div class="field">
+          <span class="field__label">{{ 'DIMENSIONS.FORM.DISPLAY_TYPE' | translate }}</span>
+          <app-segmented-toggle
+            [options]="displayTypeOptions"
+            [value]="dimension().displayType"
+            (valueChange)="setDisplayType($event)"/>
+        </div>
+
+        <!-- Attributes -->
+        <div class="field">
+          <div class="attr-head">
+            <span class="field__label">{{ 'DIMENSIONS.FORM.ATTRIBUTES' | translate }}</span>
+            <button type="button" class="btn btn-default btn-sm" (click)="openAttributes()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              {{ 'DIMENSIONS.FORM.ADD_ATTRIBUTES' | translate }}
+            </button>
+          </div>
+
+          @if (dimension().attributes.length === 0) {
+            <p class="attr-empty">{{ 'MATRIX.ATTRIBUTE.ATTRIBUTE_HINT' | translate }}</p>
+          } @else {
+            <div class="attr-tags">
+              @for (attr of dimension().attributes; track attr.id || attr.code; let i = $index) {
+                <span class="attr-tag">
+                  @if (isHex(attr.value)) {
+                    <span class="attr-swatch" [style.background-color]="attr.value"></span>
+                  }
+                  <span class="attr-name">{{ attr.name }}</span>
+                  <span class="attr-code">({{ attr.code }})</span>
+                  @if (canRemoveAttr(attr)) {
+                    <button type="button" class="attr-x" (click)="removeAttr(i)"
+                      [attr.aria-label]="'MATRIX.ATTRIBUTE.REMOVE' | translate">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  }
+                </span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="save-bar">
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'DIMENSIONS.FORM.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
+      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+      {{ 'DIMENSIONS.FORM.SAVE' | translate }}
+    </button>
+  </footer>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

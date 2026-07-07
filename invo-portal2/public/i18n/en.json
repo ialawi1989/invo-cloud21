@@ -235,6 +235,11 @@
     "BLOG": "Blog",
     "SETTINGS": "Settings",
     "DESIGN_SITE": "Design Site",
+    "SECTION": {
+      "CATALOG": "Catalog",
+      "CLASSIFICATIONS": "Classifications",
+      "OPTIONS_RECIPES": "Options & Recipes"
+    },
     "SUB": {
       "PRODUCT_LIST": "Product List",
       "MATRIX_ITEMS": "Matrix Items",

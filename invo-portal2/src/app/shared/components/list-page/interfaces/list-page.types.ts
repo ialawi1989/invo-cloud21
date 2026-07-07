@@ -23,6 +23,7 @@ export interface TableColumn<T = any> {
   customTemplate?: boolean;
   cellClass?: string | ((row: T) => string);
   isCustomField?: boolean;
+  align?: string;
 
   /**
    * Skip this column when building the `columns` array sent to the
@@ -314,6 +315,31 @@ export interface ListPageConfig<T = any> {
   customCellTemplates?: Record<string, TemplateRef<any>>;
   customHeaderTemplate?: TemplateRef<any>;
   customFooterTemplate?: TemplateRef<any>;
+}
+
+/**
+ * Mobile Card Configuration
+ * ─────────────────────────
+ * Opt-in compact card layout for `app-list-page` on screens < 768px. When a
+ * consumer supplies `[mobileCardConfig]`, the list-page renders a one-row-per
+ * card list instead of the generic key/value grid. Pages that DON'T provide
+ * it keep the existing mobile grid behavior unchanged.
+ *
+ * Structure (per card): [thumb] · { line1: title+badge } { line2: metrics +
+ * chip … secondary } · [⋯ actions]. The bespoke regions come from named
+ * template slots (`listMobileThumb`, `listMobileTitle`, `listMobileChip`);
+ * metrics/secondary reuse the row's existing `listCellTemplate`s.
+ */
+export interface MobileCardConfig {
+  /** Cell-template keys rendered inline on line 2 as icon+number metrics
+   *  (e.g. ['engagement']). Each reuses its `listCellTemplate`. */
+  metricKeys?: string[];
+  /** Column/cell key shown as the right-aligned muted secondary text on
+   *  line 2 (e.g. 'publishDate'). Uses its `listCellTemplate` or value. */
+  secondaryKey?: string;
+  /** Render the left thumbnail slot (default true). Visuals come from the
+   *  `listMobileThumb` template; absent → a default placeholder icon. */
+  showThumbnail?: boolean;
 }
 
 /**

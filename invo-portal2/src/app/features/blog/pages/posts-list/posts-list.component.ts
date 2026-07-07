@@ -24,10 +24,14 @@ import {
   EmptyStateConfig,
   ListQueryParams,
   ListResponse,
+  MobileCardConfig,
 } from '@shared/components/list-page/interfaces/list-page.types';
 import {
   ListCellTemplateDirective,
   ListRowActionsDirective,
+  ListMobileThumbDirective,
+  ListMobileTitleDirective,
+  ListMobileChipDirective,
 } from '@shared/components/list-page/directives/list-template.directives';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
@@ -57,6 +61,9 @@ type StatusFilter = typeof STATUS_OPTIONS[number];
     ListPageComponent,
     ListCellTemplateDirective,
     ListRowActionsDirective,
+    ListMobileThumbDirective,
+    ListMobileTitleDirective,
+    ListMobileChipDirective,
     DropdownMenuBtnComponent,
     SearchDropdownComponent,
     StatusBadgeComponent,
@@ -172,12 +179,30 @@ export class PostsListComponent implements OnInit {
     this.columns = [
       { key: 'title',         label: t('BLOG.LIST.COL_POST'),         sortable: true,  primary: true, locked: true, customTemplate: true },
       { key: 'publishDate',   label: t('BLOG.LIST.COL_DATE'),         sortable: true,  customTemplate: true },
-      { key: 'translations',  label: t('BLOG.LIST.COL_TRANSLATIONS'), sortable: false, customTemplate: true, noApi: true },
-      { key: 'views',         label: t('BLOG.LIST.COL_VIEWS'),        sortable: true,  customTemplate: true },
-      { key: 'commentsCount', label: t('BLOG.LIST.COL_COMMENTS'),     sortable: false, customTemplate: true },
-      { key: 'likesCount',    label: t('BLOG.LIST.COL_LIKES'),        sortable: true,  customTemplate: true },
+      // Merged Views / Likes / Comments (noApi — 'engagement' isn't a server field).
+      { key: 'engagement',    label: t('BLOG.LIST.COL_ENGAGEMENT'),   sortable: false, customTemplate: true, noApi: true, width: '150px' },
       { key: 'taxonomyIds',   label: t('BLOG.LIST.COL_CATEGORIES'),   sortable: false, customTemplate: true, noApi: true },
     ];
+  }
+
+  /** Mobile compact-card wiring — engagement metrics on line 2, date as the
+   *  right-aligned secondary text; thumbnail/title/chip via the listMobile*
+   *  slots in the template. */
+  readonly mobileCardConfig: MobileCardConfig = {
+    metricKeys: ['engagement'],
+    secondaryKey: 'publishDate',
+    showThumbnail: true,
+  };
+
+  /** { done, total } translated languages for a post. */
+  translationCounts(p: BlogPost): { done: number; total: number } {
+    const total = p.supportedLanguages?.length ?? this.supportedLangCount();
+    return { done: this.languagesOf(p).length, total };
+  }
+  /** True when every supported language is translated (hide the chip). */
+  translationsComplete(p: BlogPost): boolean {
+    const c = this.translationCounts(p);
+    return c.done >= c.total;
   }
 
   private buildFilters(): void {
@@ -344,6 +369,7 @@ export class PostsListComponent implements OnInit {
   whenLabel(p: BlogPost): string {
     if (p.status === 'scheduled' && p.scheduledDate) return new Date(p.scheduledDate).toLocaleString();
     if (p.publishDate) return new Date(p.publishDate).toLocaleDateString();
+    if (p.status === 'draft') return this.translate.instant('BLOG.LIST.NOT_PUBLISHED');
     return '—';
   }
   categoriesOf(p: BlogPost): string {
@@ -468,8 +494,9 @@ export class PostsListComponent implements OnInit {
   /** Per-row "⋯ More" menu — supported actions are live, Wix extras stub. */
   rowMenu(p: BlogPost): DropdownMenuBtnItem[] {
     const items: DropdownMenuBtnItem[] = [
+      { label: 'COMMON.ACTIONS.EDIT',         click: () => this.goEdit(p), iconPath: 'M12 20h9 M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z' },
       { label: 'BLOG.LIST.MENU_PREVIEW',      click: () => this.previewRow(p), iconPath: 'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' },
-      { label: 'BLOG.LIST.MENU_SHARE',        click: () => this.comingSoon(), iconPath: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8 M16 6l-4-4-4 4 M12 2v13' },
+      { label: 'BLOG.LIST.MENU_SHARE',        click: () => this.shareRow(p), iconPath: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8 M16 6l-4-4-4 4 M12 2v13' },
       { label: p.isPinned ? 'BLOG.LIST.MENU_UNPIN' : 'BLOG.LIST.MENU_PIN', click: () => this.togglePin(p), iconPath: 'M12 17v5 M5 17h14l-1.5-9H6.5z M9 8V5a3 3 0 0 1 6 0v3' },
       { label: 'BLOG.LIST.MENU_REPORT',       click: () => this.comingSoon(), iconPath: 'M3 3v18h18 M7 16V9 M12 16V5 M17 16v-3' },
       { label: 'BLOG.LIST.MENU_TRANSLATE',    click: () => this.comingSoon(), separator: true, iconPath: 'M2 12a10 10 0 1 0 20 0 10 10 0 1 0-20 0 M2 12h20 M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z' },

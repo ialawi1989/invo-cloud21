@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   OnDestroy,
   OnInit,
   computed,
@@ -128,6 +129,7 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
   private productsService = inject(ProductsService);
   private translate = inject(TranslateService);
   private modalService = inject(ModalService);
+  private el = inject(ElementRef<HTMLElement>);
   readonly privileges = inject(PrivilegeService);
 
   // ── Types accepted by the form ──────────────────────────────────────────────
@@ -480,7 +482,12 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
   async saveProduct(): Promise<void> {
     const info = this.productInfo();
     if (!info || this.productForm.invalid) {
+      // Reveal every field's validation UI (messages are gated on `touched`)
+      // and take the user straight to the first offending field — otherwise
+      // a required control they never focused (e.g. an empty UOM) blocks the
+      // save with no on-screen hint about where the problem is.
       this.productForm.markAllAsTouched();
+      this.scrollToFirstError();
       return;
     }
 
@@ -542,6 +549,30 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
     } finally {
       this.saving.set(false);
     }
+  }
+
+  /**
+   * Scroll to (and focus) the first invalid form field so the user can see
+   * exactly what's blocking the save. Deferred a tick so `markAllAsTouched`
+   * has flushed `ng-invalid` / the error messages into the DOM first.
+   * Prefers a *visible* control — a required control in a collapsed/hidden
+   * section can't be scrolled to — but falls back to the first match so we
+   * never silently do nothing.
+   */
+  private scrollToFirstError(): void {
+    setTimeout(() => {
+      const host = this.el.nativeElement as HTMLElement;
+      const invalids = Array.from(
+        host.querySelectorAll<HTMLElement>('[formcontrolname].ng-invalid'),
+      );
+      const target = invalids.find((elm) => elm.offsetParent !== null) ?? invalids[0];
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const focusable = target.matches('input,select,textarea,button')
+        ? target
+        : target.querySelector<HTMLElement>('input,select,textarea,button,[tabindex]');
+      focusable?.focus({ preventScroll: true });
+    });
   }
 
   backPage(): void {

@@ -235,6 +235,11 @@
     "BLOG": "المدونة",
     "SETTINGS": "الإعدادات",
     "DESIGN_SITE": "تصميم الموقع",
+    "SECTION": {
+      "CATALOG": "الكتالوج",
+      "CLASSIFICATIONS": "التصنيفات",
+      "OPTIONS_RECIPES": "الخيارات والوصفات"
+    },
     "SUB": {
       "PRODUCT_LIST": "قائمة المنتجات",
       "MATRIX_ITEMS": "عناصر المصفوفة",

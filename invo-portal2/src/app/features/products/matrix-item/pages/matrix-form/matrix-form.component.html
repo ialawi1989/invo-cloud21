@@ -1,0 +1,235 @@
+<div class="mf-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron" />
+    <h1 class="page-title">{{ pageTitle() }}</h1>
+  </header>
+
+  <form [formGroup]="form" (keydown.enter)="$event.preventDefault()">
+    <!-- Matrix information -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'MATRIX.FORM.INFORMATION' | translate }}</h2>
+      </header>
+      <div class="card__body">
+        <!-- Image -->
+        <div class="field">
+          <span class="field__label">{{ 'MATRIX.FORM.IMAGE' | translate }}</span>
+          <div class="image-row">
+            @if (hasImage()) {
+              <img class="image-row__thumb" [src]="imageUrl() + '?width=96&height=96'" alt="" />
+            } @else {
+              <div class="image-row__thumb image-row__thumb--empty">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/>
+                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                </svg>
+              </div>
+            }
+            <div class="image-row__actions">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="chooseImage()">
+                {{ (hasImage() ? 'MATRIX.FORM.REPLACE_IMAGE' : 'MATRIX.FORM.CHOOSE_IMAGE') | translate }}
+              </button>
+              @if (hasImage()) {
+                <button type="button" class="btn btn-ghost btn-sm danger" (click)="removeImage()">
+                  {{ 'MATRIX.FORM.REMOVE_IMAGE' | translate }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Name -->
+          <label class="field">
+            <span class="field__label">
+              {{ 'MATRIX.FORM.NAME' | translate }}
+              <button type="button" class="link-btn" (click)="translateName()">
+                {{ 'MATRIX.FORM.TRANSLATE' | translate }}
+              </button>
+            </span>
+            <input class="field__input" type="text"
+              formControlName="matrixName"
+              (change)="onNameChange()"
+              [placeholder]="'MATRIX.FORM.NAME_PLACEHOLDER' | translate"
+              [class.field__input--err]="form.controls.matrixName.touched && form.controls.matrixName.invalid" />
+            @if (form.controls.matrixName.touched && form.controls.matrixName.hasError('required')) {
+              <span class="field__err">{{ 'MATRIX.FORM.NAME' | translate }}</span>
+            }
+            @if (form.controls.matrixName.hasError('exist')) {
+              <span class="field__err">{{ 'DIMENSIONS.FORM.NAME_DUPLICATE' | translate }}</span>
+            }
+          </label>
+
+          <!-- Barcode -->
+          <label class="field">
+            <span class="field__label">
+              {{ 'MATRIX.FORM.BARCODE' | translate }}
+              @if (!isEdit()) {
+                <button type="button" class="link-btn" (click)="generateBarcode()">
+                  {{ 'MATRIX.FORM.GENERATE' | translate }}
+                </button>
+              }
+            </span>
+            <input class="field__input" type="text"
+              formControlName="matrixBarcode"
+              (blur)="onBarcodeBlur()"
+              [class.field__input--err]="form.controls.matrixBarcode.touched && form.controls.matrixBarcode.invalid" />
+            @if (form.controls.matrixBarcode.hasError('exist')) {
+              <span class="field__err">{{ 'DIMENSIONS.FORM.NAME_DUPLICATE' | translate }}</span>
+            }
+          </label>
+        </div>
+
+        <div class="grid-2">
+          <!-- Default price -->
+          <label class="field">
+            <span class="field__label">{{ 'MATRIX.FORM.DEFAULT_PRICE' | translate }}</span>
+            <input class="field__input" type="number" min="0" formControlName="defaultPrice" />
+            @if (form.controls.defaultPrice.value === 0) {
+              <span class="field__hint field__hint--warn">{{ 'MATRIX.FORM.PRICE_ZERO_WARNING' | translate }}</span>
+            }
+          </label>
+
+          <!-- Unit cost -->
+          <label class="field">
+            <span class="field__label">{{ 'MATRIX.FORM.UNIT_COST' | translate }}</span>
+            <input class="field__input" type="number" min="0" formControlName="unitCost" />
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dimensions + generated products -->
+    @if (matrixInfo().barcode) {
+      <section class="card">
+        <div class="card__body">
+          <app-manage-dimensions
+            [dimensions]="matrixInfo().dimensions"
+            [disabled]="isEdit()"
+            [formStatus]="formStatus()"
+            (dimensionsChange)="onDimensionsChange($event)"
+            (generate)="regenerate()" />
+
+          @if (showProducts() && hasProducts()) {
+            <h3 class="section-title">{{ 'MATRIX.FORM.PRODUCTS' | translate }}</h3>
+
+            <!-- Branch tabs -->
+            @if (branches().length > 1) {
+              <div class="branch-tabs">
+                @for (branch of branches(); track branch.id; let bi = $index) {
+                  <button type="button" class="branch-tab"
+                    [class.branch-tab--active]="activeBranch() === bi"
+                    (click)="activeBranch.set(bi)">{{ branch.name }}</button>
+                }
+              </div>
+            }
+
+            @for (branch of branches(); track branch.id; let bi = $index) {
+              @if (activeBranch() === bi) {
+                <!-- New products -->
+                @if (hasNewProducts()) {
+                  @if (hasExistingProducts()) { <h4 class="sub-title">{{ 'MATRIX.FORM.NEW_PRODUCTS' | translate }}</h4> }
+                  <div class="table-scroll">
+                    <table class="ptable">
+                      <thead>
+                        <tr>
+                          <th>{{ 'MATRIX.FORM.COL_NAME' | translate }}</th>
+                          <th>{{ 'MATRIX.FORM.COL_BARCODE' | translate }}</th>
+                          <th>{{ 'MATRIX.FORM.COL_SKU' | translate }}</th>
+                          <th>{{ 'MATRIX.FORM.COL_OPENING_BALANCE' | translate }}</th>
+                          <th>{{ 'MATRIX.FORM.COL_OPENING_BALANCE_COST' | translate }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (prod of matrixInfo().products; track prod.sku) {
+                          @if (!prod.id) {
+                            <tr>
+                              <td>{{ prod.name }}</td>
+                              <td class="mono">{{ prod.barcode }}</td>
+                              <td class="mono">{{ prod.sku }}</td>
+                              <td>
+                                <input class="cell-input" type="number" min="0"
+                                  [(ngModel)]="branchProductFor(prod, branch.id).openingBalance"
+                                  (ngModelChange)="clampNonNegative(branchProductFor(prod, branch.id), 'openingBalance')"
+                                  [ngModelOptions]="{ standalone: true }" />
+                              </td>
+                              <td>
+                                <input class="cell-input" type="number" min="0"
+                                  [(ngModel)]="branchProductFor(prod, branch.id).openingBalanceCost"
+                                  (ngModelChange)="markDirty()"
+                                  [ngModelOptions]="{ standalone: true }" />
+                              </td>
+                            </tr>
+                          }
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+
+                <!-- Existing products -->
+                @if (hasExistingProducts()) {
+                  @if (hasNewProducts()) { <h4 class="sub-title">{{ 'MATRIX.FORM.EXISTING_PRODUCTS' | translate }}</h4> }
+                  <div class="table-scroll">
+                    <table class="ptable">
+                      <thead>
+                        <tr>
+                          <th>{{ 'MATRIX.FORM.COL_NAME' | translate }}</th>
+                          <th>{{ 'MATRIX.FORM.COL_BARCODE' | translate }}</th>
+                          <th>{{ 'MATRIX.FORM.COL_SKU' | translate }}</th>
+                          <th>{{ 'MATRIX.FORM.COL_ON_HAND' | translate }}</th>
+                          <th>{{ 'MATRIX.FORM.COL_PRICE' | translate }}</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (prod of matrixInfo().products; track prod.sku) {
+                          @if (prod.id) {
+                            <tr>
+                              <td>{{ prod.name }}</td>
+                              <td class="mono">{{ prod.barcode }}</td>
+                              <td class="mono">{{ prod.sku }}</td>
+                              <td>
+                                <input class="cell-input cell-input--ro" type="number" readonly
+                                  [value]="branchProductFor(prod, branch.id).onHand" />
+                              </td>
+                              <td>
+                                <input class="cell-input" type="number" min="0"
+                                  [(ngModel)]="branchProductFor(prod, branch.id).price"
+                                  (blur)="clampNonNegative(branchProductFor(prod, branch.id), 'price')"
+                                  [ngModelOptions]="{ standalone: true }" />
+                              </td>
+                              <td>
+                                <button type="button" class="btn btn-ghost btn-sm" (click)="printBarcode(prod)">
+                                  {{ 'MATRIX.FORM.PRINT_BARCODE' | translate }}
+                                </button>
+                              </td>
+                            </tr>
+                          }
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              }
+            }
+          } @else if (matrixInfo().dimensions.length > 0 && !showProducts()) {
+            <p class="hint-line">{{ 'MATRIX.FORM.NO_PRODUCTS' | translate }}</p>
+          }
+        </div>
+      </section>
+    }
+  </form>
+
+  <footer class="save-bar">
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'MATRIX.FORM.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || form.invalid">
+      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+      {{ 'MATRIX.FORM.SAVE' | translate }}
+    </button>
+  </footer>
+
+  <app-loading-overlay [show]="loading()" />
+</div>

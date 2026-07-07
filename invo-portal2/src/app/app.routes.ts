@@ -255,6 +255,20 @@ export const routes: Routes = [
           import('./features/products/products.routes').then(m => m.PRODUCTS_ROUTES)
       },
       {
+        // Matrix Items — product-variant builder (dimensions → generated
+        // child products). Sidebar links `/matrix-item` (menu id 112).
+        path: 'matrix-item',
+        loadChildren: () =>
+          import('./features/products/matrix-item/matrix-item.routes').then(m => m.MATRIX_ITEM_ROUTES)
+      },
+      {
+        // Dimensions catalog — reusable Size/Color/Material sets consumed by
+        // the matrix builder. Co-located with the matrix-item feature.
+        path: 'dimensions',
+        loadChildren: () =>
+          import('./features/products/matrix-item/dimensions.routes').then(m => m.DIMENSIONS_ROUTES)
+      },
+      {
         // Menu Builder is surfaced from Settings (see settings.component.ts
         // → SETTINGS.ITEMS.MENU_BUILDER), so it lives under /settings/* in
         // the URL space too.

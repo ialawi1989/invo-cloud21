@@ -14,6 +14,9 @@
 .bp-h1 { margin: 0; font-size: 28px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; }
 .bp-head__actions { display: inline-flex; align-items: center; gap: 12px; }
 
+/* Mobile-only header/toolbar bits — hidden on desktop. */
+.bp-langBar, .bp-maIcon, .bp-newShort { display: none; }
+
 .bp-btn {
   display: inline-flex;
   align-items: center;
@@ -79,6 +82,7 @@
   font-weight: 600;
   color: #64748b;
   cursor: pointer;
+  white-space: nowrap;
   border-bottom: 2.5px solid transparent;
   margin-bottom: -1px;
   transition: color 120ms ease;
@@ -119,6 +123,93 @@
   }
 }
 
+/* ── Small screens ──
+   The header stacks (title over actions) and the status tabs become a
+   single horizontally-scrollable strip instead of wrapping into a tall
+   column, with the language selector dropping to its own line. */
+@media (max-width: 767px) {
+  .bp-head {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  .bp-h1 { font-size: 22px; }
+  .bp-head__actions {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .bp-btn { padding: 9px 14px; font-size: 13px; }
+  /* "More actions" → a "⋯" icon button. */
+  .bp-maText { display: none; }
+  .bp-maIcon { display: inline-flex; }
+  ::ng-deep .bp-head__actions .dmb__trigger.bp-moreActions { padding: 8px !important; }
+  /* Create button → short "New post". */
+  .bp-newFull { display: none; }
+  .bp-newShort { display: inline; }
+
+  /* Tabs become horizontally-scrollable pill chips; language collapses to a
+     compact control pinned at the row end. */
+  .bp-tabsRow {
+    align-items: center;
+    gap: 8px;
+    border-bottom: 0;
+  }
+  .bp-tabs {
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 8px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    &::-webkit-scrollbar { display: none; }
+  }
+  .bp-tab {
+    flex: 0 0 auto;
+    padding: 7px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    margin-bottom: 0;
+    background: #fff;
+    &.is-on {
+      background: var(--color-brand-600, #2691a4);
+      border-color: var(--color-brand-600, #2691a4);
+      color: #fff;
+    }
+  }
+  /* Active pill's count chip flips to a translucent-on-brand look. */
+  .bp-tab.is-on .bp-tab__count { background: rgba(255,255,255,.25); color: #fff; }
+
+  /* Language moves off the tabs row → globe icon button on the search row. */
+  .bp-lang { display: none; }
+  .bp-langBar { display: inline-flex; align-items: center; }
+  /* Collapse the search-dropdown to a 36px globe button. */
+  .bp-langIcon {
+    ::ng-deep button[aria-haspopup="listbox"] {
+      width: 34px; height: 34px; padding: 0 !important;
+      border: 1px solid #e2e8f0 !important; border-radius: 8px !important;
+      background: #fff !important; display: inline-flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+      > * { visibility: hidden; }
+      &::before {
+        content: "🌐"; position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px; visibility: visible;
+      }
+    }
+  }
+}
+
+/* Mobile card title (line 1) — truncates; badge/pill stay visible. */
+.bp-mtitle {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── Post cell (in list-page table) ── */
 .bp-postCell { display: flex; align-items: center; gap: 14px; }
 .bp-postCell__main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -145,8 +236,24 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.bp-feat { color: #f59e0b; margin-inline-start: 4px; }
+.bp-feat { color: #f59e0b; margin-inline-end: 4px; }
 .bp-trans { color: var(--color-brand-700, #2691a4); font-weight: 600; }
+/* Status badge + translated pill on one content-width row (align-self so
+   the amber pill hugs its text instead of stretching the flex-column cell). */
+.bp-badgeRow { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; }
+/* Amber "1/2 translated" pill — shown next to the status badge only when
+   translations are incomplete. */
+.bp-transPill {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center;
+  padding: 1px 8px; border-radius: 999px;
+  /* amber-50 / amber-700 (per spec) */
+  background: #fffbeb; color: #b45309;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+/* Merged engagement column — views + likes + comments inline.
+   Tabular figures so the numbers align vertically down the column. */
+.bp-engage { display: inline-flex; align-items: center; gap: 16px; font-variant-numeric: tabular-nums; }
 .bp-metric {
   display: inline-flex;
   align-items: center;

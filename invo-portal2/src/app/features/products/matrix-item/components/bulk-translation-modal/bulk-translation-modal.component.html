@@ -1,0 +1,56 @@
+<app-modal-header
+  [title]="'MATRIX.TRANSLATIONS.TITLE' | translate"
+  [subtitle]="'MATRIX.TRANSLATIONS.SUBTITLE' | translate"/>
+
+<div class="btm__body">
+  @for (dim of dimensions; track dim.id) {
+    <section class="btm__group">
+      <!-- Dimension row -->
+      <div class="btm__dim">
+        <span class="btm__dim-badge">{{ 'MATRIX.DIMENSION.DIMENSION' | translate }}</span>
+        <div class="btm__fields">
+          <label class="btm__field">
+            <span class="btm__lbl">{{ 'MATRIX.TRANSLATIONS.ENGLISH' | translate }}</span>
+            <input class="btm__input" type="text" [(ngModel)]="dim.translation.name.en"/>
+          </label>
+          <label class="btm__field">
+            <span class="btm__lbl">{{ 'MATRIX.TRANSLATIONS.ARABIC' | translate }}</span>
+            <input class="btm__input" type="text" dir="rtl" [(ngModel)]="dim.translation.name.ar"/>
+          </label>
+        </div>
+      </div>
+
+      <!-- Attribute rows -->
+      @if (dim.attributes.length > 0) {
+        <div class="btm__attrs">
+          @for (attr of dim.attributes; track attr.id || attr.code) {
+            <div class="btm__attr">
+              @if (attr.value && attr.value.startsWith('#')) {
+                <span class="btm__swatch" [style.background-color]="attr.value"></span>
+              }
+              <div class="btm__fields">
+                <label class="btm__field">
+                  <span class="btm__lbl">{{ 'MATRIX.TRANSLATIONS.ENGLISH' | translate }}</span>
+                  <input class="btm__input" type="text" [(ngModel)]="attr.translation.name.en"/>
+                </label>
+                <label class="btm__field">
+                  <span class="btm__lbl">{{ 'MATRIX.TRANSLATIONS.ARABIC' | translate }}</span>
+                  <input class="btm__input" type="text" dir="rtl" [(ngModel)]="attr.translation.name.ar"/>
+                </label>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+  }
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btn btn-ghost" (click)="cancel()">
+    {{ 'MATRIX.TRANSLATIONS.CANCEL' | translate }}
+  </button>
+  <button type="button" class="btn btn-primary" (click)="save()">
+    {{ 'MATRIX.TRANSLATIONS.SAVE' | translate }}
+  </button>
+</app-modal-footer>

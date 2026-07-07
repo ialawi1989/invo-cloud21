@@ -1,0 +1,99 @@
+<app-modal-header [title]="'MATRIX.ATTRIBUTE.ADD_ATTRIBUTES' | translate"/>
+
+<div class="aam__body">
+  <!-- Preset quick-pick -->
+  @if (availablePresets().length > 0) {
+    <div class="aam__section">
+      <span class="aam__label">{{ 'MATRIX.ATTRIBUTE.QUICK_SELECT_PRESETS' | translate }}</span>
+      <div class="aam__presets">
+        @for (preset of availablePresets(); track preset.code) {
+          <button type="button" class="aam__chip" (click)="addPreset(preset)">
+            @if (isHex(preset.value)) {
+              <span class="aam__swatch" [style.background-color]="preset.value"></span>
+            }
+            <span>{{ preset.name }}</span>
+            <span class="aam__chip-code">({{ preset.code }})</span>
+          </button>
+        }
+      </div>
+      <div class="aam__or">{{ 'MATRIX.ATTRIBUTE.OR_ADD_CUSTOM' | translate }}</div>
+    </div>
+  }
+
+  <!-- Custom add row -->
+  <div class="aam__section">
+    <div class="aam__row">
+      <input class="aam__input"
+        type="text"
+        [value]="newName()"
+        (input)="onNameInput($any($event.target).value)"
+        (keydown.enter)="addCustom()"
+        [placeholder]="(isColorDimension() ? 'MATRIX.ATTRIBUTE.COLOR_NAME_PLACEHOLDER' : 'MATRIX.ATTRIBUTE.LABEL_PLACEHOLDER') | translate"
+        [class.aam__input--err]="!!nameError()"/>
+      <input class="aam__input aam__input--code"
+        type="text"
+        [value]="newCode()"
+        (input)="onCodeInput($any($event.target).value)"
+        (keydown.enter)="addCustom()"
+        [placeholder]="'MATRIX.ATTRIBUTE.CODE_PLACEHOLDER' | translate"
+        [class.aam__input--err]="!!codeError()"/>
+      @if (isColorDimension()) {
+        <app-color-picker
+          [ngModel]="newValue()"
+          (ngModelChange)="newValue.set($event)"/>
+      }
+      <button type="button" class="aam__add" (click)="addCustom()" [disabled]="!canAdd()"
+        [attr.aria-label]="'MATRIX.ATTRIBUTE.ADD_ATTRIBUTES' | translate">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+    </div>
+
+    @if (nameError()) {
+      <span class="aam__err">{{ nameError() | translate }}</span>
+    }
+    @if (codeError()) {
+      <span class="aam__err">{{ codeError() | translate }}</span>
+    }
+
+    <span class="aam__hint">
+      {{ (isColorDimension() ? 'MATRIX.ATTRIBUTE.COLOR_HINT' : 'MATRIX.ATTRIBUTE.ATTRIBUTE_HINT') | translate }}
+    </span>
+  </div>
+
+  <!-- Current attributes -->
+  @if (attrs().length > 0) {
+    <div class="aam__section">
+      <span class="aam__label">{{ 'MATRIX.ATTRIBUTE.ATTRIBUTES_TO_ADD' | translate }}</span>
+      <div class="aam__tags">
+        @for (attr of attrs(); track $index) {
+          <span class="aam__tag">
+            @if (isHex(attr.value)) {
+              <span class="aam__swatch" [style.background-color]="attr.value"></span>
+            }
+            <span class="aam__tag-name">{{ attr.name }}</span>
+            <span class="aam__tag-code">({{ attr.code }})</span>
+            @if (canRemove(attr)) {
+              <button type="button" class="aam__tag-x" (click)="removeAttr($index)"
+                [attr.aria-label]="'MATRIX.ATTRIBUTE.REMOVE' | translate">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            }
+          </span>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btn btn-ghost" (click)="cancel()">
+    {{ 'MATRIX.ATTRIBUTE.CANCEL' | translate }}
+  </button>
+  <button type="button" class="btn btn-primary" (click)="save()">
+    {{ 'MATRIX.ATTRIBUTE.SAVE' | translate }} ({{ attrs().length }})
+  </button>
+</app-modal-footer>

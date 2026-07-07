@@ -267,16 +267,48 @@ export class SearchDropdownComponent<T = any> implements OnDestroy, ControlValue
     return (found ?? val) as T;
   }
 
+  /**
+   * True when the bound value is a primitive (id/uuid) that needs the loaded
+   * pool to resolve into a display label. Object values render directly via
+   * `displayWith`, so they don't require a preload.
+   */
+  private valueNeedsResolution(v: T | T[] | null): boolean {
+    const isPrimitive = (x: any) => x != null && x !== '' && typeof x !== 'object';
+    return Array.isArray(v) ? v.some(isPrimitive) : isPrimitive(v);
+  }
+
   hasValue = computed(() => {
     const v = this.value();
-    return Array.isArray(v) ? v.length > 0 : v != null;
+    // An empty string is "nothing selected", not a value — otherwise the
+    // trigger hides its placeholder and shows a clear (×) button for a blank
+    // control (e.g. a UOM control initialised to '').
+    return Array.isArray(v) ? v.length > 0 : v != null && v !== '';
   });
 
   // ── Search debounce ────────────────────────────────────────────────────────
   private searchInput$ = new Subject<string>();
   private destroy$ = new Subject<void>();
 
+  /** One-shot guard so the initial-value preload fires at most once. */
+  private _preloaded = false;
+
   constructor() {
+    // Preload the first page when the control is initialised with a primitive
+    // value (e.g. a UUID persisted via [toValue]) and the data is async — so
+    // the trigger can resolve that id to its label on page load instead of
+    // showing the raw id until the user opens the panel. Object values render
+    // directly via displayWith and need no lookup, so they're skipped. Runs
+    // once; the fetched page is cached and reused on the first manual open.
+    effect(() => {
+      const v = this.value();
+      if (this._preloaded) return;
+      if (!this.loadFn()) return;
+      if (this.isOpen() || this.loadedItems().length > 0) return;
+      if (!this.valueNeedsResolution(v)) return;
+      this._preloaded = true;
+      this.fetchPage();
+    });
+
     this.searchInput$
       .pipe(
         debounceTime(250),

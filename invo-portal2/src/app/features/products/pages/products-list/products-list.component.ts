@@ -5,13 +5,19 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
-import { ListCellTemplateDirective, ListRowActionsDirective } from '@shared/components/list-page/directives/list-template.directives';
+import {
+  ListCellTemplateDirective,
+  ListRowActionsDirective,
+  ListMobileThumbDirective,
+  ListMobileTitleDirective,
+} from '@shared/components/list-page/directives/list-template.directives';
 import {
   TableColumn,
   FilterConfig,
   ActionConfig,
   BulkActionConfig,
-  ListQueryParams
+  ListQueryParams,
+  MobileCardConfig
 } from '@shared/components/list-page/interfaces/list-page.types';
 
 import { ProductsService } from '../../services/products.service';
@@ -35,7 +41,18 @@ import {
 @Component({
   selector: 'app-products-list',
   standalone: true,
-  imports: [CommonModule, OverlayModule, ListPageComponent, TranslateModule, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe],
+  imports: [
+    CommonModule,
+    OverlayModule,
+    ListPageComponent,
+    TranslateModule,
+    ListCellTemplateDirective,
+    ListRowActionsDirective,
+    ListMobileThumbDirective,
+    ListMobileTitleDirective,
+    DropdownMenuBtnComponent,
+    MycurrencyPipe
+  ],
   providers: [ProductsListStateService],
   templateUrl: './products-list.component.html',
   styleUrl: './products-list.component.scss'
@@ -53,7 +70,7 @@ export class ProductsListComponent implements OnInit {
   // 1:1 port of the old product-list row-action gates. Note this privilege
   // model has no separate `edit` action — the `add` action is literally
   // "Add/Edit New Product" (see definitions/productSecurity.ts), so the Edit
-  // button uses `add.access`. `clone` is its own privilege; don't reuse add.
+  // menu item uses `add.access`. `clone` is its own privilege; don't reuse add.
   readonly canEdit       = this.privileges.check('productSecurity.actions.add.access');
   readonly canAdd        = this.privileges.check('productSecurity.actions.add.access');
   readonly canClone      = this.privileges.check('productSecurity.actions.clone.access');
@@ -83,6 +100,18 @@ export class ProductsListComponent implements OnInit {
   addNewActions: ActionConfig[] = [];
   moreActions: ActionConfig[] = [];          // general (Import/Export, Logs)
   bulkOperationActions: ActionConfig[] = []; // grouped under "Bulk operations"
+
+  /** Compact one-row mobile cards (< 768px), replacing the generic
+   *  key/value grid. Line 1: thumb + title-cased name + type chip
+   *  (listMobileTitle template). Line 2: qty + price metrics with
+   *  department right-aligned as the secondary. Card tap → detail
+   *  drawer; the "⋯" trigger reuses the same overflow menu as the
+   *  table via the shared listRowActions template. */
+  mobileCardConfig: MobileCardConfig = {
+    showThumbnail: true,
+    metricKeys: ['qty', 'defaultPrice'],
+    secondaryKey: 'departmentName',
+  };
 
   /** Map an `ActionConfig` (used by the list-page contract) onto
    *  the shared dropdown's `DropdownMenuBtnItem` shape. Carries
@@ -178,6 +207,10 @@ export class ProductsListComponent implements OnInit {
 
   private initializeTranslations(): void {
     // Columns
+    // Numeric columns (`qty`, `stockValue`, `unitCost`, `defaultPrice`,
+    // `weight`) carry `align: 'end'` so figures right-align and can be
+    // compared down the list — RTL-safe via the shared component's
+    // logical `text-end`.
     this.columns = [
       {
         key: 'name',
@@ -209,7 +242,8 @@ export class ProductsListComponent implements OnInit {
         key: 'SKU',
         label: this.lang.instant('PRODUCTS.FIELDS.SKU'),
         sortable: false,
-        width: '120px',
+        customTemplate: true,
+        width: '110px',
         visible: false,
         order: 2,
       },
@@ -262,6 +296,7 @@ export class ProductsListComponent implements OnInit {
         width: '100px',
         customTemplate: true,
         interactive: true,
+        align: 'end',
         order: 7,
       },
       // Stock Value - conditional on permission
@@ -272,6 +307,7 @@ export class ProductsListComponent implements OnInit {
         pipe: 'currency' as const,
         pipeArgs: { currency: 'BHD' },
         width: '150px',
+        align: 'end' as const,
         order: 8,
       }] : []),
       {
@@ -280,6 +316,7 @@ export class ProductsListComponent implements OnInit {
         sortable: false,
         customTemplate: true,
         width: '120px',
+        align: 'end',
         visible: false,
         order: 9,
       },
@@ -290,6 +327,7 @@ export class ProductsListComponent implements OnInit {
         pipe: 'currency' as const,
         pipeArgs: { currency: 'BHD' },
         width: '120px',
+        align: 'end',
         order: 10,
       },
       {
@@ -305,6 +343,7 @@ export class ProductsListComponent implements OnInit {
         label: this.lang.instant('PRODUCTS.FIELDS.WEIGHT'),
         sortable: false,
         width: '100px',
+        align: 'end',
         visible: false,
         order: 12,
       },
@@ -639,7 +678,9 @@ export class ProductsListComponent implements OnInit {
   onRowClick(event: any): void {
     // Matrix parents toggle their expansion via the chevron in the `name`
     // column template, so a click on the row body itself should do nothing.
-    if (event.row?.type === 'matrix') return;
+    // Exception: the compact mobile cards have no chevron/expansion, so a
+    // matrix tap there falls through to the drawer like everything else.
+    if (event.row?.type === 'matrix' && !this.listPage?.useMobileCards()) return;
 
     // Route by column: the Qty badge opens the stock breakdown modal; every
     // other column (or a click outside a column) opens the details drawer.

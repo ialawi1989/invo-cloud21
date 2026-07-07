@@ -3,6 +3,7 @@ import {
   Input,
   Output,
   EventEmitter,
+  AfterViewInit,
   OnInit,
   OnDestroy,
   signal,
@@ -42,14 +43,18 @@ import {
   SelectionChangeEvent,
   SortChangeEvent,
   FilterChangeEvent,
-  PageChangeEvent
+  PageChangeEvent,
+  MobileCardConfig
 } from '../interfaces/list-page.types';
 
 // Directives
 import {
   ListCellTemplateDirective,
   ListHeaderTemplateDirective,
-  ListRowActionsDirective
+  ListRowActionsDirective,
+  ListMobileThumbDirective,
+  ListMobileTitleDirective,
+  ListMobileChipDirective
 } from '../directives/list-template.directives';
 
 // FilterModal - MUST be relative import from same folder
@@ -99,6 +104,9 @@ import {
     FormsModule,
     ListCellTemplateDirective,
     ListRowActionsDirective,
+    ListMobileThumbDirective,
+    ListMobileTitleDirective,
+    ListMobileChipDirective,
     FilterModalComponent,
     PaginationComponent,
     BreadcrumbsComponent,
@@ -120,15 +128,19 @@ import {
     tr.list-row:hover .list-sticky-cell { background-color: #f4fbfb; }
     tr.list-row-expanded .list-sticky-cell { background-color: #ecfafd; }
 
-    /* Drop shadow on the right edge of the last start-side sticky column
-       so horizontally-scrolled content visibly tucks underneath. Gated on
-       the .list-has-scroll-start parent class (set by the scroll-affordance
-       state) so the shadow only appears when there's actually content
-       scrolled behind the sticky column - matches the Wix table pattern. */
-    /* Right-edge fade on the frozen start (Post) column. Painted INSIDE the
-       cell via ::after so no overflow:hidden ancestor can clip it, and it
-       sits above the scrolling cells because the sticky cell is a z-indexed
-       positioning context. Revealed only once the table is scrolled. */
+    /* Expanded child rows: keep their frozen (start + actions) cells opaque
+       and tinted to match the child row so scrolling content tucks cleanly
+       under them instead of bleeding over the sticky columns. */
+    tr.list-child-row .list-sticky-cell,
+    tr.list-child-row .list-floating-actions { background-color: #f5fdfd; }
+    tr.list-child-row:hover .list-sticky-cell,
+    tr.list-child-row:hover .list-floating-actions { background-color: #ecfafd; }
+
+    /* Right-edge fade on the frozen start (primary) column. Painted INSIDE
+       the cell via ::after so no overflow:hidden ancestor can clip it, and
+       it sits above the scrolling cells because the sticky cell is a
+       z-indexed positioning context. Revealed only once the table is
+       scrolled (.list-has-scroll-start). */
     .list-sticky-col::after {
       content: "";
       position: absolute;
@@ -154,9 +166,107 @@ import {
     }
 
     /* Pinned Actions column — SOLID white so content scrolls cleanly under
-       it (no left-edge fade/shadow). The header cell keeps the teal tint. */
+       it. The header cell keeps the teal tint. */
     .list-floating-actions { background: #ffffff; }
     tr.list-row:hover .list-floating-actions { background-color: #f4fbfb; }
+
+    /* ── End-edge scroll affordance ─────────────────────────────────────
+       Fade cast BY the pinned Actions column onto the content tucked
+       behind it — the "there are more columns this way" hint. Painted
+       inside the sticky actions cells via ::before (mirror of the
+       start-edge ::after above) and revealed only while there is still
+       content to scroll toward the end edge (.list-has-scroll-end). */
+    .list-floating-actions::before,
+    .list-actions-th::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 16px;
+      transform: translateX(-100%);
+      background: linear-gradient(to left, rgba(15, 23, 42, 0.10), rgba(15, 23, 42, 0));
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 3;
+    }
+    .list-has-scroll-end .list-floating-actions::before,
+    .list-has-scroll-end .list-actions-th::before { opacity: 1; }
+    :host-context([dir="rtl"]) .list-floating-actions::before,
+    :host-context([dir="rtl"]) .list-actions-th::before {
+      left: auto;
+      right: 0;
+      transform: translateX(100%);
+      background: linear-gradient(to right, rgba(15, 23, 42, 0.10), rgba(15, 23, 42, 0));
+    }
+
+    /* The table body scrolls INSIDE this host (both axes). Its height is capped
+       to the viewport by the component (recomputeScrollMaxHeight, bound inline
+       as max-height) so the page itself doesn't scroll past the header — that's
+       what lets the thead stay stuck to the top on vertical scroll while the
+       frozen start/actions columns stay put on the horizontal axis. The native
+       HORIZONTAL bar stays hidden (the fixed phantom below is its control); the
+       VERTICAL bar is shown for the inner scroll. */
+    .list-page-container .overflow-x-auto {
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+    }
+    /* WebKit/Blink: slim vertical bar, no horizontal bar (phantom drives it). */
+    .list-page-container .overflow-x-auto::-webkit-scrollbar { width: 10px; height: 0; }
+    .list-page-container .overflow-x-auto::-webkit-scrollbar:horizontal { display: none; }
+    .list-page-container .overflow-x-auto::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 5px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    /* Sticky column header — freezes to the top of the scroll host on vertical
+       scroll. No z-index here on purpose: the frozen corner cells keep their
+       higher (z-20) stacking from the sticky-column classes so they win at the
+       start/end edges, while middle header cells are positioned (sticky) and
+       therefore already paint above the scrolling body rows. The themed teal
+       fill is opaque, so rows scroll cleanly underneath. */
+    .list-page-container .overflow-x-auto thead th {
+      position: sticky;
+      top: 0;
+    }
+
+    /* Fixed phantom scrollbar — pinned to the real viewport bottom while
+       the table is in view. NOTE: position: sticky cannot work here because
+       .list-card has overflow: hidden (for its rounded corners), which makes
+       the card the sticky context — the track would stick to the card's
+       bottom, i.e. exactly where the useless native bar already was. So the
+       track is position: fixed and its left / width / bottom are set inline
+       from the scroll host's bounding rect (see updatePhantomGeometry()).
+       z-index stays below the bulk-selection bar (z-50). */
+    .lp-hscroll {
+      position: fixed;
+      z-index: 40;
+      overflow-x: auto;
+      overflow-y: hidden;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.92);
+      border-top: 1px solid #e6e8ee;
+      scrollbar-width: thin;
+      scrollbar-color: #9fbfc2 #eef2f6;
+    }
+    .lp-hscroll::-webkit-scrollbar { height: 10px; }
+    .lp-hscroll::-webkit-scrollbar-track {
+      background: #eef2f6;
+      border-radius: 5px;
+    }
+    .lp-hscroll::-webkit-scrollbar-thumb {
+      background: #9fbfc2;
+      border-radius: 5px;
+      border: 2px solid #eef2f6;
+    }
+    .lp-hscroll::-webkit-scrollbar-thumb:hover { background: #7fa9ad; }
+    /* Inner spacer just needs width (mirrors the table's scrollWidth);
+       1px tall so the track height comes from .lp-hscroll itself. */
+    .lp-hscroll > div { height: 1px; }
 
     /* ── Themed table (thead + tbody) ───────────────────────────────────
        Soft teal header, roomy cells, subtle dividers, teal accent. Applies
@@ -190,8 +300,7 @@ import {
     .list-page-container .list-interactive-cell { color: #00aab3; }
 
     /* Card container — clean rounded corners (clip the inner square-cornered
-       scroll area) + a soft, layered slate shadow tuned for the near-white
-       (#f8fafc) page background. */
+       scroll area). */
     .list-card {
       border-radius: 14px !important;
       overflow: hidden;
@@ -204,13 +313,16 @@ import {
     /* Force the table to its natural (nowrap) width so it overflows the
        scroll container when there are many columns — without this the
        w-full table just shrinks to fit and the sticky-column shadows
-       never trigger (scrollWidth === clientWidth). */
-    .list-page-container table { min-width: max-content; }
+       never trigger (scrollWidth === clientWidth). Only wanted when the
+       sticky/scroll machinery is on; pages with [stickyColumns]="false"
+       keep the plain w-full table. */
+    .list-page-container .overflow-x-auto table { min-width: max-content; }
 
     /* Lock the frozen columns to a constant width (min = max) so they can't
-       reflow narrower/wider during horizontal scroll — keeps the Post
-       column's right divider (and its shadow) in a fixed position. The
-       checkbox column's width matches the Post column's left: 3rem offset. */
+       reflow narrower/wider during horizontal scroll. Widths are exposed as
+       CSS variables so individual pages can tighten them (e.g. a page whose
+       actions cell is a single "…" button sets --lp-actions-w: 72px on the
+       <app-list-page> host) without another !important override. */
     .list-page-container th.start-0,
     .list-page-container td.start-0 {
       width: 48px; min-width: 48px; max-width: 48px;
@@ -218,15 +330,61 @@ import {
     }
     .list-page-container th.list-sticky-col,
     .list-page-container td.list-sticky-col {
-      width: 300px; min-width: 300px; max-width: 300px;
+      width: var(--lp-sticky-col-w, 300px);
+      min-width: var(--lp-sticky-col-w, 300px);
+      max-width: var(--lp-sticky-col-w, 300px);
     }
     .list-page-container td.list-floating-actions,
     .list-page-container th.list-actions-th {
-      width: 184px; min-width: 184px; max-width: 184px;
+      width: var(--lp-actions-w, 184px);
+      min-width: var(--lp-actions-w, 184px);
+      max-width: var(--lp-actions-w, 184px);
     }
+
+    /* ── Compact mobile card list (opt-in via [mobileCardConfig]) ──
+       One row per card (~60px). RTL-safe (logical props). Reuses the
+       shared brand/hover tokens. */
+    .lp-mcards { display: flex; flex-direction: column; }
+    .lp-mcard {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; min-height: 60px;
+      border-bottom: 1px solid #eef2f6; cursor: pointer;
+      transition: background-color 120ms ease;
+    }
+    .lp-mcard:last-child { border-bottom: 0; }
+    .lp-mcard:hover { background-color: #f4fbfb; }
+    .lp-mcard__thumb {
+      flex: 0 0 auto; width: 38px; height: 31px; border-radius: 7px;
+      overflow: hidden; background: #f1f5f9; border: 1px solid #e2e8f0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lp-mcard__thumb :is(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .lp-mcard__body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .lp-mcard__line1 {
+      display: flex; align-items: center; gap: 6px; min-width: 0;
+      font-size: 14px; font-weight: 600; color: #0f172a;
+    }
+    /* Title text truncates; the badge/star stay visible. */
+    .lp-mcard__line1 .lp-mcard__title,
+    .lp-mcard__line1 > :first-child { min-width: 0; }
+    .lp-mcard__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lp-mcard__line2 {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; min-width: 0;
+    }
+    .lp-mcard__metrics {
+      display: flex; align-items: center; gap: 12px; min-width: 0;
+      overflow: hidden; font-size: 12.5px; color: #64748b;
+    }
+    .lp-mcard__secondary { flex: 0 0 auto; font-size: 12px; color: #94a3b8; white-space: nowrap; }
+    .lp-mcard__actions { flex: 0 0 auto; margin-inline-start: 2px; }
+    .lp-skel { background: #f1f5f9; animation: lp-skel-pulse 1.2s ease-in-out infinite; }
+    .lp-mcard--skel { cursor: default; }
+    .lp-mcard--skel:hover { background: transparent; }
+    @keyframes lp-skel-pulse { 50% { opacity: .55; } }
   `]
 })
-export class ListPageComponent<T = any> implements OnInit, OnDestroy {
+export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDestroy {
   // ══════════════════════════════════════════════════════════════
   // INJECTED SERVICES
   // ══════════════════════════════════════════════════════════════
@@ -336,6 +494,18 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
    *  drop the grid button from the view-mode toggle entirely. */
   @Input() showGridView = true;
 
+  /** Opt-in compact mobile card layout (< 768px). When provided, the
+   *  list-page renders per-row cards driven by this config + the
+   *  listMobile* template slots instead of the generic key/value grid.
+   *  Omit → unchanged mobile behavior. */
+  @Input() mobileCardConfig?: MobileCardConfig;
+
+  /** Sticky primary/actions columns + horizontal scroll shadow. Default
+   *  `true` keeps today's behavior for wide tables. Pages whose columns
+   *  fit can pass `false` to drop the sticky cells, the scroll-shadow, and
+   *  the overflow-x wrapper (no horizontal scroll). */
+  @Input() stickyColumns = true;
+
   /** Additional view modes to surface alongside the built-in
    *  Table / Grid toggle. Each entry renders as an icon button in
    *  the toggle row. When the user picks one, the list-page hides
@@ -396,6 +566,9 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
   @ContentChildren(ListCellTemplateDirective) cellTemplates!: QueryList<ListCellTemplateDirective>;
   @ContentChildren(ListHeaderTemplateDirective) headerTemplates!: QueryList<ListHeaderTemplateDirective>;
   @ContentChildren(ListRowActionsDirective) rowActionsTemplates!: QueryList<ListRowActionsDirective>;
+  @ContentChildren(ListMobileThumbDirective) mobileThumbTemplates!: QueryList<ListMobileThumbDirective>;
+  @ContentChildren(ListMobileTitleDirective) mobileTitleTemplates!: QueryList<ListMobileTitleDirective>;
+  @ContentChildren(ListMobileChipDirective) mobileChipTemplates!: QueryList<ListMobileChipDirective>;
 
   // ══════════════════════════════════════════════════════════════
   // STATE SIGNALS
@@ -414,15 +587,99 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
   showFilterModal = signal(false);
 
   /** Horizontal-scroll affordance flag — true once the table is scrolled
-   *  right, so the frozen start (Post) column can cast its right-edge
+   *  right, so the frozen start (primary) column can cast its right-edge
    *  shadow over the content tucked behind it. */
   hasScrollStart = signal<boolean>(false);
+
+  /** End-edge affordance flag — true while there is still content to
+   *  scroll toward the end edge, so the pinned Actions column casts its
+   *  fade over the columns tucked behind it ("more columns this way"). */
+  hasScrollEnd = signal<boolean>(false);
+
+  /** Live measurements of the horizontal scroll host — drive the fixed
+   *  phantom scrollbar (rendered only when scrollWidth > clientWidth) and
+   *  size its inner spacer so the thumb proportion matches the table. */
+  hostScrollWidth = signal<number>(0);
+  hostClientWidth = signal<number>(0);
+
+  /** Geometry of the fixed phantom scrollbar (viewport coordinates),
+   *  recomputed on page scroll / resize / data load. `phantomVisible`
+   *  is true only while the table is in view AND overflows horizontally. */
+  phantomVisible = signal<boolean>(false);
+  phantomLeft = signal<number>(0);
+  phantomWidth = signal<number>(0);
+  phantomBottom = signal<number>(0);
+
+  /** Measured pixel cap for the table scroll host so the table body scrolls
+   *  INSIDE it (keeping the sticky header visible) instead of the whole page
+   *  scrolling. Derived from the host's real document position so it fits the
+   *  viewport exactly regardless of the page's header/toolbar height —
+   *  recomputed on view-init, data load, and resize. Bound as an inline
+   *  max-height on #scrollHost. */
+  scrollMaxHeight = signal<number>(600);
+
+  /** Space reserved BELOW the scroll host (pagination row + page padding) so
+   *  it stays visible under the table rather than being pushed off-screen. */
+  private static readonly SCROLL_BOTTOM_RESERVE = 88;
 
   /** ViewChild reference to the horizontally-scrolling table
    *  container — used by the data-change effect to recompute the
    *  scroll-affordance state when rows are added/removed and on
    *  window resize. */
   @ViewChild('scrollHost') scrollHost?: ElementRef<HTMLElement>;
+
+  /** The fixed phantom scrollbar track (only exists while visible). */
+  @ViewChild('hscrollPhantom') hscrollPhantom?: ElementRef<HTMLElement>;
+
+  /** Re-entrancy guard so host→phantom and phantom→host scroll sync
+   *  can't ping-pong through their respective (scroll) handlers. */
+  private _syncingScroll = false;
+
+  /** Bound page-scroll handler (capture: also catches nested scrollers)
+   *  — stored so ngOnDestroy can remove exactly this listener. */
+  private pageScrollHandler = () => this.updatePhantomGeometry();
+
+  /** Position the fixed phantom under the table's on-screen slice:
+   *  - hidden when the table doesn't overflow horizontally, or is
+   *    entirely off-screen;
+   *  - pinned to the viewport bottom while the table extends below
+   *    the fold (the case that motivated this — the native scrollbar
+   *    lives at the table's bottom, unreachable without scrolling);
+   *  - parked at the table's bottom edge when the user has scrolled
+   *    far enough that the table ends above the viewport bottom. */
+  updatePhantomGeometry(): void {
+    const host = this.scrollHost?.nativeElement;
+    if (!host) { this.phantomVisible.set(false); return; }
+
+    const overflows = host.scrollWidth - host.clientWidth > 1;
+    if (!overflows) { this.phantomVisible.set(false); return; }
+
+    const rect = host.getBoundingClientRect();
+    const vh = window.innerHeight;
+    // In view = some slice of the table is on screen (small margins so
+    // the track doesn't linger when only a border sliver remains).
+    const inView = rect.top < vh - 24 && rect.bottom > 72;
+    if (!inView) { this.phantomVisible.set(false); return; }
+
+    const wasHidden = !this.phantomVisible();
+    this.phantomVisible.set(true);
+    this.phantomLeft.set(rect.left);
+    this.phantomWidth.set(rect.width);
+    // 0 while the table runs past the fold (pin to viewport bottom);
+    // otherwise the gap between table bottom and viewport bottom (park).
+    this.phantomBottom.set(Math.max(0, vh - rect.bottom));
+
+    // The @if re-creates the track when it reappears, resetting its
+    // scrollLeft to 0 — re-mirror from the host on the next frame.
+    if (wasHidden) {
+      requestAnimationFrame(() => {
+        if (this.hscrollPhantom && this.scrollHost) {
+          this.hscrollPhantom.nativeElement.scrollLeft =
+            this.scrollHost.nativeElement.scrollLeft;
+        }
+      });
+    }
+  }
 
   /** Recompute the scroll-affordance flags from a scroll container
    *  element. RTL flips `scrollLeft`'s polarity in some browsers,
@@ -431,8 +688,31 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
     const node = el as HTMLElement | null;
     if (!node) return;
     const left = Math.abs(node.scrollLeft);
-    // 1px slack so floating-point rounding doesn't flicker the shadow.
+    // 1px slack so floating-point rounding doesn't flicker the shadows.
     this.hasScrollStart.set(left > 1);
+    this.hasScrollEnd.set(node.scrollWidth - node.clientWidth - left > 1);
+    this.hostScrollWidth.set(node.scrollWidth);
+    this.hostClientWidth.set(node.clientWidth);
+    this.updatePhantomGeometry();
+
+    // Mirror host → phantom so the visible thumb tracks native panning
+    // (trackpad, shift+wheel, touch). Signed scrollLeft is copied as-is,
+    // which keeps RTL correct — both containers share the same direction.
+    if (!this._syncingScroll && this.hscrollPhantom) {
+      this._syncingScroll = true;
+      this.hscrollPhantom.nativeElement.scrollLeft = node.scrollLeft;
+      this._syncingScroll = false;
+    }
+  }
+
+  /** Phantom → host. The phantom is the only visible scrollbar, so
+   *  dragging its thumb must pan the table; frozen start/actions columns
+   *  stay put because only the host's scrollLeft changes. */
+  syncFromPhantom(phantom: HTMLElement): void {
+    if (this._syncingScroll || !this.scrollHost) return;
+    this._syncingScroll = true;
+    this.scrollHost.nativeElement.scrollLeft = phantom.scrollLeft;
+    this._syncingScroll = false;
   }
 
   /** Recompute on resize — column widths can change when the
@@ -441,6 +721,31 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
   @HostListener('window:resize')
   onWindowResize(): void {
     if (this.scrollHost) this.updateScrollState(this.scrollHost.nativeElement);
+    this.updatePhantomGeometry();
+    this.recomputeScrollMaxHeight();
+  }
+
+  /**
+   * Cap the scroll host's height to the viewport so the table body — not the
+   * whole page — scrolls, which is what keeps the sticky `thead` in view. The
+   * cap is `viewportHeight − (host's document top) − bottom reserve`, using a
+   * document-relative top (`rect.top + scrollY`) so the value is stable no
+   * matter how far the page is currently scrolled. Deferred to a frame so the
+   * host has laid out (rows flushed, toolbar height settled).
+   */
+  recomputeScrollMaxHeight(): void {
+    requestAnimationFrame(() => {
+      const host = this.scrollHost?.nativeElement;
+      if (!host || !this.stickyColumns) return;
+      const docTop = host.getBoundingClientRect().top + window.scrollY;
+      const h = window.innerHeight - docTop - ListPageComponent.SCROLL_BOTTOM_RESERVE;
+      // Never collapse to an unusably short strip on tiny viewports.
+      this.scrollMaxHeight.set(Math.max(240, Math.round(h)));
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.recomputeScrollMaxHeight();
   }
 
   // List State
@@ -569,6 +874,21 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
     return template?.template;
   });
 
+  /** Mobile-card slot templates (thumb / title / chip). */
+  getMobileThumbTemplate = computed(() => this.mobileThumbTemplates?.first?.template);
+  getMobileTitleTemplate = computed(() => this.mobileTitleTemplates?.first?.template);
+  getMobileChipTemplate  = computed(() => this.mobileChipTemplates?.first?.template);
+
+  /** True when the compact mobile card list should render (config supplied
+   *  AND on a small viewport). */
+  useMobileCards = computed(() => this.isMobile() && !!this.mobileCardConfig);
+
+  /** Look up a column definition by key (for mobile metric/secondary cells,
+   *  which reuse the shared cellContent template). */
+  colByKey(key: string): TableColumn<T> {
+    return this.columns.find(c => c.key === key) ?? ({ key, label: '' } as TableColumn<T>);
+  }
+
   // ══════════════════════════════════════════════════════════════
   // PRIVATE PROPERTIES
   // ══════════════════════════════════════════════════════════════
@@ -577,6 +897,16 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
   private searchSubject$ = new Subject<string>();
   private subscriptions = new Subscription();
   private dataSubscription?: Subscription;
+
+  /** Bound resize handler — stored so ngOnDestroy can remove exactly the
+   *  listener that ngOnInit registered (an inline arrow in
+   *  addEventListener can never be removed and leaks per instance). */
+  private resizeHandler = () => this.checkViewportSize();
+
+  /** Remembers the desktop view mode across a desktop → mobile → desktop
+   *  round-trip, so a user's deliberate Grid choice on desktop survives
+   *  rotating a tablet / resizing the window. */
+  private preMobileViewMode: string | null = null;
 
   // ══════════════════════════════════════════════════════════════
   // LIFECYCLE HOOKS
@@ -692,6 +1022,8 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
     this.destroy$.complete();
     this.subscriptions.unsubscribe();
     this.dataSubscription?.unsubscribe();
+    window.removeEventListener('resize', this.resizeHandler);
+    window.removeEventListener('scroll', this.pageScrollHandler, { capture: true } as any);
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -732,22 +1064,30 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
 
   private setupViewportDetection(): void {
     this.checkViewportSize();
-
-    window.addEventListener('resize', () => this.checkViewportSize());
+    window.addEventListener('resize', this.resizeHandler);
+    // Page scroll drives the fixed phantom scrollbar's geometry. Capture
+    // phase so nested scroll containers (drawers, inner panes) also
+    // trigger a recompute; passive since we never preventDefault.
+    window.addEventListener('scroll', this.pageScrollHandler, { capture: true, passive: true });
   }
 
   private checkViewportSize(): void {
     const wasMobile = this.isMobile();
     this.isMobile.set(window.innerWidth < 768);
 
-    // Auto-switch to grid view on mobile
     if (this.isMobile()) {
+      // Entering mobile: remember the desktop mode once, then force the
+      // mobile-appropriate body (grid, or the compact cards when
+      // mobileCardConfig is supplied — useMobileCards gates on isMobile).
+      if (!wasMobile) {
+        this.preMobileViewMode = this.viewMode();
+      }
       this.viewMode.set('grid');
-    }
-
-    // Reload data if mobile state changed
-    if (wasMobile !== this.isMobile()) {
-      // Optional: trigger re-render or adjust layout
+    } else if (wasMobile) {
+      // Leaving mobile: restore whatever the user had on desktop
+      // (table by default) instead of staying stuck on grid.
+      this.viewMode.set(this.preMobileViewMode || 'table');
+      this.preMobileViewMode = null;
     }
   }
 
@@ -830,6 +1170,7 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
           requestAnimationFrame(() => {
             if (this.scrollHost) this.updateScrollState(this.scrollHost.nativeElement);
           });
+          this.recomputeScrollMaxHeight();
         }),
         catchError(error => {
           console.error('ListPageComponent: Error loading data', error);
@@ -950,7 +1291,6 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
     return !!column.groupedItems?.some(i => i.primary);
   }
 
-  // Continued in next part...
   // ══════════════════════════════════════════════════════════════
   // FILTERING
   // ══════════════════════════════════════════════════════════════
@@ -1303,6 +1643,12 @@ export class ListPageComponent<T = any> implements OnInit, OnDestroy {
     }
 
     return column.cellClass;
+  }
+
+  /** Alignment class for a column — 'end' right-aligns (numbers:
+   *  price, stock, qty) in an RTL-safe way via logical text-end. */
+  getAlignClass(column: TableColumn<T>): string {
+    return column.align === 'end' ? 'text-end' : 'text-start';
   }
 
   getRowClass(row: T): string {

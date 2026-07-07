@@ -57,20 +57,22 @@ export const SIDE_MENU: SideMenuItem[] = [
     requiredPermission: '',
     subItems: [
       // — Catalog —
-      { id: 31, label: 'MENU.SUB.PRODUCT_LIST', link: '/products', requiredPermission: 'productSecurity.action.view.access' },
+      { id: 31, section: 'MENU.SECTION.CATALOG', label: 'MENU.SUB.PRODUCT_LIST', link: '/products', requiredPermission: 'productSecurity.action.view.access' },
       { id: 32, label: 'MENU.SUB.MATRIX_ITEMS', link: '/matrix-item', requiredPermission: 'matrixItemSecurity.action.view.access' },
+      // Dimensions define the axes (Size/Color/…) a matrix item is built from,
+      // so it belongs beside Matrix Items — not with the product classifications.
+      { id: 33, label: 'MENU.SUB.DIMENSIONS', link: '/dimensions', requiredPermission: 'dimensionSecurity.action.view.access' },
       { id: 313, label: 'MENU.SUB.COLLECTIONS', link: '/products/products-collections', requiredPermission: 'productsCollectionsSecurity.action.view.access' },
       // Menu Builder lives under Settings (see SETTINGS.ITEMS.MENU_BUILDER) —
       // not exposed in the catalog sidebar.
 
       // — Classifications —
-      { id: 34, label: 'MENU.SUB.DEPARTMENTS', link: '/products/department', requiredPermission: 'departmentSecurity.action.view.access' },
+      { id: 34, section: 'MENU.SECTION.CLASSIFICATIONS', label: 'MENU.SUB.DEPARTMENTS', link: '/products/department', requiredPermission: 'departmentSecurity.action.view.access' },
       { id: 35, label: 'MENU.SUB.CATEGORIES', link: '/products/category', requiredPermission: 'categorySecurity.action.view.access' },
       { id: 36, label: 'MENU.SUB.BRANDS', link: '/products/brands', requiredPermission: 'brandSecurity.action.view.access' },
-      { id: 33, label: 'MENU.SUB.DIMENSIONS', link: '/products/dimension', requiredPermission: 'dimensionSecurity.action.view.access' },
 
       // — Options & Recipes —
-      { id: 37, label: 'MENU.SUB.OPTION_GROUPS', link: '/products/optionGroup', requiredPermission: 'optionGroupSecurity.action.view.access' },
+      { id: 37, section: 'MENU.SECTION.OPTIONS_RECIPES', label: 'MENU.SUB.OPTION_GROUPS', link: '/products/optionGroup', requiredPermission: 'optionGroupSecurity.action.view.access' },
       { id: 38, label: 'MENU.SUB.OPTIONS', link: '/products/option', requiredPermission: 'optionSecurity.action.view.access' },
       { id: 39, label: 'MENU.SUB.RECIPES', link: '/products/recipe', requiredPermission: 'recipeSecurity.action.view.access' },
       { id: 310, label: 'MENU.SUB.PRODUCT_RECIPES', link: '/products/productRecipe', requiredPermission: 'productRecipeSecurity.action.view.access' },
