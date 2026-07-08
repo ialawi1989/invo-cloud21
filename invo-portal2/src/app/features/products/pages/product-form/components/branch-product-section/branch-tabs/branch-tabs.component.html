@@ -13,7 +13,9 @@
       >
         <span class="bt__dot" [class.bt__dot--on]="tab.isOnline" aria-hidden="true"></span>
         <span class="bt__name">{{ tab.name }}</span>
-        @if (closable()) {
+        <!-- Hide the close (×) on the last open tab — at least one branch must
+             stay open, so a × there would be a no-op. -->
+        @if (closable() && openTabs().length > 1) {
           <button
             type="button"
             class="bt__close"

@@ -153,11 +153,14 @@ export class BranchTabsService {
     this.schedulePersist();
   }
 
-  /** Remove a tab. If it was active, focus right neighbour → left → most-recent. */
+  /** Remove a tab. If it was active, focus right neighbour → left → most-recent.
+   *  Keeps at least one branch open — closing the last remaining tab is a no-op
+   *  (a form section must always have an active branch to bind to). */
   closeTab(id: string): void {
     const ids = this.openTabIds_().slice();
     const idx = ids.indexOf(id);
     if (idx < 0) return;
+    if (ids.length <= 1) return;
 
     ids.splice(idx, 1);
     this.openTabIds_.set(ids);

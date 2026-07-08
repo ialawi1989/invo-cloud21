@@ -21,6 +21,8 @@
     "FORM": {
       "NEW_TITLE": "New Matrix Item",
       "EDIT_TITLE": "Edit Matrix Item",
+      "SINGLE_BRANCH": "Single Branch",
+      "BULK_EDIT": "Bulk Edit",
       "INFORMATION": "Matrix Information",
       "NAME": "Matrix Name",
       "NAME_PLACEHOLDER": "e.g., Classic T-Shirt",
@@ -35,6 +37,7 @@
       "TRANSLATE": "Translate",
       "PRICE_ZERO_WARNING": "This item will be free.",
       "MAX_DIMENSIONS_HINT": "Up to 3 dimensions per matrix.",
+      "DIMENSIONS_COUNT": "{{count}} dimensions",
       "PRODUCTS": "Products",
       "NEW_PRODUCTS": "New products",
       "EXISTING_PRODUCTS": "Existing products",
@@ -130,7 +133,7 @@
       "NAME": "Name",
       "DISPLAY_TYPE": "Display Type",
       "ATTRIBUTES": "Attributes",
-      "ATTRIBUTES_COUNT": "{count} attributes",
+      "ATTRIBUTES_COUNT": "{{count}} attributes",
       "EMPTY": "No dimensions yet",
       "NO_MATCH": "No dimensions match your search"
     },

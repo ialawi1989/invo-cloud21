@@ -38,45 +38,9 @@
       (valueChange)="onDisplayTypeChange($event)"/>
   </div>
 
-  <!-- Pick from saved dimensions -->
-  <div class="adm__field">
-    <span class="adm__label">{{ 'MATRIX.DIMENSION.PICK_EXISTING' | translate }}</span>
-    <label class="adm__search">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input type="text"
-        [value]="search()"
-        (input)="onSearchInput($any($event.target).value)"
-        [placeholder]="'MATRIX.DIMENSION.SEARCH_PLACEHOLDER' | translate"/>
-    </label>
-
-    <ul class="adm__list">
-      @for (row of rows(); track row.id) {
-        <li class="adm__row"
-          [class.is-selected]="isSelectedRow(row.id)"
-          [class.is-taken]="isRowTaken(row)"
-          (click)="pickSavedRow(row)">
-          <div class="adm__row-main">
-            <strong class="adm__row-name">{{ row.name || '—' }}</strong>
-            <span class="adm__row-meta">{{ 'DIMENSIONS.LIST.ATTRIBUTES_COUNT' | translate:{ count: row.attributesCount } }}</span>
-          </div>
-          @if (isRowTaken(row)) {
-            <span class="adm__row-tag">{{ 'MATRIX.DIMENSION.DIMENSION' | translate }}</span>
-          }
-        </li>
-      }
-      @if (rows().length === 0 && !loading()) {
-        <li class="adm__empty">{{ 'DIMENSIONS.LIST.NO_MATCH' | translate }}</li>
-      }
-      <li #scrollSentinel class="adm__sentinel" aria-hidden="true"></li>
-      @if (loading()) {
-        <li class="adm__loading">
-          <span class="spinner" aria-hidden="true"></span>
-        </li>
-      }
-    </ul>
-  </div>
+  <!-- "Pick from saved dimensions" lives in its own dedicated button/modal in
+       the Dimensions header (bulk multi-select) — kept out of here so this
+       modal is purely "create a new dimension". -->
 </div>
 
 <app-modal-footer>

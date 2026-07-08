@@ -6,6 +6,11 @@
   flex-direction: column;
   gap: 16px;
   overflow-y: auto;
+  /* Fill the space between header and footer and scroll internally when the
+     dimension/attribute list is long (many variants). Without min-height:0 the
+     flex item won't shrink below its content, so it never scrolls. */
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .btm__group {

@@ -21,6 +21,8 @@
     "FORM": {
       "NEW_TITLE": "منتج مصفوفة جديد",
       "EDIT_TITLE": "تعديل منتج المصفوفة",
+      "SINGLE_BRANCH": "فرع واحد",
+      "BULK_EDIT": "تعديل جماعي",
       "INFORMATION": "معلومات المصفوفة",
       "NAME": "اسم المصفوفة",
       "NAME_PLACEHOLDER": "مثال: تي شيرت كلاسيكي",
@@ -35,6 +37,7 @@
       "TRANSLATE": "ترجمة",
       "PRICE_ZERO_WARNING": "سيكون هذا المنتج مجانياً.",
       "MAX_DIMENSIONS_HINT": "حتى 3 أبعاد لكل مصفوفة.",
+      "DIMENSIONS_COUNT": "{{count}} أبعاد",
       "PRODUCTS": "المنتجات",
       "NEW_PRODUCTS": "منتجات جديدة",
       "EXISTING_PRODUCTS": "منتجات موجودة",
@@ -130,7 +133,7 @@
       "NAME": "الاسم",
       "DISPLAY_TYPE": "نوع العرض",
       "ATTRIBUTES": "الخصائص",
-      "ATTRIBUTES_COUNT": "{count} خاصية",
+      "ATTRIBUTES_COUNT": "{{count}} خاصية",
       "EMPTY": "لا توجد أبعاد بعد",
       "NO_MATCH": "لا توجد أبعاد تطابق بحثك"
     },

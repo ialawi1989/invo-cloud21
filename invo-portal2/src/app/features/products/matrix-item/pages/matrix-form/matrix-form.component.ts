@@ -60,6 +60,15 @@ import {
   regenerateBarcodesAndSkus,
 } from '../../utils/variant-generator';
 import { ManageDimensionsComponent } from '../../components/manage-dimensions/manage-dimensions.component';
+import { BranchTabsComponent } from '../../../pages/product-form/components/branch-product-section/branch-tabs/branch-tabs.component';
+import {
+  BranchTabRef,
+  provideBranchTabs,
+} from '../../../pages/product-form/components/branch-product-section/branch-tabs/branch-tabs.service';
+import {
+  SegmentedToggleComponent,
+  SegmentedToggleOption,
+} from '@shared/components/segmented-toggle/segmented-toggle.component';
 import {
   BarcodeChangeConfirmModalComponent,
   BarcodeChangeConfirmModalData,
@@ -87,7 +96,11 @@ import {
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     ManageDimensionsComponent,
+    BranchTabsComponent,
+    SegmentedToggleComponent,
   ],
+  // The branch-tabs picker persists its open/pinned/active state per namespace.
+  providers: [provideBranchTabs('matrixForm.branches')],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './matrix-form.component.html',
   styleUrl: './matrix-form.component.scss',
@@ -111,6 +124,27 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
   matrixId = signal<string | null>(null);
   branches = signal<{ id: string; name: string }[]>([]);
   activeBranch = signal<number>(0);
+
+  /** Branch pane mode — mirrors the product form. Defaults to 'bulk' so all
+   *  branches show at once (the requested default for matrix). */
+  mode = signal<'single' | 'bulk'>('bulk');
+  setMode(m: 'single' | 'bulk'): void { this.mode.set(m); }
+
+  readonly modeOptions: SegmentedToggleOption<'single' | 'bulk'>[] = [
+    { value: 'single', label: 'MATRIX.FORM.SINGLE_BRANCH' },
+    { value: 'bulk',   label: 'MATRIX.FORM.BULK_EDIT' },
+  ];
+
+  /** Branch directory for the shared `<app-pf-branch-tabs>` chips picker. */
+  branchTabRefs = computed<BranchTabRef[]>(() =>
+    this.branches().map((b) => ({ id: b.id, name: b.name, isOnline: true })),
+  );
+
+  /** Bridge the chips picker (branchId) to the index-based activeBranch. */
+  onBranchTabChange(branchId: string): void {
+    const idx = this.branches().findIndex((b) => b.id === branchId);
+    if (idx >= 0 && idx !== this.activeBranch()) this.activeBranch.set(idx);
+  }
 
   /** Manual dirty flag — set on any edit, cleared on load/save. Powers the
    *  unsaved-changes guard (the reactive form only covers 4 scalars). */

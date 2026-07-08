@@ -72,6 +72,12 @@ export class BulkTranslationModalComponent {
     withTranslations('products/matrix-item');
   }
 
+  /** Only color dimensions get a colour swatch. Non-colour attributes carry a
+   *  default '#000000' value which would otherwise render as a black square. */
+  isColorDim(dim: Dimension): boolean {
+    return /colou?r/i.test(dim.type || dim.name || '');
+  }
+
   save(): void {
     this.modalRef.close(this.dimensions);
   }

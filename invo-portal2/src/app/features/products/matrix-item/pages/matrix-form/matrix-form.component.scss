@@ -36,6 +36,52 @@ form { display: flex; flex-direction: column; gap: 16px; }
   @media (max-width: 640px) { grid-template-columns: 1fr; }
 }
 
+/* Two-column form layout — main cards + a side column (image), like the
+   product form. Stacks on narrow viewports. */
+.mf-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+.mf-main  { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.mf-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* Stick below the fixed 56px top bar (+12px breathing room) so the image
+     card isn't hidden behind it while scrolling. */
+  @media (min-width: 901px) { position: sticky; top: 68px; }
+}
+
+/* Image media card — square drop area + actions (product-style). */
+.mf-media__body { gap: 12px; }
+.mf-media__drop {
+  appearance: none;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+  transition: border-color 120ms ease, background 120ms ease;
+
+  &:hover { border-color: #94a3b8; background: #f1f5f9; }
+  &--filled { border-style: solid; border-color: #e2e8f0; background: #fff; }
+}
+.mf-media__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mf-media__placeholder {
+  display: flex; flex-direction: column; align-items: center; gap: 8px; color: #94a3b8;
+}
+.mf-media__hint { font-size: 13px; font-weight: 500; }
+.mf-media__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
 .field {
   display: flex;
   flex-direction: column;
@@ -117,6 +163,20 @@ form { display: flex; flex-direction: column; gap: 16px; }
 }
 .sub-title { margin: 8px 0 4px; font-size: 13px; font-weight: 600; color: #475569; }
 .hint-line { margin: 4px 0 0; font-size: 13px; color: #94a3b8; }
+
+/* Branch pane (shared chips + Single/Bulk toggle, like the product form). */
+.branch-mode-row { display: flex; justify-content: flex-end; margin: 10px 0 8px; }
+.matrix-branch-tabs { display: block; margin-bottom: 10px; }
+/* Per-branch heading shown in Bulk mode (each branch's variant table). */
+.branch-bulk-title {
+  margin: 18px 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.branch-bulk-title:first-of-type { margin-top: 8px; }
 
 .branch-tabs {
   display: flex;

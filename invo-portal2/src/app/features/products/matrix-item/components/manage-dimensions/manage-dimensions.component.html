@@ -2,7 +2,15 @@
   <div class="dims__head">
     <div class="dims__title">
       <span>{{ 'MATRIX.DIMENSION.DIMENSIONS' | translate }}</span>
-      <small>{{ 'MATRIX.FORM.MAX_DIMENSIONS_HINT' | translate }}</small>
+      <!-- On edit dimensions are locked, so the "up to 3" hint is misleading —
+           show the current count instead. -->
+      <small>
+        @if (disabled()) {
+          {{ 'MATRIX.FORM.DIMENSIONS_COUNT' | translate: { count: dimensions().length } }}
+        } @else {
+          {{ 'MATRIX.FORM.MAX_DIMENSIONS_HINT' | translate }}
+        }
+      </small>
     </div>
 
     @if (!disabled()) {
@@ -52,13 +60,15 @@
               }
             </div>
 
-            @if (!disabled()) {
-              <div class="dim-card__tools">
-                <app-segmented-toggle
-                  [options]="displayTypeOptions"
-                  [value]="dim.displayType"
-                  size="sm"
-                  (valueChange)="setDisplayType(di, $event)" />
+            <div class="dim-card__tools">
+              <!-- Display type is cosmetic, so it stays visible + editable even
+                   on edit (dimensions themselves are locked). -->
+              <app-segmented-toggle
+                [options]="displayTypeOptions"
+                [value]="dim.displayType"
+                size="sm"
+                (valueChange)="setDisplayType(di, $event)" />
+              @if (!disabled()) {
                 <button type="button" class="icon-btn danger"
                   [title]="'MATRIX.DIMENSION.REMOVE' | translate"
                   (click)="removeDimension(di)">
@@ -67,8 +77,8 @@
                     <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                   </svg>
                 </button>
-              </div>
-            }
+              }
+            </div>
           </div>
 
           <div class="dim-card__attrs">

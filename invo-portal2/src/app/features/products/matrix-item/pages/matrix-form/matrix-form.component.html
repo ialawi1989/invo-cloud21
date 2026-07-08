@@ -5,39 +5,14 @@
   </header>
 
   <form [formGroup]="form" (keydown.enter)="$event.preventDefault()">
+   <div class="mf-layout">
+    <div class="mf-main">
     <!-- Matrix information -->
     <section class="card">
       <header class="card__head">
         <h2 class="card__title">{{ 'MATRIX.FORM.INFORMATION' | translate }}</h2>
       </header>
       <div class="card__body">
-        <!-- Image -->
-        <div class="field">
-          <span class="field__label">{{ 'MATRIX.FORM.IMAGE' | translate }}</span>
-          <div class="image-row">
-            @if (hasImage()) {
-              <img class="image-row__thumb" [src]="imageUrl() + '?width=96&height=96'" alt="" />
-            } @else {
-              <div class="image-row__thumb image-row__thumb--empty">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/>
-                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-                </svg>
-              </div>
-            }
-            <div class="image-row__actions">
-              <button type="button" class="btn btn-ghost btn-sm" (click)="chooseImage()">
-                {{ (hasImage() ? 'MATRIX.FORM.REPLACE_IMAGE' : 'MATRIX.FORM.CHOOSE_IMAGE') | translate }}
-              </button>
-              @if (hasImage()) {
-                <button type="button" class="btn btn-ghost btn-sm danger" (click)="removeImage()">
-                  {{ 'MATRIX.FORM.REMOVE_IMAGE' | translate }}
-                </button>
-              }
-            </div>
-          </div>
-        </div>
-
         <div class="grid-2">
           <!-- Name -->
           <label class="field">
@@ -101,6 +76,7 @@
 
     <!-- Dimensions + generated products -->
     @if (matrixInfo().barcode) {
+      <!-- Dimensions -->
       <section class="card">
         <div class="card__body">
           <app-manage-dimensions
@@ -109,23 +85,42 @@
             [formStatus]="formStatus()"
             (dimensionsChange)="onDimensionsChange($event)"
             (generate)="regenerate()" />
+          @if (matrixInfo().dimensions.length > 0 && !showProducts()) {
+            <p class="hint-line">{{ 'MATRIX.FORM.NO_PRODUCTS' | translate }}</p>
+          }
+        </div>
+      </section>
 
-          @if (showProducts() && hasProducts()) {
+      <!-- Products (generated variants) — separate card -->
+      @if (showProducts() && hasProducts()) {
+        <section class="card">
+          <div class="card__body">
             <h3 class="section-title">{{ 'MATRIX.FORM.PRODUCTS' | translate }}</h3>
 
-            <!-- Branch tabs -->
+            <!-- Branch mode toggle + chips picker (shared with the product form).
+                 Bulk (default) shows every branch stacked; Single picks one via
+                 the chips. Only meaningful when there's more than one branch. -->
             @if (branches().length > 1) {
-              <div class="branch-tabs">
-                @for (branch of branches(); track branch.id; let bi = $index) {
-                  <button type="button" class="branch-tab"
-                    [class.branch-tab--active]="activeBranch() === bi"
-                    (click)="activeBranch.set(bi)">{{ branch.name }}</button>
-                }
+              <div class="branch-mode-row">
+                <app-segmented-toggle
+                  [options]="modeOptions"
+                  [value]="mode()"
+                  (valueChange)="setMode($event)" />
               </div>
+              @if (mode() === 'single') {
+                <app-pf-branch-tabs
+                  class="matrix-branch-tabs"
+                  [branches]="branchTabRefs()"
+                  (activeChange)="onBranchTabChange($event)" />
+              }
             }
 
+            <!-- Variant tables — every branch (bulk) or just the active one (single). -->
             @for (branch of branches(); track branch.id; let bi = $index) {
-              @if (activeBranch() === bi) {
+              @if (mode() === 'bulk' || activeBranch() === bi) {
+                @if (mode() === 'bulk' && branches().length > 1) {
+                  <h4 class="sub-title branch-bulk-title">{{ branch.name }}</h4>
+                }
                 <!-- New products -->
                 @if (hasNewProducts()) {
                   @if (hasExistingProducts()) { <h4 class="sub-title">{{ 'MATRIX.FORM.NEW_PRODUCTS' | translate }}</h4> }
@@ -213,12 +208,43 @@
                 }
               }
             }
-          } @else if (matrixInfo().dimensions.length > 0 && !showProducts()) {
-            <p class="hint-line">{{ 'MATRIX.FORM.NO_PRODUCTS' | translate }}</p>
+          </div>
+        </section>
+      }
+    }
+    </div><!-- /.mf-main -->
+
+    <!-- Image — product-style media card in the side column. -->
+    <aside class="mf-aside">
+      <section class="card mf-media">
+        <header class="card__head">
+          <h2 class="card__title">{{ 'MATRIX.FORM.IMAGE' | translate }}</h2>
+        </header>
+        <div class="card__body mf-media__body">
+          <button type="button" class="mf-media__drop"
+            [class.mf-media__drop--filled]="hasImage()"
+            (click)="chooseImage()">
+            @if (hasImage()) {
+              <img class="mf-media__img" [src]="imageUrl() + '?width=320&height=320'" alt="" />
+            } @else {
+              <span class="mf-media__placeholder">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                </svg>
+                <span class="mf-media__hint">{{ 'MATRIX.FORM.CHOOSE_IMAGE' | translate }}</span>
+              </span>
+            }
+          </button>
+          @if (hasImage()) {
+            <div class="mf-media__actions">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="chooseImage()">{{ 'MATRIX.FORM.REPLACE_IMAGE' | translate }}</button>
+              <button type="button" class="btn btn-ghost btn-sm danger" (click)="removeImage()">{{ 'MATRIX.FORM.REMOVE_IMAGE' | translate }}</button>
+            </div>
           }
         </div>
       </section>
-    }
+    </aside>
+   </div><!-- /.mf-layout -->
   </form>
 
   <footer class="save-bar">
