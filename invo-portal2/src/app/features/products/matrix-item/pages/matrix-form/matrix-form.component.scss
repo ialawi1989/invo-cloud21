@@ -225,6 +225,29 @@ form { display: flex; flex-direction: column; gap: 16px; }
   .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #475569; }
 }
 
+/* Keep the per-row Edit + Print Barcode buttons on one line, tight together. */
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* Variant name → opens the product editor. Looks like a name, reveals its
+   affordance (brand colour + underline) on hover/focus. */
+.pname-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: #0f172a;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: start;
+  &:hover, &:focus-visible { color: #0284c7; text-decoration: underline; }
+  &:focus-visible { outline: 0; }
+}
+
 .cell-input {
   width: 110px;
   border: 1px solid #e2e8f0;
@@ -234,6 +257,30 @@ form { display: flex; flex-direction: column; gap: 16px; }
   &:focus { outline: 0; border-color: #7dd3fc; box-shadow: 0 0 0 2px #e0f2fe; }
   &--ro { background: #f8fafc; color: #64748b; }
 }
+
+.variant-img-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+  &:hover, &:focus-visible { border-color: #7dd3fc; background: #f0f9ff; }
+  &:focus-visible { outline: 0; box-shadow: 0 0 0 2px #e0f2fe; }
+}
+.variant-img-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #f1f5f9;
+}
+.variant-img-count { font-weight: 600; color: #0f172a; }
 
 .save-bar {
   position: fixed;

@@ -48,13 +48,19 @@
       "COL_OPENING_BALANCE_COST": "Opening Cost",
       "COL_ON_HAND": "On Hand",
       "COL_PRICE": "Price",
+      "COL_IMAGES": "Images",
       "COL_ACTIONS": "Actions",
+      "EDIT": "Edit",
       "PRINT_BARCODE": "Print Barcode",
+      "OPEN_PRODUCT": "Open product (this branch)",
+      "VARIANT_IMAGES": "Variant images",
+      "ADD_IMAGES": "Add",
       "NO_PRODUCTS": "Add dimensions with attributes to generate products.",
       "SAVE": "Save",
       "CANCEL": "Cancel",
       "SAVED_OK": "Matrix item saved.",
-      "SAVE_FAILED": "Could not save the matrix item."
+      "SAVE_FAILED": "Could not save the matrix item.",
+      "IMAGES_SAVE_FAILED": "The matrix item saved, but some variant images could not be updated."
     },
     "DIMENSION": {
       "DIMENSIONS": "Dimensions",

@@ -50,6 +50,7 @@ import {
   Dimension,
   MatrixItem,
   MatrixProduct,
+  VariantImage,
   emptyMatrixItem,
   emptyTranslation,
 } from '../../services/matrix-item.types';
@@ -430,6 +431,20 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
     this.products.showGenerateBarcode(product as any);
   }
 
+  /**
+   * Open an already-saved variant in the standard product editor, pre-selecting
+   * the branch whose table the user clicked from (`?branch=<id>`). The product
+   * form self-corrects the `:type` segment after it loads, so `inventory` is a
+   * safe default here — the branch param survives that redirect. New (unsaved)
+   * variants have no id yet and aren't linkable.
+   */
+  openProduct(product: MatrixProduct, branchId: string): void {
+    if (!product.id) return;
+    void this.router.navigate(['/products/form', 'inventory', product.id], {
+      queryParams: { branch: branchId },
+    });
+  }
+
   // ─── Image ────────────────────────────────────────────────────────────
   imageUrl = computed<string>(() => this.matrixInfo().mediaUrl?.defaultUrl ?? '');
   hasImage = computed<boolean>(() => !!this.matrixInfo().mediaId);
@@ -467,6 +482,79 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
       m.mediaId = null;
       m.mediaUrl = { defaultUrl: '', thumbnailUrl: '' };
     });
+  }
+
+  // ─── Per-variant images (bulkProductMedia) ────────────────────────────
+  /** SKUs of saved variants whose image set was edited this session — drives
+   *  the `bulkProductMedia` call on save (SKU is stable across the payload). */
+  private editedImageSkus = new Set<string>();
+
+  /** How many images a variant currently has — for the table badge. */
+  variantImageCount(prod: MatrixProduct): number {
+    return prod.mediaIds?.length ?? 0;
+  }
+
+  /** Thumbnail URL of a variant's first image (empty when it has none). */
+  variantThumb(prod: MatrixProduct): string {
+    const first = prod.mediaIds?.[0];
+    return first ? first.thumbnailUrl || first.defaultUrl : '';
+  }
+
+  /**
+   * Open the media picker (multiple) for one saved variant, pre-seeded with its
+   * current images. The picked set replaces the variant's `mediaIds`; nothing
+   * hits the network until Save, which flushes the edits via `bulkProductMedia`.
+   */
+  async openVariantImages(prod: MatrixProduct): Promise<void> {
+    const config: MediaPickerConfig = {
+      contentTypes: ['image'],
+      multiple: true,
+      title: this.translate.instant('MATRIX.FORM.VARIANT_IMAGES'),
+      preSelectedIds: (prod.mediaIds ?? []).map((m) => m.id).filter(Boolean),
+    };
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      { data: config, size: 'xl' },
+    );
+    const result = await ref.afterClosed();
+    if (result === undefined) return; // dismissed — keep current images
+    const picked = Array.isArray(result) ? result : [result];
+    const images: VariantImage[] = picked.map((m) => ({
+      id: m.id ?? '',
+      defaultUrl: m.url?.defaultUrl ?? m.url?.original ?? '',
+      thumbnailUrl: m.url?.thumbnail ?? m.url?.defaultUrl ?? '',
+    }));
+    this.patchModel((m) => {
+      const target = m.products.find((p) => p.sku === prod.sku);
+      if (target) target.mediaIds = images;
+    });
+    this.editedImageSkus.add(prod.sku);
+  }
+
+  /**
+   * Push edited variant image sets to the backend. Runs after `saveMatrix`.
+   *
+   * For existing variants the product `id` is already known; for a freshly
+   * created matrix the backend returns `productIds` in the same order as the
+   * `products` array we sent, so brand-new variants are matched positionally.
+   * No-op when nothing was edited.
+   */
+  private async persistVariantImages(newProductIds?: string[]): Promise<void> {
+    if (this.editedImageSkus.size === 0) return;
+    const products = this.matrixInfo().products;
+    // Positional matching is only trustworthy when the returned id count lines
+    // up 1:1 with the products we sent; otherwise fall back to known ids only.
+    const positional = !!newProductIds && newProductIds.length === products.length;
+    const payload: { productId: string; mediaIds: string[] }[] = [];
+    products.forEach((p, i) => {
+      if (!this.editedImageSkus.has(p.sku)) return;
+      const productId = p.id || (positional ? newProductIds![i] : undefined);
+      if (!productId) return;
+      payload.push({ productId, mediaIds: (p.mediaIds ?? []).map((m) => m.id) });
+    });
+    if (payload.length === 0) return;
+    await this.products.bulkProductMedia(payload);
+    this.editedImageSkus.clear();
   }
 
   // ─── Name translation ─────────────────────────────────────────────────
@@ -529,6 +617,14 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
     try {
       const res = await this.service.saveMatrix(payload);
       if (res.success) {
+        // Flush any per-variant image edits (variants now have product ids —
+        // existing rows already had them, new rows come back in `productIds`).
+        try {
+          await this.persistVariantImages(res.productIds);
+        } catch (imgErr: any) {
+          // The matrix itself saved — surface the image failure without losing it.
+          this.toast.error('MATRIX.FORM.IMAGES_SAVE_FAILED', imgErr?.message);
+        }
         this.dirty.set(false);
         this.toast.success('MATRIX.FORM.SAVED_OK');
         void this.router.navigate(['/matrix-item'], { queryParams: this.listParams });

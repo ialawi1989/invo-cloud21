@@ -65,11 +65,17 @@ export class MatrixItemService {
     return this.normalizeMatrix(raw);
   }
 
-  async saveMatrix(matrix: MatrixItem): Promise<{ success: boolean; id?: string; msg?: string }> {
+  async saveMatrix(
+    matrix: MatrixItem,
+  ): Promise<{ success: boolean; id?: string; productIds?: string[]; msg?: string }> {
     const res = await this.api.request<any>(this.api.post('product/saveMatrix', matrix));
+    // On create the backend returns `productIds` in the same order as the
+    // `products` array we sent, so they can be matched positionally.
+    const ids = res?.data?.productIds;
     return {
       success: !!res?.success,
       id: res?.data?.id ? String(res.data.id) : matrix.id ?? undefined,
+      productIds: Array.isArray(ids) ? ids.map((v: any) => String(v)) : undefined,
       msg: res?.msg,
     };
   }
@@ -186,6 +192,15 @@ export class MatrixItemService {
       attribute2: String(raw?.attribute2 ?? ''),
       attribute3: String(raw?.attribute3 ?? ''),
       openingBalanceCost: Number(raw?.openingBalanceCost ?? 0) || 0,
+      mediaIds: Array.isArray(raw?.mediaIds)
+        ? raw.mediaIds.map((m: any) => ({
+            id: String(m?.id ?? ''),
+            defaultUrl: String(m?.defaultUrl ?? m?.url?.defaultUrl ?? ''),
+            thumbnailUrl: String(
+              m?.thumbnailUrl ?? m?.url?.thumbnailUrl ?? m?.defaultUrl ?? m?.url?.defaultUrl ?? '',
+            ),
+          }))
+        : [],
       branchProduct: bp.map((b: any) => ({
         branchId: String(b?.branchId ?? ''),
         onHand: Number(b?.onHand ?? 0) || 0,

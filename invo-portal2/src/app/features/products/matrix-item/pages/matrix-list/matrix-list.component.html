@@ -95,19 +95,33 @@
     <span class="font-mono text-xs text-slate-500">{{ row.sku || '—' }}</span>
   </ng-template>
 
-  <!-- Row actions: Edit -->
+  <!-- Row actions — a single action renders as a direct hover-reveal pill
+       (like the products list Edit button); the moment a second action is
+       added, they collapse into the ⋯ overflow menu automatically. -->
   <ng-template listRowActions let-row>
-    <div class="inline-flex items-center" (click)="$event.stopPropagation()">
-      <app-dropdown-menu-btn
-        [items]="rowMenuItems(row)"
-        [appendToBody]="true"
-        [chevron]="false"
-        align="end"
-        triggerClass="w-9 h-9 inline-flex items-center justify-center rounded-full bg-white text-slate-500 border border-slate-200 hover:text-brand-600 hover:border-brand-300 transition-colors">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
-        </svg>
-      </app-dropdown-menu-btn>
+    @let actions = rowMenuItems(row);
+    <div class="inline-flex items-center justify-end" (click)="$event.stopPropagation()">
+      @if (actions.length === 1) {
+        <button type="button"
+          (click)="actions[0].click()"
+          class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity
+                 px-4 h-9 inline-flex items-center rounded-full
+                 bg-brand-600 text-white text-sm font-medium shadow-sm
+                 hover:bg-brand-700">
+          {{ actions[0].label | translate }}
+        </button>
+      } @else {
+        <app-dropdown-menu-btn
+          [items]="actions"
+          [appendToBody]="true"
+          [chevron]="false"
+          align="end"
+          triggerClass="w-9 h-9 inline-flex items-center justify-center rounded-full bg-white text-slate-500 border border-slate-200 hover:text-brand-600 hover:border-brand-300 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+          </svg>
+        </app-dropdown-menu-btn>
+      }
     </div>
   </ng-template>
 

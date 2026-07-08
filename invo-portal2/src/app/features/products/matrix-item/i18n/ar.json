@@ -48,13 +48,19 @@
       "COL_OPENING_BALANCE_COST": "تكلفة الافتتاح",
       "COL_ON_HAND": "المتوفر",
       "COL_PRICE": "السعر",
+      "COL_IMAGES": "الصور",
       "COL_ACTIONS": "إجراءات",
+      "EDIT": "تعديل",
       "PRINT_BARCODE": "طباعة الباركود",
+      "OPEN_PRODUCT": "فتح المنتج (هذا الفرع)",
+      "VARIANT_IMAGES": "صور المتغيّر",
+      "ADD_IMAGES": "إضافة",
       "NO_PRODUCTS": "أضف أبعاداً بخصائص لتوليد المنتجات.",
       "SAVE": "حفظ",
       "CANCEL": "إلغاء",
       "SAVED_OK": "تم حفظ منتج المصفوفة.",
-      "SAVE_FAILED": "تعذّر حفظ منتج المصفوفة."
+      "SAVE_FAILED": "تعذّر حفظ منتج المصفوفة.",
+      "IMAGES_SAVE_FAILED": "تم حفظ منتج المصفوفة، لكن تعذّر تحديث بعض صور المتغيّرات."
     },
     "DIMENSION": {
       "DIMENSIONS": "الأبعاد",

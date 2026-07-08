@@ -52,7 +52,8 @@ import { BranchPriceByQtyComponent } from './branch-price-by-qty/branch-price-by
 import { BranchSerialsComponent }    from './branch-serials/branch-serials.component';
 import { BranchBatchesComponent }    from './branch-batches/branch-batches.component';
 import { BranchTabsComponent }       from './branch-tabs/branch-tabs.component';
-import { BranchTabRef, provideBranchTabs } from './branch-tabs/branch-tabs.service';
+import { BranchTabRef, BranchTabsService, provideBranchTabs } from './branch-tabs/branch-tabs.service';
+import { ActivatedRoute } from '@angular/router';
 
 type PricingType = '' | 'buyDownPrice' | 'priceBoundary' | 'priceByQty' | 'openPrice';
 
@@ -116,6 +117,13 @@ export class BranchProductSectionComponent implements OnInit {
   private modals = inject(ModalService);
   private productsService = inject(ProductsService);
   private privileges = inject(PrivilegeService);
+  private route = inject(ActivatedRoute);
+  private branchTabs = inject(BranchTabsService);
+
+  /** Deep-link target from `?branch=<id>` (matrix editor "open product") —
+   *  the branch to focus on load. Applied once, after the directory settles. */
+  private deepLinkBranchId: string | null = null;
+  private deepLinkApplied = false;
 
   /**
    * Privilege gates — 1:1 port of the old project's branch component.
@@ -153,6 +161,20 @@ export class BranchProductSectionComponent implements OnInit {
       const idx = this.activeTab();
       void this.rowsTick();
       if (this.rows) this.prefetchLocationsFor(idx);
+    });
+
+    // Deep-link (?branch=<id>): once the branch directory has landed and
+    // contains the requested branch, switch to single mode and focus it.
+    // Runs once — reacts to `directoryList` so it fires after the async
+    // BranchConnectionService + tabs hydration settle.
+    effect(() => {
+      const known = this.branchTabs.directoryList();
+      const target = this.deepLinkBranchId;
+      if (!target || this.deepLinkApplied) return;
+      if (!known.some((b) => b.id === target)) return;
+      this.deepLinkApplied = true;
+      this.mode.set('single');
+      this.branchTabs.setActive(target);
     });
   }
 
@@ -324,6 +346,10 @@ export class BranchProductSectionComponent implements OnInit {
   initializing = signal<boolean>(true);
 
   async ngOnInit(): Promise<void> {
+    // Capture the deep-link branch before anything async — the constructor
+    // effect applies it once the directory resolves.
+    this.deepLinkBranchId = this.route.snapshot.queryParamMap.get('branch');
+
     const info = this.productInfo();
     if (!Array.isArray(info.branchProduct)) info.branchProduct = [];
 

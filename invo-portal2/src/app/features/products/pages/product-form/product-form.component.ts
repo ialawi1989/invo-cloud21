@@ -207,8 +207,11 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
   }
 
   async ngOnInit(): Promise<void> {
-    // Preserve list context for back navigation
-    for (const key of ['pageNum', 'pageLimit', 'filterByType', 'searchTerm']) {
+    // Preserve list context for back navigation. `branch` is the deep-link
+    // param from the matrix editor (select this branch on open) — kept here so
+    // it survives the type-correction redirect below and reaches the branch
+    // section after a reload.
+    for (const key of ['pageNum', 'pageLimit', 'filterByType', 'searchTerm', 'branch']) {
       const v = this.route.snapshot.queryParamMap.get(key);
       if (v != null) this.listQueryParams[key] = v;
     }

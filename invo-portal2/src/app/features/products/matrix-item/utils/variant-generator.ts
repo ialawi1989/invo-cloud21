@@ -121,6 +121,7 @@ export function generateVariants(params: {
       attribute3,
       openingBalanceCost: unitCost,
       branchProduct: existing?.branchProduct ? clone(existing.branchProduct) : clone(seed),
+      mediaIds: existing?.mediaIds ? clone(existing.mediaIds) : [],
     });
   }
 

@@ -33,6 +33,15 @@ export interface MatrixItemImage {
   thumbnailUrl: string | null;
 }
 
+/** A single image attached to a generated variant product. Assigned in the
+ *  matrix form and persisted via the `bulkProductMedia` route (keyed by the
+ *  variant's `productId`). */
+export interface VariantImage {
+  id: string;
+  defaultUrl: string;
+  thumbnailUrl: string;
+}
+
 export type DimensionDisplayType = 'buttons' | 'radio' | 'dropdown';
 
 export interface DimensionAttribute {
@@ -88,6 +97,10 @@ export interface MatrixProduct {
   /** Cost carried on the product itself (mirrors `unitCost` on regenerate). */
   openingBalanceCost?: number;
   branchProduct: BranchProduct[];
+  /** Images attached to this variant. Loaded from the backend, edited via the
+   *  media picker, and saved through `bulkProductMedia` after the matrix save.
+   *  Only meaningful for saved variants (those with a real `id`). */
+  mediaIds?: VariantImage[];
 }
 
 export interface MatrixItem {

@@ -609,7 +609,7 @@
 
       <!-- Loading Skeleton -->
       @if (isLoading()) {
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 content-start auto-rows-max gap-4 p-6">
         @for (r of [1,2,3,4,5,6,7,8]; track r) {
         <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
           <div class="p-4 space-y-2.5">
@@ -652,7 +652,7 @@
          cards backfill the gap left in the parent's row instead of shifting
          down. On mobile (1 column) the strip naturally lands right below the
          expanded card, so this has no visible effect there. -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-flow-row-dense gap-4 p-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-flow-row-dense content-start auto-rows-max gap-4 p-6">
       @for (row of data(); track trackByFn($index, row)) {
       <div
         [class]="
@@ -727,7 +727,7 @@
       @if (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length) {
         <div class="col-span-full bg-brand-50/40 border-2 border-brand-300 rounded-xl p-3"
              (click)="$event.stopPropagation()">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 content-start auto-rows-max gap-3">
             @for (child of $any(row)[childrenKey]; track $index) {
               <div
                 class="bg-white border border-slate-200 rounded-lg p-3 cursor-pointer
