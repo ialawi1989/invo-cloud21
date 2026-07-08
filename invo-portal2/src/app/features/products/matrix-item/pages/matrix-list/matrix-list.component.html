@@ -27,14 +27,72 @@
     </button>
   </div>
 
+  <!-- Name — small thumbnail + matrix name (matches the products list). -->
+  <ng-template listCellTemplate="name" let-row>
+    <div class="flex items-center gap-3">
+      <span class="w-9 h-9 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden text-slate-400">
+        @if (row.image?.thumbnailUrl || row.image?.defaultUrl) {
+          <img [src]="row.image.thumbnailUrl || row.image.defaultUrl" alt="" class="w-full h-full object-cover" />
+        } @else {
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-5-5L5 21"/>
+          </svg>
+        }
+      </span>
+      <span class="font-medium text-slate-900 min-w-0 break-words list-interactive-cell">{{ row.name }}</span>
+    </div>
+  </ng-template>
+
   <!-- Barcode — monospace so codes align down the list. -->
   <ng-template listCellTemplate="barcode" let-row>
     <span class="font-mono text-xs text-slate-500">{{ row.barcode || '—' }}</span>
   </ng-template>
 
-  <!-- Price — company currency via the shared mycurrency pipe. -->
+  <!-- Dimensions — one chip per dimension name (e.g. Color · Size). -->
+  <ng-template listCellTemplate="dimensions" let-row>
+    @if (row.dimensions?.length) {
+      <div class="flex flex-wrap items-center gap-1">
+        @for (d of row.dimensions; track $index) {
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600 whitespace-nowrap">{{ d }}</span>
+        }
+      </div>
+    } @else {
+      <span class="text-slate-400">—</span>
+    }
+  </ng-template>
+
+  <!-- Variants count — "{n} variants" pill. -->
+  <ng-template listCellTemplate="variantsCount" let-row>
+    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-700 whitespace-nowrap">
+      {{ 'MATRIX.LIST.VARIANTS' | translate: { count: row.variantsCount || 0 } }}
+    </span>
+  </ng-template>
+
+  <!-- Total stock — red when ≤ 0, brand tint when in stock. -->
+  <ng-template listCellTemplate="totalOnHand" let-row>
+    <span class="inline-flex items-center px-2 py-1 rounded-lg text-sm font-medium tabular-nums"
+      [class.bg-red-50]="(row.totalOnHand ?? 0) <= 0"
+      [class.text-red-700]="(row.totalOnHand ?? 0) <= 0"
+      [class.bg-brand-50]="(row.totalOnHand ?? 0) > 0"
+      [class.text-brand-700]="(row.totalOnHand ?? 0) > 0">
+      {{ row.totalOnHand ?? 0 }}
+    </span>
+  </ng-template>
+
+  <!-- Price — single value, or a range when variant prices differ. -->
   <ng-template listCellTemplate="defaultPrice" let-row>
-    <span class="tabular-nums">{{ (row.defaultPrice || 0) | mycurrency }}</span>
+    <span class="tabular-nums">
+      @if (row.priceRange && row.priceRange.min !== row.priceRange.max) {
+        {{ row.priceRange.min | mycurrency }} – {{ row.priceRange.max | mycurrency }}
+      } @else {
+        {{ (row.defaultPrice || 0) | mycurrency }}
+      }
+    </span>
+  </ng-template>
+
+  <!-- SKU — hidden by default; monospace when shown. -->
+  <ng-template listCellTemplate="sku" let-row>
+    <span class="font-mono text-xs text-slate-500">{{ row.sku || '—' }}</span>
   </ng-template>
 
   <!-- Row actions: Edit -->

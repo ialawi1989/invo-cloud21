@@ -125,7 +125,18 @@ export interface MatrixListRow {
   id: string;
   name: string;
   barcode: string;
+  sku: string | null;
   defaultPrice: number;
+  /** Parent thumbnail/cover image (either URL may be empty/null). */
+  image: MatrixItemImage;
+  /** Number of generated variant products. */
+  variantsCount: number;
+  /** Dimension names defining this matrix, e.g. ['Color','Size']. */
+  dimensions: string[];
+  /** Total stock across all variants + branches. */
+  totalOnHand: number;
+  /** Min/max variant price — shown as a range when they differ. */
+  priceRange: { min: number; max: number };
 }
 
 export interface MatrixListResponse {

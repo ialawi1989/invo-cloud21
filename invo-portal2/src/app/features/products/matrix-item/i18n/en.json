@@ -10,7 +10,11 @@
       "NAME": "Matrix Name",
       "BARCODE": "Barcode",
       "PRICE": "Default Price",
-      "VARIANTS": "{count} variants",
+      "DIMENSIONS": "Dimensions",
+      "VARIANTS_LABEL": "Variants",
+      "STOCK": "Stock",
+      "SKU": "SKU",
+      "VARIANTS": "{{count}} variants",
       "EMPTY": "No matrix items yet",
       "NO_MATCH": "No matrix items match your search"
     },

@@ -10,7 +10,11 @@
       "NAME": "اسم المصفوفة",
       "BARCODE": "الباركود",
       "PRICE": "السعر الافتراضي",
-      "VARIANTS": "{count} شكل",
+      "DIMENSIONS": "الأبعاد",
+      "VARIANTS_LABEL": "الأشكال",
+      "STOCK": "المخزون",
+      "SKU": "SKU",
+      "VARIANTS": "{{count}} شكل",
       "EMPTY": "لا توجد منتجات مصفوفة بعد",
       "NO_MATCH": "لا توجد منتجات مصفوفة تطابق بحثك"
     },

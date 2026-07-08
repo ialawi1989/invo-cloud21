@@ -81,7 +81,7 @@ export class MatrixListComponent implements OnInit {
    *  barcode as the secondary line. */
   mobileCardConfig: MobileCardConfig = {
     showThumbnail: false,
-    metricKeys: ['defaultPrice'],
+    metricKeys: ['variantsCount', 'defaultPrice'],
     secondaryKey: 'barcode',
   };
 
@@ -100,7 +100,8 @@ export class MatrixListComponent implements OnInit {
         primary: true,
         locked: true,
         interactive: true,
-        width: '320px',
+        customTemplate: true,
+        width: '300px',
         visible: true,
         order: 0,
       },
@@ -109,9 +110,39 @@ export class MatrixListComponent implements OnInit {
         label: this.lang.instant('MATRIX.LIST.BARCODE'),
         sortable: true,
         customTemplate: true,
-        width: '200px',
+        width: '170px',
         visible: true,
         order: 1,
+      },
+      {
+        key: 'dimensions',
+        label: this.lang.instant('MATRIX.LIST.DIMENSIONS'),
+        sortable: false,
+        customTemplate: true,
+        width: '200px',
+        visible: true,
+        order: 2,
+      },
+      {
+        // Not sortable: variantsCount is a computed aggregate — keep it off
+        // until the backend confirms ORDER BY support (mirrors stockValue).
+        key: 'variantsCount',
+        label: this.lang.instant('MATRIX.LIST.VARIANTS_LABEL'),
+        sortable: false,
+        customTemplate: true,
+        width: '130px',
+        visible: true,
+        order: 3,
+      },
+      {
+        key: 'totalOnHand',
+        label: this.lang.instant('MATRIX.LIST.STOCK'),
+        sortable: false,
+        customTemplate: true,
+        align: 'end',
+        width: '110px',
+        visible: true,
+        order: 4,
       },
       {
         key: 'defaultPrice',
@@ -119,9 +150,18 @@ export class MatrixListComponent implements OnInit {
         sortable: true,
         customTemplate: true,
         align: 'end',
-        width: '160px',
+        width: '170px',
         visible: true,
-        order: 2,
+        order: 5,
+      },
+      {
+        key: 'sku',
+        label: this.lang.instant('MATRIX.LIST.SKU'),
+        sortable: false,
+        customTemplate: true,
+        width: '120px',
+        visible: false,
+        order: 6,
       },
     ];
 

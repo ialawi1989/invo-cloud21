@@ -125,7 +125,21 @@ export class MatrixItemService {
     id: String(raw?.id ?? raw?._id ?? ''),
     name: this.flattenName(raw) || String(raw?.name ?? ''),
     barcode: String(raw?.barcode ?? ''),
+    sku: raw?.sku != null && raw.sku !== '' ? String(raw.sku) : null,
     defaultPrice: Number(raw?.defaultPrice ?? 0) || 0,
+    image: {
+      defaultUrl: raw?.image?.defaultUrl || null,
+      thumbnailUrl: raw?.image?.thumbnailUrl || null,
+    },
+    variantsCount: Number(raw?.variantsCount ?? 0) || 0,
+    dimensions: Array.isArray(raw?.dimensions)
+      ? raw.dimensions.map((d: any) => String(d)).filter(Boolean)
+      : [],
+    totalOnHand: Number(raw?.totalOnHand ?? 0) || 0,
+    priceRange: {
+      min: Number(raw?.priceRange?.min ?? raw?.defaultPrice ?? 0) || 0,
+      max: Number(raw?.priceRange?.max ?? raw?.defaultPrice ?? 0) || 0,
+    },
   });
 
   private normalizeDimensionRow = (raw: any): DimensionListRow => ({
