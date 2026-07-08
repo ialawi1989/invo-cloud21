@@ -23,6 +23,7 @@ import {
 import {
   TableColumn,
   ListQueryParams,
+  MobileCardConfig,
 } from '@shared/components/list-page/interfaces/list-page.types';
 
 import { MatrixItemService } from '../../services/matrix-item.service';
@@ -75,7 +76,17 @@ export class MatrixListComponent implements OnInit {
   sortingConfig = { enabled: true, defaultSort: { key: 'name', direction: 'asc' as const } };
   emptyState = { title: '', message: '' };
 
+  /** Compact one-row mobile cards (< 768px) — same style as the products
+   *  list. No thumbnail (matrix items have no image); price as the metric,
+   *  barcode as the secondary line. */
+  mobileCardConfig: MobileCardConfig = {
+    showThumbnail: false,
+    metricKeys: ['defaultPrice'],
+    secondaryKey: 'barcode',
+  };
+
   async ngOnInit(): Promise<void> {
+    // Full-bleed layout is the default, owned by <app-list-page>.
     await this.lang.loadFeature('products/matrix-item');
     this.initTranslations();
   }

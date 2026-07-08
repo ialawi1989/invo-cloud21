@@ -185,10 +185,28 @@ button { font-family: inherit; }
   backdrop-filter: blur(2px);
 }
 
-/* Lock page scroll for full-height pages (e.g. CMS collection) */
+/* Lock page scroll for full-height pages (e.g. CMS collection, full-bleed
+   lists). dvh keeps the locked height in sync with mobile browser toolbars so
+   the pinned bottom row isn't hidden behind iOS Safari's bottom bar. */
 body:has(.main-content.no-padding) {
   overflow: hidden;
   height: 100vh;
+  height: 100dvh;
+}
+
+/* Full-bleed lists: the router-inserted component hosting an <app-list-page>
+   in full-bleed mode must fill the no-padding shell as a flex column, so the
+   table's internal scroll region gets a bounded height (header + rows scroll +
+   pinned pagination). This lives in GLOBAL styles — not the component — because
+   the routed host is inserted by the router and lacks any component's view-
+   encapsulation attribute, so a component-scoped rule can't target it. Scoped
+   via :has(> .lp-host-fullbleed) so only full-bleed list hosts are affected —
+   other no-padding pages (e.g. the site editor) are untouched. */
+.main-content.no-padding > *:has(> .lp-host-fullbleed) {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Post composer — Wix-Ricos-style internal container scroll:

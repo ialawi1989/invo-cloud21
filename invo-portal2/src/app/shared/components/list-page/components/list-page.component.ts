@@ -16,6 +16,7 @@ import {
   ViewChild,
   inject,
   ChangeDetectionStrategy,
+  HostBinding,
   HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -66,6 +67,7 @@ import { PaginationComponent } from '../../pagination';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../breadcrumbs';
 import { ListPreferencesService } from '../../../../core/layout/services/list-preferences.service';
 import { ListColumnPref } from '../../../../core/layout/services/employee-options.service';
+import { LayoutService } from '../../../../core/layout/services/layout.service';
 import { TooltipDirective } from '../../../directives/tooltip.directive';
 
 // Utilities
@@ -136,69 +138,64 @@ import {
     tr.list-child-row:hover .list-sticky-cell,
     tr.list-child-row:hover .list-floating-actions { background-color: #ecfafd; }
 
-    /* Right-edge fade on the frozen start (primary) column. Painted INSIDE
-       the cell via ::after so no overflow:hidden ancestor can clip it, and
-       it sits above the scrolling cells because the sticky cell is a
-       z-indexed positioning context. Revealed only once the table is
-       scrolled (.list-has-scroll-start). */
+    /* Drop shadow CAST BY the frozen start (primary) column ONTO the scrolling
+       content to its right — sits just outside the cell's end edge
+       (translateX 100%), darkest at the seam, fading away. The frozen column
+       keeps overflow:visible so this isn't clipped. A pseudo-element (not
+       box-shadow) because Tailwind's collapsed table borders suppress cell
+       box-shadows. Revealed only once scrolled (.list-has-scroll-start). */
     .list-sticky-col::after {
       content: "";
       position: absolute;
       top: 0;
-      right: 0;
       bottom: 0;
-      width: 16px;
+      inset-inline-end: 0;
+      /* Wider + gentler multi-stop falloff so the edge reads as a soft shadow
+         (Wix-style) rather than a hard line. */
+      width: 30px;
       transform: translateX(100%);
-      /* Drop shadow CAST BY the frozen column onto the scrolling content:
-         darkest at the column edge, fading to transparent (dark stop first). */
-      background: linear-gradient(to right, rgba(15, 23, 42, 0.10), rgba(15, 23, 42, 0));
+      background: linear-gradient(to right, rgba(15, 23, 42, 0.13), rgba(15, 23, 42, 0.04) 45%, rgba(15, 23, 42, 0));
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.15s ease;
-      z-index: 3;
+      z-index: 4;
     }
     .list-has-scroll-start .list-sticky-col::after { opacity: 1; }
     :host-context([dir="rtl"]) .list-sticky-col::after {
-      right: auto;
-      left: 0;
       transform: translateX(-100%);
-      background: linear-gradient(to left, rgba(15, 23, 42, 0.10), rgba(15, 23, 42, 0));
+      background: linear-gradient(to left, rgba(15, 23, 42, 0.13), rgba(15, 23, 42, 0.04) 45%, rgba(15, 23, 42, 0));
     }
 
-    /* Pinned Actions column — SOLID white so content scrolls cleanly under
-       it. The header cell keeps the teal tint. */
-    .list-floating-actions { background: #ffffff; }
-    tr.list-row:hover .list-floating-actions { background-color: #f4fbfb; }
+    /* Pinned Actions — TRANSPARENT (Wix-style): only the buttons inside float
+       to the end edge over the row content; the cell itself has no background,
+       so it doesn't read as a solid frozen column. The buttons carry their own
+       white pill/shadow for legibility. */
+    .list-floating-actions { background: transparent; }
 
-    /* ── End-edge scroll affordance ─────────────────────────────────────
-       Fade cast BY the pinned Actions column onto the content tucked
-       behind it — the "there are more columns this way" hint. Painted
-       inside the sticky actions cells via ::before (mirror of the
-       start-edge ::after above) and revealed only while there is still
-       content to scroll toward the end edge (.list-has-scroll-end). */
+    /* ── End-edge shadow ────────────────────────────────────────────────
+       Placed at the table's right EDGE (inside the pinned Actions cell, no
+       translate, no z-index so it sits BELOW the buttons but above the content
+       scrolling under the transparent cell). It fades that content out at the
+       edge and marks "more columns this way". Shown only while there is content
+       still to scroll toward the end (.list-has-scroll-end). */
     .list-floating-actions::before,
     .list-actions-th::before {
       content: "";
       position: absolute;
       top: 0;
       bottom: 0;
-      left: 0;
-      width: 16px;
-      transform: translateX(-100%);
-      background: linear-gradient(to left, rgba(15, 23, 42, 0.10), rgba(15, 23, 42, 0));
+      inset-inline-end: 0;
+      width: 32px;
+      background: linear-gradient(to left, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0));
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.15s ease;
-      z-index: 3;
     }
     .list-has-scroll-end .list-floating-actions::before,
     .list-has-scroll-end .list-actions-th::before { opacity: 1; }
     :host-context([dir="rtl"]) .list-floating-actions::before,
     :host-context([dir="rtl"]) .list-actions-th::before {
-      left: auto;
-      right: 0;
-      transform: translateX(100%);
-      background: linear-gradient(to right, rgba(15, 23, 42, 0.10), rgba(15, 23, 42, 0));
+      background: linear-gradient(to right, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0));
     }
 
     /* The table body scrolls INSIDE this host (both axes). Its height is capped
@@ -231,8 +228,148 @@ import {
        fill is opaque, so rows scroll cleanly underneath. */
     .list-page-container .overflow-x-auto thead th {
       position: sticky;
-      top: 0;
+      /* -1px (not 0) closes the sub-pixel gap where a scrolling row peeks above
+         the header on some zoom/DPR levels. The 1px is absorbed by the header's
+         vertical padding, so the label doesn't visibly shift. */
+      top: -1px;
     }
+
+    /* ── Full-bleed (edge-to-edge) layout — opt-in via [fullBleed] ──────────
+       Fills the viewport as a flex column: page header + toolbar + pagination
+       keep their height, only the table scroll host flexes and scrolls. Pairs
+       with the host page setting main-content to no-padding (a fixed-height
+       flex column). All rules are scoped to .lp-fullbleed / the host class so
+       padded list pages are unaffected. */
+    :host(.lp-host-fullbleed) {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .list-page-container.lp-fullbleed {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      /* Fill the viewport HEIGHT but keep comfortable side + bottom gutters
+         (Wix-style contained panel) so the table stays scannable and doesn't
+         feel crammed against the screen edges. The header supplies the top gap. */
+      padding: 0 24px 20px;
+      /* Comfortable, Wix-like row rhythm — roomy but not airy. */
+      --row-pad-y: 12px;
+    }
+    .lp-fullbleed thead th {
+      padding-top: 12px !important;
+      padding-bottom: 12px !important;
+    }
+    /* Let the primary (frozen) column absorb horizontal slack so wide screens
+       give the long product name room instead of spreading the middle columns
+       into sparse gaps. Its var stays the MIN width; it only grows when the
+       table fits the viewport — once columns overflow, max-content pins the min
+       and horizontal scroll takes over as before. Higher specificity than the
+       base width-lock so this wins in full-bleed only. */
+    /* The frozen primary column keeps its fixed default width (the base
+       list-sticky-col rule) — a balanced, predictable layout. Users who want
+       it wider/narrower drag the header resize handle (persisted per user). */
+    /* Page header (H1) — small extra inset on top of the container gutters. */
+    .list-page-container.lp-fullbleed > .mb-6:not(.list-card) {
+      flex: 0 0 auto;
+      padding: 14px 4px 0;
+      margin-bottom: 10px;
+    }
+    /* Card fills the rest, stripped of its rounded/border/shadow chrome. */
+    .lp-fullbleed .list-card {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    /* Toolbar + pagination keep their height; only the active body view flexes.
+       The body view differs per breakpoint/mode: .relative (desktop table),
+       .lp-mcards (mobile cards), or .grid (grid view). */
+    .lp-fullbleed .list-card > :not(.relative):not(.lp-mcards):not(.grid):not([listCustomView]) {
+      flex: 0 0 auto;
+    }
+    /* Consumer-provided custom views (e.g. the Chart-of-Accounts tree) also
+       fill and scroll internally in full-bleed. */
+    .lp-fullbleed .list-card > [listCustomView] {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+    }
+    /* Pagination is the pinned bottom row — pad it past the iPhone home
+       indicator so the controls aren't under the gesture bar. */
+    .lp-fullbleed .list-card > .border-t {
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+    .lp-fullbleed .list-card > .relative,
+    .lp-fullbleed .list-card > .lp-mcards,
+    .lp-fullbleed .list-card > .grid {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .lp-fullbleed .list-card > .relative {
+      display: flex;
+      flex-direction: column;
+    }
+    /* The table host scrolls itself; the card/grid views need their own
+       vertical scroll (the table's #scrollHost already has overflow-y). */
+    .lp-fullbleed .list-card > .lp-mcards,
+    .lp-fullbleed .list-card > .grid {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .lp-fullbleed .overflow-x-auto {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    /* Non-sticky lists ([stickyColumns]="false") have no overflow-x-auto class
+       on the host — make whatever the table wrapper's scroller is fill + scroll
+       vertically so the sticky header still works. (The phantom bar is fixed /
+       out of flow, so exclude it.) */
+    .lp-fullbleed .list-card > .relative > :not(.lp-hscroll) {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    /* Ensure the header sticks in full-bleed regardless of sticky-columns.
+       -1px closes the sub-pixel peek gap (see the note above). */
+    .lp-fullbleed thead th {
+      position: sticky;
+      top: -1px;
+    }
+
+    /* ── Column resize handle ───────────────────────────────────────────────
+       A grab strip on each header cell's end edge. Header cells are already
+       positioned (sticky), so this anchors to each th. Sits above neighbouring
+       cells so it stays grabbable at the frozen-column seam. */
+    .lp-col-resizer {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      inset-inline-end: -4px;
+      width: 9px;
+      cursor: col-resize;
+      z-index: 25;
+      touch-action: none;
+    }
+    .lp-col-resizer::after {
+      content: "";
+      position: absolute;
+      top: 25%;
+      bottom: 25%;
+      inset-inline-end: 4px;
+      width: 2px;
+      border-radius: 1px;
+      background: transparent;
+      transition: background-color 120ms ease;
+    }
+    .lp-col-resizer:hover::after,
+    .lp-col-resizer:active::after { background: #7fb5bd; }
 
     /* Fixed phantom scrollbar — pinned to the real viewport bottom while
        the table is in view. NOTE: position: sticky cannot work here because
@@ -290,6 +427,17 @@ import {
       font-size: 14px;
       color: #4a5163;
       white-space: nowrap;
+    }
+    /* When a column is narrower than its content (resized, or a narrow window),
+       clip it with an ellipsis instead of overflowing into the next column.
+       Excluded: the Actions column (floating button has its own shadow), the
+       selection checkbox column (.start-0 — a checkbox, not text), and the
+       frozen primary column (.list-sticky-col — its name wraps rather than
+       overflows, and it keeps overflow:visible so its cast edge-shadow shows). */
+    .list-page-container tbody td:not(.list-floating-actions):not(.start-0):not(.list-sticky-col),
+    .list-page-container thead th:not(.list-actions-th):not(.start-0):not(.list-sticky-col) {
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     /* Subtle row dividers (recolour the Tailwind divide-y borders) */
     .list-page-container tbody tr { border-top-color: #e6e8ee !important; }
@@ -393,6 +541,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   private modalService = inject(ModalService);
   private translate = inject(TranslateService);
   private listPrefs = inject(ListPreferencesService);
+  private layout = inject(LayoutService);
 
   protected readonly Math = Math;
   // Expose Object to template
@@ -505,6 +654,35 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
    *  fit can pass `false` to drop the sticky cells, the scroll-shadow, and
    *  the overflow-x wrapper (no horizontal scroll). */
   @Input() stickyColumns = true;
+
+  /** Full-bleed (edge-to-edge) layout: the list fills the viewport with the
+   *  table body as the single internal scroll region — toolbar pinned on top,
+   *  sticky header, pagination pinned at the bottom, no card chrome or outer
+   *  gaps. Now the DEFAULT for every list page — the component self-manages the
+   *  shell (switches main-content to no-padding on desktop, restores it on
+   *  destroy) so pages need no extra wiring. Set `[fullBleed]="false"` to opt a
+   *  page out (e.g. a list embedded below other content). */
+  @Input() fullBleed = true;
+
+  /** Effective full-bleed: only on desktop widths. On mobile (< 768px) we keep
+   *  the padded, page-scroll layout — a fixed-viewport shell fights iOS Safari's
+   *  dynamic toolbars, and mobile already scrolls the page fine. Reactive via
+   *  the `isMobile` signal (updated on resize). */
+  get isFullBleed(): boolean {
+    return this.fullBleed && !this.isMobile();
+  }
+
+  /** Mirror the effective full-bleed onto the component host so its own `:host`
+   *  box becomes a flex child that fills the no-padding main-content column. */
+  @HostBinding('class.lp-host-fullbleed') get isHostFullBleed(): boolean {
+    return this.isFullBleed;
+  }
+
+  /** Push the no-padding shell state to match the effective full-bleed. Called
+   *  on init and whenever the viewport crosses the mobile breakpoint. */
+  private syncFullBleedShell(): void {
+    this.layout.setNoPadding(this.isFullBleed);
+  }
 
   /** Additional view modes to surface alongside the built-in
    *  Table / Grid toggle. Each entry renders as an icon button in
@@ -1011,6 +1189,11 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     cols.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     this._columns.set(cols);
     this.visibleColumns.set(ColumnHelper.getColumnKeys(cols));
+
+    // Restore persisted per-column widths (resize handle).
+    const widths: Record<string, number> = {};
+    for (const p of prefs) if (typeof p.width === 'number') widths[p.key] = p.width;
+    this.columnWidths.set(widths);
     console.debug('[list-page] applyColumnPrefs', {
       applied: cols.map(c => ({ key: c.key, visible: c.visible, order: c.order })),
       visibleColumns: ColumnHelper.getColumnKeys(cols),
@@ -1024,6 +1207,10 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     this.dataSubscription?.unsubscribe();
     window.removeEventListener('resize', this.resizeHandler);
     window.removeEventListener('scroll', this.pageScrollHandler, { capture: true } as any);
+    document.removeEventListener('mousemove', this._onResizeMove);
+    document.removeEventListener('mouseup', this._onResizeEnd);
+    // Restore the normal padded shell for the next (non-list) page.
+    if (this.fullBleed) this.layout.setNoPadding(false);
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -1050,9 +1237,56 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     // Restore state from URL if enabled
     if (this.syncToUrl) {
       this.restoreStateFromUrl();
+      // React to EXTERNAL url changes (browser back/forward, or a pasted link)
+      // so the list follows the address bar. Self-initiated navigations
+      // (syncStateToUrl) produce params that already match the in-memory state,
+      // so onUrlQueryParamsChanged is a no-op for them — no reload loop.
+      this.subscriptions.add(
+        this.route.queryParams.subscribe(() => this.onUrlQueryParamsChanged()),
+      );
     }
 
     // Custom fields are loaded lazily when customize modal opens
+  }
+
+  /** Re-apply page/size/search/sort/filters from the URL when it changes
+   *  externally (back/forward), then reload. Does NOT re-write the URL. */
+  private onUrlQueryParamsChanged(): void {
+    if (!this.syncToUrl || !this._initialLoadDispatched) return;
+
+    const state = ListUrlStateHelper.fromQueryParams(this.route.snapshot.queryParams, {
+      page: 1,
+      pageSize: this.pageSize(),
+      searchTerm: '',
+      filters: {},
+      visibleColumns: ColumnHelper.getColumnKeys(this.columns),
+    });
+
+    const nextPage = state.page ?? 1;
+    const nextSize = state.pageSize ?? this.pageSize();
+    const nextSearch = state.searchTerm ?? '';
+    const nextSort = state.sortBy
+      ?? (this.sorting.enabled && this.sorting.defaultSort
+        ? { sortValue: this.sorting.defaultSort.key, sortDirection: this.sorting.defaultSort.direction }
+        : undefined);
+    const nextFilters = state.filters ?? {};
+
+    const changed =
+      nextPage !== this.currentPage() ||
+      nextSize !== this.pageSize() ||
+      nextSearch !== this.searchTerm() ||
+      JSON.stringify(nextSort) !== JSON.stringify(this.sortBy()) ||
+      JSON.stringify(nextFilters) !== JSON.stringify(this.activeFilters());
+
+    if (!changed) return;
+
+    this.currentPage.set(nextPage);
+    this.pageSize.set(nextSize);
+    this.searchTerm.set(nextSearch);
+    this.searchDraft.set(nextSearch);
+    this.sortBy.set(nextSort);
+    this.activeFilters.set(nextFilters);
+    this.loadData();
   }
 
   private setupSearchDebounce(): void {
@@ -1089,6 +1323,9 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       this.viewMode.set(this.preMobileViewMode || 'table');
       this.preMobileViewMode = null;
     }
+    // Keep the no-padding shell in sync with the effective (desktop-only)
+    // full-bleed as the viewport crosses the mobile breakpoint.
+    this.syncFullBleedShell();
   }
 
   private async loadCustomFields(): Promise<void> {
@@ -1733,16 +1970,94 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     });
   }
 
-  /** Persist column visibility + order + displayStyle to employee options for this entity. */
+  /** Persist column visibility + order + displayStyle + width to employee
+   *  options for this entity. */
   private persistColumnPrefs(columns: TableColumn<T>[]): void {
     if (!this.entityType) return;
+    const widths = this.columnWidths();
     const prefs: ListColumnPref[] = columns.map((col, i) => ({
       key: col.key,
       visible: col.visible !== false,
       order: col.order ?? i,
       ...(col.displayStyle ? { displayStyle: col.displayStyle } : {}),
+      ...(widths[col.key] != null ? { width: widths[col.key] } : {}),
     }));
     this.listPrefs.save(this.entityType, prefs);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // COLUMN RESIZING (desktop) — drag a header's end edge to resize;
+  // double-click the handle to auto-fit (drop the override). Widths persist
+  // per user via employee options (the same ListColumnPref store).
+  // ══════════════════════════════════════════════════════════════
+
+  /** User width overrides, keyed by column key (px). Empty = default sizing. */
+  columnWidths = signal<Record<string, number>>({});
+  private static readonly MIN_COL_WIDTH = 64;
+  private _resize: { key: string; startX: number; startWidth: number } | null = null;
+
+  /** Resizing is a desktop-only affordance. */
+  get canResizeColumns(): boolean {
+    return !this.isMobile();
+  }
+
+  /** Inline width style for a column: a fixed px lock once the user resizes it,
+   *  otherwise the column's default min-width (auto/content sizing preserved so
+   *  the flexible primary column and clamp() rules keep working). */
+  colStyle(col: TableColumn<T>): Record<string, string> {
+    const w = this.columnWidths()[col.key];
+    if (w != null) {
+      const px = `${w}px`;
+      return { width: px, 'min-width': px, 'max-width': px };
+    }
+    return col.width ? { 'min-width': col.width } : {};
+  }
+
+  startColumnResize(col: TableColumn<T>, ev: MouseEvent): void {
+    ev.preventDefault();
+    ev.stopPropagation();
+    const th = (ev.target as HTMLElement).closest('th') as HTMLElement | null;
+    const startWidth = this.columnWidths()[col.key] ?? th?.offsetWidth ?? 150;
+    this._resize = { key: col.key, startX: ev.clientX, startWidth };
+    document.addEventListener('mousemove', this._onResizeMove);
+    document.addEventListener('mouseup', this._onResizeEnd);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  }
+
+  private _onResizeMove = (ev: MouseEvent): void => {
+    if (!this._resize) return;
+    const rtl = getComputedStyle(document.documentElement).direction === 'rtl';
+    const delta = (ev.clientX - this._resize.startX) * (rtl ? -1 : 1);
+    const w = Math.max(
+      ListPageComponent.MIN_COL_WIDTH,
+      Math.round(this._resize.startWidth + delta),
+    );
+    this.columnWidths.update(m => ({ ...m, [this._resize!.key]: w }));
+  };
+
+  private _onResizeEnd = (): void => {
+    document.removeEventListener('mousemove', this._onResizeMove);
+    document.removeEventListener('mouseup', this._onResizeEnd);
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    this._resize = null;
+    // Save on drag-end (not on every move) so we hit the API once per resize.
+    this.persistColumnPrefs(this._columns());
+  };
+
+  /** Double-click the handle → drop the override so the column auto-fits to
+   *  its content again. */
+  autoFitColumn(col: TableColumn<T>, ev: MouseEvent): void {
+    ev.preventDefault();
+    ev.stopPropagation();
+    this.columnWidths.update(m => {
+      if (m[col.key] == null) return m;
+      const n = { ...m };
+      delete n[col.key];
+      return n;
+    });
+    this.persistColumnPrefs(this._columns());
   }
 
   // ══════════════════════════════════════════════════════════════

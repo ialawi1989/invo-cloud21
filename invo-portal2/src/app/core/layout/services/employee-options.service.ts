@@ -14,6 +14,9 @@ export interface ListColumnPref {
   order: number;
   /** Per-item layout inside a grouped cell. */
   displayStyle?: 'inline' | 'newLine';
+  /** User-set column width in px (from the header resize handle). Omitted when
+   *  the column uses its default/auto sizing. */
+  width?: number;
 }
 
 export interface ListPreference {

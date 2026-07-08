@@ -200,6 +200,8 @@ export class ProductsListComponent implements OnInit {
   };
 
   async ngOnInit(): Promise<void> {
+    // Full-bleed layout is now the default, owned by <app-list-page> itself
+    // (desktop-only, self-managed shell) — nothing to wire here.
     await this.lang.loadFeature('products');
     this.initializeTranslations();
   }
@@ -303,7 +305,9 @@ export class ProductsListComponent implements OnInit {
       ...(this.privileges.check('productSecurity.actions.viewStockValue.access') ? [{
         key: 'stockValue',
         label: this.lang.instant('PRODUCTS.FIELDS.STOCK_VALUE'),
-        sortable: true,
+        // Not sortable: stockValue is a computed aggregate (qty × cost) the
+        // backend can't ORDER BY — sorting it returns "Unknown sort column".
+        sortable: false,
         pipe: 'currency' as const,
         pipeArgs: { currency: 'BHD' },
         width: '150px',

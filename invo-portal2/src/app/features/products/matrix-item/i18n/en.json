@@ -6,6 +6,7 @@
       "SUBTITLE": "Product variants generated from dimensions like size and color",
       "SEARCH_PLACEHOLDER": "Search matrix items…",
       "ADD_NEW": "New Matrix Item",
+      "ADD_NEW_SHORT": "New",
       "NAME": "Matrix Name",
       "BARCODE": "Barcode",
       "PRICE": "Default Price",

@@ -11,16 +11,19 @@
   [selectable]="false"
   [emptyState]="emptyState"
   [entityType]="'matrix-item'"
+  [mobileCardConfig]="mobileCardConfig"
   (rowClicked)="onRowClick($event)">
 
   <!-- Header action: New Matrix Item -->
   <div listHeaderActions class="flex items-center gap-3">
     <button type="button" (click)="add()"
-      class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      class="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg font-medium whitespace-nowrap bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
-      {{ 'MATRIX.LIST.ADD_NEW' | translate }}
+      <!-- Full label on ≥sm, short "New" on mobile to keep the header tidy. -->
+      <span class="hidden sm:inline">{{ 'MATRIX.LIST.ADD_NEW' | translate }}</span>
+      <span class="sm:hidden">{{ 'MATRIX.LIST.ADD_NEW_SHORT' | translate }}</span>
     </button>
   </div>
 

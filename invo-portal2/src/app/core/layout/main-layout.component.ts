@@ -42,7 +42,11 @@ import { TopbarComponent } from './components/topbar/topbar.component';
     .main-content.collapsed { margin-left: 56px; }
     .main-content.no-padding {
       padding: 0;
+      /* dvh (dynamic viewport height) excludes the mobile browser's toolbars,
+         so the pinned bottom row (e.g. list pagination) isn't hidden behind
+         iOS Safari's bottom bar. Fallback to vh for older engines. */
       height: calc(100vh - 56px);
+      height: calc(100dvh - 56px);
       min-height: unset;
       overflow: hidden;
       display: flex;

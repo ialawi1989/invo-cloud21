@@ -1,5 +1,5 @@
 <app-list-page
-  style="--lp-actions-w: 92px; --lp-sticky-col-w: 300px"
+  style="--lp-actions-w: 150px; --lp-sticky-col-w: 300px"
   [pageTitle]="'PRODUCTS.TITLE' | translate"
   [breadcrumbs]="breadcrumbs"
   [columns]="columns"
@@ -190,7 +190,21 @@
        menu out of the enclosing card so `overflow-hidden` (used by grid
        cards for rounded corners) doesn't clip it. -->
   <ng-template listRowActions let-row>
-    <div class="inline-flex items-center" (click)="$event.stopPropagation()">
+    <div class="inline-flex items-center justify-end" (click)="$event.stopPropagation()">
+      <!-- Edit — revealed on row hover (Wix-style). It always reserves its
+           width so the ⋯ button stays pinned to the end edge; it just fades
+           in/out. Focus-visible also reveals it for keyboard users. -->
+      @if (canEdit) {
+        <button type="button"
+          (click)="editProduct(row, $event)"
+          class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity
+                 me-2 px-4 h-9 inline-flex items-center rounded-full
+                 bg-brand-600 text-white text-sm font-medium shadow-sm
+                 hover:bg-brand-700">
+          {{ 'COMMON.ACTIONS.EDIT' | translate }}
+        </button>
+      }
+
       <!-- Overflow menu (⋯) — circular floating button, always visible -->
       <button type="button"
         cdkOverlayOrigin

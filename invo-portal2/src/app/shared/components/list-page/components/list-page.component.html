@@ -1,4 +1,4 @@
-<div class="list-page-container">
+<div class="list-page-container" [class.lp-fullbleed]="isFullBleed">
 
   <!-- ══════════════════════════════════════════════════════════════ -->
   <!-- PAGE HEADER -->
@@ -215,19 +215,21 @@
       [class.list-has-scroll-end]="stickyColumns && hasScrollEnd()">
     <div [class.overflow-x-auto]="stickyColumns"
       #scrollHost
-      [style.max-height.px]="stickyColumns ? scrollMaxHeight() : null"
+      [style.max-height.px]="stickyColumns && !isFullBleed ? scrollMaxHeight() : null"
       (scroll)="updateScrollState($event.target)">
 
-      <!-- Loading Skeleton -->
+      <!-- Loading Skeleton — mirrors the real table's per-column widths
+           (colStyle) and w-full so the placeholder aligns with the data that
+           replaces it (no mismatched columns / empty right gap). -->
       @if (isLoading()) {
-      <table class="min-w-full">
+      <table class="w-full">
         <thead>
           <tr class="border-b border-slate-200">
             @if (selectable) {
             <th class="w-12 px-6 py-3"><div class="h-4 w-4 rounded bg-slate-200 animate-pulse"></div></th>
             }
             @for (col of displayColumns(); track col.key) {
-            <th class="px-6 py-3 text-start"><div class="h-3.5 rounded bg-slate-200 animate-pulse" [style.width.px]="60 + (col.label?.length || 5) * 6"></div></th>
+            <th class="px-6 py-3 text-start" [style]="colStyle(col)"><div class="h-3.5 rounded bg-slate-200 animate-pulse" [style.width.px]="60 + (col.label?.length || 5) * 6"></div></th>
             }
             <th class="w-24 px-6 py-3"><div class="h-3.5 w-12 rounded bg-slate-200 animate-pulse ms-auto"></div></th>
           </tr>
@@ -239,7 +241,7 @@
             <td class="px-6 py-4"><div class="h-4 w-4 rounded bg-slate-100 animate-pulse"></div></td>
             }
             @for (col of displayColumns(); track col.key; let i = $index) {
-            <td class="px-6 py-4">
+            <td class="px-6 py-4" [style]="colStyle(col)">
               @if (i === 0) {
               <div class="flex flex-col gap-1.5">
                 <div class="h-4 rounded bg-slate-100 animate-pulse" [style.width.px]="100 + (r % 3) * 50"></div>
@@ -304,7 +306,7 @@
                       'px-6 py-3 text-sm font-medium text-slate-500 ' + getAlignClass(column) + ' ' +
                       (column.sortable ? 'cursor-pointer hover:text-brand-600 transition-colors select-none ' : '') +
                       (colIdx === 0 && stickyColumns ? (selectable ? 'sticky start-12 z-20 bg-white list-sticky-col' : 'sticky start-0 z-20 bg-white list-sticky-col') : '')"
-              [style.min-width]="column.width"
+              [style]="colStyle(column)"
               (click)="column.sortable ? onColumnSort(column) : null">
               <div class="flex items-center gap-2" [class.justify-end]="column.align === 'end'">
                 {{ column.label }}
@@ -319,6 +321,15 @@
                 <span class="text-brand-600">{{ getSortIcon(column) }}</span>
                 }
               </div>
+              <!-- Column resize handle (desktop): drag to resize, double-click to
+                   auto-fit. Stops click so it never triggers a sort. -->
+              @if (canResizeColumns) {
+                <span class="lp-col-resizer"
+                  (mousedown)="startColumnResize(column, $event)"
+                  (dblclick)="autoFitColumn(column, $event)"
+                  (click)="$event.stopPropagation()"
+                  aria-hidden="true"></span>
+              }
             </th>
             }
 
@@ -357,7 +368,7 @@
             @for (column of displayColumns(); track column.key; let colIdx = $index) {
             <td [class]="'px-6 py-4 text-sm text-slate-900 ' + getAlignClass(column) + ' ' + getCellClass(row, column) +
                         (colIdx === 0 && stickyColumns ? (selectable ? ' sticky start-12 z-10 list-sticky-cell list-sticky-col' : ' sticky start-0 z-10 list-sticky-cell list-sticky-col') : '')"
-              [style.min-width]="column.width"
+              [style]="colStyle(column)"
               (click)="onRowClick(row, column, $event); $event.stopPropagation()">
 
               <!-- Grouped columns (multiple columns sharing a label) → stacked rows
@@ -409,7 +420,7 @@
           <!-- Expanded child rows -->
           @if (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length) {
             @for (child of $any(row)[childrenKey]; track $index) {
-            <tr class="list-child-row bg-brand-50/30 border-s-4 border-s-brand-500 border-b border-brand-100 hover:bg-brand-50/60 transition-colors cursor-pointer"
+            <tr class="group list-child-row bg-brand-50/30 border-s-4 border-s-brand-500 border-b border-brand-100 hover:bg-brand-50/60 transition-colors cursor-pointer"
                 (click)="onRowClick(child, undefined, $event)">
               @if (selectable) {
               <td [class]="'px-6 py-3' + (stickyColumns ? ' sticky start-0 z-10 list-sticky-cell' : '')"></td>
@@ -418,7 +429,7 @@
               <td class="px-6 py-3 text-sm text-slate-600"
                 [class]="getAlignClass(column) +
                         (ci === 0 && stickyColumns ? (selectable ? ' sticky start-12 z-10 list-sticky-cell list-sticky-col' : ' sticky start-0 z-10 list-sticky-cell list-sticky-col') : '')"
-                [style.min-width]="column.width">
+                [style]="colStyle(column)">
                 @if (ci === 0) {
                   <div class="flex items-start gap-2 ps-6">
                     <span class="w-4 border-l-2 border-b-2 border-slate-300 h-3 rounded-bl-sm flex-shrink-0 mt-2"></span>
@@ -789,6 +800,7 @@
         [count]="totalCount()"
         [pageCount]="pageCount()"
         [disabled]="isLoading()"
+        [showFirstLast]="true"
         (pageChange)="goToPage($event)"
         (pageSizeChange)="setPageSize($event)" />
     </div>
