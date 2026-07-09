@@ -77,6 +77,13 @@ export interface Dimension {
 
 /** Per-branch stock/price row hanging off a generated `MatrixProduct`. */
 export interface BranchProduct {
+  /** Existing `BranchProducts` row id — round-tripped from `getMatrix` so the
+   *  backend updates the right row in edit mode. Absent for brand-new rows
+   *  (create mode, or a branch the matrix was never assigned to), where the
+   *  backend mints one. Never emit `''`/`null`. */
+  id?: string;
+  /** Round-tripped from the backend; the matrix form doesn't toggle it. */
+  available?: boolean;
   branchId: string;
   onHand: number;
   price: number;

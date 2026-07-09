@@ -159,8 +159,11 @@ export class AddAttributeModalComponent {
 
   /** New rows are always removable; a persisted attribute (has `id`, not
    *  new) stays — matches the legacy guard so saved variants aren't
-   *  silently dropped from here. */
+   *  silently dropped from here. Exception: a code-less attribute is invalid
+   *  (the backend rejects it) so it's always removable, letting the user clean
+   *  up bad leftovers brought in by a picked saved dimension. */
   canRemove(attr: DimensionAttribute): boolean {
+    if (!String(attr.code ?? '').trim()) return true;
     return !attr.id || attr.isNew;
   }
 

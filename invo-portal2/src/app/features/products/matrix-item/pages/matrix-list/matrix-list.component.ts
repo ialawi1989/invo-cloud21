@@ -73,7 +73,9 @@ export class MatrixListComponent implements OnInit {
 
   paginationConfig = { enabled: true, pageLimits: [15, 25, 50, 100], default: 15 };
   searchConfig = { enabled: true, placeholder: '', debounceMs: 500 };
-  sortingConfig = { enabled: true, defaultSort: { key: 'name', direction: 'asc' as const } };
+  // No defaultSort — the list loads unsorted (sortBy: {}) and lets the backend
+  // apply its own default order; sorting starts only when a header is clicked.
+  sortingConfig = { enabled: true };
   emptyState = { title: '', message: '' };
 
   /** Compact one-row mobile cards (< 768px) — same style as the products

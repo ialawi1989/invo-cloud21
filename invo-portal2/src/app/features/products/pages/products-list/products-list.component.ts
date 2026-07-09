@@ -186,12 +186,10 @@ export class ProductsListComponent implements OnInit {
     debounceMs: 500
   };
 
+  // No defaultSort — the list loads unsorted (sortBy: {}) and lets the backend
+  // apply its own default order; sorting starts only when a header is clicked.
   sortingConfig = {
-    enabled: true,
-    defaultSort: {
-      key: 'name',
-      direction: 'asc' as const
-    }
+    enabled: true
   };
 
   emptyState = {

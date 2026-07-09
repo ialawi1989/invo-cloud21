@@ -170,6 +170,30 @@ export function buildBarcodeComparison(
   });
 }
 
+/**
+ * Drop attributes whose `code` is blank/whitespace. The backend requires every
+ * dimension attribute to carry a non-empty code — it's used to build the
+ * variant SKU/barcode, so a code-less attribute is invalid data that can only
+ * produce a malformed variant (e.g. a `..._` SKU with an empty segment) and
+ * `saveMatrix` rejects it (`Attribute code is required`). Pure — returns NEW
+ * dimension objects plus a list of what was removed (for user feedback).
+ */
+export function stripCodelessAttributes(dimensions: Dimension[]): {
+  dimensions: Dimension[];
+  removed: { dimension: string; attribute: string }[];
+} {
+  const removed: { dimension: string; attribute: string }[] = [];
+  const cleaned = (dimensions ?? []).map((d) => {
+    const kept = (d.attributes ?? []).filter((a) => {
+      const ok = !!String(a?.code ?? '').trim();
+      if (!ok) removed.push({ dimension: d.name, attribute: a?.name || '—' });
+      return ok;
+    });
+    return { ...d, attributes: kept };
+  });
+  return { dimensions: cleaned, removed };
+}
+
 /** Every dimension has at least one attribute — gates the per-branch product
  *  tables in the form (matches the legacy validator). */
 export function allDimensionsHaveAttributes(dimensions: Dimension[]): boolean {

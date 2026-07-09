@@ -1,14 +1,22 @@
 .mf-page {
-  padding: 16px 20px 100px;
+  /* Outer page padding comes from the shared `.main-content` wrapper (24px /
+     16px on mobile), same as the list pages — so only add the bottom space the
+     fixed save-bar needs, and let horizontal/top align with everything else. */
+  padding: 0 0 100px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  @media (max-width: 640px) { padding: 0 0 96px; gap: 12px; }
 }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
-.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a;
+  @media (max-width: 640px) { font-size: 19px; }
+}
 
-form { display: flex; flex-direction: column; gap: 16px; }
+form { display: flex; flex-direction: column; gap: 16px;
+  @media (max-width: 640px) { gap: 12px; }
+}
 
 .card {
   background: #fff;
@@ -19,6 +27,7 @@ form { display: flex; flex-direction: column; gap: 16px; }
   &__head {
     padding: 14px 16px;
     border-bottom: 1px solid #f1f5f9;
+    @media (max-width: 640px) { padding: 12px 14px; }
   }
   &__title { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
   &__body {
@@ -26,6 +35,7 @@ form { display: flex; flex-direction: column; gap: 16px; }
     display: flex;
     flex-direction: column;
     gap: 16px;
+    @media (max-width: 640px) { padding: 14px; gap: 14px; }
   }
 }
 
@@ -46,13 +56,31 @@ form { display: flex; flex-direction: column; gap: 16px; }
   @media (max-width: 900px) { grid-template-columns: 1fr; }
 }
 .mf-main  { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.mf-aside {
+
+/* Information card body — fields on the left, image tile on the right. The
+   image lives here (not a side column) so the products table spans full width.
+   Stacks on narrow viewports. */
+.mf-info {
+  display: flex;
+  flex-direction: row; /* override the global .card__body column direction */
+  align-items: flex-start;
+  gap: 20px;
+  @media (max-width: 640px) { flex-direction: column; }
+}
+.mf-info__fields {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  /* Stick below the fixed 56px top bar (+12px breathing room) so the image
-     card isn't hidden behind it while scrolling. */
-  @media (min-width: 901px) { position: sticky; top: 68px; }
+}
+.mf-info__media {
+  flex: 0 0 200px;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  @media (max-width: 640px) { flex-basis: auto; width: 100%; max-width: 260px; }
 }
 
 /* Image media card — square drop area + actions (product-style). */
@@ -130,6 +158,14 @@ form { display: flex; flex-direction: column; gap: 16px; }
   cursor: pointer;
   padding: 0;
   &:hover { text-decoration: underline; }
+
+  /* Icon + label variant — makes the "Translate" action self-explanatory. */
+  &--translate {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    svg { flex: 0 0 auto; }
+  }
 }
 
 .image-row {
@@ -201,28 +237,48 @@ form { display: flex; flex-direction: column; gap: 16px; }
   &--active { color: #4f46e5; border-bottom-color: #4f46e5; }
 }
 
-.table-scroll { overflow-x: auto; }
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid #e7edf3;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
 
 .ptable {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 
   th, td {
-    padding: 8px 10px;
+    padding: 11px 14px;
     text-align: start;
     font-size: 13px;
     border-bottom: 1px solid #f1f5f9;
     white-space: nowrap;
+    vertical-align: middle;
   }
   thead th {
-    background: #f8fafc;
-    color: #64748b;
-    font-size: 11px;
+    background: #f7f9fc;
+    color: #94a3b8;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    border-bottom: 1px solid #e6ecf2;
   }
-  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #475569; }
+  tbody tr:nth-child(even) td { background: #fbfcfe; }
+  tbody tr:hover td { background: #f0f9ff; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #52627a; }
+
+  /* Read-only On-Hand reads as "locked", matching the pivot. */
+  .cell-input--ro {
+    border-color: transparent;
+    background: #f1f5f9;
+    color: #64748b;
+    font-weight: 500;
+  }
 }
 
 /* Keep the per-row Edit + Print Barcode buttons on one line, tight together. */
@@ -281,6 +337,278 @@ form { display: flex; flex-direction: column; gap: 16px; }
   background: #f1f5f9;
 }
 .variant-img-count { font-weight: 600; color: #0f172a; }
+
+/* ── Bulk-edit pivot grid ──────────────────────────────────────────────
+   One row per variant; the variant identity + image are frozen in a sticky
+   left column, and every branch contributes a pair of value columns that
+   scroll horizontally. Removes the per-branch table duplication. */
+.pivot-scroll {
+  /* Own scroll viewport (both axes) with a bounded height, so the horizontal
+     scrollbar stays reachable near the bottom of the viewport instead of only
+     at the very end of a long variant list. The header sticks to the top. */
+  overflow: auto;
+  max-height: 68vh;
+  overscroll-behavior: contain;
+  border: 1px solid #e7edf3;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.pivot {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: max-content;
+  min-width: 100%;
+  font-size: 13px;
+}
+.pivot th,
+.pivot td {
+  padding: 10px 12px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* ── Header — two tiers: branch name band over On-Hand/Price sub-labels.
+   Both rows stick to the top of the scroll viewport; the sub row is offset by
+   the first row's height so they stack correctly. ── */
+.pivot thead th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  box-sizing: border-box;
+  background: #f7f9fc;
+  border-bottom: 1px solid #e6ecf2;
+}
+.pivot .pv-branch-head {
+  height: 38px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
+  color: #334155;
+  padding-bottom: 6px;
+}
+.pivot .pv-sub {
+  top: 38px; /* sit directly under the branch-name row */
+  text-align: center;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  padding-top: 4px;
+}
+/* Divider between branch column-groups. */
+.pivot .pv-group-start { border-inline-start: 1px solid #eaeff4; }
+
+/* Frozen identity column — subtle shadow on its trailing edge signals that it
+   stays put while the branch columns scroll. */
+.pivot .pv-sticky {
+  position: sticky;
+  inset-inline-start: 0;
+  background: #fff;
+  z-index: 2;
+  border-inline-end: 1px solid #e6ecf2;
+  box-shadow: 10px 0 10px -10px rgba(15, 23, 42, 0.18);
+}
+.pivot thead .pv-sticky {
+  background: #f7f9fc;
+  z-index: 6; /* frozen top-left corner sits above both sticky axes */
+}
+.pivot .pv-variant-head {
+  text-align: start;
+  min-width: 232px;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+.pivot .pv-variant-cell {
+  min-width: 232px;
+  white-space: normal;
+}
+.pv-variant-cell .variant-img-btn { float: inline-start; margin-inline-end: 12px; }
+.pv-variant-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+.pv-variant-name {
+  font-weight: 600;
+  color: #0f172a;
+  white-space: normal;
+  line-height: 1.25;
+}
+button.pv-variant-name,
+.pv-variant-meta .pname-link {
+  align-self: flex-start;
+  padding: 0;
+  font-size: 13px;
+}
+.pv-variant-sub {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 11px;
+  color: #64748b;
+}
+.pv-sub-label {
+  flex: 0 0 auto;
+  width: 46px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #aeb9c6;
+}
+.pv-variant-sub .mono { color: #52627a; }
+.pv-variant-actions { display: flex; gap: 6px; margin-top: 6px; }
+
+/* Variant image as a real thumbnail tile with a count badge. */
+.pv-variant-cell .variant-img-btn {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  padding: 0;
+  justify-content: center;
+  gap: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #94a3b8;
+  overflow: visible;
+}
+.pv-variant-cell .variant-img-btn svg {
+  width: 20px;
+  height: 20px;
+}
+.pv-variant-cell .variant-img-btn:hover,
+.pv-variant-cell .variant-img-btn:focus-visible {
+  border-color: #7dd3fc;
+  background: #f0f9ff;
+  color: #0284c7;
+}
+.pv-variant-cell .variant-img-thumb {
+  width: 100%;
+  height: 100%;
+  border-radius: 7px;
+}
+.pv-variant-cell .variant-img-count {
+  position: absolute;
+  inset-block-end: -5px;
+  inset-inline-end: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-brand-600, #0e7490);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+/* Value cells — center the input under its centered On Hand / Price header. */
+.pivot tbody td { text-align: center; }
+.pivot tbody .pv-variant-cell { text-align: start; }
+.pivot .cell-input--sm {
+  width: 78px;
+  text-align: center;
+}
+/* Read-only On-Hand reads as "locked", not an empty editable field. */
+.pivot .cell-input--ro {
+  border-color: transparent;
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Zebra + hover — keep the sticky cell opaque so scrolled cells don't bleed. */
+.pivot tbody td { border-bottom: 1px solid #f1f5f9; }
+.pivot tbody tr:nth-child(even) td,
+.pivot tbody tr:nth-child(even) td.pv-sticky { background: #fbfcfe; }
+.pivot tbody tr:hover td,
+.pivot tbody tr:hover td.pv-sticky { background: #f0f9ff; }
+.pivot tbody tr:last-child td { border-bottom: 0; }
+
+/* ── Mobile: reflow the pivot into one card per variant ────────────────────
+   The same table becomes a stack of cards — no horizontal scrolling. The
+   header is hidden; each value cell labels itself from its `data-label`
+   (e.g. "Zayed town · Price"). */
+@media (max-width: 640px) {
+  .pivot-scroll {
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .pivot { display: block; width: 100%; min-width: 0; font-size: 14px; }
+  .pivot thead { display: none; }
+  .pivot tbody { display: block; }
+
+  .pivot tbody tr {
+    display: block;
+    margin-bottom: 12px;
+    border: 1px solid #e7edf3;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+  }
+
+  /* Value rows → label on the left, input on the right. */
+  .pivot tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 0;
+    white-space: normal;
+  }
+  .pivot tbody td::before {
+    content: attr(data-label);
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+  }
+  /* Cancel the desktop zebra/hover in card mode. */
+  .pivot tbody tr:nth-child(even) td,
+  .pivot tbody tr:hover td { background: transparent; }
+
+  /* Group each branch (On Hand + Price): a strong divider starts every branch,
+     a faint one splits the two rows within it. */
+  .pivot tbody td.pv-group-start {
+    border-inline-start: 0;
+    border-top: 1px solid #e2e8f0;   /* branch separator */
+    border-bottom: 1px solid #f4f6f9; /* On Hand ↔ Price split */
+  }
+
+  /* Variant cell = card header (unfrozen, full width, no label). */
+  .pivot .pv-sticky {
+    position: static;
+    box-shadow: none;
+    border-inline-end: 0;
+  }
+  .pivot .pv-variant-cell {
+    display: block;
+    min-width: 0;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border-bottom: 0; /* the first branch's top divider separates it from the header */
+  }
+  .pivot .pv-variant-cell::before { content: none; }
+
+  .pivot .cell-input--sm { width: 128px; text-align: end; }
+}
 
 .save-bar {
   position: fixed;

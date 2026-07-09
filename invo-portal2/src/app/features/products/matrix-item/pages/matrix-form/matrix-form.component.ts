@@ -59,6 +59,7 @@ import {
   buildBarcodeComparison,
   generateVariants,
   regenerateBarcodesAndSkus,
+  stripCodelessAttributes,
 } from '../../utils/variant-generator';
 import { ManageDimensionsComponent } from '../../components/manage-dimensions/manage-dimensions.component';
 import { BranchTabsComponent } from '../../../pages/product-form/components/branch-product-section/branch-tabs/branch-tabs.component';
@@ -258,6 +259,7 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
         this.matrixId.set(id);
         const loaded = await this.service.getMatrix(id);
         if (loaded) {
+          await this.backfillAttributeIds(loaded);
           this.ensureBranchRows(loaded);
           this.matrixInfo.set(loaded);
           this.originalBarcode = loaded.barcode;
@@ -295,6 +297,52 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
     mutate(next);
     this.matrixInfo.set(next);
     if (markDirty) this.dirty.set(true);
+  }
+
+  /**
+   * Recover missing attribute ids after load.
+   *
+   * Older matrices stored their `dimensions` JSON with the attribute ids blank
+   * (only the dimension itself carried an id). Sending those back on save makes
+   * the backend re-insert the attributes and trip the uniqueness check
+   * (`attribute name/code already used`). Since the dimension exists in the
+   * catalog, its attributes are persisted there with real ids — so for any
+   * existing dimension whose attributes are missing ids, fetch the catalog
+   * dimension and backfill by matching code (then name). Best-effort: never
+   * blocks the load, leaves ids untouched on any failure.
+   */
+  private async backfillAttributeIds(info: MatrixItem): Promise<void> {
+    const gaps = info.dimensions.filter(
+      (d) => d.id && d.attributes.some((a) => !a.id),
+    );
+    if (gaps.length === 0) return;
+    await Promise.all(
+      gaps.map(async (d) => {
+        try {
+          const catalog = await this.service.getDimension(d.id);
+          if (!catalog?.attributes?.length) return;
+          const byCode = new Map<string, string>();
+          const byName = new Map<string, string>();
+          for (const ca of catalog.attributes) {
+            if (!ca.id) continue;
+            if (ca.code) byCode.set(ca.code.toLowerCase(), ca.id);
+            if (ca.name) byName.set(ca.name.toLowerCase(), ca.id);
+          }
+          for (const a of d.attributes) {
+            if (a.id) continue;
+            const match =
+              byCode.get((a.code || '').toLowerCase()) ??
+              byName.get((a.name || '').toLowerCase());
+            if (match) {
+              a.id = match;
+              a.isNew = false;
+            }
+          }
+        } catch {
+          /* leave ids as-is — save() still guards, and the user can re-pick */
+        }
+      }),
+    );
   }
 
   /** Ensure every product has a branchProduct row for every branch so the
@@ -387,9 +435,21 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
 
   // ─── Dimensions + variant generation ──────────────────────────────────
   onDimensionsChange(dimensions: Dimension[]): void {
-    this.patchModel((m) => (m.dimensions = dimensions));
+    // Guard: code-less attributes (e.g. brought in by a picked saved dimension)
+    // are invalid — the backend needs every attribute's code to build the
+    // variant SKU/barcode. Strip them here so no malformed variant (`..._` SKU)
+    // is ever generated, and tell the user what was dropped.
+    const { dimensions: cleaned, removed } = stripCodelessAttributes(dimensions);
+    if (removed.length) this.notifyCodelessStripped(removed);
+    this.patchModel((m) => (m.dimensions = cleaned));
     // Legacy: only create mode regenerates products from dimension edits.
     if (!this.isEdit()) this.regenerate();
+  }
+
+  /** Warn the user that invalid (code-less) attributes were dropped. */
+  private notifyCodelessStripped(removed: { dimension: string; attribute: string }[]): void {
+    const detail = removed.map((r) => `${r.attribute} — ${r.dimension}`).join(', ');
+    this.toast.warning('MATRIX.FORM.CODELESS_STRIPPED', detail);
   }
 
   regenerate(): void {
@@ -603,15 +663,54 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
     }
     if (this.saving()) return;
 
+    // Final safety net: never send an attribute with a blank code — the
+    // backend rejects it (`Attribute code is required`) and it yields malformed
+    // `..._` variant SKUs. `onDimensionsChange` already strips these as they're
+    // added, but re-check here to also catch data loaded in edit mode or via
+    // any path that bypassed that handler.
+    const { dimensions: sanitizedDims, removed } = stripCodelessAttributes(this.matrixInfo().dimensions);
+    if (removed.length) {
+      this.patchModel((m) => (m.dimensions = sanitizedDims), false);
+      // Rebuild variants (create mode) so the products payload drops the ones
+      // that referenced the removed attribute.
+      if (!this.isEdit()) this.regenerate();
+      this.notifyCodelessStripped(removed);
+    }
+
     this.saving.set(true);
     const payload: MatrixItem = JSON.parse(JSON.stringify(this.matrixInfo()));
-    // In create mode, brand-new dimensions/attributes shed their client ids +
-    // isNew flags so the backend mints its own.
-    if (!this.isEdit()) {
-      for (const d of payload.dimensions) {
-        if (d.isNew && d.id) d.id = '';
-        d.isNew = false;
-        for (const a of d.attributes) a.isNew = false;
+    // Per-variant images are persisted separately via `bulkProductMedia`, so
+    // strip them from the matrix save payload (saveMatrix ignores them anyway).
+    // `matrixInfo()` keeps its copy for `persistVariantImages()` below.
+    for (const p of payload.products) delete p.mediaIds;
+    // In edit mode the backend updates each `BranchProducts` row by its id and
+    // expects an existing row per branch. `ensureBranchRows()` may have added
+    // display-only rows for branches added after this matrix was created —
+    // those have no id, so drop them here rather than send an idless row that
+    // the backend rejects. (Create mode sends every row; ids are minted then.)
+    if (this.isEdit()) {
+      for (const p of payload.products) {
+        p.branchProduct = (p.branchProduct ?? []).filter((bp) => !!bp.id);
+      }
+    }
+    // Dimension / attribute id normalisation (both create and edit).
+    //
+    // The backend decides insert-vs-reuse by id presence: a row with an id is
+    // treated as existing, a blank id is inserted as new. So the rule is:
+    //   • An EXISTING dimension (real id) → keep it, and every attribute under
+    //     it that already exists MUST keep its real id. If we blank an existing
+    //     attribute's id the backend re-inserts it and trips the uniqueness
+    //     check ("attribute name/code already used").
+    //   • A BRAND-NEW dimension carries only a client-side uuid — drop it in
+    //     create mode so the backend mints its own (in edit mode existing
+    //     dimensions are locked, so there's nothing new to shed).
+    //   • `isNew` is advisory; derive it from id presence so it can never
+    //     disagree with the id we actually send.
+    for (const d of payload.dimensions) {
+      if (!this.isEdit() && d.isNew && d.id) d.id = ''; // brand-new dim → let backend mint the id
+      d.isNew = !d.id;
+      for (const a of d.attributes) {
+        a.isNew = !a.id; // NEVER blank a real attribute id — only flag id-less ones as new
       }
     }
     try {
@@ -625,7 +724,10 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
           // The matrix itself saved — surface the image failure without losing it.
           this.toast.error('MATRIX.FORM.IMAGES_SAVE_FAILED', imgErr?.message);
         }
+        // Clear BOTH dirty sources so the unsaved-changes guard doesn't prompt
+        // on the post-save navigation (the reactive form stays dirty otherwise).
         this.dirty.set(false);
+        this.form.markAsPristine();
         this.toast.success('MATRIX.FORM.SAVED_OK');
         void this.router.navigate(['/matrix-item'], { queryParams: this.listParams });
       } else {

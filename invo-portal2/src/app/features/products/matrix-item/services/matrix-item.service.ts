@@ -202,6 +202,11 @@ export class MatrixItemService {
           }))
         : [],
       branchProduct: bp.map((b: any) => ({
+        // Round-trip the row id so edit-mode saves update the right
+        // `BranchProducts` row. Omit the key entirely when absent (new branch)
+        // so we never send ''/null, which the backend rejects.
+        ...(b?.id != null && b.id !== '' ? { id: String(b.id) } : {}),
+        ...(b?.available != null ? { available: !!b.available } : {}),
         branchId: String(b?.branchId ?? ''),
         onHand: Number(b?.onHand ?? 0) || 0,
         price: Number(b?.price ?? 0) || 0,

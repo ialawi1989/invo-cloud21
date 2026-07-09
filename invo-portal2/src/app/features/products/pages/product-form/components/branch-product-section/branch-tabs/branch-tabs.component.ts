@@ -58,6 +58,12 @@ export class BranchTabsComponent {
    *  Defaults to 5 (product form). */
   maxVisible = input<number>(VISIBLE_TABS);
 
+  /** Render as a single-select dropdown (active branch + chevron opening the
+   *  same searchable popover) instead of the tab strip. Suits places that pick
+   *  ONE branch and may have many — e.g. the matrix form's single-branch view.
+   *  Off by default → the product form keeps its tabs. */
+  dropdown = input<boolean>(false);
+
   /** Optional narrower cap applied on small viewports (< 640px). Null
    *  keeps `maxVisible` at all sizes. */
   maxVisibleMobile = input<number | null>(null);
@@ -105,6 +111,11 @@ export class BranchTabsComponent {
 
   visibleTabs = computed<BranchTabRef[]>(() => this.openTabs().slice(0, this.effectiveMax()));
   hiddenCount = computed<number>(() => Math.max(0, this.branches().length - this.visibleTabs().length));
+
+  /** The currently-active branch — drives the dropdown trigger label. */
+  activeBranch = computed<BranchTabRef | null>(
+    () => this.branches().find((b) => b.id === this.activeId()) ?? null,
+  );
 
   /** Compact mode flag — when more tabs are open than fit inline, names ellipsize and shrink. */
   compact = computed<boolean>(() => this.openTabs().length > this.effectiveMax());

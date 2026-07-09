@@ -1,18 +1,24 @@
 .df-page {
-  padding: 16px 20px 100px;
+  /* Outer padding comes from the shared `.main-content` wrapper, same as the
+     list pages — only keep the bottom space for the fixed save-bar. */
+  padding: 0 0 100px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  @media (max-width: 640px) { padding: 0 0 96px; gap: 12px; }
 }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
-.page-title { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+.page-title { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a;
+  @media (max-width: 640px) { font-size: 19px; }
+}
 
 .df-body {
   display: flex;
   flex-direction: column;
   gap: 16px;
   max-width: 760px;
+  @media (max-width: 640px) { gap: 12px; }
 }
 
 .card {
@@ -26,6 +32,7 @@
     display: flex;
     flex-direction: column;
     gap: 18px;
+    @media (max-width: 640px) { padding: 14px; gap: 14px; }
   }
 }
 

@@ -154,4 +154,46 @@
   @media (max-width: 540px) {
     &__find-label { display: none; }
   }
+
+  // ── Dropdown variant ─────────────────────────────────────────────
+  // A single-select: the container drops its toggle-track chrome and the
+  // trigger becomes a full-width select showing the active branch.
+  &--dropdown {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    min-height: 0;
+    // The base `.bt` clips to a 10px rounded box; reset it so the select's own
+    // border + radius render fully (otherwise the bottom/right edge is cut).
+    overflow: visible;
+    border-radius: 0;
+  }
+  &__find--select {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    height: 40px;
+    padding: 0 12px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+    // Keep the label visible on mobile (it IS the value here).
+    @media (max-width: 540px) {
+      .bt__find-label { display: inline; }
+    }
+  }
+  &__find-label--name {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: start;
+    color: #0f172a;
+    font-weight: 600;
+  }
+  &__chevron {
+    margin-inline-start: auto;
+    color: #94a3b8;
+    flex-shrink: 0;
+  }
+  &__find--select[aria-expanded="true"] .bt__chevron { color: #0e7c8a; }
 }

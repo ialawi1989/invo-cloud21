@@ -120,6 +120,10 @@
     display: inline-flex;
     &:hover { color: #ef4444; background: #fef2f2; }
   }
+
+  /* The translate action shares the chip-button base but must NOT read as a
+     delete — tint it brand-purple (matches the "Translate" link) on hover. */
+  &__translate:hover { color: #4f46e5; background: #eef2ff; }
 }
 
 .attr-add {
@@ -148,6 +152,14 @@
   cursor: pointer;
   padding: 0;
   &:hover { text-decoration: underline; }
+
+  /* Icon + label variant — makes the "Translate" action self-explanatory. */
+  &--translate {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    svg { flex: 0 0 auto; }
+  }
 }
 
 .icon-btn {

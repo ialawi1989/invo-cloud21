@@ -5,20 +5,24 @@
   </header>
 
   <form [formGroup]="form" (keydown.enter)="$event.preventDefault()">
-   <div class="mf-layout">
     <div class="mf-main">
     <!-- Matrix information -->
     <section class="card">
       <header class="card__head">
         <h2 class="card__title">{{ 'MATRIX.FORM.INFORMATION' | translate }}</h2>
       </header>
-      <div class="card__body">
+      <div class="card__body mf-info">
+        <div class="mf-info__fields">
         <div class="grid-2">
           <!-- Name -->
           <label class="field">
             <span class="field__label">
               {{ 'MATRIX.FORM.NAME' | translate }}
-              <button type="button" class="link-btn" (click)="translateName()">
+              <button type="button" class="link-btn link-btn--translate" (click)="translateName()"
+                [title]="'MATRIX.FORM.TRANSLATE' | translate">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
                 {{ 'MATRIX.FORM.TRANSLATE' | translate }}
               </button>
             </span>
@@ -71,6 +75,32 @@
             <input class="field__input" type="number" min="0" formControlName="unitCost" />
           </label>
         </div>
+        </div><!-- /.mf-info__fields -->
+
+        <!-- Image — inside the information card so the products table gets full width. -->
+        <div class="mf-info__media">
+          <span class="field__label">{{ 'MATRIX.FORM.IMAGE' | translate }}</span>
+          <button type="button" class="mf-media__drop"
+            [class.mf-media__drop--filled]="hasImage()"
+            (click)="chooseImage()">
+            @if (hasImage()) {
+              <img class="mf-media__img" [src]="imageUrl() + '?width=320&height=320'" alt="" />
+            } @else {
+              <span class="mf-media__placeholder">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                </svg>
+                <span class="mf-media__hint">{{ 'MATRIX.FORM.CHOOSE_IMAGE' | translate }}</span>
+              </span>
+            }
+          </button>
+          @if (hasImage()) {
+            <div class="mf-media__actions">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="chooseImage()">{{ 'MATRIX.FORM.REPLACE_IMAGE' | translate }}</button>
+              <button type="button" class="btn btn-ghost btn-sm danger" (click)="removeImage()">{{ 'MATRIX.FORM.REMOVE_IMAGE' | translate }}</button>
+            </div>
+          }
+        </div>
       </div>
     </section>
 
@@ -111,16 +141,147 @@
                 <app-pf-branch-tabs
                   class="matrix-branch-tabs"
                   [branches]="branchTabRefs()"
+                  [dropdown]="true"
                   (activeChange)="onBranchTabChange($event)" />
               }
             }
 
-            <!-- Variant tables — every branch (bulk) or just the active one (single). -->
-            @for (branch of branches(); track branch.id; let bi = $index) {
-              @if (mode() === 'bulk' || activeBranch() === bi) {
-                @if (mode() === 'bulk' && branches().length > 1) {
-                  <h4 class="sub-title branch-bulk-title">{{ branch.name }}</h4>
-                }
+            <!-- Variant tables.
+                 • Bulk + multiple branches → a pivot grid: one row per variant,
+                   identity + image frozen on the left, an On Hand/Price pair per
+                   branch scrolling horizontally (no per-branch duplication).
+                 • Single branch (or a single-branch company) → the per-branch
+                   tables for the active branch. -->
+            @if (branches().length > 1 && mode() === 'bulk') {
+              <!-- New products pivot -->
+              @if (hasNewProducts()) {
+                @if (hasExistingProducts()) { <h4 class="sub-title">{{ 'MATRIX.FORM.NEW_PRODUCTS' | translate }}</h4> }
+                <div class="pivot-scroll">
+                  <table class="pivot">
+                    <thead>
+                      <tr>
+                        <th class="pv-sticky pv-variant-head" rowspan="2">{{ 'MATRIX.FORM.COL_VARIANT' | translate }}</th>
+                        @for (branch of branches(); track branch.id) {
+                          <th class="pv-branch-head pv-group-start" colspan="2">{{ branch.name }}</th>
+                        }
+                      </tr>
+                      <tr>
+                        @for (branch of branches(); track branch.id) {
+                          <th class="pv-sub pv-group-start">{{ 'MATRIX.FORM.COL_OPENING_BALANCE' | translate }}</th>
+                          <th class="pv-sub">{{ 'MATRIX.FORM.COL_OPENING_BALANCE_COST' | translate }}</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (prod of matrixInfo().products; track prod.sku) {
+                        @if (!prod.id) {
+                          <tr>
+                            <td class="pv-sticky pv-variant-cell">
+                              <button type="button" class="variant-img-btn" (click)="openVariantImages(prod)" [title]="'MATRIX.FORM.VARIANT_IMAGES' | translate">
+                                @if (variantImageCount(prod) > 0) {
+                                  <img class="variant-img-thumb" [src]="variantThumb(prod)" alt="" />
+                                  <span class="variant-img-count">{{ variantImageCount(prod) }}</span>
+                                } @else {
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                                  </svg>
+                                }
+                              </button>
+                              <div class="pv-variant-meta">
+                                <span class="pv-variant-name">{{ prod.name }}</span>
+                                <span class="pv-variant-sub"><span class="pv-sub-label">{{ 'MATRIX.FORM.COL_BARCODE' | translate }}</span><span class="mono">{{ prod.barcode }}</span></span>
+                                <span class="pv-variant-sub"><span class="pv-sub-label">{{ 'MATRIX.FORM.COL_SKU' | translate }}</span><span class="mono">{{ prod.sku }}</span></span>
+                              </div>
+                            </td>
+                            @for (branch of branches(); track branch.id) {
+                              <td class="pv-group-start" [attr.data-label]="branch.name + ' · ' + ('MATRIX.FORM.COL_OPENING_BALANCE' | translate)">
+                                <input class="cell-input cell-input--sm" type="number" min="0"
+                                  [(ngModel)]="branchProductFor(prod, branch.id).openingBalance"
+                                  (ngModelChange)="clampNonNegative(branchProductFor(prod, branch.id), 'openingBalance')"
+                                  [ngModelOptions]="{ standalone: true }" />
+                              </td>
+                              <td [attr.data-label]="branch.name + ' · ' + ('MATRIX.FORM.COL_OPENING_BALANCE_COST' | translate)">
+                                <input class="cell-input cell-input--sm" type="number" min="0"
+                                  [(ngModel)]="branchProductFor(prod, branch.id).openingBalanceCost"
+                                  (ngModelChange)="markDirty()"
+                                  [ngModelOptions]="{ standalone: true }" />
+                              </td>
+                            }
+                          </tr>
+                        }
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+
+              <!-- Existing products pivot -->
+              @if (hasExistingProducts()) {
+                @if (hasNewProducts()) { <h4 class="sub-title">{{ 'MATRIX.FORM.EXISTING_PRODUCTS' | translate }}</h4> }
+                <div class="pivot-scroll">
+                  <table class="pivot">
+                    <thead>
+                      <tr>
+                        <th class="pv-sticky pv-variant-head" rowspan="2">{{ 'MATRIX.FORM.COL_VARIANT' | translate }}</th>
+                        @for (branch of branches(); track branch.id) {
+                          <th class="pv-branch-head pv-group-start" colspan="2">{{ branch.name }}</th>
+                        }
+                      </tr>
+                      <tr>
+                        @for (branch of branches(); track branch.id) {
+                          <th class="pv-sub pv-group-start">{{ 'MATRIX.FORM.COL_ON_HAND' | translate }}</th>
+                          <th class="pv-sub">{{ 'MATRIX.FORM.COL_PRICE' | translate }}</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (prod of matrixInfo().products; track prod.sku) {
+                        @if (prod.id) {
+                          <tr>
+                            <td class="pv-sticky pv-variant-cell">
+                              <button type="button" class="variant-img-btn" (click)="openVariantImages(prod)" [title]="'MATRIX.FORM.VARIANT_IMAGES' | translate">
+                                @if (variantImageCount(prod) > 0) {
+                                  <img class="variant-img-thumb" [src]="variantThumb(prod)" alt="" />
+                                  <span class="variant-img-count">{{ variantImageCount(prod) }}</span>
+                                } @else {
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                                  </svg>
+                                }
+                              </button>
+                              <div class="pv-variant-meta">
+                                <button type="button" class="pname-link" (click)="openProduct(prod, branches()[0].id)" [title]="'MATRIX.FORM.OPEN_PRODUCT' | translate">{{ prod.name }}</button>
+                                <span class="pv-variant-sub"><span class="pv-sub-label">{{ 'MATRIX.FORM.COL_BARCODE' | translate }}</span><span class="mono">{{ prod.barcode }}</span></span>
+                                <span class="pv-variant-sub"><span class="pv-sub-label">{{ 'MATRIX.FORM.COL_SKU' | translate }}</span><span class="mono">{{ prod.sku }}</span></span>
+                                <div class="pv-variant-actions">
+                                  <button type="button" class="btn btn-ghost btn-sm" (click)="openProduct(prod, branches()[0].id)">{{ 'MATRIX.FORM.EDIT' | translate }}</button>
+                                  <button type="button" class="btn btn-ghost btn-sm" (click)="printBarcode(prod)">{{ 'MATRIX.FORM.PRINT_BARCODE' | translate }}</button>
+                                </div>
+                              </div>
+                            </td>
+                            @for (branch of branches(); track branch.id) {
+                              <td class="pv-group-start" [attr.data-label]="branch.name + ' · ' + ('MATRIX.FORM.COL_ON_HAND' | translate)">
+                                <input class="cell-input cell-input--ro cell-input--sm" type="number" readonly
+                                  [value]="branchProductFor(prod, branch.id).onHand" />
+                              </td>
+                              <td [attr.data-label]="branch.name + ' · ' + ('MATRIX.FORM.COL_PRICE' | translate)">
+                                <input class="cell-input cell-input--sm" type="number" min="0"
+                                  [(ngModel)]="branchProductFor(prod, branch.id).price"
+                                  (blur)="clampNonNegative(branchProductFor(prod, branch.id), 'price')"
+                                  [ngModelOptions]="{ standalone: true }" />
+                              </td>
+                            }
+                          </tr>
+                        }
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            } @else {
+              <!-- Single branch (or a single-branch company): the active branch's tables. -->
+              @for (branch of branches(); track branch.id; let bi = $index) {
+                @if (activeBranch() === bi) {
                 <!-- New products -->
                 @if (hasNewProducts()) {
                   @if (hasExistingProducts()) { <h4 class="sub-title">{{ 'MATRIX.FORM.NEW_PRODUCTS' | translate }}</h4> }
@@ -249,6 +410,7 @@
                     </table>
                   </div>
                 }
+                }
               }
             }
           </div>
@@ -256,38 +418,6 @@
       }
     }
     </div><!-- /.mf-main -->
-
-    <!-- Image — product-style media card in the side column. -->
-    <aside class="mf-aside">
-      <section class="card mf-media">
-        <header class="card__head">
-          <h2 class="card__title">{{ 'MATRIX.FORM.IMAGE' | translate }}</h2>
-        </header>
-        <div class="card__body mf-media__body">
-          <button type="button" class="mf-media__drop"
-            [class.mf-media__drop--filled]="hasImage()"
-            (click)="chooseImage()">
-            @if (hasImage()) {
-              <img class="mf-media__img" [src]="imageUrl() + '?width=320&height=320'" alt="" />
-            } @else {
-              <span class="mf-media__placeholder">
-                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-                </svg>
-                <span class="mf-media__hint">{{ 'MATRIX.FORM.CHOOSE_IMAGE' | translate }}</span>
-              </span>
-            }
-          </button>
-          @if (hasImage()) {
-            <div class="mf-media__actions">
-              <button type="button" class="btn btn-ghost btn-sm" (click)="chooseImage()">{{ 'MATRIX.FORM.REPLACE_IMAGE' | translate }}</button>
-              <button type="button" class="btn btn-ghost btn-sm danger" (click)="removeImage()">{{ 'MATRIX.FORM.REMOVE_IMAGE' | translate }}</button>
-            </div>
-          }
-        </div>
-      </section>
-    </aside>
-   </div><!-- /.mf-layout -->
   </form>
 
   <footer class="save-bar">
