@@ -13,6 +13,7 @@
       "NOTIFICATIONS":           "الإشعارات",
       "UTILITIES":               "الأدوات",
       "ANALYTICS":               "التحليلات",
+      "MARKETING_TOOLS":         "أدوات التسويق",
       "AI":                      "الذكاء الاصطناعي"
     },
     "NOTES": {
@@ -38,6 +39,8 @@
       "JOFOTARA":    "إبلاغ الفواتير لمنظومة فاتورة الأردن (JoFotara)",
       "GA4":         "Google Analytics 4 — الزيارات والسلوك",
       "GSC":         "Google Search Console — أداء البحث",
+      "GTAG":        "Google Tag / Tag Manager على متجرك",
+      "FBPIXEL":     "تتبع Meta Pixel للإعلانات والتحويلات",
       "AI":          "توليد المحتوى بالذكاء الاصطناعي عبر البوابة"
     },
     "COMMON": {
@@ -48,6 +51,7 @@
       "SAVED":             "تم حفظ الإعدادات",
       "SAVE_FAILED":       "تعذّر حفظ الإعدادات",
       "SECRET_KEEP_HINT":  "القيمة المحفوظة مخفية — اتركها فارغة للإبقاء عليها.",
+      "OPTIONAL":          "(اختياري)",
       "REQUIRED":          "هذا الحقل مطلوب.",
       "BACK":              "العودة إلى الإضافات",
       "CONFIGURE":         "إعداد",
@@ -262,6 +266,76 @@
       "DOCS":             "فتح دليل إعداد Search Console",
       "ERR_SITE_URL":     "أدخل رابط خاصية صالحاً (https://… أو sc-domain:…) أو اتركه فارغاً.",
       "ERR_KEY":          "ألصق مفتاح JSON لحساب الخدمة."
+    },
+    "GTAG": {
+      "TITLE":       "Google Tag",
+      "INTRO":       "أضف Google Tag أو حاوية Tag Manager أو GA4 أو إعلانات Google إلى متجرك المباشر. نقوم بحقن الشيفرة في كل صفحة لتعمل وسومك وبكسلات التسويق تلقائياً.",
+      "TAG_ID":      "معرّف الوسم / الحاوية",
+      "TAG_HINT":    "يقبل GTM-XXXXXXX (Tag Manager) أو GT-XXXXXXX (Google tag) أو G-XXXXXXX (GA4) أو AW-XXXXXXXXX (إعلانات Google).",
+      "HOWTO_TITLE": "كيفية ربط Google Tag",
+      "STEP_1":      "افتح Google Tag Manager (أو حساب Google tag / الإعلانات) وأنشئ أو اختر حاوية.",
+      "STEP_2":      "انسخ المعرّف — يبدو مثل GTM-XXXXXXX أو GT-XXXXXXX أو G-XXXXXXX أو AW-XXXXXXXXX.",
+      "STEP_3":      "ألصقه بالأسفل، فعّل الإضافة، ثم احفظ. نتولى نحن حقن الشيفرة في الصفحة.",
+      "ERR_TAG":     "أدخل معرّف وسم / حاوية صالحاً (GTM-…، GT-…، G-… أو AW-…)."
+    },
+    "FBPIXEL": {
+      "TITLE":             "Facebook Pixel",
+      "INTRO":             "أضف Meta (Facebook) Pixel إلى متجرك المباشر لقياس أداء الإعلانات وبناء الجماهير. نقوم بحقن البكسل في كل صفحة. يتيح رمز Conversions API الاختياري إرسال أحداث من جهة الخادم أيضاً.",
+      "PIXEL_ID":          "معرّف البكسل",
+      "PIXEL_HINT":        "معرّف Meta Pixel الرقمي من Events Manager (عادة 15–16 رقماً).",
+      "ACCESS_TOKEN":      "رمز وصول Conversions API",
+      "ACCESS_TOKEN_HINT": "اختياري. يُفعّل أحداث جهة الخادم (إسناد أفضل). يُخزَّن بأمان ولا يُعرض مرة أخرى.",
+      "HOWTO_TITLE":       "كيفية ربط Facebook Pixel",
+      "STEP_1":            "في Meta Events Manager، أنشئ أو افتح بكسل (مصدر بيانات).",
+      "STEP_2":            "انسخ معرّف البكسل الرقمي وألصقه بالأسفل.",
+      "STEP_3":            "اختياري: من الإعدادات → Conversions API، أنشئ رمز وصول وألصقه بالأسفل. ثم فعّل واحفظ.",
+      "ERR_PIXEL":         "أدخل معرّف بكسل رقمياً صالحاً."
+    },
+    "MKTGUIDE": {
+      "TITLE":      "أدوات التسويق — دليل الإعداد",
+      "INTRO":      "أضف Google Tag (Tag Manager) وبكسل Facebook (Meta) إلى متجرك المباشر لتشغيل وسوم التسويق وإعادة الاستهداف وتتبع التحويلات. اتبع خطوات كل أداة أدناه.",
+      "FULL_GUIDE": "دليل الإعداد الكامل",
+
+      "WHAT_TITLE":         "أولاً — ماذا تفعل كل أداة؟",
+      "WHAT_COL_TOOL":      "الأداة",
+      "WHAT_COL_USE":       "الغرض منها",
+      "WHAT_GTAG":          "Google Tag / Tag Manager",
+      "WHAT_GTAG_USE":      "حاوية واحدة تنشر عدة وسوم (GA4، إعلانات Google، إعادة التسويق، أحداث مخصصة) دون تعديل شيفرة متجرك.",
+      "WHAT_FBPIXEL":       "بكسل Facebook (Meta)",
+      "WHAT_FBPIXEL_USE":   "يقيس أداء الإعلانات ويبني جماهير إعادة الاستهداف ويتتبع التحويلات لإعلانات Facebook/Instagram.",
+
+      "GTAG_TITLE": "الجزء 1 — Google Tag",
+      "GTAG_LEAD":  "معرّف حاوية واحد يغطي متجرك على أي عنوان (نطاقنا الفرعي أو نطاق مخصص). نحقن الشيفرة في كل صفحة نيابةً عنك.",
+      "GTAG_S1":    "افتح Google Tag Manager وأنشئ حساباً + حاوية ويب لمتجرك (أو استخدم واحدة موجودة).",
+      "GTAG_S2":    "انسخ معرّف الحاوية من أعلى مساحة العمل — يبدو مثل GTM-XXXXXXX. (يعمل أيضاً معرّف Google tag / الإعلانات مثل GT- أو G- أو AW-.)",
+      "GTAG_S3":    "ألصق المعرّف في إضافة Google Tag أدناه، فعّلها، ثم احفظ.",
+      "GTAG_S4":    "في Tag Manager، أضف وانشر وسومك (GA4، الإعلانات، إلخ) — ستعمل على متجرك المباشر تلقائياً.",
+
+      "FBPIXEL_TITLE": "الجزء 2 — Facebook Pixel",
+      "FBPIXEL_LEAD":  "أضف بكسل Meta لقياس الإعلانات وبناء الجماهير. يعمل على أي عنوان متجر.",
+      "FBPIXEL_S1":    "افتح Meta Events Manager وأنشئ مصدر بيانات → ويب → بكسل (أو افتح بكسلاً موجوداً).",
+      "FBPIXEL_S2":    "انسخ معرّف البكسل الرقمي (عادة 15–16 رقماً) الظاهر بجوار اسم البكسل.",
+      "FBPIXEL_S3":    "ألصقه في إضافة Facebook Pixel أدناه، فعّلها، ثم احفظ.",
+      "FBPIXEL_S4":    "استخدم إضافة المتصفح Meta Pixel Helper على متجرك المباشر للتأكد من عمله.",
+
+      "FBCAPI_TITLE": "اختياري — Conversions API (إسناد أفضل)",
+      "FBCAPI_BODY":  "من Events Manager → الإعدادات → Conversions API، أنشئ رمز وصول وألصقه في حقل الرمز الاختياري بالإضافة. يتيح ذلك إرسال أحداث الشراء والعملاء المحتملين من جهة الخادم، مما يحسّن الدقة عندما تحجب المتصفحات البكسل.",
+
+      "NOTES_TITLE":    "معلومات مفيدة",
+      "NOTE_INJECT":    "بمجرد التفعيل، نحقن كل وسم/بكسل في كل صفحة من متجرك المباشر — دون أي تعديل على الشيفرة.",
+      "NOTE_VERIFY":    "استخدم Google Tag Assistant أو Meta Pixel Helper للتحقق من عمل وسومك بشكل صحيح بعد الحفظ.",
+      "NOTE_ISOLATION": "يستخدم كل متجر معرّفاته الخاصة — لا يُخلط تتبعك مع متاجر أخرى أبداً.",
+      "NOTE_CONSENT":   "تأكد من أن إشعار ملفات تعريف الارتباط/الموافقة في متجرك يغطي أدوات التسويق هذه حيثما يقتضي القانون.",
+
+      "LINK_GTM_OPEN":  "افتح Google Tag Manager",
+      "LINK_GTM_SETUP": "إعداد حاوية Tag Manager",
+      "LINK_GTM_ID":    "اعثر على معرّف الحاوية",
+      "LINK_FB_EVENTS": "افتح Meta Events Manager",
+      "LINK_FB_PIXEL":  "أنشئ بكسل Meta",
+      "LINK_FB_CAPI":   "حول Conversions API",
+
+      "OPEN_GTAG":    "افتح إضافة Google Tag",
+      "OPEN_FBPIXEL": "افتح إضافة Facebook Pixel"
     },
     "GUIDE": {
       "TITLE":      "Google Analytics و Search Console — دليل الإعداد",

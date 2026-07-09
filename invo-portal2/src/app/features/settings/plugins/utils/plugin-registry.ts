@@ -63,6 +63,12 @@ export const PLUGIN_REGISTRY: PluginDef[] = [
   { name: 'GoogleAnalytics4',    displayName: 'Google Analytics 4',    slug: 'google-analytics-ga4',  type: 'Analytics', logo: LOGO + 'google_analytics_ga4_logo.svg',  descKey: 'PLUGINS.DESC.GA4', noteKey: 'PLUGINS.NOTES.SYNC_DAILY', hasForm: true },
   { name: 'GoogleSearchConsole', displayName: 'Google Search Console', slug: 'google-search-console', type: 'Analytics', logo: LOGO + 'google_search_console_logo.svg', descKey: 'PLUGINS.DESC.GSC', noteKey: 'PLUGINS.NOTES.SYNC_DAILY', hasForm: true },
 
+  // ── Marketing Tools ────────────────────────────────────────────────
+  // Tracking/marketing snippets injected on the live storefront.
+  // `name` is the backend join key (pluginName) — must match exactly.
+  { name: 'GoogleTag',     displayName: 'Google Tag',     slug: 'google-tag',     type: 'Marketing Tools', logo: LOGO + 'google_tag_logo.svg',     descKey: 'PLUGINS.DESC.GTAG',    hasForm: true },
+  { name: 'FacebookPixel', displayName: 'Facebook Pixel', slug: 'facebook-pixel', type: 'Marketing Tools', logo: LOGO + 'facebook_pixel_logo.svg', descKey: 'PLUGINS.DESC.FBPIXEL', hasForm: true },
+
   // ── AI ─────────────────────────────────────────────────────────────
   // Content AI — company-level config lives here (NOT a standalone page).
   // No logo asset yet; the list template renders the AI placeholder glyph.
@@ -76,6 +82,7 @@ export const PLUGIN_GROUP_ORDER: PluginType[] = [
   'Notifications',
   'Utilities',
   'Analytics',
+  'Marketing Tools',
   'AI',
 ];
 

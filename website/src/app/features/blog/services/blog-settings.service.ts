@@ -2,6 +2,7 @@ import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { PublicBlogApiService } from './public-blog-api.service';
 import { BlogAnalyticsService } from './blog-analytics.service';
+import { MarketingToolsService } from '../../../services/marketing-tools.service';
 import { PublicBlogSettings, defaultPublicBlogSettings } from '../models/blog-settings.types';
 import { environment } from '../../../../environments/environment';
 
@@ -15,6 +16,7 @@ import { environment } from '../../../../environments/environment';
 export class BlogSettingsService {
   private api = inject(PublicBlogApiService);
   private analytics = inject(BlogAnalyticsService);
+  private marketing = inject(MarketingToolsService);
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
   private _settings = signal<PublicBlogSettings>(defaultPublicBlogSettings());
@@ -32,7 +34,11 @@ export class BlogSettingsService {
         const s = await this.api.getPublicSettings();
         this._settings.set(s);
         this._loaded.set(true);
+        // Site-wide tracking: GA4 / Search Console, plus the Marketing
+        // Tools plugins (Google Tag + Facebook Pixel). Both cover every
+        // storefront route, not just blog pages.
         this.analytics.init(s.tracking);
+        this.marketing.init(s.tracking);
         return s;
       } catch {
         // Backend unavailable (no slug, endpoint not deployed, network

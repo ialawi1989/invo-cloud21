@@ -17,6 +17,7 @@ export type PluginType =
   | 'Notifications'
   | 'Utilities'
   | 'Analytics'
+  | 'Marketing Tools'
   | 'AI';
 
 /** Per-branch plugin override (MOIC credentials, GrubTech store/menu,
@@ -118,6 +119,20 @@ export interface PluginSettings {
   gsc_serviceKey?:    string;
   /** True when a service key is stored server-side. */
   gsc_serviceKeySet?: boolean;
+
+  // ── Marketing Tools ──────────────────────────────────────────────
+  // Google Tag (gtag.js / Tag Manager)
+  /** Google Tag / container ID injected on the live site
+   *  (GTM-XXXXXXX, GT-XXXXXXX, G-XXXXXXX or AW-XXXXXXXXX). */
+  gtag_tagId?: string;
+
+  // Facebook (Meta) Pixel
+  /** Numeric Meta Pixel ID injected on the live site. */
+  fbpixel_pixelId?:        string;
+  /** Conversions API access token (secret) for server-side events. */
+  fbpixel_accessToken?:    string;
+  /** True when an access token is stored server-side. */
+  fbpixel_accessTokenSet?: boolean;
 
   [key: string]: unknown;
 }

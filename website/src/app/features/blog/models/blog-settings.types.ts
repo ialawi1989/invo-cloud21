@@ -71,6 +71,15 @@ export interface PublicBlogTrackingSettings {
   /** Google Search Console site-verification token. When present we
    *  render `<meta name="google-site-verification">` in <head>. */
   gscVerification?:  string;
+  /** Marketing Tools → Google Tag plugin. Tag Manager container (GTM-…)
+   *  or a gtag id (GT-/G-/AW-…). When present we inject the tag on every
+   *  page. Maps from the plugin's `gtag_tagId`. */
+  googleTagId?:      string;
+  /** Marketing Tools → Facebook Pixel plugin. Numeric Meta Pixel id.
+   *  When present we inject the pixel on every page. Maps from the
+   *  plugin's `fbpixel_pixelId`. (The Conversions API token is a
+   *  server-side secret and is never sent to the browser.) */
+  facebookPixelId?:  string;
 }
 
 export interface PublicBlogSeoSettings {
@@ -179,6 +188,10 @@ export function normalizePublicBlogSettings(raw: any): PublicBlogSettings {
       clicksEnabled:    !!raw.tracking?.clicksEnabled,
       ga4MeasurementId: nonEmptyString(raw.tracking?.ga4MeasurementId),
       gscVerification:  nonEmptyString(raw.tracking?.gscVerification),
+      // Accept the clean camelCase keys, falling back to the raw plugin
+      // setting keys the backend might surface verbatim.
+      googleTagId:      nonEmptyString(raw.tracking?.googleTagId)     ?? nonEmptyString(raw.tracking?.gtag_tagId),
+      facebookPixelId:  nonEmptyString(raw.tracking?.facebookPixelId) ?? nonEmptyString(raw.tracking?.fbpixel_pixelId),
     },
     seo: {
       titleTemplate:  nonEmptyString(raw.seo?.titleTemplate) ?? d.seo.titleTemplate,

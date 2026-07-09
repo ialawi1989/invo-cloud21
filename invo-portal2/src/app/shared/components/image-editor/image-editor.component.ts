@@ -5,6 +5,7 @@ import {
   OnDestroy,
   OnInit,
   computed,
+  inject,
   input,
   output,
   signal,
@@ -12,15 +13,18 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
+import { TooltipDirective } from '../../directives/tooltip.directive';
+import { ColorPickerComponent } from '../color-picker/color-picker.component';
 import {
   EditorTool,
   CropDragMode,
   CropOrientation,
   CropPresetView,
   CROP_RATIO_BASE,
-  ADJUSTMENTS,
-  AdjustmentDef,
+  ADJUST_GROUPS,
+  ADJUST_DEFAULTS,
   FILTER_PRESETS,
   FilterPreset,
   EditorState,
@@ -39,7 +43,7 @@ import {
 @Component({
   selector: 'app-image-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TooltipDirective, ColorPickerComponent],
   templateUrl: './image-editor.component.html',
   styleUrls: ['./image-editor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -68,13 +72,10 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
   loading    = signal(true);
   saving     = signal(false);
 
-  // Adjustments
-  adjustments = signal<Record<string, number>>({
-    brightness: 100,
-    contrast: 100,
-    saturate: 100,
-    blur: 0,
-  });
+  // Adjustments — raw values consumed by the pixel pipeline (see ADJUST_DEFAULTS).
+  adjustments = signal<Record<string, number>>({ ...ADJUST_DEFAULTS });
+  /** Colour used by the Tint control. */
+  tintColor = signal<string>('#ff0047');
 
   // Active filter
   activeFilter = signal<string>('');
@@ -139,6 +140,17 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
   canUndo = signal(false);
   canRedo = signal(false);
 
+  /**
+   * True when the image differs from the untouched original — i.e. there's a
+   * committed edit in history, or a pending (not-yet-baked) filter, free
+   * rotation, or adjustment. Drives the "Revert to Original" button.
+   */
+  canRevert = computed(() =>
+    this.canUndo() || this.canRedo() ||
+    !!this.activeFilter() || this.freeRotation() !== 0 ||
+    Object.keys(ADJUST_DEFAULTS).some(k => this.adjustments()[k] !== ADJUST_DEFAULTS[k]),
+  );
+
   // Internal
   private img = new Image();
   private naturalW = 0;
@@ -167,8 +179,27 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
   private dialDrag: { startY: number; startAngle: number } | null = null;
 
   // Expose constants for the template
-  readonly ADJUSTMENTS   = ADJUSTMENTS;
+  readonly ADJUST_GROUPS  = ADJUST_GROUPS;
   readonly FILTER_PRESETS = FILTER_PRESETS;
+
+  private sanitizer = inject(DomSanitizer);
+  private iconCache = new Map<string, SafeHtml>();
+  /** Trust a control's inline SVG so it can be bound with [innerHTML]. */
+  trustIcon(svg: string): SafeHtml {
+    let html = this.iconCache.get(svg);
+    if (!html) {
+      html = this.sanitizer.bypassSecurityTrustHtml(svg);
+      this.iconCache.set(svg, html);
+    }
+    return html;
+  }
+
+  // Adjust tool: live preview is processed from a cached, downscaled snapshot
+  // (cheap on every slider tick); "Apply" re-processes the full-res source.
+  private adjustSource: HTMLCanvasElement | null = null;
+  private adjustPreview: HTMLCanvasElement | null = null;
+  private adjustRaf = 0;
+  private readonly ADJUST_PREVIEW_MAX = 1400;
   readonly TOOLS: { key: EditorTool; label: string; icon: string; fill?: boolean }[] = [
     { key: 'crop',    label: 'Crop & Extend', fill: true, icon: 'M7,7 L7,5 L8,5 L8,7 L14,7 C15.6568542,7 17,8.34314575 17,10 L17,16 L19,16 L19,17 L17,17 L17,19 L16,19 L16,17 L10,17 C8.34314575,17 7,15.6568542 7,14 L7,8 L5,8 L5,7 L7,7 Z M16,16 L16,10 C16,8.8954305 15.1045695,8 14,8 L8,8 L8,14 C8,15.1045695 8.8954305,16 10,16 L16,16 Z M22.8618505,10.6 L23.9624116,10.6 C23.356556,4.6108387 18.3068092,0 12.2316398,0 C12.1624456,0 12.0936736,0.00181975924 12.0200005,0.00551793594 L15.3816398,3.36715729 L16.6699086,2.07888848 L16.7973046,2.13927495 C20.1355157,3.72160742 22.4450195,6.90965564 22.8618505,10.6 Z M11.934008,23.9952496 L8.5811185,20.6335599 L7.29274785,21.9316175 L7.16465805,21.8705105 C3.82514471,20.2773481 1.51720911,17.0886637 1.10056272,13.3999996 L0,13.3999996 C0.605857095,19.3891609 5.65560391,23.9999996 11.7307733,23.9999996 C11.7987067,23.9999996 11.8581706,23.9986706 11.934008,23.9952496 Z' },
     { key: 'adjust',  label: 'Adjust',  icon: 'M12 3v1m0 16v1m-8-9H3m18 0h-1m-2.636-5.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z' },
@@ -176,15 +207,9 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
     { key: 'draw',    label: 'Draw',    icon: 'M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' },
   ];
 
-  // CSS filter string for preview
-  cssFilter = computed(() => {
-    const a = this.adjustments();
-    const f = this.activeFilter();
-    let css = `brightness(${a['brightness']}%) contrast(${a['contrast']}%) saturate(${a['saturate']}%)`;
-    if (a['blur'] > 0) css += ` blur(${a['blur']}px)`;
-    if (f) css += ' ' + f;
-    return css;
-  });
+  // CSS filter for the live canvas — just the active filter preset. Adjustments
+  // are no longer CSS: they're baked into the pixels by the Adjust pipeline.
+  cssFilter = computed(() => this.activeFilter() || 'none');
 
   ngOnInit(): void {
     this.img.onload = () => {
@@ -242,6 +267,7 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.onCropDragUp(); // detach any in-flight crop drag listeners
     this.onDialUp();     // detach any in-flight rotation-dial listeners
+    if (this.adjustRaf) cancelAnimationFrame(this.adjustRaf);
     this.undoStack = [];
     this.redoStack = [];
     if (this.objectUrl) {
@@ -300,6 +326,29 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
     this.canRedo.set(this.redoStack.length > 0);
   }
 
+  /**
+   * Discard every edit and return to the untouched original (the first frame
+   * captured on load). Pending previews (filter, free rotation, adjustments)
+   * are cleared and the revert itself is pushed onto the undo stack so it can
+   * be undone.
+   */
+  revertToOriginal(): void {
+    if (this.undoStack.length === 0) return;
+    // Drop any pending, not-yet-baked previews so the reverted pixels win.
+    if (this.adjustRaf) { cancelAnimationFrame(this.adjustRaf); this.adjustRaf = 0; }
+    this.activeFilter.set('');
+    this.adjustments.set({ ...ADJUST_DEFAULTS });
+    this.adjustSource = null;
+    this.adjustPreview = null;
+    this.rotation.set(0);
+    this.flipH.set(false);
+    this.flipV.set(false);
+
+    this.restoreState(this.undoStack[0]);
+    this.pushUndo();
+    if (this.activeTool() === 'crop') this.startCrop();
+  }
+
   private restoreState(data: ImageData): void {
     const canvas = this.mainCanvas()?.nativeElement;
     if (!canvas) return;
@@ -344,7 +393,13 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
 
     this.resizeW.set(canvas.width);
     this.resizeH.set(canvas.height);
-    this.afterCanvasMutated();
+    // A 90° turn is rigid: if a free rotation is in play (tilted image with
+    // empty corners), rotate its baseline too so the crop keeps inscribing the
+    // real pixels. The tilt angle is unchanged by a 90° turn.
+    if (this.rotationSource) {
+      this.rotationSource = this.rotateCanvas90(this.rotationSource, dir);
+    }
+    if (this.cropActive()) this.refitCropRect();
     this.pushUndo();
   }
 
@@ -369,19 +424,49 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
     }
     ctx.drawImage(tempCanvas, 0, 0);
     ctx.restore();
-    this.afterCanvasMutated();
+    // A mirror is rigid too, but it reverses the rotation direction: flip the
+    // free-rotation baseline on the same axis and negate the angle so the crop
+    // stays inscribed on the real pixels.
+    if (this.rotationSource) {
+      this.rotationSource = this.flipCanvas(this.rotationSource, axis);
+      this.freeRotation.set(-this.freeRotation());
+    }
+    if (this.cropActive()) this.refitCropRect();
     this.pushUndo();
   }
 
-  /**
-   * Called after any destructive op (crop/flip/90-rotate/resize/adjust) changes
-   * the canvas: the free-rotation baseline is now stale, so drop it and refit
-   * the crop frame to the new canvas bounds.
-   */
-  private afterCanvasMutated(): void {
-    this.rotationSource = null;
-    this.freeRotation.set(0);
-    if (this.cropActive()) this.initCropRect();
+  /** Rotate a canvas 90° (dir 1 = CW, -1 = CCW) into a fresh, dims-swapped canvas. */
+  private rotateCanvas90(src: HTMLCanvasElement, dir: 1 | -1): HTMLCanvasElement {
+    const out = document.createElement('canvas');
+    out.width = src.height;
+    out.height = src.width;
+    const ctx = out.getContext('2d')!;
+    if (dir === 1) {
+      ctx.translate(out.width, 0);
+      ctx.rotate(Math.PI / 2);
+    } else {
+      ctx.translate(0, out.height);
+      ctx.rotate(-Math.PI / 2);
+    }
+    ctx.drawImage(src, 0, 0);
+    return out;
+  }
+
+  /** Mirror a canvas on the given axis into a fresh canvas of the same size. */
+  private flipCanvas(src: HTMLCanvasElement, axis: 'h' | 'v'): HTMLCanvasElement {
+    const out = document.createElement('canvas');
+    out.width = src.width;
+    out.height = src.height;
+    const ctx = out.getContext('2d')!;
+    if (axis === 'h') {
+      ctx.translate(out.width, 0);
+      ctx.scale(-1, 1);
+    } else {
+      ctx.translate(0, out.height);
+      ctx.scale(1, -1);
+    }
+    ctx.drawImage(src, 0, 0);
+    return out;
   }
 
   // ── Tool: Free (fine) rotation ─────────────────────────────────────────────
@@ -547,8 +632,10 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
   setTool(tool: EditorTool): void {
     const prev = this.activeTool();
     if (prev === 'crop' && tool !== 'crop') this.commitCrop();
+    if (prev === 'adjust' && tool !== 'adjust') this.commitAdjust();
     this.activeTool.set(tool);
     if (tool === 'crop') this.startCrop();
+    if (tool === 'adjust') this.captureAdjustSource();
   }
 
   // ── Tool: Crop ─────────────────────────────────────────────────────────────
@@ -586,18 +673,31 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
   /** Switch the active preset; refit the box in place when a crop is running. */
   setCropPreset(key: string): void {
     this.cropSel.set(key);
-    if (this.cropActive()) this.initCropRect();
+    if (this.cropActive()) this.refitCropRect();
   }
 
   /** Flip every ratio preset between portrait and landscape. */
   setOrientation(o: CropOrientation): void {
     this.cropOrientation.set(o);
-    if (this.cropActive()) this.initCropRect();
+    if (this.cropActive()) this.refitCropRect();
   }
 
   startCrop(): void {
     this.cropActive.set(true);
-    this.initCropRect();
+    this.refitCropRect();
+  }
+
+  /**
+   * Re-fit the crop box for the current preset. When a free rotation is applied
+   * the image is tilted inside a larger canvas (empty corners), so we inscribe
+   * the box in the real pixels; otherwise we fit it to the axis-aligned canvas.
+   */
+  private refitCropRect(): void {
+    if (this.freeRotation() !== 0 && this.rotationSource) {
+      this.fitCropInscribed();
+    } else {
+      this.initCropRect();
+    }
   }
 
   /**
@@ -641,7 +741,7 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
   /** Resize + refit, used by the Width/Height fields in the crop panel. */
   commitResize(): void {
     this.applyResize();
-    if (this.cropActive()) this.initCropRect();
+    if (this.cropActive()) this.refitCropRect();
   }
 
   // ── Crop drag / resize gestures ──────────────────────────────────────────
@@ -821,43 +921,197 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
 
   // ── Tool: Adjust ───────────────────────────────────────────────────────────
 
-  updateAdjustment(key: string, value: number): void {
-    this.adjustments.update(a => ({ ...a, [key]: value }));
-  }
-
-  resetAdjustments(): void {
-    const reset: Record<string, number> = {};
-    for (const adj of ADJUSTMENTS) reset[adj.key] = adj.default;
-    this.adjustments.set(reset);
-    this.activeFilter.set('');
-  }
-
-  applyAdjustments(): void {
+  /** Snapshot the current canvas as the adjust baseline + a downscaled preview. */
+  private captureAdjustSource(): void {
     const canvas = this.mainCanvas()?.nativeElement;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d')!;
+    const full = document.createElement('canvas');
+    full.width = canvas.width;
+    full.height = canvas.height;
+    full.getContext('2d')!.drawImage(canvas, 0, 0);
+    this.adjustSource = full;
 
-    // Render current canvas + CSS filter to a temp canvas, then copy back
-    const temp = document.createElement('canvas');
-    temp.width = canvas.width;
-    temp.height = canvas.height;
-    const tCtx = temp.getContext('2d')!;
-    tCtx.filter = this.cssFilter();
-    tCtx.drawImage(canvas, 0, 0);
+    const longest = Math.max(canvas.width, canvas.height);
+    const scale = longest > this.ADJUST_PREVIEW_MAX ? this.ADJUST_PREVIEW_MAX / longest : 1;
+    const prev = document.createElement('canvas');
+    prev.width = Math.max(1, Math.round(canvas.width * scale));
+    prev.height = Math.max(1, Math.round(canvas.height * scale));
+    prev.getContext('2d')!.drawImage(canvas, 0, 0, prev.width, prev.height);
+    this.adjustPreview = prev;
+  }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(temp, 0, 0);
+  /** Slider handler — update the value and schedule a throttled preview redraw. */
+  onAdjustInput(key: string, value: number): void {
+    this.adjustments.update(a => ({ ...a, [key]: value }));
+    this.scheduleAdjustRender();
+  }
 
-    this.resetAdjustments();
-    this.rotationSource = null;
-    this.freeRotation.set(0);
+  /** Tint colour handler. */
+  onTintColor(color: string): void {
+    this.tintColor.set(color);
+    this.scheduleAdjustRender();
+  }
+
+  private scheduleAdjustRender(): void {
+    if (this.adjustRaf) return;
+    this.adjustRaf = requestAnimationFrame(() => {
+      this.adjustRaf = 0;
+      const canvas = this.mainCanvas()?.nativeElement;
+      if (canvas && this.adjustPreview) this.processInto(this.adjustPreview, canvas);
+    });
+  }
+
+  /** Reset every slider to its default and restore the untouched image. */
+  resetAdjustments(): void {
+    this.adjustments.set({ ...ADJUST_DEFAULTS });
+    const canvas = this.mainCanvas()?.nativeElement;
+    if (canvas && this.adjustSource) {
+      canvas.width = this.adjustSource.width;
+      canvas.height = this.adjustSource.height;
+      canvas.getContext('2d')!.drawImage(this.adjustSource, 0, 0);
+    }
+  }
+
+  /** Bake the adjustments at full resolution and checkpoint into undo history. */
+  applyAdjustments(): void {
+    const canvas = this.mainCanvas()?.nativeElement;
+    if (!canvas || !this.adjustSource || !this.hasAdjustChanges()) return;
+    this.processInto(this.adjustSource, canvas);
+    this.resizeW.set(canvas.width);
+    this.resizeH.set(canvas.height);
+    this.adjustSource = null;
+    this.adjustPreview = null;
+    this.adjustments.set({ ...ADJUST_DEFAULTS });
     this.pushUndo();
+  }
+
+  /** Leaving the Adjust tool: bake pending changes, else drop the snapshots. */
+  private commitAdjust(): void {
+    if (this.adjustRaf) { cancelAnimationFrame(this.adjustRaf); this.adjustRaf = 0; }
+    if (this.hasAdjustChanges()) this.applyAdjustments();
+    this.adjustSource = null;
+    this.adjustPreview = null;
+    this.adjustments.set({ ...ADJUST_DEFAULTS });
+  }
+
+  /** True when any slider is off its default (a tint amount > 0 counts too). */
+  private hasAdjustChanges(): boolean {
+    const a = this.adjustments();
+    return Object.keys(ADJUST_DEFAULTS).some(k => a[k] !== ADJUST_DEFAULTS[k]);
+  }
+
+  /**
+   * Run the full adjustment pipeline: `src` → processed pixels in `dst`.
+   * Brightness/contrast/saturation/exposure ride the GPU `ctx.filter`; the rest
+   * (highlights, shadows, temperature, tint, vignette, grain) are a single
+   * pixel pass; sharpness is an extra unsharp-mask pass when non-zero.
+   */
+  private processInto(src: HTMLCanvasElement, dst: HTMLCanvasElement): void {
+    const a = this.adjustments();
+    const w = src.width, h = src.height;
+    dst.width = w;
+    dst.height = h;
+    const ctx = dst.getContext('2d')!;
+
+    // Exposure (stops) folds into brightness; contrast + saturation are native.
+    const bright = a['brightness'] * Math.pow(2, a['exposure']);
+    ctx.filter = `brightness(${bright}) contrast(${a['contrast']}) saturate(${a['saturation']})`;
+    ctx.drawImage(src, 0, 0);
+    ctx.filter = 'none';
+
+    const hi = a['highlights'], sh = a['shadows'], temp = a['temperature'];
+    const tint = a['tint'], vig = a['vignette'], grain = a['grain'];
+    if (hi || sh || temp || tint || vig || grain) {
+      const [tr, tg, tb] = this.hexToRgb(this.tintColor());
+      const img = ctx.getImageData(0, 0, w, h);
+      const d = img.data;
+      const cx = w / 2, cy = h / 2;
+      const maxD = Math.hypot(cx, cy) || 1;
+      for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+        let r = d[i], g = d[i + 1], b = d[i + 2];
+        if (hi) { r = this.tone(r, hi, true); g = this.tone(g, hi, true); b = this.tone(b, hi, true); }
+        if (sh) { r = this.tone(r, sh, false); g = this.tone(g, sh, false); b = this.tone(b, sh, false); }
+        if (temp) { r += temp * 40; b -= temp * 40; }
+        if (tint) { r += (tr - r) * tint; g += (tg - g) * tint; b += (tb - b) * tint; }
+        if (vig) {
+          const x = p % w, y = (p / w) | 0;
+          const dist = Math.hypot(x - cx, y - cy) / maxD;
+          const f = 1 - vig * dist * dist;
+          r *= f; g *= f; b *= f;
+        }
+        if (grain) {
+          const n = (Math.random() - 0.5) * grain * 60;
+          r += n; g += n; b += n;
+        }
+        d[i] = this.clamp8(r); d[i + 1] = this.clamp8(g); d[i + 2] = this.clamp8(b);
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+
+    const sharp = a['sharpness'] / 25;
+    if (sharp) this.applySharpen(ctx, w, h, sharp);
+  }
+
+  /** Push a channel toward white/black in the highlight (or shadow) range. */
+  private tone(c: number, amt: number, highlight: boolean): number {
+    if (highlight) return c > 128 ? c + amt * 63 * ((c - 128) / 127) : c;
+    return c < 128 ? c + amt * 63 * ((128 - c) / 128) : c;
+  }
+
+  private clamp8(v: number): number {
+    return v < 0 ? 0 : v > 255 ? 255 : v;
+  }
+
+  private hexToRgb(hex: string): [number, number, number] {
+    const m = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(hex);
+    return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : [255, 255, 255];
+  }
+
+  /** 3×3 unsharp mask. `amt` in −1…1 (positive sharpens, negative softens). */
+  private applySharpen(ctx: CanvasRenderingContext2D, w: number, h: number, amt: number): void {
+    const srcData = ctx.getImageData(0, 0, w, h);
+    const s = srcData.data;
+    const out = ctx.createImageData(w, h);
+    const o = out.data;
+    const center = 1 + 4 * amt;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        const up = ((Math.max(0, y - 1)) * w + x) * 4;
+        const dn = ((Math.min(h - 1, y + 1)) * w + x) * 4;
+        const lf = (y * w + Math.max(0, x - 1)) * 4;
+        const rt = (y * w + Math.min(w - 1, x + 1)) * 4;
+        for (let c = 0; c < 3; c++) {
+          o[i + c] = this.clamp8(s[i + c] * center - amt * (s[up + c] + s[dn + c] + s[lf + c] + s[rt + c]));
+        }
+        o[i + 3] = s[i + 3];
+      }
+    }
+    ctx.putImageData(out, 0, 0);
   }
 
   // ── Tool: Filters ──────────────────────────────────────────────────────────
 
   setFilter(preset: FilterPreset): void {
     this.activeFilter.set(preset.css);
+  }
+
+  /** Bake the active filter preset into the pixels and clear it. */
+  applyFilter(): void {
+    const canvas = this.mainCanvas()?.nativeElement;
+    const css = this.activeFilter();
+    if (!canvas || !css) return;
+    const temp = document.createElement('canvas');
+    temp.width = canvas.width;
+    temp.height = canvas.height;
+    const tCtx = temp.getContext('2d')!;
+    tCtx.filter = css;
+    tCtx.drawImage(canvas, 0, 0);
+    const ctx = canvas.getContext('2d')!;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(temp, 0, 0);
+    this.activeFilter.set('');
+    this.pushUndo();
   }
 
   // ── Tool: Draw ─────────────────────────────────────────────────────────────
@@ -978,11 +1232,9 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
   async onSave(): Promise<void> {
     // Commit a pending crop frame first (there's no explicit Apply button).
     if (this.activeTool() === 'crop') this.commitCrop();
-
-    // Then apply any pending adjustments/filters
-    if (this.cssFilter() !== 'brightness(100%) contrast(100%) saturate(100%)') {
-      this.applyAdjustments();
-    }
+    // Bake any pending adjustments (Adjust tool) and filter preset.
+    if (this.activeTool() === 'adjust') this.commitAdjust();
+    this.applyFilter();
 
     const canvas = this.mainCanvas()?.nativeElement;
     if (!canvas) return;

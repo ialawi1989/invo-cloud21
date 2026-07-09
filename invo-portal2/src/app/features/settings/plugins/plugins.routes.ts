@@ -132,6 +132,28 @@ export const PLUGINS_ROUTES: Routes = [
       import('./pages/forms/google-search-console.component').then(m => m.GoogleSearchConsoleComponent),
   },
 
+  // ── Marketing Tools ──────────────────────────────────────────────────
+  {
+    path: 'marketing-setup',
+    canActivate: [translationsLoaded],
+    loadComponent: () =>
+      import('./pages/forms/marketing-setup-guide.component').then(m => m.MarketingSetupGuideComponent),
+  },
+  {
+    path: 'google-tag/:id',
+    canActivate: [translationsLoaded],
+    canDeactivate: [unsavedChangesGuard],
+    loadComponent: () =>
+      import('./pages/forms/google-tag.component').then(m => m.GoogleTagComponent),
+  },
+  {
+    path: 'facebook-pixel/:id',
+    canActivate: [translationsLoaded],
+    canDeactivate: [unsavedChangesGuard],
+    loadComponent: () =>
+      import('./pages/forms/facebook-pixel.component').then(m => m.FacebookPixelComponent),
+  },
+
   // ── AI ───────────────────────────────────────────────────────────────
   {
     path: 'content-ai/:id',

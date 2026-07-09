@@ -13,6 +13,7 @@
       "NOTIFICATIONS":           "Notifications",
       "UTILITIES":               "Utilities",
       "ANALYTICS":               "Analytics",
+      "MARKETING_TOOLS":         "Marketing Tools",
       "AI":                      "AI"
     },
     "NOTES": {
@@ -38,6 +39,8 @@
       "JOFOTARA":    "Jordan JoFotara (ISTD) invoice reporting",
       "GA4":         "Google Analytics 4 — traffic & behavior",
       "GSC":         "Google Search Console — search performance",
+      "GTAG":        "Google Tag / Tag Manager on your storefront",
+      "FBPIXEL":     "Meta Pixel tracking for ads & conversions",
       "AI":          "AI content generation across the portal"
     },
     "COMMON": {
@@ -48,6 +51,7 @@
       "SAVED":             "Settings saved",
       "SAVE_FAILED":       "Could not save settings",
       "SECRET_KEEP_HINT":  "Saved value is hidden — leave empty to keep the current one.",
+      "OPTIONAL":          "(optional)",
       "REQUIRED":          "This field is required.",
       "BACK":              "Back to plugins",
       "CONFIGURE":         "Configure",
@@ -262,6 +266,76 @@
       "DOCS":             "Open Search Console setup guide",
       "ERR_SITE_URL":     "Enter a valid property URL (https://… or sc-domain:…) or leave empty.",
       "ERR_KEY":          "Paste the service-account JSON key."
+    },
+    "GTAG": {
+      "TITLE":       "Google Tag",
+      "INTRO":       "Add your Google Tag, Tag Manager container, GA4 or Google Ads tag to your live storefront. We inject the snippet on every page so your tags and marketing pixels fire automatically.",
+      "TAG_ID":      "Tag / Container ID",
+      "TAG_HINT":    "Accepts GTM-XXXXXXX (Tag Manager), GT-XXXXXXX (Google tag), G-XXXXXXX (GA4) or AW-XXXXXXXXX (Google Ads).",
+      "HOWTO_TITLE": "How to link Google Tag",
+      "STEP_1":      "Open Google Tag Manager (or your Google tag / Ads account) and create or select a container.",
+      "STEP_2":      "Copy the ID — it looks like GTM-XXXXXXX, GT-XXXXXXX, G-XXXXXXX or AW-XXXXXXXXX.",
+      "STEP_3":      "Paste it below, enable the plugin, and save. We handle the on-page snippet for you.",
+      "ERR_TAG":     "Enter a valid tag / container ID (GTM-…, GT-…, G-… or AW-…)."
+    },
+    "FBPIXEL": {
+      "TITLE":             "Facebook Pixel",
+      "INTRO":             "Add your Meta (Facebook) Pixel to your live storefront to measure ad performance and build audiences. We inject the pixel on every page. An optional Conversions API token lets us send server-side events too.",
+      "PIXEL_ID":          "Pixel ID",
+      "PIXEL_HINT":        "The numeric Meta Pixel ID from Events Manager (usually 15–16 digits).",
+      "ACCESS_TOKEN":      "Conversions API access token",
+      "ACCESS_TOKEN_HINT": "Optional. Enables server-side events (better attribution). Stored securely and never shown again.",
+      "HOWTO_TITLE":       "How to link Facebook Pixel",
+      "STEP_1":            "In Meta Events Manager, create or open a Pixel (data source).",
+      "STEP_2":            "Copy the numeric Pixel ID and paste it below.",
+      "STEP_3":            "Optional: under Settings → Conversions API, generate an access token and paste it below. Then enable and save.",
+      "ERR_PIXEL":         "Enter a valid numeric Pixel ID."
+    },
+    "MKTGUIDE": {
+      "TITLE":      "Marketing Tools — setup guide",
+      "INTRO":      "Add Google Tag (Tag Manager) and the Facebook (Meta) Pixel to your live storefront to power marketing tags, retargeting and conversion tracking. Follow the steps for each tool below.",
+      "FULL_GUIDE": "Full setup guide",
+
+      "WHAT_TITLE":         "First — what does each tool do?",
+      "WHAT_COL_TOOL":      "Tool",
+      "WHAT_COL_USE":       "What it's for",
+      "WHAT_GTAG":          "Google Tag / Tag Manager",
+      "WHAT_GTAG_USE":      "A single container that deploys many tags (GA4, Google Ads, remarketing, custom events) without editing your store's code.",
+      "WHAT_FBPIXEL":       "Facebook (Meta) Pixel",
+      "WHAT_FBPIXEL_USE":   "Measures ad performance, builds retargeting audiences and tracks conversions for Facebook/Instagram ads.",
+
+      "GTAG_TITLE": "Part 1 — Google Tag",
+      "GTAG_LEAD":  "One container ID covers your store on any address (our subdomain or a custom domain). We inject the snippet on every page for you.",
+      "GTAG_S1":    "Open Google Tag Manager and create an account + a Web container for your store (or reuse an existing one).",
+      "GTAG_S2":    "Copy the container ID from the top of the workspace — it looks like GTM-XXXXXXX. (A Google tag / Ads ID like GT-, G- or AW- also works.)",
+      "GTAG_S3":    "Paste the ID into the Google Tag plugin below, enable it, and save.",
+      "GTAG_S4":    "In Tag Manager, add and publish your tags (GA4, Ads, etc.) — they'll fire on your live store automatically.",
+
+      "FBPIXEL_TITLE": "Part 2 — Facebook Pixel",
+      "FBPIXEL_LEAD":  "Add your Meta Pixel to measure ads and build audiences. Works on any store address.",
+      "FBPIXEL_S1":    "Open Meta Events Manager and create a data source → Web → Pixel (or open an existing pixel).",
+      "FBPIXEL_S2":    "Copy the numeric Pixel ID (usually 15–16 digits) shown next to the pixel name.",
+      "FBPIXEL_S3":    "Paste it into the Facebook Pixel plugin below, enable it, and save.",
+      "FBPIXEL_S4":    "Use Meta's Pixel Helper browser extension on your live store to confirm it's firing.",
+
+      "FBCAPI_TITLE": "Optional — Conversions API (better attribution)",
+      "FBCAPI_BODY":  "In Events Manager → Settings → Conversions API, generate an access token and paste it into the plugin's optional token field. This lets us send purchase and lead events server-side, improving accuracy when browsers block the pixel.",
+
+      "NOTES_TITLE":    "Good to know",
+      "NOTE_INJECT":    "Once enabled, we inject each tag/pixel on every page of your live storefront — no code changes needed.",
+      "NOTE_VERIFY":    "Use Google Tag Assistant or Meta Pixel Helper to verify your tags fire correctly after saving.",
+      "NOTE_ISOLATION": "Each store uses its own IDs — your tracking is never mixed with other stores.",
+      "NOTE_CONSENT":   "Make sure your storefront's cookie/consent notice covers these marketing tools where required by law.",
+
+      "LINK_GTM_OPEN":  "Open Google Tag Manager",
+      "LINK_GTM_SETUP": "Set up a Tag Manager container",
+      "LINK_GTM_ID":    "Find your container ID",
+      "LINK_FB_EVENTS": "Open Meta Events Manager",
+      "LINK_FB_PIXEL":  "Create a Meta Pixel",
+      "LINK_FB_CAPI":   "About the Conversions API",
+
+      "OPEN_GTAG":    "Open the Google Tag plugin",
+      "OPEN_FBPIXEL": "Open the Facebook Pixel plugin"
     },
     "GUIDE": {
       "TITLE":      "Google Analytics & Search Console — setup guide",
