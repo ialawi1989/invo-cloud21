@@ -1,239 +1,38 @@
-<div class="bt" [class.bt--compact]="compact()"
-     [class.bt--dropdown]="isDropdown()" [class.bt--sidebar]="isSidebar()">
+<app-entity-selector
+  [items]="items()"
+  [mode]="resolvedMode()"
+  [closable]="closable()"
+  [maxVisible]="maxVisible()"
+  [maxVisibleMobile]="maxVisibleMobile()"
+  [completion]="completion()"
+  [showProgress]="showProgress()"
+  [showBulkActions]="showBulkActions()"
+  [searchLabel]="'PRODUCTS.FORM.BRANCH_TABS_SEARCH'"
+  [findLabel]="'PRODUCTS.FORM.BRANCH_TABS_FIND'"
+  [pinnedLabel]="'PRODUCTS.FORM.BRANCH_TABS_PINNED'"
+  [recentLabel]="'PRODUCTS.FORM.BRANCH_TABS_RECENT'"
+  [allLabel]="'PRODUCTS.FORM.BRANCH_TABS_ALL'"
+  [noMatchLabel]="'PRODUCTS.FORM.BRANCH_TABS_NO_MATCH'"
+  [pinLabel]="'PRODUCTS.FORM.BRANCH_TABS_PIN'"
+  [unpinLabel]="'PRODUCTS.FORM.BRANCH_TABS_UNPIN'"
+  [applyToAllLabel]="'PRODUCTS.FORM.BRANCH_TABS_APPLY_ALL'"
+  [copyFromLabel]="'PRODUCTS.FORM.BRANCH_TABS_COPY_FROM'"
+  [progressLabel]="'PRODUCTS.FORM.BRANCH_TABS_PROGRESS'"
+  [statusDoneLabel]="'PRODUCTS.FORM.BRANCH_TABS_STATUS_DONE'"
+  [statusPartialLabel]="'PRODUCTS.FORM.BRANCH_TABS_STATUS_PARTIAL'"
+  (activeChange)="activeChange.emit($event)"
+  (applyToAll)="applyToAll.emit()"
+  (copyFrom)="copyFrom.emit($event)">
 
-<!-- Bulk-action affordances (opt-in). Self-contained: the "Copy from branch…"
-     button owns its own pick-once popover, so it works in every mode. -->
-<ng-template #bulkActions>
-  <div class="bt__bulk" [class.bt__bulk--sidebar]="isSidebar()">
-    <button type="button" class="bt__bulk-btn" (click)="applyToAll.emit()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 6 9 17l-5-5"/>
-      </svg>
-      <span>{{ 'PRODUCTS.FORM.BRANCH_TABS_APPLY_ALL' | translate }}</span>
-    </button>
-    <button type="button" class="bt__bulk-btn"
-      cdkOverlayOrigin #copyOrigin="cdkOverlayOrigin"
-      [attr.aria-expanded]="copyOpen()"
-      (click)="copyOpen.set(!copyOpen())">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-      </svg>
-      <span>{{ 'PRODUCTS.FORM.BRANCH_TABS_COPY_FROM' | translate }}</span>
-    </button>
-
-    <ng-template
-      cdkConnectedOverlay
-      [cdkConnectedOverlayOrigin]="copyOrigin"
-      [cdkConnectedOverlayOpen]="copyOpen()"
-      [cdkConnectedOverlayHasBackdrop]="true"
-      cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
-      [cdkConnectedOverlayPositions]="[
-        { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top',    offsetY: 6 },
-        { originX: 'start', originY: 'top',    overlayX: 'start', overlayY: 'bottom', offsetY: -6 }
-      ]"
-      (backdropClick)="copyOpen.set(false)"
-      (detach)="copyOpen.set(false)"
-    >
-      <app-pf-find-branch-popover
-        [completion]="completion()"
-        [pickMode]="'select'"
-        (branchPicked)="onCopyPicked($event)"
-        (closed)="copyOpen.set(false)"/>
-    </ng-template>
-  </div>
-</ng-template>
-
-@if (isSidebar()) {
-  <!-- ── Sidebar mode — vertical master list ─────────────────────────── -->
-  <!-- Row template (defined first so the outlets below can reference it). -->
-  <ng-template #sbRow let-b>
-    <div class="bt-sb__row" [class.bt-sb__row--active]="isActive(b.id)">
-      <button type="button" class="bt-sb__main"
-        [attr.aria-current]="isActive(b.id) ? 'true' : null"
-        (click)="selectTab(b.id)">
-        <span class="bt__dot" [class.bt__dot--on]="b.isOnline" aria-hidden="true"></span>
-        <span class="bt-sb__name">{{ b.name }}</span>
-        @if (completion()) {
-          <app-branch-status-icon class="bt-sb__status" [status]="completionOf(b.id)" />
-        }
-      </button>
-      <button type="button" class="bt-sb__star" [class.bt-sb__star--on]="isPinned(b.id)"
-        (click)="togglePin($event, b.id)"
-        [attr.aria-label]="(isPinned(b.id) ? 'PRODUCTS.FORM.BRANCH_TABS_UNPIN' : 'PRODUCTS.FORM.BRANCH_TABS_PIN') | translate">
-        <svg width="14" height="14" viewBox="0 0 24 24" [attr.fill]="isPinned(b.id) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2l2.5 6 6.5 1-5 4 1.5 7-5.5-3-5.5 3 1.5-7-5-4 6.5-1z"/>
-        </svg>
-      </button>
-    </div>
-  </ng-template>
-
-  <!-- Search -->
-  <div class="bt-sb__search">
-    <svg class="bt-sb__search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <input #sbSearchInput type="text" class="bt-sb__search-input"
-      [value]="sidebarSearch()"
-      (input)="onSidebarSearch($any($event.target).value)"
-      [placeholder]="'PRODUCTS.FORM.BRANCH_TABS_SEARCH' | translate" />
-  </div>
-
-  @if (showBulkActions()) {
-    <ng-container *ngTemplateOutlet="bulkActions" />
-  }
-
-  <div class="bt-sb__body">
-    <!-- Pinned -->
-    @if (sbPinned().length > 0) {
-      <div class="bt-sb__section">
-        <h4 class="bt-sb__section-title">{{ 'PRODUCTS.FORM.BRANCH_TABS_PINNED' | translate }}</h4>
-        @for (b of sbPinned(); track b.id) {
-          <ng-container *ngTemplateOutlet="sbRow; context: { $implicit: b }" />
-        }
-      </div>
-    }
-
-    <!-- All branches — grouped when any branch declares a group, else flat -->
-    @if (hasGroups()) {
-      @for (grp of sbGroups(); track grp.group) {
-        <div class="bt-sb__section">
-          @if (grp.group) {
-            <button type="button" class="bt-sb__group-head"
-              (click)="toggleGroup(grp.group)"
-              [attr.aria-expanded]="!isGroupCollapsed(grp.group)">
-              <svg class="bt-sb__caret" [class.bt-sb__caret--collapsed]="isGroupCollapsed(grp.group)"
-                width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-              <span class="bt-sb__group-name">{{ grp.group }}</span>
-              <span class="bt-sb__group-count">{{ grp.branches.length }}</span>
-            </button>
-          }
-          @if (!grp.group || !isGroupCollapsed(grp.group)) {
-            @for (b of grp.branches; track b.id) {
-              <ng-container *ngTemplateOutlet="sbRow; context: { $implicit: b }" />
-            }
-          }
-        </div>
-      }
-    } @else {
-      <div class="bt-sb__section">
-        <h4 class="bt-sb__section-title">{{ 'PRODUCTS.FORM.BRANCH_TABS_ALL' | translate }}</h4>
-        @for (b of sbFlat(); track b.id) {
-          <ng-container *ngTemplateOutlet="sbRow; context: { $implicit: b }" />
-        }
-      </div>
-    }
-
-    @if (!sbHasAnyMatch()) {
-      <p class="bt-sb__empty">{{ 'PRODUCTS.FORM.BRANCH_TABS_NO_MATCH' | translate }}</p>
-    }
-  </div>
-
-  <!-- Progress footer -->
-  @if (showProgress() && completion()) {
-    <div class="bt-sb__footer">
-      {{ 'PRODUCTS.FORM.BRANCH_TABS_PROGRESS' | translate: { done: progress().done, total: progress().total } }}
-    </div>
-  }
-} @else {
-  <!-- Open tabs (tabs mode only — dropdown renders its own trigger) -->
-  @if (isTabs()) {
-  <div class="bt__tabs" role="tablist">
-    @for (tab of visibleTabs(); track tab.id) {
-      <button
-        type="button"
-        role="tab"
-        class="bt__tab"
-        [class.bt__tab--active]="isActive(tab.id)"
-        [attr.aria-selected]="isActive(tab.id)"
-        [title]="tab.name"
-        (click)="selectTab(tab.id)"
-      >
-        <span class="bt__dot" [class.bt__dot--on]="tab.isOnline" aria-hidden="true"></span>
-        <span class="bt__name">{{ tab.name }}</span>
-        @if (completion()) {
-          <app-branch-status-icon class="bt__status" [status]="completionOf(tab.id)" />
-        }
-        <!-- Hide the close (×) on the last open tab — at least one branch must
-             stay open, so a × there would be a no-op. -->
-        @if (closable() && openTabs().length > 1) {
-          <button
-            type="button"
-            class="bt__close"
-            (click)="closeTab($event, tab.id)"
-            [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
-            tabindex="-1"
-          >
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        }
-      </button>
-    }
-  </div>
-
-  <!-- Spacer pushes the find pill to the end -->
-  <div class="bt__spacer"></div>
-  }
-
-  <!-- Trigger — opens the searchable popover. In tabs mode it's the compact
-       "Find branch" pill; in dropdown mode it's a full-width select showing the
-       active branch. Both share the same overlay origin. -->
-  <button
-    #findTrigger
-    type="button"
-    class="bt__find"
-    [class.bt__find--select]="isDropdown()"
-    cdkOverlayOrigin
-    #findOrigin="cdkOverlayOrigin"
-    [attr.aria-expanded]="popoverOpen()"
-    (click)="togglePopover()"
-  >
-    @if (isDropdown()) {
-      <span class="bt__dot" [class.bt__dot--on]="activeBranch()?.isOnline" aria-hidden="true"></span>
-      <span class="bt__find-label bt__find-label--name">
-        {{ activeBranch()?.name || ('PRODUCTS.FORM.BRANCH_TABS_FIND' | translate) }}
+  <!-- Online indicator: a dot in tabs/sidebar/dropdown, a text pill in popover
+       rows. `ctx` is the render context passed by the generic component. -->
+  <ng-template #status let-item let-ctx="context">
+    @if (ctx === 'popover-row') {
+      <span class="bt-pill" [class.bt-pill--on]="item.status === 'online'">
+        {{ (item.status === 'online' ? 'PRODUCTS.FORM.ONLINE' : 'PRODUCTS.FORM.BRANCH_TABS_OFFLINE') | translate }}
       </span>
-      @if (completion() && activeBranch(); as ab) {
-        <app-branch-status-icon class="bt__status" [status]="completionOf(ab.id)" />
-      }
-      <svg class="bt__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
     } @else {
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <span class="bt__find-label">{{ 'PRODUCTS.FORM.BRANCH_TABS_FIND' | translate }}</span>
-      @if (hiddenCount() > 0) {
-        <span class="bt__find-count">+{{ hiddenCount() }}</span>
-      }
+      <span class="bt-dot" [class.bt-dot--on]="item.status === 'online'" aria-hidden="true"></span>
     }
-  </button>
-
-  @if (showBulkActions()) {
-    <ng-container *ngTemplateOutlet="bulkActions" />
-  }
-
-  <ng-template
-    cdkConnectedOverlay
-    [cdkConnectedOverlayOrigin]="findOrigin"
-    [cdkConnectedOverlayOpen]="popoverOpen()"
-    [cdkConnectedOverlayHasBackdrop]="true"
-    cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
-    [cdkConnectedOverlayPositions]="[
-      { originX: 'end',   originY: 'bottom', overlayX: 'end',   overlayY: 'top',    offsetY: 6 },
-      { originX: 'end',   originY: 'top',    overlayX: 'end',   overlayY: 'bottom', offsetY: -6 },
-      { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top',    offsetY: 6 }
-    ]"
-    (backdropClick)="closePopover()"
-    (detach)="closePopover()"
-  >
-    <app-pf-find-branch-popover [completion]="completion()" (closed)="closePopover()"/>
   </ng-template>
-}
-</div>
+</app-entity-selector>

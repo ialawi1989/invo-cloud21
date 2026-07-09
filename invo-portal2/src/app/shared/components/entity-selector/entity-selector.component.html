@@ -1,0 +1,256 @@
+<div class="es" [class.es--compact]="compact()"
+     [class.es--dropdown]="isDropdown()" [class.es--sidebar]="isSidebar()">
+
+<!-- Bulk-action affordances (opt-in). Self-contained: the "Copy from…" button
+     owns its own pick-once popover, so it works in every mode. -->
+<ng-template #bulkActions>
+  <div class="es__bulk" [class.es__bulk--sidebar]="isSidebar()">
+    <button type="button" class="es__bulk-btn" (click)="applyToAll.emit()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6 9 17l-5-5"/>
+      </svg>
+      <span>{{ applyToAllLabel() | translate }}</span>
+    </button>
+    <button type="button" class="es__bulk-btn"
+      cdkOverlayOrigin #copyOrigin="cdkOverlayOrigin"
+      [attr.aria-expanded]="copyOpen()"
+      (click)="copyOpen.set(!copyOpen())">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      </svg>
+      <span>{{ copyFromLabel() | translate }}</span>
+    </button>
+
+    <ng-template
+      cdkConnectedOverlay
+      [cdkConnectedOverlayOrigin]="copyOrigin"
+      [cdkConnectedOverlayOpen]="copyOpen()"
+      [cdkConnectedOverlayHasBackdrop]="true"
+      cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+      [cdkConnectedOverlayPositions]="[
+        { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top',    offsetY: 6 },
+        { originX: 'start', originY: 'top',    overlayX: 'start', overlayY: 'bottom', offsetY: -6 }
+      ]"
+      (backdropClick)="copyOpen.set(false)"
+      (detach)="copyOpen.set(false)"
+    >
+      <app-entity-find-popover
+        [completion]="completion()"
+        [pickMode]="'select'"
+        [statusTpl]="statusTpl ?? null"
+        [searchLabel]="searchLabel()" [pinnedLabel]="pinnedLabel()" [recentLabel]="recentLabel()"
+        [allLabel]="allLabel()" [noMatchLabel]="noMatchLabel()" [pinLabel]="pinLabel()" [unpinLabel]="unpinLabel()"
+        [doneLabel]="statusDoneLabel()" [partialLabel]="statusPartialLabel()"
+        (itemPicked)="onCopyPicked($event)"
+        (closed)="copyOpen.set(false)"/>
+    </ng-template>
+  </div>
+</ng-template>
+
+@if (isSidebar()) {
+  <!-- ── Sidebar mode — vertical master list ─────────────────────────── -->
+  <ng-template #sbRow let-b>
+    <div class="es-sb__row" [class.es-sb__row--active]="isActive(b.id)">
+      <button type="button" class="es-sb__main"
+        [attr.aria-current]="isActive(b.id) ? 'true' : null"
+        (click)="selectTab(b.id)">
+        @if (statusTpl) {
+          <ng-container *ngTemplateOutlet="statusTpl; context: { $implicit: b, context: 'sidebar-row' }" />
+        }
+        <span class="es-sb__name">{{ b.label }}</span>
+        @if (completion()) {
+          <app-entity-status-icon class="es-sb__status" [status]="completionOf(b.id)"
+            [doneLabel]="statusDoneLabel()" [partialLabel]="statusPartialLabel()" />
+        }
+        @if (suffixTpl) {
+          <ng-container *ngTemplateOutlet="suffixTpl; context: { $implicit: b }" />
+        }
+      </button>
+      <button type="button" class="es-sb__star" [class.es-sb__star--on]="isPinned(b.id)"
+        (click)="togglePin($event, b.id)"
+        [attr.aria-label]="(isPinned(b.id) ? unpinLabel() : pinLabel()) | translate">
+        <svg width="14" height="14" viewBox="0 0 24 24" [attr.fill]="isPinned(b.id) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l2.5 6 6.5 1-5 4 1.5 7-5.5-3-5.5 3 1.5-7-5-4 6.5-1z"/>
+        </svg>
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Search -->
+  <div class="es-sb__search">
+    <svg class="es-sb__search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input #sbSearchInput type="text" class="es-sb__search-input"
+      [value]="sidebarSearch()"
+      (input)="onSidebarSearch($any($event.target).value)"
+      [placeholder]="searchLabel() | translate" />
+  </div>
+
+  @if (showBulkActions()) {
+    <ng-container *ngTemplateOutlet="bulkActions" />
+  }
+
+  <div class="es-sb__body">
+    @if (sbPinned().length > 0) {
+      <div class="es-sb__section">
+        <h4 class="es-sb__section-title">{{ pinnedLabel() | translate }}</h4>
+        @for (b of sbPinned(); track b.id) {
+          <ng-container *ngTemplateOutlet="sbRow; context: { $implicit: b }" />
+        }
+      </div>
+    }
+
+    @if (hasGroups()) {
+      @for (grp of sbGroups(); track grp.group) {
+        <div class="es-sb__section">
+          @if (grp.group) {
+            <button type="button" class="es-sb__group-head"
+              (click)="toggleGroup(grp.group)"
+              [attr.aria-expanded]="!isGroupCollapsed(grp.group)">
+              <svg class="es-sb__caret" [class.es-sb__caret--collapsed]="isGroupCollapsed(grp.group)"
+                width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+              <span class="es-sb__group-name">{{ grp.group }}</span>
+              <span class="es-sb__group-count">{{ grp.items.length }}</span>
+            </button>
+          }
+          @if (!grp.group || !isGroupCollapsed(grp.group)) {
+            @for (b of grp.items; track b.id) {
+              <ng-container *ngTemplateOutlet="sbRow; context: { $implicit: b }" />
+            }
+          }
+        </div>
+      }
+    } @else {
+      <div class="es-sb__section">
+        <h4 class="es-sb__section-title">{{ allLabel() | translate }}</h4>
+        @for (b of sbFlat(); track b.id) {
+          <ng-container *ngTemplateOutlet="sbRow; context: { $implicit: b }" />
+        }
+      </div>
+    }
+
+    @if (!sbHasAnyMatch()) {
+      <p class="es-sb__empty">{{ noMatchLabel() | translate }}</p>
+    }
+  </div>
+
+  @if (showProgress() && completion()) {
+    <div class="es-sb__footer">
+      {{ progressLabel() | translate: { done: progress().done, total: progress().total } }}
+    </div>
+  }
+} @else {
+  <!-- Open tabs (tabs mode only — dropdown renders its own trigger) -->
+  @if (isTabs()) {
+  <div class="es__tabs" role="tablist">
+    @for (tab of visibleTabs(); track tab.id) {
+      <button
+        type="button"
+        role="tab"
+        class="es__tab"
+        [class.es__tab--active]="isActive(tab.id)"
+        [attr.aria-selected]="isActive(tab.id)"
+        [title]="tab.label"
+        (click)="selectTab(tab.id)"
+      >
+        @if (statusTpl) {
+          <ng-container *ngTemplateOutlet="statusTpl; context: { $implicit: tab, context: 'tab' }" />
+        }
+        <span class="es__name">{{ tab.label }}</span>
+        @if (completion()) {
+          <app-entity-status-icon class="es__status" [status]="completionOf(tab.id)"
+            [doneLabel]="statusDoneLabel()" [partialLabel]="statusPartialLabel()" />
+        }
+        @if (suffixTpl) {
+          <ng-container *ngTemplateOutlet="suffixTpl; context: { $implicit: tab }" />
+        }
+        @if (closable() && openTabs().length > 1) {
+          <button
+            type="button"
+            class="es__close"
+            (click)="closeTab($event, tab.id)"
+            [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
+            tabindex="-1"
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        }
+      </button>
+    }
+  </div>
+
+  <div class="es__spacer"></div>
+  }
+
+  <!-- Trigger — opens the searchable popover. Compact find pill in tabs mode,
+       full-width select showing the active item in dropdown mode. -->
+  <button
+    #findTrigger
+    type="button"
+    class="es__find"
+    [class.es__find--select]="isDropdown()"
+    cdkOverlayOrigin
+    #findOrigin="cdkOverlayOrigin"
+    [attr.aria-expanded]="popoverOpen()"
+    (click)="togglePopover()"
+  >
+    @if (isDropdown()) {
+      @if (statusTpl && activeEntity(); as ae) {
+        <ng-container *ngTemplateOutlet="statusTpl; context: { $implicit: ae, context: 'dropdown' }" />
+      }
+      <span class="es__find-label es__find-label--name">
+        {{ activeEntity()?.label || (findLabel() | translate) }}
+      </span>
+      @if (completion() && activeEntity(); as ae) {
+        <app-entity-status-icon class="es__status" [status]="completionOf(ae.id)"
+          [doneLabel]="statusDoneLabel()" [partialLabel]="statusPartialLabel()" />
+      }
+      <svg class="es__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    } @else {
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <span class="es__find-label">{{ findLabel() | translate }}</span>
+      @if (hiddenCount() > 0) {
+        <span class="es__find-count">+{{ hiddenCount() }}</span>
+      }
+    }
+  </button>
+
+  @if (showBulkActions()) {
+    <ng-container *ngTemplateOutlet="bulkActions" />
+  }
+
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="findOrigin"
+    [cdkConnectedOverlayOpen]="popoverOpen()"
+    [cdkConnectedOverlayHasBackdrop]="true"
+    cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+    [cdkConnectedOverlayPositions]="[
+      { originX: 'end',   originY: 'bottom', overlayX: 'end',   overlayY: 'top',    offsetY: 6 },
+      { originX: 'end',   originY: 'top',    overlayX: 'end',   overlayY: 'bottom', offsetY: -6 },
+      { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top',    offsetY: 6 }
+    ]"
+    (backdropClick)="closePopover()"
+    (detach)="closePopover()"
+  >
+    <app-entity-find-popover
+      [completion]="completion()"
+      [statusTpl]="statusTpl ?? null"
+      [searchLabel]="searchLabel()" [pinnedLabel]="pinnedLabel()" [recentLabel]="recentLabel()"
+      [allLabel]="allLabel()" [noMatchLabel]="noMatchLabel()" [pinLabel]="pinLabel()" [unpinLabel]="unpinLabel()"
+      [doneLabel]="statusDoneLabel()" [partialLabel]="statusPartialLabel()"
+      (closed)="closePopover()"/>
+  </ng-template>
+}
+</div>

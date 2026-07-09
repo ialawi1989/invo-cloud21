@@ -4,7 +4,7 @@
   max-width: 95vw;
 }
 
-.fbp {
+.fep {
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -14,7 +14,6 @@
   overflow: hidden;
   max-height: 420px;
 
-  // ── Search ──────────────────────────────────────────────────────
   &__search {
     position: relative;
     padding: 10px;
@@ -49,7 +48,6 @@
     }
   }
 
-  // ── Body ────────────────────────────────────────────────────────
   &__body {
     overflow-y: auto;
     padding: 6px 4px 8px;
@@ -69,11 +67,7 @@
     letter-spacing: 0.4px;
   }
 
-  &__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
+  &__list { list-style: none; margin: 0; padding: 0; }
 
   &__row {
     display: flex;
@@ -82,7 +76,6 @@
     padding: 8px 12px;
     cursor: pointer;
     transition: background 100ms ease;
-
     &:hover { background: #f8fafc; }
   }
 
@@ -98,7 +91,6 @@
     cursor: pointer;
     color: #cbd5e1;
     transition: color 120ms ease, background 120ms ease;
-
     &:hover { background: #f1f5f9; color: #94a3b8; }
     &--on { color: #f59e0b; }
     &--on:hover { color: #d97706; }
@@ -115,24 +107,6 @@
   }
 
   &__status { flex: 0 0 auto; }
-
-  &__pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 9px;
-    border-radius: 999px;
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: 0.2px;
-    background: #f1f5f9;
-    color: #64748b;
-    flex-shrink: 0;
-
-    &--on {
-      background: #dcfce7;
-      color: #15803d;
-    }
-  }
 
   &__empty {
     margin: 0;

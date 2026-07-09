@@ -325,3 +325,6 @@
 
   <!-- Full-screen overlay during destructive saves (detach in flight) -->
   <app-loading-overlay [show]="detaching()" message="Detaching…" />
+
+  <!-- Overlay while an edited image is uploading (preview modal already closed) -->
+  <app-loading-overlay [show]="savingEdit()" message="Saving edited image…" />

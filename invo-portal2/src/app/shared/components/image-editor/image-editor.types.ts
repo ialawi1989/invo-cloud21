@@ -1,21 +1,30 @@
 /** Active tool in the editor sidebar. */
 export type EditorTool = 'crop' | 'rotate' | 'adjust' | 'filters' | 'draw' | 'resize';
 
-/** Crop preset aspect ratios. */
-export interface CropPreset {
+/** How an in-progress crop-box gesture mutates the rect. */
+export type CropDragMode = 'move' | 'nw' | 'ne' | 'sw' | 'se' | 'n' | 'e' | 's' | 'w';
+
+/** Crop frame orientation — swaps every ratio preset between tall and wide. */
+export type CropOrientation = 'portrait' | 'landscape';
+
+/** A crop-ratio preset as rendered in the grid. */
+export interface CropPresetView {
+  /** Stable identity ('free', 'original', or 'r0'…'rN'). */
+  key: string;
+  /** Displayed label, e.g. "16:9" (flips with orientation). */
   label: string;
-  ratio: number | null; // null = free
+  /** Enforced width/height ratio; null = free, 0 = image's natural ratio. */
+  ratio: number | null;
+  /** Which icon to draw. */
+  kind: 'free' | 'original' | 'ratio';
+  /** Icon rect size (in the 24×24 viewBox) for `kind === 'ratio'`. */
+  rw: number;
+  rh: number;
 }
 
-export const CROP_PRESETS: CropPreset[] = [
-  { label: 'Free',     ratio: null },
-  { label: 'Original', ratio: 0 },    // 0 = use image's natural ratio
-  { label: '1:1',      ratio: 1 },
-  { label: '16:9',     ratio: 16 / 9 },
-  { label: '4:3',      ratio: 4 / 3 },
-  { label: '3:2',      ratio: 3 / 2 },
-  { label: '2:3',      ratio: 2 / 3 },
-  { label: '9:16',     ratio: 9 / 16 },
+/** Base ratio pairs (a ≥ b); orientation decides which side is vertical. */
+export const CROP_RATIO_BASE: ReadonlyArray<readonly [number, number]> = [
+  [1, 1], [2, 1], [16, 9], [3, 2], [4, 3], [5, 4],
 ];
 
 /** Adjustment slider definition. */

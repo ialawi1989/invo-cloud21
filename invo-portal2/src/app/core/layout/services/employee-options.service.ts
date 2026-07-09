@@ -24,18 +24,21 @@ export interface ListPreference {
 }
 
 /**
- * Persisted state for a single instance of the branch-tabs UX. Multiple
- * call sites can use the tabs component simultaneously (each with its own
+ * Persisted state for a single instance of the entity-selector UX. Multiple
+ * call sites can use the selector simultaneously (each with its own
  * pinned/recent/open lists) by providing a unique namespace via
- * `provideBranchTabs(namespace)`.
+ * `provideEntitySelector(namespace)`.
  */
-export interface BranchTabsPreference {
+export interface EntitySelectorPreference {
   openTabIds:  string[];
   activeTabId: string | null;
   pinnedIds:   string[];
   /** Collapsed sidebar group ids (sidebar mode only). Optional for back-compat. */
   collapsedGroups?: string[];
 }
+
+/** @deprecated Legacy alias — use {@link EntitySelectorPreference}. */
+export type BranchTabsPreference = EntitySelectorPreference;
 
 /** Row layout — only ratios for two-column rows are exposed to the
  *  user. `single` means the row is one full-width column. */
@@ -78,8 +81,11 @@ export interface EmployeeOptions {
   sidebar?: SidebarOptions;
   /** Per-entity list preferences, keyed by entity type (e.g. 'product'). */
   lists?: { [entityType: string]: ListPreference };
-  /** Per-namespace branch-tabs preferences (e.g. 'productForm.branches'). */
-  branchTabs?: { [namespace: string]: BranchTabsPreference };
+  /** Per-namespace entity-selector preferences (e.g. 'productForm.branches'). */
+  entitySelector?: { [namespace: string]: EntitySelectorPreference };
+  /** @deprecated Legacy field, still read (migrated into `entitySelector`) but
+   *  no longer written. Kept so old saves aren't lost. */
+  branchTabs?: { [namespace: string]: EntitySelectorPreference };
   /** User layout for the product form — section visibility + order,
    *  keyed by product type so e.g. service products and kit products
    *  can each carry their own layout. */
@@ -107,7 +113,7 @@ export class EmployeeOptionsService {
         const res: any = await firstValueFrom(
           this.http.get(`${this.base}/employee/getEmployeeOptions`)
         );
-        this.cached = res?.data ?? res ?? null;
+        this.cached = this.migrateSelectorPrefs(res?.data ?? res ?? null);
         this.loaded = true;
         return this.cached;
       } catch {
@@ -136,5 +142,17 @@ export class EmployeeOptionsService {
   async patch(patch: Partial<EmployeeOptions>): Promise<void> {
     const current = (await this.get()) ?? {};
     await this.set({ ...current, ...patch });
+  }
+
+  /**
+   * One-time forward-migration: the selector preferences moved from the legacy
+   * `branchTabs` field to `entitySelector`. Merge any legacy namespaces into
+   * `entitySelector` (newer values win) on read so nothing is lost. The legacy
+   * field is left intact — it's simply no longer written.
+   */
+  private migrateSelectorPrefs(opts: EmployeeOptions | null): EmployeeOptions | null {
+    if (!opts || !opts.branchTabs) return opts;
+    opts.entitySelector = { ...opts.branchTabs, ...(opts.entitySelector ?? {}) };
+    return opts;
   }
 }

@@ -644,7 +644,15 @@ button.pv-variant-name,
   display: flex;
   gap: 16px;
   align-items: flex-start;
-  @media (max-width: 640px) { flex-direction: column; }
+  min-width: 0;
+  @media (max-width: 640px) {
+    flex-direction: column;
+    /* Column flex keeps `align-items: flex-start`, which would size the detail
+       to its content (the wide table) and overflow the card instead of letting
+       `.table-scroll` scroll. Stretch children to full width so the table
+       scrolls inside its own container. */
+    align-items: stretch;
+  }
 }
 .mx-branch-layout__side {
   flex: 0 0 210px;
@@ -662,6 +670,7 @@ button.pv-variant-name,
 .mx-branch-layout__detail {
   flex: 1 1 auto;
   min-width: 0;
+  @media (max-width: 640px) { width: 100%; }
 }
 /* Bound the embedded sidebar so its list scrolls internally instead of
    growing the page. `.bt-sb__body` is the flex:1 scroll region. */

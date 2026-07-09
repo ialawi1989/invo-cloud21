@@ -8,7 +8,7 @@
 5. **Reorder selected items** via drag & drop
 
 ## Image Editor
-1. Crop drag handles need mouse event wiring (currently static)
+1. ~~Crop drag handles need mouse event wiring (currently static)~~ — done: box move + corner resize wired, aspect presets enforced, overlay↔canvas coords fixed
 2. Add eraser tool
 3. Add undo limit (currently unbounded)
 

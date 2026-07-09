@@ -4,10 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EmployeeOptionsService } from '@core/layout/services/employee-options.service';
 import {
-  BRANCH_TABS_NAMESPACE,
-  BranchTabsService,
-} from './branch-tabs.service';
-import { FindBranchPopoverComponent } from '../find-branch-popover/find-branch-popover.component';
+  ENTITY_SELECTOR_NAMESPACE,
+  EntitySelectorService,
+} from './entity-selector.service';
+import { FindEntityPopoverComponent } from './find-entity-popover/find-entity-popover.component';
 
 const NS = 'test.ns';
 const flush = () => new Promise<void>((r) => setTimeout(r, 0));
@@ -19,22 +19,20 @@ function configure(getResult: any) {
   };
   TestBed.configureTestingModule({
     providers: [
-      BranchTabsService,
+      EntitySelectorService,
       { provide: EmployeeOptionsService, useValue: employeeOptions },
-      { provide: BRANCH_TABS_NAMESPACE, useValue: NS },
+      { provide: ENTITY_SELECTOR_NAMESPACE, useValue: NS },
     ],
   });
   return employeeOptions;
 }
 
-describe('BranchTabsService — group collapse persistence', () => {
+describe('EntitySelectorService — group collapse persistence', () => {
   beforeEach(() => TestBed.resetTestingModule());
 
   it('hydrates collapsedGroups from the persisted slice', async () => {
-    configure({
-      branchTabs: { [NS]: { openTabIds: [], activeTabId: null, pinnedIds: [], collapsedGroups: ['trucks'] } },
-    });
-    const svc = TestBed.inject(BranchTabsService);
+    configure({ entitySelector: { [NS]: { openTabIds: [], activeTabId: null, pinnedIds: [], collapsedGroups: ['trucks'] } } });
+    const svc = TestBed.inject(EntitySelectorService);
     await flush();
 
     expect(svc.isGroupCollapsed('trucks')).toBe(true);
@@ -43,7 +41,7 @@ describe('BranchTabsService — group collapse persistence', () => {
 
   it('toggleGroup flips the collapsed state', async () => {
     configure({});
-    const svc = TestBed.inject(BranchTabsService);
+    const svc = TestBed.inject(EntitySelectorService);
     await flush();
 
     expect(svc.isGroupCollapsed('stores')).toBe(false);
@@ -53,30 +51,30 @@ describe('BranchTabsService — group collapse persistence', () => {
     expect(svc.isGroupCollapsed('stores')).toBe(false);
   });
 
-  it('persists collapsedGroups back to EmployeeOptions (debounced)', async () => {
+  it('persists collapsedGroups back under `entitySelector` (debounced)', async () => {
     const opts = configure({});
-    const svc = TestBed.inject(BranchTabsService);
+    const svc = TestBed.inject(EntitySelectorService);
     await flush();
     opts.set.mockClear();
 
     vi.useFakeTimers();
     svc.toggleGroup('trucks');
-    await vi.advanceTimersByTimeAsync(400); // past the 300ms persist debounce
+    await vi.advanceTimersByTimeAsync(400);
     vi.useRealTimers();
 
     expect(opts.set).toHaveBeenCalled();
-    const slice = opts.set.mock.calls.at(-1)![0].branchTabs[NS];
+    const slice = opts.set.mock.calls.at(-1)![0].entitySelector[NS];
     expect(slice.collapsedGroups).toContain('trucks');
   });
 });
 
-describe('FindBranchPopover — pick-once ("select") mode', () => {
+describe('FindEntityPopover — pick-once ("select") mode', () => {
   let store: any;
 
   beforeEach(() => {
     TestBed.resetTestingModule();
     store = {
-      openBranch: vi.fn(),
+      open: vi.fn(),
       togglePin: vi.fn(),
       isPinned: vi.fn(() => false),
       pinnedIds: () => new Set<string>(),
@@ -85,32 +83,29 @@ describe('FindBranchPopover — pick-once ("select") mode', () => {
     };
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],
-      providers: [{ provide: BranchTabsService, useValue: store }],
+      providers: [{ provide: EntitySelectorService, useValue: store }],
     });
   });
 
-  const branch = { id: 'b1', name: 'B1', isOnline: true };
+  const item = { id: 'i1', label: 'I1', status: 'online' };
 
-  it("'select' mode emits branchPicked WITHOUT touching the store (active unchanged)", () => {
-    const fixture = TestBed.createComponent(FindBranchPopoverComponent);
+  it("'select' mode emits itemPicked WITHOUT touching the store (active unchanged)", () => {
+    const fixture = TestBed.createComponent(FindEntityPopoverComponent);
     fixture.componentRef.setInput('pickMode', 'select');
     const cmp = fixture.componentInstance;
 
     const picked: string[] = [];
-    cmp.branchPicked.subscribe((id) => picked.push(id));
+    cmp.itemPicked.subscribe((id) => picked.push(id));
 
-    cmp.pick(branch);
+    cmp.pick(item);
 
-    expect(store.openBranch).not.toHaveBeenCalled();
-    expect(picked).toEqual(['b1']);
+    expect(store.open).not.toHaveBeenCalled();
+    expect(picked).toEqual(['i1']);
   });
 
-  it("default 'open' mode opens the branch via the store", () => {
-    const fixture = TestBed.createComponent(FindBranchPopoverComponent);
-    const cmp = fixture.componentInstance;
-
-    cmp.pick(branch);
-
-    expect(store.openBranch).toHaveBeenCalledWith('b1');
+  it("default 'open' mode opens the item via the store", () => {
+    const fixture = TestBed.createComponent(FindEntityPopoverComponent);
+    fixture.componentInstance.pick(item);
+    expect(store.open).toHaveBeenCalledWith('i1');
   });
 });

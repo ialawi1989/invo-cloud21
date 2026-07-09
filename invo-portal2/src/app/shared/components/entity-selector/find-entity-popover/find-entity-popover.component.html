@@ -1,0 +1,78 @@
+<div class="fep">
+  <!-- Search -->
+  <div class="fep__search">
+    <svg class="fep__search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input
+      #searchInput
+      type="text"
+      class="fep__search-input"
+      [value]="search()"
+      (input)="onSearchInput($any($event.target).value)"
+      [placeholder]="searchLabel() | translate" />
+  </div>
+
+  <div class="fep__body">
+    @if (pinned().length > 0) {
+      <div class="fep__section">
+        <h4 class="fep__section-title">{{ pinnedLabel() | translate }}</h4>
+        <ul class="fep__list">
+          @for (b of pinned(); track b.id) {
+            <ng-container *ngTemplateOutlet="row; context: { $implicit: b }" />
+          }
+        </ul>
+      </div>
+    }
+
+    @if (recent().length > 0) {
+      <div class="fep__section">
+        <h4 class="fep__section-title">{{ recentLabel() | translate }}</h4>
+        <ul class="fep__list">
+          @for (b of recent(); track b.id) {
+            <ng-container *ngTemplateOutlet="row; context: { $implicit: b }" />
+          }
+        </ul>
+      </div>
+    }
+
+    @if (all().length > 0) {
+      <div class="fep__section">
+        <h4 class="fep__section-title">{{ allLabel() | translate }}</h4>
+        <ul class="fep__list">
+          @for (b of all(); track b.id) {
+            <ng-container *ngTemplateOutlet="row; context: { $implicit: b }" />
+          }
+        </ul>
+      </div>
+    }
+
+    @if (!hasAnyMatch()) {
+      <p class="fep__empty">{{ noMatchLabel() | translate }}</p>
+    }
+  </div>
+</div>
+
+<!-- Row template — pin star + label + completion icon + projected status. -->
+<ng-template #row let-b>
+  <li class="fep__row" (click)="pick(b)">
+    <button
+      type="button"
+      class="fep__pin"
+      [class.fep__pin--on]="isPinned(b.id)"
+      (click)="togglePin($event, b.id)"
+      [attr.aria-label]="(isPinned(b.id) ? unpinLabel() : pinLabel()) | translate">
+      <svg width="14" height="14" viewBox="0 0 24 24" [attr.fill]="isPinned(b.id) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2l2.5 6 6.5 1-5 4 1.5 7-5.5-3-5.5 3 1.5-7-5-4 6.5-1z"/>
+      </svg>
+    </button>
+    <span class="fep__name">{{ b.label }}</span>
+    @if (completion()) {
+      <app-entity-status-icon class="fep__status" [status]="completionOf(b.id)"
+        [doneLabel]="doneLabel()" [partialLabel]="partialLabel()" />
+    }
+    @if (statusTpl()) {
+      <ng-container *ngTemplateOutlet="statusTpl()!; context: { $implicit: b, context: 'popover-row' }" />
+    }
+  </li>
+</ng-template>

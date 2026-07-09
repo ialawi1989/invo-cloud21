@@ -8,6 +8,11 @@
       <span class="header-title">Photo Editor</span>
     </div>
     <div class="header-right">
+      @if (exportBlocked()) {
+        <span class="export-error" title="The image host didn't allow it to be read back for export (CORS).">
+          Can’t save — image can’t be exported
+        </span>
+      }
       <button class="hdr-btn" [disabled]="!canUndo()" (click)="undo()" title="Undo">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h10a5 5 0 010 10H9M3 10l4-4M3 10l4 4"/></svg>
       </button>
@@ -25,8 +30,11 @@
       @for (tool of TOOLS; track tool.key) {
         <button
           [class]="'tool-btn ' + (activeTool() === tool.key ? 'tool-btn--active' : '')"
-          (click)="activeTool.set(tool.key)">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          (click)="setTool(tool.key)">
+          <svg width="20" height="20" viewBox="0 0 24 24"
+               [attr.fill]="tool.fill ? 'currentColor' : 'none'"
+               [attr.stroke]="tool.fill ? 'none' : 'currentColor'"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
             <path [attr.d]="tool.icon"/>
           </svg>
           <span>{{ tool.label }}</span>
@@ -36,45 +44,104 @@
 
     <!-- ── Tool panel (controls for active tool) ────────────────────────── -->
     <div class="tool-panel">
-      <!-- Crop controls -->
+      <!-- Crop & Extend controls -->
       @if (activeTool() === 'crop') {
-        <h3 class="panel-title">Crop</h3>
-        <div class="presets">
-          @for (p of CROP_PRESETS; track p.label) {
+        <h3 class="panel-title">Crop &amp; Extend</h3>
+
+        <!-- Aspect-ratio grid -->
+        <div class="ratio-grid">
+          @for (p of cropPresets(); track p.key) {
             <button
-              [class]="'preset-btn ' + (cropPreset().label === p.label ? 'preset-btn--active' : '')"
-              (click)="cropPreset.set(p)">
-              {{ p.label }}
+              class="ratio-btn"
+              [class.ratio-btn--active]="cropSel() === p.key"
+              (click)="setCropPreset(p.key)">
+              <span class="ratio-ico">
+                @switch (p.kind) {
+                  @case ('free') {
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <g [attr.fill]="cropSel() === p.key ? 'var(--color-brand-600)' : 'var(--color-brand-400)'">
+                        <path d="M10 8H6v4H5V7h5v1ZM18 12h1v5h-5v-1h4v-4Z"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M2.991 3A1.992 1.992 0 0 0 1 4.995v14.01C1 20.107 1.891 21 2.991 21H21.01A1.992 1.992 0 0 0 23 19.005V4.995A1.993 1.993 0 0 0 21.009 3H2.99ZM2 19.005V4.995c0-.55.443-.995.991-.995H21.01c.547 0 .991.445.991.995v14.01c0 .55-.443.995-.991.995H2.99A.993.993 0 0 1 2 19.005Z"/>
+                      </g>
+                    </svg>
+                  }
+                  @case ('original') {
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <rect x="1" y="0.5" width="22" height="23" rx="1.5"
+                            [attr.fill]="cropSel() === p.key ? 'var(--color-brand-100)' : 'var(--color-brand-50)'"
+                            stroke="var(--color-brand-400)"/>
+                    </svg>
+                  }
+                  @case ('ratio') {
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <rect [attr.x]="(24 - p.rw) / 2" [attr.y]="(24 - p.rh) / 2"
+                            [attr.width]="p.rw" [attr.height]="p.rh" rx="2"
+                            [attr.fill]="cropSel() === p.key ? 'var(--color-brand-600)' : 'var(--color-brand-400)'"/>
+                    </svg>
+                  }
+                }
+              </span>
+              <span class="ratio-label">{{ p.label }}</span>
             </button>
           }
         </div>
-        @if (!cropActive()) {
-          <button class="action-btn" (click)="startCrop()">Start Crop</button>
-        } @else {
-          <button class="action-btn action-btn--primary" (click)="applyCrop()">Apply Crop</button>
-          <button class="action-btn" (click)="cancelCrop()">Cancel</button>
-        }
-      }
 
-      <!-- Rotate controls -->
-      @if (activeTool() === 'rotate') {
-        <h3 class="panel-title">Rotate & Flip</h3>
-        <div class="rotate-btns">
-          <button class="action-btn" (click)="rotate90(-1)">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h10a5 5 0 010 10H9M3 10l4-4M3 10l4 4"/></svg>
-            Rotate Left
+        <!-- Orientation -->
+        <div class="crop-row">
+          <span class="section-label">Orientation</span>
+          <div class="orient-toggle">
+            <button class="orient-btn" [class.orient-btn--active]="cropOrientation() === 'portrait'"
+                    (click)="setOrientation('portrait')" title="Portrait">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="3" width="10" height="18" rx="2"/></svg>
+            </button>
+            <button class="orient-btn" [class.orient-btn--active]="cropOrientation() === 'landscape'"
+                    (click)="setOrientation('landscape')" title="Landscape">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="10" rx="2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="crop-divider"></div>
+
+        <!-- Resize -->
+        <h4 class="section-title">Resize</h4>
+        <div class="resize-inputs">
+          <div class="resize-field">
+            <label>Width (px)</label>
+            <input type="number" min="1" [value]="resizeW()"
+                   (input)="onResizeW(+$any($event.target).value)" (change)="commitResize()" class="resize-input" />
+          </div>
+          <button class="lock-btn" [class.active]="resizeLock()" (click)="resizeLock.set(!resizeLock())" title="Lock aspect ratio">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              @if (resizeLock()) {
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+              } @else {
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 019.9-1"/>
+              }
+            </svg>
           </button>
-          <button class="action-btn" (click)="rotate90(1)">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10H11a5 5 0 000 10h4M21 10l-4-4M21 10l-4 4"/></svg>
-            Rotate Right
+          <div class="resize-field">
+            <label>Height (px)</label>
+            <input type="number" min="1" [value]="resizeH()"
+                   (input)="onResizeH(+$any($event.target).value)" (change)="commitResize()" class="resize-input" />
+          </div>
+        </div>
+
+        <div class="crop-divider"></div>
+
+        <!-- Rotate & Flip -->
+        <div class="transform-row">
+          <button class="xf-btn" (click)="rotate90(-1)" title="Rotate left 90°">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h10a5 5 0 010 10H9M3 10l4-4M3 10l4 4"/></svg>
           </button>
-          <button class="action-btn" (click)="flip('h')">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v18M16 7l4 5-4 5M8 7L4 12l4 5"/></svg>
-            Flip H
+          <button class="xf-btn" (click)="rotate90(1)" title="Rotate right 90°">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10H11a5 5 0 000 10h4M21 10l-4-4M21 10l-4 4"/></svg>
           </button>
-          <button class="action-btn" (click)="flip('v')">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12h18M7 8L12 4l5 4M7 16l5 4 5-4"/></svg>
-            Flip V
+          <button class="xf-btn" (click)="flip('h')" title="Flip horizontal">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v18M16 7l4 5-4 5M8 7L4 12l4 5"/></svg>
+          </button>
+          <button class="xf-btn" (click)="flip('v')" title="Flip vertical">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12h18M7 8L12 4l5 4M7 16l5 4 5-4"/></svg>
           </button>
         </div>
       }
@@ -132,36 +199,15 @@
         <p class="hint">Draw directly on the image with your mouse.</p>
       }
 
-      <!-- Resize -->
-      @if (activeTool() === 'resize') {
-        <h3 class="panel-title">Resize</h3>
-        <div class="resize-inputs">
-          <div class="resize-field">
-            <label>Width (px)</label>
-            <input type="number" min="1" [value]="resizeW()" (input)="onResizeW(+$any($event.target).value)" class="resize-input" />
-          </div>
-          <button class="lock-btn" [class.active]="resizeLock()" (click)="resizeLock.set(!resizeLock())" title="Lock aspect ratio">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              @if (resizeLock()) {
-                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
-              } @else {
-                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 019.9-1"/>
-              }
-            </svg>
-          </button>
-          <div class="resize-field">
-            <label>Height (px)</label>
-            <input type="number" min="1" [value]="resizeH()" (input)="onResizeH(+$any($event.target).value)" class="resize-input" />
-          </div>
-        </div>
-        <button class="action-btn action-btn--primary" (click)="applyResize()">Apply Resize</button>
-      }
     </div>
 
     <!-- ── Canvas area ──────────────────────────────────────────────────── -->
-    <div class="canvas-area">
+    <div class="canvas-area" [class.canvas-area--dial]="activeTool() === 'crop'">
       @if (loading()) {
         <div class="canvas-loading">Loading image…</div>
+      }
+      @if (loadError()) {
+        <div class="canvas-loading">Couldn’t load this image for editing.</div>
       }
       <canvas
         #mainCanvas
@@ -176,20 +222,42 @@
         (touchend)="onDrawEnd()">
       </canvas>
 
-      <!-- Crop overlay -->
-      @if (cropActive()) {
-        <div class="crop-mask"></div>
+      <!-- Crop overlay (only while the Crop tool is active) -->
+      @if (activeTool() === 'crop' && cropActive()) {
         <div
           #cropOverlay
           class="crop-box"
           [style.left.px]="cropRect().x"
           [style.top.px]="cropRect().y"
           [style.width.px]="cropRect().w"
-          [style.height.px]="cropRect().h">
-          <div class="crop-handle nw"></div>
-          <div class="crop-handle ne"></div>
-          <div class="crop-handle sw"></div>
-          <div class="crop-handle se"></div>
+          [style.height.px]="cropRect().h"
+          (mousedown)="onCropDown($event, 'move')"
+          (touchstart)="onCropDown($event, 'move')">
+          <div class="crop-grid"></div>
+          <div class="crop-corner nw" (mousedown)="onCropDown($event, 'nw')" (touchstart)="onCropDown($event, 'nw')"></div>
+          <div class="crop-corner ne" (mousedown)="onCropDown($event, 'ne')" (touchstart)="onCropDown($event, 'ne')"></div>
+          <div class="crop-corner sw" (mousedown)="onCropDown($event, 'sw')" (touchstart)="onCropDown($event, 'sw')"></div>
+          <div class="crop-corner se" (mousedown)="onCropDown($event, 'se')" (touchstart)="onCropDown($event, 'se')"></div>
+          <div class="crop-edge n" (mousedown)="onCropDown($event, 'n')" (touchstart)="onCropDown($event, 'n')"></div>
+          <div class="crop-edge s" (mousedown)="onCropDown($event, 's')" (touchstart)="onCropDown($event, 's')"></div>
+          <div class="crop-edge w" (mousedown)="onCropDown($event, 'w')" (touchstart)="onCropDown($event, 'w')"></div>
+          <div class="crop-edge e" (mousedown)="onCropDown($event, 'e')" (touchstart)="onCropDown($event, 'e')"></div>
+        </div>
+      }
+
+      <!-- Rotation dial (vertical tick ruler) -->
+      @if (activeTool() === 'crop' && !loading()) {
+        <div class="rotate-dial" (mousedown)="onDialDown($event)" (touchstart)="onDialDown($event)">
+          <div class="rd-track" [style.transform]="'translateY(' + (freeRotation() * PX_PER_DEG) + 'px)'">
+            @for (t of FREE_ROTATE_TICKS; track t.angle) {
+              <div class="rd-tick" [class.major]="t.major" [style.top.px]="-t.angle * PX_PER_DEG">
+                @if (t.major) { <span class="rd-label">{{ t.angle }}°</span> }
+                <span class="rd-line"></span>
+              </div>
+            }
+          </div>
+          <div class="rd-value">{{ freeRotation() }}°</div>
+          <div class="rd-pointer"></div>
         </div>
       }
     </div>

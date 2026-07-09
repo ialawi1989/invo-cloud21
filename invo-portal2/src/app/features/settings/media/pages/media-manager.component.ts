@@ -131,6 +131,7 @@ export class MediaManagerComponent implements OnInit, OnDestroy {
   loading       = signal<boolean>(false);
   deleting      = signal<boolean>(false);
   detaching     = signal<boolean>(false);
+  savingEdit    = signal<boolean>(false);
 
   // ── Pagination state ────────────────────────────────────────────────────────
   page       = signal<number>(1);
@@ -529,16 +530,35 @@ export class MediaManagerComponent implements OnInit, OnDestroy {
 
   // ── Preview ─────────────────────────────────────────────────────────────────
 
-  onMediaEdit(media: Media): void {
-    this.modalService.open(MediaPreviewComponent, {
-      size: 'xl',
-      closeable: false,
-      data: {
-        media,
-        mediaList: this.mediaData(),
-        title: media.name,
+  async onMediaEdit(media: Media): Promise<void> {
+    const ref = this.modalService.open<MediaPreviewComponent, unknown, File | undefined>(
+      MediaPreviewComponent,
+      {
+        size: 'xl',
+        closeable: false,
+        data: {
+          media,
+          mediaList: this.mediaData(),
+          title: media.name,
+        },
       },
-    });
+    );
+
+    // The preview closes and returns the edited image as a File when the user
+    // saves an edit. Upload it here (with a page-level spinner) so the modal is
+    // gone by the time we're crunching the upload, then refresh the library.
+    const editedFile = await ref.afterClosed();
+    if (!editedFile) return;
+
+    this.savingEdit.set(true);
+    try {
+      await this.mediaService.uploadFile(editedFile);
+      await this.loadMedia({ refreshCounts: true });
+    } catch (err) {
+      console.error('Failed to upload edited image:', err);
+    } finally {
+      this.savingEdit.set(false);
+    }
   }
 
   // ── Detach ──────────────────────────────────────────────────────────────────

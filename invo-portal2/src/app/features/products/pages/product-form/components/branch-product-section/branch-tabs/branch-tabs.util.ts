@@ -1,15 +1,22 @@
-/**
- * Pure, dependency-free helpers for the branch-tabs selector — kept out of the
- * component file so they're unit-testable without an Angular test harness.
- */
+import { EntityRef } from '@shared/components/entity-selector/entity-selector.service';
+import { EntityCompletion, SelectorMode } from '@shared/components/entity-selector/entity-selector.util';
+import { BranchTabRef } from './branch-tabs.service';
 
-/** The selector's display mode. */
-export type BranchTabsMode = 'tabs' | 'dropdown' | 'sidebar';
+/** Branch-flavoured mode alias (kept for the wrapper's public API). */
+export type BranchTabsMode = SelectorMode;
+export type BranchCompletion = EntityCompletion;
+
+// Re-export the generic pure helpers so existing importers keep working.
+export {
+  normalizeForSearch,
+  matchesQuery,
+  progressCounts,
+} from '@shared/components/entity-selector/entity-selector.util';
+export type { CompletionMap } from '@shared/components/entity-selector/entity-selector.util';
 
 /**
- * Resolve the effective display mode. `mode` wins when set; otherwise the
- * deprecated `dropdown` boolean maps `true` → `'dropdown'`, falling back to
- * `'tabs'`.
+ * Resolve the effective mode: `mode` wins; otherwise the deprecated `dropdown`
+ * boolean maps `true` → `'dropdown'`, falling back to `'tabs'`.
  */
 export function resolveBranchMode(
   mode: BranchTabsMode | undefined,
@@ -19,43 +26,13 @@ export function resolveBranchMode(
   return dropdown ? 'dropdown' : 'tabs';
 }
 
-/**
- * Normalise a string for search: lowercase + strip diacritics/combining marks
- * (so "Zayed" matches "Záyed" and Arabic tashkeel is ignored). NFD-decomposes
- * then drops every Unicode combining mark (`\p{M}` — Latin accents + Arabic
- * tashkeel).
- */
-export function normalizeForSearch(s: string): string {
-  return (s ?? '')
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
-    .trim();
-}
-
-/** Case- and diacritic-insensitive substring match of `query` within `name`. */
-export function matchesQuery(name: string, query: string): boolean {
-  const q = normalizeForSearch(query);
-  if (!q) return true;
-  return normalizeForSearch(name).includes(q);
-}
-
-/** Per-branch fill state the host form reports for the completion indicator. */
-export type BranchCompletion = 'done' | 'partial' | 'empty';
-export type CompletionMap = Readonly<Record<string, BranchCompletion>>;
-
-/**
- * Count done / total for the progress footer. Only branches present in `ids`
- * (the live directory) are counted, so stale completion entries for deleted
- * branches don't skew the total.
- */
-export function progressCounts(
-  completion: CompletionMap | null,
-  ids: readonly string[],
-): { done: number; total: number } {
-  const total = ids.length;
-  if (!completion) return { done: 0, total };
-  let done = 0;
-  for (const id of ids) if (completion[id] === 'done') done++;
-  return { done, total };
+/** Map the branch-flavoured ref onto the generic `EntityRef`. */
+export function toEntityRef(b: BranchTabRef): EntityRef {
+  return {
+    id: b.id,
+    label: b.name,
+    status: b.isOnline ? 'online' : 'offline',
+    group: b.group,
+    disabled: b.disabled,
+  };
 }

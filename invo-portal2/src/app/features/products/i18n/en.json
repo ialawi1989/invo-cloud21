@@ -1,4 +1,21 @@
 {
+  "PF": {
+    "ENTITY_SELECTOR": {
+      "SEARCH": "Search…",
+      "FIND": "Find",
+      "PINNED": "Pinned",
+      "RECENT": "Recent",
+      "ALL": "All",
+      "NO_MATCH": "No items match your search.",
+      "PIN": "Pin",
+      "UNPIN": "Unpin",
+      "APPLY_ALL": "Apply to all",
+      "COPY_FROM": "Copy from…",
+      "PROGRESS": "{{done}} of {{total}} done",
+      "STATUS_DONE": "Completed",
+      "STATUS_PARTIAL": "Partially filled"
+    }
+  },
   "PRODUCTS": {
     "TITLE": "Products",
     "FIELDS": {

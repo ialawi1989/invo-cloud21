@@ -59,10 +59,10 @@
     }
 
     <!-- Image Preview -->
-    @if (isImage && !hasError()) {
+    @if (isImage && !hasError() && imageSrc()) {
       <div class="image-preview">
-        <img 
-          [src]="currentMedia.imageUrl || currentMedia.url.large || currentMedia.url.medium"
+        <img
+          [src]="imageSrc()"
           [alt]="currentMedia.name"
           (load)="onImageLoad()"
           (error)="onImageError()"
@@ -71,23 +71,29 @@
       </div>
     }
 
-    <!-- Document Preview -->
+    <!-- Document Preview (native — no third-party viewer) -->
     @if (isDocument && !hasError() && !isLoading()) {
       <div class="document-preview">
-        @if (isLocalPdf() && pdfViewerUrl()) {
-          <iframe 
+        @if (pdfViewerUrl()) {
+          <iframe
             [src]="pdfViewerUrl()!"
+            title="Document preview"
             frameborder="0"
             width="100%"
             height="100%"
           ></iframe>
-        } @else if (googleViewerUrl()) {
-          <iframe 
-            [src]="googleViewerUrl()!"
-            frameborder="0"
-            width="100%"
-            height="100%"
-          ></iframe>
+        } @else if (docTextContent() !== null) {
+          <pre class="text-preview">{{ docTextContent() }}</pre>
+        } @else if (previewUnavailable()) {
+          <div class="unavailable-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <h3>{{ currentMedia.name }}</h3>
+            <p>This file type can't be previewed here. Download it to open in the matching app.</p>
+            <button class="btn-primary" (click)="download()">Download File</button>
+          </div>
         }
       </div>
     }

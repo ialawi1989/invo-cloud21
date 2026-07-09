@@ -757,6 +757,12 @@ export class ProductsListComponent implements OnInit {
 
   editProduct(row: any, event: Event): void {
     event.stopPropagation();
+    // A matrix parent edits in the matrix form; its variant children are plain
+    // (inventory) products and edit in the product form like everything else.
+    if (row.type === 'matrix' && !row.parentId && !row.parent_id) {
+      this.router.navigate(['/matrix-item', row.id]);
+      return;
+    }
     // Route pattern: /products/form/:type/:id
     const type = row.type || 'inventory';
     this.router.navigate(['/products/form', type, row.id]);

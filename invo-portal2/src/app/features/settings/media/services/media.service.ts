@@ -247,6 +247,26 @@ export class MediaService {
     return new Media(response.data);
   }
 
+  /**
+   * Fetch the raw image bytes for a media item as a Blob.
+   *
+   * Streams the bytes through our backend (`GET media/:id/raw`) instead of the
+   * CDN's signed-S3 redirect, so the response carries our CORS headers and the
+   * request goes through the auth interceptor. Loading the resulting blob into
+   * a canvas leaves it untainted, so the Photo Editor can export/save.
+   */
+  async getMediaRawBlob(mediaId: string): Promise<Blob> {
+    return firstValueFrom(
+      this.http.get(`${this.baseUrl}media/${mediaId}/raw`, { responseType: 'blob' })
+    );
+  }
+
+  /** Download a media item's bytes via the authenticated raw endpoint. */
+  async downloadMediaRaw(mediaId: string, filename: string): Promise<void> {
+    const blob = await this.getMediaRawBlob(mediaId);
+    this.triggerDownload(blob, filename);
+  }
+
   // ── Media Deletion ────────────────────────────────────────────────────────
 
   /** Delete media by ID */
