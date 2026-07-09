@@ -81,6 +81,9 @@
     min-width: 0;
   }
 
+  // Completion indicator sits between the name and the close/chevron.
+  &__status { flex: 0 0 auto; }
+
   &__close {
     display: inline-flex;
     align-items: center;
@@ -196,4 +199,233 @@
     flex-shrink: 0;
   }
   &__find--select[aria-expanded="true"] .bt__chevron { color: #0e7c8a; }
+
+  // ── Bulk actions (opt-in) ────────────────────────────────────────
+  &__bulk {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    // In the narrow sidebar, stack the actions one per line (full width).
+    &--sidebar {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+      padding: 8px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+  }
+  &__bulk-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 10px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+    &:hover { background: #f8fafc; color: #0f172a; }
+    &[aria-expanded="true"] { border-color: #32acc1; color: #0e7c8a; }
+    svg { flex: 0 0 auto; color: #94a3b8; }
+    &:hover svg { color: #475569; }
+  }
+  &__bulk--sidebar &__bulk-btn { width: 100%; justify-content: center; }
+}
+
+/* ── Sidebar mode ────────────────────────────────────────────────────────
+   Vertical master list: fixed width, its own scroll, search on top, pinned +
+   all/grouped sections, optional progress footer. Uses logical properties so
+   it flips cleanly in RTL. */
+.bt--sidebar {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  width: 210px;
+  max-width: 100%;
+  padding: 0;
+  min-height: 0;
+  max-height: 100%;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.bt-sb {
+  &__search {
+    position: relative;
+    padding: 8px;
+    border-bottom: 1px solid #f1f5f9;
+    flex: 0 0 auto;
+  }
+  &__search-icon {
+    position: absolute;
+    top: 50%;
+    inset-inline-start: 18px;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+  }
+  &__search-input {
+    width: 100%;
+    height: 34px;
+    padding: 0 10px;
+    padding-inline-start: 30px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #f8fafc;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    outline: none;
+    &::placeholder { color: #94a3b8; }
+    &:focus { background: #fff; border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.15); }
+  }
+
+  &__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 6px 6px 8px;
+  }
+
+  &__section {
+    & + & { margin-top: 4px; }
+  }
+  &__section-title {
+    margin: 0;
+    padding: 6px 8px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+
+  // Collapsible group header
+  &__group-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 6px 8px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-radius: 6px;
+    &:hover { background: #f8fafc; }
+  }
+  &__caret {
+    flex: 0 0 auto;
+    transition: transform 120ms ease;
+    color: #94a3b8;
+    // Collapsed → point at the start edge (RTL-aware).
+    &--collapsed { transform: rotate(-90deg); }
+  }
+  &__group-name { flex: 1 1 auto; text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__group-count {
+    flex: 0 0 auto;
+    min-width: 18px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #eef2f6;
+    color: #64748b;
+    font-size: 10px;
+    text-align: center;
+  }
+
+  // Row = selectable main button + hover star (avoids nested buttons).
+  &__row {
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    &:hover { background: #f8fafc; }
+    &--active { background: var(--color-brand-50, #eff6f8); }
+    &--active:hover { background: var(--color-brand-50, #eff6f8); }
+  }
+  &__main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    text-align: start;
+    color: #0f172a;
+    font-size: 13px;
+  }
+  &__row--active &__main { font-weight: 600; color: #0e7c8a; }
+  &__name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__status { flex: 0 0 auto; }
+
+  &__star {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    margin-inline-end: 4px;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #cbd5e1;
+    opacity: 0;
+    transition: color 120ms ease, background 120ms ease, opacity 120ms ease;
+    &:hover { background: #f1f5f9; color: #94a3b8; }
+    &--on { color: #f59e0b; opacity: 1; }
+    &--on:hover { color: #d97706; }
+  }
+  // Reveal the star on row hover / keyboard focus.
+  &__row:hover &__star,
+  &__star:focus-visible { opacity: 1; }
+
+  &__empty {
+    margin: 0;
+    padding: 20px 12px;
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
+    font-style: italic;
+  }
+
+  &__footer {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    border-top: 1px solid #f1f5f9;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-align: center;
+  }
+}
+
+/* Mobile: in dropdown mode the select + bulk buttons can't share one row —
+   let the container wrap so the dropdown takes the first line and the actions
+   flow onto the next instead of overflowing the card. */
+@media (max-width: 640px) {
+  .bt--dropdown {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    overflow: visible;
+  }
+  .bt--dropdown .bt__find--select { flex: 1 1 100%; }
+  .bt--dropdown .bt__bulk { flex: 1 1 100%; }
+  .bt__bulk { flex-wrap: wrap; }
+  .bt__bulk-btn { flex: 1 1 auto; justify-content: center; }
 }

@@ -33,6 +33,8 @@ export interface BranchTabsPreference {
   openTabIds:  string[];
   activeTabId: string | null;
   pinnedIds:   string[];
+  /** Collapsed sidebar group ids (sidebar mode only). Optional for back-compat. */
+  collapsedGroups?: string[];
 }
 
 /** Row layout — only ratios for two-column rows are exposed to the

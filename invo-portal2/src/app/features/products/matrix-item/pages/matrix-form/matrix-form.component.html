@@ -137,13 +137,6 @@
                   [value]="mode()"
                   (valueChange)="setMode($event)" />
               </div>
-              @if (mode() === 'single') {
-                <app-pf-branch-tabs
-                  class="matrix-branch-tabs"
-                  [branches]="branchTabRefs()"
-                  [dropdown]="true"
-                  (activeChange)="onBranchTabChange($event)" />
-              }
             }
 
             <!-- Variant tables.
@@ -267,6 +260,7 @@
                               <td [attr.data-label]="branch.name + ' · ' + ('MATRIX.FORM.COL_PRICE' | translate)">
                                 <input class="cell-input cell-input--sm" type="number" min="0"
                                   [(ngModel)]="branchProductFor(prod, branch.id).price"
+                                  (ngModelChange)="markDirty()"
                                   (blur)="clampNonNegative(branchProductFor(prod, branch.id), 'price')"
                                   [ngModelOptions]="{ standalone: true }" />
                               </td>
@@ -279,7 +273,9 @@
                 </div>
               }
             } @else {
-              <!-- Single branch (or a single-branch company): the active branch's tables. -->
+              <!-- Single-branch tables — reused by the two-column layout (multi-
+                   branch single view) and by single-branch companies. -->
+              <ng-template #singleTables>
               @for (branch of branches(); track branch.id; let bi = $index) {
                 @if (activeBranch() === bi) {
                 <!-- New products -->
@@ -375,6 +371,7 @@
                               <td>
                                 <input class="cell-input" type="number" min="0"
                                   [(ngModel)]="branchProductFor(prod, branch.id).price"
+                                  (ngModelChange)="markDirty()"
                                   (blur)="clampNonNegative(branchProductFor(prod, branch.id), 'price')"
                                   [ngModelOptions]="{ standalone: true }" />
                               </td>
@@ -411,6 +408,28 @@
                   </div>
                 }
                 }
+              }
+              </ng-template>
+
+              @if (branches().length > 1 && mode() === 'single') {
+                <div class="mx-branch-layout">
+                  <aside class="mx-branch-layout__side">
+                    <app-pf-branch-tabs
+                      class="matrix-branch-tabs"
+                      [branches]="branchTabRefs()"
+                      [mode]="branchSelectorMode()"
+                      [completion]="branchCompletion()"
+                      [showBulkActions]="true"
+                      (activeChange)="onBranchTabChange($event)"
+                      (applyToAll)="applyCurrentToAll()"
+                      (copyFrom)="copyValuesFrom($event)" />
+                  </aside>
+                  <div class="mx-branch-layout__detail">
+                    <ng-container *ngTemplateOutlet="singleTables" />
+                  </div>
+                </div>
+              } @else {
+                <ng-container *ngTemplateOutlet="singleTables" />
               }
             }
           </div>

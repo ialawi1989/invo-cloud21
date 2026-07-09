@@ -61,6 +61,16 @@ import {
   regenerateBarcodesAndSkus,
   stripCodelessAttributes,
 } from '../../utils/variant-generator';
+import {
+  BranchFill,
+  applyBranchToAll,
+  copyBranchInto,
+  deriveBranchCompletion,
+} from '../../utils/branch-completion';
+import {
+  ConfirmModalComponent,
+  ConfirmModalData,
+} from '@shared/modal/demo/confirm-modal.component';
 import { ManageDimensionsComponent } from '../../components/manage-dimensions/manage-dimensions.component';
 import { BranchTabsComponent } from '../../../pages/product-form/components/branch-product-section/branch-tabs/branch-tabs.component';
 import {
@@ -127,6 +137,11 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
   branches = signal<{ id: string; name: string }[]>([]);
   activeBranch = signal<number>(0);
 
+  /** Bumped on every inline cell edit. Inline `[(ngModel)]` mutates the
+   *  branchProduct object in place (no `matrixInfo.set`), so completion-style
+   *  computed values must depend on this to recompute live. */
+  private formTick = signal<number>(0);
+
   /** Branch pane mode — mirrors the product form. Defaults to 'bulk' so all
    *  branches show at once (the requested default for matrix). */
   mode = signal<'single' | 'bulk'>('bulk');
@@ -137,6 +152,17 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
     { value: 'bulk',   label: 'MATRIX.FORM.BULK_EDIT' },
   ];
 
+  /** Viewport flag — the single-branch selector renders as a compact dropdown
+   *  on mobile (where a 210px sidebar doesn't fit) and a sidebar on desktop. */
+  private isMobile = signal<boolean>(typeof window !== 'undefined' && window.innerWidth < 640);
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (typeof window !== 'undefined') this.isMobile.set(window.innerWidth < 640);
+  }
+  branchSelectorMode = computed<'sidebar' | 'dropdown'>(() =>
+    this.isMobile() ? 'dropdown' : 'sidebar',
+  );
+
   /** Branch directory for the shared `<app-pf-branch-tabs>` chips picker. */
   branchTabRefs = computed<BranchTabRef[]>(() =>
     this.branches().map((b) => ({ id: b.id, name: b.name, isOnline: true })),
@@ -146,6 +172,47 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
   onBranchTabChange(branchId: string): void {
     const idx = this.branches().findIndex((b) => b.id === branchId);
     if (idx >= 0 && idx !== this.activeBranch()) this.activeBranch.set(idx);
+  }
+
+  /** Id of the branch currently shown in the single-branch detail pane. */
+  activeBranchId = computed<string>(() => this.branches()[this.activeBranch()]?.id ?? '');
+
+  /** Per-branch fill state for the sidebar completion indicator. Depends on
+   *  `formTick` so it recomputes live as the user types into the cells. */
+  branchCompletion = computed<Record<string, BranchFill>>(() => {
+    this.formTick();
+    return deriveBranchCompletion(this.matrixInfo().products, this.branches().map((b) => b.id));
+  });
+
+  /**
+   * Bulk: copy the active branch's opening balance / cost / price onto every
+   * other branch, for every variant — after a translated confirm.
+   */
+  async applyCurrentToAll(): Promise<void> {
+    const srcId = this.activeBranchId();
+    if (!srcId || this.branches().length < 2) return;
+    const branchName = this.branches()[this.activeBranch()]?.name ?? '';
+    const ref = this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(
+      ConfirmModalComponent,
+      {
+        size: 'md',
+        data: {
+          title: this.translate.instant('MATRIX.FORM.APPLY_ALL_TITLE'),
+          message: this.translate.instant('MATRIX.FORM.APPLY_ALL_MESSAGE', { branch: branchName }),
+          confirm: this.translate.instant('MATRIX.FORM.APPLY_ALL_CONFIRM'),
+        },
+      },
+    );
+    if (!(await ref.afterClosed())) return;
+    const ids = this.branches().map((b) => b.id);
+    this.patchModel((m) => (m.products = applyBranchToAll(m.products, srcId, ids)));
+  }
+
+  /** Bulk: copy the picked source branch's values into the active branch. */
+  copyValuesFrom(sourceBranchId: string): void {
+    const targetId = this.activeBranchId();
+    if (!sourceBranchId || !targetId || sourceBranchId === targetId) return;
+    this.patchModel((m) => (m.products = copyBranchInto(m.products, sourceBranchId, targetId)));
   }
 
   /** Manual dirty flag — set on any edit, cleared on load/save. Powers the
@@ -485,6 +552,7 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
   clampNonNegative(row: BranchProduct, field: 'openingBalance' | 'price'): void {
     if (row[field] < 0) row[field] = 0;
     this.dirty.set(true);
+    this.formTick.update((n) => n + 1);
   }
 
   printBarcode(product: MatrixProduct): void {
@@ -513,6 +581,7 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
    *  reactive FormGroup (opening-balance cost etc.). */
   markDirty(): void {
     this.dirty.set(true);
+    this.formTick.update((n) => n + 1);
   }
 
   async chooseImage(): Promise<void> {

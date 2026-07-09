@@ -20,8 +20,8 @@ form { display: flex; flex-direction: column; gap: 16px;
 
 .card {
   background: #fff;
-  border: 1px solid #e2e8f0;
   border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   overflow: hidden;
 
   &__head {
@@ -636,3 +636,36 @@ button.pv-variant-name,
   animation: mf-spin 0.7s linear infinite;
 }
 @keyframes mf-spin { to { transform: rotate(360deg); } }
+
+/* ── Single-branch two-column layout ─────────────────────────────────────
+   Sidebar branch selector (~210px, sticky) on the start edge; the variant
+   tables fill the rest. Flex + logical offsets keep it RTL-safe. */
+.mx-branch-layout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  @media (max-width: 640px) { flex-direction: column; }
+}
+.mx-branch-layout__side {
+  flex: 0 0 210px;
+  width: 210px;
+  align-self: stretch;
+  position: sticky;
+  top: 12px;
+  @media (max-width: 640px) {
+    position: static;
+    width: 100%;
+    flex-basis: auto;
+    align-self: auto;
+  }
+}
+.mx-branch-layout__detail {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* Bound the embedded sidebar so its list scrolls internally instead of
+   growing the page. `.bt-sb__body` is the flex:1 scroll region. */
+::ng-deep .mx-branch-layout__side .bt--sidebar {
+  max-height: calc(100vh - 150px);
+  @media (max-width: 640px) { max-height: 340px; }
+}

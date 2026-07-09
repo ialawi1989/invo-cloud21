@@ -34,6 +34,9 @@
                 </svg>
               </button>
               <span class="fbp__name">{{ b.name }}</span>
+              @if (completion()) {
+                <app-branch-status-icon class="fbp__status" [status]="completionOf(b.id)" />
+              }
               <span class="fbp__pill" [class.fbp__pill--on]="b.isOnline">
                 {{ (b.isOnline ? 'PRODUCTS.FORM.ONLINE' : 'PRODUCTS.FORM.BRANCH_TABS_OFFLINE') | translate }}
               </span>
@@ -62,6 +65,9 @@
                 </svg>
               </button>
               <span class="fbp__name">{{ b.name }}</span>
+              @if (completion()) {
+                <app-branch-status-icon class="fbp__status" [status]="completionOf(b.id)" />
+              }
               <span class="fbp__pill" [class.fbp__pill--on]="b.isOnline">
                 {{ (b.isOnline ? 'PRODUCTS.FORM.ONLINE' : 'PRODUCTS.FORM.BRANCH_TABS_OFFLINE') | translate }}
               </span>
@@ -90,6 +96,9 @@
                 </svg>
               </button>
               <span class="fbp__name">{{ b.name }}</span>
+              @if (completion()) {
+                <app-branch-status-icon class="fbp__status" [status]="completionOf(b.id)" />
+              }
               <span class="fbp__pill" [class.fbp__pill--on]="b.isOnline">
                 {{ (b.isOnline ? 'PRODUCTS.FORM.ONLINE' : 'PRODUCTS.FORM.BRANCH_TABS_OFFLINE') | translate }}
               </span>

@@ -114,6 +114,8 @@
     white-space: nowrap;
   }
 
+  &__status { flex: 0 0 auto; }
+
   &__pill {
     display: inline-flex;
     align-items: center;

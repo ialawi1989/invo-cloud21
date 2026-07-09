@@ -35,6 +35,9 @@
     <app-pf-branch-tabs
       class="pf-bp-tabs"
       [branches]="branchDirectory()"
+      [mode]="'tabs'"
+      [maxVisible]="3"
+      [maxVisibleMobile]="1"
       (activeChange)="onBranchTabChange($event)"
     />
   }

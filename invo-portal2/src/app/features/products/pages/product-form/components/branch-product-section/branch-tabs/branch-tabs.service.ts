@@ -23,6 +23,8 @@ export interface BranchTabRef {
   id:       string;
   name:     string;
   isOnline: boolean;
+  /** Optional grouping label for sidebar mode (e.g. "Stores", "Trucks"). */
+  group?:   string;
 }
 
 const SOFT_CAP = 8;
@@ -80,6 +82,7 @@ export class BranchTabsService {
   private readonly activeTabId_ = signal<string | null>(null);
   private readonly pinnedIds_ = signal<ReadonlySet<string>>(new Set());
   private readonly recentIds_ = signal<readonly string[]>([]);
+  private readonly collapsedGroups_ = signal<ReadonlySet<string>>(new Set());
 
   /** True once we've hydrated from `EmployeeOptionsService` (or the call failed). */
   private readonly hydrated_ = signal(false);
@@ -102,6 +105,7 @@ export class BranchTabsService {
   readonly activeTabId: Signal<string | null> = this.activeTabId_.asReadonly();
   readonly pinnedIds:   Signal<ReadonlySet<string>> = this.pinnedIds_.asReadonly();
   readonly recentIds:   Signal<readonly string[]> = this.recentIds_.asReadonly();
+  readonly collapsedGroups: Signal<ReadonlySet<string>> = this.collapsedGroups_.asReadonly();
   readonly hydrated:    Signal<boolean> = this.hydrated_.asReadonly();
 
   /** All known branches in the order the directory provided them. */
@@ -215,6 +219,20 @@ export class BranchTabsService {
     return this.pinnedIds_().has(id);
   }
 
+  /** Toggle a sidebar group's collapsed state and persist. */
+  toggleGroup(group: string): void {
+    if (!group) return;
+    const next = new Set(this.collapsedGroups_());
+    if (next.has(group)) next.delete(group);
+    else next.add(group);
+    this.collapsedGroups_.set(next);
+    this.schedulePersist();
+  }
+
+  isGroupCollapsed(group: string): boolean {
+    return this.collapsedGroups_().has(group);
+  }
+
   // ── Hydration / persistence ─────────────────────────────────────
   private async hydrate(): Promise<void> {
     try {
@@ -229,6 +247,9 @@ export class BranchTabsService {
         }
         if (Array.isArray(slice.pinnedIds)) {
           this.pinnedIds_.set(new Set(slice.pinnedIds.filter((x) => typeof x === 'string')));
+        }
+        if (Array.isArray(slice.collapsedGroups)) {
+          this.collapsedGroups_.set(new Set(slice.collapsedGroups.filter((x) => typeof x === 'string')));
         }
       }
     } finally {
@@ -261,6 +282,7 @@ export class BranchTabsService {
       openTabIds:  [...this.openTabIds_()],
       activeTabId: this.activeTabId_(),
       pinnedIds:   Array.from(this.pinnedIds_()),
+      collapsedGroups: Array.from(this.collapsedGroups_()),
     };
     // Read current options first so we preserve sibling namespaces when
     // writing back. EmployeeOptionsService caches the response so this is

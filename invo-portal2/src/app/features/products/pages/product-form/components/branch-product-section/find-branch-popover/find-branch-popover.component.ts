@@ -7,6 +7,7 @@ import {
   computed,
   effect,
   inject,
+  input,
   output,
   signal,
 } from '@angular/core';
@@ -14,6 +15,8 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { BranchTabRef, BranchTabsService } from '../branch-tabs/branch-tabs.service';
+import { BranchStatusIconComponent } from '../branch-tabs/branch-status-icon.component';
+import { BranchCompletion, CompletionMap, matchesQuery } from '../branch-tabs/branch-tabs.util';
 
 /**
  * find-branch-popover
@@ -30,7 +33,7 @@ import { BranchTabRef, BranchTabsService } from '../branch-tabs/branch-tabs.serv
 @Component({
   selector: 'app-pf-find-branch-popover',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, BranchStatusIconComponent],
   templateUrl: './find-branch-popover.component.html',
   styleUrl: './find-branch-popover.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +43,20 @@ export class FindBranchPopoverComponent {
 
   branchPicked = output<string>();
   closed       = output<void>();
+
+  /** Per-branch fill state from the host — drives the row completion icon. */
+  completion = input<CompletionMap | null>(null);
+
+  /**
+   * `'open'` (default): picking opens/activates the branch via the store.
+   * `'select'`: pick-once — emit `branchPicked` WITHOUT touching the store, so
+   * the active branch is unchanged (used by "Copy from branch…").
+   */
+  pickMode = input<'open' | 'select'>('open');
+
+  completionOf(id: string): BranchCompletion {
+    return this.completion()?.[id] ?? 'empty';
+  }
 
   search = signal<string>('');
 
@@ -53,15 +70,10 @@ export class FindBranchPopoverComponent {
     });
   }
 
-  /**
-   * Lowercase, fuzzy-ish substring match. The list of branches is small
-   * enough that proper fuzzy ranking adds noise without UX wins — a plain
-   * `includes()` against the lowercased name is plenty.
-   */
+  /** Case- and diacritic-insensitive substring match (shared with the sidebar). */
   private filtered(items: readonly BranchTabRef[]): BranchTabRef[] {
-    const q = this.search().trim().toLowerCase();
-    if (!q) return [...items];
-    return items.filter((b) => b.name.toLowerCase().includes(q));
+    const q = this.search();
+    return items.filter((b) => matchesQuery(b.name, q));
   }
 
   /** Pinned branches that exist in the directory and match the search query. */
@@ -105,7 +117,9 @@ export class FindBranchPopoverComponent {
 
   // ── Actions ──────────────────────────────────────────────────────
   pick(b: BranchTabRef): void {
-    this.store.openBranch(b.id);
+    // Pick-once ('select'): never mutate the store so the active branch stays
+    // put; the host consumes `branchPicked` (e.g. as a copy-from source).
+    if (this.pickMode() === 'open') this.store.openBranch(b.id);
     this.branchPicked.emit(b.id);
     this.closed.emit();
   }
