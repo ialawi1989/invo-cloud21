@@ -205,7 +205,11 @@
         <h3 class="panel-title">Draw</h3>
         <div class="draw-controls">
           <label class="adj-label">Color</label>
-          <input type="color" [value]="drawColor()" (input)="drawColor.set($any($event.target).value)" class="color-input" />
+          <app-color-picker
+            class="draw-color"
+            [showSpectrum]="true"
+            [ngModel]="drawColor()"
+            (ngModelChange)="drawColor.set($event)" />
           <label class="adj-label">Size</label>
           <input type="range" min="1" max="20" [value]="drawSize()" (input)="drawSize.set(+$any($event.target).value)" class="adj-slider" />
           <span class="adj-value">{{ drawSize() }}px</span>
