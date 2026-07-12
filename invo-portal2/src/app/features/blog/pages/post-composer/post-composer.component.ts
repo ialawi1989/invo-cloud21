@@ -512,6 +512,19 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
       this.postId.set(id);
       await this.load(id);
     }
+
+    // Deep link from the posts list "XX missing" pill (?lang=xx) — open the
+    // editor straight on that language so the user can start its translation.
+    // Activating it here (before the history seed) keeps it pristine, so simply
+    // arriving doesn't count as an unsaved change.
+    const wantLang = this.route.snapshot.queryParamMap.get('lang');
+    if (wantLang && !this.activeLangs().includes(wantLang)) {
+      this.addLang(wantLang);
+      this.postForm.markAsPristine();
+    } else if (wantLang) {
+      this.active.set(wantLang);
+    }
+
     // Seed the undo history with the initial state (loaded post or blank new).
     this.initHistory();
 

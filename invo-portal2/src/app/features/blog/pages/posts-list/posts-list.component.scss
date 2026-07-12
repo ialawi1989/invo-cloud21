@@ -1,17 +1,12 @@
-/* Full-width to match the product list. The app layout's .main-content
-   already supplies 24px padding, so add none here (a wrapper padding would
-   double-inset the page and make it narrower than the product list). */
-.bp-wrap { width: 100%; }
+/* The page now renders through <app-list-page> (like the product list), so the
+   title + actions use the shared page header and the status tabs project into
+   its [listSubHeader] slot. Only the projected chrome is styled here. */
 
-/* ── Header ── */
-.bp-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 18px;
-}
-.bp-h1 { margin: 0; font-size: 28px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; }
+/* Match the product list: a block host so the shared full-bleed shell can fill
+   the viewport (a custom element defaults to inline otherwise). */
+:host { display: block; }
+
+/* ── Header actions (projected into the shared page header) ── */
 .bp-head__actions { display: inline-flex; align-items: center; gap: 12px; }
 
 /* Mobile-only header/toolbar bits — hidden on desktop. */
@@ -60,8 +55,11 @@
   &:hover { background: #f4fafb; border-color: #b9dde4; }
 }
 
-/* ── Tabs row ── */
+/* ── Tabs row (projected into [listSubHeader]) ──
+   In the shared full-bleed shell this is a flex child between the page header
+   and the (flexing) table card, so pin it to its natural height. */
 .bp-tabsRow {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -110,16 +108,32 @@
 }
 .bp-lang {
   flex-shrink: 0;
-  min-width: 130px;
-  max-width: 200px;
-  /* Clean, borderless trigger like the reference (globe + language + chevron). */
+  /* Hug the content — the trigger lays out label + chevron with
+     `justify-between`, so a wider min-width would push the chevron to the far
+     edge and leave a gap after the text. */
+  min-width: 0;
+  max-width: 220px;
+  /* The row is `align-items: center`, but the tabs run down to the underline
+     while this button is short — centering left an uneven gap under it. Pin it
+     to the bottom so it aligns with the tab labels, a hair above the line. */
+  align-self: flex-end;
+  margin-bottom: 6px;
+  /* Reads as an interactive dropdown: an input-style border (matching the
+     toolbar search field) plus a leading globe icon. */
   ::ng-deep button[aria-haspopup="listbox"] {
-    border: 0 !important;
-    background: transparent !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #fff !important;
     box-shadow: none !important;
-    padding: 4px 6px !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
     font-weight: 600;
     color: #0f172a;
+    &::before {
+      content: "🌐";
+      margin-inline-end: 8px;
+      font-size: 14px;
+      line-height: 1;
+    }
   }
 }
 
@@ -128,12 +142,6 @@
    single horizontally-scrollable strip instead of wrapping into a tall
    column, with the language selector dropping to its own line. */
 @media (max-width: 767px) {
-  .bp-head {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-  }
-  .bp-h1 { font-size: 22px; }
   .bp-head__actions {
     display: flex;
     flex-wrap: nowrap;
@@ -222,12 +230,17 @@
   border: 1px solid #e2e8f0;
   flex-shrink: 0;
 }
-.bp-thumb--empty {
+/* No featured image: show the post title's first letter on a low-opacity
+   accent wash (uses the existing teal accent, no new colors). */
+.bp-thumb--letter {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f1f5f9;
-  color: #cbd5e1;
+  background: rgba(38, 145, 164, 0.12);
+  color: var(--color-brand-700, #2691a4);
+  font-weight: 700;
+  font-size: 20px;
+  text-transform: uppercase;
 }
 .bp-title {
   font-weight: 600;
@@ -241,8 +254,8 @@
 /* Status badge + translated pill on one content-width row (align-self so
    the amber pill hugs its text instead of stretching the flex-column cell). */
 .bp-badgeRow { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; }
-/* Amber "1/2 translated" pill — shown next to the status badge only when
-   translations are incomplete. */
+/* Amber "XX missing" pill — shown next to the status badge only when a site
+   language is still untranslated. Same amber/warning color as before. */
 .bp-transPill {
   flex: 0 0 auto;
   display: inline-flex; align-items: center;
@@ -250,6 +263,28 @@
   /* amber-50 / amber-700 (per spec) */
   background: #fffbeb; color: #b45309;
   font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+/* Interactive (desktop) variant — clickable button that opens the editor for
+   the missing language. Reset the UA button chrome; keep the amber pill look. */
+button.bp-transPill {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 120ms ease;
+  &:hover { background: #fef3c7; }
+}
+
+/* Unpublished posts: muted gray italic so the cell doesn't read as a date. */
+.bp-unpub { color: #94a3b8; font-style: italic; }
+
+/* Mobile no-image tile — same accent wash as the desktop letter tile,
+   filling the card thumbnail box. */
+.bp-mLetter {
+  display: flex; width: 100%; height: 100%;
+  align-items: center; justify-content: center;
+  background: rgba(38, 145, 164, 0.12);
+  color: var(--color-brand-700, #2691a4);
+  font-weight: 700; font-size: 15px; text-transform: uppercase;
 }
 /* Merged engagement column — views + likes + comments inline.
    Tabular figures so the numbers align vertically down the column. */
@@ -283,12 +318,18 @@
   white-space: nowrap;
 }
 
-/* ── Row actions: inline Edit pill + ⋯ trigger ── */
+/* ── Row actions: ⋯ trigger, revealed on row hover ──
+   The template adds `opacity-0 group-hover:opacity-100 focus-within:opacity-100`
+   (the shared list row carries `.group`), so the button only shows on hover /
+   keyboard focus. Touch devices have no hover — force it visible there. */
 .bp-rowActions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+}
+@media (hover: none) {
+  .bp-rowActions { opacity: 1 !important; }
 }
 
 .bp-edit {

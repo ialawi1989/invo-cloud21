@@ -343,6 +343,20 @@ import {
       top: -1px;
     }
 
+    /* ── Fit-to-content height (opt-in via [fitContent]) ─────────────────
+       In full-bleed the card normally flexes to fill the viewport, so a
+       5-row table shows a tall empty area below it. With .lp-fit the card
+       (and its inner table/card/grid views) size to their content instead;
+       the scroll host keeps its max-height cap (re-applied inline in
+       full-bleed for this mode) so a long table still stops at the viewport
+       height and scrolls internally — same as before for many rows. */
+    .list-page-container.lp-fullbleed.lp-fit { justify-content: flex-start; }
+    .lp-fullbleed.lp-fit .list-card { flex: 0 1 auto; }
+    .lp-fullbleed.lp-fit .list-card > .relative,
+    .lp-fullbleed.lp-fit .list-card > .lp-mcards,
+    .lp-fullbleed.lp-fit .list-card > .grid { flex: 0 1 auto; min-height: 0; }
+    .lp-fullbleed.lp-fit .overflow-x-auto { flex: 0 1 auto; }
+
     /* ── Column resize handle ───────────────────────────────────────────────
        A grab strip on each header cell's end edge. Header cells are already
        positioned (sticky), so this anchors to each th. Sits above neighbouring
@@ -663,6 +677,19 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
    *  destroy) so pages need no extra wiring. Set `[fullBleed]="false"` to opt a
    *  page out (e.g. a list embedded below other content). */
   @Input() fullBleed = true;
+
+  /** Fit the table height to its rows instead of always filling the viewport:
+   *  few rows → a short table (no big empty area below it); many rows → the
+   *  table caps at the same viewport-based height as before and scrolls
+   *  internally. Only meaningful together with full-bleed + sticky columns.
+   *  Default `false` preserves the fill-the-viewport behavior (e.g. pages with
+   *  a custom view that should stretch, like the Chart-of-Accounts tree). */
+  @Input() fitContent = false;
+
+  /** True when the fit-to-content sizing is active (opt-in AND full-bleed). */
+  get isFitContent(): boolean {
+    return this.fitContent && this.isFullBleed;
+  }
 
   /** Effective full-bleed: only on desktop widths. On mobile (< 768px) we keep
    *  the padded, page-scroll layout — a fixed-viewport shell fights iOS Safari's

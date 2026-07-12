@@ -56,7 +56,11 @@
 .an__table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .an__table th { text-align: start; padding: 8px 10px; color: #64748b; font-weight: 600; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
 .an__table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a; }
-.an__num { text-align: end; white-space: nowrap; }
+/* Scoped to th/td so it beats `.an__table th { text-align: start }` (which is
+   more specific than a bare `.an__num`) — otherwise the numeric HEADER labels
+   stay left-aligned while their column values are right-aligned. */
+.an__table th.an__num,
+.an__table td.an__num { text-align: end; white-space: nowrap; }
 .an__state { text-align: center; color: #94a3b8; padding: 28px 10px; }
 .an__postLink { display: inline-flex; align-items: center; gap: 5px; color: var(--color-brand-700, #2691a4); text-decoration: none; font-weight: 500; }
 .an__postLink:hover { text-decoration: underline; }

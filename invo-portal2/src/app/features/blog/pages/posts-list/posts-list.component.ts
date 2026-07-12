@@ -35,6 +35,7 @@ import {
 } from '@shared/components/list-page/directives/list-template.directives';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { ImportWizardComponent } from '@shared/components/import-wizard/import-wizard.component';
@@ -67,6 +68,7 @@ type StatusFilter = typeof STATUS_OPTIONS[number];
     DropdownMenuBtnComponent,
     SearchDropdownComponent,
     StatusBadgeComponent,
+    TooltipDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './posts-list.component.html',
@@ -149,6 +151,15 @@ export class PostsListComponent implements OnInit {
     ];
   });
   supportedLangCount = computed(() => Math.max(1, this.languageOptions().length - 1));
+
+  /** Resting label for the language selector when "All" is active. */
+  langPlaceholder = computed(() => {
+    this.i18nTick();
+    return this.translate.instant('BLOG.LIST.LANG_PICKER_ALL');
+  });
+
+  /** The site's configured language codes (every option except "All"). */
+  siteLanguageCodes = computed(() => this.languageOptions().filter(o => o.id).map(o => o.id));
 
   idDisplay = (v: any) => v?.label ?? v ?? '';
   idCompare = (a: any, b: any) => (a?.id ?? a) === (b?.id ?? b);
@@ -365,6 +376,41 @@ export class PostsListComponent implements OnInit {
   translationsLabel(p: BlogPost): string {
     const total = p.supportedLanguages?.length ?? this.supportedLangCount();
     return `${this.languagesOf(p).length}/${total}`;
+  }
+
+  /** Site languages this post is NOT yet translated into (lowercase codes). */
+  missingLangs(p: BlogPost): string[] {
+    const have = new Set(this.languagesOf(p).map(c => c.toLowerCase()));
+    return this.siteLanguageCodes().filter(c => !have.has(c.toLowerCase()));
+  }
+  /** Human label for the translation indicator, e.g. "AR missing". */
+  missingLabel(p: BlogPost): string {
+    const codes = this.missingLangs(p).map(c => c.toUpperCase());
+    if (!codes.length) return '';
+    return `${codes.join(', ')} ${this.translate.instant('BLOG.LIST.MISSING_SUFFIX')}`;
+  }
+  /** Tooltip listing which translations exist and which are missing. */
+  translationsTooltip(p: BlogPost): string {
+    const none = this.translate.instant('BLOG.LIST.TRANS_NONE');
+    const have = this.languagesOf(p).map(c => c.toUpperCase()).join(', ') || none;
+    const miss = this.missingLangs(p).map(c => c.toUpperCase()).join(', ') || none;
+    return `${this.translate.instant('BLOG.LIST.TRANS_HAVE')}: ${have} · ${this.translate.instant('BLOG.LIST.TRANS_NEED')}: ${miss}`;
+  }
+  /** Open the editor targeting the first missing language. */
+  editMissingTranslation(p: BlogPost, ev: Event): void {
+    ev.stopPropagation();
+    const lang = this.missingLangs(p)[0];
+    this.router.navigate(['/blog/posts', p.id, 'edit'], lang ? { queryParams: { lang } } : {});
+  }
+
+  /** First letter of the post title, for the no-image thumbnail tile. */
+  firstLetter(p: BlogPost): string {
+    return (this.titleOf(p).trim().charAt(0) || '?').toUpperCase();
+  }
+
+  /** True when the post has no real published/scheduled date to show. */
+  isUnpublished(p: BlogPost): boolean {
+    return !p.publishDate && p.status !== 'scheduled';
   }
   whenLabel(p: BlogPost): string {
     if (p.status === 'scheduled' && p.scheduledDate) return new Date(p.scheduledDate).toLocaleString();

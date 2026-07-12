@@ -1,4 +1,4 @@
-<div class="list-page-container" [class.lp-fullbleed]="isFullBleed">
+<div class="list-page-container" [class.lp-fullbleed]="isFullBleed" [class.lp-fit]="isFitContent">
 
   <!-- ══════════════════════════════════════════════════════════════ -->
   <!-- PAGE HEADER -->
@@ -29,6 +29,11 @@
     </div>
   </div>
   }
+
+  <!-- Optional sub-header between the page header and the toolbar (e.g. status
+       tabs). Empty by default; consumers project a single element here. In
+       full-bleed it stays fixed-height while the table card flexes below it. -->
+  <ng-content select="[listSubHeader]"></ng-content>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
   <!-- SEARCH & TOOLBAR -->
@@ -215,7 +220,7 @@
       [class.list-has-scroll-end]="stickyColumns && hasScrollEnd()">
     <div [class.overflow-x-auto]="stickyColumns"
       #scrollHost
-      [style.max-height.px]="stickyColumns && !isFullBleed ? scrollMaxHeight() : null"
+      [style.max-height.px]="stickyColumns && (!isFullBleed || isFitContent) ? scrollMaxHeight() : null"
       (scroll)="updateScrollState($event.target)">
 
       <!-- Loading Skeleton — mirrors the real table's per-column widths

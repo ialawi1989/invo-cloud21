@@ -1,29 +1,48 @@
-<div class="bp-wrap">
-  <!-- Page header: title + language + More Actions + Create New Post -->
-  <header class="bp-head">
-    <h1 class="bp-h1">{{ 'BLOG.LIST.TITLE' | translate }}</h1>
-    <div class="bp-head__actions">
-      @if (canManage()) {
-        <app-dropdown-menu-btn
-          [items]="moreActionsMenu()"
-          [appendToBody]="true"
-          align="end"
-          [chevron]="false"
-          triggerClass="bp-btn bp-btn--ghost bp-moreActions">
-          <span class="bp-maText">{{ 'BLOG.LIST.MORE_ACTIONS' | translate }}</span>
-          <svg class="bp-maIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
-        </app-dropdown-menu-btn>
-        <button type="button" class="bp-btn bp-btn--primary" (click)="goNew()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span class="bp-newFull">{{ 'BLOG.LIST.NEW_POST' | translate }}</span>
-          <span class="bp-newShort">{{ 'BLOG.LIST.NEW_POST_SHORT' | translate }}</span>
-        </button>
-      }
-    </div>
-  </header>
+<!-- Root is <app-list-page> (like Products) so the shared full-bleed shell
+     drives the page: fixed-height table body, sticky header + columns, and the
+     page-header spacing. The Blog-only status tabs live in the [listSubHeader]
+     slot between the header and the toolbar. -->
+<app-list-page
+  style="--lp-actions-w: 92px; --lp-sticky-col-w: 320px"
+  [pageTitle]="'BLOG.LIST.TITLE' | translate"
+  [columns]="columns"
+  [dataSource]="loadPosts"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="filters"
+  [bulkActions]="bulkActions()"
+  [selectable]="true"
+  [fitContent]="true"
+  [mobileCardConfig]="mobileCardConfig"
+  [entityType]="'blogPost'"
+  [emptyState]="emptyState()"
+  (rowClicked)="onRowClick($event)"
+  (selectionChanged)="selected.set($any($event).selectedRows)">
 
-  <!-- Status tabs + language selector -->
-  <div class="bp-tabsRow">
+  <!-- Header actions: More Actions + Create New Post (projected into the shared
+       page header, right side). -->
+  <div listHeaderActions class="bp-head__actions">
+    @if (canManage()) {
+      <app-dropdown-menu-btn
+        [items]="moreActionsMenu()"
+        [appendToBody]="true"
+        align="end"
+        [chevron]="false"
+        triggerClass="bp-btn bp-btn--ghost bp-moreActions">
+        <span class="bp-maText">{{ 'BLOG.LIST.MORE_ACTIONS' | translate }}</span>
+        <svg class="bp-maIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+      </app-dropdown-menu-btn>
+      <button type="button" class="bp-btn bp-btn--primary" (click)="goNew()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span class="bp-newFull">{{ 'BLOG.LIST.NEW_POST' | translate }}</span>
+        <span class="bp-newShort">{{ 'BLOG.LIST.NEW_POST_SHORT' | translate }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- Status tabs + language selector (sub-header slot). -->
+  <div listSubHeader class="bp-tabsRow">
     <nav class="bp-tabs" role="tablist">
       @for (t of statusTabs(); track t.key) {
         @let count = tabCount(t.key);
@@ -31,14 +50,28 @@
                 [class.is-on]="statusTab() === t.key"
                 (click)="setTab(t.key)">
           {{ t.label }}
-          @if (count > 0) {
-            <span class="bp-tab__count" [class.bp-tab__count--idle]="statusTab() !== t.key">{{ count }}</span>
-          }
+          <span class="bp-tab__count" [class.bp-tab__count--idle]="statusTab() !== t.key">{{ count }}</span>
         </button>
       }
     </nav>
     <app-search-dropdown
       class="bp-lang"
+      [items]="languageOptions()"
+      [value]="$any(language())"
+      [placeholder]="langPlaceholder()"
+      [displayWith]="langDisplay"
+      [compareWith]="idCompare"
+      [toValue]="idToValue"
+      [clearable]="false"
+      [searchable]="false"
+      (valueChange)="setLanguage($any($event))"/>
+  </div>
+
+  <!-- Mobile-only language selector, projected onto the search row as a
+       compact globe button (the tabs-row selector hides on mobile). -->
+  <div listToolbarEnd class="bp-langBar">
+    <app-search-dropdown
+      class="bp-langIcon"
       [items]="languageOptions()"
       [value]="$any(language())"
       [displayWith]="langDisplay"
@@ -49,126 +82,100 @@
       (valueChange)="setLanguage($any($event))"/>
   </div>
 
-  <app-list-page
-    style="--lp-actions-w: 92px"
-    [pageTitle]="''"
-    [columns]="columns"
-    [dataSource]="loadPosts"
-    [pagination]="paginationConfig"
-    [search]="searchConfig"
-    [sorting]="sortingConfig"
-    [filters]="filters"
-    [bulkActions]="bulkActions()"
-    [selectable]="true"
-    [stickyColumns]="false"
-    [mobileCardConfig]="mobileCardConfig"
-    [entityType]="'blogPost'"
-    [emptyState]="emptyState()"
-    (rowClicked)="onRowClick($event)"
-    (selectionChanged)="selected.set($any($event).selectedRows)">
-
-    <!-- Mobile-only language selector, projected onto the search row as a
-         compact globe button (the tabs-row selector hides on mobile). -->
-    <div listToolbarEnd class="bp-langBar">
-      <app-search-dropdown
-        class="bp-langIcon"
-        [items]="languageOptions()"
-        [value]="$any(language())"
-        [displayWith]="langDisplay"
-        [compareWith]="idCompare"
-        [toValue]="idToValue"
-        [clearable]="false"
-        [searchable]="false"
-        (valueChange)="setLanguage($any($event))"/>
-    </div>
-
-    <!-- Post cell: cover thumbnail + title + status badge -->
-    <ng-template listCellTemplate="title" let-row>
-      <div class="bp-postCell">
-        @if (row.coverImage) {
-          <img [src]="row.coverImage" alt="" class="bp-thumb"/>
-        } @else {
-          <div class="bp-thumb bp-thumb--empty">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-          </div>
-        }
-        <div class="bp-postCell__main">
-          <span class="bp-title list-interactive-cell">
-            @if (row.isFeatured) { <span class="bp-feat" title="Featured">★</span> }
-            {{ titleOf(row) }}
-          </span>
-          <span class="bp-badgeRow">
-            <app-blog-status-badge [status]="row.status"/>
-            @if (!translationsComplete(row)) {
-              <span class="bp-transPill">{{ translationsLabel(row) }} {{ 'BLOG.LIST.TRANSLATED' | translate }}</span>
-            }
-          </span>
-        </div>
-      </div>
-    </ng-template>
-
-    <ng-template listCellTemplate="publishDate" let-row>{{ whenLabel(row) }}</ng-template>
-
-    <!-- Engagement: views + likes + comments inline (comment count links to comments). -->
-    <ng-template listCellTemplate="engagement" let-row>
-      <span class="bp-engage">
-        <span class="bp-metric" [title]="'BLOG.LIST.COL_VIEWS' | translate">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
-          {{ row.views ?? 0 }}
-        </span>
-        <span class="bp-metric" [title]="'BLOG.LIST.COL_LIKES' | translate">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
-          {{ row.likesCount ?? 0 }}
-        </span>
-        <a class="bp-metric bp-metric--link"
-           [routerLink]="['/blog/comments']" [queryParams]="{ postId: row.id }"
-           (click)="$event.stopPropagation()"
-           [attr.aria-label]="('BLOG.LIST.VIEW_COMMENTS' | translate) + ' (' + (row.commentsCount ?? 0) + ')'">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-          {{ row.commentsCount ?? 0 }}
-        </a>
-      </span>
-    </ng-template>
-
-    <ng-template listCellTemplate="taxonomyIds" let-row>
-      <span class="bp-cats">{{ categoriesOf(row) }}</span>
-    </ng-template>
-
-    <!-- ── Mobile card slots ── -->
-    <ng-template listMobileThumb let-row>
+  <!-- Post cell: cover thumbnail + title + status badge -->
+  <ng-template listCellTemplate="title" let-row>
+    <div class="bp-postCell">
       @if (row.coverImage) {
-        <img [src]="row.coverImage" alt=""/>
+        <img [src]="row.coverImage" alt="" class="bp-thumb"/>
       } @else {
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" style="color:#cbd5e1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+        <div class="bp-thumb bp-thumb--letter" aria-hidden="true">{{ firstLetter(row) }}</div>
       }
-    </ng-template>
-    <ng-template listMobileTitle let-row>
-      <span class="bp-mtitle">
-        @if (row.isFeatured) { <span class="bp-feat" title="Featured">★</span> }
-        {{ titleOf(row) }}
-      </span>
-      <app-blog-status-badge [status]="row.status"/>
-    </ng-template>
-    <ng-template listMobileChip let-row>
-      @if (!translationsComplete(row)) {
-        <span class="bp-transPill">{{ translationsLabel(row) }} {{ 'BLOG.LIST.TRANSLATED' | translate }}</span>
-      }
-    </ng-template>
+      <div class="bp-postCell__main">
+        <span class="bp-title list-interactive-cell">
+          @if (row.isFeatured) { <span class="bp-feat" title="Featured">★</span> }
+          {{ titleOf(row) }}
+        </span>
+        <span class="bp-badgeRow">
+          <app-blog-status-badge [status]="row.status"/>
+          @if (missingLangs(row).length) {
+            <button type="button" class="bp-transPill"
+                    [appTooltip]="translationsTooltip(row)"
+                    (click)="editMissingTranslation(row, $event)">
+              {{ missingLabel(row) }}
+            </button>
+          }
+        </span>
+      </div>
+    </div>
+  </ng-template>
 
-    <!-- Row actions: single always-visible "⋯" menu (Edit first, then Share). -->
-    <ng-template listRowActions let-row>
-      @if (canManage()) {
-        <div class="bp-rowActions" (click)="$event.stopPropagation()">
-          <app-dropdown-menu-btn
-            [items]="rowMenu(row)"
-            align="end"
-            [appendToBody]="true"
-            [chevron]="false"
-            triggerClass="bp-more">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
-          </app-dropdown-menu-btn>
-        </div>
-      }
-    </ng-template>
-  </app-list-page>
-</div>
+  <ng-template listCellTemplate="publishDate" let-row>
+    @if (isUnpublished(row)) {
+      <span class="bp-unpub">{{ whenLabel(row) }}</span>
+    } @else {
+      {{ whenLabel(row) }}
+    }
+  </ng-template>
+
+  <!-- Engagement: views + likes + comments inline (comment count links to comments). -->
+  <ng-template listCellTemplate="engagement" let-row>
+    <span class="bp-engage">
+      <span class="bp-metric" [title]="'BLOG.LIST.COL_VIEWS' | translate">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        {{ row.views ?? 0 }}
+      </span>
+      <span class="bp-metric" [title]="'BLOG.LIST.COL_LIKES' | translate">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        {{ row.likesCount ?? 0 }}
+      </span>
+      <a class="bp-metric bp-metric--link"
+         [routerLink]="['/blog/comments']" [queryParams]="{ postId: row.id }"
+         (click)="$event.stopPropagation()"
+         [attr.aria-label]="('BLOG.LIST.VIEW_COMMENTS' | translate) + ' (' + (row.commentsCount ?? 0) + ')'">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        {{ row.commentsCount ?? 0 }}
+      </a>
+    </span>
+  </ng-template>
+
+  <ng-template listCellTemplate="taxonomyIds" let-row>
+    <span class="bp-cats">{{ categoriesOf(row) }}</span>
+  </ng-template>
+
+  <!-- ── Mobile card slots ── -->
+  <ng-template listMobileThumb let-row>
+    @if (row.coverImage) {
+      <img [src]="row.coverImage" alt=""/>
+    } @else {
+      <span class="bp-mLetter" aria-hidden="true">{{ firstLetter(row) }}</span>
+    }
+  </ng-template>
+  <ng-template listMobileTitle let-row>
+    <span class="bp-mtitle">
+      @if (row.isFeatured) { <span class="bp-feat" title="Featured">★</span> }
+      {{ titleOf(row) }}
+    </span>
+    <app-blog-status-badge [status]="row.status"/>
+  </ng-template>
+  <ng-template listMobileChip let-row>
+    @if (missingLangs(row).length) {
+      <span class="bp-transPill">{{ missingLabel(row) }}</span>
+    }
+  </ng-template>
+
+  <!-- Row actions: single always-visible "⋯" menu (Edit first, then Share). -->
+  <ng-template listRowActions let-row>
+    @if (canManage()) {
+      <div class="bp-rowActions opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" (click)="$event.stopPropagation()">
+        <app-dropdown-menu-btn
+          [items]="rowMenu(row)"
+          align="end"
+          [appendToBody]="true"
+          [chevron]="false"
+          triggerClass="bp-more">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+        </app-dropdown-menu-btn>
+      </div>
+    }
+  </ng-template>
+</app-list-page>
