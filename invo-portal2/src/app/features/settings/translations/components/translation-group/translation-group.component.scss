@@ -1,0 +1,176 @@
+// Group grid — two-column source/target editor. Colour vocabulary mirrors
+// the settings list pages (slate palette, brand accent, rounded card).
+
+:host { display: block; }
+
+.tg { display: flex; flex-direction: column; gap: 14px; }
+
+.tg-head {
+  &__title { margin: 0 0 2px; font-size: 18px; font-weight: 700; color: #0f172a; }
+  &__sub   { margin: 0; font-size: 13px; color: #64748b; }
+}
+
+// Sticky unsaved-changes bar.
+.tg-savebar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--color-brand-50, #ecfeff);
+  border: 1px solid var(--color-brand-200, #a5f3fc);
+
+  &__note { font-size: 12px; font-weight: 600; color: var(--color-brand-700, #0e7490); }
+  &__actions { display: inline-flex; gap: 8px; }
+}
+
+.tg-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tg-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th, td {
+    padding: 12px 16px;
+    text-align: start;
+    vertical-align: top;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    position: sticky;
+    top: 0;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+
+  &__field  { width: 20%; }
+  &__source { width: 34%; }
+  &__target { width: 34%; }
+  &__status { width: 12%; }
+}
+
+.tg-field {
+  &__record {
+    display: block;
+    font-size: 11px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+  }
+  &__name { font-size: 13px; font-weight: 600; color: #334155; }
+}
+
+.tg-source {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tg-input {
+  appearance: none;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #0f172a;
+  background: #fff;
+  font-family: inherit;
+  transition: border-color 100ms ease, box-shadow 100ms ease;
+
+  &:focus {
+    outline: 0;
+    border-color: var(--color-brand-400, #7dd3fc);
+    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+  }
+  &::placeholder { color: #94a3b8; }
+
+  &--area { resize: vertical; min-height: 40px; line-height: 1.5; }
+}
+
+// Status chip.
+.tg-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+
+  &--translated    { background: #dcfce7; color: #15803d; }
+  &--not-translated { background: #f1f5f9; color: #64748b; }
+  &--needs-update  { background: #fef3c7; color: #b45309; }
+}
+
+// States.
+.tg-loading { display: flex; align-items: center; justify-content: center; padding: 60px 0; }
+.tg-spinner {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 3px solid #e2e8f0;
+  border-top-color: var(--color-brand-600, #0891b2);
+  animation: tg-spin 0.8s linear infinite;
+}
+@keyframes tg-spin { to { transform: rotate(360deg); } }
+
+.tg-empty {
+  text-align: center;
+  padding: 56px 16px;
+  color: #94a3b8;
+  p { margin: 0; font-size: 13px; }
+}
+
+// Pager.
+.tg-pager {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-start: auto;
+
+  &__range { font-size: 12px; color: #64748b; margin-inline-end: 4px; }
+  &__btn {
+    width: 28px; height: 28px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, color 120ms ease;
+    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+  }
+}
+
+// Coming-soon panel.
+.tg-soon {
+  max-width: 420px;
+  margin: 48px auto;
+  text-align: center;
+  color: #94a3b8;
+
+  svg { color: #cbd5e1; margin-bottom: 12px; }
+  &__title { margin: 0 0 6px; font-size: 16px; font-weight: 700; color: #475569; }
+  &__text { margin: 0; font-size: 13px; line-height: 1.6; }
+}

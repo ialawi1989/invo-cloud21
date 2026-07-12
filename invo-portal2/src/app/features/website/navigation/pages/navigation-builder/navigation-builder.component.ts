@@ -16,6 +16,7 @@ import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { TranslationModalComponent, TranslationModalData, TranslationLang } from '@shared/components/translation-modal/translation-modal.component';
 import { withTranslations } from '@core/i18n/with-translations';
+import { safeUuid } from '@shared/utils';
 
 import { NavigationService } from '../../services/navigation.service';
 import { Website } from '../../../models/website.model';
@@ -194,7 +195,7 @@ export class NavigationBuilderComponent implements OnInit {
   addToMenu(item: NavigationListItem1): void {
     const it = new NavigationListItem1();
     it.ParseJson(item);
-    it.uId = 'item-' + crypto.randomUUID();
+    it.uId = 'item-' + safeUuid();
     it.index = this.menu.template.list.length;
     it.depth = 0;
     this.menu.template.list.push(it);
@@ -203,7 +204,7 @@ export class NavigationBuilderComponent implements OnInit {
   addCustomLink(): void {
     if (!this.customLink.title || !this.customLink.url) return;
     const it = new NavigationListItem1();
-    it.uId = 'custom-' + crypto.randomUUID();
+    it.uId = 'custom-' + safeUuid();
     it.name = this.customLink.title;
     it.originalName = this.customLink.title;
     it.customUrl = this.customLink.url;
@@ -217,7 +218,7 @@ export class NavigationBuilderComponent implements OnInit {
   addMegaMenu(): void {
     if (!this.megaMenuTitle) return;
     const it = new NavigationListItem1();
-    it.uId = 'mega-' + crypto.randomUUID();
+    it.uId = 'mega-' + safeUuid();
     it.name = this.megaMenuTitle;
     it.originalName = this.megaMenuTitle;
     it.customUrl = '#';
@@ -233,7 +234,7 @@ export class NavigationBuilderComponent implements OnInit {
 
   private mkColumn(n: number): MegaMenuColumn {
     const col = new MegaMenuColumn();
-    col.uId = 'column-' + crypto.randomUUID();
+    col.uId = 'column-' + safeUuid();
     col.title = `Column ${n}`;
     col.width = 25;
     col.items = [];
@@ -348,14 +349,14 @@ export class NavigationBuilderComponent implements OnInit {
     if (!col || col.items.some(c => c.abbr === item.abbr && c.name === item.name)) return;
     const it = new NavigationListItem1();
     it.ParseJson(item);
-    it.uId = 'item-' + crypto.randomUUID();
+    it.uId = 'item-' + safeUuid();
     col.items.push(it);
   }
   addCustomToColumn(): void {
     const col = this.pickerColumn();
     if (!col || !this.pickerCustom.title || !this.pickerCustom.url) return;
     const it = new NavigationListItem1();
-    it.uId = 'custom-' + crypto.randomUUID();
+    it.uId = 'custom-' + safeUuid();
     it.name = this.pickerCustom.title;
     it.originalName = this.pickerCustom.title;
     it.customUrl = this.pickerCustom.url;
@@ -384,7 +385,7 @@ export class NavigationBuilderComponent implements OnInit {
       if (item.mediaUrl) item.mediaUrl.defaultUrl = url;
     } else {
       const it = new NavigationListItem1();
-      it.uId = 'image-' + crypto.randomUUID();
+      it.uId = 'image-' + safeUuid();
       it.name = media.name ?? 'Image';
       it.mediaId = media.id ?? media._id ?? '';
       it.type = 'image';

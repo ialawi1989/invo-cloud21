@@ -349,6 +349,8 @@ export class SettingsComponent {
       items: [
         { label: 'SETTINGS.ITEMS.SEO_SETTINGS', description: 'SETTINGS.ITEMS.SEO_SETTINGS_DESC', link: '/settings/seo', privilege: 'companySettingsSecurity.actions.businessSettings.access',
           i18nPrefix: 'SEO' },
+        { label: 'SETTINGS.ITEMS.TRANSLATIONS', description: 'SETTINGS.ITEMS.TRANSLATIONS_DESC', link: '/settings/translations',
+          i18nPrefix: 'TRANSLATIONS' },
       ],
     },
     {

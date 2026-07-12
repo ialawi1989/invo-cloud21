@@ -33,6 +33,8 @@
     },
 
     "ITEMS": {
+      "TRANSLATIONS":              "الترجمات",
+      "TRANSLATIONS_DESC":         "ترجم صفحات الموقع ومعلومات النشاط ومحتوى المتجر إلى لغات أخرى.",
       "BUSINESS_SETTINGS":         "إعدادات الأعمال",
       "BUSINESS_SETTINGS_DESC":    "تخصيص تفاصيل الأعمال وإدارة الفروع والعناوين وغيرها.",
       "ROUNDING_SETTINGS":         "إعدادات التقريب",

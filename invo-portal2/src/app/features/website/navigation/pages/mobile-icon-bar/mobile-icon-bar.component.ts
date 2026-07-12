@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -16,6 +17,7 @@ import { NavigationService } from '../../services/navigation.service';
 import { Website } from '../../../models/website.model';
 import { MobileIconBarList, MobileIconBarItem } from '../../../models/mobileIconBar';
 import { Translation } from '@core/models/translation';
+import { iconsForSlug } from './mobile-icon-bar.icons';
 
 /** Default item set, mirroring the legacy `setItems()`. */
 const DEFAULT_ITEMS: Array<{ name: string; en: string; ar: string; slug: string; enabled: boolean }> = [
@@ -64,17 +66,31 @@ const DEFAULT_ITEMS: Array<{ name: string; en: string; ar: string; slug: string;
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
             </span>
 
-            <div class="icon-choices">
-              @for (icon of iconsFor(item); track $index) {
-                <button type="button" class="icon-swatch" [class.selected]="item.icon === icon"
-                        [innerHTML]="sanitize(icon)" (click)="item.icon = icon"></button>
+            <div class="icon-picker">
+              <button type="button" class="icon-trigger" [class.open]="iconMenu() === item.uId"
+                      (click)="toggleIconMenu(item, $event)"
+                      [title]="'NAV.MOBILE.CHANGE_ICON' | translate">
+                <span class="icon-current" [innerHTML]="sanitize(item.icon || iconsFor(item)[0])"></span>
+                @if (iconsFor(item).length > 1) {
+                  <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                }
+              </button>
+              @if (iconMenu() === item.uId) {
+                <div class="icon-menu">
+                  @for (icon of iconsFor(item); track $index) {
+                    <button type="button" class="icon-swatch" [class.selected]="item.icon === icon"
+                            [innerHTML]="sanitize(icon)" (click)="selectIcon(item, icon)"></button>
+                  }
+                </div>
               }
             </div>
 
             <span class="row-name">{{ item.name }}</span>
 
             <div class="row-tools">
-              <button type="button" class="tool" (click)="translateName(item)" [title]="'NAV.BUILDER.TRANSLATE' | translate">文</button>
+              <button type="button" class="tool" (click)="translateName(item)" [title]="'NAV.BUILDER.TRANSLATE' | translate">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              </button>
               <button type="button" class="toggle" [class.on]="item.enabled"
                       [disabled]="eyeDisabled(item)" (click)="toggle(item)"
                       [title]="eyeTooltip(item)">
@@ -108,10 +124,20 @@ const DEFAULT_ITEMS: Array<{ name: string; en: string; ar: string; slug: string;
     .row { display:flex; align-items:center; gap:12px; padding:10px 14px; border:1px solid #e2e8f0; border-radius:10px; background:#fff; transition:.12s; }
     .row.off { background:#f8fafc; opacity:.75; }
     .drag { cursor:grab; color:#cbd5e1; display:inline-flex; }
-    .icon-choices { display:flex; gap:6px; }
-    .icon-swatch { width:36px; height:36px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; }
+    /* Icon picker: a trigger showing the current icon that opens a menu of choices. */
+    .icon-picker { position:relative; flex:0 0 auto; }
+    .icon-trigger { display:inline-flex; align-items:center; gap:5px; height:36px; padding:0 8px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; color:#475569; cursor:pointer; transition:border-color .12s, background .12s; }
+    .icon-trigger:hover { border-color:#cbd5e1; background:#f8fafc; }
+    .icon-trigger.open { border-color:var(--color-brand-500); color:var(--color-brand-700); background:#fff; }
+    .icon-current { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; flex:0 0 auto; }
+    .icon-current ::ng-deep svg { width:18px; height:18px; display:block; }
+    .icon-trigger .chev { color:#94a3b8; flex:0 0 auto; transition:transform .15s ease; }
+    .icon-trigger.open .chev { transform:rotate(180deg); color:var(--color-brand-600); }
+    .icon-menu { position:absolute; top:calc(100% + 6px); inset-inline-start:0; z-index:30; display:flex; gap:6px; padding:8px; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 10px 30px rgba(15,23,42,.16); }
+    .icon-swatch { width:38px; height:38px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; transition:border-color .12s, background .12s; }
+    .icon-swatch:hover { border-color:#cbd5e1; background:#f8fafc; }
     .icon-swatch.selected { border-color:var(--color-brand-500); background:color-mix(in srgb, var(--color-brand-100), transparent 40%); color:var(--color-brand-700); }
-    .icon-swatch svg { width:20px; height:20px; }
+    .icon-swatch ::ng-deep svg { width:20px; height:20px; display:block; }
     .row-name { flex:1; font-size:14px; font-weight:500; color:#0f172a; }
     .row-tools { display:flex; align-items:center; gap:4px; }
     .tool { width:30px; height:30px; border:none; background:transparent; border-radius:6px; cursor:pointer; color:#64748b; font-size:14px; display:inline-flex; align-items:center; justify-content:center; }
@@ -129,6 +155,8 @@ export class MobileIconBarComponent implements OnInit {
   private toast     = inject(ToastService);
   private modal     = inject(ModalService);
   private translate = inject(TranslateService);
+  private sanitizer = inject(DomSanitizer);
+  private iconCache = new Map<string, SafeHtml>();
 
   readonly MAX = 5;
   private readonly excluded = ['/', 'cart', 'account'];
@@ -136,6 +164,9 @@ export class MobileIconBarComponent implements OnInit {
   loading = signal(true);
   saving  = signal(false);
   bar!: Website;
+
+  /** uId of the item whose icon dropdown is open, or null when all are closed. */
+  iconMenu = signal<string | null>(null);
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', routerLink: '/', icon: 'home', iconOnly: true },
@@ -217,6 +248,26 @@ export class MobileIconBarComponent implements OnInit {
     else { this.toast.warning('NAV.MOBILE.LIMIT', this.translate.instant('NAV.MOBILE.LIMIT', { max: this.MAX })); }
   }
 
+  /** Open/close the icon dropdown for an item (single icon → nothing to pick). */
+  toggleIconMenu(item: MobileIconBarItem, event: Event): void {
+    event.stopPropagation();
+    if (this.iconsFor(item).length <= 1) return;
+    this.iconMenu.set(this.iconMenu() === item.uId ? null : item.uId);
+  }
+
+  /** Pick an icon and close the dropdown. */
+  selectIcon(item: MobileIconBarItem, icon: string): void {
+    item.icon = icon;
+    this.iconMenu.set(null);
+  }
+
+  /** Any outside click closes an open icon dropdown (the trigger stops
+   *  propagation, so opening it doesn't immediately re-close). */
+  @HostListener('document:click')
+  closeIconMenu(): void {
+    if (this.iconMenu() !== null) this.iconMenu.set(null);
+  }
+
   onDrop(event: CdkDragDrop<MobileIconBarItem[]>): void {
     moveItemInArray(this.bar.template.list, event.previousIndex, event.currentIndex);
     this.bar.template.list.forEach((it: MobileIconBarItem, i: number) => (it.index = i));
@@ -254,26 +305,19 @@ export class MobileIconBarComponent implements OnInit {
     this.router.navigate(['/navigation-list']);
   }
 
-  sanitize(icon: string): string { return icon; }
+  /** Trust the inline SVG string so `[innerHTML]` renders it instead of
+   *  Angular's HTML sanitizer stripping the <svg> markup (blank swatch). */
+  sanitize(icon: string): SafeHtml {
+    let html = this.iconCache.get(icon);
+    if (!html) {
+      html = this.sanitizer.bypassSecurityTrustHtml(icon);
+      this.iconCache.set(icon, html);
+    }
+    return html;
+  }
 
   /** Candidate icons for an item's slug (user picks one). */
   iconsFor(item: MobileIconBarItem): string[] {
-    return ICON_SETS[item.slug] ?? ICON_SETS['default'];
+    return iconsForSlug(item.slug);
   }
 }
-
-const stroke = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-const ICON_SETS: Record<string, string[]> = {
-  search:       [`<svg viewBox="0 0 24 24" ${stroke}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`],
-  toTop:        [`<svg viewBox="0 0 24 24" ${stroke}><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>`],
-  '/':          [`<svg viewBox="0 0 24 24" ${stroke}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`],
-  categories:   [`<svg viewBox="0 0 24 24" ${stroke}><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>`],
-  wishlist:     [`<svg viewBox="0 0 24 24" ${stroke}><path d="m19 14 1.5-1.5c2-2 2-5 0-7s-5-2-7 0l-1.5 1.5L10.5 5.5c-2-2-5-2-7 0s-2 5 0 7L5 14l7 7 7-7z"/></svg>`],
-  cart:         [`<svg viewBox="0 0 24 24" ${stroke}><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>`],
-  account:      [`<svg viewBox="0 0 24 24" ${stroke}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`],
-  menu:         [`<svg viewBox="0 0 24 24" ${stroke}><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>`],
-  shop:         [`<svg viewBox="0 0 24 24" ${stroke}><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>`],
-  'my-orders':  [`<svg viewBox="0 0 24 24" ${stroke}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`],
-  appointments: [`<svg viewBox="0 0 24 24" ${stroke}><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>`],
-  default:      [`<svg viewBox="0 0 24 24" ${stroke}><circle cx="12" cy="12" r="9"/></svg>`],
-};

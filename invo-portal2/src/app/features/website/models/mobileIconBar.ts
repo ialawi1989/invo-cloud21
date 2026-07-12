@@ -1,5 +1,6 @@
 
 import { Translation } from '../.././../core/models/translation';
+import { safeUuid } from '@shared/utils';
 
 export class MobileIconBarOptions {
   ParseJson(json: any): void {
@@ -21,7 +22,7 @@ export class MobileIconBarItem {
   icon: string = '';
 
   constructor() {
-    this.uId = crypto.randomUUID();
+    this.uId = safeUuid();
   }
 
   ParseJson(json: any): void {

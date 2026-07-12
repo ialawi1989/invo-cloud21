@@ -1,0 +1,116 @@
+@if (entity && !entity.ready) {
+  <!-- ── Coming soon (backend not ready) ────────────────────────── -->
+  <div class="tg-soon">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 7v5l3 2"/>
+    </svg>
+    <h3 class="tg-soon__title">{{ 'TRANSLATIONS.COMING_SOON_TITLE' | translate }}</h3>
+    <p class="tg-soon__text">
+      {{ 'TRANSLATIONS.COMING_SOON_TEXT' | translate:{ entity: (entity.labelKey | translate) } }}
+    </p>
+  </div>
+} @else if (entity) {
+  <div class="tg">
+    <header class="tg-head">
+      <div class="tg-head__titles">
+        <h2 class="tg-head__title">{{ entity.labelKey | translate }}</h2>
+        <p class="tg-head__sub">{{ entity.descKey | translate }}</p>
+      </div>
+    </header>
+
+    @if (dirty()) {
+      <div class="tg-savebar">
+        <span class="tg-savebar__note">{{ 'TRANSLATIONS.UNSAVED' | translate }}</span>
+        <div class="tg-savebar__actions">
+          <button type="button" class="btn btn-ghost btn-sm" (click)="discard()">
+            {{ 'COMMON.DISCARD' | translate }}
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" [disabled]="!canSave()" (click)="save()">
+            {{ 'COMMON.SAVE' | translate }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <div class="tg-card">
+      @if (loading() && rows().length === 0) {
+        <div class="tg-loading"><span class="tg-spinner"></span></div>
+      } @else if (rows().length === 0) {
+        <div class="tg-empty">
+          <p>{{ 'TRANSLATIONS.EMPTY' | translate }}</p>
+        </div>
+      } @else {
+        <table class="tg-table">
+          <thead>
+            <tr>
+              <th class="tg-table__field">{{ 'TRANSLATIONS.COL.FIELD' | translate }}</th>
+              <th class="tg-table__source">{{ 'TRANSLATIONS.COL.SOURCE' | translate }}</th>
+              <th class="tg-table__target">
+                {{ 'TRANSLATIONS.COL.TARGET' | translate:{ lang: store.langLabel(store.targetLang()) } }}
+              </th>
+              <th class="tg-table__status">{{ 'TRANSLATIONS.COL.STATUS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td class="tg-table__field">
+                  <span class="tg-field__record">{{ row.recordLabel }}</span>
+                  <span class="tg-field__name">{{ row.fieldLabel | translate }}</span>
+                </td>
+                <td class="tg-table__source">
+                  <div class="tg-source" dir="ltr">{{ row.source || '—' }}</div>
+                </td>
+                <td class="tg-table__target">
+                  @if (fieldMultiline(row.field)) {
+                    <textarea class="tg-input tg-input--area"
+                              rows="2"
+                              [value]="row.target"
+                              (input)="onEdit(row, $any($event.target).value)"
+                              [placeholder]="'TRANSLATIONS.TARGET_PLACEHOLDER' | translate"></textarea>
+                  } @else {
+                    <input class="tg-input"
+                           type="text"
+                           [value]="row.target"
+                           (input)="onEdit(row, $any($event.target).value)"
+                           [placeholder]="'TRANSLATIONS.TARGET_PLACEHOLDER' | translate"/>
+                  }
+                </td>
+                <td class="tg-table__status">
+                  <span class="tg-chip" [ngClass]="'tg-chip--' + row.status">
+                    {{ statusKey(row.status) | translate }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    @if (total() > 0 && pageCount() > 1) {
+      <div class="tg-pager">
+        <span class="tg-pager__range">{{ rangeLabel() }}</span>
+        <button type="button" class="tg-pager__btn" (click)="goPrev()" [disabled]="page() <= 1 || loading()"
+                [attr.aria-label]="'COMMON.PREVIOUS' | translate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="rtl:rotate-180">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button type="button" class="tg-pager__btn" (click)="goNext()"
+                [disabled]="page() >= pageCount() || loading()"
+                [attr.aria-label]="'COMMON.NEXT' | translate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="rtl:rotate-180">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+    }
+  </div>
+
+  <input #fileInput type="file" accept=".csv,text/csv" hidden (change)="onFileSelected($event)"/>
+}

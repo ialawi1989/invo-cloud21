@@ -28,6 +28,10 @@ interface SideMenuItem {
   label: string;
   icon?: string;
   link?: string;
+  /** Extra URL prefixes that should also mark this item active (e.g. a detail
+   *  route that lives outside the item's own `link`, like the Mobile Icon Bar
+   *  under Navigation). */
+  matchLinks?: string[];
   isTitle?: boolean;
   badge?: { variant: 'primary' | 'success' | 'danger' | 'warning'; text: string };
   subItems?: SideMenuItem[];
@@ -181,8 +185,9 @@ export const SIDE_MENU: SideMenuItem[] = [
     requiredPermission: '',
     subItems: [
       { id: 131, label: 'MENU.SUB.PAGE_BUILDER', link: '/page-builder', requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
-      { id: 132, label: 'MENU.SUB.NAVIGATION', link: '/navigation-list', requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
+      { id: 132, label: 'MENU.SUB.NAVIGATION', link: '/navigation-list', matchLinks: ['/mobile-icon-bar'], requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
       { id: 136, label: 'Content Library', link: '/website/content-library', requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
+      { id: 138, label: 'MENU.SUB.MULTILINGUAL', link: '/settings/translations', requiredPermission: '' },
       { id: 137, label: 'MENU.ANALYTICS', link: '/analytics', requiredPermission: 'websiteAnalyticsSecurity.actions.view.access' },
       { id: 133, label: 'MENU.SUB.WEBSITE_SETTINGS', link: '/website-settings', requiredPermission: 'websiteSettingsSecurity.actions.view.access' },
       { id: 134, label: 'MENU.SUB.DOMAIN_SETTINGS', link: '/domain-settings', requiredPermission: 'DomainSettingsSecurity.actions.view.access' },
@@ -288,8 +293,7 @@ interface FavoritePage { label: string; link: string; }
                       }
                       <li>
                         <a [routerLink]="sub.link"
-                           routerLinkActive="active"
-                           [routerLinkActiveOptions]="{ exact: false }"
+                           [class.active]="isSubActive(sub)"
                            class="sub-row"
                            (click)="onSubLinkClick()">{{ sub.label | translate }}</a>
                       </li>
@@ -715,9 +719,22 @@ export class SidebarComponent implements OnInit {
   private expandActiveParent(): void {
     const url = this.router.url;
     SIDE_MENU.forEach(item => {
-      if (item.subItems?.some(sub => sub.link && url.startsWith(sub.link)))
+      if (item.subItems?.some(sub => this.linkMatchesUrl(sub, url)))
         item.expanded = true;
     });
+  }
+
+  /** True when `url` falls under the item's own `link` or any of its
+   *  `matchLinks` (e.g. Navigation staying active on `/mobile-icon-bar`). */
+  private linkMatchesUrl(item: SideMenuItem, url: string): boolean {
+    const links = [item.link, ...(item.matchLinks ?? [])].filter((l): l is string => !!l);
+    return links.some(l => url.startsWith(l));
+  }
+
+  /** Active state for a leaf sub-item (replaces routerLinkActive so
+   *  `matchLinks` aliases count too). */
+  isSubActive(sub: SideMenuItem): boolean {
+    return this.linkMatchesUrl(sub, this.router.url);
   }
 
   toggleCollapse(): void {
@@ -826,8 +843,8 @@ export class SidebarComponent implements OnInit {
 
   isParentActive(item: SideMenuItem): boolean {
     const url = this.router.url;
-    if (item.link && url.startsWith(item.link)) return true;
-    return item.subItems?.some(s => s.link && url.startsWith(s.link)) ?? false;
+    if (this.linkMatchesUrl(item, url)) return true;
+    return item.subItems?.some(s => this.linkMatchesUrl(s, url)) ?? false;
   }
 
   hasDivider(id: number): boolean { return DIVIDER_IDS.has(id); }

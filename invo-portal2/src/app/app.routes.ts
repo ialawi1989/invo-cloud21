@@ -375,6 +375,14 @@ export const routes: Routes = [
           import('./features/settings/service-management/service-management.routes').then(m => m.SERVICE_MANAGEMENT_ROUTES)
       },
       {
+        // Translations — Multilingual / Translation Manager. Persistent
+        // shell (entity groups sidebar + target-language selector +
+        // filters) wrapping a config-driven, per-group editable grid.
+        path: 'settings/translations',
+        loadChildren: () =>
+          import('./features/settings/translations/translations.routes').then(m => m.TRANSLATIONS_ROUTES)
+      },
+      {
         // Blog — top-level area with Posts / Categories & Tags / Comments /
         // Settings. See `features/blog/blog.routes.ts`.
         path: 'blog',

@@ -1,0 +1,125 @@
+<div class="tm">
+  <!-- ── Sidebar: entity groups ─────────────────────────────────── -->
+  <aside class="tm-side">
+    <div class="tm-side__head">
+      <h2 class="tm-side__title">{{ 'TRANSLATIONS.TITLE' | translate }}</h2>
+    </div>
+
+    <nav class="tm-side__nav">
+      @for (group of groups; track group.groupKey) {
+        <div class="tm-group">
+          <span class="tm-group__label">{{ group.groupKey | translate }}</span>
+          <ul class="tm-group__list">
+            @for (entity of group.entities; track entity.id) {
+              @if (entity.ready) {
+                <li>
+                  <a class="tm-item"
+                     [routerLink]="['/settings/translations', entity.id]"
+                     routerLinkActive="tm-item--active">
+                    <span class="tm-item__label">{{ entity.labelKey | translate }}</span>
+                  </a>
+                </li>
+              } @else {
+                <li>
+                  <span class="tm-item tm-item--disabled"
+                        [attr.title]="'TRANSLATIONS.COMING_SOON' | translate">
+                    <span class="tm-item__label">{{ entity.labelKey | translate }}</span>
+                    <span class="tm-item__tag">{{ 'TRANSLATIONS.SOON' | translate }}</span>
+                  </span>
+                </li>
+              }
+            }
+          </ul>
+        </div>
+      }
+    </nav>
+  </aside>
+
+  <!-- ── Main: header + toolbar + active group ──────────────────── -->
+  <section class="tm-main">
+    <header class="tm-header">
+      <div class="tm-header__lang">
+        <a class="tm-header__back" routerLink="/settings/translations"
+           [attr.aria-label]="'TRANSLATIONS.BACK' | translate">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="rtl:rotate-180">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </a>
+        <div class="tm-header__langbox">
+          <span class="tm-header__lang-label">{{ 'TRANSLATIONS.TARGET_LANGUAGE' | translate }}</span>
+          <span class="tm-header__lang-name">{{ currentLangLabel() }}</span>
+        </div>
+      </div>
+
+      <div class="tm-progress" role="status">
+        <div class="tm-progress__bar">
+          <span class="tm-progress__fill" [style.width.%]="progressPct()"></span>
+        </div>
+        <span class="tm-progress__text">
+          {{ 'TRANSLATIONS.PROGRESS' | translate:{
+              translated: store.progress().translated,
+              total: store.progress().total
+          } }}
+        </span>
+      </div>
+
+      <app-dropdown-menu-btn
+        class="tm-header__actions"
+        [items]="actionItems()"
+        [appendToBody]="true"
+        align="end"
+        triggerClass="btn btn-default">
+        {{ 'TRANSLATIONS.ACTIONS.MENU' | translate }}
+      </app-dropdown-menu-btn>
+    </header>
+
+    <div class="tm-toolbar">
+      <div class="tm-toolbar__filters">
+        <app-search-dropdown
+          class="tm-toolbar__items"
+          [items]="itemOptions()"
+          [displayWith]="itemDisplay"
+          [compareWith]="itemCompare"
+          [value]="selectedItem()"
+          [clearable]="false"
+          [searchable]="true"
+          (valueChange)="onItem($event)"/>
+
+        <app-segmented-toggle
+          class="tm-toolbar__status"
+          size="sm"
+          [options]="statusOptions()"
+          [value]="status()"
+          (valueChange)="onStatus($event)"/>
+      </div>
+
+      <div class="tm-search">
+        <svg class="tm-search__icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input class="tm-search__input"
+               type="text"
+               [value]="searchDraft()"
+               (input)="onSearchInput($any($event.target).value)"
+               [placeholder]="'TRANSLATIONS.TOOLBAR.SEARCH_PLACEHOLDER' | translate"/>
+        @if (searchDraft()) {
+          <button type="button" class="tm-search__clear" (click)="clearSearch()"
+                  [attr.aria-label]="'COMMON.CLEAR' | translate">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="tm-outlet">
+      <router-outlet/>
+    </div>
+  </section>
+</div>

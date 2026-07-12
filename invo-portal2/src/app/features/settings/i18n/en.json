@@ -33,6 +33,8 @@
     },
 
     "ITEMS": {
+      "TRANSLATIONS":              "Translations",
+      "TRANSLATIONS_DESC":         "Translate site pages, business info and store content into other languages.",
       "BUSINESS_SETTINGS":         "Business Settings",
       "BUSINESS_SETTINGS_DESC":    "Customise business details, manage branches, covered addresses and etc.",
       "ROUNDING_SETTINGS":         "Rounding Settings",

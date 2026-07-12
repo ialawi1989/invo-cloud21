@@ -1,4 +1,5 @@
 import { Validators } from '@angular/forms';
+import { safeUuid } from '@shared/utils';
 
 export class MegaMenuColumn {
   uId: string = '';
@@ -59,7 +60,7 @@ export class NavigationListItem1 {
   };
 
   constructor() {
-    this.uId = crypto.randomUUID();
+    this.uId = safeUuid();
   }
 
   ParseJson(json: any): void {
@@ -112,7 +113,7 @@ export class NavigationListItem {
   isDragging = false;
 
   constructor() {
-    this.uId = crypto.randomUUID();
+    this.uId = safeUuid();
   }
 
   isCollapsed: boolean = false; // for preview

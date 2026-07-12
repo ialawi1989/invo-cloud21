@@ -1,0 +1,217 @@
+// Translation Manager shell — two-pane layout (sidebar + main). Reuses
+// the settings colour vocabulary (slate palette, brand accent, rounded
+// panels). Buttons use the global .btn classes; only layout lives here.
+
+:host {
+  display: block;
+}
+
+.tm {
+  display: grid;
+  grid-template-columns: 248px 1fr;
+  align-items: stretch;
+  min-height: calc(100vh - 64px);
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────
+.tm-side {
+  border-inline-end: 1px solid #e2e8f0;
+  padding: 20px 12px 40px;
+  background: #f8fafc;
+
+  &__head { padding: 0 12px 12px; }
+  &__title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  &__nav { display: flex; flex-direction: column; gap: 18px; }
+}
+
+.tm-group {
+  &__label {
+    display: block;
+    padding: 0 12px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+  }
+  &__list { list-style: none; margin: 0; padding: 0; }
+}
+
+.tm-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 100ms ease, color 100ms ease;
+
+  &__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  &:hover { background: #eef2f7; color: #0f172a; }
+
+  &--active {
+    background: var(--color-brand-100, #e0f2fe);
+    color: var(--color-brand-700, #0e7490);
+    font-weight: 600;
+    &:hover { background: var(--color-brand-100, #e0f2fe); }
+  }
+
+  &--disabled {
+    color: #b6c1cf;
+    cursor: default;
+    &:hover { background: transparent; color: #b6c1cf; }
+  }
+
+  &__tag {
+    flex-shrink: 0;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    background: #eef2f7;
+    border-radius: 4px;
+    padding: 2px 5px;
+  }
+}
+
+// ─── Main pane ────────────────────────────────────────────────────────
+.tm-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tm-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+
+  &__lang { display: flex; align-items: center; gap: 10px; }
+  &__back {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid #e2e8f0; background: #fff; color: #475569;
+    text-decoration: none; transition: background 120ms ease, color 120ms ease;
+    &:hover { background: #f8fafc; color: #0f172a; }
+  }
+  &__langbox { display: flex; flex-direction: column; line-height: 1.2; }
+  &__lang-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+  &__lang-name { font-size: 15px; font-weight: 700; color: #0f172a; }
+  &__actions { margin-inline-start: auto; }
+}
+
+.tm-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+
+  &__bar {
+    position: relative;
+    width: 120px;
+    height: 6px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+  }
+  &__fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--color-brand-600, #0891b2);
+    transition: width 200ms ease;
+  }
+  &__text { font-size: 12px; color: #64748b; white-space: nowrap; }
+}
+
+.tm-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+
+  &__filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  &__items { display: inline-block; min-width: 170px; }
+}
+
+.tm-search {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 220px;
+
+  &__icon {
+    position: absolute;
+    inset-inline-start: 10px;
+    color: #94a3b8;
+    pointer-events: none;
+  }
+  &__input {
+    appearance: none;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 30px 8px 32px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #fff;
+    transition: border-color 100ms ease, box-shadow 100ms ease;
+
+    &:focus {
+      outline: 0;
+      border-color: var(--color-brand-400, #7dd3fc);
+      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    }
+    &::placeholder { color: #94a3b8; }
+  }
+  &__clear {
+    position: absolute;
+    inset-inline-end: 6px;
+    width: 22px;
+    height: 22px;
+    border: 0;
+    background: transparent;
+    color: #94a3b8;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    &:hover { background: #f1f5f9; color: #475569; }
+  }
+}
+
+.tm-outlet {
+  flex: 1;
+  min-width: 0;
+  padding: 20px 24px 48px;
+}
+
+// Logical properties above already flip for RTL; the search icon padding
+// is symmetric enough that Arabic layouts read correctly.
+@media (max-width: 900px) {
+  .tm { grid-template-columns: 1fr; }
+  .tm-side {
+    border-inline-end: 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+}

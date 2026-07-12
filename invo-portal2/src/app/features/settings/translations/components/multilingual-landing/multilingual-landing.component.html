@@ -1,0 +1,95 @@
+<div class="ml">
+  <header class="ml-head">
+    <div class="ml-head__titles">
+      <h1 class="ml-head__title">{{ 'TRANSLATIONS.TITLE' | translate }}</h1>
+      <p class="ml-head__sub">{{ 'TRANSLATIONS.LANDING.SUBTITLE' | translate }}</p>
+    </div>
+    @if (addLangItems().length) {
+      <app-dropdown-menu-btn [items]="addLangItems()" align="end" [appendToBody]="true"
+                             triggerClass="btn btn-primary">
+        {{ 'TRANSLATIONS.LANDING.ADD_LANGUAGE' | translate }}
+      </app-dropdown-menu-btn>
+    }
+  </header>
+
+  <!-- Original language -->
+  <section class="ml-card">
+    <div class="ml-card__head">
+      <h2 class="ml-card__title">{{ 'TRANSLATIONS.LANDING.ORIGINAL' | translate }}</h2>
+      <p class="ml-card__hint">{{ 'TRANSLATIONS.LANDING.ORIGINAL_HINT' | translate }}</p>
+    </div>
+    <div class="ml-orig">
+      <div class="ml-orig__cell">
+        <span class="ml-orig__k">{{ 'TRANSLATIONS.LANDING.LANGUAGE' | translate }}</span>
+        <span class="ml-orig__v">
+          {{ store.langLabel(originalLang) }}
+          <span class="ml-badge">{{ 'TRANSLATIONS.LANDING.DEFAULT' | translate }}</span>
+        </span>
+      </div>
+      <div class="ml-orig__cell">
+        <span class="ml-orig__k">{{ 'TRANSLATIONS.LANDING.LANG_CODE' | translate }}</span>
+        <span class="ml-orig__v"><span class="ml-code">{{ originalLang }}</span></span>
+      </div>
+      <div class="ml-orig__cell">
+        <span class="ml-orig__k">{{ 'TRANSLATIONS.LANDING.TOTAL_WORDS' | translate }}</span>
+        <span class="ml-orig__v">{{ originalWords() }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Additional languages -->
+  <section class="ml-card">
+    <div class="ml-card__head">
+      <h2 class="ml-card__title">
+        {{ 'TRANSLATIONS.LANDING.ADDITIONAL' | translate }} ({{ langRows().length }})
+      </h2>
+    </div>
+
+    @if (langRows().length === 0) {
+      <div class="ml-empty">
+        <p>{{ 'TRANSLATIONS.LANDING.NONE' | translate }}</p>
+      </div>
+    } @else {
+      <table class="ml-table" role="grid">
+        <thead>
+          <tr>
+            <th>{{ 'TRANSLATIONS.LANDING.LANGUAGE' | translate }}</th>
+            <th>{{ 'TRANSLATIONS.LANDING.LANG_CODE' | translate }}</th>
+            <th>{{ 'TRANSLATIONS.LANDING.WORDS_TRANSLATED' | translate }}</th>
+            <th>{{ 'TRANSLATIONS.LANDING.STATUS' | translate }}</th>
+            <th class="ml-table__actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of langRows(); track row.code) {
+            <tr (click)="openEditor(row.code)">
+              <td class="ml-table__lang">{{ row.nativeLabel }}</td>
+              <td><span class="ml-code">{{ row.code }}</span></td>
+              <td class="ml-table__progress">
+                <div class="ml-bar">
+                  <span class="ml-bar__fill" [class.ml-bar__fill--done]="row.complete"
+                        [style.width.%]="row.pct"></span>
+                </div>
+                <span class="ml-bar__text">{{ row.translated }} / {{ row.total }}</span>
+              </td>
+              <td>
+                <span class="ml-chip" [class.ml-chip--done]="row.complete">
+                  {{ (row.complete ? 'TRANSLATIONS.LANDING.STATUS_COMPLETE'
+                                   : 'TRANSLATIONS.LANDING.STATUS_IN_PROGRESS') | translate }}
+                </span>
+              </td>
+              <td class="ml-table__actions" (click)="$event.stopPropagation()">
+                <app-dropdown-menu-btn [items]="rowMenuItems(row)" [appendToBody]="true"
+                                       [chevron]="false" align="end" triggerClass="icon-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <circle cx="5" cy="12" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="19" cy="12" r="1.75"/>
+                  </svg>
+                </app-dropdown-menu-btn>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+</div>

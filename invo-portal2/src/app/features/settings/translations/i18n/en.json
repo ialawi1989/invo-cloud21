@@ -1,0 +1,117 @@
+{
+  "TRANSLATIONS": {
+    "TITLE": "Translations",
+    "BACK": "Back to Multilingual",
+    "TARGET_LANGUAGE": "Translating to",
+    "LANDING": {
+      "SUBTITLE": "Add languages and translate your site to reach visitors in new markets.",
+      "ADD_LANGUAGE": "Add Language",
+      "ORIGINAL": "Original language",
+      "ORIGINAL_HINT": "This is the language you wrote your site in. All translations are based on it.",
+      "LANGUAGE": "Language",
+      "LANG_CODE": "Language code",
+      "DEFAULT": "Default",
+      "TOTAL_WORDS": "Total number of words",
+      "ADDITIONAL": "Additional languages",
+      "WORDS_TRANSLATED": "Words translated",
+      "STATUS": "Status",
+      "STATUS_COMPLETE": "Complete",
+      "STATUS_IN_PROGRESS": "In progress",
+      "NONE": "No additional languages yet. Add one to start translating.",
+      "EDIT": "Edit translations",
+      "REMOVE": "Remove language"
+    },
+    "PROGRESS": "{{translated}} / {{total}} words translated",
+    "COMING_SOON": "Coming soon",
+    "SOON": "Soon",
+    "COMING_SOON_TITLE": "Not available yet",
+    "COMING_SOON_TEXT": "Translations for {{entity}} aren't ready yet. This group will light up once its content is connected.",
+    "UNSAVED": "You have unsaved changes",
+    "EMPTY": "No translatable content matches your filters.",
+    "TARGET_PLACEHOLDER": "Add translation",
+    "GROUPS": {
+      "SITE": "Site pages",
+      "BUSINESS": "Business info",
+      "STORE": "Store",
+      "CMS": "CMS collections"
+    },
+    "ENTITIES": {
+      "PAGE_CONTENT": {
+        "LABEL": "Page content",
+        "DESC": "Titles for your site pages (shown in the site menu per language)."
+      },
+      "BUSINESS_INFO": {
+        "LABEL": "Business info",
+        "DESC": "Your business name, description and address."
+      },
+      "CATEGORIES": {
+        "LABEL": "Categories",
+        "DESC": "Names and descriptions for your product categories."
+      },
+      "PRODUCTS": {
+        "LABEL": "Products",
+        "DESC": "Names and descriptions for your products."
+      },
+      "DEPARTMENTS": {
+        "LABEL": "Departments",
+        "DESC": "Names for your product departments."
+      },
+      "CMS": {
+        "LABEL": "CMS collections",
+        "DESC": "Content stored in your CMS collections."
+      }
+    },
+    "FIELDS": {
+      "TITLE": "Title",
+      "SUBTITLE": "Subtitle",
+      "BODY": "Body",
+      "NAME": "Name",
+      "DESCRIPTION": "Description",
+      "ADDRESS": "Address",
+      "PAGE_NAME": "Page title"
+    },
+    "STATUS": {
+      "TRANSLATED": "Translated",
+      "NOT_TRANSLATED": "Not translated",
+      "NEEDS_UPDATE": "Needs update"
+    },
+    "TOOLBAR": {
+      "ALL_ITEMS": "All items",
+      "ALL_STATUSES": "All statuses",
+      "SEARCH_PLACEHOLDER": "Search content"
+    },
+    "COL": {
+      "FIELD": "Field",
+      "SOURCE": "English (source)",
+      "TARGET": "{{lang}}",
+      "STATUS": "Status"
+    },
+    "ACTIONS": {
+      "MENU": "Actions",
+      "EXPORT": "Export content (CSV)",
+      "IMPORT": "Import translations (CSV)",
+      "AUTO_TRANSLATE": "Auto-translate"
+    },
+    "EXPORT": {
+      "DONE": "Content exported"
+    },
+    "IMPORT": {
+      "TITLE": "Import translations",
+      "SUBTITLE": "Review the changes before applying them to {{entity}}.",
+      "WILL_REPLACE": "translations will be replaced",
+      "REPLACE_HINT": "Existing target text for these rows will be overwritten. You can still review and save afterwards.",
+      "SKIPPED": "{{count}} row(s) skipped — unknown ids not in this group",
+      "AND_MORE": "…and {{count}} more",
+      "BLANK_IDS": "{{count}} row(s) had a blank ID and were ignored.",
+      "CONFIRM": "Apply import",
+      "DONE": "Translations imported",
+      "ERR_EMPTY": "The file is empty.",
+      "ERR_COLUMNS": "Missing required columns. The file must include an 'ID' and a 'Target' column.",
+      "ERR_NO_MATCH": "None of the rows match this group. Export a fresh file and try again.",
+      "WARN_BLANK_ID": "Blank ID"
+    },
+    "AUTO_TRANSLATE": {
+      "COMING_SOON": "Auto-translate is coming soon."
+    }
+  }
+}
