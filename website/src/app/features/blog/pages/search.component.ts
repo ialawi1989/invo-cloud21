@@ -1,6 +1,8 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { combineLatest } from 'rxjs';
+import { map, distinctUntilChanged } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 
 import { PublicBlogApiService } from '../services/public-blog-api.service';
@@ -114,8 +116,11 @@ export class SearchPage implements OnInit {
   t = t;
 
   async ngOnInit(): Promise<void> {
-    this.route.paramMap.subscribe(p => {
-      this.lang.set(p.get('lang') ?? 'en');
+    combineLatest([this.route.paramMap, this.route.queryParamMap]).pipe(
+      map(([p, q]) => p.get('lang') || q.get('lang') || 'en'),
+      distinctUntilChanged(),
+    ).subscribe(lang => {
+      this.lang.set(lang);
       this.bootstrap();
     });
     this.route.queryParamMap.subscribe(q => {

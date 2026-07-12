@@ -86,6 +86,10 @@ export class BlogSettingsComponent implements OnInit, CanLeaveComponent {
    *  toggles can flip them and the save handler can read them back. */
   supportedLangs = signal<string[]>(['en']);
   rtlLangs       = signal<string[]>([]);
+  /** Site-wide multilingual fields (auto-switch / URL structure) captured from
+   *  the loaded template and re-emitted on save, so editing Blog Settings never
+   *  wipes them — they're managed in the Multilingual manager. */
+  private langExtra: { autoSwitch?: boolean; urlStructure?: 'subdirectory' | 'subdomain' | 'parameter' } = {};
 
   /** Re-translates labels when ngx-translate finishes loading bundles. */
   private i18nTick = signal(0);
@@ -195,6 +199,12 @@ export class BlogSettingsComponent implements OnInit, CanLeaveComponent {
   private patchFromTemplate(t: BlogSettingsTemplate): void {
     this.supportedLangs.set([...t.languages.supported]);
     this.rtlLangs.set([...t.languages.rtlLanguages]);
+    // Preserve the site-wide multilingual fields (managed in the Multilingual
+    // manager) so saving Blog Settings never wipes them — one source of truth.
+    this.langExtra = {
+      autoSwitch:   t.languages.autoSwitch,
+      urlStructure: t.languages.urlStructure,
+    };
     this.form.patchValue({
       defaultLanguage:        t.languages.default,
       feedLayout:             t.layouts.feed,
@@ -327,6 +337,8 @@ export class BlogSettingsComponent implements OnInit, CanLeaveComponent {
           default:      v.defaultLanguage,
           supported:    [...this.supportedLangs()],
           rtlLanguages: this.rtlLangs().filter(c => this.supportedLangs().includes(c)),
+          // Carry through the site-wide multilingual fields untouched.
+          ...this.langExtra,
         },
         layouts: {
           feed:             v.feedLayout,

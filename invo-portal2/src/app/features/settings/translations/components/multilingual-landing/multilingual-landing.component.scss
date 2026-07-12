@@ -1,7 +1,8 @@
 // Multilingual landing — overview page. Reuses the settings slate/brand
 // vocabulary and global .btn classes; only layout lives here.
 
-:host { display: block; }
+// Fills the full-page wrapper's body and scrolls internally.
+:host { display: block; height: 100%; overflow-y: auto; }
 
 .ml {
   max-width: 1000px;
@@ -20,7 +21,10 @@
 
   &__title { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: #0f172a; letter-spacing: -0.01em; }
   &__sub { margin: 0; font-size: 14px; color: #64748b; }
+  &__actions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
 }
+// Anchor styled as a button (routerLink) — strip the link underline.
+.ml-head__actions a.btn { text-decoration: none; }
 
 .ml-card {
   background: #fff;

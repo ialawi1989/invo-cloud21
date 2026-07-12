@@ -17,6 +17,7 @@ import { merge } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
 import { withTranslations } from '@core/i18n/with-translations';
+import { AiService } from '@core/ai/ai.service';
 import { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
@@ -81,6 +82,10 @@ export class TranslationGroupComponent implements CanLeaveComponent {
   private destroyRef = inject(DestroyRef);
   private sample = inject(SampleTranslationService);
   private apiSource = inject(ApiTranslationService);
+  private ai = inject(AiService);
+
+  /** True while an AI auto-translate pass is running (guards re-entry). */
+  aiTranslating = signal<boolean>(false);
 
   private fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
@@ -358,9 +363,60 @@ export class TranslationGroupComponent implements CanLeaveComponent {
     this.publishProgress();
   }
 
-  private autoTranslate(): void {
-    // Machine translation is backend-dependent — not wired yet.
-    this.toast.info('TRANSLATIONS.AUTO_TRANSLATE.COMING_SOON');
+  /**
+   * Fill the untranslated rows in the current view via Content AI (same
+   * `AiService.generateStream` the blog editor uses). Results are written
+   * through the normal edit path, so they show as pending edits the user
+   * still saves explicitly. Only offered when AI is linked (shell gates the
+   * action), but we re-check per row implicitly via the stream's error.
+   */
+  private async autoTranslate(): Promise<void> {
+    if (this.aiTranslating()) return;
+    const langLabel = this.store.langLabel(this.store.targetLang()) || this.store.targetLang();
+    const pending = this.rows().filter(r => (r.source ?? '').trim() && !(r.target ?? '').trim());
+    if (!pending.length) {
+      this.toast.info('TRANSLATIONS.AUTO_TRANSLATE.NOTHING');
+      return;
+    }
+
+    this.aiTranslating.set(true);
+    this.store.busy.set(true);
+    let done = 0;
+    try {
+      for (const row of pending) {
+        try {
+          const out = await this.aiTranslateOne(row.source, langLabel);
+          if (out) { this.onEdit(row, out); done++; }
+        } catch { /* skip this row, keep going */ }
+      }
+    } finally {
+      this.aiTranslating.set(false);
+      this.store.busy.set(false);
+    }
+
+    if (done) {
+      this.toast.success(this.translate.instant('TRANSLATIONS.AUTO_TRANSLATE.DONE', { count: done }));
+    } else {
+      this.toast.error('TRANSLATIONS.AUTO_TRANSLATE.FAILED');
+    }
+  }
+
+  /** One streamed AI translation; resolves with the accumulated result. */
+  private aiTranslateOne(text: string, langLabel: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const controller = new AbortController();
+      const prompt =
+        `Translate the following user-interface text into ${langLabel}. ` +
+        `Return ONLY the translation — no quotes, labels, or extra commentary.`;
+      let acc = '';
+      this.ai.generateStream(
+        { task: 'custom', prompt, content: text },
+        (delta) => { acc += delta; },
+        controller.signal,
+      )
+        .then(() => resolve(acc.trim()))
+        .catch(reject);
+    });
   }
 
   // ─── Template helpers ───────────────────────────────────────────────

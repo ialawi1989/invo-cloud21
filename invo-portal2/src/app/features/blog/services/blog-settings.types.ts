@@ -20,6 +20,11 @@ export interface BlogLanguagesSettings {
   default:      string;
   supported:    string[];
   rtlLanguages: string[];
+  /** Site-wide multilingual behavior — edited in the Multilingual manager but
+   *  stored in this same `languages` object (single source of truth). Optional
+   *  so the Blog Settings page can carry them through untouched. */
+  autoSwitch?:   boolean;
+  urlStructure?: 'subdirectory' | 'subdomain' | 'parameter';
 }
 
 export interface BlogLayoutsSettings {

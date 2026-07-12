@@ -25,5 +25,8 @@ export class NotFoundPage implements OnInit {
   private route = inject(ActivatedRoute);
   lang = signal('en');
   t = t;
-  ngOnInit(): void { this.lang.set(this.route.snapshot.paramMap.get('lang') ?? 'en'); }
+  ngOnInit(): void {
+    const s = this.route.snapshot;
+    this.lang.set(s.paramMap.get('lang') || s.queryParamMap.get('lang') || 'en');
+  }
 }

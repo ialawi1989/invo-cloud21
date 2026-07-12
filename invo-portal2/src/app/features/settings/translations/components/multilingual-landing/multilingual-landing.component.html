@@ -4,12 +4,17 @@
       <h1 class="ml-head__title">{{ 'TRANSLATIONS.TITLE' | translate }}</h1>
       <p class="ml-head__sub">{{ 'TRANSLATIONS.LANDING.SUBTITLE' | translate }}</p>
     </div>
-    @if (addLangItems().length) {
-      <app-dropdown-menu-btn [items]="addLangItems()" align="end" [appendToBody]="true"
-                             triggerClass="btn btn-primary">
-        {{ 'TRANSLATIONS.LANDING.ADD_LANGUAGE' | translate }}
-      </app-dropdown-menu-btn>
-    }
+    <div class="ml-head__actions">
+      <a class="btn btn-default" routerLink="/settings/translations/general">
+        {{ 'TRANSLATIONS.GENERAL.SETTINGS' | translate }}
+      </a>
+      @if (addLangItems().length) {
+        <app-dropdown-menu-btn [items]="addLangItems()" align="end" [appendToBody]="true"
+                               triggerClass="btn btn-primary">
+          {{ 'TRANSLATIONS.LANDING.ADD_LANGUAGE' | translate }}
+        </app-dropdown-menu-btn>
+      }
+    </div>
   </header>
 
   <!-- Original language -->

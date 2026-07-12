@@ -5,6 +5,8 @@ import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
 
 import { MultilingualLandingComponent } from './components/multilingual-landing/multilingual-landing.component';
 import { TranslationsShellComponent } from './components/translations-shell/translations-shell.component';
+import { TranslationsFullPageComponent } from './components/translations-full-page/translations-full-page.component';
+import { MultilingualGeneralSettingsComponent } from './components/multilingual-general-settings/multilingual-general-settings.component';
 import { TranslationsStore } from './services/translations.store';
 import { FIRST_TRANSLATION_ENTITY, TRANSLATION_ENTITIES } from './translations.config';
 
@@ -35,8 +37,14 @@ export const TRANSLATIONS_ROUTES: Routes = [
     path: '',
     canActivate: [translationsLoaded],
     providers: [TranslationsStore],
+    // Full-page takeover: a top bar (Exit + title) wraps the landing + editor,
+    // which render into its <router-outlet>.
+    component: TranslationsFullPageComponent,
     children: [
       { path: '', component: MultilingualLandingComponent },
+
+      // General (multilingual) settings — declared before `:lang` so it wins.
+      { path: 'general', component: MultilingualGeneralSettingsComponent },
 
       {
         path: ':lang',

@@ -17,10 +17,16 @@ export const FEED_LAYOUTS: readonly FeedLayout[] = [
   'grid', 'list', 'masonry', 'magazine', 'sideBySide', 'editorial',
 ] as const;
 
+export type UrlStructure = 'subdirectory' | 'subdomain' | 'parameter';
+
 export interface PublicBlogLanguagesSettings {
   default:      string;
   supported:    string[];
   rtlLanguages: string[];
+  /** Auto-redirect first-time visitors to their browser language when supported. */
+  autoSwitch:   boolean;
+  /** How the language is encoded in the site URL. */
+  urlStructure: UrlStructure;
 }
 
 export interface PublicBlogLayoutsSettings {
@@ -112,7 +118,7 @@ export interface PublicBlogSettings {
 
 export function defaultPublicBlogSettings(): PublicBlogSettings {
   return {
-    languages: { default: 'en', supported: ['en'], rtlLanguages: ['ar', 'he', 'fa', 'ur'] },
+    languages: { default: 'en', supported: ['en'], rtlLanguages: ['ar'], autoSwitch: false, urlStructure: 'subdirectory' },
     layouts:   { feed: 'grid', categoryFeed: 'list' },
     display: {
       postsPerPage:      12,
@@ -150,6 +156,11 @@ export function normalizePublicBlogSettings(raw: any): PublicBlogSettings {
       rtlLanguages: Array.isArray(raw.languages?.rtlLanguages)
         ? raw.languages.rtlLanguages.map(String)
         : d.languages.rtlLanguages,
+      autoSwitch:   raw.languages?.autoSwitch === true,
+      urlStructure: (['subdirectory', 'subdomain', 'parameter'] as const)
+        .includes(raw.languages?.urlStructure)
+        ? raw.languages.urlStructure
+        : d.languages.urlStructure,
     },
     layouts: {
       feed:         coerceLayout(raw.layouts?.feed,         d.layouts.feed),

@@ -87,6 +87,15 @@ export const routes: Routes = [
       import('./features/blog/blog-composer.routes').then(m => m.BLOG_COMPOSER_ROUTES),
     canDeactivate: [unsavedChangesGuard],
   },
+  {
+    // Translation Manager — Wix-style full-page takeover (own top bar,
+    // no admin sidebar/topbar), like the builders above. Its own routes
+    // provide the shell + per-group grids.
+    path: 'settings/translations',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/settings/translations/translations.routes').then(m => m.TRANSLATIONS_ROUTES),
+  },
 
   // ── Protected (requires login) ───────────────────────────────────────────
   {
@@ -373,14 +382,6 @@ export const routes: Routes = [
         path: 'settings/service-management',
         loadChildren: () =>
           import('./features/settings/service-management/service-management.routes').then(m => m.SERVICE_MANAGEMENT_ROUTES)
-      },
-      {
-        // Translations — Multilingual / Translation Manager. Persistent
-        // shell (entity groups sidebar + target-language selector +
-        // filters) wrapping a config-driven, per-group editable grid.
-        path: 'settings/translations',
-        loadChildren: () =>
-          import('./features/settings/translations/translations.routes').then(m => m.TRANSLATIONS_ROUTES)
       },
       {
         // Blog — top-level area with Posts / Categories & Tags / Comments /

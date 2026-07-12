@@ -2,6 +2,7 @@
   "TRANSLATIONS": {
     "TITLE": "Translations",
     "BACK": "Back to Multilingual",
+    "EXIT": "Exit to Settings",
     "TARGET_LANGUAGE": "Translating to",
     "LANDING": {
       "SUBTITLE": "Add languages and translate your site to reach visitors in new markets.",
@@ -20,6 +21,31 @@
       "NONE": "No additional languages yet. Add one to start translating.",
       "EDIT": "Edit translations",
       "REMOVE": "Remove language"
+    },
+    "GENERAL": {
+      "SETTINGS": "Settings",
+      "TITLE": "General Settings",
+      "SUBTITLE": "Manage the settings that apply to all your site languages.",
+      "AUTO_SWITCH": "Language auto-switch",
+      "AUTO_SWITCH_DESC": "Automatically show your site to visitors in their browser language. (Not recommended for SEO)",
+      "AUTO_SWITCH_WARN": "Activating language auto-switch is not recommended for search engines and will harm your site's SEO.",
+      "DEFAULT_LANG": "Default visitor language",
+      "DEFAULT_LANG_DESC": "This is the first language visitors see when they arrive on your site. It can be different than the original language.",
+      "ORIGINAL": "Original",
+      "URL_STRUCTURE": "URL structure",
+      "URL_STRUCTURE_DESC": "This is how visitors and search engines see your site's address in languages.",
+      "URL_subdirectory": "Subdirectories",
+      "URL_subdomain": "Subdomains",
+      "URL_parameter": "Language parameters",
+      "RECOMMENDED": "Recommended",
+      "EG": "e.g.,",
+      "URL_NOTE": "Remember, it can take some time for search engines to recognize the changes you make to your site's URL structure.",
+      "DIRECTION": "Text direction",
+      "DIRECTION_DESC": "Set the reading direction for each language. Right-to-left languages (Arabic, Persian…) flip the site layout.",
+      "LTR": "LTR",
+      "RTL": "RTL",
+      "SAVED": "Settings saved",
+      "SAVE_FAILED": "Could not save settings"
     },
     "PROGRESS": "{{translated}} / {{total}} words translated",
     "COMING_SOON": "Coming soon",
@@ -111,7 +137,10 @@
       "WARN_BLANK_ID": "Blank ID"
     },
     "AUTO_TRANSLATE": {
-      "COMING_SOON": "Auto-translate is coming soon."
+      "COMING_SOON": "Auto-translate is coming soon.",
+      "NOTHING": "Nothing to translate on this view — all rows already have a translation.",
+      "DONE": "Auto-translated {{count}} field(s). Review and Save to keep them.",
+      "FAILED": "Auto-translate failed. Check your Content AI settings and try again."
     }
   }
 }

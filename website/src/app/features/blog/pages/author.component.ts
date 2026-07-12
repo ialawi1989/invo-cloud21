@@ -1,6 +1,8 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { combineLatest } from 'rxjs';
+import { map, distinctUntilChanged } from 'rxjs/operators';
 
 import { PublicBlogApiService } from '../services/public-blog-api.service';
 import { BlogSettingsService } from '../services/blog-settings.service';
@@ -125,9 +127,12 @@ export class AuthorPage implements OnInit {
   t = t;
 
   async ngOnInit(): Promise<void> {
-    this.route.paramMap.subscribe(p => {
-      this.lang.set(p.get('lang') ?? 'en');
-      this.authorEmployeeId.set(p.get('authorEmployeeId') ?? '');
+    combineLatest([this.route.paramMap, this.route.queryParamMap]).pipe(
+      map(([p, q]) => ({ lang: p.get('lang') || q.get('lang') || 'en', id: p.get('authorEmployeeId') ?? '' })),
+      distinctUntilChanged((a, b) => a.lang === b.lang && a.id === b.id),
+    ).subscribe(({ lang, id }) => {
+      this.lang.set(lang);
+      this.authorEmployeeId.set(id);
       this.bootstrap();
     });
     this.route.queryParamMap.subscribe(q => {

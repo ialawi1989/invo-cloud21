@@ -31,11 +31,27 @@ export const ORIGINAL_LANG = 'en';
  * English is the source, so it is not offered as a target.
  */
 const DEFAULT_LANGS: TranslationLang[] = [
-  { code: 'ar', label: 'Arabic',     nativeLabel: 'العربية' },
-  { code: 'fr', label: 'French',     nativeLabel: 'Français' },
-  { code: 'es', label: 'Spanish',    nativeLabel: 'Español' },
-  { code: 'de', label: 'German',     nativeLabel: 'Deutsch' },
-  { code: 'tr', label: 'Turkish',    nativeLabel: 'Türkçe' },
+  // RTL languages
+  { code: 'ar', label: 'Arabic',      nativeLabel: 'العربية' },
+  { code: 'fa', label: 'Persian',     nativeLabel: 'فارسی' },
+  { code: 'ur', label: 'Urdu',        nativeLabel: 'اردو' },
+  // LTR languages
+  { code: 'fr', label: 'French',      nativeLabel: 'Français' },
+  { code: 'es', label: 'Spanish',     nativeLabel: 'Español' },
+  { code: 'de', label: 'German',      nativeLabel: 'Deutsch' },
+  { code: 'it', label: 'Italian',     nativeLabel: 'Italiano' },
+  { code: 'pt', label: 'Portuguese',  nativeLabel: 'Português' },
+  { code: 'nl', label: 'Dutch',       nativeLabel: 'Nederlands' },
+  { code: 'tr', label: 'Turkish',     nativeLabel: 'Türkçe' },
+  { code: 'ru', label: 'Russian',     nativeLabel: 'Русский' },
+  { code: 'zh', label: 'Chinese',     nativeLabel: '中文' },
+  { code: 'ja', label: 'Japanese',    nativeLabel: '日本語' },
+  { code: 'ko', label: 'Korean',      nativeLabel: '한국어' },
+  { code: 'hi', label: 'Hindi',       nativeLabel: 'हिन्दी' },
+  { code: 'id', label: 'Indonesian',  nativeLabel: 'Bahasa Indonesia' },
+  { code: 'pl', label: 'Polish',      nativeLabel: 'Polski' },
+  { code: 'sv', label: 'Swedish',     nativeLabel: 'Svenska' },
+  { code: 'uk', label: 'Ukrainian',   nativeLabel: 'Українська' },
 ];
 
 @Injectable()

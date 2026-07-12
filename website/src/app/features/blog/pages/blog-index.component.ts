@@ -1,6 +1,8 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { combineLatest } from 'rxjs';
+import { map, distinctUntilChanged } from 'rxjs/operators';
 
 import { PublicBlogApiService } from '../services/public-blog-api.service';
 import { BlogSettingsService } from '../services/blog-settings.service';
@@ -148,7 +150,10 @@ export class BlogIndexPage implements OnInit {
   t = t;
 
   async ngOnInit(): Promise<void> {
-    this.route.paramMap.subscribe(p => { this.lang.set(p.get('lang') ?? 'en'); this.bootstrap(); });
+    combineLatest([this.route.paramMap, this.route.queryParamMap]).pipe(
+      map(([p, q]) => p.get('lang') || q.get('lang') || 'en'),
+      distinctUntilChanged(),
+    ).subscribe(lang => { this.lang.set(lang); this.bootstrap(); });
     this.route.queryParamMap.subscribe(q => {
       const newPage = Number(q.get('page') ?? '1') || 1;
       if (newPage !== this.page()) { this.page.set(newPage); this.load(); }

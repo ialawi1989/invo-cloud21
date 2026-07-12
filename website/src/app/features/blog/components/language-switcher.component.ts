@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { inject } from '@angular/core';
 
 import { nativeLanguageName } from '../i18n/i18n';
+import { BlogSettingsService } from '../services/blog-settings.service';
 
 /**
  * Language switcher used in the blog header and on the post page.
@@ -82,6 +83,7 @@ export class LanguageSwitcherComponent {
   @Input() urlFor: ((lang: string) => string | null) | null = null;
 
   private router = inject(Router);
+  private settingsSvc = inject(BlogSettingsService);
   open = signal(false);
 
   name(code: string): string { return nativeLanguageName(code); }
@@ -90,19 +92,33 @@ export class LanguageSwitcherComponent {
     this.open.set(false);
     if (lang === this.current) return;
 
-    if (this.urlFor) {
-      const target = this.urlFor(lang);
-      if (target) { this.router.navigateByUrl(target); return; }
-    }
+    const s = this.settingsSvc.settings();
+    const supported = s.languages.supported;
 
-    // Replace the first URL segment with the new lang code.
-    const url = this.router.url;
-    const [path, query] = url.split('?');
-    const segments = path.split('/').filter(Boolean);
-    if (segments.length === 0) {
-      this.router.navigateByUrl(`/${lang}/blog`);
+    // Custom resolver wins (e.g. the post page's translated-slug URL). It
+    // returns a subdirectory-shaped path (/xx/blog/slug).
+    let resolved: string | null = null;
+    if (this.urlFor) resolved = this.urlFor(lang);
+
+    if (s.languages.urlStructure === 'parameter') {
+      // Parameter mode: lang-less path + `?lang=`. Default language → clean URL
+      // (no param); a non-default language adds `?lang=xx`.
+      const [rawPath, rawQuery] = (resolved ?? this.router.url).split('?');
+      const segs = rawPath.split('/').filter(Boolean);
+      if (segs.length && supported.includes(segs[0])) segs.shift(); // drop any lang segment
+      const params = new URLSearchParams(rawQuery ?? '');
+      if (lang === s.languages.default) params.delete('lang');
+      else params.set('lang', lang);
+      const q = params.toString();
+      this.router.navigateByUrl('/' + segs.join('/') + (q ? '?' + q : ''));
       return;
     }
+
+    // Subdirectory mode.
+    if (resolved) { this.router.navigateByUrl(resolved); return; }
+    const [path, query] = this.router.url.split('?');
+    const segments = path.split('/').filter(Boolean);
+    if (segments.length === 0) { this.router.navigateByUrl(`/${lang}/blog`); return; }
     segments[0] = lang;
     this.router.navigateByUrl(`/${segments.join('/')}${query ? '?' + query : ''}`);
   }

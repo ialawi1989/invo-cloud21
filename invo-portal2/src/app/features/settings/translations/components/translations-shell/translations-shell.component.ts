@@ -16,6 +16,7 @@ import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
 import { withTranslations } from '@core/i18n/with-translations';
+import { AiService } from '@core/ai/ai.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import {
   DropdownMenuBtnComponent,
@@ -70,6 +71,11 @@ export class TranslationsShellComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private qp = inject(QueryParamsService);
   private destroyRef = inject(DestroyRef);
+  private ai = inject(AiService);
+
+  /** True once the company Content AI plugin is enabled + keyed — gates the
+   *  "Auto-translate" action (hidden entirely when AI isn't linked to an API). */
+  aiAvailable = signal(false);
 
   readonly groups = translationGroups();
 
@@ -95,7 +101,7 @@ export class TranslationsShellComponent implements OnInit {
   actionItems = computed<DropdownMenuBtnItem[]>(() => {
     this.i18nTick();
     const busy = this.store.busy();
-    return [
+    const items: DropdownMenuBtnItem[] = [
       {
         label: 'TRANSLATIONS.ACTIONS.EXPORT',
         disabled: busy,
@@ -108,14 +114,19 @@ export class TranslationsShellComponent implements OnInit {
         iconPath: 'M12 21V9m0 0l-4 4m4-4l4 4M4 7V5a2 2 0 012-2h12a2 2 0 012 2v2',
         click: () => this.store.emit('import'),
       },
-      {
+    ];
+    // Auto-translate is shown only when Content AI is linked to an API
+    // (company plugin enabled + key stored) — mirrors the blog editor.
+    if (this.aiAvailable()) {
+      items.push({
         label: 'TRANSLATIONS.ACTIONS.AUTO_TRANSLATE',
         separator: true,
         disabled: busy,
         iconPath: 'M4 5h7M9 3v2c0 4-2 7-5 9m3-4c0 2 2 4 5 5M14 21l4-9 4 9m-7-3h6',
         click: () => this.store.emit('auto-translate'),
-      },
-    ];
+      });
+    }
+    return items;
   });
 
   // ─── Toolbar: filters ───────────────────────────────────────────────
@@ -190,6 +201,12 @@ export class TranslationsShellComponent implements OnInit {
     this.searchDraft.set(p.search);
     this.status.set(p.status);
     this.item.set(p.item);
+
+    // Resolve Content AI availability (enabled + key stored) to gate the
+    // Auto-translate action. Fails soft to hidden on any error.
+    void this.ai.getCompanySettings()
+      .then(s => this.aiAvailable.set(s.enabled && s.apiKeySet))
+      .catch(() => this.aiAvailable.set(false));
   }
 
   // ─── URL sync ───────────────────────────────────────────────────────

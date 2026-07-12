@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -41,7 +41,7 @@ interface LangRow {
 @Component({
   selector: 'app-multilingual-landing',
   standalone: true,
-  imports: [CommonModule, TranslateModule, DropdownMenuBtnComponent],
+  imports: [CommonModule, RouterModule, TranslateModule, DropdownMenuBtnComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './multilingual-landing.component.html',
   styleUrl: './multilingual-landing.component.scss',

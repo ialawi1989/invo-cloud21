@@ -1,6 +1,8 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { combineLatest } from 'rxjs';
+import { map, distinctUntilChanged } from 'rxjs/operators';
 
 import { PublicBlogApiService } from '../services/public-blog-api.service';
 import { BlogSettingsService } from '../services/blog-settings.service';
@@ -301,9 +303,14 @@ export class PostPage implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.route.paramMap.subscribe(p => {
-      this.lang.set(p.get('lang') ?? 'en');
-      this.slug.set(p.get('slug') ?? '');
+    // Language comes from the `:lang` path (subdirectory mode) OR the `?lang=`
+    // query (parameter mode); re-bootstrap only when lang or slug changes.
+    combineLatest([this.route.paramMap, this.route.queryParamMap]).pipe(
+      map(([p, q]) => ({ lang: p.get('lang') || q.get('lang') || 'en', slug: p.get('slug') ?? '' })),
+      distinctUntilChanged((a, b) => a.lang === b.lang && a.slug === b.slug),
+    ).subscribe(({ lang, slug }) => {
+      this.lang.set(lang);
+      this.slug.set(slug);
       this.bootstrap();
     });
   }

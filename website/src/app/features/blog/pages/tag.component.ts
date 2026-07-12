@@ -1,6 +1,8 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { combineLatest } from 'rxjs';
+import { map, distinctUntilChanged } from 'rxjs/operators';
 
 import { PublicBlogApiService } from '../services/public-blog-api.service';
 import { BlogSettingsService } from '../services/blog-settings.service';
@@ -102,9 +104,12 @@ export class TagPage implements OnInit {
   t = t;
 
   async ngOnInit(): Promise<void> {
-    this.route.paramMap.subscribe(p => {
-      this.lang.set(p.get('lang') ?? 'en');
-      this.slug.set(p.get('tagSlug') ?? '');
+    combineLatest([this.route.paramMap, this.route.queryParamMap]).pipe(
+      map(([p, q]) => ({ lang: p.get('lang') || q.get('lang') || 'en', slug: p.get('tagSlug') ?? '' })),
+      distinctUntilChanged((a, b) => a.lang === b.lang && a.slug === b.slug),
+    ).subscribe(({ lang, slug }) => {
+      this.lang.set(lang);
+      this.slug.set(slug);
       this.bootstrap();
     });
     this.route.queryParamMap.subscribe(q => {

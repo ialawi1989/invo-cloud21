@@ -18,10 +18,19 @@ import { RenderMode, ServerRoute } from '@angular/ssr';
 // must stay listed BEFORE the catch-all ":lang/:page" so a blog URL is
 // never downgraded to the client-rendered customizer.
 export const serverRoutes: ServerRoute[] = [
-  // Lang-less redirects resolve the default language at runtime — CSR.
+  // Home — CSR (customizer canvas in parameter mode; lang-less redirect in
+  // subdirectory mode).
   { path: '', renderMode: RenderMode.Client },
 
-  // Blog — SSR for SEO/crawlers.
+  // Parameter-mode blog (lang-less, ?lang=) — SSR for SEO/crawlers.
+  { path: 'blog', renderMode: RenderMode.Server },
+  { path: 'blog/search', renderMode: RenderMode.Server },
+  { path: 'blog/category/:categorySlug', renderMode: RenderMode.Server },
+  { path: 'blog/tag/:tagSlug', renderMode: RenderMode.Server },
+  { path: 'blog/authors/:authorEmployeeId', renderMode: RenderMode.Server },
+  { path: 'blog/:slug', renderMode: RenderMode.Server },
+
+  // Subdirectory-mode blog — SSR for SEO/crawlers.
   { path: ':lang/blog', renderMode: RenderMode.Server },
   { path: ':lang/blog/search', renderMode: RenderMode.Server },
   { path: ':lang/blog/category/:categorySlug', renderMode: RenderMode.Server },
@@ -29,10 +38,12 @@ export const serverRoutes: ServerRoute[] = [
   { path: ':lang/blog/authors/:authorEmployeeId', renderMode: RenderMode.Server },
   { path: ':lang/blog/:slug', renderMode: RenderMode.Server },
 
-  // Customizer canvas (home + arbitrary page) — must stay CSR.
+  // Customizer canvas (home + arbitrary page) — must stay CSR. `:page` is the
+  // parameter-mode lang-less page; `:lang` / `:lang/:page` are subdirectory.
+  { path: ':page', renderMode: RenderMode.Client },
   { path: ':lang', renderMode: RenderMode.Client },
   { path: ':lang/:page', renderMode: RenderMode.Client },
 
-  // Everything else (lang-less "/blog" redirect, not-found, etc.) — SSR.
+  // Everything else (not-found, etc.) — SSR.
   { path: '**', renderMode: RenderMode.Server },
 ];
