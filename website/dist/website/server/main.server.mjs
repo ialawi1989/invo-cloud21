@@ -1,16 +1,11 @@
 import './polyfills.server.mjs';
 import {
-  APP_CONFIG,
-  BlogSettingsService,
-  PreviewService,
-  TenantService,
-  environment
-} from "./chunk-LDQ36KWW.mjs";
-import {
   APP_BASE_HREF,
+  APP_CONFIG,
   APP_ID,
   ActivatedRoute,
   ApplicationRef,
+  BlogSettingsService,
   BrowserDomAdapter,
   BrowserModule,
   CSP_NONCE,
@@ -43,6 +38,7 @@ import {
   PLATFORM_INITIALIZER,
   PLATFORM_SERVER_ID,
   PlatformLocation,
+  PreviewService,
   REQUEST,
   REQUEST_CONTEXT,
   RESPONSE_INIT,
@@ -52,6 +48,7 @@ import {
   SSR_CONTENT_INTEGRITY_MARKER,
   Subject,
   TESTABILITY,
+  TenantService,
   Testability,
   TransferState,
   ViewportScroller,
@@ -62,6 +59,7 @@ import {
   computed,
   createEnvironmentInjector,
   createPlatformFactory,
+  environment,
   firstValueFrom,
   getDOM,
   inject,
@@ -121,7 +119,7 @@ import {
   ɵɵtext,
   ɵɵtextInterpolate,
   ɵɵtextInterpolate1
-} from "./chunk-O2VCL7SJ.mjs";
+} from "./chunk-CTHK6LKW.mjs";
 import {
   __async,
   __asyncGenerator,
@@ -29978,12 +29976,12 @@ var AppComponent = class _AppComponent {
 
 // src/app/features/blog/blog.routes.ts
 var BLOG_CHILDREN = [
-  __spreadValues({ path: "", loadComponent: () => import("./blog-index.component-EGDNAVGF.mjs").then((m) => m.BlogIndexPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/blog-index.component.ts" } : {}),
-  __spreadValues({ path: "search", loadComponent: () => import("./search.component-RD6EQWQ5.mjs").then((m) => m.SearchPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/search.component.ts" } : {}),
-  __spreadValues({ path: "category/:categorySlug", loadComponent: () => import("./category.component-PQ7MREYY.mjs").then((m) => m.CategoryPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/category.component.ts" } : {}),
-  __spreadValues({ path: "tag/:tagSlug", loadComponent: () => import("./tag.component-ZRMMQA4U.mjs").then((m) => m.TagPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/tag.component.ts" } : {}),
-  __spreadValues({ path: "authors/:authorEmployeeId", loadComponent: () => import("./author.component-QMK7MSEC.mjs").then((m) => m.AuthorPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/author.component.ts" } : {}),
-  __spreadValues({ path: ":slug", loadComponent: () => import("./post.component-HDPCE77H.mjs").then((m) => m.PostPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/post.component.ts" } : {})
+  __spreadValues({ path: "", loadComponent: () => import("./blog-index.component-F7NQNCYN.mjs").then((m) => m.BlogIndexPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/blog-index.component.ts" } : {}),
+  __spreadValues({ path: "search", loadComponent: () => import("./search.component-MDCKJQUQ.mjs").then((m) => m.SearchPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/search.component.ts" } : {}),
+  __spreadValues({ path: "category/:categorySlug", loadComponent: () => import("./category.component-S6PD5A5C.mjs").then((m) => m.CategoryPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/category.component.ts" } : {}),
+  __spreadValues({ path: "tag/:tagSlug", loadComponent: () => import("./tag.component-I52YVDC4.mjs").then((m) => m.TagPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/tag.component.ts" } : {}),
+  __spreadValues({ path: "authors/:authorEmployeeId", loadComponent: () => import("./author.component-UY3WMWJ6.mjs").then((m) => m.AuthorPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/author.component.ts" } : {}),
+  __spreadValues({ path: ":slug", loadComponent: () => import("./post.component-FQF4U4NJ.mjs").then((m) => m.PostPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/post.component.ts" } : {})
 ];
 var langGuard = (route) => __async(null, null, function* () {
   const settings = yield inject(BlogSettingsService).load();
@@ -30055,11 +30053,6 @@ var rootRedirect = () => __async(null, null, function* () {
   const queryParams = currentQueryParams(router);
   return router.createUrlTree([yield defaultLang()], { queryParams });
 });
-var blogRedirect = () => __async(null, null, function* () {
-  const router = inject(Router);
-  const queryParams = currentQueryParams(router);
-  return router.createUrlTree([yield defaultLang(), "blog"], { queryParams });
-});
 var langGuard2 = (route, state) => __async(null, null, function* () {
   const router = inject(Router);
   const svc = inject(BlogSettingsService);
@@ -30092,7 +30085,7 @@ var APP_ROUTES = [
     path: "",
     pathMatch: "full",
     canMatch: [isParamMode],
-    loadComponent: () => import("./customizer-root.component-X57BL2PZ.mjs").then((m) => m.CustomizerRoot)
+    loadComponent: () => import("./customizer-root.component-DQNRN2TZ.mjs").then((m) => m.CustomizerRoot)
   }, true ? { \u0275entryName: "src/app/customizer-root.component.ts" } : {}),
   {
     path: "blog",
@@ -30102,27 +30095,31 @@ var APP_ROUTES = [
   __spreadValues({
     path: ":page",
     canMatch: [isParamMode],
-    loadComponent: () => import("./customizer-root.component-X57BL2PZ.mjs").then((m) => m.CustomizerRoot)
+    loadComponent: () => import("./customizer-root.component-DQNRN2TZ.mjs").then((m) => m.CustomizerRoot)
   }, true ? { \u0275entryName: "src/app/customizer-root.component.ts" } : {}),
   // ── Subdirectory mode + lang-less entry points ────────────────────────
   { path: "", pathMatch: "full", canMatch: [rootRedirect], children: [] },
-  { path: "blog", canMatch: [blogRedirect], children: [] },
+  // Lang-less blog entry — render the DEFAULT language's blog directly at
+  // `/blog` (no redirect to `/:lang/blog`). The blog pages resolve the active
+  // language from the `:lang` segment / `?lang=` query, falling back to the
+  // default when neither is present, so `/blog` serves the default language.
+  { path: "blog", children: BLOG_CHILDREN },
   // Blog at /:lang/blog/* — before ":lang/:page" so "blog" is never a page slug.
   ...BLOG_ROUTES,
   // Storefront home + arbitrary page (customizer canvas, CSR).
   __spreadValues({
     path: ":lang",
     canActivate: [langGuard2],
-    loadComponent: () => import("./customizer-root.component-X57BL2PZ.mjs").then((m) => m.CustomizerRoot)
+    loadComponent: () => import("./customizer-root.component-DQNRN2TZ.mjs").then((m) => m.CustomizerRoot)
   }, true ? { \u0275entryName: "src/app/customizer-root.component.ts" } : {}),
   __spreadValues({
     path: ":lang/:page",
     canActivate: [langGuard2],
-    loadComponent: () => import("./customizer-root.component-X57BL2PZ.mjs").then((m) => m.CustomizerRoot)
+    loadComponent: () => import("./customizer-root.component-DQNRN2TZ.mjs").then((m) => m.CustomizerRoot)
   }, true ? { \u0275entryName: "src/app/customizer-root.component.ts" } : {}),
   // Legacy lang-less deep links → prepend default language (subdirectory only).
   { path: "**", canMatch: [langlessRedirect], children: [] },
-  __spreadValues({ path: "**", loadComponent: () => import("./not-found.component-QFRMRNXG.mjs").then((m) => m.NotFoundPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/not-found.component.ts" } : {})
+  __spreadValues({ path: "**", loadComponent: () => import("./not-found.component-66LL7LMY.mjs").then((m) => m.NotFoundPage) }, true ? { \u0275entryName: "src/app/features/blog/pages/not-found.component.ts" } : {})
 ];
 
 // src/app/app.config.ts

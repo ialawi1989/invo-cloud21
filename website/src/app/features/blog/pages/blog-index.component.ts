@@ -214,13 +214,12 @@ export class BlogIndexPage implements OnInit {
   }
 
   private applySeo(): void {
-    const origin = this.settingsSvc.originUrl();
     const lang = this.lang();
-    const alts = this.supportedLangs().map(l => ({ lang: l, url: `${origin}/${l}/blog` }));
+    const alts = this.supportedLangs().map(l => ({ lang: l, url: this.settingsSvc.blogUrl(l) }));
     this.seo.apply({
       title: `${this.t(lang, 'blog')} | ${this.siteName()}`,
       description: this.tagline() || `${this.siteName()} — ${this.t(lang, 'blog')}`,
-      url: `${origin}/${lang}/blog`,
+      url: this.settingsSvc.blogUrl(lang),
       type: 'website',
       locale: lang,
       hreflang: alts,

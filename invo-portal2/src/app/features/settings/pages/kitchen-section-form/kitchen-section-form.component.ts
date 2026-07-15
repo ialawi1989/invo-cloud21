@@ -215,7 +215,6 @@ export class KitchenSectionFormComponent implements OnInit, CanLeaveComponent {
   // ─── Translation modal ────────────────────────────────────────────────
   async openNameTranslationModal(): Promise<void> {
     const currentEn = String(this.nameCtrl.value ?? '').trim();
-    const currentAr = this.original()?.translation?.name?.ar ?? '';
 
     const ref = this.modal.open<
       TranslationModalComponent,
@@ -224,7 +223,7 @@ export class KitchenSectionFormComponent implements OnInit, CanLeaveComponent {
     >(TranslationModalComponent, {
       size: 'sm',
       data: {
-        initial: { en: currentEn, ar: currentAr },
+        initial: { ...(this.original()?.translation?.name ?? {}), en: currentEn },
         label:   this.translate.instant('SETTINGS.KITCHEN.NAME'),
       },
       closeOnBackdrop: false,
@@ -236,7 +235,7 @@ export class KitchenSectionFormComponent implements OnInit, CanLeaveComponent {
     const orig = this.original() ?? { id: '', name: result.en, products: [] } as KitchenSectionDetails;
     orig.translation = {
       ...(orig.translation ?? {}),
-      name: { en: result.en, ar: result.ar },
+      name: { ...result },
     };
     this.original.set({ ...orig });
     this.form.markAsDirty();

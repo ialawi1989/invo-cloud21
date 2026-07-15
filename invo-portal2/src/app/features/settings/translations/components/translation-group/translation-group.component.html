@@ -1,3 +1,15 @@
+@if (aiTranslating()) {
+  <!-- Blocking overlay: auto-translate is running; user can't leave or
+       interact until it finishes. -->
+  <div class="tg-ai-overlay" role="alertdialog" aria-live="assertive" aria-busy="true">
+    <div class="tg-ai-box">
+      <span class="tg-ai-spinner"></span>
+      <p class="tg-ai-text">{{ 'TRANSLATIONS.AUTO_TRANSLATE.WORKING' | translate }}</p>
+      <p class="tg-ai-hint">{{ 'TRANSLATIONS.AUTO_TRANSLATE.WORKING_HINT' | translate }}</p>
+    </div>
+  </div>
+}
+
 @if (entity && !entity.ready) {
   <!-- ── Coming soon (backend not ready) ────────────────────────── -->
   <div class="tg-soon">
@@ -34,6 +46,28 @@
       </div>
     }
 
+    @if (selectedCount() > 0) {
+      <div class="tg-bulkbar">
+        <span class="tg-bulkbar__note">
+          {{ 'TRANSLATIONS.RESET.SELECTED' | translate:{ count: selectedCount() } }}
+        </span>
+        <div class="tg-bulkbar__actions">
+          <button type="button" class="btn btn-ghost btn-sm" (click)="clearSelection()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+          @if (store.aiAvailable()) {
+            <button type="button" class="btn btn-primary btn-sm" [disabled]="store.busy()"
+                    (click)="autoTranslateSelected()">
+              {{ 'TRANSLATIONS.AUTO_TRANSLATE.SELECTED' | translate }}
+            </button>
+          }
+          <button type="button" class="btn btn-danger btn-sm" [disabled]="store.busy()" (click)="resetSelected()">
+            {{ 'TRANSLATIONS.RESET.TO_DEFAULT' | translate }}
+          </button>
+        </div>
+      </div>
+    }
+
     <div class="tg-card">
       @if (loading() && rows().length === 0) {
         <div class="tg-loading"><span class="tg-spinner"></span></div>
@@ -45,6 +79,10 @@
         <table class="tg-table">
           <thead>
             <tr>
+              <th class="tg-table__check">
+                <input type="checkbox" [checked]="allOnPageSelected()" (change)="toggleSelectAll()"
+                       [attr.aria-label]="'TRANSLATIONS.RESET.SELECT_ALL' | translate"/>
+              </th>
               <th class="tg-table__field">{{ 'TRANSLATIONS.COL.FIELD' | translate }}</th>
               <th class="tg-table__source">{{ 'TRANSLATIONS.COL.SOURCE' | translate }}</th>
               <th class="tg-table__target">
@@ -55,7 +93,11 @@
           </thead>
           <tbody>
             @for (row of rows(); track row.id) {
-              <tr>
+              <tr [class.tg-row--selected]="isSelected(row.id)">
+                <td class="tg-table__check">
+                  <input type="checkbox" [checked]="isSelected(row.id)" (change)="toggleRow(row.id)"
+                         [attr.aria-label]="row.recordLabel"/>
+                </td>
                 <td class="tg-table__field">
                   <span class="tg-field__record">{{ row.recordLabel }}</span>
                   <span class="tg-field__name">{{ row.fieldLabel | translate }}</span>

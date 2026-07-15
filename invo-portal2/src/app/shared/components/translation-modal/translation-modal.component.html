@@ -20,40 +20,108 @@
   </header>
 
   <div class="tm__body">
-    <div class="tm__field">
-      <label class="tm__label" for="tm-en">
-        {{ 'COMMON.TEXT_IN_ENGLISH' | translate }}
-      </label>
-      <textarea
-        id="tm-en"
-        class="tm__input"
-        rows="3"
-        [ngModel]="en()"
-        (ngModelChange)="en.set($event)"
-        dir="ltr"
-      ></textarea>
-    </div>
-
-    <div class="tm__field">
-      <label class="tm__label" for="tm-ar">
-        {{ 'COMMON.TEXT_IN_ARABIC' | translate }}
-      </label>
-      <textarea
-        id="tm-ar"
-        class="tm__input"
-        rows="3"
-        [ngModel]="ar()"
-        (ngModelChange)="ar.set($event)"
-        dir="rtl"
-      ></textarea>
-    </div>
+    @if (!loading() && canAutoTranslate()) {
+      <div class="tm__actions">
+        <button type="button" class="tm__ai" (click)="autoTranslate()" [disabled]="translating()">
+          @if (translating()) {
+            <span class="tm__btn-spinner"></span>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M17.9903 3.40194C17.9435 3.16823 17.7383 3 17.5 3 17.2617 3 17.0565 3.16823 17.0097 3.40194L16.9019 3.94078C16.704 4.93043 15.9304 5.70401 14.9408 5.90194L14.4019 6.00971C14.1682 6.05645 14 6.26166 14 6.5 14 6.73834 14.1682 6.94355 14.4019 6.99029L14.9408 7.09806C15.9304 7.29599 16.704 8.06957 16.9019 9.05922L17.0097 9.59806C17.0565 9.83177 17.2617 10 17.5 10 17.7383 10 17.9435 9.83177 17.9903 9.59806L18.0981 9.05922C18.296 8.06957 19.0696 7.29599 20.0592 7.09806L20.5981 6.99029C20.8318 6.94355 21 6.73834 21 6.5 21 6.26166 20.8318 6.05645 20.5981 6.00971L20.0592 5.90194C19.0696 5.70401 18.296 4.93043 18.0981 3.94078L17.9903 3.40194ZM16.1685 6.5C16.7252 6.18626 17.1863 5.72521 17.5 5.1685 17.8137 5.72521 18.2748 6.18626 18.8315 6.5 18.2748 6.81374 17.8137 7.27479 17.5 7.8315 17.1863 7.27479 16.7252 6.81374 16.1685 6.5ZM10.9824 6.36844C10.9231 6.15091 10.7255 6 10.5 6 10.2745 6 10.0769 6.15091 10.0176 6.36844L9.57009 8.00939C8.96451 10.2298 7.22985 11.9645 5.00939 12.5701L3.36844 13.0176C3.15091 13.0769 3 13.2745 3 13.5 3 13.7255 3.15091 13.9231 3.36844 13.9824L5.00939 14.4299C7.22985 15.0355 8.96451 16.7702 9.57009 18.9906L10.0176 20.6316C10.0769 20.8491 10.2745 21 10.5 21 10.7255 21 10.9231 20.8491 10.9824 20.6316L11.4299 18.9906C12.0355 16.7702 13.7702 15.0355 15.9906 14.4299L17.6316 13.9824C17.8491 13.9231 18 13.7255 18 13.5 18 13.2745 17.8491 13.0769 17.6316 13.0176L15.9906 12.5701C13.7702 11.9645 12.0355 10.2298 11.4299 8.00939L10.9824 6.36844ZM5.39612 13.5C7.85779 12.7833 9.7833 10.8578 10.5 8.39612 11.2167 10.8578 13.1422 12.7833 15.6039 13.5 13.1422 14.2167 11.2167 16.1422 10.5 18.6039 9.7833 16.1422 7.85779 14.2167 5.39612 13.5Z"></path></svg>
+          }
+          <span>{{ (translating() ? 'COMMON.AUTO_TRANSLATING' : 'COMMON.AUTO_TRANSLATE') | translate }}</span>
+        </button>
+      </div>
+    }
+    @if (loading()) {
+      <div class="tm__loading"><span class="tm__spinner"></span></div>
+    } @else if (useTabs()) {
+      <!-- 3+ languages: tabs so the dialog doesn't grow into a long stack. -->
+      <div class="tm__tabs" role="tablist">
+        @for (f of fields(); track f.code) {
+          <button type="button" class="tm__tab" role="tab"
+                  [class.tm__tab--active]="activeLang() === f.code"
+                  [attr.aria-selected]="activeLang() === f.code"
+                  (click)="setActive(f.code)">
+            {{ f.label }}
+            @if (f.code === 'en') { <span class="tm__tab-badge">{{ 'COMMON.ORIGINAL' | translate }}</span> }
+          </button>
+        }
+      </div>
+      @if (activeField(); as f) {
+        <div class="tm__field">
+          @if (rich) {
+            <app-rich-editor
+              [ngModel]="values()[f.code]"
+              (ngModelChange)="setValue(f.code, $event)"
+              [placeholder]="f.label"
+              height="220px"
+            />
+          } @else if (multiline) {
+            <textarea
+              [id]="'tm-' + f.code"
+              class="tm__input"
+              rows="3"
+              [ngModel]="values()[f.code]"
+              (ngModelChange)="setValue(f.code, $event)"
+              [dir]="f.rtl ? 'rtl' : 'ltr'"
+            ></textarea>
+          } @else {
+            <input
+              [id]="'tm-' + f.code"
+              type="text"
+              class="tm__input"
+              [ngModel]="values()[f.code]"
+              (ngModelChange)="setValue(f.code, $event)"
+              [dir]="f.rtl ? 'rtl' : 'ltr'"
+            />
+          }
+        </div>
+      }
+    } @else {
+      @for (f of fields(); track f.code) {
+        <div class="tm__field">
+          <label class="tm__label" [attr.for]="'tm-' + f.code">
+            <span>{{ f.label }}</span>
+            @if (f.code === 'en') {
+              <span class="tm__badge">{{ 'COMMON.ORIGINAL' | translate }}</span>
+            }
+          </label>
+          @if (rich) {
+            <app-rich-editor
+              [ngModel]="values()[f.code]"
+              (ngModelChange)="setValue(f.code, $event)"
+              [placeholder]="f.label"
+              height="220px"
+            />
+          } @else if (multiline) {
+            <textarea
+              [id]="'tm-' + f.code"
+              class="tm__input"
+              rows="2"
+              [ngModel]="values()[f.code]"
+              (ngModelChange)="setValue(f.code, $event)"
+              [dir]="f.rtl ? 'rtl' : 'ltr'"
+            ></textarea>
+          } @else {
+            <input
+              [id]="'tm-' + f.code"
+              type="text"
+              class="tm__input"
+              [ngModel]="values()[f.code]"
+              (ngModelChange)="setValue(f.code, $event)"
+              [dir]="f.rtl ? 'rtl' : 'ltr'"
+            />
+          }
+        </div>
+      }
+    }
   </div>
 
   <footer class="tm__foot">
-    <button type="button" class="btn btn-ghost" (click)="cancel()">
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="translating()">
       {{ 'COMMON.CANCEL' | translate }}
     </button>
-    <button type="button" class="btn btn-primary" (click)="save()">
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="loading() || translating()">
       {{ 'COMMON.SAVE' | translate }}
     </button>
   </footer>

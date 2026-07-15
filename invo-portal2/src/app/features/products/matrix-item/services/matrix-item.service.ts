@@ -12,6 +12,7 @@ import {
   MatrixListRow,
   MatrixProduct,
   Translation,
+  TranslationLang,
   colorForCode,
   emptyAttribute,
   emptyDimension,
@@ -266,7 +267,13 @@ export class MatrixItemService {
       for (const key of Object.keys(raw)) {
         const v = raw[key];
         if (v && typeof v === 'object') {
-          t[key] = { en: String(v.en ?? ''), ar: String(v.ar ?? '') };
+          // Preserve every language present (en/ar + any site language),
+          // not just en/ar, so added languages survive the round-trip.
+          const field: TranslationLang = { en: '', ar: '' };
+          for (const lang of Object.keys(v)) {
+            if (typeof v[lang] === 'string') field[lang] = v[lang];
+          }
+          t[key] = field;
         }
       }
     }

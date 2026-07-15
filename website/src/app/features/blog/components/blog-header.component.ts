@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { LanguageSwitcherComponent } from './language-switcher.component';
+import { BlogSettingsService } from '../services/blog-settings.service';
 import { t } from '../i18n/i18n';
 
 @Component({
@@ -14,7 +15,7 @@ import { t } from '../i18n/i18n';
   template: `
     <header class="blog-header">
       <div class="left">
-        <a [routerLink]="['/', lang, 'blog']" class="brand">
+        <a [routerLink]="blogLink()" class="brand">
           <strong>{{ siteName }}</strong>
           <span class="dot">·</span>
           <span>{{ t('blog') }}</span>
@@ -79,11 +80,15 @@ export class BlogHeaderComponent {
 
   query = '';
   private router = inject(Router);
+  private settings = inject(BlogSettingsService);
+
+  /** Blog router commands, lang-less for the default language. */
+  blogLink = (...segments: (string | number)[]) => this.settings.blogLink(this.lang, ...segments);
 
   submit(): void {
     const q = this.query.trim();
     if (!q) return;
-    this.router.navigate(['/', this.lang, 'blog', 'search'], { queryParams: { q } });
+    this.router.navigate(this.blogLink('search'), { queryParams: { q } });
   }
 
   t = (k: string) => t(this.lang, k);

@@ -6,12 +6,16 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Media, IMediaUploadConfig } from '../../models/media.model';
 import { MediaService } from '../../services/media.service';
 import { MODAL_REF, MODAL_DATA } from '../../../../../shared/modal/modal.tokens';
-import { ModalRef } from '../../../../../shared/modal/modal.service';
+import { ModalRef, ModalService } from '../../../../../shared/modal/modal.service';
 import { ModalHeaderComponent } from '../../../../../shared/modal/modal-header.component';
 import { SpinnerComponent } from '../../../../../shared/components/spinner';
 import { UploadToastService } from '../../../../../shared/components/upload-toast';
 import { UploadToastPanelComponent } from '../../../../../shared/components/upload-toast/upload-toast.component';
 import { MediaUploadComponent } from '../media-upload';
+import {
+  ImageEditorModalComponent,
+  ImageEditorModalData,
+} from '../../../../../shared/components/image-editor';
 
 export interface MediaPickerConfig {
   /** Filter to specific content types (e.g. ['image']). Empty = all. */
@@ -214,7 +218,21 @@ type PickerTab = 'library' | 'upload';
                 <span class="info-value">{{ formatDate(activeItem()!.createdDate) }}</span>
               </div>
             </div>
-            <button class="sidebar-delete-btn" (click)="selected.set([])">
+            @if (activeItem()!.isImage) {
+              <button class="sidebar-edit-btn" (click)="editActive()" [disabled]="editing()">
+                @if (editing()) {
+                  <app-spinner size="sm" />
+                  Saving…
+                } @else {
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                  </svg>
+                  Edit image
+                }
+              </button>
+            }
+            <button class="sidebar-delete-btn" (click)="selected.set([])" [disabled]="editing()">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
               </svg>
@@ -405,6 +423,17 @@ type PickerTab = 'library' | 'upload';
       }
     }
 
+    /* Single item edit */
+    .sidebar-edit-btn {
+      display:flex; align-items:center; justify-content:center; gap:6px;
+      margin:12px 16px 0; padding:8px; border:1px solid var(--color-brand-500, #32acc1);
+      border-radius:8px; background:var(--color-brand-600, #32acc1); color:#fff;
+      font-size:13px; font-weight:500; cursor:pointer; font-family:inherit;
+      width:calc(100% - 32px); transition:.12s;
+    }
+    .sidebar-edit-btn:hover:not(:disabled) { background:var(--color-brand-700, #2a92a6); }
+    .sidebar-edit-btn:disabled { opacity:.6; cursor:not-allowed; }
+
     /* Single item delete */
     .sidebar-delete-btn {
       display:flex; align-items:center; justify-content:center; gap:6px;
@@ -412,7 +441,8 @@ type PickerTab = 'library' | 'upload';
       background:#fff; color:#dc2626; font-size:13px; font-weight:500;
       cursor:pointer; font-family:inherit; width:calc(100% - 32px); transition:.12s;
     }
-    .sidebar-delete-btn:hover { background:#fef2f2; }
+    .sidebar-delete-btn:hover:not(:disabled) { background:#fef2f2; }
+    .sidebar-delete-btn:disabled { opacity:.6; cursor:not-allowed; }
 
     /* Selected items list in sidebar (multi-select) */
     .sidebar-selected-list { border-bottom:1px solid #e2e8f0; }
@@ -527,8 +557,11 @@ export class MediaPickerModalComponent implements OnInit {
 
   private mediaService = inject(MediaService);
   private uploadToast  = inject(UploadToastService);
+  private modalService = inject(ModalService);
 
   activeTab    = signal<PickerTab>('library');
+  /** True while an edited image is being uploaded back to the library. */
+  editing      = signal(false);
   mediaItems   = signal<Media[]>([]);
   selected     = signal<Media[]>([]);
   loading      = signal(false);
@@ -698,6 +731,81 @@ export class MediaPickerModalComponent implements OnInit {
   /** In multi-select mode, click a sidebar item to show its details. */
   setActiveItem(item: Media): void {
     this.focusedItem.set(item);
+  }
+
+  /**
+   * Edit the currently-detailed image in the shared full-screen image editor,
+   * then upload the result as a NEW media item (non-destructive — the original
+   * is kept) and select it. Mirrors the media-preview edit flow: prefer the
+   * authenticated raw blob so the canvas stays untainted and export works.
+   */
+  async editActive(): Promise<void> {
+    const item = this.activeItem();
+    if (!item || !item.isImage || this.editing()) return;
+
+    const mediaId = item.id;
+    const fallbackUrl = item.imageUrl;
+    if (!mediaId && !fallbackUrl) return;
+
+    let editorUrl = fallbackUrl;
+    let objectUrl: string | null = null;
+    if (mediaId) {
+      try {
+        const rawBlob = await this.mediaService.getMediaRawBlob(mediaId);
+        objectUrl = URL.createObjectURL(rawBlob);
+        editorUrl = objectUrl;
+      } catch (err) {
+        console.error('Failed to fetch image for editing; using direct URL:', err);
+      }
+    }
+
+    const ref = this.modalService.open<ImageEditorModalComponent, ImageEditorModalData, Blob | undefined>(
+      ImageEditorModalComponent,
+      {
+        size: 'fullscreen',
+        closeable: false,
+        data: { imageUrl: editorUrl!, fileName: item.name },
+      },
+    );
+
+    let editedBlob: Blob | undefined;
+    try {
+      editedBlob = await ref.afterClosed();
+    } finally {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    }
+    if (!editedBlob) return;
+
+    // The editor exports WebP (JPEG/PNG fallback); derive the extension from the
+    // blob's actual type so the backend stores a matching content-type.
+    const type = editedBlob.type || 'image/webp';
+    const ext = type === 'image/jpeg' ? 'jpg' : type === 'image/png' ? 'png' : 'webp';
+    const baseName = (item.name || 'image').replace(/\.[^.]+$/, '');
+    const file = new File([editedBlob], `edited-${baseName}.${ext}`, { type });
+
+    this.editing.set(true);
+    try {
+      const result = await this.mediaService.uploadFile(file, this.uploadConfig);
+      const newMedia = result?.data?.[0];
+      await this.loadMedia(true);
+      if (newMedia?.id) {
+        const match = this.mediaItems().find(m => m.id === newMedia.id) ?? newMedia;
+        this.selected.set(this.config.multiple ? [...this.selected(), match] : [match]);
+        this.focusedItem.set(match);
+      }
+    } catch (e: any) {
+      console.error('Failed to upload edited image', e);
+      this.uploadToast.add({
+        id: `error-${Date.now()}`,
+        name: 'Edit failed',
+        size: '',
+        status: 'failed',
+        progress: 0,
+        error: e?.message ?? 'Upload failed',
+      });
+    } finally {
+      this.editing.set(false);
+    }
   }
 
   private sanitizer = inject(DomSanitizer);

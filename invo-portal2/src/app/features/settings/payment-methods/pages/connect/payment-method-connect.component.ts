@@ -395,9 +395,9 @@ export class PaymentMethodConnectComponent implements OnInit, CanLeaveComponent 
   async openNameTranslation(): Promise<void> {
     const m = this.method();
     const initial: TranslationLang = {
+      ...(m.translation?.name ?? {}),
       en: m.translation?.name?.en || m.name || '',
-      ar: m.translation?.name?.ar || '',
-    };
+    } as TranslationLang;
     const ref = this.modal.open<
       TranslationModalComponent,
       TranslationModalData,
@@ -415,7 +415,7 @@ export class PaymentMethodConnectComponent implements OnInit, CanLeaveComponent 
     this.method.update(prev => ({
       ...prev,
       name: result.en || prev.name,
-      translation: { name: { en: result.en, ar: result.ar } },
+      translation: { name: { ...result } },
     }));
   }
 

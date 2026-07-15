@@ -176,9 +176,8 @@ export class AuthorPage implements OnInit {
   }
 
   private applySeo(r: AuthorProfileResult): void {
-    const origin = this.settingsSvc.originUrl();
     const lang = this.lang();
-    const url = `${origin}/${lang}/blog/authors/${this.authorEmployeeId()}`;
+    const url = this.settingsSvc.blogUrl(lang, 'authors', this.authorEmployeeId());
     this.seo.apply({
       title: `${r.profile.name} | ${this.siteName()}`,
       description: (r.profile.bio || '').slice(0, 160) || r.profile.title || r.profile.name,
@@ -186,7 +185,7 @@ export class AuthorPage implements OnInit {
       image: r.profile.image,
       type: 'profile',
       locale: lang,
-      hreflang: this.supportedLangs().map(l => ({ lang: l, url: `${origin}/${l}/blog/authors/${this.authorEmployeeId()}` })),
+      hreflang: this.supportedLangs().map(l => ({ lang: l, url: this.settingsSvc.blogUrl(l, 'authors', this.authorEmployeeId()) })),
       siteName: this.siteName(),
     });
     this.seo.setJsonLd([{

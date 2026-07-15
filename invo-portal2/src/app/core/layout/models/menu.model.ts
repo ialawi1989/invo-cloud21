@@ -38,7 +38,7 @@ export const MENU_ITEMS: MenuItem[] = [
       { id: 1110, label: 'Product Recipes',        link: '/products/productRecipe',          privilege: 'productRecipeSecurity.actions.view' },
       { id: 1111, label: 'Price Change',           link: '/products/priceChange',            privilege: 'priceChangeSecurity.actions.view' },
       { id: 1112, label: 'Products Availability',  link: '/products/products-availability',  privilege: 'productsAvailabilitySecurity.actions.view' },
-      { id: 1113, label: 'Collections',            link: '/products/products-collections',   privilege: 'productsCollectionsSecurity.actions.view' },
+      { id: 1113, label: 'Collections',            link: '/products-collections',   privilege: 'productsCollectionsSecurity.actions.view' },
       { id: 1114, label: 'Label Print',            link: '/products/label-print',            privilege: 'productSecurity.actions.view' },
       { id: 1115, label: 'Translation',            link: '/products/translation',            privilege: 'productSecurity.actions.view' },
     ],

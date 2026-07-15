@@ -333,7 +333,7 @@ export class ModalService {
         .centerHorizontally().centerVertically(),
       width:    widthMap[size ?? 'md'],
       maxWidth: 'calc(100vw - 48px)',
-      height:   size === 'fullscreen' ? 'calc(100vh - 48px)' : size === 'xl' ? 'min(680px, calc(100vh - 48px))' : undefined,
+      height:   size === 'fullscreen' ? 'calc(100vh - 48px)' : size === 'xl' ? 'min(780px, calc(100vh - 48px))' : undefined,
       maxHeight: 'calc(100vh - 48px)',
     });
   }

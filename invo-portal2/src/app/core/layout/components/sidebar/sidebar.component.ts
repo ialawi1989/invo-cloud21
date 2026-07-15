@@ -61,12 +61,15 @@ export const SIDE_MENU: SideMenuItem[] = [
     requiredPermission: '',
     subItems: [
       // — Catalog —
-      { id: 31, section: 'MENU.SECTION.CATALOG', label: 'MENU.SUB.PRODUCT_LIST', link: '/products', requiredPermission: 'productSecurity.action.view.access' },
+      // Point at the real list route (not bare `/products`) so it doesn't
+      // prefix-match the Classifications pages (`/products/department`, …);
+      // `matchLinks` keeps it active on the product form + bulk-print pages.
+      { id: 31, section: 'MENU.SECTION.CATALOG', label: 'MENU.SUB.PRODUCT_LIST', link: '/products/list', matchLinks: ['/products/form', '/products/bulk-print'], requiredPermission: 'productSecurity.action.view.access' },
       { id: 32, label: 'MENU.SUB.MATRIX_ITEMS', link: '/matrix-item', requiredPermission: 'matrixItemSecurity.action.view.access' },
       // Dimensions define the axes (Size/Color/…) a matrix item is built from,
       // so it belongs beside Matrix Items — not with the product classifications.
       { id: 33, label: 'MENU.SUB.DIMENSIONS', link: '/dimensions', requiredPermission: 'dimensionSecurity.action.view.access' },
-      { id: 313, label: 'MENU.SUB.COLLECTIONS', link: '/products/products-collections', requiredPermission: 'productsCollectionsSecurity.action.view.access' },
+      { id: 313, label: 'MENU.SUB.COLLECTIONS', link: '/products-collections', requiredPermission: 'productsCollectionsSecurity.action.view.access' },
       // Menu Builder lives under Settings (see SETTINGS.ITEMS.MENU_BUILDER) —
       // not exposed in the catalog sidebar.
 
@@ -76,10 +79,10 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 36, label: 'MENU.SUB.BRANDS', link: '/products/brands', requiredPermission: 'brandSecurity.action.view.access' },
 
       // — Options & Recipes —
-      { id: 37, section: 'MENU.SECTION.OPTIONS_RECIPES', label: 'MENU.SUB.OPTION_GROUPS', link: '/products/optionGroup', requiredPermission: 'optionGroupSecurity.action.view.access' },
+      { id: 37, section: 'MENU.SECTION.OPTIONS_RECIPES', label: 'MENU.SUB.OPTION_GROUPS', link: '/products/option-group', requiredPermission: 'optionGroupSecurity.action.view.access' },
       { id: 38, label: 'MENU.SUB.OPTIONS', link: '/products/option', requiredPermission: 'optionSecurity.action.view.access' },
       { id: 39, label: 'MENU.SUB.RECIPES', link: '/products/recipe', requiredPermission: 'recipeSecurity.action.view.access' },
-      { id: 310, label: 'MENU.SUB.PRODUCT_RECIPES', link: '/products/productRecipe', requiredPermission: 'productRecipeSecurity.action.view.access' },
+      { id: 310, label: 'MENU.SUB.PRODUCT_RECIPES', link: '/products/product-recipe', requiredPermission: 'productRecipeSecurity.action.view.access' },
     ],
   },
   // ── Employees ──────────────────────────────────────────────────────
@@ -728,7 +731,10 @@ export class SidebarComponent implements OnInit {
    *  `matchLinks` (e.g. Navigation staying active on `/mobile-icon-bar`). */
   private linkMatchesUrl(item: SideMenuItem, url: string): boolean {
     const links = [item.link, ...(item.matchLinks ?? [])].filter((l): l is string => !!l);
-    return links.some(l => url.startsWith(l));
+    // Match on path-segment boundaries, not a raw prefix — otherwise `/products`
+    // would light up for `/products-collections` (both start with `/products`).
+    const path = url.split(/[?#]/)[0];
+    return links.some(l => path === l || path.startsWith(l + '/'));
   }
 
   /** Active state for a leaf sub-item (replaces routerLinkActive so

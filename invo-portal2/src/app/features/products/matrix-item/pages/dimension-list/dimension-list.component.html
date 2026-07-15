@@ -1,107 +1,87 @@
-<app-list-shell
-  [title]="'DIMENSIONS.LIST.TITLE' | translate"
-  [subtitle]="'DIMENSIONS.LIST.SUBTITLE' | translate"
-  [breadcrumbs]="breadcrumbs()"
-  [search]="search()"
-  [searchPlaceholder]="'DIMENSIONS.LIST.SEARCH_PLACEHOLDER' | translate"
-  [page]="page()"
-  [pageCount]="pageCount()"
-  [total]="total()"
-  [rangeLabel]="rangeLabel()"
-  [loading]="loading()"
-  [hasRows]="rows().length > 0"
-  [customLoading]="true"
-  [cardFlush]="true"
-  (searchChange)="onSearch($event)"
-  (searchClear)="clearSearch()"
-  (prevPage)="goPrev()"
-  (nextPage)="goNext()">
+<app-list-page
+  [pageTitle]="'DIMENSIONS.LIST.TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="loadDimensions"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="[]"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'dimension'"
+  [mobileCardConfig]="mobileCardConfig"
+  (rowClicked)="onRowClick($event)">
 
-  <button shellActions type="button" class="btn btn-primary" (click)="add()">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <line x1="12" y1="5" x2="12" y2="19"/>
-      <line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    {{ 'DIMENSIONS.LIST.ADD_NEW' | translate }}
-  </button>
-
-  <table shellLoading class="table table--skeleton" role="grid" aria-busy="true">
-    <thead>
-      <tr>
-        <th class="table__name">{{ 'DIMENSIONS.LIST.NAME' | translate }}</th>
-        <th class="table__display">{{ 'DIMENSIONS.LIST.DISPLAY_TYPE' | translate }}</th>
-        <th class="table__attributes">{{ 'DIMENSIONS.LIST.ATTRIBUTES' | translate }}</th>
-        <th class="table__actions"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (_ of [0,1,2,3,4]; track $index) {
-        <tr>
-          <td class="table__name"><app-skeleton variant="line" width="40%"/></td>
-          <td class="table__display"><app-skeleton variant="line" width="70px"/></td>
-          <td class="table__attributes"><app-skeleton variant="line" width="80px"/></td>
-          <td class="table__actions"><app-skeleton variant="line" width="28px"/></td>
-        </tr>
-      }
-    </tbody>
-  </table>
-
-  <div shellEmpty>
-    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 2l3 6 6 .9-4.5 4.4 1 6.2L12 16.5 6.5 19.5l1-6.2L3 8.9 9 8z"/>
-    </svg>
-    <p>{{ (search() ? 'DIMENSIONS.LIST.NO_MATCH' : 'DIMENSIONS.LIST.EMPTY') | translate }}</p>
-    @if (!search()) {
-      <button type="button" class="btn btn-ghost btn-sm" (click)="add()">
-        {{ 'DIMENSIONS.LIST.ADD_NEW' | translate }}
-      </button>
-    }
+  <!-- Header action: New Dimension -->
+  <div listHeaderActions class="flex items-center gap-3">
+    <button type="button" (click)="add()"
+      class="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg font-medium whitespace-nowrap bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      <!-- Full label on ≥sm, short "New" on mobile to keep the header tidy. -->
+      <span class="hidden sm:inline">{{ 'DIMENSIONS.LIST.ADD_NEW' | translate }}</span>
+      <span class="sm:hidden">{{ 'DIMENSIONS.LIST.ADD_NEW_SHORT' | translate }}</span>
+    </button>
   </div>
 
-  <table class="table" role="grid">
-    <thead>
-      <tr>
-        <th class="table__name">
-          <button type="button" class="th-sort"
-            [class.is-sorted]="sortDirOf('name')"
-            (click)="toggleSort('name')">
-            {{ 'DIMENSIONS.LIST.NAME' | translate }}
-            <span class="th-sort__arrow" [attr.data-dir]="sortDirOf('name') || ''" aria-hidden="true"></span>
-          </button>
-        </th>
-        <th class="table__display">{{ 'DIMENSIONS.LIST.DISPLAY_TYPE' | translate }}</th>
-        <th class="table__attributes">{{ 'DIMENSIONS.LIST.ATTRIBUTES' | translate }}</th>
-        <th class="table__actions"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (row of rows(); track row.id) {
-        <tr (click)="edit(row)">
-          <td class="table__name">
-            <span class="row-name">{{ row.name || '—' }}</span>
-          </td>
-          <td class="table__display">
-            <span class="chip">{{ displayTypeLabel(row) }}</span>
-          </td>
-          <td class="table__attributes">{{ attributesLabel(row) }}</td>
-          <td class="table__actions" (click)="$event.stopPropagation()">
-            <app-dropdown-menu-btn
-              [items]="rowMenuItems(row)"
-              [appendToBody]="true"
-              [chevron]="false"
-              align="end"
-              triggerClass="icon-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <circle cx="5"  cy="12" r="1.75"/>
-                <circle cx="12" cy="12" r="1.75"/>
-                <circle cx="19" cy="12" r="1.75"/>
-              </svg>
-            </app-dropdown-menu-btn>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
-</app-list-shell>
+  <!-- Name — small icon + dimension name (matches the matrix list). -->
+  <ng-template listCellTemplate="name" let-row>
+    <div class="flex items-center gap-3">
+      <span class="w-9 h-9 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center flex-shrink-0 text-slate-400">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l3 6 6 .9-4.5 4.4 1 6.2L12 16.5 6.5 19.5l1-6.2L3 8.9 9 8z"/>
+        </svg>
+      </span>
+      <span class="font-medium text-slate-900 min-w-0 break-words list-interactive-cell">{{ row.name || '—' }}</span>
+    </div>
+  </ng-template>
 
-<app-loading-overlay [show]="loading()"/>
+  <!-- Display type — buttons / radio / dropdown pill. -->
+  <ng-template listCellTemplate="displayType" let-row>
+    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-50 text-cyan-700 uppercase tracking-wide whitespace-nowrap">
+      {{ displayTypeLabel(row) }}
+    </span>
+  </ng-template>
+
+  <!-- Attribute count — "{n} attributes" pill. -->
+  <ng-template listCellTemplate="attributesCount" let-row>
+    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-700 whitespace-nowrap">
+      {{ attributesLabel(row) }}
+    </span>
+  </ng-template>
+
+  <!-- Row actions — a single action renders as a direct hover-reveal pill;
+       the moment a second action is added, they collapse into the ⋯ overflow
+       menu automatically. -->
+  <ng-template listRowActions let-row>
+    @let actions = rowMenuItems(row);
+    <div class="inline-flex items-center justify-end" (click)="$event.stopPropagation()">
+      @if (actions.length === 1) {
+        <button type="button"
+          (click)="actions[0].click()"
+          class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity
+                 px-4 h-9 inline-flex items-center rounded-full
+                 bg-brand-600 text-white text-sm font-medium shadow-sm
+                 hover:bg-brand-700">
+          {{ actions[0].label | translate }}
+        </button>
+      } @else {
+        <app-dropdown-menu-btn
+          [items]="actions"
+          [appendToBody]="true"
+          [chevron]="false"
+          align="end"
+          triggerClass="w-9 h-9 inline-flex items-center justify-center rounded-full bg-white text-slate-500 border border-slate-200 hover:text-brand-600 hover:border-brand-300 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+          </svg>
+        </app-dropdown-menu-btn>
+      }
+    </div>
+  </ng-template>
+
+</app-list-page>

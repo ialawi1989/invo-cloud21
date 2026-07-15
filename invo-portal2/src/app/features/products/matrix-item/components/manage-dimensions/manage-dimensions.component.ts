@@ -58,10 +58,12 @@ const MAX_DIMENSIONS = 3;
  * Ported from the legacy `DimensionManagerComponent` (`app-manage-dimension`),
  * collapsing its FormArray bookkeeping into signal-driven array replacement.
  */
+import { TranslateLinkComponent } from '@shared/components/translate-link/translate-link.component';
+
 @Component({
   selector: 'app-manage-dimensions',
   standalone: true,
-  imports: [CommonModule, TranslateModule, SegmentedToggleComponent],
+  imports: [CommonModule, TranslateModule, SegmentedToggleComponent, TranslateLinkComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './manage-dimensions.component.html',
   styleUrl: './manage-dimensions.component.scss',
@@ -182,14 +184,14 @@ export class ManageDimensionsComponent {
   async translateDimension(index: number): Promise<void> {
     const dim = this.dimensions()[index];
     const initial = dim.translation?.name ?? { en: dim.name, ar: '' };
-    const result = await this.openTranslationModal({ en: initial.en || dim.name, ar: initial.ar }, dim.name);
+    const result = await this.openTranslationModal({ ...initial, en: initial.en || dim.name }, dim.name);
     if (!result) return;
     this.update((draft) => {
       const t = draft[index].translation ?? emptyTranslation();
       draft[index] = {
         ...draft[index],
         name: result.en,
-        translation: { ...t, name: { en: result.en, ar: result.ar } },
+        translation: { ...t, name: { ...result } },
       };
     }, false);
   }
@@ -197,7 +199,7 @@ export class ManageDimensionsComponent {
   async translateAttribute(dimIndex: number, attrIndex: number): Promise<void> {
     const attr = this.dimensions()[dimIndex].attributes[attrIndex];
     const initial = attr.translation?.name ?? { en: attr.name, ar: '' };
-    const result = await this.openTranslationModal({ en: initial.en || attr.name, ar: initial.ar }, attr.name);
+    const result = await this.openTranslationModal({ ...initial, en: initial.en || attr.name }, attr.name);
     if (!result) return;
     this.update((draft) => {
       const attrs = [...draft[dimIndex].attributes];
@@ -205,7 +207,7 @@ export class ManageDimensionsComponent {
       attrs[attrIndex] = {
         ...attrs[attrIndex],
         name: result.en,
-        translation: { ...t, name: { en: result.en, ar: result.ar } },
+        translation: { ...t, name: { ...result } },
       };
       draft[dimIndex] = { ...draft[dimIndex], attributes: attrs };
     }, false);

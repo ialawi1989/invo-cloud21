@@ -1,0 +1,102 @@
+<app-list-page
+  [pageTitle]="'PRODUCTS.COLLECTIONS.TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="loadCollections"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="[]"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'product-collection'"
+  [mobileCardConfig]="mobileCardConfig"
+  (rowClicked)="onRowClick($event)">
+
+  <!-- Header action: New Collection -->
+  <div listHeaderActions class="flex items-center gap-3">
+    @if (canAdd) {
+      <button type="button" (click)="add()"
+        class="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg font-medium whitespace-nowrap bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <!-- Full label on ≥sm, short "New" on mobile to keep the header tidy. -->
+        <span class="hidden sm:inline">{{ 'PRODUCTS.COLLECTIONS.ADD_NEW' | translate }}</span>
+        <span class="sm:hidden">{{ 'PRODUCTS.COLLECTIONS.ADD_NEW_SHORT' | translate }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- Title — small thumbnail (collection cover) + collection title. -->
+  <ng-template listCellTemplate="title" let-row>
+    <div class="flex items-center gap-3">
+      <span class="w-9 h-9 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden text-slate-400">
+        @if (row.thumbnailUrl) {
+          <img [src]="row.thumbnailUrl" alt="" class="w-full h-full object-cover" />
+        } @else {
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+          </svg>
+        }
+      </span>
+      <span class="font-medium text-slate-900 min-w-0 break-words list-interactive-cell">{{ row.title || '—' }}</span>
+    </div>
+  </ng-template>
+
+  <!-- Type — Manual (slate) vs Automated (brand) pill. -->
+  <ng-template listCellTemplate="type" let-row>
+    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
+      [class.bg-brand-50]="row.type === 'Auto'"
+      [class.text-brand-700]="row.type === 'Auto'"
+      [class.bg-slate-100]="row.type !== 'Auto'"
+      [class.text-slate-600]="row.type !== 'Auto'">
+      {{ typeLabel(row) }}
+    </span>
+  </ng-template>
+
+  <!-- Product count — "{n} products" pill for Manual; em dash for Auto. -->
+  <ng-template listCellTemplate="productsCount" let-row>
+    @if (row.productsCount !== null) {
+      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-700 whitespace-nowrap">
+        {{ productsLabel(row) }}
+      </span>
+    } @else {
+      <span class="text-slate-400">—</span>
+    }
+  </ng-template>
+
+  <!-- Row actions — a single action renders as a direct hover-reveal pill;
+       the moment a second action is added, they collapse into the ⋯ overflow
+       menu automatically. -->
+  <ng-template listRowActions let-row>
+    @let actions = rowMenuItems(row);
+    <div class="inline-flex items-center justify-end" (click)="$event.stopPropagation()">
+      @if (actions.length === 1) {
+        <button type="button"
+          (click)="actions[0].click()"
+          class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity
+                 px-4 h-9 inline-flex items-center rounded-full
+                 bg-brand-600 text-white text-sm font-medium shadow-sm
+                 hover:bg-brand-700">
+          {{ actions[0].label | translate }}
+        </button>
+      } @else {
+        <app-dropdown-menu-btn
+          [items]="actions"
+          [appendToBody]="true"
+          [chevron]="false"
+          align="end"
+          triggerClass="w-9 h-9 inline-flex items-center justify-center rounded-full bg-white text-slate-500 border border-slate-200 hover:text-brand-600 hover:border-brand-300 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+          </svg>
+        </app-dropdown-menu-btn>
+      }
+    </div>
+  </ng-template>
+
+</app-list-page>

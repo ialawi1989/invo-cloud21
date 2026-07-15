@@ -432,7 +432,9 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
 
     /* ── Favorites dropdown (desktop) ── */
     .fav-dropdown {
-      position: fixed; top: 56px; left: 180px; width: 300px;
+      /* Logical inset flips to the right edge under dir="rtl" so the panel
+         tracks the mirrored trigger instead of staying pinned left. */
+      position: fixed; top: 56px; inset-inline-start: 180px; width: 300px;
       background: #fff; border: 1px solid #e9ecef; border-radius: 12px;
       box-shadow: 0 8px 32px rgba(0,0,0,.12); z-index: 1098;
       animation: dropIn .14s ease; overflow: hidden;

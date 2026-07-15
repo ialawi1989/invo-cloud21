@@ -61,10 +61,85 @@
 .tm__field { display: flex; flex-direction: column; gap: 6px; }
 
 .tm__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
   font-weight: 600;
   color: #334155;
 }
+
+// ── Language tabs (segmented toggle, 2+ languages) ───────────────────────
+.tm__tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 14px;
+  padding: 3px;
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.tm__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
+
+  &:hover:not(&--active) { color: #334155; }
+
+  &--active {
+    background: #fff;
+    color: #0f172a;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  }
+}
+
+.tm__tab-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  color: var(--color-brand-700, #0e7490);
+  background: rgba(50, 172, 193, 0.14);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.tm__badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  color: var(--color-brand-700, #0e7490);
+  background: rgba(50, 172, 193, 0.12);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+// ── Loading ────────────────────────────────────────────────────────────
+.tm__loading { display: flex; justify-content: center; padding: 32px 0; }
+
+.tm__spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #e2e8f0;
+  border-top-color: var(--color-brand-500, #32acc1);
+  border-radius: 50%;
+  animation: tm-spin .7s linear infinite;
+}
+
+@keyframes tm-spin { to { transform: rotate(360deg); } }
 
 .tm__input {
   width: 100%;
@@ -75,8 +150,6 @@
   font: inherit;
   font-size: 13px;
   color: #0f172a;
-  resize: vertical;
-  min-height: 80px;
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
   &:focus {
@@ -86,16 +159,58 @@
   }
 }
 
+// Multi-line variant only — single-line `<input>` keeps the default height.
+textarea.tm__input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+// ── Auto-translate action (top-right of the body) ──────────────────────
+.tm__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+.tm__ai {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-brand-200, #b6e6ee);
+  background: var(--color-brand-50, #ecfeff);
+  color: var(--color-brand-700, #0e7490);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  svg { flex-shrink: 0; }
+  &:hover:not(:disabled) { background: var(--color-brand-100, #d5f4fa); color: var(--color-brand-800, #075985); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+.tm__btn-spinner {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid currentColor; border-top-color: transparent;
+  animation: tm-spin .7s linear infinite; display: inline-block;
+}
+@keyframes tm-spin { to { transform: rotate(360deg); } }
+
 // ── Footer ─────────────────────────────────────────────────────────────
 .tm__foot {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 8px;
   padding: 14px 24px;
   border-top: 1px solid #f1f5f9;
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   padding: 8px 18px;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -105,12 +220,14 @@
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+
   &-primary {
     background: var(--color-brand-600); color: #fff; border-color: var(--color-brand-600);
-    &:hover { background: var(--color-brand-700); border-color: var(--color-brand-700); }
+    &:hover:not(:disabled) { background: var(--color-brand-700); border-color: var(--color-brand-700); }
   }
   &-ghost {
     background: #fff; color: #475569; border-color: #e2e8f0;
-    &:hover { background: #f8fafc; color: #0f172a; }
+    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
   }
 }

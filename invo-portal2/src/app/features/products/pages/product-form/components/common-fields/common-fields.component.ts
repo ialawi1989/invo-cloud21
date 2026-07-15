@@ -26,7 +26,12 @@ import { Fields } from '../../../../models/product-fields.model';
 import { ModalService } from '@shared/modal';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { RichEditorComponent } from '@shared/components/rich-editor/rich-editor.component';
-import { TranslationModalComponent, TranslationModalData } from './translation-modal.component';
+import { TranslateLinkComponent } from '@shared/components/translate-link/translate-link.component';
+import {
+  TranslationModalComponent,
+  TranslationModalData,
+  TranslationLang,
+} from '@shared/components/translation-modal/translation-modal.component';
 
 /**
  * common-fields
@@ -40,7 +45,7 @@ import { TranslationModalComponent, TranslationModalData } from './translation-m
 @Component({
   selector: 'app-pf-common-fields',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, TooltipDirective, RichEditorComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, TooltipDirective, RichEditorComponent, TranslateLinkComponent],
   templateUrl: './common-fields.component.html',
   styleUrl: './common-fields.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -122,21 +127,23 @@ export class CommonFieldsComponent implements OnInit {
 
   showNameTranslation(): void {
     const p = this.productInfo();
-    p.translation.name.en = p.name || p.translation.name.en;
-    const ref = this.modals.open<TranslationModalComponent, TranslationModalData, { en: string; ar: string }>(
+    const currentEn = p.name || p.translation.name.en;
+    const ref = this.modals.open<TranslationModalComponent, TranslationModalData, TranslationLang | null>(
       TranslationModalComponent,
       {
-        size: 'md',
+        size: 'sm',
         data: {
-          title: this.translate.instant('PRODUCTS.ACTIONS.TRANSLATION'),
-          value: { en: p.translation.name.en, ar: p.translation.name.ar },
+          label: this.translate.instant('PRODUCTS.ACTIONS.TRANSLATION'),
+          initial: { ...(p.translation.name as unknown as Record<string, string>), en: currentEn },
         },
       },
     );
     ref.afterClosed().then((result) => {
       if (!result) return;
-      p.translation.name.en = result.en;
-      p.translation.name.ar = result.ar;
+      // Preserve every language the modal returns (en/ar + any site language).
+      for (const [lang, val] of Object.entries(result)) {
+        (p.translation.name as unknown as Record<string, string>)[lang] = val;
+      }
       p.name = result.en;
       this.group.patchValue({ name: result.en });
     });
@@ -144,22 +151,23 @@ export class CommonFieldsComponent implements OnInit {
 
   showDescriptionTranslation(): void {
     const p = this.productInfo();
-    p.translation.description.en = p.description || p.translation.description.en;
-    const ref = this.modals.open<TranslationModalComponent, TranslationModalData, { en: string; ar: string }>(
+    const currentEn = p.description || p.translation.description.en;
+    const ref = this.modals.open<TranslationModalComponent, TranslationModalData, TranslationLang | null>(
       TranslationModalComponent,
       {
         size: 'md',
         data: {
-          title: this.translate.instant('PRODUCTS.ACTIONS.TRANSLATION'),
-          value: { en: p.translation.description.en, ar: p.translation.description.ar },
-          rich: true, // description is now HTML
+          label: this.translate.instant('PRODUCTS.ACTIONS.TRANSLATION'),
+          initial: { ...(p.translation.description as unknown as Record<string, string>), en: currentEn },
+          rich: true, // description is HTML — render the rich editor per language
         },
       },
     );
     ref.afterClosed().then((result) => {
       if (!result) return;
-      p.translation.description.en = result.en;
-      p.translation.description.ar = result.ar;
+      for (const [lang, val] of Object.entries(result)) {
+        (p.translation.description as unknown as Record<string, string>)[lang] = val;
+      }
       p.description = result.en;
       this.group.patchValue({ description: result.en });
     });

@@ -7,13 +7,18 @@
 
 const HASHTAG_RE = /#([\p{L}\p{N}_]+)/gu;
 
-export function linkifyHashtags(html: string, lang: string): string {
+/**
+ * @param hrefFor builds the tag URL for a given tag slug. The caller owns the
+ *   language/URL-structure rules (e.g. the default language is served lang-less
+ *   at `/blog/tag/…`, others at `/:lang/blog/tag/…`).
+ */
+export function linkifyHashtags(html: string, hrefFor: (tag: string) => string): string {
   if (!html) return html;
 
   if (typeof DOMParser !== 'undefined') {
     const doc = new DOMParser().parseFromString(`<root>${html}</root>`, 'text/html');
     const root = doc.body.firstElementChild!;
-    walk(root, lang);
+    walk(root, hrefFor);
     return root.innerHTML;
   }
 
@@ -24,7 +29,7 @@ export function linkifyHashtags(html: string, lang: string): string {
   let buf = '';
   const flush = () => {
     if (!inTag && buf) {
-      out += buf.replace(HASHTAG_RE, (_m, tag) => anchorFor(lang, tag));
+      out += buf.replace(HASHTAG_RE, (_m, tag) => anchorFor(hrefFor, tag));
       buf = '';
     } else if (inTag) {
       out += buf;
@@ -40,7 +45,7 @@ export function linkifyHashtags(html: string, lang: string): string {
   return out;
 }
 
-function walk(node: Element, lang: string): void {
+function walk(node: Element, hrefFor: (tag: string) => string): void {
   const children = Array.from(node.childNodes);
   for (const child of children) {
     if (child.nodeType === 3 /* TEXT_NODE */) {
@@ -53,7 +58,7 @@ function walk(node: Element, lang: string): void {
       while ((m = HASHTAG_RE.exec(text)) !== null) {
         if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
         const a = document.createElement('a');
-        a.setAttribute('href', `/${lang}/blog/tag/${encodeURIComponent(m[1])}`);
+        a.setAttribute('href', hrefFor(m[1]));
         a.className = 'blog-hashtag';
         a.textContent = `#${m[1]}`;
         frag.appendChild(a);
@@ -64,12 +69,12 @@ function walk(node: Element, lang: string): void {
     } else if (child.nodeType === 1 /* ELEMENT_NODE */) {
       const tag = (child as Element).tagName.toLowerCase();
       if (tag === 'a' || tag === 'code' || tag === 'pre' || tag === 'script' || tag === 'style') continue;
-      walk(child as Element, lang);
+      walk(child as Element, hrefFor);
     }
   }
 }
 
-function anchorFor(lang: string, tag: string): string {
+function anchorFor(hrefFor: (tag: string) => string, tag: string): string {
   const safe = tag.replace(/"/g, '&quot;');
-  return `<a class="blog-hashtag" href="/${lang}/blog/tag/${encodeURIComponent(tag)}">#${safe}</a>`;
+  return `<a class="blog-hashtag" href="${hrefFor(tag)}">#${safe}</a>`;
 }

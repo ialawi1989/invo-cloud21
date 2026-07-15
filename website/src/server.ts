@@ -249,6 +249,14 @@ async function resolveSlug(host: string): Promise<string> {
 // UUID v4 validation regex.
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// First-path segments that are framework routes, NOT storefront page slugs.
+// The `/:slug` Open-Graph handler must skip these so it never treats them as
+// pages: it would (a) log a spurious "No page data found", (b) force a 404 on a
+// perfectly good route, and (c) swallow Angular's redirect response (e.g. the
+// subdirectory-mode `/blog` → `/:lang/blog` 302). The blog injects its own SSR
+// Open-Graph tags via BlogSeoService, so it needs no help from this handler.
+const RESERVED_SLUGS = new Set(['blog']);
+
 function getVisitorContext(req: any) {
   const fwd = (req.headers['x-forwarded-for'] as string | undefined) || '';
   const firstHop = fwd.split(',')[0]?.trim();
@@ -409,6 +417,11 @@ app.get('/:slug', async (req: any, res: any, next: any) => {
 
   const slug = req.params.slug;
   if (!slug || slug === 'null' || slug === 'undefined' || slug.includes('.')) {
+    return next();
+  }
+  // Framework routes (blog, …) aren't storefront pages — hand them to the
+  // generic SSR handler, which passes redirects through and never forces 404.
+  if (RESERVED_SLUGS.has(slug.toLowerCase())) {
     return next();
   }
 

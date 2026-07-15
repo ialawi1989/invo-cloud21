@@ -29,7 +29,7 @@ import { t } from '../i18n/i18n';
       <app-blog-header [lang]="lang()" [siteName]="siteName()" [languages]="supportedLangs()"></app-blog-header>
 
       <div class="container">
-        <a class="back" [routerLink]="['/', lang(), 'blog']">← {{ t(lang(), 'back_to_blog') }}</a>
+        <a class="back" [routerLink]="blogLink()">← {{ t(lang(), 'back_to_blog') }}</a>
 
         @if (loading() && !result()) {
           <app-loading-skeleton [count]="display().postsPerPage"></app-loading-skeleton>
@@ -115,6 +115,9 @@ export class CategoryPage implements OnInit {
 
   t = t;
 
+  /** Blog router commands, lang-less for the default language. */
+  blogLink = (...segments: (string | number)[]) => this.settingsSvc.blogLink(this.lang(), ...segments);
+
   async ngOnInit(): Promise<void> {
     combineLatest([this.route.paramMap, this.route.queryParamMap]).pipe(
       map(([p, q]) => ({ lang: p.get('lang') || q.get('lang') || 'en', slug: p.get('categorySlug') ?? '' })),
@@ -168,16 +171,15 @@ export class CategoryPage implements OnInit {
   }
 
   private applySeo(r: CategoryPostsResult): void {
-    const origin = this.settingsSvc.originUrl();
     const lang = this.lang();
     const alts = this.supportedLangs().map(l => ({
       lang: l,
-      url: `${origin}/${l}/blog/category/${this.slug()}`,
+      url: this.settingsSvc.blogUrl(l, 'category', this.slug()),
     }));
     this.seo.apply({
       title: `${r.category.seoTitle || r.category.name} | ${this.t(lang, 'blog')} | ${this.siteName()}`,
       description: r.category.seoDescription || r.category.description || `Posts in ${r.category.name}`,
-      url: `${origin}/${lang}/blog/category/${this.slug()}`,
+      url: this.settingsSvc.blogUrl(lang, 'category', this.slug()),
       type: 'website',
       locale: lang,
       hreflang: alts,

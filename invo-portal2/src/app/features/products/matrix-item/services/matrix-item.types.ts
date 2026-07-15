@@ -11,10 +11,12 @@
  * arrays; the rest of the front-end trusts these shapes.
  */
 
-/** Per-language value pair — mirrors the shared `TranslationLang`. */
+/** Per-language value map — `en`/`ar` explicit, plus any additional site
+ *  languages carried by the index signature (mirrors the shared modal). */
 export interface TranslationLang {
   en: string;
   ar: string;
+  [lang: string]: string;
 }
 
 /** Only `.name` is used by the matrix UI, but the backend round-trips the

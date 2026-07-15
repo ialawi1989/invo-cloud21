@@ -152,7 +152,7 @@ form { display: flex; flex-direction: column; gap: 16px;
   appearance: none;
   border: 0;
   background: transparent;
-  color: #4f46e5;
+  color: var(--color-brand-700, #0e7490);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -234,7 +234,7 @@ form { display: flex; flex-direction: column; gap: 16px;
   margin-bottom: -1px;
 
   &:hover { color: #0f172a; }
-  &--active { color: #4f46e5; border-bottom-color: #4f46e5; }
+  &--active { color: var(--color-brand-700, #0e7490); border-bottom-color: var(--color-brand-700, #0e7490); }
 }
 
 .table-scroll {

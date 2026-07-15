@@ -169,7 +169,7 @@ export class SearchPage implements OnInit {
 
   submit(): void {
     const q = this.draft.trim();
-    this.router.navigate(['/', this.lang(), 'blog', 'search'], { queryParams: q ? { q } : {} });
+    this.router.navigate(this.settingsSvc.blogLink(this.lang(), 'search'), { queryParams: q ? { q } : {} });
   }
 
   goToPage(p: number): void {
@@ -178,12 +178,11 @@ export class SearchPage implements OnInit {
   }
 
   private applySeo(): void {
-    const origin = this.settingsSvc.originUrl();
     const q = this.query();
     this.seo.apply({
       title: q ? `Search: ${q} | ${this.t(this.lang(), 'blog')}` : `Search | ${this.t(this.lang(), 'blog')}`,
       description: q ? `Search results for "${q}"` : 'Search the blog',
-      url: `${origin}/${this.lang()}/blog/search${q ? '?q=' + encodeURIComponent(q) : ''}`,
+      url: `${this.settingsSvc.blogUrl(this.lang(), 'search')}${q ? '?q=' + encodeURIComponent(q) : ''}`,
       noindex: true,
       locale: this.lang(),
       siteName: this.siteName(),

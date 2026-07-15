@@ -35,7 +35,7 @@ import { t } from '../i18n/i18n';
       <app-blog-header [lang]="lang()" [siteName]="siteName()" [languages]="supportedLangs()"></app-blog-header>
 
       <div class="container">
-        <a class="back" [routerLink]="['/', lang(), 'blog']">← {{ t(lang(), 'back_to_blog') }}</a>
+        <a class="back" [routerLink]="blogLink()">← {{ t(lang(), 'back_to_blog') }}</a>
 
         @if (loading() && !result()) {
           <app-loading-skeleton [count]="display().postsPerPage"></app-loading-skeleton>
@@ -103,6 +103,9 @@ export class TagPage implements OnInit {
 
   t = t;
 
+  /** Blog router commands, lang-less for the default language. */
+  blogLink = (...segments: (string | number)[]) => this.settingsSvc.blogLink(this.lang(), ...segments);
+
   async ngOnInit(): Promise<void> {
     combineLatest([this.route.paramMap, this.route.queryParamMap]).pipe(
       map(([p, q]) => ({ lang: p.get('lang') || q.get('lang') || 'en', slug: p.get('tagSlug') ?? '' })),
@@ -155,16 +158,15 @@ export class TagPage implements OnInit {
   }
 
   private applySeo(r: TagPostsResult): void {
-    const origin = this.settingsSvc.originUrl();
     const lang = this.lang();
     const thin = (r.pagination.total ?? r.data.length) < 3;
     this.seo.apply({
       title: `Posts tagged #${r.tag.name} | ${this.t(lang, 'blog')}`,
       description: r.tag.description || `Posts tagged with ${r.tag.name}`,
-      url: `${origin}/${lang}/blog/tag/${this.slug()}`,
+      url: this.settingsSvc.blogUrl(lang, 'tag', this.slug()),
       noindex: thin,
       locale: lang,
-      hreflang: this.supportedLangs().map(l => ({ lang: l, url: `${origin}/${l}/blog/tag/${this.slug()}` })),
+      hreflang: this.supportedLangs().map(l => ({ lang: l, url: this.settingsSvc.blogUrl(l, 'tag', this.slug()) })),
       siteName: this.siteName(),
     });
   }

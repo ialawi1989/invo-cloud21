@@ -398,18 +398,25 @@ export class NavigationBuilderComponent implements OnInit {
 
   translateItem(item: NavigationListItem1): void {
     if (!item.translation) item.translation = {};
-    if (!item.translation.en) item.translation.en = { name: item.name };
-    if (!item.translation.ar) item.translation.ar = { name: '' };
-    item.translation.en.name = item.name;
+    const tr = item.translation as Record<string, { name?: string }>;
+
+    // Seed the modal with the current per-language names; English mirrors
+    // the primary `name`.
+    const initial: Record<string, string> = {};
+    for (const [lang, val] of Object.entries(tr)) initial[lang] = val?.name ?? '';
+    initial['en'] = item.name;
 
     const ref = this.modal.open<TranslationModalComponent, TranslationModalData, TranslationLang>(
       TranslationModalComponent,
-      { size: 'md', data: { initial: { en: item.translation.en.name, ar: item.translation.ar.name }, label: item.name } },
+      { size: 'md', data: { initial, label: item.name } },
     );
     ref.afterClosed().then((res) => {
       if (!res) return;
-      item.translation.en = { name: res.en };
-      item.translation.ar = { name: res.ar };
+      // Keep the lang-major shape (`translation.<lang>.name`); write a slot
+      // per language the site supports so nothing is dropped.
+      for (const [lang, value] of Object.entries(res)) {
+        tr[lang] = { ...(tr[lang] ?? {}), name: value };
+      }
       item.name = res.en;
     });
   }

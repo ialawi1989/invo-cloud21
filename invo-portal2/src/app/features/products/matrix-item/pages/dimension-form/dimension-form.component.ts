@@ -54,6 +54,8 @@ import {
  * success. Attributes are edited through the shared add-attribute modal;
  * the translate button reuses the shared translation modal.
  */
+import { TranslateLinkComponent } from '@shared/components/translate-link/translate-link.component';
+
 @Component({
   selector: 'app-dimension-form',
   standalone: true,
@@ -63,6 +65,7 @@ import {
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     SegmentedToggleComponent,
+    TranslateLinkComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dimension-form.component.html',
@@ -260,7 +263,7 @@ export class DimensionFormComponent implements OnInit, CanLeaveComponent {
     >(TranslationModalComponent, {
       size: 'md',
       data: {
-        initial: { en: d.translation?.name?.en || d.name, ar: d.translation?.name?.ar || '' },
+        initial: { ...(d.translation?.name ?? {}), en: d.translation?.name?.en || d.name },
         label: this.translate.instant('DIMENSIONS.FORM.NAME'),
       },
     });
@@ -268,7 +271,7 @@ export class DimensionFormComponent implements OnInit, CanLeaveComponent {
     if (result) {
       this.dimension.update((dim) => {
         const translation = emptyTranslation();
-        translation.name = { en: result.en, ar: result.ar };
+        translation.name = { ...result };
         return {
           ...dim,
           translation,

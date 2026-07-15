@@ -69806,6 +69806,7 @@ async function resolveSlug(host) {
   }
 }
 var UUID_REGEX2 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var RESERVED_SLUGS = /* @__PURE__ */ new Set(["blog"]);
 function getVisitorContext(req) {
   const fwd = req.headers["x-forwarded-for"] || "";
   const firstHop = fwd.split(",")[0]?.trim();
@@ -69914,6 +69915,9 @@ app.get("/:slug", async (req, res, next) => {
     return next();
   const slug = req.params.slug;
   if (!slug || slug === "null" || slug === "undefined" || slug.includes(".")) {
+    return next();
+  }
+  if (RESERVED_SLUGS.has(slug.toLowerCase())) {
     return next();
   }
   const host = (req.headers.host || "").toString();

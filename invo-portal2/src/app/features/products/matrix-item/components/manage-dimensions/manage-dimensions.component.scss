@@ -123,7 +123,7 @@
 
   /* The translate action shares the chip-button base but must NOT read as a
      delete — tint it brand-purple (matches the "Translate" link) on hover. */
-  &__translate:hover { color: #4f46e5; background: #eef2ff; }
+  &__translate:hover { color: var(--color-brand-700, #0e7490); background: var(--color-brand-50, #ecfeff); }
 }
 
 .attr-add {
@@ -139,14 +139,14 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  &:hover { border-color: #6366f1; color: #4f46e5; background: #eef2ff; }
+  &:hover { border-color: var(--color-brand-500, #32acc1); color: var(--color-brand-700, #0e7490); background: var(--color-brand-50, #ecfeff); }
 }
 
 .link-btn {
   appearance: none;
   border: 0;
   background: transparent;
-  color: #4f46e5;
+  color: var(--color-brand-700, #0e7490);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;

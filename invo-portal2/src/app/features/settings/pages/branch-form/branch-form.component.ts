@@ -314,7 +314,6 @@ export class BranchFormComponent implements OnInit, CanLeaveComponent {
    */
   async openNameTranslationModal(): Promise<void> {
     const currentEn = String(this.form.controls['name'].value ?? '').trim();
-    const currentAr = this.original()?.translation?.name?.ar ?? '';
 
     const ref = this.modal.open<
       TranslationModalComponent,
@@ -323,7 +322,7 @@ export class BranchFormComponent implements OnInit, CanLeaveComponent {
     >(TranslationModalComponent, {
       size: 'sm',
       data: {
-        initial: { en: currentEn, ar: currentAr },
+        initial: { ...(this.original()?.translation?.name ?? {}), en: currentEn },
         label:   this.translate.instant('SETTINGS.BRANCHES.NAME'),
       },
       closeOnBackdrop: false,
@@ -340,7 +339,7 @@ export class BranchFormComponent implements OnInit, CanLeaveComponent {
     if (orig) {
       orig.translation = {
         ...(orig.translation ?? {}),
-        name: { en: result.en, ar: result.ar },
+        name: { ...result },
       };
       this.original.set({ ...orig });
     }

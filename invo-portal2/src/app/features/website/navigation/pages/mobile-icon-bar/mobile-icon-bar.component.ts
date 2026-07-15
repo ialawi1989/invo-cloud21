@@ -275,14 +275,16 @@ export class MobileIconBarComponent implements OnInit {
 
   translateName(item: MobileIconBarItem): void {
     if (!item.translation.title.en) item.translation.title.en = item.name;
+    const title = item.translation.title as Record<string, string>;
+    const initial: Record<string, string> = { ...title, en: title['en'] || item.name };
     const ref = this.modal.open<TranslationModalComponent, TranslationModalData, TranslationLang>(
       TranslationModalComponent,
-      { size: 'md', data: { initial: { en: item.translation.title.en, ar: item.translation.title.ar }, label: item.name } },
+      { size: 'md', data: { initial, label: item.name } },
     );
     ref.afterClosed().then((res) => {
       if (!res) return;
-      item.translation.title.en = res.en;
-      item.translation.title.ar = res.ar;
+      // Write every language the modal returned, preserving the title map.
+      for (const [lang, value] of Object.entries(res)) title[lang] = value;
       item.name = res.en;
     });
   }

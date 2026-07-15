@@ -224,10 +224,10 @@ export class BlogSeoService {
     const origin = this.settings.originUrl();
     const items: { name: string; url: string }[] = [
       { name: 'Home', url: `${origin}/${lang}` },
-      { name: 'Blog', url: `${origin}/${lang}/blog` },
+      { name: 'Blog', url: this.settings.blogUrl(lang) },
     ];
-    if (main) items.push({ name: main.name, url: `${origin}/${lang}/blog/category/${main.slug}` });
-    items.push({ name: post.title, url: `${origin}/${lang}/blog/${post.slug}` });
+    if (main) items.push({ name: main.name, url: this.settings.blogUrl(lang, 'category', main.slug) });
+    items.push({ name: post.title, url: this.settings.blogUrl(lang, post.slug) });
     return {
       '@context': 'https://schema.org',
       '@type':    'BreadcrumbList',

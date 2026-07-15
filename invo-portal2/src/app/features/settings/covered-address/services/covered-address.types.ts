@@ -15,6 +15,7 @@
 export interface TranslationLang {
   en: string;
   ar: string;
+  [lang: string]: string;
 }
 
 /** Bilingual translations for a country address's two granularity

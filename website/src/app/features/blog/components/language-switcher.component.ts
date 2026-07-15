@@ -114,12 +114,15 @@ export class LanguageSwitcherComponent {
       return;
     }
 
-    // Subdirectory mode.
+    // Subdirectory mode. The DEFAULT language is served lang-less (/blog/...);
+    // every other language carries a /:lang prefix (/ar/blog/...).
     if (resolved) { this.router.navigateByUrl(resolved); return; }
     const [path, query] = this.router.url.split('?');
     const segments = path.split('/').filter(Boolean);
-    if (segments.length === 0) { this.router.navigateByUrl(`/${lang}/blog`); return; }
-    segments[0] = lang;
-    this.router.navigateByUrl(`/${segments.join('/')}${query ? '?' + query : ''}`);
+    // Drop a leading language segment if present, leaving the lang-less path
+    // (e.g. ['blog','category','x']); default-language URLs are already so.
+    if (segments.length && supported.includes(segments[0])) segments.shift();
+    const parts = lang === s.languages.default ? segments : [lang, ...segments];
+    this.router.navigateByUrl('/' + parts.join('/') + (query ? '?' + query : ''));
   }
 }

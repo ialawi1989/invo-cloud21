@@ -73,4 +73,23 @@ export class MultilingualSettingsService {
       throw new Error(res?.msg || res?.message || 'Failed to save multilingual settings');
     }
   }
+
+  /**
+   * Persist the site's supported-language list (`languages.supported`) — the
+   * add/remove-language action on the Multilingual landing. Load-modify-save
+   * so every other language + site setting is preserved. `en` is always kept
+   * first as the original language.
+   */
+  async saveSupported(supported: string[]): Promise<void> {
+    const list = Array.from(new Set(['en', ...supported.filter(Boolean)]));
+    const row = (await this.loadRow()) ?? {};
+    const template = row.template ?? {};
+    const languages = { ...(template.languages ?? {}), supported: list };
+    const payload = { ...row, type: this.TYPE, template: { ...template, languages } };
+
+    const res = await this.api.request<any>(this.api.post('company/saveWebsiteTheme', payload));
+    if (res?.success === false) {
+      throw new Error(res?.msg || res?.message || 'Failed to save languages');
+    }
+  }
 }

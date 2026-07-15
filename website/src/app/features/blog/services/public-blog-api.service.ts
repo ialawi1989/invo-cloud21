@@ -139,20 +139,24 @@ export class PublicBlogApiService {
   }
 
   // ── Taxonomies ─────────────────────────────────────────────────────
-  listPublicTaxonomies(opts: {
+  async listPublicTaxonomies(opts: {
     language?: string;
     taxonomyType: 'category' | 'tag' | 'hashtag';
     search?: string;
   }): Promise<BlogTaxonomy[]> {
     // We don't paginate the category strip — request a generous page
     // so the strip stays single-fetch.
-    return this.call<BlogTaxonomy[]>('getTaxonomyList', {
+    // The backend wraps the rows in a paginated `{ list, count, pageCount }`
+    // envelope; unwrap `list` (tolerating a bare-array response too) so
+    // callers always get an iterable array.
+    const data = await this.call<any>('getTaxonomyList', {
       page:       1,
       limit:      200,
       searchTerm: opts.search ?? '',
       sortBy:     { sortValue: 'name', sortDirection: 'asc' },
       filter:     { taxonomyType: opts.taxonomyType, language: opts.language },
     });
+    return Array.isArray(data?.list) ? data.list : (Array.isArray(data) ? data : []);
   }
 
   getCategoryPosts(

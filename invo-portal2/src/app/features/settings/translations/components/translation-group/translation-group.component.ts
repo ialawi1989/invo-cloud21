@@ -18,6 +18,7 @@ import { debounceTime } from 'rxjs/operators';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { AiService } from '@core/ai/ai.service';
+import { CompanyService } from '@core/auth/company.service';
 import { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
@@ -26,6 +27,7 @@ import { findTranslationEntity, TranslationEntityConfig } from '../../translatio
 import { TranslationsStore } from '../../services/translations.store';
 import { SampleTranslationService } from '../../services/sample-translation.service';
 import { ApiTranslationService } from '../../services/api-translation.service';
+import { UiTextTranslationService } from '../../services/ui-text-translation.service';
 import {
   TRANSLATION_QP,
   TranslationChange,
@@ -47,6 +49,10 @@ import {
   ImportModalData,
   ImportTranslationsModalComponent,
 } from '../import-translations-modal/import-translations-modal.component';
+import {
+  ConfirmModalComponent,
+  ConfirmModalData,
+} from '@shared/modal/demo/confirm-modal.component';
 
 interface EditEntry {
   recordId: string;
@@ -82,7 +88,9 @@ export class TranslationGroupComponent implements CanLeaveComponent {
   private destroyRef = inject(DestroyRef);
   private sample = inject(SampleTranslationService);
   private apiSource = inject(ApiTranslationService);
+  private uiSource = inject(UiTextTranslationService);
   private ai = inject(AiService);
+  private company = inject(CompanyService);
 
   /** True while an AI auto-translate pass is running (guards re-entry). */
   aiTranslating = signal<boolean>(false);
@@ -102,6 +110,14 @@ export class TranslationGroupComponent implements CanLeaveComponent {
   private edits = new Map<string, EditEntry>();
   dirty = signal<boolean>(false);
   saving = signal<boolean>(false);
+
+  /** Row ids ticked for a bulk "Reset to default" (may span pages). */
+  selected = signal<Set<string>>(new Set<string>());
+  selectedCount = computed<number>(() => this.selected().size);
+  allOnPageSelected = computed<boolean>(() => {
+    const rows = this.rows();
+    return rows.length > 0 && rows.every(r => this.selected().has(r.id));
+  });
 
   /** Whole-entity word progress from the last load. */
   private baseWords = signal<{ translated: number; total: number }>({ translated: 0, total: 0 });
@@ -134,6 +150,7 @@ export class TranslationGroupComponent implements CanLeaveComponent {
         if (action === 'export') void this.exportCsv();
         else if (action === 'import') this.triggerImport();
         else if (action === 'auto-translate') this.autoTranslate();
+        else if (action === 'reset-all') void this.resetAll();
       });
 
     // Resolve the entity from the route in the constructor so `toObservable`
@@ -147,6 +164,9 @@ export class TranslationGroupComponent implements CanLeaveComponent {
     this.store.items.set([]);
     this.store.progress.set({ translated: 0, total: 0 });
     this.store.dirty.set(false);
+    // "Auto-translate everything" is only sane for the bounded UI-strings set.
+    this.store.canAutoTranslateAll.set(entity.source === 'ui');
+    this.selected.set(new Set());
 
     if (!entity.ready) return;
 
@@ -157,7 +177,11 @@ export class TranslationGroupComponent implements CanLeaveComponent {
   }
 
   private source(): TranslationDataSource {
-    return this.entity.source === 'api' ? this.apiSource : this.sample;
+    switch (this.entity.source) {
+      case 'api': return this.apiSource;
+      case 'ui':  return this.uiSource;
+      default:    return this.sample;
+    }
   }
 
   // ─── Data loading ───────────────────────────────────────────────────
@@ -272,6 +296,96 @@ export class TranslationGroupComponent implements CanLeaveComponent {
     void this.load();
   }
 
+  // ─── Selection + reset to default ───────────────────────────────────
+  isSelected(id: string): boolean {
+    return this.selected().has(id);
+  }
+
+  toggleRow(id: string): void {
+    this.selected.update(s => {
+      const next = new Set(s);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  /** Toggle every row on the current page. */
+  toggleSelectAll(): void {
+    const rows = this.rows();
+    const allSelected = this.allOnPageSelected();
+    this.selected.update(s => {
+      const next = new Set(s);
+      for (const r of rows) allSelected ? next.delete(r.id) : next.add(r.id);
+      return next;
+    });
+  }
+
+  clearSelection(): void {
+    if (this.selected().size) this.selected.set(new Set());
+  }
+
+  /** Clear the target for the ticked rows — reverts them to the source
+   *  default (for UI strings, drops the DB override). Rows may span pages,
+   *  so resolve them from the full set. */
+  async resetSelected(): Promise<void> {
+    const ids = this.selected();
+    if (!ids.size) return;
+    const all = await this.fetchAll();
+    await this.applyReset(all.filter(r => ids.has(r.id)));
+    this.selected.set(new Set());
+  }
+
+  /** Clear every translated target for this entity + language. */
+  async resetAll(): Promise<void> {
+    const label = this.translate.instant(this.entity.labelKey);
+    const ok = await this.confirm('TRANSLATIONS.RESET.CONFIRM_ALL_TITLE', 'TRANSLATIONS.RESET.CONFIRM_ALL_TEXT', label);
+    if (!ok) return;
+    const all = await this.fetchAll();
+    await this.applyReset(all.filter(r => (r.target ?? '').trim() !== ''));
+    this.selected.set(new Set());
+  }
+
+  private async applyReset(rows: TranslationRow[]): Promise<void> {
+    if (!rows.length) {
+      this.toast.info('TRANSLATIONS.RESET.NOTHING');
+      return;
+    }
+    this.store.busy.set(true);
+    try {
+      const changes: TranslationChange[] = rows.map(r => ({
+        id: r.id, recordId: r.recordId, field: r.field, target: '',
+      }));
+      const res = await this.source().saveTranslations(this.entity.id, this.store.targetLang(), changes);
+      if (res.success) {
+        this.edits.clear();
+        this.dirty.set(false);
+        this.store.dirty.set(false);
+        this.toast.success(this.translate.instant('TRANSLATIONS.RESET.DONE', { count: changes.length }));
+        await this.load();
+      } else {
+        this.toast.error('COMMON.SAVE_FAILED', res.msg);
+      }
+    } finally {
+      this.store.busy.set(false);
+    }
+  }
+
+  private async confirm(titleKey: string, textKey: string, entity: string): Promise<boolean> {
+    const ref = this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(
+      ConfirmModalComponent,
+      {
+        size: 'sm',
+        data: {
+          title: this.translate.instant(titleKey),
+          message: this.translate.instant(textKey, { entity }),
+          confirm: this.translate.instant('TRANSLATIONS.RESET.CONFIRM_BTN'),
+          danger: true,
+        },
+      },
+    );
+    return !!(await ref.afterClosed());
+  }
+
   // ─── Pagination ─────────────────────────────────────────────────────
   goPrev(): void {
     if (this.page() > 1) this.writePage(this.page() - 1);
@@ -373,50 +487,226 @@ export class TranslationGroupComponent implements CanLeaveComponent {
   private async autoTranslate(): Promise<void> {
     if (this.aiTranslating()) return;
     const langLabel = this.store.langLabel(this.store.targetLang()) || this.store.targetLang();
-    const pending = this.rows().filter(r => (r.source ?? '').trim() && !(r.target ?? '').trim());
-    if (!pending.length) {
+
+    const all = await this.fetchAll();
+    const pending = all.filter(r => (r.source ?? '').trim() && !(r.target ?? '').trim());
+    await this.runAutoTranslate(pending, langLabel);
+  }
+
+  /** Auto-translate only the ticked rows (any entity). Covers "translate one
+   *  row" too — tick a single row. */
+  async autoTranslateSelected(): Promise<void> {
+    if (this.aiTranslating()) return;
+    const ids = this.selected();
+    if (!ids.size) return;
+    const langLabel = this.store.langLabel(this.store.targetLang()) || this.store.targetLang();
+    const all = await this.fetchAll();
+    const rows = all.filter(r => ids.has(r.id) && (r.source ?? '').trim());
+    const done = await this.runAutoTranslate(rows, langLabel);
+    if (done) this.selected.set(new Set());
+  }
+
+  /**
+   * Translate `rows`, save, and reload. Splits into as few AI requests as the
+   * backend's per-request input cap allows (chunked by CHARACTER budget, not
+   * row count) so a large set never exceeds it. Runs behind the blocking
+   * overlay. Returns true when something was translated + saved.
+   */
+  private async runAutoTranslate(rows: TranslationRow[], langLabel: string): Promise<boolean> {
+    if (this.aiTranslating()) return false;
+    if (!rows.length) {
       this.toast.info('TRANSLATIONS.AUTO_TRANSLATE.NOTHING');
-      return;
+      return false;
     }
 
     this.aiTranslating.set(true);
     this.store.busy.set(true);
-    let done = 0;
     try {
-      for (const row of pending) {
+      const changes: TranslationChange[] = [];
+      for (const chunk of this.chunkByChars(rows)) {
+        let translations: string[] = [];
         try {
-          const out = await this.aiTranslateOne(row.source, langLabel);
-          if (out) { this.onEdit(row, out); done++; }
-        } catch { /* skip this row, keep going */ }
+          translations = await this.aiTranslateBatch(chunk.map(r => r.source), langLabel);
+        } catch { /* skip this chunk, keep going */ }
+        chunk.forEach((row, i) => {
+          const out = (translations[i] ?? '').trim();
+          if (out) changes.push({ id: row.id, recordId: row.recordId, field: row.field, target: out });
+        });
       }
+
+      if (!changes.length) {
+        this.toast.error('TRANSLATIONS.AUTO_TRANSLATE.FAILED');
+        return false;
+      }
+
+      const res = await this.source().saveTranslations(this.entity.id, this.store.targetLang(), changes);
+      if (res.success) {
+        this.edits.clear();
+        this.dirty.set(false);
+        this.store.dirty.set(false);
+        this.toast.success(this.translate.instant('TRANSLATIONS.AUTO_TRANSLATE.DONE', { count: changes.length }));
+        await this.load();
+        return true;
+      }
+      this.toast.error('COMMON.SAVE_FAILED', res.msg);
+      return false;
     } finally {
       this.aiTranslating.set(false);
       this.store.busy.set(false);
     }
-
-    if (done) {
-      this.toast.success(this.translate.instant('TRANSLATIONS.AUTO_TRANSLATE.DONE', { count: done }));
-    } else {
-      this.toast.error('TRANSLATIONS.AUTO_TRANSLATE.FAILED');
-    }
   }
 
-  /** One streamed AI translation; resolves with the accumulated result. */
-  private aiTranslateOne(text: string, langLabel: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
+  /** Group rows so each AI request's JSON payload stays under the backend's
+   *  per-request input cap. A single over-long row still goes alone. */
+  private chunkByChars(rows: TranslationRow[], maxChars = 6000): TranslationRow[][] {
+    const chunks: TranslationRow[][] = [];
+    let cur: TranslationRow[] = [];
+    let len = 2; // the surrounding `[]`
+    for (const row of rows) {
+      const add = JSON.stringify(row.source ?? '').length + 1; // element + comma
+      if (cur.length && len + add > maxChars) {
+        chunks.push(cur);
+        cur = [];
+        len = 2;
+      }
+      cur.push(row);
+      len += add;
+    }
+    if (cur.length) chunks.push(cur);
+    return chunks;
+  }
+
+  /** Translate every string in `texts` in one streamed AI call; resolves with
+   *  the translations in the same order (same length as `texts`). */
+  private aiTranslateBatch(texts: string[], langLabel: string): Promise<string[]> {
+    return new Promise<string[]>((resolve, reject) => {
       const controller = new AbortController();
+      const context = this.entity ? this.translate.instant(this.entity.labelKey) : '';
+      const glossary = this.glossaryFor(this.store.targetLang());
       const prompt =
-        `Translate the following user-interface text into ${langLabel}. ` +
-        `Return ONLY the translation — no quotes, labels, or extra commentary.`;
+        `You are ${this.translatorPersona()}, fluent in ${langLabel}, working on a business ` +
+        `point-of-sale, inventory, accounting and e-commerce platform. ` +
+        `Translate each item of the given JSON array from English into ${langLabel}. ` +
+        (context ? `These strings are "${context}" shown in the app interface. ` : '') +
+        `Use the officially-recognised, industry-standard ${langLabel} accounting, finance and retail terminology a native professional expects — translate by meaning, not word for word, and keep it short enough for a UI label. ` +
+        (glossary ? `ALWAYS use these exact translations when a term matches (case-insensitive), including its singular/plural: ${glossary}. ` : '') +
+        `Transliterate personal, business and brand names into ${langLabel} script so they read naturally to a native speaker (e.g. "Sayed Hussain" → "سيد حسين"); do NOT leave a name in its original Latin spelling when the target uses a different script. ` +
+        `Keep EXACTLY as-is (do NOT translate, transliterate or reorder): numbers, measurements and units, product codes and SKUs, model/serial numbers, HTML tags, and placeholders such as {{name}}, {0}, %s, :param or {% ... %} template tokens. ` +
+        `If an item is only such a code/number/token, return it unchanged. ` +
+        `Return ONLY a JSON array of strings — the translations in the SAME ORDER and SAME LENGTH as the input, ` +
+        `no keys, no numbering, no commentary, no code fences.`;
       let acc = '';
       this.ai.generateStream(
-        { task: 'custom', prompt, content: text },
+        { task: 'custom', prompt, content: JSON.stringify(texts) },
         (delta) => { acc += delta; },
         controller.signal,
       )
-        .then(() => resolve(acc.trim()))
+        .then(() => resolve(this.parseTranslationArray(acc, texts.length)))
         .catch(reject);
     });
+  }
+
+  /**
+   * The domain expert the AI should role-play, chosen from the section being
+   * translated: accounting/finance sections → accountant; catalog sections →
+   * a merchandiser tuned to the company's line of business; UI/site → a
+   * software localizer. Sharper persona ⇒ more accurate terminology.
+   */
+  private translatorPersona(): string {
+    const id = this.entity?.id ?? '';
+    const group = this.entity?.groupKey ?? '';
+
+    // Accounting / finance (invoices, credit/debit notes, journals, taxes,
+    // sales, purchases, payments, expenses…).
+    if (/invoice|credit|debit|journal|ledger|account|tax|payment|expense|purchase|sales|estimate|quotation/i.test(id)) {
+      return 'a professional accountant and financial-software localizer';
+    }
+    // Product / catalog — tuned to the company's industry when known.
+    if (group === 'TRANSLATIONS.GROUPS.STORE' ||
+        /product|categor|department|brand|collection|option|dimension|matrix|menu/i.test(id)) {
+      const industry = this.companyIndustry();
+      return industry
+        ? `an expert ${industry} product-catalog and merchandising localizer`
+        : 'an expert retail product-catalog and merchandising localizer';
+    }
+    // UI strings / site pages.
+    if (id === 'ui-strings' ||
+        group === 'TRANSLATIONS.GROUPS.INTERFACE' ||
+        group === 'TRANSLATIONS.GROUPS.SITE') {
+      return 'an expert software UI/UX localizer';
+    }
+    return 'an expert software and business localizer';
+  }
+
+  /** Company line-of-business (e.g. "restaurant", "pharmacy") to sharpen
+   *  product-catalog translations. Read from the company's `type` (with
+   *  legacy fallbacks); empty when not configured. */
+  private companyIndustry(): string {
+    const c = (this.company.currentCompany() ?? {}) as Record<string, unknown>;
+    const s = (this.company.settings() ?? {}) as Record<string, unknown>;
+    const raw =
+      c['type'] ?? c['businessType'] ?? c['industry'] ?? c['companyType'] ?? c['category'] ??
+      s['type'] ?? s['businessType'] ?? s['industry'] ?? '';
+    const val = typeof raw === 'string' ? raw.trim().toLowerCase() : '';
+    // Normalise known values / the backend's "Resturant" typo.
+    const FIX: Record<string, string> = {
+      resturant: 'restaurant',
+      restaurant: 'restaurant',
+      retail: 'retail',
+      pharmacy: 'pharmacy',
+      grocery: 'grocery/supermarket',
+      supermarket: 'grocery/supermarket',
+      salon: 'salon and beauty',
+    };
+    return FIX[val] ?? val;
+  }
+
+  /**
+   * A "must-match" term glossary for the target language, injected into the
+   * prompt so standard accounting/retail terms are always translated
+   * consistently (e.g. Credit Notes → إشعارات دائنة, not a literal rendering).
+   * Currently curated for Arabic; other languages rely on the accountant
+   * persona alone. Extend the maps to add languages/terms.
+   */
+  private glossaryFor(lang: string): string {
+    const base = (lang || '').toLowerCase().split('-')[0];
+    const GLOSSARY: Record<string, Record<string, string>> = {
+      ar: {
+        'Credit Note': 'إشعار دائن', 'Credit Notes': 'إشعارات دائنة',
+        'Debit Note': 'إشعار مدين', 'Debit Notes': 'إشعارات مدينة',
+        'Invoice': 'فاتورة', 'Invoices': 'فواتير',
+        'Purchase Order': 'أمر شراء', 'Sales Order': 'أمر بيع',
+        'Quotation': 'عرض سعر', 'Estimate': 'عرض سعر', 'Receipt': 'إيصال',
+        'Journal Entry': 'قيد يومية', 'Ledger': 'دفتر الأستاذ',
+        'Balance': 'رصيد', 'Account': 'حساب', 'Accounts': 'حسابات',
+        'VAT': 'ضريبة القيمة المضافة', 'Tax': 'ضريبة',
+        'Discount': 'خصم', 'Refund': 'استرداد',
+        'Supplier': 'مورّد', 'Customer': 'عميل',
+        'Inventory': 'المخزون', 'Warehouse': 'مستودع', 'Branch': 'فرع',
+        'Expense': 'مصروف', 'Revenue': 'إيراد', 'Payment': 'دفعة',
+      },
+    };
+    const map = GLOSSARY[base];
+    if (!map) return '';
+    return Object.entries(map).map(([en, tr]) => `"${en}"="${tr}"`).join('; ');
+  }
+
+  /** Extract a JSON string array from a (possibly fenced) model response,
+   *  normalised to exactly `expected` entries. */
+  private parseTranslationArray(raw: string, expected: number): string[] {
+    const out: string[] = new Array(expected).fill('');
+    const start = raw.indexOf('[');
+    const end = raw.lastIndexOf(']');
+    if (start === -1 || end <= start) return out;
+    try {
+      const arr = JSON.parse(raw.slice(start, end + 1));
+      if (Array.isArray(arr)) {
+        for (let i = 0; i < expected; i++) {
+          out[i] = typeof arr[i] === 'string' ? arr[i] : '';
+        }
+      }
+    } catch { /* leave blanks — caller treats empty as "not translated" */ }
+    return out;
   }
 
   // ─── Template helpers ───────────────────────────────────────────────

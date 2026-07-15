@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { BlogSettingsService } from '../services/blog-settings.service';
 import { t } from '../i18n/i18n';
 
 @Component({
@@ -11,7 +12,7 @@ import { t } from '../i18n/i18n';
     <div class="wrap">
       <h1>{{ t(lang(), '404_title') }}</h1>
       <p>{{ t(lang(), '404_body') }}</p>
-      <a class="btn" [routerLink]="['/', lang(), 'blog']">{{ t(lang(), 'back_to_blog') }}</a>
+      <a class="btn" [routerLink]="blogLink()">{{ t(lang(), 'back_to_blog') }}</a>
     </div>
   `,
   styles: [`
@@ -23,8 +24,13 @@ import { t } from '../i18n/i18n';
 })
 export class NotFoundPage implements OnInit {
   private route = inject(ActivatedRoute);
+  private settings = inject(BlogSettingsService);
   lang = signal('en');
   t = t;
+
+  /** Blog router commands, lang-less for the default language. */
+  blogLink = (...segments: (string | number)[]) => this.settings.blogLink(this.lang(), ...segments);
+
   ngOnInit(): void {
     const s = this.route.snapshot;
     this.lang.set(s.paramMap.get('lang') || s.queryParamMap.get('lang') || 'en');

@@ -6,6 +6,7 @@ import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { linkifyHashtags } from '../utils/hashtag-linker';
+import { BlogSettingsService } from '../services/blog-settings.service';
 import { neutralizeEditable } from '../utils/neutralize-editable';
 import { normalizeGalleryHtml } from '../utils/normalize-gallery';
 import { normalizeLinkHrefs } from '../utils/normalize-links';
@@ -654,6 +655,7 @@ export class PostContentComponent implements OnChanges, AfterViewChecked, OnDest
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
   private doc = inject(DOCUMENT);
+  private settings = inject(BlogSettingsService);
   private host = inject<ElementRef<HTMLElement>>(ElementRef);
   /** Content we've already enhanced — re-runs only when it changes. */
   private enhancedFor: string | null = null;
@@ -669,7 +671,10 @@ export class PostContentComponent implements OnChanges, AfterViewChecked, OnDest
   slideDir = signal<1 | -1>(1);
 
   ngOnChanges(_: SimpleChanges): void {
-    const linked = linkifyHashtags(this.html, this.lang);
+    // Tag hrefs follow the same lang-less-for-default rule as every other blog
+    // link (see BlogSettingsService.blogLink).
+    const linked = linkifyHashtags(this.html, (tag) =>
+      this.settings.blogLink(this.lang, 'tag', encodeURIComponent(tag)).join('/').replace('//', '/'));
     // Render strictly read-only (no contenteditable / live form controls)
     // and strip the editor's baked-in gallery tile sizing so the site's
     // responsive layout CSS applies.

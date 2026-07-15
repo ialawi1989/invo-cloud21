@@ -68,4 +68,27 @@ export class BlogSettingsService {
       || environment.siteOrigin
       || (this.isBrowser ? window.location.origin : '');
   }
+
+  /** Path segments after the origin for a blog URL. The DEFAULT language is
+   *  served at the clean, lang-less path (`/blog/...`); every OTHER language
+   *  keeps its `/:lang` prefix (`/ar/blog/...`). Parameter mode is always
+   *  lang-less (language rides in `?lang=`). Single source of truth so the
+   *  route table (app.routes.ts), internal links, and canonical/hreflang URLs
+   *  all agree. */
+  private blogParts(lang: string, segments: (string | number)[]): string[] {
+    const langs = this._settings().languages;
+    const langless = langs.urlStructure === 'parameter' || lang === langs.default;
+    const base = langless ? ['blog'] : [lang, 'blog'];
+    return [...base, ...segments.map(String)];
+  }
+
+  /** Router `routerLink`/`navigate` commands for a blog URL — see `blogParts`. */
+  blogLink(lang: string, ...segments: (string | number)[]): string[] {
+    return ['/', ...this.blogParts(lang, segments)];
+  }
+
+  /** Absolute blog URL (origin + path) for canonical / og:url / hreflang. */
+  blogUrl(lang: string, ...segments: (string | number)[]): string {
+    return `${this.originUrl()}/${this.blogParts(lang, segments).join('/')}`;
+  }
 }

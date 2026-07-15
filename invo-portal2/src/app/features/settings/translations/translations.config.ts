@@ -20,7 +20,7 @@ export interface TranslationFieldConfig {
   multiline?: boolean;
 }
 
-export type TranslationSourceKind = 'sample' | 'api';
+export type TranslationSourceKind = 'sample' | 'api' | 'ui';
 
 export interface TranslationEntityConfig {
   /** Route slug + `entityId` passed to the data source. */
@@ -40,10 +40,16 @@ export interface TranslationEntityConfig {
   source?: TranslationSourceKind;
   /** Endpoints for `source: 'api'` — bare relative paths for ApiService. */
   endpoints?: { list: string; save: string };
+  /** For `source: 'ui'` — the i18n namespaces whose shipped English JSON
+   *  supplies the editable keys. `''` = the base `i18n/<lang>.json`; a
+   *  feature path (e.g. `'settings/translations'`) = that feature's file.
+   *  Defaults to `['']` (base) when omitted. */
+  uiNamespaces?: string[];
 }
 
 export const TRANSLATION_GROUP_ORDER: string[] = [
   'TRANSLATIONS.GROUPS.SITE',
+  'TRANSLATIONS.GROUPS.INTERFACE',
   'TRANSLATIONS.GROUPS.BUSINESS',
   'TRANSLATIONS.GROUPS.STORE',
 ];
@@ -67,6 +73,23 @@ export const TRANSLATION_ENTITIES: TranslationEntityConfig[] = [
     endpoints: TRANSLATION_ENDPOINTS,
     fields: [
       { key: 'pageName', labelKey: 'TRANSLATIONS.FIELDS.PAGE_NAME' },
+    ],
+  },
+
+  // ── Site text (app UI strings; source = shipped i18n JSON, target =
+  //    per-tenant override in theme settings) ─────────────────────────
+  {
+    id: 'ui-strings',
+    labelKey: 'TRANSLATIONS.ENTITIES.UI_STRINGS.LABEL',
+    groupKey: 'TRANSLATIONS.GROUPS.INTERFACE',
+    descKey: 'TRANSLATIONS.ENTITIES.UI_STRINGS.DESC',
+    ready: true,
+    source: 'ui',
+    // Base global chrome strings (COMMON, MENU, SIDEBAR, …). Add more
+    // namespaces here to expose other features' text for overriding.
+    uiNamespaces: [''],
+    fields: [
+      { key: 'value', labelKey: 'TRANSLATIONS.FIELDS.TEXT' },
     ],
   },
 
@@ -114,6 +137,79 @@ export const TRANSLATION_ENTITIES: TranslationEntityConfig[] = [
     labelKey: 'TRANSLATIONS.ENTITIES.DEPARTMENTS.LABEL',
     groupKey: 'TRANSLATIONS.GROUPS.STORE',
     descKey: 'TRANSLATIONS.ENTITIES.DEPARTMENTS.DESC',
+    ready: true,
+    source: 'api',
+    endpoints: TRANSLATION_ENDPOINTS,
+    fields: [
+      { key: 'name', labelKey: 'TRANSLATIONS.FIELDS.NAME' },
+    ],
+  },
+  {
+    id: 'brands',
+    labelKey: 'TRANSLATIONS.ENTITIES.BRANDS.LABEL',
+    groupKey: 'TRANSLATIONS.GROUPS.STORE',
+    descKey: 'TRANSLATIONS.ENTITIES.BRANDS.DESC',
+    ready: true,
+    source: 'api',
+    endpoints: TRANSLATION_ENDPOINTS,
+    fields: [
+      { key: 'name', labelKey: 'TRANSLATIONS.FIELDS.NAME' },
+    ],
+  },
+  {
+    id: 'collections',
+    labelKey: 'TRANSLATIONS.ENTITIES.COLLECTIONS.LABEL',
+    groupKey: 'TRANSLATIONS.GROUPS.STORE',
+    descKey: 'TRANSLATIONS.ENTITIES.COLLECTIONS.DESC',
+    ready: true,
+    source: 'api',
+    endpoints: TRANSLATION_ENDPOINTS,
+    fields: [
+      { key: 'title', labelKey: 'TRANSLATIONS.FIELDS.TITLE' },
+      { key: 'description', labelKey: 'TRANSLATIONS.FIELDS.DESCRIPTION', multiline: true },
+    ],
+  },
+  {
+    id: 'options',
+    labelKey: 'TRANSLATIONS.ENTITIES.OPTIONS.LABEL',
+    groupKey: 'TRANSLATIONS.GROUPS.STORE',
+    descKey: 'TRANSLATIONS.ENTITIES.OPTIONS.DESC',
+    ready: true,
+    source: 'api',
+    endpoints: TRANSLATION_ENDPOINTS,
+    fields: [
+      { key: 'name', labelKey: 'TRANSLATIONS.FIELDS.NAME' },
+    ],
+  },
+  {
+    id: 'option-groups',
+    labelKey: 'TRANSLATIONS.ENTITIES.OPTION_GROUPS.LABEL',
+    groupKey: 'TRANSLATIONS.GROUPS.STORE',
+    descKey: 'TRANSLATIONS.ENTITIES.OPTION_GROUPS.DESC',
+    ready: true,
+    source: 'api',
+    endpoints: TRANSLATION_ENDPOINTS,
+    fields: [
+      { key: 'name', labelKey: 'TRANSLATIONS.FIELDS.NAME' },
+    ],
+  },
+  {
+    id: 'dimensions',
+    labelKey: 'TRANSLATIONS.ENTITIES.DIMENSIONS.LABEL',
+    groupKey: 'TRANSLATIONS.GROUPS.STORE',
+    descKey: 'TRANSLATIONS.ENTITIES.DIMENSIONS.DESC',
+    ready: true,
+    source: 'api',
+    endpoints: TRANSLATION_ENDPOINTS,
+    fields: [
+      { key: 'name', labelKey: 'TRANSLATIONS.FIELDS.NAME' },
+    ],
+  },
+  {
+    id: 'matrix',
+    labelKey: 'TRANSLATIONS.ENTITIES.MATRIX.LABEL',
+    groupKey: 'TRANSLATIONS.GROUPS.STORE',
+    descKey: 'TRANSLATIONS.ENTITIES.MATRIX.DESC',
     ready: true,
     source: 'api',
     endpoints: TRANSLATION_ENDPOINTS,

@@ -1,8 +1,9 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 import { PostAuthorRef } from '../models/blog.types';
+import { BlogSettingsService } from '../services/blog-settings.service';
 import { t } from '../i18n/i18n';
 
 @Component({
@@ -21,7 +22,7 @@ import { t } from '../i18n/i18n';
           @if (author.publicTitle) { <div class="title">{{ author.publicTitle }}</div> }
           @if (author.publicBio) { <p class="bio">{{ author.publicBio }}</p> }
           @if (author.id) {
-            <a [routerLink]="['/', lang, 'blog', 'authors', author.id]" class="btn">
+            <a [routerLink]="blogLink('authors', author.id)" class="btn">
               {{ t(lang, 'read_more_by', { name: author.name }) }}
             </a>
           }
@@ -54,7 +55,11 @@ import { t } from '../i18n/i18n';
   `],
 })
 export class AuthorCardComponent {
+  private settings = inject(BlogSettingsService);
   @Input() author: PostAuthorRef | null = null;
   @Input({ required: true }) lang = 'en';
   t = t;
+
+  /** Blog router commands, lang-less for the default language. */
+  blogLink = (...segments: (string | number)[]) => this.settings.blogLink(this.lang, ...segments);
 }

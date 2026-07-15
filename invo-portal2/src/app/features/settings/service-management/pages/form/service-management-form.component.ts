@@ -328,9 +328,9 @@ export class ServiceManagementFormComponent implements OnInit, CanLeaveComponent
   async openNameTranslation(): Promise<void> {
     const s = this.service$();
     const initial: TranslationLang = {
+      ...(s.translation?.name ?? {}),
       en: s.translation?.name?.['en'] || s.name || '',
-      ar: s.translation?.name?.['ar'] || '',
-    };
+    } as TranslationLang;
     const ref = this.modal.open<
       TranslationModalComponent,
       TranslationModalData,
@@ -348,7 +348,7 @@ export class ServiceManagementFormComponent implements OnInit, CanLeaveComponent
     this.service$.update(prev => ({
       ...prev,
       name: result.en || prev.name,
-      translation: { name: { ...(prev.translation?.name ?? {}), en: result.en, ar: result.ar } },
+      translation: { name: { ...(prev.translation?.name ?? {}), ...result } },
     }));
   }
 

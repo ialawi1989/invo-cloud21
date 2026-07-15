@@ -57,7 +57,7 @@ import { formatDate, formatNumber, nativeLanguageName, t } from '../i18n/i18n';
           <div class="not-found">
             <h1>{{ t(lang(), '404_title') }}</h1>
             <p>{{ t(lang(), '404_body') }}</p>
-            <a class="btn" [routerLink]="['/', lang(), 'blog']">{{ t(lang(), 'back_to_blog') }}</a>
+            <a class="btn" [routerLink]="blogLink()">{{ t(lang(), 'back_to_blog') }}</a>
           </div>
         } @else if (error()) {
           <app-error-banner [lang]="lang()" [showRetry]="true" (retry)="load()"></app-error-banner>
@@ -82,7 +82,7 @@ import { formatDate, formatNumber, nativeLanguageName, t } from '../i18n/i18n';
 
           <header class="head">
             @if (display().showCategoryLabel && p.mainCategory; as cat) {
-              <a class="cat" [routerLink]="['/', lang(), 'blog', 'category', cat.slug]">{{ cat.name }}</a>
+              <a class="cat" [routerLink]="blogLink('category', cat.slug)">{{ cat.name }}</a>
             }
             <h1>{{ p.title }}</h1>
             <div class="meta">
@@ -90,7 +90,7 @@ import { formatDate, formatNumber, nativeLanguageName, t } from '../i18n/i18n';
                 <span class="author">
                   @if (p.author.image) { <img [src]="p.author.image" alt="" class="avatar"> }
                   @if (p.author.id) {
-                    <a [routerLink]="['/', lang(), 'blog', 'authors', p.author.id]">{{ p.author.name }}</a>
+                    <a [routerLink]="blogLink('authors', p.author.id)">{{ p.author.name }}</a>
                   } @else { <span>{{ p.author.name }}</span> }
                   @if (p.author.publicTitle) { <span class="title">· {{ p.author.publicTitle }}</span> }
                 </span>
@@ -109,7 +109,7 @@ import { formatDate, formatNumber, nativeLanguageName, t } from '../i18n/i18n';
             @if (display().showTags && p.tags.length) {
               <div class="tags">
                 @for (tagRef of p.tags; track tagRef.id) {
-                  <a class="chip" [routerLink]="['/', lang(), 'blog', 'tag', tagRef.slug]">{{ tagRef.name }}</a>
+                  <a class="chip" [routerLink]="blogLink('tag', tagRef.slug)">{{ tagRef.name }}</a>
                 }
               </div>
             }
@@ -269,19 +269,21 @@ export class PostPage implements OnInit {
   formatDate = formatDate;
   formatNumber = formatNumber;
 
+  /** Blog router commands, lang-less for the default language. */
+  blogLink = (...segments: (string | number)[]) => this.settingsSvc.blogLink(this.lang(), ...segments);
+
   urlForLang = (lang: string): string | null => {
     const alts = this.post()?.seo?.hreflangAlternates;
     const found = alts?.find(a => a.lang === lang);
     if (found) {
       try { return new URL(found.url).pathname; } catch { return found.url; }
     }
-    return `/${lang}/blog`;
+    return this.settingsSvc.blogLink(lang).join('/').replace('//', '/');
   };
 
   canonicalUrl(): string {
-    const origin = this.settingsSvc.originUrl();
     const p = this.post();
-    return p?.seo?.canonical || `${origin}/${this.lang()}/blog/${this.slug()}`;
+    return p?.seo?.canonical || this.settingsSvc.blogUrl(this.lang(), this.slug());
   }
 
   crumbs = computed<Crumb[]>(() => {
@@ -290,9 +292,9 @@ export class PostPage implements OnInit {
     const main = p?.mainCategory;
     const list: Crumb[] = [
       { label: this.t(lang, 'home'), link: ['/', lang] },
-      { label: this.t(lang, 'blog'), link: ['/', lang, 'blog'] },
+      { label: this.t(lang, 'blog'), link: this.blogLink() },
     ];
-    if (main) list.push({ label: main.name, link: ['/', lang, 'blog', 'category', main.slug] });
+    if (main) list.push({ label: main.name, link: this.blogLink('category', main.slug) });
     if (p) list.push({ label: p.title, link: null });
     return list;
   });

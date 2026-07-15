@@ -18,9 +18,7 @@
             {{ 'PRODUCTS.FIELDS.NAME' | translate }}
             @if (fieldsOptions()?.name?.isRequired) { <span class="pf-required">*</span> }
           </span>
-          <button type="button" class="pf-link" (click)="showNameTranslation()">
-            {{ 'PRODUCTS.ACTIONS.TRANSLATION' | translate }}
-          </button>
+          <app-translate-link (clicked)="showNameTranslation()"/>
         </label>
         <input
           id="pf-name"
@@ -115,9 +113,7 @@
             {{ 'PRODUCTS.FORM.DESCRIPTION' | translate }}
             @if (fieldsOptions()?.description?.isRequired) { <span class="pf-required">*</span> }
           </span>
-          <button type="button" class="pf-link" (click)="showDescriptionTranslation()">
-            {{ 'PRODUCTS.ACTIONS.TRANSLATION' | translate }}
-          </button>
+          <app-translate-link (clicked)="showDescriptionTranslation()"/>
         </label>
         <app-rich-editor
           formControlName="description"

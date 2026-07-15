@@ -20,7 +20,7 @@ export interface TranslationLang {
   nativeLabel: string;
 }
 
-export type TranslationAction = 'export' | 'import' | 'auto-translate';
+export type TranslationAction = 'export' | 'import' | 'auto-translate' | 'reset-all';
 
 /** The source language all translations are based on. */
 export const ORIGINAL_LANG = 'en';
@@ -81,6 +81,15 @@ export class TranslationsStore {
   /** True while the active grid is loading (disables toolbar actions). */
   readonly busy = signal<boolean>(false);
 
+  /** True once Content AI is linked (enabled + keyed) — gates every
+   *  auto-translate affordance. Set by the shell. */
+  readonly aiAvailable = signal<boolean>(false);
+
+  /** True only for the fixed-size UI-strings entity, where "translate
+   *  everything" is bounded. Other entities (products, …) can hold thousands
+   *  of rows, so they offer "auto-translate selected" instead. Set by the grid. */
+  readonly canAutoTranslateAll = signal<boolean>(false);
+
   /** Toolbar action bus — shell fires, active grid handles. */
   private readonly action = new Subject<TranslationAction>();
   readonly action$ = this.action.asObservable();
@@ -100,6 +109,13 @@ export class TranslationsStore {
 
   removeLanguage(code: string): void {
     this.additionalLanguages.update(list => list.filter(c => c !== code));
+  }
+
+  /** Replace the additional-language list — e.g. seeded from the backend
+   *  `supported` set on load. English is the source and never included. */
+  setAdditionalLanguages(codes: string[]): void {
+    const unique = Array.from(new Set(codes.filter(c => c && c !== ORIGINAL_LANG)));
+    this.additionalLanguages.set(unique);
   }
 
   /** Languages that can still be added (catalogue minus source minus added). */

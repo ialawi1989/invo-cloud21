@@ -7,6 +7,7 @@ import {
   CoveredAddressesPayload,
   CoveredAddressRow,
   emptyTranslation,
+  TranslationLang,
 } from './covered-address.types';
 
 /**
@@ -83,15 +84,23 @@ export class CoveredAddressService {
   }
 
   /** Coerce server translation into the canonical `{ City, Governorate }`
-   *  shape with `{ en, ar }` leaves. Falls through with empty strings
-   *  for missing fields so the form's bindings never read `undefined`. */
+   *  shape. Preserves every language present (en/ar + any site language)
+   *  so an added language survives the round-trip; guarantees en/ar exist
+   *  so the form's bindings never read `undefined`. */
   private normTranslation(raw: any): CountryAddressTranslation {
     const t = raw && typeof raw === 'object' ? raw : {};
-    const city = t.City && typeof t.City === 'object' ? t.City : {};
-    const gov  = t.Governorate && typeof t.Governorate === 'object' ? t.Governorate : {};
+    const bucket = (src: any): TranslationLang => {
+      const out: TranslationLang = { en: '', ar: '' };
+      if (src && typeof src === 'object') {
+        for (const lang of Object.keys(src)) {
+          if (typeof src[lang] === 'string') out[lang] = src[lang];
+        }
+      }
+      return out;
+    };
     return {
-      City:        { en: String(city.en ?? ''), ar: String(city.ar ?? '') },
-      Governorate: { en: String(gov.en  ?? ''), ar: String(gov.ar  ?? '') },
+      City:        bucket(t.City),
+      Governorate: bucket(t.Governorate),
     };
   }
 }

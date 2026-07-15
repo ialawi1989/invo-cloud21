@@ -1,8 +1,9 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { BlogTaxonomy } from '../models/blog.types';
+import { BlogSettingsService } from '../services/blog-settings.service';
 import { t } from '../i18n/i18n';
 
 @Component({
@@ -13,14 +14,14 @@ import { t } from '../i18n/i18n';
   template: `
     <nav class="strip" [attr.aria-label]="t('category')">
       <a class="pill"
-         [routerLink]="['/', lang, 'blog']"
+         [routerLink]="blogLink()"
          routerLinkActive="active"
          [routerLinkActiveOptions]="{ exact: true }">
         {{ t('all_posts') }}
       </a>
       @for (c of categories; track c.id) {
         <a class="pill"
-           [routerLink]="['/', lang, 'blog', 'category', c.slug]"
+           [routerLink]="blogLink('category', c.slug)"
            routerLinkActive="active">
           {{ c.name }}
         </a>
@@ -51,8 +52,12 @@ import { t } from '../i18n/i18n';
   `],
 })
 export class CategoryMenuStripComponent {
+  private settings = inject(BlogSettingsService);
   @Input({ required: true }) lang = 'en';
   @Input({ required: true }) categories: BlogTaxonomy[] = [];
+
+  /** Blog router commands, lang-less for the default language. */
+  blogLink = (...segments: (string | number)[]) => this.settings.blogLink(this.lang, ...segments);
 
   t = (k: string) => t(this.lang, k);
 }

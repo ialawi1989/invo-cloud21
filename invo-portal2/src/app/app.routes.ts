@@ -278,6 +278,15 @@ export const routes: Routes = [
           import('./features/products/matrix-item/dimensions.routes').then(m => m.DIMENSIONS_ROUTES)
       },
       {
+        // Product Collections — top-level like Matrix Items / Dimensions.
+        // Sidebar links `/products-collections` (menu id 313).
+        path: 'products-collections',
+        loadChildren: () =>
+          import('./features/products/pages/products-collections/products-collections.routes').then(
+            m => m.PRODUCTS_COLLECTIONS_ROUTES,
+          )
+      },
+      {
         // Menu Builder is surfaced from Settings (see settings.component.ts
         // → SETTINGS.ITEMS.MENU_BUILDER), so it lives under /settings/* in
         // the URL space too.

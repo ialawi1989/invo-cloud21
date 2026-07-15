@@ -14,7 +14,7 @@
               @if (entity.ready) {
                 <li>
                   <a class="tm-item"
-                     [routerLink]="['/settings/translations', entity.id]"
+                     [routerLink]="['/settings/translations', store.targetLang(), entity.id]"
                      routerLinkActive="tm-item--active">
                     <span class="tm-item__label">{{ entity.labelKey | translate }}</span>
                   </a>

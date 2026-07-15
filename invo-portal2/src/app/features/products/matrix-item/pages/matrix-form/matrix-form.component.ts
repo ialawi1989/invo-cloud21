@@ -96,6 +96,8 @@ import {
  * changes — and only in create mode, matching the legacy behaviour where
  * editing an existing matrix never regenerates its child products.
  */
+import { TranslateLinkComponent } from '@shared/components/translate-link/translate-link.component';
+
 @Component({
   selector: 'app-matrix-form',
   standalone: true,
@@ -110,6 +112,7 @@ import {
     ManageDimensionsComponent,
     BranchTabsComponent,
     SegmentedToggleComponent,
+    TranslateLinkComponent,
   ],
   // The branch-tabs picker persists its open/pinned/active state per namespace.
   providers: [provideBranchTabs('matrixForm.branches')],
@@ -690,8 +693,8 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
   async translateName(): Promise<void> {
     const info = this.matrixInfo();
     const initial: TranslationLang = {
+      ...(info.translation?.name ?? {}),
       en: info.translation?.name?.en || info.name,
-      ar: info.translation?.name?.ar || '',
     };
     const ref = this.modal.open<TranslationModalComponent, TranslationModalData, TranslationLang | null>(
       TranslationModalComponent,
@@ -701,8 +704,8 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
     if (!result) return;
     this.patchModel((m) => {
       const t = m.translation ?? emptyTranslation();
-      m.translation = { ...t, name: { en: result.en, ar: result.ar } };
-      m.name = result.en;
+      m.translation = { ...t, name: { ...result } };
+      m.name = result['en'];
     });
     this.form.controls.matrixName.setValue(result.en, { emitEvent: false });
     if (!this.isEdit()) this.regenerate();

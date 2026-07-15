@@ -1,0 +1,52 @@
+<div class="clf-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'PRODUCTS.DEPARTMENTS.IDENTITY' | translate }}</h2>
+        <p class="card__sub">{{ 'PRODUCTS.DEPARTMENTS.IDENTITY_DESC' | translate }}</p>
+      </header>
+      <div class="card__body">
+        <div class="field">
+          <label class="field-label field-label--with-action" for="dept-name">
+            <span>
+              {{ 'PRODUCTS.DEPARTMENTS.NAME' | translate }}
+              <span class="required">*</span>
+            </span>
+            <app-translate-link (clicked)="openNameTranslationModal()"/>
+          </label>
+          <input
+            id="dept-name"
+            type="text"
+            class="input"
+            formControlName="name"
+            [placeholder]="'PRODUCTS.DEPARTMENTS.NAME_PLACEHOLDER' | translate"
+            [class.input--invalid]="nameCtrl.touched && nameCtrl.invalid"
+          />
+          @if (nameCtrl.touched && nameCtrl.errors?.['required']) {
+            <p class="field-error">{{ 'PRODUCTS.DEPARTMENTS.NAME_REQUIRED' | translate }}</p>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || loading() || form.invalid">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

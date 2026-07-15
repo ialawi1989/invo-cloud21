@@ -57,6 +57,7 @@
     "TARGET_PLACEHOLDER": "Add translation",
     "GROUPS": {
       "SITE": "Site pages",
+      "INTERFACE": "Site text",
       "BUSINESS": "Business info",
       "STORE": "Store",
       "CMS": "CMS collections"
@@ -65,6 +66,10 @@
       "PAGE_CONTENT": {
         "LABEL": "Page content",
         "DESC": "Titles for your site pages (shown in the site menu per language)."
+      },
+      "UI_STRINGS": {
+        "LABEL": "Interface text",
+        "DESC": "Override the built-in app/storefront labels and buttons per language."
       },
       "BUSINESS_INFO": {
         "LABEL": "Business info",
@@ -82,6 +87,30 @@
         "LABEL": "Departments",
         "DESC": "Names for your product departments."
       },
+      "BRANDS": {
+        "LABEL": "Brands",
+        "DESC": "Names for your product brands."
+      },
+      "COLLECTIONS": {
+        "LABEL": "Collections",
+        "DESC": "Titles and descriptions for your product collections."
+      },
+      "OPTIONS": {
+        "LABEL": "Options",
+        "DESC": "Names for your product options and modifiers."
+      },
+      "OPTION_GROUPS": {
+        "LABEL": "Option groups",
+        "DESC": "Names for your option and modifier groups."
+      },
+      "DIMENSIONS": {
+        "LABEL": "Dimensions",
+        "DESC": "Names for your matrix dimensions."
+      },
+      "MATRIX": {
+        "LABEL": "Matrix items",
+        "DESC": "Names for your matrix items."
+      },
       "CMS": {
         "LABEL": "CMS collections",
         "DESC": "Content stored in your CMS collections."
@@ -94,7 +123,8 @@
       "NAME": "Name",
       "DESCRIPTION": "Description",
       "ADDRESS": "Address",
-      "PAGE_NAME": "Page title"
+      "PAGE_NAME": "Page title",
+      "TEXT": "Text"
     },
     "STATUS": {
       "TRANSLATED": "Translated",
@@ -116,7 +146,18 @@
       "MENU": "Actions",
       "EXPORT": "Export content (CSV)",
       "IMPORT": "Import translations (CSV)",
-      "AUTO_TRANSLATE": "Auto-translate"
+      "AUTO_TRANSLATE": "Auto-translate everything",
+      "RESET_ALL": "Reset all to default"
+    },
+    "RESET": {
+      "TO_DEFAULT": "Reset to default",
+      "SELECTED": "{{count}} selected",
+      "SELECT_ALL": "Select all on this page",
+      "DONE": "Reset {{count}} field(s) to default",
+      "NOTHING": "Nothing to reset.",
+      "CONFIRM_BTN": "Reset",
+      "CONFIRM_ALL_TITLE": "Reset all translations?",
+      "CONFIRM_ALL_TEXT": "This clears every {{entity}} translation for this language and reverts them to the default. This can't be undone."
     },
     "EXPORT": {
       "DONE": "Content exported"
@@ -137,9 +178,12 @@
       "WARN_BLANK_ID": "Blank ID"
     },
     "AUTO_TRANSLATE": {
+      "SELECTED": "Auto-translate selected",
+      "WORKING": "Auto-translating…",
+      "WORKING_HINT": "Please keep this page open until it finishes.",
       "COMING_SOON": "Auto-translate is coming soon.",
-      "NOTHING": "Nothing to translate on this view — all rows already have a translation.",
-      "DONE": "Auto-translated {{count}} field(s). Review and Save to keep them.",
+      "NOTHING": "Nothing to translate — everything already has a translation.",
+      "DONE": "Auto-translated and saved {{count}} field(s).",
       "FAILED": "Auto-translate failed. Check your Content AI settings and try again."
     }
   }

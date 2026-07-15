@@ -74,8 +74,9 @@ export class TranslationsShellComponent implements OnInit {
   private ai = inject(AiService);
 
   /** True once the company Content AI plugin is enabled + keyed — gates the
-   *  "Auto-translate" action (hidden entirely when AI isn't linked to an API). */
-  aiAvailable = signal(false);
+   *  auto-translate actions. Mirrored onto the store so the grid's
+   *  "Auto-translate selected" button can read it too. */
+  protected aiAvailable = this.store.aiAvailable;
 
   readonly groups = translationGroups();
 
@@ -115,9 +116,10 @@ export class TranslationsShellComponent implements OnInit {
         click: () => this.store.emit('import'),
       },
     ];
-    // Auto-translate is shown only when Content AI is linked to an API
-    // (company plugin enabled + key stored) — mirrors the blog editor.
-    if (this.aiAvailable()) {
+    // "Auto-translate everything" is offered only for the fixed-size UI
+    // strings (bounded set); other entities can hold thousands of rows, so
+    // there it's driven per-selection from the grid's bulk bar instead.
+    if (this.aiAvailable() && this.store.canAutoTranslateAll()) {
       items.push({
         label: 'TRANSLATIONS.ACTIONS.AUTO_TRANSLATE',
         separator: true,
@@ -126,6 +128,14 @@ export class TranslationsShellComponent implements OnInit {
         click: () => this.store.emit('auto-translate'),
       });
     }
+    items.push({
+      label: 'TRANSLATIONS.ACTIONS.RESET_ALL',
+      separator: true,
+      danger: true,
+      disabled: busy,
+      iconPath: 'M3 12a9 9 0 1 0 9-9 9 9 0 0 0-7 3.3M3 4v4h4',
+      click: () => this.store.emit('reset-all'),
+    });
     return items;
   });
 

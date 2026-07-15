@@ -46,7 +46,8 @@ import { BranchSettingsService } from '../../services/branch-settings.service';
 import {
   TranslationModalComponent,
   TranslationModalData,
-} from '../components/translation-modal/translation-modal.component';
+  TranslationLang as ModalTranslationLang,
+} from '@shared/components/translation-modal/translation-modal.component';
 
 interface BranchOption { id: string; name: string; }
 interface TypeOption   { value: string; label: string; }
@@ -535,16 +536,16 @@ export class CoveredAddressComponent implements OnInit, CanLeaveComponent {
     const ref = this.modal.open<
       TranslationModalComponent,
       TranslationModalData,
-      TranslationLang | undefined
+      ModalTranslationLang | null
     >(TranslationModalComponent, {
       size: 'sm',
       data: {
-        title: this.translate.instant(
+        label: this.translate.instant(
           bucket === 'City'
             ? 'COVERED_ADDRESS.TRANSLATION_CITY'
             : 'COVERED_ADDRESS.TRANSLATION_GOVERNORATE',
         ),
-        value: row.translation?.[bucket] ?? { en: '', ar: '' },
+        initial: { ...(row.translation?.[bucket] ?? {}) },
       },
       closeOnBackdrop: false,
     });
@@ -554,7 +555,7 @@ export class CoveredAddressComponent implements OnInit, CanLeaveComponent {
     this.setRow(idx, {
       translation: {
         ...(row.translation ?? emptyTranslation()),
-        [bucket]: result,
+        [bucket]: { ...result },
       },
       // Keep the visible name in sync with the chosen English
       // translation — matches the legacy behaviour.

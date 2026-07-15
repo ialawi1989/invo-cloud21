@@ -83,12 +83,6 @@ const rootRedirect: CanMatchFn = async () => {
   return router.createUrlTree([await defaultLang()], { queryParams });
 };
 
-const blogRedirect: CanMatchFn = async () => {
-  const router = inject(Router);
-  const queryParams = currentQueryParams(router);
-  return router.createUrlTree([await defaultLang(), 'blog'], { queryParams });
-};
-
 /** Guard the storefront `:lang` segment (subdirectory mode). When the first
  *  segment is a supported language, render the page; otherwise it's a LEGACY
  *  lang-less link — prepend the default language, preserving path + query. */
@@ -137,7 +131,11 @@ export const APP_ROUTES: Routes = [
 
   // ── Subdirectory mode + lang-less entry points ────────────────────────
   { path: '', pathMatch: 'full', canMatch: [rootRedirect], children: [] },
-  { path: 'blog', canMatch: [blogRedirect], children: [] },
+  // Lang-less blog entry — render the DEFAULT language's blog directly at
+  // `/blog` (no redirect to `/:lang/blog`). The blog pages resolve the active
+  // language from the `:lang` segment / `?lang=` query, falling back to the
+  // default when neither is present, so `/blog` serves the default language.
+  { path: 'blog', children: BLOG_CHILDREN },
 
   // Blog at /:lang/blog/* — before ":lang/:page" so "blog" is never a page slug.
   ...BLOG_ROUTES,

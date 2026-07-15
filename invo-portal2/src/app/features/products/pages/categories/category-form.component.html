@@ -1,0 +1,93 @@
+<div class="clf-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'PRODUCTS.CATEGORIES.IDENTITY' | translate }}</h2>
+        <p class="card__sub">{{ 'PRODUCTS.CATEGORIES.IDENTITY_DESC' | translate }}</p>
+      </header>
+      <div class="card__body card__body--grid">
+        <!-- Cover image -->
+        <div class="field">
+          <label class="field-label">{{ 'PRODUCTS.CATEGORIES.IMAGE' | translate }}</label>
+          <div class="image-row">
+            <span class="image-thumb">
+              @if (mediaUrl()) {
+                <img [src]="mediaUrl()" alt="" />
+              } @else {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                </svg>
+              }
+            </span>
+            <div class="image-actions">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="chooseImage()">
+                {{ (mediaUrl() ? 'PRODUCTS.CATEGORIES.REPLACE_IMAGE' : 'PRODUCTS.CATEGORIES.CHOOSE_IMAGE') | translate }}
+              </button>
+              @if (mediaUrl()) {
+                <button type="button" class="btn btn-ghost btn-sm" (click)="removeImage()">
+                  {{ 'PRODUCTS.CATEGORIES.REMOVE_IMAGE' | translate }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Name -->
+        <div class="field">
+          <label class="field-label field-label--with-action" for="cat-name">
+            <span>{{ 'PRODUCTS.CATEGORIES.NAME' | translate }} <span class="required">*</span></span>
+            <app-translate-link (clicked)="openNameTranslationModal()"/>
+          </label>
+          <input
+            id="cat-name"
+            type="text"
+            class="input"
+            formControlName="name"
+            [placeholder]="'PRODUCTS.CATEGORIES.NAME_PLACEHOLDER' | translate"
+            [class.input--invalid]="nameCtrl.touched && nameCtrl.invalid"
+          />
+          @if (nameCtrl.touched && nameCtrl.errors?.['required']) {
+            <p class="field-error">{{ 'PRODUCTS.CATEGORIES.NAME_REQUIRED' | translate }}</p>
+          }
+        </div>
+
+        <!-- Department -->
+        <div class="field">
+          <label class="field-label">{{ 'PRODUCTS.CATEGORIES.DEPARTMENT' | translate }} <span class="required">*</span></label>
+          <app-search-dropdown
+            [items]="departments()"
+            [displayWith]="displayDept"
+            [compareWith]="compareDept"
+            [value]="selectedDepartment()"
+            [searchable]="true"
+            [clearable]="false"
+            [placeholder]="'PRODUCTS.CATEGORIES.DEPARTMENT_PLACEHOLDER' | translate"
+            (valueChange)="onDepartmentChange($event)"/>
+          @if (deptCtrl.touched && deptCtrl.errors?.['required']) {
+            <p class="field-error">{{ 'PRODUCTS.CATEGORIES.DEPARTMENT_REQUIRED' | translate }}</p>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || loading() || form.invalid">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

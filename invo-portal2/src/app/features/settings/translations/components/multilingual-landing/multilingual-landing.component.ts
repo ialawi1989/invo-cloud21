@@ -20,6 +20,7 @@ import {
 
 import { ORIGINAL_LANG, TranslationsStore } from '../../services/translations.store';
 import { ApiTranslationService } from '../../services/api-translation.service';
+import { MultilingualSettingsService } from '../../services/multilingual-settings.service';
 import { TranslationLangSummary, TranslationSummary } from '../../services/translation-api';
 
 interface LangRow {
@@ -49,6 +50,7 @@ interface LangRow {
 export class MultilingualLandingComponent implements OnInit {
   protected store = inject(TranslationsStore);
   private api = inject(ApiTranslationService);
+  private settingsSvc = inject(MultilingualSettingsService);
   private router = inject(Router);
   private translate = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
@@ -101,7 +103,18 @@ export class MultilingualLandingComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    void this.loadSummary();
+    void this.init();
+  }
+
+  private async init(): Promise<void> {
+    // Seed the additional-language list from the persisted `supported` set so
+    // languages added in a previous session (and the modals' language list)
+    // stay in sync — the store's default is only a first-run fallback.
+    try {
+      const settings = await this.settingsSvc.get();
+      this.store.setAdditionalLanguages(settings.supported);
+    } catch { /* keep the store default on failure */ }
+    await this.loadSummary();
   }
 
   private async loadSummary(): Promise<void> {
@@ -119,12 +132,21 @@ export class MultilingualLandingComponent implements OnInit {
 
   private addLanguage(code: string): void {
     this.store.addLanguage(code);
+    void this.persistLanguages();
     void this.loadSummary();
   }
 
   private removeLanguage(code: string): void {
     this.store.removeLanguage(code);
+    void this.persistLanguages();
     void this.loadSummary();
+  }
+
+  /** Persist the current language set to the site's `supported` list. */
+  private async persistLanguages(): Promise<void> {
+    try {
+      await this.settingsSvc.saveSupported(this.store.additionalLanguages());
+    } catch { /* surfaced by the toast layer elsewhere; keep UI responsive */ }
   }
 
   rowMenuItems(row: LangRow): DropdownMenuBtnItem[] {

@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { PostSummary } from '../models/blog.types';
 import { PublicBlogDisplaySettings } from '../models/blog-settings.types';
 import { BlogAnalyticsService } from '../services/blog-analytics.service';
+import { BlogSettingsService } from '../services/blog-settings.service';
 import { formatDate, formatNumber, t } from '../i18n/i18n';
 
 /**
@@ -26,7 +27,7 @@ import { formatDate, formatNumber, t } from '../i18n/i18n';
     <article class="card" [class]="'v-' + variant">
       @if (post.coverImage && variant !== 'editorial-mini') {
         <a class="cover"
-           [routerLink]="['/', lang, 'blog', post.slug]"
+           [routerLink]="blogLink(post.slug)"
            (click)="onPostClick()"
            [attr.aria-label]="post.title">
           <img
@@ -45,13 +46,13 @@ import { formatDate, formatNumber, t } from '../i18n/i18n';
       <div class="body">
         @if (display.showCategoryLabel && post.mainCategory) {
           <a class="category"
-             [routerLink]="['/', lang, 'blog', 'category', post.mainCategory.slug]">
+             [routerLink]="blogLink('category', post.mainCategory.slug)">
             {{ post.mainCategory.name }}
           </a>
         }
 
         <h3 class="title">
-          <a [routerLink]="['/', lang, 'blog', post.slug]" (click)="onPostClick()">{{ post.title }}</a>
+          <a [routerLink]="blogLink(post.slug)" (click)="onPostClick()">{{ post.title }}</a>
         </h3>
 
         @if (variant !== 'compact' && post.excerpt) {
@@ -62,7 +63,7 @@ import { formatDate, formatNumber, t } from '../i18n/i18n';
           <div class="hashtags">
             @for (h of post.hashtags; track h.slug) {
               <a class="chip hash"
-                 [routerLink]="['/', lang, 'blog', 'tag', h.slug]">#{{ h.name }}</a>
+                 [routerLink]="blogLink('tag', h.slug)">#{{ h.name }}</a>
             }
           </div>
         }
@@ -74,7 +75,7 @@ import { formatDate, formatNumber, t } from '../i18n/i18n';
                 <img [src]="post.author.image" alt="" class="avatar">
               }
               @if (post.author.id) {
-                <a [routerLink]="['/', lang, 'blog', 'authors', post.author.id]">{{ post.author.name }}</a>
+                <a [routerLink]="blogLink('authors', post.author.id)">{{ post.author.name }}</a>
               } @else {
                 <span>{{ post.author.name }}</span>
               }
@@ -213,6 +214,10 @@ import { formatDate, formatNumber, t } from '../i18n/i18n';
 })
 export class PostCardComponent {
   private analytics = inject(BlogAnalyticsService);
+  private settings = inject(BlogSettingsService);
+
+  /** Blog router commands, lang-less for the default language. */
+  blogLink = (...segments: (string | number)[]) => this.settings.blogLink(this.lang, ...segments);
 
   @Input({ required: true }) post!: PostSummary;
   @Input({ required: true }) lang!: string;
