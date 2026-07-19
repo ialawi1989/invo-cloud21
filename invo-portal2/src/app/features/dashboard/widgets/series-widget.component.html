@@ -1,0 +1,57 @@
+<app-widget-frame
+  [title]="title()"
+  [loading]="loading()"
+  [error]="failed()"
+  [empty]="isEmpty()"
+  (retry)="retry()">
+
+  <!-- Chart ⇄ table. The table is the accessible equivalent of the chart, so
+       identity never depends on colour alone. -->
+  <button widgetActions type="button" class="sw__toggle"
+          [class.is-on]="showTable()"
+          (click)="toggleTable()"
+          [attr.aria-pressed]="showTable()"
+          [attr.aria-label]="(showTable() ? 'DASHBOARD.VIEW_CHART' : 'DASHBOARD.VIEW_TABLE') | translate">
+    @if (showTable()) {
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>
+      </svg>
+    } @else {
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/>
+      </svg>
+    }
+  </button>
+
+  @if (showTable()) {
+    <div class="sw__tableWrap">
+      <table class="sw__table">
+        <thead>
+          <tr>
+            <th>{{ 'DASHBOARD.NAME' | translate }}</th>
+            <th class="sw__num">{{ 'DASHBOARD.VALUE' | translate }}</th>
+            <th class="sw__num">{{ 'DASHBOARD.SHARE' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of plotted(); track row.label) {
+            <tr>
+              <td>{{ row.label | translate }}</td>
+              <td class="sw__num">
+                @if (money()) { {{ row.value | mycurrency }} } @else { {{ row.value }} }
+              </td>
+              <td class="sw__num sw__share">{{ (row.share ?? 0).toFixed(1) }}%</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <app-dash-chart
+      [type]="chart()"
+      [series]="series()"
+      [categories]="categories()"
+      [valueFormat]="fmt()"
+      [height]="260"/>
+  }
+</app-widget-frame>

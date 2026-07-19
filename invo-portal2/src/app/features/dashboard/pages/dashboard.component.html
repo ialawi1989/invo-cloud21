@@ -1,0 +1,60 @@
+<div class="db">
+  <header class="db__head">
+    <div class="db__titles">
+      <h1 class="db__title">{{ greeting() }}</h1>
+      <p class="db__sub">{{ 'DASHBOARD.SUBTITLE' | translate }}</p>
+    </div>
+
+    <!-- Filters sit in one row above the content, never inside a card. -->
+    <div class="db__filters">
+      <app-search-dropdown
+        class="db__branch"
+        [items]="branchOptions()"
+        [displayWith]="branchDisplay"
+        [compareWith]="branchCompare"
+        [value]="selectedBranch()"
+        [searchable]="true"
+        [clearable]="false"
+        (valueChange)="onBranch($event)"/>
+
+      <app-date-picker
+        mode="range"
+        [presets]="presets()"
+        [value]="range()"
+        (valueChange)="onRange($event)"/>
+    </div>
+  </header>
+
+  @if (placed().length === 0) {
+    <div class="db__empty">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/>
+        <rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>
+      </svg>
+      <p class="db__emptyTitle">{{ 'DASHBOARD.EMPTY_TITLE' | translate }}</p>
+      <p class="db__emptySub">{{ 'DASHBOARD.EMPTY_SUB' | translate }}</p>
+    </div>
+  } @else {
+    <div class="db__grid">
+      @for (item of placed(); track item.def.slug) {
+        <div class="db__cell"
+             [style.grid-column]="'span ' + item.colSpan"
+             [style.min-height.px]="item.def.minHeight">
+          @switch (item.def.slug) {
+            @case ('business-summary') {
+              <app-business-summary-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @default {
+              <app-series-widget
+                [title]="item.def.title"
+                [scope]="scope()"
+                [load]="loaderFor(item.def.slug)"
+                [chart]="chartFor[item.def.slug] ?? 'bar'"
+                [money]="isMoney(item.def.slug)"/>
+            }
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

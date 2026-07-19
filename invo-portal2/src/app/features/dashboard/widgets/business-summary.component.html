@@ -1,0 +1,73 @@
+<app-widget-frame
+  [title]="title()"
+  [loading]="loading()"
+  [error]="failed()"
+  [empty]="isEmpty()"
+  skeletonHeight="220px"
+  (retry)="retry()">
+
+  <label widgetActions class="bs__oh">
+    <input type="checkbox" [checked]="byOpeningHour()" (change)="toggleOpeningHour()"/>
+    <span>{{ 'DASHBOARD.OPENING_HOUR' | translate }}</span>
+  </label>
+
+  <div class="bs__kpis">
+    <app-kpi-tile label="DASHBOARD.KPI.ORDERS"     [value]="totals().numberOfInvoices" [money]="false"/>
+    <app-kpi-tile label="DASHBOARD.KPI.SALES"      [value]="totals().sales" [accent]="true"/>
+    <app-kpi-tile label="DASHBOARD.KPI.DISCOUNT"   [value]="totals().discountTotal"/>
+    <app-kpi-tile label="DASHBOARD.KPI.TAX"        [value]="totals().taxTotal"/>
+    <app-kpi-tile label="DASHBOARD.KPI.RETURNS"    [value]="totals().totalReturn"/>
+    <app-kpi-tile label="DASHBOARD.KPI.NET_SALES"  [value]="totals().netSales" [accent]="true"/>
+  </div>
+
+  <div class="bs__tableWrap">
+    <table class="bs__table">
+      <thead>
+        <tr>
+          <th class="bs__sortable" (click)="sort('branchName')">{{ 'DASHBOARD.BRANCH' | translate }}</th>
+          <th class="bs__num bs__sortable" (click)="sort('numberOfInvoices')">{{ 'DASHBOARD.KPI.ORDERS' | translate }}</th>
+          <th class="bs__num bs__sortable" (click)="sort('sales')">{{ 'DASHBOARD.KPI.SALES' | translate }}</th>
+          <th class="bs__num bs__sortable" (click)="sort('discountTotal')">{{ 'DASHBOARD.KPI.DISCOUNT' | translate }}</th>
+          <th class="bs__num bs__sortable" (click)="sort('taxTotal')">{{ 'DASHBOARD.KPI.TAX' | translate }}</th>
+          <th class="bs__num bs__sortable" (click)="sort('totalReturn')">{{ 'DASHBOARD.KPI.RETURNS' | translate }}</th>
+          <th class="bs__num bs__sortable" (click)="sort('netSales')">{{ 'DASHBOARD.KPI.NET_SALES' | translate }}</th>
+          <th class="bs__share bs__sortable" (click)="sort('share')">{{ 'DASHBOARD.SHARE' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of sorted(); track row.branchId) {
+          <tr>
+            <td class="bs__name">{{ row.branchName }}</td>
+            <td class="bs__num">{{ row.numberOfInvoices.toLocaleString() }}</td>
+            <td class="bs__num">{{ row.sales | mycurrency }}</td>
+            <td class="bs__num">{{ row.discountTotal | mycurrency }}</td>
+            <td class="bs__num">{{ row.taxTotal | mycurrency }}</td>
+            <td class="bs__num">{{ row.totalReturn | mycurrency }}</td>
+            <td class="bs__num">{{ row.netSales | mycurrency }}</td>
+            <td class="bs__share">
+              <!-- Bar + number: the value is always stated, so the bar is
+                   reinforcement rather than the only encoding. -->
+              <span class="bs__bar" role="img"
+                    [attr.aria-label]="(row.share ?? 0).toFixed(1) + '%'">
+                <span class="bs__barFill" [style.width.%]="row.share"></span>
+              </span>
+              <span class="bs__barVal">{{ (row.share ?? 0).toFixed(1) }}%</span>
+            </td>
+          </tr>
+        }
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>{{ 'DASHBOARD.TOTAL' | translate }}</td>
+          <td class="bs__num">{{ totals().numberOfInvoices.toLocaleString() }}</td>
+          <td class="bs__num">{{ totals().sales | mycurrency }}</td>
+          <td class="bs__num">{{ totals().discountTotal | mycurrency }}</td>
+          <td class="bs__num">{{ totals().taxTotal | mycurrency }}</td>
+          <td class="bs__num">{{ totals().totalReturn | mycurrency }}</td>
+          <td class="bs__num">{{ totals().netSales | mycurrency }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</app-widget-frame>

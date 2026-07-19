@@ -1,0 +1,57 @@
+{
+  "DASHBOARD": {
+    "GREETING": "مرحبًا، {{name}}",
+    "SUBTITLE": "إليك أداء نشاطك التجاري.",
+    "ALL_BRANCHES": "كل الفروع",
+    "NO_DATA": "لا توجد بيانات لهذه الفترة",
+    "LOAD_FAILED": "تعذّر تحميل هذه الأداة",
+    "OTHER": "أخرى",
+    "NAME": "الاسم",
+    "VALUE": "القيمة",
+    "SHARE": "النسبة",
+    "VIEW_TABLE": "عرض كجدول",
+    "VIEW_CHART": "عرض كرسم بياني",
+    "EMPTY_TITLE": "لا توجد أدوات بعد",
+    "EMPTY_SUB": "أضف أدوات لبناء لوحة التحكم.",
+    "RANGE": {
+      "TODAY": "اليوم",
+      "YESTERDAY": "أمس",
+      "LAST_7": "آخر 7 أيام",
+      "LAST_30": "آخر 30 يومًا",
+      "THIS_MONTH": "هذا الشهر",
+      "PREVIOUS_MONTH": "الشهر السابق",
+      "THIS_YEAR": "هذه السنة"
+    },
+    "W": {
+      "BUSINESS_SUMMARY": "ملخص الأعمال",
+      "SUMMARY_BLOCKS": "الملخص المالي",
+      "SALES_BY_DAY": "المبيعات حسب اليوم",
+      "SALES_BY_TIME": "المبيعات حسب الساعة",
+      "TOP_ITEMS": "أفضل المنتجات",
+      "TOP_CUSTOMERS": "أفضل العملاء",
+      "SALES_BY_CATEGORY": "المبيعات حسب الفئة",
+      "SALES_BY_DEPARTMENT": "المبيعات حسب القسم",
+      "SALES_BY_BRAND": "المبيعات حسب العلامة",
+      "SALES_BY_SERVICE": "المبيعات حسب الخدمة",
+      "SALES_BY_SOURCE": "المبيعات حسب المصدر",
+      "SALES_BY_EMPLOYEE": "المبيعات حسب الموظف",
+      "ONLINE_INVOICES": "الفواتير الإلكترونية",
+      "PAYMENTS_FLOW": "التدفق النقدي",
+      "INCOME_EXPENSE": "الإيرادات والمصروفات",
+      "PAYMENT_METHODS": "طرق الدفع",
+      "LOW_STOCK": "مخزون منخفض",
+      "EXPIRING_BATCHES": "دفعات قاربت الانتهاء"
+    },
+    "OPENING_HOUR": "تطبيق ساعة الافتتاح",
+    "BRANCH": "الفرع",
+    "TOTAL": "الإجمالي",
+    "KPI": {
+      "ORDERS": "الطلبات",
+      "SALES": "المبيعات",
+      "DISCOUNT": "الخصم",
+      "TAX": "الضريبة",
+      "RETURNS": "المرتجعات",
+      "NET_SALES": "صافي المبيعات"
+    }
+  }
+}

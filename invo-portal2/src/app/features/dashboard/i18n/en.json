@@ -1,0 +1,57 @@
+{
+  "DASHBOARD": {
+    "GREETING": "Hello, {{name}}",
+    "SUBTITLE": "Here's how your business is doing.",
+    "ALL_BRANCHES": "All branches",
+    "NO_DATA": "No data for this period",
+    "LOAD_FAILED": "Couldn't load this widget",
+    "OTHER": "Other",
+    "NAME": "Name",
+    "VALUE": "Value",
+    "SHARE": "Share",
+    "VIEW_TABLE": "View as table",
+    "VIEW_CHART": "View as chart",
+    "EMPTY_TITLE": "No widgets yet",
+    "EMPTY_SUB": "Add widgets to build your dashboard.",
+    "RANGE": {
+      "TODAY": "Today",
+      "YESTERDAY": "Yesterday",
+      "LAST_7": "Last 7 days",
+      "LAST_30": "Last 30 days",
+      "THIS_MONTH": "This month",
+      "PREVIOUS_MONTH": "Previous month",
+      "THIS_YEAR": "This year"
+    },
+    "W": {
+      "BUSINESS_SUMMARY": "Business summary",
+      "SUMMARY_BLOCKS": "Financial summary",
+      "SALES_BY_DAY": "Sales by day",
+      "SALES_BY_TIME": "Sales by hour",
+      "TOP_ITEMS": "Top products",
+      "TOP_CUSTOMERS": "Top customers",
+      "SALES_BY_CATEGORY": "Sales by category",
+      "SALES_BY_DEPARTMENT": "Sales by department",
+      "SALES_BY_BRAND": "Sales by brand",
+      "SALES_BY_SERVICE": "Sales by service",
+      "SALES_BY_SOURCE": "Sales by source",
+      "SALES_BY_EMPLOYEE": "Sales by employee",
+      "ONLINE_INVOICES": "Online invoices",
+      "PAYMENTS_FLOW": "Payments flow",
+      "INCOME_EXPENSE": "Income vs expense",
+      "PAYMENT_METHODS": "Payment methods",
+      "LOW_STOCK": "Low stock",
+      "EXPIRING_BATCHES": "Expiring batches"
+    },
+    "OPENING_HOUR": "Apply opening hour",
+    "BRANCH": "Branch",
+    "TOTAL": "Total",
+    "KPI": {
+      "ORDERS": "Orders",
+      "SALES": "Sales",
+      "DISCOUNT": "Discount",
+      "TAX": "Tax",
+      "RETURNS": "Returns",
+      "NET_SALES": "Net sales"
+    }
+  }
+}
