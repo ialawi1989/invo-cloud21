@@ -20,6 +20,7 @@ import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { TranslateLinkComponent } from '@shared/components/translate-link/translate-link.component';
+import { CollapsibleCardComponent } from '@shared/components/collapsible-card/collapsible-card.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
 import {
@@ -59,6 +60,7 @@ import { Option, OptionRecipeItem, OptionService } from '../../services/option.s
     LoadingOverlayComponent,
     FormStickyFooterComponent,
     TranslateLinkComponent,
+    CollapsibleCardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './option-form.component.html',
@@ -127,26 +129,35 @@ export class OptionFormComponent implements OnInit, CanLeaveComponent {
       this.optionId.set(null);
       return;
     }
-    this.optionId.set(id);
+    // Clone reuses the source record's route with ?clone=true: load its data,
+    // but keep the form in "create" mode so saving writes a new option. As in
+    // the legacy flow the image is NOT inherited — only the prep recipe is.
+    const isClone = this.route.snapshot.queryParamMap.get('clone') === 'true';
+    this.optionId.set(isClone ? null : id);
     this.loading.set(true);
     try {
       const data = await this.service.getOne(id);
       if (!data) return;
-      this.original.set(data);
-      this.name.set(data.name);
-      this.displayName.set(data.displayName);
+      this.original.set(isClone ? { ...data, id: null } : data);
+      this.name.set(isClone ? this.copyOf(data.name) : data.name);
+      this.displayName.set(isClone ? this.copyOf(data.displayName) : data.displayName);
       this.kitchenName.set(data.kitchenName);
       this.price.set(data.price);
       this.isMultiple.set(data.isMultiple);
       this.isVisible.set(data.isVisible);
       this.weight.set(data.weight);
-      this.mediaId.set(data.mediaId);
-      this.mediaUrl.set(data.mediaUrl?.defaultUrl ?? data.mediaUrl?.thumbnailUrl ?? '');
+      this.mediaId.set(isClone ? null : data.mediaId);
+      this.mediaUrl.set(isClone ? '' : (data.mediaUrl?.defaultUrl ?? data.mediaUrl?.thumbnailUrl ?? ''));
       this.items.set([...data.recipe]);
       this.translation.set(data.translation ?? {});
     } finally {
       this.loading.set(false);
     }
+  }
+
+  /** "Copy of X" — the legacy clone prefix, translatable. Blank stays blank. */
+  private copyOf(value: string): string {
+    return value?.trim() ? this.translate.instant('COMMON.COPY_OF', { name: value }) : value;
   }
 
   // ── Simple field setters ──────────────────────────────────────────────────
@@ -295,6 +306,7 @@ export class OptionFormComponent implements OnInit, CanLeaveComponent {
       UOM: p.UOM,
       barcode: p.barcode,
       type: p.type,
+      categoryName: p.categoryName,
       thumbnailUrl: p.thumbnailUrl,
     };
   }

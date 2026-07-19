@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { LanguageService } from '@core/i18n/language.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
@@ -23,8 +23,18 @@ import {
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import {
   ListCellTemplateDirective,
+  ListMobileThumbDirective,
   ListRowActionsDirective,
+  ListRowDetailDirective,
 } from '@shared/components/list-page/directives/list-template.directives';
+import { EntityThumbComponent } from '@shared/components/entity-thumb/entity-thumb.component';
+import { ImportWizardComponent } from '@shared/components/import-wizard/import-wizard.component';
+import {
+  ImportWizardConfig,
+  ImportSummaryCounts,
+} from '@shared/components/import-wizard/import-wizard.types';
+import { PrepRecipePanelComponent } from '../../components/prep-recipe-panel/prep-recipe-panel.component';
+import { buildOptionImportConfig } from './option-import.config';
 import {
   TableColumn,
   ListQueryParams,
@@ -50,7 +60,11 @@ import { OptionService, OptionListRow } from '../../services/option.service';
     ListPageComponent,
     ListCellTemplateDirective,
     ListRowActionsDirective,
+    ListMobileThumbDirective,
+    ListRowDetailDirective,
     DropdownMenuBtnComponent,
+    EntityThumbComponent,
+    PrepRecipePanelComponent,
   ],
   templateUrl: './options-list.component.html',
   styleUrl: './options-list.component.scss',
@@ -59,6 +73,7 @@ export class OptionsListComponent implements OnInit {
   private service = inject(OptionService);
   private router = inject(Router);
   private lang = inject(LanguageService);
+  private translate = inject(TranslateService);
   private privileges = inject(PrivilegeService);
   private toast = inject(ToastService);
   private modal = inject(ModalService);
@@ -68,6 +83,33 @@ export class OptionsListComponent implements OnInit {
   readonly canAdd = this.privileges.check('optionSecurity.actions.add.access');
   readonly canEdit = this.canAdd; // add/edit share the same privilege in this model
   readonly canDelete = this.privileges.check('optionSecurity.actions.delete.access');
+  readonly canClone = this.privileges.check('optionSecurity.actions.clone.access');
+  readonly canImportExport = this.privileges.check('optionSecurity.actions.importExport.access');
+  readonly canManageAvailability = this.privileges.check('optionSecurity.actions.optionAvailable.access');
+
+  /**
+   * Header "⋯" menu. Import and the two export formats are separate entries —
+   * the dropdown has no submenus, and a combined "Import/Export" item would
+   * need a second modal just to pick a direction.
+   */
+  moreMenuItems = (): DropdownMenuBtnItem[] => {
+    const items: DropdownMenuBtnItem[] = [];
+    if (this.canImportExport) {
+      items.push(
+        { label: 'PRODUCTS.OPTIONS.IMPORT.MENU_IMPORT', click: () => void this.openImport() },
+        { label: 'PRODUCTS.OPTIONS.IMPORT.MENU_EXPORT_CSV', click: () => void this.exportAs('csv') },
+        { label: 'PRODUCTS.OPTIONS.IMPORT.MENU_EXPORT_XLSX', click: () => void this.exportAs('xlsx') },
+      );
+    }
+    if (this.canManageAvailability) {
+      items.push({
+        label: 'PRODUCTS.OPTIONS.AVAILABILITY.MENU',
+        separator: items.length > 0,
+        click: () => void this.router.navigate(['/products/option-availability']),
+      });
+    }
+    return items;
+  };
 
   columns: TableColumn[] = [];
 
@@ -81,7 +123,7 @@ export class OptionsListComponent implements OnInit {
   sortingConfig = { enabled: true };
   emptyState = { title: '', message: '' };
 
-  mobileCardConfig: MobileCardConfig = { showThumbnail: false, metricKeys: [], secondaryKey: '' };
+  mobileCardConfig: MobileCardConfig = { showThumbnail: true, metricKeys: [], secondaryKey: '' };
 
   async ngOnInit(): Promise<void> {
     await this.lang.loadFeature('products');
@@ -127,6 +169,9 @@ export class OptionsListComponent implements OnInit {
   /** Overflow (⋯) menu items — everything except Edit, which is the hover pill. */
   overflowActions(row: OptionListRow): DropdownMenuBtnItem[] {
     const items: DropdownMenuBtnItem[] = [];
+    if (this.canClone) {
+      items.push({ label: 'COMMON.CLONE', click: () => this.clone(row) });
+    }
     if (this.canDelete) {
       items.push({ label: 'COMMON.DELETE', danger: true, click: () => this.remove(row) });
     }
@@ -137,12 +182,40 @@ export class OptionsListComponent implements OnInit {
     if (event?.row) this.edit(event.row);
   }
 
+  /**
+   * Clone opens the source record's form with ?clone=true. The form loads that
+   * record, blanks its id and prefixes the names, so saving creates a new one —
+   * matching the legacy flow, which had no server-side clone endpoint.
+   */
+  clone(row: OptionListRow): void {
+    void this.router.navigate(['/products/option', row.id], { queryParams: { clone: true } });
+  }
+
   edit(row: OptionListRow): void {
     void this.router.navigate(['/products/option', row.id]);
   }
 
   add(): void {
     void this.router.navigate(['/products/option/new']);
+  }
+
+  /** Bulk import via the shared wizard; refresh the list if anything landed. */
+  async openImport(): Promise<void> {
+    const config = buildOptionImportConfig({ service: this.service, translate: this.translate });
+    const ref = this.modal.open<ImportWizardComponent, ImportWizardConfig, ImportSummaryCounts | undefined>(
+      ImportWizardComponent,
+      { size: 'lg', data: config, closeOnBackdrop: false },
+    );
+    const res = await ref.afterClosed();
+    if (res?.successful) this.listPage?.refresh();
+  }
+
+  async exportAs(type: 'csv' | 'xlsx'): Promise<void> {
+    try {
+      await this.service.exportOptions(type);
+    } catch (e: any) {
+      this.toast.error('COMMON.EXPORT_FAILED', e?.message);
+    }
   }
 
   async remove(row: OptionListRow): Promise<void> {

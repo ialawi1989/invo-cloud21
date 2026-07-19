@@ -71,6 +71,16 @@ export class BreadcrumbsComponent {
   /** Extra classes for the root nav element. */
   navClass = input<string>('');
 
+  /**
+   * On narrow screens, replace the trail with a single "back to parent" link.
+   *
+   * A full trail on a phone either wraps to two lines or truncates every
+   * segment into uselessness, and the only action anyone takes from it there
+   * is "go up one level" — which is what the platform back convention is.
+   * Set false to keep the wrapped trail on mobile too.
+   */
+  mobileBack = input<boolean>(true);
+
   // ── Outputs ────────────────────────────────────────────────────────────────
   itemClick = output<BreadcrumbItem>();
 
@@ -100,6 +110,21 @@ export class BreadcrumbsComponent {
     const tailCount = Math.max(1, max - 2);
     const ellipsis: BreadcrumbItem = { label: '…' };
     return [items[0], ellipsis, ...items.slice(items.length - tailCount)];
+  });
+
+  /**
+   * The nearest navigable ancestor — what the mobile back link points at.
+   * Skips the current page and any ellipsis sentinel, and requires something
+   * to navigate to; returns null when there's no parent worth linking.
+   */
+  parentItem = computed<BreadcrumbItem | null>(() => {
+    const items = this.visibleItems();
+    for (let i = items.length - 2; i >= 0; i--) {
+      const item = items[i];
+      if (item.label === '…') continue;
+      if (item.routerLink || item.href) return item;
+    }
+    return null;
   });
 
   // ── Helpers ────────────────────────────────────────────────────────────────

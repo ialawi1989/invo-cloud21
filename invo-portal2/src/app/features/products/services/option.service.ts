@@ -1,5 +1,9 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+
 import { ApiService } from '@core/http/api.service';
+import { environment } from '../../../../environments/environment';
 
 /** One prep-recipe row of an option (an inventory product it consumes). */
 export interface OptionRecipeItem {
@@ -12,6 +16,7 @@ export interface OptionRecipeItem {
   UOM?: string;
   barcode?: string;
   type?: string;
+  categoryName?: string;
   thumbnailUrl?: string;
 }
 
@@ -53,6 +58,8 @@ export interface OptionListRow {
   displayName: string;
   price: number;
   thumbnailUrl: string | null;
+  /** Branch ids this option is unavailable in — drives the availability grid. */
+  excludedBranches: string[];
 }
 
 export interface OptionListResult {
@@ -61,10 +68,29 @@ export interface OptionListResult {
   pageCount: number;
 }
 
+/** One option row shaped for the import endpoint. */
+export interface OptionImportRow {
+  name: string;
+  displayName: string;
+  kitchenName: string;
+  isMultiple: boolean;
+  isVisible: boolean;
+  price: number;
+  defaultPrice: number;
+  translation: { name: Record<string, string> };
+}
+
+/** Per-option branch exclusions, as posted by the availability grid. */
+export interface OptionAvailabilityChange {
+  id: string;
+  excludedBranches: string[];
+}
+
 /** OptionService — wraps the legacy `product/*Option*` endpoints. */
 @Injectable({ providedIn: 'root' })
 export class OptionService {
   private api = inject(ApiService);
+  private http = inject(HttpClient);
 
   async getList(params: OptionListParams = {}): Promise<OptionListResult> {
     const body = {
@@ -81,6 +107,7 @@ export class OptionService {
       displayName: String(o?.displayName ?? ''),
       price: Number(o?.price) || 0,
       thumbnailUrl: o?.thumbnailUrl ?? o?.mediaUrl?.thumbnailUrl ?? null,
+      excludedBranches: Array.isArray(o?.excludedBranches) ? o.excludedBranches.map(String) : [],
     }));
     return {
       list,
@@ -127,6 +154,51 @@ export class OptionService {
     return { success: !!res?.success };
   }
 
+  // ─── Import / Export ──────────────────────────────────────────────────────
+
+  /**
+   * Bulk-import gate. The legacy contract is inverted: `success: true` means
+   * **no** import is running, so it's safe to start one. `msg` explains the
+   * job in flight when it isn't.
+   */
+  async getBulkImportProgress(): Promise<{ success: boolean; msg?: string }> {
+    const res = await this.api.request<any>(this.api.get('product/getOptionBulkImportProgress'));
+    return { success: !!res?.success, msg: res?.msg };
+  }
+
+  async importOptions(rows: OptionImportRow[]): Promise<{ success: boolean; msg?: string }> {
+    const res = await this.api.request<any>(this.api.post('product/importOptions', rows));
+    return { success: !!res?.success, msg: res?.msg };
+  }
+
+  /** Streams the export straight to a file download. */
+  async exportOptions(type: 'csv' | 'xlsx'): Promise<void> {
+    const response = await firstValueFrom(
+      this.http.get(`${environment.backendUrl}product/exportOptions/${type}`, {
+        responseType: 'blob',
+        observe: 'response',
+      }),
+    );
+    const blob = response.body;
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `options.${type}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // ─── Availability ─────────────────────────────────────────────────────────
+
+  /** Save branch exclusions for the changed options only. */
+  async setOptionAvailability(changes: OptionAvailabilityChange[]): Promise<{ success: boolean; msg?: string }> {
+    const res = await this.api.request<any>(this.api.post('product/setOptionAvailability', changes));
+    return { success: !!res?.success, msg: res?.msg };
+  }
+
   private mapItem(i: any): OptionRecipeItem {
     return {
       inventoryId: String(i?.inventoryId ?? i?.recipeId ?? i?.id ?? ''),
@@ -136,6 +208,7 @@ export class OptionService {
       UOM: i?.UOM,
       barcode: i?.barcode,
       type: i?.type,
+      categoryName: i?.categoryName,
       thumbnailUrl: i?.thumbnailUrl,
     };
   }

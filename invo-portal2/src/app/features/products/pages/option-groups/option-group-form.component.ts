@@ -16,6 +16,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { InfoNoteComponent } from '@shared/components/info-note/info-note.component';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
@@ -57,6 +58,7 @@ import {
     TranslateLinkComponent,
     DragDropModule,
     MycurrencyPipe,
+    InfoNoteComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './option-group-form.component.html',
@@ -139,14 +141,18 @@ export class OptionGroupFormComponent implements OnInit, CanLeaveComponent {
       this.groupId.set(null);
       return;
     }
-    this.groupId.set(id);
+    // Clone reuses the source record's route with ?clone=true: load its data,
+    // but keep the form in "create" mode so saving writes a new group. The
+    // member options carry over as references — no new Option records.
+    const isClone = this.route.snapshot.queryParamMap.get('clone') === 'true';
+    this.groupId.set(isClone ? null : id);
     this.loading.set(true);
     try {
       const data = await this.service.getOne(id);
       if (!data) return;
-      this.original.set(data);
-      this.title.set(data.title);
-      this.alias.set(data.alias);
+      this.original.set(isClone ? { ...data, id: null } : data);
+      this.title.set(isClone ? this.copyOf(data.title) : data.title);
+      this.alias.set(isClone ? this.copyOf(data.alias) : data.alias);
       this.minSelectable.set(data.minSelectable);
       this.maxSelectable.set(data.maxSelectable);
       this.options.set([...data.options]);
@@ -155,6 +161,11 @@ export class OptionGroupFormComponent implements OnInit, CanLeaveComponent {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  /** "Copy of X" — the legacy clone prefix, translatable. Blank stays blank. */
+  private copyOf(value: string): string {
+    return value?.trim() ? this.translate.instant('COMMON.COPY_OF', { name: value }) : value;
   }
 
   // ── Simple setters ─────────────────────────────────────────────────────────

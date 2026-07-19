@@ -1,0 +1,33 @@
+// Table chrome comes entirely from <app-list-page>, and the actions come from
+// its selection bar + the shared sticky footer. This file only styles what's
+// projected into those: the cell contents and the unsaved-changes hint.
+// The list already reserves 88px below its scroll host (pagination row + a ~16px
+// gap), which is what leaves the small space under the card on every other list.
+// [bottomReserve] adds exactly the footer's height on top, so that same 16px gap
+// lands above the footer instead of the viewport edge and the page matches the
+// Options list. padding-bottom keeps page content clear of the fixed bar.
+.oa-page {
+  padding-bottom: 80px;
+  // Lift the list's floating selection bar above the sticky save footer.
+  --lp-selbar-offset: 68px;
+}
+
+.oa-loading { display: flex; align-items: center; justify-content: center; padding: 60px 0; }
+.oa-spinner {
+  width: 32px; height: 32px; border: 3px solid #e2e8f0;
+  border-top-color: var(--color-brand-600, #0e7490);
+  border-radius: 50%; animation: oa-spin 800ms linear infinite;
+}
+@keyframes oa-spin { to { transform: rotate(360deg); } }
+
+.oa-name { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.oa-check { width: 16px; height: 16px; accent-color: #32acc1; cursor: pointer; }
+
+.chip {
+  display: inline-block;
+  padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 600;
+  &--mod { background: #fef3c7; color: #b45309; }
+}
+
+// The sticky footer needs clearance so the last table row isn't hidden behind it.
+.oa-hint { margin-inline-end: auto; font-size: 13px; color: #b45309; }

@@ -19,7 +19,16 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+
 import { withTranslations } from '@core/i18n/with-translations';
+import { CollapsibleCardComponent } from '@shared/components/collapsible-card/collapsible-card.component';
+import { EntityThumbComponent } from '@shared/components/entity-thumb/entity-thumb.component';
+import {
+  PickAssignedProductsModalComponent,
+  PickAssignedProductsData,
+  PickAssignedProductsResult,
+} from '../../components/pick-assigned-products-modal/pick-assigned-products-modal.component';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
@@ -40,7 +49,7 @@ import {
 } from '@features/settings/media/components/media-picker/media-picker-modal.component';
 import { Media } from '@features/settings/media/models/media.model';
 
-import { Category, CategoryService } from '../../services/category.service';
+import { Category, CategoryProduct, CategoryService } from '../../services/category.service';
 import { DepartmentService } from '../../services/department.service';
 
 interface DeptOption { id: string; name: string; }
@@ -62,7 +71,10 @@ interface DeptOption { id: string; name: string; }
     LoadingOverlayComponent,
     FormStickyFooterComponent,
     SearchDropdownComponent,
-  TranslateLinkComponent,
+    TranslateLinkComponent,
+    CollapsibleCardComponent,
+    EntityThumbComponent,
+    DragDropModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './category-form.component.html',
@@ -134,6 +146,12 @@ export class CategoryFormComponent implements OnInit, CanLeaveComponent {
       .subscribe(() => this.i18nTick.update((n) => n + 1));
   }
 
+  /** Products assigned to this category, in saved order. */
+  products = signal<CategoryProduct[]>([]);
+  /** Tracked separately: assignments save through their own endpoint, so a
+   *  name-only edit shouldn't trigger a second request. */
+  private productsDirty = signal(false);
+
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
@@ -157,6 +175,7 @@ export class CategoryFormComponent implements OnInit, CanLeaveComponent {
       this.form.patchValue({ name: data.name, departmentId: data.departmentId ?? '' }, { emitEvent: false });
       this.mediaId.set(data.mediaId);
       this.mediaUrl.set(data.mediaUrl?.defaultUrl ?? data.mediaUrl?.thumbnailUrl ?? '');
+      this.products.set(await this.service.getCategoryProducts(id));
       this.form.markAsPristine();
     } finally {
       this.loading.set(false);
@@ -221,6 +240,46 @@ export class CategoryFormComponent implements OnInit, CanLeaveComponent {
   }
 
   // ── Save / cancel ────────────────────────────────────────────────────────
+  // ── Assigned products ─────────────────────────────────────────────────────
+  async openProductPicker(): Promise<void> {
+    const ref = this.modal.open<PickAssignedProductsModalComponent, PickAssignedProductsData, PickAssignedProductsResult>(
+      PickAssignedProductsModalComponent,
+      {
+        size: 'lg',
+        data: {
+          load: ({ page, limit, searchTerm }) =>
+            this.service.getUncategorizedProducts({ page, limit, searchTerm }),
+          assignedIds: this.products().map((p) => p.id),
+          title: 'PRODUCTS.CATEGORIES.SELECT_PRODUCTS',
+          emptyKey: 'PRODUCTS.CATEGORIES.NO_UNASSIGNED',
+        },
+        closeOnBackdrop: false,
+      },
+    );
+    const result = await ref.afterClosed();
+    if (!result?.added?.length) return;
+    const seen = new Set(this.products().map((p) => p.id));
+    const fresh = result.added.filter((p) => !seen.has(p.id));
+    if (!fresh.length) return;
+    this.products.update((list) => [...list, ...fresh]);
+    this.productsDirty.set(true);
+    this.form.markAsDirty();
+  }
+
+  removeProduct(id: string): void {
+    this.products.update((list) => list.filter((p) => p.id !== id));
+    this.productsDirty.set(true);
+    this.form.markAsDirty();
+  }
+
+  onReorder(event: CdkDragDrop<CategoryProduct[]>): void {
+    const list = [...this.products()];
+    moveItemInArray(list, event.previousIndex, event.currentIndex);
+    this.products.set(list);
+    this.productsDirty.set(true);
+    this.form.markAsDirty();
+  }
+
   async save(): Promise<void> {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
@@ -239,13 +298,27 @@ export class CategoryFormComponent implements OnInit, CanLeaveComponent {
         payload.translation = { ...payload.translation, name: { ...payload.translation.name, en: v.name.trim() } };
       }
       const res = await this.service.save(payload);
-      if (res.success) {
-        this.form.markAsPristine();
-        this.toast.success('COMMON.SAVED_OK');
-        this.router.navigate(['/products/category']);
-      } else {
+      if (!res.success) {
         this.toast.error('COMMON.SAVE_FAILED');
+        return;
       }
+
+      // Product assignments are a separate resource, so they need a second
+      // call — and on create we only learn the new id from the save response.
+      const categoryId = String(res.data?.id ?? payload.id ?? '');
+      if (categoryId && this.productsDirty()) {
+        const linked = await this.service.saveCategoryProducts(categoryId, this.products());
+        if (!linked.success) {
+          // The category itself saved; say so rather than implying nothing landed.
+          this.toast.error('PRODUCTS.CATEGORIES.PRODUCTS_SAVE_FAILED');
+          return;
+        }
+      }
+
+      this.productsDirty.set(false);
+      this.form.markAsPristine();
+      this.toast.success('COMMON.SAVED_OK');
+      this.router.navigate(['/products/category']);
     } catch (e: any) {
       console.error('[category-form] save failed', e);
       this.toast.error('COMMON.SAVE_FAILED', e?.message);

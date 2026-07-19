@@ -1,0 +1,71 @@
+@if (isEmpty()) {
+  <div class="rt-empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 14l4-4 4 4 5-5"/>
+    </svg>
+    <p>{{ 'REPORTS.TABLE.NO_DATA' | translate }}</p>
+  </div>
+} @else {
+  <div class="rt-scroll">
+    <table class="rt-table">
+      <thead>
+        <tr>
+          @for (col of columns(); track col.key) {
+            <th [class.rt-end]="col.align === 'end'"
+                [class.rt-center]="col.align === 'center'"
+                (click)="onSort(col)">
+              <span class="rt-th">
+                {{ col.label }}
+                <span class="rt-sort" [class.active]="sortKey() === col.key">
+                  @if (sortKey() === col.key && sortDir() === 'asc') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                  } @else if (sortKey() === col.key && sortDir() === 'desc') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 9 12 5 16 9"/><polyline points="16 15 12 19 8 15"/></svg>
+                  }
+                </span>
+              </span>
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track $index) {
+          <tr>
+            @for (col of columns(); track col.key) {
+              <td [class.rt-end]="col.align === 'end'" [class.rt-center]="col.align === 'center'">
+                @switch (col.type) {
+                  @case ('currency') { {{ cellValue(row, col) | mycurrency }} }
+                  @case ('number') { {{ (cellValue(row, col) || 0) | number: '1.0-0' }} }
+                  @case ('percent') { {{ (cellValue(row, col) || 0) | number: '1.0-2' }}% }
+                  @case ('date') { {{ cellValue(row, col) | date: 'mediumDate' }} }
+                  @default { {{ cellValue(row, col) }} }
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+      @if (table().totals) {
+        <tfoot>
+          <tr>
+            @for (col of columns(); track col.key; let i = $index) {
+              <td [class.rt-end]="col.align === 'end'" [class.rt-center]="col.align === 'center'">
+                @if (i === 0) {
+                  {{ 'REPORTS.TABLE.TOTAL' | translate }}
+                } @else if (table().totals?.[col.key] !== undefined) {
+                  @switch (col.type) {
+                    @case ('currency') { {{ table().totals![col.key] | mycurrency }} }
+                    @case ('percent') { {{ (table().totals![col.key] || 0) | number: '1.0-2' }}% }
+                    @default { {{ (table().totals![col.key] || 0) | number: '1.0-0' }} }
+                  }
+                }
+              </td>
+            }
+          </tr>
+        </tfoot>
+      }
+    </table>
+  </div>
+}

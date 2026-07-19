@@ -1,0 +1,67 @@
+<div class="oa-page">
+  @if (branches().length > 0) {
+    <!-- showGridView=false: a branch matrix has no meaningful card rendering —
+         one card per option listing every branch is just the table, worse.
+         Desktop stays table-only; mobile still falls back to cards. -->
+    <app-list-page
+      [pageTitle]="'PRODUCTS.OPTIONS.AVAILABILITY.TITLE' | translate"
+      [breadcrumbs]="breadcrumbs()"
+      [columns]="columns()"
+      [dataSource]="loadRows"
+      [pagination]="paginationConfig"
+      [search]="searchConfig"
+      [sorting]="{ enabled: false }"
+      [fitContent]="true"
+      [showGridView]="false"
+      [bottomReserve]="64"
+      [filters]="[]"
+      [headerActions]="[]"
+      [selectable]="true"
+      [bulkActions]="bulkActions()"
+      [emptyState]="emptyState()"
+      [entityType]="'option-availability'"
+      (selectionChanged)="onSelectionChange($event)">
+
+      <!-- Name -->
+      <ng-template listCellTemplate="name" let-row>
+        <span class="oa-name">
+          {{ row.name || '—' }}
+          @if (isDirty(row)) {
+            <span class="chip chip--mod">{{ 'PRODUCTS.PRODUCT_RECIPE.MODIFIED' | translate }}</span>
+          }
+        </span>
+      </ng-template>
+
+      <!-- One cell template per branch column. `listCellTemplate` is an input, so
+           these register by branch id exactly like a static template would. -->
+      @for (b of branches(); track b.id) {
+        <ng-template [listCellTemplate]="b.id" let-row>
+          <input type="checkbox" class="oa-check"
+                 [checked]="isAvailable(row, b.id)"
+                 (change)="toggle(row, b.id)"
+                 (click)="$event.stopPropagation()"
+                 [attr.aria-label]="row.name + ' — ' + b.name"/>
+        </ng-template>
+      }
+    </app-list-page>
+  } @else {
+    <div class="oa-loading"><span class="oa-spinner"></span></div>
+  }
+
+  <!-- Save lives in the app-standard fixed action bar, same as every form. -->
+  <app-form-sticky-footer>
+    @if (dirtyCount() > 0) {
+      <span class="oa-hint">
+        {{ 'PRODUCTS.OPTIONS.AVAILABILITY.UNSAVED' | translate:{ count: dirtyCount() } }}
+      </span>
+    }
+    <button type="button" class="btn btn-ghost" [disabled]="dirtyCount() === 0 || saving()" (click)="discard()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" [disabled]="dirtyCount() === 0 || saving()" (click)="save()">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+
+  <app-loading-overlay [show]="saving()"/>
+</div>

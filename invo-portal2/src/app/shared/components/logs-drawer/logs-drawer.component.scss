@@ -1,0 +1,100 @@
+:host { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+
+.ld__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 18px 12px; border-bottom: 1px solid #f1f5f9;
+  /* The drawer chrome floats its own close button in the top corner (30px at
+     14px inset) — physically right in LTR, left in RTL, i.e. inline-end in
+     both. Reserve room so the Filters button doesn't sit under it. */
+  padding-inline-end: 56px;
+}
+.ld__title { margin: 0; font-size: 16px; font-weight: 600; color: #0f172a; }
+
+.ld__filter-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 11px; border: 1px solid #e2e8f0; border-radius: 8px;
+  background: #fff; color: #475569; font: inherit; font-size: 12.5px; cursor: pointer;
+  &:hover { background: #f8fafc; color: #0f172a; }
+  &.is-active { border-color: var(--color-brand-300, #7dd3e0); background: #ecfeff; color: var(--color-brand-700, #0e7490); }
+}
+.ld__filter-count {
+  min-width: 17px; height: 17px; padding: 0 4px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px; background: var(--color-brand-600, #0e7490); color: #fff;
+  font-size: 10.5px; font-weight: 700;
+}
+
+.ld__filters {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px 18px; border-bottom: 1px solid #f1f5f9; background: #f8fafc;
+}
+.ld__search {
+  position: relative; display: flex; align-items: center;
+  svg { position: absolute; inset-inline-start: 10px; color: #94a3b8; pointer-events: none; }
+  input {
+    width: 100%; padding: 8px 12px; padding-inline-start: 32px;
+    font-size: 13px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+    &:focus { outline: none; border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.12); }
+  }
+}
+.ld__dates {
+  display: flex; flex-direction: column; gap: 4px;
+  &-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: #94a3b8; }
+}
+.ld__clear {
+  align-self: flex-start; padding: 0; border: 0; background: transparent;
+  font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+  color: var(--color-brand-700, #0e7490);
+  &:hover { text-decoration: underline; }
+}
+
+.ld__body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 18px 18px; }
+
+.ld__state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; padding: 48px 16px; color: #94a3b8;
+  p { margin: 0; font-size: 13px; }
+  &--empty svg { color: #cbd5e1; }
+}
+
+.ld__spinner {
+  width: 22px; height: 22px; border: 2px solid #e2e8f0;
+  border-top-color: var(--color-brand-600, #0e7490);
+  border-radius: 50%; animation: ld-spin 700ms linear infinite;
+  &--sm { width: 16px; height: 16px; }
+}
+@keyframes ld-spin { to { transform: rotate(360deg); } }
+
+.ld__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ld__sentinel { min-height: 28px; display: flex; align-items: center; justify-content: center; }
+
+.ld-card {
+  padding: 11px 13px;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  border-inline-start: 3px solid #cbd5e1;
+
+  &[data-kind="create"] { border-inline-start-color: #22c55e; }
+  &[data-kind="edit"]   { border-inline-start-color: #f59e0b; }
+  &[data-kind="delete"] { border-inline-start-color: #ef4444; }
+
+  &__top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  &__action { font-size: 13px; font-weight: 600; color: #0f172a; word-break: break-word; }
+  &__time { flex-shrink: 0; font-size: 11.5px; color: #94a3b8; font-variant-numeric: tabular-nums; }
+
+  &__comment { margin: 5px 0 0; font-size: 12.5px; line-height: 1.5; color: #475569; word-break: break-word; }
+
+  &__meta {
+    margin: 8px 0 0; padding: 8px 10px;
+    background: #f8fafc; border-radius: 8px;
+    display: flex; flex-direction: column; gap: 3px;
+    div { display: flex; gap: 6px; font-size: 12px; }
+    dt { margin: 0; color: #94a3b8; flex-shrink: 0; }
+    dd { margin: 0; color: #334155; font-weight: 500; word-break: break-word; }
+  }
+
+  &__foot {
+    margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px;
+    font-size: 11.5px; color: #94a3b8;
+  }
+  &__ref { margin-inline-start: auto; font-weight: 600; color: var(--color-brand-700, #0e7490); }
+}

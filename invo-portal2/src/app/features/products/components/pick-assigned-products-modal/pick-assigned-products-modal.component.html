@@ -1,0 +1,44 @@
+<app-modal-header [title]="data.title | translate"/>
+
+<div class="pbp__body">
+  <label class="pbp__search">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" [value]="search()" (input)="onSearch($any($event.target).value)"
+           [placeholder]="'COMMON.SEARCH' | translate"/>
+  </label>
+
+  <div class="pbp__bar">
+    <span>{{ 'COMMON.SELECTED_COUNT' | translate:{ count: selectedCount() } }}</span>
+  </div>
+
+  <ul class="pbp__list">
+    @for (row of rows(); track row.id) {
+      <li class="pbp__row" [class.is-picked]="isPicked(row.id)" (click)="toggle(row)">
+        <input type="checkbox" [checked]="isPicked(row.id)"
+               (click)="$event.stopPropagation()" (change)="toggle(row)"/>
+        <app-entity-thumb [src]="row.thumbnailUrl" [alt]="row.name" [size]="32"/>
+        <span class="pbp__name">{{ row.name || '—' }}</span>
+        @if (row.barcode) { <span class="pbp__code">{{ row.barcode }}</span> }
+      </li>
+    }
+    @if (rows().length === 0 && !loading()) {
+      <li class="pbp__empty">{{ data.emptyKey | translate }}</li>
+    }
+    <li #scrollSentinel class="pbp__sentinel" aria-hidden="true"></li>
+    @if (loading()) {
+      <li class="pbp__loading">
+        <span class="pbp__spinner" aria-hidden="true"></span>
+        {{ 'COMMON.LOADING' | translate }}
+      </li>
+    }
+  </ul>
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btn btn-ghost" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+  <button type="button" class="btn btn-primary" [disabled]="selectedCount() === 0" (click)="apply()">
+    {{ 'COMMON.ADD' | translate }}
+  </button>
+</app-modal-footer>

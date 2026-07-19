@@ -20,6 +20,8 @@ import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { TranslateLinkComponent } from '@shared/components/translate-link/translate-link.component';
+import { CollapsibleCardComponent } from '@shared/components/collapsible-card/collapsible-card.component';
+import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
 import {
@@ -53,6 +55,8 @@ import { Recipe, RecipeItem, RecipeService } from '../../services/recipe.service
     LoadingOverlayComponent,
     FormStickyFooterComponent,
     TranslateLinkComponent,
+    CollapsibleCardComponent,
+    MycurrencyPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './recipe-form.component.html',
@@ -263,6 +267,7 @@ export class RecipeFormComponent implements OnInit, CanLeaveComponent {
       barcode: p.barcode,
       defaultPrice: p.price,
       type: p.type,
+      categoryName: p.categoryName,
       thumbnailUrl: p.thumbnailUrl,
     };
   }

@@ -5,8 +5,18 @@
   <!-- ══════════════════════════════════════════════════════════════ -->
   @if (pageTitle) {
   <div class="mb-6">
-    <div class="flex items-center justify-between">
+    <!-- min-h keeps the title block the same height whether or not the page
+         has header action buttons, so the card below starts at a consistent
+         offset across list pages. -->
+    <div class="flex items-center justify-between min-h-[46px]">
       <div>
+        <!-- Only child pages (forms, detail views, sub-pages reached from a ⋯
+             menu) should pass breadcrumbs. Top-level lists are already the
+             highlighted sidebar item, so a crumb trail above a heading that
+             repeats the same word is noise. -->
+        @if (breadcrumbs.length > 0) {
+          <app-breadcrumbs [items]="breadcrumbs" separator="chevron" class="block mb-2"/>
+        }
         @if (pageTitle) {
           <h1 class="text-2xl font-bold text-slate-900 tracking-tight">{{ pageTitle }}</h1>
         }
@@ -305,6 +315,11 @@
             </th>
             }
 
+            <!-- Disclosure column (present only when a listRowDetail template is projected) -->
+            @if (getRowDetailTemplate()) {
+            <th class="list-disclosure-cell whitespace-nowrap"><span class="sr-only">{{ 'COMMON.EXPAND' | translate }}</span></th>
+            }
+
             <!-- Column Headers -->
             @for (column of displayColumns(); track column.key; let colIdx = $index) {
             <th [class]="
@@ -367,6 +382,22 @@
             </td>
             }
 
+            <!-- Disclosure chevron -->
+            @if (getRowDetailTemplate()) {
+            <td class="list-disclosure-cell whitespace-nowrap" (click)="$event.stopPropagation()">
+              <button type="button"
+                class="w-7 h-7 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                [attr.aria-expanded]="isRowDetailOpen($any(row)[idField])"
+                [attr.aria-label]="'COMMON.EXPAND' | translate"
+                (click)="toggleRowDetail(row, $event)">
+                <svg class="w-4 h-4 transition-transform" [class.rotate-90]="isRowDetailOpen($any(row)[idField])"
+                  fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </td>
+            }
+
             <!-- Data Cells. Cell-level click wins (so per-column `clickable`
                  configs know which column was hit) and stops propagation so
                  the row-level click doesn't fire a second time. -->
@@ -421,6 +452,16 @@
             </td>
             }
           </tr>
+
+          <!-- Row detail panel (listRowDetail) -->
+          @if (getRowDetailTemplate() && isRowDetailOpen($any(row)[idField])) {
+          <tr class="list-detail-row">
+            <td [attr.colspan]="detailColspan()" class="p-0 bg-slate-50 border-b border-slate-200">
+              <ng-container [ngTemplateOutlet]="$any(getRowDetailTemplate())"
+                [ngTemplateOutletContext]="{ $implicit: row, row: row }"/>
+            </td>
+          </tr>
+          }
 
           <!-- Expanded child rows -->
           @if (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length) {
@@ -560,6 +601,18 @@
         <div class="lp-mcards">
           @for (row of data(); track trackByFn($index, row)) {
             <div class="lp-mcard" (click)="onRowClick(row, undefined, $event)">
+              <!-- Disclosure chevron -->
+              @if (getRowDetailTemplate()) {
+                <button type="button" class="lp-mcard__chevron"
+                  [attr.aria-expanded]="isRowDetailOpen($any(row)[idField])"
+                  [attr.aria-label]="'COMMON.EXPAND' | translate"
+                  (click)="toggleRowDetail(row, $event)">
+                  <svg class="w-4 h-4 transition-transform" [class.rotate-90]="isRowDetailOpen($any(row)[idField])"
+                    fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </button>
+              }
               <!-- Thumbnail -->
               @if (mobileCardConfig?.showThumbnail !== false) {
                 <div class="lp-mcard__thumb">
@@ -602,6 +655,12 @@
                 </div>
               }
             </div>
+            @if (getRowDetailTemplate() && isRowDetailOpen($any(row)[idField])) {
+              <div class="lp-mcard-detail">
+                <ng-container [ngTemplateOutlet]="$any(getRowDetailTemplate())"
+                  [ngTemplateOutletContext]="{ $implicit: row, row: row }"/>
+              </div>
+            }
           }
         </div>
       }
@@ -817,7 +876,7 @@
 <!-- BULK SELECTION BAR (floating) -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 @if (selectable && selectedRows().length > 0) {
-<div class="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50
+<div class="lp-selbar fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50
             flex items-center gap-1.5 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3
             bg-slate-900 text-white rounded-xl shadow-2xl
             max-w-[calc(100vw-1rem)] overflow-x-auto

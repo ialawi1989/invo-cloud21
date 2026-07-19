@@ -1,0 +1,32 @@
+<header class="cc__head">
+  <!-- Only the title block toggles; header actions keep their own click. -->
+  <button type="button" class="cc__toggle" [attr.aria-expanded]="open()" (click)="toggle()">
+    <span class="cc__chevron" [class.cc__chevron--open]="open()" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </span>
+    <span class="cc__titles">
+      <span class="cc__title">
+        {{ title() }}
+        @if (required()) { <span class="cc__required">*</span> }
+      </span>
+      @if (subtitle() || count() !== null) {
+        <span class="cc__sub">
+          {{ subtitle() }}
+          @if (count() !== null) { <span class="cc__count">· {{ count() }}</span> }
+        </span>
+      }
+    </span>
+  </button>
+
+  <div class="cc__actions" (click)="$event.stopPropagation()">
+    <ng-content select="[cardActions]"/>
+  </div>
+</header>
+
+@if (open()) {
+  <div class="cc__body">
+    <ng-content/>
+  </div>
+}

@@ -2,6 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { ApiService } from '@core/http/api.service';
 
 /**
+ * What a recipe line hangs off. The backend takes this verbatim as a path
+ * segment on the saveRecipeItem / deleteRecipeItem endpoints.
+ */
+export type RecipeOwnerType = 'menuProduct' | 'option' | 'recipe';
+
+/**
  * A single recipe line under a menu-item product. Either an inventory/kit
  * product (`inventoryId`) or a nested recipe (`recipeId`).
  */
@@ -87,8 +93,28 @@ export class ProductRecipeService {
     };
   }
 
-  /** Create/update one recipe line on a menu-item product. */
-  async saveRecipeItem(productId: string, item: MenuRecipeItem): Promise<{ success: boolean; data?: any }> {
+  /**
+   * The recipe lines attached to one owner. Options and recipes carry no lines
+   * in their list payload, so the panel fetches them lazily when a row opens.
+   *
+   * The load endpoints are named per owner (unlike save/delete, which take the
+   * owner as a path segment), hence the lookup.
+   */
+  async getItems(ownerType: RecipeOwnerType, ownerId: string): Promise<MenuRecipeItem[]> {
+    const path = ownerType === 'recipe'
+      ? `product/getRecipeItems/recipe/${ownerId}`
+      : `product/getOptionItems/option/${ownerId}`;
+    const res = await this.api.request<any>(this.api.get(path));
+    const raw: any[] = Array.isArray(res?.data) ? res.data : (res?.data?.list ?? []);
+    return raw.map((r) => this.mapItem(r));
+  }
+
+  /** Create/update one recipe line on a menu-item product or an option. */
+  async saveRecipeItem(
+    ownerType: RecipeOwnerType,
+    ownerId: string,
+    item: MenuRecipeItem,
+  ): Promise<{ success: boolean; data?: any }> {
     const body: Record<string, unknown> = {
       name: item.name,
       usages: Number(item.usages) || 0,
@@ -97,21 +123,26 @@ export class ProductRecipeService {
     else body['inventoryId'] = item.inventoryId;
 
     const res = await this.api.request<any>(
-      this.api.post(`product/saveRecipeItem/menuProduct/${productId}`, body),
+      this.api.post(`product/saveRecipeItem/${ownerType}/${ownerId}`, body),
     );
     return { success: !!res?.success, data: res?.data };
   }
 
   /** Remove one recipe line. `itemId` is the line's inventoryId or recipeId. */
-  async deleteRecipeItem(productId: string, itemId: string): Promise<{ success: boolean }> {
+  async deleteRecipeItem(
+    ownerType: RecipeOwnerType,
+    ownerId: string,
+    itemId: string,
+  ): Promise<{ success: boolean }> {
     const res = await this.api.request<any>(
-      this.api.delete(`product/deleteRecipeItem/menuProduct/${productId}/${itemId}`),
+      this.api.delete(`product/deleteRecipeItem/${ownerType}/${ownerId}/${itemId}`),
     );
     return { success: !!res?.success };
   }
 
   private mapItem(r: any): MenuRecipeItem {
-    const usages = Number(r?.usages) || 0;
+    // `usages` on menu-item/option payloads, `usage` on recipe payloads.
+    const usages = Number(r?.usages ?? r?.usage) || 0;
     return {
       inventoryId: r?.inventoryId ? String(r.inventoryId) : undefined,
       recipeId: r?.recipeId ? String(r.recipeId) : undefined,

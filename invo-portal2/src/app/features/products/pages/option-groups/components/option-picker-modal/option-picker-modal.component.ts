@@ -17,6 +17,7 @@ import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import type { ModalRef } from '@shared/modal/modal.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { EntityThumbComponent } from '@shared/components/entity-thumb/entity-thumb.component';
 
 import { OptionService } from '../../../../services/option.service';
 
@@ -53,7 +54,7 @@ export interface OptionPickerResult {
 @Component({
   selector: 'app-option-picker-modal',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ModalHeaderComponent, MycurrencyPipe],
+  imports: [CommonModule, TranslateModule, ModalHeaderComponent, MycurrencyPipe, EntityThumbComponent],
   templateUrl: './option-picker-modal.component.html',
   styleUrl: './option-picker-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

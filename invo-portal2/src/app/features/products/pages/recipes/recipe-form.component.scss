@@ -122,10 +122,13 @@
     &--ph { display: inline-flex; align-items: center; justify-content: center; color: #94a3b8; } }
   &__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   &__name { font-size: 13px; font-weight: 600; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* Category trails the name in normal weight, matching the legacy row. */
+  &__category { font-weight: 400; color: #64748b; }
   &__meta { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
   &__chip { display: inline-flex; align-items: center; padding: 1px 7px; font-size: 10px; font-weight: 600; color: #475569; background: #f1f5f9; border-radius: 4px; text-transform: uppercase; letter-spacing: .04em;
     &--type { background: var(--color-brand-50, #ecfeff); color: var(--color-brand-700, #0e7490); }
-    &--code { background: transparent; color: #94a3b8; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; letter-spacing: 0; text-transform: none; padding: 0 2px; } }
+    &--code { background: transparent; color: #94a3b8; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; letter-spacing: 0; text-transform: none; padding: 0 2px; }
+    &--price { background: transparent; color: var(--color-brand-700, #0e7490); text-transform: none; letter-spacing: 0; font-size: 11px; padding: 0 2px; } }
   &__usage { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0;
     label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; } }
   &__remove { width: 28px; height: 28px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #94a3b8; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;

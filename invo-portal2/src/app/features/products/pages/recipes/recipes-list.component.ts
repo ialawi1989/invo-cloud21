@@ -11,10 +11,21 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
+import { ModalService } from '@shared/modal/modal.service';
+import {
+  DropdownMenuBtnComponent,
+  DropdownMenuBtnItem,
+} from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import {
+  LogsDrawerComponent,
+  LogsDrawerData,
+} from '@shared/components/logs-drawer/logs-drawer.component';
 import {
   ListCellTemplateDirective,
   ListRowActionsDirective,
+  ListRowDetailDirective,
 } from '@shared/components/list-page/directives/list-template.directives';
+import { PrepRecipePanelComponent } from '../../components/prep-recipe-panel/prep-recipe-panel.component';
 import {
   TableColumn,
   ListQueryParams,
@@ -37,6 +48,9 @@ import { RecipeService, RecipeListRow } from '../../services/recipe.service';
     ListPageComponent,
     ListCellTemplateDirective,
     ListRowActionsDirective,
+    ListRowDetailDirective,
+    DropdownMenuBtnComponent,
+    PrepRecipePanelComponent,
   ],
   templateUrl: './recipes-list.component.html',
   styleUrl: './recipes-list.component.scss',
@@ -46,11 +60,30 @@ export class RecipesListComponent implements OnInit {
   private router = inject(Router);
   private lang = inject(LanguageService);
   private privileges = inject(PrivilegeService);
+  private modal = inject(ModalService);
 
   @ViewChild(ListPageComponent) listPage?: ListPageComponent;
 
   readonly canAdd = this.privileges.check('recipeSecurity.actions.add.access');
   readonly canEdit = this.canAdd;
+
+  /** Header "⋯" menu. */
+  readonly moreMenuItems: DropdownMenuBtnItem[] = [
+    { label: 'COMMON.LOGS.SHOW', click: () => this.openLogs() },
+  ];
+
+  /** Activity log — the legacy entity key for recipes is 'Recipe'. */
+  openLogs(): void {
+    this.modal.open<LogsDrawerComponent, LogsDrawerData, void>(LogsDrawerComponent, {
+      drawer: true,
+      drawerWidth: '480px',
+      drawerResizable: true,
+      data: {
+        sourceTable: 'Recipe',
+        title: this.lang.instant('PRODUCTS.RECIPES.TITLE'),
+      },
+    });
+  }
 
   columns: TableColumn[] = [];
 

@@ -50,24 +50,18 @@
     </section>
 
     <!-- Ingredients -->
-    <section class="card">
-      <header class="card__head card__head--with-action">
-        <div>
-          <h2 class="card__title">{{ 'PRODUCTS.RECIPES.ITEMS' | translate }}</h2>
-          <p class="card__sub">
-            {{ 'PRODUCTS.RECIPES.ITEMS_DESC' | translate }}
-            @if (items().length > 0) { <span class="card__count">· {{ items().length }}</span> }
-          </p>
-        </div>
-        <button type="button" class="btn btn-primary btn-sm" (click)="openPickItems()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          {{ 'PRODUCTS.RECIPES.SELECT_PRODUCTS' | translate }}
-        </button>
-      </header>
-
-      <div class="card__body card__body--list">
+    <!-- Ingredients — collapsible, as in the legacy form -->
+    <app-collapsible-card
+      [title]="'PRODUCTS.RECIPES.ITEMS' | translate"
+      [subtitle]="'PRODUCTS.RECIPES.ITEMS_DESC' | translate"
+      [count]="items().length || null"
+      [required]="true">
+      <button cardActions type="button" class="btn btn-primary btn-sm" (click)="openPickItems()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        {{ 'PRODUCTS.RECIPES.SELECT_PRODUCTS' | translate }}
+      </button>
         @if (items().length === 0) {
           <div class="empty">
             <p>{{ 'PRODUCTS.RECIPES.ITEMS_EMPTY' | translate }}</p>
@@ -89,11 +83,15 @@
                   </span>
                 }
                 <div class="prod__body">
-                  <span class="prod__name">{{ it.name || '—' }}</span>
+                  <span class="prod__name">
+                    {{ it.name || '—' }}
+                    @if (it.categoryName) { <span class="prod__category">— {{ it.categoryName }}</span> }
+                  </span>
                   <span class="prod__meta">
                     @if (it.type) { <span class="prod__chip prod__chip--type">{{ it.type }}</span> }
                     @if (it.UOM) { <span class="prod__chip">{{ it.UOM }}</span> }
                     @if (it.barcode) { <span class="prod__chip prod__chip--code">{{ it.barcode }}</span> }
+                    @if (it.defaultPrice != null) { <span class="prod__chip prod__chip--price">{{ it.defaultPrice | mycurrency }}</span> }
                   </span>
                 </div>
                 <div class="prod__usage">
@@ -112,8 +110,7 @@
             }
           </ul>
         }
-      </div>
-    </section>
+    </app-collapsible-card>
   }
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>

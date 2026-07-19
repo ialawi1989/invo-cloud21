@@ -64,7 +64,7 @@ export const SIDE_MENU: SideMenuItem[] = [
       // Point at the real list route (not bare `/products`) so it doesn't
       // prefix-match the Classifications pages (`/products/department`, …);
       // `matchLinks` keeps it active on the product form + bulk-print pages.
-      { id: 31, section: 'MENU.SECTION.CATALOG', label: 'MENU.SUB.PRODUCT_LIST', link: '/products/list', matchLinks: ['/products/form', '/products/bulk-print'], requiredPermission: 'productSecurity.action.view.access' },
+      { id: 31, section: 'MENU.SECTION.CATALOG', label: 'MENU.SUB.PRODUCT_LIST', link: '/products/list', matchLinks: ['/products/form', '/products/bulk-print', '/products/import-export', '/products/products-availability'], requiredPermission: 'productSecurity.action.view.access' },
       { id: 32, label: 'MENU.SUB.MATRIX_ITEMS', link: '/matrix-item', requiredPermission: 'matrixItemSecurity.action.view.access' },
       // Dimensions define the axes (Size/Color/…) a matrix item is built from,
       // so it belongs beside Matrix Items — not with the product classifications.
@@ -80,7 +80,11 @@ export const SIDE_MENU: SideMenuItem[] = [
 
       // — Options & Recipes —
       { id: 37, section: 'MENU.SECTION.OPTIONS_RECIPES', label: 'MENU.SUB.OPTION_GROUPS', link: '/products/option-group', requiredPermission: 'optionGroupSecurity.action.view.access' },
-      { id: 38, label: 'MENU.SUB.OPTIONS', link: '/products/option', requiredPermission: 'optionSecurity.action.view.access' },
+      // Option availability is reached from this page's ⋯ menu, so it keeps
+      // Options lit rather than orphaning the sidebar. Note `/products/option`
+      // alone won't match it — matching is on segment boundaries, and
+      // `/products/option-availability` isn't under `/products/option/`.
+      { id: 38, label: 'MENU.SUB.OPTIONS', link: '/products/option', matchLinks: ['/products/option-availability'], requiredPermission: 'optionSecurity.action.view.access' },
       { id: 39, label: 'MENU.SUB.RECIPES', link: '/products/recipe', requiredPermission: 'recipeSecurity.action.view.access' },
       { id: 310, label: 'MENU.SUB.PRODUCT_RECIPES', link: '/products/product-recipe', requiredPermission: 'productRecipeSecurity.action.view.access' },
     ],
@@ -167,7 +171,7 @@ export const SIDE_MENU: SideMenuItem[] = [
   // ── Reports ────────────────────────────────────────────────────────
   {
     id: 10, label: 'MENU.REPORTS', icon: 'bar_chart',
-    link: '/cloud-reports',
+    link: '/reports',
     requiredPermission: 'reportsSecurity.actions.view.access',
   },
   // ── Media ──────────────────────────────────────────────────────────

@@ -66,6 +66,20 @@ export class ListMobileTitleDirective {
 }
 
 /**
+ * Full-width detail panel revealed under a row when its disclosure chevron is
+ * toggled. Distinct from `childrenKey` child rows, which reuse the parent's
+ * columns — this projects arbitrary content spanning every column, for rich
+ * in-place editors (e.g. the prep-recipe panel).
+ *
+ * Supplying this template adds the chevron column automatically.
+ * Usage: <ng-template listRowDetail let-row> … </ng-template>
+ */
+@Directive({ selector: '[listRowDetail]', standalone: true })
+export class ListRowDetailDirective {
+  constructor(public template: TemplateRef<any>) {}
+}
+
+/**
  * Mobile-card line-2 conditional chip(s) (e.g. "1/2 translated"). Self-guard
  * with @if so nothing renders when irrelevant.
  * Usage: <ng-template listMobileChip let-row> … </ng-template>

@@ -68,6 +68,7 @@ export class OptionGroupsListComponent implements OnInit {
   readonly canAdd = this.privileges.check('optionGroupSecurity.actions.add.access');
   readonly canEdit = this.canAdd; // add/edit share the same privilege in this model
   readonly canDelete = this.privileges.check('optionGroupSecurity.actions.delete.access');
+  readonly canClone = this.privileges.check('optionGroupSecurity.actions.clone.access');
 
   columns: TableColumn[] = [];
 
@@ -127,6 +128,9 @@ export class OptionGroupsListComponent implements OnInit {
   /** Overflow (⋯) menu items — everything except Edit, which is the hover pill. */
   overflowActions(row: OptionGroupListRow): DropdownMenuBtnItem[] {
     const items: DropdownMenuBtnItem[] = [];
+    if (this.canClone) {
+      items.push({ label: 'COMMON.CLONE', click: () => this.clone(row) });
+    }
     if (this.canDelete) {
       items.push({ label: 'COMMON.DELETE', danger: true, click: () => this.remove(row) });
     }
@@ -135,6 +139,15 @@ export class OptionGroupsListComponent implements OnInit {
 
   onRowClick(event: any): void {
     if (event?.row) this.edit(event.row);
+  }
+
+  /**
+   * Clone opens the source record's form with ?clone=true. The form loads that
+   * record, blanks its id and prefixes the names, so saving creates a new one —
+   * matching the legacy flow, which had no server-side clone endpoint.
+   */
+  clone(row: OptionGroupListRow): void {
+    void this.router.navigate(['/products/option-group', row.id], { queryParams: { clone: true } });
   }
 
   edit(row: OptionGroupListRow): void {

@@ -19,15 +19,7 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
-import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
-import { DropdownLoadFn } from '@shared/components/dropdown/search-dropdown.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { ToastService } from '@shared/components/toast/toast.service';
-import { ModalService } from '@shared/modal/modal.service';
-import {
-  ConfirmModalComponent,
-  ConfirmModalData,
-} from '@shared/modal/demo/confirm-modal.component';
 import {
   QueryParamsService,
   ParamDef,
@@ -42,14 +34,24 @@ import {
   MenuRecipeItem,
 } from '../../services/product-recipe.service';
 import { CategoryService } from '../../services/category.service';
+import { ModalService } from '@shared/modal/modal.service';
 import {
-  PickProductModalComponent,
-  PickProductModalData,
-  PickProductResult,
-  PickedProduct,
-} from '../product-form/components/pick-product-modal/pick-product-modal.component';
-
-interface CatItem { label: string; value: string; }
+  DropdownMenuBtnComponent,
+  DropdownMenuBtnItem,
+} from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import {
+  LogsDrawerComponent,
+  LogsDrawerData,
+} from '@shared/components/logs-drawer/logs-drawer.component';
+import { ApiService } from '@core/http/api.service';
+import {
+  PickListModalComponent,
+  PickListModalData,
+  PickListModalResult,
+  PickedListItem,
+} from '@shared/components/pick-list-modal/pick-list-modal.component';
+import { categoryLoader } from '@shared/components/pick-list-modal/pick-list.loaders';
+import { PrepRecipePanelComponent } from '../../components/prep-recipe-panel/prep-recipe-panel.component';
 
 const PARAMS = {
   page: { key: 'page', codec: IntCodec } as ParamDef<number>,
@@ -74,9 +76,10 @@ const PARAMS = {
     TranslateModule,
     BreadcrumbsComponent,
     PaginationComponent,
-    SearchDropdownComponent,
     LoadingOverlayComponent,
     MycurrencyPipe,
+    PrepRecipePanelComponent,
+    DropdownMenuBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-recipe.component.html',
@@ -87,9 +90,9 @@ export class ProductRecipeComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private translate = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
-  private modal = inject(ModalService);
-  private toast = inject(ToastService);
   private qp = inject(QueryParamsService);
+  private modal = inject(ModalService);
+  private api = inject(ApiService);
 
   loading = signal<boolean>(false);
   saving = signal<boolean>(false);
@@ -100,7 +103,7 @@ export class ProductRecipeComponent implements OnInit {
   limit = signal<number>(15);
   search = signal<string>('');
   categoryId = signal<string>('');
-  category = signal<CatItem | null>(null);
+  category = signal<PickedListItem | null>(null);
 
   private i18nTick = signal(0);
   private searchDebounce = new Subject<void>();
@@ -112,15 +115,59 @@ export class ProductRecipeComponent implements OnInit {
     ];
   });
 
-  categoryLoad: DropdownLoadFn<CatItem> = async ({ page, pageSize, search }) => {
-    const res = await this.categoryService.getList({ page, limit: pageSize, searchTerm: search });
-    return {
-      items: res.list.map((c) => ({ label: c.name, value: c.id })),
-      hasMore: page * pageSize < res.count,
-    };
-  };
-  displayCat = (c: CatItem) => c?.label ?? '';
-  compareCat = (a: CatItem, b: CatItem) => a?.value === b?.value;
+  /** Header "⋯" menu. */
+  readonly moreMenuItems: DropdownMenuBtnItem[] = [
+    { label: 'COMMON.LOGS.SHOW', click: () => this.openLogs() },
+  ];
+
+  /** Activity log for menu-item recipes — the legacy entity key is 'MenuRecipe'. */
+  openLogs(): void {
+    this.modal.open<LogsDrawerComponent, LogsDrawerData, void>(LogsDrawerComponent, {
+      drawer: true,
+      drawerWidth: '480px',
+      drawerResizable: true,
+      data: {
+        sourceTable: 'MenuRecipe',
+        title: this.translate.instant('PRODUCTS.PRODUCT_RECIPE.TITLE'),
+      },
+    });
+  }
+
+  /** Category filter — single-select picker (acts as a filter, applies on click). */
+  async openCategoryPicker(): Promise<void> {
+    const result = await this.openPicker({
+      load: categoryLoader(this.api),
+      multiple: false,
+      selectedIds: this.categoryId() ? [this.categoryId()] : [],
+      title: this.translate.instant('PRODUCTS.PRODUCT_RECIPE.PICK_CATEGORY'),
+      clearLabel: 'PRODUCTS.PRODUCT_RECIPE.ALL_CATEGORIES',
+    });
+    if (!result) return;
+    this.applyCategory(result.selected[0] ?? null);
+  }
+
+  clearCategory(): void { this.applyCategory(null); }
+
+  private openPicker(data: PickListModalData): Promise<PickListModalResult | undefined> {
+    // Dismissed (Cancel / backdrop) resolves undefined and leaves the filter
+    // alone; an empty `selected` is an explicit "no filter" and does apply.
+    return this.modal.open<PickListModalComponent, PickListModalData, PickListModalResult>(
+      PickListModalComponent,
+      { size: 'md', data },
+    ).afterClosed();
+  }
+
+  private applyCategory(picked: PickedListItem | null): void {
+    this.category.set(picked);
+    this.categoryId.set(picked?.id ?? '');
+    this.refilter();
+  }
+
+  private refilter(): void {
+    this.page.set(1);
+    this.syncUrl();
+    void this.load();
+  }
 
   constructor() {
     withTranslations('products');
@@ -149,7 +196,7 @@ export class ProductRecipeComponent implements OnInit {
       // Hydrate the category label from the id if possible (best-effort).
       const res = await this.categoryService.getList({ page: 1, limit: 50 });
       const match = res.list.find((c) => c.id === initial.category);
-      if (match) this.category.set({ label: match.name, value: match.id });
+      if (match) this.category.set({ id: match.id, name: match.name });
     }
     await this.load();
   }
@@ -183,15 +230,6 @@ export class ProductRecipeComponent implements OnInit {
   onSearch(value: string): void { this.search.set(value); this.searchDebounce.next(); }
   clearSearch(): void { this.search.set(''); this.page.set(1); this.syncUrl(); void this.load(); }
 
-  onCategory(c: CatItem | CatItem[] | null): void {
-    const picked = Array.isArray(c) ? c[0] : c;
-    this.category.set(picked ?? null);
-    this.categoryId.set(picked?.value ?? '');
-    this.page.set(1);
-    this.syncUrl();
-    void this.load();
-  }
-
   onPage(p: number): void { this.page.set(p); this.syncUrl(); void this.load(); }
   onPageSize(n: number): void { this.limit.set(n); this.page.set(1); this.syncUrl(); void this.load(); }
 
@@ -200,12 +238,10 @@ export class ProductRecipeComponent implements OnInit {
     this.products.update((list) => list.map((x) => (x.id === p.id ? { ...x, expanded: !x.expanded } : x)));
   }
 
-  // ── Recipe-line editing ──────────────────────────────────────────────────
-  private itemKey(item: MenuRecipeItem): string { return item.inventoryId ?? item.recipeId ?? ''; }
-
-  isModified(item: MenuRecipeItem): boolean {
-    return item.isNew || Number(item.usages) !== Number(item.originalUsages ?? 0);
-  }
+  // ── Recipe lines ─────────────────────────────────────────────────────────
+  // Editing lives in <app-prep-recipe-panel>; the page only mirrors the
+  // panel's lines back into its row so the collapsed summary (tag list, item
+  // count, cost) stays in step.
 
   lineCost(item: MenuRecipeItem): number { return (Number(item.usages) || 0) * (Number(item.unitCost) || 0); }
 
@@ -213,140 +249,10 @@ export class ProductRecipeComponent implements OnInit {
     return p.recipes.reduce((sum, i) => sum + this.lineCost(i), 0);
   }
 
-  setUsage(p: MenuItemProduct, item: MenuRecipeItem, value: string): void {
-    const usages = Number(value);
-    const key = this.itemKey(item);
+  onLinesChange(p: MenuItemProduct, lines: MenuRecipeItem[]): void {
     this.products.update((list) =>
-      list.map((x) =>
-        x.id !== p.id ? x : {
-          ...x,
-          recipes: x.recipes.map((r) => (this.itemKey(r) === key ? { ...r, usages: isNaN(usages) ? 0 : usages } : r)),
-        },
-      ),
+      list.map((x) => (x.id === p.id ? { ...x, recipes: lines } : x)),
     );
-  }
-
-  revert(p: MenuItemProduct, item: MenuRecipeItem): void {
-    const key = this.itemKey(item);
-    this.products.update((list) =>
-      list.map((x) =>
-        x.id !== p.id ? x : {
-          ...x,
-          recipes: x.recipes.map((r) => (this.itemKey(r) === key ? { ...r, usages: r.originalUsages ?? 0 } : r)),
-        },
-      ),
-    );
-  }
-
-  async saveLine(p: MenuItemProduct, item: MenuRecipeItem): Promise<void> {
-    if (Number(item.usages) <= 0) return;
-    this.saving.set(true);
-    try {
-      const res = await this.service.saveRecipeItem(p.id, item);
-      if (res.success) {
-        const key = this.itemKey(item);
-        this.products.update((list) =>
-          list.map((x) =>
-            x.id !== p.id ? x : {
-              ...x,
-              recipes: x.recipes.map((r) =>
-                this.itemKey(r) === key ? { ...r, originalUsages: r.usages, isNew: false } : r,
-              ),
-            },
-          ),
-        );
-        this.toast.success('COMMON.SAVED_OK');
-      } else {
-        this.toast.error('COMMON.SAVE_FAILED');
-      }
-    } catch (e: any) {
-      this.toast.error('COMMON.SAVE_FAILED', e?.message);
-    } finally {
-      this.saving.set(false);
-    }
-  }
-
-  async removeLine(p: MenuItemProduct, item: MenuRecipeItem): Promise<void> {
-    const key = this.itemKey(item);
-    // New (unsaved) rows just drop out locally.
-    if (item.isNew) {
-      this.dropLine(p.id, key);
-      return;
-    }
-    const ref = this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(
-      ConfirmModalComponent,
-      {
-        size: 'sm',
-        data: {
-          title: this.translate.instant('COMMON.DELETE'),
-          message: this.translate.instant('PRODUCTS.PRODUCT_RECIPE.CONFIRM_DELETE', { name: item.name }),
-          confirm: this.translate.instant('COMMON.DELETE'),
-          danger: true,
-        },
-      },
-    );
-    if (!(await ref.afterClosed())) return;
-    this.saving.set(true);
-    try {
-      const res = await this.service.deleteRecipeItem(p.id, key);
-      if (res.success) {
-        this.dropLine(p.id, key);
-        this.toast.success('COMMON.DELETED_OK');
-      } else {
-        this.toast.error('COMMON.DELETE_FAILED');
-      }
-    } finally {
-      this.saving.set(false);
-    }
-  }
-
-  private dropLine(productId: string, key: string): void {
-    this.products.update((list) =>
-      list.map((x) =>
-        x.id !== productId ? x : { ...x, recipes: x.recipes.filter((r) => this.itemKey(r) !== key) },
-      ),
-    );
-  }
-
-  async addItems(p: MenuItemProduct): Promise<void> {
-    const existing = p.recipes.map((r) => this.itemKey(r)).filter(Boolean);
-    const ref = this.modal.open<PickProductModalComponent, PickProductModalData, PickProductResult>(
-      PickProductModalComponent,
-      {
-        size: 'lg',
-        data: {
-          excludedIds: existing,
-          multiple: true,
-          title: this.translate.instant('PRODUCTS.PRODUCT_RECIPE.ADD_ITEM'),
-        },
-        closeOnBackdrop: false,
-      },
-    );
-    const result = await ref.afterClosed();
-    if (!result?.added?.length) return;
-    const seen = new Set(existing.map(String));
-    const fresh: MenuRecipeItem[] = result.added
-      .filter((pr) => !seen.has(String(pr.id)))
-      .map((pr) => this.toRecipeItem(pr));
-    if (!fresh.length) return;
-    this.products.update((list) =>
-      list.map((x) => (x.id === p.id ? { ...x, recipes: [...x.recipes, ...fresh] } : x)),
-    );
-  }
-
-  private toRecipeItem(pr: PickedProduct): MenuRecipeItem {
-    const isRecipe = pr.type === 'Recipe';
-    return {
-      inventoryId: isRecipe ? undefined : String(pr.id),
-      recipeId: isRecipe ? String(pr.id) : undefined,
-      name: pr.name ?? '',
-      UOM: pr.UOM ?? '',
-      unitCost: Number(pr.unitCost) || 0,
-      usages: 1,
-      type: pr.type ?? '',
-      originalUsages: 0,
-      isNew: true,
-    };
   }
 
   trackProduct = (_: number, p: MenuItemProduct) => p.id;

@@ -1,0 +1,61 @@
+<div class="filter-bar">
+  <!-- ── Period (shared date-picker) ───────────────────────────── -->
+  @if (flags().date !== false || flags().asOf) {
+    @if (isAsOf()) {
+      <app-date-picker
+        mode="single"
+        [value]="singleValue()"
+        (valueChange)="onSingleChange($any($event))"
+        displayFormat="MMM d, yyyy"
+        [placeholder]="'REPORTS.PERIOD.AS_OF' | translate"
+        triggerClass="fb-datepicker">
+      </app-date-picker>
+    } @else {
+      <app-date-picker
+        mode="range"
+        [value]="rangeValue()"
+        (valueChange)="onRangeChange($any($event))"
+        [presets]="presets"
+        [monthsShown]="2"
+        displayFormat="MMM d, yyyy"
+        [placeholder]="'REPORTS.PERIOD.CUSTOM' | translate"
+        triggerClass="fb-datepicker">
+      </app-date-picker>
+    }
+  }
+
+  <!-- ── Branches ──────────────────────────────────────────────── -->
+  @if (showBranches()) {
+    <div class="fb-control">
+      <button type="button" class="fb-trigger" [class.open]="branchOpen()" (click)="toggleBranch()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/>
+        </svg>
+        <span class="fb-trigger-text">{{ selectedBranchLabel() }}</span>
+        <svg class="fb-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+
+      @if (branchOpen()) {
+        <div class="fb-panel fb-panel--list">
+          @for (b of branches(); track b.value) {
+            <label class="fb-check">
+              <input type="checkbox" [checked]="isBranchSelected(b.value)" (change)="toggleBranchValue(b.value)" />
+              <span>{{ b.label }}</span>
+            </label>
+          }
+          <button type="button" class="btn btn-primary btn-sm fb-apply" (click)="applyBranches()">
+            {{ 'REPORTS.FILTER.APPLY' | translate }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── Compare toggle ────────────────────────────────────────── -->
+  @if (flags().compare) {
+    <button type="button" class="fb-compare" [class.on]="compare()" (click)="toggleCompare()">
+      <span class="fb-switch"><span class="fb-knob"></span></span>
+      {{ 'REPORTS.FILTER.COMPARE' | translate }}
+    </button>
+  }
+</div>

@@ -1,0 +1,84 @@
+<div class="reports-catalog">
+  <!-- ── Header ─────────────────────────────────────────────────── -->
+  <header class="rc-header">
+    <div class="rc-heading">
+      <h1>{{ 'REPORTS.CATALOG.TITLE' | translate }}</h1>
+      <p>{{ 'REPORTS.CATALOG.SUBTITLE' | translate: { count: totalCount() } }}</p>
+    </div>
+    <div class="rc-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" [ngModel]="search()" (ngModelChange)="search.set($event)"
+             [placeholder]="'REPORTS.CATALOG.SEARCH' | translate" />
+      @if (search()) {
+        <button type="button" class="rc-clear" (click)="search.set('')" aria-label="clear">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- ── Tabs ───────────────────────────────────────────────────── -->
+  <nav class="rc-tabs">
+    <button type="button" class="rc-tab" [class.active]="activeTab() === 'all'" (click)="setTab('all')">
+      {{ 'REPORTS.TABS.ALL' | translate }}
+    </button>
+    <button type="button" class="rc-tab" [class.active]="activeTab() === 'favorites'" (click)="setTab('favorites')">
+      <svg class="rc-tab-star" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      {{ 'REPORTS.TABS.FAVORITES' | translate }}
+    </button>
+    @if (newCount() > 0) {
+      <button type="button" class="rc-tab" [class.active]="activeTab() === 'new'" (click)="setTab('new')">
+        {{ 'REPORTS.TABS.NEW' | translate }}
+        <span class="rc-tab-badge">{{ newCount() }}</span>
+      </button>
+    }
+    <span class="rc-tab-sep"></span>
+    @for (g of visibleGroups(); track g.key) {
+      <button type="button" class="rc-tab" [class.active]="activeTab() === g.key" (click)="setTab(g.key)">
+        {{ g.titleKey | translate }}
+      </button>
+    }
+  </nav>
+
+  <!-- ── Groups + cards ─────────────────────────────────────────── -->
+  @if (filteredGroups().length === 0) {
+    <div class="rc-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <p>{{ 'REPORTS.CATALOG.NO_RESULTS' | translate }}</p>
+    </div>
+  } @else {
+    @for (group of filteredGroups(); track group.key) {
+      <section class="rc-group">
+        <h2 class="rc-group-title">
+          <span class="rc-group-icon" [innerHTML]="icon(group.icon)"></span>
+          {{ group.titleKey | translate }}
+          <span class="rc-group-count">{{ group.reports.length }}</span>
+        </h2>
+        <div class="rc-grid">
+          @for (report of group.reports; track report.slug) {
+            <button type="button" class="rc-card" (click)="openReport(report)">
+              <span class="rc-card-icon" [innerHTML]="icon(report.icon)"></span>
+              <span class="rc-card-body">
+                <span class="rc-card-title">{{ report.titleKey | translate }}</span>
+                @if (report.descriptionKey) {
+                  <span class="rc-card-desc">{{ report.descriptionKey | translate }}</span>
+                }
+              </span>
+              <span class="rc-card-star" [class.on]="isFavorite(report.slug)"
+                    (click)="toggleFavorite(report.slug, $event)">
+                <svg viewBox="0 0 24 24" [attr.fill]="isFavorite(report.slug) ? 'currentColor' : 'none'"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </span>
+            </button>
+          }
+        </div>
+      </section>
+    }
+  }
+</div>

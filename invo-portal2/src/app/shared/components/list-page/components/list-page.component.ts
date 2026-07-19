@@ -55,7 +55,8 @@ import {
   ListRowActionsDirective,
   ListMobileThumbDirective,
   ListMobileTitleDirective,
-  ListMobileChipDirective
+  ListMobileChipDirective,
+  ListRowDetailDirective
 } from '../directives/list-template.directives';
 
 // FilterModal - MUST be relative import from same folder
@@ -341,6 +342,10 @@ import {
     .lp-fullbleed thead th {
       position: sticky;
       top: -1px;
+      /* Must outrank body cells: without this both sides resolve to auto and
+         tbody (later in the DOM) paints over the header as rows scroll under
+         it. Stays below the frozen header columns, which use z-20. */
+      z-index: 5;
     }
 
     /* ── Fit-to-content height (opt-in via [fitContent]) ─────────────────
@@ -420,20 +425,40 @@ import {
     .lp-hscroll > div { height: 1px; }
 
     /* ── Themed table (thead + tbody) ───────────────────────────────────
-       Soft teal header, roomy cells, subtle dividers, teal accent. Applies
-       to every list page since the table lives in this shared component. */
+       Neutral header, roomy cells, subtle dividers, teal accent. Applies
+       to every list page since the table lives in this shared component.
+
+       The header is deliberately NOT brand-tinted. Column labels are
+       metadata you read once, so they should recede; and teal is the app's
+       action signal (interactive cells, checkbox accent, primary button) —
+       spending it on an inert band both out-shouts the data and weakens
+       that signal. Keeping the header neutral leaves row hover and the
+       expanded-row highlight as the strongest teal on the page, which is
+       the way round it should be.
+
+       Must stay opaque: the header is position: sticky, so rows would
+       ghost through a transparent fill as they scroll under it. */
     .list-page-container thead th {
-      background: #d6f0f1 !important;
+      background: #f8fafc !important;
       color: #4a5163 !important;
       font-size: 14px;
       font-weight: 600;
       padding: 13px 18px !important;
       white-space: nowrap;
-      /* Wix-style framed header band: a soft teal rule above and below so the
-         header reads as a distinct band over the teal fill. */
-      border-top: 1px solid #aeded3 !important;
-      border-bottom: 1px solid #aeded3 !important;
+      border-top: 0 !important;
+      border-bottom: 1px solid #e2e8f0 !important;
     }
+    /* Disclosure (row-detail chevron) column — opts out of the themed 18px
+       side padding above, which would otherwise push the first data column
+       ~36px further in for a cell holding a single 28px button. Sized to the
+       button plus a hair, so the chevron sits close to the column it opens. */
+    .list-page-container th.list-disclosure-cell,
+    .list-page-container td.list-disclosure-cell {
+      width: 34px; min-width: 34px; max-width: 34px;
+      padding-inline: 6px 0 !important;
+      text-align: center;
+    }
+
     /* Body cells. --row-pad-y tunes vertical density in one place. */
     .list-page-container { --row-pad-y: 12px; }
     .list-page-container tbody td {
@@ -447,9 +472,12 @@ import {
        Excluded: the Actions column (floating button has its own shadow), the
        selection checkbox column (.start-0 — a checkbox, not text), and the
        frozen primary column (.list-sticky-col — its name wraps rather than
-       overflows, and it keeps overflow:visible so its cast edge-shadow shows). */
-    .list-page-container tbody td:not(.list-floating-actions):not(.start-0):not(.list-sticky-col),
-    .list-page-container thead th:not(.list-actions-th):not(.start-0):not(.list-sticky-col) {
+       overflows, and it keeps overflow:visible so its cast edge-shadow shows).
+       Also excluded: the disclosure cell (.list-disclosure-cell) — it holds a
+       28px button in a 28px content box, so sub-pixel rounding counts as
+       overflow and paints a stray "…" next to the chevron. */
+    .list-page-container tbody td:not(.list-floating-actions):not(.start-0):not(.list-sticky-col):not(.list-disclosure-cell),
+    .list-page-container thead th:not(.list-actions-th):not(.start-0):not(.list-sticky-col):not(.list-disclosure-cell) {
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -540,6 +568,19 @@ import {
     }
     .lp-mcard__secondary { flex: 0 0 auto; font-size: 12px; color: #94a3b8; white-space: nowrap; }
     .lp-mcard__actions { flex: 0 0 auto; margin-inline-start: 2px; }
+    .lp-mcard__chevron {
+      flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #94a3b8; transition: color 120ms ease, background-color 120ms ease;
+    }
+    .lp-mcard__chevron:hover { color: #0e7490; background: #ecfeff; }
+    /* Floating selection bar — lifted clear of any page-level sticky footer
+       via --lp-selbar-offset (set by the host page). */
+    .lp-selbar { bottom: calc(1rem + var(--lp-selbar-offset, 0px)) !important; }
+    @media (min-width: 640px) {
+      .lp-selbar { bottom: calc(1.5rem + var(--lp-selbar-offset, 0px)) !important; }
+    }
+    .lp-mcard-detail { border-bottom: 1px solid #eef2f6; background: #f8fafc; }
     .lp-skel { background: #f1f5f9; animation: lp-skel-pulse 1.2s ease-in-out infinite; }
     .lp-mcard--skel { cursor: default; }
     .lp-mcard--skel:hover { background: transparent; }
@@ -774,6 +815,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   @ContentChildren(ListMobileThumbDirective) mobileThumbTemplates!: QueryList<ListMobileThumbDirective>;
   @ContentChildren(ListMobileTitleDirective) mobileTitleTemplates!: QueryList<ListMobileTitleDirective>;
   @ContentChildren(ListMobileChipDirective) mobileChipTemplates!: QueryList<ListMobileChipDirective>;
+  @ContentChildren(ListRowDetailDirective) rowDetailTemplates!: QueryList<ListRowDetailDirective>;
 
   // ══════════════════════════════════════════════════════════════
   // STATE SIGNALS
@@ -824,8 +866,14 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   scrollMaxHeight = signal<number>(600);
 
   /** Space reserved BELOW the scroll host (pagination row + page padding) so
-   *  it stays visible under the table rather than being pushed off-screen. */
+   *  it stays visible under the table rather than being pushed off-screen.
+   *  Raise it via `[bottomReserve]` on pages that also pin something to the
+   *  viewport bottom (e.g. a sticky save bar), which would otherwise cover
+   *  the pagination row. */
   private static readonly SCROLL_BOTTOM_RESERVE = 88;
+
+  /** Extra pixels to reserve below the table, on top of the default. */
+  @Input() bottomReserve = 0;
 
   /** ViewChild reference to the horizontally-scrolling table
    *  container — used by the data-change effect to recompute the
@@ -865,6 +913,12 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     // the track doesn't linger when only a border sliver remains).
     const inView = rect.top < vh - 24 && rect.bottom > 72;
     if (!inView) { this.phantomVisible.set(false); return; }
+
+    // Only worth showing when the host's OWN horizontal scrollbar is out of
+    // reach — i.e. the table runs past the fold. When the table ends on screen
+    // (short lists, or [fitContent] where it scrolls internally) the native bar
+    // is already visible and the phantom is a duplicate empty strip under it.
+    if (rect.bottom <= vh - 8) { this.phantomVisible.set(false); return; }
 
     const wasHidden = !this.phantomVisible();
     this.phantomVisible.set(true);
@@ -943,7 +997,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       const host = this.scrollHost?.nativeElement;
       if (!host || !this.stickyColumns) return;
       const docTop = host.getBoundingClientRect().top + window.scrollY;
-      const h = window.innerHeight - docTop - ListPageComponent.SCROLL_BOTTOM_RESERVE;
+      const h = window.innerHeight - docTop - ListPageComponent.SCROLL_BOTTOM_RESERVE - this.bottomReserve;
       // Never collapse to an unusably short strip on tiny viewports.
       this.scrollMaxHeight.set(Math.max(240, Math.round(h)));
     });
@@ -1078,6 +1132,9 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     const template = this.rowActionsTemplates?.first;  // ✅ Use .first
     return template?.template;
   });
+
+  /** Full-width row-detail panel template (adds the chevron column when set). */
+  getRowDetailTemplate = computed(() => this.rowDetailTemplates?.first?.template);
 
   /** Mobile-card slot templates (thumb / title / chip). */
   getMobileThumbTemplate = computed(() => this.mobileThumbTemplates?.first?.template);
@@ -1422,6 +1479,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       .pipe(
         tap((response: ListResponse<T>) => {
           this.data.set(response.list);
+          this.pruneOpenDetails(response.list);
           this.pageCount.set(response.pageCount);
           if (response.count !== undefined) {
             this.totalCount.set(response.count);
@@ -1452,6 +1510,13 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
    * Only called when the query scope (search/filters) changes — pagination
    * and sort keep the selection intact so users can multi-page select.
    */
+  /** Forget detail panels whose row is no longer on screen (page/search change). */
+  private pruneOpenDetails(newData: T[]): void {
+    if (this.openDetailRows().size === 0) return;
+    const visible = new Set(newData.map((r: any) => String(r?.[this.idField] ?? '')));
+    this.openDetailRows.update((open) => new Set([...open].filter((id) => visible.has(id))));
+  }
+
   private pruneSelection(newData: T[]): void {
     const selected = this.selectedRows();
     if (selected.length === 0) return;
@@ -1780,6 +1845,47 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
 
   isRowExpanded(rowId: string): boolean {
     return this.expandedRows().has(rowId);
+  }
+
+  // ── Row-detail panels (listRowDetail) ─────────────────────────────────────
+  // Kept separate from `expandedRows` above, which drives `childrenKey` child
+  // rows; a list can use either without the two fighting over the same set.
+
+  /** Row ids whose detail panel is open. */
+  openDetailRows = signal<Set<string>>(new Set());
+
+  /** Emits the row each time its detail panel opens — hook for lazy loading. */
+  @Output() rowDetailOpened = new EventEmitter<any>();
+
+  isRowDetailOpen(rowId: string): boolean {
+    return this.openDetailRows().has(rowId);
+  }
+
+  toggleRowDetail(row: any, event?: Event): void {
+    event?.stopPropagation();
+    const rowId = String(row?.[this.idField] ?? '');
+    let opened = false;
+    this.openDetailRows.update((open) => {
+      const next = new Set(open);
+      if (next.has(rowId)) {
+        next.delete(rowId);
+      } else {
+        next.add(rowId);
+        opened = true;
+      }
+      return next;
+    });
+    if (opened) this.rowDetailOpened.emit(row);
+  }
+
+  /** Column count for the detail row's `colspan`. */
+  detailColspan(): number {
+    return (
+      this.displayColumns().length +
+      (this.selectable ? 1 : 0) +
+      (this.getRowDetailTemplate() ? 1 : 0) +
+      (this.rowActions.length > 0 || this.getRowActionsTemplate() ? 1 : 0)
+    );
   }
 
   // ══════════════════════════════════════════════════════════════

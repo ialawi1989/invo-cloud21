@@ -18,6 +18,7 @@ import {
 } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
@@ -34,7 +35,14 @@ import {
   TranslationLang,
 } from '@shared/components/translation-modal/translation-modal.component';
 
-import { Brand, BrandService } from '../../services/brand.service';
+import { CollapsibleCardComponent } from '@shared/components/collapsible-card/collapsible-card.component';
+import { EntityThumbComponent } from '@shared/components/entity-thumb/entity-thumb.component';
+import {
+  PickAssignedProductsModalComponent,
+  PickAssignedProductsData,
+  PickAssignedProductsResult,
+} from '../../components/pick-assigned-products-modal/pick-assigned-products-modal.component';
+import { Brand, BrandProduct, BrandService } from '../../services/brand.service';
 
 /**
  * Brands → form (create + edit). A single translatable Name.
@@ -52,7 +60,10 @@ import { Brand, BrandService } from '../../services/brand.service';
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     FormStickyFooterComponent,
-  TranslateLinkComponent,
+    TranslateLinkComponent,
+    CollapsibleCardComponent,
+    EntityThumbComponent,
+    DragDropModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './brand-form.component.html',
@@ -111,6 +122,9 @@ export class BrandFormComponent implements OnInit, CanLeaveComponent {
       .subscribe(() => this.i18nTick.update((n) => n + 1));
   }
 
+  /** Products assigned to this brand, in saved order. */
+  products = signal<BrandProduct[]>([]);
+
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id || id === 'new' || id === '0') {
@@ -124,6 +138,7 @@ export class BrandFormComponent implements OnInit, CanLeaveComponent {
       if (!data) return;
       this.original.set(data);
       this.form.patchValue({ name: data.name }, { emitEvent: false });
+      this.products.set([...(data.options ?? [])]);
       this.form.markAsPristine();
     } finally {
       this.loading.set(false);
@@ -152,6 +167,43 @@ export class BrandFormComponent implements OnInit, CanLeaveComponent {
     this.form.markAsDirty();
   }
 
+  // ── Assigned products ─────────────────────────────────────────────────────
+  async openProductPicker(): Promise<void> {
+    const ref = this.modal.open<PickAssignedProductsModalComponent, PickAssignedProductsData, PickAssignedProductsResult>(
+      PickAssignedProductsModalComponent,
+      {
+        size: 'lg',
+        data: {
+          load: ({ page, limit, searchTerm }) =>
+            this.service.getUnbrandedProducts({ page, limit, searchTerm, brandId: this.brandId() }),
+          assignedIds: this.products().map((p) => p.id),
+          title: 'PRODUCTS.BRANDS.SELECT_PRODUCTS',
+          emptyKey: 'PRODUCTS.BRANDS.NO_UNASSIGNED',
+        },
+        closeOnBackdrop: false,
+      },
+    );
+    const result = await ref.afterClosed();
+    if (!result?.added?.length) return;
+    const seen = new Set(this.products().map((p) => p.id));
+    const fresh = result.added.filter((p) => !seen.has(p.id));
+    if (!fresh.length) return;
+    this.products.update((list) => [...list, ...fresh]);
+    this.form.markAsDirty();
+  }
+
+  removeProduct(id: string): void {
+    this.products.update((list) => list.filter((p) => p.id !== id));
+    this.form.markAsDirty();
+  }
+
+  onReorder(event: CdkDragDrop<BrandProduct[]>): void {
+    const list = [...this.products()];
+    moveItemInArray(list, event.previousIndex, event.currentIndex);
+    this.products.set(list);
+    this.form.markAsDirty();
+  }
+
   async save(): Promise<void> {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
@@ -163,7 +215,7 @@ export class BrandFormComponent implements OnInit, CanLeaveComponent {
         ...(original ?? {}),
         id: original?.id ?? null,
         name: v.name.trim(),
-        options: original?.options ?? [],
+        options: this.products(),
       };
       if (payload.translation?.name) {
         payload.translation = { ...payload.translation, name: { ...payload.translation.name, en: v.name.trim() } };

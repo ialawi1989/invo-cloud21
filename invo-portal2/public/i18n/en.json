@@ -17,6 +17,8 @@
     },
     "DONE": "Done",
     "DUPLICATE": "Duplicate",
+    "CLONE": "Clone",
+    "COPY_OF": "Copy of {{name}}",
     "DRAG_TO_REORDER": "Drag to reorder",
     "UNGROUP": "Move to its own panel",
     "WIDGET_DRAG_HINT": "Drag up/down to reorder · drop on another header to merge as a tab",
@@ -25,6 +27,8 @@
     "LOAD_FAILED":      "Couldn't load — please try again",
     "DELETED_OK":       "Deleted successfully",
     "DELETE_FAILED":    "Couldn't delete — please try again",
+    "EXPORT_FAILED":    "Couldn't export — please try again",
+    "SELECT_ALL":       "Select all",
     "IMPORTED_OK":      "Import completed",
     "IMPORT_FAILED":    "Import failed",
     "IMPORT_WIZARD": {
@@ -121,6 +125,14 @@
     "APPLY": "Apply",
     "CLEAR": "Clear",
     "CLEAR_ALL": "Clear all",
+    "PICKER": {
+      "TITLE": "Select"
+    },
+    "LOGS": {
+      "TITLE": "Activity log",
+      "SHOW": "Show logs",
+      "EMPTY": "No activity recorded yet"
+    },
     "REMOVE": "Remove",
     "ALL": "All",
     "REFRESH": "Refresh",
@@ -255,8 +267,8 @@
       "BRANDS": "Brands",
       "OPTION_GROUPS": "Option Groups",
       "OPTIONS": "Options",
-      "RECIPES": "Recipes",
-      "PRODUCT_RECIPES": "Product Recipes",
+      "RECIPES": "Prep. Recipe",
+      "PRODUCT_RECIPES": "Menu Item Recipes",
       "PRICE_CHANGE": "Price Change",
       "TRANSLATION": "Translation",
       "COLLECTIONS": "Collections",

@@ -1,6 +1,5 @@
 <app-list-page
   [pageTitle]="'PRODUCTS.OPTIONS.TITLE' | translate"
-  [breadcrumbs]="breadcrumbs"
   [columns]="columns"
   [dataSource]="loadOptions"
   [pagination]="paginationConfig"
@@ -27,11 +26,36 @@
         <span class="sm:hidden">{{ 'PRODUCTS.OPTIONS.ADD_NEW_SHORT' | translate }}</span>
       </button>
     }
+    @if (moreMenuItems().length) {
+      <app-dropdown-menu-btn
+        [items]="moreMenuItems()"
+        [appendToBody]="true"
+        [chevron]="false"
+        align="end"
+        triggerClass="flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+        </svg>
+      </app-dropdown-menu-btn>
+    }
   </div>
 
-  <!-- Name -->
+  <!-- Name — thumbnail + name, matching the "Add options" picker rows. -->
   <ng-template listCellTemplate="name" let-row>
-    <span class="font-medium text-slate-900 min-w-0 break-words list-interactive-cell">{{ row.name || '—' }}</span>
+    <span class="inline-flex items-center gap-3 min-w-0">
+      <app-entity-thumb [src]="row.thumbnailUrl" [alt]="row.name || ''" [size]="36"/>
+      <span class="font-medium text-slate-900 min-w-0 break-words list-interactive-cell">{{ row.name || '—' }}</span>
+    </span>
+  </ng-template>
+
+  <!-- Mobile card thumbnail -->
+  <ng-template listMobileThumb let-row>
+    <app-entity-thumb [src]="row.thumbnailUrl" [alt]="row.name || ''" [size]="40"/>
+  </ng-template>
+
+  <!-- Expanded row: the option's prep recipe. Lines load lazily on open. -->
+  <ng-template listRowDetail let-row>
+    <app-prep-recipe-panel ownerType="option" [ownerId]="row.id" [autoLoad]="true"/>
   </ng-template>
 
   <!-- Row actions — Edit revealed on hover (Wix-style); the ⋯ menu holds the

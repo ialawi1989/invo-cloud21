@@ -48,6 +48,10 @@
           <input type="checkbox" [checked]="unlimited()" (change)="toggleUnlimited()"/>
           <span>{{ 'PRODUCTS.OPTION_GROUPS.MAX_UNLIMITED' | translate }}</span>
         </label>
+        <app-info-note [heading]="'PRODUCTS.OPTION_GROUPS.SELECTABLE_NOTE_TITLE' | translate">
+          <div>{{ 'PRODUCTS.OPTION_GROUPS.SELECTABLE_NOTE_MIN' | translate }}</div>
+          <div>{{ 'PRODUCTS.OPTION_GROUPS.SELECTABLE_NOTE_MAX' | translate }}</div>
+        </app-info-note>
       </div>
     </section>
 

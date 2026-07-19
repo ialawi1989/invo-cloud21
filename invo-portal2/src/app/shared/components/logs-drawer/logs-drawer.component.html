@@ -1,0 +1,80 @@
+<header class="ld__head">
+  <h2 class="ld__title">{{ (data.title || 'COMMON.LOGS.TITLE') | translate }}</h2>
+  <button type="button" class="ld__filter-btn" [class.is-active]="showFilters()" (click)="toggleFilters()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/>
+    </svg>
+    {{ 'COMMON.FILTERS' | translate }}
+    @if (activeFilterCount() > 0) { <span class="ld__filter-count">{{ activeFilterCount() }}</span> }
+  </button>
+</header>
+
+@if (showFilters()) {
+  <div class="ld__filters">
+    <label class="ld__search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" [value]="search()" (input)="onSearch($any($event.target).value)"
+             [placeholder]="'COMMON.SEARCH' | translate"/>
+    </label>
+    <div class="ld__dates">
+      <span class="ld__dates-label">{{ 'COMMON.PERIOD_CUSTOM' | translate }}</span>
+      <app-date-picker
+        mode="range"
+        [value]="dateRange()"
+        [placeholder]="'COMMON.PERIOD_ALL' | translate"
+        (valueChange)="onDateRange($any($event))"/>
+    </div>
+    @if (activeFilterCount() > 0) {
+      <button type="button" class="ld__clear" (click)="clearFilters()">{{ 'COMMON.CLEAR_ALL' | translate }}</button>
+    }
+  </div>
+}
+
+<div class="ld__body">
+  @if (loading()) {
+    <div class="ld__state"><span class="ld__spinner"></span></div>
+  } @else if (logs().length === 0) {
+    <div class="ld__state ld__state--empty">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/>
+      </svg>
+      <p>{{ 'COMMON.LOGS.EMPTY' | translate }}</p>
+    </div>
+  } @else {
+    <ul class="ld__list">
+      @for (entry of logs(); track trackLog($index, entry)) {
+        <li class="ld-card" [attr.data-kind]="actionKind(entry)">
+          <div class="ld-card__top">
+            <span class="ld-card__action">{{ entry.action }}</span>
+            <time class="ld-card__time">{{ entry.createdAt | date:'dd/MM/yyyy HH:mm' }}</time>
+          </div>
+
+          @if (entry.comment) {
+            <p class="ld-card__comment">{{ entry.comment }}</p>
+          }
+
+          @let rows = metaRows(entry);
+          @if (rows.length) {
+            <dl class="ld-card__meta">
+              @for (row of rows; track row.label) {
+                <div><dt>{{ row.label }}</dt><dd>{{ row.value }}</dd></div>
+              }
+            </dl>
+          }
+
+          <div class="ld-card__foot">
+            @if (entry.employeeName) { <span>{{ entry.employeeName }}</span> }
+            @if (entry.branchName) { <span>· {{ entry.branchName }}</span> }
+            @if (entry.sourceNumber) { <span class="ld-card__ref">#{{ entry.sourceNumber }}</span> }
+          </div>
+        </li>
+      }
+    </ul>
+
+    <div #scrollSentinel class="ld__sentinel" aria-hidden="true">
+      @if (loadingMore()) { <span class="ld__spinner ld__spinner--sm"></span> }
+    </div>
+  }
+</div>

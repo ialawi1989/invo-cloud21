@@ -5,6 +5,18 @@
       <h1 class="page-title">{{ 'PRODUCTS.PRODUCT_RECIPE.TITLE' | translate }}</h1>
       <p class="page-sub">{{ 'PRODUCTS.PRODUCT_RECIPE.SUBTITLE' | translate }}</p>
     </div>
+    <div class="page-header__actions">
+      <app-dropdown-menu-btn
+        [items]="moreMenuItems"
+        [appendToBody]="true"
+        [chevron]="false"
+        align="end"
+        triggerClass="flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+        </svg>
+      </app-dropdown-menu-btn>
+    </div>
   </header>
 
   <!-- Toolbar -->
@@ -20,17 +32,22 @@
           </button>
         }
       </div>
-      <div class="cat-filter">
-        <app-search-dropdown
-          [loadFn]="categoryLoad"
-          [displayWith]="displayCat"
-          [compareWith]="compareCat"
-          [value]="category()"
-          [searchable]="true"
-          [clearable]="true"
-          [placeholder]="'PRODUCTS.PRODUCT_RECIPE.ALL_CATEGORIES' | translate"
-          (valueChange)="onCategory($event)"/>
-      </div>
+      <!-- Category filter — a picker modal, matching the legacy filter flow. -->
+      <button type="button" class="cat-filter" [class.cat-filter--active]="!!categoryId()"
+              (click)="openCategoryPicker()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/>
+        </svg>
+        <span class="cat-filter__label">
+          {{ category()?.name || ('PRODUCTS.PRODUCT_RECIPE.ALL_CATEGORIES' | translate) }}
+        </span>
+        @if (categoryId()) {
+          <span class="cat-filter__clear" role="button" [attr.aria-label]="'COMMON.CLEAR' | translate"
+                (click)="clearCategory(); $event.stopPropagation()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </span>
+        }
+      </button>
     </div>
   </div>
 
@@ -84,70 +101,12 @@
 
           <!-- Expanded recipe editor -->
           @if (p.expanded) {
-            <div class="pcard__body">
-              <div class="pcard__body-head">
-                <h4 class="pcard__body-title">
-                  {{ 'PRODUCTS.PRODUCT_RECIPE.RECIPE_ITEMS' | translate:{ count: p.recipes.length } }}
-                </h4>
-                <button type="button" class="btn btn-sm btn-ghost" (click)="addItems(p)">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  {{ 'PRODUCTS.PRODUCT_RECIPE.ADD_ITEM' | translate }}
-                </button>
-              </div>
-
-              @if (p.recipes.length === 0) {
-                <div class="empty">
-                  <p>{{ 'PRODUCTS.PRODUCT_RECIPE.NO_ITEMS' | translate }}</p>
-                  <button type="button" class="btn btn-sm btn-primary" (click)="addItems(p)">
-                    {{ 'PRODUCTS.PRODUCT_RECIPE.ADD_ITEM' | translate }}
-                  </button>
-                </div>
-              } @else {
-                <ul class="lines">
-                  @for (item of p.recipes; track trackItem($index, item)) {
-                    <li class="line" [class.line--modified]="isModified(item)">
-                      <div class="line__info">
-                        <span class="line__name">
-                          {{ item.name }}
-                          @if (item.UOM) { <span class="line__chip">{{ item.UOM }}</span> }
-                          @if (item.isNew) { <span class="line__chip line__chip--new">{{ 'PRODUCTS.PRODUCT_RECIPE.NEW' | translate }}</span> }
-                          @else if (isModified(item)) { <span class="line__chip line__chip--mod">{{ 'PRODUCTS.PRODUCT_RECIPE.MODIFIED' | translate }}</span> }
-                        </span>
-                        <span class="line__meta">
-                          @if (item.type) { <span class="line__badge">{{ item.type }}</span> }
-                          <span class="line__badge">{{ 'PRODUCTS.PRODUCT_RECIPE.UNIT_COST' | translate }}: {{ item.unitCost | mycurrency }}</span>
-                        </span>
-                      </div>
-                      <div class="line__usage">
-                        <label>{{ 'PRODUCTS.PRODUCT_RECIPE.USAGE' | translate }}</label>
-                        <input type="number" min="0" step="any" class="usage-input"
-                               [class.usage-input--invalid]="item.usages <= 0"
-                               [ngModel]="item.usages" (ngModelChange)="setUsage(p, item, $event)"/>
-                      </div>
-                      <div class="line__cost">
-                        <label>{{ 'PRODUCTS.PRODUCT_RECIPE.LINE_COST' | translate }}</label>
-                        <strong>{{ lineCost(item) | mycurrency }}</strong>
-                      </div>
-                      <div class="line__actions">
-                        @if (isModified(item) && !item.isNew) {
-                          <button type="button" class="icon-btn" (click)="revert(p, item)" [title]="'PRODUCTS.PRODUCT_RECIPE.REVERT' | translate">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-                          </button>
-                        }
-                        @if (isModified(item)) {
-                          <button type="button" class="icon-btn icon-btn--save" [disabled]="item.usages <= 0" (click)="saveLine(p, item)" [title]="'COMMON.SAVE' | translate">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                          </button>
-                        }
-                        <button type="button" class="icon-btn icon-btn--danger" (click)="removeLine(p, item)" [title]="'COMMON.DELETE' | translate">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                        </button>
-                      </div>
-                    </li>
-                  }
-                </ul>
-              }
-            </div>
+            <app-prep-recipe-panel
+              ownerType="menuProduct"
+              [ownerId]="p.id"
+              [items]="p.recipes"
+              (linesChange)="onLinesChange(p, $event)"
+              (busyChange)="saving.set($event)"/>
           }
         </li>
       }

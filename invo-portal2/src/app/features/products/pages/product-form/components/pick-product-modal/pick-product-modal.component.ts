@@ -25,6 +25,7 @@ export interface PickedProduct {
   barcode?:  string;
   sku?:      string;
   UOM?:      string;
+  categoryName?: string;
   unitCost?: number;
   price?:    number;
   type?:     string;
@@ -134,7 +135,7 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
         // Without an explicit columns set the backend returns a reduced row
         // shape (no image/price). Request only the fields this picker maps
         // (PickedProduct) so thumbnails + prices come back without over-fetching.
-        columns: ['name', 'image', 'barcode', 'SKU', 'UOM', 'unitCost', 'defaultPrice', 'type'],
+        columns: ['name', 'image', 'barcode', 'SKU', 'UOM', 'unitCost', 'defaultPrice', 'type', 'category'],
       });
       const rows: PickedProduct[] = (res.list ?? []).map((r: any) => ({
         id:       r.id ?? r._id,
@@ -142,6 +143,7 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
         barcode:  r.barcode,
         sku:      r.sku,
         UOM:      r.UOM,
+        categoryName: r.categoryName ?? r.category?.name ?? undefined,
         unitCost: r.unitCost ?? 0,
         price:    r.defaultPrice ?? 0,
         type:     r.type,

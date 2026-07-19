@@ -17,6 +17,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { withTranslations } from '@core/i18n/with-translations';
+import { ApiService } from '@core/http/api.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
@@ -44,10 +45,11 @@ import {
   PickProductPlModalResult,
 } from '../../../price-label/components/pick-product-modal/pick-product-pl-modal.component';
 import {
-  PickCategoryModalComponent,
-  PickCategoryModalData,
-  PickCategoryModalResult,
-} from '../../components/pick-category-modal/pick-category-modal.component';
+  PickListModalComponent,
+  PickListModalData,
+  PickListModalResult,
+} from '@shared/components/pick-list-modal/pick-list-modal.component';
+import { categoryLoader } from '@shared/components/pick-list-modal/pick-list.loaders';
 import type {
   DropdownLoadFn,
   DropdownLoadResult,
@@ -121,6 +123,7 @@ export class DiscountFormComponent implements OnInit, CanLeaveComponent {
   private router      = inject(Router);
   private toast       = inject(ToastService);
   private modal       = inject(ModalService);
+  private api         = inject(ApiService);
   private destroyRef  = inject(DestroyRef);
 
   loading = signal<boolean>(false);
@@ -516,12 +519,13 @@ export class DiscountFormComponent implements OnInit, CanLeaveComponent {
       || document.body.scrollTop
       || 0;
     const ref = this.modal.open<
-      PickCategoryModalComponent,
-      PickCategoryModalData,
-      PickCategoryModalResult
-    >(PickCategoryModalComponent, {
+      PickListModalComponent,
+      PickListModalData,
+      PickListModalResult
+    >(PickListModalComponent, {
       size: 'md',
       data: {
+        load:        categoryLoader(this.api),
         selectedIds: this.discount().items,
         title:       this.translate.instant('DISCOUNT.PICKER.CATEGORIES_TITLE'),
       },

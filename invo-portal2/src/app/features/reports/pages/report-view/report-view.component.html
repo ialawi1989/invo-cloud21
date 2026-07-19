@@ -1,0 +1,82 @@
+@if (notFound()) {
+  <div class="rv-notfound">
+    <h2>{{ 'REPORTS.VIEW.NOT_FOUND_TITLE' | translate }}</h2>
+    <p>{{ 'REPORTS.VIEW.NOT_FOUND_MSG' | translate }}</p>
+    <button type="button" class="btn btn-primary" (click)="back()">{{ 'REPORTS.VIEW.BACK_TO_REPORTS' | translate }}</button>
+  </div>
+} @else if (meta(); as m) {
+  <div class="report-view">
+    <!-- ── Header ─────────────────────────────────────────────── -->
+    <header class="rv-header">
+      <div class="rv-head-left">
+        <button type="button" class="rv-back" (click)="back()" [attr.aria-label]="'REPORTS.VIEW.BACK' | translate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="rv-icon" [innerHTML]="icon(m.icon)"></span>
+        <div class="rv-titles">
+          <div class="rv-breadcrumb">
+            <span (click)="back()">{{ 'REPORTS.CATALOG.TITLE' | translate }}</span>
+            <span class="rv-sep">/</span>
+            @if (group(); as g) { <span>{{ g.titleKey | translate }}</span> }
+          </div>
+          <h1>
+            {{ m.titleKey | translate }}
+            <button type="button" class="rv-star" [class.on]="isFavorite()" (click)="toggleFavorite()"
+                    [attr.aria-label]="'REPORTS.VIEW.FAVORITE' | translate">
+              <svg viewBox="0 0 24 24" [attr.fill]="isFavorite() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </button>
+          </h1>
+          @if (m.descriptionKey) { <p class="rv-desc">{{ m.descriptionKey | translate }}</p> }
+        </div>
+      </div>
+
+      <div class="rv-head-actions">
+        @if (exportItems().length) {
+          <app-dropdown-menu-btn [items]="exportItems()" align="end" triggerClass="btn btn-default btn-sm">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            {{ 'REPORTS.EXPORT.LABEL' | translate }}
+          </app-dropdown-menu-btn>
+        }
+      </div>
+    </header>
+
+    <!-- ── Filter bar ─────────────────────────────────────────── -->
+    <div class="rv-toolbar">
+      <app-report-filter-bar
+        [flags]="m.filters ?? { date: true }"
+        [branches]="branchOptions()"
+        [value]="filterState()"
+        (apply)="onFilterApply($event)">
+      </app-report-filter-bar>
+    </div>
+
+    <!-- ── Body ───────────────────────────────────────────────── -->
+    @if (loading()) {
+      <div class="rv-loading">
+        <div class="rv-kpi-skel">
+          @for (i of [1,2,3,4]; track i) { <div class="rv-skel-tile"></div> }
+        </div>
+        <div class="rv-skel-chart"></div>
+        <div class="rv-skel-table"></div>
+      </div>
+    } @else if (error()) {
+      <div class="rv-error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p>{{ error() }}</p>
+        <button type="button" class="btn btn-default btn-sm" (click)="load()">{{ 'REPORTS.VIEW.RETRY' | translate }}</button>
+      </div>
+    } @else if (result(); as res) {
+      @if (res.kpis?.length) {
+        <app-report-kpi-row [kpis]="res.kpis!"></app-report-kpi-row>
+      }
+      @if (m.chart) {
+        <app-report-chart [config]="m.chart" [rows]="res.chartRows ?? res.table.rows"></app-report-chart>
+      }
+      <app-report-data-table [table]="res.table" (sortChange)="onSortChange($event)"></app-report-data-table>
+    }
+  </div>
+}

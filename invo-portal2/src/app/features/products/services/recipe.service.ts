@@ -14,6 +14,7 @@ export interface RecipeItem {
   barcode?: string;
   defaultPrice?: number;
   type?: string;
+  categoryName?: string;
   thumbnailUrl?: string;
 }
 
@@ -111,6 +112,7 @@ export class RecipeService {
       barcode: i?.barcode,
       defaultPrice: i?.defaultPrice,
       type: i?.type,
+      categoryName: i?.categoryName,
       thumbnailUrl: i?.thumbnailUrl,
     };
   }

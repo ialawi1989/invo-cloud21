@@ -141,6 +141,14 @@ export const PRODUCTS_ROUTES: Routes = [
     data: { permissionPath: 'optionSecurity.actions.view' },
   },
   {
+    // Must precede `option/:id` so it isn't swallowed as an option id.
+    path: 'option-availability',
+    canActivate: [translationsLoaded, privilegeGuard],
+    loadComponent: () =>
+      import('./pages/options/option-availability.component').then(m => m.OptionAvailabilityComponent),
+    data: { permissionPath: 'optionSecurity.actions.optionAvailable.access' },
+  },
+  {
     path: 'option/:id',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],

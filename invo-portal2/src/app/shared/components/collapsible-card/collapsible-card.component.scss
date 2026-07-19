@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.cc__head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px 14px;
+}
+/* Divider only while the body is showing — a collapsed card is a plain bar. */
+.cc__head:has(+ .cc__body) { border-bottom: 1px solid #f1f5f9; }
+
+.cc__toggle {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1; min-width: 0;
+  padding: 0; border: 0; background: transparent;
+  font: inherit; text-align: start; cursor: pointer;
+}
+
+.cc__chevron {
+  display: inline-flex; flex-shrink: 0;
+  color: #94a3b8;
+  transition: transform 150ms ease, color 120ms ease;
+  .cc__toggle:hover & { color: var(--color-brand-600, #0e7490); }
+  &--open { transform: rotate(90deg); }
+}
+:host-context([dir="rtl"]) .cc__chevron { transform: rotate(180deg); &--open { transform: rotate(90deg); } }
+
+.cc__titles { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.cc__title { font-size: 15px; font-weight: 600; color: #0f172a; }
+.cc__required { color: #ef4444; font-weight: 700; }
+.cc__sub { font-size: 12px; color: #64748b; }
+.cc__count { color: #94a3b8; font-weight: 500; }
+
+.cc__actions { flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
+
+.cc__body { padding: 14px 20px 18px; }

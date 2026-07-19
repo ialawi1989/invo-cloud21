@@ -1,0 +1,127 @@
+:host { display: block; }
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.fb-control { position: relative; }
+
+/* The date-picker host is inline by default and its trigger is `w-full`,
+   so without an explicit width it collapses to ~0 in this flex row (the
+   control appears "missing"). Give it a real width. */
+app-date-picker {
+  display: inline-block;
+  width: 260px;
+  max-width: 100%;
+}
+
+/* Align the shared date-picker's trigger with the other 38px controls. */
+:host ::ng-deep .fb-datepicker {
+  height: 38px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* Branch + compare triggers */
+.fb-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+
+  svg { width: 16px; height: 16px; color: #64748b; flex-shrink: 0; }
+  .fb-caret { width: 14px; height: 14px; margin-inline-start: 2px; }
+  .fb-trigger-text { white-space: nowrap; }
+
+  &:hover { border-color: #cbd5e1; }
+  &.open { border-color: var(--color-brand-500, #32acc1); box-shadow: 0 0 0 3px rgba(50, 172, 193, .12); }
+}
+
+.fb-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline-start: 0;
+  z-index: 40;
+  min-width: 240px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, .12);
+  padding: 10px;
+  animation: fb-pop .12s ease;
+}
+
+@keyframes fb-pop {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fb-apply { align-self: flex-end; }
+
+.fb-panel--list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.fb-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+  &:hover { background: #f8fafc; }
+  input { accent-color: var(--color-brand-500, #32acc1); width: 15px; height: 15px; }
+}
+
+.fb-panel--list .fb-apply { margin-top: 6px; }
+
+/* Compare toggle */
+.fb-compare {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+
+  &.on { border-color: var(--color-brand-500, #32acc1); color: var(--color-brand-700, #1f6b7a); }
+}
+
+.fb-switch {
+  width: 32px; height: 18px; border-radius: 9px;
+  background: #cbd5e1; position: relative; transition: background .2s; flex-shrink: 0;
+}
+.fb-compare.on .fb-switch { background: var(--color-brand-500, #32acc1); }
+.fb-knob {
+  position: absolute; top: 2px; inset-inline-start: 2px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff; transition: transform .2s;
+}
+.fb-compare.on .fb-knob { transform: translateX(14px); }
+[dir="rtl"] .fb-compare.on .fb-knob { transform: translateX(-14px); }
