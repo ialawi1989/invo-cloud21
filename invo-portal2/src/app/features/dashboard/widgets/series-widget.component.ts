@@ -5,12 +5,14 @@ import {
   computed,
   inject,
   input,
+  linkedSignal,
+  output,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { Observable, catchError, of, switchMap, tap } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 
@@ -57,6 +59,7 @@ export type SeriesLoader = (scope: DashboardScope) => Observable<LabelValue[]>;
 })
 export class SeriesWidgetComponent {
   private currency = inject(MycurrencyPipe);
+  private translate = inject(TranslateService);
 
   readonly title = input.required<string>();
   readonly scope = input.required<DashboardScope>();
@@ -67,13 +70,36 @@ export class SeriesWidgetComponent {
   /** Cap the plotted series; the rest fold into "Other" rather than inventing hues. */
   readonly maxSlices = input<number>(8);
 
+  /**
+   * Which view opens first. A ranked list of a handful of named things reads
+   * better as a table — the exact figures and shares are the point, and a chart
+   * makes you hover for them.
+   */
+  readonly defaultView = input<'chart' | 'table'>('chart');
+  /** i18n key for the hero caption, e.g. "Top category". */
+  readonly heroLabel = input<string>('DASHBOARD.TOP_RESULT');
+  /** Toggling chart⇄table is a preference, so the page can persist it. */
+  readonly viewChange = output<'chart' | 'table'>();
+
   readonly rows = signal<LabelValue[]>([]);
   readonly loading = signal(true);
   readonly failed = signal(false);
   /** Table is the alternate view of the same data, not a different dataset. */
-  readonly showTable = signal(false);
+  readonly showTable = linkedSignal(() => this.defaultView() === 'table');
+
+  /** The leader — surfaced above the table so the headline isn't a scan job. */
+  readonly hero = computed<LabelValue | null>(() => this.plotted()[0] ?? null);
 
   readonly isEmpty = computed(() => this.rows().length === 0);
+
+  /** The placeholder mirrors whichever form will actually appear. */
+  readonly skeletonShape = computed(() => {
+    if (this.showTable()) return 'table' as const;
+    const t = this.chart();
+    if (t === 'pie' || t === 'donut') return 'donut' as const;
+    if (t === 'area') return 'area' as const;
+    return t === 'hbar' ? ('hbar' as const) : ('bar' as const);
+  });
 
   /**
    * Pie and donut can't carry an unbounded number of slices without cycling
@@ -95,7 +121,11 @@ export class SeriesWidgetComponent {
   });
 
   readonly categories = computed(() => this.plotted().map((r) => r.label));
-  readonly series = computed(() => [{ name: this.title(), data: this.plotted().map((r) => r.value) }]);
+  readonly series = computed(() => [{
+    // Translated: this string is rendered in the tooltip, not used as a key.
+    name: this.translate.instant(this.title()),
+    data: this.plotted().map((r) => r.value),
+  }]);
 
   readonly fmt = computed(() => (v: number) =>
     this.money() ? String(this.currency.transform(v)) : v.toLocaleString());
@@ -131,5 +161,8 @@ export class SeriesWidgetComponent {
 
   retry(): void { this.reload.update((n) => n + 1); }
 
-  toggleTable(): void { this.showTable.update((v) => !v); }
+  toggleTable(): void {
+    this.showTable.update((v) => !v);
+    this.viewChange.emit(this.showTable() ? 'table' : 'chart');
+  }
 }

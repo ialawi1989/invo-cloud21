@@ -18,7 +18,14 @@
  *    filter, so the UI can say so instead of users assuming stale numbers.
  */
 
-export type WidgetGroup = 'overview' | 'sales' | 'finance' | 'inventory';
+/**
+ * A way of showing a widget's data. Not every widget can wear every form —
+ * a part-of-whole chart of a time series is a lie, so the registry lists only
+ * the forms that fit each widget's data and the editor offers just those.
+ */
+export type WidgetView = 'bar' | 'hbar' | 'area' | 'pie' | 'donut' | 'table';
+
+export type WidgetGroup = 'overview' | 'sales' | 'finance' | 'inventory' | 'custom';
 
 export interface WidgetDef {
   slug: string;
@@ -31,6 +38,27 @@ export interface WidgetDef {
   defaultSpan: number;
   /** Minimum body height so a placed widget doesn't collapse. */
   minHeight: number;
+  /**
+   * True for widgets backed by a saved custom report rather than a built-in
+   * endpoint. These are registered at runtime (the catalogue can't know them
+   * at build time) and carry the report id needed to render them.
+   */
+  custom?: boolean;
+  /** Saved-report id, for `custom` widgets only. */
+  reportId?: string;
+  /**
+   * Opens as a table instead of a chart. Right for short ranked lists where the
+   * figures and shares are the answer and a chart only hides them behind hover.
+   */
+  defaultView?: WidgetView;
+  /** i18n key for the table's hero caption ("Top category"). */
+  heroLabel?: string;
+  /**
+   * Forms the user may pick from in the customizer. Absent (or a single entry)
+   * means the widget has one sensible form and offers no choice — the bespoke
+   * widgets are not charts with a swappable body.
+   */
+  views?: WidgetView[];
 }
 
 export const WIDGETS: WidgetDef[] = [
@@ -40,36 +68,37 @@ export const WIDGETS: WidgetDef[] = [
 
   // ── Sales ─────────────────────────────────────────────────────────
   { slug: 'sales-by-day',           title: 'DASHBOARD.W.SALES_BY_DAY',       group: 'sales',     scope: 'period', defaultSpan: 8,  minHeight: 340 },
-  { slug: 'sales-by-time',          title: 'DASHBOARD.W.SALES_BY_TIME',      group: 'sales',     scope: 'period', defaultSpan: 8,  minHeight: 340 },
-  { slug: 'top-items',              title: 'DASHBOARD.W.TOP_ITEMS',          group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 340 },
-  { slug: 'top-customers',          title: 'DASHBOARD.W.TOP_CUSTOMERS',      group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 340 },
-  { slug: 'sales-by-category',      title: 'DASHBOARD.W.SALES_BY_CATEGORY',  group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 320 },
-  { slug: 'sales-by-department',    title: 'DASHBOARD.W.SALES_BY_DEPARTMENT',group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 320 },
-  { slug: 'sales-by-brand',         title: 'DASHBOARD.W.SALES_BY_BRAND',     group: 'sales',     scope: 'period', defaultSpan: 4,  minHeight: 320 },
-  { slug: 'sales-by-service',       title: 'DASHBOARD.W.SALES_BY_SERVICE',   group: 'sales',     scope: 'period', defaultSpan: 4,  minHeight: 320 },
-  { slug: 'sales-by-source',        title: 'DASHBOARD.W.SALES_BY_SOURCE',    group: 'sales',     scope: 'period', defaultSpan: 4,  minHeight: 320 },
-  { slug: 'sales-by-employee',      title: 'DASHBOARD.W.SALES_BY_EMPLOYEE',  group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 320 },
-  { slug: 'online-invoices',        title: 'DASHBOARD.W.ONLINE_INVOICES',    group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 300 },
+  { slug: 'sales-by-time',          title: 'DASHBOARD.W.SALES_BY_TIME',      group: 'sales',     scope: 'period', defaultSpan: 8,  minHeight: 340, views: ['bar', 'area', 'table'] },
+  { slug: 'top-10-item-by-sales',              title: 'DASHBOARD.W.TOP_ITEMS',          group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 340, views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
+  { slug: 'top-customers',          title: 'DASHBOARD.W.TOP_CUSTOMERS',      group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 340, views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
+  { slug: 'sales-by-category',      title: 'DASHBOARD.W.SALES_BY_CATEGORY',  group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 320, defaultView: 'table', heroLabel: 'DASHBOARD.TOP_CATEGORY', views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
+  { slug: 'sales-by-departments',    title: 'DASHBOARD.W.SALES_BY_DEPARTMENT',group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 320, views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
+  { slug: 'top-brand-by-sales',         title: 'DASHBOARD.W.SALES_BY_BRAND',     group: 'sales',     scope: 'period', defaultSpan: 4,  minHeight: 320, views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
+  { slug: 'sales-by-service',       title: 'DASHBOARD.W.SALES_BY_SERVICE',   group: 'sales',     scope: 'period', defaultSpan: 4,  minHeight: 320, views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
+  { slug: 'sales-by-source',        title: 'DASHBOARD.W.SALES_BY_SOURCE',    group: 'sales',     scope: 'period', defaultSpan: 4,  minHeight: 320, views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
+  { slug: 'sales-by-employee',      title: 'DASHBOARD.W.SALES_BY_EMPLOYEE',  group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 320, views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
+  { slug: 'online-invoices',        title: 'DASHBOARD.W.ONLINE_INVOICES',    group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 300, views: ['bar', 'hbar', 'table'] },
 
   // ── Finance ───────────────────────────────────────────────────────
   { slug: 'payments-flow',          title: 'DASHBOARD.W.PAYMENTS_FLOW',      group: 'finance',   scope: 'period', defaultSpan: 8,  minHeight: 380 },
-  { slug: 'income-expense',         title: 'DASHBOARD.W.INCOME_EXPENSE',     group: 'finance',   scope: 'period', defaultSpan: 8,  minHeight: 380 },
-  { slug: 'payment-methods',        title: 'DASHBOARD.W.PAYMENT_METHODS',    group: 'finance',   scope: 'period', defaultSpan: 6,  minHeight: 320 },
+  { slug: 'expense-income',         title: 'DASHBOARD.W.INCOME_EXPENSE',     group: 'finance',   scope: 'period', defaultSpan: 8,  minHeight: 380 },
+  { slug: 'payment-method-overview',        title: 'DASHBOARD.W.PAYMENT_METHODS',    group: 'finance',   scope: 'period', defaultSpan: 6,  minHeight: 320, views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
 
   // ── Inventory ─────────────────────────────────────────────────────
-  { slug: 'low-stock',              title: 'DASHBOARD.W.LOW_STOCK',          group: 'inventory', scope: 'global', defaultSpan: 6,  minHeight: 300 },
-  { slug: 'expiring-batches',       title: 'DASHBOARD.W.EXPIRING_BATCHES',   group: 'inventory', scope: 'global', defaultSpan: 6,  minHeight: 300 },
+  { slug: 'low-quantity-products',              title: 'DASHBOARD.W.LOW_STOCK',          group: 'inventory', scope: 'global', defaultSpan: 6,  minHeight: 300 },
+  { slug: 'expiry-date-products',       title: 'DASHBOARD.W.EXPIRING_BATCHES',   group: 'inventory', scope: 'global', defaultSpan: 6,  minHeight: 300 },
 ];
 
 export const WIDGET_BY_SLUG = new Map(WIDGETS.map((w) => [w.slug, w]));
 
-/** Shown to a user who has never customised — a useful default, not everything. */
-export const DEFAULT_LAYOUT: { slug: string; colSpan: number }[] = [
-  { slug: 'business-summary', colSpan: 12 },
-  { slug: 'sales-by-day',     colSpan: 8 },
-  { slug: 'sales-by-source',  colSpan: 4 },
-  { slug: 'top-items',        colSpan: 6 },
-  { slug: 'top-customers',    colSpan: 6 },
-  { slug: 'income-expense',   colSpan: 8 },
-  { slug: 'low-stock',        colSpan: 4 },
+/**
+ * Shown to a user who has never customised — a useful default, not everything.
+ * Grouped into rows so the first impression is a deliberate composition rather
+ * than whatever the spans happen to flow into.
+ */
+export const DEFAULT_LAYOUT: { id: string; widgets: { slug: string; colSpan: number }[] }[] = [
+  { id: 'row_default_1', widgets: [{ slug: 'business-summary', colSpan: 12 }] },
+  { id: 'row_default_2', widgets: [{ slug: 'sales-by-day', colSpan: 8 }, { slug: 'sales-by-source', colSpan: 4 }] },
+  { id: 'row_default_3', widgets: [{ slug: 'top-10-item-by-sales', colSpan: 6 }, { slug: 'top-customers', colSpan: 6 }] },
+  { id: 'row_default_4', widgets: [{ slug: 'expense-income', colSpan: 8 }, { slug: 'low-quantity-products', colSpan: 4 }] },
 ];

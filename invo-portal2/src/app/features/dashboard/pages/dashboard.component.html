@@ -17,6 +17,16 @@
         [clearable]="false"
         (valueChange)="onBranch($event)"/>
 
+      <button type="button" class="db__customize" (click)="openCustomize()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+          <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+          <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
+        </svg>
+        {{ 'DASHBOARD.CUSTOMIZE' | translate }}
+      </button>
+
       <app-date-picker
         mode="range"
         [presets]="presets()"
@@ -25,7 +35,7 @@
     </div>
   </header>
 
-  @if (placed().length === 0) {
+  @if (rows().length === 0) {
     <div class="db__empty">
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/>
@@ -33,28 +43,68 @@
       </svg>
       <p class="db__emptyTitle">{{ 'DASHBOARD.EMPTY_TITLE' | translate }}</p>
       <p class="db__emptySub">{{ 'DASHBOARD.EMPTY_SUB' | translate }}</p>
+      <button type="button" class="db__emptyCta" (click)="openCustomize()">
+        {{ 'DASHBOARD.CUSTOMIZE' | translate }}
+      </button>
     </div>
   } @else {
-    <div class="db__grid">
-      @for (item of placed(); track item.def.slug) {
+    @for (row of rows(); track row.id) {
+    <div class="db__row">
+      @for (item of row.widgets; track item.def.slug) {
         <div class="db__cell"
              [style.grid-column]="'span ' + item.colSpan"
              [style.min-height.px]="item.def.minHeight">
+          <!-- Nothing below the fold is created until it scrolls into view, so
+               a 15-widget board issues ~4 requests on load instead of 15. The
+               widget component isn't instantiated at all while deferred, which
+               is what prevents the fetch (the request lives in its ctor). This
+               also code-splits each widget into its own chunk. -->
+          @defer (on viewport) {
           @switch (item.def.slug) {
             @case ('business-summary') {
               <app-business-summary-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('summary-blocks') {
+              <app-summary-blocks-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('expense-income') {
+              <app-income-expense-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('payments-flow') {
+              <app-payments-flow-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('sales-by-day') {
+              <app-sales-by-day-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('low-quantity-products') {
+              <app-low-stock-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('expiry-date-products') {
+              <app-expiring-batches-widget [title]="item.def.title" [scope]="scope()"/>
             }
             @default {
               <app-series-widget
                 [title]="item.def.title"
                 [scope]="scope()"
                 [load]="loaderFor(item.def.slug)"
-                [chart]="chartFor[item.def.slug] ?? 'bar'"
-                [money]="isMoney(item.def.slug)"/>
+                [chart]="chartTypeFor(item)"
+                [money]="isMoney(item.def.slug)"
+                [defaultView]="isTableView(item) ? 'table' : 'chart'"
+                [heroLabel]="item.def.heroLabel ?? 'DASHBOARD.TOP_RESULT'"
+                (viewChange)="onViewChange(item, $event)"/>
             }
+          }
+          } @placeholder {
+            <!-- Same card frame as a loading widget, so scrolling doesn't jolt
+                 as deferred blocks swap in. -->
+            <div class="db__pending">
+              <span class="db__pendingTitle">{{ item.def.title | translate }}</span>
+              <app-skeleton variant="block" height="140px"/>
+            </div>
           }
         </div>
       }
     </div>
+    }
   }
 </div>

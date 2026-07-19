@@ -15,15 +15,31 @@ import { withTranslations } from '@core/i18n/with-translations';
 import { AuthService } from '@core/auth/auth.service';
 import { BranchConnectionService } from '@core/layout/services/branch.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import type { DatePreset, DateRange } from '@shared/components/datepicker/date-picker.types';
 import { isCompleteRange } from '@shared/components/datepicker/date-picker.types';
 
+import { ModalService } from '@shared/modal/modal.service';
+
 import { DashboardService } from '../services/dashboard.service';
+import {
+  DashboardCustomizeModalComponent,
+  CustomizeData,
+  CustomizeResult,
+} from '../components/customize-modal/customize-modal.component';
 import { DashboardScope } from '../services/dashboard.types';
 import { SeriesWidgetComponent, SeriesLoader } from '../widgets/series-widget.component';
 import { BusinessSummaryWidgetComponent } from '../widgets/business-summary.component';
-import { DEFAULT_LAYOUT, WIDGET_BY_SLUG, WidgetDef } from '../models/widget-registry';
+import { SummaryBlocksWidgetComponent } from '../widgets/summary-blocks.component';
+import { IncomeExpenseWidgetComponent } from '../widgets/income-expense.component';
+import { PaymentsFlowWidgetComponent } from '../widgets/payments-flow.component';
+import { SalesByDayWidgetComponent } from '../widgets/sales-by-day.component';
+import {
+  LowStockWidgetComponent,
+  ExpiringBatchesWidgetComponent,
+} from '../widgets/inventory-widgets.component';
+import { DEFAULT_LAYOUT, WIDGET_BY_SLUG, WidgetDef, WidgetView } from '../models/widget-registry';
 
 interface BranchOption { id: string; name: string; }
 
@@ -31,6 +47,15 @@ interface BranchOption { id: string; name: string; }
 interface Placed {
   def: WidgetDef;
   colSpan: number;
+  /** Form the user chose in the customizer; falls back to the widget default. */
+  view?: WidgetView;
+}
+
+/** A row of placed widgets. Rows are explicit so a user's grouping survives
+ *  adding or resizing a widget, which a flowing grid can't guarantee. */
+interface PlacedRow {
+  id: string;
+  widgets: Placed[];
 }
 
 const LAYOUT_KEY = 'dashboard:layout';
@@ -60,8 +85,15 @@ const SCOPE_KEY  = 'dashboard:scope';
     TranslateModule,
     DatePickerComponent,
     SearchDropdownComponent,
+    SkeletonComponent,
     SeriesWidgetComponent,
     BusinessSummaryWidgetComponent,
+    SummaryBlocksWidgetComponent,
+    IncomeExpenseWidgetComponent,
+    PaymentsFlowWidgetComponent,
+    SalesByDayWidgetComponent,
+    LowStockWidgetComponent,
+    ExpiringBatchesWidgetComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',
@@ -69,6 +101,7 @@ const SCOPE_KEY  = 'dashboard:scope';
 })
 export class DashboardComponent implements OnInit {
   private service = inject(DashboardService);
+  private modal = inject(ModalService);
   private branchService = inject(BranchConnectionService);
   private auth = inject(AuthService);
   private translate = inject(TranslateService);
@@ -126,35 +159,51 @@ export class DashboardComponent implements OnInit {
   branchCompare = (a: BranchOption, b: BranchOption) => a?.id === b?.id;
 
   // ─── layout ───────────────────────────────────────────────────────
-  readonly placed = signal<Placed[]>([]);
+  readonly rows = signal<PlacedRow[]>([]);
 
   /** Loaders live here so a widget stays a pure presentation component. */
   readonly loaders: Record<string, SeriesLoader> = {
-    'top-items':           (s) => this.service.topItems(s),
+    'top-10-item-by-sales':           (s) => this.service.topItems(s),
     'top-customers':       (s) => this.service.topCustomers(s),
     'sales-by-category':   (s) => this.service.salesByCategory(s),
-    'sales-by-department': (s) => this.service.salesByDepartment(s),
-    'sales-by-brand':      (s) => this.service.salesByBrand(s),
+    'sales-by-departments': (s) => this.service.salesByDepartment(s),
+    'top-brand-by-sales':      (s) => this.service.salesByBrand(s),
     'sales-by-service':    (s) => this.service.salesByService(s),
     'sales-by-source':     (s) => this.service.salesBySource(s),
     'sales-by-employee':   (s) => this.service.salesByEmployee(s),
     'sales-by-time':       (s) => this.service.salesByTime(s),
-    'payment-methods':     (s) => this.service.paymentMethods(s),
+    'payment-method-overview':     (s) => this.service.paymentMethods(s),
     'online-invoices':     (s) => this.service.onlineInvoices(s),
   };
 
+  /**
+   * The form a placed widget renders as: the user's choice if they made one,
+   * else the widget's declared default, else the chart type for its data shape.
+   */
+  viewFor(item: Placed): WidgetView {
+    return item.view ?? item.def.defaultView ?? this.chartFor[item.def.slug] ?? 'bar';
+  }
+
+  /** Table is a view, not a chart type — the chart input keeps a real fallback. */
+  chartTypeFor(item: Placed): 'bar' | 'hbar' | 'area' | 'pie' | 'donut' {
+    const v = this.viewFor(item);
+    return v === 'table' ? (this.chartFor[item.def.slug] ?? 'bar') : v;
+  }
+
+  isTableView(item: Placed): boolean { return this.viewFor(item) === 'table'; }
+
   /** Chart form per widget — magnitude→bar, part-of-whole→donut, ranked→hbar. */
   readonly chartFor: Record<string, 'bar' | 'hbar' | 'donut' | 'pie'> = {
-    'top-items':           'hbar',
+    'top-10-item-by-sales':           'hbar',
     'top-customers':       'hbar',
     'sales-by-category':   'hbar',
-    'sales-by-department': 'hbar',
-    'sales-by-brand':      'donut',
+    'sales-by-departments': 'hbar',
+    'top-brand-by-sales':      'donut',
     'sales-by-service':    'donut',
     'sales-by-source':     'donut',
     'sales-by-employee':   'hbar',
     'sales-by-time':       'bar',
-    'payment-methods':     'bar',
+    'payment-method-overview':     'bar',
     'online-invoices':     'bar',
   };
 
@@ -162,7 +211,10 @@ export class DashboardComponent implements OnInit {
   readonly countWidgets = new Set(['online-invoices']);
 
   /** Slugs with a bespoke layout — everything else renders as a series widget. */
-  readonly BESPOKE = new Set(['business-summary']);
+  readonly BESPOKE = new Set([
+    'business-summary', 'summary-blocks', 'expense-income',
+    'payments-flow', 'sales-by-day', 'low-quantity-products', 'expiry-date-products',
+  ]);
   isBespoke(slug: string) { return this.BESPOKE.has(slug); }
 
   constructor() {
@@ -174,7 +226,41 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.restoreScope();
+    // Show something immediately from the local copy, then reconcile with the
+    // server. Without the local paint the board is blank for a round-trip; and
+    // without the server fetch a layout saved elsewhere never arrives.
     this.restoreLayout();
+
+    this.service.loadLayout()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (saved) => {
+          if (!saved.length) return;               // never saved — keep the default
+          // The wire format is flat with a `rowId` per widget; rebuild the rows
+          // from it, preserving the order the service already sorted into.
+          // The `view` field is newer than the endpoint. If the server hasn't
+          // stored it, keep whatever this device last chose rather than silently
+          // reverting the widget to its default form.
+          const localViews = this.savedViews();
+
+          const byRow = new Map<string, { slug: string; colSpan: number; view?: WidgetView }[]>();
+          saved.forEach((w) => {
+            const key = w.rowId || `row_${w.slug}`;   // orphans get their own row
+            const list = byRow.get(key) ?? [];
+            list.push({
+              slug: w.slug,
+              colSpan: w.colSpan,
+              view: (w.view as WidgetView) ?? localViews.get(w.slug),
+            });
+            byRow.set(key, list);
+          });
+          const rows = [...byRow].map(([id, widgets]) => ({ id, widgets }));
+          this.applyLayout(rows);
+          localStorage.setItem(LAYOUT_KEY, JSON.stringify(rows));
+        },
+        // Offline or a failing endpoint must not blank the dashboard.
+        error: () => { /* local layout stands */ },
+      });
   }
 
   // ─── scope handlers ───────────────────────────────────────────────
@@ -214,27 +300,134 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  /**
+   * The widget's own chart⇄table toggle is the same preference the customizer
+   * sets, so it persists the same way — otherwise flipping to the table view
+   * would silently revert on the next visit.
+   */
+  onViewChange(item: Placed, mode: 'chart' | 'table'): void {
+    const view: WidgetView = mode === 'table' ? 'table' : this.chartTypeFor(item);
+    this.rows.update((rows) =>
+      rows.map((r) => ({
+        ...r,
+        widgets: r.widgets.map((w) => (w.def.slug === item.def.slug ? { ...w, view } : w)),
+      })));
+    this.persistLayout();
+  }
+
+  /** Writes the current layout locally, then syncs it. */
+  private persistLayout(): void {
+    const rows = this.rows().map((r) => ({
+      id: r.id,
+      widgets: r.widgets.map((w) => ({ slug: w.def.slug, colSpan: w.colSpan, view: w.view })),
+    }));
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(rows));
+
+    this.service
+      .saveLayout({
+        rows: rows.map((r) => ({
+          id: r.id,
+          widgets: r.widgets.map((w, i) => ({ ...w, rowId: r.id, order: i })),
+        })),
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ error: () => { /* local choice stands; server catches up */ } });
+  }
+
+  /** slug → chosen form, from the last layout saved on this device. */
+  private savedViews(): Map<string, WidgetView> {
+    const views = new Map<string, WidgetView>();
+    try {
+      const raw = localStorage.getItem(LAYOUT_KEY);
+      if (!raw) return views;
+      for (const row of JSON.parse(raw) ?? []) {
+        for (const w of row?.widgets ?? []) {
+          if (w?.slug && w?.view) views.set(w.slug, w.view);
+        }
+      }
+    } catch { /* a corrupt layout just means no remembered views */ }
+    return views;
+  }
+
   // ─── layout ───────────────────────────────────────────────────────
   private restoreLayout(): void {
-    let slugs: { slug: string; colSpan: number }[] = DEFAULT_LAYOUT;
+    let rows = DEFAULT_LAYOUT;
     try {
       const raw = localStorage.getItem(LAYOUT_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length) slugs = parsed;
+        // Layouts saved before the row model was introduced are a flat widget
+        // list — wrap each one in its own row instead of discarding the layout.
+        if (Array.isArray(parsed) && parsed.length) {
+          rows = parsed[0]?.widgets
+            ? parsed
+            : parsed.map((w: { slug: string; colSpan: number }) => ({
+                id: `row_${w.slug}`, widgets: [w],
+              }));
+        }
       }
     } catch { /* fall back to the default layout */ }
 
-    this.placed.set(
-      slugs
-        .map((s) => {
-          const def = WIDGET_BY_SLUG.get(s.slug);
-          // A slug we no longer ship (or haven't built yet) is skipped rather
-          // than rendering a hole.
-          const supported = def && (this.loaders[def.slug] || this.BESPOKE.has(def.slug));
-          return supported ? { def: def!, colSpan: s.colSpan ?? def!.defaultSpan } : null;
-        })
-        .filter((p): p is Placed => p !== null),
+    this.applyLayout(rows);
+  }
+
+  /**
+   * Customize. The chosen layout is written locally straight away so the board
+   * updates instantly, then pushed to the server so it follows the employee to
+   * another device. A failed sync doesn't roll back the local change — the user
+   * asked for this arrangement, and losing it because a request failed would be
+   * worse than a layout that syncs late.
+   */
+  async openCustomize(): Promise<void> {
+    const supported = [...Object.keys(this.loaders), ...this.BESPOKE];
+    const ref = this.modal.open<DashboardCustomizeModalComponent, CustomizeData, CustomizeResult>(
+      DashboardCustomizeModalComponent,
+      {
+        // xl (1100px, tall) — the two panels each need room for a name plus a
+        // six-button width control; anything narrower collapses the name away.
+        size: 'xl',
+        data: {
+          rows: this.rows().map((r) => ({
+            id: r.id,
+            widgets: r.widgets.map((w) => ({ slug: w.def.slug, colSpan: w.colSpan, view: w.view })),
+          })),
+          supported,
+        },
+        closeOnBackdrop: false,
+      },
+    );
+    const result = await ref.afterClosed();
+    if (!result) return;
+
+    this.applyLayout(result.rows);
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(result.rows));
+
+    this.service
+      .saveLayout({
+        rows: result.rows.map((r) => ({
+          id: r.id,
+          widgets: r.widgets.map((w, i) => ({ ...w, rowId: r.id, order: i })),
+        })),
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ error: () => { /* local layout stands; server catches up next time */ } });
+  }
+
+  private applyLayout(rows: { id: string; widgets: { slug: string; colSpan: number; view?: WidgetView }[] }[]): void {
+    this.rows.set(
+      rows
+        .map((r) => ({
+          id: r.id,
+          widgets: r.widgets
+            .map((w): Placed | null => {
+              const def = WIDGET_BY_SLUG.get(w.slug);
+              // Skip slugs we can't render rather than leaving a hole.
+              const supported = def && (this.loaders[def.slug] || this.BESPOKE.has(def.slug));
+              return supported ? { def: def!, colSpan: w.colSpan ?? def!.defaultSpan, view: w.view } : null;
+            })
+            .filter((w): w is Placed => w !== null),
+        }))
+        .filter((r) => r.widgets.length > 0),
     );
   }
 

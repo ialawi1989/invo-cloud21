@@ -20,18 +20,23 @@
 
 // ── Grid ────────────────────────────────────────────────────────────
 // 12 columns, matching the saved layout's colSpan units.
-.db__grid {
+// Each saved row is its own 12-column track, so a row's grouping is preserved
+// exactly as arranged — widgets never reflow up into the previous line.
+.db__row {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 16px;
   align-items: stretch;
+  margin-bottom: 16px;
+
+  &:last-child { margin-bottom: 0; }
 }
 .db__cell { min-width: 0; }
 
 // Below 1100px the 12-col grid stops being meaningful — everything goes
 // full width rather than squeezing a 4-col chart into 200px.
 @media (max-width: 1100px) {
-  .db__grid { grid-template-columns: 1fr; }
+  .db__row { grid-template-columns: 1fr; }
   .db__cell { grid-column: 1 / -1 !important; }
 }
 
@@ -46,3 +51,37 @@
 }
 .db__emptyTitle { margin: 0; font-size: 15px; font-weight: 600; color: #475569; }
 .db__emptySub   { margin: 0; font-size: 13px; }
+
+.db__customize {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 13px;
+  border: 1px solid #e2e8f0; border-radius: 9px; background: #fff;
+  font: inherit; font-size: 13px; font-weight: 600; color: #475569; cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  svg { color: #94a3b8; }
+  &:hover {
+    background: var(--color-brand-50, #effbfd);
+    border-color: var(--color-brand-200, #afe7ef);
+    color: var(--color-brand-700, #207484);
+    svg { color: currentColor; }
+  }
+}
+
+.db__emptyCta {
+  margin-top: 10px; padding: 8px 16px;
+  border: 0; border-radius: 9px;
+  background: var(--color-brand-600, #2691a4); color: #fff;
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  &:hover { background: var(--color-brand-700, #207484); }
+}
+
+// Placeholder for a not-yet-scrolled-to widget. Matches the widget card so the
+// grid keeps its geometry and nothing reflows when the real one swaps in.
+.db__pending {
+  height: 100%;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 16px;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+}
+.db__pendingTitle { font-size: 14px; font-weight: 700; color: #0f172a; }

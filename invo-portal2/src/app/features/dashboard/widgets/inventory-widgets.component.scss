@@ -1,0 +1,70 @@
+:host { display: block; height: 100%; }
+
+// No inner scrollbar: the card grows to fit every row. A short scroll area
+// inside an already-scrolling page hides rows behind a second scrollbar most
+// people never notice.
+.iw__wrap { overflow-x: auto; }
+
+.iw__table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+
+  th {
+    // Sticky against the page, not a clipped inner box.
+    position: sticky; top: 0; z-index: 1;
+    padding: 8px 10px;
+    background: #f8fafc; color: #64748b;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em;
+    text-align: start; white-space: nowrap;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  td {
+    padding: 9px 10px; color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  tr:last-child td { border-bottom: 0; }
+}
+
+.iw__name  { font-weight: 600; color: #0f172a; }
+.iw__muted { color: #64748b; }
+.iw__num   { text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.iw__pill {
+  display: inline-block; min-width: 34px; padding: 2px 8px;
+  border-radius: 999px; background: #f1f5f9; color: #475569;
+  font-size: 12px; font-weight: 700; text-align: center;
+
+  // Reserved status tones — out of stock is critical, low is a warning.
+  &.is-out { background: #fef2f2; color: #b91c1c; }
+  &.is-low { background: #fffbeb; color: #b45309; }
+}
+
+.iw__status {
+  display: inline-flex; align-items: center; gap: 5px;
+  white-space: nowrap; color: #475569;
+
+  &.is-expired { color: #b91c1c; font-weight: 600; }
+  &.is-soon    { color: #b45309; font-weight: 600; }
+}
+
+// Pager sits in the card header, where legacy put it.
+.iw__pager {
+  display: inline-flex; align-items: center; gap: 4px;
+
+  button {
+    width: 24px; height: 24px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid #e2e8f0; border-radius: 7px; background: #fff;
+    color: #64748b; cursor: pointer;
+    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    &:disabled { opacity: .4; cursor: not-allowed; }
+  }
+}
+.iw__pageNo {
+  min-width: 44px; text-align: center;
+  font-size: 11.5px; font-weight: 600; color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+// A numeric column's header must sit over its figures: the `th` rule's
+// higher specificity was silently winning against the shared .iw__num rule.
+.iw__table th.iw__num { text-align: end; }

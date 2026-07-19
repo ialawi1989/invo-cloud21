@@ -17,6 +17,7 @@ import {
   LowStockRow,
   PaymentsFlow,
   PaymentsFlowPoint,
+  PlacedWidget,
 } from './dashboard.types';
 
 /** The scope every widget endpoint takes. */
@@ -273,6 +274,52 @@ export class DashboardService {
   }
 
   // ─── saved layout ─────────────────────────────────────────────────
+
+  /**
+   * The employee's saved layout. Server-side so it follows them between
+   * devices — localStorage alone would strand a carefully arranged dashboard
+   * on one browser.
+   *
+   * Legacy stored a `rowId` per widget and rebuilt explicit rows from it. We
+   * keep reading and writing that field so a layout saved by either app stays
+   * intelligible to the other, but ordering here comes from `index`/`order`.
+   */
+  loadLayout(): Observable<PlacedWidget[]> {
+    return this.api.get<any>('employee/getEmployeeDashboard').pipe(
+      map((res: any) => {
+        const raw: any[] = res?.data ?? [];
+        return raw
+          .filter((w) => w?.slug && w?.isAdded !== false)
+          .map((w) => ({
+            slug: String(w.slug),
+            rowId: String(w?.rowId ?? ''),
+            colSpan: Number(w?.colSpan) || 12,
+            order: Number(w?.order) || 0,
+            index: Number(w?.index) || 0,
+            view: w?.view ? String(w.view) : undefined,
+          }))
+          // Legacy ordered rows by `index`, then widgets within a row by `order`.
+          .sort((a, b) => (a.index - b.index) || (a.order - b.order))
+          .map(({ slug, rowId, colSpan, order, view }) => ({ slug, rowId, colSpan, order, view }));
+      }),
+    );
+  }
+
+  /**
+   * Open (unpaid/unclosed) invoices, and open cashier sessions. Both are
+   * as-of-now counts: they ignore the date filter entirely, which is why the
+   * blocks carry a "no date filter" note.
+   */
+  openInvoicesCount(branchId: string | null): Observable<number> {
+    return this.api.post<any>('dashboard/getOpenInvoices', { branchId }).pipe(
+      map((res: any) => Number(res?.data?.totalInvoices) || 0));
+  }
+
+  openCashiersCount(branchId: string | null): Observable<number> {
+    return this.api.post<any>('dashboard/numberOfOpenCashiers', { branchId }).pipe(
+      map((res: any) => Number(res?.data?.totalCashiers) || 0));
+  }
+
   saveLayout(layout: DashboardLayout): Observable<boolean> {
     // Flattened back to the legacy per-widget shape the endpoint expects.
     const dashBoardOptions = layout.rows.flatMap((row, rowIndex) =>
@@ -283,6 +330,9 @@ export class DashboardService {
         rowId: row.id,
         colSpan: w.colSpan,
         order: i,
+        // Extra field the legacy endpoint doesn't know; it stores the object as
+        // given, and an older client simply ignores it.
+        view: w.view,
       })),
     );
     return this.api.post<any>('employee/setEmployeeDashboard', { dashBoardOptions }).pipe(

@@ -6,12 +6,16 @@
   input { width: 15px; height: 15px; accent-color: #32acc1; cursor: pointer; }
 }
 
+// Six KPIs as a fixed 3 x 2 block: two tidy rows, rather than an auto-fit strip
+// that lands on five-and-one at awkward widths.
 .bs__kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 14px;
 }
+@media (max-width: 900px) { .bs__kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .bs__kpis { grid-template-columns: 1fr; } }
 
 .bs__tableWrap { overflow-x: auto; }
 
@@ -57,4 +61,24 @@
 .bs__barVal {
   flex-shrink: 0; font-size: 12px; color: #64748b;
   font-variant-numeric: tabular-nums;
+}
+
+// A numeric column's header must sit over its figures: the `th` rule's
+// higher specificity was silently winning against the shared .bs__num rule.
+.bs__table th.bs__num { text-align: end; }
+
+// Drill-through links: a branch row leads to the report behind the number.
+.bs__link {
+  color: var(--color-brand-600, #2691a4); text-decoration: none;
+  border-bottom: 1px solid transparent;
+  &:hover { border-bottom-color: currentColor; }
+}
+
+// Average sale, secondary to the figure it qualifies.
+.bs__sub { display: block; font-size: 11px; color: #94a3b8; white-space: nowrap; }
+
+.bs__info {
+  display: inline-flex; vertical-align: -2px; margin-inline-start: 4px;
+  color: #94a3b8; cursor: help;
+  &:hover, &:focus-visible { color: var(--color-brand-600, #2691a4); }
 }

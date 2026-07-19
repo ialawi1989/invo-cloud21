@@ -119,6 +119,8 @@ export interface PlacedWidget {
   rowId: string;
   colSpan: number;
   order: number;
+  /** Chart/table form the user picked; absent means the widget's default. */
+  view?: string;
 }
 
 export interface DashboardLayout {

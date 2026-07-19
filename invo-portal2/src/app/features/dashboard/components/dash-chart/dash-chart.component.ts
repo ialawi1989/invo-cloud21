@@ -48,7 +48,7 @@ export interface DashSeries {
         [series]="series()"
         [chart]="meta()"
         [xaxis]="xaxis()"
-        [yaxis]="yaxis"
+        [yaxis]="yaxis()"
         [colors]="PALETTE"
         [legend]="legend()"
         [dataLabels]="noLabels"
@@ -129,6 +129,9 @@ export class DashChartComponent {
   readonly barPlot = computed(() => ({
     bar: {
       horizontal: this.type() === 'hbar',
+      // A ranked single-series bar reads better with one hue per category —
+      // still the fixed palette order, never a generated hue.
+      distributed: this.type() === 'hbar' && this.series().length <= 1,
       columnWidth: '52%',
       barHeight: '58%',
       // Rounded data-end only, anchored to the baseline.
@@ -155,6 +158,9 @@ export class DashChartComponent {
     padding: { left: 4, right: 4, top: 0 },
   } as any;
 
+  // On a horizontal bar the axes swap roles: the x-axis carries values and the
+  // y-axis carries the category names. Formatting values on both axes is what
+  // turned every category label into "0".
   readonly xaxis = computed(() => ({
     categories: this.categories(),
     labels: {
@@ -162,17 +168,21 @@ export class DashChartComponent {
       // Long category names (product/customer) would otherwise collide.
       trim: true,
       maxHeight: 72,
+      ...(this.type() === 'hbar' ? { formatter: (v: any) => abbreviate(Number(v)) } : {}),
     },
     axisBorder: { show: false },
     axisTicks: { show: false },
   }) as any);
 
-  readonly yaxis = {
+  readonly yaxis = computed(() => ({
     labels: {
       style: { fontSize: '11px', colors: '#94a3b8' },
-      formatter: (v: number) => abbreviate(v),
+      // Category names on an hbar must pass through untouched.
+      ...(this.type() === 'hbar'
+        ? { maxWidth: 160, formatter: (v: any) => String(v ?? '') }
+        : { formatter: (v: number) => abbreviate(v) }),
     },
-  } as any;
+  }) as any);
 
   readonly tooltip = computed(() => ({
     theme: 'light',

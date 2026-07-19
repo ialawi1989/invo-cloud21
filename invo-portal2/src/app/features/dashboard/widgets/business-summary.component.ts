@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 
 import { KpiTileComponent } from '../components/kpi-tile/kpi-tile.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { WidgetFrameComponent } from '../components/widget-frame/widget-frame.component';
 import { DashboardService } from '../services/dashboard.service';
 import { loadOnScope } from '../services/load-on-scope';
@@ -24,7 +26,7 @@ type SortKey = keyof Pick<BranchSalesRow,
 @Component({
   selector: 'app-business-summary-widget',
   standalone: true,
-  imports: [CommonModule, TranslateModule, MycurrencyPipe, WidgetFrameComponent, KpiTileComponent],
+  imports: [CommonModule, RouterLink, TooltipDirective, TranslateModule, MycurrencyPipe, WidgetFrameComponent, KpiTileComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './business-summary.component.html',
   styleUrl: './business-summary.component.scss',
@@ -98,6 +100,20 @@ export class BusinessSummaryWidgetComponent {
     if (this.sortKey() !== key) { this.sortKey.set(key); this.sortDir.set('desc'); return; }
     if (this.sortDir() === 'desc') { this.sortDir.set('asc'); return; }
     this.sortKey.set(null);
+  }
+
+  /**
+   * Query params the reports shell understands, so a branch row opens the same
+   * period the dashboard is showing rather than the report's own default.
+   */
+  reportParams(branchId: string): Record<string, string> {
+    const s = this.scope();
+    return { preset: 'custom', fromDate: s.from, toDate: s.to, branches: branchId };
+  }
+
+  /** Legacy showed this under the sales figure; it answers "per order?". */
+  avgSales(row: BranchSalesRow): number {
+    return row.numberOfInvoices > 0 ? row.sales / row.numberOfInvoices : 0;
   }
 
   retry(): void { this.res.retry(); }

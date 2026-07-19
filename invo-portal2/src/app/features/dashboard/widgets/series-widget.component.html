@@ -3,6 +3,7 @@
   [loading]="loading()"
   [error]="failed()"
   [empty]="isEmpty()"
+  [skeleton]="skeletonShape()"
   (retry)="retry()">
 
   <!-- Chart ⇄ table. The table is the accessible equivalent of the chart, so
@@ -24,23 +25,55 @@
   </button>
 
   @if (showTable()) {
+    <!-- The leader, stated rather than left to be inferred from the top row. -->
+    @if (hero(); as top) {
+      <div class="sw__hero">
+        <span class="sw__heroIcon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/>
+          </svg>
+        </span>
+        <span class="sw__heroText">
+          <span class="sw__heroLabel">{{ heroLabel() | translate }}</span>
+          <strong class="sw__heroValue">
+            @if (money()) { {{ top.value | mycurrency }} } @else { {{ top.value }} }
+          </strong>
+          <span class="sw__heroName">
+            {{ top.label | translate }}
+            @if (top.share != null) {
+              <span class="sw__heroShare">· {{ top.share.toFixed(1) }}%</span>
+            }
+          </span>
+        </span>
+      </div>
+    }
+
     <div class="sw__tableWrap">
       <table class="sw__table">
         <thead>
           <tr>
             <th>{{ 'DASHBOARD.NAME' | translate }}</th>
             <th class="sw__num">{{ 'DASHBOARD.VALUE' | translate }}</th>
-            <th class="sw__num">{{ 'DASHBOARD.SHARE' | translate }}</th>
+            <th class="sw__num">{{ 'DASHBOARD.PCT_OF_TOTAL' | translate }}</th>
           </tr>
         </thead>
         <tbody>
-          @for (row of plotted(); track row.label) {
+          @for (row of plotted(); track row.label; let i = $index) {
             <tr>
-              <td>{{ row.label | translate }}</td>
-              <td class="sw__num">
+              <td>
+                <span class="sw__rank" [class.is-top]="i === 0">{{ i + 1 }}</span>
+                {{ row.label | translate }}
+              </td>
+              <td class="sw__num sw__value">
                 @if (money()) { {{ row.value | mycurrency }} } @else { {{ row.value }} }
               </td>
-              <td class="sw__num sw__share">{{ (row.share ?? 0).toFixed(1) }}%</td>
+              <td class="sw__num sw__share">
+                <span class="sw__shareVal">{{ (row.share ?? 0).toFixed(1) }}%</span>
+                <!-- Length carries the comparison; the number carries the fact. -->
+                <span class="sw__shareTrack">
+                  <span class="sw__shareFill" [style.width.%]="row.share ?? 0"></span>
+                </span>
+              </td>
             </tr>
           }
         </tbody>

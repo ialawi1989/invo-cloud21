@@ -15,7 +15,62 @@
   }
 }
 
-.sw__tableWrap { max-height: 260px; overflow-y: auto; }
+// ── Hero: the leading entry ─────────────────────────────────────────
+.sw__hero {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; margin-bottom: 14px;
+  border: 1px solid var(--color-brand-100, #d6f4f8); border-radius: 12px;
+  background: linear-gradient(90deg, var(--color-brand-50, #effbfd), #fff);
+}
+.sw__heroIcon {
+  flex-shrink: 0; width: 44px; height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+  background: var(--color-brand-100, #d6f4f8); color: var(--color-brand-700, #207484);
+}
+.sw__heroText { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sw__heroLabel {
+  font-size: 11px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--color-brand-600, #2691a4);
+}
+.sw__heroValue {
+  font-size: 22px; font-weight: 700; line-height: 1.15;
+  color: var(--color-brand-700, #207484);
+  font-variant-numeric: tabular-nums;
+}
+.sw__heroName {
+  font-size: 12.5px; color: #64748b;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sw__heroShare { font-variant-numeric: tabular-nums; }
+
+// Same rule as the inventory tables: show every row, no nested scrollbar.
+.sw__tableWrap { overflow-x: auto; }
+
+// Rank chip — position is the table's whole point, so state it.
+.sw__rank {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; margin-inline-end: 8px;
+  border-radius: 999px; background: #f1f5f9; color: #64748b;
+  font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
+
+  &.is-top { background: var(--color-brand-100, #d6f4f8); color: var(--color-brand-700, #207484); }
+}
+
+.sw__value { font-weight: 600; color: #0f172a; }
+
+// Share: a number plus a bar. The bar makes ranking scannable without asking
+// the reader to compare decimals.
+.sw__share { min-width: 120px; }
+.sw__shareVal { display: block; font-size: 12px; color: #475569; }
+.sw__shareTrack {
+  display: block; height: 5px; margin-top: 4px;
+  border-radius: 999px; background: #eef2f6; overflow: hidden;
+}
+.sw__shareFill {
+  display: block; height: 100%; max-width: 100%;
+  border-radius: 999px; background: var(--color-brand-500, #32acc1);
+}
 
 .sw__table {
   width: 100%; border-collapse: collapse; font-size: 13px;
@@ -35,5 +90,8 @@
   tr:last-child td { border-bottom: 0; }
 
   .sw__num { text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .sw__share { color: #64748b; }
 }
+
+// A numeric column's header must sit over its figures: the `th` rule's
+// higher specificity was silently winning against the shared .sw__num rule.
+.sw__table th.sw__num { text-align: end; }

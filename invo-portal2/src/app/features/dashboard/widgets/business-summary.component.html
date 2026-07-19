@@ -1,4 +1,5 @@
 <app-widget-frame
+  skeleton="kpi"
   [title]="title()"
   [loading]="loading()"
   [error]="failed()"
@@ -12,12 +13,12 @@
   </label>
 
   <div class="bs__kpis">
-    <app-kpi-tile label="DASHBOARD.KPI.ORDERS"     [value]="totals().numberOfInvoices" [money]="false"/>
-    <app-kpi-tile label="DASHBOARD.KPI.SALES"      [value]="totals().sales" [accent]="true"/>
-    <app-kpi-tile label="DASHBOARD.KPI.DISCOUNT"   [value]="totals().discountTotal"/>
-    <app-kpi-tile label="DASHBOARD.KPI.TAX"        [value]="totals().taxTotal"/>
-    <app-kpi-tile label="DASHBOARD.KPI.RETURNS"    [value]="totals().totalReturn"/>
-    <app-kpi-tile label="DASHBOARD.KPI.NET_SALES"  [value]="totals().netSales" [accent]="true"/>
+    <app-kpi-tile label="DASHBOARD.KPI.ORDERS"    [value]="totals().numberOfInvoices" [money]="false" tone="neutral" icon="orders"/>
+    <app-kpi-tile label="DASHBOARD.KPI.SALES"     [value]="totals().sales"          tone="brand"  icon="sales"/>
+    <app-kpi-tile label="DASHBOARD.KPI.DISCOUNT"  [value]="totals().discountTotal"  tone="amber"  icon="discount"/>
+    <app-kpi-tile label="DASHBOARD.KPI.TAX"       [value]="totals().taxTotal"       tone="violet" icon="tax"/>
+    <app-kpi-tile label="DASHBOARD.KPI.RETURNS"   [value]="totals().totalReturn"    tone="rose"   icon="returns"/>
+    <app-kpi-tile label="DASHBOARD.KPI.NET_SALES" [value]="totals().netSales"       tone="green"  icon="net"/>
   </div>
 
   <div class="bs__tableWrap">
@@ -26,22 +27,57 @@
         <tr>
           <th class="bs__sortable" (click)="sort('branchName')">{{ 'DASHBOARD.BRANCH' | translate }}</th>
           <th class="bs__num bs__sortable" (click)="sort('numberOfInvoices')">{{ 'DASHBOARD.KPI.ORDERS' | translate }}</th>
-          <th class="bs__num bs__sortable" (click)="sort('sales')">{{ 'DASHBOARD.KPI.SALES' | translate }}</th>
+          <th class="bs__num bs__sortable" (click)="sort('sales')">
+            {{ 'DASHBOARD.KPI.SALES' | translate }}
+            <!-- Sales excludes tax; without saying so the column reads as a
+                 contradiction of Total two columns over. -->
+            <span class="bs__info" [appTooltip]="'DASHBOARD.SALES_BEFORE_TAX' | translate" tabindex="0"
+                  [attr.aria-label]="'DASHBOARD.SALES_BEFORE_TAX' | translate">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/><path d="M9.2 9a2.8 2.8 0 1 1 3.8 2.6c-.7.3-1 .9-1 1.6v.3"/><path d="M12 17h.01"/>
+              </svg>
+            </span>
+          </th>
           <th class="bs__num bs__sortable" (click)="sort('discountTotal')">{{ 'DASHBOARD.KPI.DISCOUNT' | translate }}</th>
           <th class="bs__num bs__sortable" (click)="sort('taxTotal')">{{ 'DASHBOARD.KPI.TAX' | translate }}</th>
+          <th class="bs__num bs__sortable" (click)="sort('total')">{{ 'DASHBOARD.TOTAL' | translate }}</th>
           <th class="bs__num bs__sortable" (click)="sort('totalReturn')">{{ 'DASHBOARD.KPI.RETURNS' | translate }}</th>
           <th class="bs__num bs__sortable" (click)="sort('netSales')">{{ 'DASHBOARD.KPI.NET_SALES' | translate }}</th>
-          <th class="bs__share bs__sortable" (click)="sort('share')">{{ 'DASHBOARD.SHARE' | translate }}</th>
+          <th class="bs__share bs__sortable" (click)="sort('share')">
+            {{ 'DASHBOARD.PCT_OF_SALES' | translate }}
+            <span class="bs__info" [appTooltip]="'DASHBOARD.PCT_OF_SALES_HINT' | translate" tabindex="0"
+                  [attr.aria-label]="'DASHBOARD.PCT_OF_SALES_HINT' | translate">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/><path d="M9.2 9a2.8 2.8 0 1 1 3.8 2.6c-.7.3-1 .9-1 1.6v.3"/><path d="M12 17h.01"/>
+              </svg>
+            </span>
+          </th>
         </tr>
       </thead>
       <tbody>
         @for (row of sorted(); track row.branchId) {
           <tr>
-            <td class="bs__name">{{ row.branchName }}</td>
-            <td class="bs__num">{{ row.numberOfInvoices.toLocaleString() }}</td>
-            <td class="bs__num">{{ row.sales | mycurrency }}</td>
+            <td class="bs__name">
+              <!-- Straight into the sales summary for this branch and period —
+                   the dashboard states the figure, the report explains it. -->
+              <a class="bs__link" [routerLink]="['/reports/view/sales-summary']"
+                 [queryParams]="reportParams(row.branchId)">{{ row.branchName }}</a>
+            </td>
+            <td class="bs__num">
+              <a class="bs__link" [routerLink]="['/reports/view/sales-by-invoice']"
+                 [queryParams]="reportParams(row.branchId)">{{ row.numberOfInvoices.toLocaleString() }}</a>
+            </td>
+            <td class="bs__num">
+              {{ row.sales | mycurrency }}
+              @if (row.numberOfInvoices > 0) {
+                <span class="bs__sub">
+                  ({{ 'DASHBOARD.AVG_SALES' | translate }}: {{ avgSales(row) | mycurrency }})
+                </span>
+              }
+            </td>
             <td class="bs__num">{{ row.discountTotal | mycurrency }}</td>
             <td class="bs__num">{{ row.taxTotal | mycurrency }}</td>
+            <td class="bs__num">{{ row.total | mycurrency }}</td>
             <td class="bs__num">{{ row.totalReturn | mycurrency }}</td>
             <td class="bs__num">{{ row.netSales | mycurrency }}</td>
             <td class="bs__share">
@@ -63,6 +99,7 @@
           <td class="bs__num">{{ totals().sales | mycurrency }}</td>
           <td class="bs__num">{{ totals().discountTotal | mycurrency }}</td>
           <td class="bs__num">{{ totals().taxTotal | mycurrency }}</td>
+          <td class="bs__num">{{ totals().total | mycurrency }}</td>
           <td class="bs__num">{{ totals().totalReturn | mycurrency }}</td>
           <td class="bs__num">{{ totals().netSales | mycurrency }}</td>
           <td></td>
