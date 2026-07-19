@@ -7,3 +7,20 @@
   justify-content: space-between;
   gap: 12px;
 }
+
+.pf-unit { font-weight: 400; color: #94a3b8; margin-inline-start: 4px; }
+
+.pf-dims {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+
+  &__item {
+    display: flex; flex-direction: column; gap: 4px; min-width: 0;
+    > span {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .03em; color: #94a3b8;
+    }
+  }
+}
+@media (max-width: 640px) { .pf-dims { grid-template-columns: 1fr; } }

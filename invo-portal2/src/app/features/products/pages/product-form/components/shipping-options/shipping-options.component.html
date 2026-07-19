@@ -20,5 +20,30 @@
       <label class="pf-label">{{ 'PRODUCTS.FORM.SHIPPING_WEIGHT' | translate }}</label>
       <input type="number" class="pf-input" formControlName="weight" min="0"/>
     </div>
+
+    <!-- Shipping size, used to match "by dimension" rate ranges. The unit is
+         a company-wide setting (Shipping settings), so it's shown, not edited. -->
+    @if (showDimensions()) {
+      <div class="pf-field">
+        <label class="pf-label">
+          {{ 'PRODUCTS.FORM.SHIPPING_DIMENSIONS' | translate }}
+          <span class="pf-unit">({{ dimensionUom() }})</span>
+        </label>
+        <div class="pf-dims">
+          <label class="pf-dims__item">
+            <span>{{ 'PRODUCTS.FORM.SHIPPING_LENGTH' | translate }}</span>
+            <input type="number" class="pf-input" formControlName="length" min="0" step="any"/>
+          </label>
+          <label class="pf-dims__item">
+            <span>{{ 'PRODUCTS.FORM.SHIPPING_WIDTH' | translate }}</span>
+            <input type="number" class="pf-input" formControlName="width" min="0" step="any"/>
+          </label>
+          <label class="pf-dims__item">
+            <span>{{ 'PRODUCTS.FORM.SHIPPING_HEIGHT' | translate }}</span>
+            <input type="number" class="pf-input" formControlName="height" min="0" step="any"/>
+          </label>
+        </div>
+      </div>
+    }
   </div>
 </section>

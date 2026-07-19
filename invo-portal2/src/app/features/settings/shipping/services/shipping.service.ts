@@ -9,6 +9,7 @@ import {
   TaxOption,
   Zone,
   emptyShippingOptions,
+  normalizeRateType,
 } from './shipping.types';
 
 /**
@@ -49,7 +50,7 @@ export class ShippingService {
       rates: (z.rates ?? []).map((r, ri): Rate => ({
         id:    seed + zi * 1000 + ri + 1,
         name:  String(r.name ?? ''),
-        type:  r.type === 'weight' ? 'weight' : 'total',
+        type:  normalizeRateType(r.type),
         from:  String(r.from ?? ''),
         to:    String(r.to ?? ''),
         price: String(r.price ?? ''),
@@ -99,7 +100,8 @@ export class ShippingService {
   // minimal and matches where the legacy storefront expects to find
   // each value at runtime.
 
-  /** Load the four options. Theme doc supplies `type` + `deliveryMethod`;
+  /** Load the options. Theme doc supplies `type`, `deliveryMethod` and
+   *  `dimensionUOM`;
    *  the company-settings cache supplies `weightUOM` + `deliveryChargeTaxId`
    *  with no extra HTTP round-trip. */
   async loadOptions(): Promise<ShippingOptions> {
@@ -114,6 +116,12 @@ export class ShippingService {
       if (so?.type === 'shipping' || so?.type === 'delivery') opts.type = so.type;
       if (so?.deliveryMethod === 'address' || so?.deliveryMethod === 'zone') {
         opts.deliveryMethod = so.deliveryMethod;
+      }
+      // Dimension UOM is theme-owned (unlike weightUOM, which sits on the
+      // company doc) — the product form reads it back from here read-only.
+      if (so?.dimensionUOM === 'cm' || so?.dimensionUOM === 'm'
+          || so?.dimensionUOM === 'in' || so?.dimensionUOM === 'ft') {
+        opts.dimensionUOM = so.dimensionUOM;
       }
     } catch { /* fall through to defaults */ }
 
@@ -130,11 +138,11 @@ export class ShippingService {
     return opts;
   }
 
-  /** Persist the four options across the two backends. Both calls
+  /** Persist the options across the two backends. Both calls
    *  fire even when only one side changed — the diff is too small
    *  to be worth tracking, and both endpoints are idempotent. */
   async saveOptions(opts: ShippingOptions): Promise<{ success: boolean; msg?: string }> {
-    // 1) Theme doc — `type` + `deliveryMethod` only. Read-modify-write
+    // 1) Theme doc — `type`, `deliveryMethod`, `dimensionUOM`. Read-modify-write
     //    so we don't blow away other `template` fields owned by the
     //    website-builder pages.
     let themeOk = true;
@@ -153,6 +161,7 @@ export class ShippingService {
             ...((doc?.template ?? {}).shippingOptions ?? {}),
             type:           opts.type,
             deliveryMethod: opts.deliveryMethod,
+            dimensionUOM:   opts.dimensionUOM,
           },
         },
       };

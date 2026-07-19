@@ -22,6 +22,18 @@
           [clearable]="false"
           (valueChange)="onWeightChange($event)"/>
       </label>
+      <label class="som__field">
+        <span class="som__label">{{ 'SHIPPING.OPTIONS.DIMENSION_UOM' | translate }}</span>
+        <app-search-dropdown
+          [items]="dimensionOptions()"
+          [displayWith]="optDisplay"
+          [compareWith]="optCompare"
+          [toValue]="optToValue"
+          [value]="selectedDimension()"
+          [searchable]="false"
+          [clearable]="false"
+          (valueChange)="onDimensionChange($event)"/>
+      </label>
     }
 
     <label class="som__field">

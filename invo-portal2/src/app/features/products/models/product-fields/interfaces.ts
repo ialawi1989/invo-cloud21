@@ -76,6 +76,19 @@ export interface ShippingOptions {
   isRequired: boolean;
   weight: FieldTemplate;
   weightUOM: FieldTemplate;
+  /** Optional: product types without a shipping size omit this block. */
+  dimension?: DimensionFields;
+}
+
+/** Per-field visibility for the L×W×H shipping-size inputs. The unit is a
+ *  company-wide setting, so there is no `uom` field here. */
+export interface DimensionFields {
+  isVisible: boolean;
+  isDisabled: boolean;
+  isRequired: boolean;
+  length: FieldTemplate;
+  width: FieldTemplate;
+  height: FieldTemplate;
 }
 
 export interface Measurements {

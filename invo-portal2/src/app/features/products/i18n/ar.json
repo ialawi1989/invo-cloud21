@@ -721,6 +721,10 @@
       "SHIPPING_ENABLED":           "متاح للشحن",
       "WEIGHT":                     "الوزن",
       "SHIPPING_WEIGHT":            "وزن الشحن",
+      "SHIPPING_DIMENSIONS":        "أبعاد الشحن",
+      "SHIPPING_LENGTH":            "الطول",
+      "SHIPPING_WIDTH":             "العرض",
+      "SHIPPING_HEIGHT":            "الارتفاع",
       "WEIGHT_UOM":                 "وحدة الوزن",
 
       "CUSTOM_FIELDS":              "حقول مخصصة",

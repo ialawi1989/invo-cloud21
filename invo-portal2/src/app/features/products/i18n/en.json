@@ -721,6 +721,10 @@
       "SHIPPING_ENABLED":           "Ships to customers",
       "WEIGHT":                     "Weight",
       "SHIPPING_WEIGHT":            "Shipping Weight",
+      "SHIPPING_DIMENSIONS":        "Shipping Dimensions",
+      "SHIPPING_LENGTH":            "Length",
+      "SHIPPING_WIDTH":             "Width",
+      "SHIPPING_HEIGHT":            "Height",
       "WEIGHT_UOM":                 "Weight unit",
 
       "CUSTOM_FIELDS":              "Custom fields",

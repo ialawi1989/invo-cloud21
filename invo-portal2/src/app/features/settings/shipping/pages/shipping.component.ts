@@ -39,6 +39,7 @@ import {
   Overlap,
   Rate,
   RateGroup,
+  RateType,
   Zone,
   emptyRate,
   emptyZone,
@@ -94,11 +95,20 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
   /** Weight UOM (e.g. `KG`) from company settings — adornment for
    *  `From/To` inputs of `weight` rate groups. */
   weightUOM      = computed<string>(() => this.company.settings()?.weightUOM ?? this.company.settings()?.settings?.weightUOM ?? '');
+  /** Theme-owned, so it can't be read off the company settings cache like
+   *  weightUOM — fetched alongside the zones on load. */
+  dimensionUOM   = signal<string>('cm');
 
   /** Adornment for a group's `from`/`to` cells: weight UOM for
    *  `weight` groups, currency symbol for `total` groups. */
-  unitFor(type: 'weight' | 'total'): string {
-    return type === 'weight' ? this.weightUOM() : this.currencySymbol();
+  /** Unit shown beside a range's From/To inputs. Dimension ranges are
+   *  volumetric (L×W×H), hence the cubed unit. */
+  unitFor(type: RateType): string {
+    switch (type) {
+      case 'weight':    return this.weightUOM();
+      case 'dimension': return `${this.dimensionUOM()}³`;
+      default:          return this.currencySymbol();
+    }
   }
 
   loading = signal<boolean>(false);
@@ -160,7 +170,7 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
   editingGroup = signal<string | null>(null);
   /** Per-edit draft so the user can cancel without mutating the
    *  rates underneath. */
-  editingDraft = signal<{ name: string; type: 'weight' | 'total'; note: string } | null>(null);
+  editingDraft = signal<{ name: string; type: RateType; note: string } | null>(null);
 
   isDirty = computed<boolean>(() => this.snapshot() !== this.cleanSnapshot());
   canSave = computed<boolean>(() =>
@@ -173,17 +183,18 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
    *  translate pipe inside its row template — so we resolve the
    *  i18n keys here, with `i18nTick` as a dep to refresh on
    *  language change. */
-  typeOptions = computed<{ value: 'weight' | 'total'; label: string }[]>(() => {
+  typeOptions = computed<{ value: RateType; label: string }[]>(() => {
     this.i18nTick();
     return [
-      { value: 'weight', label: this.translate.instant('SHIPPING.RATES.TYPE_WEIGHT') },
-      { value: 'total',  label: this.translate.instant('SHIPPING.RATES.TYPE_TOTAL') },
+      { value: 'weight',    label: this.translate.instant('SHIPPING.RATES.TYPE_WEIGHT') },
+      { value: 'total',     label: this.translate.instant('SHIPPING.RATES.TYPE_TOTAL') },
+      { value: 'dimension', label: this.translate.instant('SHIPPING.RATES.TYPE_DIMENSION') },
     ];
   });
 
   /** Resolve the draft's `type` string to its option object so
    *  the dropdown's `[value]` binding can show the current pick. */
-  selectedTypeOption(): { value: 'weight' | 'total'; label: string } | null {
+  selectedTypeOption(): { value: RateType; label: string } | null {
     const t = this.editingDraft()?.type;
     if (!t) return null;
     return this.typeOptions().find(o => o.value === t) ?? null;
@@ -191,7 +202,7 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
 
   /** Dropdown emits `T | T[] | null` — narrow at the edge so the
    *  edit-draft setter stays terse. */
-  onEditTypeChange(v: { value: 'weight' | 'total' } | { value: 'weight' | 'total' }[] | null): void {
+  onEditTypeChange(v: { value: RateType } | { value: RateType }[] | null): void {
     const opt = Array.isArray(v) ? v[0] ?? null : v;
     if (opt) this.setEditDraft('type', opt.value);
   }
@@ -212,12 +223,14 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
-      const [zones, countries] = await Promise.all([
+      const [zones, countries, options] = await Promise.all([
         this.service.loadZones(),
         this.service.loadCountries(),
+        this.service.loadOptions(),
       ]);
       this.zones.set(zones);
       this.countries.set(countries.map(c => c.name).sort());
+      this.dimensionUOM.set(options.dimensionUOM);
       this.cleanSnapshot.set(this.snapshot());
     } finally {
       this.loading.set(false);
@@ -296,7 +309,7 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
   }
 
   setEditDraft<K extends 'name' | 'type' | 'note'>(key: K, value: string): void {
-    this.editingDraft.update(d => d ? { ...d, [key]: key === 'type' ? (value as 'weight' | 'total') : value } : d);
+    this.editingDraft.update(d => d ? { ...d, [key]: key === 'type' ? (value as RateType) : value } : d);
   }
 
   /** Apply the draft back to every rate in the group — that's

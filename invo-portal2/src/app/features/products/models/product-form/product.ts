@@ -26,6 +26,15 @@ import {
   Tax,
 } from './interfaces';
 
+/** Shipping dimensions of a product. */
+export interface ProductDimension {
+  length: number;
+  width: number;
+  height: number;
+  /** Display-only; the source of truth is ThemeSettings.shippingOptions. */
+  uom: string;
+}
+
 export class Product {
   static afterDecimal = 3;
 
@@ -147,7 +156,16 @@ export class Product {
 
   weight = 0;
   weightUOM = 'KG';
+  /** Shipping size, L×W×H. `uom` is display-only — it's owned centrally by
+   *  ThemeSettings.shippingOptions.dimensionUOM, not stored per product. */
+  dimension: ProductDimension = { length: 0, width: 0, height: 0, uom: 'cm' };
   shippingEnabled = false;
+
+  /** Volumetric size used to match `dimension` shipping rate ranges. */
+  get volume(): number {
+    const d = this.dimension;
+    return (d?.length || 0) * (d?.width || 0) * (d?.height || 0);
+  }
 
   custom: any = {};
 

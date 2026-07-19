@@ -97,6 +97,17 @@ export class ProductCrudService {
     const copy: any = { ...productInfo };
     copy.productMedia = copy.productMedia?.map((f: any) => f.id) || [];
 
+    // The dimension unit is a single company-wide setting (ThemeSettings
+    // .shippingOptions.dimensionUOM); it rides on the model only for display,
+    // so don't persist a per-product copy that could drift from it.
+    if (copy.dimension) {
+      copy.dimension = {
+        length: copy.dimension.length,
+        width:  copy.dimension.width,
+        height: copy.dimension.height,
+      };
+    }
+
     return this.api.request(this.api.post('product/saveProduct', copy));
   }
 

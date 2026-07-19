@@ -309,6 +309,26 @@ export const serializedFields: Fields = {
       isDisabled: false,
       isRequired: false,
     },
+    dimension: {
+      isVisible: true,
+      isDisabled: false,
+      isRequired: false,
+      length: {
+        isVisible: true,
+        isDisabled: false,
+        isRequired: false,
+      },
+      width: {
+        isVisible: true,
+        isDisabled: false,
+        isRequired: false,
+      },
+      height: {
+        isVisible: true,
+        isDisabled: false,
+        isRequired: false,
+      },
+    },
   },
   isTaxable: {
     isVisible: true,
