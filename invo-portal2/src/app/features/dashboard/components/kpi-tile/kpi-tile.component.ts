@@ -19,7 +19,7 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
   template: `
     <div class="kpi" [class]="'kpi--' + tone()" [class.kpi--accent]="accent()">
       <span class="kpi__head">
-        <span class="kpi__label">{{ label() | translate }}</span>
+        <span class="kpi__label">{{ label() | translate: labelParams() }}</span>
         @if (icon()) {
           <span class="kpi__icon" aria-hidden="true">
             @switch (icon()) {
@@ -104,6 +104,8 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 })
 export class KpiTileComponent {
   readonly label = input.required<string>();
+  /** Interpolation values for the label key, e.g. the "as on <date>" suffix. */
+  readonly labelParams = input<Record<string, unknown> | undefined>(undefined);
   readonly value = input.required<number>();
   readonly money = input<boolean>(true);
   readonly accent = input<boolean>(false);

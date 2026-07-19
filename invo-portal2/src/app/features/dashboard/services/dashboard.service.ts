@@ -186,12 +186,17 @@ export class DashboardService {
         walk(cash?.transactions, 'cash');
         walk(bank?.transactions, 'bank');
 
+        // Legacy filled the whole period; a gap-free axis is what makes the
+        // shape readable (and a single point renders as nothing at all).
+        const points = monthsBetween(s.from, s.to).map(
+          (label) => buckets.get(label) ?? { label, cash: 0, bank: 0 });
+
         return {
           openingBalance: opening,
           incoming,
           outgoing,
           closingBalance: opening + incoming - outgoing,
-          points: [...buckets.values()],
+          points,
         };
       }),
     );
@@ -214,23 +219,13 @@ export class DashboardService {
         walk(d?.income, 'income');
         walk(d?.expense, 'expense');
 
-        const points = [...buckets.values()];
+        const points = monthsBetween(s.from, s.to).map(
+          (label) => buckets.get(label) ?? { label, income: 0, expense: 0 });
         const totalIncome = points.reduce((sum, p) => sum + p.income, 0);
         const totalExpense = points.reduce((sum, p) => sum + p.expense, 0);
         return { totalIncome, totalExpense, net: totalIncome - totalExpense, points };
       }),
     );
-  }
-
-  // ─── period-independent tiles ─────────────────────────────────────
-  openInvoices(): Observable<number> {
-    return this.api.post<any>('dashboard/getOpenInvoices', {}).pipe(
-      map((res: any) => Number(res?.data?.totalInvoices) || 0));
-  }
-
-  openCashiers(): Observable<number> {
-    return this.api.post<any>('dashboard/numberOfOpenCashiers', {}).pipe(
-      map((res: any) => Number(res?.data?.totalCashiers) || 0));
   }
 
   // ─── inventory ────────────────────────────────────────────────────
@@ -357,6 +352,27 @@ function withShare(rows: LabelValue[]): LabelValue[] {
 }
 
 /** 'MMM YYYY' without pulling in a date library. */
+/**
+ * Every month from `from` to `to` inclusive, labelled like `monthLabel`.
+ * Charts need a continuous axis: without the empty months a sparse series
+ * collapses to a couple of disconnected points.
+ */
+function monthsBetween(from: string, to: string): string[] {
+  const start = new Date(from);
+  const end = new Date(to);
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return [];
+
+  const out: string[] = [];
+  const cur = new Date(start.getFullYear(), start.getMonth(), 1);
+  const last = new Date(end.getFullYear(), end.getMonth(), 1);
+  // Guard against a reversed or absurd range producing an endless list.
+  while (cur <= last && out.length < 120) {
+    out.push(monthLabel(cur.toISOString())!);
+    cur.setMonth(cur.getMonth() + 1);
+  }
+  return out;
+}
+
 function monthLabel(iso: unknown): string | null {
   if (!iso) return null;
   const d = new Date(String(iso));

@@ -40,8 +40,8 @@ const EMPTY: IncomeExpense = { totalIncome: 0, totalExpense: 0, net: 0, points: 
       (retry)="retry()">
 
       <div class="ie__kpis">
-        <app-kpi-tile label="DASHBOARD.TOTAL_INCOME"  [value]="data().totalIncome"/>
-        <app-kpi-tile label="DASHBOARD.TOTAL_EXPENSE" [value]="data().totalExpense"/>
+        <app-kpi-tile label="DASHBOARD.TOTAL_INCOME"  [value]="data().totalIncome"  tone="green" icon="net"/>
+        <app-kpi-tile label="DASHBOARD.TOTAL_EXPENSE" [value]="data().totalExpense" tone="rose"  icon="returns"/>
         <app-kpi-tile
           label="DASHBOARD.NET"
           [value]="data().net"

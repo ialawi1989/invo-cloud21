@@ -134,6 +134,8 @@
     "PCT_OF_TOTAL": "% of total",
     "PCT_OF_SALES_HINT": "This branch's share of total sales for the selected period",
     "OPEN_INVOICES": "Open invoices",
-    "OPEN_CASHIERS": "Open cashiers"
+    "OPEN_CASHIERS": "Open cashiers",
+    "OPENING_AS_ON": "Opening as on {{date}}",
+    "CLOSING_AS_ON": "Closing as on {{date}}"
   }
 }

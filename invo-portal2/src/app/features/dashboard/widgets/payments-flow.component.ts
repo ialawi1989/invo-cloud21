@@ -53,10 +53,14 @@ type Channel = 'all' | 'cash' | 'bank';
         (valueChange)="channel.set($any($event))"/>
 
       <div class="pf__kpis">
-        <app-kpi-tile label="DASHBOARD.OPENING"  [value]="data().openingBalance"/>
-        <app-kpi-tile label="DASHBOARD.INCOMING" [value]="data().incoming"/>
-        <app-kpi-tile label="DASHBOARD.OUTGOING" [value]="data().outgoing"/>
-        <app-kpi-tile label="DASHBOARD.CLOSING"  [value]="data().closingBalance" [accent]="true"/>
+        <!-- Legacy stated the as-of dates; a bare "Opening" leaves the reader
+             guessing which end of the period it belongs to. -->
+        <app-kpi-tile label="DASHBOARD.OPENING_AS_ON" [labelParams]="{ date: fromLabel() }"
+                      [value]="data().openingBalance" tone="neutral" icon="card"/>
+        <app-kpi-tile label="DASHBOARD.INCOMING" [value]="data().incoming"       tone="green"   icon="net"/>
+        <app-kpi-tile label="DASHBOARD.OUTGOING" [value]="data().outgoing"       tone="rose"    icon="returns"/>
+        <app-kpi-tile label="DASHBOARD.CLOSING_AS_ON" [labelParams]="{ date: toLabel() }"
+                      [value]="data().closingBalance" tone="brand" icon="sales"/>
       </div>
 
       <app-dash-chart
@@ -112,5 +116,16 @@ export class PaymentsFlowWidgetComponent {
 
   fmt = (v: number) => String(this.currency.transform(v));
 
+  /** Period bounds, formatted for the opening/closing captions. */
+  readonly fromLabel = computed(() => fmtDate(this.scope().from));
+  readonly toLabel = computed(() => fmtDate(this.scope().to));
+
   retry(): void { this.res.retry(); }
+}
+
+/** '01 Jul 2026' — the form legacy used in these captions. */
+function fmtDate(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
 }
