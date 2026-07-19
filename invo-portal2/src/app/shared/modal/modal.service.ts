@@ -318,8 +318,14 @@ export class ModalService {
     size?:       ModalConfig['size'],
     panelClass?: string | string[],
   ): OverlayConfig {
+    // Capped to the viewport: a fixed width wider than the window pushed the
+    // dialog off-screen instead of shrinking it.
     const widthMap: Record<string, string> = {
-      sm: '400px', md: '560px', lg: '720px', xl: '1100px', fullscreen: '100vw',
+      sm: 'min(400px, calc(100vw - 32px))',
+      md: 'min(560px, calc(100vw - 32px))',
+      lg: 'min(720px, calc(100vw - 32px))',
+      xl: 'min(1100px, calc(100vw - 32px))',
+      fullscreen: '100vw',
     };
     return new OverlayConfig({
       hasBackdrop:      true,

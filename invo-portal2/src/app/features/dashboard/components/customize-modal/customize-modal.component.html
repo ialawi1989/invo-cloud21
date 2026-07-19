@@ -174,7 +174,7 @@
             }
 
             @for (w of row.widgets; track w.def.slug) {
-              <div class="cm__placed" cdkDrag>
+              <div class="cm__placed" cdkDrag [style.grid-column]="'span ' + w.colSpan">
                 <span class="cm__grip" cdkDragHandle [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/>

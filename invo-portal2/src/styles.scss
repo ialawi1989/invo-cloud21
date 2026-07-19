@@ -550,3 +550,14 @@ select[readonly] {
 [aria-disabled="true"] {
   cursor: not-allowed;
 }
+
+// CDK appends a drag preview to <body>, where it shares z-index 1000 with the
+// overlay container — so inside a modal the dragged item disappeared *behind*
+// the dialog. Lift the preview (and the drop placeholder's shadow) above it.
+.cdk-drag-preview {
+  z-index: 1200 !important;
+}
+.cdk-drag-dragging {
+  // No text selection painted across labels the pointer sweeps over.
+  user-select: none;
+}
