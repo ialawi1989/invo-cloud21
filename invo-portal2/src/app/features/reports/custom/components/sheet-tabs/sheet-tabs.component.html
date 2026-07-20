@@ -1,0 +1,44 @@
+<div class="sheet-tabs" (click)="closeContextMenu()">
+  <div
+    *ngFor="let s of sheets"
+    class="sheet-tab"
+    [class.is-active]="s.id === activeSheetId"
+    (click)="onSelectSheet(s.id)"
+    (contextmenu)="showContextMenu(s.id, $event)"
+  >
+    <ng-container *ngIf="editingId !== s.id">
+      <span class="tab-name">{{ s.name }}</span>
+    </ng-container>
+    <ng-container *ngIf="editingId === s.id">
+      <input
+        class="tab-rename-input"
+        [(ngModel)]="editingName"
+        (blur)="finishRename()"
+        (keydown)="onRenameKeydown($event)"
+        (click)="$event.stopPropagation()"
+        autofocus
+      />
+    </ng-container>
+
+    <div class="tab-context-menu" *ngIf="contextMenuId === s.id" (click)="$event.stopPropagation()">
+      <button (click)="startRename(s, $event)">Rename</button>
+      <button *ngIf="sheets.length > 1" class="danger" (click)="onRemoveSheet(s.id)">Delete</button>
+    </div>
+  </div>
+
+  <button *ngIf="canEdit" class="add-tab-btn" (click)="onAddSheet()" title="Add sheet">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+    <span>Add sheet</span>
+  </button>
+
+  <span class="tabs-spacer"></span>
+
+  <!-- <a class="dashboard-link" title="Dashboard">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>
+    </svg>
+    Dashboard
+  </a> -->
+</div>

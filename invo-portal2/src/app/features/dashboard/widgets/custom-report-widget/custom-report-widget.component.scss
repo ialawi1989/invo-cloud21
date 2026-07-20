@@ -1,0 +1,135 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Fill the widget cell and match the other dashboard cards: borderless, with a
+// soft shadow instead of a 1px rule.
+.cr-widget {
+  height: 100%;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 0;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 1px 3px rgba(15, 23, 42, .06);
+  overflow: hidden;
+}
+
+.cr-widget .card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.card-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cr-badge {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #00838f;
+  padding: 2px 6px;
+  background: #e0f7fa;
+  border-radius: 3px;
+}
+
+.cr-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -4px 0 10px;
+  font-size: 11px;
+  color: #98a6ad;
+
+  svg { flex-shrink: 0; color: #b0bcc4; }
+  span { line-height: 1.3; }
+}
+
+// Size to the report's content rather than stretching to fill the cell — a
+// short report (one total row) shouldn't leave a tall empty card. Large reports
+// stay bounded and scroll.
+.cr-body {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 420px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.cr-state {
+  flex: 1;
+  // The card no longer reserves height, so the loading/error state supplies its
+  // own — otherwise the spinner would collapse to nothing.
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #98a6ad;
+  font-size: 13px;
+}
+
+.cr-error {
+  color: #f1556c;
+}
+
+.cr-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #eef2f7;
+  border-top-color: #00bcd4;
+  border-radius: 50%;
+  animation: cr-spin 0.6s linear infinite;
+}
+
+@keyframes cr-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* The table renders through the shared <app-chart-preview>, so it keeps the
+   builder/view colors (teal Total rows, currency, grouping). We only ADD the
+   dashboard's table chrome — an outer rounded border, row dividers and roomy
+   cell spacing — to match the other dashboard widgets. */
+:host ::ng-deep .table-wrap {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  // chart-preview forces `overflow-x: scroll` (always-on bar) for the report
+  // canvas. In a dashboard card we only want the bar when the table actually
+  // overflows — `!important` beats the equal-specificity base rule regardless
+  // of stylesheet load order.
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+}
+
+:host ::ng-deep th {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+:host ::ng-deep td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e2e8f0;
+}

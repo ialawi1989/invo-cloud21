@@ -1,0 +1,45 @@
+<div class="marks-card">
+  <div class="marks-head">
+    <span class="marks-head-label">Marks</span>
+  </div>
+
+  <div class="marks-channels" *ngIf="slots.length > 0">
+    <div *ngFor="let slot of slots" class="channel">
+      <div class="channel-label">
+        <span class="channel-dot" [attr.data-channel]="slot.channel"></span>
+        {{ slot.label }}
+      </div>
+      <div
+        class="channel-drop"
+        [class.drag-over]="dragOverChannel === slot.channel"
+        (dragover)="onDragOver($event, slot.channel)"
+        (dragleave)="onDragLeave(slot.channel)"
+        (drop)="onDrop($event, slot.channel)"
+      >
+        <ng-container *ngIf="getMarkForChannel(slot.channel) as mark; else emptySlot">
+          <div class="channel-pill">
+            <span class="channel-pill-name">{{ getFieldLabel(mark.field.col) }}</span>
+            <button class="channel-remove" (click)="removeMark(slot.channel)" aria-label="Remove">×</button>
+          </div>
+        </ng-container>
+        <ng-template #emptySlot>
+          <span class="channel-empty">Drop field</span>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data-labels toggle — only for chart types ApexCharts supports labels on
+       (Table / KPI render natively and don't need this). -->
+  <div class="marks-label-row" *ngIf="showLabelsAvailable">
+    <span class="marks-label-text">Data labels</span>
+    <label class="toggle">
+      <input
+        type="checkbox"
+        [ngModel]="showLabels"
+        (ngModelChange)="onShowLabelsChange($event)"
+      />
+      <span class="toggle-track"></span>
+    </label>
+  </div>
+</div>

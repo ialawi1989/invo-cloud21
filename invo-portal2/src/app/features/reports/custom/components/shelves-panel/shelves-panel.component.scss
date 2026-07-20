@@ -1,0 +1,307 @@
+$teal:       #00aab3;
+$teal-tint:  rgba(#00aab3, 0.10);
+$teal-dark:  #008f97;
+$teal-rgb:   0, 170, 179;
+$ink:        #1a1a18;
+$ink-2:      #444441;
+$ink-3:      #6b6b67;
+$ink-4:      #a3a39e;
+$bg-surface: #f8f8f7;
+$bg-pill:    #eeeeed;
+$border-rule: 0.5px solid rgba(0,0,0,0.09);
+$rad-input:  6px;
+
+:host { display: block; }
+
+.shelves-panel {
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.shelf-row {
+  display: flex; align-items: stretch;
+  border-bottom: $border-rule;
+  min-height: 44px;
+  &:last-child { border-bottom: none; }
+}
+
+.shelf-label {
+  // Wide enough to show the longest label ("Group by" + its icon) without
+  // ellipsizing to "GROU…".
+  width: 108px;
+  min-width: 108px;
+  max-width: 108px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  display: flex; flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 7px;
+  border-right: $border-rule;
+  background: $bg-surface;
+  overflow: hidden;
+}
+.shelf-label-text {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  color: $ink-2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Filter row: glue toggle (and / or) sits inline within the label column
+.glue-toggle {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: $border-rule;
+  border-radius: $rad-input;
+  overflow: hidden;
+}
+.glue-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  font-size: 10px; font-weight: 700;
+  font-family: inherit; letter-spacing: 0.4px;
+  text-transform: uppercase;
+  border: none;
+  background: #fff;
+  color: $ink-3;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.4;
+  transition: background .14s, color .14s;
+  & + & { border-left: $border-rule; }
+  &.is-active { background: $teal-tint; color: $teal-dark; }
+  &:hover:not(.is-active) { background: $bg-pill; color: $ink; }
+}
+
+// Drop area — dashed
+.shelf-area {
+  flex: 1; min-height: 44px;
+  margin: 8px;
+  padding: 6px 10px;
+  display: flex; flex-wrap: wrap;
+  gap: 6px;
+  align-content: flex-start; align-items: center;
+  border: 1px dashed rgba(0,0,0,0.16);
+  border-radius: $rad-input;
+  background: #fff;
+  transition: background .15s, border-color .15s;
+
+  &.drag-over {
+    background: $teal-tint;
+    border-color: $teal;
+    border-style: dashed;
+  }
+}
+
+.shelf-area--filters {
+  flex-direction: column;
+  align-items: stretch;
+  max-height: 140px;
+  overflow-y: auto;
+  gap: 4px;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+}
+
+.shelf-empty {
+  font-size: 12px;
+  color: $ink-3;
+  font-weight: 500;
+  padding: 4px 6px;
+  font-style: normal;
+}
+
+.swap-btn {
+  padding: 0 10px;
+  background: transparent;
+  border: none;
+  border-left: $border-rule;
+  color: $ink-3;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  &:hover { color: $teal; background: $bg-surface; }
+}
+
+// ─── Pills (typed) ────────────────────────────────
+.shelf-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px;
+  border-radius: $rad-input;
+  font-size: 12px; font-weight: 600;
+  white-space: nowrap;
+  max-width: 240px;
+  transition: outline-color .14s, transform .1s;
+  outline: 1px solid transparent;
+
+  &:active { transform: scale(.98); }
+  &.is-active { outline-color: rgba($teal, 0.50); }
+}
+
+// Type colors
+.shelf-pill.pill-type-text,
+.filter-pill.pill-type-text {
+  background: #EEEDFE; color: #3C3489;
+}
+.shelf-pill.pill-type-number,
+.filter-pill.pill-type-number {
+  background: #E6F1FB; color: #0C447C;
+}
+.shelf-pill.pill-type-date,
+.filter-pill.pill-type-date {
+  background: #FAEEDA; color: #854F0B;
+}
+
+// ─── Group by shelf (narrower, accent-tinted) ───
+.shelf-row--groupby .shelf-label { background: $teal-tint; }
+.groupby-icon { color: $teal; vertical-align: -2px; margin-right: 4px; }
+.shelf-area--groupby {
+  flex: 0 0 auto;
+  min-width: 200px; max-width: 320px;
+  align-self: center;
+  border-color: rgba($teal, 0.35);
+  background: $teal-tint;
+}
+.shelf-area--groupby:empty::before {
+  content: 'Drop one field';
+  font-size: 12px; color: $ink-4; font-weight: 500;
+}
+// Group pill — accent variant of .shelf-pill (mirrors the typed pills)
+.shelf-pill.group-pill,
+.group-pill {
+  background: $teal-tint; color: $teal-dark;
+  .pill-type-icon { background: rgba($teal, 0.18); color: $teal-dark; }
+}
+
+.pill-type-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.7);
+  font-size: 10px; font-weight: 700;
+  flex-shrink: 0;
+}
+
+.pill-label {
+  cursor: pointer;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  &:hover { text-decoration: underline; }
+}
+
+.pill-x {
+  background: none; border: none; cursor: pointer;
+  color: inherit; opacity: 0.45;
+  padding: 0 2px; line-height: 1;
+  font-size: 13px; font-weight: 400;
+  flex-shrink: 0;
+  &:hover { opacity: 1; }
+}
+
+// ─── Filter pill (multi-input) ────────────────────
+.filter-pill {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 10px;
+  border-radius: $rad-input;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.filter-field {
+  font-weight: 700;
+  white-space: nowrap; flex-shrink: 0;
+  max-width: 140px; overflow: hidden; text-overflow: ellipsis;
+}
+// These wrappers used to style native <select> / <input>. ng-select renders
+// its own .ng-select-container inside the host, so width/positioning here
+// only — actual control styling lives in the ::ng-deep block below.
+.filter-op { flex-shrink: 0; min-width: 90px; }
+.filter-val {
+  flex: 1; min-width: 70px;
+  // Input variant keeps native styles (we only converted selects).
+  &:not(ng-select) {
+    padding: 5px 8px;
+    border: $border-rule; border-radius: $rad-input;
+    font-size: 12px; font-family: inherit; color: $ink;
+    background: #fff; outline: none;
+    transition: border-color .14s, box-shadow .14s;
+    &:focus { border-color: $teal; box-shadow: 0 0 0 3px rgba($teal, 0.12); }
+  }
+}
+
+// ─── ng-select sizing inside shelves-panel ───────────
+// ng-select replaces our old <select> tags here. The control draws its own
+// internal .ng-select-container, which we resize so it lines up with the
+// adjacent native <input> (.filter-val) and the chips around it.
+:host ::ng-deep ng-select {
+  &.filter-op,
+  &.filter-val {
+    .ng-select-container {
+      min-height: 28px;
+      height: 28px;
+      border: $border-rule;
+      border-radius: $rad-input;
+      background: #fff;
+    }
+    &.ng-select-focused:not(.ng-select-opened) > .ng-select-container,
+    &.ng-select-opened > .ng-select-container {
+      border-color: $teal;
+      box-shadow: 0 0 0 3px rgba($teal, 0.12);
+    }
+    .ng-value-container { padding-left: 8px; }
+    .ng-value-container .ng-value,
+    .ng-value-container .ng-input > input,
+    .ng-value-container .ng-placeholder {
+      font-size: 11px; line-height: 1.3; color: $ink;
+    }
+    .ng-arrow-wrapper { padding-right: 4px; width: 18px; }
+    .ng-clear-wrapper { display: none; }
+  }
+}
+.between-sep {
+  font-size: 12px; color: $ink-3; flex-shrink: 0;
+}
+
+// ─── Popover ──────────────────────────────────────
+.pill-popover {
+  background: #fff;
+  border: $border-rule;
+  border-radius: $rad-input;
+  padding: 10px;
+  min-width: 200px;
+  max-width: 260px;
+  animation: fadeIn .12s ease;
+}
+.popover-backdrop { position: fixed; inset: 0; z-index: 999; }
+
+.popover-section {
+  display: flex; flex-direction: column; gap: 4px;
+  & + & { margin-top: 8px; }
+}
+.popover-label {
+  font-size: 10px; font-weight: 500;
+  color: $ink-4;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.popover-input,
+.popover-select {
+  width: 100%;
+  padding: 8px 10px;
+  border: $border-rule; border-radius: $rad-input;
+  font-size: 13px; font-family: inherit; color: $ink;
+  background: #fff; outline: none;
+  transition: border-color .14s, box-shadow .14s;
+  &:focus { border-color: $teal; box-shadow: 0 0 0 3px rgba($teal, 0.12); }
+}
+.popover-input::placeholder { color: $ink-4; }
+.popover-divider { height: 1px; background: rgba(0,0,0,0.06); margin: 8px 0; }
+.popover-row { display: flex; gap: 8px; }
+.popover-half { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

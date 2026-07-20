@@ -1,0 +1,11 @@
+// _custom-reports-base.scss
+// Imports the unified report base for any table components.
+@import '../../../shared/styles/report-base';
+
+// Custom report builder accent (for builder UI, not tables)
+$cr-accent: $primary-color;
+$cr-accent-light: $info-color-light;
+$cr-border: $gray-200;
+$cr-bg: $gray-100;
+$cr-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$cr-mono: 'IBM Plex Mono', monospace;

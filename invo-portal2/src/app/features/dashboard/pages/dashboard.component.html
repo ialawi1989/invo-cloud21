@@ -82,6 +82,11 @@
             @case ('expiry-date-products') {
               <app-expiring-batches-widget [title]="item.def.title" [scope]="scope()"/>
             }
+            @case (isCustomReport(item.def.slug) ? item.def.slug : '') {
+              <!-- A saved custom report (report builder module). It renders its
+                   own card + title, so it isn't wrapped in a widget-frame. -->
+              <app-custom-report-widget [moduleId]="reportIdFor(item.def.slug)"/>
+            }
             @default {
               <app-series-widget
                 [title]="item.def.title"

@@ -1,0 +1,151 @@
+<!-- Empty: fields ARE on shelves but the server returned 0 rows. -->
+<div *ngIf="!hasData && hasShelfFields" class="empty-chart">
+  <div class="empty-icon">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+  </div>
+  <div class="empty-title">No rows returned</div>
+  <div class="empty-sub">The current selection didn't match any data. Check your field choices and filters, then click Run again.</div>
+</div>
+
+<!-- Empty: nothing on the shelves yet. -->
+<div *ngIf="!hasData && !hasShelfFields" class="empty-chart">
+  <div class="empty-icon">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></svg>
+  </div>
+  <div class="empty-title">Build your first view</div>
+  <div class="empty-sub">Drag fields onto the columns and rows shelves to compose your report.</div>
+</div>
+
+<!-- ═══ Chart can't render with current selection ═══ -->
+<div *ngIf="chartUnsupported" class="chart-unsupported">
+  <div class="chart-unsupported-icon">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+    </svg>
+  </div>
+  <div class="chart-unsupported-title">Can't draw this chart yet</div>
+  <div class="chart-unsupported-sub">{{ chartUnsupportedReason }}</div>
+  <div class="chart-unsupported-hint">Tip: switch to <strong>Table</strong> to see the raw rows.</div>
+</div>
+
+<!-- ═══ CHART (bar / line / area / donut / pie via ApexCharts) ═══ -->
+<div *ngIf="isApexChart && apexOptions" class="apex-wrap">
+  <apx-chart
+    class="apex-chart"
+    [series]="apexOptions.series"
+    [chart]="apexOptions.chart"
+    [xaxis]="apexOptions.xaxis"
+    [yaxis]="apexOptions.yaxis"
+    [colors]="apexOptions.colors"
+    [stroke]="apexOptions.stroke"
+    [fill]="apexOptions.fill"
+    [markers]="apexOptions.markers"
+    [plotOptions]="apexOptions.plotOptions"
+    [dataLabels]="apexOptions.dataLabels"
+    [labels]="apexOptions.labels"
+    [legend]="apexOptions.legend"
+    [tooltip]="apexOptions.tooltip"
+    [grid]="apexOptions.grid"
+    [responsive]="apexOptions.responsive">
+  </apx-chart>
+</div>
+
+<!-- ═══ KPI ═══ -->
+<div *ngIf="hasChartData && chartType === 'kpi'" class="kpi-wrap">
+  <div class="kpi-value">{{ fmtTotal }}</div>
+  <div class="kpi-label">{{ kpiLabel }}</div>
+</div>
+
+<!-- ═══ TABLE ═══ -->
+<div *ngIf="hasData && chartType === 'table' && !hasGroupedTable" class="table-section">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th
+            *ngFor="let h of tableHeaders; let i = index"
+            [class.num]="h.isNum"
+            [class.sorted]="h.sortDir"
+            [class.drag-over-col]="dragOverColIndex === i"
+            draggable="true"
+            (dragstart)="onColDragStart($event, i)"
+            (dragover)="onColDragOver($event, i)"
+            (dragleave)="onColDragLeave()"
+            (drop)="onColDrop($event, i)"
+            (dragend)="onColDragEnd()"
+            (click)="onSortColumn(h.key)"
+          >
+            {{ h.label }}
+            <span *ngIf="h.sortDir" class="sort-icon">{{ h.sortDir === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of tableRows" [style.border-left]="row.colorBorder">
+          <td *ngFor="let cell of row.cells" [class.num]="cell.isNum">{{ cell.value }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ GROUPED TABLE (Group by shelf) ═══ -->
+<div *ngIf="hasData && chartType === 'table' && hasGroupedTable" class="table-section">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th *ngFor="let h of tableHeaders" [class.num]="h.isNum">{{ h.label }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let block of groupedBlocks">
+          <tr *ngFor="let row of block.rows; let ri = index" class="group-row">
+            <ng-container *ngFor="let cell of row.cells; let ci = index">
+              <!-- group name: one merged cell, vertically centred over the group -->
+              <td *ngIf="ci === block.groupColIdx && ri === 0" [attr.rowspan]="block.rows.length" class="group-name-cell">{{ block.value }}</td>
+              <td *ngIf="ci !== block.groupColIdx" [class.num]="cell.isNum">{{ cell.value }}</td>
+            </ng-container>
+          </tr>
+          <tr class="subtotal-row">
+            <td *ngFor="let cell of block.totalCells" [class.num]="cell.isNum" [class.subtotal-label]="cell.isLabel">{{ cell.value }}</td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ═══ PIVOT ═══ -->
+<div *ngIf="hasData && chartType === 'pivot'" class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>{{ pivotDimLabel }}</th>
+        <th *ngFor="let h of pivotMeasHeaders" class="num">{{ h.label }}</th>
+        <th class="num total-col">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of pivotRows">
+        <td class="dim-cell">{{ row.dimLabel }}</td>
+        <td *ngFor="let v of row.values" class="num">{{ v }}</td>
+        <td class="num total-col">{{ row.total }}</td>
+      </tr>
+      <tr class="total-row">
+        <td><strong>Total</strong></td>
+        <td *ngFor="let v of pivotColTotals" class="num"><strong>{{ v }}</strong></td>
+        <td class="num total-col"><strong class="accent">{{ pivotGrandTotal }}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Legend (only for non-Apex chart types — apex renders its own) -->
+<div *ngIf="legendItems.length > 0 && !isApexChart" class="legend">
+  <span *ngFor="let item of legendItems" class="legend-item-inline">
+    <span class="legend-dot" [style.background]="item.color"></span>
+    {{ item.label }}
+  </span>
+</div>

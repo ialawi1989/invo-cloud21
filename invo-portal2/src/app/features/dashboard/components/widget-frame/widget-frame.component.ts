@@ -122,7 +122,8 @@ import { SkeletonComponent } from '@shared/components/skeleton/skeleton.componen
       height: 100%;
       display: flex; flex-direction: column;
       background: #fff;
-      border: 1px solid #e2e8f0;
+      /* Borderless: a soft shadow lifts the card off the page instead. */
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 1px 3px rgba(15, 23, 42, .06);
       border-radius: 12px;
       overflow: hidden;
     }

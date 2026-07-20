@@ -1,0 +1,114 @@
+<div class="calc-fields">
+  <!-- Header -->
+  <div class="calc-header">
+    <span class="calc-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4zM8 12h8M12 8v8"/></svg>
+      Calculated Fields
+    </span>
+    <div class="calc-add-btns">
+      <button class="calc-add-btn" (click)="addMathField()">+ Math</button>
+      <button class="calc-add-btn" (click)="addSummaryField()">+ Summary</button>
+      <button class="calc-add-btn" (click)="addConcatField()">+ Text</button>
+    </div>
+  </div>
+
+  <!-- Field list -->
+  <div *ngFor="let cfv of cachedFieldViews" class="calc-item">
+    <div class="calc-item-info">
+      <span class="calc-item-name">{{ cfv.name }}</span>
+      <span class="calc-item-formula">{{ cfv.formulaLabel }}</span>
+    </div>
+    <div class="calc-item-actions">
+      <button class="calc-action-btn" (click)="editField(cfv.source)" title="Edit">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="calc-action-btn calc-action-btn--danger" (click)="removeField(cfv.id)" title="Remove">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="fields.length === 0 && !showEditor" class="calc-empty">
+    No calculated fields. Click + Math or + Text to create one.
+  </div>
+
+  <!-- Editor -->
+  <div *ngIf="showEditor && editingField" class="calc-editor">
+    <div class="editor-row">
+      <label class="editor-label">Name</label>
+      <input class="editor-input" [(ngModel)]="editingField.name" placeholder="e.g. Net Total, Full Name" />
+    </div>
+
+    <div class="editor-mode-badge" [ngClass]="'mode-' + editingField.mode">
+      {{ editingField.mode === 'concat' ? 'Text concatenation' : editingField.mode === 'summary' ? 'Column summary' : 'Math expression' }}
+    </div>
+
+    <!-- Summary mode: pick aggregate function -->
+    <div *ngIf="editingField.mode === 'summary'" class="editor-row">
+      <label class="editor-label">Aggregate Function</label>
+      <div class="agg-chips">
+        <button
+          *ngFor="let af of aggFunctions"
+          class="agg-chip"
+          [class.active]="editingField.aggFunc === af.value"
+          (click)="editingField.aggFunc = af.value"
+        >{{ af.label }}</button>
+      </div>
+    </div>
+
+    <!-- Concat separator -->
+    <div *ngIf="editingField.mode === 'concat'" class="editor-row">
+      <label class="editor-label">Separator</label>
+      <input class="editor-input editor-input--short" [(ngModel)]="editingField.separator" placeholder="space" />
+    </div>
+
+    <!-- Operands (used by all modes: math, summary, concat) -->
+    <div class="editor-row">
+      <label class="editor-label">
+        {{ editingField.mode === 'summary' ? 'Expression inside ' + (editingField.aggFunc || 'SUM').toUpperCase() + '(...)' : 'Expression' }}
+      </label>
+      <div class="operand-list">
+        <div *ngFor="let op of editingField.operands; let i = index" class="operand-row">
+          <!-- Operator selector (for 2nd+ operands in math/summary mode) -->
+          <ng-select appendTo="body" panelClass="cr-ng-select-dropdown"
+            *ngIf="i > 0 && editingField.mode !== 'concat'"
+            class="operand-operator"
+            [(ngModel)]="op.operator"
+            [clearable]="false"
+          >
+            <ng-option *ngFor="let mo of mathOperators" [value]="mo.value">{{ mo.label }}</ng-option>
+          </ng-select>
+          <span *ngIf="i > 0 && editingField.mode === 'concat'" class="operand-concat-sep">&</span>
+
+          <!-- Type toggle -->
+          <ng-select appendTo="body" panelClass="cr-ng-select-dropdown" class="operand-type" [(ngModel)]="op.type" [clearable]="false">
+            <ng-option [value]="'field'">Field</ng-option>
+            <ng-option [value]="'constant'">Value</ng-option>
+          </ng-select>
+
+          <!-- Value -->
+          <ng-container *ngIf="op.type === 'field'">
+            <ng-select appendTo="body" panelClass="cr-ng-select-dropdown" class="operand-value" [(ngModel)]="op.value" [clearable]="false" placeholder="Select field...">
+              <ng-option *ngFor="let f of (editingField.mode === 'concat' ? cachedAvailableFields : cachedNumericFields)" [value]="f.value">{{ f.label }}</ng-option>
+            </ng-select>
+          </ng-container>
+          <ng-container *ngIf="op.type === 'constant'">
+            <input class="operand-value" [(ngModel)]="op.value" placeholder="Enter value..." />
+          </ng-container>
+
+          <button
+            *ngIf="editingField.operands.length > 2"
+            class="operand-remove"
+            (click)="removeOperand(i)"
+          >x</button>
+        </div>
+        <button class="operand-add" (click)="addOperand()">+ Add</button>
+      </div>
+    </div>
+
+    <div class="editor-actions">
+      <button class="editor-btn editor-btn--cancel" (click)="cancelEdit()">Cancel</button>
+      <button class="editor-btn editor-btn--save" (click)="saveField()">Save</button>
+    </div>
+  </div>
+</div>

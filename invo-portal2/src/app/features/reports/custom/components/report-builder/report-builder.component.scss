@@ -1,0 +1,1113 @@
+@import '../../shared/styles/report-base';
+
+// ─── Design tokens (aligned with Sales Target dashboard) ───
+$teal:       #00aab3;             // Sales Target primary
+$teal-tint:  rgba(#00aab3, 0.10); // hover / active background
+$teal-dark:  #008f97;             // hover / pressed
+$teal-rgb:   0, 170, 179;         // for inline rgba()
+$ink:        #1a1a18;
+$ink-2:      #444441;
+$ink-3:      #6b6b67;
+$ink-4:      #a3a39e;
+$bg-surface: #eeeeed;             // pill / hover surface
+$bg-canvas:  #f5f5f4;             // page background
+$border-rule: 0.5px solid rgba(0,0,0,0.09);
+$rad-input:  6px;
+$rad-card:   10px;
+$rad-canvas: 10px;
+
+// Builder takes the full viewport when mounted at /custom-report (no app layout
+// chrome). Fall back to the old "subtract header + negative margins" math if
+// the host happens to be embedded inside the legacy /reports/custom layout.
+:host {
+  display: block;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+}
+
+.rb {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: $bg-canvas; color: $ink;
+  height: 100%; width: 100%; display: flex; flex-direction: column;
+  overflow: hidden; font-size: 14px; font-weight: 400;
+}
+
+// ─── Top bar ───────────────────────────────────────
+.topbar {
+  height: 56px; background: #fff; border-bottom: $border-rule;
+  display: flex; align-items: center; padding: 0 24px; gap: 16px;
+  flex-shrink: 0; z-index: 20;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.topbar-left {
+  display: flex; align-items: center; gap: 12px;
+  min-width: 0; flex-shrink: 1;
+}
+
+// ─── Back button (full-screen mode has no app sidebar to navigate from) ──
+.btn-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; border-radius: $rad-input;
+  background: #fff; border: 1px solid rgba(0,0,0,0.10);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  color: $ink-2; cursor: pointer; white-space: nowrap;
+  transition: background .14s, color .14s, transform .1s;
+  &:hover { background: $bg-surface; color: $ink; }
+  &:active { transform: scale(.97); }
+  svg { flex-shrink: 0; }
+}
+
+.topbar-spacer { flex: 1; }
+
+.topbar-right {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.btn-group {
+  display: flex; align-items: center; gap: 4px;
+  &:not(:last-child) {
+    padding-right: 12px;
+    border-right: $border-rule;
+  }
+}
+
+// ─── Breadcrumb ────────────────────────────────────
+.crumbs {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; color: $ink-2;
+  min-width: 0;
+}
+.crumb { display: inline-block; white-space: nowrap; }
+.crumb--muted { color: $ink-3; font-weight: 500; }
+.crumb--link {
+  cursor: pointer; user-select: none;
+  padding: 2px 6px; border-radius: 6px;
+  transition: background .14s, color .14s;
+  &:hover { background: $bg-surface; color: $teal-dark; }
+  &:focus-visible { outline: 2px solid $teal; outline-offset: 1px; }
+}
+.crumb-sep { color: $ink-4; font-weight: 400; }
+.crumb--name {
+  color: $ink; font-weight: 600; cursor: pointer;
+  padding: 3px 8px; border-radius: $rad-input;
+  max-width: 280px; overflow: hidden; text-overflow: ellipsis;
+  &:hover { background: $bg-surface; }
+}
+.crumb-input {
+  border: $border-rule; background: #fff; outline: none;
+  border-radius: $rad-input; padding: 4px 10px;
+  font-size: 14px; font-weight: 600; color: $ink;
+  font-family: inherit; min-width: 240px;
+  &:focus { border-color: $teal; box-shadow: 0 0 0 3px rgba($teal, 0.12); }
+}
+
+// ─── Status pill ───────────────────────────────────
+.status-pill {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 700;
+  background: #FAEEDA; color: #854F0B;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  &--published { background: $teal-tint; color: $teal-dark; }
+}
+
+.saved-ago {
+  font-size: 12px; color: $ink-3; font-weight: 500;
+  white-space: nowrap;
+}
+
+// ─── Buttons (Sales Target style) ──────────────────
+.icon-btn {
+  width: 32px; height: 32px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid rgba(0,0,0,0.10); border-radius: $rad-input;
+  color: $ink-2; cursor: pointer; transition: background .14s, transform .1s;
+  &:hover { background: $bg-surface; color: $ink; }
+  &:active { transform: scale(.97); }
+  &.is-disabled { opacity: .35; pointer-events: none; }
+}
+
+.ghost-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border-radius: $rad-input;
+  background: #fff; border: 1px solid rgba(0,0,0,0.10);
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  color: $ink; cursor: pointer;
+  transition: background .14s, transform .1s;
+  &:hover { background: $bg-surface; }
+  &:active { transform: scale(.97); }
+  &:disabled { opacity: .5; pointer-events: none; }
+  &--sm { padding: 6px 12px; font-size: 12px; }
+}
+
+.primary-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 16px; border-radius: $rad-input;
+  background: $teal; border: none;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  color: #fff; cursor: pointer;
+  transition: background .14s, transform .1s;
+  &:hover { background: $teal-dark; }
+  &:active { transform: scale(.97); }
+  &:disabled { opacity: .55; pointer-events: none; }
+}
+
+.toggle-inline {
+  // Matches the sibling .ghost-btn / .icon-btn dimensions in the topbar so
+  // the row reads as one consistent group: 32px height, 13px / 700 text,
+  // same border + radius.
+  display: inline-flex; align-items: center; gap: 10px;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid rgba(0, 0, 0, 0.10); border-radius: $rad-input;
+  background: #fff;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  color: $ink; cursor: pointer;
+  white-space: nowrap;
+  transition: background .14s, border-color .14s;
+  &:hover { background: $bg-surface; }
+  .toggle-inline-label { line-height: 1; }
+  // Visual baseline correction: the small switch sits 1px low compared to
+  // the text baseline at this height — nudge it up so it lines up with
+  // the label centre.
+  .toggle { display: inline-flex; align-items: center; }
+}
+
+// ─── Main layout ───────────────────────────────────
+.main-layout {
+  flex: 1; display: flex; overflow: hidden; min-height: 0;
+  background: #fff;
+}
+
+:host ::ng-deep {
+  // ─── ng-select compact theming (matches surrounding ghost-btn / inputs) ──
+  //
+  // The custom-reports builder packs ng-select into tight rows next to
+  // checkboxes, labels, and ghost-buttons. The library's default theme
+  // ships with a tall .ng-select-container and large padding that throws
+  // off the line. These overrides give every ng-select inside the builder
+  // a consistent 28px height, the same border-radius as our inputs, and
+  // the same teal accent on focus / open.
+  ng-select {
+    font-size: 11px;
+    .ng-select-container {
+      min-height: 28px;
+      height: 28px;
+      border-radius: $rad-input;
+      border-color: var(--ng-rule, #e6e6e3);
+      background: #fff;
+    }
+    &.ng-select-focused:not(.ng-select-opened) > .ng-select-container,
+    &.ng-select-opened > .ng-select-container,
+    .ng-select-container:hover {
+      border-color: $teal;
+      box-shadow: none;
+    }
+    .ng-value-container {
+      padding-left: 8px;
+      align-items: center;
+    }
+    .ng-value-container .ng-input > input {
+      font-size: 11px;
+      color: $ink;
+    }
+    .ng-value-container .ng-placeholder {
+      color: $ink-4;
+      font-size: 11px;
+    }
+    .ng-arrow-wrapper {
+      width: 18px; padding-right: 4px;
+    }
+    .ng-clear-wrapper { display: none; }
+    .ng-dropdown-panel {
+      border-color: var(--ng-rule, #e6e6e3);
+      border-radius: $rad-input;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    }
+    .ng-dropdown-panel .ng-option {
+      font-size: 11px; padding: 6px 10px; color: $ink;
+      &.ng-option-marked { background: $teal-tint; color: $teal-dark; }
+      &.ng-option-selected { background: $teal; color: #fff; font-weight: 500; }
+    }
+  }
+
+  // Form-input variant: when ng-select is dropped where the old <select
+  // class="form-input"> was, match the input height (34px) so it lines
+  // up with the surrounding text inputs in the General / Source panels.
+  ng-select.form-input {
+    .ng-select-container { min-height: 34px; height: 34px; }
+  }
+
+  app-field-list { display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; }
+  app-field-list .field-list-panel { width: var(--field-list-width, 240px); }
+  app-shelves-panel { display: block; flex-shrink: 0; }
+  // marks-card lives in the shelf area (Tableau-style Marks card), to the left
+  // of the Filters/Columns/Rows shelves. It keeps its own "Marks" header here.
+  app-marks-card { display: block; width: 100%; }
+  app-marks-card .marks-card {
+    width: 100%; padding: 0; background: transparent;
+    border: 0; border-right: 0;
+  }
+  app-sheet-tabs { display: block; flex-shrink: 0; }
+  app-report-pagination { display: block; flex-shrink: 0; }
+  app-dashboard-canvas { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  app-view-mode { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  app-calculated-fields { display: block; }
+}
+
+// ─── Resize handles ────────────────────────────────
+.resize-handle {
+  flex-shrink: 0;
+  background: transparent;
+  position: relative;
+  z-index: 5;
+  transition: background .12s;
+
+  &--v {
+    width: 4px;
+    cursor: col-resize;
+    align-self: stretch;
+    margin: 0 -2px; // overlay edges so the visible border still shows
+  }
+
+  &--h {
+    height: 4px;
+    cursor: row-resize;
+    margin: -2px 0;
+  }
+
+  &:hover, &:active {
+    background: rgba($teal, 0.25);
+  }
+}
+
+// ─── Builder center ────────────────────────────────
+.builder-center {
+  flex: 1; display: flex; flex-direction: column;
+  min-height: 0; overflow: hidden; background: #fff;
+}
+
+// ─── Contextual hint banner (Table vs Pivot etc.) ──
+.chart-hint {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 10px 16px;
+  background: $teal-tint;
+  border-bottom: $border-rule;
+  color: $ink;
+  font-size: 12.5px; line-height: 1.45;
+  flex-shrink: 0;
+
+  strong { color: $teal-dark; font-weight: 700; }
+}
+.chart-hint-icon {
+  color: $teal-dark;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+// Auto-join failure notice — amber warning variant of the hint banner.
+.join-notice {
+  background: #fff8e6;
+  color: #7a5b00;
+  border-bottom-color: #f0d27a;
+
+  .chart-hint-icon { color: #c08a00; }
+}
+.join-notice-dismiss {
+  margin-left: auto;
+  background: none; border: none; cursor: pointer;
+  color: #7a5b00; font-size: 16px; line-height: 1;
+  padding: 0 2px; flex-shrink: 0;
+
+  &:hover { color: #4a3700; }
+}
+
+// ─── Chart tiles row ───────────────────────────────
+// ─── Sheet / Dashboard single toggle (config panel, top-right) ─
+.rt-toggle-bar {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  padding: 8px 10px;
+  border-bottom: $border-rule;
+}
+.rt-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border: $border-rule; border-radius: $rad-input;
+  background: $bg-surface; cursor: pointer;
+  font-family: inherit; font-size: 12px; font-weight: 600; color: $teal-dark;
+  transition: background .12s, color .12s, border-color .12s;
+  svg { color: $teal-dark; }
+  &:hover { background: $teal-tint; border-color: rgba($teal, 0.3); }
+}
+
+// Smart-marks live suggestion chip (Feature 3) — informational by default,
+// turns warning-tinted when the engine signals a placement mismatch.
+.suggestion-chip {
+  display: flex; align-items: center; gap: 8px;
+  margin: 8px 16px 0;
+  padding: 8px 12px;
+  background: $teal-tint;
+  border: 1px solid rgba($teal, 0.25);
+  border-radius: $rad-input;
+  font-size: 12px; color: $ink;
+  &--mismatch {
+    background: rgba(#f59e0b, 0.10);
+    border-color: rgba(#f59e0b, 0.35);
+    .suggestion-chip-icon { color: #b45309; }
+  }
+  .suggestion-chip-icon { color: $teal-dark; flex-shrink: 0; }
+  .suggestion-chip-text { flex: 1; min-width: 0; }
+  .suggestion-chip-apply {
+    background: $teal; color: #fff; border: 0; border-radius: $rad-input;
+    padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+    &:hover { background: $teal-dark; }
+  }
+  .suggestion-chip-dismiss {
+    background: none; border: 0; color: $ink-3; cursor: pointer;
+    font-size: 16px; line-height: 1; padding: 0 4px;
+    &:hover { color: $ink; }
+  }
+}
+// ─── Fullscreen canvas mode ───────────────────────
+.rb.rb--fullscreen {
+  app-field-list,
+  .shelf-toggle,
+  .shelf-area-row,
+  .resize-handle--h,
+  .config-panel,
+  app-sheet-tabs,
+  app-report-pagination,
+  > app-field-list,
+  .main-layout > .resize-handle--v,
+  .main-layout > .resize-handle {
+    display: none !important;
+  }
+  .canvas-card { max-width: none; width: 100%; }
+  .preview-scroll { padding: 8px; }
+}
+
+// ─── Marks + shelves collapse toggle ───────────────
+.shelf-toggle {
+  display: flex; align-items: center; gap: 7px;
+  width: 100%;
+  padding: 10px 16px;
+  background: #fff;
+  border: none;
+  border-bottom: $border-rule;
+  font-family: inherit;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  color: $ink-2;
+  cursor: pointer;
+  flex-shrink: 0;
+  text-align: left;
+
+  &:hover { background: $bg-surface; color: $ink; }
+}
+.shelf-toggle-chevron {
+  color: $ink-3;
+  transition: transform .18s ease;
+  flex-shrink: 0;
+}
+.shelf-toggle.is-open .shelf-toggle-chevron { transform: rotate(90deg); }
+.shelf-toggle-label { color: $ink-2; }
+.shelf-toggle-summary {
+  margin-left: auto;
+  color: $ink-3;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+// ─── Marks + shelves row ───────────────────────────
+.shelf-area-row {
+  display: flex;
+  flex-shrink: 0;
+  border-bottom: $border-rule;
+  background: #fff;
+  overflow: hidden;
+  min-height: 160px;
+}
+// Tableau-style Marks card column — sits to the left of the shelves.
+.shelf-marks-col {
+  flex-shrink: 0;
+  width: 200px;
+  min-height: 0;
+  border-right: $border-rule;
+  overflow-y: auto;
+  padding: 10px 12px;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+}
+.shelves-wrap {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+}
+
+// ─── Canvas preview ────────────────────────────────
+.preview-scroll {
+  flex: 1; min-height: 0; overflow: hidden;
+  padding: 20px; background: $bg-canvas;
+  // `stretch` instead of `flex-start` so the canvas-card fills the available
+  // height. Without it, a tall table grew the card past the viewport and
+  // pushed the horizontal scrollbar below the fold — users had to scroll
+  // vertically just to access the horizontal scroll.
+  display: flex; justify-content: center; align-items: stretch;
+  transition: background .15s;
+  &.preview-drag-over {
+    background: $teal-tint;
+    outline: 2px dashed $teal; outline-offset: -4px;
+  }
+}
+.canvas-card {
+  background: #fff;
+  border: $border-rule;
+  border-radius: $rad-canvas;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.055);
+  width: 100%; max-width: 1100px;
+  // Fill the .preview-scroll height (which is `align-items: stretch`) so the
+  // inner .table-wrap overflow keeps the horizontal scrollbar within the
+  // visible viewport. `min-height: 0` is required for the flex-child
+  // overflow chain to actually clip.
+  height: 100%; max-height: 100%; min-height: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.canvas-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: $border-rule;
+}
+.canvas-header-left {
+  display: flex; align-items: center; gap: 10px;
+  min-width: 0;
+}
+.canvas-title {
+  font-size: 15px; font-weight: 700; color: $ink;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.canvas-pill {
+  display: inline-flex; padding: 3px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.4px;
+  background: #FAEEDA; color: #854F0B;
+  &--active { background: $teal-tint; color: $teal-dark; }
+}
+.canvas-header-right {
+  display: flex; align-items: center; gap: 4px;
+  position: relative;
+}
+.canvas-icon {
+  width: 26px; height: 26px; padding: 0;
+  background: transparent; border: $border-rule;
+  border-radius: $rad-input;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: $ink-3; cursor: pointer;
+  &:hover { background: $bg-surface; color: $ink; }
+}
+// Labeled variant (icon + text) used by the Show Me button.
+.canvas-icon--labeled {
+  width: auto; gap: 6px; padding: 0 10px;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+}
+.show-me-btn.is-active {
+  background: $teal-tint; color: $teal-dark; border-color: rgba($teal, 0.3);
+}
+
+// ─── Show Me popover (single chart-type picker) ─────
+.show-me-popover {
+  position: absolute; top: 100%; right: 0; margin-top: 6px;
+  width: 280px; z-index: 40;
+  background: #fff; border: $border-rule; border-radius: $rad-card;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+}
+.show-me-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 4px; padding: 10px;
+}
+.show-me-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 9px 4px; border-radius: $rad-input;
+  background: transparent; border: 1px solid transparent;
+  font-family: inherit; cursor: pointer;
+  color: $ink-2; transition: background .12s, color .12s, border-color .12s;
+  svg { color: $ink-3; transition: color .12s; }
+  &:hover { background: $bg-surface; color: $ink; svg { color: $ink; } }
+  &.is-active {
+    background: $teal-tint; color: $teal-dark; border-color: rgba($teal, 0.25);
+    svg { color: $teal-dark; }
+  }
+}
+.show-me-tile-label { font-size: 11px; font-weight: 600; }
+.show-me-desc {
+  padding: 10px 14px; border-top: $border-rule;
+  background: $bg-surface; font-size: 12px; line-height: 1.45; color: $ink-2;
+  strong { color: $ink; font-weight: 600; }
+}
+.show-me-footer {
+  padding: 8px 10px; border-top: $border-rule;
+  .choose-for-me-btn { width: 100%; justify-content: center; }
+}
+// Transparent click-catcher so clicking outside closes the popover.
+.show-me-backdrop {
+  position: fixed; inset: 0; z-index: 35; background: transparent;
+}
+.canvas-body {
+  flex: 1; padding: 16px;
+  display: flex; align-items: stretch; justify-content: center;
+  // Without `min-height: 0` the default `min-height: auto` resolves to
+  // min-content — i.e. the natural height of the table — so the canvas-body
+  // grows past the .canvas-card bounds and the horizontal scrollbar
+  // (anchored at the bottom of .table-wrap) ends up clipped out of view.
+  min-height: 0;
+  overflow: hidden;
+}
+.export-dropdown {
+  position: absolute; top: 100%; right: 0; margin-top: 4px;
+  background: #fff; border: $border-rule; border-radius: $rad-card;
+  min-width: 160px; z-index: 30; overflow: hidden;
+  button {
+    display: block; width: 100%; text-align: left; padding: 8px 14px;
+    background: none; border: none; font-family: inherit; font-size: 12px;
+    color: $ink-2; cursor: pointer;
+    &:hover { background: $bg-surface; color: $ink; }
+  }
+}
+.loading-spinner {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; color: $ink-4; font-size: 12px; padding: 32px;
+}
+.spinner {
+  width: 28px; height: 28px;
+  border: 2.5px solid #eee; border-top-color: $teal;
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+
+// ─── Right config panel ────────────────────────────
+.config-panel {
+  width: 300px;
+  background: #fff;
+  border-left: $border-rule;
+  display: flex; flex-direction: column;
+  flex-shrink: 0; min-height: 0; overflow: hidden;
+}
+.tabs-row {
+  display: flex;
+  border-bottom: $border-rule;
+  background: #fff;
+  flex-shrink: 0;
+}
+.tab-btn {
+  flex: 1;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px;
+  padding: 12px 6px;
+  background: transparent; border: none;
+  border-bottom: 2px solid transparent;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  color: $ink-2; cursor: pointer;
+  transition: color .14s, border-color .14s, background .14s;
+  svg { color: $ink-3; transition: color .14s; width: 16px; height: 16px; }
+  &:hover { color: $ink; background: $bg-surface; svg { color: $ink; } }
+  &.is-active {
+    color: $teal-dark; border-bottom-color: $teal;
+    svg { color: $teal-dark; }
+  }
+}
+.config-content {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: 14px 0;
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+}
+
+.sub-head {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  color: $ink-3;
+  padding: 12px 16px 8px;
+}
+.form-group { padding: 0 16px 14px; }
+.form-label {
+  display: block; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  color: $ink-3; margin-bottom: 6px;
+}
+.form-input {
+  width: 100%; padding: 9px 12px;
+  background: #fff;
+  border: $border-rule;
+  border-radius: $rad-input;
+  font-family: inherit; font-size: 14px; font-weight: 500; color: $ink; outline: none;
+  transition: border-color .14s, box-shadow .14s;
+  &:focus { border-color: $teal; box-shadow: 0 0 0 3px rgba($teal, 0.12); }
+  &::placeholder { color: $ink-4; font-weight: 400; }
+}
+
+// ─── Modules ───────────────────────────────────────
+.modules-section { padding: 6px 0 14px; }
+.modules-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 16px 8px;
+}
+.modules-title {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  color: $ink-3;
+}
+.modules-new {
+  background: transparent; border: none;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  color: $teal-dark; cursor: pointer;
+  &:hover { text-decoration: underline; }
+}
+.modules-search {
+  display: flex; align-items: center; gap: 7px;
+  margin: 0 16px 10px;
+  padding: 8px 10px;
+  background: #fff; border: $border-rule; border-radius: $rad-input;
+  transition: border-color .14s, box-shadow .14s;
+  &:focus-within { border-color: $teal; box-shadow: 0 0 0 3px rgba($teal, 0.12); }
+  svg { color: $ink-3; flex-shrink: 0; }
+  input {
+    flex: 1; border: none; background: none; outline: none;
+    font-family: inherit; font-size: 13px; color: $ink;
+    &::placeholder { color: $ink-4; }
+  }
+}
+.modules-group-head {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  color: $ink-3;
+  padding: 6px 16px 6px;
+}
+.module-card {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin: 0 10px 6px;
+  padding: 10px 12px;
+  border-radius: $rad-card;
+  background: #fff; border: $border-rule;
+  cursor: pointer;
+  transition: background .14s, border-color .14s, transform .1s;
+  &:hover { background: $bg-surface; border-color: rgba(0,0,0,0.12); }
+  &:active { transform: scale(.98); }
+  &.is-active { background: $teal-tint; border-color: rgba($teal, 0.30); }
+  &--compact { padding: 8px 12px; }
+}
+.module-card-main { flex: 1; min-width: 0; }
+.module-card-name {
+  font-size: 13px; font-weight: 600; color: $ink;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.module-card-meta {
+  font-size: 11px; color: $ink-3; font-weight: 500;
+  margin-top: 3px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.module-fav {
+  background: none; border: none; padding: 3px;
+  color: $ink-4; cursor: pointer;
+  flex-shrink: 0;
+  &:hover { color: $teal-dark; }
+  &.is-fav { color: $teal-dark; }
+}
+.show-all-link {
+  display: inline-block; margin: 6px 16px 0;
+  background: none; border: none; padding: 4px 0;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  color: $teal-dark; cursor: pointer;
+  &:hover { text-decoration: underline; }
+}
+.empty-msg {
+  padding: 10px 16px; font-size: 12px; color: $ink-3; font-style: normal;
+}
+
+// ─── Joins ─────────────────────────────────────────
+.join-item {
+  padding: 6px 14px;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  .join-checkbox-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    flex: 1; min-width: 0;
+    font-size: 12px; color: $ink-2; cursor: pointer; font-weight: 400;
+    line-height: 1;
+    input { accent-color: $teal; flex-shrink: 0; margin: 0; }
+  }
+  .join-type-select {
+    flex-shrink: 0;
+    min-width: 110px;
+    font-size: 11px;
+  }
+}
+
+// ─── Column picker trigger ─────────────────────────
+.column-picker-trigger {
+  margin: 0 14px 10px; padding: 8px 12px;
+  background: #fff; border: $border-rule;
+  border-radius: $rad-input; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background .12s;
+  &:hover { background: $bg-surface; }
+  .trigger-left {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500; color: $ink;
+  }
+  .trigger-count { font-size: 11px; color: $teal-dark; font-weight: 500; }
+}
+
+// ─── Data tab (color legend + quick filters) ──────────────────────
+.data-legend {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 6px 14px 8px;
+}
+.data-legend-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: $ink;
+  min-width: 0;
+}
+.data-legend-swatch {
+  width: 12px; height: 12px; border-radius: 3px;
+  flex-shrink: 0; border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.data-legend-label {
+  flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+// ─── Data tab: per-dimension quick-filter sections ───
+// Each .data-filter is a collapsible card-like block separated by a 1-px
+// rule. Header is a button-shaped row; body holds optional search +
+// "(All)" + the virtual list of values. The "active" state lives on the
+// outer wrapper so dividers / chevrons can react.
+
+.data-filter {
+  border-top: $border-rule;
+  &:last-child { border-bottom: $border-rule; }
+}
+
+.data-filter-head {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  background: transparent; border: 0;
+  font-family: inherit;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  color: $ink-2;
+  cursor: pointer;
+  text-align: left;
+  user-select: none;
+  &:hover { background: $bg-surface; }
+}
+.data-filter-chevron {
+  color: $ink-3; flex-shrink: 0;
+  transition: transform 0.14s;
+  transform: rotate(90deg); // expanded by default
+  .data-filter.is-collapsed & { transform: rotate(0); }
+}
+.data-filter-name {
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+// Subdued right-aligned chip — "All (n)" / "K / N" / "None".
+.data-filter-summary {
+  flex-shrink: 0;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0;  text-transform: none;
+  color: $ink-3;
+  background: $bg-surface;
+  padding: 2px 7px;
+  border-radius: 10px;
+  .data-filter.is-active & {
+    color: $teal-dark;
+    background: $teal-tint;
+  }
+}
+.data-filter-clear {
+  flex-shrink: 0;
+  color: $ink-4; cursor: pointer;
+  font-size: 14px; line-height: 1; padding: 0 4px;
+  border-radius: 3px;
+  &:hover { color: $ink; background: $bg-surface; }
+}
+
+.data-filter-body {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 0 12px 8px;
+}
+
+// Search input above the virtual list.
+.data-filter-search {
+  display: flex; align-items: center; gap: 6px;
+  margin: 2px 0 6px;
+  padding: 5px 9px;
+  border: $border-rule; border-radius: $rad-input;
+  background: #fff;
+  svg { color: $ink-4; flex-shrink: 0; }
+  input {
+    flex: 1; min-width: 0;
+    border: 0; outline: 0; background: transparent;
+    font-size: 11px; color: $ink; font-family: inherit;
+    &::placeholder { color: $ink-4; }
+  }
+  &:focus-within { border-color: $teal; }
+}
+
+// CDK virtual viewport — fixed height. itemSize="26" must match the
+// rendered option height (padding + line).
+.data-filter-virtual {
+  height: 220px;
+  display: block;
+  contain: strict;
+  ::ng-deep .cdk-virtual-scroll-content-wrapper {
+    display: flex; flex-direction: column;
+    will-change: transform;
+    contain: content;
+  }
+}
+
+// Quiet option row — no row background by default. The checkbox itself
+// communicates state; backgrounds only on hover. This prevents the
+// "wall of teal" when most rows are checked.
+.data-filter-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 6px;
+  font-size: 11px; color: $ink-2;
+  cursor: pointer; user-select: none;
+  border-radius: 3px;
+  &:hover { background: $bg-surface; }
+  input[type="checkbox"] {
+    accent-color: $teal; flex-shrink: 0; margin: 0;
+    width: 13px; height: 13px;
+    cursor: pointer;
+  }
+  span {
+    flex: 1; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+}
+// "(All)" row sits above the list. Slightly distinguished from data rows
+// so users see it as a meta-control rather than another value.
+.data-filter-all {
+  font-weight: 600; color: $ink;
+  border-bottom: $border-rule;
+  margin-bottom: 4px;
+  padding-bottom: 6px;
+  &.is-indeterminate input[type="checkbox"] {
+    // Indeterminate styling — Chromium / Firefox handle this via the
+    // .indeterminate IDL attr (set via [indeterminate] binding in Angular).
+    // Some browsers don't reflect it visually with accent-color, so we
+    // add a subtle teal box-shadow fallback.
+    box-shadow: inset 0 0 0 2px $teal;
+  }
+}
+
+.data-filter-empty {
+  font-size: 11px; color: $ink-4; padding: 8px 6px; text-align: center;
+}
+
+.data-empty {
+  font-size: 12px; color: $ink-3; line-height: 1.5;
+  padding: 16px 14px;
+}
+// ─── Settings ──────────────────────────────────────
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px;
+  label { font-size: 12px; color: $ink-2; font-weight: 400; }
+}
+.toggle {
+  position: relative; width: 32px; height: 18px; display: inline-block;
+  input { opacity: 0; width: 0; height: 0; }
+}
+.toggle-track {
+  position: absolute; inset: 0; background: #d6d6d2;
+  border-radius: 18px; cursor: pointer; transition: background .15s;
+  &::before {
+    content: ''; position: absolute;
+    height: 14px; width: 14px; left: 2px; bottom: 2px;
+    background: #fff; border-radius: 50%; transition: transform .15s;
+  }
+}
+.toggle input:checked + .toggle-track { background: $teal; }
+.toggle input:checked + .toggle-track::before { transform: translateX(14px); }
+
+.config-list { padding: 0 14px; }
+.config-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 0; font-size: 11px; color: $ink-2;
+  span { flex: 1; }
+}
+.sort-dir-btn {
+  background: #fff; border: $border-rule; border-radius: $rad-input;
+  padding: 2px 8px; font-size: 10px; cursor: pointer; color: $ink-2;
+  font-family: inherit; font-weight: 500;
+  &:hover { border-color: $teal; color: $teal-dark; }
+}
+.remove-btn {
+  background: none; border: none; cursor: pointer;
+  color: $ink-4; font-size: 14px; line-height: 1;
+  &:hover { color: #b3261e; }
+}
+.add-btn {
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  padding: 7px 10px; margin: 8px 14px;
+  width: calc(100% - 28px);
+  background: #fff; border: 0.5px dashed rgba(0,0,0,0.16);
+  border-radius: $rad-input;
+  color: $ink-3; font-family: inherit; font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  &:hover { border-color: $teal; color: $teal-dark; }
+}
+
+// ─── Column reorder dialog ────────────────────────
+.reorder-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 9000; }
+.reorder-dialog {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 340px; max-height: 70vh; background: #fff;
+  border-radius: $rad-card; border: $border-rule;
+  z-index: 9001; display: flex; flex-direction: column;
+}
+.reorder-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: $border-rule;
+  font-size: 13px; font-weight: 500; color: $ink;
+}
+.reorder-close {
+  background: none; border: none; color: $ink-3; cursor: pointer; padding: 4px;
+  border-radius: $rad-input;
+  &:hover { color: $ink; background: $bg-surface; }
+}
+.reorder-list {
+  flex: 1; overflow-y: auto; padding: 6px 0;
+}
+.reorder-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 16px; cursor: grab;
+  user-select: none;
+  &:hover { background: $bg-surface; }
+  &:hover .reorder-grip { color: $teal-dark; }
+  &:active { cursor: grabbing; background: $teal-tint; }
+  &.is-dragging { opacity: 0.4; }
+}
+.reorder-grip {
+  color: $ink-4; flex-shrink: 0;
+  display: inline-flex; align-items: center;
+  cursor: grab;
+  transition: color .12s;
+}
+.reorder-placeholder {
+  height: 2px; margin: 0 16px;
+  background: $teal; border-radius: 2px;
+  box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.18);
+  pointer-events: none;
+}
+.reorder-label {
+  flex: 1; font-size: 12px; color: $ink;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.reorder-arrows {
+  display: flex; flex-direction: column; gap: 1px; flex-shrink: 0;
+  button {
+    width: 22px; height: 18px; border: none; background: none;
+    color: $ink-4; cursor: pointer; padding: 0; border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    &:hover:not(:disabled) { color: $teal-dark; background: $teal-tint; }
+    &:disabled { opacity: 0.25; cursor: default; }
+  }
+}
+.reorder-footer {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 12px 16px; border-top: $border-rule;
+}
+.reorder-btn {
+  padding: 6px 14px; border-radius: $rad-input;
+  font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer;
+  border: $border-rule;
+  &--cancel { background: #fff; color: $ink-2; &:hover { background: $bg-surface; } }
+  &--apply {
+    background: $teal; color: #fff; border-color: transparent;
+    &:hover:not(:disabled) { background: $teal-dark; }
+    &:disabled { opacity: 0.5; cursor: default; }
+  }
+}
+
+// ─── Add-sort picker tweaks (radio rows + ASC/DESC toggle) ──
+.reorder-item {
+  // Hide the native radio used by the add-sort picker; selection is
+  // shown via .is-selected highlighting below.
+  > input[type="radio"] { display: none; }
+  &.is-selected {
+    background: $teal-tint;
+    .reorder-label { color: $teal-dark; font-weight: 500; }
+  }
+}
+.add-sort-dir-toggle {
+  display: inline-flex; gap: 4px; margin-right: auto;
+  .sort-dir-btn.is-active {
+    background: $teal; color: #fff; border-color: $teal;
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// Export-button "fetching all rows" state — rotates the spinner icon while
+// `exporting` is true. Disabled state is handled by the [disabled] attr.
+.export-spinner { animation: spin 0.9s linear infinite; }
+.canvas-icon.is-busy { opacity: 0.65; cursor: progress; }
+
+// ─── Dashboard "Arrange layout" (shared editor overlay) ─────────
+.primary-btn--sm { padding: 6px 14px; font-size: 12px; }
+
+.dash-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 16px 0;
+  flex-shrink: 0;
+}
+
+.arrange-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  z-index: 1080;
+}
+.arrange-dialog {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 720px; max-width: calc(100vw - 32px);
+  height: 70vh; max-height: 640px;
+  display: flex; flex-direction: column;
+  background: #fff; border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  z-index: 1081; overflow: hidden;
+}
+.arrange-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: $border-rule;
+}
+.arrange-title { font-size: 15px; font-weight: 700; color: $ink; }
+.arrange-header-actions { display: flex; align-items: center; gap: 10px; }
+.arrange-close {
+  background: none; border: 0; font-size: 22px; line-height: 1;
+  color: $ink-3; cursor: pointer;
+  &:hover { color: $ink; }
+}
+.arrange-editor { flex: 1; min-height: 0; display: flex; }
+.arrange-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 12px 18px; border-top: $border-rule;
+}

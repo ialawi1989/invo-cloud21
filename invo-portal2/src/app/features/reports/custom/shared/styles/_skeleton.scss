@@ -1,0 +1,172 @@
+/**
+ * Skeleton Loading Mixins
+ * Stage 4: Performance Optimization
+ * 
+ * Usage in component SCSS:
+ * @import 'shared/styles/skeleton';
+ * 
+ * .my-element {
+ *   @include skeleton-shimmer;
+ * }
+ */
+
+// ===========================================
+// SHIMMER ANIMATION
+// ===========================================
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// ===========================================
+// MIXINS
+// ===========================================
+
+/// Apply shimmer effect to an element
+/// @param {Color} $base-color [#f0f0f0] - Base skeleton color
+/// @param {Color} $highlight-color [#e8e8e8] - Highlight color for shimmer
+/// @param {Duration} $duration [1.4s] - Animation duration
+@mixin skeleton-shimmer($base-color: #f0f0f0, $highlight-color: #e8e8e8, $duration: 1.4s) {
+  background: linear-gradient(
+    90deg,
+    $base-color 25%,
+    $highlight-color 37%,
+    $base-color 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer $duration ease infinite;
+  border-radius: 4px;
+}
+
+/// Create a skeleton text line
+/// @param {Length} $height [16px] - Height of the line
+/// @param {Length} $width [100%] - Width of the line
+@mixin skeleton-text($height: 16px, $width: 100%) {
+  @include skeleton-shimmer;
+  height: $height;
+  width: $width;
+  display: block;
+}
+
+/// Create a skeleton title
+@mixin skeleton-title {
+  @include skeleton-text(24px, 60%);
+  margin-bottom: 16px;
+}
+
+/// Create a skeleton paragraph (multiple lines)
+/// @param {Number} $lines [3] - Number of lines
+/// @param {Length} $line-height [16px] - Height of each line
+/// @param {Length} $gap [10px] - Gap between lines
+@mixin skeleton-paragraph($lines: 3, $line-height: 16px, $gap: 10px) {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+
+  &::before,
+  &::after,
+  > * {
+    @include skeleton-text($line-height, 100%);
+    content: '';
+  }
+
+  &::after {
+    width: 70%;
+  }
+}
+
+/// Create a skeleton avatar/image
+/// @param {Length} $size [48px] - Size of the avatar
+/// @param {Boolean} $circle [true] - Whether to make it circular
+@mixin skeleton-avatar($size: 48px, $circle: true) {
+  @include skeleton-shimmer;
+  width: $size;
+  height: $size;
+  @if $circle {
+    border-radius: 50%;
+  } @else {
+    border-radius: 8px;
+  }
+}
+
+/// Create a skeleton button
+/// @param {Length} $width [120px] - Button width
+/// @param {Length} $height [40px] - Button height
+@mixin skeleton-button($width: 120px, $height: 40px) {
+  @include skeleton-shimmer;
+  width: $width;
+  height: $height;
+  border-radius: 6px;
+}
+
+/// Create a skeleton card
+@mixin skeleton-card {
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+// ===========================================
+// UTILITY CLASSES (optional - can be used directly in templates)
+// ===========================================
+
+.skeleton-shimmer {
+  @include skeleton-shimmer;
+}
+
+.skeleton-text {
+  @include skeleton-text;
+}
+
+.skeleton-text-short {
+  @include skeleton-text(16px, 40%);
+}
+
+.skeleton-text-medium {
+  @include skeleton-text(16px, 70%);
+}
+
+.skeleton-text-long {
+  @include skeleton-text(16px, 100%);
+}
+
+.skeleton-title {
+  @include skeleton-title;
+}
+
+.skeleton-avatar {
+  @include skeleton-avatar;
+}
+
+.skeleton-avatar-sm {
+  @include skeleton-avatar(32px);
+}
+
+.skeleton-avatar-lg {
+  @include skeleton-avatar(64px);
+}
+
+.skeleton-button {
+  @include skeleton-button;
+}
+
+// ===========================================
+// DARK MODE SUPPORT (optional)
+// ===========================================
+
+@mixin skeleton-shimmer-dark {
+  @include skeleton-shimmer(#2a2a2a, #3a3a3a);
+}
+
+// Usage: 
+// @media (prefers-color-scheme: dark) {
+//   .skeleton-shimmer {
+//     @include skeleton-shimmer-dark;
+//   }
+// }

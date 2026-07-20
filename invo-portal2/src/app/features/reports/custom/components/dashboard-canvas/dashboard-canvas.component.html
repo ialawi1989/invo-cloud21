@@ -1,0 +1,73 @@
+<div class="dashboard-container">
+  <!-- ═══ DASHBOARD HEADER ═══ -->
+  <div class="dashboard-header">
+    <h2 class="dashboard-title">{{ dashboard.name }}</h2>
+
+    <div class="global-filters">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
+      </svg>
+      <span class="gf-label">Global Filters</span>
+
+      <div *ngFor="let r of dashboard.globalFilters; let i = index" class="gf-pill">
+        <ng-select appendTo="body" panelClass="cr-ng-select-dropdown" class="gf-select" [ngModel]="r.field" (ngModelChange)="updateGlobalFilterField(i, $event)" [clearable]="false" placeholder="Field...">
+          <ng-option *ngFor="let f of allFields" [value]="f.fullId">{{ f.label }}</ng-option>
+        </ng-select>
+        <ng-select appendTo="body" panelClass="cr-ng-select-dropdown" class="gf-select" [ngModel]="r.condition.type" (ngModelChange)="r.condition.type = $event" [clearable]="false">
+          <ng-option *ngFor="let op of filterOperators" [value]="op.value">{{ op.label }}</ng-option>
+        </ng-select>
+        <input
+          class="gf-input"
+          [ngModel]="r.condition.filter"
+          (ngModelChange)="r.condition.filter = $event"
+          placeholder="Value..."
+        />
+        <button class="gf-remove" (click)="removeGlobalFilter(i)">x</button>
+      </div>
+
+      <button class="gf-add" (click)="addGlobalFilter()">+ Filter</button>
+      <button class="gf-run" (click)="onRunAll()">Run All</button>
+    </div>
+  </div>
+
+  <!-- ═══ DASHBOARD GRID ═══ -->
+  <div class="dashboard-grid">
+    <div
+      *ngFor="let ds of dashboard.sheets; let i = index"
+      class="dashboard-card"
+      [ngStyle]="getGridStyle(ds)"
+    >
+      <ng-container *ngIf="getSheetConfig(ds.sheetId) as sheet">
+        <div class="card-header">
+          <span class="card-title">{{ sheet.name }}</span>
+          <div class="card-tools">
+            <div class="card-widths">
+              <button
+                *ngFor="let w of widthOptions"
+                type="button"
+                class="card-tool"
+                [class.is-active]="ds.width === w.value"
+                (click)="setWidth(ds, w.value)"
+                [title]="'Width: ' + w.label"
+              >{{ w.label }}</button>
+            </div>
+            <button type="button" class="card-tool card-move" (click)="moveCard(i, -1)" [disabled]="i === 0" title="Move earlier">‹</button>
+            <button type="button" class="card-tool card-move" (click)="moveCard(i, 1)" [disabled]="i === dashboard.sheets.length - 1" title="Move later">›</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div *ngIf="isSheetLoading(ds.sheetId)" class="card-loading">
+            <div class="spinner"></div>
+          </div>
+          <app-chart-preview
+            *ngIf="!isSheetLoading(ds.sheetId)"
+            [data]="getSheetData(ds.sheetId)"
+            [chartType]="sheet.chartType"
+            [dimKey]="getDimKey(getSheetData(ds.sheetId))"
+            [measKeys]="getMeasKeys(getSheetData(ds.sheetId))"
+          ></app-chart-preview>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

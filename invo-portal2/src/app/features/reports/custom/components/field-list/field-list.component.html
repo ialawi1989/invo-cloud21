@@ -1,0 +1,115 @@
+<div class="field-list-panel">
+
+  <!-- Data source dropdown -->
+  <div class="ds-row" *ngIf="dataSources.length > 0">
+    <label class="ds-label">Data source</label>
+    <ng-select appendTo="body" panelClass="cr-ng-select-dropdown"
+      class="ds-select"
+      [ngModel]="primaryTable"
+      (ngModelChange)="onPrimaryTableChange($event)"
+      [clearable]="false"
+    >
+      <ng-option *ngFor="let t of dataSources" [value]="t.id">{{ t.label }}</ng-option>
+    </ng-select>
+  </div>
+
+  <!-- Search -->
+  <div class="search-row">
+    <div class="search-box">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 21l-4.3-4.3M11 19a8 8 0 100-16 8 8 0 000 16z"/>
+      </svg>
+      <input
+        placeholder="Search fields…"
+        [(ngModel)]="fieldSearch"
+        (ngModelChange)="onSearchChange()"
+      />
+    </div>
+  </div>
+
+  <!-- Type filter chips -->
+  <div class="chip-row">
+    <button class="chip" [class.is-active]="typeFilter === 'all'"    (click)="setTypeFilter('all')">All</button>
+    <button class="chip chip--text"   [class.is-active]="typeFilter === 'text'"   (click)="setTypeFilter('text')">Aa</button>
+    <button class="chip chip--number" [class.is-active]="typeFilter === 'number'" (click)="setTypeFilter('number')">#</button>
+    <button class="chip chip--date"   [class.is-active]="typeFilter === 'date'"   (click)="setTypeFilter('date')">Date</button>
+  </div>
+
+  <!-- Groups -->
+  <div class="field-groups">
+    <div *ngFor="let group of fieldGroups; trackBy: trackGroup" class="accordion-group">
+      <div class="accordion-header" (click)="toggleGroup(group.tableId)">
+        <svg class="accordion-arrow" [class.is-open]="isGroupOpen(group.tableId)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+        <span class="accordion-title">{{ tableLabel(group.tableId) }}</span>
+        <span class="accordion-count">{{ group.fields.length }}</span>
+      </div>
+      <div class="accordion-body" *ngIf="isGroupOpen(group.tableId)">
+        <div
+          *ngFor="let f of group.fields; trackBy: trackField"
+          class="field-item"
+          [class.field-item--fk]="isFK(f)"
+          draggable="true"
+          (dragstart)="onDragStart($event, f)"
+          (dblclick)="onDoubleClick(f)"
+        >
+          <span class="field-type-chip" [ngClass]="'type-' + f.type">{{ getTypeIcon(f.type) }}</span>
+          <span class="field-label">{{ f.label }}</span>
+          <svg *ngIf="isFK(f)" class="fk-link" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.72M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+          </svg>
+          <div class="field-actions">
+            <button class="field-add-btn" title="Add to columns" (click)="onAddTo($event, f, 'columns')">C</button>
+            <button class="field-add-btn" title="Add to rows"    (click)="onAddTo($event, f, 'rows')">R</button>
+            <button class="field-add-btn field-add-btn--filter" title="Add to filters" (click)="onAddTo($event, f, 'filters')">F</button>
+            <button class="field-add-btn field-add-btn--group" title="Group by" (click)="onAddTo($event, f, 'group')">G</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulas section (predefined calculated fields — filter-only) -->
+  <div class="calc-section" *ngIf="formulaFields.length > 0">
+    <div class="calc-header" (click)="toggleFormulas()">
+      <svg class="accordion-arrow" [class.is-open]="formulasOpen" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+      <span class="accordion-title">Formulas</span>
+      <span class="accordion-count">{{ formulaFields.length }}</span>
+    </div>
+    <div class="accordion-body" *ngIf="formulasOpen">
+      <div
+        *ngFor="let f of formulaFields; trackBy: trackField"
+        class="field-item field-item--formula"
+        draggable="true"
+        (dragstart)="onDragStart($event, f)"
+        (dblclick)="onDoubleClick(f)"
+        title="Predefined formula — add to columns, rows or filters"
+      >
+        <span class="field-type-chip type-formula">ƒ</span>
+        <span class="field-label">{{ f.label }}</span>
+        <div class="field-actions">
+          <button class="field-add-btn" title="Add to columns" (click)="onAddTo($event, f, 'columns')">C</button>
+          <button class="field-add-btn" title="Add to rows"    (click)="onAddTo($event, f, 'rows')">R</button>
+          <button class="field-add-btn field-add-btn--filter" title="Add to filters" (click)="onAddTo($event, f, 'filters')">F</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculated section (collapsible, bottom) -->
+  <div class="calc-section">
+    <div class="calc-header" (click)="toggleCalculated()">
+      <svg class="accordion-arrow" [class.is-open]="calculatedOpen" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+      <span class="accordion-title">Calculated</span>
+      <button class="calc-add" (click)="onCreateCalc($event)" title="New calculated field">+</button>
+    </div>
+    <div class="calc-body" *ngIf="calculatedOpen">
+      <span class="calc-empty">Use the calculated panel below the shelves to create formulas.</span>
+    </div>
+  </div>
+</div>

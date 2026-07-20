@@ -32,4 +32,11 @@ export const REPORTS_ROUTES: Routes = [
     // shown/openable); the shell itself only needs list-view access.
     data: { permissionPath: 'reportsSecurity.actions.view.access' },
   },
+  {
+    // The custom-report builder (migrated from the legacy reports-system).
+    // Full-screen, no app chrome — the builder owns the whole viewport.
+    path: 'builder',
+    loadChildren: () =>
+      import('./custom/custom-reports.routes').then(m => m.CUSTOM_REPORTS_ROUTES),
+  },
 ];

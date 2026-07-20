@@ -136,6 +136,8 @@
     "OPEN_INVOICES": "فواتير مفتوحة",
     "OPEN_CASHIERS": "كاشيرات مفتوحة",
     "OPENING_AS_ON": "الرصيد الافتتاحي بتاريخ {{date}}",
-    "CLOSING_AS_ON": "الرصيد الختامي بتاريخ {{date}}"
+    "CLOSING_AS_ON": "الرصيد الختامي بتاريخ {{date}}",
+    "VIEW_FULL_REPORT": "عرض التقرير كاملاً",
+    "MORE_ROWS": "+{{count}} صفوف إضافية في التقرير الكامل"
   }
 }

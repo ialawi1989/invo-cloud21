@@ -1,0 +1,363 @@
+@import '../../shared/styles/report-base';
+$accent: #00aab3;
+$mono: 'IBM Plex Mono', monospace;
+
+// The host stretches to fill .canvas-body (which is display:flex). Without
+// an explicit height, ApexCharts (which sizes itself to its container) ends
+// up with 0px tall and the chart silently doesn't render.
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+// ApexCharts wrapper — needs a real height for chart `height: '100%'` to
+// resolve to actual pixels.
+.apex-wrap {
+  flex: 1;
+  width: 100%;
+  min-height: 320px;
+  display: flex;
+}
+.apex-chart {
+  flex: 1;
+  width: 100%;
+  display: block;
+}
+
+// KPI takes the same space.
+.kpi-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 220px;
+}
+.kpi-value { font-size: 36px; font-weight: 600; color: #1f2328; }
+.kpi-label { font-size: 12px; color: #6b7682; }
+
+// Table and other content wrappers should also be able to grow.
+// The detailed .table-wrap rules (always-visible scrollbar etc.) live in
+// the table renderer block further down — keep this one to layout only.
+.table-section { flex: 1; width: 100%; min-height: 0; display: flex; flex-direction: column; }
+.table-section .table-wrap { min-height: 0; }
+
+// Chart unsupported placeholder
+.chart-unsupported {
+  text-align: center;
+  padding: 40px 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  width: 100%;
+}
+.chart-unsupported-icon {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #FAEEDA; color: #854F0B;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 4px;
+}
+.chart-unsupported-title {
+  font-size: 14px; font-weight: 500; color: #1f2328;
+}
+.chart-unsupported-sub {
+  font-size: 12px; color: #475260;
+  max-width: 420px; line-height: 1.55; font-weight: 400;
+}
+.chart-unsupported-hint {
+  font-size: 11px; color: #6b7682;
+  margin-top: 2px;
+  strong { color: #1f2328; font-weight: 500; }
+}
+
+// Empty state (Sales Target teal palette)
+$teal-empty: #00aab3;
+$teal-tint-empty: rgba(#00aab3, 0.10);
+$teal-dark-empty: #008f97;
+.empty-chart {
+  text-align: center;
+  padding: 56px 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  width: 100%;
+}
+.empty-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: $teal-empty;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 6px;
+  box-shadow: 0 4px 12px rgba(0, 170, 179, 0.25);
+}
+.empty-title {
+  font-size: 17px; font-weight: 700; color: #111827;
+}
+.empty-sub {
+  font-size: 14px; color: #6b7280;
+  max-width: 400px; line-height: 1.55; font-weight: 400;
+}
+.empty-actions {
+  display: flex; gap: 10px; margin-top: 12px;
+}
+.empty-cta {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background .14s, transform .1s;
+  &:active { transform: scale(.97); }
+  &--primary {
+    background: $teal-empty; color: #fff;
+    &:hover { background: $teal-dark-empty; }
+  }
+  &--outline {
+    background: #fff; color: #111827;
+    border-color: rgba(0,0,0,0.10);
+    &:hover { background: #f1f5f9; }
+  }
+}
+
+// Vertical Bar
+.vbar-wrap {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+}
+.y-axis {
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 0 8px 24px 0; font-size: 9px; color: #aaa; font-family: $mono;
+  min-width: 48px; text-align: right; flex-shrink: 0;
+}
+.vbar-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+  &::-webkit-scrollbar { height: 4px; }
+  &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+}
+.grid-lines {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 24px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  pointer-events: none; z-index: 0;
+}
+.grid-line { height: 1px; background: #f0f0f0; }
+// Chart area = everything above the labels
+.vbar-chart-area {
+  flex: 1 1 0;        // height: 0 + flex-grow makes this a "definite" height for % children
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 100%;
+  position: relative; z-index: 1;
+}
+// Labels row below the chart
+.vbar-labels {
+  display: flex;
+  gap: 4px;
+  height: 24px;
+  flex-shrink: 0;
+  min-width: 100%;
+}
+.vbar-group {
+  flex: 0 0 auto;
+  min-width: 36px;
+  max-width: 80px;
+  flex-grow: 1;
+  height: 100%;          // take full chart-area height
+  display: flex;
+  gap: 2px;
+  align-items: flex-end; // bars grow upward
+  justify-content: center;
+}
+.vbar {
+  flex: 1; max-width: 32px; min-width: 6px; border-radius: 3px 3px 0 0;
+  cursor: pointer; transition: opacity .15s;
+  min-height: 2px;
+  &:hover { opacity: .75; }
+}
+.vbar-label-slot {
+  flex: 0 0 auto;
+  min-width: 36px;
+  max-width: 80px;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vbar-label {
+  font-size: 8px; color: #999; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 72px; width: 100%;
+}
+
+// Horizontal Bar
+.hbar-wrap {
+  display: flex; flex-direction: column; gap: 4px; width: 100%;
+  max-height: 100%; overflow-y: auto;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+}
+.hbar-row {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.hbar-label {
+  font-size: 10px; color: #666; min-width: 90px; max-width: 120px; text-align: right;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0;
+}
+.hbar-bars { flex: 1; display: flex; gap: 2px; height: 22px; }
+.hbar {
+  height: 100%; border-radius: 3px; min-width: 2px;
+  display: flex; align-items: center; justify-content: flex-end; padding-right: 5px;
+  transition: width .3s ease;
+  &:hover { opacity: .8; }
+}
+.hbar-val { font-size: 8px; color: #fff; font-family: $mono; white-space: nowrap; }
+
+// Line/Area
+.line-wrap { width: 100%; }
+.line-wrap svg { width: 100%; height: auto; }
+
+// Donut/Pie
+.donut-wrap { display: flex; align-items: center; gap: 24px; justify-content: center; flex-wrap: wrap; }
+.donut-svg { width: 170px; height: 170px; }
+.donut-legend { display: flex; flex-direction: column; gap: 4px; }
+.legend-item {
+  display: flex; align-items: center; gap: 6px; font-size: 11px;
+}
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.legend-label { color: #333; }
+.legend-val { color: #999; font-family: $mono; font-size: 10px; margin-left: auto; padding-left: 8px; }
+
+// KPI
+.kpi-wrap { text-align: center; padding: 36px 20px; }
+.kpi-value { font-size: 46px; font-weight: 700; color: #333; letter-spacing: -0.02em; }
+.kpi-label { font-size: 12px; color: #999; margin-top: 4px; }
+.kpi-trend { margin-top: 12px; font-size: 12px; display: flex; align-items: center; gap: 6px; justify-content: center; }
+.kpi-up { color: $accent; font-weight: 600; }
+.kpi-vs { color: #bbb; }
+
+// Table
+//
+// IMPORTANT: this rule used to override the earlier `.table-section { flex: 1;
+// min-height: 0 }` declaration further up the file, which silently disabled
+// the flex chain — `.table-section` then grew to the natural height of every
+// row (hundreds of thousands of px) and pushed the horizontal scrollbar
+// below the visible viewport. Keep `flex: 1` and `min-height: 0` here.
+.table-section {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.table-toolbar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 4px; flex-shrink: 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.table-tool-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border: 1px solid #e0e0e0; border-radius: 5px;
+  background: #fff; font-size: 11px; font-weight: 500; font-family: inherit;
+  color: #555; cursor: pointer; transition: all 0.12s;
+  &:hover { border-color: $accent; color: $accent; background: #f0fafa; }
+  svg { flex-shrink: 0; }
+}
+.table-wrap {
+  width: 100%; flex: 1;
+  // Horizontal scrollbar must always be visible — on macOS / Windows 11
+  // the default `overflow: auto` shows a thin auto-hide bar that users
+  // miss entirely on wide tables. Force `scroll` on the X axis and
+  // keep Y as `auto`. Webkit / Firefox scrollbar styling below.
+  overflow-x: scroll;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #b8b8b8 #f1f1f1;
+  &::-webkit-scrollbar { width: 10px; height: 10px; }
+  &::-webkit-scrollbar-track { background: #f1f1f1; }
+  &::-webkit-scrollbar-thumb {
+    background: #c0c0c0; border-radius: 5px;
+    border: 2px solid #f1f1f1;
+    &:hover { background: #999; }
+  }
+  &::-webkit-scrollbar-corner { background: #f1f1f1; }
+}
+// `width: max-content` lets the table grow as wide as its cells need
+// (cells are `white-space: nowrap`) — that's what makes `.table-wrap`'s
+// horizontal overflow + scrollbar actually engage on wide tables.
+// `min-width: 100%` keeps narrow tables filling the wrap so they don't
+// hug the left edge.
+table {
+  border-collapse: collapse;
+  table-layout: auto;
+  width: max-content;
+  min-width: 100%;
+}
+th {
+  padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .04em; color: #666;
+  background: #fafafa; border-bottom: 2px solid #eee; white-space: nowrap;
+  position: sticky; top: 0; z-index: 1;
+  cursor: pointer; user-select: none;
+  border-right: 2px solid transparent;
+  transition: border-color 0.12s, background 0.12s;
+  &.num { text-align: right; }
+  &.sorted { color: $accent; background: #f0fafa; }
+  &.drag-over-col {
+    border-right-color: $accent;
+    background: #e8f5f7;
+  }
+}
+.sort-icon {
+  font-size: 8px; margin-left: 3px; color: $accent;
+}
+td {
+  padding: 7px 12px; font-size: 12px; border-bottom: 1px solid #f0f0f0;
+  white-space: nowrap; max-width: 300px; overflow: hidden; text-overflow: ellipsis;
+}
+.num { font-family: $mono; text-align: right; color: #333; }
+.dim-cell { font-weight: 500; }
+.total-col { background: #fafafa; font-weight: 600; color: #333; }
+.total-row { background: #f5f5f5; td { border-top: 2px solid #ddd; } }
+.accent { color: $accent; }
+tbody tr:hover { background: #f8fbff; }
+
+// ─── Grouped table: group header + subtotal rows ───
+// Group name — one cell merged (rowspan) over the group's rows, centred.
+.group-name-cell {
+  vertical-align: middle;
+  font-weight: 600;
+  color: #1a1a18;
+  background: #f8f8f7;
+  border-right: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+// Per-group total row.
+.subtotal-row {
+  background: rgba($accent, 0.08);
+  td { border-top: 1px solid rgba($accent, 0.25); border-bottom: 1px solid rgba($accent, 0.25); font-weight: 600; }
+  &:hover { background: rgba($accent, 0.08); }
+}
+.subtotal-label { color: $accent; font-weight: 700; }
+
+
+// Legend
+.legend {
+  display: flex; gap: 14px; margin-top: 12px; padding: 8px 12px;
+  justify-content: center; flex-wrap: wrap;
+  background: #fafafa; border-radius: 6px; border: 1px solid #f0f0f0;
+}
+.legend-item-inline {
+  display: flex; align-items: center; gap: 5px; font-size: 11px; color: #555;
+  font-weight: 500;
+}
+.legend-dot {
+  width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
+}

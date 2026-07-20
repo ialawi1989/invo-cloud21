@@ -1,0 +1,132 @@
+<!-- NgbModal provides the backdrop and centering -->
+<div class="modal-header">
+  <h4 class="modal-title">Show / Hide Columns</h4>
+  <button type="button" class="btn-close" aria-label="Close" (click)="cancel()"></button>
+</div>
+
+<div class="modal-body">
+  <div class="picker-body">
+    <!-- LEFT: Available Columns -->
+    <div class="panel panel-left">
+      <div class="panel-title">
+        <span>Available Columns</span>
+        <span class="panel-count" *ngIf="selectedLeft.size > 0">{{ selectedLeft.size }} selected</span>
+      </div>
+      <div class="panel-search">
+        <div class="search-box">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 21l-4.3-4.3M11 19a8 8 0 100-16 8 8 0 000 16z"/>
+          </svg>
+          <input
+            placeholder="Search"
+            [(ngModel)]="fieldSearch"
+          />
+        </div>
+        <button type="button" class="select-all-link" (click)="toggleSelectAllVisible()" *ngIf="availableFields.length > 0">
+          {{ allVisibleSelected ? 'Clear selection' : 'Select all' }}
+        </button>
+      </div>
+      <div class="panel-list">
+        <ng-container *ngFor="let grp of groupedKeys">
+          <div class="group-label">{{ grp }}</div>
+          <div
+            *ngFor="let f of groupedAvailable[grp]"
+            class="list-item"
+            [class.highlighted]="selectedLeft.has(f.fullId)"
+            (click)="toggleLeft(f.fullId, $event)"
+            (dblclick)="addField(f.fullId)"
+          >
+            <input type="checkbox" class="row-check" [checked]="selectedLeft.has(f.fullId)" (click)="$event.stopPropagation(); toggleLeft(f.fullId)"/>
+            <span class="item-name">{{ f.label }}</span>
+          </div>
+        </ng-container>
+        <div *ngIf="availableFields.length === 0" class="empty-state">All columns selected</div>
+      </div>
+    </div>
+
+    <!-- CENTER: Arrow buttons -->
+    <div class="arrows">
+      <button class="arrow-btn" (click)="addHighlighted()" title="Add column →">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+      <button class="arrow-btn" (click)="removeHighlighted()" title="← Remove column">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- RIGHT: Selected Columns -->
+    <div class="panel panel-right">
+      <div class="panel-title">
+        <span>Selected Columns</span>
+        <span class="panel-count" *ngIf="selectedRight.size > 0">{{ selectedRight.size }} selected</span>
+      </div>
+      <div class="panel-search">
+        <div class="search-box">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 21l-4.3-4.3M11 19a8 8 0 100-16 8 8 0 000 16z"/>
+          </svg>
+          <input
+            placeholder="Search"
+            [(ngModel)]="selectedSearch"
+          />
+        </div>
+        <button type="button" class="select-all-link" (click)="toggleSelectAllVisibleRight()" *ngIf="filteredSelected.length > 0">
+          {{ allVisibleSelectedRight ? 'Clear selection' : 'Select all' }}
+        </button>
+      </div>
+      <div class="panel-list">
+        <div
+          *ngFor="let c of filteredSelected"
+          class="list-item"
+          [class.highlighted]="selectedRight.has(c.key)"
+          (click)="toggleRight(c.key)"
+        >
+          <input type="checkbox" class="row-check" [checked]="selectedRight.has(c.key)" (click)="$event.stopPropagation(); toggleRight(c.key)"/>
+          <div class="item-info">
+            <span class="item-name">{{ getFieldLabel(c.col) }}</span>
+            <span class="item-table">({{ getFieldTable(c.col) }})</span>
+          </div>
+          <ng-select appendTo="body" panelClass="cr-ng-select-dropdown"
+            *ngIf="isNumericField(c.col)"
+            class="agg-select"
+            [ngModel]="c.agg"
+            (ngModelChange)="setAgg(c.key, $event)"
+            (click)="$event.stopPropagation()"
+            [clearable]="false"
+          >
+            <ng-option [value]="''">No Agg</ng-option>
+            <ng-option [value]="'sum'">SUM</ng-option>
+            <ng-option [value]="'count'">COUNT</ng-option>
+            <ng-option [value]="'avg'">AVG</ng-option>
+            <ng-option [value]="'max'">MAX</ng-option>
+            <ng-option [value]="'min'">MIN</ng-option>
+          </ng-select>
+          <ng-select appendTo="body" panelClass="cr-ng-select-dropdown"
+            *ngIf="isDateField(c.col)"
+            class="agg-select"
+            [ngModel]="c.datePart"
+            (ngModelChange)="setDatePart(c.key, $event)"
+            (click)="$event.stopPropagation()"
+            [clearable]="false"
+          >
+            <ng-option [value]="''">Raw</ng-option>
+            <ng-option [value]="'day'">Day</ng-option>
+            <ng-option [value]="'month'">Month</ng-option>
+            <ng-option [value]="'year'">Year</ng-option>
+            <ng-option [value]="'yearmonth'">Year-Month</ng-option>
+          </ng-select>
+        </div>
+        <div *ngIf="workingColumns.length === 0" class="empty-state">Click → to add columns</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="cancel()">Cancel</button>
+  <button type="button" class="btn btn-primary" (click)="done()">Done</button>
+</div>

@@ -102,3 +102,30 @@ export const DEFAULT_LAYOUT: { id: string; widgets: { slug: string; colSpan: num
   { id: 'row_default_3', widgets: [{ slug: 'top-10-item-by-sales', colSpan: 6 }, { slug: 'top-customers', colSpan: 6 }] },
   { id: 'row_default_4', widgets: [{ slug: 'expense-income', colSpan: 8 }, { slug: 'low-quantity-products', colSpan: 4 }] },
 ];
+
+/**
+ * A catalog report placed on the dashboard. These are registered at runtime
+ * from the reports catalog (filtered by access), so the build-time catalogue
+ * can't list them — the slug namespaces them as `custom-report:<reportSlug>`,
+ * which is also the legacy persistence key, so a layout stays portable.
+ */
+export function customReportWidget(reportSlug: string, title: string): WidgetDef {
+  return {
+    slug: `custom-report:${reportSlug}`,
+    title,
+    group: 'custom',
+    scope: 'period',
+    defaultSpan: 12,
+    // No forced cell floor — the card hugs the report's content. The widget's
+    // own loading/error state carries its height, so a short report (one total
+    // row) doesn't sit in a tall, mostly-empty card.
+    minHeight: 0,
+    custom: true,
+    reportId: reportSlug,
+  };
+}
+
+/** The report slug behind a `custom-report:<slug>` widget, or null. */
+export function customReportId(slug: string): string | null {
+  return slug.startsWith('custom-report:') ? slug.slice('custom-report:'.length) : null;
+}

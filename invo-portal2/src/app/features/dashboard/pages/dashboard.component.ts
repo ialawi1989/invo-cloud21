@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { from } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
@@ -39,7 +40,13 @@ import {
   LowStockWidgetComponent,
   ExpiringBatchesWidgetComponent,
 } from '../widgets/inventory-widgets.component';
-import { DEFAULT_LAYOUT, WIDGET_BY_SLUG, WidgetDef, WidgetView } from '../models/widget-registry';
+import {
+  DEFAULT_LAYOUT, WIDGET_BY_SLUG, WidgetDef, WidgetView,
+  customReportWidget, customReportId,
+} from '../models/widget-registry';
+import { CustomReportWidgetComponent } from '../widgets/custom-report-widget/custom-report-widget.component';
+import { CustomReportsService } from '../../reports/custom/services/custom-reports.service';
+import type { SavedModule } from '../../reports/custom/shared/models/custom-report.model';
 
 interface BranchOption { id: string; name: string; }
 
@@ -94,6 +101,7 @@ const SCOPE_KEY  = 'dashboard:scope';
     SalesByDayWidgetComponent,
     LowStockWidgetComponent,
     ExpiringBatchesWidgetComponent,
+    CustomReportWidgetComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',
@@ -106,6 +114,7 @@ export class DashboardComponent implements OnInit {
   private auth = inject(AuthService);
   private translate = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
+  private customReports = inject(CustomReportsService);
 
   private i18nTick = signal(0);
 
@@ -160,6 +169,25 @@ export class DashboardComponent implements OnInit {
 
   // ─── layout ───────────────────────────────────────────────────────
   readonly rows = signal<PlacedRow[]>([]);
+
+  /**
+   * Saved custom reports (the report builder's modules), offered as dashboard
+   * widgets. Loaded once from `getModules` in ngOnInit; the title is the user's
+   * report name (a plain string, not an i18n key).
+   */
+  readonly customWidgets = signal<WidgetDef[]>([]);
+
+  private readonly customBySlug = computed(
+    () => new Map(this.customWidgets().map((w) => [w.slug, w])));
+
+  /** Static catalogue plus the runtime custom reports. */
+  private defOf(slug: string): WidgetDef | undefined {
+    return WIDGET_BY_SLUG.get(slug) ?? this.customBySlug().get(slug);
+  }
+
+  /** A custom-report slug is renderable when its report is still in the catalog. */
+  isCustomReport(slug: string): boolean { return customReportId(slug) !== null; }
+  reportIdFor(slug: string): string { return customReportId(slug) ?? ''; }
 
   /** Loaders live here so a widget stays a pure presentation component. */
   readonly loaders: Record<string, SeriesLoader> = {
@@ -218,7 +246,7 @@ export class DashboardComponent implements OnInit {
   isBespoke(slug: string) { return this.BESPOKE.has(slug); }
 
   constructor() {
-    withTranslations('dashboard');
+    withTranslations('dashboard', 'reports');
     this.translate.onLangChange
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.i18nTick.update((n) => n + 1));
@@ -230,6 +258,7 @@ export class DashboardComponent implements OnInit {
     // server. Without the local paint the board is blank for a round-trip; and
     // without the server fetch a layout saved elsewhere never arrives.
     this.restoreLayout();
+    this.loadCustomReports();
 
     this.service.loadLayout()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -349,6 +378,31 @@ export class DashboardComponent implements OnInit {
     return views;
   }
 
+  /** Saved report modules → custom widgets available in the Customize picker. */
+  private loadCustomReports(): void {
+    from(this.customReports.getModules())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (modules: SavedModule[]) => {
+          this.customWidgets.set(
+            (modules ?? [])
+              .filter((m) => m?.id)
+              .map((m) => customReportWidget(String(m.id), m.name || 'Custom report')),
+          );
+          // A layout restored before the modules arrived may have skipped a
+          // custom widget as "unsupported" — re-apply now that they're known.
+          this.reapplyLayout();
+        },
+        error: () => { /* no saved reports, or offline — board still works */ },
+      });
+  }
+
+  /** Re-run the layout from storage once modules are known, so a custom widget
+   *  that was skipped as "unsupported" before its module loaded now appears. */
+  private reapplyLayout(): void {
+    this.restoreLayout();
+  }
+
   // ─── layout ───────────────────────────────────────────────────────
   private restoreLayout(): void {
     let rows = DEFAULT_LAYOUT;
@@ -379,7 +433,10 @@ export class DashboardComponent implements OnInit {
    * worse than a layout that syncs late.
    */
   async openCustomize(): Promise<void> {
-    const supported = [...Object.keys(this.loaders), ...this.BESPOKE];
+    const customs = this.customWidgets();
+    const supported = [
+      ...Object.keys(this.loaders), ...this.BESPOKE, ...customs.map((w) => w.slug),
+    ];
     const ref = this.modal.open<DashboardCustomizeModalComponent, CustomizeData, CustomizeResult>(
       DashboardCustomizeModalComponent,
       {
@@ -392,6 +449,7 @@ export class DashboardComponent implements OnInit {
             widgets: r.widgets.map((w) => ({ slug: w.def.slug, colSpan: w.colSpan, view: w.view })),
           })),
           supported,
+          extraWidgets: customs,
         },
         closeOnBackdrop: false,
       },
@@ -420,9 +478,11 @@ export class DashboardComponent implements OnInit {
           id: r.id,
           widgets: r.widgets
             .map((w): Placed | null => {
-              const def = WIDGET_BY_SLUG.get(w.slug);
-              // Skip slugs we can't render rather than leaving a hole.
-              const supported = def && (this.loaders[def.slug] || this.BESPOKE.has(def.slug));
+              const def = this.defOf(w.slug);
+              // Skip slugs we can't render rather than leaving a hole. Custom
+              // reports are supported whenever the report is still in the catalog.
+              const supported = def && (
+                this.loaders[def.slug] || this.BESPOKE.has(def.slug) || this.isCustomReport(def.slug));
               return supported ? { def: def!, colSpan: w.colSpan ?? def!.defaultSpan, view: w.view } : null;
             })
             .filter((w): w is Placed => w !== null),

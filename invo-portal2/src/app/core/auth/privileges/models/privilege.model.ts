@@ -102,6 +102,7 @@ import { websiteBuilderSecurity } from '../definitions/websiteBuilderSecurity';
 import { websiteAnalyticsSecurity } from '../definitions/websiteAnalyticsSecurity';
 import { websiteSettingsSecurity } from '../definitions/websiteSettingsSecurity';
 import { workOrderSecurity } from '../definitions/workOrderSecurity';
+import { customReportsSecurity } from '../../../../features/reports/custom/custom-reports.privileges';
 
 export class Privilege {
   [key: string]: PrivilegeSetting | any;
@@ -175,6 +176,7 @@ export class Privilege {
   websiteSettingsSecurity        = websiteSettingsSecurity();
   blogSecurity                   = blogSecurity();
   reportsSecurity                = reportsSecurity();
+  customReportsSecurity          = customReportsSecurity();
   privilegeSecurity              = privilegeSecurity();
   accountSecurity                = accountSecurity();
   customerSecurity               = customerSecurity();

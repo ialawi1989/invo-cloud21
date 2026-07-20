@@ -1,0 +1,114 @@
+<div class="layout-container" cdkDropListGroup>
+
+  <!-- Rows -->
+  <div class="row-list"
+       cdkDropList
+       [cdkDropListData]="rows"
+       (cdkDropListDropped)="dropRow($event)">
+
+    <div class="layout-row"
+         *ngFor="let row of rows; let rowIndex = index"
+         [attr.data-row-id]="row.id"
+         cdkDrag
+         [cdkDragData]="row">
+
+      <!-- Row Header -->
+      <div class="row-header">
+        <div class="row-drag-handle" cdkDragHandle>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="19" r="1"></circle>
+            <circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="19" r="1"></circle>
+          </svg>
+        </div>
+
+        <span class="row-label">{{ 'DASHBOARD.ROW' | translate }} {{ rowIndex + 1 }}</span>
+
+        <div class="row-usage">
+          <span class="usage-text">{{ row.getTotalColSpan() }}/12</span>
+          <div class="usage-bar">
+            <div class="usage-fill" [style.width.%]="(row.getTotalColSpan() / 12) * 100"></div>
+          </div>
+        </div>
+
+        <button type="button" class="btn-remove-row" (click)="removeRow(rowIndex)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Row Widgets (12-column grid) -->
+      <div class="row-widgets"
+           [id]="row.id"
+           cdkDropList
+           [cdkDropListData]="row.widgets"
+           [cdkDropListConnectedTo]="getConnectedRowIds(row.id)"
+           (cdkDropListDropped)="dropWidget($event)">
+
+        <div class="row-widget"
+             *ngFor="let widget of row.widgets; let widgetIndex = index"
+             [style.grid-column]="'span ' + (widget.colSpan || 12)"
+             cdkDrag>
+
+          <div class="widget-card">
+            <div class="widget-drag" cdkDragHandle>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline>
+                <polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline>
+                <line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line>
+              </svg>
+            </div>
+            <span class="widget-title">{{ widget.title | translate }}</span>
+            <div class="widget-controls">
+              <div class="colspan-selector">
+                <button type="button"
+                        *ngFor="let opt of colSpanOptions"
+                        class="colspan-btn"
+                        [class.active]="widget.colSpan === opt.value"
+                        [title]="opt.desc"
+                        (click)="setWidgetColSpan(widget, opt.value); $event.stopPropagation()">
+                  {{ opt.label }}
+                </button>
+              </div>
+              <button type="button" *ngIf="showSettings && widget.isCustom" class="btn-widget-gear"
+                      (click)="openSettings.emit(widget); $event.stopPropagation()" title="Widget settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+              </button>
+              <button type="button" class="btn-remove-widget" (click)="removeWidget(widget, row, widgetIndex); $event.stopPropagation()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-row" *ngIf="row.widgets.length === 0">
+          <p>{{ 'DASHBOARD.DRAG_WIDGETS_HERE' | translate }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-layout" *ngIf="rows.length === 0">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect>
+      <rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>
+    </svg>
+    <p>{{ 'DASHBOARD.NO_ROWS' | translate }}</p>
+    <button type="button" class="btn-add-first-row" (click)="addRow()">
+      {{ 'DASHBOARD.ADD_FIRST_ROW' | translate }}
+    </button>
+  </div>
+</div>

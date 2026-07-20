@@ -1,0 +1,65 @@
+<div class="card cr-widget">
+  <div class="card-body">
+
+    <!-- Header Row — matches the built-in dashboard widgets -->
+    <div class="header-row">
+      <h4 class="card-title mb-0" [title]="reportName">{{ reportName || 'Custom report' }}</h4>
+
+      <div class="header-tools">
+        <span class="cr-badge">Custom</span>
+      </div>
+    </div>
+
+    <!-- Filter-source note: this widget reflects the report's own saved
+         filters, not the dashboard's global date/branch filter. -->
+    <div class="cr-note" *ngIf="!error">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <span>Uses the report's saved filters — not the dashboard date/branch.</span>
+    </div>
+
+    <div class="cr-body">
+      <div *ngIf="loading" class="cr-state">
+        <div class="cr-spinner"></div>
+      </div>
+
+      <div *ngIf="!loading && error" class="cr-state cr-error">
+        {{ error }}
+      </div>
+
+      <app-chart-preview
+        *ngIf="!loading && !error"
+        [data]="data"
+        [chartType]="chartType"
+        [dimKey]="dimKey"
+        [measKeys]="measKeys"
+        [colorField]="colorField"
+        [columnLabels]="columnLabels"
+        [columnFormats]="columnFormats"
+        [columnTypes]="columnTypes"
+        [columnNumberFormats]="columnNumberFormats"
+        [orderedColumns]="orderedColumns"
+        [currentSort]="currentSort"
+        [groupedData]="groupedData"
+        [groupFieldLabel]="groupFieldLabel"
+        [groupByKey]="groupByKey"
+        [hasShelfFields]="true"
+        (sortChange)="onSortChange($event)"
+      ></app-chart-preview>
+
+      <!-- Server-side pager (table view only) -->
+      <app-report-pagination
+        *ngIf="!loading && !error && chartType === 'table' && totalRows > pageSizeUsed"
+        [totalRows]="totalRows"
+        [pageSize]="pageSizeUsed"
+        [currentPage]="currentPage"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-report-pagination>
+    </div>
+
+  </div>
+</div>

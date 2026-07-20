@@ -1,0 +1,764 @@
+<div class="rb"
+     [class.rb--view]="mode === 'view'"
+     [class.rb--fullscreen]="canvasFullscreen"
+     [style.--field-list-width.px]="fieldListWidth">
+  <!-- ═══ TOP BAR ═══ -->
+  <div class="topbar">
+    <!-- Breadcrumb + name + status + saved indicator -->
+    <div class="topbar-left">
+      <button class="btn-back" type="button" (click)="goBackToReports()" title="Back to Reports">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>Back</span>
+      </button>
+
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a class="crumb crumb--muted crumb--link" (click)="goBackToReports()" role="button" tabindex="0">Reports</a>
+        <span class="crumb-sep">/</span>
+        <ng-container *ngIf="mode === 'edit'">
+          <span *ngIf="!editingName" class="crumb crumb--name" (click)="editingName = true" title="Click to rename">
+            {{ reportName }}
+          </span>
+          <input
+            *ngIf="editingName"
+            class="crumb-input"
+            [(ngModel)]="reportName"
+            (blur)="commitName()"
+            (keydown)="onNameKeydown($event)"
+            autofocus
+          />
+        </ng-container>
+        <span *ngIf="mode === 'view'" class="crumb crumb--name">{{ reportName }}</span>
+      </nav>
+
+      <span class="status-pill" [class.status-pill--published]="!!activeModuleId">
+        {{ statusLabel }}
+      </span>
+
+      <span class="saved-ago">{{ savedAgoText }}</span>
+    </div>
+
+    <div class="topbar-spacer"></div>
+
+    <!-- Right-side action groups -->
+    <div class="topbar-right">
+      <!-- Group: guided tour -->
+      <div class="btn-group">
+        <button class="icon-btn" type="button" data-tour="tutorial"
+                (click)="startTour()" title="Take a quick tour">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </button>
+      </div>
+
+      <!-- Group: undo / redo -->
+      <div *ngIf="mode === 'edit'" class="btn-group">
+        <button class="icon-btn" [class.is-disabled]="history.length === 0" (click)="undo()" title="Undo">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg>
+        </button>
+        <button class="icon-btn" [class.is-disabled]="future.length === 0" (click)="redo()" title="Redo">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6M3 17a9 9 0 019-9 9 9 0 016 2.3L21 13"/></svg>
+        </button>
+      </div>
+
+      <!-- Group: view toggle (Auto refresh moved into Settings tab so the
+           topbar stays focused on actions: Undo/Redo, View, Run, Save). -->
+      <div class="btn-group">
+        <button *ngIf="canEdit" class="ghost-btn" (click)="toggleMode()" [title]="mode === 'edit' ? 'Switch to view' : 'Switch to edit'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <ng-container *ngIf="mode === 'edit'"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></ng-container>
+            <ng-container *ngIf="mode === 'view'"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></ng-container>
+          </svg>
+          {{ mode === 'edit' ? 'View' : 'Edit' }}
+        </button>
+      </div>
+
+      <!-- Group: Run (primary) + Save -->
+      <div *ngIf="mode === 'edit'" class="btn-group">
+        <button class="primary-btn" data-tour="run" (click)="runReport()" [disabled]="loading">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          {{ loading ? 'Running…' : 'Run' }}
+        </button>
+        <button *ngIf="canEdit" class="ghost-btn" data-tour="save" (click)="saveReport()" [disabled]="saving">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/></svg>
+          {{ saving ? 'Saving…' : 'Save' }}
+        </button>
+        <span *ngIf="saveError" class="save-error" role="alert" title="{{ saveError }}">
+          {{ saveError }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VIEW MODE ═══════════════ -->
+  <ng-container *ngIf="mode === 'view'">
+    <app-view-mode
+      [sheet]="activeSheet"
+      [data]="reportData"
+      [loading]="loading"
+      [allFields]="allFields"
+      [fieldOptions]="fieldOptions"
+      [dimKey]="dimKey"
+      [measKeys]="measKeys"
+      [colorField]="colorField"
+      [columnLabels]="columnLabels"
+      [columnFormats]="columnFormats"
+      [columnTypes]="columnTypes"
+      [columnNumberFormats]="columnNumberFormats"
+      [orderedColumns]="orderedColumns"
+      [showDataLabels]="activeSheet.showLabels"
+      [currentSort]="currentSort"
+      [groupedData]="groupedMeta"
+      [groupFieldLabel]="groupFieldLabel"
+      [groupByKey]="activeSheet.groupBy || null"
+      [totalRows]="totalRows"
+      (run)="onViewModeRun($event)"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+      (loadOptions)="loadFieldOptionsFor($event)"
+    ></app-view-mode>
+  </ng-container>
+
+  <!-- ═══════════════ EDIT MODE ═══════════════ -->
+  <ng-container *ngIf="mode === 'edit'">
+    <div class="main-layout" (click)="closeExport()">
+      <!-- ═══ LEFT: FIELD LIST ═══ -->
+      <app-field-list
+        data-tour="fields"
+        [fields]="allFields"
+        [joinedTableIds]="joinedTableIds"
+        [dataSources]="dataSources"
+        [primaryTable]="activeSheet.primaryTable"
+        (primaryTableChange)="setPrimaryTable($event)"
+        (fieldDoubleClick)="onFieldDoubleClick($event)"
+        (addToShelf)="onAddToShelf($event)"
+      ></app-field-list>
+
+      <div class="resize-handle resize-handle--v" (mousedown)="startResize($event, 'field-list')" title="Drag to resize"></div>
+
+      <!-- ═══ CENTER ═══ -->
+      <div class="builder-center">
+
+        <!-- Chart type is now chosen from the "Show Me" popover in the canvas
+             header (single source of truth). The old top tile bar + the active-
+             type hint were removed; the Show Me popover surfaces the same
+             description on hover. -->
+
+        <!-- Sheet / Dashboard switch now lives at the bottom, next to the
+             sheet tabs. -->
+
+        <!-- Auto-join failure notice: a picked field's table has no resolvable
+             FK path, so it wasn't added. Auto-clears after a few seconds. -->
+        <div *ngIf="joinNotice" class="chart-hint join-notice">
+          <svg class="chart-hint-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span>{{ joinNotice }}</span>
+          <button type="button" class="join-notice-dismiss" (click)="joinNotice = null" title="Dismiss">×</button>
+        </div>
+
+        <!-- Smart-marks live suggestion chip (only when the engine has
+             something to say AND the user hasn't dismissed it). -->
+        <div *ngIf="liveSuggestion" class="suggestion-chip"
+             [class.suggestion-chip--mismatch]="liveSuggestion.placementMismatch">
+          <svg class="suggestion-chip-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/>
+          </svg>
+          <span class="suggestion-chip-text">{{ liveSuggestion.reason }}</span>
+          <button *ngIf="liveSuggestion.suggestedColorField"
+                  type="button"
+                  class="suggestion-chip-apply"
+                  (click)="applyLiveSuggestion()">
+            Apply
+          </button>
+          <button type="button"
+                  class="suggestion-chip-dismiss"
+                  (click)="dismissLiveSuggestion()"
+                  title="Dismiss">
+            ×
+          </button>
+        </div>
+
+        <!-- Shelves collapse toggle. The Marks card sits inside the shelf area. -->
+        <button
+          class="shelf-toggle"
+          data-tour="shelves-toggle"
+          [class.is-open]="showShelves"
+          (click)="showShelves = !showShelves"
+          [attr.aria-expanded]="showShelves"
+        >
+          <svg class="shelf-toggle-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <span class="shelf-toggle-label">Shelves</span>
+          <span class="shelf-toggle-summary" *ngIf="!showShelves">
+            {{ activeSheet.columnsShelf.length + activeSheet.rowsShelf.length }} fields
+            <ng-container *ngIf="activeSheet.filterRules.length > 0">
+              · {{ activeSheet.filterRules.length }} filter{{ activeSheet.filterRules.length === 1 ? '' : 's' }}
+            </ng-container>
+          </span>
+        </button>
+
+        <!-- Shelves row. The Marks card (Color encoding + Data labels) sits in
+             the shelf area, Tableau-style, alongside the Filters/Columns/Rows
+             shelves rather than in the right config panel. -->
+        <div class="shelf-area-row"
+             *ngIf="showShelves"
+             [style.height.px]="shelfHeight">
+          <div class="shelf-marks-col" data-tour="marks">
+            <app-marks-card
+              [marks]="activeSheet.marks"
+              [allFields]="allFields"
+              [chartType]="activeSheet.chartType"
+              [showLabels]="activeSheet.showLabels"
+              (marksChange)="onMarksChange($event)"
+              (showLabelsChange)="onShowLabelsChange($event)"
+            ></app-marks-card>
+          </div>
+          <div class="shelves-wrap" data-tour="shelves">
+            <app-shelves-panel
+              [sheet]="activeSheet"
+              [allFields]="allFields"
+              [fieldOptions]="fieldOptions"
+              (sheetChange)="onSheetChange($event)"
+              (loadOptions)="loadFieldOptionsFor($event)"
+              (addField)="onAddToShelf($event)"
+            ></app-shelves-panel>
+
+            <app-calculated-fields
+              data-tour="calc"
+              [fields]="activeSheet.calculatedFields || []"
+              [allFields]="allFields"
+              [dataKeys]="dataKeys"
+              (fieldsChange)="onCalculatedFieldsChange($event)"
+            ></app-calculated-fields>
+          </div>
+        </div>
+
+        <div *ngIf="showShelves"
+             class="resize-handle resize-handle--h"
+             (mousedown)="startResize($event, 'shelf-block')"
+             title="Drag to resize"></div>
+
+        <!-- Dashboard or Sheet Preview -->
+        <ng-container *ngIf="reportType === 'dashboard' && dashboard; else sheetPreview">
+          <div class="dash-toolbar" *ngIf="canEdit && mode === 'edit'">
+            <button type="button" class="ghost-btn ghost-btn--sm" (click)="openArrange()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 11h8v10h-8zM3 14h8v7H3z"/></svg>
+              Arrange layout
+            </button>
+          </div>
+          <app-dashboard-canvas
+            [dashboard]="dashboard"
+            [sheets]="sheets"
+            [sheetsData]="dashboardSheetsData"
+            [sheetsLoading]="dashboardSheetsLoading"
+            [allFields]="allFields"
+            (globalFiltersChange)="onDashboardGlobalFilters($event)"
+            (layoutChange)="onDashboardLayoutChange($event)"
+            (runAll)="onDashboardRunAll()"
+          ></app-dashboard-canvas>
+        </ng-container>
+
+        <!-- Shared layout editor overlay — arrange the dashboard's sheets. -->
+        <ng-container *ngIf="arrangeOpen">
+          <div class="arrange-backdrop" (click)="closeArrange()"></div>
+          <div class="arrange-dialog">
+            <div class="arrange-header">
+              <span class="arrange-title">Arrange dashboard</span>
+              <div class="arrange-header-actions">
+                <button type="button" class="ghost-btn ghost-btn--sm" (click)="arrangeEditor.addRow()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                  Add row
+                </button>
+                <button type="button" class="arrange-close" (click)="closeArrange()" aria-label="Close">×</button>
+              </div>
+            </div>
+            <app-layout-editor
+              #arrangeEditor
+              class="arrange-editor"
+              [rows]="arrangeRows"
+              [showSettings]="false"
+              (rowsChange)="arrangeRows = $event"
+            ></app-layout-editor>
+            <div class="arrange-footer">
+              <button type="button" class="ghost-btn ghost-btn--sm" (click)="closeArrange()">Cancel</button>
+              <button type="button" class="primary-btn primary-btn--sm" (click)="applyArrange()">Apply</button>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #sheetPreview>
+          <div class="preview-scroll"
+            data-tour="preview"
+            [class.preview-drag-over]="previewDragOver"
+            (dragover)="onPreviewDragOver($event)"
+            (dragleave)="previewDragOver = false"
+            (drop)="onPreviewDrop($event)"
+          >
+            <div class="canvas-card">
+              <!-- Sheet header -->
+              <div class="canvas-header">
+                <div class="canvas-header-left">
+                  <span class="canvas-title">{{ activeSheet.name }}</span>
+                  <span class="canvas-pill" [class.canvas-pill--active]="reportData.length > 0">
+                    {{ reportData.length > 0 ? 'Published' : 'Draft' }}
+                  </span>
+                </div>
+                <div class="canvas-header-right">
+                  <!-- ═══ VISUAL — single chart-type picker ═══ -->
+                  <button class="canvas-icon canvas-icon--labeled show-me-btn"
+                          data-tour="show-me"
+                          [class.is-active]="showMeOpen"
+                          (click)="toggleShowMe(); $event.stopPropagation()"
+                          title="Visual — pick a chart type">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 15l4-4 4 4 5-6"/></svg>
+                    <span>Visual</span>
+                  </button>
+
+                  <div class="show-me-popover" *ngIf="showMeOpen" (click)="$event.stopPropagation()">
+                    <div class="show-me-grid" (mouseleave)="showMeHover = null">
+                      <button
+                        *ngFor="let ct of chartTypes"
+                        type="button"
+                        class="show-me-tile"
+                        [class.is-active]="activeSheet.chartType === ct.id"
+                        (click)="pickChartType(ct.id)"
+                        (mouseenter)="showMeHover = ct"
+                        [title]="ct.tooltip ? ct.label + ' — ' + ct.tooltip : ct.label"
+                      >
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                          <path *ngFor="let p of ct.paths" [attr.d]="p"/>
+                        </svg>
+                        <span class="show-me-tile-label">{{ ct.label }}</span>
+                      </button>
+                    </div>
+
+                    <!-- Description for the hovered (or active) chart type -->
+                    <div class="show-me-desc" *ngIf="showMeDescription as desc">
+                      <strong>{{ desc.label }}:</strong>
+                      <span [innerHTML]="desc.note"></span>
+                    </div>
+
+                    <!-- Auto-assign fields for the active chart (edit only) -->
+                    <div class="show-me-footer" *ngIf="canEdit && mode === 'edit'">
+                      <button type="button"
+                              class="ghost-btn ghost-btn--sm choose-for-me-btn"
+                              (click)="chooseForMe(); closeShowMe()"
+                              title="Auto-assign fields based on the chosen chart type">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                        </svg>
+                        Choose for me
+                      </button>
+                    </div>
+                  </div>
+                  <div class="show-me-backdrop" *ngIf="showMeOpen" (click)="closeShowMe()"></div>
+
+                  <button class="canvas-icon" *ngIf="reportData.length > 0" (click)="onOpenReorder()" title="Sort columns">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h13M3 12h9M3 18h5M17 4v16M14 16l3 3 3-3"/></svg>
+                  </button>
+                  <button class="canvas-icon" (click)="toggleExport(); $event.stopPropagation()"
+                          [class.is-busy]="exporting"
+                          [disabled]="exporting"
+                          [title]="exporting ? 'Exporting…' : 'Export'">
+                    <svg *ngIf="!exporting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                    <svg *ngIf="exporting" class="export-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                  </button>
+                  <button class="canvas-icon" (click)="toggleFullscreen()" [title]="canvasFullscreen ? 'Exit fullscreen' : 'Expand'">
+                    <svg *ngIf="!canvasFullscreen" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                    <svg *ngIf="canvasFullscreen"  width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>
+                  </button>
+                  <div class="export-dropdown" *ngIf="exportOpen" (click)="$event.stopPropagation()">
+                    <button (click)="exportAs('xlsx')">Excel (.xlsx)</button>
+                    <button (click)="exportAs('csv')">CSV (.csv)</button>
+                    <button (click)="exportAs('pdf')">PDF document</button>
+                    <!-- PNG hidden for Table chart-type — html2canvas can't
+                         realistically capture hundreds of pages of rows as
+                         one image. Use PDF / Excel / CSV for tabular data. -->
+                    <button *ngIf="activeSheet.chartType !== 'table'"
+                            (click)="exportAs('png')">PNG image</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="canvas-body">
+                <div *ngIf="loading" class="loading-spinner">
+                  <div class="spinner"></div>
+                  <span>Loading data…</span>
+                </div>
+                <app-chart-preview
+                  *ngIf="!loading"
+                  [data]="reportData"
+                  [chartType]="activeSheet.chartType"
+                  [dimKey]="dimKey"
+                  [measKeys]="measKeys"
+                  [colorField]="colorField"
+                  [columnLabels]="columnLabels"
+                  [columnFormats]="columnFormats"
+                  [columnTypes]="columnTypes"
+                  [columnNumberFormats]="columnNumberFormats"
+                  [showDataLabels]="activeSheet.showLabels"
+                  [orderedColumns]="orderedColumns"
+                  [currentSort]="currentSort"
+                  [groupedData]="groupedMeta"
+                  [groupFieldLabel]="groupFieldLabel"
+                  [groupByKey]="activeSheet.groupBy || null"
+                  [hasShelfFields]="activeSheet.columnsShelf.length + activeSheet.rowsShelf.length + activeSheet.marks.length > 0"
+                  (openReorder)="onOpenReorder()"
+                  (sortChange)="onSortChange($event)"
+                  (loadModuleAction)="jumpToSavedModules()"
+                ></app-chart-preview>
+              </div>
+            </div>
+          </div>
+
+          <app-report-pagination
+            data-tour="pagination"
+            [totalRows]="totalRows"
+            [pageSize]="activeSheet.pageSize"
+            [currentPage]="activeSheet.currentPage"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)"
+          ></app-report-pagination>
+        </ng-template>
+
+        <!-- Sheet tabs (hidden in Dashboard mode — you compose the grid there). -->
+        <app-sheet-tabs
+          *ngIf="reportType !== 'dashboard'"
+          data-tour="sheets"
+          [sheets]="sheets"
+          [activeSheetId]="activeSheetId"
+          [canEdit]="canEdit"
+          (selectSheet)="onSelectSheet($event)"
+          (addSheet)="onAddSheet()"
+          (removeSheet)="onRemoveSheet($event)"
+          (renameSheet)="onRenameSheet($event)"
+        ></app-sheet-tabs>
+      </div>
+
+      <!-- ═══ RIGHT: CONFIG PANEL ═══ -->
+      <div class="resize-handle resize-handle--v" (mousedown)="startResize($event, 'config')" title="Drag to resize"></div>
+
+      <div class="config-panel" [style.width.px]="configPanelWidth">
+        <!-- Sheet/Dashboard toggle hidden for now: Dashboard mode isn't persisted
+             yet (saving needs backend support). Re-enable once the API stores the
+             dashboard layout. Kept `reportType === 'dashboard'` so an existing
+             dashboard-state report can still switch back to Sheet. -->
+        <div class="rt-toggle-bar" *ngIf="canEdit && mode === 'edit' && reportType === 'dashboard'">
+          <button type="button" class="rt-toggle" (click)="toggleReportType()"
+                  title="Switch to Sheet view">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 11h8v10h-8zM3 14h8v7H3z"/></svg>
+            <span>Dashboard</span>
+          </button>
+        </div>
+
+        <!-- Horizontal tabs -->
+        <div class="tabs-row">
+          <button
+            *ngFor="let nav of rightTabs"
+            class="tab-btn"
+            [class.is-active]="activeNav === nav.id"
+            (click)="activeNav = nav.id"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path [attr.d]="nav.icon"/></svg>
+            <span>{{ nav.label }}</span>
+          </button>
+        </div>
+
+        <div class="config-content">
+          <!-- ═══ GENERAL TAB ═══ -->
+          <ng-container *ngIf="activeNav === 'general'">
+            <div class="form-group">
+              <label class="form-label">Report name</label>
+              <input class="form-input" [(ngModel)]="reportName" placeholder="Untitled report" />
+            </div>
+
+            <div *ngIf="queries.length > 0" class="modules-section">
+              <div class="modules-head">
+                <span class="modules-title">Saved queries</span>
+              </div>
+              <div *ngFor="let q of queries" class="module-card module-card--compact" (click)="loadQuery(q)">
+                <div class="module-card-main">
+                  <div class="module-card-name">{{ q.name }}</div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- ═══ DATA SOURCE TAB ═══ -->
+          <ng-container *ngIf="activeNav === 'datasource'">
+            <div class="form-group">
+              <label class="form-label">Primary table</label>
+              <ng-select appendTo="body" panelClass="cr-ng-select-dropdown" class="form-input" [ngModel]="activeSheet.primaryTable" (ngModelChange)="setPrimaryTable($event)" [clearable]="false">
+                <ng-option *ngFor="let t of dataSources" [value]="t.id">{{ t.label }}</ng-option>
+              </ng-select>
+            </div>
+            <div class="sub-head">Join tables</div>
+            <div *ngFor="let t of availableTables" class="join-item">
+              <label class="join-checkbox-label">
+                <input type="checkbox" [checked]="isJoined(t.id)" (change)="toggleJoin(t.id)" />
+                {{ t.label }}
+              </label>
+              <ng-select appendTo="body" panelClass="cr-ng-select-dropdown"
+                *ngIf="isJoined(t.id)"
+                class="join-type-select"
+                [ngModel]="getJoin(t.id)?.type || 'LEFT'"
+                (ngModelChange)="setJoinType(t.id, $event)"
+                [clearable]="false"
+              >
+                <ng-option *ngFor="let jt of joinTypes" [value]="jt.value">{{ jt.label }}</ng-option>
+              </ng-select>
+            </div>
+
+            <div class="sub-head">Columns</div>
+            <div class="column-picker-trigger" (click)="openColumnPicker()">
+              <span class="trigger-left">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                Show / hide columns
+              </span>
+              <span class="trigger-count">{{ activeSheet.columnsShelf.length + activeSheet.rowsShelf.length }} selected</span>
+            </div>
+          </ng-container>
+
+          <!-- Chart type now lives in the canvas-header "Show Me" popover and
+               Marks live in the shelf area, so the former "Visual" tab is gone. -->
+
+          <!-- ═══ DATA TAB (color legend + quick filters) ═══ -->
+          <ng-container *ngIf="activeNav === 'data'">
+            <!-- Color legend (read-only). Only renders when a colour mark
+                 is active AND the response has rows to legendise. -->
+            <ng-container *ngIf="legendItems.length > 0">
+              <div class="sub-head">Color legend</div>
+              <div class="data-legend">
+                <div *ngFor="let item of legendItems" class="data-legend-item">
+                  <span class="data-legend-swatch" [style.background]="item.color"></span>
+                  <span class="data-legend-label" [title]="item.value">{{ item.value }}</span>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Quick filters per shelf dimension. Backend only supports a
+                 single `equal` filter per field today, so the UI is radio-
+                 style (pick one or "All"). Multi-select is parked for when
+                 the API gains an `in` operator. -->
+            <ng-container *ngIf="quickFilterDimensions.length > 0; else qfEmpty">
+              <div *ngFor="let dim of quickFilterDimensions"
+                   class="data-filter"
+                   [class.is-collapsed]="quickFilterCollapsed[dim.col]"
+                   [class.is-active]="!isQuickFilterAll(dim.col)"
+                   (mouseenter)="loadFieldOptionsFor(dim.col)">
+
+                <!-- Clickable header — toggles collapse. Right-side summary
+                     shows the current selection state at a glance; small ×
+                     button shortcut to reset, kept out of the click bubble. -->
+                <button type="button"
+                        class="data-filter-head"
+                        (click)="toggleQuickFilterCollapsed(dim.col)">
+                  <svg class="data-filter-chevron"
+                       width="10" height="10" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="2.4"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                  <span class="data-filter-name">{{ dim.label }}</span>
+                  <span class="data-filter-summary">{{ quickFilterSummary(dim.col) }}</span>
+                  <span *ngIf="!isQuickFilterAll(dim.col)"
+                        class="data-filter-clear"
+                        (click)="$event.stopPropagation(); clearQuickFilter(dim.col)"
+                        title="Reset to all">×</span>
+                </button>
+
+                <div class="data-filter-body" *ngIf="!quickFilterCollapsed[dim.col]">
+                  <!-- Per-field search — only when list is long enough to
+                       benefit. Cheap because virtualisation only renders
+                       the matched window. -->
+                  <div class="data-filter-search"
+                       *ngIf="(fieldOptions[dim.col]?.length || 0) > 12">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                    <input
+                      type="text"
+                      placeholder="Search…"
+                      [ngModel]="quickFilterSearch[dim.col] || ''"
+                      (ngModelChange)="onQuickFilterSearch(dim.col, $event)"
+                    />
+                  </div>
+
+                  <!-- "(All)" stays outside the virtual viewport. Click
+                       toggles between all-checked and all-unchecked. The
+                       checkbox renders "indeterminate" when a partial
+                       selection is active. -->
+                  <label class="data-filter-option data-filter-all"
+                         [class.is-indeterminate]="isQuickFilterPartial(dim.col)">
+                    <input
+                      type="checkbox"
+                      [checked]="isQuickFilterAll(dim.col)"
+                      [indeterminate]="isQuickFilterPartial(dim.col)"
+                      (change)="toggleAllQuickFilter(dim.col)"
+                    />
+                    <span>(All)</span>
+                  </label>
+
+                  <!-- Virtualised distinct-value list — multi-select.
+                       Quiet design: no row background, just the checkbox
+                       state. Avoids the "wall of teal" when many rows are
+                       selected. -->
+                  <cdk-virtual-scroll-viewport
+                    *ngIf="filteredFieldOptions(dim.col).length > 0; else qfLoading"
+                    itemSize="26"
+                    class="data-filter-virtual">
+                    <label *cdkVirtualFor="let opt of filteredFieldOptions(dim.col); trackBy: trackOptionById"
+                           class="data-filter-option">
+                      <input
+                        type="checkbox"
+                        [checked]="isQuickFilterChecked(dim.col, opt.id)"
+                        (change)="toggleQuickFilter(dim.col, opt.id, $any($event.target).checked)"
+                      />
+                      <span [title]="opt.value || opt.name || opt.id">
+                        {{ opt.value || opt.name || opt.id }}
+                      </span>
+                    </label>
+                  </cdk-virtual-scroll-viewport>
+                  <ng-template #qfLoading>
+                    <div class="data-filter-empty">
+                      {{ (fieldOptions[dim.col]?.length || 0) > 0
+                         ? 'No matches.'
+                         : 'Loading values…' }}
+                    </div>
+                  </ng-template>
+                </div>
+              </div>
+            </ng-container>
+            <ng-template #qfEmpty>
+              <div *ngIf="legendItems.length === 0" class="data-empty">
+                Drop dimensions onto the Columns shelf to filter the report,
+                or drop a field on Marks → Color to see a legend here.
+              </div>
+            </ng-template>
+          </ng-container>
+
+          <!-- ═══ SETTINGS TAB ═══ -->
+          <ng-container *ngIf="activeNav === 'settings'">
+            <!-- "Data labels" lives in the Marks card (Chart tab) now, scoped
+                 to chart types that actually support it. Keep settings to
+                 cross-cutting toggles only. -->
+            <div class="setting-row">
+              <label>Auto refresh</label>
+              <label class="toggle">
+                <input type="checkbox" [(ngModel)]="autoRefresh" />
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <!-- Sheet / Dashboard switch lives above the canvas now. -->
+
+            <div class="sub-head">Sort</div>
+            <div class="config-list">
+              <div
+                *ngFor="let s of activeSheet.sortBy; let i = index"
+                class="config-item"
+                draggable="true"
+                (dragstart)="onSortDragStart($event, i)"
+                (dragover)="onSortDragOver($event)"
+                (drop)="onSortDrop($event, i)"
+              >
+                <span class="reorder-grip" title="Drag to reorder">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01"/></svg>
+                </span>
+                <span>{{ s.id }}</span>
+                <button class="sort-dir-btn" (click)="toggleSortDir(i)">{{ s.mod }}</button>
+                <button class="remove-btn" (click)="removeSort(i)">×</button>
+              </div>
+            </div>
+            <button class="add-btn" (click)="addSort()">+ Add sort</button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- ═══ COLUMN REORDER DIALOG ═══ -->
+<div *ngIf="showReorderDialog" class="reorder-backdrop" (click)="closeReorderDialog()"></div>
+<div *ngIf="showReorderDialog" class="reorder-dialog">
+  <div class="reorder-header">
+    <span>Reorder columns</span>
+    <button class="reorder-close" (click)="closeReorderDialog()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="reorder-list">
+    <ng-container *ngFor="let item of reorderList; let i = index">
+      <!-- Drop placeholder line — appears above the hovered row while dragging. -->
+      <div class="reorder-placeholder"
+           *ngIf="reorderDragIndex !== null && reorderDragOverIndex === i && reorderDragIndex !== i"></div>
+      <div
+        class="reorder-item"
+        [class.is-dragging]="reorderDragIndex === i"
+        draggable="true"
+        (dragstart)="onReorderDragStart($event, i)"
+        (dragover)="onReorderDragOver($event, i)"
+        (dragleave)="onReorderDragLeave()"
+        (dragend)="onReorderDragEnd()"
+        (drop)="onReorderDrop($event, i)"
+      >
+        <span class="reorder-grip" title="Drag to reorder">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/>
+            <circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>
+          </svg>
+        </span>
+        <span class="reorder-label">{{ item.label }}</span>
+      </div>
+      <!-- Tail placeholder when dropping at the very end of the list. -->
+      <div class="reorder-placeholder"
+           *ngIf="reorderDragIndex !== null && reorderDragOverIndex === reorderList.length && i === reorderList.length - 1"></div>
+    </ng-container>
+  </div>
+  <div class="reorder-footer">
+    <button class="reorder-btn reorder-btn--cancel" (click)="closeReorderDialog()">Cancel</button>
+    <button class="reorder-btn reorder-btn--apply" (click)="applyReorder()">Apply</button>
+  </div>
+</div>
+
+<!-- ═══ ADD-SORT PICKER DIALOG ═══ -->
+<div *ngIf="showAddSortDialog" class="reorder-backdrop" (click)="closeAddSortDialog()"></div>
+<div *ngIf="showAddSortDialog" class="reorder-dialog">
+  <div class="reorder-header">
+    <span>Add sort</span>
+    <button class="reorder-close" (click)="closeAddSortDialog()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="reorder-list">
+    <label
+      *ngFor="let item of addSortChoices"
+      class="reorder-item"
+      [class.is-selected]="addSortSelectedKey === item.key"
+    >
+      <input
+        type="radio"
+        name="addSortChoice"
+        [value]="item.key"
+        [(ngModel)]="addSortSelectedKey"
+      />
+      <span class="reorder-label">{{ item.label }}</span>
+    </label>
+  </div>
+  <div class="reorder-footer">
+    <div class="add-sort-dir-toggle">
+      <button
+        type="button"
+        class="sort-dir-btn"
+        [class.is-active]="addSortDir === 'ASC'"
+        (click)="addSortDir = 'ASC'"
+      >ASC</button>
+      <button
+        type="button"
+        class="sort-dir-btn"
+        [class.is-active]="addSortDir === 'DESC'"
+        (click)="addSortDir = 'DESC'"
+      >DESC</button>
+    </div>
+    <button class="reorder-btn reorder-btn--cancel" (click)="closeAddSortDialog()">Cancel</button>
+    <button class="reorder-btn reorder-btn--apply" (click)="confirmAddSort()" [disabled]="!addSortSelectedKey">Add</button>
+  </div>
+</div>

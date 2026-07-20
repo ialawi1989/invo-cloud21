@@ -1,0 +1,114 @@
+<div class="view-container">
+  <!-- ═══ VIEW HEADER ═══ -->
+  <div class="view-header">
+    <h2 class="view-title">{{ sheet.name }}</h2>
+    <span class="view-chart-type">{{ sheet.chartType }}</span>
+  </div>
+
+  <!-- ═══ FILTER BAR ═══ -->
+  <div class="filter-bar">
+    <div class="filter-bar-header">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
+      </svg>
+      <span>Filters</span>
+      <div class="glue-toggle">
+        <button class="glue-btn" [class.active]="pendingGlue === ' AND '" (click)="updateGlue(' AND ')">AND</button>
+        <button class="glue-btn" [class.active]="pendingGlue === ' OR '" (click)="updateGlue(' OR ')">OR</button>
+      </div>
+      <!-- View mode: report consumers can change the AND/OR glue and the
+           operator on each existing filter, but cannot add new filters,
+           delete filters, or change which field / value is being filtered.
+           Add / remove affordances are intentionally absent. -->
+    </div>
+
+    <div class="filter-row-list" *ngIf="pendingFilters.length > 0">
+      <div *ngFor="let r of pendingFilters; let i = index" class="filter-row">
+        <!-- Field — locked in view mode. Renders as the same coloured
+             pill the edit-mode shelves panel uses (type icon + short
+             label) so it visually matches and only the column name is
+             shown, not the fully-qualified `Table.field` id. -->
+        <span class="filter-pill"
+              [class.pill-formula]="r.isFormula"
+              [ngClass]="'pill-type-' + (r.type || 'text')"
+              [title]="r.field">
+          <span class="pill-type-icon">{{ r.isFormula ? 'ƒ' : typeIconFor(r.type) }}</span>
+          <span class="filter-field">{{ getFieldLabel(r.field) }}</span>
+        </span>
+
+        <!-- Operator — the only per-row editable control. Only the
+             `filter-op` class is kept; the legacy `filter-select` class
+             added a native-input style border that doubled up with
+             ng-select's own .ng-select-container border. -->
+        <ng-select appendTo="body" panelClass="cr-ng-select-dropdown" class="filter-op" [ngModel]="r.condition.type" (ngModelChange)="updateFilterOp(i, $event)" [clearable]="false">
+          <!-- Only operators valid for this column's type — Contains hidden
+               for number/date, Greater/Less hidden for text, etc. -->
+          <ng-option *ngFor="let op of operatorsForRule(r)" [value]="op.value">{{ op.label }}</ng-option>
+        </ng-select>
+
+        <!-- Value(s) — read-only in view mode. We still render the value so
+             the consumer can see what the filter is set to. -->
+        <ng-container *ngIf="!isNoValueOp(r)">
+          <ng-container *ngIf="isBetween(r); else singleVal">
+            <span class="filter-static-value">{{ getBetweenStart(r) || '—' }}</span>
+            <span class="between-sep">-</span>
+            <span class="filter-static-value">{{ getBetweenEnd(r) || '—' }}</span>
+          </ng-container>
+          <ng-template #singleVal>
+            <span class="filter-static-value" [title]="getFilterStringValue(r) || '—'">
+              {{ getFilterStringValue(r) || '—' }}
+            </span>
+          </ng-template>
+        </ng-container>
+
+        <!-- No remove button in view mode. -->
+      </div>
+    </div>
+
+    <!-- RUN BUTTON -->
+    <div class="run-bar">
+      <button class="run-btn" [class.pending]="hasPendingChanges" [disabled]="loading" (click)="onRun()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        {{ loading ? 'Loading...' : hasPendingChanges ? 'Run (filters changed)' : 'Run' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ CHART AREA ═══ -->
+  <div class="view-chart">
+    <div *ngIf="loading" class="loading-spinner">
+      <div class="spinner"></div>
+      <span>Loading data...</span>
+    </div>
+    <app-chart-preview
+      *ngIf="!loading"
+      [data]="data"
+      [chartType]="sheet.chartType"
+      [dimKey]="dimKey"
+      [measKeys]="measKeys"
+      [colorField]="colorField"
+      [columnLabels]="columnLabels"
+      [columnFormats]="columnFormats"
+      [columnTypes]="columnTypes"
+      [columnNumberFormats]="columnNumberFormats"
+      [orderedColumns]="orderedColumns"
+      [showDataLabels]="showDataLabels"
+      [currentSort]="currentSort"
+      [groupedData]="groupedData"
+      [groupFieldLabel]="groupFieldLabel"
+      [groupByKey]="groupByKey"
+      [hasShelfFields]="true"
+    ></app-chart-preview>
+  </div>
+
+  <!-- ═══ PAGINATION ═══ -->
+  <app-report-pagination
+    [totalRows]="totalRows"
+    [pageSize]="sheet.pageSize"
+    [currentPage]="sheet.currentPage"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+  ></app-report-pagination>
+</div>

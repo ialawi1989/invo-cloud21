@@ -1,0 +1,8 @@
+// shared/styles/_report-table.scss
+// ==============================================
+// DEPRECATED: This file now re-exports from _report-base.scss
+// All report styles have been unified into _report-base.scss.
+// Import _report-base directly in new code.
+// ==============================================
+
+@import 'report-base';

@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import {
   DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem,
 } from '@angular/cdk/drag-drop';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
@@ -28,6 +28,11 @@ export interface CustomizeData {
   rows: { id: string; widgets: { slug: string; colSpan: number; view?: WidgetView }[] }[];
   /** Slugs the dashboard can actually render today. */
   supported: string[];
+  /**
+   * Runtime widgets not in the static catalogue — catalog reports registered as
+   * custom dashboard widgets. Merged into the pickable pool.
+   */
+  extraWidgets?: WidgetDef[];
 }
 
 export interface CustomizeResult {
@@ -93,6 +98,7 @@ export class DashboardCustomizeModalComponent {
   private modalRef = inject<ModalRef<CustomizeResult>>(MODAL_REF);
   private host = inject<ElementRef<HTMLElement>>(ElementRef);
   private injector = inject(Injector);
+  private translate = inject(TranslateService);
   data = inject<CustomizeData>(MODAL_DATA);
 
   /** Row to flash after it was just added or received a widget. */
@@ -160,8 +166,18 @@ export class DashboardCustomizeModalComponent {
     { value: 'custom',   label: 'DASHBOARD.TAB_CUSTOM' },
   ];
 
-  /** Only offer widgets the dashboard can render — no dead entries. */
-  private readonly available = WIDGETS.filter((w) => this.data.supported.includes(w.slug));
+  /**
+   * Only offer widgets the dashboard can render — no dead entries. The static
+   * catalogue plus any runtime custom widgets (catalog reports), de-duplicated
+   * by slug in case a report is somehow also declared statically.
+   */
+  private readonly available = (() => {
+    const bySlug = new Map<string, WidgetDef>();
+    for (const w of [...WIDGETS, ...(this.data.extraWidgets ?? [])]) {
+      if (this.data.supported.includes(w.slug)) bySlug.set(w.slug, w);
+    }
+    return [...bySlug.values()];
+  })();
 
   readonly rows = signal<EditorRow[]>(
     this.data.rows.map((r) => ({
@@ -220,7 +236,10 @@ export class DashboardCustomizeModalComponent {
     const pool = this.remaining().filter((w) => {
       if (tab === 'standard' && w.custom) return false;
       if (tab === 'custom' && !w.custom) return false;
-      return !term || w.title.toLowerCase().includes(term) || w.slug.toLowerCase().includes(term);
+      // `title` is an i18n key; match on the resolved label so a search for
+      // "sales" finds a report titled that, not just its key.
+      const label = this.translate.instant(w.title).toLowerCase();
+      return !term || label.includes(term) || w.slug.toLowerCase().includes(term);
     });
     const order: WidgetGroup[] = ['overview', 'sales', 'finance', 'inventory', 'custom'];
     return order

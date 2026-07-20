@@ -1,0 +1,1108 @@
+// ==============================================
+// _report-base.scss
+// Unified Report Base Styles
+// Single source of truth for ALL report tables
+// ==============================================
+// Import this file in every feature report style.
+// Then add ONLY feature-specific overrides below it.
+// ==============================================
+
+@import 'variables';
+
+// ==============================================
+// ANIMATIONS
+// ==============================================
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ==============================================
+// SKELETON LOADING
+// ==============================================
+.skeleton-wrapper {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.skeleton-container {
+  background: #fff;
+  border-radius: $border-radius;
+  box-shadow: $shadow-base;
+  overflow: hidden;
+}
+
+.skeleton-header {
+  padding: 1rem;
+  border-bottom: 1px solid $gray-200;
+
+  .skeleton-title {
+    height: 20px;
+    width: 200px;
+    margin-bottom: 0.5rem;
+  }
+
+  .skeleton-subtitle {
+    height: 14px;
+    width: 150px;
+  }
+}
+
+.skeleton-table-wrapper {
+  overflow-x: auto;
+}
+
+.skeleton-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid $gray-200;
+  }
+
+  thead th {
+    background: $header-bg;
+    .skeleton-content { background: rgba(255, 255, 255, 0.15); }
+  }
+
+  tbody tr:nth-child(even) td { background: $row-even-bg; }
+  .skeleton-highlight-row td { background: $gray-50; }
+  .skeleton-total-row td { background: $total-row-bg; }
+  .skeleton-section-row td { background: $section-header-bg; }
+
+  .skeleton-sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: inherit;
+  }
+
+  .skeleton-number {
+    margin-left: auto;
+  }
+}
+
+.skeleton-content {
+  height: 14px;
+  border-radius: 4px;
+  background: $gray-200;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, $gray-200 0%, $gray-100 50%, $gray-200 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+// ==============================================
+// ERROR STATE
+// ==============================================
+.error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+}
+
+.error-card {
+  text-align: center;
+  background: #fff;
+  border-radius: $border-radius;
+  padding: 2.5rem;
+  box-shadow: $shadow-base;
+  max-width: 400px;
+
+  .error-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: $danger-color-light;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    i { font-size: 28px; color: #ef4444; }
+  }
+
+  .error-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $gray-700;
+    margin-bottom: 0.5rem;
+  }
+
+  .error-message {
+    color: $gray-500;
+    margin-bottom: 1.5rem;
+    overflow-wrap: break-word;
+  }
+
+  .btn-retry {
+    padding: 0.625rem 1.5rem;
+    border-radius: 6px;
+  }
+}
+
+// ==============================================
+// EMPTY STATE
+// ==============================================
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: #fff;
+  border-radius: $border-radius;
+  box-shadow: $shadow-sm;
+
+  .empty-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    i { font-size: 32px; color: $info-color; }
+  }
+
+  &.initial-state .empty-icon {
+    background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
+    i { color: #8b5cf6; }
+  }
+
+  h5 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $gray-700;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: $gray-500;
+    font-size: 0.9375rem;
+    margin: 0;
+  }
+}
+
+// ==============================================
+// REPORT CONTAINER
+// ==============================================
+.report-container {
+  padding: 0;
+  width: 100%;
+}
+
+// ==============================================
+// REPORT TOOLBAR
+// ==============================================
+.report-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #ffffff;
+  border: 1px solid $gray-200;
+  border-radius: $border-radius-md $border-radius-md 0 0;
+  border-bottom: none;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .record-count {
+    font-size: 0.8125rem;
+    color: $gray-500;
+    font-weight: 500;
+  }
+
+  .pagination-info {
+    font-size: 0.8125rem;
+    color: $gray-500;
+    white-space: nowrap;
+    padding: 0 0.25rem;
+  }
+
+  .page-size-select {
+    width: auto;
+    min-width: 64px;
+    font-size: 0.8125rem;
+    padding: 0.3125rem 1.75rem 0.3125rem 0.625rem;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    background-color: #fff;
+    color: $gray-700;
+    cursor: pointer;
+
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 2px rgba($primary-color, 0.1);
+      outline: none;
+    }
+  }
+
+  .pagination-buttons {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .btn-pagination {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid $gray-300;
+    background: #fff;
+    color: $gray-500;
+    border-radius: 6px;
+    transition: all $transition-fast;
+    cursor: pointer;
+    line-height: 1;
+
+    i {
+      font-size: 1rem;
+    }
+
+    &:hover:not(:disabled) {
+      background: $gray-50;
+      border-color: $gray-400;
+      color: $gray-700;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  .scroll-nav-buttons {
+    // Deprecated: scroll arrows moved to table overlay. Hide in toolbar.
+    display: none !important;
+  }
+}
+
+// Alternate toolbar class used in "others" reports
+.table-toolbar {
+  @extend .report-toolbar;
+}
+
+// ==============================================
+// TABLE SCROLL WRAPPER
+// ==============================================
+.table-scroll-wrapper {
+  position: relative;
+  overflow: visible; // Must be visible so absolute-positioned overlay buttons aren't clipped
+
+  // Gradient shadow indicators
+  &.can-scroll-left::before,
+  &.can-scroll-right::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    pointer-events: none;
+    z-index: 3;
+    transition: opacity 0.2s;
+  }
+
+  &.can-scroll-left::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.08), transparent);
+  }
+
+  &.can-scroll-right::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(0,0,0,0.08), transparent);
+  }
+
+}
+
+// ==============================================
+// SCROLL OVERLAY ARROW BUTTONS
+// Root-level so Angular encapsulation doesn't block
+// ==============================================
+.scroll-overlay-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: rgba(255, 255, 255, 0.95);
+  color: $gray-600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: all 0.15s ease;
+  padding: 0;
+
+  &:hover:not(:disabled) {
+    background: #fff;
+    color: $primary-color;
+    border-color: $primary-color;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    transform: translateY(-50%) scale(1.08);
+  }
+
+  &:disabled {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &.scroll-left-btn {
+    left: 8px;
+  }
+
+  &.scroll-right-btn {
+    right: 8px;
+  }
+
+  i {
+    font-size: 12px;
+  }
+}
+
+.table-scroll-container {
+  overflow-x: auto;
+
+  &::-webkit-scrollbar { height: 8px; }
+  &::-webkit-scrollbar-track { background: #f1f5f9; }
+  &::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 4px;
+    &:hover { background: #64748b; }
+  }
+}
+
+// ==============================================
+// REPORT TABLE — Unified Design
+// ==============================================
+// Header: #0f172a (dark navy)
+// Borders: 1px solid $gray-200 on body cells
+// Even rows: $gray-50
+// Hover: #f1f5f9
+// Total row: #E8EFFF with 2px top border
+// Border-radius: 0 0 0.5rem 0.5rem (bottom corners)
+// ==============================================
+
+.report-table {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: $font-size-base;
+  background: #fff;
+  margin-bottom: 0;
+  border: 1px solid $gray-200;
+  border-radius: 0 0 $border-radius-md $border-radius-md;
+  overflow: hidden;
+
+  // ====== HEADER STYLES ======
+  thead {
+    // Primary header row
+    .header-row th,
+    .header-group-row th {
+      padding: 0.875rem 1rem;
+      background: $header-bg;
+      color: #fff;
+      font-weight: 600;
+      white-space: nowrap;
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: left;
+      position: relative;
+
+      // Subtle separator between header cells
+      &:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 25%;
+        height: 50%;
+        width: 1px;
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      &.text-center { text-align: center; }
+      &.text-end { text-align: right; }
+
+      &.sortable {
+        cursor: pointer;
+        user-select: none;
+        transition: background-color $transition-fast;
+
+        &:hover { background-color: $header-bg-dark; }
+
+        i.fas {
+          margin-left: 0.5rem;
+          opacity: 0.7;
+          font-size: $font-size-xs;
+        }
+
+        &:hover i.fas { opacity: 1; }
+
+        .sort-icon {
+          margin-left: 4px;
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 11px;
+        }
+      }
+
+      // Sticky column
+      &.sticky-col-1 {
+        position: sticky;
+        left: 0;
+        z-index: 3;
+      }
+    }
+
+    // Secondary header row (for grouped columns)
+    .header-row-secondary th,
+    .sub-header-row th {
+      padding: 0.625rem 1rem;
+      background: $header-bg-secondary;
+      color: #fff;
+      font-weight: 500;
+      font-size: $font-size-sm;
+      white-space: nowrap;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: left;
+
+      &.text-center { text-align: center; }
+      &.text-end { text-align: right; }
+    }
+  }
+
+  // ====== BODY STYLES ======
+  tbody {
+    td {
+      padding: 0.75rem 1rem;
+      border: 1px solid $gray-200;
+      vertical-align: middle;
+      color: $gray-700;
+      background: #fff;
+    }
+
+    .data-row {
+      transition: background-color 0.1s ease;
+
+      &:hover td { background-color: $row-hover-bg; }
+      &.even-row td { background-color: $row-even-bg; }
+      &.even-row:hover td { background-color: #eef2f7; }
+
+      // Sticky column in data rows
+      td.sticky-col-1 {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: inherit;
+      }
+
+      a.link-primary {
+        color: $primary-color;
+        text-decoration: none;
+        font-weight: 500;
+        &:hover {
+          text-decoration: underline;
+          color: $primary-color-dark;
+        }
+      }
+    }
+
+    // Last row
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    // ====== GROUP / SECTION ROWS ======
+    .group-first-row td {
+      background-color: #f0f9ff !important;
+      border-top: 2px solid $header-bg;
+    }
+
+    .group-header-row td {
+      background: #e0f2fe !important;
+      font-weight: 600;
+      color: $debit-color;
+    }
+
+    .group-data-row td { padding-left: 2rem; }
+
+    .group-subtotal-row td {
+      background: #f0f9ff !important;
+      font-weight: 500;
+    }
+
+    .section-header-row td {
+      background: $section-header-bg !important;
+      font-weight: 700;
+      color: $primary-color-dark;
+      border-top: 2px solid $primary-color;
+      font-size: 0.9375rem;
+    }
+
+    .section-subtotal-row td {
+      background: #f0f9ff !important;
+      font-weight: 600;
+      color: $gray-700;
+    }
+
+    // ====== SUMMARY / TOTAL ROWS ======
+    .summary-row td,
+    .total-row td {
+      background: $total-row-bg !important;
+      // Override Bootstrap's CSS custom property table-bg system
+      --bs-table-bg: #{$total-row-bg};
+      --bs-table-striped-bg: #{$total-row-bg};
+      --bs-table-hover-bg: #{$total-row-bg};
+      border-top: 2px solid $header-bg;
+      font-weight: 600;
+      color: $gray-700 !important;
+      border-bottom: none;
+    }
+
+    .total-row {
+      .total-label {
+        font-weight: 700;
+      }
+
+      // Label + count layout (inventory reports tfoot pattern)
+      .td-total-label {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .total-title {
+        font-weight: 700;
+        color: $gray-800;
+      }
+
+      .total-count {
+        font-size: $font-size-xs;
+        font-weight: 400;
+        color: $text-secondary;
+      }
+
+      td:first-child {
+        border-bottom-left-radius: $border-radius-md;
+      }
+
+      td:last-child {
+        border-bottom-right-radius: $border-radius-md;
+      }
+
+      td.sticky-col-1 {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: $total-row-bg !important;
+      }
+    }
+
+    .grand-total-row td {
+      background: $header-bg !important;
+      color: #fff !important;
+      font-weight: 700;
+      border-top: 2px solid $header-bg-dark;
+    }
+
+    // Last row border radius (when no total row)
+    tr:last-child:not(.total-row):not(.grand-total-row) {
+      td:first-child {
+        border-bottom-left-radius: $border-radius-md;
+      }
+      td:last-child {
+        border-bottom-right-radius: $border-radius-md;
+      }
+    }
+  }
+
+  // ====== CELL UTILITIES ======
+  .text-center { text-align: center; }
+  .text-end { text-align: right; }
+  .fw-semibold { font-weight: 600; }
+  .fw-bold { font-weight: 700; }
+
+  // ====== PRODUCT CELL WITH BARCODE ======
+  .product-cell {
+    .product-name {
+      font-weight: 500;
+      color: $gray-700;
+    }
+
+    .barcode {
+      display: block;
+      color: $gray-400;
+      font-size: $font-size-xs;
+    }
+  }
+
+  // ====== CATEGORY CELL ======
+  .category-cell {
+    font-weight: 500;
+    color: $gray-600;
+  }
+
+  // ====== ACCOUNT CELL (Business Overview) ======
+  .account-cell {
+    .account-code {
+      font-family: monospace;
+      color: $gray-500;
+      font-size: $font-size-xs;
+      display: block;
+    }
+
+    .account-name {
+      font-weight: 500;
+      color: $gray-700;
+    }
+
+    &.indent-1 { padding-left: 2rem; }
+    &.indent-2 { padding-left: 3rem; }
+    &.indent-3 { padding-left: 4rem; }
+  }
+
+  // ====== DEBIT / CREDIT / VALUE STYLING ======
+  .debit-value { color: $debit-color; }
+  .credit-value { color: $credit-color; }
+  .positive-value { color: $positive-color; }
+  .negative-value { color: $negative-color; }
+
+  // ====== VARIANCE CELLS ======
+  .variance-favorable {
+    background: $variance-favorable !important;
+    color: $positive-color;
+  }
+
+  .variance-unfavorable {
+    background: $variance-unfavorable !important;
+    color: $negative-color;
+  }
+
+  // ====== CLICKABLE CELLS ======
+  td.clickable-cell {
+    color: $primary-color;
+    cursor: pointer;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+      color: $primary-color-dark;
+    }
+  }
+
+  // ====== COLUMN GROUP BORDERS ======
+  .border-left {
+    border-left: 1px solid $gray-200;
+  }
+}
+
+// Card wrapper (used in some report modules)
+.card-wrapper {
+  background: #fff;
+  border-radius: $border-radius-md;
+  border: 1px solid $gray-200;
+  overflow: hidden;
+}
+
+// ==============================================
+// DYNAMIC COLUMN GROUP HEADERS
+// ==============================================
+.dynamic-header-group {
+  text-align: center;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  min-width: 130px;
+}
+
+.dynamic-sub-header {
+  text-align: center;
+  border-left: 1px solid $gray-200;
+
+  &:first-child {
+    border-left: 1px solid $border-color-dark;
+  }
+}
+
+// ==============================================
+// BADGE STYLES
+// ==============================================
+.badge {
+  padding: 0.25rem 0.625rem;
+  border-radius: 12px;
+  font-size: $font-size-xs;
+  font-weight: 500;
+  display: inline-block;
+
+  &.bg-success { background: $success-color-light !important; color: $success-color-dark !important; }
+  &.bg-danger { background: $danger-color-light !important; color: $danger-color-dark !important; }
+  &.bg-warning { background: $warning-color-light !important; color: #d97706 !important; }
+  &.bg-info { background: $info-color-light !important; color: #2563eb !important; }
+}
+
+// ==============================================
+// STATUS BADGE (alternate pattern)
+// ==============================================
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: $font-size-xs;
+  font-weight: 500;
+
+  &.success { background: rgba($success-color, 0.1); color: $success-color-dark; }
+  &.warning { background: rgba($warning-color, 0.1); color: #d97706; }
+  &.danger { background: rgba($danger-color, 0.1); color: $danger-color-dark; }
+}
+
+// ==============================================
+// AMOUNT FORMATTING
+// ==============================================
+.amount {
+  font-family: 'Roboto Mono', monospace;
+  font-variant-numeric: tabular-nums;
+
+  &.positive { color: $positive-color; }
+  &.negative { color: $negative-color; }
+}
+
+// ==============================================
+// CLICKABLE ROWS
+// ==============================================
+.clickable-row {
+  cursor: pointer;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: rgba($primary-color, 0.06) !important;
+  }
+
+  .row-action-icon {
+    opacity: 0;
+    transition: opacity $transition-fast;
+    color: $primary-color;
+  }
+
+  &:hover .row-action-icon {
+    opacity: 1;
+  }
+}
+
+// ==============================================
+// LOADING / NO DATA STATES
+// ==============================================
+.report-loading,
+.loading-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+
+  .spinner-border {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 10;
+}
+
+.report-no-data {
+  text-align: center;
+  padding: 3rem;
+  color: $gray-500;
+
+  i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  h5 { margin-bottom: 0.5rem; }
+  p { margin-bottom: 0; }
+}
+
+// ==============================================
+// SCROLL INDICATOR
+// ==============================================
+.scroll-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  button {
+    padding: 4px 8px;
+    font-size: $font-size-xs;
+  }
+}
+
+// ==============================================
+// PAGINATION CONTROLS (alternate pattern)
+// ==============================================
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .page-info {
+    font-size: $font-size-sm;
+    color: $gray-600;
+    min-width: 50px;
+    text-align: center;
+  }
+}
+
+// ==============================================
+// COHORT TABLE
+// ==============================================
+.cohort-table {
+  .retention-cell {
+    font-weight: 500;
+    font-size: $font-size-sm;
+  }
+}
+
+// ==============================================
+// FINANCIAL STATEMENT SPECIFIC
+// ==============================================
+
+// Balance Sheet
+.balance-sheet-table {
+  .assets-section { border-left: 3px solid $info-color; }
+  .liabilities-section { border-left: 3px solid #ef4444; }
+  .equity-section { border-left: 3px solid $success-color; }
+}
+
+// P&L
+.profit-loss-table {
+  .income-section { border-left: 3px solid $success-color; }
+  .expense-section { border-left: 3px solid #ef4444; }
+  .cogs-section { border-left: 3px solid #f59e0b; }
+
+  .net-profit-row td {
+    background: $variance-favorable !important;
+    color: $positive-color !important;
+    font-weight: 700;
+  }
+
+  .net-loss-row td {
+    background: $variance-unfavorable !important;
+    color: $negative-color !important;
+    font-weight: 700;
+  }
+}
+
+// Trial Balance
+.trial-balance-table {
+  .balanced-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: $font-size-base;
+    font-weight: 500;
+
+    &.balanced { background: $variance-favorable; color: $positive-color; }
+    &.not-balanced { background: $variance-unfavorable; color: $negative-color; }
+  }
+}
+
+// ==============================================
+// RESPONSIVE
+// ==============================================
+@media (max-width: $breakpoint-md) {
+  .report-toolbar,
+  .table-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .toolbar-right {
+      width: 100%;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+  }
+
+  .report-table {
+    font-size: $font-size-sm;
+
+    thead .header-row th { padding: 0.625rem 0.75rem; }
+    tbody td { padding: 0.625rem 0.75rem; }
+  }
+}
+
+// ==============================================
+// RTL SUPPORT
+// ==============================================
+[dir="rtl"] {
+  .report-toolbar {
+    .scroll-nav-buttons {
+      display: none !important;
+    }
+  }
+
+  .table-scroll-wrapper {
+    .scroll-overlay-btn {
+      &.scroll-left-btn {
+        left: auto;
+        right: 8px;
+      }
+
+      &.scroll-right-btn {
+        right: auto;
+        left: 8px;
+      }
+    }
+  }
+
+  .report-table {
+    thead {
+      .header-row th,
+      .header-group-row th {
+        text-align: right;
+
+        &:not(:last-child)::after {
+          right: auto;
+          left: 0;
+        }
+
+        &.sortable i.fas {
+          margin-left: 0;
+          margin-right: 0.5rem;
+        }
+
+        &.sortable .sort-icon {
+          margin-left: 0;
+          margin-right: 4px;
+        }
+
+        &.sticky-col-1 {
+          left: auto;
+          right: 0;
+        }
+
+        // Second sticky column flips too
+        &.sticky-col-2 {
+          left: auto;
+          right: 220px;
+          border-right: none;
+          border-left: 2px solid $header-bg-secondary;
+        }
+
+        // Numeric/currency columns stay left-aligned in RTL
+        &.text-end { text-align: left; }
+      }
+    }
+
+    tbody {
+      td {
+        text-align: right;
+        &.text-end { text-align: left; }
+      }
+
+      .data-row td.sticky-col-1,
+      .total-row td.sticky-col-1,
+      .summary-row td.sticky-col-1 {
+        left: auto;
+        right: 0;
+      }
+
+      // sticky-col-2 in body
+      .data-row td.sticky-col-2,
+      .total-row td.sticky-col-2,
+      .summary-row td.sticky-col-2 {
+        left: auto;
+        right: 220px;
+        border-right: none;
+        border-left: 2px solid $gray-200;
+      }
+
+      .group-data-row td {
+        padding-left: 1rem;
+        padding-right: 2rem;
+      }
+    }
+
+    .account-cell {
+      &.indent-1 { padding-left: 1rem; padding-right: 2rem; }
+      &.indent-2 { padding-left: 1rem; padding-right: 3rem; }
+      &.indent-3 { padding-left: 1rem; padding-right: 4rem; }
+    }
+  }
+}
+
+// ==============================================
+// PRINT
+// ==============================================
+@media print {
+  .report-toolbar,
+  .table-toolbar,
+  .scroll-nav-buttons { display: none; }
+
+  .table-scroll-wrapper::before,
+  .table-scroll-wrapper::after { display: none; }
+
+  .report-table {
+    thead .header-row th {
+      background: $header-bg !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    tbody {
+      .data-row.even-row td {
+        background: $row-even-bg !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .section-header-row td {
+        background: $section-header-bg !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .total-row td,
+      .summary-row td,
+      .grand-total-row td {
+        background: $total-row-bg !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  }
+}

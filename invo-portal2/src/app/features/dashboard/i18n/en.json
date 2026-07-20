@@ -136,6 +136,8 @@
     "OPEN_INVOICES": "Open invoices",
     "OPEN_CASHIERS": "Open cashiers",
     "OPENING_AS_ON": "Opening as on {{date}}",
-    "CLOSING_AS_ON": "Closing as on {{date}}"
+    "CLOSING_AS_ON": "Closing as on {{date}}",
+    "VIEW_FULL_REPORT": "View full report",
+    "MORE_ROWS": "+{{count}} more rows in the full report"
   }
 }

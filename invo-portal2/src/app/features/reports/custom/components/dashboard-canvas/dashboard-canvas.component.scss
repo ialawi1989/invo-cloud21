@@ -1,0 +1,210 @@
+$accent: #00bcd4;
+$accent-light: #e0f7fa;
+$border: #e0e0e0;
+
+:host { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: #f0f0f0;
+}
+
+.dashboard-header {
+  padding: 16px 24px;
+  background: #fff;
+  border-bottom: 1px solid $border;
+  flex-shrink: 0;
+}
+
+.dashboard-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 10px;
+}
+
+// ─── Global Filters ──────────────────────────────
+.global-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.gf-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  margin-right: 4px;
+}
+
+.gf-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 4px;
+}
+
+.gf-select, .gf-input {
+  padding: 3px 6px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 11px;
+  font-family: inherit;
+  color: #333;
+  background: #fff;
+  outline: none;
+  &:focus { border-color: $accent; }
+}
+
+.gf-input { min-width: 60px; }
+
+.gf-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ccc;
+  font-weight: 700;
+  font-size: 12px;
+  &:hover { color: #ef5350; }
+}
+
+.gf-add {
+  padding: 3px 10px;
+  background: none;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: inherit;
+  color: #999;
+  cursor: pointer;
+  &:hover { border-color: $accent; color: $accent; }
+}
+
+.gf-run {
+  padding: 4px 14px;
+  background: $accent;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  margin-left: auto;
+  &:hover { background: darken($accent, 5%); }
+}
+
+// ─── Dashboard Grid ──────────────────────────────
+.dashboard-grid {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: minmax(250px, auto);
+  gap: 16px;
+}
+
+.dashboard-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.card-chart-type {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #999;
+  padding: 2px 6px;
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+// ─── Card layout tools (resize / reorder) ───────────
+.card-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-widths {
+  display: inline-flex;
+  border: 1px solid $border;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.card-tool {
+  min-width: 22px;
+  height: 20px;
+  padding: 0 5px;
+  background: #fff;
+  border: none;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  color: #888;
+  cursor: pointer;
+  &:hover:not(:disabled) { background: $accent-light; color: $accent; }
+  &:disabled { opacity: 0.35; cursor: default; }
+}
+.card-widths .card-tool:not(:last-child) { border-right: 1px solid $border; }
+.card-widths .card-tool.is-active { background: $accent; color: #fff; }
+.card-move {
+  border: 1px solid $border;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.card-body {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+}
+
+.card-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #eee;
+  border-top-color: $accent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

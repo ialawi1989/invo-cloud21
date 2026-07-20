@@ -1,0 +1,110 @@
+$teal:       #00aab3;
+$teal-tint:  rgba(#00aab3, 0.10);
+$teal-dark:  #008f97;
+$teal-rgb:   0, 170, 179;
+$ink:        #1a1a18;
+$ink-2:      #444441;
+$ink-3:      #6b6b67;
+$ink-4:      #a3a39e;
+$bg-surface: #f8f8f7;
+$border-rule: 0.5px solid rgba(0,0,0,0.09);
+$rad-tab-top: 6px;
+
+.sheet-tabs {
+  display: flex;
+  align-items: stretch;
+  background: $bg-surface;
+  border-top: $border-rule;
+  height: 40px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  padding: 6px 12px 0;
+  gap: 4px;
+
+  &::-webkit-scrollbar { height: 0; }
+}
+
+.sheet-tab {
+  display: flex; align-items: center;
+  padding: 0 14px;
+  font-size: 13px; font-weight: 600;
+  color: $ink-2;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  min-width: 92px;
+  border-radius: $rad-tab-top $rad-tab-top 0 0;
+  transition: background .14s, color .14s;
+
+  &:hover { background: rgba(0,0,0,0.04); color: $ink; }
+
+  &.is-active {
+    background: $teal-tint;
+    color: $teal-dark;
+  }
+}
+
+.tab-name {
+  overflow: hidden; text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.tab-rename-input {
+  border: 1px solid $teal;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: inherit;
+  color: $ink;
+  background: #fff;
+  outline: none;
+  width: 124px;
+  box-shadow: 0 0 0 3px rgba($teal, 0.12);
+}
+
+.tab-context-menu {
+  position: absolute;
+  top: 100%; left: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: $border-rule;
+  border-radius: 8px;
+  z-index: 50;
+  min-width: 140px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+
+  button {
+    display: block; width: 100%;
+    padding: 9px 14px;
+    background: none; border: none;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    color: $ink-2; text-align: left; cursor: pointer;
+    &:hover { background: $bg-surface; color: $ink; }
+    &.danger { color: #b3261e; }
+    &.danger:hover { background: #fdecea; }
+  }
+}
+
+.add-tab-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 0 12px;
+  background: transparent; border: none;
+  color: $ink-2;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  border-radius: $rad-tab-top $rad-tab-top 0 0;
+  &:hover { color: $teal-dark; background: rgba(0,0,0,0.04); }
+}
+
+.tabs-spacer { flex: 1; }
+
+.dashboard-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 14px;
+  color: $ink-2;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  &:hover { color: $teal-dark; }
+}
