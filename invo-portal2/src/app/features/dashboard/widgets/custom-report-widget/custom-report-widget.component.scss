@@ -22,6 +22,9 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
+  // Match the built-in widget-frame's inset (14px 16px) so the custom card's
+  // title/note line up with every other card instead of sitting flush-left.
+  padding: 14px 16px;
 }
 
 .header-row {

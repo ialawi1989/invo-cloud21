@@ -4,11 +4,12 @@ import { RouterModule } from '@angular/router';
 import { LayoutService } from '../../core/layout/services/layout.service';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { TopbarComponent } from './components/topbar/topbar.component';
+import { ScrollTopButtonComponent } from '@shared/components/scroll-top/scroll-top-button.component';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, SidebarComponent, TopbarComponent],
+  imports: [CommonModule, RouterModule, SidebarComponent, TopbarComponent, ScrollTopButtonComponent],
   template: `
     <app-topbar
       [collapsed]="sidebarCollapsed()"
@@ -27,6 +28,8 @@ import { TopbarComponent } from './components/topbar/topbar.component';
       <router-outlet></router-outlet>
     </main>
 
+    <!-- Global "back to top", visible on every routed page. -->
+    <app-scroll-top-button/>
   `,
   styles: [`
     .main-content {
