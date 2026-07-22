@@ -2,6 +2,7 @@ import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { PublicBlogApiService } from './public-blog-api.service';
 import { BlogAnalyticsService } from './blog-analytics.service';
+import { AnalyticsService } from '../../../services/analytics.service';
 import { MarketingToolsService } from '../../../services/marketing-tools.service';
 import { PublicBlogSettings, defaultPublicBlogSettings } from '../models/blog-settings.types';
 import { environment } from '../../../../environments/environment';
@@ -15,7 +16,8 @@ import { environment } from '../../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class BlogSettingsService {
   private api = inject(PublicBlogApiService);
-  private analytics = inject(BlogAnalyticsService);
+  private analytics = inject(AnalyticsService);
+  private blogAnalytics = inject(BlogAnalyticsService);
   private marketing = inject(MarketingToolsService);
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
@@ -34,10 +36,12 @@ export class BlogSettingsService {
         const s = await this.api.getPublicSettings();
         this._settings.set(s);
         this._loaded.set(true);
-        // Site-wide tracking: GA4 / Search Console, plus the Marketing
-        // Tools plugins (Google Tag + Facebook Pixel). Both cover every
-        // storefront route, not just blog pages.
+        // Site-wide tracking: GA4 / Search Console / Meta verification via the
+        // app-level AnalyticsService, plus the Marketing Tools plugins (Google
+        // Tag + Facebook Pixel). Both cover every storefront route, not just
+        // blog pages. The blog only layers its own post-click events on top.
         this.analytics.init(s.tracking);
+        this.blogAnalytics.setClicksEnabled(!!s.tracking.clicksEnabled);
         this.marketing.init(s.tracking);
         return s;
       } catch {

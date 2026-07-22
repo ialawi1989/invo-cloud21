@@ -80,6 +80,33 @@ import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.
           <p>{{ 'PLUGINS.MKTGUIDE.FBCAPI_BODY' | translate }}</p>
         </div>
 
+        <!-- Domain verification -->
+        <h3 class="gd-h3">{{ 'PLUGINS.MKTGUIDE.FBVERIFY_TITLE' | translate }}</h3>
+        <p class="gd-lead">{{ 'PLUGINS.MKTGUIDE.FBVERIFY_LEAD' | translate }}</p>
+
+        <p class="gd-way"><span class="gd-badge gd-badge--rec">{{ 'PLUGINS.MKTGUIDE.FBVERIFY_REC' | translate }}</span> {{ 'PLUGINS.MKTGUIDE.FBVERIFY_DNS_TITLE' | translate }}</p>
+        <ol class="pf-howto__steps gd-steps">
+          <li>{{ 'PLUGINS.MKTGUIDE.FBVERIFY_DNS_S1' | translate }}</li>
+          <li>{{ 'PLUGINS.MKTGUIDE.FBVERIFY_DNS_S2' | translate }}</li>
+          <li>{{ 'PLUGINS.MKTGUIDE.FBVERIFY_DNS_S3' | translate }}
+            <code class="gd-code">facebook-domain-verification=…</code>
+          </li>
+          <li>{{ 'PLUGINS.MKTGUIDE.FBVERIFY_DNS_S4' | translate }}</li>
+          <li>{{ 'PLUGINS.MKTGUIDE.FBVERIFY_DNS_S5' | translate }}</li>
+        </ol>
+
+        <p class="gd-way"><span class="gd-badge">{{ 'PLUGINS.MKTGUIDE.FBVERIFY_ALT' | translate }}</span> {{ 'PLUGINS.MKTGUIDE.FBVERIFY_TAG_TITLE' | translate }}</p>
+        <p class="gd-lead">{{ 'PLUGINS.MKTGUIDE.FBVERIFY_TAG_BODY' | translate }}</p>
+
+        <div class="gd-callout gd-callout--warn">
+          <p>{{ 'PLUGINS.MKTGUIDE.FBVERIFY_CAVEAT' | translate }}</p>
+        </div>
+
+        <div class="gd-actions">
+          <a class="gd-link" href="https://business.facebook.com/settings/owned-domains" target="_blank" rel="noopener">{{ 'PLUGINS.MKTGUIDE.LINK_FB_DOMAINS' | translate }} {{ '↗' }}</a>
+          <a class="gd-link" href="https://www.facebook.com/business/help/286768115176155" target="_blank" rel="noopener">{{ 'PLUGINS.MKTGUIDE.LINK_FB_VERIFY_HELP' | translate }} {{ '↗' }}</a>
+        </div>
+
         <div class="gd-actions">
           <a class="gd-link" href="https://business.facebook.com/events_manager2/" target="_blank" rel="noopener">{{ 'PLUGINS.MKTGUIDE.LINK_FB_EVENTS' | translate }} {{ '↗' }}</a>
           <a class="gd-link" href="https://www.facebook.com/business/help/952192354843755" target="_blank" rel="noopener">{{ 'PLUGINS.MKTGUIDE.LINK_FB_PIXEL' | translate }} {{ '↗' }}</a>
@@ -111,7 +138,21 @@ import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.
     .gd-link:hover { text-decoration: underline; }
     .gd-callout { border-radius: 10px; padding: 12px 14px; margin-bottom: 4px; }
     .gd-callout--ok { background: #ecfdf5; border: 1px solid #a7f3d0; }
-    .gd-callout p { margin: 0; font-size: 13px; color: #065f46; }
+    .gd-callout--ok p { color: #065f46; }
+    .gd-callout--warn { background: #fffbeb; border: 1px solid #fde68a; }
+    .gd-callout--warn p { color: #92400e; }
+    .gd-callout p { margin: 0; font-size: 13px; }
+    .gd-way { margin: 14px 0 6px; font-size: 13.5px; font-weight: 600; color: #0f172a; }
+    .gd-badge {
+      display: inline-block; margin-inline-end: 6px; padding: 1px 8px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
+      background: #eef2f6; color: #64748b; vertical-align: 1px;
+    }
+    .gd-badge--rec { background: var(--color-brand-50, #effbfd); color: var(--color-brand-700, #207484); }
+    .gd-code {
+      display: inline-block; margin-top: 2px; padding: 1px 7px; border-radius: 6px;
+      background: #0f172a; color: #e2e8f0; font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+    }
     .gd-cta {
       display: inline-block; margin-top: 4px; padding: 9px 18px; border-radius: 8px;
       background: var(--color-brand-600, #2691a4); color: #fff; font-size: 13px; font-weight: 600;

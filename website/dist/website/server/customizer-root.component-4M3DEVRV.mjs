@@ -1,3 +1,4 @@
+import './polyfills.server.mjs';
 import {
   BlogSettingsService,
   COMPONENT_NAMES,
@@ -6,8 +7,6 @@ import {
   Input,
   PreviewService,
   PublicBlogApiService,
-  __async,
-  __spreadValues,
   computed,
   inject,
   setClassMetadata,
@@ -41,7 +40,11 @@ import {
   ɵɵtext,
   ɵɵtextInterpolate,
   ɵɵtextInterpolate1
-} from "./chunk-WIK4ERCU.js";
+} from "./chunk-OMUS4H4A.mjs";
+import {
+  __async,
+  __spreadValues
+} from "./chunk-TXMZZVXC.mjs";
 
 // src/app/components/dynamic/dynamic-component.component.ts
 var _forTrack0 = ($index, $item) => $item.title;
@@ -1263,4 +1266,4 @@ var CustomizerRoot = class _CustomizerRoot {
 export {
   CustomizerRoot
 };
-//# sourceMappingURL=customizer-root.component-HNQ3B4BX.js.map
+//# sourceMappingURL=customizer-root.component-4M3DEVRV.mjs.map

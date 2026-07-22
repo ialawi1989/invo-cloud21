@@ -5,6 +5,8 @@
  * (those affect the dashboard, not the storefront).
  */
 
+import { StorefrontTrackingSettings } from '../../../services/marketing-tools.types';
+
 export type FeedLayout =
   | 'grid'
   | 'list'
@@ -67,25 +69,17 @@ export interface PublicBlogMobileSettings {
   showCategoryMenu: boolean;
 }
 
-export interface PublicBlogTrackingSettings {
-  /** When true, post/link clicks fire GA4 `select_content` events
+/**
+ * Blog tracking = the site-wide storefront tracking (GA4, Google Tag, Pixel,
+ * verification tags — see {@link StorefrontTrackingSettings}) plus the one
+ * blog-specific toggle below. The marketing tags themselves are NOT blog-scoped;
+ * they're modelled at the app level and merely surfaced through the same
+ * settings payload the blog loads.
+ */
+export interface PublicBlogTrackingSettings extends StorefrontTrackingSettings {
+  /** Blog-only: when true, post/link clicks fire GA4 `select_content` events
    *  (only meaningful once `ga4MeasurementId` is set). */
   clicksEnabled:     boolean;
-  /** GA4 measurement id (e.g. `G-XXXXXXXX`). When present we load
-   *  gtag.js and report page views; otherwise analytics stays off. */
-  ga4MeasurementId?: string;
-  /** Google Search Console site-verification token. When present we
-   *  render `<meta name="google-site-verification">` in <head>. */
-  gscVerification?:  string;
-  /** Marketing Tools → Google Tag plugin. Tag Manager container (GTM-…)
-   *  or a gtag id (GT-/G-/AW-…). When present we inject the tag on every
-   *  page. Maps from the plugin's `gtag_tagId`. */
-  googleTagId?:      string;
-  /** Marketing Tools → Facebook Pixel plugin. Numeric Meta Pixel id.
-   *  When present we inject the pixel on every page. Maps from the
-   *  plugin's `fbpixel_pixelId`. (The Conversions API token is a
-   *  server-side secret and is never sent to the browser.) */
-  facebookPixelId?:  string;
 }
 
 export interface PublicBlogSeoSettings {
@@ -203,6 +197,8 @@ export function normalizePublicBlogSettings(raw: any): PublicBlogSettings {
       // setting keys the backend might surface verbatim.
       googleTagId:      nonEmptyString(raw.tracking?.googleTagId)     ?? nonEmptyString(raw.tracking?.gtag_tagId),
       facebookPixelId:  nonEmptyString(raw.tracking?.facebookPixelId) ?? nonEmptyString(raw.tracking?.fbpixel_pixelId),
+      facebookDomainVerification:
+        nonEmptyString(raw.tracking?.facebookDomainVerification) ?? nonEmptyString(raw.tracking?.fbpixel_domainVerification),
     },
     seo: {
       titleTemplate:  nonEmptyString(raw.seo?.titleTemplate) ?? d.seo.titleTemplate,

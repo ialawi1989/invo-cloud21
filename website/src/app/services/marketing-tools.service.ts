@@ -3,7 +3,7 @@ import { isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
-import { PublicBlogTrackingSettings } from '../features/blog/models/blog-settings.types';
+import { StorefrontTrackingSettings } from './marketing-tools.types';
 import { PreviewService } from './preview.service';
 
 declare global {
@@ -44,7 +44,7 @@ export class MarketingToolsService {
   private googleTagId: string | null = null;
   private pixelId: string | null = null;
 
-  init(tracking: PublicBlogTrackingSettings): void {
+  init(tracking: StorefrontTrackingSettings): void {
     if (this.started) return;
     // Never inject marketing tags into the dashboard's live-preview iframe.
     if (this.preview.isCustomizeMode()) return;

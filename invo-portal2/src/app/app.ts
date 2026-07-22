@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, NavigationEnd } from '@angular/router';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, filter } from 'rxjs';
 import { AuthTabSyncService } from './core/auth/auth-tab-sync.service';
 import { AuthService } from './core/auth/auth.service';
 import { ToastComponent } from './shared/components/toast/toast.component';
@@ -28,6 +28,15 @@ export class App implements OnInit, OnDestroy {
         this.auth.logout();
       }
     });
+
+    // Any successful navigation means the app shell is healthy again, so clear
+    // the one-shot reload guard set by the stale-chunk recovery handler — this
+    // re-arms it for a future redeploy without ever looping.
+    this.sub.add(
+      this.router.events
+        .pipe(filter((e) => e instanceof NavigationEnd))
+        .subscribe(() => sessionStorage.removeItem('chunk-reload')),
+    );
   }
 
   ngOnDestroy(): void {

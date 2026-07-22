@@ -1,10 +1,9 @@
-import './polyfills.server.mjs';
 import {
   formatDate,
   formatNumber,
   nativeLanguageName,
   t
-} from "./chunk-ZMGIQB7V.mjs";
+} from "./chunk-TUMDR5WP.js";
 import {
   ApplicationRef,
   BlogAnalyticsService,
@@ -38,6 +37,8 @@ import {
   Subject,
   Title,
   Version,
+  __spreadProps,
+  __spreadValues,
   afterNextRender,
   booleanAttribute,
   computed,
@@ -98,11 +99,7 @@ import {
   ɵɵtwoWayBindingSet,
   ɵɵtwoWayListener,
   ɵɵtwoWayProperty
-} from "./chunk-CTHK6LKW.mjs";
-import {
-  __spreadProps,
-  __spreadValues
-} from "./chunk-TXMZZVXC.mjs";
+} from "./chunk-Y4IP4WHH.js";
 
 // src/app/features/blog/services/blog-seo.service.ts
 var BlogSeoService = class _BlogSeoService {
@@ -5823,4 +5820,4 @@ export {
   EmptyStateComponent,
   ErrorBannerComponent
 };
-//# sourceMappingURL=chunk-MG7EQU7S.mjs.map
+//# sourceMappingURL=chunk-GIVY7Q32.js.map

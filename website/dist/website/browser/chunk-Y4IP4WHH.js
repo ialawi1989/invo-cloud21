@@ -39970,7 +39970,8 @@ function normalizePublicBlogSettings(raw) {
       // Accept the clean camelCase keys, falling back to the raw plugin
       // setting keys the backend might surface verbatim.
       googleTagId: nonEmptyString(raw.tracking?.googleTagId) ?? nonEmptyString(raw.tracking?.gtag_tagId),
-      facebookPixelId: nonEmptyString(raw.tracking?.facebookPixelId) ?? nonEmptyString(raw.tracking?.fbpixel_pixelId)
+      facebookPixelId: nonEmptyString(raw.tracking?.facebookPixelId) ?? nonEmptyString(raw.tracking?.fbpixel_pixelId),
+      facebookDomainVerification: nonEmptyString(raw.tracking?.facebookDomainVerification) ?? nonEmptyString(raw.tracking?.fbpixel_domainVerification)
     },
     seo: {
       titleTemplate: nonEmptyString(raw.seo?.titleTemplate) ?? d.seo.titleTemplate,
@@ -40293,8 +40294,8 @@ var PublicBlogApiService = class _PublicBlogApiService {
   }], null, null);
 })();
 
-// src/app/features/blog/services/blog-analytics.service.ts
-var BlogAnalyticsService = class _BlogAnalyticsService {
+// src/app/services/analytics.service.ts
+var AnalyticsService = class _AnalyticsService {
   constructor() {
     this.platformId = inject2(PLATFORM_ID);
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -40302,8 +40303,11 @@ var BlogAnalyticsService = class _BlogAnalyticsService {
     this.router = inject2(Router);
     this.preview = inject2(PreviewService);
     this.measurementId = null;
-    this.clicksEnabled = false;
     this.started = false;
+  }
+  /** True once GA4 is loaded, so callers can gate their own events. */
+  get enabled() {
+    return !!this.measurementId;
   }
   init(tracking) {
     if (this.started)
@@ -40311,10 +40315,10 @@ var BlogAnalyticsService = class _BlogAnalyticsService {
     if (this.preview.isCustomizeMode())
       return;
     this.started = true;
-    this.applyGscVerification(tracking.gscVerification);
+    this.applyVerificationMeta("google-site-verification", tracking.gscVerification);
+    this.applyVerificationMeta("facebook-domain-verification", tracking.facebookDomainVerification);
     if (!this.isBrowser)
       return;
-    this.clicksEnabled = !!tracking.clicksEnabled;
     const id = tracking.ga4MeasurementId?.trim();
     if (!id)
       return;
@@ -40323,28 +40327,22 @@ var BlogAnalyticsService = class _BlogAnalyticsService {
     this.sendPageView(this.router.url);
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe((e) => this.sendPageView(e.urlAfterRedirects));
   }
-  applyGscVerification(token) {
+  /** Record a GA4 event. No-op unless GA4 is active — safe to call anywhere. */
+  event(name, params) {
+    this.gtag("event", name, params ?? {});
+  }
+  /** Idempotently write a `<meta name=… content=…>` verification tag to <head>. */
+  applyVerificationMeta(name, token) {
     const t = token?.trim();
     if (!t || !this.doc?.head)
       return;
-    let meta = this.doc.head.querySelector('meta[name="google-site-verification"]');
+    let meta = this.doc.head.querySelector(`meta[name="${name}"]`);
     if (!meta) {
       meta = this.doc.createElement("meta");
-      meta.setAttribute("name", "google-site-verification");
+      meta.setAttribute("name", name);
       this.doc.head.appendChild(meta);
     }
     meta.setAttribute("content", t);
-  }
-  /** Fire a GA4 content-selection event for a clicked post. Gated on
-   *  `clicksEnabled`; safe to call unconditionally from templates. */
-  trackPostClick(post) {
-    if (!this.clicksEnabled)
-      return;
-    this.gtag("event", "select_content", {
-      content_type: "blog_post",
-      item_id: post.slug,
-      item_name: post.title
-    });
   }
   loadGtag(id) {
     const w = this.doc.defaultView;
@@ -40372,6 +40370,43 @@ var BlogAnalyticsService = class _BlogAnalyticsService {
     if (!this.isBrowser || !this.measurementId)
       return;
     this.doc.defaultView?.gtag?.(...args);
+  }
+  static {
+    this.\u0275fac = function AnalyticsService_Factory(__ngFactoryType__) {
+      return new (__ngFactoryType__ || _AnalyticsService)();
+    };
+  }
+  static {
+    this.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _AnalyticsService, factory: _AnalyticsService.\u0275fac, providedIn: "root" });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(AnalyticsService, [{
+    type: Injectable,
+    args: [{ providedIn: "root" }]
+  }], null, null);
+})();
+
+// src/app/features/blog/services/blog-analytics.service.ts
+var BlogAnalyticsService = class _BlogAnalyticsService {
+  constructor() {
+    this.analytics = inject2(AnalyticsService);
+    this.clicksEnabled = false;
+  }
+  /** Set from the blog settings' `tracking.clicksEnabled`. */
+  setClicksEnabled(enabled) {
+    this.clicksEnabled = enabled;
+  }
+  /** Fire a GA4 content-selection event for a clicked post. Gated on
+   *  `clicksEnabled`; safe to call unconditionally from templates. */
+  trackPostClick(post) {
+    if (!this.clicksEnabled)
+      return;
+    this.analytics.event("select_content", {
+      content_type: "blog_post",
+      item_id: post.slug,
+      item_name: post.title
+    });
   }
   static {
     this.\u0275fac = function BlogAnalyticsService_Factory(__ngFactoryType__) {
@@ -40541,7 +40576,8 @@ var MarketingToolsService = class _MarketingToolsService {
 var BlogSettingsService = class _BlogSettingsService {
   constructor() {
     this.api = inject2(PublicBlogApiService);
-    this.analytics = inject2(BlogAnalyticsService);
+    this.analytics = inject2(AnalyticsService);
+    this.blogAnalytics = inject2(BlogAnalyticsService);
     this.marketing = inject2(MarketingToolsService);
     this.platformId = inject2(PLATFORM_ID);
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -40568,6 +40604,7 @@ var BlogSettingsService = class _BlogSettingsService {
         this._settings.set(s);
         this._loaded.set(true);
         this.analytics.init(s.tracking);
+        this.blogAnalytics.setClicksEnabled(!!s.tracking.clicksEnabled);
         this.marketing.init(s.tracking);
         return s;
       } catch (e) {
@@ -40768,4 +40805,4 @@ export {
   BlogAnalyticsService,
   BlogSettingsService
 };
-//# sourceMappingURL=chunk-WIK4ERCU.js.map
+//# sourceMappingURL=chunk-Y4IP4WHH.js.map

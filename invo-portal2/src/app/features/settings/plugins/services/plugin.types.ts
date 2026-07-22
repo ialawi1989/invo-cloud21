@@ -129,6 +129,9 @@ export interface PluginSettings {
   // Facebook (Meta) Pixel
   /** Numeric Meta Pixel ID injected on the live site. */
   fbpixel_pixelId?:        string;
+  /** Meta domain-verification token → storefront renders
+   *  `<meta name="facebook-domain-verification">`. Public value. */
+  fbpixel_domainVerification?: string;
   /** Conversions API access token (secret) for server-side events. */
   fbpixel_accessToken?:    string;
   /** True when an access token is stored server-side. */

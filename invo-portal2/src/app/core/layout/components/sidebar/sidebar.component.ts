@@ -174,6 +174,15 @@ export const SIDE_MENU: SideMenuItem[] = [
     link: '/reports',
     requiredPermission: 'reportsSecurity.actions.view.access',
   },
+  // ── Analytics ──────────────────────────────────────────────────────
+  // Promoted to a top-level entry (was buried under Website Content): it's the
+  // general, store-wide analytics home for every enabled tool (GA4 traffic +
+  // e-commerce, Search Console, and the status of the Marketing Tools plugins).
+  {
+    id: 15, label: 'MENU.ANALYTICS', icon: 'analytics',
+    link: '/analytics',
+    requiredPermission: 'websiteAnalyticsSecurity.actions.view.access',
+  },
   // ── Media ──────────────────────────────────────────────────────────
   {
     id: 11, label: 'MENU.MEDIA', icon: 'media',
@@ -195,7 +204,6 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 132, label: 'MENU.SUB.NAVIGATION', link: '/navigation-list', matchLinks: ['/mobile-icon-bar'], requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
       { id: 136, label: 'Content Library', link: '/website/content-library', requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
       { id: 138, label: 'MENU.SUB.MULTILINGUAL', link: '/settings/translations', requiredPermission: '' },
-      { id: 137, label: 'MENU.ANALYTICS', link: '/analytics', requiredPermission: 'websiteAnalyticsSecurity.actions.view.access' },
       { id: 133, label: 'MENU.SUB.WEBSITE_SETTINGS', link: '/website-settings', requiredPermission: 'websiteSettingsSecurity.actions.view.access' },
       { id: 134, label: 'MENU.SUB.DOMAIN_SETTINGS', link: '/domain-settings', requiredPermission: 'DomainSettingsSecurity.actions.view.access' },
       { id: 135, label: 'MENU.SUB.PAGING_SYSTEM', link: '/paging', requiredPermission: 'pagingSecurity.actions.view.access' },

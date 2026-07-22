@@ -4,7 +4,10 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection
 } from '@angular/core';
-import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
+import {
+  provideRouter, withComponentInputBinding, withInMemoryScrolling,
+  withNavigationErrorHandler,
+} from '@angular/router';
 import { provideHttpClient, HttpClient, withInterceptors } from '@angular/common/http';
 import { TranslateModule, TranslateLoader, TranslationObject } from '@ngx-translate/core';
 import { Observable, of } from 'rxjs';
@@ -43,6 +46,24 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({
         scrollPositionRestoration: 'top',
         anchorScrolling: 'enabled',
+      }),
+      // Recover from stale lazy chunks after a redeploy. When a new build renames
+      // chunk hashes, an open tab still holds the old index and requests a chunk
+      // name that no longer exists — the dynamic import throws "Failed to fetch
+      // dynamically imported module" and the route silently dies. Force one full
+      // reload so the browser fetches the fresh index + current chunk names. The
+      // sessionStorage guard prevents a reload loop if the failure is genuine
+      // (e.g. the chunk is really 404 on this build, not just stale).
+      withNavigationErrorHandler((event) => {
+        const msg = String((event as any)?.error?.message ?? (event as any)?.error ?? '');
+        const isChunkLoadFailure =
+          /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed/i.test(msg);
+        if (isChunkLoadFailure && !sessionStorage.getItem('chunk-reload')) {
+          sessionStorage.setItem('chunk-reload', '1');
+          location.reload();
+          return;
+        }
+        // A successful navigation later clears the guard (see app component).
       }),
     ),
     provideHttpClient(

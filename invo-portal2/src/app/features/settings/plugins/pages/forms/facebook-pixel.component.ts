@@ -59,6 +59,17 @@ const PIXEL_ID = /^\d{10,20}$/;
 
         <div class="pf-field">
           <label class="pf-label">
+            {{ 'PLUGINS.FBPIXEL.DOMAIN_VERIFICATION' | translate }}
+            <span class="pf-optional">{{ 'PLUGINS.COMMON.OPTIONAL' | translate }}</span>
+          </label>
+          <input class="pf-input" type="text" name="domainVerification"
+                 [(ngModel)]="plugin.settings.fbpixel_domainVerification" (ngModelChange)="markDirty()"
+                 placeholder="abc123def456..." autocomplete="off" spellcheck="false"/>
+          <span class="pf-hint">{{ 'PLUGINS.FBPIXEL.DOMAIN_VERIFICATION_HINT' | translate }}</span>
+        </div>
+
+        <div class="pf-field">
+          <label class="pf-label">
             {{ 'PLUGINS.FBPIXEL.ACCESS_TOKEN' | translate }}
             <span class="pf-optional">{{ 'PLUGINS.COMMON.OPTIONAL' | translate }}</span>
           </label>
@@ -118,6 +129,9 @@ export class FacebookPixelComponent extends PluginFormBase implements OnInit {
     const settings: Record<string, unknown> = {
       enable: !!s.enable,
       fbpixel_pixelId: (s.fbpixel_pixelId ?? '').trim(),
+      // Public token from Meta's meta-tag verification method; the storefront
+      // renders it as <meta name="facebook-domain-verification">.
+      fbpixel_domainVerification: (s.fbpixel_domainVerification ?? '').trim(),
     };
     if (this.shouldSendSecret('fbpixel_accessToken') && (s.fbpixel_accessToken ?? '').trim()) {
       settings['fbpixel_accessToken'] = (s.fbpixel_accessToken ?? '').trim();
