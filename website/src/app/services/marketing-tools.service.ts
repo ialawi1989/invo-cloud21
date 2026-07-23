@@ -147,6 +147,18 @@ export class MarketingToolsService {
     this.addFbPixelNoscript(id);
   }
 
+  /**
+   * Fire a Meta Pixel standard event (ViewContent, Search, Lead, …). No-op
+   * unless the pixel is active, so it's safe to call from anywhere.
+   */
+  track(event: string, params?: Record<string, unknown>): void {
+    if (!this.pixelId) return;
+    const w = this.doc.defaultView as (Window & typeof globalThis) | null;
+    try { w?.fbq?.('track', event, params ?? {}); } catch { /* never break the page for a pixel */ }
+  }
+
+  trackViewContent(params: Record<string, unknown>): void { this.track('ViewContent', params); }
+
   /** Meta Pixel's <noscript> tracking image. */
   private addFbPixelNoscript(id: string): void {
     const ns = this.doc.createElement('noscript');

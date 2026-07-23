@@ -149,6 +149,7 @@
             <ul class="sa__sources">
               @for (s of trafficSources(); track s.source) {
                 <li>
+                  <span class="sa__srcBar" [style.width.%]="s.pct"></span>
                   <span class="sa__srcName">{{ s.source }}</span>
                   <span class="sa__srcVals"><b>{{ num(s.sessions) }}</b><em>{{ pct(s.pct) }}</em></span>
                 </li>

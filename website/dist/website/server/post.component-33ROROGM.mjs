@@ -18,7 +18,7 @@ import {
   SelectControlValueAccessor,
   ɵNgNoValidate,
   ɵNgSelectMultipleOption
-} from "./chunk-QJ35PM2B.mjs";
+} from "./chunk-PN4CKP3Y.mjs";
 import {
   formatDate,
   formatNumber,
@@ -27,6 +27,7 @@ import {
 } from "./chunk-ZMGIQB7V.mjs";
 import {
   ActivatedRoute,
+  BlogAnalyticsService,
   BlogSettingsService,
   ChangeDetectionStrategy,
   CommonModule,
@@ -93,7 +94,7 @@ import {
   ɵɵtwoWayBindingSet,
   ɵɵtwoWayListener,
   ɵɵtwoWayProperty
-} from "./chunk-OMUS4H4A.mjs";
+} from "./chunk-RT4NVNKL.mjs";
 import {
   __async,
   __spreadProps,
@@ -5357,6 +5358,7 @@ var PostPage = class _PostPage {
     this.seo = inject(BlogSeoService);
     this.route = inject(ActivatedRoute);
     this.router = inject(Router);
+    this.analytics = inject(BlogAnalyticsService);
     this.lang = signal("en", ...ngDevMode ? [{ debugName: "lang" }] : (
       /* istanbul ignore next */
       []
@@ -5479,6 +5481,7 @@ var PostPage = class _PostPage {
           return;
         }
         this.post.set(p);
+        this.analytics.trackPostView({ slug: p.slug, title: p.title });
         const fullUrl = this.canonicalUrl();
         const rss = this.api.rssUrl(this.lang());
         this.seo.applyForPost(p, this.lang(), fullUrl, rss);
@@ -5654,9 +5657,9 @@ var PostPage = class _PostPage {
   }], null, null);
 })();
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(PostPage, { className: "PostPage", filePath: "src/app/features/blog/pages/post.component.ts", lineNumber: 248 });
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(PostPage, { className: "PostPage", filePath: "src/app/features/blog/pages/post.component.ts", lineNumber: 249 });
 })();
 export {
   PostPage
 };
-//# sourceMappingURL=post.component-VICI3NVZ.mjs.map
+//# sourceMappingURL=post.component-33ROROGM.mjs.map

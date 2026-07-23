@@ -1,7 +1,7 @@
 {
   "version": 3,
-  "sources": ["angular:styles/component:css;9854337ab35a1ecb3b8dd570e1cfa57ec513951b40ed031a17212ca333535d20;D:/Users/Invo/Downloads/angular-customizer/website/src/app/features/blog/components/ui-bits.component.ts"],
-  "sourcesContent": ["\n    :host { display: block; }\n    .empty { text-align: center; padding: 80px 24px; color: rgba(0,0,0,.55); }\n    .icon { font-size: 56px; margin-bottom: 8px; }\n    h3 { margin: 0 0 6px; }\n    p { margin: 0; }\n  "],
-  "mappings": ";AACI;AAAQ,WAAS;AAAO;AACxB,CAAC;AAAQ,cAAY;AAAQ,WAAS,KAAK;AAAM,SAAO,KAAK,CAAC,EAAC,CAAC,EAAC,CAAC,EAAC;AAAM;AACzE,CAAC;AAAO,aAAW;AAAM,iBAAe;AAAK;AAC7C;AAAK,UAAQ,EAAE,EAAE;AAAK;AACtB;AAAI,UAAQ;AAAG;",
+  "sources": ["angular:styles/component:css;f04610c8eba949c807074f44a436e5045981da85add8729adb0a6001ab8812ff;D:/Users/Invo/Downloads/angular-customizer/website/src/app/features/blog/components/ui-bits.component.ts"],
+  "sourcesContent": ["\n    .err { padding: 20px; border: 1px solid rgba(220,50,50,.3); background: rgba(220,50,50,.06); border-radius: 8px; }\n    .err p { margin: 6px 0 10px; }\n    .err button { padding: 6px 14px; border: 1px solid currentColor; background: transparent; cursor: pointer; border-radius: 4px; font: inherit; color: inherit; }\n  "],
+  "mappings": ";AACI,CAAC;AAAM,WAAS;AAAM,UAAQ,IAAI,MAAM,KAAK,GAAG,EAAC,EAAE,EAAC,EAAE,EAAC;AAAK,cAAY,KAAK,GAAG,EAAC,EAAE,EAAC,EAAE,EAAC;AAAM,iBAAe;AAAK;AACjH,CADC,IACI;AAAI,UAAQ,IAAI,EAAE;AAAM;AAC7B,CAFC,IAEI;AAAS,WAAS,IAAI;AAAM,UAAQ,IAAI,MAAM;AAAc,cAAY;AAAa,UAAQ;AAAS,iBAAe;AAAK,QAAM;AAAS,SAAO;AAAS;",
   "names": []
 }

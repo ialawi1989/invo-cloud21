@@ -40387,43 +40387,6 @@ var AnalyticsService = class _AnalyticsService {
   }], null, null);
 })();
 
-// src/app/features/blog/services/blog-analytics.service.ts
-var BlogAnalyticsService = class _BlogAnalyticsService {
-  constructor() {
-    this.analytics = inject2(AnalyticsService);
-    this.clicksEnabled = false;
-  }
-  /** Set from the blog settings' `tracking.clicksEnabled`. */
-  setClicksEnabled(enabled) {
-    this.clicksEnabled = enabled;
-  }
-  /** Fire a GA4 content-selection event for a clicked post. Gated on
-   *  `clicksEnabled`; safe to call unconditionally from templates. */
-  trackPostClick(post) {
-    if (!this.clicksEnabled)
-      return;
-    this.analytics.event("select_content", {
-      content_type: "blog_post",
-      item_id: post.slug,
-      item_name: post.title
-    });
-  }
-  static {
-    this.\u0275fac = function BlogAnalyticsService_Factory(__ngFactoryType__) {
-      return new (__ngFactoryType__ || _BlogAnalyticsService)();
-    };
-  }
-  static {
-    this.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _BlogAnalyticsService, factory: _BlogAnalyticsService.\u0275fac, providedIn: "root" });
-  }
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(BlogAnalyticsService, [{
-    type: Injectable,
-    args: [{ providedIn: "root" }]
-  }], null, null);
-})();
-
 // src/app/services/marketing-tools.service.ts
 var MarketingToolsService = class _MarketingToolsService {
   constructor() {
@@ -40525,6 +40488,22 @@ var MarketingToolsService = class _MarketingToolsService {
     w.fbq("track", "PageView");
     this.addFbPixelNoscript(id);
   }
+  /**
+   * Fire a Meta Pixel standard event (ViewContent, Search, Lead, …). No-op
+   * unless the pixel is active, so it's safe to call from anywhere.
+   */
+  track(event, params) {
+    if (!this.pixelId)
+      return;
+    const w = this.doc.defaultView;
+    try {
+      w?.fbq?.("track", event, params ?? {});
+    } catch (e) {
+    }
+  }
+  trackViewContent(params) {
+    this.track("ViewContent", params);
+  }
   /** Meta Pixel's <noscript> tracking image. */
   addFbPixelNoscript(id) {
     const ns = this.doc.createElement("noscript");
@@ -40567,6 +40546,64 @@ var MarketingToolsService = class _MarketingToolsService {
 };
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MarketingToolsService, [{
+    type: Injectable,
+    args: [{ providedIn: "root" }]
+  }], null, null);
+})();
+
+// src/app/features/blog/services/blog-analytics.service.ts
+var BlogAnalyticsService = class _BlogAnalyticsService {
+  constructor() {
+    this.analytics = inject2(AnalyticsService);
+    this.marketing = inject2(MarketingToolsService);
+    this.clicksEnabled = false;
+  }
+  /** Set from the blog settings' `tracking.clicksEnabled`. */
+  setClicksEnabled(enabled) {
+    this.clicksEnabled = enabled;
+  }
+  /**
+   * A blog post was opened. Records it on both tools so a content site's traffic
+   * is usable: GA4 gets an explicit `blog_post_view` event (the automatic
+   * page_view already fires, this one is content-labelled for reports), and the
+   * Meta Pixel gets a `ViewContent` so readers can be built into retargeting
+   * audiences. Both no-op unless their tool is active. Not gated on
+   * `clicksEnabled` — that flag is only about click events.
+   */
+  trackPostView(post) {
+    this.analytics.event("blog_post_view", {
+      content_type: "blog_post",
+      item_id: post.slug,
+      item_name: post.title
+    });
+    this.marketing.trackViewContent({
+      content_type: "article",
+      content_ids: [post.slug],
+      content_name: post.title
+    });
+  }
+  /** Fire a GA4 content-selection event for a clicked post. Gated on
+   *  `clicksEnabled`; safe to call unconditionally from templates. */
+  trackPostClick(post) {
+    if (!this.clicksEnabled)
+      return;
+    this.analytics.event("select_content", {
+      content_type: "blog_post",
+      item_id: post.slug,
+      item_name: post.title
+    });
+  }
+  static {
+    this.\u0275fac = function BlogAnalyticsService_Factory(__ngFactoryType__) {
+      return new (__ngFactoryType__ || _BlogAnalyticsService)();
+    };
+  }
+  static {
+    this.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _BlogAnalyticsService, factory: _BlogAnalyticsService.\u0275fac, providedIn: "root" });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(BlogAnalyticsService, [{
     type: Injectable,
     args: [{ providedIn: "root" }]
   }], null, null);
@@ -40805,4 +40842,4 @@ export {
   BlogAnalyticsService,
   BlogSettingsService
 };
-//# sourceMappingURL=chunk-Y4IP4WHH.js.map
+//# sourceMappingURL=chunk-FZE75RKO.js.map

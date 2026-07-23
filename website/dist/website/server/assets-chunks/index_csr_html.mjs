@@ -30,6 +30,6 @@ export default `<!DOCTYPE html>
 <link rel="stylesheet" href="styles.css"><link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Poppins:wght@400;500;600;700&amp;family=Playfair+Display:wght@400;500;600;700&amp;display=swap" as="style"></head>
 <body ngcm="">
   <app-root></app-root>
-<link rel="modulepreload" href="chunk-Y4IP4WHH.js"><script src="polyfills.js" type="module"></script><script src="main.js" type="module"></script></body>
+<link rel="modulepreload" href="chunk-FZE75RKO.js"><script src="polyfills.js" type="module"></script><script src="main.js" type="module"></script></body>
 </html>
 `;

@@ -6,6 +6,7 @@ import { map, distinctUntilChanged } from 'rxjs/operators';
 
 import { PublicBlogApiService } from '../services/public-blog-api.service';
 import { BlogSettingsService } from '../services/blog-settings.service';
+import { BlogAnalyticsService } from '../services/blog-analytics.service';
 import { BlogSeoService } from '../services/blog-seo.service';
 import { BlogPost } from '../models/blog.types';
 
@@ -251,6 +252,7 @@ export class PostPage implements OnInit {
   private seo = inject(BlogSeoService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private analytics = inject(BlogAnalyticsService);
 
   lang = signal('en');
   slug = signal('');
@@ -341,6 +343,9 @@ export class PostPage implements OnInit {
       const p = await this.api.getPublicPost(this.slug(), this.lang(), preview);
       if (!p) { this.notFound.set(true); return; }
       this.post.set(p);
+      // GA4 blog_post_view + Meta Pixel ViewContent — lets readers be measured
+      // and built into retargeting audiences. No-op unless a tool is active.
+      this.analytics.trackPostView({ slug: p.slug, title: p.title });
       const fullUrl = this.canonicalUrl();
       const rss = this.api.rssUrl(this.lang());
       this.seo.applyForPost(p, this.lang(), fullUrl, rss);

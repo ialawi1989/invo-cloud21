@@ -17,7 +17,7 @@ import {
   SelectControlValueAccessor,
   ɵNgNoValidate,
   ɵNgSelectMultipleOption
-} from "./chunk-GIVY7Q32.js";
+} from "./chunk-GZS2IXPU.js";
 import {
   formatDate,
   formatNumber,
@@ -26,6 +26,7 @@ import {
 } from "./chunk-TUMDR5WP.js";
 import {
   ActivatedRoute,
+  BlogAnalyticsService,
   BlogSettingsService,
   ChangeDetectionStrategy,
   CommonModule,
@@ -95,7 +96,7 @@ import {
   ɵɵtwoWayBindingSet,
   ɵɵtwoWayListener,
   ɵɵtwoWayProperty
-} from "./chunk-Y4IP4WHH.js";
+} from "./chunk-FZE75RKO.js";
 
 // src/app/features/blog/components/breadcrumbs.component.ts
 function BreadcrumbsComponent_For_3_Conditional_1_Template(rf, ctx) {
@@ -5354,6 +5355,7 @@ var PostPage = class _PostPage {
     this.seo = inject(BlogSeoService);
     this.route = inject(ActivatedRoute);
     this.router = inject(Router);
+    this.analytics = inject(BlogAnalyticsService);
     this.lang = signal("en", ...ngDevMode ? [{ debugName: "lang" }] : (
       /* istanbul ignore next */
       []
@@ -5476,6 +5478,7 @@ var PostPage = class _PostPage {
           return;
         }
         this.post.set(p);
+        this.analytics.trackPostView({ slug: p.slug, title: p.title });
         const fullUrl = this.canonicalUrl();
         const rss = this.api.rssUrl(this.lang());
         this.seo.applyForPost(p, this.lang(), fullUrl, rss);
@@ -5651,9 +5654,9 @@ var PostPage = class _PostPage {
   }], null, null);
 })();
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(PostPage, { className: "PostPage", filePath: "src/app/features/blog/pages/post.component.ts", lineNumber: 248 });
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(PostPage, { className: "PostPage", filePath: "src/app/features/blog/pages/post.component.ts", lineNumber: 249 });
 })();
 export {
   PostPage
 };
-//# sourceMappingURL=post.component-NTEA7SHN.js.map
+//# sourceMappingURL=post.component-EFKWKFND.js.map
