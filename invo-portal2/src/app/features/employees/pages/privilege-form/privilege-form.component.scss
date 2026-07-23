@@ -143,6 +143,22 @@
   flex-wrap: wrap;
 
   &__type { min-width: 140px; }
+
+  &__master {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding-inline-end: 10px;
+    border-inline-end: 1px solid #e5e7eb;
+    cursor: pointer;
+  }
+  &__master-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    white-space: nowrap;
+  }
 }
 .search {
   min-width: 220px;

@@ -16,11 +16,9 @@ import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { EmployeePrivilege } from '@core/auth/privileges/models/privilege.model';
 import { PrivilegeSetting } from '@core/auth/privileges/models/privilege-setting.model';
-import {
-  PRESET_ROLES,
-  PresetRole,
-  applyPresetToPrivilege,
-} from '@core/auth/privileges/preset-roles';
+
+/** A saved privilege set the user can clone from (the "preset" dropdown). */
+interface RoleOption { id: string; name: string; }
 
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
@@ -124,9 +122,11 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
   /** Optional description of what this role is for. */
   description = signal<string>('');
 
-  /** Preset (template) roles — "Start from a preset" picker. */
-  presetRoles: PresetRole[] = PRESET_ROLES;
-  displayPreset = (p: PresetRole): string => this.translate.instant(p.displayNameKey);
+  /** Existing saved privilege sets you can clone from ("Start from a role").
+   *  Mirrors the legacy dropdown — the values come from the saved records, not
+   *  a hardcoded catalog. */
+  savedRoles = signal<RoleOption[]>([]);
+  displayRole = (r: RoleOption): string => r.name;
 
   /** The underlying tree (mutable CORE instances). Toggles mutate the
    *  `access` fields in place; `treeVersion` is bumped so the derived
@@ -299,18 +299,39 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
 
     this.loading.set(true);
     try {
-      if (!id || id === '0') {
-        // New record — a fresh EmployeePrivilege carries the full catalog
-        // with every action defaulting to "off".
-        this.record.set(new EmployeePrivilege());
-      } else {
-        const ep = await this.service.getPrivilege(id);
-        this.record.set(ep);
-        this.name.set(ep.name ?? '');
-        this.description.set(ep.description ?? '');
-      }
+      const [, ] = await Promise.all([
+        this.loadSavedRoles(id),
+        (async () => {
+          if (!id || id === '0') {
+            // New record — a fresh EmployeePrivilege carries the full catalog
+            // with every action defaulting to "off".
+            this.record.set(new EmployeePrivilege());
+          } else {
+            const ep = await this.service.getPrivilege(id);
+            this.record.set(ep);
+            this.name.set(ep.name ?? '');
+            this.description.set(ep.description ?? '');
+          }
+        })(),
+      ]);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  /** Load the existing saved privilege sets for the "clone from" dropdown
+   *  (excluding the record currently being edited). */
+  private async loadSavedRoles(currentId: string | null): Promise<void> {
+    try {
+      const res = await this.service.getPrivilegeList({ page: 1, limit: 1000, searchTerm: '', sortBy: {} });
+      const list = Array.isArray(res) ? res : res.list;
+      this.savedRoles.set(
+        list
+          .filter((r: any) => String(r.id) !== String(currentId))
+          .map((r: any) => ({ id: String(r.id ?? ''), name: r.name ?? '' })),
+      );
+    } catch {
+      this.savedRoles.set([]);
     }
   }
 
@@ -326,18 +347,23 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
   }
 
   /**
-   * Apply a preset template to the whole tree: its groups on, everything else
-   * off. Also seeds the name (only when still blank, so we don't clobber a
-   * user's typed name) and the description, and records the preset key.
+   * Clone the permission values from an existing saved role into the current
+   * tree (mirrors the legacy "start from a role" dropdown). Overlays the
+   * source's access map via ParseJson so every group/action takes the source's
+   * on/off state; the current record's name/description are left untouched.
    */
-  applyPreset(preset: PresetRole | null): void {
+  async applyPreset(role: RoleOption | null): Promise<void> {
     const ep = this.record();
-    if (!preset || !ep) return;
-    applyPresetToPrivilege(ep.privileges, preset);
-    ep.presetKey = preset.key;
-    if (!this.name().trim()) this.name.set(this.translate.instant(preset.displayNameKey));
-    this.description.set(this.translate.instant(preset.descriptionKey));
-    this.markChanged();
+    if (!role || !ep) return;
+    this.loading.set(true);
+    try {
+      const src = await this.service.getPrivilege(role.id);
+      ep.privileges.ParseJson(src.privileges.ToJson());
+      ep.presetKey = role.id;
+      this.markChanged();
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   onSearchInput(value: string): void {

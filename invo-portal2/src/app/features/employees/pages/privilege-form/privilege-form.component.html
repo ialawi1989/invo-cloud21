@@ -28,17 +28,19 @@
             />
           </div>
 
-          <div class="field">
-            <label class="field-label">{{ 'EMPLOYEES.PRIVILEGES.START_FROM_PRESET' | translate }}</label>
-            <app-search-dropdown
-              [items]="presetRoles"
-              [displayWith]="displayPreset"
-              [searchable]="false"
-              [clearable]="false"
-              [placeholder]="'EMPLOYEES.PRIVILEGES.SELECT_PRESET' | translate"
-              (valueChange)="applyPreset($any($event))"
-            />
-          </div>
+          @if (savedRoles().length) {
+            <div class="field">
+              <label class="field-label">{{ 'EMPLOYEES.PRIVILEGES.START_FROM_PRESET' | translate }}</label>
+              <app-search-dropdown
+                [items]="savedRoles()"
+                [displayWith]="displayRole"
+                [searchable]="true"
+                [clearable]="false"
+                [placeholder]="'EMPLOYEES.PRIVILEGES.SELECT_PRESET' | translate"
+                (valueChange)="applyPreset($any($event))"
+              />
+            </div>
+          }
         </div>
 
         <div class="field">

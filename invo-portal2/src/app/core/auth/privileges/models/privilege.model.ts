@@ -61,8 +61,8 @@ export class EmployeePrivilege {
    *  templates ship one; custom sets can set their own). Round-tripped to
    *  the backend, which simply stores the extra field. */
   description       = '';
-  /** Preset template this set was created from, if any (stable key from
-   *  {@link PRESET_ROLES}). Empty for hand-built sets. */
+  /** Id of the saved role this set was cloned from, if any (the "start from a
+   *  role" dropdown). Empty for hand-built sets. */
   presetKey         = '';
   privileges        = new Privilege();
   companyId         = '';
