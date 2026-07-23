@@ -1,0 +1,104 @@
+<div class="attendance-form-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Recorded record (read-only) ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'EMPLOYEES.ATTENDANCE.SECTION_ORIGINAL' | translate }}</h2>
+        <p class="card__sub">{{ 'EMPLOYEES.ATTENDANCE.SECTION_ORIGINAL_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="summary">
+          <div class="summary__row">
+            <span class="summary__label">{{ 'EMPLOYEES.ATTENDANCE.EMPLOYEE_NAME' | translate }}</span>
+            <span class="summary__value">{{ employeeName() }}</span>
+          </div>
+          <div class="summary__row">
+            <span class="summary__label">{{ 'EMPLOYEES.ATTENDANCE.BRANCH_NAME' | translate }}</span>
+            <span class="summary__value">{{ branchName() }}</span>
+          </div>
+          <div class="summary__row">
+            <span class="summary__label">{{ 'EMPLOYEES.ATTENDANCE.CLOCKED_IN' | translate }}</span>
+            <span class="summary__value">
+              {{ clockedIn() ? (clockedIn() | date:'medium') : '—' }}
+            </span>
+          </div>
+          <div class="summary__row">
+            <span class="summary__label">{{ 'EMPLOYEES.ATTENDANCE.CLOCKED_OUT' | translate }}</span>
+            <span class="summary__value">
+              @if (clockedOut()) {
+                {{ clockedOut() | date:'medium' }}
+              } @else {
+                <span class="summary__placeholder">{{ 'EMPLOYEES.ATTENDANCE.NOT_CLOCKED_OUT' | translate }}</span>
+              }
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Adjustments (editable) ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'EMPLOYEES.ATTENDANCE.SECTION_ADJUST' | translate }}</h2>
+        <p class="card__sub">{{ 'EMPLOYEES.ATTENDANCE.SECTION_ADJUST_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label" for="adj-clocked-in">
+              {{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_IN' | translate }}
+            </label>
+            <input
+              id="adj-clocked-in"
+              type="datetime-local"
+              class="input"
+              formControlName="adjClockedIn"
+            />
+            <p class="field-hint">{{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_IN_HINT' | translate }}</p>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="adj-clocked-out">
+              {{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_OUT' | translate }}
+            </label>
+            <input
+              id="adj-clocked-out"
+              type="datetime-local"
+              class="input"
+              formControlName="adjClockedOut"
+              [min]="minClockOut()"
+            />
+            <p class="field-hint">{{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_OUT_HINT' | translate }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || form.invalid"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

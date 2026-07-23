@@ -1,0 +1,81 @@
+<app-modal-header [title]="'EMPLOYEES.SCHEDULE.TIME_OFF_SCHEDULE' | translate" />
+
+<div class="body">
+  <!-- Team member -->
+  <div class="section">
+    <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.TEAM_MEMBER' | translate }}</label>
+    <app-search-dropdown
+      [items]="employeeOptions"
+      [displayWith]="employeeDisplay"
+      [compareWith]="employeeCompare"
+      [value]="selectedEmployee()"
+      [clearable]="false"
+      [placeholder]="'EMPLOYEES.SCHEDULE.SELECT_EMPLOYEE' | translate"
+      (valueChange)="onEmployeePick($event)" />
+  </div>
+
+  <!-- Type -->
+  <div class="section">
+    <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.TYPE' | translate }}</label>
+    <div class="type-grid">
+      @for (opt of typeOptions; track opt.value) {
+        <button type="button" class="type-card" [class.active]="type() === opt.value"
+                (click)="selectType(opt.value)">
+          <i class="bx {{ opt.icon }}"></i>
+          <span>{{ opt.labelKey | translate }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Date -->
+  <div class="section">
+    <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.DATE' | translate }}</label>
+    <input class="date-input" type="date" [value]="from()"
+           (change)="onFromChange($any($event.target).value)" />
+  </div>
+
+  <!-- Repeat -->
+  <div class="section repeat-row">
+    <app-toggle
+      [checked]="isRepeat()"
+      [label]="'EMPLOYEES.SCHEDULE.REPEAT' | translate"
+      (checkedChange)="onRepeatChange($event)" />
+  </div>
+
+  @if (isRepeat()) {
+    <div class="section">
+      <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.REPEAT_UNTIL' | translate }}</label>
+      <input class="date-input" type="date" [min]="from()" [value]="to() ?? ''"
+             (change)="to.set($any($event.target).value)" />
+    </div>
+  }
+
+  <!-- Description -->
+  <div class="section">
+    <div class="section-head">
+      <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.DESCRIPTION' | translate }}</label>
+      <span class="char-count">{{ description().length }}/100</span>
+    </div>
+    <textarea class="desc" maxlength="100" rows="3"
+              [value]="description()"
+              (input)="description.set($any($event.target).value)"
+              [placeholder]="'EMPLOYEES.SCHEDULE.ADD_NOTES' | translate"></textarea>
+  </div>
+
+  <!-- Total -->
+  <div class="total">
+    <i class="bx bx-time-five"></i>
+    {{ 'EMPLOYEES.SCHEDULE.TOTAL_TIME_OFF' | translate }}:
+    <strong>{{ 'EMPLOYEES.SCHEDULE.DAYS_COUNT' | translate: { count: totalDays() } }}</strong>
+  </div>
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btn-cancel" (click)="cancel()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="btn-save" (click)="save()">
+    {{ 'COMMON.SAVE' | translate }}
+  </button>
+</app-modal-footer>

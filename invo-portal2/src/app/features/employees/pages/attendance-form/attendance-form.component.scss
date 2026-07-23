@@ -1,0 +1,162 @@
+// ── Page chrome (matches branch-form) ─────────────────────────────────
+.attendance-form-page {
+  max-width: 1200px;
+  // Extra bottom padding leaves room for the sticky save bar so the
+  // last card never sits underneath it when the user scrolls.
+  padding: 0 0 96px;
+  position: relative;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  &__titles { min-width: 0; flex: 1; }
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 6px 0 0;
+  word-break: break-word;
+}
+
+.btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &-primary {
+    background: #32acc1; color: #fff; border-color: #32acc1;
+    &:disabled { opacity: .5; cursor: not-allowed; }
+    &:not(:disabled):hover { background: #2a93a6; border-color: #2a93a6; }
+  }
+  &-ghost {
+    background: #fff; color: #475569; border-color: #e5e7eb;
+    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    &:disabled { opacity: .5; cursor: not-allowed; }
+  }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+.spinner {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 3px solid #e2e8f0; border-top-color: #32acc1;
+  animation: af-spin .8s linear infinite;
+  display: inline-block;
+  &--lg { width: 32px; height: 32px; }
+}
+@keyframes af-spin { to { transform: rotate(360deg); } }
+
+// ── Cards ──────────────────────────────────────────────────────────────
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+  &__head {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  &__title { margin: 0; font-size: 15px; font-weight: 600; color: #0f172a; }
+  &__sub   { margin: 0; font-size: 12px; color: #64748b; line-height: 1.5; }
+  &__body  { padding: 18px; }
+}
+
+// ── Form fields ────────────────────────────────────────────────────────
+.grid {
+  display: grid;
+  gap: 14px;
+
+  &--2 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.field-hint {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.input {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: #32acc1;
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+}
+
+// ── Read-only recorded summary ─────────────────────────────────────────
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+
+  &__row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+  }
+  &__value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    word-break: break-word;
+  }
+  &__placeholder {
+    font-weight: 400;
+    color: #94a3b8;
+    font-style: italic;
+  }
+}

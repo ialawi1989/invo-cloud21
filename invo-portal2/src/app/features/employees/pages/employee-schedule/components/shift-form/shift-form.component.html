@@ -1,0 +1,94 @@
+<app-modal-header
+  [title]="(isEdit()
+    ? 'EMPLOYEES.SCHEDULE.EDIT_SHIFT_TITLE'
+    : 'EMPLOYEES.SCHEDULE.ADD_SHIFT_TITLE') | translate" />
+
+<div class="body">
+  <!-- Team member -->
+  <div class="section">
+    <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.TEAM_MEMBER' | translate }}</label>
+    <div class="member">
+      <span class="avatar">
+        @if (employee.avatar) {
+          <img [src]="employee.avatar" [alt]="employee.employeeName" />
+        } @else {
+          {{ employee.employeeName.charAt(0).toUpperCase() }}
+        }
+      </span>
+      <span class="member-name">{{ employee.employeeName }}</span>
+    </div>
+  </div>
+
+  <!-- Date -->
+  <div class="section">
+    <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.DATE' | translate }}</label>
+    <div class="date-readonly">{{ date | date: 'MMM d, y' }}</div>
+  </div>
+
+  <!-- Shift rows -->
+  @if (existing().length || newShifts().length) {
+    <div class="section">
+      <div class="row head">
+        <span class="col">{{ 'EMPLOYEES.SCHEDULE.START_TIME' | translate }}</span>
+        <span class="sep"></span>
+        <span class="col">{{ 'EMPLOYEES.SCHEDULE.END_TIME' | translate }}</span>
+        <span class="act"></span>
+      </div>
+
+      <!-- Existing (locked value, deletable) -->
+      @for (shift of existing(); track $index) {
+        <div class="row">
+          <div class="col">
+            <app-search-dropdown
+              [items]="times" [value]="shift.from" [disabled]="true"
+              [clearable]="false" [searchable]="false" />
+          </div>
+          <span class="sep">–</span>
+          <div class="col">
+            <app-search-dropdown
+              [items]="times" [value]="shift.to" [disabled]="true"
+              [clearable]="false" [searchable]="false" />
+          </div>
+          <button type="button" class="icon-btn danger" (click)="removeExisting($index)"
+                  [attr.aria-label]="'COMMON.DELETE' | translate">
+            <i class="bx bx-trash-alt"></i>
+          </button>
+        </div>
+      }
+
+      <!-- New editable rows -->
+      @for (shift of newShifts(); track $index) {
+        <div class="row">
+          <div class="col">
+            <app-search-dropdown
+              [items]="times" [value]="shift.from" [clearable]="false"
+              (valueChange)="setFrom(shift, $event)" />
+          </div>
+          <span class="sep">–</span>
+          <div class="col">
+            <app-search-dropdown
+              [items]="times" [value]="shift.to" [clearable]="false"
+              (valueChange)="setTo(shift, $event)" />
+          </div>
+          <button type="button" class="icon-btn danger" (click)="removeNew($index)"
+                  [attr.aria-label]="'COMMON.DELETE' | translate">
+            <i class="bx bx-trash-alt"></i>
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <button type="button" class="add-link" (click)="addShift()">
+    <i class="bx bx-plus"></i> {{ 'EMPLOYEES.SCHEDULE.ADD_SHIFT' | translate }}
+  </button>
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btn-cancel" (click)="cancel()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="btn-save" [disabled]="!canSave()" (click)="save()">
+    {{ 'COMMON.SAVE' | translate }}
+  </button>
+</app-modal-footer>

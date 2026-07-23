@@ -1,0 +1,233 @@
+<div class="my-account-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'EMPLOYEES.MY_ACCOUNT.TITLE' | translate }}</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Profile ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'EMPLOYEES.FORM.BASIC_INFORMATION' | translate }}</h2>
+      </header>
+
+      <div class="card__body">
+        <!-- Avatar -->
+        <div class="avatar-row">
+          <div class="avatar">
+            @if (avatarPreview() || original()?.mediaUrl?.defaultUrl) {
+              <img
+                class="avatar__img"
+                [src]="avatarPreview() || (original()?.mediaUrl?.defaultUrl + '?width=150&height=150')"
+                [alt]="'EMPLOYEES.FORM.IMAGE' | translate"
+              />
+            } @else {
+              <div class="avatar__placeholder">
+                {{ (form.controls['name'].value || '?').charAt(0).toUpperCase() }}
+              </div>
+            }
+          </div>
+
+          <div class="avatar-row__actions">
+            <label class="btn btn-ghost btn-sm" for="ma-avatar">
+              @if (avatarPreview() || original()?.mediaUrl?.defaultUrl) {
+                {{ 'EMPLOYEES.FORM.REPLACE_IMAGE' | translate }}
+              } @else {
+                {{ 'EMPLOYEES.FORM.CHOOSE_IMAGE' | translate }}
+              }
+            </label>
+            <input
+              id="ma-avatar"
+              class="visually-hidden"
+              type="file"
+              accept="image/*"
+              (change)="onAvatarPicked($event)"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label" for="ma-name">
+              {{ 'EMPLOYEES.FORM.NAME' | translate }}
+              <span class="required">*</span>
+            </label>
+            <input
+              id="ma-name"
+              type="text"
+              class="input"
+              formControlName="name"
+              [class.input--invalid]="form.controls['name'].touched && form.controls['name'].invalid"
+            />
+            @if (form.controls['name'].touched && form.controls['name'].errors?.['required']) {
+              <p class="field-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+            }
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="ma-email">
+              {{ 'EMPLOYEES.FORM.EMAIL' | translate }}
+              <span class="required">*</span>
+            </label>
+            <input
+              id="ma-email"
+              type="email"
+              class="input"
+              formControlName="email"
+              [class.input--invalid]="form.controls['email'].touched && form.controls['email'].invalid"
+            />
+            @if (form.controls['email'].touched && form.controls['email'].errors?.['required']) {
+              <p class="field-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+            } @else if (form.controls['email'].touched && form.controls['email'].errors?.['email']) {
+              <p class="field-error">{{ 'EMPLOYEES.MY_ACCOUNT.INVALID_EMAIL' | translate }}</p>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Security ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'EMPLOYEES.MY_ACCOUNT.SECURITY' | translate }}</h2>
+        <p class="card__sub">{{ 'EMPLOYEES.MY_ACCOUNT.SECURITY_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body security">
+        <!-- Change password -->
+        <div class="security__block">
+          <app-toggle
+            [checked]="changePassword()"
+            (checkedChange)="toggleChangePassword($event)"
+            [label]="'EMPLOYEES.FORM.CHANGE_PASSWORD' | translate"/>
+          @if (changePassword()) {
+            <div class="field">
+              <input
+                type="password"
+                class="input"
+                autocomplete="new-password"
+                formControlName="password"
+                [class.input--invalid]="form.controls['password'].touched && form.controls['password'].invalid"
+                [placeholder]="'EMPLOYEES.FORM.PASSWORD' | translate"
+              />
+              @if (form.controls['password'].touched && form.controls['password'].invalid) {
+                <p class="field-error">{{ 'EMPLOYEES.MY_ACCOUNT.PASSWORD_HINT' | translate }}</p>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Change passcode -->
+        <div class="security__block">
+          <app-toggle
+            [checked]="changePasscode()"
+            (checkedChange)="toggleChangePasscode($event)"
+            [label]="'EMPLOYEES.FORM.CHANGE_PASSCODE' | translate"/>
+          @if (changePasscode()) {
+            <div class="field">
+              <input
+                type="text"
+                inputmode="numeric"
+                class="input"
+                autocomplete="off"
+                formControlName="passCode"
+                [class.input--invalid]="form.controls['passCode'].touched && form.controls['passCode'].invalid"
+                [placeholder]="'EMPLOYEES.FORM.PASSCODE' | translate"
+              />
+              @if (form.controls['passCode'].touched && form.controls['passCode'].invalid) {
+                <p class="field-error">{{ 'EMPLOYEES.MY_ACCOUNT.PASSCODE_HINT' | translate }}</p>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Change MSR -->
+        <div class="security__block">
+          <app-toggle
+            [checked]="changeMSR()"
+            (checkedChange)="toggleChangeMSR($event)"
+            [label]="'EMPLOYEES.FORM.CHANGE_MSR' | translate"/>
+          @if (changeMSR()) {
+            <div class="field">
+              <input
+                type="text"
+                class="input"
+                autocomplete="off"
+                formControlName="MSR"
+                [class.input--invalid]="form.controls['MSR'].touched && form.controls['MSR'].invalid"
+                [placeholder]="'EMPLOYEES.FORM.MSR' | translate"
+              />
+              @if (form.controls['MSR'].touched && form.controls['MSR'].errors?.['required']) {
+                <p class="field-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Two-factor -->
+        <div class="security__block security__block--2fa">
+          <app-toggle
+            formControlName="apply2fa"
+            [label]="'EMPLOYEES.FORM.APPLY_2FA' | translate"
+            [hint]="'EMPLOYEES.MY_ACCOUNT.TWO_FACTOR_HINT' | translate"/>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Account info (read-only) ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'EMPLOYEES.MY_ACCOUNT.ACCOUNT_INFO' | translate }}</h2>
+      </header>
+
+      <div class="card__body info">
+        @if (privilegeName()) {
+          <div class="info__row">
+            <span class="info__label">{{ 'EMPLOYEES.FORM.ACCESS_PERMISSIONS' | translate }}</span>
+            <span class="info__value">{{ privilegeName() }}</span>
+          </div>
+        }
+
+        <div class="info__row">
+          <span class="info__label">{{ 'EMPLOYEES.FORM.EMPLOYEE_ROLES' | translate }}</span>
+          @if (roles().length) {
+            <span class="info__badges">
+              @for (r of roles(); track r.key) {
+                <span class="badge">{{ r.key | translate }}</span>
+              }
+            </span>
+          } @else {
+            <span class="info__placeholder">—</span>
+          }
+        </div>
+
+        @if (createdAt()) {
+          <div class="info__row">
+            <span class="info__label">{{ 'EMPLOYEES.FORM.CREATED_AT' | translate }}</span>
+            <span class="info__value">{{ createdAt() | date: 'mediumDate' }}</span>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || form.invalid"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

@@ -1,0 +1,119 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.body {
+  padding: 8px 24px 16px;
+  overflow-y: auto;
+}
+
+.section { margin-bottom: 18px; }
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lbl {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 8px;
+}
+
+.char-count { font-size: 11px; color: #9ca3af; }
+
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 8px;
+  background: #f9fafb;
+  border: 1.5px solid #f1f5f9;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #374151;
+  transition: all 0.15s ease;
+
+  i { font-size: 22px; color: #6b7280; }
+  span { font-size: 13px; font-weight: 500; }
+
+  &:hover { border-color: #d1d5db; }
+
+  &.active {
+    background: rgba(50, 172, 193, 0.08);
+    border-color: #32acc1;
+    color: #2b95a8;
+    i { color: #32acc1; }
+  }
+}
+
+.date-input,
+.desc {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #374151;
+  background: #fff;
+  font-family: inherit;
+
+  &:focus { outline: none; border-color: #32acc1; }
+}
+
+.desc { resize: vertical; }
+
+.repeat-row { display: flex; }
+
+.total {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 14px;
+  background: rgba(50, 172, 193, 0.06);
+  border-radius: 10px;
+  font-size: 13px;
+  color: #374151;
+
+  i { color: #32acc1; font-size: 16px; }
+  strong { color: #111827; margin-inline-start: 2px; }
+}
+
+.btn-cancel {
+  padding: 9px 20px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover { background: #e5e7eb; }
+}
+
+.btn-save {
+  padding: 9px 24px;
+  background: #32acc1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { background: #2b95a8; }
+}

@@ -1,0 +1,118 @@
+<app-modal-header [title]="'EMPLOYEES.SCHEDULE.SET_REGULAR_SHIFTS' | translate" />
+
+<div class="body">
+  <!-- Employee card -->
+  <div class="emp-card">
+    <span class="avatar">
+      @if (employee.avatar) {
+        <img [src]="employee.avatar" [alt]="employee.employeeName" />
+      } @else {
+        {{ employee.employeeName.charAt(0).toUpperCase() }}
+      }
+    </span>
+    <div class="emp-meta">
+      <span class="emp-name">{{ employee.employeeName }}</span>
+      <span class="emp-sub">{{ 'EMPLOYEES.SCHEDULE.REGULAR_SCHEDULE_SETUP' | translate }}</span>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="settings-grid">
+    <div class="setting">
+      <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.SCHEDULE_TYPE' | translate }}</label>
+      <app-search-dropdown
+        [items]="repeatOptions"
+        [displayWith]="repeatDisplay"
+        [compareWith]="repeatCompare"
+        [value]="selectedRepeat()"
+        [clearable]="false"
+        [searchable]="false"
+        (valueChange)="onRepeatPick($event)" />
+    </div>
+
+    <div class="setting">
+      <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.START_DATE' | translate }}</label>
+      <input class="date-input" type="date" [value]="startDate()"
+             (change)="startDate.set($any($event.target).value)" />
+    </div>
+
+    <div class="setting">
+      <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.END_DATE' | translate }}</label>
+      <app-search-dropdown
+        [items]="endOptions"
+        [displayWith]="endDisplay"
+        [compareWith]="endCompare"
+        [value]="selectedEnd()"
+        [clearable]="false"
+        [searchable]="false"
+        (valueChange)="onEndPick($event)" />
+    </div>
+
+    @if (endOption() === 'specificDate') {
+      <div class="setting">
+        <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.END_ON' | translate }}</label>
+        <input class="date-input" type="date" [min]="startDate()" [value]="endDate() ?? ''"
+               (change)="endDate.set($any($event.target).value)" />
+      </div>
+    }
+  </div>
+
+  <!-- Weekly schedules -->
+  @for (week of weeks(); track weekI; let weekI = $index) {
+    <div class="week-card">
+      @if (weeks().length > 1) {
+        <div class="week-head">
+          <span class="week-badge">
+            {{ 'EMPLOYEES.SCHEDULE.WEEK_N' | translate: { n: weekI + 1 } }}
+          </span>
+        </div>
+      }
+
+      @for (day of weekDays; track day) {
+        <div class="day-row">
+          <div class="day-info">
+            <app-toggle
+              size="sm"
+              [checked]="dayHasShifts(weekI, day)"
+              (checkedChange)="toggleDay(weekI, day, $event)" />
+            <span class="day-name">{{ dayLabelKey(day) | translate }}</span>
+            @if (dayHasShifts(weekI, day)) {
+              <span class="hours-badge">{{ dayHours(weekI, day) }}h</span>
+            }
+          </div>
+
+          <div class="day-shifts">
+            @for (shift of week[day].shifts; track shiftI; let shiftI = $index) {
+              <div class="shift-row">
+                <app-search-dropdown
+                  [items]="times" [value]="shift.from" [clearable]="false"
+                  (valueChange)="setFrom(shift, $event)" />
+                <span class="sep">–</span>
+                <app-search-dropdown
+                  [items]="times" [value]="shift.to" [clearable]="false"
+                  (valueChange)="setTo(shift, $event)" />
+                <button type="button" class="icon-btn danger"
+                        (click)="removeShift(weekI, day, shiftI)"
+                        [attr.aria-label]="'COMMON.DELETE' | translate">
+                  <i class="bx bx-trash-alt"></i>
+                </button>
+              </div>
+            }
+            <button type="button" class="add-link" (click)="addShift(weekI, day)">
+              <i class="bx bx-plus"></i> {{ 'EMPLOYEES.SCHEDULE.ADD_SHIFT' | translate }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btn-cancel" (click)="cancel()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="btn-save" (click)="save()">
+    {{ 'COMMON.SAVE' | translate }}
+  </button>
+</app-modal-footer>

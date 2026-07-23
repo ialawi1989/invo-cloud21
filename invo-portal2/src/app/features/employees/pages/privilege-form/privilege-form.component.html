@@ -1,0 +1,151 @@
+<div class="privilege-form-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Name ═══ -->
+    <section class="card">
+      <div class="card__body">
+        <div class="field">
+          <label class="field-label" for="privilege-name">
+            {{ 'EMPLOYEES.PRIVILEGES.NAME' | translate }}
+            <span class="required">*</span>
+          </label>
+          <input
+            id="privilege-name"
+            type="text"
+            class="input"
+            [value]="name()"
+            (input)="onNameInput($any($event.target).value)"
+            [placeholder]="'EMPLOYEES.PRIVILEGES.NAME' | translate"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Access tree ═══ -->
+    <section class="card">
+      <header class="card__head card__head--tools">
+        <div>
+          <h2 class="card__title">{{ 'EMPLOYEES.PRIVILEGES.ACCESS' | translate }}</h2>
+          <p class="card__sub">{{ 'EMPLOYEES.PRIVILEGES.ACCESS_HINT' | translate }}</p>
+        </div>
+
+        <div class="tools">
+          <app-search-dropdown
+            class="tools__type"
+            [items]="securityTypeOptions"
+            [value]="securityType()"
+            (valueChange)="onSecurityTypeChange($any($event))"
+            [displayWith]="displaySecurityType"
+            [searchable]="false"
+            [placeholder]="'EMPLOYEES.PRIVILEGES.FILTER_ALL' | translate"
+          />
+          <div class="search">
+            <input
+              type="search"
+              class="input"
+              [value]="search()"
+              (input)="onSearchInput($any($event.target).value)"
+              [placeholder]="'EMPLOYEES.PRIVILEGES.SEARCH_GROUPS' | translate"
+            />
+          </div>
+        </div>
+      </header>
+
+      <div class="card__body">
+        @if (noMatches()) {
+          <p class="empty">{{ 'EMPLOYEES.PRIVILEGES.NO_MATCH' | translate }}</p>
+        }
+
+        <div class="groups">
+          @for (g of groups(); track g.key) {
+            <div class="group" [class.group--open]="g.expanded">
+              <div class="group__head">
+                <button
+                  type="button"
+                  class="group__toggle"
+                  [attr.aria-expanded]="g.expanded"
+                  (click)="toggleExpand(g.key)"
+                >
+                  @if (g.hasActions) {
+                    <svg class="group__chevron" width="14" height="14" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  } @else {
+                    <span class="group__chevron group__chevron--empty" aria-hidden="true"></span>
+                  }
+                  <span class="group__name">{{ g.label }}</span>
+                  @if (g.hasActions) {
+                    <span class="group__count">{{ g.enabledActions }} / {{ g.totalActions }}</span>
+                  }
+                </button>
+
+                @if (g.hasActions) {
+                  <label class="group__select-all">
+                    <span class="group__select-all-label">
+                      {{ 'EMPLOYEES.PRIVILEGES.SELECT_ALL' | translate }}
+                    </span>
+                    <app-toggle
+                      size="sm"
+                      [checked]="g.allOn"
+                      [ariaLabel]="'EMPLOYEES.PRIVILEGES.SELECT_ALL' | translate"
+                      (checkedChange)="onSelectAll(g.section, $event)"
+                    />
+                  </label>
+                } @else {
+                  <app-toggle
+                    size="sm"
+                    [checked]="g.sectionChecked"
+                    [ariaLabel]="g.label"
+                    (checkedChange)="onSectionToggle(g.section, $event)"
+                  />
+                }
+              </div>
+
+              @if (g.expanded && g.hasActions) {
+                <div class="group__body">
+                  @for (a of g.actions; track a.key) {
+                    <div class="action">
+                      <span class="action__label">{{ a.label }}</span>
+                      <app-toggle
+                        size="sm"
+                        [checked]="a.checked"
+                        [ariaLabel]="a.label"
+                        (checkedChange)="onActionChange(g.section, a.setting, $event)"
+                      />
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="savingLabel()"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading()"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

@@ -422,6 +422,13 @@ export const routes: Routes = [
         path: 'analytics',
         loadChildren: () =>
           import('./features/analytics/analytics.routes').then(m => m.ANALYTICS_ROUTES)
+      },
+      {
+        // Employees — team members, invitations, schedules, privilege sets
+        // and attendance. Top-level "Employees" sidebar group.
+        path: 'employees',
+        loadChildren: () =>
+          import('./features/employees/employees.routes').then(m => m.EMPLOYEES_ROUTES)
       }
       // ── Add features here as you build them ──────────────────────────────
     ],

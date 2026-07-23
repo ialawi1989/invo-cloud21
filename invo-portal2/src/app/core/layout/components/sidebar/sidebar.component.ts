@@ -94,10 +94,10 @@ export const SIDE_MENU: SideMenuItem[] = [
     id: 4, label: 'MENU.EMPLOYEES', icon: 'employee',
     requiredPermission: '',
     subItems: [
-      { id: 41, label: 'MENU.SUB.EMPLOYEE_LIST', link: '/employees', requiredPermission: 'employeeSecurity.actions.view.access' },
-      { id: 42, label: 'MENU.SUB.PRIVILEGES', link: '/employee-privileges', requiredPermission: 'privilegeSecurity.actions.view.access' },
-      { id: 43, label: 'MENU.SUB.SCHEDULE', link: '/employeeSchedule', requiredPermission: 'employeeScheduleSecurity.actions.view.access' },
-      { id: 44, label: 'MENU.SUB.ATTENDANCE', link: '/employeeAttendence', requiredPermission: 'employeeAttendenceSecurity.actions.view.access' },
+      { id: 41, label: 'MENU.SUB.EMPLOYEE_LIST', link: '/employees', matchLinks: ['/employees/invitation', '/employees/my-account'], requiredPermission: 'employeeSecurity.actions.view.access' },
+      { id: 42, label: 'MENU.SUB.PRIVILEGES', link: '/employees/privileges', requiredPermission: 'privilegeSecurity.actions.view.access' },
+      { id: 43, label: 'MENU.SUB.SCHEDULE', link: '/employees/schedule', requiredPermission: 'employeeScheduleSecurity.actions.view.access' },
+      { id: 44, label: 'MENU.SUB.ATTENDANCE', link: '/employees/attendance', requiredPermission: 'employeeAttendenceSecurity.actions.view.access' },
     ],
   },
   // ── Accounts ───────────────────────────────────────────────────────

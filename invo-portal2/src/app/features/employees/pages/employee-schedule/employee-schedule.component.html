@@ -1,0 +1,142 @@
+<div class="schedule-page">
+  <app-breadcrumbs [items]="breadcrumbs()" />
+
+  <div class="page-head">
+    <h1 class="page-title">{{ 'EMPLOYEES.SCHEDULE.TITLE' | translate }}</h1>
+    <button type="button" class="btn-primary" (click)="openTimeOff()">
+      <i class="bx bx-plus"></i> {{ 'EMPLOYEES.SCHEDULE.ADD_TIME_OFF' | translate }}
+    </button>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="week-nav">
+      <button type="button" class="nav-btn" (click)="previousWeek()"
+              [attr.aria-label]="'EMPLOYEES.SCHEDULE.CURRENT_WEEK' | translate">
+        <i class="bx bx-chevron-left"></i>
+      </button>
+      <span class="week-display">
+        <i class="bx bx-calendar"></i>
+        {{ rangeLabel() }}
+      </span>
+      <button type="button" class="nav-btn" (click)="nextWeek()"
+              [attr.aria-label]="'EMPLOYEES.SCHEDULE.CURRENT_WEEK' | translate">
+        <i class="bx bx-chevron-right"></i>
+      </button>
+      <button type="button" class="reset-btn" (click)="setThisWeek()">
+        {{ 'EMPLOYEES.SCHEDULE.RESET_TO_TODAY' | translate }}
+      </button>
+    </div>
+
+    <div class="branch-select">
+      <app-search-dropdown
+        [items]="branches()"
+        [displayWith]="branchDisplay"
+        [compareWith]="branchCompare"
+        [value]="selectedBranch()"
+        [clearable]="false"
+        [placeholder]="'EMPLOYEES.SCHEDULE.SELECT_BRANCH' | translate"
+        (valueChange)="onBranchChange($event)" />
+    </div>
+  </div>
+
+  <!-- Board -->
+  <div class="board-card">
+    <app-loading-overlay [show]="loading()" />
+
+    <div class="table-scroll">
+      <table class="board">
+        <thead>
+          <tr>
+            <th class="emp-col">{{ 'EMPLOYEES.SCHEDULE.EMPLOYEE' | translate }}</th>
+            @for (date of currentWeek(); track date; let i = $index) {
+              <th>
+                <div class="day-head">
+                  <span class="day-name">{{ date | date: 'EEE' }}</span>
+                  <span class="day-date">{{ date | date: 'd MMM' }}</span>
+                  <span class="hours-badge">{{ hoursByDay()[i] || 0 }}h</span>
+                </div>
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (employee of employees(); track employee.employeeId) {
+            <tr>
+              <!-- Employee cell -->
+              <td class="emp-col">
+                <div class="emp-cell">
+                  <span class="avatar">
+                    @if (employee.avatar) {
+                      <img [src]="employee.avatar" [alt]="employee.employeeName" />
+                    } @else {
+                      {{ initial(employee.employeeName) }}
+                    }
+                  </span>
+                  <div class="emp-meta">
+                    <span class="emp-name">{{ employee.employeeName }}</span>
+                    <span class="emp-hours">
+                      {{ hoursByEmployee()[employee.employeeId] || 0 }}
+                      {{ 'EMPLOYEES.SCHEDULE.HOURS_SUFFIX' | translate }}
+                    </span>
+                  </div>
+                  <button type="button" class="edit-btn" (click)="openRegular(employee)"
+                          [attr.aria-label]="'EMPLOYEES.SCHEDULE.SET_REGULAR_SHIFTS' | translate">
+                    <i class="bx bx-edit"></i>
+                  </button>
+                </div>
+              </td>
+
+              <!-- Day cells -->
+              @for (date of currentWeek(); track date; let i = $index) {
+                <td>
+                  @let day = getDayData(employee, i);
+                  <div class="cell">
+                    @if (day && day.dayOffShift.length) {
+                      @for (off of day.dayOffShift; track off.offDayId) {
+                        <app-dropdown-menu-btn
+                          [items]="dayOffMenu(employee, day, off)"
+                          [chevron]="false"
+                          [appendToBody]="true"
+                          triggerClass="badge badge-off">
+                          {{ off.type }}
+                        </app-dropdown-menu-btn>
+                      }
+                    } @else {
+                      @if (day && day.shift.length) {
+                        @for (shift of day.shift; track $index) {
+                          <app-dropdown-menu-btn
+                            [items]="shiftMenu(employee, day, shift)"
+                            [chevron]="false"
+                            [appendToBody]="true"
+                            triggerClass="badge badge-active">
+                            {{ shift.from }} - {{ shift.to }}
+                          </app-dropdown-menu-btn>
+                        }
+                      }
+                      <app-dropdown-menu-btn
+                        [items]="addMenu(employee, date, day)"
+                        [chevron]="false"
+                        [appendToBody]="true"
+                        triggerClass="badge badge-add">
+                        <i class="bx bx-plus"></i>
+                      </app-dropdown-menu-btn>
+                    }
+                  </div>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (!loading() && employees().length === 0) {
+      <div class="empty">
+        <div class="empty-icon"><i class="bx bx-calendar-x"></i></div>
+        <h4>{{ 'EMPLOYEES.SCHEDULE.NO_EMPLOYEES_TITLE' | translate }}</h4>
+        <p>{{ 'EMPLOYEES.SCHEDULE.NO_EMPLOYEES_TEXT' | translate }}</p>
+      </div>
+    }
+  </div>
+</div>

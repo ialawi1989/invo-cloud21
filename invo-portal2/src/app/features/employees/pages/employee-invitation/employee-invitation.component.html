@@ -1,0 +1,139 @@
+<div class="invite-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- ═══ Invitation Details ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'EMPLOYEES.INVITE.INVITATION_DETAILS' | translate }}</h2>
+      </header>
+
+      <div class="card__body">
+        <div class="field">
+          <label class="field-label" for="invite-email">
+            {{ 'EMPLOYEES.INVITE.EMAIL' | translate }}
+            <span class="required">*</span>
+          </label>
+          <div class="email-row">
+            <input
+              id="invite-email"
+              type="email"
+              class="input email-row__input"
+              formControlName="email"
+              autocomplete="off"
+              (input)="onEmailInput()"
+              (keydown.enter)="$event.preventDefault(); lookupEmail()"
+              [class.input--invalid]="form.controls['email'].touched && form.controls['email'].invalid"
+            />
+            @if (!isEdit()) {
+              <button
+                type="button"
+                class="btn btn-primary email-row__btn"
+                (click)="lookupEmail()"
+                [disabled]="lookingUp() || form.controls['email'].invalid"
+              >
+                {{ 'EMPLOYEES.INVITE.CLICK_HERE_TO_INVITE' | translate }}
+              </button>
+            }
+          </div>
+
+          @if (form.controls['email'].touched && form.controls['email'].errors?.['required']) {
+            <p class="field-error">{{ 'EMPLOYEES.INVITE.EMAIL_REQUIRED' | translate }}</p>
+          } @else if (form.controls['email'].touched && form.controls['email'].errors?.['email']) {
+            <p class="field-error">{{ 'EMPLOYEES.INVITE.EMAIL_INVALID' | translate }}</p>
+          } @else if (lookupError()) {
+            <p class="field-error">{{ lookupError()! | translate }}</p>
+          }
+        </div>
+
+        <!-- Resolved user summary -->
+        @if (invitedUser(); as user) {
+          <div class="user-summary">
+            <div class="user-summary__row">
+              <span class="user-summary__label">{{ 'EMPLOYEES.INVITE.RESOLVED_USER' | translate }}</span>
+              <span class="user-summary__value">{{ user.employeeName || '—' }}</span>
+            </div>
+            <div class="user-summary__row">
+              <span class="user-summary__label">{{ 'EMPLOYEES.INVITE.BRANCHES' | translate }}</span>
+              @if (user.branches.length) {
+                <div class="user-summary__chips">
+                  @for (branch of user.branches; track branch.id ?? $index) {
+                    <span class="chip">{{ branch.name || branch.id }}</span>
+                  }
+                </div>
+              } @else {
+                <span class="user-summary__placeholder">{{ 'EMPLOYEES.INVITE.NO_BRANCHES' | translate }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- ═══ Invitation Schedule ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'EMPLOYEES.INVITE.INVITATION_SCHEDULE' | translate }}</h2>
+      </header>
+
+      <div class="card__body">
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label" for="invite-start">
+              {{ 'EMPLOYEES.INVITE.INVITATION_START_AT' | translate }}
+            </label>
+            <input id="invite-start" type="date" class="input" formControlName="startAt"/>
+          </div>
+
+          <div class="field">
+            <label class="field-label">
+              {{ 'EMPLOYEES.INVITE.INVITATION_END_AT' | translate }}
+            </label>
+            <div class="end-mode">
+              <app-toggle
+                formControlName="endNever"
+                [label]="'EMPLOYEES.INVITE.NEVER' | translate"
+                [hint]="'EMPLOYEES.INVITE.NEVER_HINT' | translate"/>
+            </div>
+            @if (!form.controls['endNever'].value) {
+              <div class="end-date">
+                <label class="field-label field-label--sub" for="invite-end">
+                  {{ 'EMPLOYEES.INVITE.SPECIFIC_DATE' | translate }}
+                </label>
+                <input
+                  id="invite-end"
+                  type="date"
+                  class="input"
+                  formControlName="endAt"
+                  [min]="form.controls['startAt'].value || null"
+                  [class.input--invalid]="form.controls['endAt'].touched && !form.controls['endAt'].value"
+                />
+                @if (form.controls['endAt'].touched && !form.controls['endAt'].value) {
+                  <p class="field-error">{{ 'EMPLOYEES.INVITE.END_DATE_REQUIRED' | translate }}</p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving() || lookingUp()" [message]="savingLabel()"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>
