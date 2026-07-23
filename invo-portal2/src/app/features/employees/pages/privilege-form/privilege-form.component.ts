@@ -16,6 +16,11 @@ import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { EmployeePrivilege } from '@core/auth/privileges/models/privilege.model';
 import { PrivilegeSetting } from '@core/auth/privileges/models/privilege-setting.model';
+import {
+  PRESET_ROLES,
+  PresetRole,
+  applyPresetToPrivilege,
+} from '@core/auth/privileges/preset-roles';
 
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
@@ -115,6 +120,13 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
 
   /** The privilege-set name (top field). */
   name = signal<string>('');
+
+  /** Optional description of what this role is for. */
+  description = signal<string>('');
+
+  /** Preset (template) roles — "Start from a preset" picker. */
+  presetRoles: PresetRole[] = PRESET_ROLES;
+  displayPreset = (p: PresetRole): string => this.translate.instant(p.displayNameKey);
 
   /** The underlying tree (mutable CORE instances). Toggles mutate the
    *  `access` fields in place; `treeVersion` is bumped so the derived
@@ -247,6 +259,29 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
   /** True once a catalog is loaded but the filters hid everything. */
   noMatches = computed<boolean>(() => !!this.record() && this.groups().length === 0);
 
+  /**
+   * Master "select all" state across the WHOLE tree (ignores filters): true
+   * only when every group and every action is enabled. Drives the header
+   * master toggle — the "promotion way" select-all applied to all groups.
+   */
+  allGroupsOn = computed<boolean>(() => {
+    this.treeVersion();
+    const ep = this.record();
+    if (!ep) return false;
+    for (const key in ep.privileges) {
+      const section = ep.privileges[key] as PrivilegeSetting;
+      if (!section || typeof section.ToJson !== 'function') continue;
+      if (section.actions) {
+        for (const ak in section.actions) {
+          if (section.actions[ak].access !== true) return false;
+        }
+      } else if (section.access !== true) {
+        return false;
+      }
+    }
+    return true;
+  });
+
   constructor() {
     withTranslations('employees');
 
@@ -272,6 +307,7 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
         const ep = await this.service.getPrivilege(id);
         this.record.set(ep);
         this.name.set(ep.name ?? '');
+        this.description.set(ep.description ?? '');
       }
     } finally {
       this.loading.set(false);
@@ -282,6 +318,26 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
   onNameInput(value: string): void {
     this.name.set(value);
     this.dirty.set(true);
+  }
+
+  onDescriptionInput(value: string): void {
+    this.description.set(value);
+    this.dirty.set(true);
+  }
+
+  /**
+   * Apply a preset template to the whole tree: its groups on, everything else
+   * off. Also seeds the name (only when still blank, so we don't clobber a
+   * user's typed name) and the description, and records the preset key.
+   */
+  applyPreset(preset: PresetRole | null): void {
+    const ep = this.record();
+    if (!preset || !ep) return;
+    applyPresetToPrivilege(ep.privileges, preset);
+    ep.presetKey = preset.key;
+    if (!this.name().trim()) this.name.set(this.translate.instant(preset.displayNameKey));
+    this.description.set(this.translate.instant(preset.descriptionKey));
+    this.markChanged();
   }
 
   onSearchInput(value: string): void {
@@ -324,6 +380,21 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
     this.markChanged();
   }
 
+  /** Master select-all — cascade to EVERY group and action in the tree. */
+  onSelectAllGroups(value: boolean): void {
+    const ep = this.record();
+    if (!ep) return;
+    for (const key in ep.privileges) {
+      const section = ep.privileges[key] as PrivilegeSetting;
+      if (!section || typeof section.ToJson !== 'function') continue;
+      section.access = value;
+      if (section.actions) {
+        for (const ak in section.actions) section.actions[ak].access = value;
+      }
+    }
+    this.markChanged();
+  }
+
   /** A section is "accessible" when at least one of its actions is on. */
   private syncSectionAccess(section: PrivilegeSetting): void {
     if (!section.actions) return;
@@ -351,6 +422,7 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
     }
 
     ep.name = trimmed;
+    ep.description = this.description().trim();
     this.saving.set(true);
     try {
       const res = await this.service.savePrivilege(ep.ToJson());

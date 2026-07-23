@@ -177,7 +177,27 @@
       "FILTER_POS": "POS",
       "ADD_TITLE": "New privilege",
       "EDIT_TITLE": "Edit privilege",
-      "SAVED": "Privilege saved"
+      "SAVED": "Privilege saved",
+      "DESCRIPTION": "Description",
+      "DESCRIPTION_PLACEHOLDER": "What is this role for?",
+      "START_FROM_PRESET": "Start from a preset",
+      "SELECT_PRESET": "Choose a template…",
+      "PRESETS": {
+        "OWNER": "Owner",
+        "OWNER_DESC": "Full access to every module and setting.",
+        "MANAGER": "Manager",
+        "MANAGER_DESC": "Runs day-to-day operations — catalog, sales, customers, staff and reports.",
+        "CASHIER": "Cashier",
+        "CASHIER_DESC": "Point-of-sale, orders and daily operations.",
+        "ACCOUNTANT": "Accountant",
+        "ACCOUNTANT_DESC": "Finance, journals, invoices, bills, payments and tax.",
+        "INVENTORY": "Inventory Manager",
+        "INVENTORY_DESC": "Products, stock counts, transfers, pricing and purchasing.",
+        "MARKETING": "Marketing",
+        "MARKETING_DESC": "Website, blog, media, promotions and segments.",
+        "DRIVER": "Delivery Driver",
+        "DRIVER_DESC": "Delivery orders and daily operations only."
+      }
     },
 
     "ATTENDANCE": {

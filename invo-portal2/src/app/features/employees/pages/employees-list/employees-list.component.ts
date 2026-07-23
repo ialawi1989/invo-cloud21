@@ -1,182 +1,107 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  OnInit,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
-import { withTranslations } from '@core/i18n/with-translations';
+import { LanguageService } from '@core/i18n/language.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
-import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { ListShellComponent } from '@shared/components/list-shell/list-shell.component';
+import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import {
-  QueryParamsService,
-  ParamDef,
-  IntCodec,
-  intCodec,
-  StringCodec,
-} from '@shared/services/query-params.service';
+  ListCellTemplateDirective,
+  ListRowActionsDirective,
+} from '@shared/components/list-page/directives/list-template.directives';
+import {
+  TableColumn,
+  ListQueryParams,
+} from '@shared/components/list-page/interfaces/list-page.types';
 
 import { EmployeeService } from '../../services/employee.service';
 import { EmployeeSummary } from '../../models/employee.types';
 
-const QP = {
-  page:     { key: 'page',  codec: IntCodec }     as ParamDef<number>,
-  pageSize: { key: 'limit', codec: intCodec(20) } as ParamDef<number>,
-  search:   { key: 'q',     codec: StringCodec }  as ParamDef<string>,
-};
-
 /**
- * Employees list
- * ──────────────
- * Searchable / paginated table of the company's employees. Header actions
- * (Add / Invite / Show logs) mirror the legacy page. Row click opens the
- * employee form — invited users route to the invitation form instead.
+ * Employees list — shared `<app-list-page>`.
+ * Search / paging / sort / URL-sync handled by the list-page; this component
+ * only supplies the column config, the data source, and the row/header
+ * actions. Invited users route to the invitation form on edit.
  */
 @Component({
   selector: 'app-employees-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, ListShellComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    TranslateModule,
+    ListPageComponent,
+    ListCellTemplateDirective,
+    ListRowActionsDirective,
+  ],
   templateUrl: './employees-list.component.html',
   styleUrl: './employees-list.component.scss',
 })
 export class EmployeesListComponent implements OnInit {
   private service    = inject(EmployeeService);
-  private translate  = inject(TranslateService);
-  private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
-  private qp         = inject(QueryParamsService);
+  private lang       = inject(LanguageService);
   private privileges = inject(PrivilegeService);
 
-  loading = signal<boolean>(false);
-  rows    = signal<EmployeeSummary[]>([]);
-  total   = signal<number>(0);
+  readonly canAdd    = this.privileges.check('employeeSecurity.actions.add.access');
+  readonly canInvite = this.privileges.check('employeeInvitationSecurity.actions.add.access');
 
-  search   = signal<string>('');
-  page     = signal<number>(1);
-  pageSize = signal<number>(20);
+  columns: TableColumn[] = [];
 
-  /** Re-translate labels after ngx-translate finishes loading. */
-  private i18nTick = signal(0);
-
-  canAdd    = this.privileges.check('employeeSecurity.actions.add.access');
-  canInvite = this.privileges.check('employeeInvitationSecurity.actions.add.access');
-
-  breadcrumbs = computed<BreadcrumbItem[]>(() => {
-    this.i18nTick();
-    return [{ label: this.translate.instant('EMPLOYEES.TITLE') }];
-  });
-
-  pageCount = computed<number>(() => {
-    const total = this.total();
-    const limit = this.pageSize();
-    return total > 0 ? Math.ceil(total / limit) : 1;
-  });
-
-  rangeLabel = computed<string>(() => {
-    this.i18nTick();
-    const total = this.total();
-    if (total === 0) return '';
-    const start = (this.page() - 1) * this.pageSize() + 1;
-    const end   = Math.min(this.page() * this.pageSize(), total);
-    return this.translate.instant('COMMON.PAGINATION_RANGE', { start, end, total });
-  });
-
-  constructor() {
-    withTranslations('employees');
-
-    this.translate.onTranslationChange
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.i18nTick.update(n => n + 1));
-    this.translate.onLangChange
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.i18nTick.update(n => n + 1));
-  }
+  paginationConfig = { enabled: true, pageLimits: [20, 50, 100], default: 20 };
+  searchConfig     = { enabled: true, placeholder: '', debounceMs: 400 };
+  sortingConfig    = { enabled: true };
+  emptyState       = { title: '', message: '' };
 
   async ngOnInit(): Promise<void> {
-    const p = this.qp.read(QP);
-    this.page.set(p.page);
-    this.pageSize.set(p.pageSize);
-    this.search.set(p.search);
-    await this.load();
+    await this.lang.loadFeature('employees');
+    this.initTranslations();
   }
 
-  private syncUrl(): void {
-    this.qp.write(QP, {
-      page:     this.page(),
-      pageSize: this.pageSize(),
-      search:   this.search(),
+  private initTranslations(): void {
+    const t = (k: string) => this.lang.instant(k);
+    this.columns = [
+      { key: 'name',  label: t('EMPLOYEES.LIST.NAME'),  sortable: true, primary: true, locked: true, interactive: true, customTemplate: true, visible: true, order: 0 },
+      { key: 'email', label: t('EMPLOYEES.LIST.EMAIL'), sortable: true, visible: true, order: 1 },
+      { key: 'superAdmin', label: t('EMPLOYEES.LIST.SUPER_ADMIN'), noApi: true, sortable: false, customTemplate: true, align: 'center', visible: true, order: 2 },
+      { key: 'admin',      label: t('EMPLOYEES.LIST.CLOUD_ADMIN'), noApi: true, sortable: false, customTemplate: true, align: 'center', visible: true, order: 3 },
+      { key: 'user',       label: t('EMPLOYEES.LIST.POS_USER'),    noApi: true, sortable: false, customTemplate: true, align: 'center', visible: true, order: 4 },
+    ];
+    this.searchConfig.placeholder = t('EMPLOYEES.SEARCH_PLACEHOLDER');
+    this.emptyState = { title: t('EMPLOYEES.EMPTY'), message: '' };
+  }
+
+  loadEmployees = async (params: ListQueryParams) => {
+    const res = await this.service.getList({
+      page:       params.page,
+      limit:      params.limit,
+      searchTerm: params.searchTerm || '',
+      sortBy:     params.sortBy
+        ? { sortValue: params.sortBy.sortValue, sortDirection: params.sortBy.sortDirection }
+        : {},
     });
-  }
-
-  async load(): Promise<void> {
-    this.loading.set(true);
-    try {
-      const res = await this.service.getList({
-        page:       this.page(),
-        limit:      this.pageSize(),
-        searchTerm: this.search().trim(),
-      });
-      this.rows.set(res.list);
-      this.total.set(res.count);
-    } finally {
-      this.loading.set(false);
-    }
-  }
-
-  onSearch(value: string): void {
-    this.search.set(value);
-    this.page.set(1);
-    this.syncUrl();
-    void this.load();
-  }
-
-  clearSearch(): void {
-    this.search.set('');
-    this.page.set(1);
-    this.syncUrl();
-    void this.load();
-  }
-
-  goPrev(): void {
-    if (this.page() <= 1) return;
-    this.page.update(p => p - 1);
-    this.syncUrl();
-    this.load();
-  }
-
-  goNext(): void {
-    if (this.page() >= this.pageCount()) return;
-    this.page.update(p => p + 1);
-    this.syncUrl();
-    this.load();
-  }
+    return { list: res.list, count: res.count, pageCount: res.pageCount };
+  };
 
   initial(name: string): string {
     return (name || '?').charAt(0).toUpperCase();
   }
 
+  onRowClick(event: any): void {
+    if (event?.row) this.edit(event.row);
+  }
+
+  edit(row: EmployeeSummary): void {
+    void this.router.navigate(
+      row.isInvitedUser ? ['/employees/invitation', row.id] : ['/employees', row.id],
+    );
+  }
+
   add(): void {
-    this.router.navigate(['/employees', 0]);
+    void this.router.navigate(['/employees', 0]);
   }
 
   invite(): void {
-    this.router.navigate(['/employees/invitation', 0]);
-  }
-
-  edit(e: EmployeeSummary): void {
-    if (e.isInvitedUser) {
-      this.router.navigate(['/employees/invitation', e.id]);
-    } else {
-      this.router.navigate(['/employees', e.id]);
-    }
+    void this.router.navigate(['/employees/invitation', 0]);
   }
 }

@@ -27,6 +27,7 @@ import { LoadingOverlayComponent } from '@shared/components/spinner/loading-over
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import { EmployeeService } from '../../services/employee.service';
@@ -70,6 +71,7 @@ interface Option {
     FormStickyFooterComponent,
     ToggleComponent,
     SearchDropdownComponent,
+    DatePickerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-form.component.html',
@@ -145,9 +147,10 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
     // Branch assignment
     branchIds:       [[] as string[]],
     branchId:        [''], // primary branch id
-    // Employment
-    hireDate:        [null as string | null],
-    terminationDate: [null as string | null],
+    // Employment — held as `Date | null` on the form; mapped to/from ISO
+    // 'yyyy-MM-dd' strings (the stored/wire format) at the load/save boundary.
+    hireDate:        [null as Date | null],
+    terminationDate: [null as Date | null],
   });
 
   // ── Derived ────────────────────────────────────────────────────────────
@@ -278,8 +281,8 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
       privilegeId:     data.privilegeId ?? null,
       branchIds:       (data.branches ?? []).map((b: any) => b.id),
       branchId:        data.branchId ?? '',
-      hireDate:        data.hireDate ?? null,
-      terminationDate: data.terminationDate ?? null,
+      hireDate:        this.toDate(data.hireDate ?? null),
+      terminationDate: this.toDate(data.terminationDate ?? null),
       // Secrets are never pre-filled — the user re-enters them to change.
       password:        '',
       passcode:        '',
@@ -440,8 +443,8 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
         privilegeId:     v.privilegeId || null,
         branches,
         branchId,
-        hireDate:        v.hireDate || null,
-        terminationDate: v.terminationDate || null,
+        hireDate:        this.toIso(v.hireDate),
+        terminationDate: this.toIso(v.terminationDate),
         base64Image:     this.base64Image() || '',
         mediaId:         this.mediaId(),
         mediaUrl:        this.mediaUrl(),
@@ -480,5 +483,25 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
 
   hasUnsavedChanges(): boolean {
     return this.dirty() && !this.saving();
+  }
+
+  // ─── Date <-> ISO 'yyyy-MM-dd' helpers (date-only) ───────────────────────
+  /** Stored ISO 'yyyy-MM-dd' string → local `Date` (midnight). Parses the
+   *  y/m/d parts directly so the calendar day never shifts across timezones.
+   *  Returns `null` for empty / unparseable input. */
+  private toDate(iso: string | null): Date | null {
+    if (!iso) return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  /** `Date` → ISO 'yyyy-MM-dd' string using the local date parts. Returns
+   *  `null` for a null date (empty termination = currently employed). */
+  private toIso(d: Date | null): string | null {
+    if (!d) return null;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 }

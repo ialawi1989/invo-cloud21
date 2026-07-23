@@ -320,18 +320,15 @@
           </header>
           <div class="card__body">
             <div class="field">
-              <label class="field-label" for="emp-hire">{{ 'EMPLOYEES.FORM.HIRE_DATE' | translate }}</label>
-              <input id="emp-hire" type="date" class="input" formControlName="hireDate"/>
+              <label class="field-label">{{ 'EMPLOYEES.FORM.HIRE_DATE' | translate }}</label>
+              <app-date-picker formControlName="hireDate" triggerClass="input"/>
             </div>
             <div class="field">
-              <label class="field-label" for="emp-term">{{ 'EMPLOYEES.FORM.TERMINATION_DATE' | translate }}</label>
-              <input
-                id="emp-term"
-                type="date"
-                class="input"
+              <label class="field-label">{{ 'EMPLOYEES.FORM.TERMINATION_DATE' | translate }}</label>
+              <app-date-picker
                 formControlName="terminationDate"
-                [min]="form.controls['hireDate'].value || null"
-              />
+                [min]="$any(form.controls['hireDate'].value) || null"
+                triggerClass="input"/>
               <p class="field-hint">{{ 'EMPLOYEES.FORM.TERMINATION_HINT' | translate }}</p>
             </div>
           </div>

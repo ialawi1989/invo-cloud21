@@ -9,21 +9,49 @@
   @if (loading()) {
     <div class="loading"><span class="spinner spinner--lg"></span></div>
   } @else {
-    <!-- ═══ Name ═══ -->
+    <!-- ═══ Name + preset ═══ -->
     <section class="card">
       <div class="card__body">
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label" for="privilege-name">
+              {{ 'EMPLOYEES.PRIVILEGES.NAME' | translate }}
+              <span class="required">*</span>
+            </label>
+            <input
+              id="privilege-name"
+              type="text"
+              class="input"
+              [value]="name()"
+              (input)="onNameInput($any($event.target).value)"
+              [placeholder]="'EMPLOYEES.PRIVILEGES.NAME' | translate"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field-label">{{ 'EMPLOYEES.PRIVILEGES.START_FROM_PRESET' | translate }}</label>
+            <app-search-dropdown
+              [items]="presetRoles"
+              [displayWith]="displayPreset"
+              [searchable]="false"
+              [clearable]="false"
+              [placeholder]="'EMPLOYEES.PRIVILEGES.SELECT_PRESET' | translate"
+              (valueChange)="applyPreset($any($event))"
+            />
+          </div>
+        </div>
+
         <div class="field">
-          <label class="field-label" for="privilege-name">
-            {{ 'EMPLOYEES.PRIVILEGES.NAME' | translate }}
-            <span class="required">*</span>
+          <label class="field-label" for="privilege-desc">
+            {{ 'EMPLOYEES.PRIVILEGES.DESCRIPTION' | translate }}
           </label>
           <input
-            id="privilege-name"
+            id="privilege-desc"
             type="text"
             class="input"
-            [value]="name()"
-            (input)="onNameInput($any($event.target).value)"
-            [placeholder]="'EMPLOYEES.PRIVILEGES.NAME' | translate"
+            [value]="description()"
+            (input)="onDescriptionInput($any($event.target).value)"
+            [placeholder]="'EMPLOYEES.PRIVILEGES.DESCRIPTION_PLACEHOLDER' | translate"
           />
         </div>
       </div>
@@ -38,6 +66,15 @@
         </div>
 
         <div class="tools">
+          <label class="tools__master">
+            <span class="tools__master-label">{{ 'EMPLOYEES.PRIVILEGES.SELECT_ALL' | translate }}</span>
+            <app-toggle
+              size="sm"
+              [checked]="allGroupsOn()"
+              [ariaLabel]="'EMPLOYEES.PRIVILEGES.SELECT_ALL' | translate"
+              (checkedChange)="onSelectAllGroups($event)"
+            />
+          </label>
           <app-search-dropdown
             class="tools__type"
             [items]="securityTypeOptions"

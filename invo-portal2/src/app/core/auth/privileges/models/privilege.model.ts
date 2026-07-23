@@ -1,215 +1,26 @@
 import { PrivilegeSetting } from './privilege-setting.model';
+import { SECURITY_DEFINITIONS } from '../definitions/registry';
 
-import { acceptRejectOrderCloudSecurity } from '../definitions/acceptRejectOrderCloudSecurity';
-import { accountSecurity } from '../definitions/accountSecurity';
-import { bankingOverview } from '../definitions/bankingOverview';
-import { billingPaymentsSecurity } from '../definitions/billingPaymentsSecurity';
-import { billingSecurity } from '../definitions/billingSecurity';
-import { billOfEntrySecurity } from '../definitions/billOfEntrySecurity';
-import { blogSecurity } from '../definitions/blogSecurity';
-import { branchesConnectionSecurity } from '../definitions/branchesConnectionSecurity';
-import { branchPaymentsSecurity } from '../definitions/branchPaymentsSecurity';
-import { branchSettingsSecurity } from '../definitions/branchSettingsSecurity';
-import { brandSecurity } from '../definitions/brandSecurity';
-import { budgetSecurity } from '../definitions/budgetSecurity';
-import { businessSettingsSecurity } from '../definitions/businessSettingsSecurity';
-import { callSecurity } from '../definitions/callSecurity';
-import { cashierSecurity } from '../definitions/cashierSecurity';
-import { categorySecurity } from '../definitions/categorySecurity';
-import { chequeBuilderSecurity } from '../definitions/chequeBuilderSecurity';
-import { companiesOverviewSecurity } from '../definitions/companieOverviewSecurity';
-import { companyGroupEmployeesSecurity } from '../definitions/companyGroupEmployeesSecurity';
-import { companySettingsSecurity } from '../definitions/companySettingsSecurity';
-import { coveredAddress } from '../definitions/coveredAddress';
-import { coveredZone } from '../definitions/coveredZone';
-import { creditNoteSecurity } from '../definitions/creditNoteSecurity';
-import { customerSecurity } from '../definitions/customerSecurity';
-import { customerSegmentsSecurity } from '../definitions/customerSegmentsSecurity';
-import { dailyOpertionSecurity } from '../definitions/dailyOpertionSecurity';
-import { dashboardSecurity } from '../definitions/dashboardSecurity';
-import { deliverySecurity } from '../definitions/deliverySecurity';
-import { departmentSecurity } from '../definitions/departmentSecurity';
-import { dimensionSecurity } from '../definitions/dimensionSecurity';
-import { dineInSecurity } from '../definitions/dineInSecurity';
-import { discountSecurity } from '../definitions/discountSecurity';
-import { DomainSettingsSecurity } from '../definitions/DomainSettingsSecurity';
-import { employeeAttendenceSecurity } from '../definitions/employeeAttendenceSecurity';
-import { employeeInvitationSecurity } from '../definitions/employeeInvitationSecurity';
-import { employeeScheduleSecurity } from '../definitions/employeeScheduleSecurity';
-import { employeeSecurity } from '../definitions/employeeSecurity';
-import { estimateBuilderSecurity } from '../definitions/estimateBuilderSecurity';
-import { billBuilderSecurity } from '../definitions/billBuilderSecurity';
-import { estimateSecurity } from '../definitions/estimateSecurity';
-import { expenseBuilderSecurity } from '../definitions/expenseBuilderSecurity';
-import { expenseSecurity } from '../definitions/expenseSecurity';
-import { houseAccountSecurity } from '../definitions/houseAccountSecurity';
-import { inventoryLocationsSecurity } from '../definitions/inventoryLocationsSecurity';
-import { inventoryPhysicalCountsSecurity } from '../definitions/inventoryPhysicalCountsSecurity';
-import { inventoryTransferSecurity } from '../definitions/inventoryTransferSecurity';
-import { invoiceBuilderSecurity } from '../definitions/invoiceBuilderSecurity';
-import { invoicePaymentsSecurity } from '../definitions/invoicePaymentsSecurity';
-import { invoiceSecurity } from '../definitions/invoiceSecurity';
-import { kitchenSectionSecurity } from '../definitions/kitchenSectionSecurity';
-import { labelBuilderSecurity } from '../definitions/labelBuilderSecurity';
-import { manualAdjustmentSecurity } from '../definitions/manualAdjustmentSecurity';
-import { manualJournalSecurity } from '../definitions/manualJournalSecurity';
-import { matrixItemSecurity } from '../definitions/matrixItemSecurity';
-import { mediaSecurity } from '../definitions/mediaSecurity';
-import { mediaSettingsSecurity } from '../definitions/mediaSettingsSecurity';
-import { menuBuilderSecurity } from '../definitions/menuBuilderSecurity';
-import { openingBalances } from '../definitions/openingBalances';
-import { optionGroupSecurity } from '../definitions/optionGroupSecurity';
-import { optionSecurity } from '../definitions/optionSecurity';
-import { pageBuilderSecurity } from '../definitions/pageBuilderSecurity';
-import { pagingSecurity } from '../definitions/pagingSecurity';
-import { paymentMethodSecurity } from '../definitions/paymentMethodSecurity';
-import { pendingOrderSecurity } from '../definitions/pendingOrderSecurity';
-import { pluginsSecurity } from '../definitions/pluginsSecurity';
-import { prefixSettingsSecurity } from '../definitions/prefixSettingsSecurity';
-import { priceChangeSecurity } from '../definitions/priceChangeSecurity';
-import { priceLabelSecurity } from '../definitions/priceLabelSecurity';
-import { priceManagementSecurity } from '../definitions/priceManagementSecurity';
-import { privilegeSecurity } from '../definitions/privilegeSecurity';
-import { productRecipeSecurity } from '../definitions/productRecipeSecurity';
-import { productsAvailabilitySecurity } from '../definitions/productsAvailabilitySecurity';
-import { productsCollectionsSecurity } from '../definitions/productsCollectionsSecurity';
-import { productSecurity } from '../definitions/productSecurity';
-import { purchaseOrderBuilderSecurity } from '../definitions/purchaseOrderBuilderSecurity';
-import { purchaseOrderSecurity } from '../definitions/purchaseOrderSecurity';
-import { recentUpdatesSecurity } from '../definitions/recentUpdatesSecurity';
-import { recieptBuilderSecurity } from '../definitions/recieptBuilderSecurity';
-import { recipeSecurity } from '../definitions/recipeSecurity';
-import { reconciliationSecurity } from '../definitions/reconciliationSecurity';
-import { recurringBillSecurity } from '../definitions/recurringBillSecurity';
-import { recurringExpenseSecurity } from '../definitions/recurringExpenseSecurity';
-import { recurringInvoiceSecurity } from '../definitions/recurringInvoiceSecurity';
-import { recurringJournalSecurity } from '../definitions/recurringJournalSecurity';
-import { reportsSecurity } from '../definitions/reportsSecurity';
-import { salonSecurity } from '../definitions/salonSecurity';
-import { salesTargetSecurity } from '../definitions/salesTargetSecurity';
-import { serviceSecurity } from '../definitions/serviceSecurity';
-import { shippingSecurity } from '../definitions/shippingSecurity';
-import { supplierCredit } from '../definitions/supplierCredit';
-import { supplierSecurity } from '../definitions/supplierSecurity';
-import { surchargeSecurity } from '../definitions/surchargeSecurity';
-import { tabBuilderSecurity } from '../definitions/tabBuilderSecurity';
-import { tableManagmentSecurity } from '../definitions/tableManagmentSecurity';
-import { taxSecurity } from '../definitions/taxSecurity';
-import { terminalSecurity } from '../definitions/terminalSecurity';
-import { vatPayment } from '../definitions/vatPayment';
-import { waitingListSecurity } from '../definitions/waitingListSecurity';
-import { websiteBuilderSecurity } from '../definitions/websiteBuilderSecurity';
-import { websiteAnalyticsSecurity } from '../definitions/websiteAnalyticsSecurity';
-import { websiteSettingsSecurity } from '../definitions/websiteSettingsSecurity';
-import { workOrderSecurity } from '../definitions/workOrderSecurity';
-import { customReportsSecurity } from '../../../../features/reports/custom/custom-reports.privileges';
-
+/**
+ * The full permission tree — one {@link PrivilegeSetting} per security group.
+ *
+ * The groups are built from the central {@link SECURITY_DEFINITIONS} registry
+ * (see that file), so adding a new feature's permissions is a one-line change
+ * there — there is no per-group field to declare here and keep in sync.
+ *
+ * The wire/saved shape is unchanged: `{ <groupKey>: { name, access,
+ * securityType, actions?: { <actionKey>: { name, access } } } }`. `ToJson()`
+ * / `ParseJson()` produce and consume exactly that structure.
+ */
 export class Privilege {
   [key: string]: PrivilegeSetting | any;
 
-  dashboardSecurity              = dashboardSecurity();
-  branchesConnectionSecurity     = branchesConnectionSecurity();
-  branchSettingsSecurity         = branchSettingsSecurity();
-  branchPaymentsSecurity         = branchPaymentsSecurity();
-  kitchenSectionSecurity         = kitchenSectionSecurity();
-  companySettingsSecurity        = companySettingsSecurity();
-  tableManagmentSecurity         = tableManagmentSecurity();
-  recieptBuilderSecurity         = recieptBuilderSecurity();
-  invoiceBuilderSecurity         = invoiceBuilderSecurity();
-  estimateBuilderSecurity        = estimateBuilderSecurity();
-  expenseBuilderSecurity         = expenseBuilderSecurity();
-  purchaseOrderBuilderSecurity   = purchaseOrderBuilderSecurity();
-  billBuilderSecurity            = billBuilderSecurity();
-  shippingSecurity               = shippingSecurity();
-  acceptRejectOrderCloudSecurity = acceptRejectOrderCloudSecurity();
-  DomainSettingsSecurity         = DomainSettingsSecurity();
-  labelBuilderSecurity           = labelBuilderSecurity();
-  chequeBuilderSecurity          = chequeBuilderSecurity();
-  serviceSecurity                = serviceSecurity();
-  menuBuilderSecurity            = menuBuilderSecurity();
-  budgetSecurity                 = budgetSecurity();
-  taxSecurity                    = taxSecurity();
-  surchargeSecurity              = surchargeSecurity();
-  tabBuilderSecurity             = tabBuilderSecurity();
-  paymentMethodSecurity          = paymentMethodSecurity();
-  priceLabelSecurity             = priceLabelSecurity();
-  priceManagementSecurity        = priceManagementSecurity();
-  discountSecurity               = discountSecurity();
-  prefixSettingsSecurity         = prefixSettingsSecurity();
-  productSecurity                = productSecurity();
-  recentUpdatesSecurity          = recentUpdatesSecurity();
-  matrixItemSecurity             = matrixItemSecurity();
-  brandSecurity                  = brandSecurity();
-  inventoryLocationsSecurity     = inventoryLocationsSecurity();
-  priceChangeSecurity            = priceChangeSecurity();
-  productRecipeSecurity          = productRecipeSecurity();
-  bankingOverview                = bankingOverview();
-  openingBalances                = openingBalances();
-  vatPayment                     = vatPayment();
-  coveredAddress                 = coveredAddress();
-  coveredZone                    = coveredZone();
-  productsCollectionsSecurity    = productsCollectionsSecurity();
-  pagingSecurity                 = pagingSecurity();
-  customerSegmentsSecurity       = customerSegmentsSecurity();
-  departmentSecurity             = departmentSecurity();
-  dimensionSecurity              = dimensionSecurity();
-  productsAvailabilitySecurity   = productsAvailabilitySecurity();
-  categorySecurity               = categorySecurity();
-  optionGroupSecurity            = optionGroupSecurity();
-  optionSecurity                 = optionSecurity();
-  recipeSecurity                 = recipeSecurity();
-  mediaSecurity                  = mediaSecurity();
-  mediaSettingsSecurity          = mediaSettingsSecurity();
-  pluginsSecurity                = pluginsSecurity();
-  pendingOrderSecurity           = pendingOrderSecurity();
-  waitingListSecurity            = waitingListSecurity();
-  employeeSecurity               = employeeSecurity();
-  employeeScheduleSecurity       = employeeScheduleSecurity();
-  employeeAttendenceSecurity     = employeeAttendenceSecurity();
-  employeeInvitationSecurity     = employeeInvitationSecurity();
-  companyGroupEmployeesSecurity  = companyGroupEmployeesSecurity();
-  inventoryPhysicalCountsSecurity = inventoryPhysicalCountsSecurity();
-  inventoryTransferSecurity      = inventoryTransferSecurity();
-  websiteBuilderSecurity         = websiteBuilderSecurity();
-  websiteAnalyticsSecurity       = websiteAnalyticsSecurity();
-  pageBuilderSecurity            = pageBuilderSecurity();
-  websiteSettingsSecurity        = websiteSettingsSecurity();
-  blogSecurity                   = blogSecurity();
-  reportsSecurity                = reportsSecurity();
-  customReportsSecurity          = customReportsSecurity();
-  privilegeSecurity              = privilegeSecurity();
-  accountSecurity                = accountSecurity();
-  customerSecurity               = customerSecurity();
-  manualJournalSecurity          = manualJournalSecurity();
-  manualAdjustmentSecurity       = manualAdjustmentSecurity();
-  recurringJournalSecurity       = recurringJournalSecurity();
-  estimateSecurity               = estimateSecurity();
-  invoiceSecurity                = invoiceSecurity();
-  invoicePaymentsSecurity        = invoicePaymentsSecurity();
-  workOrderSecurity              = workOrderSecurity();
-  creditNoteSecurity             = creditNoteSecurity();
-  supplierSecurity               = supplierSecurity();
-  salesTargetSecurity            = salesTargetSecurity();
-  purchaseOrderSecurity          = purchaseOrderSecurity();
-  billingSecurity                = billingSecurity();
-  billOfEntrySecurity            = billOfEntrySecurity();
-  recurringBillSecurity          = recurringBillSecurity();
-  recurringInvoiceSecurity       = recurringInvoiceSecurity();
-  recurringExpenseSecurity       = recurringExpenseSecurity();
-  billingPaymentsSecurity        = billingPaymentsSecurity();
-  expenseSecurity                = expenseSecurity();
-  supplierCredit                 = supplierCredit();
-  reconciliationSecurity         = reconciliationSecurity();
-  businessSettingsSecurity       = businessSettingsSecurity();
-  dineInSecurity                 = dineInSecurity();
-  deliverySecurity               = deliverySecurity();
-  callSecurity                   = callSecurity();
-  salonSecurity                  = salonSecurity();
-  dailyOpertionSecurity          = dailyOpertionSecurity();
-  cashierSecurity                = cashierSecurity();
-  houseAccountSecurity           = houseAccountSecurity();
-  terminalSecurity               = terminalSecurity();
-  companiesOverviewSecurity      = companiesOverviewSecurity();
+  constructor() {
+    const defs = SECURITY_DEFINITIONS as Record<string, () => PrivilegeSetting>;
+    for (const key in defs) {
+      this[key] = defs[key]();
+    }
+  }
 
   ToJson(): any {
     const result: any = {};
@@ -242,9 +53,17 @@ export class Privilege {
 }
 
 // ─── Employee Privilege (the stored record) ───────────────────────────────────
+
 export class EmployeePrivilege {
   id: string | null = null;
   name              = '';
+  /** Optional human description of what this role is for (preset-role
+   *  templates ship one; custom sets can set their own). Round-tripped to
+   *  the backend, which simply stores the extra field. */
+  description       = '';
+  /** Preset template this set was created from, if any (stable key from
+   *  {@link PRESET_ROLES}). Empty for hand-built sets. */
+  presetKey         = '';
   privileges        = new Privilege();
   companyId         = '';
   updatedDate       = new Date();
@@ -254,6 +73,8 @@ export class EmployeePrivilege {
     return {
       id:          this.id,
       name:        this.name,
+      description: this.description,
+      presetKey:   this.presetKey,
       privileges:  this.privileges.ToJson(),
       companyId:   this.companyId,
       updatedDate: this.updatedDate,

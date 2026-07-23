@@ -56,29 +56,25 @@
       <div class="card__body">
         <div class="grid grid--2">
           <div class="field">
-            <label class="field-label" for="adj-clocked-in">
+            <label class="field-label">
               {{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_IN' | translate }}
             </label>
-            <input
-              id="adj-clocked-in"
-              type="datetime-local"
-              class="input"
+            <app-date-picker
               formControlName="adjClockedIn"
-            />
+              [showTime]="true"
+              triggerClass="input"/>
             <p class="field-hint">{{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_IN_HINT' | translate }}</p>
           </div>
 
           <div class="field">
-            <label class="field-label" for="adj-clocked-out">
+            <label class="field-label">
               {{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_OUT' | translate }}
             </label>
-            <input
-              id="adj-clocked-out"
-              type="datetime-local"
-              class="input"
+            <app-date-picker
               formControlName="adjClockedOut"
+              [showTime]="true"
               [min]="minClockOut()"
-            />
+              triggerClass="input"/>
             <p class="field-hint">{{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_OUT_HINT' | translate }}</p>
           </div>
         </div>

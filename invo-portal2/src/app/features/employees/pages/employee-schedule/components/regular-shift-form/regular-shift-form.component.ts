@@ -14,6 +14,7 @@ import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
+import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import {
@@ -87,6 +88,7 @@ const END_OPTIONS: EndOption[] = [
     ModalFooterComponent,
     SearchDropdownComponent,
     ToggleComponent,
+    DatePickerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './regular-shift-form.component.html',
@@ -109,6 +111,13 @@ export class RegularShiftFormComponent {
   startDate  = signal<string>(this.data.date ?? '');
   endOption  = signal<'never' | 'specificDate'>('never');
   endDate    = signal<string | null>(null);
+
+  /** `Date` views of the ISO 'yyyy-MM-dd' signals for `<app-date-picker>`. */
+  startDateObj = computed<Date | null>(() => this.toDate(this.startDate()));
+  endDateObj   = computed<Date | null>(() => this.toDate(this.endDate()));
+
+  onStartDate(d: Date | null): void { this.startDate.set(this.toIso(d) ?? ''); }
+  onEndDate(d: Date | null): void { this.endDate.set(this.toIso(d)); }
 
   weeks = signal<WeekMap[]>([this.buildFirstWeek()]);
 
@@ -150,6 +159,24 @@ export class RegularShiftFormComponent {
     const week = {} as WeekMap;
     for (const d of WEEK_DAYS) week[d] = { shifts: [] };
     return week;
+  }
+
+  // ─── Date <-> ISO 'yyyy-MM-dd' helpers (date-only) ───────────────────────
+  /** ISO 'yyyy-MM-dd' string → local `Date` (midnight). Returns `null` for
+   *  empty / unparseable input. */
+  private toDate(iso: string | null): Date | null {
+    if (!iso) return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  /** `Date` → ISO 'yyyy-MM-dd' string (local parts). Returns `null` for null. */
+  private toIso(d: Date | null): string | null {
+    if (!d) return null;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 
   private weekdayName(dateStr: string): WeekDayName | null {

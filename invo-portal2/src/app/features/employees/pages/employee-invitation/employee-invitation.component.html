@@ -86,10 +86,10 @@
       <div class="card__body">
         <div class="grid grid--2">
           <div class="field">
-            <label class="field-label" for="invite-start">
+            <label class="field-label">
               {{ 'EMPLOYEES.INVITE.INVITATION_START_AT' | translate }}
             </label>
-            <input id="invite-start" type="date" class="input" formControlName="startAt"/>
+            <app-date-picker formControlName="startAt" triggerClass="input"/>
           </div>
 
           <div class="field">
@@ -104,17 +104,13 @@
             </div>
             @if (!form.controls['endNever'].value) {
               <div class="end-date">
-                <label class="field-label field-label--sub" for="invite-end">
+                <label class="field-label field-label--sub">
                   {{ 'EMPLOYEES.INVITE.SPECIFIC_DATE' | translate }}
                 </label>
-                <input
-                  id="invite-end"
-                  type="date"
-                  class="input"
+                <app-date-picker
                   formControlName="endAt"
-                  [min]="form.controls['startAt'].value || null"
-                  [class.input--invalid]="form.controls['endAt'].touched && !form.controls['endAt'].value"
-                />
+                  [min]="$any(form.controls['startAt'].value) || null"
+                  [triggerClass]="form.controls['endAt'].touched && !form.controls['endAt'].value ? 'input input--invalid' : 'input'"/>
                 @if (form.controls['endAt'].touched && !form.controls['endAt'].value) {
                   <p class="field-error">{{ 'EMPLOYEES.INVITE.END_DATE_REQUIRED' | translate }}</p>
                 }

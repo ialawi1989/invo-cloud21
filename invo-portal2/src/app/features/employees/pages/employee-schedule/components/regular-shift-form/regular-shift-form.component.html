@@ -32,8 +32,9 @@
 
     <div class="setting">
       <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.START_DATE' | translate }}</label>
-      <input class="date-input" type="date" [value]="startDate()"
-             (change)="startDate.set($any($event.target).value)" />
+      <app-date-picker triggerClass="date-input"
+                       [value]="startDateObj()"
+                       (valueChange)="onStartDate($any($event))" />
     </div>
 
     <div class="setting">
@@ -51,8 +52,10 @@
     @if (endOption() === 'specificDate') {
       <div class="setting">
         <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.END_ON' | translate }}</label>
-        <input class="date-input" type="date" [min]="startDate()" [value]="endDate() ?? ''"
-               (change)="endDate.set($any($event.target).value)" />
+        <app-date-picker triggerClass="date-input"
+                         [min]="startDateObj()"
+                         [value]="endDateObj()"
+                         (valueChange)="onEndDate($any($event))" />
       </div>
     }
   </div>

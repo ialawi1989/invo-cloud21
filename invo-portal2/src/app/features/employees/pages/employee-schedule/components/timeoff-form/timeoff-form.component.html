@@ -31,8 +31,9 @@
   <!-- Date -->
   <div class="section">
     <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.DATE' | translate }}</label>
-    <input class="date-input" type="date" [value]="from()"
-           (change)="onFromChange($any($event.target).value)" />
+    <app-date-picker triggerClass="date-input"
+                     [value]="fromObj()"
+                     (valueChange)="onFromDate($any($event))" />
   </div>
 
   <!-- Repeat -->
@@ -46,8 +47,10 @@
   @if (isRepeat()) {
     <div class="section">
       <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.REPEAT_UNTIL' | translate }}</label>
-      <input class="date-input" type="date" [min]="from()" [value]="to() ?? ''"
-             (change)="to.set($any($event.target).value)" />
+      <app-date-picker triggerClass="date-input"
+                       [min]="fromObj()"
+                       [value]="toObj()"
+                       (valueChange)="onToDate($any($event))" />
     </div>
   }
 

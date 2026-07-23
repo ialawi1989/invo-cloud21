@@ -25,6 +25,7 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
+import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import { EmployeeService } from '../../services/employee.service';
@@ -67,6 +68,7 @@ interface InvitedUser {
     LoadingOverlayComponent,
     FormStickyFooterComponent,
     ToggleComponent,
+    DatePickerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-invitation.component.html',
@@ -110,10 +112,12 @@ export class EmployeeInvitationComponent implements OnInit, CanLeaveComponent {
   // ─── Form ───────────────────────────────────────────────────────────────
   form: FormGroup = this.fb.group({
     email:     ['', [Validators.required, Validators.email]],
-    startAt:   [''],
+    // `Date | null` on the form; mapped to/from ISO 'yyyy-MM-dd' strings
+    // (the wire format) at the load/save boundary.
+    startAt:   [null as Date | null],
     // `endNever` true → invitation never expires; false → `endAt` is used.
     endNever:  [true],
-    endAt:     [''],
+    endAt:     [null as Date | null],
   });
 
   // ─── Derived ────────────────────────────────────────────────────────────
@@ -185,9 +189,9 @@ export class EmployeeInvitationComponent implements OnInit, CanLeaveComponent {
       const endAt = data.inventionEndAt ?? null;
       this.form.patchValue({
         email:    data.email ?? '',
-        startAt:  this.toDateInput(data.inventionStartAt),
+        startAt:  this.toDate(data.inventionStartAt),
         endNever: !endAt,
-        endAt:    this.toDateInput(endAt),
+        endAt:    this.toDate(endAt),
       });
       // Email is immutable when editing an existing invitation.
       this.form.controls['email'].disable();
@@ -252,8 +256,8 @@ export class EmployeeInvitationComponent implements OnInit, CanLeaveComponent {
         type:            this.original()?.type ?? 'cloud',
         email:           v.email,
         branches:        user?.branches ?? [],
-        inventionStartAt: v.startAt || null,
-        inventionEndAt:  v.endNever ? null : (v.endAt || null),
+        inventionStartAt: this.toIso(v.startAt),
+        inventionEndAt:  v.endNever ? null : this.toIso(v.endAt),
       };
 
       const res = await this.service.saveInvitedEmployee(payload);
@@ -281,14 +285,26 @@ export class EmployeeInvitationComponent implements OnInit, CanLeaveComponent {
     return this.form.dirty && !this.saving();
   }
 
-  // ─── Helpers ─────────────────────────────────────────────────────────────
-  /** Coerce whatever date shape the backend returns into a `YYYY-MM-DD`
-   *  string usable by `<input type="date">`. Returns `''` on empty/parse
-   *  failure so the control stays blank rather than showing "Invalid Date". */
-  private toDateInput(raw: any): string {
-    if (!raw) return '';
+  // ─── Date <-> ISO 'yyyy-MM-dd' helpers (date-only) ───────────────────────
+  /** Coerce whatever date shape the backend returns into a local `Date`
+   *  (midnight). Parses y/m/d parts directly when present so the calendar
+   *  day never shifts across timezones. Returns `null` on empty/parse
+   *  failure so the picker stays blank. */
+  private toDate(raw: any): Date | null {
+    if (!raw) return null;
+    if (typeof raw === 'string') {
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
+      if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+    }
     const d = new Date(raw);
-    if (Number.isNaN(d.getTime())) return typeof raw === 'string' ? raw.slice(0, 10) : '';
-    return d.toISOString().slice(0, 10);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  /** `Date` → ISO 'yyyy-MM-dd' string using the local date parts. Returns
+   *  `null` for a null date. */
+  private toIso(d: Date | null): string | null {
+    if (!d) return null;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 }

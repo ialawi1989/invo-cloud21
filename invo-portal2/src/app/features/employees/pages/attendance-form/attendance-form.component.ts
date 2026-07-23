@@ -23,6 +23,7 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import { EmployeeAttendanceService } from '../../services/employee-attendance.service';
@@ -51,6 +52,7 @@ import { AttendanceSummary } from '../../models/employee.types';
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     FormStickyFooterComponent,
+    DatePickerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './attendance-form.component.html',
@@ -78,11 +80,11 @@ export class AttendanceFormComponent implements OnInit, CanLeaveComponent {
   private i18nTick = signal(0);
 
   // ─── Form ───────────────────────────────────────────────────────────────
-  // `datetime-local` string values ("YYYY-MM-DDTHH:mm"). Empty = keep the
-  // recorded time (no adjustment).
+  // `Date` values (carrying date + time). `null` = keep the recorded time
+  // (no adjustment). Serialised to ISO strings on save.
   form: FormGroup = this.fb.group({
-    adjClockedIn:  [''],
-    adjClockedOut: [''],
+    adjClockedIn:  [null as Date | null],
+    adjClockedOut: [null as Date | null],
   });
 
   // ─── Derived ────────────────────────────────────────────────────────────
@@ -114,9 +116,9 @@ export class AttendanceFormComponent implements OnInit, CanLeaveComponent {
    *  clock-in (mirrors the legacy flatpickr `minDate`). Bumped on form
    *  changes since form control values aren't tracked by signals. */
   private formTick = signal(0);
-  minClockOut = computed<string>(() => {
+  minClockOut = computed<Date | null>(() => {
     this.formTick();
-    return String(this.form.controls['adjClockedIn'].value ?? '');
+    return (this.form.controls['adjClockedIn'].value as Date | null) ?? null;
   });
 
   constructor() {
@@ -152,8 +154,8 @@ export class AttendanceFormComponent implements OnInit, CanLeaveComponent {
       }
       this.original.set(data);
       this.form.patchValue({
-        adjClockedIn:  isoToLocalInput(data.adjClockedIn),
-        adjClockedOut: isoToLocalInput(data.adjClockedOut),
+        adjClockedIn:  this.toDate(data.adjClockedIn),
+        adjClockedOut: this.toDate(data.adjClockedOut),
       });
     } finally {
       this.loading.set(false);
@@ -169,8 +171,8 @@ export class AttendanceFormComponent implements OnInit, CanLeaveComponent {
       const payload: any = {
         ...(original ?? {}),
         id:            this.attendanceId() ?? null,
-        adjClockedIn:  localInputToIso(v.adjClockedIn),
-        adjClockedOut: localInputToIso(v.adjClockedOut),
+        adjClockedIn:  this.toIso(v.adjClockedIn),
+        adjClockedOut: this.toIso(v.adjClockedOut),
       };
       const res = await this.service.adjust(payload);
       if (res?.success !== false) {
@@ -198,23 +200,19 @@ export class AttendanceFormComponent implements OnInit, CanLeaveComponent {
   hasUnsavedChanges(): boolean {
     return this.form.dirty && !this.saving();
   }
-}
 
-// ─── datetime-local <-> ISO helpers ─────────────────────────────────────────
-/** ISO string → `datetime-local` value ("YYYY-MM-DDTHH:mm") in local time.
- *  Returns '' for null / unparseable input. */
-function isoToLocalInput(iso: string | null): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
+  // ─── Date <-> ISO helpers (datetime — time preserved) ─────────────────────
+  /** ISO string → `Date` (carrying date + time). Returns `null` for
+   *  null / unparseable input. */
+  private toDate(iso: string | null): Date | null {
+    if (!iso) return null;
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
 
-/** `datetime-local` value → ISO string (UTC). Returns null for empty input. */
-function localInputToIso(v: string): string | null {
-  if (!v) return null;
-  const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
+  /** `Date` → full ISO string (UTC). Returns `null` for a null date. */
+  private toIso(d: Date | null): string | null {
+    if (!d) return null;
+    return d.toISOString();
+  }
 }

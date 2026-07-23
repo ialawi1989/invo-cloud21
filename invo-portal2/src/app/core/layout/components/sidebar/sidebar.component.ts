@@ -749,10 +749,35 @@ export class SidebarComponent implements OnInit {
     return links.some(l => path === l || path.startsWith(l + '/'));
   }
 
-  /** Active state for a leaf sub-item (replaces routerLinkActive so
-   *  `matchLinks` aliases count too). */
+  /** Length of the longest own-link / matchLink that matches `url` on segment
+   *  boundaries, or -1 when none match. Used to pick the most-specific item. */
+  private matchedLen(item: SideMenuItem, url: string): number {
+    const path = url.split(/[?#]/)[0];
+    const links = [item.link, ...(item.matchLinks ?? [])].filter((l): l is string => !!l);
+    let best = -1;
+    for (const l of links) {
+      if (path === l || path.startsWith(l + '/')) best = Math.max(best, l.length);
+    }
+    return best;
+  }
+
+  /**
+   * Active state for a leaf sub-item (replaces routerLinkActive so `matchLinks`
+   * aliases count too). Uses **most-specific-wins**: a sub-item lights up only
+   * when no other sub-item matches the URL with a longer link. Without this,
+   * a parent-ish link like `/employees` would stay active on nested siblings
+   * such as `/employees/privileges`.
+   */
   isSubActive(sub: SideMenuItem): boolean {
-    return this.linkMatchesUrl(sub, this.router.url);
+    const url = this.router.url;
+    const myLen = this.matchedLen(sub, url);
+    if (myLen < 0) return false;
+    for (const group of SIDE_MENU) {
+      for (const other of group.subItems ?? []) {
+        if (other !== sub && this.matchedLen(other, url) > myLen) return false;
+      }
+    }
+    return true;
   }
 
   toggleCollapse(): void {

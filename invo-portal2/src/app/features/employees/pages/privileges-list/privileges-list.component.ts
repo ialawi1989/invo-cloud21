@@ -1,171 +1,100 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  OnInit,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
-import { withTranslations } from '@core/i18n/with-translations';
+import { LanguageService } from '@core/i18n/language.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { EmployeePrivilege } from '@core/auth/privileges/models/privilege.model';
-import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { ListShellComponent } from '@shared/components/list-shell/list-shell.component';
+import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import {
-  QueryParamsService,
-  ParamDef,
-  IntCodec,
-  intCodec,
-  StringCodec,
-} from '@shared/services/query-params.service';
-
-const QP = {
-  page:     { key: 'page',  codec: IntCodec }     as ParamDef<number>,
-  pageSize: { key: 'limit', codec: intCodec(20) } as ParamDef<number>,
-  search:   { key: 'q',     codec: StringCodec }  as ParamDef<string>,
-};
+  ListCellTemplateDirective,
+  ListRowActionsDirective,
+} from '@shared/components/list-page/directives/list-template.directives';
+import {
+  TableColumn,
+  ListQueryParams,
+} from '@shared/components/list-page/interfaces/list-page.types';
 
 /**
- * Privileges list
- * ───────────────
- * Reusable permission-set records that can be assigned to employees.
- * Reuses the core {@link PrivilegeService} CRUD (shared with the auth layer).
+ * Privileges list — shared `<app-list-page>`. Reusable permission-set records
+ * (reuses the core {@link PrivilegeService} CRUD). Search / paging / sort /
+ * URL-sync are handled by the list-page.
  */
 @Component({
   selector: 'app-privileges-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, ListShellComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    TranslateModule,
+    ListPageComponent,
+    ListCellTemplateDirective,
+    ListRowActionsDirective,
+  ],
   templateUrl: './privileges-list.component.html',
   styleUrl: './privileges-list.component.scss',
 })
 export class PrivilegesListComponent implements OnInit {
   private service    = inject(PrivilegeService);
-  private translate  = inject(TranslateService);
-  private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
-  private qp         = inject(QueryParamsService);
+  private lang       = inject(LanguageService);
 
-  loading = signal<boolean>(false);
-  rows    = signal<EmployeePrivilege[]>([]);
-  total   = signal<number>(0);
+  readonly canAdd = this.service.check('privilegeSecurity.actions.add.access');
 
-  search   = signal<string>('');
-  page     = signal<number>(1);
-  pageSize = signal<number>(20);
+  columns: TableColumn[] = [];
 
-  private i18nTick = signal(0);
+  breadcrumbs = [
+    { label: '', routerLink: '/employees' },
+    { label: '', routerLink: '/employees/privileges' },
+  ];
 
-  canAdd = this.service.check('privilegeSecurity.actions.add.access');
-
-  breadcrumbs = computed<BreadcrumbItem[]>(() => {
-    this.i18nTick();
-    return [
-      { label: this.translate.instant('EMPLOYEES.TITLE'), routerLink: '/employees' },
-      { label: this.translate.instant('EMPLOYEES.PRIVILEGES.TITLE') },
-    ];
-  });
-
-  pageCount = computed<number>(() => {
-    const total = this.total();
-    const limit = this.pageSize();
-    return total > 0 ? Math.ceil(total / limit) : 1;
-  });
-
-  rangeLabel = computed<string>(() => {
-    this.i18nTick();
-    const total = this.total();
-    if (total === 0) return '';
-    const start = (this.page() - 1) * this.pageSize() + 1;
-    const end   = Math.min(this.page() * this.pageSize(), total);
-    return this.translate.instant('COMMON.PAGINATION_RANGE', { start, end, total });
-  });
-
-  constructor() {
-    withTranslations('employees');
-
-    this.translate.onTranslationChange
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.i18nTick.update(n => n + 1));
-    this.translate.onLangChange
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.i18nTick.update(n => n + 1));
-  }
+  paginationConfig = { enabled: true, pageLimits: [20, 50, 100], default: 20 };
+  searchConfig     = { enabled: true, placeholder: '', debounceMs: 400 };
+  sortingConfig    = { enabled: true };
+  emptyState       = { title: '', message: '' };
 
   async ngOnInit(): Promise<void> {
-    const p = this.qp.read(QP);
-    this.page.set(p.page);
-    this.pageSize.set(p.pageSize);
-    this.search.set(p.search);
-    await this.load();
+    await this.lang.loadFeature('employees');
+    this.initTranslations();
   }
 
-  private syncUrl(): void {
-    this.qp.write(QP, {
-      page:     this.page(),
-      pageSize: this.pageSize(),
-      search:   this.search(),
+  private initTranslations(): void {
+    const t = (k: string) => this.lang.instant(k);
+    this.columns = [
+      { key: 'name',        label: t('EMPLOYEES.PRIVILEGES.NAME'),        sortable: true, primary: true, interactive: true, customTemplate: true, visible: true, order: 0 },
+      { key: 'description', label: t('EMPLOYEES.PRIVILEGES.DESCRIPTION'), noApi: true, sortable: false, visible: true, order: 1 },
+    ];
+    this.breadcrumbs = [
+      { label: t('EMPLOYEES.TITLE'),            routerLink: '/employees' },
+      { label: t('EMPLOYEES.PRIVILEGES.TITLE'), routerLink: '/employees/privileges' },
+    ];
+    this.searchConfig.placeholder = t('EMPLOYEES.PRIVILEGES.SEARCH_PLACEHOLDER');
+    this.emptyState = { title: t('EMPLOYEES.PRIVILEGES.EMPTY'), message: '' };
+  }
+
+  loadPrivileges = async (params: ListQueryParams) => {
+    const res = await this.service.getPrivilegeList({
+      page:       params.page,
+      limit:      params.limit,
+      searchTerm: params.searchTerm || '',
+      sortBy:     params.sortBy
+        ? { sortValue: params.sortBy.sortValue, sortDirection: params.sortBy.sortDirection }
+        : {},
     });
+    const list  = Array.isArray(res) ? res : res.list;
+    const count = Array.isArray(res) ? res.length : res.count;
+    return { list, count, pageCount: Math.max(1, Math.ceil(count / params.limit)) };
+  };
+
+  onRowClick(event: any): void {
+    if (event?.row) this.edit(event.row);
   }
 
-  async load(): Promise<void> {
-    this.loading.set(true);
-    try {
-      const res = await this.service.getPrivilegeList({
-        page:       this.page(),
-        limit:      this.pageSize(),
-        searchTerm: this.search().trim(),
-        sortBy:     {},
-      });
-      // With params, the service returns { list, count }.
-      const list  = Array.isArray(res) ? res : res.list;
-      const count = Array.isArray(res) ? res.length : res.count;
-      this.rows.set(list);
-      this.total.set(count);
-    } finally {
-      this.loading.set(false);
-    }
-  }
-
-  onSearch(value: string): void {
-    this.search.set(value);
-    this.page.set(1);
-    this.syncUrl();
-    void this.load();
-  }
-
-  clearSearch(): void {
-    this.search.set('');
-    this.page.set(1);
-    this.syncUrl();
-    void this.load();
-  }
-
-  goPrev(): void {
-    if (this.page() <= 1) return;
-    this.page.update(p => p - 1);
-    this.syncUrl();
-    this.load();
-  }
-
-  goNext(): void {
-    if (this.page() >= this.pageCount()) return;
-    this.page.update(p => p + 1);
-    this.syncUrl();
-    this.load();
+  edit(row: EmployeePrivilege): void {
+    void this.router.navigate(['/employees/privileges', row.id]);
   }
 
   add(): void {
-    this.router.navigate(['/employees/privileges', 0]);
-  }
-
-  edit(p: EmployeePrivilege): void {
-    this.router.navigate(['/employees/privileges', p.id]);
+    void this.router.navigate(['/employees/privileges', 0]);
   }
 }

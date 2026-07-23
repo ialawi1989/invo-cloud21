@@ -15,6 +15,7 @@ import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
+import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import { EmployeeService } from '../../../../services/employee.service';
@@ -67,6 +68,7 @@ interface EmployeeOption { id: string; name: string; }
     ModalFooterComponent,
     SearchDropdownComponent,
     ToggleComponent,
+    DatePickerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './timeoff-form.component.html',
@@ -109,6 +111,13 @@ export class TimeoffFormComponent {
     this.employeeId.set(opt?.id ?? null);
   }
 
+  /** `Date` views of the ISO 'yyyy-MM-dd' signals for `<app-date-picker>`. */
+  fromObj = computed<Date | null>(() => this.toDate(this.from()));
+  toObj   = computed<Date | null>(() => this.toDate(this.to()));
+
+  onFromDate(d: Date | null): void { this.onFromChange(this.toIso(d) ?? ''); }
+  onToDate(d: Date | null): void { this.to.set(this.toIso(d)); }
+
   totalDays = computed<number>(() => {
     const from = this.from();
     if (!from) return 0;
@@ -148,6 +157,23 @@ export class TimeoffFormComponent {
     if (!v) return null;
     const d = new Date(v);
     return Number.isNaN(d.getTime()) ? String(v).slice(0, 10) : d.toISOString().slice(0, 10);
+  }
+
+  // ─── Date <-> ISO 'yyyy-MM-dd' helpers (picker boundary, date-only) ──────
+  /** ISO 'yyyy-MM-dd' string → local `Date` (midnight). `null` when empty. */
+  private toDate(iso: string | null): Date | null {
+    if (!iso) return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  /** `Date` → ISO 'yyyy-MM-dd' string (local parts). `null` for null. */
+  private toIso(d: Date | null): string | null {
+    if (!d) return null;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 
   selectType(value: string): void {

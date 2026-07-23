@@ -87,10 +87,21 @@
   }
   &__title { margin: 0; font-size: 15px; font-weight: 600; color: #0f172a; }
   &__sub   { margin: 0; font-size: 12px; color: #64748b; line-height: 1.5; }
-  &__body  { padding: 18px; }
+  &__body  {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
 }
 
-// ── Name field ────────────────────────────────────────────────────────
+// ── Name / preset / description fields ────────────────────────────────
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  @media (max-width: 640px) { grid-template-columns: 1fr; }
+}
 .field {
   display: flex;
   flex-direction: column;

@@ -79,7 +79,7 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
 
   /** The full payload from the server — kept so save can round-trip
    *  unknown fields (privileges, branches, mediaId, …) untouched. */
-  private original = signal<EmployeeDetails | null>(null);
+  protected original = signal<EmployeeDetails | null>(null);
 
   /** "Change …" security toggles. Off = leave the existing secret alone;
    *  the matching control stays empty and is excluded from the payload. */
