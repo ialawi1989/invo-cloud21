@@ -19,6 +19,9 @@
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.BASIC_INFORMATION' | translate }}</h2>
           </header>
           <div class="card__body">
+            <!-- Credential fields pack into one flowing grid; which appear
+                 depends on the selected role(s) — Cloud → Email + Password,
+                 POS → Pass Code + MSR (mirrors the legacy role blocks). -->
             <div class="grid grid--2">
               <div class="field">
                 <label class="field-label" for="emp-name">
@@ -36,121 +39,123 @@
                 }
               </div>
 
-              <div class="field">
-                <label class="field-label" for="emp-email">
-                  {{ 'EMPLOYEES.FORM.EMAIL' | translate }}<span class="required">*</span>
-                </label>
-                <input
-                  id="emp-email"
-                  type="email"
-                  class="input"
-                  formControlName="email"
-                  [class.input--invalid]="form.controls['email'].touched && form.controls['email'].invalid"
-                />
-                @if (form.controls['email'].touched && form.controls['email'].errors?.['required']) {
-                  <p class="field-error">{{ 'EMPLOYEES.FORM.REQUIRED' | translate }}</p>
-                } @else if (form.controls['email'].touched && form.controls['email'].errors?.['email']) {
-                  <p class="field-error">{{ 'EMPLOYEES.FORM.EMAIL_INVALID' | translate }}</p>
-                }
-              </div>
-            </div>
-
-            <div class="grid grid--2">
-              <!-- Password -->
-              <div class="field">
-                <label class="field-label field-label--with-action" for="emp-password">
-                  <span>
-                    {{ 'EMPLOYEES.FORM.PASSWORD' | translate }}
-                    @if (showPassword()) { <span class="required">*</span> }
-                  </span>
-                </label>
-                @if (showPassword()) {
+              @if (showEmailPassword()) {
+                <div class="field">
+                  <label class="field-label" for="emp-email">
+                    {{ 'EMPLOYEES.FORM.EMAIL' | translate }}<span class="required">*</span>
+                  </label>
                   <input
-                    id="emp-password"
-                    type="password"
+                    id="emp-email"
+                    type="email"
                     class="input"
-                    autocomplete="new-password"
-                    formControlName="password"
-                    [class.input--invalid]="form.controls['password'].touched && form.controls['password'].invalid"
+                    formControlName="email"
+                    [class.input--invalid]="form.controls['email'].touched && form.controls['email'].invalid"
                   />
-                  @if (form.controls['password'].touched && form.controls['password'].errors?.['required']) {
+                  @if (form.controls['email'].touched && form.controls['email'].errors?.['required']) {
                     <p class="field-error">{{ 'EMPLOYEES.FORM.REQUIRED' | translate }}</p>
-                  } @else if (form.controls['password'].touched && form.controls['password'].errors?.['minlength']) {
-                    <p class="field-error">{{ 'EMPLOYEES.FORM.PASSWORD_MIN' | translate }}</p>
+                  } @else if (form.controls['email'].touched && form.controls['email'].errors?.['email']) {
+                    <p class="field-error">{{ 'EMPLOYEES.FORM.EMAIL_INVALID' | translate }}</p>
                   }
-                }
-                @if (!isCreate()) {
-                  <app-toggle
-                    size="sm"
-                    [checked]="changePassword()"
-                    (checkedChange)="toggleChangePassword($event)"
-                    [label]="'EMPLOYEES.FORM.CHANGE_PASSWORD' | translate"/>
-                }
-              </div>
+                </div>
 
-              <!-- Passcode -->
-              <div class="field">
-                <label class="field-label" for="emp-passcode">
-                  <span>
-                    {{ 'EMPLOYEES.FORM.PASSCODE' | translate }}
-                    @if (showPassCode()) { <span class="required">*</span> }
-                  </span>
-                </label>
-                @if (showPassCode()) {
-                  <input
-                    id="emp-passcode"
-                    type="password"
-                    inputmode="numeric"
-                    class="input"
-                    autocomplete="off"
-                    formControlName="passcode"
-                    [class.input--invalid]="form.controls['passcode'].touched && form.controls['passcode'].invalid"
-                  />
-                  @if (form.controls['passcode'].touched && form.controls['passcode'].errors?.['required']) {
-                    <p class="field-error">{{ 'EMPLOYEES.FORM.REQUIRED' | translate }}</p>
-                  } @else if (form.controls['passcode'].touched && form.controls['passcode'].errors?.['pattern']) {
-                    <p class="field-error">{{ 'EMPLOYEES.FORM.PASSCODE_NUMERIC' | translate }}</p>
-                  } @else if (form.controls['passcode'].touched && form.controls['passcode'].errors?.['minlength']) {
-                    <p class="field-error">{{ 'EMPLOYEES.FORM.PASSCODE_MIN' | translate }}</p>
+                <!-- Password -->
+                <div class="field">
+                  <label class="field-label field-label--with-action" for="emp-password">
+                    <span>
+                      {{ 'EMPLOYEES.FORM.PASSWORD' | translate }}
+                      @if (showPassword()) { <span class="required">*</span> }
+                    </span>
+                  </label>
+                  @if (showPassword()) {
+                    <input
+                      id="emp-password"
+                      type="password"
+                      class="input"
+                      autocomplete="new-password"
+                      formControlName="password"
+                      [class.input--invalid]="form.controls['password'].touched && form.controls['password'].invalid"
+                    />
+                    @if (form.controls['password'].touched && form.controls['password'].errors?.['required']) {
+                      <p class="field-error">{{ 'EMPLOYEES.FORM.REQUIRED' | translate }}</p>
+                    } @else if (form.controls['password'].touched && form.controls['password'].errors?.['minlength']) {
+                      <p class="field-error">{{ 'EMPLOYEES.FORM.PASSWORD_MIN' | translate }}</p>
+                    }
                   }
-                }
-                @if (!isCreate()) {
-                  <app-toggle
-                    size="sm"
-                    [checked]="changePassCode()"
-                    (checkedChange)="toggleChangePassCode($event)"
-                    [label]="'EMPLOYEES.FORM.CHANGE_PASSCODE' | translate"/>
-                }
-              </div>
-            </div>
-
-            <!-- MSR -->
-            <div class="field">
-              <label class="field-label" for="emp-msr">
-                <span>
-                  {{ 'EMPLOYEES.FORM.MSR' | translate }}
-                  @if (showMSR()) { <span class="required">*</span> }
-                </span>
-              </label>
-              @if (showMSR()) {
-                <input
-                  id="emp-msr"
-                  type="password"
-                  class="input"
-                  autocomplete="off"
-                  formControlName="msr"
-                  [class.input--invalid]="form.controls['msr'].touched && form.controls['msr'].invalid"
-                />
-                @if (form.controls['msr'].touched && form.controls['msr'].errors?.['required']) {
-                  <p class="field-error">{{ 'EMPLOYEES.FORM.REQUIRED' | translate }}</p>
-                }
+                  @if (!isCreate()) {
+                    <app-toggle
+                      size="sm"
+                      [checked]="changePassword()"
+                      (checkedChange)="toggleChangePassword($event)"
+                      [label]="'EMPLOYEES.FORM.CHANGE_PASSWORD' | translate"/>
+                  }
+                </div>
               }
-              @if (!isCreate()) {
-                <app-toggle
-                  size="sm"
-                  [checked]="changeMSR()"
-                  (checkedChange)="toggleChangeMSR($event)"
-                  [label]="'EMPLOYEES.FORM.CHANGE_MSR' | translate"/>
+
+              @if (showPassCodeMsr()) {
+                <!-- Passcode -->
+                <div class="field">
+                  <label class="field-label" for="emp-passcode">
+                    <span>
+                      {{ 'EMPLOYEES.FORM.PASSCODE' | translate }}
+                      @if (showPassCode()) { <span class="required">*</span> }
+                    </span>
+                  </label>
+                  @if (showPassCode()) {
+                    <input
+                      id="emp-passcode"
+                      type="password"
+                      inputmode="numeric"
+                      class="input"
+                      autocomplete="off"
+                      formControlName="passcode"
+                      [class.input--invalid]="form.controls['passcode'].touched && form.controls['passcode'].invalid"
+                    />
+                    @if (form.controls['passcode'].touched && form.controls['passcode'].errors?.['required']) {
+                      <p class="field-error">{{ 'EMPLOYEES.FORM.REQUIRED' | translate }}</p>
+                    } @else if (form.controls['passcode'].touched && form.controls['passcode'].errors?.['pattern']) {
+                      <p class="field-error">{{ 'EMPLOYEES.FORM.PASSCODE_NUMERIC' | translate }}</p>
+                    } @else if (form.controls['passcode'].touched && form.controls['passcode'].errors?.['minlength']) {
+                      <p class="field-error">{{ 'EMPLOYEES.FORM.PASSCODE_MIN' | translate }}</p>
+                    }
+                  }
+                  @if (!isCreate()) {
+                    <app-toggle
+                      size="sm"
+                      [checked]="changePassCode()"
+                      (checkedChange)="toggleChangePassCode($event)"
+                      [label]="'EMPLOYEES.FORM.CHANGE_PASSCODE' | translate"/>
+                  }
+                </div>
+
+                <!-- MSR -->
+                <div class="field">
+                  <label class="field-label" for="emp-msr">
+                    <span>
+                      {{ 'EMPLOYEES.FORM.MSR' | translate }}
+                      @if (showMSR()) { <span class="required">*</span> }
+                    </span>
+                  </label>
+                  @if (showMSR()) {
+                    <input
+                      id="emp-msr"
+                      type="password"
+                      class="input"
+                      autocomplete="off"
+                      formControlName="msr"
+                      [class.input--invalid]="form.controls['msr'].touched && form.controls['msr'].invalid"
+                    />
+                    @if (form.controls['msr'].touched && form.controls['msr'].errors?.['required']) {
+                      <p class="field-error">{{ 'EMPLOYEES.FORM.REQUIRED' | translate }}</p>
+                    }
+                  }
+                  @if (!isCreate()) {
+                    <app-toggle
+                      size="sm"
+                      [checked]="changeMSR()"
+                      (checkedChange)="toggleChangeMSR($event)"
+                      [label]="'EMPLOYEES.FORM.CHANGE_MSR' | translate"/>
+                  }
+                </div>
               }
             </div>
           </div>
@@ -161,44 +166,52 @@
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYEE_ROLES' | translate }}</h2>
           </header>
-          <div class="card__body toggles">
-            <div class="toggle-row">
-              <app-toggle
-                formControlName="admin"
-                (checkedChange)="onAdminChange()"/>
-              <span class="toggle-row__text">
-                <span class="field-label">{{ 'EMPLOYEES.FORM.CLOUD_ADMIN' | translate }}</span>
-                <span class="field-hint">{{ 'EMPLOYEES.FORM.FULL_SYSTEM_ACCESS' | translate }}</span>
+          <div class="card__body role-cards">
+            <!-- Cloud Admin -->
+            <button type="button" class="role-card"
+              [class.role-card--active]="isAdmin()"
+              [disabled]="isSuperAdmin()"
+              (click)="toggleRole('admin')">
+              <svg class="role-card__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>
+              </svg>
+              <span class="role-card__title">{{ 'EMPLOYEES.FORM.CLOUD_ADMIN' | translate }}</span>
+              <span class="role-card__hint">{{ 'EMPLOYEES.FORM.FULL_SYSTEM_ACCESS' | translate }}</span>
+              <span class="role-card__check" [class.role-card__check--on]="isAdmin()" aria-hidden="true">
+                @if (isAdmin()) { ✓ }
               </span>
-            </div>
+            </button>
 
-            <div class="toggle-row">
-              <app-toggle
-                formControlName="user"
-                (checkedChange)="onUserChange()"/>
-              <span class="toggle-row__text">
-                <span class="field-label">{{ 'EMPLOYEES.FORM.POS_USER' | translate }}</span>
-                <span class="field-hint">{{ 'EMPLOYEES.FORM.POINT_OF_SALE_ACCESS' | translate }}</span>
+            <!-- POS User (can't be turned off when it's the only active role) -->
+            <button type="button" class="role-card"
+              [class.role-card--active]="isUser()"
+              [class.role-card--locked]="posLocked()"
+              [disabled]="isSuperAdmin() || posLocked()"
+              (click)="toggleRole('user')">
+              <svg class="role-card__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>
+              </svg>
+              <span class="role-card__title">{{ 'EMPLOYEES.FORM.POS_USER' | translate }}</span>
+              <span class="role-card__hint">{{ 'EMPLOYEES.FORM.POINT_OF_SALE_ACCESS' | translate }}</span>
+              <span class="role-card__check" [class.role-card__check--on]="isUser()" aria-hidden="true">
+                @if (isUser()) { ✓ }
               </span>
-            </div>
+            </button>
 
-            <div class="toggle-row">
-              <app-toggle formControlName="isDriver"/>
-              <span class="toggle-row__text">
-                <span class="field-label">{{ 'EMPLOYEES.FORM.IS_DRIVER' | translate }}</span>
-                <span class="field-hint">{{ 'EMPLOYEES.FORM.DELIVERY_DRIVER_ROLE' | translate }}</span>
+            <!-- Is Driver -->
+            <button type="button" class="role-card"
+              [class.role-card--active]="form.controls['isDriver'].value"
+              [disabled]="isSuperAdmin()"
+              (click)="toggleRole('isDriver')">
+              <svg class="role-card__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 17h14M6 17l1.5-5h9L18 17M7 12l1-4h8l1 4"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>
+              </svg>
+              <span class="role-card__title">{{ 'EMPLOYEES.FORM.IS_DRIVER' | translate }}</span>
+              <span class="role-card__hint">{{ 'EMPLOYEES.FORM.DELIVERY_DRIVER_ROLE' | translate }}</span>
+              <span class="role-card__check" [class.role-card__check--on]="form.controls['isDriver'].value" aria-hidden="true">
+                @if (form.controls['isDriver'].value) { ✓ }
               </span>
-            </div>
-
-            <div class="toggle-row">
-              <app-toggle
-                formControlName="superAdmin"
-                (checkedChange)="onSuperAdminChange($event)"/>
-              <span class="toggle-row__text">
-                <span class="field-label">{{ 'EMPLOYEES.FORM.SUPER_ADMIN' | translate }}</span>
-                <span class="field-hint">{{ 'EMPLOYEES.FORM.FULL_SYSTEM_ACCESS' | translate }}</span>
-              </span>
-            </div>
+            </button>
           </div>
         </section>
 

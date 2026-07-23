@@ -159,6 +159,24 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
     return !!this.form.controls['superAdmin'].value;
   });
 
+  isAdmin = computed<boolean>(() => {
+    this.formTick();
+    return !!this.form.controls['admin'].value;
+  });
+  isUser = computed<boolean>(() => {
+    this.formTick();
+    return !!this.form.controls['user'].value;
+  });
+
+  /**
+   * Role-driven field visibility (mirrors the legacy form's role blocks):
+   *  • Cloud accounts (Cloud Admin / Super Admin) sign in with Email + Password.
+   *  • POS accounts (POS User) sign in with a Pass Code (+ MSR swipe id).
+   * `isDriver` is an independent flag and does not change which fields show.
+   */
+  showEmailPassword = computed<boolean>(() => this.isAdmin() || this.isSuperAdmin());
+  showPassCodeMsr   = computed<boolean>(() => this.isUser() && !this.isSuperAdmin());
+
   /** Selected branches (full option objects) for the chip list + primary star. */
   selectedBranches = computed<Option[]>(() => {
     this.formTick();
@@ -238,9 +256,8 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
         this.patchFromRecord(data);
       }
 
-      // Secrets are required inputs when creating; on edit they stay hidden
-      // behind the "change" toggles until the user opts in.
-      this.applySecretValidators();
+      // Apply role-scoped field visibility + validators for the loaded roles.
+      this.applyFieldRules();
       if (this.form.controls['superAdmin'].value) this.setSuperAdminLock(true);
     } finally {
       this.loading.set(false);
@@ -305,11 +322,26 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
     }
   }
 
-  onAdminChange(): void { this.enforceRoleInvariant(); }
-  onUserChange(): void  { this.enforceRoleInvariant(); }
+  onAdminChange(): void { this.enforceRoleInvariant(); this.applyFieldRules(); }
+  onUserChange(): void  { this.enforceRoleInvariant(); this.applyFieldRules(); }
 
-  onSuperAdminChange(value: boolean): void {
-    this.setSuperAdminLock(value);
+  /**
+   * POS User is the last remaining role (Cloud Admin off) — it must stay on,
+   * so its card is locked (mirrors the legacy
+   * `[disabled]="admin == false && user == true"`).
+   */
+  posLocked = computed<boolean>(() => this.isUser() && !this.isAdmin());
+
+  /** Clickable role-card toggle. Honors the disable rules (locked last role /
+   *  super-admin lock) so a card can't be flipped when it shouldn't be. */
+  toggleRole(role: 'admin' | 'user' | 'isDriver'): void {
+    if (this.isSuperAdmin()) return;              // super-admin accounts are locked
+    if (role === 'user' && this.posLocked()) return; // can't drop the last role
+    const ctrl = this.form.controls[role];
+    ctrl.setValue(!ctrl.value);
+    if (role === 'admin') this.onAdminChange();
+    else if (role === 'user') this.onUserChange();
+    this.dirty.set(true);
   }
 
   /** Super admins bypass privilege / branch / employment scoping — mirror the
@@ -356,19 +388,19 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
   toggleChangePassword(value: boolean): void {
     this.changePassword.set(value);
     if (!value) this.form.controls['password'].setValue('');
-    this.applySecretValidators();
+    this.applyFieldRules();
   }
 
   toggleChangePassCode(value: boolean): void {
     this.changePassCode.set(value);
     if (!value) this.form.controls['passcode'].setValue('');
-    this.applySecretValidators();
+    this.applyFieldRules();
   }
 
   toggleChangeMSR(value: boolean): void {
     this.changeMSR.set(value);
     if (!value) this.form.controls['msr'].setValue('');
-    this.applySecretValidators();
+    this.applyFieldRules();
   }
 
   /** Whether each secret input is currently editable (always on create;
@@ -377,28 +409,40 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
   showPassCode = computed<boolean>(() => this.isCreate() || this.changePassCode());
   showMSR      = computed<boolean>(() => this.isCreate() || this.changeMSR());
 
-  /** Recompute validators for the secret fields whenever their editability
-   *  changes. Legacy rules: password >= 6, passcode numeric >= 4, MSR present. */
-  private applySecretValidators(): void {
-    const pw = this.form.controls['password'];
-    const pc = this.form.controls['passcode'];
-    const msr = this.form.controls['msr'];
+  /** Recompute validators for the role-scoped credential fields. Only the
+   *  fields visible for the selected role(s) are validated, so a POS-only
+   *  account isn't blocked by an empty (hidden) email/password and a
+   *  cloud-only account isn't blocked by an empty pass code.
+   *  Legacy rules: email valid+required, password >= 6, passcode numeric >= 4,
+   *  MSR present. */
+  private applyFieldRules(): void {
+    const email = this.form.controls['email'];
+    const pw    = this.form.controls['password'];
+    const pc    = this.form.controls['passcode'];
+    const msr   = this.form.controls['msr'];
 
-    if (this.isCreate() || this.changePassword()) {
+    const cloud = this.showEmailPassword();
+    const pos   = this.showPassCodeMsr();
+
+    if (cloud) email.setValidators([Validators.required, Validators.email]);
+    else       email.clearValidators();
+
+    if (cloud && (this.isCreate() || this.changePassword())) {
       pw.setValidators([Validators.required, Validators.minLength(6)]);
     } else {
       pw.clearValidators();
     }
-    if (this.isCreate() || this.changePassCode()) {
+    if (pos && (this.isCreate() || this.changePassCode())) {
       pc.setValidators([Validators.required, Validators.pattern(/^\d+$/), Validators.minLength(4)]);
     } else {
       pc.clearValidators();
     }
-    if (this.isCreate() || this.changeMSR()) {
+    if (pos && (this.isCreate() || this.changeMSR())) {
       msr.setValidators([Validators.required]);
     } else {
       msr.clearValidators();
     }
+    email.updateValueAndValidity({ emitEvent: false });
     pw.updateValueAndValidity({ emitEvent: false });
     pc.updateValueAndValidity({ emitEvent: false });
     msr.updateValueAndValidity({ emitEvent: false });
@@ -435,7 +479,8 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
         id:              this.isCreate() ? null : this.employeeId(),
         formStatus:      this.isCreate() ? 'new' : 'edit',
         name:            v.name,
-        email:           v.email,
+        // Email belongs to cloud accounts only; a POS-only account has none.
+        email:           this.showEmailPassword() ? v.email : '',
         admin,
         user,
         isDriver:        !!v.isDriver,
@@ -448,11 +493,12 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
         base64Image:     this.base64Image() || '',
         mediaId:         this.mediaId(),
         mediaUrl:        this.mediaUrl(),
-        // Secrets: send the typed value when the field was editable,
-        // otherwise an empty string (backend keeps the existing secret).
-        password: (this.isCreate() || this.changePassword()) ? (v.password ?? '') : '',
-        passCode: (this.isCreate() || this.changePassCode()) ? (v.passcode ?? '') : '',
-        MSR:      (this.isCreate() || this.changeMSR()) ? (v.msr ?? '') : '',
+        // Secrets: send the typed value only when the field is BOTH visible
+        // for the selected role AND editable; otherwise '' (backend keeps the
+        // existing secret). Cloud → password; POS → passcode + MSR.
+        password: (this.showEmailPassword() && (this.isCreate() || this.changePassword())) ? (v.password ?? '') : '',
+        passCode: (this.showPassCodeMsr()   && (this.isCreate() || this.changePassCode())) ? (v.passcode ?? '') : '',
+        MSR:      (this.showPassCodeMsr()   && (this.isCreate() || this.changeMSR()))      ? (v.msr ?? '') : '',
       };
 
       // Drop the heavy privilege tree — the backend rebuilds it from
