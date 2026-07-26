@@ -9,6 +9,7 @@
   background: #f8fafc;
   border: 1px solid #eef2f6;
   border-radius: 12px;
+  container-type: inline-size;
 
   &--profit {
     background: #ecfdf5;
@@ -28,6 +29,6 @@
 }
 .fs__value {
   margin-top: 6px;
-  font-size: 21px; font-weight: 700; color: #0f172a;
-  line-height: 1.15; font-variant-numeric: tabular-nums;
+  font-size: clamp(14px, 9cqi, 21px); font-weight: 700; color: #0f172a;
+  line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
 }

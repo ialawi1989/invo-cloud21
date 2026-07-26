@@ -66,6 +66,9 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
       background: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 10px;
+      // Lets the headline number scale to THIS tile's width (tiles can be
+      // narrow even on wide screens at a small colSpan), not the viewport's.
+      container-type: inline-size;
 
       &--accent { background: var(--color-brand-50, #effbfd); border-color: var(--color-brand-200, #afe7ef); }
     }
@@ -96,8 +99,12 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
       text-transform: uppercase; letter-spacing: .03em;
     }
     .kpi__value {
-      font-size: 21px; font-weight: 800; color: #0f172a;
+      // Scales with the tile width so long currency values (e.g. seven-figure
+      // balances) never clip; wraps as a last resort instead of overflowing.
+      font-size: clamp(14px, 8.5cqi, 21px);
+      font-weight: 800; color: #0f172a;
       letter-spacing: -0.01em; font-variant-numeric: tabular-nums;
+      min-width: 0; overflow-wrap: anywhere; line-height: 1.15;
     }
     .kpi__hint { font-size: 11.5px; color: #94a3b8; }
   `],

@@ -9,6 +9,7 @@
   background: #f8fafc;
   border: 1px solid #eef2f6;
   border-radius: 12px;
+  container-type: inline-size;
 
   &--accent {
     background: var(--color-brand-50, #effbfd);
@@ -22,7 +23,7 @@
 }
 .ck__value {
   margin-top: 6px;
-  font-size: 22px; font-weight: 700; color: #0f172a;
-  line-height: 1.15; font-variant-numeric: tabular-nums;
+  font-size: clamp(15px, 9cqi, 22px); font-weight: 700; color: #0f172a;
+  line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
 }
 .ck__tile--accent .ck__value { color: var(--color-brand-700, #207484); }
