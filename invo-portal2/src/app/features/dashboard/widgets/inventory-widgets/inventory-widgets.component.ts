@@ -6,9 +6,9 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap, tap } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { WidgetFrameComponent } from '../components/widget-frame/widget-frame.component';
-import { DashboardService } from '../services/dashboard.service';
-import { DashboardScope, ExpiringBatchRow, LowStockRow } from '../services/dashboard.types';
+import { WidgetFrameComponent } from '../../components/widget-frame/widget-frame.component';
+import { DashboardService } from '../../services/dashboard.service';
+import { DashboardScope, ExpiringBatchRow, LowStockRow } from '../../services/dashboard.types';
 
 /**
  * Low stock.

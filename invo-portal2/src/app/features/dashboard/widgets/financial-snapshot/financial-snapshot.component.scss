@@ -1,0 +1,33 @@
+.fs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.fs__tile {
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #eef2f6;
+  border-radius: 12px;
+
+  &--profit {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    .fs__value { color: #047857; }
+  }
+  &--neg {
+    background: #fef2f2;
+    border-color: #fecaca;
+    .fs__value { color: #b91c1c; }
+  }
+}
+
+.fs__label {
+  font-size: 11.5px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .3px; color: #94a3b8;
+}
+.fs__value {
+  margin-top: 6px;
+  font-size: 21px; font-weight: 700; color: #0f172a;
+  line-height: 1.15; font-variant-numeric: tabular-nums;
+}

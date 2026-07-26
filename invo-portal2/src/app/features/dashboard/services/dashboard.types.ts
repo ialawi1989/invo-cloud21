@@ -28,6 +28,45 @@ export interface BranchSalesRow {
 }
 
 // ─── summary blocks ─────────────────────────────────────────────────
+/** Compact sales-target snapshot for the current period (from the existing
+ *  `salesTarget/getTargetSales/summary` endpoint). */
+export interface SalesTargetSnapshot {
+  target: number;
+  actual: number;
+  /** Achievement % (actual / target). */
+  pct: number;
+  forecast: number;
+  status: string;
+  daysRemaining: number;
+}
+
+/** A status → count row (purchase orders, deliveries). */
+export interface StatusCount {
+  status: string;
+  count: number;
+}
+
+export interface RefundsVoids {
+  refundCount: number;
+  refundTotal: number;
+  voidCount: number;
+  voidTotal: number;
+}
+
+export interface AttendanceToday {
+  present: number;
+  onShift: number;
+  absent: number;
+  total: number;
+}
+
+export interface NewCustomerRow {
+  id: string;
+  name: string;
+  /** ISO timestamp the customer was created. */
+  createdAt: string;
+}
+
 export interface AccountSummaryBlock {
   balance: number;
   /** Six-month trail used for the sparkline. */

@@ -14,7 +14,12 @@ import {
   IncomeExpense,
   IncomeExpensePoint,
   LabelValue,
+  AttendanceToday,
   LowStockRow,
+  NewCustomerRow,
+  RefundsVoids,
+  SalesTargetSnapshot,
+  StatusCount,
   PaymentsFlow,
   PaymentsFlowPoint,
   PlacedWidget,
@@ -83,11 +88,29 @@ export class DashboardService {
   salesByBrand(s: DashboardScope)      { return this.series('dashboard/topBrandBySales', s, 'brandName', 'sales'); }
   salesBySource(s: DashboardScope)     { return this.series('dashboard/salesBySource', s, 'sourceName', 'sales'); }
   paymentMethods(s: DashboardScope)    { return this.series('dashboard/PaymentMethodOverView', s, 'paymentMethodName', 'total'); }
+  expensesByCategory(s: DashboardScope){ return this.series('dashboard/expensesByCategory', s, 'categoryName', 'total'); }
   salesByEmployee(s: DashboardScope)   { return this.series('dashboard/getSalesByEmployee', s, 'employeeName', 'salestotal', 'productQty'); }
 
   /** Hourly sales — carries money and invoice count so the widget can toggle. */
   salesByTime(s: DashboardScope) {
     return this.series('dashboard/salesByTime', s, 'hour', 'totalSales', 'invoiceTotal');
+  }
+
+  /** Newly-created customers (id, name, createdAt), newest first. Backed by the
+   *  existing `dashboard/NewCustomers` endpoint (returns a plain row list). */
+  newCustomers(): Observable<NewCustomerRow[]> {
+    return this.api.get<any>('dashboard/NewCustomers').pipe(
+      map((res: any) => {
+        const raw: any[] = Array.isArray(res?.data) ? res.data : [];
+        return raw
+          .map((r) => ({
+            id: String(r?.id ?? ''),
+            name: String(r?.name ?? '—'),
+            createdAt: String(r?.createdAt ?? ''),
+          }))
+          .sort((a, b) => (b.createdAt > a.createdAt ? 1 : b.createdAt < a.createdAt ? -1 : 0));
+      }),
+    );
   }
 
   /**
@@ -313,6 +336,77 @@ export class DashboardService {
   openCashiersCount(branchId: string | null): Observable<number> {
     return this.api.post<any>('dashboard/numberOfOpenCashiers', { branchId }).pipe(
       map((res: any) => Number(res?.data?.totalCashiers) || 0));
+  }
+
+  /**
+   * Sales target vs actual for a period (default: current month). Backed by
+   * the existing `salesTarget/getTargetSales/summary` endpoint (no id → the
+   * period's active target). Returns null when no target is configured.
+   */
+  salesTargetSummary(period: string, year: number, month: number): Observable<SalesTargetSnapshot | null> {
+    return this.api.get<any>('salesTarget/getTargetSales/summary', { period, year, month }).pipe(
+      map((res: any) => {
+        const d = res?.data;
+        if (!d || (!d.targets && !d.totals)) return null;
+        return {
+          target:        Number(d?.targets?.netSalesTarget ?? d?.targets?.totalSalesTarget) || 0,
+          actual:        Number(d?.totals?.netSales ?? d?.totals?.totalSales) || 0,
+          pct:           Number(d?.achievement?.netSalesPct ?? d?.achievement?.totalSalesPct) || 0,
+          forecast:      Number(d?.forecast?.forecastTotal) || 0,
+          status:        String(d?.forecast?.status ?? ''),
+          daysRemaining: Number(d?.runRate?.daysRemaining) || 0,
+        };
+      }),
+    );
+  }
+
+  /** Purchase orders grouped by status. */
+  purchaseOrderStatus(branchId: string | null): Observable<StatusCount[]> {
+    return this.api.post<any>('dashboard/purchaseOrderStatus', { branchId }).pipe(
+      map((res: any) => this.toStatusCounts(res)));
+  }
+
+  /** Deliveries grouped by status. */
+  deliveryStatus(branchId: string | null): Observable<StatusCount[]> {
+    return this.api.post<any>('dashboard/deliveryStatus', { branchId }).pipe(
+      map((res: any) => this.toStatusCounts(res)));
+  }
+
+  private toStatusCounts(res: any): StatusCount[] {
+    const raw: any[] = Array.isArray(res?.data) ? res.data : [];
+    return raw
+      .map((r) => ({ status: String(r?.status ?? '—'), count: Number(r?.count) || 0 }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  /** Refunds (credit notes) + voided invoices for the period. */
+  refundsVoids(s: DashboardScope): Observable<RefundsVoids> {
+    return this.api.post<any>('dashboard/refundsVoids', body(s)).pipe(
+      map((res: any) => {
+        const d = res?.data ?? {};
+        return {
+          refundCount: Number(d?.refundCount) || 0,
+          refundTotal: Number(d?.refundTotal) || 0,
+          voidCount:   Number(d?.voidCount)   || 0,
+          voidTotal:   Number(d?.voidTotal)   || 0,
+        };
+      }),
+    );
+  }
+
+  /** Today's attendance snapshot — present / on-shift / absent / total. */
+  attendanceToday(branchId: string | null): Observable<AttendanceToday> {
+    return this.api.post<any>('dashboard/attendanceToday', { branchId }).pipe(
+      map((res: any) => {
+        const d = res?.data ?? {};
+        return {
+          present: Number(d?.present) || 0,
+          onShift: Number(d?.onShift) || 0,
+          absent:  Number(d?.absent)  || 0,
+          total:   Number(d?.total)   || 0,
+        };
+      }),
+    );
   }
 
   saveLayout(layout: DashboardLayout): Observable<boolean> {

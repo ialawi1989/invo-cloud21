@@ -33,6 +33,13 @@ export interface CustomizeData {
    * custom dashboard widgets. Merged into the pickable pool.
    */
   extraWidgets?: WidgetDef[];
+  /**
+   * Layout the "Reset Layout" button restores. The dashboard passes the ROLE
+   * default (the employee's role default, or in role mode the role's own saved
+   * default) so a reset returns to the role's dashboard, not a hardcoded one.
+   * Falls back to the built-in default when absent.
+   */
+  defaultRows?: { id: string; widgets: { slug: string; colSpan: number; view?: WidgetView }[] }[];
 }
 
 export interface CustomizeResult {
@@ -108,6 +115,15 @@ export class DashboardCustomizeModalComponent {
   readonly CAPACITY = ROW_CAPACITY;
   readonly search = signal('');
   readonly sourceTab = signal<SourceTab>('all');
+
+  /** Slug of the placed widget whose settings popover (width + view) is open,
+   *  or null. Only one is open at a time — a compact per-widget row keeps the
+   *  width/view controls behind a gear so each placed widget stays one line. */
+  readonly openSettings = signal<string | null>(null);
+  toggleSettings(slug: string): void {
+    this.openSettings.update((cur) => (cur === slug ? null : slug));
+  }
+  closeSettings(): void { this.openSettings.set(null); }
 
   // ─── resizable rail ───────────────────────────────────────────────
   readonly MIN_RAIL = 240;
@@ -318,7 +334,17 @@ export class DashboardCustomizeModalComponent {
       if (def) this.addTo(def, null);
       return;
     }
-    this.picking.update((cur) => (cur === slug ? null : slug));
+    const next = this.picking() === slug ? null : slug;
+    this.picking.set(next);
+    // The picker is in-flow inside the scrolling rail; for a card near the
+    // bottom it opens below the fold. Scroll it fully into view once rendered.
+    if (next) {
+      afterNextRender(() => {
+        this.host.nativeElement
+          .querySelector<HTMLElement>('.cm__picker')
+          ?.scrollIntoView({ block: 'nearest' });
+      }, { injector: this.injector });
+    }
   }
 
   /** Adds to `rowId`, or to a brand-new row when null. */
@@ -366,8 +392,33 @@ export class DashboardCustomizeModalComponent {
     this.rows.set(rows);
   }
 
+  /**
+   * "Reset Layout" — restore the role default the dashboard supplied
+   * (`data.defaultRows`), mapping each slug through the pickable pool so any
+   * widget the current access can't render is dropped rather than left as a
+   * hole. Falls back to the built-in composition when no default was passed.
+   */
   reset(): void {
     const pick = (slug: string) => this.available.find((w) => w.slug === slug);
+
+    if (this.data.defaultRows?.length) {
+      this.rows.set(
+        this.data.defaultRows
+          .map((r) => ({
+            id: newRowId(Math.random()),
+            widgets: r.widgets
+              .map((w): PlacedEdit | null => {
+                const def = pick(w.slug);
+                return def ? { def, colSpan: w.colSpan ?? def.defaultSpan, view: w.view } : null;
+              })
+              .filter((w): w is PlacedEdit => w !== null),
+          }))
+          .filter((r) => r.widgets.length > 0),
+      );
+      return;
+    }
+
+    // No role default supplied — fall back to the built-in composition.
     const mk = (slugs: string[]) => ({
       id: newRowId(Math.random()),
       widgets: slugs

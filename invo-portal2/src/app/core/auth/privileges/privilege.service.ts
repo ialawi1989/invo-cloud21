@@ -4,6 +4,29 @@ import { firstValueFrom, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { EmployeePrivilege, Privilege } from './models/privilege.model';
 
+/**
+ * Pure permission check against an ARBITRARY privileges tree (not the
+ * signed-in user's). Same dot-path semantics + allow-by-default rule as
+ * {@link PrivilegeService.check} — use it to gate UI by some OTHER role's
+ * permissions, e.g. previewing/editing a role's default dashboard. A null
+ * tree means "not restricted" → allowed (mirrors super-admin behavior).
+ */
+export function hasPrivilegeAccess(
+  privileges: Record<string, any> | null | undefined,
+  permissionPath: string | undefined,
+): boolean {
+  if (!permissionPath) return true;
+  if (!privileges) return true;
+
+  const parts = permissionPath.split('.');
+  if (parts[1] === 'access') {
+    return privileges[parts[0]]?.access !== false;
+  }
+  const actionKey = parts[2];
+  if (!actionKey) return true;
+  return privileges[parts[0]]?.actions?.[actionKey]?.access !== false;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PrivilegeService {
   private http           = inject(HttpClient);

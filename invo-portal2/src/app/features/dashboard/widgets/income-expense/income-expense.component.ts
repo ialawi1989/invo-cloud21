@@ -4,12 +4,12 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 
-import { DashChartComponent } from '../components/dash-chart/dash-chart.component';
-import { KpiTileComponent } from '../components/kpi-tile/kpi-tile.component';
-import { WidgetFrameComponent } from '../components/widget-frame/widget-frame.component';
-import { DashboardService } from '../services/dashboard.service';
-import { loadOnScope } from '../services/load-on-scope';
-import { DashboardScope, IncomeExpense } from '../services/dashboard.types';
+import { DashChartComponent } from '../../components/dash-chart/dash-chart.component';
+import { KpiTileComponent } from '../../components/kpi-tile/kpi-tile.component';
+import { WidgetFrameComponent } from '../../components/widget-frame/widget-frame.component';
+import { DashboardService } from '../../services/dashboard.service';
+import { loadOnScope } from '../../services/load-on-scope';
+import { DashboardScope, IncomeExpense } from '../../services/dashboard.types';
 
 const EMPTY: IncomeExpense = { totalIncome: 0, totalExpense: 0, net: 0, points: [] };
 

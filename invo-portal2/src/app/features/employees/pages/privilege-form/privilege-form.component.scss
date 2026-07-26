@@ -108,6 +108,31 @@
   gap: 5px;
   min-width: 0;
 }
+
+// Label row that carries the small "copy from a role" utility on the right,
+// so the clone action reads as a helper — not a stored field beside Name.
+.field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 24px;
+}
+// "Copy from a role" — a subtle utility button that opens the role picker.
+.clone-from-btn {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;
+  font: inherit; font-size: 12.5px; font-weight: 500; color: #475569; cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  svg { color: #94a3b8; }
+  &:hover {
+    background: #f0fbfd; border-color: #afe7ef; color: #207484;
+    svg { color: currentColor; }
+  }
+}
 .field-label {
   font-size: 13px;
   font-weight: 500;
@@ -251,28 +276,49 @@
   }
 
   &__body {
-    border-top: 1px solid #f1f5f9;
-    padding: 6px 14px 10px;
+    border-top: 1px solid #eef2f6;
+    padding: 12px 14px 14px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2px 20px;
+    gap: 8px 12px;
   }
 }
 
+// Each permission is a clearly-bounded cell so the toggles don't blur
+// together in the multi-column grid. The `--on` state tints enabled
+// privileges teal so which ones are active reads at a glance.
 .action {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 2px;
-  border-bottom: 1px solid #f6f8fa;
+  padding: 9px 12px;
+  border: 1px solid #e5e9ee;
+  border-radius: 8px;
+  background: #fff;
+  transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+
+  &:hover {
+    border-color: #cfd6de;
+    background: #f9fbfc;
+  }
+
+  &--on {
+    border-color: #bfe6ee;
+    background: #f2fbfd;
+
+    &:hover { border-color: #a6dde8; background: #eaf8fb; }
+
+    .action__label { color: #0f172a; font-weight: 500; }
+  }
 
   &__label {
     font-size: 13px;
-    color: #1f2937;
+    color: #334155;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 

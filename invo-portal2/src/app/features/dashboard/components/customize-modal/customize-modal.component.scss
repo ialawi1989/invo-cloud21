@@ -271,35 +271,58 @@
 // Two deliberate lines instead of free-form wrapping: identity on top (grip,
 // name, badges, remove), controls beneath. Free wrap put the remove button on
 // its own orphan line and clipped the last width button.
+// Single-line row: [grip] name [badges] …spacer… [gear] [remove].
+// Width + view controls live behind the gear, in the .cm__settings popover.
 .cm__placed {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas: 'grip head' 'grip ctrls';
-  align-items: center;
-  column-gap: 10px; row-gap: 8px;
-  padding: 10px 12px;
+  position: relative;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 8px 10px;
   background: #fff; border: 1px solid #e8edf2; border-radius: 10px;
 }
-.cm__head {
-  grid-area: head;
-  display: flex; align-items: center; gap: 8px; min-width: 0;
+.cm__placed--open {
+  border-color: var(--color-brand-400, #7ccbd6);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .06);
 }
-.cm__ctrls {
-  grid-area: ctrls;
-  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
-}
+.cm__spacer { flex: 1 1 auto; }
 .cm__grip {
-  grid-area: grip;
   flex-shrink: 0; color: #94a3b8; cursor: grab;
   display: inline-flex; align-items: center;
   &:active { cursor: grabbing; }
 }
-// flex-basis + a real min-width: with `min-width: 0` the six width buttons win
-// the space fight and the label disappears entirely.
 .cm__name {
-  flex: 1 1 auto; min-width: 0;
+  flex: 0 1 auto; min-width: 0;
   font-size: 13px; color: #0f172a;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+// Gear — opens the per-widget size + view popover.
+.cm__gear {
+  flex-shrink: 0; width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid #e8edf2; border-radius: 8px; background: #fff;
+  color: #64748b; cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  &:hover { background: #f4f7fa; color: #0f172a; }
+  &.is-on {
+    background: var(--color-brand-50, #eefbfd);
+    border-color: var(--color-brand-400, #7ccbd6);
+    color: var(--color-brand-600, #2691a4);
+  }
+}
+
+// Width + View drop inline on a full-width line below the header when the gear
+// is toggled — an expand, not an overlay, so it can never be clipped by the
+// scrolling row panel.
+.cm__settings {
+  flex-basis: 100%;
+  display: flex; flex-wrap: wrap; gap: 18px;
+  margin-top: 6px; padding: 10px 12px;
+  background: #f8fafc; border: 1px solid #eef2f6; border-radius: 8px;
+}
+.cm__settings-group { display: flex; flex-direction: column; gap: 6px; }
+.cm__settings-label {
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .4px; color: #94a3b8;
 }
 
 // Form picker — icons, since six words wouldn't fit beside the width control.
@@ -317,8 +340,8 @@
   &.is-on { background: #fff; color: var(--color-brand-600, #2691a4); box-shadow: 0 1px 2px rgba(15,23,42,.10); }
 }
 
-// Never clipped: at a narrow span the strip wraps as a unit onto its own line.
-.cm__spans { display: inline-flex; flex-wrap: wrap; gap: 3px; margin-inline-start: auto; }
+// Inside the settings popover — wraps freely, no auto margin.
+.cm__spans { display: inline-flex; flex-wrap: wrap; gap: 3px; }
 .cm__span {
   min-width: 30px; padding: 4px 6px;
   border: 0; border-radius: 7px;
@@ -330,7 +353,7 @@
 }
 
 .cm__remove {
-  flex-shrink: 0; margin-inline-start: auto; width: 26px; height: 26px;
+  flex-shrink: 0; width: 26px; height: 26px;
   display: inline-flex; align-items: center; justify-content: center;
   border: 0; border-radius: 7px; background: transparent; color: #94a3b8; cursor: pointer;
   &:hover { background: #fef2f2; color: #dc2626; }

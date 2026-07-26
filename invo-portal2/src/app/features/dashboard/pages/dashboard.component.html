@@ -1,22 +1,25 @@
 <div class="db">
   <header class="db__head">
     <div class="db__titles">
-      <h1 class="db__title">{{ greeting() }}</h1>
-      <p class="db__sub">{{ 'DASHBOARD.SUBTITLE' | translate }}</p>
+      @if (roleMode()) {
+        <a class="db__back" [routerLink]="backLink()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+          </svg>
+          {{ 'DASHBOARD.BACK_TO_ROLE' | translate }}
+        </a>
+        <h1 class="db__title">{{ 'DASHBOARD.ROLE_EDIT_TITLE' | translate:{ name: roleName() } }}</h1>
+        <p class="db__sub">{{ 'DASHBOARD.ROLE_EDIT_SUB' | translate }}</p>
+      } @else {
+        <h1 class="db__title">{{ greeting() }}</h1>
+        <p class="db__sub">{{ 'DASHBOARD.SUBTITLE' | translate }}</p>
+      }
     </div>
 
-    <!-- Filters sit in one row above the content, never inside a card. -->
+    <!-- Filters sit in one row above the content, never inside a card.
+         Customize leads (accent-coloured, it's the primary action here), then
+         the date range, then the branch selector. -->
     <div class="db__filters">
-      <app-search-dropdown
-        class="db__branch"
-        [items]="branchOptions()"
-        [displayWith]="branchDisplay"
-        [compareWith]="branchCompare"
-        [value]="selectedBranch()"
-        [searchable]="true"
-        [clearable]="false"
-        (valueChange)="onBranch($event)"/>
-
       <button type="button" class="db__customize" (click)="openCustomize()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
@@ -27,11 +30,31 @@
         {{ 'DASHBOARD.CUSTOMIZE' | translate }}
       </button>
 
+      @if (roleMode()) {
+        <button type="button" class="db__customize db__customize--save" (click)="saveRole()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+          </svg>
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      }
+
       <app-date-picker
         mode="range"
         [presets]="presets()"
         [value]="range()"
         (valueChange)="onRange($event)"/>
+
+      <app-search-dropdown
+        class="db__branch"
+        [items]="branchOptions()"
+        [displayWith]="branchDisplay"
+        [compareWith]="branchCompare"
+        [value]="selectedBranch()"
+        [searchable]="true"
+        [clearable]="false"
+        (valueChange)="onBranch($event)"/>
     </div>
   </header>
 
@@ -43,9 +66,11 @@
       </svg>
       <p class="db__emptyTitle">{{ 'DASHBOARD.EMPTY_TITLE' | translate }}</p>
       <p class="db__emptySub">{{ 'DASHBOARD.EMPTY_SUB' | translate }}</p>
-      <button type="button" class="db__emptyCta" (click)="openCustomize()">
-        {{ 'DASHBOARD.CUSTOMIZE' | translate }}
-      </button>
+      @if (canCustomize) {
+        <button type="button" class="db__emptyCta" (click)="openCustomize()">
+          {{ 'DASHBOARD.CUSTOMIZE' | translate }}
+        </button>
+      }
     </div>
   } @else {
     @for (row of rows(); track row.id) {
@@ -81,6 +106,48 @@
             }
             @case ('expiry-date-products') {
               <app-expiring-batches-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('admin-company-overview') {
+              <app-admin-overview-widget/>
+            }
+            @case ('company-kpis') {
+              <app-company-kpis-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('attention-alerts') {
+              <app-attention-alerts-widget/>
+            }
+            @case ('financial-snapshot') {
+              <app-financial-snapshot-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('employees-overview') {
+              <app-employees-overview-widget/>
+            }
+            @case ('new-customers') {
+              <app-new-customers-widget/>
+            }
+            @case ('attendance-today') {
+              <app-attendance-today-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('sales-target') {
+              <app-sales-target-widget/>
+            }
+            @case ('my-sales') {
+              <app-my-sales-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('purchase-order-status') {
+              <app-status-breakdown-widget kind="po" [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('delivery-status') {
+              <app-status-breakdown-widget kind="delivery" [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('refunds-voids') {
+              <app-refunds-voids-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('branch-comparison') {
+              <app-branch-comparison-widget [title]="item.def.title" [scope]="scope()"/>
+            }
+            @case ('live-operations') {
+              <app-live-operations-widget [title]="item.def.title" [scope]="scope()"/>
             }
             @case (isCustomReport(item.def.slug) ? item.def.slug : '') {
               <!-- A saved custom report (report builder module). It renders its

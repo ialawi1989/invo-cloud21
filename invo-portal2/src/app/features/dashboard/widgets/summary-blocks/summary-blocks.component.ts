@@ -6,11 +6,11 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 
-import { SparklineComponent } from '../components/sparkline/sparkline.component';
-import { WidgetFrameComponent } from '../components/widget-frame/widget-frame.component';
-import { DashboardService } from '../services/dashboard.service';
-import { loadOnScope } from '../services/load-on-scope';
-import { DashboardScope, DashboardSummary } from '../services/dashboard.types';
+import { SparklineComponent } from '../../components/sparkline/sparkline.component';
+import { WidgetFrameComponent } from '../../components/widget-frame/widget-frame.component';
+import { DashboardService } from '../../services/dashboard.service';
+import { loadOnScope } from '../../services/load-on-scope';
+import { DashboardScope, DashboardSummary } from '../../services/dashboard.types';
 
 const EMPTY: DashboardSummary = {
   costOfGoodsSold: { balance: 0, trail: [] },

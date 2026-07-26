@@ -180,8 +180,10 @@
       "SAVED": "تم حفظ الصلاحية",
       "DESCRIPTION": "الوصف",
       "DESCRIPTION_PLACEHOLDER": "ما الغرض من هذا الدور؟",
-      "START_FROM_PRESET": "ابدأ من دور",
-      "SELECT_PRESET": "انسخ من دور موجود…"
+      "START_FROM_PRESET": "انسخ من دور",
+      "SELECT_PRESET": "انسخ من دور موجود…",
+      "COPY_FROM_ROLE_TITLE": "نسخ الصلاحيات من دور",
+      "CUSTOMIZE_DASHBOARD": "تخصيص لوحة التحكم"
     },
 
     "ATTENDANCE": {

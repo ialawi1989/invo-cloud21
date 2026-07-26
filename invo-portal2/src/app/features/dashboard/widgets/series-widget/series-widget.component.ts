@@ -16,9 +16,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 
-import { DashChartComponent, DashChartType } from '../components/dash-chart/dash-chart.component';
-import { WidgetFrameComponent } from '../components/widget-frame/widget-frame.component';
-import { DashboardScope, LabelValue } from '../services/dashboard.types';
+import { DashChartComponent, DashChartType } from '../../components/dash-chart/dash-chart.component';
+import { WidgetFrameComponent } from '../../components/widget-frame/widget-frame.component';
+import { DashboardScope, LabelValue } from '../../services/dashboard.types';
 
 export type SeriesLoader = (scope: DashboardScope) => Observable<LabelValue[]>;
 

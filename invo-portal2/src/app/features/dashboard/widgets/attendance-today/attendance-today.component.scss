@@ -1,0 +1,26 @@
+.at {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 12px;
+}
+
+.at__tile {
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #eef2f6;
+  border-radius: 12px;
+  text-align: center;
+
+  &--present { background: #ecfdf5; border-color: #a7f3d0; .at__value { color: #047857; } }
+  &--onshift { background: #effbfd; border-color: #d7f3f7; .at__value { color: #207484; } }
+  &--absent  { background: #fef2f2; border-color: #fecaca; .at__value { color: #b91c1c; } }
+}
+
+.at__value { font-size: 26px; font-weight: 700; color: #0f172a; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.at__label { margin-top: 4px; font-size: 12px; color: #64748b; }
+
+.at__bar {
+  margin-top: 14px; height: 8px; border-radius: 999px;
+  background: #eef2f6; overflow: hidden;
+}
+.at__barFill { display: block; height: 100%; border-radius: 999px; background: #10b981; }

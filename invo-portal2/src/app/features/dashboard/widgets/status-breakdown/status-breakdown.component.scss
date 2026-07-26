@@ -1,0 +1,15 @@
+.sb__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+
+.sb__row {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) 2fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.sb__status {
+  font-size: 13px; color: #0f172a; text-transform: capitalize;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sb__bar { height: 8px; border-radius: 999px; background: #eef2f6; overflow: hidden; }
+.sb__barFill { display: block; height: 100%; border-radius: 999px; background: var(--color-brand-500, #32acc1); }
+.sb__count { font-size: 13px; font-weight: 600; color: #0f172a; font-variant-numeric: tabular-nums; min-width: 28px; text-align: end; }

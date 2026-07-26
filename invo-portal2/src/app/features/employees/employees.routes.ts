@@ -9,8 +9,9 @@ import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
  * Top-level feature (sidebar "Employees" group), living at `/employees/*`.
  *
  *   /employees                 → list
- *   /employees/privileges      → privilege-set list
- *   /employees/privileges/:id  → privilege-set form (0 = new)
+ *   /employees/privileges              → privilege-set list
+ *   /employees/privileges/:id/dashboard → role default-dashboard editor
+ *   /employees/privileges/:id          → privilege-set form (0 = new)
  *   /employees/attendance      → attendance log
  *   /employees/attendance/:id  → attendance adjust form
  *   /employees/schedule        → team schedule board
@@ -40,6 +41,14 @@ export const EMPLOYEES_ROUTES: Routes = [
     data: { permissionPath: 'privilegeSecurity.actions.view' },
     loadComponent: () =>
       import('./pages/privileges-list/privileges-list.component').then(m => m.PrivilegesListComponent),
+  },
+  {
+    // Declared before `privileges/:id` so the deeper `.../dashboard` path wins.
+    path: 'privileges/:id/dashboard',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'privilegeSecurity.actions.add.access' },
+    loadComponent: () =>
+      import('./pages/privilege-dashboard/privilege-dashboard.component').then(m => m.PrivilegeDashboardComponent),
   },
   {
     path: 'privileges/:id',

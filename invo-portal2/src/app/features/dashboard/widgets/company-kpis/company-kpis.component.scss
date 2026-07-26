@@ -1,0 +1,28 @@
+.ck {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.ck__tile {
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #eef2f6;
+  border-radius: 12px;
+
+  &--accent {
+    background: var(--color-brand-50, #effbfd);
+    border-color: var(--color-brand-100, #d7f3f7);
+  }
+}
+
+.ck__label {
+  font-size: 11.5px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .3px; color: #94a3b8;
+}
+.ck__value {
+  margin-top: 6px;
+  font-size: 22px; font-weight: 700; color: #0f172a;
+  line-height: 1.15; font-variant-numeric: tabular-nums;
+}
+.ck__tile--accent .ck__value { color: var(--color-brand-700, #207484); }

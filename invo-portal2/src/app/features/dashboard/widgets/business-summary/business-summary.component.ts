@@ -5,12 +5,12 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 
-import { KpiTileComponent } from '../components/kpi-tile/kpi-tile.component';
+import { KpiTileComponent } from '../../components/kpi-tile/kpi-tile.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
-import { WidgetFrameComponent } from '../components/widget-frame/widget-frame.component';
-import { DashboardService } from '../services/dashboard.service';
-import { loadOnScope } from '../services/load-on-scope';
-import { BranchSalesRow, DashboardScope } from '../services/dashboard.types';
+import { WidgetFrameComponent } from '../../components/widget-frame/widget-frame.component';
+import { DashboardService } from '../../services/dashboard.service';
+import { loadOnScope } from '../../services/load-on-scope';
+import { BranchSalesRow, DashboardScope } from '../../services/dashboard.types';
 
 type SortKey = keyof Pick<BranchSalesRow,
   'branchName' | 'numberOfInvoices' | 'sales' | 'discountTotal' | 'taxTotal' | 'total' | 'totalReturn' | 'netSales' | 'share'>;

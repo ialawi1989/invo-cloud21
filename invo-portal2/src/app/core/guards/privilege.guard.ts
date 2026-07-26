@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
+import { CanActivateFn, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { PrivilegeService } from '../auth/privileges/privilege.service';
 
 /**
@@ -11,7 +11,7 @@ import { PrivilegeService } from '../auth/privileges/privilege.service';
  *   redirectTo      — where to go on deny (default: 'dashboard')
  *   silentRedirect  — if true, redirect without an error message
  */
-export const privilegeGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
+export const privilegeGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   const privilegeService = inject(PrivilegeService);
   const router           = inject(Router);
 
@@ -36,7 +36,7 @@ export const privilegeGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => 
   // Non-silent: navigate and the target page can show the error
   // (replaces generalHelpers.errorMsg from v16)
   router.navigate(['/403'], {
-    state: { permissionPath, redirectTo }
+    state: { permissionPath, redirectTo, attemptedUrl: state.url }
   });
   return false;
 };

@@ -347,6 +347,19 @@ import {
          it. Stays below the frozen header columns, which use z-20. */
       z-index: 5;
     }
+    /* The blanket rule above (specificity beats the z-20 utility) would drop the
+       frozen start/actions HEADER cells to z-5 — below the frozen body cells
+       (.list-sticky-cell / .list-floating-actions, z-10) and the column resizer
+       (z-25) — so scrolling body cells and the row's Edit pill paint over the
+       frozen column header on vertical scroll. Lift them above the entire body
+       layer (>25) and keep an opaque fill so rows can't ghost through. Higher
+       specificity (0,2,2) than the blanket rule so this wins. */
+    .lp-fullbleed thead th.list-sticky-col,
+    .lp-fullbleed thead th.list-actions-th,
+    .lp-fullbleed thead th.start-0 {
+      z-index: 30;
+      background: #f8fafc;
+    }
 
     /* ── Fit-to-content height (opt-in via [fitContent]) ─────────────────
        In full-bleed the card normally flexes to fill the viewport, so a

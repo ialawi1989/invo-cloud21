@@ -5,15 +5,20 @@ import {
   OnInit,
   computed,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { AuthService } from '@core/auth/auth.service';
+import { PrivilegeService, hasPrivilegeAccess } from '@core/auth/privileges/privilege.service';
+import { EmployeePrivilege } from '@core/auth/privileges/models/privilege.model';
+import { ToastService } from '@shared/components/toast/toast.service';
 import { BranchConnectionService } from '@core/layout/services/branch.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
@@ -30,19 +35,32 @@ import {
   CustomizeResult,
 } from '../components/customize-modal/customize-modal.component';
 import { DashboardScope } from '../services/dashboard.types';
-import { SeriesWidgetComponent, SeriesLoader } from '../widgets/series-widget.component';
-import { BusinessSummaryWidgetComponent } from '../widgets/business-summary.component';
-import { SummaryBlocksWidgetComponent } from '../widgets/summary-blocks.component';
-import { IncomeExpenseWidgetComponent } from '../widgets/income-expense.component';
-import { PaymentsFlowWidgetComponent } from '../widgets/payments-flow.component';
-import { SalesByDayWidgetComponent } from '../widgets/sales-by-day.component';
+import { SeriesWidgetComponent, SeriesLoader } from '../widgets/series-widget/series-widget.component';
+import { BusinessSummaryWidgetComponent } from '../widgets/business-summary/business-summary.component';
+import { SummaryBlocksWidgetComponent } from '../widgets/summary-blocks/summary-blocks.component';
+import { IncomeExpenseWidgetComponent } from '../widgets/income-expense/income-expense.component';
+import { PaymentsFlowWidgetComponent } from '../widgets/payments-flow/payments-flow.component';
+import { SalesByDayWidgetComponent } from '../widgets/sales-by-day/sales-by-day.component';
 import {
   LowStockWidgetComponent,
   ExpiringBatchesWidgetComponent,
-} from '../widgets/inventory-widgets.component';
+} from '../widgets/inventory-widgets/inventory-widgets.component';
+import { AdminOverviewWidgetComponent } from '../widgets/admin-overview/admin-overview.component';
+import { BranchComparisonWidgetComponent } from '../widgets/branch-comparison/branch-comparison.component';
+import { LiveOperationsWidgetComponent } from '../widgets/live-operations/live-operations.component';
+import { CompanyKpisWidgetComponent } from '../widgets/company-kpis/company-kpis.component';
+import { AttentionAlertsWidgetComponent } from '../widgets/attention-alerts/attention-alerts.component';
+import { FinancialSnapshotWidgetComponent } from '../widgets/financial-snapshot/financial-snapshot.component';
+import { EmployeesOverviewWidgetComponent } from '../widgets/employees-overview/employees-overview.component';
+import { NewCustomersWidgetComponent } from '../widgets/new-customers/new-customers.component';
+import { AttendanceTodayWidgetComponent } from '../widgets/attendance-today/attendance-today.component';
+import { SalesTargetWidgetComponent } from '../widgets/sales-target/sales-target.component';
+import { MySalesWidgetComponent } from '../widgets/my-sales/my-sales.component';
+import { StatusBreakdownWidgetComponent } from '../widgets/status-breakdown/status-breakdown.component';
+import { RefundsVoidsWidgetComponent } from '../widgets/refunds-voids/refunds-voids.component';
 import {
   DEFAULT_LAYOUT, WIDGET_BY_SLUG, WidgetDef, WidgetView,
-  customReportWidget, customReportId,
+  customReportWidget, customReportId, canAccessWidget,
 } from '../models/widget-registry';
 import { CustomReportWidgetComponent } from '../widgets/custom-report-widget/custom-report-widget.component';
 import { CustomReportsService } from '../../reports/custom/services/custom-reports.service';
@@ -89,6 +107,7 @@ const SCOPE_KEY  = 'dashboard:scope';
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     TranslateModule,
     DatePickerComponent,
     SearchDropdownComponent,
@@ -101,6 +120,19 @@ const SCOPE_KEY  = 'dashboard:scope';
     SalesByDayWidgetComponent,
     LowStockWidgetComponent,
     ExpiringBatchesWidgetComponent,
+    AdminOverviewWidgetComponent,
+    BranchComparisonWidgetComponent,
+    LiveOperationsWidgetComponent,
+    CompanyKpisWidgetComponent,
+    AttentionAlertsWidgetComponent,
+    FinancialSnapshotWidgetComponent,
+    EmployeesOverviewWidgetComponent,
+    NewCustomersWidgetComponent,
+    AttendanceTodayWidgetComponent,
+    SalesTargetWidgetComponent,
+    MySalesWidgetComponent,
+    StatusBreakdownWidgetComponent,
+    RefundsVoidsWidgetComponent,
     CustomReportWidgetComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -112,11 +144,64 @@ export class DashboardComponent implements OnInit {
   private modal = inject(ModalService);
   private branchService = inject(BranchConnectionService);
   private auth = inject(AuthService);
+  private privileges = inject(PrivilegeService);
+  private toast = inject(ToastService);
   private translate = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
   private customReports = inject(CustomReportsService);
 
   private i18nTick = signal(0);
+
+  // ─── role editor mode ─────────────────────────────────────────────
+  /**
+   * When true the board edits a ROLE's default dashboard instead of the
+   * signed-in employee's own. Widget access is checked against the role's
+   * permissions and the layout is persisted onto the privilege record — the
+   * employee-layout endpoints are never touched. Default (false) is exactly the
+   * existing employee dashboard.
+   */
+  readonly roleMode = input(false);
+  /** The privilege (role) id being edited, in role mode. */
+  readonly roleId = input<string | null>(null);
+
+  /** The loaded role record, kept so a save can write its `dashBoardOptions`. */
+  private role: EmployeePrivilege | null = null;
+  /** Display name of the edited role, for the header banner. */
+  readonly roleName = signal('');
+  /** Raw (pre-filter) role layout, re-applied once custom reports resolve. */
+  private roleSourceRows: { id: string; widgets: { slug: string; colSpan: number; view?: WidgetView }[] }[] = [];
+
+  /** Cached "reset target" — the role default the "Reset Layout" button
+   *  restores (role's own default in role mode; the employee's role default in
+   *  employee mode; global default as a last resort). Lazily resolved. */
+  private roleDefaultRows: { id: string; widgets: { slug: string; colSpan: number; view?: WidgetView }[] }[] | null = null;
+
+  /**
+   * Permission checker used for widget access. Employee mode uses the signed-in
+   * user's live permissions; role mode swaps in a checker bound to the edited
+   * role's tree. Same allow-by-default semantics either way.
+   */
+  private checkFn: (permission: string) => boolean = (p) => this.privileges.check(p);
+
+  /** True only when a super admin is viewing their OWN dashboard (never in role
+   *  mode — a role is not a super admin). Gates the super-admin-only widgets.
+   *  Detected via the employee flag OR the absence of a loaded privilege tree:
+   *  super admins bypass the privilege system server-side, so they arrive with
+   *  no tree, whereas every scoped user has one after login. */
+  private get isViewerSuperAdmin(): boolean {
+    if (this.roleMode()) return false;
+    const emp: any = this.auth.currentEmployee;
+    if (emp?.superAdmin === true) return true;
+    return !this.privileges.privileges;
+  }
+
+  /** The empty-state CTA only appears when the viewer may customise — always
+   *  true today (any viewer reaching the board owns or edits its layout), but
+   *  kept as a gate so a future read-only mode can hide it. */
+  readonly canCustomize = true;
+
+  /** Back link to the role's privilege form, shown in role-edit mode. */
+  readonly backLink = computed(() => ['/employees/privileges', this.roleId() ?? '0']);
 
   // ─── scope ────────────────────────────────────────────────────────
   readonly range = signal<DateRange>(thisMonth());
@@ -202,6 +287,7 @@ export class DashboardComponent implements OnInit {
     'sales-by-time':       (s) => this.service.salesByTime(s),
     'payment-method-overview':     (s) => this.service.paymentMethods(s),
     'online-invoices':     (s) => this.service.onlineInvoices(s),
+    'expenses-by-category': (s) => this.service.expensesByCategory(s),
   };
 
   /**
@@ -233,6 +319,7 @@ export class DashboardComponent implements OnInit {
     'sales-by-time':       'bar',
     'payment-method-overview':     'bar',
     'online-invoices':     'bar',
+    'expenses-by-category': 'hbar',
   };
 
   /** Counts, not money. */
@@ -242,6 +329,10 @@ export class DashboardComponent implements OnInit {
   readonly BESPOKE = new Set([
     'business-summary', 'summary-blocks', 'expense-income',
     'payments-flow', 'sales-by-day', 'low-quantity-products', 'expiry-date-products',
+    'admin-company-overview', 'branch-comparison', 'live-operations',
+    'company-kpis', 'attention-alerts', 'financial-snapshot', 'employees-overview',
+    'new-customers', 'attendance-today', 'sales-target', 'my-sales',
+    'purchase-order-status', 'delivery-status', 'refunds-voids',
   ]);
   isBespoke(slug: string) { return this.BESPOKE.has(slug); }
 
@@ -254,42 +345,174 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.restoreScope();
+    // The custom-report pool is needed in both modes (it's a pickable source and
+    // a renderable widget) — load it regardless.
+    this.loadCustomReports();
+
+    if (this.roleMode()) {
+      // Editing a role's default dashboard: never read/write the employee
+      // endpoints or this device's localStorage.
+      void this.initRoleMode();
+      return;
+    }
+
     // Show something immediately from the local copy, then reconcile with the
     // server. Without the local paint the board is blank for a round-trip; and
     // without the server fetch a layout saved elsewhere never arrives.
-    this.restoreLayout();
-    this.loadCustomReports();
+    const hadStored = this.restoreLayout();
 
     this.service.loadLayout()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (saved) => {
-          if (!saved.length) return;               // never saved — keep the default
+          // Never personalised server-side: fall back to the role default, then
+          // the global default — but keep a layout this device already stored.
+          if (!saved.length) { void this.applyRoleFallback(hadStored); return; }
           // The wire format is flat with a `rowId` per widget; rebuild the rows
           // from it, preserving the order the service already sorted into.
-          // The `view` field is newer than the endpoint. If the server hasn't
-          // stored it, keep whatever this device last chose rather than silently
-          // reverting the widget to its default form.
-          const localViews = this.savedViews();
-
-          const byRow = new Map<string, { slug: string; colSpan: number; view?: WidgetView }[]>();
-          saved.forEach((w) => {
-            const key = w.rowId || `row_${w.slug}`;   // orphans get their own row
-            const list = byRow.get(key) ?? [];
-            list.push({
-              slug: w.slug,
-              colSpan: w.colSpan,
-              view: (w.view as WidgetView) ?? localViews.get(w.slug),
-            });
-            byRow.set(key, list);
-          });
-          const rows = [...byRow].map(([id, widgets]) => ({ id, widgets }));
+          const rows = this.savedToRows(saved);
           this.applyLayout(rows);
           localStorage.setItem(LAYOUT_KEY, JSON.stringify(rows));
         },
         // Offline or a failing endpoint must not blank the dashboard.
         error: () => { /* local layout stands */ },
       });
+  }
+
+  // ─── role editor ──────────────────────────────────────────────────
+  /**
+   * Load the role, bind widget access to its permissions, and seed the board
+   * from its saved default (or the global default, filtered by that access).
+   */
+  private async initRoleMode(): Promise<void> {
+    const id = this.roleId();
+    if (!id) { this.applyLayout(DEFAULT_LAYOUT); return; }
+    try {
+      const role = await this.privileges.getPrivilege(id);
+      this.role = role;
+      this.roleName.set(role.name ?? '');
+      const tree = role.privileges.ToJson();
+      this.checkFn = (p) => hasPrivilegeAccess(tree, p);
+
+      this.roleSourceRows = role.dashBoardOptions?.length
+        ? this.savedToRows(this.normalizeOptions(role.dashBoardOptions))
+        : DEFAULT_LAYOUT.map((r) => ({ id: r.id, widgets: r.widgets.map((w) => ({ ...w })) }));
+      // "Reset Layout" in the role editor returns to the role's saved default.
+      this.roleDefaultRows = this.roleSourceRows;
+      this.applyLayout(this.roleSourceRows);
+    } catch {
+      // Couldn't load the role — show the global default under the viewer's
+      // own access rather than a blank board.
+      this.applyLayout(DEFAULT_LAYOUT);
+    }
+  }
+
+  /**
+   * Persist the current board as the edited role's default dashboard. Writes
+   * the same flat `dashBoardOptions` shape the employee endpoint uses, onto the
+   * privilege record — never the employee-layout endpoint.
+   */
+  saveRole(): void {
+    const role = this.role;
+    if (!role) return;
+    role.dashBoardOptions = this.rows().flatMap((row, rowIndex) =>
+      row.widgets.map((w, i) => ({
+        slug: w.def.slug,
+        isAdded: true,
+        index: rowIndex,
+        rowId: row.id,
+        colSpan: w.colSpan,
+        order: i,
+        view: w.view,
+      })),
+    );
+    this.privileges.savePrivilege(role.ToJson())
+      .then(() => this.toast.success('DASHBOARD.ROLE_SAVED'))
+      .catch(() => this.toast.error('COMMON.SAVE_FAILED'));
+  }
+
+  /**
+   * Employee fallback when the server has no saved layout: the employee's role
+   * default first, then the global default. Skipped when this device already
+   * holds a personalised layout.
+   */
+  private async applyRoleFallback(hadStored: boolean): Promise<void> {
+    if (hadStored) return;                 // personalised on this device — keep it
+    const roleId = this.auth.currentEmployee?.['privilegeId'];
+    if (roleId) {
+      try {
+        const role = await this.privileges.getPrivilege(String(roleId));
+        if (role.dashBoardOptions?.length) {
+          this.applyLayout(this.savedToRows(this.normalizeOptions(role.dashBoardOptions)));
+          return;
+        }
+      } catch { /* fall through to the global default */ }
+    }
+    this.applyLayout(DEFAULT_LAYOUT);       // access-filtered in applyLayout
+  }
+
+  /**
+   * The layout "Reset Layout" restores — the ROLE default. In role mode it's
+   * the role's own saved default; in employee mode it's the employee's role
+   * default (fetched once, cached), else the global default.
+   */
+  private async resolveRoleDefaultRows(): Promise<
+    { id: string; widgets: { slug: string; colSpan: number; view?: WidgetView }[] }[]
+  > {
+    if (this.roleDefaultRows) return this.roleDefaultRows;
+    const roleId = this.auth.currentEmployee?.['privilegeId'];
+    if (roleId) {
+      try {
+        const role = await this.privileges.getPrivilege(String(roleId));
+        if (role.dashBoardOptions?.length) {
+          this.roleDefaultRows = this.savedToRows(this.normalizeOptions(role.dashBoardOptions));
+          return this.roleDefaultRows;
+        }
+      } catch { /* fall through to the global default */ }
+    }
+    this.roleDefaultRows = DEFAULT_LAYOUT.map((r) => ({ id: r.id, widgets: r.widgets.map((w) => ({ ...w })) }));
+    return this.roleDefaultRows;
+  }
+
+  /** Groups a flat saved/normalized widget list into explicit rows by `rowId`,
+   *  restoring any locally remembered view the server hasn't stored yet. */
+  private savedToRows(
+    saved: { slug: string; rowId?: string; colSpan: number; view?: string }[],
+  ): { id: string; widgets: { slug: string; colSpan: number; view?: WidgetView }[] }[] {
+    // The `view` field is newer than the endpoint. If the server hasn't stored
+    // it, keep whatever this device last chose rather than reverting the form.
+    const localViews = this.savedViews();
+    const byRow = new Map<string, { slug: string; colSpan: number; view?: WidgetView }[]>();
+    saved.forEach((w) => {
+      const key = w.rowId || `row_${w.slug}`;   // orphans get their own row
+      const list = byRow.get(key) ?? [];
+      list.push({
+        slug: w.slug,
+        colSpan: w.colSpan,
+        view: (w.view as WidgetView) ?? localViews.get(w.slug),
+      });
+      byRow.set(key, list);
+    });
+    return [...byRow].map(([id, widgets]) => ({ id, widgets }));
+  }
+
+  /** Normalizes a raw `dashBoardOptions` array (role default) into the sorted
+   *  flat shape `savedToRows` consumes — mirrors `DashboardService.loadLayout`. */
+  private normalizeOptions(
+    raw: any[],
+  ): { slug: string; rowId: string; colSpan: number; view?: string }[] {
+    return (raw ?? [])
+      .filter((w) => w?.slug && w?.isAdded !== false)
+      .map((w) => ({
+        slug: String(w.slug),
+        rowId: String(w?.rowId ?? ''),
+        colSpan: Number(w?.colSpan) || 12,
+        order: Number(w?.order) || 0,
+        index: Number(w?.index) || 0,
+        view: w?.view ? String(w.view) : undefined,
+      }))
+      .sort((a, b) => (a.index - b.index) || (a.order - b.order))
+      .map(({ slug, rowId, colSpan, view }) => ({ slug, rowId, colSpan, view }));
   }
 
   // ─── scope handlers ───────────────────────────────────────────────
@@ -344,8 +567,10 @@ export class DashboardComponent implements OnInit {
     this.persistLayout();
   }
 
-  /** Writes the current layout locally, then syncs it. */
+  /** Writes the current layout locally, then syncs it. In role mode changes are
+   *  staged in memory and persisted only on an explicit Save / Customize apply. */
   private persistLayout(): void {
+    if (this.roleMode()) return;
     const rows = this.rows().map((r) => ({
       id: r.id,
       widgets: r.widgets.map((w) => ({ slug: w.def.slug, colSpan: w.colSpan, view: w.view })),
@@ -397,15 +622,21 @@ export class DashboardComponent implements OnInit {
       });
   }
 
-  /** Re-run the layout from storage once modules are known, so a custom widget
-   *  that was skipped as "unsupported" before its module loaded now appears. */
+  /** Re-run the layout once modules are known, so a custom widget that was
+   *  skipped as "unsupported" before its module loaded now appears. In role
+   *  mode the source is the role layout, not this device's localStorage. */
   private reapplyLayout(): void {
+    if (this.roleMode()) { this.applyLayout(this.roleSourceRows); return; }
     this.restoreLayout();
   }
 
   // ─── layout ───────────────────────────────────────────────────────
-  private restoreLayout(): void {
+  /** Applies the stored layout; returns whether a stored layout existed
+   *  (i.e. this device was personalised), so callers can decide whether a
+   *  role/global fallback should run. */
+  private restoreLayout(): boolean {
     let rows = DEFAULT_LAYOUT;
+    let hadStored = false;
     try {
       const raw = localStorage.getItem(LAYOUT_KEY);
       if (raw) {
@@ -418,11 +649,13 @@ export class DashboardComponent implements OnInit {
             : parsed.map((w: { slug: string; colSpan: number }) => ({
                 id: `row_${w.slug}`, widgets: [w],
               }));
+          hadStored = true;
         }
       }
     } catch { /* fall back to the default layout */ }
 
     this.applyLayout(rows);
+    return hadStored;
   }
 
   /**
@@ -436,7 +669,15 @@ export class DashboardComponent implements OnInit {
     const customs = this.customWidgets();
     const supported = [
       ...Object.keys(this.loaders), ...this.BESPOKE, ...customs.map((w) => w.slug),
-    ];
+    ]
+      // Only offer widgets the current access (employee or role) can see, so the
+      // picker never lists a gated widget. Custom reports are already filtered.
+      .filter((slug) => {
+        const def = this.defOf(slug);
+        return !def || canAccessWidget(def, this.checkFn, this.isViewerSuperAdmin);
+      });
+    // The role default powers the modal's "Reset Layout" button.
+    const defaultRows = await this.resolveRoleDefaultRows();
     const ref = this.modal.open<DashboardCustomizeModalComponent, CustomizeData, CustomizeResult>(
       DashboardCustomizeModalComponent,
       {
@@ -450,6 +691,7 @@ export class DashboardComponent implements OnInit {
           })),
           supported,
           extraWidgets: customs,
+          defaultRows,
         },
         closeOnBackdrop: false,
       },
@@ -458,6 +700,15 @@ export class DashboardComponent implements OnInit {
     if (!result) return;
 
     this.applyLayout(result.rows);
+
+    // Role mode persists onto the privilege record; keep this device's
+    // localStorage and the employee endpoint out of it entirely.
+    if (this.roleMode()) {
+      this.roleSourceRows = result.rows;
+      this.saveRole();
+      return;
+    }
+
     localStorage.setItem(LAYOUT_KEY, JSON.stringify(result.rows));
 
     this.service
@@ -481,8 +732,11 @@ export class DashboardComponent implements OnInit {
               const def = this.defOf(w.slug);
               // Skip slugs we can't render rather than leaving a hole. Custom
               // reports are supported whenever the report is still in the catalog.
-              const supported = def && (
-                this.loaders[def.slug] || this.BESPOKE.has(def.slug) || this.isCustomReport(def.slug));
+              // Also drop any widget the current access (employee or role) can't
+              // see, so a layout can never surface a gated widget.
+              const supported = def
+                && canAccessWidget(def, this.checkFn, this.isViewerSuperAdmin)
+                && (this.loaders[def.slug] || this.BESPOKE.has(def.slug) || this.isCustomReport(def.slug));
               return supported ? { def: def!, colSpan: w.colSpan ?? def!.defaultSpan, view: w.view } : null;
             })
             .filter((w): w is Placed => w !== null),

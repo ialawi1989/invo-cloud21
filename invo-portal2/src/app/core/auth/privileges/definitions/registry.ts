@@ -103,6 +103,7 @@ import { websiteAnalyticsSecurity } from './websiteAnalyticsSecurity';
 import { websiteSettingsSecurity } from './websiteSettingsSecurity';
 import { workOrderSecurity } from './workOrderSecurity';
 import { customReportsSecurity } from '../../../../features/reports/custom/custom-reports.privileges';
+import { dashboardWidgetSecurity } from './dashboardWidgetSecurity';
 
 /**
  * Security-definition registry — the single source of truth for the whole
@@ -124,6 +125,7 @@ import { customReportsSecurity } from '../../../../features/reports/custom/custo
  */
 export const SECURITY_DEFINITIONS = {
   dashboardSecurity,
+  dashboardWidgetSecurity,
   branchesConnectionSecurity,
   branchSettingsSecurity,
   branchPaymentsSecurity,

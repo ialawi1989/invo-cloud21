@@ -64,6 +64,11 @@ export class EmployeePrivilege {
   /** Id of the saved role this set was cloned from, if any (the "start from a
    *  role" dropdown). Empty for hand-built sets. */
   presetKey         = '';
+  /** The role's DEFAULT dashboard layout — the per-widget rows employees on
+   *  this role see when they haven't personalised their own. Same shape as the
+   *  employee dashboard payload (`{ slug, isAdded, index, rowId, colSpan,
+   *  order, view }[]`). `null` = no role default configured. */
+  dashBoardOptions: any[] | null = null;
   privileges        = new Privilege();
   companyId         = '';
   updatedDate       = new Date();
@@ -71,14 +76,15 @@ export class EmployeePrivilege {
 
   ToJson(): any {
     return {
-      id:          this.id,
-      name:        this.name,
-      description: this.description,
-      presetKey:   this.presetKey,
-      privileges:  this.privileges.ToJson(),
-      companyId:   this.companyId,
-      updatedDate: this.updatedDate,
-      createdAt:   this.createdAt,
+      id:               this.id,
+      name:             this.name,
+      description:      this.description,
+      presetKey:        this.presetKey,
+      dashBoardOptions: this.dashBoardOptions,
+      privileges:       this.privileges.ToJson(),
+      companyId:        this.companyId,
+      updatedDate:      this.updatedDate,
+      createdAt:        this.createdAt,
     };
   }
 

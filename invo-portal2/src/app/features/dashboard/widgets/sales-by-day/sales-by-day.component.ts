@@ -12,10 +12,10 @@ import {
   SegmentedToggleOption,
 } from '@shared/components/segmented-toggle/segmented-toggle.component';
 
-import { DashChartComponent } from '../components/dash-chart/dash-chart.component';
-import { WidgetFrameComponent } from '../components/widget-frame/widget-frame.component';
-import { DashboardService } from '../services/dashboard.service';
-import { DashboardScope, LabelValue } from '../services/dashboard.types';
+import { DashChartComponent } from '../../components/dash-chart/dash-chart.component';
+import { WidgetFrameComponent } from '../../components/widget-frame/widget-frame.component';
+import { DashboardService } from '../../services/dashboard.service';
+import { DashboardScope, LabelValue } from '../../services/dashboard.types';
 
 type Window = '7' | '14' | '30';
 

@@ -13,6 +13,15 @@
 }
 .db__sub { margin: 0; font-size: 14px; color: #64748b; }
 
+// Back link shown while editing a role's default dashboard.
+.db__back {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-bottom: 6px;
+  font-size: 13px; font-weight: 600; color: #64748b; text-decoration: none;
+  &:hover { color: var(--color-brand-700, #207484); }
+  svg { color: currentColor; }
+}
+
 .db__filters {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
@@ -52,19 +61,35 @@
 .db__emptyTitle { margin: 0; font-size: 15px; font-weight: 600; color: #475569; }
 .db__emptySub   { margin: 0; font-size: 13px; }
 
+// Accent-tinted so the primary action stands out from the neutral date/branch
+// controls beside it.
 .db__customize {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 8px 13px;
-  border: 1px solid #e2e8f0; border-radius: 9px; background: #fff;
-  font: inherit; font-size: 13px; font-weight: 600; color: #475569; cursor: pointer;
+  border: 1px solid var(--color-brand-200, #afe7ef); border-radius: 9px;
+  background: var(--color-brand-50, #effbfd);
+  font: inherit; font-size: 13px; font-weight: 600;
+  color: var(--color-brand-700, #207484); cursor: pointer;
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
-  svg { color: #94a3b8; }
+  svg { color: currentColor; }
   &:hover {
-    background: var(--color-brand-50, #effbfd);
-    border-color: var(--color-brand-200, #afe7ef);
-    color: var(--color-brand-700, #207484);
-    svg { color: currentColor; }
+    background: var(--color-brand-100, #d7f3f7);
+    border-color: var(--color-brand-300, #7fd7e2);
+    color: var(--color-brand-800, #1a5f6d);
+  }
+}
+
+// Save action in role-edit mode — a filled variant of the customize button.
+.db__customize--save {
+  border-color: var(--color-brand-600, #2691a4);
+  background: var(--color-brand-600, #2691a4);
+  color: #fff;
+  svg { color: currentColor; }
+  &:hover {
+    background: var(--color-brand-700, #207484);
+    border-color: var(--color-brand-700, #207484);
+    color: #fff;
   }
 }
 

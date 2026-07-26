@@ -27,6 +27,13 @@ import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { ModalService } from '@shared/modal/modal.service';
+import {
+  PickListModalComponent,
+  PickListModalData,
+  PickListModalResult,
+  PickListLoader,
+} from '@shared/components/pick-list-modal/pick-list-modal.component';
 
 /** Security-type filter option (client-side filter over the tree). */
 interface SecurityTypeOption {
@@ -105,6 +112,7 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
   private route      = inject(ActivatedRoute);
   private router     = inject(Router);
   private toast      = inject(ToastService);
+  private modal      = inject(ModalService);
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
@@ -122,11 +130,23 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
   /** Optional description of what this role is for. */
   description = signal<string>('');
 
-  /** Existing saved privilege sets you can clone from ("Start from a role").
-   *  Mirrors the legacy dropdown — the values come from the saved records, not
-   *  a hardcoded catalog. */
+  /** Whether any other saved roles exist — gates the "Copy from a role"
+   *  button. The picker itself loads roles on demand (server-paginated). */
   savedRoles = signal<RoleOption[]>([]);
-  displayRole = (r: RoleOption): string => r.name;
+
+  /** Paginated loader for the role picker modal (excludes this record). */
+  private roleLoader: PickListLoader = async ({ page, limit, searchTerm }) => {
+    const res = await this.service.getPrivilegeList({ page, limit, searchTerm, sortBy: {} });
+    const list = Array.isArray(res) ? res : res.list;
+    const count = Array.isArray(res) ? res.length : res.count;
+    const cur = this.recordId();
+    return {
+      list: list
+        .filter((r: any) => String(r.id) !== String(cur))
+        .map((r: any) => ({ id: String(r.id ?? ''), name: r.name ?? '' })),
+      count,
+    };
+  };
 
   /** The underlying tree (mutable CORE instances). Toggles mutate the
    *  `access` fields in place; `treeVersion` is bumped so the derived
@@ -346,6 +366,24 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
     this.dirty.set(true);
   }
 
+  /** Open the role picker popup; clone the chosen role into the current tree. */
+  async openRolePicker(): Promise<void> {
+    const ref = this.modal.open<PickListModalComponent, PickListModalData, PickListModalResult>(
+      PickListModalComponent,
+      {
+        size: 'lg',
+        data: {
+          load: this.roleLoader,
+          multiple: false,
+          title: this.translate.instant('EMPLOYEES.PRIVILEGES.COPY_FROM_ROLE_TITLE'),
+        },
+      },
+    );
+    const res = await ref.afterClosed();
+    const picked = res?.selected?.[0];
+    if (picked) await this.applyPreset({ id: picked.id, name: picked.name });
+  }
+
   /**
    * Clone the permission values from an existing saved role into the current
    * tree (mirrors the legacy "start from a role" dropdown). Overlays the
@@ -471,6 +509,13 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
 
   cancel(): void {
     this.router.navigate(['/employees/privileges']);
+  }
+
+  /** Open the role's default-dashboard editor (existing records only). */
+  customizeDashboard(): void {
+    const id = this.recordId();
+    if (!id || id === '0') return;
+    this.router.navigate(['/employees/privileges', id, 'dashboard']);
   }
 
   hasUnsavedChanges(): boolean {

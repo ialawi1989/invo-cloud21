@@ -1,0 +1,97 @@
+.ao {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ao__company {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ao__logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-weight: 700;
+  font-size: 18px;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.ao__name { font-size: 15px; font-weight: 700; color: #0f172a; }
+.ao__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.ao__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+
+  &--warn   { background: #fef3c7; color: #92400e; }
+  &--danger { background: #fee2e2; color: #991b1b; }
+}
+
+.ao__wrap { overflow-x: auto; }
+
+.ao__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th {
+    text-align: start;
+    padding: 8px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    color: #94a3b8;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  td {
+    padding: 9px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+}
+
+.ao__bname { font-weight: 500; color: #0f172a; }
+.ao__muted { color: #64748b; font-variant-numeric: tabular-nums; }
+.ao__status-col { width: 130px; }
+
+.ao__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &--active   { background: #dcfce7; color: #166534; }
+  &--expiring { background: #fef3c7; color: #92400e; }
+  &--expired  { background: #fee2e2; color: #991b1b; }
+  &--none     { background: #f1f5f9; color: #64748b; }
+}

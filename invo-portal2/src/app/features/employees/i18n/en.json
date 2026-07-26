@@ -180,8 +180,10 @@
       "SAVED": "Privilege saved",
       "DESCRIPTION": "Description",
       "DESCRIPTION_PLACEHOLDER": "What is this role for?",
-      "START_FROM_PRESET": "Start from a role",
-      "SELECT_PRESET": "Copy from an existing role…"
+      "START_FROM_PRESET": "Copy from a role",
+      "SELECT_PRESET": "Copy from an existing role…",
+      "COPY_FROM_ROLE_TITLE": "Copy permissions from a role",
+      "CUSTOMIZE_DASHBOARD": "Customize dashboard"
     },
 
     "ATTENDANCE": {

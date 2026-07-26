@@ -9,38 +9,35 @@
   @if (loading()) {
     <div class="loading"><span class="spinner spinner--lg"></span></div>
   } @else {
-    <!-- ═══ Name + preset ═══ -->
+    <!-- ═══ Name + description ═══ -->
     <section class="card">
       <div class="card__body">
-        <div class="field-row">
-          <div class="field">
+        <div class="field">
+          <div class="field-head">
             <label class="field-label" for="privilege-name">
               {{ 'EMPLOYEES.PRIVILEGES.NAME' | translate }}
               <span class="required">*</span>
             </label>
-            <input
-              id="privilege-name"
-              type="text"
-              class="input"
-              [value]="name()"
-              (input)="onNameInput($any($event.target).value)"
-              [placeholder]="'EMPLOYEES.PRIVILEGES.NAME' | translate"
-            />
-          </div>
 
-          @if (savedRoles().length) {
-            <div class="field">
-              <label class="field-label">{{ 'EMPLOYEES.PRIVILEGES.START_FROM_PRESET' | translate }}</label>
-              <app-search-dropdown
-                [items]="savedRoles()"
-                [displayWith]="displayRole"
-                [searchable]="true"
-                [clearable]="false"
-                [placeholder]="'EMPLOYEES.PRIVILEGES.SELECT_PRESET' | translate"
-                (valueChange)="applyPreset($any($event))"
-              />
-            </div>
-          }
+            <!-- "Copy from a role" is a one-time seed action, not a stored
+                 field — a button that opens a role picker popup. -->
+            @if (savedRoles().length) {
+              <button type="button" class="clone-from-btn" (click)="openRolePicker()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                {{ 'EMPLOYEES.PRIVILEGES.START_FROM_PRESET' | translate }}
+              </button>
+            }
+          </div>
+          <input
+            id="privilege-name"
+            type="text"
+            class="input"
+            [value]="name()"
+            (input)="onNameInput($any($event.target).value)"
+            [placeholder]="'EMPLOYEES.PRIVILEGES.NAME' | translate"
+          />
         </div>
 
         <div class="field">
@@ -153,7 +150,7 @@
               @if (g.expanded && g.hasActions) {
                 <div class="group__body">
                   @for (a of g.actions; track a.key) {
-                    <div class="action">
+                    <div class="action" [class.action--on]="a.checked">
                       <span class="action__label">{{ a.label }}</span>
                       <app-toggle
                         size="sm"
@@ -175,6 +172,11 @@
   <app-loading-overlay [show]="saving()" [message]="savingLabel()"/>
 
   <app-form-sticky-footer>
+    @if (!isCreate()) {
+      <button type="button" class="btn btn-ghost" (click)="customizeDashboard()" [disabled]="saving() || loading()">
+        {{ 'EMPLOYEES.PRIVILEGES.CUSTOMIZE_DASHBOARD' | translate }}
+      </button>
+    }
     <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
       {{ 'COMMON.CANCEL' | translate }}
     </button>

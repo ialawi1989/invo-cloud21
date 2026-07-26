@@ -8,12 +8,12 @@ import {
   SegmentedToggleOption,
 } from '@shared/components/segmented-toggle/segmented-toggle.component';
 
-import { DashChartComponent } from '../components/dash-chart/dash-chart.component';
-import { KpiTileComponent } from '../components/kpi-tile/kpi-tile.component';
-import { WidgetFrameComponent } from '../components/widget-frame/widget-frame.component';
-import { DashboardService } from '../services/dashboard.service';
-import { loadOnScope } from '../services/load-on-scope';
-import { DashboardScope, PaymentsFlow } from '../services/dashboard.types';
+import { DashChartComponent } from '../../components/dash-chart/dash-chart.component';
+import { KpiTileComponent } from '../../components/kpi-tile/kpi-tile.component';
+import { WidgetFrameComponent } from '../../components/widget-frame/widget-frame.component';
+import { DashboardService } from '../../services/dashboard.service';
+import { loadOnScope } from '../../services/load-on-scope';
+import { DashboardScope, PaymentsFlow } from '../../services/dashboard.types';
 
 const EMPTY: PaymentsFlow = {
   openingBalance: 0, incoming: 0, outgoing: 0, closingBalance: 0, points: [],

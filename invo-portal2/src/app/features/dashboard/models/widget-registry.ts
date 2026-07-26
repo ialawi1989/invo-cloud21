@@ -25,7 +25,7 @@
  */
 export type WidgetView = 'bar' | 'hbar' | 'area' | 'pie' | 'donut' | 'table';
 
-export type WidgetGroup = 'overview' | 'sales' | 'finance' | 'inventory' | 'custom';
+export type WidgetGroup = 'overview' | 'sales' | 'finance' | 'inventory' | 'hr' | 'purchasing' | 'delivery' | 'custom';
 
 export interface WidgetDef {
   slug: string;
@@ -59,6 +59,13 @@ export interface WidgetDef {
    * widgets are not charts with a swappable body.
    */
   views?: WidgetView[];
+  /**
+   * Only offered to / rendered for a super admin. These surface tenant-level
+   * detail (company, branch subscriptions) regular roles must never see, and
+   * are gated by the VIEWER's super-admin flag — not the privilege tree — so
+   * they never appear when editing a role's default dashboard.
+   */
+  superAdminOnly?: boolean;
 }
 
 export const WIDGETS: WidgetDef[] = [
@@ -78,8 +85,13 @@ export const WIDGETS: WidgetDef[] = [
   { slug: 'sales-by-source',        title: 'DASHBOARD.W.SALES_BY_SOURCE',    group: 'sales',     scope: 'period', defaultSpan: 4,  minHeight: 320, views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
   { slug: 'sales-by-employee',      title: 'DASHBOARD.W.SALES_BY_EMPLOYEE',  group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 320, views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
   { slug: 'online-invoices',        title: 'DASHBOARD.W.ONLINE_INVOICES',    group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 300, views: ['bar', 'hbar', 'table'] },
+  { slug: 'new-customers',          title: 'DASHBOARD.W.NEW_CUSTOMERS',      group: 'sales',     scope: 'global', defaultSpan: 6,  minHeight: 300 },
+  { slug: 'my-sales',               title: 'DASHBOARD.W.MY_SALES',           group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 180 },
+  { slug: 'sales-target',           title: 'DASHBOARD.W.SALES_TARGET',       group: 'sales',     scope: 'global', defaultSpan: 6,  minHeight: 220 },
 
   // ── Finance ───────────────────────────────────────────────────────
+  { slug: 'financial-snapshot',     title: 'DASHBOARD.W.FINANCIAL_SNAPSHOT', group: 'finance',   scope: 'period', defaultSpan: 12, minHeight: 150 },
+  { slug: 'expenses-by-category',   title: 'DASHBOARD.W.EXPENSES_BY_CATEGORY', group: 'finance', scope: 'period', defaultSpan: 6,  minHeight: 320, views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
   { slug: 'payments-flow',          title: 'DASHBOARD.W.PAYMENTS_FLOW',      group: 'finance',   scope: 'period', defaultSpan: 8,  minHeight: 380 },
   { slug: 'expense-income',         title: 'DASHBOARD.W.INCOME_EXPENSE',     group: 'finance',   scope: 'period', defaultSpan: 8,  minHeight: 380 },
   { slug: 'payment-method-overview',        title: 'DASHBOARD.W.PAYMENT_METHODS',    group: 'finance',   scope: 'period', defaultSpan: 6,  minHeight: 320, views: ['hbar', 'bar', 'pie', 'donut', 'table'] },
@@ -87,9 +99,96 @@ export const WIDGETS: WidgetDef[] = [
   // ── Inventory ─────────────────────────────────────────────────────
   { slug: 'low-quantity-products',              title: 'DASHBOARD.W.LOW_STOCK',          group: 'inventory', scope: 'global', defaultSpan: 6,  minHeight: 300 },
   { slug: 'expiry-date-products',       title: 'DASHBOARD.W.EXPIRING_BATCHES',   group: 'inventory', scope: 'global', defaultSpan: 6,  minHeight: 300 },
+
+  // ── HR ────────────────────────────────────────────────────────────
+  { slug: 'attendance-today',       title: 'DASHBOARD.W.ATTENDANCE_TODAY',   group: 'hr',        scope: 'global', defaultSpan: 6,  minHeight: 200 },
+
+  // ── Purchasing / delivery / loss ──────────────────────────────────
+  { slug: 'purchase-order-status',  title: 'DASHBOARD.W.PO_STATUS',          group: 'purchasing', scope: 'global', defaultSpan: 6, minHeight: 240 },
+  { slug: 'delivery-status',        title: 'DASHBOARD.W.DELIVERY_STATUS',    group: 'delivery',  scope: 'global', defaultSpan: 6,  minHeight: 240 },
+  { slug: 'refunds-voids',          title: 'DASHBOARD.W.REFUNDS_VOIDS',      group: 'sales',     scope: 'period', defaultSpan: 6,  minHeight: 150 },
+
+  // ── Management (cross-branch / operations) ────────────────────────
+  { slug: 'branch-comparison',      title: 'DASHBOARD.W.BRANCH_COMPARISON',  group: 'sales',     scope: 'period', defaultSpan: 8,  minHeight: 300 },
+  { slug: 'live-operations',        title: 'DASHBOARD.W.LIVE_OPERATIONS',    group: 'sales',     scope: 'global', defaultSpan: 4,  minHeight: 220 },
+
+  // ── Super admin only (tenant-level) ───────────────────────────────
+  { slug: 'company-kpis',           title: 'DASHBOARD.W.COMPANY_KPIS',       group: 'overview',  scope: 'period', defaultSpan: 12, minHeight: 150, superAdminOnly: true },
+  { slug: 'admin-company-overview', title: 'DASHBOARD.W.COMPANY_OVERVIEW',    group: 'overview',  scope: 'global', defaultSpan: 8,  minHeight: 260, superAdminOnly: true },
+  { slug: 'attention-alerts',       title: 'DASHBOARD.W.ATTENTION',          group: 'overview',  scope: 'global', defaultSpan: 4,  minHeight: 220, superAdminOnly: true },
+  { slug: 'employees-overview',     title: 'DASHBOARD.W.EMPLOYEES_OVERVIEW', group: 'overview',  scope: 'global', defaultSpan: 6,  minHeight: 150, superAdminOnly: true },
 ];
 
 export const WIDGET_BY_SLUG = new Map(WIDGETS.map((w) => [w.slug, w]));
+
+/**
+ * Sensible DEFAULT gate per widget group — the module permission a role needs
+ * for the group to show. This is what makes a role's widgets fit the role out
+ * of the box: a cashier (sales access) gets sales/overview widgets, an
+ * accountant (account access) gets finance, etc. — without anyone configuring
+ * anything. `overview`/`custom` are ungated (overview is the base board; custom
+ * reports are access-filtered when registered). Admins then refine per widget
+ * via the explicit toggles below.
+ */
+export const WIDGET_GROUP_PERMISSION: Record<WidgetGroup, string> = {
+  overview:  '',
+  sales:     'invoiceSecurity.actions.view',
+  finance:   'accountSecurity.actions.view',
+  inventory: 'productSecurity.actions.view',
+  hr:        'employeeAttendenceSecurity.actions.view',
+  purchasing:'purchaseOrderSecurity.actions.view',
+  delivery:  'deliverySecurity.actions.view',
+  custom:    '',
+};
+
+/**
+ * The security group under which each widget is individually gated. Its actions
+ * are generated from this registry (see `dashboardWidgetSecurity`), so every
+ * widget shows up as its own toggle in the privilege form — that's how an admin
+ * refines a role's widget access.
+ */
+export const DASHBOARD_WIDGET_SECURITY = 'dashboardWidgetSecurity';
+
+/**
+ * Stable privilege ACTION key for a widget slug (camelCase, alphanumeric only)
+ * — used both to build the privilege actions and to check them, so the two
+ * always line up. e.g. `branch-comparison` → `branchComparison`.
+ */
+export function widgetActionKey(slug: string): string {
+  return slug.replace(/[^a-zA-Z0-9]+([a-zA-Z0-9])?/g, (_m, c: string) => (c ? c.toUpperCase() : ''));
+}
+
+/** Human-readable fallback name for a slug, for the privilege-form toggle
+ *  label. e.g. `branch-comparison` → `Branch Comparison`. */
+export function widgetLabelFromSlug(slug: string): string {
+  return slug.replace(/[-_:]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).trim();
+}
+
+/**
+ * True when a permission-checker (e.g. `PrivilegeService.check` bound to a
+ * specific role/employee) grants access to this widget.
+ *
+ * Model — **super admin sees every widget**; everyone else must pass BOTH:
+ *  1. the group's module default (`WIDGET_GROUP_PERMISSION`) — so a role's
+ *     widgets fit the role automatically, and
+ *  2. the per-widget toggle (`dashboardWidgetSecurity.actions.<key>`) — which
+ *     an admin can turn off in the privilege form to hide a specific widget.
+ * Both use allow-by-default semantics, so an unconfigured role gets exactly the
+ * widgets its modules imply. Tenant `superAdminOnly` widgets are never shown to
+ * non-super-admins.
+ */
+export function canAccessWidget(
+  def: Pick<WidgetDef, 'slug' | 'group' | 'superAdminOnly'>,
+  check: (permission: string) => boolean,
+  isSuperAdmin = false,
+): boolean {
+  if (isSuperAdmin) return true;
+  if (def.superAdminOnly) return false;
+  const modulePerm = WIDGET_GROUP_PERMISSION[def.group] ?? '';
+  const moduleOk = modulePerm ? check(modulePerm) : true;
+  const widgetOk = check(`${DASHBOARD_WIDGET_SECURITY}.actions.${widgetActionKey(def.slug)}`);
+  return moduleOk && widgetOk;
+}
 
 /**
  * Shown to a user who has never customised — a useful default, not everything.
@@ -97,7 +196,12 @@ export const WIDGET_BY_SLUG = new Map(WIDGETS.map((w) => [w.slug, w]));
  * than whatever the spans happen to flow into.
  */
 export const DEFAULT_LAYOUT: { id: string; widgets: { slug: string; colSpan: number }[] }[] = [
+  // Super-admin-only rows; filtered out for everyone else (they start at the
+  // business summary below).
+  { id: 'row_ck',        widgets: [{ slug: 'company-kpis', colSpan: 12 }] },
+  { id: 'row_admin',     widgets: [{ slug: 'admin-company-overview', colSpan: 8 }, { slug: 'attention-alerts', colSpan: 4 }] },
   { id: 'row_default_1', widgets: [{ slug: 'business-summary', colSpan: 12 }] },
+  { id: 'row_branches',  widgets: [{ slug: 'branch-comparison', colSpan: 8 }, { slug: 'live-operations', colSpan: 4 }] },
   { id: 'row_default_2', widgets: [{ slug: 'sales-by-day', colSpan: 8 }, { slug: 'sales-by-source', colSpan: 4 }] },
   { id: 'row_default_3', widgets: [{ slug: 'top-10-item-by-sales', colSpan: 6 }, { slug: 'top-customers', colSpan: 6 }] },
   { id: 'row_default_4', widgets: [{ slug: 'expense-income', colSpan: 8 }, { slug: 'low-quantity-products', colSpan: 4 }] },
