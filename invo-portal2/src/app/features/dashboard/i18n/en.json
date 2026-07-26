@@ -22,9 +22,15 @@
       "YESTERDAY": "Yesterday",
       "LAST_7": "Last 7 days",
       "LAST_30": "Last 30 days",
+      "THIS_WEEK": "This week",
       "THIS_MONTH": "This month",
-      "PREVIOUS_MONTH": "Previous month",
+      "THIS_QUARTER": "This quarter",
       "THIS_YEAR": "This year",
+      "YEAR_TO_DATE": "Year to date",
+      "PREVIOUS_WEEK": "Previous week",
+      "PREVIOUS_MONTH": "Previous month",
+      "PREVIOUS_QUARTER": "Previous quarter",
+      "PREVIOUS_YEAR": "Previous year",
       "LAST_14": "Last 14 days"
     },
     "W": {

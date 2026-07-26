@@ -22,9 +22,15 @@
       "YESTERDAY": "أمس",
       "LAST_7": "آخر 7 أيام",
       "LAST_30": "آخر 30 يومًا",
+      "THIS_WEEK": "هذا الأسبوع",
       "THIS_MONTH": "هذا الشهر",
-      "PREVIOUS_MONTH": "الشهر السابق",
+      "THIS_QUARTER": "هذا الربع",
       "THIS_YEAR": "هذه السنة",
+      "YEAR_TO_DATE": "منذ بداية السنة",
+      "PREVIOUS_WEEK": "الأسبوع السابق",
+      "PREVIOUS_MONTH": "الشهر السابق",
+      "PREVIOUS_QUARTER": "الربع السابق",
+      "PREVIOUS_YEAR": "السنة السابقة",
       "LAST_14": "آخر 14 يومًا"
     },
     "W": {

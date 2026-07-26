@@ -22,8 +22,7 @@ import { ToastService } from '@shared/components/toast/toast.service';
 import { BranchConnectionService } from '@core/layout/services/branch.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
-import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
-import type { DatePreset, DateRange } from '@shared/components/datepicker/date-picker.types';
+import type { DateRange } from '@shared/components/datepicker/date-picker.types';
 import { isCompleteRange } from '@shared/components/datepicker/date-picker.types';
 
 import { ModalService } from '@shared/modal/modal.service';
@@ -68,6 +67,9 @@ import type { SavedModule } from '../../reports/custom/shared/models/custom-repo
 
 interface BranchOption { id: string; name: string; }
 
+/** A date preset for the dashboard's preset-only date dropdown. */
+interface DatePresetOption { labelKey: string; range: () => DateRange; }
+
 /** A widget as placed on the grid. */
 interface Placed {
   def: WidgetDef;
@@ -109,7 +111,6 @@ const SCOPE_KEY  = 'dashboard:scope';
     CommonModule,
     RouterLink,
     TranslateModule,
-    DatePickerComponent,
     SearchDropdownComponent,
     SkeletonComponent,
     SeriesWidgetComponent,
@@ -222,20 +223,53 @@ export class DashboardComponent implements OnInit {
     return this.translate.instant('DASHBOARD.GREETING', { name });
   });
 
-  /** Presets are thunks so "Today" stays correct across midnight. */
-  readonly presets = computed<DatePreset[]>(() => {
-    this.i18nTick();
-    const t = (k: string) => this.translate.instant(k);
-    return [
-      { label: t('DASHBOARD.RANGE.TODAY'),          range: () => todayRange() },
-      { label: t('DASHBOARD.RANGE.YESTERDAY'),      range: () => shiftDays(todayRange(), -1) },
-      { label: t('DASHBOARD.RANGE.LAST_7'),         range: () => lastNDays(7) },
-      { label: t('DASHBOARD.RANGE.LAST_30'),        range: () => lastNDays(30) },
-      { label: t('DASHBOARD.RANGE.THIS_MONTH'),     range: () => thisMonth() },
-      { label: t('DASHBOARD.RANGE.PREVIOUS_MONTH'), range: () => previousMonth() },
-      { label: t('DASHBOARD.RANGE.THIS_YEAR'),      range: () => thisYear() },
-    ];
-  });
+  /**
+   * Date presets. The dashboard uses a preset-only dropdown (no calendar), so
+   * these are the entire date UX. Range thunks so "Today"/"This week" stay
+   * correct across midnight.
+   */
+  readonly datePresets: DatePresetOption[] = [
+    { labelKey: 'DASHBOARD.RANGE.TODAY',            range: () => todayRange() },
+    { labelKey: 'DASHBOARD.RANGE.YESTERDAY',        range: () => yesterday() },
+    { labelKey: 'DASHBOARD.RANGE.THIS_WEEK',        range: () => thisWeek() },
+    { labelKey: 'DASHBOARD.RANGE.THIS_MONTH',       range: () => thisMonth() },
+    { labelKey: 'DASHBOARD.RANGE.THIS_QUARTER',     range: () => thisQuarter() },
+    { labelKey: 'DASHBOARD.RANGE.THIS_YEAR',        range: () => thisYear() },
+    { labelKey: 'DASHBOARD.RANGE.YEAR_TO_DATE',     range: () => yearToDate() },
+    { labelKey: 'DASHBOARD.RANGE.PREVIOUS_WEEK',    range: () => previousWeek() },
+    { labelKey: 'DASHBOARD.RANGE.PREVIOUS_MONTH',   range: () => previousMonth() },
+    { labelKey: 'DASHBOARD.RANGE.PREVIOUS_QUARTER', range: () => previousQuarter() },
+    { labelKey: 'DASHBOARD.RANGE.PREVIOUS_YEAR',    range: () => previousYear() },
+    { labelKey: 'DASHBOARD.RANGE.LAST_7',           range: () => lastNDays(7) },
+    { labelKey: 'DASHBOARD.RANGE.LAST_30',          range: () => lastNDays(30) },
+  ];
+
+  /** Currently-selected preset — the dropdown's model. Defaults to This Month. */
+  readonly selectedPreset = signal<DatePresetOption>(this.datePresets[3]);
+  displayPreset = (p: DatePresetOption): string => { this.i18nTick(); return this.translate.instant(p.labelKey); };
+  comparePreset = (a: DatePresetOption, b: DatePresetOption): boolean => a?.labelKey === b?.labelKey;
+
+  onPresetChange(p: DatePresetOption | null): void {
+    if (!p) return;
+    this.selectedPreset.set(p);
+    this.onRange(p.range());
+  }
+
+  /** Point the dropdown at whichever preset matches the current range; if none
+   *  does (legacy custom range), fall back to This Month. */
+  private syncSelectedPreset(): void {
+    const cur = this.range();
+    const key = (r: DateRange) => `${iso(r.start ?? new Date())}|${iso(r.end ?? new Date())}`;
+    const curKey = key(cur);
+    const match = this.datePresets.find((p) => key(p.range()) === curKey);
+    if (match) {
+      this.selectedPreset.set(match);
+    } else {
+      const thisMonthPreset = this.datePresets[3];
+      this.selectedPreset.set(thisMonthPreset);
+      this.range.set(thisMonthPreset.range());
+    }
+  }
 
   readonly branchOptions = computed<BranchOption[]>(() => {
     this.i18nTick();
@@ -345,6 +379,10 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.restoreScope();
+    // Sync the preset dropdown to the restored range. A saved range that no
+    // longer matches any preset (e.g. a legacy custom range from the old
+    // calendar) snaps back to This Month so the label and data stay consistent.
+    this.syncSelectedPreset();
     // The custom-report pool is needed in both modes (it's a pickable source and
     // a renderable widget) — load it regardless.
     this.loadCustomReports();
@@ -783,4 +821,37 @@ function previousMonth(): DateRange {
 function thisYear(): DateRange {
   const now = new Date();
   return { start: new Date(now.getFullYear(), 0, 1), end: dayStart(now) };
+}
+function yesterday(): DateRange { return shiftDays(todayRange(), -1); }
+function thisWeek(): DateRange {
+  const now = dayStart(new Date());
+  const start = new Date(now); start.setDate(now.getDate() - now.getDay()); // week starts Sunday
+  return { start, end: now };
+}
+function previousWeek(): DateRange {
+  const tw = thisWeek();
+  const start = new Date(tw.start!); start.setDate(start.getDate() - 7);
+  const end   = new Date(tw.start!); end.setDate(end.getDate() - 1);
+  return { start, end };
+}
+function thisQuarter(): DateRange {
+  const now = new Date();
+  const q = Math.floor(now.getMonth() / 3);
+  return { start: new Date(now.getFullYear(), q * 3, 1), end: dayStart(now) };
+}
+function previousQuarter(): DateRange {
+  const now = new Date();
+  const startMonth = Math.floor(now.getMonth() / 3) * 3 - 3;
+  return {
+    start: new Date(now.getFullYear(), startMonth, 1),
+    end:   new Date(now.getFullYear(), startMonth + 3, 0),
+  };
+}
+function yearToDate(): DateRange {
+  const now = new Date();
+  return { start: new Date(now.getFullYear(), 0, 1), end: dayStart(now) };
+}
+function previousYear(): DateRange {
+  const now = new Date();
+  return { start: new Date(now.getFullYear() - 1, 0, 1), end: new Date(now.getFullYear() - 1, 11, 31) };
 }

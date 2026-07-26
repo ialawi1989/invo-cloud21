@@ -40,11 +40,15 @@
         </button>
       }
 
-      <app-date-picker
-        mode="range"
-        [presets]="presets()"
-        [value]="range()"
-        (valueChange)="onRange($event)"/>
+      <app-search-dropdown
+        class="db__period"
+        [items]="datePresets"
+        [value]="selectedPreset()"
+        [displayWith]="displayPreset"
+        [compareWith]="comparePreset"
+        [searchable]="false"
+        [clearable]="false"
+        (valueChange)="onPresetChange($any($event))"/>
 
       <app-search-dropdown
         class="db__branch"
