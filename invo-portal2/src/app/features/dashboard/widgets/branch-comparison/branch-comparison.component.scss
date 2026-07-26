@@ -22,13 +22,18 @@
     vertical-align: middle;
   }
   tr:last-child td { border-bottom: none; }
+
+  // Numeric columns: header AND cell right-aligned so labels sit over values.
+  th.bc__num, td.bc__num { text-align: end; }
 }
 
 .bc__name { font-weight: 500; color: #0f172a; }
-.bc__num  { text-align: end; font-variant-numeric: tabular-nums; color: #475569; }
+.bc__num  { font-variant-numeric: tabular-nums; color: #475569; }
 .bc__strong { color: #0f172a; font-weight: 600; }
 
-.bc__share { width: 180px; }
+// Share column: fixed width; bar + percent laid out as one right-aligned unit
+// so the % lines up under the SHARE header.
+.bc__share { width: 190px; text-align: end; white-space: nowrap; }
 .bc__bar {
   display: inline-block; vertical-align: middle;
   width: 110px; height: 7px; border-radius: 999px;
