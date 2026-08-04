@@ -51,6 +51,29 @@ export class EmployeeService {
     return this.api.request<any>(this.api.post('employee/saveEmployee', employee));
   }
 
+  // ─── Uniqueness checks ───────────────────────────────────────────────────
+
+  /**
+   * Shared `company/validateName` uniqueness probe. The backend answers
+   * `{ success: true }` when the value is free (or unchanged for the record
+   * identified by `id`) and `{ success: false }` when it clashes.
+   * Used for the pass-code uniqueness rule (legacy `tableName: 'passCode'`).
+   */
+  async validateName(params: {
+    tableName: string;
+    id?: string | null;
+    name: string;
+    branchId?: string;
+  }): Promise<{ success: boolean; msg?: string }> {
+    const res = await this.api.request<any>(this.api.post('company/validateName', {
+      tableName: params.tableName,
+      id:        params.id ?? '',
+      name:      params.name,
+      branchId:  params.branchId ?? '',
+    }));
+    return { success: !!res?.success, msg: res?.msg };
+  }
+
   // ─── Invitation ──────────────────────────────────────────────────────────
 
   /** Look up an existing InvoCloud user by email (invite flow). */

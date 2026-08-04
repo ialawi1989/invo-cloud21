@@ -417,6 +417,14 @@ export const routes: Routes = [
           import('./features/settings/chart-of-accounts/chart-of-accounts.routes').then(m => m.CHART_OF_ACCOUNTS_ROUTES)
       },
       {
+        // Opening Balances — set starting debit/credit for every ledger
+        // account (plus per-customer / supplier / product balances) as of
+        // an opening date, enforcing double-entry (debit = credit).
+        path: 'account/opening-balances',
+        loadChildren: () =>
+          import('./features/settings/opening-balances/opening-balances.routes').then(m => m.OPENING_BALANCES_ROUTES)
+      },
+      {
         // Analytics — store-wide GA4 traffic + e-commerce + realtime and
         // GSC search. Distinct from the blog-scoped `/blog/analytics`.
         path: 'analytics',

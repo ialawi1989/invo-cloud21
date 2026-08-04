@@ -37,6 +37,12 @@ export { MODAL_DATA, MODAL_REF };
         0 0 0 1px rgba(0, 0, 0, 0.06),
         0 8px 24px rgba(0, 0, 0, 0.14),
         0 24px 56px rgba(0, 0, 0, 0.12);
+      /* Keep the panel on a stable, pre-promoted compositing layer so a
+         transform animation (entrance / attention-pulse) never triggers a
+         one-frame black flash from re-promotion. */
+      will-change: transform;
+      backface-visibility: hidden;
+      transform: translateZ(0);
     }
     .modal-close {
       position: absolute; top: 14px; right: 14px;

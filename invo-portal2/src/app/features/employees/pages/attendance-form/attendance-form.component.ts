@@ -168,28 +168,51 @@ export class AttendanceFormComponent implements OnInit, CanLeaveComponent {
     try {
       const v = this.form.getRawValue();
       const original = this.original();
-      const payload: any = {
-        ...(original ?? {}),
-        id:            this.attendanceId() ?? null,
-        adjClockedIn:  this.toIso(v.adjClockedIn),
-        adjClockedOut: this.toIso(v.adjClockedOut),
-      };
-      const res = await this.service.adjust(payload);
-      if (res?.success !== false) {
-        // Clear the dirty flag before navigating so the unsaved-changes
-        // guard doesn't fire during the route change.
+      const id = this.attendanceId() ?? null;
+
+      // Match the legacy contract: one request per adjusted column, carrying
+      // only { id, adj<field>, type } — and a LOCAL datetime string (not a UTC
+      // ISO with `Z`) so the saved time is exactly what the user picked.
+      const jobs: Array<'adjClockedIn' | 'adjClockedOut'> = [];
+      if (this.changed(v.adjClockedIn,  original?.adjClockedIn))  jobs.push('adjClockedIn');
+      if (this.changed(v.adjClockedOut, original?.adjClockedOut)) jobs.push('adjClockedOut');
+
+      if (jobs.length === 0) {
         this.form.markAsPristine();
-        this.toast.success('EMPLOYEES.ATTENDANCE.SAVED');
         this.router.navigate(['/employees/attendance']);
-      } else {
-        this.toast.error('COMMON.SAVE_FAILED', res?.msg);
+        return;
       }
+
+      for (const field of jobs) {
+        const res = await this.service.adjust({
+          id,
+          [field]: this.toLocal(this.form.getRawValue()[field] as Date | null),
+          type:    field,
+        });
+        if (res?.success === false) {
+          this.toast.error('COMMON.SAVE_FAILED', res?.msg);
+          return;
+        }
+      }
+
+      // Clear the dirty flag before navigating so the unsaved-changes guard
+      // doesn't fire during the route change.
+      this.form.markAsPristine();
+      this.toast.success('EMPLOYEES.ATTENDANCE.SAVED');
+      this.router.navigate(['/employees/attendance']);
     } catch (e: any) {
       console.error('[attendance-form] save failed', e);
       this.toast.error('COMMON.SAVE_FAILED', e?.message);
     } finally {
       this.saving.set(false);
     }
+  }
+
+  /** True when the picked value differs from the originally-saved adjustment. */
+  private changed(value: Date | null, original: string | null | undefined): boolean {
+    const a = value ? value.getTime() : null;
+    const b = original ? new Date(original).getTime() : null;
+    return a !== b;
   }
 
   cancel(): void {
@@ -210,9 +233,12 @@ export class AttendanceFormComponent implements OnInit, CanLeaveComponent {
     return Number.isNaN(d.getTime()) ? null : d;
   }
 
-  /** `Date` → full ISO string (UTC). Returns `null` for a null date. */
-  private toIso(d: Date | null): string | null {
+  /** `Date` → local `"YYYY-MM-DD HH:mm"` string (matches the legacy payload).
+   *  Uses local calendar parts — no UTC conversion — so the time is stored
+   *  exactly as the user picked it. Returns `null` for a null date. */
+  private toLocal(d: Date | null): string | null {
     if (!d) return null;
-    return d.toISOString();
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
   }
 }

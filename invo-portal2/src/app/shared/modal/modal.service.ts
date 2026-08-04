@@ -271,7 +271,33 @@ export class ModalService {
       }
     });
 
-    if (closeOnBackdrop) overlayRef.backdropClick().subscribe(() => modalRef.dismiss());
+    if (closeOnBackdrop) {
+      overlayRef.backdropClick().subscribe(() => modalRef.dismiss());
+    } else {
+      // Backdrop click is blocked — instead of silently ignoring it, give the
+      // modal a brief zoom pulse (ngb-modal style) so the user sees the click
+      // registered but the dialog won't close that way.
+      //
+      // Played via the Web Animations API rather than toggling a CSS class:
+      // toggling would change the panel's `animation` property and re-trigger
+      // the entrance keyframes (which start at opacity:0), causing a one-frame
+      // "black" blink of the backdrop. A one-off `.animate()` leaves the CSS
+      // animation untouched and cleans itself up.
+      let pulse: Animation | null = null;
+      overlayRef.backdropClick().subscribe(() => {
+        const panel = overlayRef.overlayElement?.querySelector('.modal-panel') as HTMLElement | null;
+        if (!panel) return;
+        pulse?.cancel(); // restart cleanly on rapid repeated clicks
+        pulse = panel.animate(
+          [
+            { transform: 'scale(1)' },
+            { transform: 'scale(1.02)' },
+            { transform: 'scale(1)' },
+          ],
+          { duration: 240, easing: 'ease-out' },
+        );
+      });
+    }
     overlayRef.keydownEvents().subscribe(e => {
       if (e.key === 'Escape' && closeable) modalRef.dismiss();
     });

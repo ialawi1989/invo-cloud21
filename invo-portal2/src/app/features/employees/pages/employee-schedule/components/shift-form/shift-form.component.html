@@ -51,7 +51,7 @@
           </div>
           <button type="button" class="icon-btn danger" (click)="removeExisting($index)"
                   [attr.aria-label]="'COMMON.DELETE' | translate">
-            <i class="bx bx-trash-alt"></i>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>
           </button>
         </div>
       }
@@ -72,7 +72,7 @@
           </div>
           <button type="button" class="icon-btn danger" (click)="removeNew($index)"
                   [attr.aria-label]="'COMMON.DELETE' | translate">
-            <i class="bx bx-trash-alt"></i>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>
           </button>
         </div>
       }
@@ -80,7 +80,8 @@
   }
 
   <button type="button" class="add-link" (click)="addShift()">
-    <i class="bx bx-plus"></i> {{ 'EMPLOYEES.SCHEDULE.ADD_SHIFT' | translate }}
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    {{ 'EMPLOYEES.SCHEDULE.ADD_SHIFT' | translate }}
   </button>
 </div>
 

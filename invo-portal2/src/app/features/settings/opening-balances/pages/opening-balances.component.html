@@ -1,0 +1,260 @@
+<div class="ob-page">
+  <app-breadcrumbs [items]="breadcrumbs()" separator="chevron" />
+
+  <header class="ob-head">
+    <div class="ob-head__titles">
+      <h1 class="ob-title">{{ 'OPENING_BALANCES.TITLE' | translate }}</h1>
+      <p class="ob-sub">{{ 'OPENING_BALANCES.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="ob-head__actions">
+      <app-dropdown-menu-btn
+        [items]="optionsMenu()" [appendToBody]="true" [chevron]="true" align="end"
+        triggerClass="ob-btn ob-btn--ghost">
+        {{ 'OPENING_BALANCES.OPTIONS' | translate }}
+      </app-dropdown-menu-btn>
+    </div>
+  </header>
+
+  <!-- Toolbar: opening date · branch · live balance status -->
+  <section class="ob-toolbar">
+    <div class="ob-field">
+      <label class="ob-field__label">{{ 'OPENING_BALANCES.OPENING_DATE' | translate }}</label>
+      <app-date-picker
+        mode="single"
+        [max]="maxDate()"
+        [value]="openingDateObj()"
+        [disabled]="!editMode()"
+        triggerClass="ob-input"
+        (valueChange)="onDatePick($any($event))" />
+    </div>
+
+    @if (branches().length > 1) {
+      <div class="ob-field">
+        <label class="ob-field__label">{{ 'OPENING_BALANCES.BRANCH' | translate }}</label>
+        <app-search-dropdown
+          [items]="branches()"
+          [displayWith]="branchDisplay"
+          [compareWith]="branchCompare"
+          [value]="selectedBranch()"
+          [clearable]="false"
+          [disabled]="editMode()"
+          (valueChange)="onBranchChange($event)" />
+      </div>
+    }
+
+    <div class="ob-status" [class.ob-status--ok]="isBalanced()" [class.ob-status--adj]="!isBalanced()">
+      @if (isBalanced()) {
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <span>{{ 'OPENING_BALANCES.IN_BALANCE' | translate }}</span>
+      } @else {
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+        <span>{{ 'OPENING_BALANCES.AUTO_BALANCED' | translate }} · {{ (adjustmentDebit() || adjustmentCredit()) | mycurrency }}</span>
+      }
+    </div>
+  </section>
+
+  <!-- Accounts grid -->
+  <section class="ob-card">
+    <app-loading-overlay [show]="loading()" />
+
+    <div class="ob-scroll">
+      <table class="ob-grid">
+        <colgroup>
+          <col class="ob-c-acc" />
+          <col class="ob-c-num" />
+          <col class="ob-c-num" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="ob-col-acc">{{ 'OPENING_BALANCES.ACCOUNT' | translate }}</th>
+            <th class="ob-col-num">{{ 'OPENING_BALANCES.DEBIT' | translate }}</th>
+            <th class="ob-col-num">{{ 'OPENING_BALANCES.CREDIT' | translate }}</th>
+          </tr>
+        </thead>
+
+        @for (group of groups(); track group.parentType) {
+          <tbody class="ob-group">
+            <tr class="ob-row-parent">
+              <td colspan="3">{{ group.label }}</td>
+            </tr>
+
+            @for (tg of group.typeGroups; track tg.type) {
+              @if (group.showTypeHeaders && tg.label) {
+                <tr class="ob-row-type"><td colspan="3">{{ tg.label }}</td></tr>
+              }
+
+              @for (a of tg.accounts; track trackAccount($index, a)) {
+                <tr class="ob-row-acc"
+                    [class.ob-row-acc--expandable]="a.expandable"
+                    [class.ob-row-acc--open]="a.expanded"
+                    (click)="a.expandable ? toggleExpand(a) : null">
+                  <td class="ob-cell-acc" [class.ob-indent]="group.showTypeHeaders">
+                    <span class="ob-acc-wrap">
+                      @if (a.expandable) {
+                        <svg class="ob-chevron" [class.ob-chevron--open]="a.expanded" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+                      }
+                      <span class="ob-acc-name">{{ a.name }}</span>
+                      @if (a.readonly && a.expandable) {
+                        <span class="ob-acc-hint">
+                          {{ (a.recordKind === 'inventory'
+                              ? 'OPENING_BALANCES.READONLY_INVENTORY'
+                              : 'OPENING_BALANCES.READONLY_HINT') | translate }}
+                        </span>
+                      }
+                    </span>
+                  </td>
+
+                  <!-- Debit -->
+                  <td class="ob-cell-num" (click)="$event.stopPropagation()">
+                    @if (editMode() && !a.readonly) {
+                      <input type="number" class="ob-num-input" min="0" step="0.001"
+                             [value]="a.debit || null"
+                             (input)="setDebit(a, $any($event.target).value)"
+                             placeholder="0" />
+                    } @else if (a.debit > 0) {
+                      <span class="ob-num ob-num--debit">{{ a.debit | mycurrency }}</span>
+                    } @else { <span class="ob-num-empty">—</span> }
+                  </td>
+
+                  <!-- Credit -->
+                  <td class="ob-cell-num" (click)="$event.stopPropagation()">
+                    @if (editMode() && !a.readonly) {
+                      <input type="number" class="ob-num-input" min="0" step="0.001"
+                             [value]="a.credit || null"
+                             (input)="setCredit(a, $any($event.target).value)"
+                             placeholder="0" />
+                    } @else if (a.credit > 0) {
+                      <span class="ob-num ob-num--credit">{{ a.credit | mycurrency }}</span>
+                    } @else { <span class="ob-num-empty">—</span> }
+                  </td>
+                </tr>
+
+                <!-- Expanded sub-records panel -->
+                @if (a.expanded) {
+                  @let p = panel(a.accountId);
+                  <tr class="ob-row-panel">
+                    <td colspan="3">
+                      <div class="ob-panel">
+                        @if (a.recordKind === 'inventory') {
+                          <div class="ob-panel__search">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" [value]="p?.search || ''"
+                                   [placeholder]="'OPENING_BALANCES.SEARCH_PRODUCTS' | translate"
+                                   (input)="onInventorySearch(a, $any($event.target).value)" />
+                          </div>
+                        }
+
+                        @if (p?.loading) {
+                          <div class="ob-panel__loading"><span class="ob-spinner"></span></div>
+                        } @else if ((p?.list?.length ?? 0) === 0) {
+                          <div class="ob-panel__empty">{{ 'OPENING_BALANCES.NO_RECORDS' | translate }}</div>
+                        } @else {
+                          <table class="ob-records">
+                            @for (rec of p?.list ?? []; track trackRecord($index, rec)) {
+                              <tr>
+                                <td class="ob-rec-name">
+                                  @if (recordViewLink(a, rec); as link) {
+                                    <a [routerLink]="link" class="ob-rec-link" (click)="$event.stopPropagation()">{{ rec.name }}</a>
+                                  } @else { <span>{{ rec.name }}</span> }
+                                  @if (a.recordKind === 'inventory') {
+                                    <span class="ob-rec-sub">
+                                      {{ 'OPENING_BALANCES.STOCK' | translate }}: {{ rec.stock ?? 0 }} ·
+                                      {{ 'OPENING_BALANCES.COST' | translate }}: {{ (rec.openingBalanceCost ?? 0) | mycurrency }}
+                                    </span>
+                                  }
+                                </td>
+
+                                @if (a.recordKind === 'payable') {
+                                  <td class="ob-cell-num"><span class="ob-num-empty">—</span></td>
+                                  <td class="ob-cell-num"><span class="ob-num ob-num--credit">{{ rec.openingBalance | mycurrency }}</span></td>
+                                } @else if (a.recordKind === 'inventory' && rec.editing) {
+                                  <td class="ob-cell-num" colspan="2">
+                                    <div class="ob-rec-edit" (click)="$event.stopPropagation()">
+                                      <input type="number" min="0" [value]="rec.openingBalance || null"
+                                             (input)="setRecordField(a.accountId!, rec.id, 'openingBalance', $any($event.target).value)"
+                                             [attr.aria-label]="'OPENING_BALANCES.OPENING_BALANCE' | translate" placeholder="0" />
+                                      <input type="number" min="0" [value]="rec.openingBalanceCost || null"
+                                             (input)="setRecordField(a.accountId!, rec.id, 'openingBalanceCost', $any($event.target).value)"
+                                             [attr.aria-label]="'OPENING_BALANCES.COST' | translate" placeholder="0" />
+                                      <button type="button" class="ob-apply" (click)="applyRecord(a, rec)">{{ 'OPENING_BALANCES.APPLY' | translate }}</button>
+                                    </div>
+                                  </td>
+                                } @else {
+                                  <td class="ob-cell-num"><span class="ob-num ob-num--debit">{{ rec.openingBalance | mycurrency }}</span></td>
+                                  <td class="ob-cell-num">
+                                    @if (a.recordKind === 'inventory' && editMode()) {
+                                      <button type="button" class="ob-rec-editbtn" (click)="toggleRecordEdit(a.accountId!, rec); $event.stopPropagation()">{{ 'OPENING_BALANCES.EDIT' | translate }}</button>
+                                    } @else { <span class="ob-num-empty">—</span> }
+                                  </td>
+                                }
+                              </tr>
+                            }
+                          </table>
+
+                          @if (p && p.pageCount > 1) {
+                            <div class="ob-pager">
+                              <span class="ob-pager__info">
+                                {{ 'OPENING_BALANCES.SHOWING' | translate: { from: recordRange(p).from, to: recordRange(p).to, count: p.count } }}
+                              </span>
+                              <div class="ob-pager__btns">
+                                <button type="button" [disabled]="p.page <= 1" (click)="goToRecordPage(a, p.page - 1); $event.stopPropagation()">‹</button>
+                                <span>{{ p.page }} / {{ p.pageCount }}</span>
+                                <button type="button" [disabled]="p.page >= p.pageCount" (click)="goToRecordPage(a, p.page + 1); $event.stopPropagation()">›</button>
+                              </div>
+                            </div>
+                          }
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            }
+          </tbody>
+        }
+
+        <!-- Totals -->
+        <tfoot class="ob-totals">
+          <tr class="ob-total-row">
+            <td>{{ 'OPENING_BALANCES.TOTAL' | translate }}</td>
+            <td class="ob-cell-num"><span class="ob-num">{{ totalDebit() | mycurrency }}</span></td>
+            <td class="ob-cell-num"><span class="ob-num">{{ totalCredit() | mycurrency }}</span></td>
+          </tr>
+          <tr class="ob-total-row ob-total-row--adj">
+            <td>{{ 'OPENING_BALANCES.ADJUSTMENT' | translate }}</td>
+            <td class="ob-cell-num"><span class="ob-num">{{ adjustmentDebit() | mycurrency }}</span></td>
+            <td class="ob-cell-num"><span class="ob-num">{{ adjustmentCredit() | mycurrency }}</span></td>
+          </tr>
+          <tr class="ob-total-row ob-total-row--grand">
+            <td>{{ 'OPENING_BALANCES.GRAND_TOTAL' | translate }}</td>
+            <td class="ob-cell-num"><span class="ob-num">{{ grandDebit() | mycurrency }}</span></td>
+            <td class="ob-cell-num"><span class="ob-num">{{ grandCredit() | mycurrency }}</span></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    @if (!loading() && groups().length === 0) {
+      <div class="ob-empty">{{ 'OPENING_BALANCES.EMPTY' | translate }}</div>
+    }
+  </section>
+
+  <p class="ob-foot-hint">{{ 'OPENING_BALANCES.BALANCE_HINT' | translate }}</p>
+
+  <app-loading-overlay [show]="saving()" />
+
+  <app-form-sticky-footer>
+    @if (editMode()) {
+      <button type="button" class="ob-btn ob-btn--ghost" (click)="cancel()" [disabled]="saving()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button type="button" class="ob-btn ob-btn--primary" (click)="save()" [disabled]="saving() || loading()">
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    } @else {
+      <button type="button" class="ob-btn ob-btn--primary" (click)="enterEdit()" [disabled]="loading() || groups().length === 0">
+        {{ 'OPENING_BALANCES.EDIT' | translate }}
+      </button>
+    }
+  </app-form-sticky-footer>
+</div>

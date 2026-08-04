@@ -40,6 +40,38 @@
       "DETAILS":            "Details",
       "ERR_NAME_REQUIRED":  "Account name is required.",
       "ERR_TYPE_REQUIRED":  "Pick an account type."
+    },
+    "BULK": {
+      "ACTION":           "Bulk edit",
+      "TITLE":            "Bulk edit accounts",
+      "HINT":             "Only the fields you set are applied to the {{count}} selected accounts.",
+      "KEEP_UNCHANGED":   "Keep unchanged",
+      "PARENT_ACCOUNT":   "Parent account",
+      "PARENT_NEED_TYPE": "Select a type first (or select accounts of the same type)",
+      "SAVED":            "Accounts updated"
+    },
+    "ACCOUNT_TYPE": {
+      "Account Receivable":        "Account Receivable",
+      "Cash":                      "Cash",
+      "Current Assets":            "Current Assets",
+      "Bank":                      "Bank",
+      "Other Current Assets":      "Other Current Assets",
+      "Fixed Assets":              "Fixed Assets",
+      "Intangible Asset":          "Intangible Asset",
+      "Non Current Assets":        "Non Current Assets",
+      "Current Liabilities":       "Current Liabilities",
+      "Account Payable":           "Account Payable",
+      "Other Current Liabilities": "Other Current Liabilities",
+      "Long Term Liabilities":     "Long Term Liabilities",
+      "Equity":                    "Equity",
+      "Sales":                     "Sales",
+      "Income":                    "Income",
+      "Other Income":              "Other Income",
+      "Operating Income":          "Operating Income",
+      "Costs Of Goods Sold":       "Costs Of Goods Sold",
+      "Expense":                   "Expense",
+      "Other Expense":             "Other Expense",
+      "Operating Expense":         "Operating Expense"
     }
   }
 }

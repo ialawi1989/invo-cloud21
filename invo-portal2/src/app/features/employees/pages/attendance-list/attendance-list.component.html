@@ -8,7 +8,8 @@
   [sorting]="sortingConfig"
   [filters]="[]"
   [headerActions]="[]"
-  [selectable]="false"
+  [bulkActions]="bulkActions"
+  [selectable]="true"
   [fitContent]="true"
   [emptyState]="emptyState"
   [entityType]="'attendance'"
@@ -19,17 +20,43 @@
   </ng-template>
 
   <ng-template listCellTemplate="clockedIn" let-row>
-    <span class="tabular-nums">{{ (row.adjClockedIn || row.clockedIn) ? ((row.adjClockedIn || row.clockedIn) | date:'short') : '—' }}</span>
-    @if (row.adjClockedIn) {
-      <span class="adj" [title]="row.adjClockedInByEmployee">{{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_IN' | translate }}</span>
-    }
+    <div class="attcell">
+      <div class="attcell__main">
+        <span class="tabular-nums">{{ (row.adjClockedIn || row.clockedIn) ? ((row.adjClockedIn || row.clockedIn) | date:'short') : '—' }}</span>
+        @if (row.adjClockedIn) {
+          <span class="adj">{{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_IN' | translate }}</span>
+          @if (row.adjClockedInByEmployee) {
+            <span class="adj-by">{{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_IN_BY' | translate }}: {{ row.adjClockedInByEmployee }}</span>
+          }
+        }
+      </div>
+      <button type="button" class="quick-edit" (click)="quickEdit(row, 'adjClockedIn', $event)"
+              [title]="'COMMON.EDIT' | translate" [attr.aria-label]="'COMMON.EDIT' | translate">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+        </svg>
+      </button>
+    </div>
   </ng-template>
 
   <ng-template listCellTemplate="clockedOut" let-row>
-    <span class="tabular-nums">{{ (row.adjClockedOut || row.clockedOut) ? ((row.adjClockedOut || row.clockedOut) | date:'short') : '—' }}</span>
-    @if (row.adjClockedOut) {
-      <span class="adj" [title]="row.adjClockedOutByEmployee">{{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_OUT' | translate }}</span>
-    }
+    <div class="attcell">
+      <div class="attcell__main">
+        <span class="tabular-nums">{{ (row.adjClockedOut || row.clockedOut) ? ((row.adjClockedOut || row.clockedOut) | date:'short') : '—' }}</span>
+        @if (row.adjClockedOut) {
+          <span class="adj">{{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_OUT' | translate }}</span>
+          @if (row.adjClockedOutByEmployee) {
+            <span class="adj-by">{{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_IN_BY' | translate }}: {{ row.adjClockedOutByEmployee }}</span>
+          }
+        }
+      </div>
+      <button type="button" class="quick-edit" (click)="quickEdit(row, 'adjClockedOut', $event)"
+              [title]="'COMMON.EDIT' | translate" [attr.aria-label]="'COMMON.EDIT' | translate">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+        </svg>
+      </button>
+    </div>
   </ng-template>
 
   <ng-template listRowActions let-row>

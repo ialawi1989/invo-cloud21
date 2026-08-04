@@ -8,6 +8,8 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { OverlayModule, ConnectedPosition } from '@angular/cdk/overlay';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -16,6 +18,12 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
+import type { DateRange } from '@shared/components/datepicker/date-picker.types';
+import {
+  SegmentedToggleComponent,
+  SegmentedToggleOption,
+} from '@shared/components/segmented-toggle/segmented-toggle.component';
 import {
   DropdownMenuBtnComponent,
   DropdownMenuBtnItem,
@@ -34,6 +42,7 @@ import {
   ScheduleDayOff,
   ScheduleEmployee,
   ScheduleShift,
+  formatShiftRange,
   shiftsHours,
 } from './employee-schedule.types';
 import {
@@ -55,6 +64,24 @@ import {
 interface BranchOption { id: string; name: string; }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** How the team-member rows are ordered (Fresha-style "Custom order" menu). */
+type SortKey =
+  | 'custom'
+  | 'shifts-desc' | 'shifts-asc'
+  | 'hours-desc'  | 'hours-asc'
+  | 'name-asc'    | 'name-desc';
+
+interface SortOption { value: SortKey; labelKey: string; }
+const SORT_OPTIONS: SortOption[] = [
+  { value: 'custom',      labelKey: 'EMPLOYEES.SCHEDULE.SORT_CUSTOM' },
+  { value: 'shifts-desc', labelKey: 'EMPLOYEES.SCHEDULE.SORT_SHIFTS_DESC' },
+  { value: 'shifts-asc',  labelKey: 'EMPLOYEES.SCHEDULE.SORT_SHIFTS_ASC' },
+  { value: 'hours-desc',  labelKey: 'EMPLOYEES.SCHEDULE.SORT_HOURS_DESC' },
+  { value: 'hours-asc',   labelKey: 'EMPLOYEES.SCHEDULE.SORT_HOURS_ASC' },
+  { value: 'name-asc',    labelKey: 'EMPLOYEES.SCHEDULE.SORT_NAME_ASC' },
+  { value: 'name-desc',   labelKey: 'EMPLOYEES.SCHEDULE.SORT_NAME_DESC' },
+];
 
 /**
  * Employee Schedule board
@@ -79,6 +106,9 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
     LoadingOverlayComponent,
     SearchDropdownComponent,
     DropdownMenuBtnComponent,
+    DatePickerComponent,
+    OverlayModule,
+    SegmentedToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-schedule.component.html',
@@ -90,6 +120,7 @@ export class EmployeeScheduleComponent implements OnInit {
   private modal           = inject(ModalService);
   private toast           = inject(ToastService);
   private translate       = inject(TranslateService);
+  private router          = inject(Router);
   private destroyRef      = inject(DestroyRef);
 
   loading  = signal<boolean>(false);
@@ -97,10 +128,44 @@ export class EmployeeScheduleComponent implements OnInit {
   branchId = signal<string | null>(null);
   employees = signal<ScheduleEmployee[]>([]);
 
+  readonly sortOptions = SORT_OPTIONS;
+  /** Active row-ordering (persisted only for the session). */
+  sortKey = signal<SortKey>('custom');
+
+  /** 12-hour shift label helper exposed to the template. */
+  shiftRange = formatShiftRange;
+
   /** The seven ISO dates (yyyy-MM-dd) of the visible week, Sat→Fri. */
   currentWeek = signal<string[]>([]);
   /** Saturday anchoring the visible week. */
   private weekStart = new Date();
+
+  /** Week-jump calendar (opened from the date range label). */
+  weekPickerOpen = signal<boolean>(false);
+  readonly weekPickerPositions: ConnectedPosition[] = [
+    // Prefer centered under the date label; fall back to edge-aligned near
+    // the viewport edges so the calendar never clips off-screen.
+    { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top',    offsetY: 8 },
+    { originX: 'center', originY: 'top',    overlayX: 'center', overlayY: 'bottom', offsetY: -8 },
+    { originX: 'start',  originY: 'bottom', overlayX: 'start',  overlayY: 'top',    offsetY: 8 },
+    { originX: 'end',    originY: 'bottom', overlayX: 'end',    overlayY: 'top',    offsetY: 8 },
+  ];
+  /** The visible week as a Sat→Fri range, so the calendar highlights the
+   *  whole week as a band (not a single day). */
+  weekPickerValue = computed<DateRange | null>(() => {
+    const wk = this.currentWeek();
+    if (wk.length < 7) return null;
+    return { start: new Date(`${wk[0]}T00:00:00`), end: new Date(`${wk[6]}T00:00:00`) };
+  });
+
+  /** Jump the board to the week containing the picked day. In range mode the
+   *  first click emits `{ start, end: null }`, so we snap on `start`. */
+  onWeekDatePicked(value: Date | DateRange | null): void {
+    this.weekPickerOpen.set(false);
+    if (!value) return;
+    const date = value instanceof Date ? value : (value.start ?? value.end ?? null);
+    if (date) this.setWeekFrom(date);
+  }
 
   private i18nTick = signal(0);
 
@@ -118,7 +183,12 @@ export class EmployeeScheduleComponent implements OnInit {
     if (week.length < 7) return '';
     const start = new Date(`${week[0]}T00:00:00`);
     const end   = new Date(`${week[6]}T00:00:00`);
-    return `${start.getDate()} - ${end.getDate()} ${MONTHS[end.getMonth()]}, ${end.getFullYear()}`;
+    // Fresha format: "Jul 25 – 31, 2026" (collapse the month when it repeats).
+    const left  = `${MONTHS[start.getMonth()]} ${start.getDate()}`;
+    const right = start.getMonth() === end.getMonth()
+      ? `${end.getDate()}`
+      : `${MONTHS[end.getMonth()]} ${end.getDate()}`;
+    return `${left} – ${right}, ${end.getFullYear()}`;
   });
 
   branchDisplay = (b: BranchOption) => b?.name ?? '';
@@ -154,6 +224,88 @@ export class EmployeeScheduleComponent implements OnInit {
     return map;
   });
 
+  /** Number of worked days (cells with ≥1 shift) per employee this week. */
+  shiftsByEmployee = computed<Record<string, number>>(() => {
+    const map: Record<string, number> = {};
+    for (const emp of this.employees()) {
+      let count = 0;
+      emp.days?.forEach((day) => {
+        if (!day.dayOffShift?.length && day.shift?.length) count++;
+      });
+      map[emp.employeeId] = count;
+    }
+    return map;
+  });
+
+  /** Rows in the currently-selected order. `custom` keeps the backend order. */
+  sortedEmployees = computed<ScheduleEmployee[]>(() => {
+    const rows = [...this.employees()];
+    const key = this.sortKey();
+    if (key === 'custom') return rows;
+    const hours  = this.hoursByEmployee();
+    const shifts = this.shiftsByEmployee();
+    const name = (e: ScheduleEmployee) => (e.employeeName || '').toLowerCase();
+    rows.sort((a, b) => {
+      switch (key) {
+        case 'name-asc':    return name(a).localeCompare(name(b));
+        case 'name-desc':   return name(b).localeCompare(name(a));
+        case 'hours-desc':  return (hours[b.employeeId] || 0) - (hours[a.employeeId] || 0);
+        case 'hours-asc':   return (hours[a.employeeId] || 0) - (hours[b.employeeId] || 0);
+        case 'shifts-desc': return (shifts[b.employeeId] || 0) - (shifts[a.employeeId] || 0);
+        case 'shifts-asc':  return (shifts[a.employeeId] || 0) - (shifts[b.employeeId] || 0);
+        default:            return 0;
+      }
+    });
+    return rows;
+  });
+
+  /** Label shown on the sort trigger (reacts to i18n + selection). */
+  sortLabel = computed<string>(() => {
+    this.i18nTick();
+    const opt = SORT_OPTIONS.find((o) => o.value === this.sortKey()) ?? SORT_OPTIONS[0];
+    return this.translate.instant(opt.labelKey);
+  });
+
+  /** Items for the "Custom order" sort menu (checkmark on the active one). */
+  sortMenu = computed<DropdownMenuBtnItem[]>(() => {
+    this.i18nTick();
+    const active = this.sortKey();
+    return SORT_OPTIONS.map((o) => ({
+      label: this.translate.instant(o.labelKey),
+      iconPath: o.value === active ? 'M20 6 9 17l-5-5' : undefined,
+      click: () => this.sortKey.set(o.value),
+    }));
+  });
+
+  // ─── Mobile view (small screens) ─────────────────────────────────────────
+  /** Small-screen layout: group by team member (accordion) or by week/day. */
+  mobileView = signal<'member' | 'week'>('member');
+  readonly mobileViewOptions: SegmentedToggleOption[] = [
+    { value: 'member', label: 'EMPLOYEES.SCHEDULE.TEAM_MEMBER' },
+    { value: 'week',   label: 'EMPLOYEES.SCHEDULE.WEEK_VIEW' },
+  ];
+  onMobileView(v: string): void { this.mobileView.set(v === 'week' ? 'week' : 'member'); }
+
+  /** Collapsed team-member cards in the mobile accordion (default expanded). */
+  private collapsedEmp = signal<Set<string>>(new Set());
+  isEmpExpanded(id: string): boolean { return !this.collapsedEmp().has(id); }
+  toggleEmp(id: string): void {
+    this.collapsedEmp.update((set) => {
+      const next = new Set(set);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  /** Header "Add" split-button menu. */
+  addMenuTop = computed<DropdownMenuBtnItem[]>(() => {
+    this.i18nTick();
+    return [
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.ADD_TIME_OFF'),     click: () => this.openTimeOff() },
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.NEW_TEAM_MEMBER'),  click: () => this.router.navigate(['/employees', '0']) },
+    ];
+  });
+
   constructor() {
     withTranslations('employees');
     this.translate.onTranslationChange
@@ -185,9 +337,11 @@ export class EmployeeScheduleComponent implements OnInit {
   // ─── Week navigation ─────────────────────────────────────────────────────
   private saturdayOf(d: Date): Date {
     const date = new Date(d);
-    const day = date.getDay();
-    const diff = date.getDate() - day + (day === 6 ? 0 : day < 6 ? -1 : -6);
-    return new Date(date.setDate(diff));
+    date.setHours(0, 0, 0, 0);
+    // Days since the most recent Saturday (Sat=0, Sun=1, … Fri=6).
+    const diff = (date.getDay() + 1) % 7;
+    date.setDate(date.getDate() - diff);
+    return date;
   }
 
   private buildWeek(start: Date): string[] {
@@ -277,17 +431,19 @@ export class EmployeeScheduleComponent implements OnInit {
   addMenu(employee: ScheduleEmployee, date: string, day: ScheduleDay | null): DropdownMenuBtnItem[] {
     const target = day ?? this.tempDay(date);
     return [
-      { label: this.translate.instant('EMPLOYEES.SCHEDULE.ADD_SHIFT'),          click: () => this.openShift(employee, target) },
-      { label: this.translate.instant('EMPLOYEES.SCHEDULE.SET_REGULAR_SHIFTS'), click: () => this.openRegular(employee) },
-      { label: this.translate.instant('EMPLOYEES.SCHEDULE.ADD_TIME_OFF'),       click: () => this.openTimeOff(employee, target) },
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.ADD_SHIFT'),            click: () => this.openShift(employee, target) },
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.SET_REPEATING_SHIFTS'), click: () => this.openRegular(employee) },
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.ADD_TIME_OFF'),         click: () => this.openTimeOff(employee, target) },
     ];
   }
 
   shiftMenu(employee: ScheduleEmployee, day: ScheduleDay, shift: ScheduleShift): DropdownMenuBtnItem[] {
     return [
-      { label: this.translate.instant('COMMON.EDIT'),                     click: () => this.openShift(employee, day) },
-      { label: this.translate.instant('EMPLOYEES.SCHEDULE.ADD_TIME_OFF'), click: () => this.openTimeOff(employee, day) },
-      { label: this.translate.instant('COMMON.DELETE'), danger: true,     click: () => this.deleteShift(employee, day, shift) },
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.EDIT_THIS_DAY'),        click: () => this.openShift(employee, day) },
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.SET_REPEATING_SHIFTS'), click: () => this.openRegular(employee) },
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.ADD_TIME_OFF'),         click: () => this.openTimeOff(employee, day) },
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.DELETE_THIS_SHIFT'), danger: true, separator: true,
+        click: () => this.deleteShift(employee, day, shift) },
     ];
   }
 
@@ -296,6 +452,27 @@ export class EmployeeScheduleComponent implements OnInit {
       { label: this.translate.instant('COMMON.EDIT'),                 click: () => this.openEditDayOff(employee, day, off) },
       { label: this.translate.instant('COMMON.DELETE'), danger: true, click: () => this.deleteDayOff(off.offDayId) },
     ];
+  }
+
+  /** Team-member row menu (pencil), mirroring Fresha's two-section layout. */
+  rowMenu(employee: ScheduleEmployee): DropdownMenuBtnItem[] {
+    return [
+      { header: 'EMPLOYEES.SCHEDULE.SCHEDULE_SECTION',
+        label: this.translate.instant('EMPLOYEES.SCHEDULE.SET_REPEATING_SHIFTS'), click: () => this.openRegular(employee) },
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.ADD_TIME_OFF'),         click: () => this.openTimeOff(employee) },
+      { header: 'EMPLOYEES.SCHEDULE.TEAM_MEMBER_SECTION', separator: true,
+        label: this.translate.instant('EMPLOYEES.SCHEDULE.VIEW_TEAM_MEMBER'),     click: () => this.router.navigate(['/employees', employee.employeeId]) },
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.EDIT_TEAM_MEMBER'),     click: () => this.router.navigate(['/employees', employee.employeeId]) },
+    ];
+  }
+
+  /** Native-title tooltip for a day header: bookable vs non-bookable split. */
+  dayTooltip(index: number): string {
+    const bookable = this.hoursByDay()[index] || 0;
+    const b = this.translate.instant('EMPLOYEES.SCHEDULE.BOOKABLE');
+    const n = this.translate.instant('EMPLOYEES.SCHEDULE.NON_BOOKABLE');
+    const suffix = this.translate.instant('EMPLOYEES.SCHEDULE.HR_SUFFIX');
+    return `${b}: ${bookable} ${suffix}\n${n}: 0 ${suffix}`;
   }
 
   // ─── Modal openers ───────────────────────────────────────────────────────

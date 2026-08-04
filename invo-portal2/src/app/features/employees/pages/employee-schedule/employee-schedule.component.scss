@@ -3,11 +3,13 @@ $primary-dark: #2b95a8;
 $warning: #f59e0b;
 $border: #eef2f6;
 $muted: #9ca3af;
+$ink: #111827;
 
 .schedule-page {
-  padding: 4px 0 80px;
+  padding: 4px 0 40px;
 }
 
+// ── Header ───────────────────────────────────────────────────────────────
 .page-head {
   display: flex;
   align-items: center;
@@ -18,97 +20,119 @@ $muted: #9ca3af;
 }
 
 .page-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
-  color: #111827;
+  color: $ink;
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  background: $primary;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.15s ease;
+.page-head__actions { display: flex; align-items: center; gap: 8px; }
 
-  &:hover { background: $primary-dark; }
-  i { font-size: 18px; }
-}
-
+// ── Controls row ─────────────────────────────────────────────────────────
 .controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
+}
+
+.controls__right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+// "Custom order" sort trigger.
+::ng-deep .sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $ink;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover { border-color: #cbd5e1; background: #f8fafc; }
+  svg { color: #6b7280; }
+}
+
+.week-pill {
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $ink;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover { border-color: #cbd5e1; background: #f8fafc; }
 }
 
 .week-nav {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px;
+  gap: 2px;
+  padding: 3px;
   background: #fff;
-  border: 1px solid $border;
-  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
 }
 
 .nav-btn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  color: #6b7280;
+  background: transparent;
+  border: none;
+  color: #374151;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease;
 
-  &:hover { background: $primary; border-color: $primary; color: #fff; }
-  i { font-size: 16px; }
+  &:hover { background: #f1f5f9; }
+  i { font-size: 18px; }
 }
 
 .week-display {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 0 10px;
+  padding: 6px 10px;
   font-size: 14px;
   font-weight: 600;
-  color: #111827;
+  color: $ink;
   white-space: nowrap;
-
-  i { color: $muted; }
-}
-
-.reset-btn {
-  padding: 7px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  color: $primary;
   background: transparent;
-  border: 1px solid $primary;
+  border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease;
 
-  &:hover { background: $primary; color: #fff; }
+  &:hover { background: #f1f5f9; }
+  svg { color: #6b7280; }
 }
 
-.branch-select {
-  margin-inline-start: auto;
-  min-width: 220px;
-}
+// Week-jump calendar popover — no styling here: the inline `<app-date-picker>`
+// renders its own bordered/shadowed panel, so an extra wrapper box would
+// double the container and padding.
 
+
+.branch-select { min-width: 200px; }
+
+// ── Board ────────────────────────────────────────────────────────────────
 .board-card {
   position: relative;
   background: #fff;
@@ -125,48 +149,41 @@ $muted: #9ca3af;
 .board {
   width: 100%;
   border-collapse: collapse;
-  min-width: 900px;
+  min-width: 980px;
+  table-layout: fixed;
 
   thead th {
-    padding: 14px 12px;
+    padding: 16px 10px;
     font-size: 13px;
     font-weight: 600;
-    color: #111827;
+    color: $ink;
     text-align: center;
     border-bottom: 1px solid $border;
 
-    &.emp-col { text-align: start; min-width: 220px; padding-inline-start: 20px; }
+    &.emp-col { text-align: start; width: 240px; padding-inline-start: 20px; }
   }
 
   tbody td {
-    padding: 12px;
-    vertical-align: middle;
+    padding: 10px;
+    vertical-align: top;
     border-bottom: 1px solid $border;
+    border-inline-start: 1px solid $border;
 
-    &.emp-col { padding-inline-start: 20px; }
+    &.emp-col { border-inline-start: none; padding: 12px 12px 12px 20px; vertical-align: middle; }
   }
 
   tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover { background: rgba($primary, 0.02); }
+  tbody tr:hover .emp-cell { background: transparent; }
 }
 
 .day-head {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
 
-  .day-name { font-weight: 600; color: #111827; }
-  .day-date { font-size: 12px; color: #6b7280; }
-  .hours-badge {
-    margin-top: 2px;
-    padding: 2px 10px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #fff;
-    background: $primary;
-    border-radius: 9999px;
-  }
+  .day-name { font-weight: 600; color: $ink; }
+  .day-hours { font-size: 12px; color: #6b7280; }
 }
 
 .emp-cell {
@@ -175,8 +192,8 @@ $muted: #9ca3af;
   gap: 12px;
 
   .avatar {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: $primary;
     color: #fff;
@@ -190,79 +207,110 @@ $muted: #9ca3af;
     img { width: 100%; height: 100%; object-fit: cover; }
   }
 
-  .emp-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .emp-name { font-size: 14px; font-weight: 600; color: #111827; }
-  .emp-hours {
-    align-self: flex-start;
-    margin-top: 3px;
-    padding: 1px 8px;
-    font-size: 11px;
-    font-weight: 500;
-    color: $primary;
-    background: rgba($primary, 0.1);
-    border-radius: 9999px;
-  }
+  .emp-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .emp-name { font-size: 14px; font-weight: 600; color: $ink; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .emp-hours { font-size: 12px; font-weight: 500; color: #6b7280; }
+}
 
-  .edit-btn {
-    width: 32px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    background: #f9fafb;
-    border: none;
-    color: #6b7280;
-    cursor: pointer;
-    flex-shrink: 0;
+// The pencil trigger for the row menu.
+::ng-deep .emp-cell .edit-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
 
-    &:hover { background: $primary; color: #fff; }
-  }
+  &:hover { background: #f1f5f9; color: #374151; }
+  i { font-size: 17px; }
 }
 
 .cell {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   align-items: stretch;
+  min-height: 44px;
 }
 
-// The badges are rendered as the dropdown-menu-btn's trigger.
-::ng-deep .cell .badge {
+// Make each in-cell dropdown wrapper span the full column so the shift
+// chips fill the width and the "+" circle can center via auto margins.
+::ng-deep .cell app-dropdown-menu-btn { display: block; }
+::ng-deep .cell .dmb { display: flex; width: 100%; }
+
+// Chips are rendered as the dropdown-menu-btn's trigger.
+::ng-deep .cell .chip {
   display: flex;
   width: 100%;
   justify-content: center;
-  padding: 8px 10px;
-  font-size: 12px;
+  align-items: center;
+  padding: 10px 8px;
+  font-size: 13px;
   font-weight: 600;
   text-align: center;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-::ng-deep .cell .badge-active {
-  background: rgba($primary, 0.1);
-  color: $primary-dark;
-  border-color: rgba($primary, 0.2);
+::ng-deep .cell .chip-active {
+  background: var(--color-brand-50, #effbfd);
+  color: var(--color-brand-700, #207484);
+  border-color: var(--color-brand-100, #d7f3f7);
 
-  &:hover { background: rgba($primary, 0.16); }
+  &:hover { background: var(--color-brand-100, #d7f3f7); }
 }
 
-::ng-deep .cell .badge-off {
+::ng-deep .cell .chip-off {
   background: rgba($warning, 0.12);
   color: #b45309;
   border-color: rgba($warning, 0.25);
+
+  &:hover { background: rgba($warning, 0.18); }
 }
 
-::ng-deep .cell .badge-add {
-  background: #f9fafb;
-  color: $muted;
-  border: 1px dashed #e5e7eb;
+// "Add another shift" — a full-width tinted box the same size as a shift
+// chip, holding a centered "+" ring (Fresha style). Hidden until the row
+// is hovered so populated days stay tidy.
+::ng-deep .cell .chip-add {
+  padding: 7px 8px;
+  background: var(--color-brand-50, #effbfd);
+  border-color: transparent;
+  opacity: 0;
+  transition: background 0.15s ease, opacity 0.15s ease;
 
-  &:hover { border-color: $primary; color: $primary; background: rgba($primary, 0.05); }
-  i { font-size: 15px; }
+  &:hover { background: var(--color-brand-100, #d6f4f8); }
+}
+// Reveal the "+" only for the specific day cell being hovered.
+.cell:hover ::ng-deep .chip-add { opacity: 1; }
+
+// The faint "+" circle inside the add box.
+::ng-deep .cell .add-ring {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--color-brand-300, #7dd3e0);
+  color: var(--color-brand-600, #2b95a8);
+}
+
+// Empty days read as muted "Not working"; hovering hints they're clickable.
+::ng-deep .cell .chip-empty {
+  background: #f8fafc;
+  color: #9ca3af;
+  font-weight: 500;
+  border-color: transparent;
+
+  &:hover { background: #f1f5f9; color: #6b7280; }
 }
 
 .empty {
@@ -282,14 +330,128 @@ $muted: #9ca3af;
     align-items: center;
     justify-content: center;
     margin-bottom: 18px;
-    i { font-size: 34px; color: $muted; }
+    svg { color: $muted; }
   }
 
-  h4 { font-size: 17px; font-weight: 600; color: #111827; margin: 0 0 6px; }
+  h4 { font-size: 17px; font-weight: 600; color: $ink; margin: 0 0 6px; }
   p  { font-size: 14px; color: #6b7280; margin: 0; }
 }
 
+// ── Info banner ──────────────────────────────────────────────────────────
+.roster-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 14px 18px;
+  background: #f8fafc;
+  border: 1px solid $border;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #6b7280;
+
+  svg { color: $primary; flex-shrink: 0; }
+}
+
+// ── Mobile / small-screen layout ─────────────────────────────────────────
+.board-mobile { display: none; }
+.board-mobile__toggle { display: block; margin-bottom: 12px; }
+
+.mcard {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.mcard__head { display: flex; align-items: center; gap: 8px; padding: 12px 14px; }
+
+.mcard__toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: start;
+
+  .avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: $primary; color: #fff; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+    img { width: 100%; height: 100%; object-fit: cover; }
+  }
+}
+.mcard__meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mcard__name { font-size: 15px; font-weight: 600; color: $ink; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mcard__hours { font-size: 12px; color: #6b7280; }
+
+.mcard__actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+::ng-deep .mcard__actions .icon-btn {
+  width: 34px; height: 34px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px; border: none; background: transparent; color: #6b7280; cursor: pointer;
+  &:hover { background: #f1f5f9; }
+}
+.chev-btn {
+  width: 34px; height: 34px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px; border: none; background: transparent; color: #6b7280; cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  &:hover { background: #f1f5f9; }
+  &.open { transform: rotate(180deg); }
+}
+
+.mcard__days { border-top: 1px solid $border; }
+.mday {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 14px;
+  border-top: 1px solid #f8fafc;
+  &:first-child { border-top: none; }
+}
+.mday__label { font-size: 13px; font-weight: 600; color: $ink; flex-shrink: 0; }
+.mday__label--emp { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.mcard__dayhead {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; background: #f8fafc;
+  span:first-child { font-size: 14px; font-weight: 700; color: $ink; }
+}
+.mcard__dayhours { font-size: 12px; color: #6b7280; }
+
+// Inline variant of the day cell: chips sit on the right at content width
+// instead of the full-width desktop column.
+.cell--inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-height: 0;
+  width: auto;
+  max-width: 66%;
+}
+::ng-deep .cell--inline app-dropdown-menu-btn { display: inline-flex; }
+::ng-deep .cell--inline .dmb { width: auto; }
+::ng-deep .cell--inline .chip { width: auto; padding: 8px 12px; }
+// No hover on touch — the "add another shift" button is always visible here.
+::ng-deep .cell--inline .chip-add { opacity: 1; padding: 6px; }
+
+@media (max-width: 860px) {
+  .board-card { display: none; }
+  .board-mobile { display: block; }
+  // The segmented toggle covers view switching, so drop the sort dropdown.
+  .controls > app-dropdown-menu-btn:first-child { display: none; }
+}
+
 @media (max-width: 640px) {
-  .branch-select { margin-inline-start: 0; width: 100%; }
-  .week-nav { flex-wrap: wrap; }
+  .controls { flex-direction: column; align-items: stretch; }
+  .controls__right { justify-content: space-between; flex-wrap: wrap; }
+  .branch-select { flex: 1; min-width: 0; }
 }

@@ -2,41 +2,90 @@
   <app-breadcrumbs [items]="breadcrumbs()" />
 
   <div class="page-head">
-    <h1 class="page-title">{{ 'EMPLOYEES.SCHEDULE.TITLE' | translate }}</h1>
-    <button type="button" class="btn-primary" (click)="openTimeOff()">
-      <i class="bx bx-plus"></i> {{ 'EMPLOYEES.SCHEDULE.ADD_TIME_OFF' | translate }}
-    </button>
+    <h1 class="page-title">{{ 'EMPLOYEES.SCHEDULE.SCHEDULED_SHIFTS' | translate }}</h1>
+    <div class="page-head__actions">
+      <app-dropdown-menu-btn
+        [items]="addMenuTop()"
+        [appendToBody]="true"
+        align="end"
+        triggerClass="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        {{ 'COMMON.ADD' | translate }}
+      </app-dropdown-menu-btn>
+    </div>
   </div>
 
   <!-- Controls -->
   <div class="controls">
-    <div class="week-nav">
-      <button type="button" class="nav-btn" (click)="previousWeek()"
-              [attr.aria-label]="'EMPLOYEES.SCHEDULE.CURRENT_WEEK' | translate">
-        <i class="bx bx-chevron-left"></i>
-      </button>
-      <span class="week-display">
-        <i class="bx bx-calendar"></i>
-        {{ rangeLabel() }}
-      </span>
-      <button type="button" class="nav-btn" (click)="nextWeek()"
-              [attr.aria-label]="'EMPLOYEES.SCHEDULE.CURRENT_WEEK' | translate">
-        <i class="bx bx-chevron-right"></i>
-      </button>
-      <button type="button" class="reset-btn" (click)="setThisWeek()">
-        {{ 'EMPLOYEES.SCHEDULE.RESET_TO_TODAY' | translate }}
-      </button>
-    </div>
+    <!-- Left: row ordering (Fresha "Custom order") -->
+    <app-dropdown-menu-btn
+      [items]="sortMenu()"
+      [appendToBody]="true"
+      align="start"
+      triggerClass="sort-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M8 4v16M8 20l-3-3M8 20l3-3M16 20V4M16 4l-3 3M16 4l3 3"/>
+      </svg>
+      {{ sortLabel() }}
+    </app-dropdown-menu-btn>
 
-    <div class="branch-select">
-      <app-search-dropdown
-        [items]="branches()"
-        [displayWith]="branchDisplay"
-        [compareWith]="branchCompare"
-        [value]="selectedBranch()"
-        [clearable]="false"
-        [placeholder]="'EMPLOYEES.SCHEDULE.SELECT_BRANCH' | translate"
-        (valueChange)="onBranchChange($event)" />
+    <!-- Right: week nav + branch -->
+    <div class="controls__right">
+      <button type="button" class="week-pill" (click)="setThisWeek()">
+        {{ 'EMPLOYEES.SCHEDULE.THIS_WEEK' | translate }}
+      </button>
+      <div class="week-nav">
+        <button type="button" class="nav-btn" (click)="previousWeek()"
+                [attr.aria-label]="'EMPLOYEES.SCHEDULE.CURRENT_WEEK' | translate">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button type="button" class="week-display"
+                cdkOverlayOrigin #weekOrigin="cdkOverlayOrigin"
+                (click)="weekPickerOpen.set(!weekPickerOpen())"
+                [attr.aria-expanded]="weekPickerOpen()">
+          <span>{{ rangeLabel() }}</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+        </button>
+        <button type="button" class="nav-btn" (click)="nextWeek()"
+                [attr.aria-label]="'EMPLOYEES.SCHEDULE.CURRENT_WEEK' | translate">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- Week-jump calendar: pick any day to snap to that week. -->
+      <ng-template
+        cdkConnectedOverlay
+        [cdkConnectedOverlayOrigin]="weekOrigin"
+        [cdkConnectedOverlayOpen]="weekPickerOpen()"
+        [cdkConnectedOverlayHasBackdrop]="true"
+        cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+        [cdkConnectedOverlayPositions]="weekPickerPositions"
+        (backdropClick)="weekPickerOpen.set(false)"
+        (detach)="weekPickerOpen.set(false)">
+        <div class="week-picker-pop">
+          <app-date-picker
+            [inline]="true"
+            mode="range"
+            [selectWeek]="true"
+            [showFooter]="false"
+            [firstDayOfWeek]="6"
+            [value]="weekPickerValue()"
+            (valueChange)="onWeekDatePicked($any($event))" />
+        </div>
+      </ng-template>
+
+      <div class="branch-select">
+        <app-search-dropdown
+          [items]="branches()"
+          [displayWith]="branchDisplay"
+          [compareWith]="branchCompare"
+          [value]="selectedBranch()"
+          [clearable]="false"
+          [placeholder]="'EMPLOYEES.SCHEDULE.SELECT_BRANCH' | translate"
+          (valueChange)="onBranchChange($event)" />
+      </div>
     </div>
   </div>
 
@@ -48,20 +97,21 @@
       <table class="board">
         <thead>
           <tr>
-            <th class="emp-col">{{ 'EMPLOYEES.SCHEDULE.EMPLOYEE' | translate }}</th>
+            <th class="emp-col">{{ 'EMPLOYEES.SCHEDULE.TEAM_MEMBER' | translate }}</th>
             @for (date of currentWeek(); track date; let i = $index) {
-              <th>
+              <th [title]="dayTooltip(i)">
                 <div class="day-head">
-                  <span class="day-name">{{ date | date: 'EEE' }}</span>
-                  <span class="day-date">{{ date | date: 'd MMM' }}</span>
-                  <span class="hours-badge">{{ hoursByDay()[i] || 0 }}h</span>
+                  <span class="day-name">{{ date | date: 'EEE, MMM d' }}</span>
+                  <span class="day-hours">
+                    {{ hoursByDay()[i] || 0 }} {{ 'EMPLOYEES.SCHEDULE.HR_SUFFIX' | translate }}
+                  </span>
                 </div>
               </th>
             }
           </tr>
         </thead>
         <tbody>
-          @for (employee of employees(); track employee.employeeId) {
+          @for (employee of sortedEmployees(); track employee.employeeId) {
             <tr>
               <!-- Employee cell -->
               <td class="emp-col">
@@ -77,13 +127,20 @@
                     <span class="emp-name">{{ employee.employeeName }}</span>
                     <span class="emp-hours">
                       {{ hoursByEmployee()[employee.employeeId] || 0 }}
-                      {{ 'EMPLOYEES.SCHEDULE.HOURS_SUFFIX' | translate }}
+                      {{ 'EMPLOYEES.SCHEDULE.HR_SUFFIX' | translate }}
                     </span>
                   </div>
-                  <button type="button" class="edit-btn" (click)="openRegular(employee)"
-                          [attr.aria-label]="'EMPLOYEES.SCHEDULE.SET_REGULAR_SHIFTS' | translate">
-                    <i class="bx bx-edit"></i>
-                  </button>
+                  <app-dropdown-menu-btn
+                    [items]="rowMenu(employee)"
+                    [chevron]="false"
+                    [appendToBody]="true"
+                    align="start"
+                    triggerClass="edit-btn"
+                    [attr.aria-label]="'EMPLOYEES.SCHEDULE.SET_REPEATING_SHIFTS' | translate">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                    </svg>
+                  </app-dropdown-menu-btn>
                 </div>
               </td>
 
@@ -98,28 +155,39 @@
                           [items]="dayOffMenu(employee, day, off)"
                           [chevron]="false"
                           [appendToBody]="true"
-                          triggerClass="badge badge-off">
+                          triggerClass="chip chip-off">
                           {{ off.type }}
                         </app-dropdown-menu-btn>
                       }
-                    } @else {
-                      @if (day && day.shift.length) {
-                        @for (shift of day.shift; track $index) {
-                          <app-dropdown-menu-btn
-                            [items]="shiftMenu(employee, day, shift)"
-                            [chevron]="false"
-                            [appendToBody]="true"
-                            triggerClass="badge badge-active">
-                            {{ shift.from }} - {{ shift.to }}
-                          </app-dropdown-menu-btn>
-                        }
+                    } @else if (day && day.shift.length) {
+                      @for (shift of day.shift; track $index) {
+                        <app-dropdown-menu-btn
+                          [items]="shiftMenu(employee, day, shift)"
+                          [chevron]="false"
+                          [appendToBody]="true"
+                          triggerClass="chip chip-active">
+                          {{ shiftRange(shift) }}
+                        </app-dropdown-menu-btn>
                       }
                       <app-dropdown-menu-btn
                         [items]="addMenu(employee, date, day)"
                         [chevron]="false"
                         [appendToBody]="true"
-                        triggerClass="badge badge-add">
-                        <i class="bx bx-plus"></i>
+                        triggerClass="chip chip-add">
+                        <span class="add-ring">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                          </svg>
+                        </span>
+                      </app-dropdown-menu-btn>
+                    } @else {
+                      <!-- Empty day: "Not working" is itself the add trigger. -->
+                      <app-dropdown-menu-btn
+                        [items]="addMenu(employee, date, day)"
+                        [chevron]="false"
+                        [appendToBody]="true"
+                        triggerClass="chip chip-empty">
+                        {{ 'EMPLOYEES.SCHEDULE.NOT_WORKING' | translate }}
                       </app-dropdown-menu-btn>
                     }
                   </div>
@@ -133,10 +201,142 @@
 
     @if (!loading() && employees().length === 0) {
       <div class="empty">
-        <div class="empty-icon"><i class="bx bx-calendar-x"></i></div>
+        <div class="empty-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m10 14 4 4M14 14l-4 4"/>
+          </svg>
+        </div>
         <h4>{{ 'EMPLOYEES.SCHEDULE.NO_EMPLOYEES_TITLE' | translate }}</h4>
         <p>{{ 'EMPLOYEES.SCHEDULE.NO_EMPLOYEES_TEXT' | translate }}</p>
       </div>
     }
   </div>
+
+  <!-- ── Mobile / small-screen layout ─────────────────────────────────────── -->
+  <div class="board-mobile">
+    <app-segmented-toggle
+      class="board-mobile__toggle"
+      [options]="mobileViewOptions"
+      [value]="mobileView()"
+      (valueChange)="onMobileView($any($event))" />
+
+    @if (loading() && employees().length === 0) {
+      <div class="loading"><span class="spinner spinner--lg"></span></div>
+    } @else if (employees().length === 0) {
+      <div class="empty">
+        <h4>{{ 'EMPLOYEES.SCHEDULE.NO_EMPLOYEES_TITLE' | translate }}</h4>
+        <p>{{ 'EMPLOYEES.SCHEDULE.NO_EMPLOYEES_TEXT' | translate }}</p>
+      </div>
+    } @else if (mobileView() === 'member') {
+      @for (employee of sortedEmployees(); track employee.employeeId) {
+        <div class="mcard" [class.mcard--open]="isEmpExpanded(employee.employeeId)">
+          <div class="mcard__head">
+            <button type="button" class="mcard__toggle" (click)="toggleEmp(employee.employeeId)">
+              <span class="avatar">
+                @if (employee.avatar) {
+                  <img [src]="employee.avatar" [alt]="employee.employeeName" />
+                } @else { {{ initial(employee.employeeName) }} }
+              </span>
+              <span class="mcard__meta">
+                <span class="mcard__name">{{ employee.employeeName }}</span>
+                <span class="mcard__hours">
+                  {{ hoursByEmployee()[employee.employeeId] || 0 }} {{ 'EMPLOYEES.SCHEDULE.HR_SUFFIX' | translate }}
+                </span>
+              </span>
+            </button>
+            <div class="mcard__actions">
+              <app-dropdown-menu-btn
+                [items]="rowMenu(employee)" [chevron]="false" [appendToBody]="true"
+                align="end" triggerClass="icon-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                  <circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/>
+                </svg>
+              </app-dropdown-menu-btn>
+              <button type="button" class="chev-btn" [class.open]="isEmpExpanded(employee.employeeId)"
+                      (click)="toggleEmp(employee.employeeId)" aria-label="Toggle">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+          </div>
+
+          @if (isEmpExpanded(employee.employeeId)) {
+            <div class="mcard__days">
+              @for (date of currentWeek(); track date; let i = $index) {
+                <div class="mday">
+                  <span class="mday__label">{{ date | date: 'EEE, MMM d' }}</span>
+                  <div class="cell cell--inline">
+                    <ng-container *ngTemplateOutlet="cellTpl; context: { employee: employee, day: getDayData(employee, i), date: date }" />
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    } @else {
+      @for (date of currentWeek(); track date; let i = $index) {
+        <div class="mcard mcard--open">
+          <div class="mcard__dayhead">
+            <span>{{ date | date: 'EEEE, MMM d' }}</span>
+            <span class="mcard__dayhours">{{ hoursByDay()[i] || 0 }} {{ 'EMPLOYEES.SCHEDULE.HR_SUFFIX' | translate }}</span>
+          </div>
+          <div class="mcard__days">
+            @for (employee of sortedEmployees(); track employee.employeeId) {
+              <div class="mday">
+                <span class="mday__label mday__label--emp">{{ employee.employeeName }}</span>
+                <div class="cell cell--inline">
+                  <ng-container *ngTemplateOutlet="cellTpl; context: { employee: employee, day: getDayData(employee, i), date: date }" />
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Info banner -->
+  <div class="roster-hint">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1v.2h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/>
+    </svg>
+    <span>{{ 'EMPLOYEES.SCHEDULE.ROSTER_HINT' | translate }}</span>
+  </div>
 </div>
+
+<!-- Reusable day-cell content (shift chips / time-off / "Not working") shared
+     by the desktop table and the mobile day rows. -->
+<ng-template #cellTpl let-employee="employee" let-day="day" let-date="date">
+  @if (day && day.dayOffShift.length) {
+    @for (off of day.dayOffShift; track off.offDayId) {
+      <app-dropdown-menu-btn
+        [items]="dayOffMenu(employee, day, off)" [chevron]="false" [appendToBody]="true"
+        triggerClass="chip chip-off">
+        {{ off.type }}
+      </app-dropdown-menu-btn>
+    }
+  } @else if (day && day.shift.length) {
+    @for (shift of day.shift; track $index) {
+      <app-dropdown-menu-btn
+        [items]="shiftMenu(employee, day, shift)" [chevron]="false" [appendToBody]="true"
+        triggerClass="chip chip-active">
+        {{ shiftRange(shift) }}
+      </app-dropdown-menu-btn>
+    }
+    <app-dropdown-menu-btn
+      [items]="addMenu(employee, date, day)" [chevron]="false" [appendToBody]="true"
+      triggerClass="chip chip-add">
+      <span class="add-ring">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </span>
+    </app-dropdown-menu-btn>
+  } @else {
+    <app-dropdown-menu-btn
+      [items]="addMenu(employee, date, day)" [chevron]="false" [appendToBody]="true"
+      triggerClass="chip chip-empty">
+      {{ 'EMPLOYEES.SCHEDULE.NOT_WORKING' | translate }}
+    </app-dropdown-menu-btn>
+  }
+</ng-template>

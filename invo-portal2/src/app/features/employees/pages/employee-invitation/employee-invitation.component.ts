@@ -173,7 +173,16 @@ export class EmployeeInvitationComponent implements OnInit, CanLeaveComponent {
     const id = this.route.snapshot.paramMap.get('id');
     this.inviteId.set(id);
 
-    if (!this.isEdit()) return;
+    if (!this.isEdit()) {
+      // Arriving from the employee form's "click here to invite" shortcut —
+      // pre-fill the address and resolve it straight away.
+      const email = this.route.snapshot.queryParamMap.get('email');
+      if (email) {
+        this.form.controls['email'].setValue(email);
+        await this.lookupEmail();
+      }
+      return;
+    }
 
     // Edit an existing invited user — prefill from the loaded record.
     this.loading.set(true);

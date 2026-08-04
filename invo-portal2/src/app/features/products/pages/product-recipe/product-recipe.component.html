@@ -82,20 +82,21 @@
               }
             </span>
             <span class="pcard__stats">
-              <span class="stat">
+              <span class="stat stat--items">
                 <span class="stat__val" [class.stat__val--active]="p.recipes.length > 0">{{ p.recipes.length }}</span>
                 <span class="stat__label">{{ 'PRODUCTS.PRODUCT_RECIPE.ITEMS' | translate }}</span>
               </span>
               @if (p.sku) {
-                <span class="stat"><span class="stat__val">{{ p.sku }}</span><span class="stat__label">{{ 'PRODUCTS.FIELDS.SKU' | translate }}</span></span>
+                <span class="stat stat--sku"><span class="stat__val">{{ p.sku }}</span><span class="stat__label">{{ 'PRODUCTS.FIELDS.SKU' | translate }}</span></span>
               }
-              <span class="stat">
+              <span class="stat stat--cost">
                 <span class="stat__val stat__val--cost">{{ productCost(p) | mycurrency }}</span>
                 <span class="stat__label">{{ 'PRODUCTS.FIELDS.COST' | translate }}</span>
               </span>
-              @if (p.serviceTime != null) {
-                <span class="stat"><span class="stat__val stat__val--time">{{ p.serviceTime }}</span><span class="stat__label">{{ 'PRODUCTS.PRODUCT_RECIPE.MIN' | translate }}</span></span>
-              }
+              <span class="stat stat--min">
+                <span class="stat__val stat__val--time">{{ p.serviceTime ?? '—' }}</span>
+                <span class="stat__label">{{ 'PRODUCTS.PRODUCT_RECIPE.MIN' | translate }}</span>
+              </span>
             </span>
           </button>
 

@@ -75,6 +75,25 @@ export function buildTimeOptions(stepMinutes = 30): string[] {
   return out;
 }
 
+/** `"HH:mm"` (24h) → a Fresha-style 12-hour label: `"10 AM"`, `"7 PM"`,
+ *  `"10:30 AM"`. Whole hours drop the `":00"`. Returns the input unchanged
+ *  when it can't be parsed. */
+export function formatTime12(hhmm: string | null | undefined): string {
+  if (!hhmm) return '';
+  const [hStr, mStr] = hhmm.split(':');
+  const h = Number(hStr);
+  const m = Number(mStr);
+  if (Number.isNaN(h) || Number.isNaN(m)) return hhmm;
+  const period = h < 12 ? 'AM' : 'PM';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return m === 0 ? `${h12} ${period}` : `${h12}:${String(m).padStart(2, '0')} ${period}`;
+}
+
+/** A whole shift range as a 12-hour label: `"10 AM - 7 PM"`. */
+export function formatShiftRange(shift: ScheduleShift): string {
+  return `${formatTime12(shift.from)} - ${formatTime12(shift.to)}`;
+}
+
 /** Minutes worked across a list of shifts, handling overnight spans. */
 export function shiftsHours(shifts: ScheduleShift[] | undefined): number {
   if (!shifts?.length) return 0;

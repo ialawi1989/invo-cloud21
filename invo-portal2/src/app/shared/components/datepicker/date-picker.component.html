@@ -82,7 +82,8 @@
       cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
       [cdkConnectedOverlayPanelClass]="panelClass()"
       [cdkConnectedOverlayMinWidth]="triggerWidth()"
-      [cdkConnectedOverlayFlexibleDimensions]="true"
+      [cdkConnectedOverlayFlexibleDimensions]="false"
+      [cdkConnectedOverlayPush]="true"
       [cdkConnectedOverlayPositions]="[
         { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top',    offsetY: 4 },
         { originX: 'start', originY: 'top',    overlayX: 'start', overlayY: 'bottom', offsetY: -4 }
@@ -107,6 +108,9 @@
       panelClass()
     "
     role="dialog">
+
+    <!-- Calendar + time group: side-by-side when [horizontalTime], else stacked. -->
+    <div [class]="horizontalTime() && showTime() && !isRangeMode() ? 'flex flex-row items-stretch gap-4' : 'contents'">
 
     <!-- Top row: presets + calendar columns -->
     <div class="flex flex-col sm:flex-row gap-3">
@@ -187,7 +191,7 @@
           </div>
 
           <!-- 6×7 day grid -->
-          <div class="grid grid-cols-7 gap-y-0.5">
+          <div class="grid grid-cols-7 gap-y-0.5" (mouseleave)="onGridMouseLeave()">
             @for (cell of dayCells(); track $index) {
               <button
                 type="button"
@@ -305,7 +309,7 @@
             }
           </div>
 
-          <div class="grid grid-cols-7 gap-y-0.5">
+          <div class="grid grid-cols-7 gap-y-0.5" (mouseleave)="onGridMouseLeave()">
             @for (cell of secondDayCells(); track $index) {
               <button
                 type="button"
@@ -360,7 +364,7 @@
          columns sized to content (not flex-stretched), centered as a
          group, with the AM/PM toggle inline beside them. -->
     @if (showTime() && !isRangeMode()) {
-      <div class="flex items-center justify-center gap-3 mt-2 pt-2 border-t border-slate-100" role="group" aria-label="Time">
+      <div [class]="'flex items-center justify-center gap-3 border-slate-100 ' + (horizontalTime() ? 'ps-4 border-s shrink-0' : 'mt-2 pt-2 border-t')" role="group" aria-label="Time">
         <!-- Hour column -->
         <div class="flex flex-col items-center gap-0.5 shrink-0">
           <button
@@ -441,14 +445,16 @@
         </div>
       </div>
     }
+    </div>
+    <!-- /calendar + time group -->
 
     <!-- Footer -->
     @if (showFooter()) {
-      <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+      <div class="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-100">
         <button
           type="button"
           (click)="clear()"
-          class="text-sm text-slate-500 hover:text-slate-700 transition-colors">
+          class="px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 transition-colors">
           Clear
         </button>
         @if (showTime() && !isRangeMode()) {
@@ -459,14 +465,14 @@
           <button
             type="button"
             (click)="close()"
-            class="text-sm text-brand-600 font-medium hover:text-brand-700 transition-colors">
+            class="px-4 py-1.5 rounded-lg text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 transition-colors">
             Done
           </button>
         } @else {
           <button
             type="button"
             (click)="goToToday()"
-            class="text-sm text-brand-600 font-medium hover:text-brand-700 transition-colors">
+            class="px-4 py-1.5 rounded-lg text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 transition-colors">
             Today
           </button>
         }

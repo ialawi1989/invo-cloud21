@@ -49,7 +49,7 @@
   color: #374151;
   transition: all 0.15s ease;
 
-  i { font-size: 22px; color: #6b7280; }
+  svg { color: #6b7280; }
   span { font-size: 13px; font-weight: 500; }
 
   &:hover { border-color: #d1d5db; }
@@ -58,7 +58,7 @@
     background: rgba(50, 172, 193, 0.08);
     border-color: #32acc1;
     color: #2b95a8;
-    i { color: #32acc1; }
+    svg { color: #32acc1; }
   }
 }
 
@@ -90,7 +90,7 @@
   font-size: 13px;
   color: #374151;
 
-  i { color: #32acc1; font-size: 16px; }
+  svg { color: #32acc1; }
   strong { color: #111827; margin-inline-start: 2px; }
 }
 

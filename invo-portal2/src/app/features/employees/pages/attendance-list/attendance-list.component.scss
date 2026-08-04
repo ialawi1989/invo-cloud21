@@ -9,3 +9,38 @@
   background: #fef3c7;
   color: #92400e;
 }
+
+// "Adjusted By: <who>" — shown on its own line under the adjusted time.
+.adj-by {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: #64748b;
+  word-break: break-word;
+}
+
+// Time cell: content on the left, quick-edit pencil on the right.
+.attcell {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.attcell__main { min-width: 0; }
+
+.quick-edit {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: var(--color-brand-600, #2691a4);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover { background: var(--color-brand-50, #effbfd); border-color: var(--color-brand-300, #7ad3df); }
+}

@@ -62,6 +62,7 @@
             <app-date-picker
               formControlName="adjClockedIn"
               [showTime]="true"
+              [horizontalTime]="true"
               triggerClass="input"/>
             <p class="field-hint">{{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_IN_HINT' | translate }}</p>
           </div>
@@ -73,6 +74,7 @@
             <app-date-picker
               formControlName="adjClockedOut"
               [showTime]="true"
+              [horizontalTime]="true"
               [min]="minClockOut()"
               triggerClass="input"/>
             <p class="field-hint">{{ 'EMPLOYEES.ATTENDANCE.ADJ_CLOCKED_OUT_HINT' | translate }}</p>

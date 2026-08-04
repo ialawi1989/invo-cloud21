@@ -29,8 +29,18 @@ import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { ModalService } from '@shared/modal/modal.service';
+import {
+  MediaPickerModalComponent,
+  MediaPickerConfig,
+} from '@features/settings/media/components/media-picker/media-picker-modal.component';
+import { Media } from '@features/settings/media/models/media.model';
 
 import { EmployeeService } from '../../services/employee.service';
+import {
+  employeeEmailValidator,
+  passcodeUniqueValidator,
+} from '../../services/employee-validators';
 import { EmployeeDetails } from '../../models/employee.types';
 // Branch list source — the settings service already wraps `branch/getBranches`
 // and normalises the wire shape. CompanyService carries no branch collection,
@@ -87,6 +97,11 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
   private route       = inject(ActivatedRoute);
   private router      = inject(Router);
   private toast       = inject(ToastService);
+  private modal       = inject(ModalService);
+
+  /** Credential rules (legacy: password >= 8, pass code >= 4 digits). */
+  readonly passwordMinLength = 8;
+  readonly passcodeMinLength = 4;
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
@@ -105,13 +120,10 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
   privileges = signal<Option[]>([]);
   branches   = signal<Option[]>([]);
 
-  // ── Image (simple base64 upload + preview) ─────────────────────────────
-  private base64Image = signal<string>('');
+  // ── Image (media-library picker, as in the legacy form) ────────────────
   private mediaUrl    = signal<{ defaultUrl: string }>({ defaultUrl: '' });
   private mediaId     = signal<string | null>(null);
-  avatarPreview = computed<string>(
-    () => this.base64Image() || this.mediaUrl().defaultUrl || '',
-  );
+  avatarPreview = computed<string>(() => this.mediaUrl().defaultUrl || '');
 
   // ── Edit-mode "change secret" reveals ──────────────────────────────────
   changePassword = signal<boolean>(false);
@@ -171,11 +183,50 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
   /**
    * Role-driven field visibility (mirrors the legacy form's role blocks):
    *  • Cloud accounts (Cloud Admin / Super Admin) sign in with Email + Password.
-   *  • POS accounts (POS User) sign in with a Pass Code (+ MSR swipe id).
+   *  • POS accounts (POS User) sign in with a Pass Code.
    * `isDriver` is an independent flag and does not change which fields show.
+   * The MSR swipe id lives with Access & Permissions and is offered for every
+   * account (legacy parity — it was never gated on the POS role).
    */
   showEmailPassword = computed<boolean>(() => this.isAdmin() || this.isSuperAdmin());
   showPassCodeMsr   = computed<boolean>(() => this.isUser() && !this.isSuperAdmin());
+
+  /** Email the record was loaded with — an unchanged address skips the
+   *  uniqueness probe (legacy `tempEmail`). */
+  private originalEmail = signal<string>('');
+
+  /** Set when the typed address belongs to an existing InvoCloud user; the
+   *  form then offers the invitation flow instead of a plain create. */
+  emailExistsAsUser = computed<boolean>(() => {
+    this.formTick();
+    return !!this.form.controls['email'].errors?.['emailExists'];
+  });
+
+  /**
+   * Jump to the invitation form pre-filled with the typed address — the legacy
+   * "Click here to invite" shortcut shown when the email resolves to an
+   * existing InvoCloud user who isn't in this company yet.
+   */
+  inviteEmployee(): void {
+    const email = String(this.form.controls['email'].value ?? '').trim();
+    void this.router.navigate(['/employees/invitation', 0], {
+      queryParams: { email },
+    });
+  }
+
+  // ── Secret placeholders (edit mode: empty = keep the current value) ──────
+  passwordPlaceholder = computed<string>(() => {
+    this.i18nTick();
+    return this.isCreate() ? '' : this.translate.instant('EMPLOYEES.FORM.KEEP_EMPTY_PASSWORD');
+  });
+  passcodePlaceholder = computed<string>(() => {
+    this.i18nTick();
+    return this.isCreate() ? '' : this.translate.instant('EMPLOYEES.FORM.KEEP_EMPTY_PASSCODE');
+  });
+  msrPlaceholder = computed<string>(() => {
+    this.i18nTick();
+    return this.isCreate() ? '' : this.translate.instant('EMPLOYEES.FORM.KEEP_EMPTY_MSR');
+  });
 
   /** Selected branches (full option objects) for the chip list + primary star. */
   selectedBranches = computed<Option[]>(() => {
@@ -307,7 +358,7 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
     });
     this.mediaUrl.set(data.mediaUrl ?? { defaultUrl: '' });
     this.mediaId.set(data.mediaId ?? null);
-    this.base64Image.set('');
+    this.originalEmail.set(data.email ?? '');
   }
 
   // ── Roles ──────────────────────────────────────────────────────────────
@@ -363,22 +414,30 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
   }
 
   // ── Image ──────────────────────────────────────────────────────────────
-  onImageSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.base64Image.set(String(reader.result ?? ''));
+  /** Open the shared media library (legacy used the same picker modal rather
+   *  than a bare file input, so uploads land in the library and can be reused). */
+  async chooseImage(): Promise<void> {
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      {
+        size: 'xl',
+        data: {
+          contentTypes: ['image'],
+          title: this.translate.instant('EMPLOYEES.FORM.CHOOSE_IMAGE'),
+          preSelectedIds: this.mediaId() ? [this.mediaId()!] : [],
+        },
+      },
+    );
+    const result = await ref.afterClosed();
+    const media = Array.isArray(result) ? result[0] : result;
+    if (media) {
+      this.mediaId.set(media.id);
+      this.mediaUrl.set({ defaultUrl: media.imageUrl ?? media.thumbUrl ?? '' });
       this.dirty.set(true);
-    };
-    reader.readAsDataURL(file);
-    // Allow re-selecting the same file later.
-    input.value = '';
+    }
   }
 
   removeImage(): void {
-    this.base64Image.set('');
     this.mediaUrl.set({ defaultUrl: '' });
     this.mediaId.set(null);
     this.dirty.set(true);
@@ -424,24 +483,42 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
     const cloud = this.showEmailPassword();
     const pos   = this.showPassCodeMsr();
 
-    if (cloud) email.setValidators([Validators.required, Validators.email]);
-    else       email.clearValidators();
+    if (cloud) {
+      email.setValidators([Validators.required, Validators.email]);
+      // Uniqueness / "already an InvoCloud user" probe — legacy parity.
+      email.setAsyncValidators([
+        employeeEmailValidator(this.service, {
+          getEmployeeId:    () => this.employeeId(),
+          getOriginalEmail: () => this.originalEmail(),
+        }),
+      ]);
+    } else {
+      email.clearValidators();
+      email.clearAsyncValidators();
+    }
 
     if (cloud && (this.isCreate() || this.changePassword())) {
-      pw.setValidators([Validators.required, Validators.minLength(6)]);
+      pw.setValidators([Validators.required, Validators.minLength(this.passwordMinLength)]);
     } else {
       pw.clearValidators();
     }
     if (pos && (this.isCreate() || this.changePassCode())) {
-      pc.setValidators([Validators.required, Validators.pattern(/^\d+$/), Validators.minLength(4)]);
+      pc.setValidators([
+        Validators.required,
+        Validators.pattern(/^\d+$/),
+        Validators.minLength(this.passcodeMinLength),
+      ]);
+      // Pass codes must be unique company-wide (legacy `passCode` table probe).
+      pc.setAsyncValidators([
+        passcodeUniqueValidator(this.service, { getEmployeeId: () => this.employeeId() }),
+      ]);
     } else {
       pc.clearValidators();
+      pc.clearAsyncValidators();
     }
-    if (pos && (this.isCreate() || this.changeMSR())) {
-      msr.setValidators([Validators.required]);
-    } else {
-      msr.clearValidators();
-    }
+    // MSR is optional for every role — it only needs to be well-formed when
+    // the user actually chose to change it.
+    msr.clearValidators();
     email.updateValueAndValidity({ emitEvent: false });
     pw.updateValueAndValidity({ emitEvent: false });
     pc.updateValueAndValidity({ emitEvent: false });
@@ -451,6 +528,9 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
   // ── Save / cancel ──────────────────────────────────────────────────────
   async save(): Promise<void> {
     this.form.markAllAsTouched();
+    // The email / pass-code probes are async — let any in-flight check settle
+    // before deciding, otherwise a fast save would slip past them.
+    if (this.form.pending) await this.whenSettled();
     if (this.form.invalid) return;
 
     this.saving.set(true);
@@ -490,15 +570,16 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
         branchId,
         hireDate:        this.toIso(v.hireDate),
         terminationDate: this.toIso(v.terminationDate),
-        base64Image:     this.base64Image() || '',
+        base64Image:     '',
         mediaId:         this.mediaId(),
         mediaUrl:        this.mediaUrl(),
         // Secrets: send the typed value only when the field is BOTH visible
         // for the selected role AND editable; otherwise '' (backend keeps the
-        // existing secret). Cloud → password; POS → passcode + MSR.
+        // existing secret). Cloud → password; POS → passcode; MSR is offered
+        // for every role.
         password: (this.showEmailPassword() && (this.isCreate() || this.changePassword())) ? (v.password ?? '') : '',
         passCode: (this.showPassCodeMsr()   && (this.isCreate() || this.changePassCode())) ? (v.passcode ?? '') : '',
-        MSR:      (this.showPassCodeMsr()   && (this.isCreate() || this.changeMSR()))      ? (v.msr ?? '') : '',
+        MSR:      (this.isCreate() || this.changeMSR()) ? (v.msr ?? '') : '',
       };
 
       // Drop the heavy privilege tree — the backend rebuilds it from
@@ -525,6 +606,15 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
 
   cancel(): void {
     this.router.navigate(['/employees']);
+  }
+
+  /** Resolves once the form leaves the PENDING state (async validators done). */
+  private whenSettled(): Promise<void> {
+    return new Promise<void>((resolve) => {
+      const sub = this.form.statusChanges.subscribe((status) => {
+        if (status !== 'PENDING') { sub.unsubscribe(); resolve(); }
+      });
+    });
   }
 
   hasUnsavedChanges(): boolean {

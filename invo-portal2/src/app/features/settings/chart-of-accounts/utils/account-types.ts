@@ -72,3 +72,10 @@ export const ACCOUNT_PARENT_TYPES: readonly string[] = (() => {
 export function findAccountType(id: string): AccountType | undefined {
   return ACCOUNT_TYPES.find(t => t.id === id);
 }
+
+/** i18n key for an account-type / parent-type wire value. Exact Arabic
+ *  labels live under `CHART_OF_ACCOUNTS.ACCOUNT_TYPE.*` (ported from the
+ *  legacy `MENUITEMS.ACCOUNTS.LIST.*` strings). */
+export function accountTypeKey(value: string | null | undefined): string {
+  return value ? `CHART_OF_ACCOUNTS.ACCOUNT_TYPE.${value}` : '';
+}

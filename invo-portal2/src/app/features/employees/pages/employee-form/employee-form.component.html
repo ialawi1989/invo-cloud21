@@ -51,10 +51,23 @@
                     formControlName="email"
                     [class.input--invalid]="form.controls['email'].touched && form.controls['email'].invalid"
                   />
-                  @if (form.controls['email'].touched && form.controls['email'].errors?.['required']) {
+                  @if (form.controls['email'].pending) {
+                    <p class="field-hint">{{ 'EMPLOYEES.FORM.CHECKING_EMAIL' | translate }}</p>
+                  } @else if (form.controls['email'].touched && form.controls['email'].errors?.['required']) {
                     <p class="field-error">{{ 'EMPLOYEES.FORM.REQUIRED' | translate }}</p>
                   } @else if (form.controls['email'].touched && form.controls['email'].errors?.['email']) {
                     <p class="field-error">{{ 'EMPLOYEES.FORM.EMAIL_INVALID' | translate }}</p>
+                  } @else if (form.controls['email'].errors?.['emailTaken']) {
+                    <p class="field-error">{{ 'EMPLOYEES.FORM.EMAIL_ALREADY_EXISTS' | translate }}</p>
+                  } @else if (emailExistsAsUser()) {
+                    <!-- The address belongs to an existing InvoCloud user — they
+                         can't be created again, only invited into this company. -->
+                    <p class="field-error">
+                      {{ 'EMPLOYEES.FORM.EMAIL_EXISTS' | translate }}
+                      <button type="button" class="link-btn" (click)="inviteEmployee()">
+                        {{ 'EMPLOYEES.FORM.CLICK_TO_INVITE' | translate }}
+                      </button>
+                    </p>
                   }
                 </div>
 
@@ -72,6 +85,7 @@
                       type="password"
                       class="input"
                       autocomplete="new-password"
+                      [placeholder]="passwordPlaceholder()"
                       formControlName="password"
                       [class.input--invalid]="form.controls['password'].touched && form.controls['password'].invalid"
                     />
@@ -107,6 +121,7 @@
                       inputmode="numeric"
                       class="input"
                       autocomplete="off"
+                      [placeholder]="passcodePlaceholder()"
                       formControlName="passcode"
                       [class.input--invalid]="form.controls['passcode'].touched && form.controls['passcode'].invalid"
                     />
@@ -116,6 +131,8 @@
                       <p class="field-error">{{ 'EMPLOYEES.FORM.PASSCODE_NUMERIC' | translate }}</p>
                     } @else if (form.controls['passcode'].touched && form.controls['passcode'].errors?.['minlength']) {
                       <p class="field-error">{{ 'EMPLOYEES.FORM.PASSCODE_MIN' | translate }}</p>
+                    } @else if (form.controls['passcode'].errors?.['exist']) {
+                      <p class="field-error">{{ 'EMPLOYEES.FORM.PASSCODE_IN_USE' | translate }}</p>
                     }
                   }
                   @if (!isCreate()) {
@@ -127,35 +144,6 @@
                   }
                 </div>
 
-                <!-- MSR -->
-                <div class="field">
-                  <label class="field-label" for="emp-msr">
-                    <span>
-                      {{ 'EMPLOYEES.FORM.MSR' | translate }}
-                      @if (showMSR()) { <span class="required">*</span> }
-                    </span>
-                  </label>
-                  @if (showMSR()) {
-                    <input
-                      id="emp-msr"
-                      type="password"
-                      class="input"
-                      autocomplete="off"
-                      formControlName="msr"
-                      [class.input--invalid]="form.controls['msr'].touched && form.controls['msr'].invalid"
-                    />
-                    @if (form.controls['msr'].touched && form.controls['msr'].errors?.['required']) {
-                      <p class="field-error">{{ 'EMPLOYEES.FORM.REQUIRED' | translate }}</p>
-                    }
-                  }
-                  @if (!isCreate()) {
-                    <app-toggle
-                      size="sm"
-                      [checked]="changeMSR()"
-                      (checkedChange)="toggleChangeMSR($event)"
-                      [label]="'EMPLOYEES.FORM.CHANGE_MSR' | translate"/>
-                  }
-                </div>
               }
             </div>
           </div>
@@ -221,16 +209,41 @@
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.ACCESS_PERMISSIONS' | translate }}</h2>
           </header>
           <div class="card__body">
-            <div class="field">
-              <label class="field-label">{{ 'EMPLOYEES.FORM.SELECT_PRIVILEGE' | translate }}</label>
-              <app-search-dropdown
-                formControlName="privilegeId"
-                [items]="privileges()"
-                [displayWith]="optionDisplay"
-                [toValue]="optionToValue"
-                [compareWith]="optionCompare"
-                [placeholder]="'EMPLOYEES.FORM.SELECT_PRIVILEGE' | translate"
-                [searchPlaceholder]="'COMMON.SEARCH' | translate"/>
+            <div class="grid grid--2">
+              <div class="field">
+                <label class="field-label">{{ 'EMPLOYEES.FORM.SELECT_PRIVILEGE' | translate }}</label>
+                <app-search-dropdown
+                  formControlName="privilegeId"
+                  [items]="privileges()"
+                  [displayWith]="optionDisplay"
+                  [toValue]="optionToValue"
+                  [compareWith]="optionCompare"
+                  [placeholder]="'EMPLOYEES.FORM.SELECT_PRIVILEGE' | translate"
+                  [searchPlaceholder]="'COMMON.SEARCH' | translate"/>
+              </div>
+
+              <!-- MSR swipe id — offered for every role (legacy parity), not
+                   just POS accounts. -->
+              <div class="field">
+                <label class="field-label" for="emp-msr">{{ 'EMPLOYEES.FORM.MSR' | translate }}</label>
+                @if (showMSR()) {
+                  <input
+                    id="emp-msr"
+                    type="password"
+                    class="input"
+                    autocomplete="off"
+                    [placeholder]="msrPlaceholder()"
+                    formControlName="msr"
+                  />
+                }
+                @if (!isCreate()) {
+                  <app-toggle
+                    size="sm"
+                    [checked]="changeMSR()"
+                    (checkedChange)="toggleChangeMSR($event)"
+                    [label]="'EMPLOYEES.FORM.CHANGE_MSR' | translate"/>
+                }
+              </div>
             </div>
           </div>
         </section>
@@ -250,16 +263,16 @@
                 <div class="avatar__preview">
                   <img [src]="avatarPreview()" alt="" class="avatar__img"/>
                   <div class="avatar__actions">
-                    <label class="btn btn-ghost btn-sm" for="emp-image">
+                    <button type="button" class="btn btn-ghost btn-sm" (click)="chooseImage()">
                       {{ 'EMPLOYEES.FORM.REPLACE_IMAGE' | translate }}
-                    </label>
+                    </button>
                     <button type="button" class="btn btn-ghost btn-sm btn-danger" (click)="removeImage()">
                       {{ 'EMPLOYEES.FORM.REMOVE_IMAGE' | translate }}
                     </button>
                   </div>
                 </div>
               } @else {
-                <label class="avatar__drop" for="emp-image">
+                <button type="button" class="avatar__drop" (click)="chooseImage()">
                   <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
@@ -267,15 +280,8 @@
                     <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
                   </svg>
                   <span class="avatar__hint">{{ 'EMPLOYEES.FORM.ADD_PHOTO' | translate }}</span>
-                </label>
+                </button>
               }
-              <input
-                id="emp-image"
-                type="file"
-                accept="image/*"
-                class="avatar__input"
-                (change)="onImageSelected($event)"
-              />
             </div>
           </div>
         </section>

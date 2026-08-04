@@ -21,7 +21,9 @@
       @for (opt of typeOptions; track opt.value) {
         <button type="button" class="type-card" [class.active]="type() === opt.value"
                 (click)="selectType(opt.value)">
-          <i class="bx {{ opt.icon }}"></i>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            @for (d of opt.iconPaths; track $index) { <path [attr.d]="d"/> }
+          </svg>
           <span>{{ opt.labelKey | translate }}</span>
         </button>
       }
@@ -68,7 +70,9 @@
 
   <!-- Total -->
   <div class="total">
-    <i class="bx bx-time-five"></i>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+    </svg>
     {{ 'EMPLOYEES.SCHEDULE.TOTAL_TIME_OFF' | translate }}:
     <strong>{{ 'EMPLOYEES.SCHEDULE.DAYS_COUNT' | translate: { count: totalDays() } }}</strong>
   </div>

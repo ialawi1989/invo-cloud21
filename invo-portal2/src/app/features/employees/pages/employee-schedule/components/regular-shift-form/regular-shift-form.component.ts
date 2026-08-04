@@ -13,7 +13,6 @@ import type { ModalRef } from '@shared/modal/modal.service';
 import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
-import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 
@@ -27,6 +26,9 @@ import {
   shiftsHours,
   validTimeOrder,
 } from '../../employee-schedule.types';
+
+/** Sensible default for a freshly-added shift (09:00 → 17:00). */
+const DEFAULT_SHIFT: ScheduleShift = { from: '09:00', to: '17:00' };
 
 export interface RegularShiftFormData {
   employee: ScheduleEmployee;
@@ -87,7 +89,6 @@ const END_OPTIONS: EndOption[] = [
     ModalHeaderComponent,
     ModalFooterComponent,
     SearchDropdownComponent,
-    ToggleComponent,
     DatePickerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -100,7 +101,9 @@ export class RegularShiftFormComponent {
   private toast     = inject(ToastService);
   private translate = inject(TranslateService);
 
-  readonly times         = buildTimeOptions();
+  /** 12-hour-labelled time options (value stays 24h `"HH:mm"`). */
+  /** 24-hour `"HH:mm"` time options (displayed verbatim, e.g. "09:00"). */
+  readonly times          = buildTimeOptions();
   readonly weekDays       = WEEK_DAYS;
   readonly repeatOptions = REPEAT_OPTIONS;
   readonly endOptions    = END_OPTIONS;
@@ -215,14 +218,14 @@ export class RegularShiftFormComponent {
       if (!checked) {
         weeks[weekIndex][day].shifts = [];
       } else if (!weeks[weekIndex][day].shifts.length) {
-        weeks[weekIndex][day].shifts.push({ from: '00:00', to: '00:00' });
+        weeks[weekIndex][day].shifts.push({ ...DEFAULT_SHIFT });
       }
     });
   }
 
   addShift(weekIndex: number, day: WeekDayName): void {
     this.mutate((weeks) => {
-      weeks[weekIndex][day].shifts.push({ from: '00:00', to: '00:00' });
+      weeks[weekIndex][day].shifts.push({ ...DEFAULT_SHIFT });
     });
   }
 
@@ -241,6 +244,15 @@ export class RegularShiftFormComponent {
 
   dayHours(weekIndex: number, day: WeekDayName): number {
     return shiftsHours(this.weeks()[weekIndex]?.[day]?.shifts);
+  }
+
+  /** Total scheduled hours for a whole week (for the "N hours total" head). */
+  weekTotalHours(weekIndex: number): number {
+    const week = this.weeks()[weekIndex];
+    if (!week) return 0;
+    let total = 0;
+    for (const d of WEEK_DAYS) total += shiftsHours(week[d].shifts);
+    return Math.round(total * 10) / 10;
   }
 
   dayLabelKey(day: WeekDayName): string {

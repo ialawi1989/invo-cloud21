@@ -36,13 +36,21 @@ export interface TimeoffFormResult {
   offDay: EmployeeOffDayPayload;
 }
 
-interface TypeOption { value: string; labelKey: string; icon: string; }
+/** `iconPaths` holds the inner `<path d="…">` strings of an inline SVG
+ *  (24×24, stroke-based) so the type cards render without an icon font. */
+interface TypeOption { value: string; labelKey: string; iconPaths: string[]; }
 
 const TYPE_OPTIONS: TypeOption[] = [
-  { value: 'Annual leave',          labelKey: 'EMPLOYEES.SCHEDULE.ANNUAL_LEAVE', icon: 'bx-sun' },
-  { value: 'Sick leave',            labelKey: 'EMPLOYEES.SCHEDULE.SICK_LEAVE',   icon: 'bx-plus-medical' },
-  { value: 'Training',              labelKey: 'EMPLOYEES.SCHEDULE.TRAINING',     icon: 'bx-book-open' },
-  { value: 'Other absence reasons', labelKey: 'EMPLOYEES.SCHEDULE.OTHER',        icon: 'bx-dots-horizontal-rounded' },
+  { value: 'Annual leave', labelKey: 'EMPLOYEES.SCHEDULE.ANNUAL_LEAVE',
+    iconPaths: ['M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z',
+                'M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4'] },
+  { value: 'Sick leave', labelKey: 'EMPLOYEES.SCHEDULE.SICK_LEAVE',
+    iconPaths: ['M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z',
+                'M3.5 12.5h4l1.5-3 3 6 1.5-3h4'] },
+  { value: 'Training', labelKey: 'EMPLOYEES.SCHEDULE.TRAINING',
+    iconPaths: ['M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z'] },
+  { value: 'Other absence reasons', labelKey: 'EMPLOYEES.SCHEDULE.OTHER',
+    iconPaths: ['M5 12h.01M12 12h.01M19 12h.01'] },
 ];
 
 /** Item shape fed to the team-member dropdown. */

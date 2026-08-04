@@ -40,6 +40,38 @@
       "DETAILS":            "التفاصيل",
       "ERR_NAME_REQUIRED":  "اسم الحساب مطلوب.",
       "ERR_TYPE_REQUIRED":  "اختر نوع الحساب."
+    },
+    "BULK": {
+      "ACTION":           "تعديل جماعي",
+      "TITLE":            "تعديل الحسابات دفعة واحدة",
+      "HINT":             "يتم تطبيق الحقول التي تحددها فقط على {{count}} حساب محدد.",
+      "KEEP_UNCHANGED":   "إبقاء دون تغيير",
+      "PARENT_ACCOUNT":   "الحساب الرئيسي",
+      "PARENT_NEED_TYPE": "اختر النوع أولاً (أو حدد حسابات من نفس النوع)",
+      "SAVED":            "تم تحديث الحسابات"
+    },
+    "ACCOUNT_TYPE": {
+      "Account Receivable":        "ذمم مدينة",
+      "Cash":                      "نقدي",
+      "Current Assets":            "أصول متداولة",
+      "Bank":                      "البنك",
+      "Other Current Assets":      "أصول متداولة أخرى",
+      "Fixed Assets":              "أصول ثابتة",
+      "Intangible Asset":          "الأصل غير الملموس",
+      "Non Current Assets":        "أصول غير متداولة",
+      "Current Liabilities":       "المطلوبات المتداولة",
+      "Account Payable":           "ذمم دائنة",
+      "Other Current Liabilities": "مطلوبات متداولة أخرى",
+      "Long Term Liabilities":     "المطلوبات المتداولة طويلة الأمد",
+      "Equity":                    "حقوق الملكية",
+      "Sales":                     "المبيعات",
+      "Income":                    "الدخل",
+      "Other Income":              "دخل إضافي",
+      "Operating Income":          "الدخل التشغيلي",
+      "Costs Of Goods Sold":       "تكاليف التشغيل",
+      "Expense":                   "مصاريف",
+      "Other Expense":             "مصروفات أخرى",
+      "Operating Expense":         "المصاريف التشغيلية"
     }
   }
 }

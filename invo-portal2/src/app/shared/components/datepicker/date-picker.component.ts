@@ -30,6 +30,7 @@ import {
   DEFAULT_DAY_NAMES,
   DEFAULT_MONTH_NAMES,
   DEFAULT_MONTH_NAMES_SHORT,
+  addDays,
   addMonths,
   addYears,
   buildCalendarGrid,
@@ -118,6 +119,14 @@ export class DatePickerComponent implements ControlValueAccessor {
   /** Sunday = 0, Monday = 1, etc. */
   firstDayOfWeek = input<number>(0);
 
+  /**
+   * Week-picker mode (range mode only). Clicking any day selects the whole
+   * week that contains it (aligned to `firstDayOfWeek`) in a single click,
+   * and hovering previews that week as a band. The bound value is the
+   * `{ start, end }` of the selected week.
+   */
+  selectWeek = input<boolean>(false);
+
   /** i18n month names override. */
   monthNames = input<string[]>(DEFAULT_MONTH_NAMES);
 
@@ -141,6 +150,13 @@ export class DatePickerComponent implements ControlValueAccessor {
 
   /** Minute step the up/down chevrons advance by. Defaults to 5. */
   timeStep = input<number>(5);
+
+  /**
+   * Lay the time stepper BESIDE the calendar (to its side) instead of below
+   * it, so the panel is wider and shorter. Only affects `showTime` single
+   * mode; ignored otherwise. Defaults to the stacked (vertical) layout.
+   */
+  horizontalTime = input<boolean>(false);
 
   /**
    * Optional quick-pick preset list (e.g. "Today", "Last 7 days"). Rendered
@@ -289,6 +305,15 @@ export class DatePickerComponent implements ControlValueAccessor {
     return `${this.monthNames()[c.getMonth()]} ${c.getFullYear()}`;
   });
 
+  /** The Sat→Fri (or `firstDayOfWeek`-aligned) week containing `date`. */
+  private weekRangeOf(date: Date): DateRange {
+    const fdow = this.firstDayOfWeek();
+    const d = startOfDay(date);
+    const diff = (d.getDay() - fdow + 7) % 7;
+    const start = addDays(d, -diff);
+    return { start, end: addDays(start, 6) };
+  }
+
   private buildDayCells(c: Date) {
     const grid = buildCalendarGrid(c.getFullYear(), c.getMonth(), this.firstDayOfWeek());
     const today = new Date();
@@ -316,8 +341,17 @@ export class DatePickerComponent implements ControlValueAccessor {
       let rangeEnd   = false;
 
       if (rangeMode) {
-        const start = anchor ?? range?.start ?? null;
-        const end = anchor ? hover : range?.end ?? null;
+        let start: Date | null;
+        let end: Date | null;
+        if (this.selectWeek() && !anchor && hover) {
+          // Preview the hovered day's whole week as a band.
+          const wk = this.weekRangeOf(hover);
+          start = wk.start;
+          end = wk.end;
+        } else {
+          start = anchor ?? range?.start ?? null;
+          end = anchor ? hover : range?.end ?? null;
+        }
         if (start && end) {
           const lo = isBeforeDay(start, end) ? start : end;
           const hi = isBeforeDay(start, end) ? end : start;
@@ -461,6 +495,16 @@ export class DatePickerComponent implements ControlValueAccessor {
   selectDay(date: Date, disabled: boolean): void {
     if (disabled) return;
     if (this.isRangeMode()) {
+      // Week-picker: one click selects the whole week containing `date`.
+      if (this.selectWeek()) {
+        const wk = this.weekRangeOf(date);
+        this.value.set(wk);
+        this._onChange(wk);
+        this.rangeAnchor.set(null);
+        this.rangeHover.set(null);
+        if (!this.inline()) this.close();
+        return;
+      }
       const anchor = this.rangeAnchor();
       const current = this.rangeValue();
       if (!anchor && (!current || (current.start && current.end))) {
@@ -540,9 +584,15 @@ export class DatePickerComponent implements ControlValueAccessor {
   }
 
   onDayHover(date: Date): void {
-    if (this.isRangeMode() && this.rangeAnchor()) {
+    if (this.isRangeMode() && (this.rangeAnchor() || this.selectWeek())) {
       this.rangeHover.set(date);
     }
+  }
+
+  /** In week-select mode, drop the hover preview when the pointer leaves the
+   *  grid so the band snaps back to the actually-selected week. */
+  onGridMouseLeave(): void {
+    if (this.selectWeek() && !this.rangeAnchor()) this.rangeHover.set(null);
   }
 
   // ── Footer actions ─────────────────────────────────────────────────────────

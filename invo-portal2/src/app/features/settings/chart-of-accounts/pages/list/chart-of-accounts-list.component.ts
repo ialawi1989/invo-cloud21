@@ -17,11 +17,13 @@ import { withTranslations } from '@core/i18n/with-translations';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import {
   ListRowActionsDirective,
+  ListCellTemplateDirective,
 } from '@shared/components/list-page/directives/list-template.directives';
 import type {
   TableColumn,
   FilterConfig,
   ActionConfig,
+  BulkActionConfig,
   ListQueryParams,
   ListResponse,
 } from '@shared/components/list-page/interfaces/list-page.types';
@@ -38,7 +40,12 @@ import { ToastService } from '@shared/components/toast/toast.service';
 
 import { AccountService } from '../../services/account.service';
 import { Account } from '../../services/account.types';
-import { ACCOUNT_PARENT_TYPES } from '../../utils/account-types';
+import { ACCOUNT_PARENT_TYPES, accountTypeKey, findAccountType } from '../../utils/account-types';
+import {
+  AccountsBulkEditModalComponent,
+  AccountsBulkEditData,
+  AccountsBulkEditResult,
+} from './components/accounts-bulk-edit-modal.component';
 
 type ViewMode = 'table' | 'tree';
 
@@ -76,6 +83,7 @@ interface TreeNode {
     TranslateModule,
     ListPageComponent,
     ListRowActionsDirective,
+    ListCellTemplateDirective,
     DropdownMenuBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -116,8 +124,8 @@ export class ChartOfAccountsListComponent implements OnInit {
     {
       id:       'tree',
       labelKey: 'CHART_OF_ACCOUNTS.LIST.VIEW_TREE',
-      // Same hierarchical-tree glyph the legacy used.
-      iconPath: 'M3 12h4l3-6 4 12 3-6h4',
+      // Hierarchy / "list-tree" glyph: a trunk branching to indented rows.
+      iconPath: 'M21 12h-8 M21 6h-8 M21 18h-8 M3 6v4c0 1.1 .9 2 2 2h3 M3 10v6c0 1.1 .9 2 2 2h3',
     },
   ];
 
@@ -163,6 +171,7 @@ export class ChartOfAccountsListComponent implements OnInit {
   columns: TableColumn<Account>[] = [];
   filters: FilterConfig[]         = [];
   headerActions: ActionConfig[]   = [];
+  bulkActions: BulkActionConfig[] = [];
 
   paginationConfig = { enabled: true, pageLimits: [15, 25, 50, 100], default: 25 };
   searchConfig     = { enabled: true, placeholder: '', debounceMs: 350 };
@@ -190,6 +199,15 @@ export class ChartOfAccountsListComponent implements OnInit {
   /** Hide the `…` trigger entirely when the menu has no items
    *  (default rows have nothing actionable in the dropdown). */
   hasRowMenu = (row: Account): boolean => this.rowMenuItems(row).length > 0;
+
+  /** Translate an account-type / parent-type wire value, falling back to the
+   *  raw string for any legacy value not in the map. */
+  typeLabel = (value: string | null | undefined): string => {
+    if (!value) return '—';
+    const key = accountTypeKey(value);
+    const label = this.translate.instant(key);
+    return label && label !== key ? label : value;
+  };
 
   constructor() {
     withTranslations('settings/chart-of-accounts');
@@ -229,18 +247,20 @@ export class ChartOfAccountsListComponent implements OnInit {
         order:      0,
       },
       {
-        key:        'type',
-        label:      t('CHART_OF_ACCOUNTS.LIST.TYPE'),
-        sortable:   true,
-        visible:    true,
-        order:      1,
+        key:            'type',
+        label:          t('CHART_OF_ACCOUNTS.LIST.TYPE'),
+        sortable:       true,
+        customTemplate: true,
+        visible:        true,
+        order:          1,
       },
       {
-        key:        'parentType',
-        label:      t('CHART_OF_ACCOUNTS.LIST.PARENT_TYPE'),
-        sortable:   true,
-        visible:    true,
-        order:      2,
+        key:            'parentType',
+        label:          t('CHART_OF_ACCOUNTS.LIST.PARENT_TYPE'),
+        sortable:       true,
+        customTemplate: true,
+        visible:        true,
+        order:          2,
       },
       {
         key:        'code',
@@ -264,7 +284,17 @@ export class ChartOfAccountsListComponent implements OnInit {
         key:     'parentType',
         label:   t('CHART_OF_ACCOUNTS.LIST.PARENT_TYPE'),
         type:    'checkbox-group',
-        options: ACCOUNT_PARENT_TYPES.map(p => ({ value: p, label: p })),
+        options: ACCOUNT_PARENT_TYPES.map(p => ({ value: p, label: this.typeLabel(p) })),
+      },
+    ];
+
+    this.bulkActions = [
+      {
+        id:      'bulk-edit',
+        label:   t('CHART_OF_ACCOUNTS.BULK.ACTION'),
+        icon:    'edit',
+        color:   'primary',
+        handler: (rows) => this.bulkEdit(rows as Account[]),
       },
     ];
 
@@ -331,7 +361,7 @@ export class ChartOfAccountsListComponent implements OnInit {
         accs.sort((a, b) => a.name.localeCompare(b.name));
         typeNodes.push({
           id:       `pt:${pt}/t:${type}`,
-          label:    type,
+          label:    this.typeLabel(type),
           count:    accs.length,
           children: accs.map(a => ({
             id:       `acc:${a.id}`,
@@ -345,7 +375,7 @@ export class ChartOfAccountsListComponent implements OnInit {
       }
       out.push({
         id:       `pt:${pt}`,
-        label:    pt,
+        label:    this.typeLabel(pt),
         count:    ptCount,
         children: typeNodes,
       });
@@ -370,6 +400,40 @@ export class ChartOfAccountsListComponent implements OnInit {
 
   add(): void {
     void this.router.navigate(['/account/chart-of-accounts', 'new']);
+  }
+
+  /** Bulk edit shared fields (Type + Parent type, Parent account) across the
+   *  selected rows via the modal, then persist each record and refresh. */
+  private async bulkEdit(rows: Account[]): Promise<void> {
+    if (!rows?.length) return;
+    const types = new Set(rows.map(r => r.type).filter(Boolean));
+    const commonType = types.size === 1 ? [...types][0] : null;
+
+    const ref = this.modal.open<AccountsBulkEditModalComponent, AccountsBulkEditData, AccountsBulkEditResult>(
+      AccountsBulkEditModalComponent,
+      { size: 'md', closeOnBackdrop: false, data: { count: rows.length, commonType } },
+    );
+    const result = await ref.afterClosed();
+    if (!result || (result.type == null && result.parentId == null)) return;
+
+    try {
+      for (const row of rows) {
+        const updated: Account = { ...row };
+        if (result.type != null) {
+          updated.type       = result.type;
+          updated.parentType = findAccountType(result.type)?.parentType ?? result.type;
+        }
+        if (result.parentId != null) updated.parentId = result.parentId;
+
+        const saved = await this.service.save(updated);
+        if (!saved) { this.toast.error('COMMON.SAVE_FAILED'); return; }
+      }
+      this.toast.success('CHART_OF_ACCOUNTS.BULK.SAVED');
+      this.listPage?.refresh();
+    } catch (e: any) {
+      console.error('[chart-of-accounts] bulk edit failed', e);
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
+    }
   }
 
   onRowClick(event: { row: Account }): void {

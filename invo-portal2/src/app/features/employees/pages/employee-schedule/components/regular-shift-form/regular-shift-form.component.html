@@ -63,47 +63,61 @@
   <!-- Weekly schedules -->
   @for (week of weeks(); track weekI; let weekI = $index) {
     <div class="week-card">
-      @if (weeks().length > 1) {
-        <div class="week-head">
-          <span class="week-badge">
-            {{ 'EMPLOYEES.SCHEDULE.WEEK_N' | translate: { n: weekI + 1 } }}
-          </span>
-        </div>
-      }
+      <div class="week-head">
+        <span class="week-title">
+          {{ weeks().length > 1
+              ? ('EMPLOYEES.SCHEDULE.WEEK_N' | translate: { n: weekI + 1 })
+              : ('EMPLOYEES.SCHEDULE.WEEKLY' | translate) }}
+        </span>
+        <span class="week-total">
+          {{ 'EMPLOYEES.SCHEDULE.HOURS_TOTAL' | translate: { hours: weekTotalHours(weekI) } }}
+        </span>
+      </div>
 
       @for (day of weekDays; track day) {
         <div class="day-row">
           <div class="day-info">
-            <app-toggle
-              size="sm"
-              [checked]="dayHasShifts(weekI, day)"
-              (checkedChange)="toggleDay(weekI, day, $event)" />
-            <span class="day-name">{{ dayLabelKey(day) | translate }}</span>
-            @if (dayHasShifts(weekI, day)) {
-              <span class="hours-badge">{{ dayHours(weekI, day) }}h</span>
-            }
+            <label class="day-check">
+              <input type="checkbox"
+                     [checked]="dayHasShifts(weekI, day)"
+                     (change)="toggleDay(weekI, day, $any($event.target).checked)" />
+              <span class="box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+            </label>
+            <div class="day-label">
+              <span class="day-name">{{ dayLabelKey(day) | translate }}</span>
+              @if (dayHasShifts(weekI, day)) {
+                <span class="hours-badge">{{ dayHours(weekI, day) }}h</span>
+              }
+            </div>
           </div>
 
           <div class="day-shifts">
-            @for (shift of week[day].shifts; track shiftI; let shiftI = $index) {
-              <div class="shift-row">
-                <app-search-dropdown
-                  [items]="times" [value]="shift.from" [clearable]="false"
-                  (valueChange)="setFrom(shift, $event)" />
-                <span class="sep">–</span>
-                <app-search-dropdown
-                  [items]="times" [value]="shift.to" [clearable]="false"
-                  (valueChange)="setTo(shift, $event)" />
-                <button type="button" class="icon-btn danger"
-                        (click)="removeShift(weekI, day, shiftI)"
-                        [attr.aria-label]="'COMMON.DELETE' | translate">
-                  <i class="bx bx-trash-alt"></i>
-                </button>
-              </div>
+            @if (dayHasShifts(weekI, day)) {
+              @for (shift of week[day].shifts; track shiftI; let shiftI = $index) {
+                <div class="shift-row">
+                  <app-search-dropdown
+                    [items]="times" [value]="shift.from" [clearable]="false"
+                    (valueChange)="setFrom(shift, $event)" />
+                  <span class="to">{{ 'EMPLOYEES.SCHEDULE.TO_SEP' | translate }}</span>
+                  <app-search-dropdown
+                    [items]="times" [value]="shift.to" [clearable]="false"
+                    (valueChange)="setTo(shift, $event)" />
+                  <button type="button" class="circle-btn" (click)="addShift(weekI, day)"
+                          [attr.aria-label]="'EMPLOYEES.SCHEDULE.ADD_SHIFT' | translate">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </button>
+                  <button type="button" class="trash-btn"
+                          (click)="removeShift(weekI, day, shiftI)"
+                          [attr.aria-label]="'COMMON.DELETE' | translate">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>
+                  </button>
+                </div>
+              }
+            } @else {
+              <span class="not-working">{{ 'EMPLOYEES.SCHEDULE.NOT_WORKING' | translate }}</span>
             }
-            <button type="button" class="add-link" (click)="addShift(weekI, day)">
-              <i class="bx bx-plus"></i> {{ 'EMPLOYEES.SCHEDULE.ADD_SHIFT' | translate }}
-            </button>
           </div>
         </div>
       }

@@ -1,0 +1,175 @@
+$border: #eef2f6;
+$ink: #0f172a;
+$muted: #64748b;
+
+.ob-page { max-width: 1080px; margin: 0 auto; padding: 8px 0 96px; position: relative; }
+
+// ── Header ───────────────────────────────────────────────────────────────
+.ob-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  margin: 10px 0 18px;
+}
+.ob-title { margin: 6px 0 4px; font-size: 22px; font-weight: 700; color: $ink; letter-spacing: -0.01em; }
+.ob-sub   { margin: 0; max-width: 640px; font-size: 13px; line-height: 1.5; color: $muted; }
+.ob-head__actions { flex-shrink: 0; }
+
+// ── Buttons ──────────────────────────────────────────────────────────────
+::ng-deep .ob-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; font-size: 14px; font-weight: 600;
+  border-radius: 10px; cursor: pointer; transition: all 0.15s ease;
+}
+::ng-deep .ob-btn--primary {
+  color: #fff; border: none;
+  background: linear-gradient(to right, var(--color-brand-500, #32acc1), var(--color-brand-700, #207484));
+  box-shadow: 0 4px 12px -4px rgba(32, 116, 132, 0.5);
+  &:hover:not(:disabled) { box-shadow: 0 6px 16px -4px rgba(32, 116, 132, 0.6); transform: translateY(-1px); }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+}
+::ng-deep .ob-btn--ghost {
+  color: #475569; background: #fff; border: 1px solid #e5e7eb;
+  &:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; }
+}
+
+// ── Toolbar ──────────────────────────────────────────────────────────────
+.ob-toolbar {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px;
+  margin-bottom: 16px;
+}
+.ob-field { display: flex; flex-direction: column; gap: 6px; min-width: 200px; }
+.ob-field__label { font-size: 12px; font-weight: 600; color: $muted; text-transform: uppercase; letter-spacing: 0.4px; }
+::ng-deep .ob-input {
+  width: 100%; padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 10px;
+  font-size: 14px; color: #374151; background: #fff;
+}
+
+.ob-status {
+  margin-inline-start: auto; align-self: flex-end;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 14px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  &--ok  { background: #dcfce7; color: #166534; }
+  &--adj { background: #fef3c7; color: #92400e; }
+}
+
+// ── Grid card ────────────────────────────────────────────────────────────
+.ob-card {
+  position: relative; background: #fff; border: 1px solid $border;
+  border-radius: 16px; overflow: hidden;
+}
+.ob-scroll { overflow-x: auto; }
+
+.ob-grid {
+  width: 100%; border-collapse: collapse; min-width: 640px;
+
+  thead th {
+    padding: 13px 16px; font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.4px; color: $muted; text-align: start;
+    background: #f8fafc; border-bottom: 1px solid $border;
+
+    // Higher specificity (th.ob-col-num) so end-alignment wins over `thead th`
+    // once view-encapsulation attributes equalise the selectors.
+    &.ob-col-num { text-align: end; }
+  }
+}
+// Fixed column widths so header, body and totals line up exactly.
+.ob-c-num { width: 190px; }
+
+.ob-row-parent td {
+  padding: 12px 16px 6px; font-size: 13px; font-weight: 700; color: $ink;
+  text-transform: uppercase; letter-spacing: 0.03em;
+}
+.ob-group:not(:first-child) .ob-row-parent td { border-top: 1px solid $border; }
+
+.ob-row-type td {
+  padding: 6px 16px; font-size: 12px; font-weight: 600; color: #475569;
+  background: #fbfcfe; padding-inline-start: 32px;
+}
+
+.ob-row-acc {
+  td { padding: 10px 16px; border-top: 1px solid #f5f8fb; vertical-align: middle; }
+  &--expandable { cursor: pointer; &:hover { background: #f8fafc; } }
+  &--open { background: #f8fafc; }
+}
+.ob-cell-acc { vertical-align: middle; }
+.ob-acc-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.ob-indent { padding-inline-start: 32px !important; }
+.ob-chevron { color: #94a3b8; flex-shrink: 0; transition: transform 0.15s ease;
+  &--open { transform: rotate(90deg); color: var(--color-brand-600, #2691a4); } }
+.ob-acc-name { font-size: 14px; font-weight: 500; color: $ink; overflow-wrap: anywhere; }
+.ob-acc-hint { font-size: 11px; color: #a3aab6; font-style: italic; }
+
+.ob-cell-num { text-align: end; white-space: nowrap; }
+.ob-num { font-size: 14px; font-weight: 600; color: #334155; font-variant-numeric: tabular-nums;
+  &--debit  { color: #0e7490; }
+  &--credit { color: #b45309; } }
+.ob-num-empty { color: #cbd5e1; }
+
+.ob-num-input {
+  width: 130px; padding: 7px 10px; text-align: end;
+  border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;
+  font-variant-numeric: tabular-nums; color: $ink; background: #fff;
+  &:focus { outline: none; border-color: var(--color-brand-500, #32acc1); box-shadow: 0 0 0 3px rgba(50,172,193,.12); }
+  &::-webkit-outer-spin-button, &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+}
+
+// ── Expanded records panel ───────────────────────────────────────────────
+.ob-row-panel > td { padding: 0; background: #f8fbfd; border-top: 1px solid $border; }
+.ob-panel { padding: 12px 16px 14px; padding-inline-start: 40px; }
+.ob-panel__search {
+  position: relative; display: inline-flex; align-items: center; margin-bottom: 10px;
+  svg { position: absolute; inset-inline-start: 10px; color: #94a3b8; }
+  input { width: 260px; padding: 7px 12px 7px 32px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; background: #fff; }
+}
+.ob-panel__loading, .ob-panel__empty { padding: 16px; text-align: center; color: $muted; font-size: 13px; }
+
+.ob-records {
+  width: 100%; border-collapse: collapse;
+  td { padding: 8px 12px; border-top: 1px solid #eef4f9; vertical-align: middle; }
+  tr:first-child td { border-top: none; }
+  .ob-col-num, .ob-cell-num { width: 160px; }
+}
+.ob-rec-name { display: flex; flex-direction: column; gap: 2px; }
+.ob-rec-link { font-size: 13px; font-weight: 500; color: var(--color-brand-700, #207484); text-decoration: none; &:hover { text-decoration: underline; } }
+.ob-rec-sub { font-size: 11px; color: #94a3b8; }
+
+.ob-rec-edit { display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end;
+  input { width: 96px; padding: 6px 8px; text-align: end; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; } }
+.ob-apply, .ob-rec-editbtn {
+  padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.ob-apply { background: var(--color-brand-600, #2691a4); color: #fff; border: none; &:hover { background: var(--color-brand-700, #207484); } }
+.ob-rec-editbtn { background: #fff; color: var(--color-brand-700, #207484); border: 1px solid #e2e8f0; &:hover { background: var(--color-brand-50, #effbfd); } }
+
+.ob-pager {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-top: 10px; font-size: 12px; color: $muted;
+  &__btns { display: inline-flex; align-items: center; gap: 8px;
+    button { width: 28px; height: 28px; border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; cursor: pointer; color: #475569;
+      &:hover:not(:disabled) { background: #f1f5f9; } &:disabled { opacity: 0.4; cursor: not-allowed; } } }
+}
+
+// ── Totals ───────────────────────────────────────────────────────────────
+.ob-totals { border-top: 2px solid $border; }
+.ob-total-row td {
+  padding: 11px 16px; font-size: 14px; font-weight: 600; color: #334155;
+  background: #f8fafc;
+  &.ob-cell-num .ob-num { color: #334155; }
+}
+.ob-total-row--adj td { color: #b91c1c; .ob-num { color: #b91c1c; } font-weight: 500; }
+.ob-total-row--grand td { font-weight: 700; color: $ink; border-top: 1px solid #e2e8f0; .ob-num { color: $ink; font-weight: 700; } }
+
+.ob-empty { padding: 48px 16px; text-align: center; color: $muted; font-size: 14px; }
+.ob-foot-hint { margin: 12px 4px 0; font-size: 12px; color: #94a3b8; }
+
+.ob-spinner {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 3px solid #e2e8f0; border-top-color: var(--color-brand-600, #2691a4);
+  display: inline-block; animation: ob-spin 0.8s linear infinite;
+}
+@keyframes ob-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .ob-toolbar { flex-direction: column; align-items: stretch; }
+  .ob-status { margin-inline-start: 0; align-self: flex-start; }
+  .ob-field { min-width: 0; }
+}

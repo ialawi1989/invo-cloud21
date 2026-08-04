@@ -91,18 +91,31 @@
   &__chip { display: inline-flex; align-items: center; padding: 1px 8px; font-size: 11px; font-weight: 600; border-radius: 5px;
     &--cat { background: #fff7ed; color: #c2410c; }
     &--code { background: #ecfdf5; color: #047857; font-family: ui-monospace, Menlo, Consolas, monospace; } }
-  &__tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  // Pull the row left by the chip's own inline padding so the first tag's TEXT
+  // lines up under the product name instead of sitting ~8px to its right.
+  &__tags { display: flex; flex-wrap: wrap; gap: 4px; margin-inline-start: -8px; }
   &__tag { display: inline-flex; align-items: center; padding: 1px 8px; font-size: 11px; font-weight: 500; color: var(--color-brand-700, #0e7490); background: var(--color-brand-50, #ecfeff); border-radius: 5px; }
 
-  &__stats { display: flex; align-items: center; gap: 22px; flex-shrink: 0; padding-inline-start: 12px; }
+  // Fixed-width, right-anchored stat columns so ITEMS / COST / MIN line up
+  // vertically down the list regardless of each row's value widths.
+  &__stats { display: flex; align-items: flex-start; gap: 8px; flex-shrink: 0; padding-inline-start: 12px; }
 
   /* The expanded body is <app-prep-recipe-panel>; it brings its own padding. */
   app-prep-recipe-panel { display: block; border-top: 1px solid #f1f5f9; background: #f8fafc; }
 }
 @media (max-width: 720px) { .pcard__stats { display: none; } }
 
-.stat { display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 0;
-  &__val { font-size: 14px; font-weight: 600; color: #475569;
+.stat {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+  flex-shrink: 0; text-align: end;
+
+  &--items { width: 56px; }
+  &--sku   { width: 96px; }
+  &--cost  { width: 116px; }
+  &--min   { width: 52px; }
+
+  &__val { font-size: 14px; font-weight: 600; color: #475569; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; max-width: 100%;
     &--active { color: #c2410c; }
     &--cost { color: #047857; }
     &--time { color: var(--color-brand-600); } }
