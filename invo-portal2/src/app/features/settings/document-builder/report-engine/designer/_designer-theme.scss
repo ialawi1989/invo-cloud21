@@ -1,0 +1,204 @@
+// Design tokens for the free-position designer UI.
+//
+// Every value defers to the portal's design system (`--cl-*`, defined in
+// styles/_content-library-design-system.scss) so the designer inherits the
+// portal's look — including any future retheme — instead of carrying its own
+// palette. Import this partial at the top of every designer component's SCSS
+// rather than redeclaring values.
+//
+// These stay SCSS variables rather than becoming `--cl-*` references at every
+// call site: the components use them inside `rgba()`, `darken()` and mixin
+// defaults, which CSS custom properties can't do. Each one resolves to a token
+// where the design system has an equivalent, and to a literal only where it
+// doesn't (the designer needs a few colors the portal has no token for).
+
+// ── Brand ──────────────────────────────────────────────────────────
+$d-primary: var(--cl-brand);
+$d-primary-hover: var(--cl-brand-dark);
+$d-primary-light: var(--cl-brand-light);
+// Brand at partial alpha. `rgba()` can't take a var(), so these go through
+// color-mix — which can — and stay tied to the token rather than to a hex
+// copy of it.
+$d-primary-tint: color-mix(in srgb, var(--cl-brand) 12%, transparent);
+$d-primary-soft: color-mix(in srgb, var(--cl-brand) 10%, transparent);
+
+// ── Text ───────────────────────────────────────────────────────────
+$d-text: var(--cl-t1);
+$d-text-secondary: var(--cl-t3);
+$d-text-muted: var(--cl-t4);
+$d-text-label: var(--cl-t2);
+
+// ── Surfaces ───────────────────────────────────────────────────────
+$d-white: var(--cl-surface);
+$d-bg: var(--cl-bg);
+$d-bg-alt: var(--cl-border-sub);
+$d-bg-panel: var(--cl-bg);
+// The canvas surround — deliberately darker than the page so the paper edge
+// reads as a physical sheet. The portal has no token this dark; --cl-border
+// is the closest and doubles as the surround.
+$d-canvas-bg: var(--cl-border);
+
+// ── Lines ──────────────────────────────────────────────────────────
+$d-border: var(--cl-border);
+$d-border-light: var(--cl-border-sub);
+$d-border-input: #d1d5db;
+
+// ── Semantic ───────────────────────────────────────────────────────
+// No design-system tokens exist for these yet; they match the portal's
+// Tailwind amber/red/emerald 500s.
+$d-warning: #f59e0b;
+$d-danger: #ef4444;
+$d-success: #10b981;
+// Snap/alignment guide color — intentionally NOT the brand color so guides
+// stay distinguishable from selection chrome during a drag.
+$d-guide: #ec4899;
+
+// ── Geometry ───────────────────────────────────────────────────────
+$d-radius: var(--cl-r-md);
+$d-radius-sm: var(--cl-r-sm);
+$d-radius-xs: 4px;
+
+$d-shadow-sm: var(--cl-sh);
+$d-shadow-md: var(--cl-sh-card);
+$d-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+$d-transition: 0.15s var(--cl-ease);
+
+// Panel rails. The canvas takes whatever is left.
+$d-rail-width: 240px;
+$d-panel-width: 340px;
+
+// ── Control metrics ────────────────────────────────────────────────
+//
+// Matched to the classic builder's `.form-control` (10px/12px padding at
+// 14px type ≈ 36px tall, 6px radius) rather than the tighter scale the
+// designer started with. The two modes sit behind one toolbar toggle, so a
+// denser control scale here read as a different product. Body text is 13px:
+// one step down from classic's 14px, which the narrower rails need, but the
+// same weights, radii and colors.
+$d-control-height: 36px;
+$d-control-height-sm: 32px;
+$d-font: 13px;
+$d-font-sm: 12px;
+$d-icon-btn: 32px;
+
+// ── Shared primitives ──────────────────────────────────────────────
+
+// Section heading inside a scrolling panel.
+@mixin d-panel-heading {
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $d-text-muted;
+  background: $d-bg;
+  border-bottom: 1px solid $d-border;
+}
+
+// Field label above a control — classic's `.form-label`.
+@mixin d-label {
+  display: block;
+  font-size: $d-font;
+  font-weight: 500;
+  color: $d-text-label;
+}
+
+// Form control used throughout the property panel.
+@mixin d-input {
+  width: 100%;
+  height: $d-control-height;
+  padding: 0 12px;
+  font-size: $d-font;
+  color: $d-text;
+  background: $d-white;
+  border: 1px solid $d-border-input;
+  border-radius: $d-radius-sm;
+  transition: border-color $d-transition, box-shadow $d-transition;
+
+  &:hover:not(:focus):not(:disabled) {
+    border-color: $d-text-muted;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $d-primary;
+    box-shadow: 0 0 0 3px $d-primary-soft;
+  }
+
+  &::placeholder {
+    color: $d-text-muted;
+  }
+
+  &:disabled {
+    background: $d-bg-alt;
+    color: $d-text-muted;
+    cursor: not-allowed;
+  }
+}
+
+// Icon/text button used in toolbars and panel headers.
+@mixin d-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: $d-control-height;
+  padding: 0 16px;
+  font-size: $d-font;
+  font-weight: 500;
+  color: $d-text-secondary;
+  background: $d-white;
+  border: 1px solid $d-border;
+  border-radius: $d-radius;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all $d-transition;
+
+  &:hover:not(:disabled) {
+    background: $d-bg;
+    border-color: $d-text-muted;
+    color: $d-primary;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+// Pill segmented control — the classic builder's `.tab-toggle`.
+@mixin d-pill-group {
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  background: $d-bg-alt;
+  border-radius: 20px;
+}
+
+@mixin d-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 16px;
+  font-size: $d-font;
+  font-weight: 500;
+  line-height: 1;
+  color: $d-text-secondary;
+  background: transparent;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all $d-transition;
+
+  &:hover:not(.is-active) {
+    color: $d-text;
+  }
+
+  &.is-active {
+    color: $d-text;
+    background: $d-white;
+    box-shadow: $d-shadow-sm;
+  }
+}

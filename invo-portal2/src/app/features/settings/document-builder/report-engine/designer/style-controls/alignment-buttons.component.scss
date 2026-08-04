@@ -1,0 +1,32 @@
+@use '../_designer-theme.scss' as *;
+
+.alignment-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-alignment {
+  width: $d-icon-btn;
+  height: $d-icon-btn;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid $d-border;
+  border-radius: $d-radius-sm;
+  background: $d-white;
+  color: $d-text-secondary;
+  cursor: pointer;
+  transition: all $d-transition;
+  padding: 0;
+
+  &:hover {
+    background: $d-bg-alt;
+    border-color: $d-border-input;
+  }
+
+  &.active {
+    background: $d-primary-light;
+    border-color: $d-primary;
+    color: $d-primary;
+  }
+}

@@ -1,0 +1,42 @@
+<ng-container *ngIf="svc.state() as pos">
+  <!-- Backdrop closes on any outside click or right-click. -->
+  <div class="ctx__backdrop" (click)="svc.hide()" (contextmenu)="onBackdropContextMenu($event)"></div>
+
+  <div class="ctx__menu"
+       [style.left.px]="pos.x"
+       [style.top.px]="pos.y"
+       (click)="$event.stopPropagation()"
+       (contextmenu)="$event.preventDefault()">
+
+    <button type="button" class="ctx__item" (click)="duplicate()">
+      <i class="mdi mdi-content-duplicate ctx__icon"></i>
+      <span class="ctx__label">Duplicate</span>
+      <span class="ctx__shortcut">Ctrl+D</span>
+    </button>
+
+    <button type="button" class="ctx__item" (click)="toggleLock()">
+      <i class="mdi ctx__icon" [ngClass]="isLocked() ? 'mdi-lock-open-variant-outline' : 'mdi-lock-outline'"></i>
+      <span class="ctx__label">{{ isLocked() ? 'Unlock' : 'Lock' }}</span>
+    </button>
+
+    <div class="ctx__divider"></div>
+
+    <button type="button" class="ctx__item" (click)="bringToFront()">
+      <i class="mdi mdi-arrange-bring-to-front ctx__icon"></i>
+      <span class="ctx__label">Bring to front</span>
+    </button>
+
+    <button type="button" class="ctx__item" (click)="sendToBack()">
+      <i class="mdi mdi-arrange-send-to-back ctx__icon"></i>
+      <span class="ctx__label">Send to back</span>
+    </button>
+
+    <div class="ctx__divider"></div>
+
+    <button type="button" class="ctx__item ctx__item--danger" (click)="del()">
+      <i class="mdi mdi-trash-can-outline ctx__icon"></i>
+      <span class="ctx__label">Delete</span>
+      <span class="ctx__shortcut">Del</span>
+    </button>
+  </div>
+</ng-container>

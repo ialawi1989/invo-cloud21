@@ -1,0 +1,89 @@
+<div class="bd__backdrop" *ngIf="svc.open()" (click)="cancel()">
+  <div class="bd__dialog" (click)="$event.stopPropagation()">
+
+    <header class="bd__head">
+      <h3 class="bd__title">Expression</h3>
+      <button type="button" class="bd__close" title="Cancel" (click)="cancel()">
+        <i class="mdi mdi-close"></i>
+      </button>
+    </header>
+
+    <!-- Editor. Inserts land here, not in the originating input — the
+         caller's value only changes on OK, so Cancel truly discards. -->
+    <div class="bd__editor">
+      <label class="bd__editor-label">
+        Set expression for: <span class="bd__target">{{ svc.label() }}</span>
+      </label>
+      <textarea #editor rows="3" class="bd__textarea"
+                [ngModel]="expression()"
+                (ngModelChange)="expression.set($event)"></textarea>
+
+      <ng-container *ngIf="validation() as v">
+        <p class="bd__feedback bd__feedback--ok" *ngIf="v.kind === 'ok'">✓ {{ v.display }}</p>
+        <p class="bd__feedback bd__feedback--error" *ngIf="v.kind === 'error'">⚠ {{ v.message }}</p>
+      </ng-container>
+    </div>
+
+    <!-- Category / Item / Description, the SSRS-style three-pane chooser -->
+    <div class="bd__panes">
+
+      <div class="bd__pane bd__pane--categories">
+        <div class="bd__pane-head">Category</div>
+        <button *ngFor="let cat of CATEGORIES"
+                type="button" class="bd__cat"
+                [class.is-active]="selectedCategory() === cat.id"
+                (click)="onSelectCategory(cat.id)">{{ cat.label }}</button>
+      </div>
+
+      <div class="bd__pane bd__pane--items">
+        <div class="bd__pane-head">Item</div>
+
+        <div class="bd__row-context" *ngIf="selectedCategory() === 'fields' && svc.rowSource() as rs">
+          Row context: <span class="bd__mono">{{ rs }}</span>
+        </div>
+
+        <div class="bd__search">
+          <input type="text" class="bd__search-input" placeholder="Search…"
+                 [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+        </div>
+
+        <div class="bd__item-list">
+          <p class="bd__empty" *ngIf="currentItems().length === 0">No items.</p>
+          <button *ngFor="let item of currentItems()"
+                  type="button" class="bd__item"
+                  [class.is-active]="selectedItem()?.id === item.id"
+                  [style.padding-left.px]="8 + (item.depth ?? 0) * 12"
+                  [title]="'Click to add ' + item.label + ' to the expression'"
+                  (click)="insertItem(item)">
+            <span class="bd__item-label">{{ item.label }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="bd__pane bd__pane--detail">
+        <ng-container *ngIf="selectedItem() as item; else noSelection">
+          <div class="bd__detail-block">
+            <div class="bd__pane-head bd__pane-head--plain">Description</div>
+            <p class="bd__description">{{ item.description }}</p>
+          </div>
+          <div class="bd__detail-block bd__detail-block--grow">
+            <div class="bd__pane-head bd__pane-head--plain">Example</div>
+            <pre class="bd__example">{{ item.example }}</pre>
+          </div>
+          <div class="bd__detail-actions">
+            <button type="button" class="bd__btn bd__btn--primary" (click)="insertItem(item)">+ Insert again</button>
+            <span class="bd__note">Click any item to add it; stack as many as you like before pressing OK.</span>
+          </div>
+        </ng-container>
+        <ng-template #noSelection>
+          <p class="bd__empty">Select an item to see its description.</p>
+        </ng-template>
+      </div>
+    </div>
+
+    <footer class="bd__foot">
+      <button type="button" class="bd__btn" (click)="cancel()">Cancel</button>
+      <button type="button" class="bd__btn bd__btn--primary" (click)="commit()">OK</button>
+    </footer>
+  </div>
+</div>

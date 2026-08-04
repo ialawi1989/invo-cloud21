@@ -1,0 +1,223 @@
+@use '../_designer-theme.scss' as *;
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.toolbox {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: $d-rail-width;
+  background: $d-white;
+  border-right: 1px solid $d-border;
+  user-select: none;
+
+  &__tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid $d-border;
+    flex-shrink: 0;
+  }
+
+  &__tab {
+    padding: 14px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $d-text-secondary;
+    background: $d-bg;
+    border: none;
+    // Reserve the active underline on every tab so switching doesn't shift
+    // the panel below by 2px.
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all $d-transition;
+
+    &:hover:not(.is-active) {
+      color: $d-text-label;
+    }
+
+    &.is-active {
+      color: $d-text;
+      background: $d-white;
+      border-bottom-color: $d-primary;
+    }
+  }
+
+  &__scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 8px;
+  }
+
+  // ── Palette ──────────────────────────────────────────────────
+  &__group-label {
+    padding: 14px 14px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $d-text-muted;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 12px;
+  }
+
+  &__tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 8px;
+    background: $d-bg;
+    border: 1px solid $d-border;
+    border-radius: $d-radius;
+    cursor: grab;
+    transition: all $d-transition;
+
+    &:hover {
+      background: $d-primary-light;
+      border-color: $d-primary;
+      color: $d-primary;
+    }
+
+    &:active {
+      cursor: grabbing;
+      background: $d-primary-tint;
+    }
+
+    .mdi {
+      font-size: 20px;
+      line-height: 1;
+      color: $d-text-secondary;
+    }
+
+    &:hover .mdi {
+      color: $d-primary;
+    }
+  }
+
+  &__tile-char {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 17px;
+    line-height: 1;
+    color: $d-text-secondary;
+  }
+
+  &__tile-label {
+    font-size: $d-font-sm;
+    line-height: 1.2;
+    text-align: center;
+    color: $d-text-secondary;
+  }
+
+  // ── Layers ───────────────────────────────────────────────────
+  &__section-head {
+    @include d-panel-heading;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  &__count {
+    margin-inline-start: 4px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+    color: $d-text-muted;
+  }
+
+  &__empty {
+    margin: 0;
+    padding: 16px 14px;
+    font-size: $d-font;
+    text-align: center;
+    color: $d-text-muted;
+
+    &--inline {
+      padding: 6px 12px;
+      text-align: start;
+      font-style: italic;
+      color: $d-border-input;
+    }
+  }
+
+  &__layer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 10px 9px 14px;
+    font-size: $d-font;
+    text-align: start;
+    color: $d-text-label;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid $d-border-light;
+    cursor: pointer;
+    transition: background $d-transition;
+
+    &:hover:not(.is-selected) {
+      background: $d-bg;
+    }
+
+    &.is-selected {
+      background: $d-primary-tint;
+      color: $d-primary-hover;
+      font-weight: 500;
+    }
+  }
+
+  &__layer-icon {
+    flex-shrink: 0;
+    width: 18px;
+    font-size: 16px;
+    text-align: center;
+    color: $d-text-muted;
+  }
+
+  &__layer-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__layer-badge {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: $d-text-muted;
+
+    &--conditional {
+      color: $d-warning;
+    }
+  }
+}
+
+// CDK drag chrome.
+//
+// The palette drags are copy-style: nothing actually moves within the
+// palette, so CDK's snap-back animation reads as lag. Kill the transition
+// and keep the source cell occupied (visibility, not display) so the grid
+// doesn't reflow around the gap mid-drag.
+:host ::ng-deep {
+  .cdk-drag-animating,
+  .cdk-drop-list-dragging .cdk-drag {
+    transition: none !important;
+  }
+
+  .cdk-drag-placeholder {
+    opacity: 0 !important;
+    visibility: hidden;
+  }
+}

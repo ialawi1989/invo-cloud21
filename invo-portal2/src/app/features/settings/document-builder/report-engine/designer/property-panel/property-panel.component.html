@@ -1,0 +1,871 @@
+<div class="pp">
+  <!-- Single binding-picker instance; every fx button in this panel opens it. -->
+  <app-binding-dialog></app-binding-dialog>
+
+  <!-- Sticky title bar -->
+  <div class="pp__head">
+    <ng-container *ngIf="block() as b; else noBlockHead">
+      <span class="pp__title">{{ b.type }} — {{ b.id.slice(0, 8) }}</span>
+      <!-- Same operations as Ctrl+D / Del on the canvas, surfaced so they're
+           findable without knowing the shortcuts. -->
+      <button type="button" class="pp__head-btn" title="Duplicate (Ctrl+D)" (click)="state.duplicateSelected()">
+        <i class="mdi mdi-content-duplicate"></i>
+      </button>
+      <button type="button" class="pp__head-btn pp__head-btn--danger" title="Delete (Del)" (click)="state.deleteSelected()">
+        <i class="mdi mdi-trash-can-outline"></i>
+      </button>
+    </ng-container>
+    <ng-template #noBlockHead>
+      <span class="pp__title">{{ template() ? 'Page settings' : 'No selection' }}</span>
+    </ng-template>
+  </div>
+
+  <div class="pp__scroll">
+
+    <!-- ══════════════ BLOCK PROPERTIES ══════════════ -->
+    <ng-container *ngIf="block() as b">
+
+      <!-- Position & size -->
+      <fieldset class="pp__group" *ngIf="hasGroup('position')">
+        <legend class="pp__legend">Position &amp; size</legend>
+        <div class="pp__grid-2">
+          <label class="pp__field">X (mm)
+            <input class="pp__input" type="number" step="0.5"
+                   [ngModel]="disp(b.position.x)" (ngModelChange)="setPos(b, 'x', $event)" />
+          </label>
+          <label class="pp__field">Y (mm)
+            <input class="pp__input" type="number" step="0.5"
+                   [ngModel]="disp(b.position.y)" (ngModelChange)="setPos(b, 'y', $event)" />
+          </label>
+          <label class="pp__field">Width (mm)
+            <input class="pp__input" type="number" step="0.5" min="1"
+                   [ngModel]="disp(b.size.width)" (ngModelChange)="setSize(b, 'width', $event)" />
+          </label>
+          <label class="pp__field">Height (mm)
+            <input class="pp__input" type="number" step="0.5" min="1"
+                   [ngModel]="disp(b.size.height)"
+                   [disabled]="b.size.autoHeight === true"
+                   (ngModelChange)="setSize(b, 'height', $event)" />
+          </label>
+        </div>
+        <label class="pp__check">
+          <input type="checkbox" class="field-checkbox"
+                 [ngModel]="b.size.autoHeight ?? false" (ngModelChange)="setAutoHeight(b, $event)" />
+          Auto-height (size to content)
+        </label>
+      </fieldset>
+
+      <!-- Typography -->
+      <fieldset class="pp__group" *ngIf="hasGroup('typography')">
+        <legend class="pp__legend">Typography</legend>
+
+        <label class="pp__field">Font family
+          <input class="pp__input" placeholder="Inherit"
+                 [ngModel]="b.style?.font?.family ?? ''" (ngModelChange)="setFont(b, 'family', $event)" />
+        </label>
+
+        <label class="pp__field">Size (pt)
+          <input class="pp__input" type="number" min="6" max="72" step="0.5"
+                 [ngModel]="disp(b.style?.font?.size ?? 10, 1)" (ngModelChange)="setFont(b, 'size', $event)" />
+        </label>
+
+        <designer-color-picker label="Text color"
+                          [appendToBody]="true"
+                          [color]="b.style?.font?.color ?? '#000000'"
+                          (colorChange)="setFont(b, 'color', $event)"></designer-color-picker>
+        <ng-container *ngTemplateOutlet="swatchRow; context: { $implicit: applyFontColor, block: b }"></ng-container>
+
+        <div class="pp__row">
+          <app-font-style-buttons [bold]="isBold(b)"
+                                  [italic]="b.style?.font?.italic ?? false"
+                                  [underline]="b.style?.font?.underline ?? false"
+                                  (boldChange)="setBold(b, $event)"
+                                  (italicChange)="setItalic(b, $event)"
+                                  (underlineChange)="setUnderline(b, $event)"></app-font-style-buttons>
+
+          <div class="pp__segmented">
+            <button *ngFor="let a of ALIGNMENTS"
+                    type="button"
+                    class="pp__seg"
+                    [title]="a.label"
+                    [class.is-active]="(b.style?.align ?? 'left') === a.value"
+                    (click)="setStyle(b, 'align', a.value)">
+              <i class="mdi" [ngClass]="a.icon"></i>
+            </button>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Background -->
+      <fieldset class="pp__group" *ngIf="hasGroup('background')">
+        <legend class="pp__legend">Background</legend>
+        <div class="pp__row pp__row--tight pp__row--controls">
+          <designer-color-picker class="pp__grow"
+                            [appendToBody]="true"
+                            [color]="b.style?.background ?? '#ffffff'"
+                            (colorChange)="setStyle(b, 'background', $event)"></designer-color-picker>
+          <button type="button" class="pp__btn"
+                  title="Clear (transparent)"
+                  [disabled]="!b.style?.background"
+                  (click)="setStyle(b, 'background', undefined)">None</button>
+        </div>
+        <ng-container *ngTemplateOutlet="swatchRow; context: { $implicit: applyBackground, block: b }"></ng-container>
+      </fieldset>
+
+      <!-- Border -->
+      <fieldset class="pp__group" *ngIf="hasGroup('border')">
+        <legend class="pp__legend">Border</legend>
+        <div class="pp__grid-2">
+          <label class="pp__field">Width (pt)
+            <input class="pp__input" type="number" min="0" step="0.25"
+                   [ngModel]="borderWidth()" (ngModelChange)="setUniformBorder(b, 'width', $event)" />
+          </label>
+          <label class="pp__field">Style
+            <select class="pp__input" [ngModel]="borderStyleVal()" (ngModelChange)="setUniformBorder(b, 'style', $event)">
+              <option *ngFor="let s of BORDER_STYLES" [value]="s">{{ s }}</option>
+            </select>
+          </label>
+        </div>
+        <designer-color-picker label="Border color"
+                          [appendToBody]="true"
+                          [color]="borderColor()"
+                          (colorChange)="setUniformBorder(b, 'color', $event)"></designer-color-picker>
+        <ng-container *ngTemplateOutlet="swatchRow; context: { $implicit: applyBorderColor, block: b }"></ng-container>
+
+        <label class="pp__field" *ngIf="b.type === 'rectangle'">Corner radius (mm)
+          <input class="pp__input" type="number" min="0" step="0.5"
+                 [ngModel]="$any(b).borderRadius ?? 0"
+                 (ngModelChange)="patchTyped(b, { borderRadius: +$event || undefined })" />
+        </label>
+      </fieldset>
+
+      <!-- Padding -->
+      <fieldset class="pp__group" *ngIf="hasGroup('spacing')">
+        <legend class="pp__legend pp__legend--split">
+          <span>Padding (mm)</span>
+          <button type="button" class="pp__link-btn" [class.is-active]="linkPadding()"
+                  title="Link all four sides — typing in one updates the others"
+                  (click)="linkPadding.set(!linkPadding())">
+            <i class="mdi" [ngClass]="linkPadding() ? 'mdi-link-variant' : 'mdi-link-variant-off'"></i>
+          </button>
+        </legend>
+        <div class="pp__grid-2">
+          <label class="pp__field">Top
+            <input class="pp__input" type="number" min="0" step="0.5"
+                   [ngModel]="b.style?.padding?.top ?? 0" (ngModelChange)="setPadding(b, 'top', $event)" />
+          </label>
+          <label class="pp__field">Right
+            <input class="pp__input" type="number" min="0" step="0.5"
+                   [ngModel]="b.style?.padding?.right ?? 0" (ngModelChange)="setPadding(b, 'right', $event)" />
+          </label>
+          <label class="pp__field">Bottom
+            <input class="pp__input" type="number" min="0" step="0.5"
+                   [ngModel]="b.style?.padding?.bottom ?? 0" (ngModelChange)="setPadding(b, 'bottom', $event)" />
+          </label>
+          <label class="pp__field">Left
+            <input class="pp__input" type="number" min="0" step="0.5"
+                   [ngModel]="b.style?.padding?.left ?? 0" (ngModelChange)="setPadding(b, 'left', $event)" />
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- Text content. Keyed off b.type rather than hasGroup so it survives
+           a stale block-registry singleton after HMR. -->
+      <fieldset class="pp__group" *ngIf="b.type === 'text'">
+        <legend class="pp__legend">Content</legend>
+        <div class="pp__fx">
+          <textarea #textRef rows="3" class="pp__input pp__input--mono"
+                    [ngModel]="$any(b).text" (ngModelChange)="patchTyped(b, { text: $event })"></textarea>
+          <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(textRef)">fx</button>
+        </div>
+        <p class="pp__hint">
+          Use <code>{{ '{{ binding }}' }}</code> for fields, e.g. <code>{{ '{{ invoice.total | currency:BHD }}' }}</code>
+        </p>
+      </fieldset>
+
+      <fieldset class="pp__group" *ngIf="b.type === 'rich-text'">
+        <legend class="pp__legend">Content (HTML)</legend>
+        <div class="pp__fx">
+          <textarea #htmlRef rows="4" class="pp__input pp__input--mono"
+                    [ngModel]="$any(b).html" (ngModelChange)="patchTyped(b, { html: $event })"></textarea>
+          <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(htmlRef)">fx</button>
+        </div>
+      </fieldset>
+
+      <!-- Binding / data source, per block type -->
+      <fieldset class="pp__group" *ngIf="hasGroup('binding')" [ngSwitch]="b.type">
+        <legend class="pp__legend">Content / binding</legend>
+
+        <ng-container *ngSwitchCase="'dynamic-field'">
+          <label class="pp__label">Expression</label>
+          <div class="pp__fx">
+            <input #dynRef class="pp__input pp__input--mono"
+                   [ngModel]="$any(b).expression" (ngModelChange)="patchTyped(b, { expression: $event })" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(dynRef)">fx</button>
+          </div>
+          <ng-container *ngTemplateOutlet="exprFeedback; context: { $implicit: validateExpr($any(b).expression) }"></ng-container>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'qr-code'">
+          <label class="pp__label">Value</label>
+          <div class="pp__fx">
+            <input #qrRef class="pp__input pp__input--mono"
+                   [ngModel]="$any(b).value" (ngModelChange)="patchTyped(b, { value: $event })" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(qrRef)">fx</button>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'barcode'">
+          <label class="pp__label">Value</label>
+          <div class="pp__fx">
+            <input #bcRef class="pp__input pp__input--mono"
+                   [ngModel]="$any(b).value" (ngModelChange)="patchTyped(b, { value: $event })" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(bcRef)">fx</button>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'table'">
+          <label class="pp__label">Data source (path)</label>
+          <div class="pp__fx">
+            <input #tdsRef class="pp__input pp__input--mono"
+                   [ngModel]="$any(b).dataSource" (ngModelChange)="patchTyped(b, { dataSource: $event })" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(tdsRef)">fx</button>
+          </div>
+
+          <div class="pp__checks">
+            <label class="pp__check">
+              <input type="checkbox" class="field-checkbox"
+                     [ngModel]="$any(b).showHeader ?? true" (ngModelChange)="patchTyped(b, { showHeader: $event })" /> Header
+            </label>
+            <label class="pp__check">
+              <input type="checkbox" class="field-checkbox"
+                     [ngModel]="$any(b).repeatHeader ?? true" (ngModelChange)="patchTyped(b, { repeatHeader: $event })" /> Repeat header
+            </label>
+            <label class="pp__check">
+              <input type="checkbox" class="field-checkbox"
+                     [ngModel]="$any(b).zebra ?? false" (ngModelChange)="patchTyped(b, { zebra: $event })" /> Zebra
+            </label>
+          </div>
+
+          <label class="pp__label">Show row when</label>
+          <div class="pp__fx">
+            <input #tblRvw class="pp__input pp__input--mono" placeholder="e.g. row.qty > 0"
+                   [ngModel]="$any(b).rowVisibleWhen ?? ''"
+                   (ngModelChange)="patchTyped(b, { rowVisibleWhen: $event || undefined })" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…"
+                    (click)="picker.openFor(tblRvw, 'Show row when', { rowSource: $any(b).dataSource })">fx</button>
+          </div>
+          <ng-container *ngTemplateOutlet="rowFeedback"></ng-container>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'repeater'">
+          <label class="pp__label">Data source (path)</label>
+          <div class="pp__fx">
+            <input #rdsRef class="pp__input pp__input--mono" placeholder="lines"
+                   [ngModel]="$any(b).dataSource" (ngModelChange)="patchTyped(b, { dataSource: $event })" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(rdsRef)">fx</button>
+          </div>
+
+          <div class="pp__grid-2">
+            <label class="pp__field">Card height (mm)
+              <input class="pp__input" type="number" min="1" step="0.5"
+                     [ngModel]="$any(b).itemHeight" (ngModelChange)="setRepeaterItemHeight(b, +$event)" />
+            </label>
+            <label class="pp__field">Gap (mm)
+              <input class="pp__input" type="number" min="0" step="0.5"
+                     [ngModel]="$any(b).itemSpacing ?? 0" (ngModelChange)="patchTyped(b, { itemSpacing: +$event })" />
+            </label>
+          </div>
+
+          <label class="pp__field">Card corner radius (mm)
+            <input class="pp__input" type="number" min="0" step="0.5"
+                   [ngModel]="$any(b).borderRadius ?? 0"
+                   (ngModelChange)="patchTyped(b, { borderRadius: +$event || undefined })" />
+          </label>
+
+          <div class="pp__checks">
+            <label class="pp__check">
+              <input type="checkbox" class="field-checkbox"
+                     [ngModel]="$any(b).pageBreak ?? true" (ngModelChange)="patchTyped(b, { pageBreak: $event })" /> Page break
+            </label>
+            <label class="pp__check">Direction
+              <select class="pp__input pp__input--inline"
+                      [ngModel]="$any(b).direction ?? 'vertical'" (ngModelChange)="patchTyped(b, { direction: $event })">
+                <option value="vertical">vertical</option>
+                <option value="horizontal">horizontal</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="pp__label">Add child to card</div>
+          <div class="pp__child-grid">
+            <button *ngFor="let kind of REPEATER_CHILD_KINDS"
+                    type="button" class="pp__child-btn" [title]="kind.label"
+                    (click)="addRepeaterChild(b.id, kind.type)">
+              <i class="mdi" [ngClass]="kind.icon"></i>
+              <span>{{ kind.label }}</span>
+            </button>
+          </div>
+          <p class="pp__hint">
+            Or drop blocks from the toolbox while the card is selected. Children use <code>row.x</code> bindings.
+          </p>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'payments'">
+          <label class="pp__label">Data source (path)</label>
+          <div class="pp__fx">
+            <input #pdsRef class="pp__input pp__input--mono" placeholder="invoicePayments"
+                   [ngModel]="$any(b).dataSource" (ngModelChange)="patchTyped(b, { dataSource: $event })" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(pdsRef)">fx</button>
+          </div>
+
+          <label class="pp__field">Currency code
+            <input class="pp__input pp__input--mono" placeholder="BHD"
+                   [ngModel]="$any(b).currency ?? 'BHD'" (ngModelChange)="patchTyped(b, { currency: $event })" />
+          </label>
+
+          <div class="pp__checks">
+            <label class="pp__check">
+              <input type="checkbox" class="field-checkbox"
+                     [ngModel]="$any(b).showHeader ?? true" (ngModelChange)="patchTyped(b, { showHeader: $event })" /> Header
+            </label>
+            <label class="pp__check">
+              <input type="checkbox" class="field-checkbox"
+                     [ngModel]="$any(b).showBorder ?? true" (ngModelChange)="patchTyped(b, { showBorder: $event })" /> Border
+            </label>
+            <label class="pp__check">
+              <input type="checkbox" class="field-checkbox"
+                     [ngModel]="$any(b).zebra ?? true" (ngModelChange)="patchTyped(b, { zebra: $event })" /> Zebra
+            </label>
+          </div>
+
+          <div class="pp__label">Columns</div>
+          <div class="pp__grid-2">
+            <label class="pp__check" *ngFor="let col of PAYMENT_COLUMN_CATALOG">
+              <input type="checkbox" class="field-checkbox"
+                     [ngModel]="paymentHasColumn(b, col.id)"
+                     (ngModelChange)="togglePaymentColumn(b, col.id, $event)" />
+              {{ col.label }}
+            </label>
+          </div>
+          <p class="pp__hint">Order follows the catalog above.</p>
+
+          <label class="pp__label">Show row when</label>
+          <div class="pp__fx">
+            <input #pyRvw class="pp__input pp__input--mono" placeholder="e.g. row.status == 'SUCCESS'"
+                   [ngModel]="$any(b).rowVisibleWhen ?? ''"
+                   (ngModelChange)="patchTyped(b, { rowVisibleWhen: $event || undefined })" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…"
+                    (click)="picker.openFor(pyRvw, 'Show row when', { rowSource: $any(b).dataSource })">fx</button>
+          </div>
+          <ng-container *ngTemplateOutlet="rowFeedback"></ng-container>
+        </ng-container>
+      </fieldset>
+
+      <!-- Table columns -->
+      <fieldset class="pp__group" *ngIf="hasGroup('table-columns') && b.type === 'table'">
+        <legend class="pp__legend">Columns</legend>
+
+        <div class="pp__card" *ngFor="let col of $any(b).columns; let i = index">
+          <div class="pp__fx">
+            <input #colHdr class="pp__input" placeholder="Header"
+                   [ngModel]="col.header" (ngModelChange)="updateColumn(b, i, { header: $event })" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…"
+                    (click)="picker.openFor(colHdr, 'Column header')">fx</button>
+          </div>
+
+          <div class="pp__fx">
+            <input #colExpr class="pp__input pp__input--mono" placeholder="row.qty"
+                   [ngModel]="col.expression" (ngModelChange)="updateColumn(b, i, { expression: $event })" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…"
+                    (click)="picker.openFor(colExpr, 'Column expression', { rowSource: $any(b).dataSource })">fx</button>
+          </div>
+          <ng-container *ngTemplateOutlet="exprFeedback; context: { $implicit: validateExpr(col.expression, $any(b).dataSource) }"></ng-container>
+
+          <!-- Width: kind toggle plus a value input where applicable. Auto
+               columns have no value — the renderers content-size them. -->
+          <div class="pp__row pp__row--tight">
+            <span class="pp__mini-label">Width</span>
+            <div class="pp__segmented pp__segmented--sm">
+              <button type="button" class="pp__seg" title="Fixed millimetres"
+                      [class.is-active]="col.width.kind === 'fixed'"
+                      (click)="setColumnWidthKind(b, i, 'fixed')">mm</button>
+              <button type="button" class="pp__seg" title="Fractional share of remaining width"
+                      [class.is-active]="col.width.kind === 'fraction'"
+                      (click)="setColumnWidthKind(b, i, 'fraction')">fr</button>
+              <button type="button" class="pp__seg" title="Auto (content-based)"
+                      [class.is-active]="col.width.kind === 'auto'"
+                      (click)="setColumnWidthKind(b, i, 'auto')">auto</button>
+            </div>
+            <input *ngIf="col.width.kind === 'fixed'" class="pp__input pp__grow" type="number" min="1" step="1"
+                   [ngModel]="col.width.mm" (ngModelChange)="setColumnWidthValue(b, i, $event)" />
+            <input *ngIf="col.width.kind === 'fraction'" class="pp__input pp__grow" type="number" min="0.1" step="0.1"
+                   [ngModel]="col.width.fr" (ngModelChange)="setColumnWidthValue(b, i, $event)" />
+            <span *ngIf="col.width.kind === 'auto'" class="pp__hint pp__grow">content-sized</span>
+          </div>
+
+          <div class="pp__row pp__row--tight">
+            <app-alignment-buttons [alignment]="col.align ?? 'left'"
+                                   (alignmentChange)="updateColumn(b, i, { align: $event })"></app-alignment-buttons>
+
+            <button type="button" class="pp__icon-btn"
+                    [class.is-active]="col.cellType === 'image'"
+                    [title]="col.cellType === 'image'
+                             ? 'Image cell (click for text)'
+                             : 'Text cell (click for image — expression must resolve to a URL)'"
+                    (click)="updateColumn(b, i, { cellType: col.cellType === 'image' ? 'text' : 'image' })">
+              <i class="mdi mdi-image-outline"></i>
+            </button>
+
+            <button type="button" class="pp__icon-btn" title="Move up" [disabled]="i === 0" (click)="moveColumn(b, i, -1)">
+              <i class="mdi mdi-arrow-up"></i>
+            </button>
+            <button type="button" class="pp__icon-btn" title="Move down"
+                    [disabled]="i === $any(b).columns.length - 1" (click)="moveColumn(b, i, 1)">
+              <i class="mdi mdi-arrow-down"></i>
+            </button>
+            <button type="button" class="pp__icon-btn pp__icon-btn--danger" title="Remove column" (click)="removeColumn(b, i)">
+              <i class="mdi mdi-close"></i>
+            </button>
+          </div>
+
+          <div class="pp__row pp__row--tight" *ngIf="col.cellType === 'image'">
+            <span class="pp__mini-label">Img H</span>
+            <input class="pp__input pp__grow" type="number" min="1" step="1" placeholder="auto (mm)"
+                   [ngModel]="col.imageHeightMm" (ngModelChange)="updateColumn(b, i, { imageHeightMm: $event })" />
+          </div>
+        </div>
+
+        <button type="button" class="pp__add" (click)="addColumn(b)">+ Add column</button>
+        <p class="pp__hint">
+          Single binding: <code>row.qty</code> · combined cell: wrap each in
+          <code>{{ '{{ }}' }}</code>, e.g. <code>{{ '{{row.productName}}' }} — {{ '{{row.barcode}}' }}</code>
+        </p>
+      </fieldset>
+
+      <!-- Grouping. Single level, matching the renderers. -->
+      <fieldset class="pp__group" *ngIf="hasGroup('table-columns') && b.type === 'table'">
+        <legend class="pp__legend">Grouping</legend>
+        <label class="pp__check">
+          <input type="checkbox" class="field-checkbox"
+                 [ngModel]="hasGrouping(b)" (ngModelChange)="toggleGrouping(b, $event)" />
+          Group rows by an expression
+        </label>
+
+        <ng-container *ngIf="hasGrouping(b)">
+          <label class="pp__label">Group by</label>
+          <div class="pp__fx">
+            <input #grpBy class="pp__input pp__input--mono" placeholder="row.category"
+                   [ngModel]="groupBy(b)" (ngModelChange)="setGroup(b, 'by', $event)" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…"
+                    (click)="picker.openFor(grpBy, 'Group by', { rowSource: $any(b).dataSource })">fx</button>
+          </div>
+
+          <div class="pp__checks">
+            <label class="pp__check">
+              <input type="checkbox" class="field-checkbox"
+                     [ngModel]="groupShowHeader(b)" (ngModelChange)="setGroup(b, 'showHeader', $event)" /> Header
+            </label>
+            <label class="pp__check">
+              <input type="checkbox" class="field-checkbox"
+                     [ngModel]="groupShowFooter(b)" (ngModelChange)="setGroup(b, 'showFooter', $event)" /> Footer
+            </label>
+          </div>
+
+          <ng-container *ngIf="groupShowHeader(b)">
+            <label class="pp__label">Header text</label>
+            <div class="pp__fx">
+              <input #grpHdr class="pp__input pp__input--mono"
+                     [ngModel]="groupHeader(b)" (ngModelChange)="setGroup(b, 'headerExpression', $event)" />
+              <button type="button" class="pp__fx-btn" title="Insert binding…"
+                      (click)="picker.openFor(grpHdr, 'Group header text')">fx</button>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="groupShowFooter(b)">
+            <label class="pp__label">Footer text</label>
+            <div class="pp__fx">
+              <input #grpFtr class="pp__input pp__input--mono"
+                     [ngModel]="groupFooter(b)" (ngModelChange)="setGroup(b, 'footerExpression', $event)" />
+              <button type="button" class="pp__fx-btn" title="Insert binding…"
+                      (click)="picker.openFor(grpFtr, 'Group footer text')">fx</button>
+            </div>
+          </ng-container>
+
+          <p class="pp__hint">
+            Inside header/footer use <code>{{ '{{group.key}}' }}</code>,
+            <code>{{ '{{group.rows}}' }}</code> (pair with <code>length</code> / <code>pluck</code> / <code>join</code>),
+            and <code>{{ '{{group.index}}' }}</code>.
+          </p>
+        </ng-container>
+      </fieldset>
+
+      <!-- Totals rows -->
+      <fieldset class="pp__group" *ngIf="hasGroup('totals-rows') && b.type === 'totals'">
+        <legend class="pp__legend">Totals rows</legend>
+
+        <div class="pp__card" *ngFor="let row of $any(b).rows; let i = index">
+          <div class="pp__fx">
+            <input #totLbl class="pp__input" placeholder="Label"
+                   [ngModel]="row.label" (ngModelChange)="updateTotalsRow(b, i, { label: $event })" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(totLbl)">fx</button>
+          </div>
+          <div class="pp__fx">
+            <input #totExpr class="pp__input pp__input--mono" placeholder="Expression"
+                   [ngModel]="row.expression" (ngModelChange)="updateTotalsRow(b, i, { expression: $event })" />
+            <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(totExpr)">fx</button>
+          </div>
+          <ng-container *ngTemplateOutlet="exprFeedback; context: { $implicit: validateExpr(row.expression) }"></ng-container>
+
+          <div class="pp__row pp__row--split">
+            <label class="pp__check">
+              <input type="checkbox" class="field-checkbox"
+                     [ngModel]="row.bold ?? false" (ngModelChange)="updateTotalsRow(b, i, { bold: $event })" /> Bold
+            </label>
+            <button type="button" class="pp__icon-btn pp__icon-btn--danger" title="Remove row" (click)="removeTotalsRow(b, i)">
+              <i class="mdi mdi-close"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" class="pp__add" (click)="addTotalsRow(b)">+ Add row</button>
+      </fieldset>
+
+      <!-- Image -->
+      <fieldset class="pp__group" *ngIf="hasGroup('image') && b.type === 'image'">
+        <legend class="pp__legend">Image</legend>
+        <label class="pp__label">Source (URL or binding)</label>
+        <div class="pp__fx">
+          <input #imgSrc class="pp__input pp__input--mono"
+                 [ngModel]="$any(b).source" (ngModelChange)="patchTyped(b, { source: $event })" />
+          <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(imgSrc)">fx</button>
+        </div>
+        <label class="pp__label">Fit</label>
+        <div class="pp__segmented">
+          <button *ngFor="let f of IMAGE_FITS" type="button" class="pp__seg"
+                  [class.is-active]="($any(b).fit ?? 'contain') === f"
+                  (click)="patchTyped(b, { fit: f })">{{ f }}</button>
+        </div>
+      </fieldset>
+
+      <!-- Barcode -->
+      <fieldset class="pp__group" *ngIf="hasGroup('barcode') && b.type === 'barcode'">
+        <legend class="pp__legend">Barcode</legend>
+        <label class="pp__field">Symbology
+          <select class="pp__input" [ngModel]="$any(b).symbology" (ngModelChange)="patchTyped(b, { symbology: $event })">
+            <option *ngFor="let s of BARCODE_SYMBOLOGIES" [value]="s">{{ s }}</option>
+          </select>
+        </label>
+        <label class="pp__check">
+          <input type="checkbox" class="field-checkbox"
+                 [ngModel]="$any(b).showText ?? true" (ngModelChange)="patchTyped(b, { showText: $event })" />
+          Show text under code
+        </label>
+        <p class="pp__hint" *ngIf="$any(b).symbology === 'qrcode' || $any(b).symbology === 'datamatrix'">
+          2-D symbologies render as a QR code.
+        </p>
+      </fieldset>
+
+      <!-- Divider. Keyed off b.type, same reasoning as the text fieldset. -->
+      <fieldset class="pp__group" *ngIf="b.type === 'divider'">
+        <legend class="pp__legend">Divider</legend>
+        <label class="pp__label">Pattern</label>
+        <div class="pp__segmented">
+          <button *ngFor="let p of DIVIDER_PATTERNS" type="button" class="pp__seg" [title]="p.label"
+                  [class.is-active]="($any(b).pattern ?? 'solid') === p.value"
+                  (click)="patchTyped(b, { pattern: p.value })">{{ p.label }}</button>
+        </div>
+        <label class="pp__field">Thickness (pt)
+          <input class="pp__input" type="number" min="0.1" step="0.1"
+                 [ngModel]="$any(b).thickness ?? 0.5" (ngModelChange)="setDividerThickness(b, $event)" />
+        </label>
+        <designer-color-picker label="Line color"
+                          [appendToBody]="true"
+                          [color]="$any(b).color ?? '#e5e7eb'"
+                          (colorChange)="patchTyped(b, { color: $event })"></designer-color-picker>
+        <ng-container *ngTemplateOutlet="swatchRow; context: { $implicit: applyDividerColor, block: b }"></ng-container>
+      </fieldset>
+
+      <!-- Signature -->
+      <fieldset class="pp__group" *ngIf="hasGroup('signature') && b.type === 'signature'">
+        <legend class="pp__legend">Signature</legend>
+        <label class="pp__label">Label</label>
+        <div class="pp__fx">
+          <input #sigLbl class="pp__input" placeholder="Authorized Signature"
+                 [ngModel]="$any(b).label ?? ''" (ngModelChange)="patchTyped(b, { label: $event || undefined })" />
+          <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(sigLbl, 'Signature label')">fx</button>
+        </div>
+        <label class="pp__label">Image binding (optional)</label>
+        <div class="pp__fx">
+          <input #sigImg class="pp__input pp__input--mono" placeholder="e.g. customer.signatureUrl"
+                 [ngModel]="$any(b).imageBinding ?? ''"
+                 (ngModelChange)="patchTyped(b, { imageBinding: $event || undefined })" />
+          <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(sigImg, 'Signature image binding')">fx</button>
+        </div>
+        <p class="pp__hint">An image binding replaces the signature line — point it at a URL or data-URL field.</p>
+      </fieldset>
+
+      <!-- Page number -->
+      <fieldset class="pp__group" *ngIf="hasGroup('page-number') && b.type === 'page-number'">
+        <legend class="pp__legend">Page number</legend>
+        <label class="pp__label">Format</label>
+        <div class="pp__fx">
+          <input #pnFmt class="pp__input pp__input--mono"
+                 [ngModel]="$any(b).format" (ngModelChange)="patchTyped(b, { format: $event })" />
+          <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(pnFmt)">fx</button>
+        </div>
+        <p class="pp__hint">Tokens: <code>{{ '{{ page.current }}' }}</code> / <code>{{ '{{ page.total }}' }}</code></p>
+      </fieldset>
+
+      <!-- Visibility -->
+      <fieldset class="pp__group" *ngIf="hasGroup('visibility')">
+        <legend class="pp__legend">Visibility</legend>
+        <label class="pp__label">Show when (expression)</label>
+        <div class="pp__fx">
+          <input #vwRef class="pp__input pp__input--mono" placeholder="e.g. status == 'Paid'"
+                 [ngModel]="b.visibleWhen ?? ''" (ngModelChange)="setVisibleWhen(b, $event)" />
+          <button type="button" class="pp__fx-btn" title="Insert binding…" (click)="picker.openFor(vwRef)">fx</button>
+        </div>
+
+        <ng-container *ngIf="visibleWhenEval() as r">
+          <p class="pp__feedback pp__feedback--error" *ngIf="r.kind === 'error'">⚠ {{ r.message }}</p>
+          <ng-container *ngIf="r.kind === 'ok'">
+            <p class="pp__feedback" [class.pp__feedback--ok]="r.truthy" [class.pp__feedback--warn]="!r.truthy">
+              {{ r.truthy ? '✓ Visible' : '✗ Hidden' }} — evaluates to <strong>{{ r.display }}</strong>
+            </p>
+            <p class="pp__hint">
+              Tested against the current sample data. Use <code>row.x</code> inside table rows; top-level paths outside.
+            </p>
+          </ng-container>
+        </ng-container>
+
+        <label class="pp__check">
+          <input type="checkbox" class="field-checkbox"
+                 [ngModel]="b.locked ?? false" (ngModelChange)="setLocked(b, $event)" />
+          Locked (prevent moving / resizing)
+        </label>
+      </fieldset>
+    </ng-container>
+
+    <!-- ══════════════ PAGE SETTINGS (nothing selected) ══════════════ -->
+    <ng-container *ngIf="!block() && template() as t">
+
+      <fieldset class="pp__group">
+        <legend class="pp__legend">Paper</legend>
+
+        <label class="pp__field">Size
+          <ng-select class="pp__ng-select"
+                     [items]="PAPER_SIZES"
+                     [clearable]="false"
+                     [searchable]="false"
+                     [appendTo]="'body'"
+                     [ngModel]="t.page.size"
+                     (ngModelChange)="onPaperSize($event)"></ng-select>
+        </label>
+
+        <div class="pp__grid-2" *ngIf="t.page.size === 'Custom'">
+          <label class="pp__field">Width (mm)
+            <input class="pp__input" type="number" min="10" step="1"
+                   [ngModel]="t.page.customWidth ?? 210"
+                   (ngModelChange)="state.setCustomPageSize($event, t.page.customHeight)" />
+          </label>
+          <label class="pp__field">Height (mm)
+            <input class="pp__input" type="number" min="10" step="1"
+                   [ngModel]="t.page.customHeight ?? 297"
+                   (ngModelChange)="state.setCustomPageSize(t.page.customWidth, $event)" />
+          </label>
+        </div>
+
+        <label class="pp__label">Orientation</label>
+        <div class="pp__segmented">
+          <button type="button" class="pp__seg" [class.is-active]="t.page.orientation === 'portrait'"
+                  (click)="setOrientation('portrait')">
+            <i class="mdi mdi-crop-portrait"></i> Portrait
+          </button>
+          <button type="button" class="pp__seg" [class.is-active]="t.page.orientation === 'landscape'"
+                  (click)="setOrientation('landscape')">
+            <i class="mdi mdi-crop-landscape"></i> Landscape
+          </button>
+        </div>
+
+        <!-- The label is hoisted out of designer-color-picker so the row holds two
+             single-line controls: with the label inside, the picker was taller
+             than the button and centring pushed "None" up beside the label. -->
+        <label class="pp__label">Page background</label>
+        <div class="pp__row pp__row--tight pp__row--controls pp__row--under-label">
+          <designer-color-picker class="pp__grow"
+                            [appendToBody]="true"
+                            [color]="t.page.background ?? '#ffffff'"
+                            (colorChange)="state.setPageBackground($event)"></designer-color-picker>
+          <button type="button" class="pp__btn" title="Clear (transparent)"
+                  [disabled]="!t.page.background"
+                  (click)="state.setPageBackground(undefined)">None</button>
+        </div>
+        <ng-container *ngTemplateOutlet="swatchRow; context: { $implicit: applyPageBackground }"></ng-container>
+      </fieldset>
+
+      <!-- Theme. Snapshot semantics: editing a slot doesn't recolor existing
+           blocks — it changes what the swatch quick-picks offer from here on. -->
+      <fieldset class="pp__group">
+        <legend class="pp__legend">Theme</legend>
+        <designer-color-picker label="Primary" [appendToBody]="true"
+                          [color]="t.theme?.primaryColor ?? '#1e40af'"
+                          (colorChange)="state.setThemeColor('primaryColor', $event)"></designer-color-picker>
+        <designer-color-picker label="On primary" [appendToBody]="true"
+                          [showContrastCheck]="true"
+                          [contrastBackground]="t.theme?.primaryColor ?? '#1e40af'"
+                          [color]="t.theme?.onPrimaryColor ?? '#ffffff'"
+                          (colorChange)="state.setThemeColor('onPrimaryColor', $event)"></designer-color-picker>
+        <designer-color-picker label="Accent" [appendToBody]="true"
+                          [color]="t.theme?.accentColor ?? '#0ea5e9'"
+                          (colorChange)="state.setThemeColor('accentColor', $event)"></designer-color-picker>
+        <designer-color-picker label="Text" [appendToBody]="true"
+                          [showContrastCheck]="true"
+                          [contrastBackground]="t.theme?.surfaceColor ?? '#f8fafc'"
+                          [color]="t.theme?.textColor ?? '#0f172a'"
+                          (colorChange)="state.setThemeColor('textColor', $event)"></designer-color-picker>
+        <designer-color-picker label="Muted" [appendToBody]="true"
+                          [color]="t.theme?.mutedColor ?? '#64748b'"
+                          (colorChange)="state.setThemeColor('mutedColor', $event)"></designer-color-picker>
+        <designer-color-picker label="Surface" [appendToBody]="true"
+                          [color]="t.theme?.surfaceColor ?? '#f8fafc'"
+                          (colorChange)="state.setThemeColor('surfaceColor', $event)"></designer-color-picker>
+        <p class="pp__hint">
+          Theme colors appear as quick-pick swatches under every color input. Changing one here does not
+          recolor blocks already using it.
+        </p>
+      </fieldset>
+
+      <fieldset class="pp__group">
+        <legend class="pp__legend pp__legend--split">
+          <span>Margins (mm)</span>
+          <button type="button" class="pp__link-btn" [class.is-active]="linkMargins()"
+                  title="Link all four sides" (click)="linkMargins.set(!linkMargins())">
+            <i class="mdi" [ngClass]="linkMargins() ? 'mdi-link-variant' : 'mdi-link-variant-off'"></i>
+          </button>
+        </legend>
+        <div class="pp__grid-2">
+          <label class="pp__field">Top
+            <input class="pp__input" type="number" min="0" step="1"
+                   [ngModel]="t.page.margins.top" (ngModelChange)="setMargin('top', $event)" />
+          </label>
+          <label class="pp__field">Right
+            <input class="pp__input" type="number" min="0" step="1"
+                   [ngModel]="t.page.margins.right" (ngModelChange)="setMargin('right', $event)" />
+          </label>
+          <label class="pp__field">Bottom
+            <input class="pp__input" type="number" min="0" step="1"
+                   [ngModel]="t.page.margins.bottom" (ngModelChange)="setMargin('bottom', $event)" />
+          </label>
+          <label class="pp__field">Left
+            <input class="pp__input" type="number" min="0" step="1"
+                   [ngModel]="t.page.margins.left" (ngModelChange)="setMargin('left', $event)" />
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="pp__group">
+        <legend class="pp__legend">Header &amp; footer</legend>
+        <div class="pp__grid-2">
+          <label class="pp__field">Header height (mm)
+            <input class="pp__input" type="number" min="0" step="1"
+                   [ngModel]="headerHeight()"
+                   (ngModelChange)="state.setSectionHeight('page-header', $event > 0 ? $event : undefined)" />
+          </label>
+          <label class="pp__field">Footer height (mm)
+            <input class="pp__input" type="number" min="0" step="1"
+                   [ngModel]="footerHeight()"
+                   (ngModelChange)="state.setSectionHeight('page-footer', $event > 0 ? $event : undefined)" />
+          </label>
+        </div>
+        <p class="pp__hint">0 = auto-fit to the blocks in that band</p>
+
+        <label class="pp__check">
+          <input type="checkbox" class="field-checkbox"
+                 [ngModel]="t.page.repeatHeader !== false" (ngModelChange)="state.setRepeatHeader($event)" />
+          Repeat header on every page
+        </label>
+        <label class="pp__check">
+          <input type="checkbox" class="field-checkbox"
+                 [ngModel]="t.page.repeatFooter !== false" (ngModelChange)="state.setRepeatFooter($event)" />
+          Repeat footer on every page
+        </label>
+        <p class="pp__hint">When off, the footer shows only on the last page; earlier pages show "continued…".</p>
+      </fieldset>
+
+      <fieldset class="pp__group">
+        <legend class="pp__legend">Watermark</legend>
+
+        <div class="pp__segmented">
+          <button *ngFor="let k of WATERMARK_KINDS" type="button" class="pp__seg"
+                  [class.is-active]="watermarkKind() === k" (click)="setWatermarkKind(k)">{{ k }}</button>
+        </div>
+
+        <input *ngIf="watermarkKind() === 'text'" class="pp__input" placeholder="e.g. DRAFT"
+               [ngModel]="t.page.watermark?.text ?? ''"
+               (ngModelChange)="state.patchWatermark({ text: $event || undefined })" />
+
+        <ng-container *ngIf="watermarkKind() === 'image'">
+          <div class="pp__wm-image" *ngIf="t.page.watermark?.image as img; else pickImage">
+            <img [src]="img" alt="watermark" />
+            <div class="pp__wm-actions">
+              <button type="button" class="pp__btn" (click)="fileInput.click()">Replace</button>
+              <button type="button" class="pp__btn pp__btn--danger"
+                      (click)="state.patchWatermark({ image: undefined })">Remove</button>
+            </div>
+          </div>
+          <ng-template #pickImage>
+            <button type="button" class="pp__add" (click)="fileInput.click()">+ Choose image…</button>
+          </ng-template>
+          <input #fileInput type="file" accept="image/*" hidden (change)="onWatermarkImageUpload($event)" />
+        </ng-container>
+
+        <div class="pp__grid-2" *ngIf="watermarkKind() !== 'none'">
+          <label class="pp__field">
+            <span class="pp__field-split">Opacity <span>{{ watermarkOpacityPct() }}%</span></span>
+            <input type="range" min="0" max="100" step="1" class="pp__range"
+                   [ngModel]="watermarkOpacityPct()"
+                   (ngModelChange)="state.patchWatermark({ opacity: $event / 100 })" />
+          </label>
+          <label class="pp__field">Rotation °
+            <input class="pp__input" type="number" step="5"
+                   [ngModel]="t.page.watermark?.rotation ?? -30"
+                   (ngModelChange)="state.patchWatermark({ rotation: $event })" />
+          </label>
+        </div>
+      </fieldset>
+    </ng-container>
+  </div>
+</div>
+
+<!-- ══════════════ Shared sub-templates ══════════════ -->
+
+<!-- Theme quick-picks. `apply` is a bound callback so one markup block serves
+     every color slot without repeating the swatch row six times. -->
+<ng-template #swatchRow let-apply let-b="block">
+  <div class="pp__swatches" *ngIf="themeSwatches().length > 0">
+    <span class="pp__swatch-label">Theme</span>
+    <button *ngFor="let s of themeSwatches()"
+            type="button" class="pp__swatch"
+            [style.background]="s.color"
+            [title]="s.label + ': ' + s.color"
+            (click)="apply(s.color, b)"></button>
+  </div>
+</ng-template>
+
+<!-- Inline ✓/⚠ under an expression input. -->
+<ng-template #exprFeedback let-r>
+  <p class="pp__feedback pp__feedback--ok" *ngIf="r.kind === 'ok'">✓ {{ r.display }}</p>
+  <p class="pp__feedback pp__feedback--error" *ngIf="r.kind === 'error'">⚠ {{ r.message }}</p>
+</ng-template>
+
+<!-- Row-filter match count for table / payments. -->
+<ng-template #rowFeedback>
+  <ng-container *ngIf="rowVisibleWhenEval() as r">
+    <p class="pp__feedback pp__feedback--error" *ngIf="r.kind === 'error'">⚠ {{ r.message }}</p>
+    <p class="pp__feedback" *ngIf="r.kind === 'ok'"
+       [class.pp__feedback--ok]="r.matched > 0" [class.pp__feedback--warn]="r.matched === 0">
+      {{ r.matched }} of {{ r.total }} rows match (in sample data)
+    </p>
+  </ng-container>
+</ng-template>

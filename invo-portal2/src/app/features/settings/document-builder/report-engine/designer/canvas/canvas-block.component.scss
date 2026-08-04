@@ -1,0 +1,224 @@
+@use '../_designer-theme.scss' as *;
+
+:host {
+  position: absolute;
+  box-sizing: border-box;
+  cursor: move;
+  user-select: none;
+
+  &.is-locked {
+    cursor: default;
+  }
+}
+
+.cb {
+  &__content {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    // Fallback type size for blocks without an explicit style.font.size —
+    // notably the data tables. blockStyleToCss emits inline styles on this
+    // same element, so a user-set size always wins over this.
+    font-size: 9pt;
+
+    &.is-locked {
+      opacity: 0.6;
+    }
+  }
+
+  &__fill {
+    width: 100%;
+    height: 100%;
+  }
+
+  // ── Media ────────────────────────────────────────────────────
+  &__image-ph {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 100%;
+    height: 100%;
+    font-size: 10px;
+    color: $d-text-secondary;
+    background: $d-bg-alt;
+    border: 1px dashed $d-border-input;
+
+    .mdi {
+      font-size: 18px;
+    }
+  }
+
+  &__code {
+    width: 100%;
+    height: 100%;
+
+    // The generated SVG carries width/height 100% already; this guarantees
+    // it fills the block even if a generator falls back to a placeholder.
+    ::ng-deep svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  // ── Rules ────────────────────────────────────────────────────
+  &__divider {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__divider-rule {
+    width: 100%;
+  }
+
+  &__signature {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__signature-rule {
+    width: 100%;
+  }
+
+  &__signature-label {
+    margin-top: 4px;
+  }
+
+  // ── Groups ───────────────────────────────────────────────────
+  &__group-header {
+    padding: 4px 8px;
+    font-size: 9pt;
+    font-weight: 600;
+    background: $d-bg-alt;
+  }
+
+  &__group-footer {
+    padding: 4px 8px;
+    font-size: 9pt;
+    font-style: italic;
+  }
+
+  // ── Totals ───────────────────────────────────────────────────
+  &__totals {
+    width: 100%;
+
+    tr.is-bold {
+      font-weight: 600;
+    }
+  }
+
+  &__totals-value {
+    text-align: end;
+  }
+
+  // ── Tables (shared by table + payments) ──────────────────────
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: 1px 4px;
+    }
+
+    th {
+      font-weight: 600;
+      text-align: start;
+      background: $d-bg-alt;
+    }
+
+    &.is-bordered {
+      border: 1px solid $d-border-input;
+
+      th,
+      td {
+        border: 1px solid $d-border-input;
+      }
+    }
+  }
+
+  &__cell-empty {
+    font-style: italic;
+    color: $d-border-input;
+  }
+
+  &__cell-image {
+    text-align: center;
+
+    img {
+      display: block;
+      max-width: 100%;
+      margin: 0 auto;
+      object-fit: contain;
+    }
+  }
+
+  // ── Repeater ─────────────────────────────────────────────────
+  &__repeater {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__repeater-hint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    // Violet, deliberately unlike both the brand color and the section
+    // bands, so a card frame never reads as selection or as a zone.
+    border: 1px dashed rgba(168, 85, 247, 0.45);
+    background: rgba(245, 243, 255, 0.15);
+  }
+
+  &__repeater-badge {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgb(168, 85, 247);
+    pointer-events: none;
+  }
+
+  // ── Selection ────────────────────────────────────────────────
+  &__outline {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: 0 0 0 2px $d-primary;
+  }
+}
+
+.resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: $d-white;
+  border: 1px solid $d-primary;
+  border-radius: 2px;
+  // The content wrapper may set pointer-events: none via block styles;
+  // handles must always stay grabbable.
+  pointer-events: auto;
+
+  // Physical left/right, not logical inset-inline-*: block positions come
+  // from `left`/`top` host bindings computed off mm coordinates, so the
+  // handles must not flip under [dir="rtl"] or they'd land on the wrong
+  // corners while the block itself stayed put.
+  &--nw { top: -4px; left: -4px; cursor: nwse-resize; }
+  &--n  { top: -4px; left: calc(50% - 4px); cursor: ns-resize; }
+  &--ne { top: -4px; right: -4px; cursor: nesw-resize; }
+  &--e  { top: calc(50% - 4px); right: -4px; cursor: ew-resize; }
+  &--se { bottom: -4px; right: -4px; cursor: nwse-resize; }
+  &--s  { bottom: -4px; left: calc(50% - 4px); cursor: ns-resize; }
+  &--sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
+  &--w  { top: calc(50% - 4px); left: -4px; cursor: ew-resize; }
+}

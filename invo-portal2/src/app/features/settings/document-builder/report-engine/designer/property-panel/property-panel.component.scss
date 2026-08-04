@@ -1,0 +1,530 @@
+@use '../_designer-theme.scss' as *;
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.pp {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: $d-panel-width;
+  background: $d-white;
+  border-left: 1px solid $d-border;
+
+  // ── Sticky header ────────────────────────────────────────────
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    min-height: 56px;
+    padding: 10px 16px;
+    background: $d-white;
+    border-bottom: 1px solid $d-border;
+  }
+
+  &__title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $d-text-secondary;
+  }
+
+  &__head-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: $d-icon-btn;
+    height: $d-icon-btn;
+    font-size: 16px;
+    color: $d-text-secondary;
+    background: $d-white;
+    border: 1px solid $d-border;
+    border-radius: $d-radius;
+    cursor: pointer;
+    transition: all $d-transition;
+
+    &:hover {
+      background: $d-bg;
+      color: $d-primary;
+      border-color: $d-primary;
+    }
+
+    &--danger:hover {
+      color: $d-danger;
+      border-color: $d-danger;
+      background: rgba($d-danger, 0.06);
+    }
+  }
+
+  &__scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  // ── Fieldsets ────────────────────────────────────────────────
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 16px;
+    border: none;
+    border-bottom: 1px solid $d-border;
+  }
+
+  &__legend {
+    // A float-free legend: `display: block` inside a flex fieldset keeps it
+    // in normal flow so the gap spacing applies uniformly.
+    display: block;
+    width: 100%;
+    padding: 0;
+    margin-bottom: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $d-text-muted;
+
+    &--split {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  // ── Layout helpers ───────────────────────────────────────────
+  &__grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &--tight { gap: 6px; }
+    &--split { justify-content: space-between; }
+
+    // A field paired with a trailing button. Stretch so the button matches
+    // the input's height exactly instead of floating at 36px beside a taller
+    // field.
+    &--controls {
+      align-items: stretch;
+
+      .pp__btn {
+        height: auto;
+      }
+
+      app-color-picker {
+        display: block;
+      }
+    }
+
+    // Pulls the row up out of the fieldset's 12px gap when it sits directly
+    // under its own label, so the pair reads as one labelled control.
+    &--under-label {
+      margin-top: -6px;
+    }
+  }
+
+  &__grow {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+
+  // ── Form controls ────────────────────────────────────────────
+  &__field {
+    @include d-label;
+  }
+
+  &__field-split {
+    display: flex;
+    justify-content: space-between;
+
+    span { color: $d-text-muted; font-variant-numeric: tabular-nums; font-weight: 400; }
+  }
+
+  &__label {
+    @include d-label;
+  }
+
+  &__mini-label {
+    flex-shrink: 0;
+    width: 38px;
+    font-size: $d-font-sm;
+    color: $d-text-muted;
+  }
+
+  &__input {
+    @include d-input;
+
+    margin-top: 6px;
+
+    &--mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: $d-font-sm;
+    }
+
+    // Inline selects sit beside their label rather than under it.
+    &--inline {
+      width: auto;
+      margin-top: 0;
+      height: $d-control-height-sm;
+    }
+  }
+
+  // ng-select styled to sit flush with the plain inputs around it. Only the
+  // closed control is restyled here — the dropdown is appended to body (the
+  // panel scroller would clip it) and so keeps the app's global ng-select
+  // theme.
+  &__ng-select {
+    display: block;
+    margin-top: 6px;
+    font-size: $d-font;
+
+    ::ng-deep .ng-select-container {
+      min-height: $d-control-height;
+      height: $d-control-height;
+      padding: 0 6px;
+      color: $d-text;
+      background: $d-white;
+      border: 1px solid $d-border-input;
+      border-radius: $d-radius-sm;
+      transition: border-color $d-transition, box-shadow $d-transition;
+    }
+
+    &:hover ::ng-deep .ng-select-container {
+      border-color: $d-text-muted;
+    }
+
+    &::ng-deep.ng-select-focused .ng-select-container {
+      border-color: $d-primary;
+      box-shadow: 0 0 0 3px rgba($d-primary, 0.1);
+    }
+  }
+
+  textarea.pp__input {
+    height: auto;
+    padding: 6px 8px;
+    line-height: 1.4;
+    resize: vertical;
+  }
+
+  &__range {
+    width: 100%;
+    margin-top: 6px;
+    accent-color: $d-primary;
+  }
+
+  &__check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: $d-font;
+    font-weight: 500;
+    color: $d-text-label;
+    cursor: pointer;
+  }
+
+  // The app-wide .field-checkbox (18px) is left at its natural size — it
+  // pairs with the classic builder's 13px labels, which the panel now uses.
+
+  // ── Buttons ──────────────────────────────────────────────────
+  &__btn {
+    @include d-button;
+
+    flex-shrink: 0;
+
+    &--danger {
+      color: $d-danger;
+      border-color: rgba($d-danger, 0.4);
+
+      &:hover:not(:disabled) {
+        color: $d-danger;
+        background: rgba($d-danger, 0.06);
+        border-color: $d-danger;
+      }
+    }
+  }
+
+  &__icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: $d-icon-btn;
+    height: $d-icon-btn;
+    font-size: 16px;
+    color: $d-text-secondary;
+    background: $d-white;
+    border: 1px solid transparent;
+    border-radius: $d-radius-sm;
+    cursor: pointer;
+    transition: all $d-transition;
+
+    &:hover:not(:disabled) {
+      background: $d-bg-alt;
+      color: $d-text;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    &.is-active {
+      color: $d-primary;
+      background: $d-primary-light;
+      border-color: $d-primary;
+    }
+
+    &--danger:hover:not(:disabled) {
+      color: $d-danger;
+      background: rgba($d-danger, 0.08);
+    }
+  }
+
+  &__link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    font-size: 13px;
+    color: $d-text-muted;
+    background: $d-white;
+    border: 1px solid $d-border;
+    border-radius: $d-radius-xs;
+    cursor: pointer;
+    transition: all $d-transition;
+
+    &:hover { color: $d-text-label; }
+
+    &.is-active {
+      color: $d-primary;
+      background: $d-primary-light;
+      border-color: $d-primary;
+    }
+  }
+
+  &__add {
+    width: 100%;
+    padding: 9px;
+    font-size: $d-font-sm;
+    color: $d-text-secondary;
+    background: transparent;
+    border: 1px dashed $d-border-input;
+    border-radius: $d-radius-xs;
+    cursor: pointer;
+    transition: all $d-transition;
+
+    &:hover {
+      background: $d-primary-light;
+      border-color: $d-primary;
+      color: $d-primary;
+    }
+  }
+
+  // ── Segmented control ────────────────────────────────────────
+  &__segmented {
+    @include d-pill-group;
+
+    display: flex;
+
+    &--sm {
+      flex-shrink: 0;
+      padding: 3px;
+    }
+  }
+
+  &__seg {
+    @include d-pill;
+
+    flex: 1;
+    text-transform: capitalize;
+
+    .mdi { font-size: 15px; }
+
+    // The compact variant sits inline beside a label, where the full pill
+    // padding would push the row past the panel width.
+    .pp__segmented--sm & {
+      padding: 5px 12px;
+      font-size: $d-font-sm;
+    }
+  }
+
+  // ── fx expression inputs ─────────────────────────────────────
+  &__fx {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+
+    .pp__input {
+      flex: 1;
+      min-width: 0;
+      margin-top: 0;
+    }
+  }
+
+  &__fx-btn {
+    flex-shrink: 0;
+    height: $d-control-height;
+    padding: 0 10px;
+    font-size: $d-font-sm;
+    font-style: italic;
+    font-weight: 600;
+    color: $d-text-secondary;
+    background: $d-bg;
+    border: 1px solid $d-border-input;
+    border-radius: $d-radius-xs;
+    cursor: pointer;
+    transition: all $d-transition;
+
+    &:hover {
+      color: $d-primary;
+      background: $d-primary-light;
+      border-color: $d-primary;
+    }
+  }
+
+  // ── Repeat-item cards (columns, totals rows) ─────────────────
+  &__card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    background: $d-bg;
+    border: 1px solid $d-border;
+    border-radius: $d-radius-xs;
+  }
+
+  &__child-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+  }
+
+  &__child-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 6px;
+    font-size: $d-font-sm;
+    color: $d-text-secondary;
+    background: $d-bg;
+    border: 1px solid $d-border;
+    border-radius: $d-radius-sm;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all $d-transition;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &:hover {
+      color: $d-primary;
+      background: $d-primary-light;
+      border-color: $d-primary;
+    }
+  }
+
+  // ── Theme swatches ───────────────────────────────────────────
+  &__swatches {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__swatch-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $d-text-muted;
+  }
+
+  &__swatch {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: 1px solid $d-border-input;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform $d-transition;
+
+    &:hover { transform: scale(1.15); }
+  }
+
+  // ── Inline feedback ──────────────────────────────────────────
+  &__feedback {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    line-height: 1.4;
+    word-break: break-word;
+    color: $d-text-secondary;
+
+    &--ok { color: $d-success; }
+    &--warn { color: $d-warning; }
+    &--error { color: $d-danger; }
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: $d-font-sm;
+    line-height: 1.4;
+    color: $d-text-muted;
+
+    code {
+      padding: 0 2px;
+      font-size: 11px;
+      color: $d-text-label;
+      background: $d-bg-alt;
+      border-radius: 2px;
+    }
+  }
+
+  // ── Watermark image ──────────────────────────────────────────
+  &__wm-image {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      background: $d-bg;
+      border: 1px solid $d-border;
+      border-radius: $d-radius-xs;
+    }
+  }
+
+  &__wm-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+}

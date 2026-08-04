@@ -1,0 +1,73 @@
+<div class="toolbox">
+
+  <!-- Tab strip -->
+  <div class="toolbox__tabs">
+    <button *ngFor="let t of TABS"
+            type="button"
+            class="toolbox__tab"
+            [class.is-active]="activeTab() === t.id"
+            (click)="activeTab.set(t.id)">
+      {{ t.key | translate: { Default: t.label } }}
+    </button>
+  </div>
+
+  <!-- ── Blocks palette ─────────────────────────────────────────── -->
+  <ng-container *ngIf="activeTab() === 'blocks'">
+    <!-- Each category grid is its own cdkDropList (auto-connected through
+         the shell's cdkDropListGroup) so tiles fire cross-list drops onto
+         the canvas. Sorting is disabled so tiles don't reorder in place. -->
+    <div class="toolbox__scroll">
+      <ng-container *ngFor="let group of groups()">
+        <div class="toolbox__group-label">{{ group.key | translate: { Default: group.label } }}</div>
+
+        <div class="toolbox__grid"
+             cdkDropList
+             [cdkDropListData]="group.label"
+             [cdkDropListSortingDisabled]="true">
+          <div *ngFor="let def of group.blocks"
+               class="toolbox__tile"
+               cdkDrag
+               cdkDragPreviewContainer="global"
+               [cdkDragData]="def.type"
+               [title]="def.description || def.label"
+               (click)="addAtCorner(def)">
+            <i *ngIf="mdiFor(def.type); else charIcon" class="mdi" [ngClass]="mdiFor(def.type)"></i>
+            <ng-template #charIcon><span class="toolbox__tile-char">{{ def.icon }}</span></ng-template>
+            <span class="toolbox__tile-label">{{ def.label }}</span>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <!-- ── Layers tree ────────────────────────────────────────────── -->
+  <div class="toolbox__scroll" *ngIf="activeTab() === 'layers'">
+    <p class="toolbox__empty" *ngIf="layerSections().length === 0">No blocks yet.</p>
+
+    <ng-container *ngFor="let section of layerSections()">
+      <div class="toolbox__section-head">
+        {{ sectionLabel(section.type) }}
+        <span class="toolbox__count">({{ section.blocks.length }})</span>
+      </div>
+
+      <p class="toolbox__empty toolbox__empty--inline" *ngIf="section.blocks.length === 0">empty</p>
+
+      <button *ngFor="let b of section.blocks"
+              type="button"
+              class="toolbox__layer"
+              [class.is-selected]="isSelected(b.id)"
+              [title]="b.id"
+              (click)="onLayerClick(b.id, $event)">
+        <i *ngIf="mdiFor(b.type); else layerChar" class="mdi toolbox__layer-icon" [ngClass]="mdiFor(b.type)"></i>
+        <ng-template #layerChar><span class="toolbox__layer-icon">{{ charIconFor(b.type) }}</span></ng-template>
+
+        <span class="toolbox__layer-label">{{ labelFor(b) }}</span>
+
+        <i *ngIf="b.locked" class="mdi mdi-lock toolbox__layer-badge" title="Locked"></i>
+        <i *ngIf="b.visibleWhen"
+           class="mdi mdi-help-rhombus-outline toolbox__layer-badge toolbox__layer-badge--conditional"
+           [title]="'Conditional: ' + b.visibleWhen"></i>
+      </button>
+    </ng-container>
+  </div>
+</div>

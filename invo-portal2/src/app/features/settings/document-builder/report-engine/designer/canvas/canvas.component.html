@@ -1,0 +1,113 @@
+<!-- Right-click menu. Rendered once; opened by canvas-block via the
+     ContextMenuService. -->
+<app-canvas-context-menu></app-canvas-context-menu>
+
+<div class="canvas" tabindex="0" (keydown)="onKeyDown($event)">
+
+  <!-- Top ruler -->
+  <div class="canvas__ruler-x">
+    <div class="canvas__ruler-corner"></div>
+    <div class="canvas__ruler-track">
+      <div class="canvas__tick canvas__tick--x" *ngFor="let t of rulerTicksX()" [style.left.px]="t.x">
+        <span class="canvas__tick-label">{{ t.label }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="canvas__row">
+    <!-- Left ruler -->
+    <div class="canvas__ruler-y">
+      <div class="canvas__tick canvas__tick--y" *ngFor="let t of rulerTicksY()" [style.top.px]="t.y">
+        <span class="canvas__tick-label">{{ t.label }}</span>
+      </div>
+    </div>
+
+    <!-- Page column. Start-aligned on purpose — see PAGE_PAD_PX. -->
+    <div class="canvas__page-col">
+      <div #pageEl
+           class="canvas__page"
+           cdkDropList
+           [cdkDropListData]="'canvas'"
+           (cdkDropListDropped)="onDrop($event)"
+           [style.width.px]="pageWidthPx()"
+           [style.height.px]="pageHeightPx()"
+           [style.background-color]="pageBg()"
+           (mousedown)="onSurfaceMouseDown($event)">
+
+        <!-- Margin guide -->
+        <div class="canvas__margin-guide"
+             [style.left.px]="marginLeftPx()"
+             [style.top.px]="marginTopPx()"
+             [style.right.px]="marginRightPx()"
+             [style.bottom.px]="marginBottomPx()"></div>
+
+        <!-- Watermark preview — mirrors the HTML/PDF renderers. Sits under
+             the blocks and never intercepts pointer events. -->
+        <div class="canvas__watermark"
+             *ngIf="watermark() as wm"
+             [style.opacity]="wm.opacity ?? 0.08"
+             [style.transform]="'rotate(' + (wm.rotation ?? -30) + 'deg)'">
+          <img *ngIf="wm.image; else wmText" [src]="wm.image" alt="watermark" />
+          <ng-template #wmText>
+            <span class="canvas__watermark-text" [style.font-size.pt]="80 * zoom()">{{ wm.text }}</span>
+          </ng-template>
+        </div>
+
+        <!-- Margin frame. Block coordinates are inside-margin, so everything
+             positional lives in here — matching the HTML/PDF renderers,
+             which both shift content by page.margins. -->
+        <div class="canvas__frame"
+             [style.left.px]="marginLeftPx()"
+             [style.top.px]="marginTopPx()"
+             [style.right.px]="marginRightPx()"
+             [style.bottom.px]="marginBottomPx()">
+
+          <!-- Section bands (visual only) -->
+          <div *ngFor="let band of sectionBands()"
+               class="canvas__band"
+               [ngClass]="'canvas__band--' + band.variant"
+               [style.top.px]="band.topPx"
+               [style.height.px]="band.heightPx">
+            <span class="canvas__band-label">{{ band.label }}</span>
+          </div>
+
+          <!-- Optional 5mm grid -->
+          <div class="canvas__grid"
+               *ngIf="showGrid()"
+               [style.background-size.px]="gridStepPx()"></div>
+
+          <!-- Blocks across every section, each shifted by its section offset -->
+          <app-canvas-block *ngFor="let item of allBlocksWithOffset(); trackBy: trackBlock"
+                            [block]="item.block"
+                            [zoom]="zoom()"
+                            [yOffsetMm]="item.yOffsetMm"></app-canvas-block>
+
+          <!-- Smart alignment guides published by the block being dragged.
+               Positioned in px (mm × pxPerMm × zoom) rather than CSS mm so
+               they stay locked to the blocks at every zoom level. -->
+          <ng-container *ngFor="let g of state.alignGuides()">
+            <div *ngIf="g.kind === 'v'; else hGuide"
+                 class="canvas__guide canvas__guide--v"
+                 [style.left.px]="g.position * pxPerMm() * zoom()"
+                 [style.top.px]="g.from * pxPerMm() * zoom()"
+                 [style.height.px]="(g.to - g.from) * pxPerMm() * zoom()"></div>
+            <ng-template #hGuide>
+              <div class="canvas__guide canvas__guide--h"
+                   [style.top.px]="g.position * pxPerMm() * zoom()"
+                   [style.left.px]="g.from * pxPerMm() * zoom()"
+                   [style.width.px]="(g.to - g.from) * pxPerMm() * zoom()"></div>
+            </ng-template>
+          </ng-container>
+        </div>
+
+        <!-- Marquee -->
+        <div class="canvas__marquee"
+             *ngIf="marquee() as m"
+             [style.left.px]="m.x"
+             [style.top.px]="m.y"
+             [style.width.px]="m.w"
+             [style.height.px]="m.h"></div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,147 @@
+<div class="cb__content"
+     [class.is-locked]="locked()"
+     [attr.style]="blockCss()"
+     [style.border-radius.mm]="rectRadius() || null"
+     [ngSwitch]="block().type">
+
+  <!-- ── Text-ish ────────────────────────────────────────────── -->
+  <div *ngSwitchCase="'text'"
+       [style.font-size.pt]="fontSize()"
+       [style.text-align]="align()"
+       [style.font-weight]="weight()">{{ textPreview() }}</div>
+
+  <div *ngSwitchCase="'rich-text'" [innerHTML]="richHtml()"></div>
+
+  <div *ngSwitchCase="'dynamic-field'"
+       [style.font-size.pt]="fontSize()"
+       [style.text-align]="align()">{{ expressionText() }}</div>
+
+  <div *ngSwitchCase="'page-number'"
+       [style.font-size.pt]="fontSize()"
+       [style.text-align]="align()">{{ pageFormat() }}</div>
+
+  <!-- ── Media ───────────────────────────────────────────────── -->
+  <div *ngSwitchCase="'image'" class="cb__image-ph">
+    <i class="mdi mdi-image-outline"></i>
+    <span>Image</span>
+  </div>
+
+  <div *ngSwitchCase="'qr-code'" class="cb__code" [innerHTML]="qrPreview()"></div>
+
+  <div *ngSwitchCase="'barcode'" class="cb__code" [innerHTML]="barcodePreview()"></div>
+
+  <!-- ── Shapes ──────────────────────────────────────────────── -->
+  <div *ngSwitchCase="'line'" class="cb__fill" [style.background]="lineColor()"></div>
+
+  <div *ngSwitchCase="'rectangle'"
+       class="cb__fill"
+       [style.background]="rectFill()"
+       [style.border-radius.mm]="rectRadius()"></div>
+
+  <div *ngSwitchCase="'divider'" class="cb__divider">
+    <div class="cb__divider-rule" [style.border-top]="dividerCss()"></div>
+  </div>
+
+  <div *ngSwitchCase="'signature'" class="cb__signature">
+    <div class="cb__signature-rule" [style.border-bottom]="signatureLineCss()"></div>
+    <div class="cb__signature-label" [style.text-align]="align()">{{ sigLabel() }}</div>
+  </div>
+
+  <!-- ── Groups ──────────────────────────────────────────────── -->
+  <div *ngSwitchCase="'group-header'" class="cb__group-header">{{ groupTemplate() }}</div>
+  <div *ngSwitchCase="'group-footer'" class="cb__group-footer">{{ groupTemplate() }}</div>
+
+  <!-- ── Totals ──────────────────────────────────────────────── -->
+  <table *ngSwitchCase="'totals'" class="cb__totals">
+    <tr *ngFor="let r of totalsRows()" [class.is-bold]="r.bold">
+      <td [style.width.mm]="totalsLabelWidth()">{{ r.label }}</td>
+      <td class="cb__totals-value">{{ evalTotalsValue(r.expression, r.format) }}</td>
+    </tr>
+  </table>
+
+  <!-- ── Payments ────────────────────────────────────────────── -->
+  <table *ngSwitchCase="'payments'" class="cb__table" [class.is-bordered]="paymentsShowBorder()">
+    <thead *ngIf="paymentsShowHeader()">
+      <tr>
+        <th *ngFor="let c of paymentsCols()" [style.text-align]="c.align">{{ c.label }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngIf="paymentsRows().length === 0">
+        <td *ngFor="let c of paymentsCols()" class="cb__cell-empty" [style.text-align]="c.align">—</td>
+      </tr>
+      <tr *ngFor="let row of paymentsRows(); let i = index">
+        <td *ngFor="let c of paymentsCols()" [style.text-align]="c.align">{{ evalPaymentCell(c, row, i) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── Table ───────────────────────────────────────────────── -->
+  <!-- `table-layout: fixed` honours the colgroup widths strictly so the
+       canvas matches the HTML/PDF export. With any 'auto' column we fall
+       back to auto layout so the browser can content-size it. -->
+  <table *ngSwitchCase="'table'"
+         class="cb__table is-bordered"
+         [style.table-layout]="tableHasAutoCol() ? 'auto' : 'fixed'">
+    <colgroup>
+      <col *ngFor="let col of tableColumns()" [style.width]="tableColWidth(col)" />
+    </colgroup>
+    <thead>
+      <tr>
+        <th *ngFor="let col of tableColumns()" [attr.style]="headerCss(col)">{{ col.header }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngIf="tableRows().length === 0">
+        <td *ngFor="let col of tableColumns()" class="cb__cell-empty" [attr.style]="cellCss(col)">—</td>
+      </tr>
+      <tr *ngFor="let row of tableRows(); let i = index">
+        <ng-container *ngFor="let col of tableColumns()">
+          <td *ngIf="col.cellType === 'image'; else textCell" class="cb__cell-image" [attr.style]="cellCss(col)">
+            <img [src]="evalTableCell(col.expression, row, i)"
+                 alt=""
+                 [style.max-height.mm]="col.imageHeightMm ?? tableRowMinHeight()" />
+          </td>
+          <ng-template #textCell>
+            <td [attr.style]="cellCss(col)">{{ evalTableCell(col.expression, row, i) }}</td>
+          </ng-template>
+        </ng-container>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── Repeater ────────────────────────────────────────────── -->
+  <!-- One "template card" with children at their card-relative positions.
+       The recursive <app-canvas-block> gives children the same drag,
+       resize, and select behaviour as top-level blocks. -->
+  <div *ngSwitchCase="'repeater'"
+       class="cb__repeater"
+       [style.border-radius.mm]="repeaterRadius() || null"
+       [style.overflow]="repeaterRadius() ? 'hidden' : null">
+
+    <app-canvas-block *ngFor="let child of repeaterChildren()"
+                      [block]="child"
+                      [zoom]="zoom()"
+                      [yOffsetMm]="0"
+                      [rowContextOverride]="repeaterChildCtx()"
+                      [parentXOffsetMm]="parentXOffsetMm() + block().position.x"
+                      [parentYOffsetMm]="parentYOffsetMm() + yOffsetMm() + block().position.y"></app-canvas-block>
+
+    <!-- Card hint hides once the user gives the repeater a real skin, so the
+         preview stays truthful about what will export. -->
+    <div class="cb__repeater-hint"
+         *ngIf="!repeaterHasOwnSkin()"
+         [style.border-radius.mm]="repeaterRadius() || null"></div>
+
+    <div class="cb__repeater-badge">card · {{ repeaterRowCount() }} rows</div>
+  </div>
+</div>
+
+<!-- Selection chrome -->
+<ng-container *ngIf="selected()">
+  <div class="cb__outline"></div>
+  <div *ngFor="let h of handles()"
+       class="resize-handle"
+       [ngClass]="'resize-handle--' + h"
+       (pointerdown)="startResize($event, h)"></div>
+</ng-container>
