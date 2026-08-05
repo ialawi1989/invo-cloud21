@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { PageService } from '../../core/pages/page.service';
@@ -64,6 +64,7 @@ import { ProductListPage } from '../product-list/product-list.page';
 })
 export class PageHostComponent implements OnInit {
   private route      = inject(ActivatedRoute);
+  private router     = inject(Router);
   private pages      = inject(PageService);
   private preview    = inject(PreviewService);
   private destroyRef = inject(DestroyRef);
@@ -107,6 +108,19 @@ export class PageHostComponent implements OnInit {
     }
 
     const page = await this.pages.getPage(slug);
+
+    // Status decides whether this page exists for the visitor at all, so it is
+    // applied BEFORE anything renders. This is what replaced the old
+    // "Redirect menu to shop" setting: a redirect is a property of the page,
+    // works for any page and any target, and — unlike the old toggle — is
+    // knowable before the page paints.
+    if (!page.missing && page.status === 'redirect' && page.redirectTo) {
+      const lang = this.route.snapshot.paramMap.get('lang');
+      const target = lang ? ['/', lang, page.redirectTo] : ['/', page.redirectTo];
+      void this.router.navigate(target, { replaceUrl: true });
+      return;
+    }
+
     this.page.set(page);
     // A missing row falls back to the canvas rather than a 404 — same as today.
     this.renderAs.set(page.missing ? 'content' : page.pageType);

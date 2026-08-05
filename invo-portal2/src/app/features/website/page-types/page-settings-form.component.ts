@@ -148,6 +148,9 @@ export class PageSettingsFormComponent {
   }
 
   visible(field: SettingField): boolean {
+    // A retired option stays in storage but never in the editor: showing it
+    // would invite a merchant to configure something nothing reads any more.
+    if (field.deprecated) return false;
     return this.registry.isVisible(field, this.values(), this.source());
   }
 

@@ -24,6 +24,18 @@ export interface WebsitePage {
   settings:   Record<string, any>;
   sections:   any[];
   isHomePage: boolean;
+  /**
+   * published | hidden | redirect.
+   *
+   * Deliberately a page property rather than a setting: it decides whether the
+   * page exists for a visitor, which no per-type option bag should own. It also
+   * replaces the old "Redirect menu to shop" toggle — that answered "this
+   * merchant is retail" by bouncing people out of a page that stayed in the
+   * navigation and in search results.
+   */
+  status: 'published' | 'hidden' | 'redirect';
+  /** Target page slug when `status === 'redirect'`. */
+  redirectTo: string;
   /** Row type in `WebSiteBuilder` — preserved on save so an existing
    *  `StaticPage` row doesn't silently become a `Page`. */
   rowType:    'Page' | 'StaticPage';
@@ -145,6 +157,13 @@ export class WebsitePagesService {
       settings:   template['settings'] ?? {},
       sections:   Array.isArray(template['sections']) ? template['sections'] : [],
       isHomePage: !!row?.isHomePage || !!template['isHomePage'],
+      // Absent status = published, EXCEPT where a retired option still says
+      // otherwise: an un-migrated row with `redirect_to_shop` really does
+      // redirect on the live site, so the form must show that rather than
+      // claim the page is published.
+      status:     (template['status'] as any)
+                  ?? (template['settings']?.redirect_to_shop === true ? 'redirect' : 'published'),
+      redirectTo: String(template['redirectTo'] ?? (template['settings']?.redirect_to_shop === true ? 'shop' : '')),
       rowType,
     };
   }
@@ -179,6 +198,8 @@ export class WebsitePagesService {
         slug:       page.slug,
         pageName:   page.name,
         pageType:   page.pageType,
+        status:     page.status ?? 'published',
+        ...(page.status === 'redirect' ? { redirectTo: page.redirectTo } : {}),
         // Legacy compatibility only: derived from the type, never read back.
         // Anything still on the old code path keeps classifying pages right.
         isStatic:   page.pageType !== 'content',
@@ -201,6 +222,8 @@ export class WebsitePagesService {
       settings: this.registry.withDefaults(pageType, {}),
       sections: [],
       isHomePage: false,
+      status: 'published',
+      redirectTo: '',
       // Row type follows the page type: only a content page is editor-built.
       rowType: pageType === 'content' ? 'Page' : 'StaticPage',
     };

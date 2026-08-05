@@ -41,6 +41,17 @@
           {{ 'WEBSITE.PAGES.HOME' | translate }}
         </span>
       }
+      <!-- A page that is hidden or always redirects is worth seeing at a
+           glance: both mean visitors don't get what the row implies. -->
+      @if (row.status === 'hidden') {
+        <span class="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+          {{ 'WEBSITE.PAGES.STATUS_HIDDEN' | translate }}
+        </span>
+      } @else if (row.status === 'redirect') {
+        <span class="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-semibold text-violet-700">
+          {{ 'WEBSITE.PAGES.STATUS_REDIRECT' | translate }} → /{{ row.redirectTo }}
+        </span>
+      }
     </span>
   </ng-template>
 

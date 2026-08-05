@@ -100,6 +100,42 @@ interface Option { id: string; name: string; }
               }
             </div>
 
+            <!-- Status is a page property, not a setting: it decides whether
+                 the page exists for a visitor. It also replaces the old
+                 "Redirect menu to shop" toggle — that answered "this merchant
+                 is retail" by bouncing people out of a page which stayed in the
+                 navigation and in search results. A redirect belongs to the
+                 page, works for any target, and is knowable before render. -->
+            <div class="grid grid--2">
+              <div class="field">
+                <label class="field-label">{{ 'WEBSITE.PAGES.STATUS' | translate }}</label>
+                <app-search-dropdown
+                  [items]="statusOptions()"
+                  [displayWith]="optionName"
+                  [toValue]="optionId"
+                  [compareWith]="optionCompare"
+                  [searchable]="false"
+                  [clearable]="false"
+                  [value]="page().status"
+                  (valueChange)="changeStatus($any($event))"/>
+                <p class="field-hint">{{ statusHint() }}</p>
+              </div>
+
+              @if (page().status === 'redirect') {
+                <div class="field">
+                  <label class="field-label">{{ 'WEBSITE.PAGES.REDIRECT_TO' | translate }}</label>
+                  <app-search-dropdown
+                    [items]="targetOptions()"
+                    [displayWith]="optionName"
+                    [toValue]="optionId"
+                    [compareWith]="optionCompare"
+                    [placeholder]="'WEBSITE.PAGES.REDIRECT_PICK' | translate"
+                    [value]="page().redirectTo"
+                    (valueChange)="patch({ redirectTo: $any($event) ?? '' })"/>
+                </div>
+              }
+            </div>
+
             @if (page().pageType === 'content') {
               <div class="field field--inline">
                 <span class="field-label">{{ 'WEBSITE.PAGES.IS_HOME' | translate }}</span>
@@ -179,6 +215,7 @@ export class WebsitePageFormComponent implements OnInit, CanLeaveComponent {
   page = signal<WebsitePage>({
     id: null, name: '', slug: '', pageType: 'content', source: null,
     settings: {}, sections: [], isHomePage: false, rowType: 'Page',
+    status: 'published', redirectTo: '',
   });
 
   typeOptions = computed<Option[]>(() =>
@@ -206,7 +243,41 @@ export class WebsitePageFormComponent implements OnInit, CanLeaveComponent {
     this.page().id ? (this.page().name || this.page().slug) : this.translate.instant('WEBSITE.PAGES.NEW'),
   );
 
-  canSave = computed<boolean>(() => !!this.page().name.trim() && !!this.page().slug.trim());
+  /** A redirect with no target is worse than no redirect — it would strand
+   *  every visitor who reaches the page. */
+  canSave = computed<boolean>(() =>
+    !!this.page().name.trim() &&
+    !!this.page().slug.trim() &&
+    (this.page().status !== 'redirect' || !!this.page().redirectTo));
+
+  statusOptions = computed<Option[]>(() =>
+    (this.registry.manifest()?.pageStatuses ?? [
+      { value: 'published', title: 'Published' },
+      { value: 'hidden',    title: 'Hidden' },
+      { value: 'redirect',  title: 'Redirects to another page' },
+    ]).map(s => ({ id: s.value, name: s.title })),
+  );
+
+  statusHint = computed<string>(() => {
+    switch (this.page().status) {
+      case 'hidden':   return this.translate.instant('WEBSITE.PAGES.STATUS_HIDDEN_HINT');
+      case 'redirect': return this.translate.instant('WEBSITE.PAGES.STATUS_REDIRECT_HINT');
+      default:         return this.translate.instant('WEBSITE.PAGES.STATUS_PUBLISHED_HINT');
+    }
+  });
+
+  /** Other pages, as redirect targets. A page can't redirect to itself. */
+  targetOptions = signal<Option[]>([]);
+
+  changeStatus(status: string): void {
+    if (!status) return;
+    this.patch({
+      status: status as WebsitePage['status'],
+      // Dropping the target with the status keeps a stale slug from silently
+      // reactivating if the merchant flips back.
+      ...(status === 'redirect' ? {} : { redirectTo: '' }),
+    });
+  }
 
   /** Saved pages of any type — a system page is decorated and configured in
    *  the builder too. Only a type the manifest gives no widgets stays
@@ -237,6 +308,12 @@ export class WebsitePageFormComponent implements OnInit, CanLeaveComponent {
         const loaded = await this.service.getOne(id);
         if (loaded) this.page.set(loaded);
       }
+      const all = await this.service.list();
+      this.targetOptions.set(
+        all
+          .filter(p => p.slug && p.id !== this.page().id)
+          .map(p => ({ id: p.slug, name: `${p.name || p.slug} (/${p.slug})` })),
+      );
     } finally {
       this.loading.set(false);
     }

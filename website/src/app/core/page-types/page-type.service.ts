@@ -113,7 +113,31 @@ export class PageTypeService {
       source:   pageType === 'product-list' ? this.sourceFor(slug, template) : null,
       sections: Array.isArray(template?.sections) ? template.sections : [],
       missing:  !row,
+      ...this.statusOf(template),
     };
+  }
+
+  /**
+   * Page status, with the legacy option honoured as a FALLBACK.
+   *
+   * A first-time upload must behave like the old site before anyone runs a
+   * migration, so a retired option keeps working until its replacement is
+   * actually set: `settings.redirect_to_shop` still produces a redirect when no
+   * `status` exists. Saved values are never rewritten by this — reading is
+   * where compatibility is paid for, not writing.
+   */
+  private statusOf(template: any): { status: any; redirectTo: string } {
+    const explicit = String(template?.status ?? '').trim();
+    if (explicit) {
+      return { status: explicit as any, redirectTo: String(template?.redirectTo ?? '') };
+    }
+
+    if (template?.settings?.redirect_to_shop === true) {
+      return { status: 'redirect', redirectTo: String(template?.redirectTo ?? 'shop') };
+    }
+
+    // Absent means published — never hide a page because a field is missing.
+    return { status: 'published', redirectTo: '' };
   }
 
   /**

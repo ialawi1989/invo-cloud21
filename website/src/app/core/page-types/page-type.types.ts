@@ -20,6 +20,10 @@ export interface SettingField {
   options?:   FieldOption[];
   condition?: FieldCondition;
   hint?:      string;
+  /** A retired option: hidden from the editor, left untouched in storage, and
+   *  named with what replaced it. Legacy settings don't have to survive as-is —
+   *  their INTENT does, carried across by the migration. */
+  deprecated?: { reason: string; replacedBy: string };
 }
 
 export interface SettingGroup { key: string; title: string; fields: SettingField[]; }
@@ -63,7 +67,13 @@ export interface PageTypeManifest {
   legacyTemplateTypes?:   Record<string, string>;
   legacyTemplateSources?: Record<string, ListingSource>;
   companySeeds:  Record<string, Array<{ slug: string; pageType: string; source?: ListingSource; name: string }>>;
+  /** Page-level statuses, offered for every type. */
+  pageStatuses?: ReadonlyArray<{ value: string; title: string }>;
 }
+
+/** A page's lifecycle, kept OUT of `settings` because it decides whether the
+ *  page exists for a visitor at all. */
+export type PageStatus = 'published' | 'hidden' | 'redirect';
 
 /** A page row resolved through the registry — what components consume. */
 export interface ResolvedPage {
@@ -77,4 +87,8 @@ export interface ResolvedPage {
   sections: any[];
   /** True when no page row existed for this slug. */
   missing:  boolean;
+  /** published | hidden | redirect — applied before anything renders. */
+  status:   PageStatus;
+  /** Target slug when `status === 'redirect'`. */
+  redirectTo: string;
 }

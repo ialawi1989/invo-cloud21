@@ -37,7 +37,15 @@
       "KIND_STATIC": "ثابتة",
       "EDIT_SETTINGS": "تعديل الإعدادات",
       "EDIT_CONTENT": "فتح المُنشئ",
-      "OPEN_BUILDER_HINT": "رتّب أقسام هذه الصفحة في المُنشئ المرئي."
+      "OPEN_BUILDER_HINT": "رتّب أقسام هذه الصفحة في المُنشئ المرئي.",
+      "STATUS": "الحالة",
+      "STATUS_PUBLISHED_HINT": "منشورة على متجرك.",
+      "STATUS_HIDDEN_HINT": "يمكن الوصول إليها عبر الرابط المباشر فقط — لا تظهر في التنقل ولا في نتائج البحث.",
+      "STATUS_REDIRECT_HINT": "من يفتح هذه الصفحة يتم تحويله إلى صفحة أخرى.",
+      "REDIRECT_TO": "التحويل إلى",
+      "REDIRECT_PICK": "اختر صفحة",
+      "STATUS_HIDDEN": "مخفية",
+      "STATUS_REDIRECT": "تحويل"
     }
   }
 }
