@@ -174,9 +174,10 @@ export class WebsitePagesListComponent implements OnInit {
     const items: DropdownMenuBtnItem[] = [
       { label: 'WEBSITE.PAGES.EDIT_SETTINGS', click: () => this.onRowClick({ row: page }) },
     ];
-    // Only a dynamic page has a canvas to arrange. A static page is a system
-    // page (cart, checkout, a listing) whose look comes from settings.
-    if (this.registry.isDynamic(page.pageType) && page.id) {
+    // Every type opens in the builder now — a system page can be decorated
+    // around its core and configured there, with the preview live. Types the
+    // manifest gives no widgets are the exception: settings only.
+    if (page.id && this.registry.typeDef(page.pageType)?.allowedWidgets?.length !== 0) {
       items.push({ label: 'WEBSITE.PAGES.EDIT_CONTENT', click: () => void this.router.navigate(['/page-builder', page.id, 'editor']) });
     }
     // Only a content page makes sense as a home page — a checkout or a listing

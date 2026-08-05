@@ -208,10 +208,12 @@ export class WebsitePageFormComponent implements OnInit, CanLeaveComponent {
 
   canSave = computed<boolean>(() => !!this.page().name.trim() && !!this.page().slug.trim());
 
-  /** Saved dynamic pages only — a builder needs a row to write sections into,
-   *  and only `content` has a canvas. */
+  /** Saved pages of any type — a system page is decorated and configured in
+   *  the builder too. Only a type the manifest gives no widgets stays
+   *  settings-only. A builder still needs a row to write sections into. */
   canOpenBuilder = computed<boolean>(() =>
-    !!this.page().id && this.registry.isDynamic(this.page().pageType));
+    !!this.page().id &&
+    this.registry.typeDef(this.page().pageType)?.allowedWidgets?.length !== 0);
 
   openBuilder(): void {
     const id = this.page().id;

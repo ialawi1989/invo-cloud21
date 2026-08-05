@@ -32,11 +32,14 @@ export const FALLBACK_MANIFEST: PageTypeManifest = {
   pageTypes: [
     {
       id: 'content', title: 'Content page', multiple: true,
+      allowedWidgets: ['*'],
       description: 'Free-form page built from sections in the editor.',
       settings: [{ key: 'page_settings', title: 'Page Settings', fields: [subheader] }],
     },
     {
       id: 'product-list', title: 'Product listing', multiple: true,
+      allowedWidgets: ['hero', 'banner', 'text', 'rich-text', 'image', 'spacer', 'buttons', 'faq', 'features'],
+      coreBlockTitle: 'Product grid',
       description:
         'Shows products from a chosen source. One type covers what used to be ' +
         'three separate pages (menu, shop, collections).',
@@ -86,6 +89,8 @@ export const FALLBACK_MANIFEST: PageTypeManifest = {
     },
     {
       id: 'product-detail', title: 'Product page', multiple: false,
+      allowedWidgets: ['banner', 'text', 'rich-text', 'spacer', 'features', 'faq'],
+      coreBlockTitle: 'Product details',
       description: 'A single product. One canonical URL per product.',
       settings: [{
         key: 'page_settings', title: 'Page Settings',
@@ -107,15 +112,21 @@ export const FALLBACK_MANIFEST: PageTypeManifest = {
     },
     {
       id: 'category-list', title: 'Categories', multiple: true,
+      allowedWidgets: ['hero', 'banner', 'text', 'rich-text', 'spacer'],
+      coreBlockTitle: 'Category grid',
       description: 'Grid of product categories.',
       settings: [{ key: 'page_settings', title: 'Page Settings', fields: [subheader, productImageSize] }],
     },
     {
-      id: 'cart', title: 'Cart', multiple: false, description: 'The shopping cart.',
+      id: 'cart', title: 'Cart', multiple: false,
+      allowedWidgets: ['banner', 'text', 'spacer'],
+      coreBlockTitle: 'Cart', description: 'The shopping cart.',
       settings: [{ key: 'page_settings', title: 'Page Settings', fields: [subheader] }],
     },
     {
-      id: 'checkout', title: 'Checkout', multiple: false, description: 'Order placement.',
+      id: 'checkout', title: 'Checkout', multiple: false,
+      allowedWidgets: ['banner', 'text', 'spacer'],
+      coreBlockTitle: 'Checkout steps', description: 'Order placement.',
       settings: [{
         key: 'page_settings', title: 'Page Settings',
         fields: [
@@ -152,16 +163,22 @@ export const FALLBACK_MANIFEST: PageTypeManifest = {
     },
     {
       id: 'system', title: 'System page', multiple: false,
+      allowedWidgets: ['banner', 'text', 'spacer'],
+      coreBlockTitle: 'Page content',
       description: 'A built-in storefront page configured through settings.',
       settings: [{ key: 'page_settings', title: 'Page Settings', fields: [subheader] }],
     },
     {
       id: 'account', title: 'Account', multiple: true,
+      allowedWidgets: ['banner', 'text', 'spacer'],
+      coreBlockTitle: 'Account',
       description: 'Orders, reservations and profile.',
       settings: [{ key: 'page_settings', title: 'Page Settings', fields: [subheader] }],
     },
     {
       id: 'booking', title: 'Booking', multiple: true,
+      allowedWidgets: ['hero', 'banner', 'text', 'rich-text', 'spacer', 'faq'],
+      coreBlockTitle: 'Booking form',
       description: 'Appointments or table reservations.',
       settings: [{ key: 'page_settings', title: 'Page Settings', fields: [subheader] }],
     },

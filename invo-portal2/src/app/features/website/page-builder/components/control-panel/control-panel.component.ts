@@ -2,6 +2,7 @@ import { Component, signal, computed, Input, Output, EventEmitter } from '@angul
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CustomizerService } from '../../services/customizer.service';
+import { PageSettingsFormComponent } from '../../../page-types/page-settings-form.component';
 import { ThemeManagerComponent } from '../theme-manager/theme-manager.component';
 import { NavigationBuilderComponent, MenuData } from '../navigation-builder/navigation-builder.component';
 import { 
@@ -167,7 +168,7 @@ const STATIC_PAGE_SCHEMAS: Record<string, any> = {
 @Component({
   selector: 'app-control-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, ThemeManagerComponent, NavigationBuilderComponent],
+  imports: [CommonModule, FormsModule, ThemeManagerComponent, NavigationBuilderComponent, PageSettingsFormComponent],
   template: `
     <div class="control-panel">
       <!-- Navigation Tabs -->
@@ -193,41 +194,39 @@ const STATIC_PAGE_SCHEMAS: Record<string, any> = {
               <span class="page-badge" [class.static]="isStaticPage">{{ isStaticPage ? 'Static' : 'Dynamic' }}</span>
             </div>
             
-            <!-- Static Page Settings -->
-            @if (isStaticPage && currentSchema) {
-              @for (group of currentSchema.settingsGroups; track group.key) {
-                <div class="section-group">
-                  <button class="section-btn" (click)="toggleSection(group.key)">
-                    <span>{{ group.label }}</span>
-                    <svg [class.rotated]="openSection() === group.key" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                  </button>
-                  @if (openSection() === group.key) {
-                    <div class="section-body">
-                      @for (field of group.fields; track field.key) {
-                        <div class="field-row">
-                          <label>{{ field.label }}</label>
-                          @if (field.type === 'select') {
-                            <select [(ngModel)]="staticSettings[field.key]">
-                              @for (opt of field.options; track opt.value) {
-                                <option [value]="opt.value">{{ opt.label }}</option>
-                              }
-                            </select>
-                          }
-                          @if (field.type === 'toggle') {
-                            <input type="checkbox" [(ngModel)]="staticSettings[field.key]">
-                          }
-                        </div>
-                      }
-                    </div>
-                  }
+            <!-- Page settings, rendered from the page-type manifest — the same
+                 schema the Pages form uses. The prototype carried its own
+                 STATIC_PAGE_SCHEMAS here, which was a THIRD copy of the
+                 catalog; one source of truth is the whole point of the
+                 registry, so it is gone. -->
+            @if (pageType) {
+              <div class="section-group">
+                <div class="section-label">SETTINGS</div>
+                <div class="settings-slot">
+                  <app-page-settings-form
+                    [pageType]="pageType"
+                    [settings]="pageSettings"
+                    [source]="pageSource"
+                    (settingsChange)="settingsChange.emit($event)"/>
                 </div>
-              }
+              </div>
             }
-            
-            <!-- Dynamic Page: Full Builder -->
-            @if (!isStaticPage) {
+
+            <!-- Sections. A system page gets them too now: it can be decorated
+                 around the core it exists for, which is why the core shows up
+                 as a locked row rather than being invisible. -->
+            @if (canAddWidgets || components().length) {
               <div class="section-group">
                 <div class="section-label">SECTIONS</div>
+
+                @if (coreBlockTitle) {
+                  <div class="tree-item tree-item--core" title="This page's own content — it can be decorated, not removed">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+                    <span>{{ coreBlockTitle }}</span>
+                    <svg class="lock" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                  </div>
+                }
+
                 @for (comp of components(); track comp.id) {
                   <div class="tree-item" [class.selected]="selectedComponentId() === comp.id" (click)="selectComponent(comp.id)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
@@ -239,7 +238,9 @@ const STATIC_PAGE_SCHEMAS: Record<string, any> = {
                     </div>
                   </div>
                 }
-                <button class="add-btn" (click)="openModal()">+ Add section</button>
+                @if (canAddWidgets) {
+                  <button class="add-btn" (click)="openModal()">+ Add section</button>
+                }
               </div>
             }
           </div>
@@ -561,6 +562,14 @@ const STATIC_PAGE_SCHEMAS: Record<string, any> = {
     .item-actions button { width: 24px; height: 24px; border: none; background: transparent; cursor: pointer; border-radius: 4px; }
     .item-actions button:hover { background: var(--border-color); }
     .item-actions button.del:hover { background: #fee2e2; color: #ef4444; }
+    .tree-item--core {
+      background: var(--bg-gray-50);
+      color: var(--text-secondary);
+      cursor: default;
+    }
+    .tree-item--core .lock { margin-inline-start: auto; opacity: .6; }
+    .settings-slot { padding: 4px 10px 10px; }
+
     .add-btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 16px; background: transparent; border: none; font-size: 14px; color: #6366f1; font-weight: 500; cursor: pointer; text-align: left; }
     .add-btn:hover { background: #eef2ff; }
     .theme-trigger { padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
@@ -634,7 +643,25 @@ const STATIC_PAGE_SCHEMAS: Record<string, any> = {
 export class ControlPanelComponent {
   @Input() currentPageSlug: string = 'home';
   @Input() currentPageName: string = 'Home page';
+  /** @deprecated Kept so existing bindings don't break; the page TYPE decides
+   *  behaviour now — `content` is the only all-canvas page. */
   @Input() isStaticPage: boolean = false;
+
+  /** Page type id, e.g. `product-list`. Drives the settings form. */
+  @Input() pageType = '';
+  @Input() pageSettings: Record<string, any> = {};
+  @Input() pageSource: any = null;
+  /** Label of the immovable core row, when the type has one. */
+  @Input() coreBlockTitle = '';
+
+  @Output() settingsChange = new EventEmitter<Record<string, any>>();
+
+  /** False when the manifest gives the type no widgets — settings only. */
+  get canAddWidgets(): boolean {
+    const allowed = this.allowedWidgets;
+    if (!allowed) return true;
+    return allowed.length > 0;
+  }
   @Input() availableMenus: MenuOption[] = [];
   
   @Output() openMenuBuilderEvent = new EventEmitter<void>();
@@ -703,7 +730,21 @@ export class ControlPanelComponent {
   // Static page settings
   staticSettings: Record<string, any> = {};
   
-  componentLibrary = COMPONENT_LIBRARY;
+  /**
+   * Widgets this page may take, per the manifest.
+   *
+   * A content page is all canvas and takes everything (`['*']`). A system page —
+   * a listing, checkout — has a fixed core it exists for, so it can only be
+   * DECORATED: offering it a block that has nowhere to go would be a trap. An
+   * empty list means settings only.
+   */
+  @Input() allowedWidgets: string[] | null = null;
+
+  get componentLibrary() {
+    const allowed = this.allowedWidgets;
+    if (!allowed || allowed.includes('*')) return COMPONENT_LIBRARY;
+    return COMPONENT_LIBRARY.filter(c => allowed.includes(c.type));
+  }
   fontOptions = FONT_OPTIONS;
   
   constructor(private customizer: CustomizerService) {}

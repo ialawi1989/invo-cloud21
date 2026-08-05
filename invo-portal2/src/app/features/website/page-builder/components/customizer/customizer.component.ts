@@ -214,7 +214,14 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
       <!-- Main Content -->
       <div class="customizer-main">
         <!-- Left Sidebar -->
-        <app-control-panel class="sidebar-left"></app-control-panel>
+        <app-control-panel
+          class="sidebar-left"
+          [allowedWidgets]="allowedWidgets"
+          [pageType]="pageType"
+          [pageSettings]="pageSettings"
+          [pageSource]="pageSource"
+          [coreBlockTitle]="coreBlockTitle"
+          (settingsChange)="settingsChange.emit($event)"></app-control-panel>
         
         <!-- Preview Area -->
         <app-preview-frame 
@@ -1094,6 +1101,19 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
 export class CustomizerComponent {
   /** Slug of the page being edited — the preview iframe opens it directly. */
   @Input() pageSlug = '';
+  /** Widgets this page type accepts; null = everything. */
+  @Input() allowedWidgets: string[] | null = null;
+  /** Label of the page's immovable core block ("Product grid"), shown in the
+   *  section list so a merchant can see where their widgets sit relative to
+   *  the page's own output. Empty for a content page, which has no core. */
+  @Input() coreBlockTitle = '';
+  /** Page type + its stored settings, so the panel can render the manifest
+   *  form beside the canvas — settings and layout in one place, previewed live. */
+  @Input() pageType = '';
+  @Input() pageSettings: Record<string, any> = {};
+  @Input() pageSource: any = null;
+
+  @Output() settingsChange = new EventEmitter<Record<string, any>>();
   /** Host-controlled, so the Save button reflects the real round-trip. */
   @Input() saving = false;
 

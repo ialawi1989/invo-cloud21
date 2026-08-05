@@ -3,6 +3,7 @@ import {
   Component,
   DestroyRef,
   OnInit,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -14,6 +15,7 @@ import { PageService } from '../../core/pages/page.service';
 import { ResolvedPage } from '../../core/page-types/page-type.types';
 import { PreviewService } from '../../services/preview.service';
 import { CustomizerRoot } from '../../customizer-root.component';
+import { DynamicComponentComponent } from '../../components/dynamic/dynamic-component.component';
 import { ProductListPage } from '../product-list/product-list.page';
 
 /**
@@ -34,9 +36,17 @@ import { ProductListPage } from '../product-list/product-list.page';
 @Component({
   selector: 'app-page-host',
   standalone: true,
-  imports: [CommonModule, CustomizerRoot, ProductListPage],
+  imports: [CommonModule, CustomizerRoot, ProductListPage, DynamicComponentComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <!-- Sections saved in the builder render AROUND the page's own output, so a
+         system page (a listing, checkout) can carry a banner or some copy while
+         keeping the core it exists for. A section's slot decides the side;
+         anything without one sits on top, where decoration usually goes. -->
+    @for (section of sectionsBefore(); track section.id) {
+      <app-dynamic-component [component]="section" />
+    }
+
     @switch (renderAs()) {
       @case ('product-list') {
         <app-product-list-page [page]="page()!" />
@@ -45,6 +55,10 @@ import { ProductListPage } from '../product-list/product-list.page';
         <!-- content pages (and anything not yet ported) keep the editor canvas -->
         <app-customizer-root />
       }
+    }
+
+    @for (section of sectionsAfter(); track section.id) {
+      <app-dynamic-component [component]="section" />
     }
   `,
 })
@@ -59,6 +73,22 @@ export class PageHostComponent implements OnInit {
   /** What to mount. Defaults to the canvas so the customizer is never delayed
    *  by a page fetch, then narrows once the row resolves. */
   renderAs = signal<string>('content');
+
+  /**
+   * Builder sections for a NON-content page. A content page's sections are the
+   * whole page and the canvas already renders them, so they'd double up here.
+   */
+  private decorations = computed<any[]>(() => {
+    const page = this.page();
+    if (!page || page.pageType === 'content') return [];
+    return [...(page.sections ?? [])].sort((a, b) => (a?.order ?? 0) - (b?.order ?? 0));
+  });
+
+  sectionsBefore = computed<any[]>(() =>
+    this.decorations().filter(s => (s?.slot ?? 'top') !== 'bottom'));
+
+  sectionsAfter = computed<any[]>(() =>
+    this.decorations().filter(s => s?.slot === 'bottom'));
 
   ngOnInit(): void {
     this.route.paramMap

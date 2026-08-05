@@ -3,6 +3,7 @@ import {
   Component,
   OnInit,
   ViewChild,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -27,12 +28,16 @@ import { WebsitePage, WebsitePagesService } from '../services/website-pages.serv
  * through StorefrontUrlService, so it points at the right storefront on local /
  * LAN / dev / prod and carries the tenant.
  *
- * ONLY DYNAMIC PAGES GET HERE. That distinction is the point of the split the
- * old dashboard made and this screen keeps: a dynamic page (`Page` row) is
- * built from sections in this editor; a static page (`StaticPage` row) is a
- * system page — cart, checkout, a product listing — that carries settings only
- * and has no canvas to arrange. The guard below sends static pages back to
- * their settings form rather than opening an editor that could never apply.
+ * EVERY page type opens here, not just content pages. A system page — a
+ * listing, checkout — keeps the core it exists for, but can be decorated around
+ * it and configured in the same screen: the manifest settings form sits in the
+ * left panel, so a merchant changes a setting and watches the preview instead of
+ * editing a form and guessing.
+ *
+ * What keeps that safe is the manifest: `allowedWidgets` says which blocks a
+ * type accepts (a content page takes everything; a listing takes decoration),
+ * and `coreBlockTitle` puts the page's own output in the section list as a
+ * locked row, so it is visible but not removable.
  */
 @Component({
   selector: 'app-website-page-editor',
@@ -45,7 +50,13 @@ import { WebsitePage, WebsitePagesService } from '../services/website-pages.serv
     } @else {
       <app-customizer
         [pageSlug]="page()?.slug ?? ''"
+        [pageType]="page()?.pageType ?? ''"
+        [pageSettings]="page()?.settings ?? {}"
+        [pageSource]="page()?.source ?? null"
+        [allowedWidgets]="allowedWidgets()"
+        [coreBlockTitle]="coreBlockTitle()"
         [saving]="saving()"
+        (settingsChange)="onSettingsChange($event)"
         (save)="save()"
         (back)="back()"/>
     }
@@ -70,6 +81,28 @@ export class WebsitePageEditorComponent implements OnInit, CanLeaveComponent {
   loading = signal<boolean>(true);
   saving  = signal<boolean>(false);
   page    = signal<WebsitePage | null>(null);
+  /** Settings edited in the panel, pending save. */
+  private settingsDirty = signal<boolean>(false);
+
+  /** Widget rules for this page's type — null while the page loads. */
+  allowedWidgets = computed<string[] | null>(() => {
+    const type = this.page()?.pageType;
+    return type ? (this.registry.typeDef(type)?.allowedWidgets ?? null) : null;
+  });
+
+  coreBlockTitle = computed<string>(() => {
+    const type = this.page()?.pageType;
+    return type ? (this.registry.typeDef(type)?.coreBlockTitle ?? '') : '';
+  });
+
+  /** Settings are edited in the builder panel; keep them on the page so Save
+   *  writes layout AND configuration in one round-trip. */
+  onSettingsChange(settings: Record<string, any>): void {
+    const page = this.page();
+    if (!page) return;
+    this.page.set({ ...page, settings });
+    this.settingsDirty.set(true);
+  }
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
@@ -84,12 +117,6 @@ export class WebsitePageEditorComponent implements OnInit, CanLeaveComponent {
       if (!page) {
         this.toast.error('COMMON.LOAD_FAILED');
         void this.router.navigate(['/page-builder']);
-        return;
-      }
-
-      // Static pages have settings, not a canvas.
-      if (!this.registry.isDynamic(page.pageType)) {
-        void this.router.navigate(['/page-builder', id]);
         return;
       }
 
@@ -112,6 +139,7 @@ export class WebsitePageEditorComponent implements OnInit, CanLeaveComponent {
       const res = await this.service.save({ ...page, sections: snapshot as any });
 
       if (res.success) {
+        this.settingsDirty.set(false);
         this.customizer.markSaved();
         this.editor?.savedOk();
         this.toast.success('WEBSITE.PAGES.SAVED');
@@ -132,6 +160,6 @@ export class WebsitePageEditorComponent implements OnInit, CanLeaveComponent {
   }
 
   hasUnsavedChanges(): boolean {
-    return this.customizer.hasUnsavedChanges() && !this.saving();
+    return (this.customizer.hasUnsavedChanges() || this.settingsDirty()) && !this.saving();
   }
 }

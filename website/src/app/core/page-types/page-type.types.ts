@@ -42,6 +42,15 @@ export interface PageTypeDef {
   multiple:    boolean;
   sources?:    ListingSourceKind[];
   settings:    SettingGroup[];
+
+  /** Widgets a merchant may add around this page. `['*']` = everything (a
+   *  content page is all canvas); a short list = decoration only, because a
+   *  system page has a fixed core; empty/absent = settings only, no canvas. */
+  allowedWidgets?: string[];
+
+  /** Label for the immovable block standing in for the page's own output
+   *  ("Product grid"), so the canvas shows where widgets sit relative to it. */
+  coreBlockTitle?: string;
 }
 
 export interface PageTypeManifest {
