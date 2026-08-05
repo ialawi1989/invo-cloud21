@@ -19,6 +19,7 @@ import { DynamicComponentComponent } from '../../components/dynamic/dynamic-comp
 import { ProductListPage } from '../product-list/product-list.page';
 import { CategoryListPage } from '../category-list/category-list.page';
 import { AccountPage } from '../account/account.page';
+import { BookingPage } from '../booking/booking.page';
 
 /**
  * Renders whatever page lives at this URL, by TYPE.
@@ -38,7 +39,7 @@ import { AccountPage } from '../account/account.page';
 @Component({
   selector: 'app-page-host',
   standalone: true,
-  imports: [CommonModule, CustomizerRoot, ProductListPage, CategoryListPage, AccountPage, DynamicComponentComponent],
+  imports: [CommonModule, CustomizerRoot, ProductListPage, CategoryListPage, AccountPage, BookingPage, DynamicComponentComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .ph-gap { padding: 72px 20px; text-align: center; }
@@ -64,12 +65,15 @@ import { AccountPage } from '../account/account.page';
       @case ('account') {
         <app-account-page [page]="page()!" />
       }
+      @case ('booking') {
+        <app-booking-page [page]="page()!" />
+      }
       @case ('content') {
         <app-customizer-root />
       }
       @default {
         <!-- A type the registry classifies but this app cannot render yet
-             (cart, checkout, booking). Saying so beats an empty
+             (cart, checkout). Saying so beats an empty
              canvas that looks like a page whose content went missing — and it
              keeps any sections the merchant added visible above and below. -->
         <div class="ph-gap">

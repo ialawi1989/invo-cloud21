@@ -180,7 +180,19 @@ export const FALLBACK_MANIFEST: PageTypeManifest = {
       allowedWidgets: ['hero', 'banner', 'text', 'rich-text', 'spacer', 'faq'],
       coreBlockTitle: 'Booking form',
       description: 'Appointments or table reservations.',
-      settings: [{ key: 'page_settings', title: 'Page Settings', fields: [subheader] }],
+      settings: [{
+        key: 'page_settings', title: 'Page Settings',
+        fields: [
+          subheader,
+          {
+            key: 'booking_kind', title: 'What is booked', type: 'select', default: 'table',
+            options: [
+              { title: 'A table',        value: 'table' },
+              { title: 'An appointment', value: 'appointment' },
+            ],
+          },
+        ],
+      }],
     },
   ],
 
