@@ -137,6 +137,33 @@ async function resolveProductSlug(
   }
 }
 
+/**
+ * The one URL that represents this product.
+ *
+ * The request URL is the wrong answer for two reasons. It carries `?from=shop`
+ * or `?from=menu`, which is breadcrumb state, not identity — so the same
+ * product would advertise two different canonicals and split its own ranking.
+ * And it may address the product by UUID, while the canonical form is the slug.
+ *
+ * Falls back to the request URL minus its query string if anything here fails:
+ * a canonical without the breadcrumb param is still strictly better than one
+ * with it.
+ */
+function canonicalProductUrl(referer: string, productName: string, seoSlug?: string): string {
+  const stripQuery = (u: string) => u.split('?')[0].split('#')[0];
+  try {
+    const url = new URL(referer);
+    const parts = url.pathname.split('/').filter(Boolean);
+    const at = parts.indexOf('product');
+    const slug = (seoSlug || slugify(productName) || '').trim();
+    if (at === -1 || at === parts.length - 1 || !slug) return stripQuery(referer);
+    parts[at + 1] = slug;
+    return `${url.origin}/${parts.join('/')}`;
+  } catch {
+    return stripQuery(referer);
+  }
+}
+
 async function getPageData(apiUrl: string, slug: string, visitor?: FetchOptions['visitor']): Promise<Product | null> {
   if (!slug || slug === 'null' || slug === 'undefined') return null;
   return await fetchFromAPI(`${apiUrl}/theme/getPage/${slug}`, { method: 'GET', visitor });
@@ -202,15 +229,18 @@ export async function generateMetaTags(
     const robots = seo.robots
       || (seo.indexable === false ? 'noindex, nofollow' : 'index, follow');
 
+    // Slug form, no breadcrumb query — see canonicalProductUrl.
+    const canonical = canonicalProductUrl(referer, productData.name, seo.urlSlug);
+
     return `
       <title>${esc(title)}</title>
-      <link rel="canonical" href="${esc(referer)}">
+      <link rel="canonical" href="${esc(canonical)}">
       <meta name="description" content="${esc(description)}">
       <meta name="robots" content="${esc(robots)}">
       <meta property="og:title" content="${esc(ogTitle)}">
       <meta property="og:description" content="${esc(ogDescription)}">
       <meta property="og:image" content="${esc(image)}">
-      <meta property="og:url" content="${esc(referer)}">
+      <meta property="og:url" content="${esc(canonical)}">
       <meta property="og:type" content="product">
       <meta name="twitter:card" content="summary_large_image">
       <meta name="twitter:title" content="${esc(xTitle)}">
