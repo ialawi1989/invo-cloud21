@@ -46,6 +46,11 @@
       "REDIRECT_PICK": "اختر صفحة",
       "STATUS_HIDDEN": "مخفية",
       "STATUS_REDIRECT": "تحويل"
+    },
+    "SETTINGS": {
+      "TITLE": "إعدادات الموقع",
+      "SAVED": "تم حفظ إعدادات الموقع",
+      "ELSEWHERE": "إعدادات موجودة في أماكن أخرى"
     }
   }
 }

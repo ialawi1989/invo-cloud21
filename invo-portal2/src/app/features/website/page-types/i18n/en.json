@@ -46,6 +46,11 @@
       "REDIRECT_PICK": "Choose a page",
       "STATUS_HIDDEN": "Hidden",
       "STATUS_REDIRECT": "Redirects"
+    },
+    "SETTINGS": {
+      "TITLE": "Website settings",
+      "SAVED": "Website settings saved",
+      "ELSEWHERE": "Settings that live elsewhere"
     }
   }
 }

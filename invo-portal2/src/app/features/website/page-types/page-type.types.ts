@@ -26,6 +26,9 @@ export interface SettingField {
   options?:   FieldOption[];
   condition?: FieldCondition;
   hint?:      string;
+  /** Names a runtime option list the schema can't know (a tenant's listing
+   *  pages, its branches). The client supplies it. */
+  optionsSource?: string;
   /** A retired option: hidden from the editor, left untouched in storage, and
    *  named with what replaced it. Legacy settings don't have to survive as-is —
    *  their INTENT does, carried across by the migration. */

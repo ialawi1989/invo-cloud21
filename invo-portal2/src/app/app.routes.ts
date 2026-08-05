@@ -259,6 +259,15 @@ export const routes: Routes = [
         canDeactivate: [unsavedChangesGuard],
       },
 
+      // Website settings — schema-driven, same renderer as page settings.
+      // The sidebar has linked /website-settings all along.
+      {
+        path: 'website-settings',
+        loadComponent: () =>
+          import('./features/website/site-config/website-settings.component').then(m => m.WebsiteSettingsComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
+
       // ── Navigation (menus + mobile icon bar) ─────────────────────────────
       {
         path: 'navigation-list',
