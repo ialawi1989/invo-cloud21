@@ -72,7 +72,7 @@ type AccountTab = 'orders' | 'profile';
                   </div>
                   <div class="ac__order-meta">
                     @if (order.createdAt) { <span>{{ order.createdAt | date: 'medium' }}</span> }
-                    @if (order.itemCount) { <span>{{ order.itemCount }} items</span> }
+                    @if (order.serviceName) { <span>{{ order.serviceName }}</span> }
                   </div>
                   <span class="ac__order-total">{{ order.total | number: '1.3-3' }}</span>
                 </li>
@@ -168,7 +168,7 @@ export class AccountPage {
     this.loading.set(true);
     try {
       const [orders, profile] = await Promise.all([this.api.orders(), this.api.profile()]);
-      this.orders.set(orders);
+      this.orders.set(orders.list);
       // Fall back to the cached shopper so the tab isn't blank when the
       // profile call fails — the session already told us who this is.
       this.profile.set(profile ?? {

@@ -28,6 +28,9 @@ export interface ReservationRequest {
 export interface BookingResult {
   ok:   boolean;
   msg?: string;
+  /** `reservationSessionId` — the only identifier the API returns, and what
+   *  `reservation/getReservation/:sessionId` later takes. The row's own id is
+   *  never sent back. */
   ref?: string;
 }
 
@@ -60,11 +63,17 @@ export class BookingApiService {
     });
   }
 
-  /** Branches a customer can book at. */
+  /**
+   * Branches a customer can book at.
+   *
+   * The endpoint is `getBranchList`, and it already filters to branches with a
+   * live subscription and `onlineAvailability = true` — so the list is exactly
+   * the bookable ones, with no client-side filtering needed.
+   */
   async branches(): Promise<BookingBranch[]> {
     try {
       const env = await firstValueFrom(
-        this.http.get<Envelope<any>>(this.url('branch', 'getBranches'), { headers: this.headers() }),
+        this.http.get<Envelope<any>>(this.url('branch', 'getBranchList'), { headers: this.headers() }),
       );
       const list: any[] = Array.isArray(env?.data?.list) ? env.data.list
         : Array.isArray(env?.data) ? env.data : [];
@@ -86,24 +95,27 @@ export class BookingApiService {
       const env = await firstValueFrom(
         this.http.post<Envelope<any>>(
           this.url('reservation', 'saveReservation'),
+          // Exactly the fields on the Reservation model. It parses with a
+          // `key in this` guard, so anything else is silently dropped — adding
+          // aliases would look like belt-and-braces while doing nothing.
           {
-            branchId:      req.branchId,
-            guests:        req.guests,
-            note:          req.note ?? '',
+            branchId: req.branchId,
+            guests:   req.guests,
+            note:     req.note ?? '',
             reservationDate,
-            name:          req.name,
-            phone:         req.phone,
-            customerName:  req.name,
-            customerPhone: req.phone,
-            sessionId:     this.auth.sessionId(),
+            name:     req.name,
+            phone:    req.phone,
           },
           { headers: this.headers(), withCredentials: true },
         ),
       );
 
       if (env?.success === false) return { ok: false, msg: env?.msg };
-      return { ok: true, ref: String(env?.data?.id ?? env?.data?.reference ?? '') };
+      return { ok: true, ref: String(env?.data?.reservationSessionId ?? '') };
     } catch (e: any) {
+      // A signed-in shopper whose phone isn't validated is rejected here, and
+      // the reason only exists in the server's message — dropping it would
+      // leave the form failing with nothing to act on.
       return { ok: false, msg: e?.error?.msg ?? e?.message };
     }
   }

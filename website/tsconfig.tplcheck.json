@@ -1,0 +1,28 @@
+/* Template type-checking only.
+ *
+ * `tsc --noEmit` checks TypeScript but never looks inside a component template,
+ * so a binding to a property that does not exist compiles clean and fails in the
+ * browser. This config runs the Angular compiler over every source file with the
+ * strictest template checks on, and emits nothing.
+ *
+ *   npx ngc -p tsconfig.tplcheck.json
+ */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "angularCompilerOptions": {
+    "strictTemplates": true,
+    "strictInputTypes": true,
+    "strictNullInputTypes": true,
+    "strictAttributeTypes": true,
+    "strictDomLocalRefTypes": true,
+    "strictOutputEventTypes": true,
+    "strictDomEventTypes": true,
+    "strictContextGenerics": true,
+    "strictLiteralTypes": true
+  },
+  "include": ["src/**/*.ts"]
+}

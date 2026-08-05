@@ -1,149 +1,105 @@
-# Angular Live Customizer
+# Invo Cloud — Portal + Storefront
 
-A WordPress Customizer-like live preview system built with Angular. This project demonstrates real-time communication between two separate Angular applications using `postMessage` API.
+Two Angular applications plus the shared page-type contract that keeps them in
+agreement about what a page *is*.
+
+| App | Port | What it is |
+| --- | --- | --- |
+| `invo-portal2/` | 4700 | The admin portal. Contains the page builder, page settings and website settings. |
+| `website/` | 4600 | The public storefront. Angular SSR; also the live-preview target inside the builder. |
+| `dashboard/` | — | **Legacy prototype. Not used, not started, safe to delete.** See below. |
+
+The backend lives outside this repo at `D:\Projects\InvoCloudBack`.
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  Dashboard App (http://localhost:4200)                          │
-│  ┌────────────────────┐    ┌──────────────────────────────────┐ │
-│  │   Controls Panel   │    │  iframe (http://localhost:4300)  │ │
-│  │   - Colors         │───▶│                                  │ │
-│  │   - Typography     │    │   Website Preview                │ │
-│  │   - Layout         │◀───│                                  │ │
-│  │   - Content        │    │   Live updates via postMessage   │ │
-│  └────────────────────┘    └──────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## Features
-
-- ✅ Real-time live preview
-- ✅ Color picker for theme customization
-- ✅ Typography controls (font family, size, weight)
-- ✅ Layout controls (spacing, alignment)
-- ✅ Content editing (site title, tagline, etc.)
-- ✅ Responsive device preview (desktop/tablet/mobile)
-- ✅ Undo/Redo functionality
-- ✅ Save/Reset settings
-- ✅ Import/Export configurations
-
-## Project Structure
-
-```
-angular-customizer/
-├── dashboard/          # Dashboard app (controls + iframe preview)
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/
-│   │   │   │   ├── customizer/
-│   │   │   │   ├── control-panel/
-│   │   │   │   ├── preview-frame/
-│   │   │   │   └── controls/
-│   │   │   ├── services/
-│   │   │   │   ├── customizer.service.ts
-│   │   │   │   └── settings.service.ts
-│   │   │   └── models/
-│   │   │       └── settings.model.ts
-│   │   └── environments/
-│   └── package.json
-│
-├── website/            # Website app (preview target)
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/
-│   │   │   │   ├── header/
-│   │   │   │   ├── hero/
-│   │   │   │   └── footer/
-│   │   │   ├── services/
-│   │   │   │   └── preview.service.ts
-│   │   │   └── models/
-│   │   └── environments/
-│   └── package.json
-│
-└── README.md
+```text
+┌────────────────────────────────────────────────────────────────────┐
+│  Portal — invo-portal2 (http://localhost:4700)                     │
+│                                                                    │
+│  /page-builder/:id/editor      ┌──────────────────────────────────┐│
+│  ┌────────────────────┐        │ iframe → website :4600           ││
+│  │ Control panel      │───────▶│                                  ││
+│  │  · widget library  │        │  live preview of the page        ││
+│  │  · page settings   │◀───────│  (postMessage bridge)            ││
+│  └────────────────────┘        └──────────────────────────────────┘│
+│                                                                    │
+│  /website-settings   site-wide config (General / Commerce / …)     │
+└────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼  shared contract
+                   ┌──────────────────────────────┐
+                   │  page-type manifest          │
+                   │  GET /v1/app/pageTypes       │  (admin scope)
+                   │  bundled fallback in both    │
+                   └──────────────────────────────┘
 ```
 
-## Installation
+### Page types
 
-### Prerequisites
-- Node.js 18+
-- Angular CLI 17+
+Every page row carries a `pageType`, which decides three things at once: which
+widgets the builder offers, which settings the page exposes, and which renderer
+the storefront mounts.
+
+```text
+content · product-list · product-detail · category-list
+system  · cart · checkout · account · booking
+```
+
+The manifest is served to the **portal only** (`/v1/app/pageTypes`,
+`Cache-Control: private`). The storefront never fetches it — it ships a bundled
+fallback (`website/src/app/core/page-types/page-type.fallback.ts`), so a page
+renders even if the admin API is unreachable.
+
+When `pageType` is absent the type is inferred: `templateType` → slug →
+`content`. That inference is why the backfill migration is optional rather than
+a prerequisite.
+
+### Storefront renderers
+
+`website/src/app/features/`:
+
+| Renderer | Status |
+| --- | --- |
+| `page-host` | Dispatches on `pageType`, renders saved sections around the core block |
+| `product-list`, `product`, `category-list` | Working |
+| `account`, `booking`, `cart` | Built; **response mappings unverified** against a live session |
+| checkout | Not started — see the scoped plan in the project notes |
+
+## Running
 
 ```bash
-npm install -g @angular/cli
+./start.sh          # macOS/Linux
+start.bat           # Windows
 ```
 
-### Setup Dashboard App
+Or individually — both bind `0.0.0.0`, so a phone on the same network can reach
+them by LAN IP:
 
 ```bash
-cd dashboard
-npm install
-ng serve --port 4200
+cd invo-portal2 && npm start     # :4700
+cd website      && npm start     # :4600
 ```
 
-### Setup Website App
+## Verifying changes
+
+Do **not** run `ng build` to check your work; it is slow and proves less than:
 
 ```bash
-cd website
-npm install
-ng serve --port 4300
+npx tsc --noEmit                            # types
+npx ngc -p tsconfig.tplcheck.json           # templates, strict mode
 ```
 
-## Usage
+## Legacy: `dashboard/`
 
-1. Open Dashboard at `http://localhost:4200`
-2. The website preview loads automatically in the iframe
-3. Use the controls on the left panel to customize:
-   - **Colors**: Header, background, text, accent colors
-   - **Typography**: Font family, sizes, weights
-   - **Layout**: Spacing, container width
-   - **Content**: Site title, tagline, button text
-4. Changes appear instantly in the preview
-5. Click "Save" to persist changes or "Reset" to restore defaults
+A standalone customizer prototype that predates the portal. Its builder —
+customizer shell, control panel, preview frame, theme manager, navigation
+builder — was moved into `invo-portal2/src/app/features/website/page-builder/`
+and rewired to real page data and the shared page-type manifest.
 
-## Communication Flow
+Nothing references it: not the start scripts, not either app's build. Removing
+it is a one-liner and needs no other edit.
 
-1. **Dashboard → Website**: Settings changes via `postMessage`
-2. **Website → Dashboard**: Ready signal, click events, etc.
-
-```typescript
-// Dashboard sends
-window.postMessage({
-  type: 'setting-change',
-  key: 'headerColor',
-  value: '#ff0000'
-}, targetOrigin);
-
-// Website receives and applies
-window.addEventListener('message', (event) => {
-  if (event.data.type === 'setting-change') {
-    applyChange(event.data.key, event.data.value);
-  }
-});
+```bash
+rm -rf dashboard
 ```
-
-## Configuration
-
-### Changing Origins
-
-Edit the environment files to change the allowed origins:
-
-**Dashboard** (`dashboard/src/environments/environment.ts`):
-```typescript
-export const environment = {
-  websiteUrl: 'http://localhost:4300'
-};
-```
-
-**Website** (`website/src/environments/environment.ts`):
-```typescript
-export const environment = {
-  dashboardUrl: 'http://localhost:4200'
-};
-```
-
-## License
-
-MIT

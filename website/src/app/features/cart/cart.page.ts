@@ -53,6 +53,9 @@ import { CartApiService, CartLine } from './cart.api';
 
               <div class="ct__info">
                 <span class="ct__name">{{ line.name }}</span>
+                @for (sub of line.subItems; track sub.id) {
+                  <span class="ct__sub">{{ sub.qty }}× {{ sub.name }}</span>
+                }
                 @if (line.note) { <span class="ct__note">{{ line.note }}</span> }
                 <span class="ct__unit">{{ line.unitPrice | number: '1.3-3' }} each</span>
               </div>
@@ -103,6 +106,7 @@ import { CartApiService, CartLine } from './cart.api';
     .ct__thumb { width: 64px; height: 64px; border-radius: 10px; background: #f3f4f6 center/cover no-repeat; }
     .ct__info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
     .ct__name { font-weight: 600; color: #111827; }
+    .ct__sub { font-size: 12.5px; color: #6b7280; padding-inline-start: 10px; }
     .ct__note { font-size: 12px; color: #9ca3af; }
     .ct__unit { font-size: 12.5px; color: #6b7280; }
 

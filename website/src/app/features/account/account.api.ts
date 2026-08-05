@@ -8,13 +8,15 @@ import { ShopperAuthService } from '../blog/services/shopper-auth.service';
 
 interface Envelope<T> { success: boolean; msg: string; data: T; }
 
+/** Exactly the columns `getShopperOrdersHistory` selects — nothing more is
+ *  available without a second call to `shopper/order/:orderId`. */
 export interface AccountOrder {
-  id:        string;
-  reference: string;
-  status:    string;
-  total:     number;
-  createdAt: string;
-  itemCount: number;
+  id:          string;
+  reference:   string;
+  status:      string;
+  total:       number;
+  createdAt:   string;
+  serviceName: string;
 }
 
 export interface AccountProfile {
@@ -62,32 +64,46 @@ export class AccountApiService {
     }
   }
 
-  /** Past orders for the signed-in shopper. */
-  async orders(page = 1, limit = 20): Promise<AccountOrder[]> {
-    const data = await this.post<any>('orderHistory', {
-      page, limit, sessionId: this.auth.sessionId(),
-    });
-    const list: any[] = Array.isArray(data?.list) ? data.list : (Array.isArray(data) ? data : []);
-    return list.map(o => ({
-      id:        String(o?.id ?? ''),
-      // The backend has used several names for the human-facing number over
-      // time; take whichever is present rather than showing a blank row.
-      reference: String(o?.reference ?? o?.invoiceNumber ?? o?.orderNumber ?? o?.id ?? ''),
-      status:    String(o?.status ?? o?.orderStatus ?? ''),
-      total:     Number(o?.total ?? o?.grandTotal ?? 0),
-      createdAt: String(o?.createdAt ?? o?.date ?? ''),
-      itemCount: Number(o?.itemCount ?? o?.items?.length ?? 0),
-    }));
+  /**
+   * Past orders for the signed-in shopper.
+   *
+   * Answers `{hasNext, list}`. The shopper is identified from the session on
+   * the server side, so `sessionId` in the body is ignored — it is the
+   * `session-id` header that matters.
+   *
+   * Note the server's own paging quirk: it fetches `limit + 1` rows to decide
+   * `hasNext` and slices back down, so `list.length` is the real page size.
+   */
+  async orders(page = 1, limit = 20): Promise<{ list: AccountOrder[]; hasNext: boolean }> {
+    const data = await this.post<any>('orderHistory', { page, limit });
+    const rows: any[] = Array.isArray(data?.list) ? data.list : [];
+    return {
+      hasNext: !!data?.hasNext,
+      list: rows.map(o => ({
+        id:          String(o?.id ?? ''),
+        reference:   String(o?.invoiceNumber ?? o?.id ?? ''),
+        // Selected as `onlineData->>'onlineStatus'`, so it can legitimately be null.
+        status:      String(o?.status ?? ''),
+        total:       Number(o?.total ?? 0),
+        createdAt:   String(o?.createdAt ?? ''),
+        serviceName: String(o?.serviceName ?? ''),
+      })),
+    };
   }
 
-  /** Profile of the signed-in shopper, refreshed from the server. */
+  /**
+   * Profile of the signed-in shopper.
+   *
+   * Returns the Shopper record, whose phone field is `phone` — there is no
+   * `mobile` or `phoneNumber` on it.
+   */
   async profile(): Promise<AccountProfile | null> {
-    const data = await this.post<any>('getLoggedInUser', { sessionId: this.auth.sessionId() });
+    const data = await this.post<any>('getLoggedInUser', {});
     if (!data) return null;
     return {
-      name:   String(data?.name ?? data?.fullName ?? ''),
+      name:   String(data?.name ?? ''),
       email:  String(data?.email ?? ''),
-      mobile: String(data?.mobile ?? data?.phoneNumber ?? ''),
+      mobile: String(data?.phone ?? ''),
     };
   }
 }

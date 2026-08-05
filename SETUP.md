@@ -1,230 +1,122 @@
 # Setup Guide
 
-This guide will help you set up and run the Angular Customizer project.
+How to get the portal, the storefront and the backend running together.
 
 ## Prerequisites
 
-Before you begin, make sure you have the following installed:
+- **Node.js** v18+ — [download](https://nodejs.org/)
+- **Angular CLI** v17+ — `npm install -g @angular/cli`
+- The backend checkout at `D:\Projects\InvoCloudBack` (Express + Postgres)
 
-- **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
-- **npm** (comes with Node.js)
-- **Angular CLI** (v17 or higher)
+## Quick start
 
-Install Angular CLI globally:
 ```bash
-npm install -g @angular/cli
+./start.sh      # macOS/Linux
+start.bat       # Windows
 ```
 
-## Quick Start
+Installs missing dependencies and starts both apps. Or run them separately:
 
-### Option 1: Using the Start Script
-
-**Linux/macOS:**
 ```bash
-chmod +x start.sh
-./start.sh
+cd invo-portal2 && npm start     # portal     → http://localhost:4700
+cd website      && npm start     # storefront → http://localhost:4600
 ```
 
-**Windows:**
-```cmd
-start.bat
-```
+Both bind `0.0.0.0`, so `http://<your-lan-ip>:4600` works from a phone on the
+same network. If a device gets `ERR_CONNECTION_REFUSED`, the server was started
+without `--host 0.0.0.0` — that is a flag problem, not an app problem.
 
-### Option 2: Manual Setup
+The backend runs separately on `:3001`.
 
-1. **Install Dashboard dependencies:**
+## Backend wiring
+
+Four routers need mounting for the page-type work to answer:
+
+| Router | Scope | Path |
+| --- | --- | --- |
+| `pageTypes.routes` | `/v1/app` (admin) | `src/modules/website/pageTypes/` |
+| `siteConfigSchema` | `/v1/app` (admin) | `src/modules/website/siteConfig/` |
+| `listing.routes` | tenant | `src/modules/website/listing/` |
+| `siteConfig.routes` | tenant | `src/modules/website/siteConfig/` |
+
+The manifest and the schema are **admin-scoped on purpose** — they describe the
+authoring surface, not the storefront, and are served `Cache-Control: private`.
+The storefront ships a bundled fallback and never fetches them.
+
+### Migrations
+
+Run in this order; the second assumes the first:
+
 ```bash
-cd dashboard
-npm install
+cd D:\Projects\InvoCloudBack
+npm run migrate up
 ```
 
-2. **Install Website dependencies:**
-```bash
-cd ../website
-npm install
-```
+1. `1783800000000_website_page_type_backfill` — writes `pageType`/`source` into
+   existing rows and adds two indexes.
+2. `1783900000000_website_option_relocations` — copies relocated options to
+   their new home.
 
-3. **Start the Dashboard (Terminal 1):**
-```bash
-cd dashboard
-ng serve --port 4200
-```
-
-4. **Start the Website (Terminal 2):**
-```bash
-cd website
-ng serve --port 4300
-```
-
-5. **Open the Dashboard:**
-Navigate to `http://localhost:4200` in your browser.
-
-## Project Structure
-
-```
-angular-customizer/
-├── dashboard/                 # Dashboard Application
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/
-│   │   │   │   ├── customizer/      # Main customizer container
-│   │   │   │   ├── control-panel/   # Settings panels
-│   │   │   │   └── preview-frame/   # Iframe preview
-│   │   │   ├── services/
-│   │   │   │   └── customizer.service.ts
-│   │   │   └── models/
-│   │   │       └── settings.model.ts
-│   │   └── environments/
-│   ├── package.json
-│   └── angular.json
-│
-├── website/                   # Website Application
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/
-│   │   │   │   ├── header/
-│   │   │   │   ├── hero/
-│   │   │   │   ├── features/
-│   │   │   │   └── footer/
-│   │   │   ├── services/
-│   │   │   │   └── preview.service.ts
-│   │   │   └── models/
-│   │   └── environments/
-│   ├── package.json
-│   └── angular.json
-│
-├── README.md
-├── SETUP.md
-├── start.sh
-└── start.bat
-```
+Both are additive and idempotent. They **copy, never move**: the legacy key
+stays where it was, and every reader falls back to it when the new key is
+absent. That is what lets an unmigrated site keep behaving exactly as before —
+running them is an optimisation, not a prerequisite, and rolling back breaks
+nothing.
 
 ## Configuration
 
-### Changing Ports
+### Ports
 
-**Dashboard (default: 4200):**
-Edit `dashboard/package.json`:
-```json
-"start": "ng serve --port YOUR_PORT"
+Edit the `start` script in each app's `package.json`.
+
+### Origins
+
+The portal derives the storefront origin from the page host in development
+(`website/src/environments/environment.ts` → `devDashboardOrigin()`), so LAN IPs
+and `localhost` both work without editing a file. For production, set the
+explicit origins in each app's `environment.prod.ts`.
+
+## Verifying changes
+
+```bash
+npx tsc --noEmit                     # types
+npx ngc -p tsconfig.tplcheck.json    # templates, strict mode
 ```
 
-**Website (default: 4300):**
-Edit `website/package.json`:
-```json
-"start": "ng serve --port YOUR_PORT"
-```
+`ng build` is slower and proves less; skip it.
 
-### Changing Origins (for Production)
+## Builder ↔ preview bridge
 
-**Dashboard** - Edit `dashboard/src/environments/environment.ts`:
-```typescript
-export const environment = {
-  production: false,
-  websiteUrl: 'https://your-website-domain.com'
-};
-```
+The builder loads the storefront in an iframe with `?customize=true`.
 
-**Website** - Edit `website/src/environments/environment.ts`:
-```typescript
-export const environment = {
-  production: false,
-  dashboardUrl: 'https://your-dashboard-domain.com'
-};
-```
-
-## How It Works
-
-### Communication Flow
-
-1. **Dashboard loads Website in iframe** with `?customize=true` query parameter
-2. **Website detects customize mode** and initializes the PreviewService
-3. **Website sends "ready" message** to Dashboard via `postMessage`
-4. **Dashboard syncs all settings** to Website
-5. **User changes a setting** → Dashboard sends change via `postMessage`
-6. **Website receives and applies** the change in real-time
-
-### Message Types
-
-| Type | Direction | Description |
-|------|-----------|-------------|
-| `preview-ready` | Website → Dashboard | Website is loaded and ready |
-| `setting-change` | Dashboard → Website | Single setting changed |
-| `sync-all` | Dashboard → Website | All settings updated |
-| `reset` | Dashboard → Website | Reset to defaults |
-| `element-click` | Website → Dashboard | Element selected in preview |
-
-## Adding New Settings
-
-### 1. Add to Settings Model
-
-Edit both `dashboard/src/app/models/settings.model.ts` and `website/src/app/models/settings.model.ts`:
-
-```typescript
-export interface CustomizerSettings {
-  // ... existing settings
-  myNewSetting: string;
-}
-
-export const DEFAULT_SETTINGS: CustomizerSettings = {
-  // ... existing defaults
-  myNewSetting: 'default value'
-};
-```
-
-### 2. Add Control in Dashboard
-
-Edit `dashboard/src/app/components/control-panel/control-panel.component.ts`:
-
-```typescript
-<div class="control-group">
-  <label>My New Setting</label>
-  <input type="text" 
-         [value]="settings().myNewSetting"
-         (input)="onTextChange('myNewSetting', $event)">
-</div>
-```
-
-### 3. Add Handler in Website
-
-Edit `website/src/app/services/preview.service.ts`:
-
-```typescript
-this.registerHandler('myNewSetting', (value) => {
-  // Apply the setting (e.g., update CSS variable or DOM)
-  document.documentElement.style.setProperty('--my-setting', value);
-});
-```
+| Message | Direction | Meaning |
+| --- | --- | --- |
+| `preview-ready` | storefront → portal | iframe mounted |
+| `page-data` | portal → storefront | full page document |
+| `sync-all` | portal → storefront | all settings |
+| `scroll-to-component` | portal → storefront | reveal a section |
+| `reset` | portal → storefront | discard local changes |
 
 ## Troubleshooting
 
-### "Preview not loading"
-- Ensure both apps are running on the correct ports
-- Check browser console for CORS errors
-- Verify environment URLs match actual running ports
+**Preview blank.** Check the console first. A 200 with an empty body usually
+means a missing trailing slash on a path-prefixed URL, not a crash.
 
-### "Changes not applying"
-- Open browser DevTools → Console to check for errors
-- Verify the setting handler is registered in PreviewService
-- Check that CSS variables are being applied correctly
+**`pageTypes` 404.** The router is not mounted — see *Backend wiring*.
 
-### "postMessage not working"
-- Verify origins match in both environment files
-- Check that the Website loads with `?customize=true` parameter
-- Look for security errors in browser console
+**A page renders as the gap state.** Its `pageType` resolved to something with
+no renderer. Checkout is the only remaining one; anything else means the
+inference chain (`pageType` → `templateType` → slug → `content`) picked a value
+you did not expect. Check `template.templateType` before assuming the slug.
 
-## Building for Production
+**Settings changed in the portal do not show.** Confirm which key the storefront
+reads. During the relocation window a value can exist under both the legacy and
+the new key, and the new key wins.
 
-**Dashboard:**
+## Legacy `dashboard/`
+
+Unused prototype; its builder now lives in the portal. Nothing references it.
+
 ```bash
-cd dashboard
-ng build --configuration production
+rm -rf dashboard
 ```
-
-**Website:**
-```bash
-cd website
-ng build --configuration production
-```
-
-Deploy the `dist/` folders to your respective servers, ensuring CORS and origin configurations are updated for production URLs.

@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -9,8 +10,9 @@ import { ShopperAuthService } from '../blog/services/shopper-auth.service';
 interface Envelope<T> { success: boolean; msg: string; data: T; }
 
 export interface CartLine {
-  /** Line id — what add/remove/qty calls address, NOT the product id: the same
-   *  product can appear twice with different options. */
+  /** `InvoiceLine.id`. This is what the cart endpoints call `transactionId`,
+   *  and it is NOT the product id: the same product can appear on several
+   *  lines with different options. */
   id:        string;
   productId: string;
   name:      string;
@@ -19,6 +21,8 @@ export interface CartLine {
   total:     number;
   imageUrl:  string;
   note:      string;
+  /** Package / menu-selection children, shown indented under the parent. */
+  subItems:  { id: string; name: string; qty: number }[];
 }
 
 export interface CartState {
@@ -54,6 +58,7 @@ export class CartApiService {
   private http   = inject(HttpClient);
   private tenant = inject(TenantService);
   private auth   = inject(ShopperAuthService);
+  private router = inject(Router);
 
   private _state = signal<CartState>(EMPTY);
   state = this._state.asReadonly();
@@ -99,12 +104,16 @@ export class CartApiService {
     }
   }
 
+  /**
+   * The API names the line id `transactionId`, and its validator requires it to
+   * be a UUID — sending `itemId` fails validation before the cart is ever read.
+   */
   async changeQty(lineId: string, qty: number): Promise<CartState> {
-    return this.mutate('changeItemQty', { sessionId: this.sessionId(), itemId: lineId, qty });
+    return this.mutate('changeItemQty', { sessionId: this.sessionId(), transactionId: lineId, qty });
   }
 
   async remove(lineId: string): Promise<CartState> {
-    return this.mutate('removeItem', { sessionId: this.sessionId(), itemId: lineId });
+    return this.mutate('removeItem', { sessionId: this.sessionId(), transactionId: lineId });
   }
 
   async clear(): Promise<CartState> {
@@ -119,9 +128,10 @@ export class CartApiService {
           withCredentials: true,
         }),
       );
-      // Some cart actions answer with the cart, others with just a flag; re-read
-      // when we can't tell, so the screen never shows a stale total.
-      if (env?.data?.items || env?.data?.lines) {
+      // Every cart action answers with the whole Invoice, but a validation
+      // failure answers with something else entirely — re-read rather than
+      // leave a stale total on screen.
+      if (Array.isArray(env?.data?.lines)) {
         const state = this.normalise(env.data, this.sessionId());
         this._state.set(state);
         return state;
@@ -132,40 +142,61 @@ export class CartApiService {
     }
   }
 
+  /** Translated product name, falling back to the untranslated one. */
+  private lineName(r: any): string {
+    const lang = this.lang();
+    return String(r?.translation?.name?.[lang] || r?.productName || '');
+  }
+
+  private lang(): string {
+    const first = this.router.url.split('?')[0].split('/').filter(Boolean)[0] ?? '';
+    return first && first.length <= 5 ? first : 'en';
+  }
+
   /**
    * Wire shape → what the page renders.
    *
-   * The backend has carried several names for these over time (`items` vs
-   * `lines`, `qty` vs `quantity`, `total` vs `grandTotal`), so each is read
-   * defensively — a cart that renders a blank row or a zero total is worse than
-   * one that guesses the right field.
+   * The cart IS an `Invoice` (src/models/account/Invoice.ts): items live on
+   * `lines` as `InvoiceLine`, and the totals carry accounting names —
+   * `invoiceTaxTotal`, `deliveryCharge`, `discountTotal` — not the generic ones
+   * a cart API would suggest. These are read straight rather than defensively:
+   * a guessed alias that silently yields 0 hides a broken total, and the model
+   * is right here to check against.
    */
   private normalise(raw: any, sessionId: string): CartState {
     const src = raw ?? {};
-    const rows: any[] = Array.isArray(src.items) ? src.items
-      : Array.isArray(src.lines) ? src.lines
-      : Array.isArray(src.invoiceItems) ? src.invoiceItems : [];
+    const rows: any[] = Array.isArray(src.lines) ? src.lines : [];
 
-    const lines: CartLine[] = rows.map(r => ({
-      id:        String(r?.id ?? r?.itemId ?? ''),
-      productId: String(r?.productId ?? r?.product?.id ?? ''),
-      name:      String(r?.name ?? r?.productName ?? r?.product?.name ?? ''),
-      qty:       Number(r?.qty ?? r?.quantity ?? 1),
-      unitPrice: Number(r?.price ?? r?.unitPrice ?? 0),
-      total:     Number(r?.total ?? r?.lineTotal ?? (Number(r?.qty ?? 1) * Number(r?.price ?? 0))),
-      imageUrl:  String(r?.mediaUrl?.defaultUrl ?? r?.mediaUrl ?? r?.image ?? ''),
-      note:      String(r?.note ?? ''),
-    }));
+    const lines: CartLine[] = rows
+      // Package/menu children are attached to their parent below, and voided
+      // lines are history rather than something the shopper still pays for.
+      .filter(r => !r?.parentId && !r?.isVoided)
+      .map(r => ({
+        id:        String(r?.id ?? ''),
+        productId: String(r?.productId ?? ''),
+        name:      this.lineName(r),
+        qty:       Number(r?.qty ?? 0),
+        unitPrice: Number(r?.price ?? 0),
+        total:     Number(r?.total ?? 0),
+        imageUrl:  String(r?.mediaUrl ?? ''),
+        note:      String(r?.note ?? ''),
+        subItems:  (Array.isArray(r?.subItems) ? r.subItems : []).map((s: any) => ({
+          id:   String(s?.id ?? ''),
+          name: this.lineName(s),
+          qty:  Number(s?.qty ?? 0),
+        })),
+      }));
 
     return {
-      sessionId: String(src.sessionId ?? sessionId),
+      sessionId: String(sessionId),
       lines,
-      subTotal:  Number(src.subTotal ?? src.subtotal ?? 0),
-      tax:       Number(src.tax ?? src.taxAmount ?? 0),
-      delivery:  Number(src.deliveryCharge ?? src.delivery ?? 0),
-      discount:  Number(src.discount ?? src.discountAmount ?? 0),
-      total:     Number(src.total ?? src.grandTotal ?? 0),
-      currency:  String(src.currency ?? ''),
+      subTotal:  Number(src.subTotal ?? 0),
+      tax:       Number(src.invoiceTaxTotal ?? 0),
+      delivery:  Number(src.deliveryCharge ?? 0),
+      discount:  Number(src.discountTotal ?? 0),
+      total:     Number(src.total ?? 0),
+      // The Invoice carries no currency; the storefront formats with the site's.
+      currency:  '',
     };
   }
 }
