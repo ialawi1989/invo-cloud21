@@ -106,9 +106,9 @@ export class WebsitePagesListComponent implements OnInit {
     this.searchConfig.placeholder = t('WEBSITE.PAGES.SEARCH');
     this.emptyState = { title: t('WEBSITE.PAGES.EMPTY'), message: '' };
 
-    // Dynamic vs Static, as the old page list separated them: a dynamic page is
-    // built from sections in the editor; a static one is a system page (menu,
-    // checkout, cart…) that only carries settings.
+    // Dynamic vs Static, as the old page list separated them — but derived
+    // from the page TYPE rather than a separate flag: `content` is the type
+    // with a canvas, every other type is a system page configured by settings.
     this.filters = [{
       key: 'kind',
       label: t('WEBSITE.PAGES.KIND'),
@@ -133,7 +133,7 @@ export class WebsitePagesListComponent implements OnInit {
     const kind = String(params.filter?.['kind'] ?? 'all');
     let rows = kind === 'all'
       ? all
-      : all.filter(p => (kind === 'static' ? p.rowType === 'StaticPage' : p.rowType === 'Page'));
+      : all.filter(p => (kind === 'dynamic') === this.registry.isDynamic(p.pageType));
 
     const term = (params.searchTerm || '').trim().toLowerCase();
     if (term) {
@@ -176,7 +176,7 @@ export class WebsitePagesListComponent implements OnInit {
     ];
     // Only a dynamic page has a canvas to arrange. A static page is a system
     // page (cart, checkout, a listing) whose look comes from settings.
-    if (page.rowType === 'Page' && page.id) {
+    if (this.registry.isDynamic(page.pageType) && page.id) {
       items.push({ label: 'WEBSITE.PAGES.EDIT_CONTENT', click: () => void this.router.navigate(['/page-builder', page.id, 'editor']) });
     }
     // Only a content page makes sense as a home page — a checkout or a listing

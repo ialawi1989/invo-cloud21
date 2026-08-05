@@ -50,6 +50,11 @@ export const FALLBACK_MANIFEST: PageTypeManifest = {
       }],
     },
     { id: 'category-list', title: 'Categories', description: '', multiple: true, settings: [] },
+    {
+      id: 'system', title: 'System page', multiple: false,
+      description: 'A built-in storefront page configured through settings.',
+      settings: [],
+    },
     { id: 'cart',     title: 'Cart',     description: '', multiple: false, settings: [] },
     { id: 'checkout', title: 'Checkout', description: '', multiple: false, settings: [] },
     { id: 'account',  title: 'Account',  description: '', multiple: true,  settings: [] },
@@ -72,6 +77,19 @@ export const FALLBACK_MANIFEST: PageTypeManifest = {
     products:    { kind: 'catalog' },
     collections: { kind: 'collection' },
     search:      { kind: 'search' },
+  },
+
+  legacyTemplateTypes: {
+    menu: 'product-list', shop: 'product-list', collection: 'product-list',
+    'view-product': 'product-detail',
+    appointment: 'booking', 'table-reservation': 'booking',
+    blog: 'content', custom: 'content',
+  },
+
+  legacyTemplateSources: {
+    menu:       { kind: 'menu', serviceFlow: true },
+    shop:       { kind: 'catalog' },
+    collection: { kind: 'collection' },
   },
 
   companySeeds: {},

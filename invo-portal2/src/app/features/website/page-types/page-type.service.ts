@@ -86,6 +86,31 @@ export class PageTypeService {
     return out;
   }
 
+  /**
+   * `template.templateType` → page type. This is the field the OLD dashboard
+   * recorded the page kind in, and it outranks the slug: a merchant can rename
+   * a URL, but the template type stays. Returns '' when unknown so callers can
+   * fall through to the slug.
+   */
+  pageTypeForTemplateType(templateType: string): string {
+    if (!templateType) return '';
+    return this.manifestSig().legacyTemplateTypes?.[templateType] ?? '';
+  }
+
+  sourceForTemplateType(templateType: string): ListingSource | null {
+    if (!templateType) return null;
+    return this.manifestSig().legacyTemplateSources?.[templateType] ?? null;
+  }
+
+  /**
+   * Dynamic pages are the ones with a canvas — that is exactly `content`.
+   * Every other type is a system page configured through settings, so the old
+   * `isStatic` flag is redundant once a page carries its type.
+   */
+  isDynamic(pageType: string): boolean {
+    return pageType === 'content';
+  }
+
   /** Legacy slug → page type, for rows saved before `pageType` existed. */
   pageTypeForSlug(slug: string): string {
     return this.manifestSig().legacySlugs?.[slug] ?? 'content';

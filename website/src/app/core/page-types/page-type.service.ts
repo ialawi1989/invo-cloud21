@@ -47,17 +47,37 @@ export class PageTypeService {
     return this.manifestSig().pageTypes.find(t => t.id === id) ?? null;
   }
 
-  /** `template.pageType` → legacy slug map → 'content'. */
+  /**
+   * Page kind, strongest signal first:
+   *   `template.pageType` → `template.templateType` → legacy slug → 'content'.
+   *
+   * `templateType` is the field the old dashboard stored the kind in and it
+   * outranks the slug, which a merchant can rename.
+   */
   pageTypeFor(slug: string, template: any): string {
     const explicit = String(template?.pageType ?? '').trim();
     if (explicit) return explicit;
+
+    const templateType = String(template?.templateType ?? '').trim();
+    const fromTemplate = templateType
+      ? this.manifestSig().legacyTemplateTypes?.[templateType]
+      : '';
+    if (fromTemplate) return fromTemplate;
+
     return this.manifestSig().legacySlugs[slug] ?? 'content';
   }
 
-  /** `template.source` → legacy slug map → null. */
+  /** `template.source` → templateType map → legacy slug map → null. */
   sourceFor(slug: string, template: any): ListingSource | null {
     const explicit = template?.source;
     if (explicit?.kind) return explicit as ListingSource;
+
+    const templateType = String(template?.templateType ?? '').trim();
+    const fromTemplate = templateType
+      ? this.manifestSig().legacyTemplateSources?.[templateType]
+      : null;
+    if (fromTemplate) return fromTemplate;
+
     return this.manifestSig().legacySources[slug] ?? null;
   }
 

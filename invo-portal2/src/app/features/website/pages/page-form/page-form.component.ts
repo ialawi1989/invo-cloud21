@@ -208,8 +208,10 @@ export class WebsitePageFormComponent implements OnInit, CanLeaveComponent {
 
   canSave = computed<boolean>(() => !!this.page().name.trim() && !!this.page().slug.trim());
 
-  /** Saved dynamic pages only — a builder needs a row to write sections into. */
-  canOpenBuilder = computed<boolean>(() => !!this.page().id && this.page().rowType === 'Page');
+  /** Saved dynamic pages only — a builder needs a row to write sections into,
+   *  and only `content` has a canvas. */
+  canOpenBuilder = computed<boolean>(() =>
+    !!this.page().id && this.registry.isDynamic(this.page().pageType));
 
   openBuilder(): void {
     const id = this.page().id;
@@ -253,6 +255,9 @@ export class WebsitePageFormComponent implements OnInit, CanLeaveComponent {
       pageType,
       source,
       settings: this.registry.withDefaults(pageType, {}),
+      // The row type follows the page type — only a content page is
+      // editor-built, and the storefront reads that distinction.
+      rowType: pageType === 'content' ? 'Page' : 'StaticPage',
     });
   }
 

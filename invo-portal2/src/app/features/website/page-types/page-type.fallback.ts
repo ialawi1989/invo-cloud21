@@ -151,6 +151,11 @@ export const FALLBACK_MANIFEST: PageTypeManifest = {
       }],
     },
     {
+      id: 'system', title: 'System page', multiple: false,
+      description: 'A built-in storefront page configured through settings.',
+      settings: [{ key: 'page_settings', title: 'Page Settings', fields: [subheader] }],
+    },
+    {
       id: 'account', title: 'Account', multiple: true,
       description: 'Orders, reservations and profile.',
       settings: [{ key: 'page_settings', title: 'Page Settings', fields: [subheader] }],
@@ -178,6 +183,19 @@ export const FALLBACK_MANIFEST: PageTypeManifest = {
     products:    { kind: 'catalog' },
     collections: { kind: 'collection' },
     search:      { kind: 'search' },
+  },
+
+  legacyTemplateTypes: {
+    menu: 'product-list', shop: 'product-list', collection: 'product-list',
+    'view-product': 'product-detail',
+    appointment: 'booking', 'table-reservation': 'booking',
+    blog: 'content', custom: 'content',
+  },
+
+  legacyTemplateSources: {
+    menu:       { kind: 'menu', serviceFlow: true },
+    shop:       { kind: 'catalog' },
+    collection: { kind: 'collection' },
   },
 
   companySeeds: {},

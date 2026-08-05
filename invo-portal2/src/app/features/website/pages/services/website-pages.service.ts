@@ -9,8 +9,16 @@ export interface WebsitePage {
   id:         string | null;
   name:       string;
   slug:       string;
-  /** `template.pageType` — inferred from the slug for rows saved before the
-   *  registry existed, so nothing has to be migrated first. */
+  /**
+   * `template.pageType` — inferred from `templateType` / slug for rows saved
+   * before the registry existed, so nothing has to be migrated first.
+   *
+   * This alone says whether a page is dynamic: `content` has a canvas,
+   * everything else is a system page configured through settings. The legacy
+   * `isStatic` flag is therefore redundant — it is still WRITTEN on save so the
+   * old dashboard and storefront keep reading pages correctly, but nothing here
+   * reads it.
+   */
   pageType:   string;
   source:     ListingSource | null;
   settings:   Record<string, any>;
@@ -98,27 +106,60 @@ export class WebsitePagesService {
 
   // ── Mapping ────────────────────────────────────────────────────────────
   /**
-   * Row → typed page. `pageType` and `source` fall back to the registry's
-   * legacy slug maps, which is what lets an untouched database work with the
-   * new UI on day one.
+   * Row → typed page.
+   *
+   * Resolution order for the page KIND, strongest signal first:
+   *   1. `template.pageType`     — set by this UI / the backfill
+   *   2. `template.templateType` — the OLD dashboard's own field for the kind
+   *      (`menu | shop | collection | view-product | appointment |
+   *      table-reservation | custom`). More reliable than the slug: a merchant
+   *      can rename a URL, but the template type stays.
+   *   3. legacy slug map
+   *   4. `content`
+   *
+   * Reading only the slug is what made every existing page show up as a
+   * content page — legacy rows carry the kind in `templateType`.
    */
   private fromRow(row: any, rowType: 'Page' | 'StaticPage'): WebsitePage {
-    const template = row?.template ?? {};
-    const slug     = String(template.slug ?? '');
-    const pageType = String(template.pageType ?? '') || this.registry.pageTypeForSlug(slug);
-    const source   = (template.source?.kind ? template.source : this.registry.sourceForSlug(slug)) ?? null;
+    const template = this.parseTemplate(row?.template);
+
+    const slug = String(template['slug'] ?? row?.slug ?? '');
+    const templateType = String(template['templateType'] ?? '');
+
+    const pageType =
+      String(template['pageType'] ?? '') ||
+      this.registry.pageTypeForTemplateType(templateType) ||
+      this.registry.pageTypeForSlug(slug);
+
+    const source =
+      (template['source']?.kind ? template['source'] : null) ??
+      this.registry.sourceForTemplateType(templateType) ??
+      this.registry.sourceForSlug(slug);
 
     return {
       id:         row?.id ?? null,
-      name:       String(row?.name ?? template.pageName ?? ''),
+      name:       String(row?.name ?? template['pageName'] ?? template['name'] ?? ''),
       slug,
       pageType,
       source:     pageType === 'product-list' ? source : null,
-      settings:   template.settings ?? {},
-      sections:   Array.isArray(template.sections) ? template.sections : [],
-      isHomePage: !!row?.isHomePage || !!template.isHomePage,
+      settings:   template['settings'] ?? {},
+      sections:   Array.isArray(template['sections']) ? template['sections'] : [],
+      isHomePage: !!row?.isHomePage || !!template['isHomePage'],
       rowType,
     };
+  }
+
+  /**
+   * `template` comes back as an object from jsonb — but some endpoints hand it
+   * over as a JSON string. Reading `.slug` off a string yields undefined, which
+   * silently emptied every URL and defaulted every page to `content`.
+   */
+  private parseTemplate(template: any): Record<string, any> {
+    if (!template) return {};
+    if (typeof template === 'string') {
+      try { return JSON.parse(template) ?? {}; } catch { return {}; }
+    }
+    return template;
   }
 
   /**
@@ -138,6 +179,9 @@ export class WebsitePagesService {
         slug:       page.slug,
         pageName:   page.name,
         pageType:   page.pageType,
+        // Legacy compatibility only: derived from the type, never read back.
+        // Anything still on the old code path keeps classifying pages right.
+        isStatic:   page.pageType !== 'content',
         ...(page.source ? { source: page.source } : {}),
         settings:   page.settings ?? {},
         sections:   page.sections ?? [],
@@ -157,7 +201,8 @@ export class WebsitePagesService {
       settings: this.registry.withDefaults(pageType, {}),
       sections: [],
       isHomePage: false,
-      rowType: 'Page',
+      // Row type follows the page type: only a content page is editor-built.
+      rowType: pageType === 'content' ? 'Page' : 'StaticPage',
     };
   }
 }

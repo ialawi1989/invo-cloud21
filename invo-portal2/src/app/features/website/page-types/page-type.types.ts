@@ -56,5 +56,9 @@ export interface PageTypeManifest {
   pageTypes:     PageTypeDef[];
   legacySlugs:   Record<string, string>;
   legacySources: Record<string, ListingSource>;
+  /** `template.templateType` → page type. The old dashboard's own field for
+   *  the page kind; survives a URL rename, so it outranks the slug. */
+  legacyTemplateTypes?:   Record<string, string>;
+  legacyTemplateSources?: Record<string, ListingSource>;
   companySeeds:  Record<string, Array<{ slug: string; pageType: string; source?: ListingSource; name: string }>>;
 }

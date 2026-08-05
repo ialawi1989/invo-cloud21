@@ -14,6 +14,7 @@ import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 
 import { CustomizerComponent } from '../../page-builder/components/customizer/customizer.component';
 import { CustomizerService } from '../../page-builder/services/customizer.service';
+import { PageTypeService } from '../../page-types/page-type.service';
 import { WebsitePage, WebsitePagesService } from '../services/website-pages.service';
 
 /**
@@ -59,6 +60,7 @@ import { WebsitePage, WebsitePagesService } from '../services/website-pages.serv
 export class WebsitePageEditorComponent implements OnInit, CanLeaveComponent {
   private service    = inject(WebsitePagesService);
   private customizer = inject(CustomizerService);
+  private registry   = inject(PageTypeService);
   private route      = inject(ActivatedRoute);
   private router     = inject(Router);
   private toast      = inject(ToastService);
@@ -86,7 +88,7 @@ export class WebsitePageEditorComponent implements OnInit, CanLeaveComponent {
       }
 
       // Static pages have settings, not a canvas.
-      if (page.rowType !== 'Page') {
+      if (!this.registry.isDynamic(page.pageType)) {
         void this.router.navigate(['/page-builder', id]);
         return;
       }
