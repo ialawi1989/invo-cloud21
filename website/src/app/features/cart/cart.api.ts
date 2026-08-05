@@ -1,4 +1,5 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -36,6 +37,9 @@ export interface CartState {
   currency:  string;
 }
 
+/** Where the cart session id lives between page views. */
+const CART_SESSION_KEY = 'cartSession';
+
 const EMPTY: CartState = {
   sessionId: '', lines: [], subTotal: 0, tax: 0,
   delivery: 0, discount: 0, total: 0, currency: '',
@@ -59,6 +63,7 @@ export class CartApiService {
   private tenant = inject(TenantService);
   private auth   = inject(ShopperAuthService);
   private router = inject(Router);
+  private platformId = inject(PLATFORM_ID);
 
   private _state = signal<CartState>(EMPTY);
   state = this._state.asReadonly();
@@ -75,8 +80,36 @@ export class CartApiService {
     });
   }
 
+  /**
+   * The CART session id.
+   *
+   * This is NOT the shopper session. `createCart` mints its own GUID and keeps
+   * it at `cart.onlineData.sessionId`; the shopper session travels separately
+   * as `userSessionId` (the `session-id` header) and is only used to resolve
+   * who the shopper is for coupons and checkout. Falling back to the shopper
+   * session here asks Redis for a cart under a key that was never written, and
+   * the page shows an empty cart forever instead of an error.
+   *
+   * Whatever adds the first item is responsible for storing the id it gets
+   * back — see {@link setSessionId}.
+   */
   private sessionId(): string {
-    return this._state().sessionId || this.auth.sessionId() || '';
+    if (this._state().sessionId) return this._state().sessionId;
+    if (!isPlatformBrowser(this.platformId)) return '';
+    try {
+      return window.localStorage.getItem(CART_SESSION_KEY) ?? '';
+    } catch {
+      return '';
+    }
+  }
+
+  /** Persist the cart session id minted by createCart / addItem. */
+  setSessionId(sessionId: string): void {
+    this._state.update(s => ({ ...s, sessionId }));
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      window.localStorage.setItem(CART_SESSION_KEY, sessionId);
+    } catch { /* storage disabled — the cart lives for this page view only */ }
   }
 
   /** Load the cart for the current session. No session = an empty cart, not an
