@@ -13,12 +13,12 @@
   </label>
 
   <div class="bs__kpis">
-    <app-kpi-tile label="DASHBOARD.KPI.ORDERS"    [value]="totals().numberOfInvoices" [money]="false" tone="neutral" icon="orders"/>
-    <app-kpi-tile label="DASHBOARD.KPI.SALES"     [value]="totals().sales"          tone="brand"  icon="sales"/>
-    <app-kpi-tile label="DASHBOARD.KPI.DISCOUNT"  [value]="totals().discountTotal"  tone="amber"  icon="discount"/>
-    <app-kpi-tile label="DASHBOARD.KPI.TAX"       [value]="totals().taxTotal"       tone="violet" icon="tax"/>
-    <app-kpi-tile label="DASHBOARD.KPI.RETURNS"   [value]="totals().totalReturn"    tone="rose"   icon="returns"/>
-    <app-kpi-tile label="DASHBOARD.KPI.NET_SALES" [value]="totals().netSales"       tone="green"  icon="net"/>
+    <app-kpi-tile label="DASHBOARD.KPI.ORDERS"    [value]="totals().numberOfInvoices" [money]="false" tone="neutral" icon="orders" tooltip="DASHBOARD.KPI_HINT.ORDERS"/>
+    <app-kpi-tile label="DASHBOARD.KPI.SALES"     [value]="totals().sales"          tone="brand"  icon="sales"    tooltip="DASHBOARD.KPI_HINT.SALES"/>
+    <app-kpi-tile label="DASHBOARD.KPI.DISCOUNT"  [value]="totals().discountTotal"  tone="amber"  icon="discount" tooltip="DASHBOARD.KPI_HINT.DISCOUNT"/>
+    <app-kpi-tile label="DASHBOARD.KPI.TAX"       [value]="totals().taxTotal"       tone="violet" icon="tax"      tooltip="DASHBOARD.KPI_HINT.TAX"/>
+    <app-kpi-tile label="DASHBOARD.KPI.RETURNS"   [value]="totals().totalReturn"    tone="rose"   icon="returns"  tooltip="DASHBOARD.KPI_HINT.RETURNS"/>
+    <app-kpi-tile label="DASHBOARD.KPI.NET_SALES" [value]="totals().netSales"       tone="green"  icon="net"      tooltip="DASHBOARD.KPI_HINT.NET_SALES"/>
   </div>
 
   <div class="bs__tableWrap">

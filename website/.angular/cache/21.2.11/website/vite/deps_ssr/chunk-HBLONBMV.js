@@ -7,43 +7,38 @@ import {
   ROUTES,
   Router,
   loadChildren
-} from "./chunk-MNUZVWQ7.js";
+} from "./chunk-CMDLGXHL.js";
 import {
   BrowserDomAdapter,
   BrowserModule,
   EVENT_MANAGER_PLUGINS,
   EventManagerPlugin
-} from "./chunk-V7T4WOKX.js";
+} from "./chunk-FACM2CK2.js";
 import {
   APP_BASE_HREF,
   NullViewportScroller,
   PLATFORM_SERVER_ID,
   ViewportScroller
-} from "./chunk-DGDLONC3.js";
+} from "./chunk-2WMXBCV4.js";
 import {
   HTTP_ROOT_INTERCEPTOR_FNS
-} from "./chunk-B5HSFUCI.js";
+} from "./chunk-5XVK64LY.js";
 import {
   PlatformLocation,
   XhrFactory,
   getDOM,
   setRootDomAdapter
-} from "./chunk-6OJIVZTV.js";
+} from "./chunk-F6M77V7U.js";
 import {
   APP_ID,
   ApplicationRef,
   CSP_NONCE,
   Compiler,
   Console,
-  DOCUMENT,
   ENABLE_ROOT_COMPONENT_BOOTSTRAP,
-  EnvironmentInjector,
-  INTERNAL_APPLICATION_ERROR_HANDLER,
   IS_HYDRATION_DOM_REUSE_ENABLED,
   Inject,
   Injectable,
-  InjectionToken,
-  Injector,
   LOCALE_ID,
   NgModule,
   PLATFORM_ID,
@@ -56,25 +51,32 @@ import {
   TESTABILITY,
   Testability,
   TransferState,
-  Version,
   annotateForHydration,
   createEnvironmentInjector,
   createPlatformFactory,
-  inject,
-  makeEnvironmentProviders,
   platformCore,
-  provideEnvironmentInitializer,
   resetCompiledComponents,
-  runInInjectionContext,
   setClassMetadata,
   setDocument,
   startMeasuring,
   stopMeasuring,
+  ɵɵdefineNgModule
+} from "./chunk-KNX6RTYS.js";
+import {
+  DOCUMENT,
+  EnvironmentInjector,
+  INTERNAL_APPLICATION_ERROR_HANDLER,
+  InjectionToken,
+  Injector,
+  Version,
+  inject,
+  makeEnvironmentProviders,
+  provideEnvironmentInitializer,
+  runInInjectionContext,
   ɵɵdefineInjectable,
   ɵɵdefineInjector,
-  ɵɵdefineNgModule,
   ɵɵinject
-} from "./chunk-23PZ53IU.js";
+} from "./chunk-DYILQ42H.js";
 import {
   require_cjs
 } from "./chunk-7RP5W65N.js";
@@ -12698,4 +12700,4 @@ export {
   AngularAppEngine,
   createRequestHandler
 };
-//# sourceMappingURL=chunk-3N5Y6ZCU.js.map
+//# sourceMappingURL=chunk-HBLONBMV.js.map

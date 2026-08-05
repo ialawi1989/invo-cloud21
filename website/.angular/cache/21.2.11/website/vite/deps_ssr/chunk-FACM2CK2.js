@@ -1,49 +1,39 @@
-import {
-  withHttpTransferCache
-} from "./chunk-JONMBLAQ.js";
+import { createRequire } from 'module';const require = createRequire(import.meta.url);
 import {
   CommonModule,
   PLATFORM_BROWSER_ID
-} from "./chunk-C6I7CU4P.js";
+} from "./chunk-2WMXBCV4.js";
+import {
+  withHttpTransferCache
+} from "./chunk-5XVK64LY.js";
 import {
   DomAdapter,
   XhrFactory,
   getDOM,
   parseCookieValue,
   setRootDomAdapter
-} from "./chunk-ZCQT7GLA.js";
+} from "./chunk-F6M77V7U.js";
 import {
   APP_ID,
   ApplicationModule,
   ApplicationRef,
   CSP_NONCE,
   Console,
-  DOCUMENT,
-  ENVIRONMENT_INITIALIZER,
-  ErrorHandler,
-  INJECTOR_SCOPE,
   IS_ENABLED_BLOCKING_INITIAL_NAVIGATION,
   Inject,
   Injectable,
-  InjectionToken,
-  Injector,
   NgModule,
-  NgZone,
   Optional,
   PLATFORM_ID,
   PLATFORM_INITIALIZER,
   RendererFactory2,
   RendererStyleFlags2,
-  RuntimeError,
   SecurityContext,
   TESTABILITY,
   TESTABILITY_GETTER,
   Testability,
   TracingService,
-  Version,
   ViewEncapsulation,
-  XSS_SECURITY_URL,
-  _global,
   _sanitizeHtml,
   _sanitizeUrl,
   allLeavingAnimations,
@@ -54,11 +44,7 @@ import {
   bypassSanitizationTrustStyle,
   bypassSanitizationTrustUrl,
   createPlatformFactory,
-  formatRuntimeError,
-  forwardRef,
-  inject,
   internalCreateApplication,
-  makeEnvironmentProviders,
   platformCore,
   provideStabilityDebugging,
   setClassMetadata,
@@ -68,15 +54,33 @@ import {
   withEventReplay,
   withI18nSupport,
   withIncrementalHydration,
+  ɵɵdefineNgModule
+} from "./chunk-KNX6RTYS.js";
+import {
+  DOCUMENT,
+  ENVIRONMENT_INITIALIZER,
+  ErrorHandler,
+  INJECTOR_SCOPE,
+  InjectionToken,
+  Injector,
+  NgZone,
+  RuntimeError,
+  Version,
+  XSS_SECURITY_URL,
+  _global,
+  formatRuntimeError,
+  forwardRef,
+  inject,
+  makeEnvironmentProviders,
   ɵɵdefineInjectable,
   ɵɵdefineInjector,
-  ɵɵdefineNgModule,
   ɵɵinject
-} from "./chunk-5IM4JJAK.js";
+} from "./chunk-DYILQ42H.js";
 import {
   __async,
+  __spreadProps,
   __spreadValues
-} from "./chunk-WDMUDEB6.js";
+} from "./chunk-JLB47SLY.js";
 
 // node_modules/@angular/platform-browser/fesm2022/_dom_renderer-chunk.mjs
 var EventManagerPlugin = class {
@@ -291,7 +295,7 @@ var SharedStylesHost = class _SharedStylesHost {
     if (this.nonce) {
       element.setAttribute("nonce", this.nonce);
     }
-    if (false) {
+    if (true) {
       element.setAttribute(APP_ID_ATTRIBUTE_NAME, this.appId);
     }
     return host.appendChild(element);
@@ -408,7 +412,7 @@ var DomRendererFactory2 = class _DomRendererFactory2 {
     if (!element || !type) {
       return this.defaultRenderer;
     }
-    if (false) {
+    if (type.encapsulation === ViewEncapsulation.ShadowDom || type.encapsulation === ViewEncapsulation.ExperimentalIsolatedShadowDom) {
       type = __spreadProps(__spreadValues({}, type), {
         encapsulation: ViewEncapsulation.Emulated
       });
@@ -635,7 +639,7 @@ var DefaultDomRenderer2 = class {
       if (event === "__ngUnwrap__") {
         return eventHandler;
       }
-      const allowDefaultBehavior = false ? this.ngZone.runGuarded(() => eventHandler(event)) : eventHandler(event);
+      const allowDefaultBehavior = true ? this.ngZone.runGuarded(() => eventHandler(event)) : eventHandler(event);
       if (allowDefaultBehavior === false) {
         event.preventDefault();
       }
@@ -1751,4 +1755,4 @@ export {
   provideClientHydration,
   VERSION
 };
-//# sourceMappingURL=chunk-EVFKMPPB.js.map
+//# sourceMappingURL=chunk-FACM2CK2.js.map

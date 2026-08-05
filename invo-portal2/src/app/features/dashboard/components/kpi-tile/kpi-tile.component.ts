@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 
 /**
  * A single headline number.
@@ -14,12 +15,24 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 @Component({
   selector: 'app-kpi-tile',
   standalone: true,
-  imports: [CommonModule, TranslateModule, MycurrencyPipe],
+  imports: [CommonModule, TranslateModule, MycurrencyPipe, TooltipDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="kpi" [class]="'kpi--' + tone()" [class.kpi--accent]="accent()">
       <span class="kpi__head">
-        <span class="kpi__label">{{ label() | translate: labelParams() }}</span>
+        <span class="kpi__label">
+          {{ label() | translate: labelParams() }}
+          @if (tooltip(); as tip) {
+            <!-- The label alone can't say what a figure includes or excludes
+                 (net of what? tax on what?); the hint carries the definition. -->
+            <span class="kpi__info" [appTooltip]="tip | translate" tabindex="0"
+                  [attr.aria-label]="tip | translate">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/><path d="M9.2 9a2.8 2.8 0 1 1 3.8 2.6c-.7.3-1 .9-1 1.6v.3"/><path d="M12 17h.01"/>
+              </svg>
+            </span>
+          }
+        </span>
         @if (icon()) {
           <span class="kpi__icon" aria-hidden="true">
             @switch (icon()) {
@@ -97,6 +110,14 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
     .kpi__label {
       font-size: 11.5px; font-weight: 600; color: #64748b;
       text-transform: uppercase; letter-spacing: .03em;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    // Sits at the label's weight, not the value's — it explains, it doesn't compete.
+    .kpi__info {
+      flex-shrink: 0; display: inline-flex; cursor: help;
+      opacity: .55; transition: opacity .12s ease;
+      &:hover, &:focus-visible { opacity: 1; }
+      &:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 50%; }
     }
     .kpi__value {
       // Scales with the tile width so long currency values (e.g. seven-figure
@@ -117,6 +138,8 @@ export class KpiTileComponent {
   readonly money = input<boolean>(true);
   readonly accent = input<boolean>(false);
   readonly hint = input<string | null>(null);
+  /** Translation key for a "what does this number mean" (?) beside the label. */
+  readonly tooltip = input<string | null>(null);
   /** Colour family. Always paired with a distinct icon + label, never alone. */
   readonly tone = input<'neutral' | 'brand' | 'amber' | 'violet' | 'rose' | 'green' | 'bad'>('neutral');
   readonly icon = input<'orders' | 'sales' | 'discount' | 'tax' | 'returns' | 'net' | 'card' | null>(null);

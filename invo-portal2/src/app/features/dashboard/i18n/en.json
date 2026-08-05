@@ -151,6 +151,14 @@
       "RETURNS": "Returns",
       "NET_SALES": "Net sales"
     },
+    "KPI_HINT": {
+      "ORDERS": "Number of invoices issued in the selected period",
+      "SALES": "Value of goods and services sold, before tax and before discount",
+      "DISCOUNT": "Total discount given on those sales",
+      "TAX": "Total tax charged on those sales",
+      "RETURNS": "Value of items returned by customers in the selected period",
+      "NET_SALES": "What the business actually earned: sales plus tax, less discount and returns"
+    },
     "NET_PROFIT": "Net profit",
     "PROFIT": "In profit",
     "LOSS": "At a loss",
