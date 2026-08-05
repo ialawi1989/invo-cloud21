@@ -50,8 +50,10 @@ import { WebsitePage, WebsitePagesService } from '../services/website-pages.serv
     }
   `,
   styles: [`
-    :host { display: block; height: 100%; }
-    .pe-loading { display: flex; justify-content: center; padding: 80px 0; }
+    /* Registered outside MainLayoutComponent, so there is no shell to fit
+       inside — the builder owns the viewport. */
+    :host { display: block; height: 100dvh; overflow: hidden; }
+    .pe-loading { display: flex; align-items: center; justify-content: center; height: 100%; }
   `],
 })
 export class WebsitePageEditorComponent implements OnInit, CanLeaveComponent {

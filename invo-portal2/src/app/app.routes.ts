@@ -59,6 +59,21 @@ export const routes: Routes = [
     canDeactivate: [unsavedChangesGuard],
   },
   {
+    // Page builder — the storefront page canvas. Full-page like the other
+    // builders: it hosts a device-framed preview iframe plus two side panels,
+    // so the sidebar+topbar shell would leave it a letterbox. The Pages list
+    // and the per-page settings form stay inside the shell.
+    //
+    // Dynamic (content) pages only — the component redirects a static page
+    // back to its settings form, since a system page has no canvas to arrange.
+    path: 'page-builder/:id/editor',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/website/pages/page-editor/page-editor.component')
+        .then(m => m.WebsitePageEditorComponent),
+    canDeactivate: [unsavedChangesGuard],
+  },
+  {
     // Label-builder editor — full-page like the other builders. The
     // list page is registered under MainLayoutComponent below.
     path: 'settings/label-builder/:id',
@@ -241,15 +256,6 @@ export const routes: Routes = [
         path: 'page-builder/:id',
         loadComponent: () =>
           import('./features/website/pages/page-form/page-form.component').then(m => m.WebsitePageFormComponent),
-        canDeactivate: [unsavedChangesGuard],
-      },
-      {
-        // The visual builder — dynamic (content) pages only. Static pages are
-        // system pages with settings and no canvas; the editor redirects them
-        // back to their settings form.
-        path: 'page-builder/:id/editor',
-        loadComponent: () =>
-          import('./features/website/pages/page-editor/page-editor.component').then(m => m.WebsitePageEditorComponent),
         canDeactivate: [unsavedChangesGuard],
       },
 

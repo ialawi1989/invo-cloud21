@@ -392,10 +392,15 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
     </div>
   `,
   styles: [`
+    /* Full-viewport builder: the host route sits outside the app shell, so
+       this owns the whole screen. 100dvh keeps it honest on mobile browsers
+       whose toolbars change the viewport height mid-scroll. */
+    :host { display: block; height: 100dvh; }
+
     .customizer-layout {
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       background: var(--bg-gray-100);
     }
