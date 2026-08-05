@@ -1,4 +1,4 @@
-<section class="pf-card">
+<section class="pf-card pf-bp">
   <header class="pf-card__header">
     <div class="pf-card__icon">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -8,20 +8,31 @@
     </div>
     <h2 class="pf-card__title">{{ 'PRODUCTS.FORM.BRANCH_STOCK' | translate }}</h2>
 
-    <!-- Mode toggle — Single Branch | Bulk Edit -->
-    @if (rows && rows.length > 1) {
-      <app-segmented-toggle
-        class="pf-bp-mode-toggle"
-        [options]="modeOptions"
-        [value]="mode()"
-        (valueChange)="setMode($event)"/>
+    <!-- Summary + error badge stay visible while the section is collapsed —
+         a hidden error count leaves Save disabled with no explanation. -->
+    <span class="pf-bp-summary">
+      {{ 'PRODUCTS.FORM.BRANCH_SUMMARY' | translate: { total: totalCount(), overridden: overriddenCount() } }}
+    </span>
+
+    @if (errorCount()) {
+      <button type="button" class="pf-bp-badge pf-bp-badge--error" (click)="jumpToErrors()">
+        {{ 'PRODUCTS.FORM.BRANCH_NEEDS_ATTENTION' | translate: { count: errorCount() } }}
+      </button>
     }
 
+    <button type="button"
+            class="pf-bp-chev"
+            [class.pf-bp-chev--up]="!sectionOpen()"
+            [attr.aria-expanded]="sectionOpen()"
+            [attr.aria-label]="(sectionOpen() ? 'PRODUCTS.FORM.COLLAPSE_SECTION' : 'PRODUCTS.FORM.EXPAND_SECTION') | translate"
+            (click)="toggleSection()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </button>
   </header>
 
-  <!-- Init skeleton — shown while BranchConnectionService is still
-       resolving. Prevents the "no branches" flash and the flicker when
-       rows are being rebuilt. -->
+  <!-- Init skeleton — shown while BranchConnectionService is still resolving. -->
   @if (initializing()) {
     <div class="pf-bp-skeleton">
       <app-skeleton variant="line" width="40%"/>
@@ -30,522 +41,523 @@
     </div>
   }
 
-  <!-- Branch picker (single mode) — pinned tabs + searchable overflow popover -->
-  @if (!initializing() && mode() === 'single' && rows && rows.length > 0) {
-    <app-pf-branch-tabs
-      class="pf-bp-tabs"
-      [branches]="branchDirectory()"
-      [mode]="'tabs'"
-      [maxVisible]="3"
-      [maxVisibleMobile]="1"
-      (activeChange)="onBranchTabChange($event)"
-    />
-  }
-
-  <!-- Panel -->
-  <div class="pf-card__body" [hidden]="initializing()">
+  @if (!initializing() && sectionOpen()) {
     @if (rows && rows.length === 0) {
       <div class="pf-bp-empty">{{ 'PRODUCTS.FORM.NO_BRANCHES' | translate }}</div>
-    }
+    } @else {
+      <div class="pf-bp-grid"
+           [class.pf-bp-grid--rail]="!paneOpen() && !isMobile()"
+           [class.pf-bp-grid--mob-list]="isMobile() && mobileView() === 'list'"
+           [class.pf-bp-grid--mob-detail]="isMobile() && mobileView() === 'detail'">
 
-    <!-- Bulk-edit table — every branch shown as a row, all cells editable. -->
-    @if (mode() === 'bulk' && rows && rows.length > 0) {
-      <div class="pf-bp-bulk">
-        <div class="pf-bp-bulk__scroll">
-          <table class="pf-bp-bulk-table">
-            <thead>
-              <tr>
-                <th>{{ 'PRODUCTS.FORM.BRANCH' | translate }}</th>
-                @if (fieldsOptions()?.branchProduct?.available) {
-                  <th>{{ 'PRODUCTS.FORM.AVAILABLE' | translate }}</th>
-                }
-                @if (fieldsOptions()?.branchProduct?.availableOnline) {
-                  <th>{{ 'PRODUCTS.FORM.AVAILABLE_ONLINE' | translate }}</th>
-                }
-                @if (fieldsOptions()?.branchProduct?.onHand?.isVisible) {
-                  <th>{{ 'PRODUCTS.FORM.ON_HAND' | translate }}</th>
-                }
-                @if (fieldsOptions()?.branchProduct?.unitCost?.isVisible && canManageUnitCost) {
-                  <th>{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</th>
-                }
-                <!-- Opening balance cols only on new products, per old UX -->
-                @if (!productInfo().id && fieldsOptions()?.branchProduct?.openingBalance?.isVisible) {
-                  <th>{{ 'PRODUCTS.FORM.OPENING_BALANCE' | translate }}</th>
-                }
-                @if (!productInfo().id && fieldsOptions()?.branchProduct?.openingBalanceCost?.isVisible) {
-                  <th>{{ 'PRODUCTS.FORM.OPENING_BALANCE_COST' | translate }}</th>
-                }
-                @if (fieldsOptions()?.branchProduct?.reorderPoint?.isVisible) {
-                  <th>{{ 'PRODUCTS.FORM.REORDER_POINT' | translate }}</th>
-                }
-                @if (fieldsOptions()?.branchProduct?.reorderLevel?.isVisible) {
-                  <th>{{ 'PRODUCTS.FORM.REORDER_LEVEL' | translate }}</th>
-                }
-                @if (fieldsOptions()?.branchProduct?.differentPrice) {
-                  <th>{{ 'PRODUCTS.FORM.DIFFERENT_PRICE_COL' | translate }}</th>
-                }
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of rows.controls; track row.value['branchId']; let i = $index) {
-                <tr [formGroup]="$any(row)">
-                  <td class="pf-bp-bulk-table__name">{{ row.value['branchName'] }}</td>
+        <!-- ═══ Master pane ═══ -->
+        <aside class="pf-bp-master">
+          <!-- Collapsed rail (desktop only) -->
+          <div class="pf-bp-rail">
+            <button type="button" class="pf-bp-icon-btn"
+                    [attr.aria-label]="'PRODUCTS.FORM.SHOW_BRANCH_LIST' | translate"
+                    (click)="setPaneOpen(true)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+            <span class="pf-bp-rail__count">{{ visibleRows().length }}</span>
+            <span class="pf-bp-rail__label">{{ 'PRODUCTS.FORM.BRANCHES' | translate }}</span>
+          </div>
 
-                  @if (fieldsOptions()?.branchProduct?.available) {
-                    <td>
-                      <input type="checkbox" class="pf-bp-check" formControlName="available"/>
-                    </td>
+          <!-- Full pane -->
+          <div class="pf-bp-master__full">
+            <div class="pf-bp-search">
+              <input
+                type="search"
+                class="pf-input pf-input--compact"
+                [value]="searchInput()"
+                [attr.aria-label]="'PRODUCTS.FORM.SEARCH_BRANCHES' | translate"
+                [placeholder]="'PRODUCTS.FORM.SEARCH_BRANCHES' | translate"
+                (input)="onSearchInput($any($event.target).value)"/>
+              <button type="button" class="pf-bp-icon-btn pf-bp-collapse-btn"
+                      [attr.aria-label]="'PRODUCTS.FORM.HIDE_BRANCH_LIST' | translate"
+                      (click)="setPaneOpen(false)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="pf-bp-chips">
+              <button type="button" class="pf-bp-chip" [class.pf-bp-chip--on]="filter() === 'all'" (click)="setFilter('all')">
+                {{ 'PRODUCTS.FORM.FILTER_ALL' | translate }} <span>{{ totalCount() }}</span>
+              </button>
+              <button type="button" class="pf-bp-chip" [class.pf-bp-chip--on]="filter() === 'override'" (click)="setFilter('override')">
+                {{ 'PRODUCTS.FORM.FILTER_OVERRIDDEN' | translate }} <span>{{ overriddenCount() }}</span>
+              </button>
+              <button type="button" class="pf-bp-chip" [class.pf-bp-chip--on]="filter() === 'errors'" (click)="setFilter('errors')">
+                {{ 'PRODUCTS.FORM.FILTER_NEEDS_ATTENTION' | translate }} <span>{{ errorCount() }}</span>
+              </button>
+              <button type="button" class="pf-bp-chip" [class.pf-bp-chip--on]="filter() === 'low'" (click)="setFilter('low')">
+                {{ 'PRODUCTS.FORM.LOW_STOCK' | translate }} <span>{{ lowStockCount() }}</span>
+              </button>
+            </div>
+
+            <div class="pf-bp-list" #listBox>
+              @for (row of pagedRows(); track row.branchId) {
+                <div class="pf-bp-row"
+                     [class.pf-bp-row--active]="row.index === activeTab()"
+                     role="button"
+                     tabindex="0"
+                     (click)="openBranch(row.index)"
+                     (keydown.enter)="openBranch(row.index)"
+                     (keydown.space)="openBranch(row.index); $event.preventDefault()">
+                  <input type="checkbox"
+                         class="pf-bp-check"
+                         [checked]="isSelected(row.index)"
+                         [attr.aria-label]="row.name"
+                         (click)="toggleSelect(row.index, $event)"/>
+                  <span class="pf-bp-row__name">{{ row.name }}</span>
+                  @if (isOverride(row.index)) {
+                    <span class="pf-bp-pill pf-bp-pill--override">{{ 'PRODUCTS.FORM.PRICE' | translate }}</span>
                   }
-                  @if (fieldsOptions()?.branchProduct?.availableOnline) {
-                    <td>
-                      <input type="checkbox" class="pf-bp-check" formControlName="availableOnline"/>
-                    </td>
+                  @switch (rowStatus(row.index)) {
+                    @case ('error') {
+                      <span class="pf-bp-pill pf-bp-pill--error"
+                            [attr.title]="'PRODUCTS.FORM.FILTER_NEEDS_ATTENTION' | translate">!</span>
+                    }
+                    @case ('low') {
+                      <span class="pf-bp-dot pf-bp-dot--warn" [attr.title]="'PRODUCTS.FORM.LOW_STOCK' | translate"></span>
+                    }
+                    @case ('on') {
+                      <span class="pf-bp-dot pf-bp-dot--good" [attr.title]="'PRODUCTS.FORM.AVAILABLE' | translate"></span>
+                    }
+                    @default {
+                      <span class="pf-bp-dot pf-bp-dot--off" [attr.title]="'PRODUCTS.FORM.NOT_AVAILABLE' | translate"></span>
+                    }
                   }
+                </div>
+              } @empty {
+                <div class="pf-bp-list-empty">
+                  <p>{{ 'PRODUCTS.FORM.NO_BRANCHES_MATCH' | translate }}</p>
+                  <button type="button" class="pf-chip-btn" (click)="clearFilters()">
+                    {{ 'PRODUCTS.FORM.CLEAR_FILTERS' | translate }}
+                  </button>
+                </div>
+              }
+
+              @if (hasMore()) {
+                <div class="pf-bp-sentinel" #sentinel>
+                  <span class="pf-bp-spin"></span>
+                  {{ 'COMMON.LOADING' | translate }}
+                </div>
+              } @else if (visibleRows().length > 20) {
+                <div class="pf-bp-list-end">
+                  {{ 'PRODUCTS.FORM.LIST_END' | translate: { count: visibleRows().length } }}
+                </div>
+              }
+            </div>
+
+            <div class="pf-bp-master__foot">
+              <span>{{ 'PRODUCTS.FORM.LIST_LOADED' | translate: { loaded: pagedRows().length, total: visibleRows().length } }}</span>
+              <button type="button" class="pf-bp-link" (click)="toggleSelectAllMatching()">
+                @if (allMatchingSelected()) {
+                  {{ 'PRODUCTS.FORM.CLEAR_SELECTION' | translate }}
+                } @else {
+                  {{ 'PRODUCTS.FORM.SELECT_ALL_MATCHING' | translate: { count: visibleRows().length } }}
+                }
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ═══ Detail pane ═══ -->
+        <div class="pf-bp-detail">
+          @if (activeGroup(); as grp) {
+            <!-- Remount on branch switch: FormGroupDirective doesn't always
+                 rebind cleanly when [formGroup] swaps on the same DOM node. -->
+            @for (tab of [activeTab()]; track tab) {
+              <div [formGroup]="grp">
+                <div class="pf-bp-back">
+                  <button type="button" class="pf-chip-btn" (click)="backToList()">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pf-bp-back__icon">
+                      <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                    {{ 'PRODUCTS.FORM.ALL_BRANCHES' | translate }}
+                  </button>
+                  <span class="pf-bp-back__pos">
+                    {{ 'PRODUCTS.FORM.POSITION_OF' | translate: { index: activePosition(), total: visibleRows().length } }}
+                  </span>
+                </div>
+
+                <div class="pf-bp-detail__head">
+                  <h3 class="pf-bp-detail__title">{{ activeBranchName() }}</h3>
+                  <span class="pf-bp-pill" [class.pf-bp-pill--ok]="isAvailable(activeTab())" [class.pf-bp-pill--off]="!isAvailable(activeTab())">
+                    {{ (isAvailable(activeTab()) ? 'PRODUCTS.FORM.AVAILABLE' : 'PRODUCTS.FORM.NOT_AVAILABLE') | translate }}
+                  </span>
+                  <span class="pf-bp-pill" [class.pf-bp-pill--on]="ctl('availableOnline')?.value" [class.pf-bp-pill--off]="!ctl('availableOnline')?.value">
+                    {{ (ctl('availableOnline')?.value ? 'PRODUCTS.FORM.ONLINE' : 'PRODUCTS.FORM.OFFLINE') | translate }}
+                  </span>
                   @if (fieldsOptions()?.branchProduct?.onHand?.isVisible) {
-                    <td class="pf-bp-bulk-table__stock">
-                      <span class="pf-bp-bulk-dot"
-                            [class]="'pf-bp-bulk-dot--' + getStockBadgeClass(row.value['onHand'], row.value['reorderPoint'])"></span>
-                      <span class="pf-bp-bulk-val">{{ row.value['onHand'] | mynumber:0 }}</span>
-                      @if (productInfo().id && canAdjust) {
-                        <button type="button" class="pf-chip-btn pf-chip-btn--sm"
-                                (click)="openStockAdjustModalFor(i)">
-                          {{ 'PRODUCTS.PRICING.ADJUST' | translate }}
-                        </button>
+                    <span class="pf-bp-pill"
+                          [class]="'pf-bp-pill pf-bp-pill--stock-' + getStockBadgeClass(ctl('onHand')?.value, ctl('reorderPoint')?.value)">
+                      {{ 'PRODUCTS.FORM.IN_STOCK' | translate: { count: (ctl('onHand')?.value | mynumber:0) } }}
+                    </span>
+                  }
+                  @if (isOverride(activeTab())) {
+                    <span class="pf-bp-pill pf-bp-pill--override">{{ 'PRODUCTS.FORM.PRICE_OVERRIDE' | translate }}</span>
+                  }
+                  @if (isLowStock(activeTab())) {
+                    <span class="pf-bp-pill pf-bp-pill--warn">{{ 'PRODUCTS.FORM.LOW_STOCK' | translate }}</span>
+                  }
+                </div>
+
+                @if (rowErrors(activeTab()).length) {
+                  <div class="pf-bp-alert pf-bp-alert--error">
+                    <ul>
+                      @for (e of rowErrors(activeTab()); track e.field) {
+                        <li><strong>{{ e.field }}</strong> — {{ e.msg }}</li>
                       }
-                    </td>
-                  }
-                  @if (fieldsOptions()?.branchProduct?.unitCost?.isVisible && canManageUnitCost) {
-                    @if (productInfo().id) {
-                      <td class="pf-bp-bulk-table__stock">
-                        <span class="pf-bp-bulk-val">{{ row.value['unitCost'] | mynumber }}</span>
-                        @if (canAdjust) {
-                          <button type="button" class="pf-chip-btn pf-chip-btn--sm"
-                                  (click)="openUnitCostAdjustModalFor(i)">
-                            {{ 'PRODUCTS.PRICING.ADJUST' | translate }}
-                          </button>
-                        }
-                      </td>
-                    } @else {
-                      <td>
-                        <input type="number"
-                               class="pf-input pf-input--compact"
-                               formControlName="unitCost"
-                               min="0"/>
-                      </td>
-                    }
-                  }
-                  @if (!productInfo().id && fieldsOptions()?.branchProduct?.openingBalance?.isVisible) {
-                    <td>
-                      <input type="number"
-                             class="pf-input pf-input--compact"
-                             formControlName="openingBalance"
-                             min="0"/>
-                    </td>
-                  }
-                  @if (!productInfo().id && fieldsOptions()?.branchProduct?.openingBalanceCost?.isVisible) {
-                    <td>
-                      <input type="number"
-                             class="pf-input pf-input--compact"
-                             formControlName="openingBalanceCost"
-                             min="0"/>
-                    </td>
-                  }
-                  @if (fieldsOptions()?.branchProduct?.reorderPoint?.isVisible) {
-                    <td>
-                      <input type="number"
-                             class="pf-input pf-input--compact"
-                             formControlName="reorderPoint"
-                             min="0"/>
-                    </td>
-                  }
-                  @if (fieldsOptions()?.branchProduct?.reorderLevel?.isVisible) {
-                    <td>
-                      <input type="number"
-                             class="pf-input pf-input--compact"
-                             formControlName="reorderLevel"
-                             min="0"/>
-                    </td>
-                  }
-                  @if (fieldsOptions()?.branchProduct?.differentPrice) {
-                    <td class="pf-bp-bulk-table__diff">
-                      @if (row.value['has_different_price']) {
-                        <input type="number"
-                               class="pf-input pf-input--compact"
-                               formControlName="price"
-                               min="0"/>
-                      } @else {
-                        <span class="pf-bp-bulk-default">{{ 'PRODUCTS.FORM.BULK_DEFAULT' | translate }}</span>
-                      }
-                    </td>
-                  }
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Summary footer -->
-        <div class="pf-bp-bulk-summary">
-          <div class="pf-bp-bulk-summary__item">
-            <strong class="pf-bp-bulk-summary__num pf-bp-bulk-summary__num--good">{{ availableCount() }}</strong>
-            <span>{{ 'PRODUCTS.FORM.AVAILABLE' | translate }}</span>
-          </div>
-          <div class="pf-bp-bulk-summary__item">
-            <strong class="pf-bp-bulk-summary__num pf-bp-bulk-summary__num--info">{{ onlineBranchesCount() }}</strong>
-            <span>{{ 'PRODUCTS.FORM.ONLINE_BRANCHES' | translate }}</span>
-          </div>
-          @if (canViewStockValue) {
-            <div class="pf-bp-bulk-summary__item">
-              <strong class="pf-bp-bulk-summary__num pf-bp-bulk-summary__num--warn">{{ lowStockCount() }}</strong>
-              <span>{{ 'PRODUCTS.FORM.LOW_STOCK' | translate }}</span>
-            </div>
-          }
-        </div>
-      </div>
-    }
-
-    <!-- Single-branch panel. Wrapped in `@for` over `[activeTab()]` with a
-         value-based track key so switching branches destroys + recreates the
-         panel — Angular's FormGroupDirective doesn't always rebind cleanly
-         when `[formGroup]` swaps to a different group on the same DOM. This
-         mirrors the old project's `*ngFor + [hidden]` pattern in effect (one
-         set of controls mounted at a time, fresh bindings after switch). -->
-    @if (mode() === 'single' && activeGroup(); as grp) {
-    @for (tab of [activeTab()]; track tab) {
-      <div class="pf-bp-panel" [formGroup]="grp">
-        <!-- Flags row -->
-        <div class="pf-row">
-          @if (fieldsOptions()?.branchProduct?.available) {
-            <div class="pf-field pf-field--half pf-field--inline">
-              <span class="pf-label">{{ 'PRODUCTS.FORM.AVAILABLE' | translate }}</span>
-              <app-toggle formControlName="available"/>
-            </div>
-          }
-          @if (fieldsOptions()?.branchProduct?.availableOnline) {
-            <div class="pf-field pf-field--half pf-field--inline">
-              <span class="pf-label">{{ 'PRODUCTS.FORM.AVAILABLE_ONLINE' | translate }}</span>
-              <app-toggle formControlName="availableOnline"/>
-            </div>
-          }
-        </div>
-
-        <!-- Different-price override — card-style checkbox (matches old UX) -->
-        @if (fieldsOptions()?.branchProduct?.differentPrice) {
-          <label class="pf-bp-card-check">
-            <input type="checkbox"
-                   formControlName="has_different_price"
-                   (change)="onChangeHasDifferentPrice($any($event.target).checked)"/>
-            <span class="pf-bp-card-check__box">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="5 13 9 17 19 7"/>
-              </svg>
-            </span>
-            <span class="pf-bp-card-check__label">{{ 'PRODUCTS.FORM.HAS_DIFFERENT_PRICE' | translate }}</span>
-          </label>
-
-          @if (hasDifferentPriceValue() && fieldsOptions()?.branchProduct?.price?.isVisible) {
-            <div class="pf-row">
-              <div class="pf-field pf-field--half">
-                <label class="pf-label">{{ 'PRODUCTS.PRICING.DEFAULT_PRICE' | translate }}</label>
-                <input type="number" class="pf-input" formControlName="price" min="0"
-                       [class.pf-input--invalid]="ctl('price')?.touched && ctl('price')?.invalid"
-                       [class.pf-input--warn]="branchPriceIsFree()"/>
-                @if (ctl('price')?.touched && ctl('price')?.errors?.['required']) {
-                  <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
-                }
-                @if (branchPriceIsFree()) {
-                  <small class="pf-warn">{{ 'PRODUCTS.PRICING.ITEM_WILL_BE_FREE' | translate }}</small>
-                }
-              </div>
-            </div>
-          }
-        }
-
-        <!-- Inline On Hand (only when openingBalance is NOT a visible field —
-             i.e. product types that don't use the Manage Stock collapsible.
-             Matches old `branch.component.html` lines 143-157). -->
-        @if (
-          fieldsOptions()?.branchProduct?.onHand?.isVisible &&
-          !fieldsOptions()?.branchProduct?.openingBalance?.isVisible
-        ) {
-          <div class="pf-field">
-            <label class="pf-label">{{ 'PRODUCTS.FORM.ON_HAND' | translate }}</label>
-            <input type="number" class="pf-input" formControlName="onHand" min="0"/>
-          </div>
-        }
-
-        <!-- Manage Stock (collapsible) — only when openingBalance is visible;
-             otherwise the inline On Hand field above covers the case. -->
-        @if (fieldsOptions()?.branchProduct?.openingBalance?.isVisible) {
-          <div class="pf-bp-manage">
-            <button type="button" class="pf-bp-manage__toggle"
-                    (click)="toggleManageStock(activeTab())">
-              {{ 'PRODUCTS.FORM.MANAGE_STOCK' | translate }}
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                   [class.pf-bp-manage__chev--open]="isManageStockOpen(activeTab())">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-            <small class="pf-bp-manage__formula">
-              {{ 'PRODUCTS.FORM.STOCK_EQUATION' | translate: { value: ctl('onHand')?.value ?? 0 } }}
-            </small>
-
-            @if (isManageStockOpen(activeTab())) {
-              <div class="pf-bp-manage__body">
-                <!-- Existing product → read-only value + Adjust. New → Opening Balance inputs. -->
-                @if (productInfo().id) {
-                  <div class="pf-field">
-                    <div class="pf-label pf-label--with-action">
-                      <span>{{ 'PRODUCTS.FORM.ON_HAND' | translate }}</span>
-                      @if (canAdjust) {
-                        <button type="button" class="pf-chip-btn"
-                                (click)="openStockAdjustModal()">
-                          {{ 'PRODUCTS.PRICING.ADJUST' | translate }}
-                        </button>
-                      }
-                    </div>
-                    <div class="pf-readonly pf-readonly--strong">
-                      {{ ctl('onHand')?.value | mynumber:0 }}
-                    </div>
+                    </ul>
                   </div>
-                } @else {
+                }
+
+                <!-- Tabs -->
+                <div class="pf-bp-tabs" role="tablist">
+                  @for (t of visibleTabs(); track t.key) {
+                    <button type="button"
+                            class="pf-bp-tab"
+                            role="tab"
+                            [class.pf-bp-tab--on]="detailTab() === t.key"
+                            [attr.aria-selected]="detailTab() === t.key"
+                            (click)="setDetailTab(t.key)">
+                      {{ t.label | translate }}
+                      @if (t.count !== undefined) { <span class="pf-bp-tab__count">{{ t.count }}</span> }
+                    </button>
+                  }
+                </div>
+
+                <!-- ── Settings ── -->
+                @if (detailTab() === 'settings') {
                   <div class="pf-row">
-                    @if (fieldsOptions()?.branchProduct?.openingBalance?.isVisible) {
-                      <div class="pf-field pf-field--half">
-                        <label class="pf-label">{{ 'PRODUCTS.FORM.OPENING_BALANCE' | translate }}</label>
-                        <input type="number" class="pf-input" formControlName="openingBalance" min="0"/>
+                    @if (fieldsOptions()?.branchProduct?.available) {
+                      <div class="pf-field pf-field--half pf-field--inline">
+                        <span class="pf-label">{{ 'PRODUCTS.FORM.AVAILABLE' | translate }}</span>
+                        <app-toggle formControlName="available"/>
                       </div>
                     }
-                    @if (fieldsOptions()?.branchProduct?.openingBalanceCost?.isVisible) {
-                      <div class="pf-field pf-field--half">
-                        <label class="pf-label">{{ 'PRODUCTS.FORM.OPENING_BALANCE_COST' | translate }}</label>
-                        <input type="number" class="pf-input" formControlName="openingBalanceCost" min="0"/>
+                    @if (fieldsOptions()?.branchProduct?.availableOnline) {
+                      <div class="pf-field pf-field--half pf-field--inline">
+                        <span class="pf-label">{{ 'PRODUCTS.FORM.AVAILABLE_ONLINE' | translate }}</span>
+                        <app-toggle formControlName="availableOnline"/>
                       </div>
                     }
                   </div>
-                }
-              </div>
-            }
-          </div>
-        }
 
-        <!-- Manage Unit Cost (collapsible) — mirrors old `isCollapsedCost`.
-             Read-only current value + Adjust button for existing products,
-             plain input for new products; gated on visibility + privilege +
-             the old project's `branchesUnitCost != null` check so the section
-             only renders when the product has per-branch cost overrides. -->
-        @if (fieldsOptions()?.branchProduct?.unitCost?.isVisible && canManageUnitCost && hasBranchesUnitCost()) {
-          <div class="pf-bp-manage">
-            <button type="button" class="pf-bp-manage__toggle"
-                    (click)="toggleManageCost(activeTab())">
-              {{ 'PRODUCTS.FORM.MANAGE_UNIT_COST' | translate }}
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                   [class.pf-bp-manage__chev--open]="isManageCostOpen(activeTab())">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-            <small class="pf-bp-manage__formula">
-              {{ 'PRODUCTS.FORM.UNIT_COST_EQUATION' | translate: { value: ctl('unitCost')?.value ?? 0 } }}
-            </small>
+                  @if (fieldsOptions()?.branchProduct?.reorderPoint?.isVisible || fieldsOptions()?.branchProduct?.reorderLevel?.isVisible) {
+                    <div class="pf-row">
+                      @if (fieldsOptions()?.branchProduct?.reorderPoint?.isVisible) {
+                        <div class="pf-field pf-field--half">
+                          <label class="pf-label">{{ 'PRODUCTS.FORM.REORDER_POINT' | translate }}</label>
+                          <input type="number" class="pf-input" formControlName="reorderPoint" min="0"/>
+                        </div>
+                      }
+                      @if (fieldsOptions()?.branchProduct?.reorderLevel?.isVisible) {
+                        <div class="pf-field pf-field--half">
+                          <label class="pf-label">{{ 'PRODUCTS.FORM.REORDER_LEVEL' | translate }}</label>
+                          <input type="number" class="pf-input" formControlName="reorderLevel" min="0"/>
+                        </div>
+                      }
+                    </div>
+                  }
 
-            @if (isManageCostOpen(activeTab())) {
-              <div class="pf-bp-manage__body">
-                @if (productInfo().id) {
-                  <!-- Existing product: 3-col Unit Cost / Profit / Margin row
-                       (mirrors old `branch.component.html` lines 277–327). -->
-                  <div class="pf-row pf-row--thirds">
+                  @if (fieldsOptions()?.branchProduct?.location?.isVisible) {
                     <div class="pf-field">
-                      <div class="pf-label pf-label--with-action">
+                      <label class="pf-label">{{ 'PRODUCTS.FORM.LOCATION' | translate }}</label>
+                      <app-search-dropdown
+                        formControlName="locationId"
+                        [loadFn]="loadLocations"
+                        [displayWith]="locationDisplay"
+                        [toValue]="toValueId"
+                        [placeholder]="'PRODUCTS.FORM.SELECT_LOCATION' | translate"
+                      />
+                    </div>
+                  }
+                }
+
+                <!-- ── Stock ── -->
+                @if (detailTab() === 'stock') {
+                  <div class="pf-bp-stats">
+                    @if (fieldsOptions()?.branchProduct?.onHand?.isVisible) {
+                      <div class="pf-bp-stat">
+                        <strong>{{ ctl('onHand')?.value | mynumber:0 }}</strong>
+                        <span>{{ 'PRODUCTS.FORM.ON_HAND' | translate }}</span>
+                      </div>
+                    }
+                    @if (fieldsOptions()?.branchProduct?.unitCost?.isVisible && canManageUnitCost) {
+                      <div class="pf-bp-stat">
+                        <strong>{{ ctl('unitCost')?.value | mynumber }}</strong>
                         <span>{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</span>
-                        @if (canAdjust) {
-                          <button type="button" class="pf-chip-btn"
-                                  (click)="openUnitCostAdjustModalFor(activeTab())">
-                            {{ 'PRODUCTS.PRICING.ADJUST' | translate }}
+                      </div>
+                    }
+                    @if (canViewStockValue) {
+                      <div class="pf-bp-stat">
+                        <strong>{{ activeStockValue() | mycurrency }}</strong>
+                        <span>{{ 'PRODUCTS.FORM.STOCK_VALUE' | translate }}</span>
+                      </div>
+                    }
+                  </div>
+
+                  @if (productInfo().id) {
+                    @if (canAdjust) {
+                      <div class="pf-bp-toolbar">
+                        @if (fieldsOptions()?.branchProduct?.onHand?.isVisible) {
+                          <button type="button" class="pf-chip-btn" (click)="openStockAdjustModal()">
+                            {{ 'PRODUCTS.FORM.ADJUST_ON_HAND' | translate }}
+                          </button>
+                        }
+                        @if (fieldsOptions()?.branchProduct?.unitCost?.isVisible && canManageUnitCost && hasBranchesUnitCost()) {
+                          <button type="button" class="pf-chip-btn" (click)="openUnitCostAdjustModalFor(activeTab())">
+                            {{ 'PRODUCTS.FORM.ADJUST_UNIT_COST' | translate }}
                           </button>
                         }
                       </div>
-                      <div class="pf-readonly pf-readonly--strong">
-                        {{ ctl('unitCost')?.value | mynumber }}
-                      </div>
+                    }
+                    <div class="pf-bp-alert pf-bp-alert--info">
+                      {{ 'PRODUCTS.FORM.STOCK_READONLY_HINT' | translate }}
                     </div>
-
-                    <div class="pf-field">
-                      <label class="pf-label">{{ 'PRODUCTS.PRICING.PROFIT' | translate }}</label>
-                      <div class="pf-readonly pf-readonly--strong"
-                           [class.pf-readonly--warn]="activeBranchProfit() < 0">
-                        {{ activeBranchProfit() | mycurrency }}
-                      </div>
+                  } @else {
+                    <!-- New product: opening balance is the only writable stock. -->
+                    <div class="pf-row">
+                      @if (fieldsOptions()?.branchProduct?.openingBalance?.isVisible) {
+                        <div class="pf-field pf-field--half">
+                          <label class="pf-label">{{ 'PRODUCTS.FORM.OPENING_BALANCE' | translate }}</label>
+                          <input type="number" class="pf-input" formControlName="openingBalance" min="0"/>
+                        </div>
+                      }
+                      @if (fieldsOptions()?.branchProduct?.openingBalanceCost?.isVisible) {
+                        <div class="pf-field pf-field--half">
+                          <label class="pf-label">{{ 'PRODUCTS.FORM.OPENING_BALANCE_COST' | translate }}</label>
+                          <input type="number" class="pf-input" formControlName="openingBalanceCost" min="0"/>
+                        </div>
+                      }
                     </div>
-
-                    <div class="pf-field">
-                      <label class="pf-label">{{ 'PRODUCTS.PRICING.MARGIN' | translate }}</label>
-                      <div class="pf-readonly pf-readonly--strong">
-                        {{ activeBranchMargin() | mynumber }}%
+                    @if (
+                      fieldsOptions()?.branchProduct?.onHand?.isVisible &&
+                      !fieldsOptions()?.branchProduct?.openingBalance?.isVisible
+                    ) {
+                      <div class="pf-field">
+                        <label class="pf-label">{{ 'PRODUCTS.FORM.ON_HAND' | translate }}</label>
+                        <input type="number" class="pf-input" formControlName="onHand" min="0"/>
                       </div>
-                    </div>
-                  </div>
+                    }
+                    @if (fieldsOptions()?.branchProduct?.unitCost?.isVisible && canManageUnitCost) {
+                      <div class="pf-field pf-field--half">
+                        <label class="pf-label">{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</label>
+                        <input type="number" class="pf-input" formControlName="unitCost" min="0"/>
+                      </div>
+                    }
+                  }
 
-                  <!-- Formula hint — shows the exact inputs feeding the profit calc. -->
-                  <small class="pf-bp-manage__formula">
-                    {{ 'PRODUCTS.FORM.PROFIT_EQUATION' | translate: {
-                         sellingPrice: (sellingPriceForActive() | mynumber),
-                         unitCost:     (ctl('unitCost')?.value | mynumber),
-                         taxAmount:    (productInfo().taxAmount | mynumber)
-                       } }}
+                  <small class="pf-bp-formula">
+                    {{ 'PRODUCTS.FORM.STOCK_EQUATION' | translate: { value: ctl('onHand')?.value ?? 0 } }}
                   </small>
-                } @else {
-                  <div class="pf-field">
-                    <label class="pf-label">{{ 'PRODUCTS.PRICING.UNIT_COST' | translate }}</label>
-                    <input type="number" class="pf-input" formControlName="unitCost" min="0"/>
+                }
+
+                <!-- ── Pricing ── -->
+                @if (detailTab() === 'pricing') {
+                  @if (fieldsOptions()?.branchProduct?.differentPrice) {
+                    <div class="pf-bp-inherit">
+                      <label class="pf-bp-inherit__row">
+                        <input type="checkbox"
+                               formControlName="has_different_price"
+                               (change)="onChangeHasDifferentPrice($any($event.target).checked)"/>
+                        <span>{{ 'PRODUCTS.FORM.HAS_DIFFERENT_PRICE' | translate }}</span>
+                        <span class="pf-bp-inherit__hint">
+                          @if (hasDifferentPriceValue()) {
+                            {{ 'PRODUCTS.FORM.PRODUCT_DEFAULT_IS' | translate: { price: (defaultPrice() | mycurrency) } }}
+                          } @else {
+                            {{ 'PRODUCTS.FORM.INHERITS_PRICE' | translate: { price: (defaultPrice() | mycurrency) } }}
+                          }
+                        </span>
+                      </label>
+                    </div>
+
+                    @if (hasDifferentPriceValue() && fieldsOptions()?.branchProduct?.price?.isVisible) {
+                      <div class="pf-row">
+                        <div class="pf-field pf-field--half">
+                          <label class="pf-label">{{ 'PRODUCTS.PRICING.DEFAULT_PRICE' | translate }}</label>
+                          <input type="number" class="pf-input" formControlName="price" min="0"
+                                 [class.pf-input--invalid]="ctl('price')?.touched && ctl('price')?.invalid"
+                                 [class.pf-input--warn]="branchPriceIsFree()"/>
+                          @if (ctl('price')?.touched && ctl('price')?.errors?.['required']) {
+                            <p class="pf-error">{{ 'COMMON.REQUIRED' | translate }}</p>
+                          }
+                          @if (branchPriceIsFree()) {
+                            <small class="pf-warn">{{ 'PRODUCTS.PRICING.ITEM_WILL_BE_FREE' | translate }}</small>
+                          }
+                        </div>
+                      </div>
+                    }
+                  }
+
+                  @if (canManageUnitCost && productInfo().id) {
+                    <div class="pf-bp-stats">
+                      <div class="pf-bp-stat">
+                        <strong [class.pf-bp-stat--bad]="activeBranchProfit() < 0">{{ activeBranchProfit() | mycurrency }}</strong>
+                        <span>{{ 'PRODUCTS.PRICING.PROFIT' | translate }}</span>
+                      </div>
+                      <div class="pf-bp-stat">
+                        <strong>{{ activeBranchMargin() | mynumber }}%</strong>
+                        <span>{{ 'PRODUCTS.PRICING.MARGIN' | translate }}</span>
+                      </div>
+                    </div>
+                    <small class="pf-bp-formula">
+                      {{ 'PRODUCTS.FORM.PROFIT_EQUATION' | translate: {
+                           sellingPrice: (sellingPriceForActive() | mynumber),
+                           unitCost:     (ctl('unitCost')?.value | mynumber),
+                           taxAmount:    (productInfo().taxAmount | mynumber)
+                         } }}
+                    </small>
+                  }
+
+                  <!-- Advance Pricing -->
+                  @if (fieldsOptions()?.branchProduct?.pricingType?.isVisible) {
+                    <h5 class="pf-bp-section-title">{{ 'PRODUCTS.FORM.ADVANCE_PRICING' | translate }}</h5>
+
+                    <div class="pf-field">
+                      <label class="pf-label">{{ 'PRODUCTS.FORM.SELECTED_PRICING_TYPE' | translate }}</label>
+                      <app-search-dropdown
+                        [items]="PRICING_TYPE_OPTIONS"
+                        [displayWith]="$any(pricingTypeDisplay)"
+                        [compareWith]="$any(branchCompare)"
+                        [searchable]="false"
+                        [clearable]="false"
+                        [value]="$any(selectedPricingTypeOption())"
+                        (valueChange)="setPricingType($any($event)?.value ?? '')"
+                        [placeholder]="'PRODUCTS.FORM.PRICING_TYPE_PLACEHOLDER' | translate"
+                      />
+                    </div>
+
+                    @if (selectedPricingTypeValue() === 'buyDownPrice') {
+                      <p class="pf-hint">{{ 'PRODUCTS.FORM.BUY_DOWN_HINT' | translate }}</p>
+                      <div class="pf-row">
+                        @if (fieldsOptions()?.branchProduct?.buyDownQty?.isVisible) {
+                          <div class="pf-field pf-field--half">
+                            <label class="pf-label">{{ 'PRODUCTS.FORM.BUY_DOWN_QTY' | translate }}</label>
+                            <input type="number" class="pf-input" formControlName="buyDownQty" min="0"/>
+                          </div>
+                        }
+                        @if (fieldsOptions()?.branchProduct?.buyDownPrice?.isVisible) {
+                          <div class="pf-field pf-field--half">
+                            <label class="pf-label">{{ 'PRODUCTS.FORM.BUY_DOWN_PRICE' | translate }}</label>
+                            <input type="number" class="pf-input" formControlName="buyDownPrice" min="0"
+                                   [class.pf-input--warn]="buyDownPriceIsFree()"/>
+                            @if (buyDownPriceIsFree()) {
+                              <small class="pf-warn">{{ 'PRODUCTS.PRICING.ITEM_WILL_BE_FREE' | translate }}</small>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    @if (selectedPricingTypeValue() === 'priceBoundary') {
+                      <p class="pf-hint">{{ 'PRODUCTS.FORM.PRICE_BOUNDARY_HINT' | translate }}</p>
+                      <div class="pf-row">
+                        @if (fieldsOptions()?.branchProduct?.priceBoundriesFrom?.isVisible) {
+                          <div class="pf-field pf-field--half">
+                            <label class="pf-label">{{ 'PRODUCTS.FORM.PRICE_FROM' | translate }}</label>
+                            <input type="number" class="pf-input" formControlName="priceBoundriesFrom" min="0"
+                                   [class.pf-input--invalid]="priceBoundsInvalid()"/>
+                          </div>
+                        }
+                        @if (fieldsOptions()?.branchProduct?.priceBoundriesTo?.isVisible) {
+                          <div class="pf-field pf-field--half">
+                            <label class="pf-label">{{ 'PRODUCTS.FORM.PRICE_TO' | translate }}</label>
+                            <input type="number" class="pf-input" formControlName="priceBoundriesTo" min="0"
+                                   [class.pf-input--invalid]="priceBoundsInvalid()"/>
+                          </div>
+                        }
+                      </div>
+                      @if (priceBoundsInvalid()) {
+                        <p class="pf-error">{{ 'PRODUCTS.FORM.PRICE_BOUNDARY_INVALID' | translate }}</p>
+                      }
+                    }
+
+                    @if (selectedPricingTypeValue() === 'priceByQty' && fieldsOptions()?.branchProduct?.priceByQty) {
+                      <app-pf-branch-price-by-qty
+                        [array]="$any(grp.get('priceByQty'))"
+                        [fieldsOptions]="fieldsOptions()"
+                      />
+                    }
+                  }
+                }
+
+                <!-- ── Serials ── -->
+                @if (detailTab() === 'serials') {
+                  <div class="pf-bp-toolbar">
+                    <app-dropdown-menu-btn
+                      [items]="ioMenuItems('serials')"
+                      triggerClass="pf-chip-btn"
+                      [appendToBody]="true">
+                      {{ 'PRODUCTS.FORM.IO_IMPORT_EXPORT' | translate }}
+                    </app-dropdown-menu-btn>
                   </div>
+                  <app-pf-branch-serials
+                    [array]="$any(grp.get('serials'))"
+                    [fieldsOptions]="fieldsOptions()"
+                    [productInfo]="productInfo()"
+                    [otherBranchesSerials]="otherBranchesSerials()"
+                  />
+                }
+
+                <!-- ── Batches ── -->
+                @if (detailTab() === 'batches') {
+                  <div class="pf-bp-toolbar">
+                    <app-dropdown-menu-btn
+                      [items]="ioMenuItems('batches')"
+                      triggerClass="pf-chip-btn"
+                      [appendToBody]="true">
+                      {{ 'PRODUCTS.FORM.IO_IMPORT_EXPORT' | translate }}
+                    </app-dropdown-menu-btn>
+                  </div>
+                  <app-pf-branch-batches
+                    [array]="$any(grp.get('batches'))"
+                    [fieldsOptions]="fieldsOptions()"
+                    [productInfo]="productInfo()"
+                  />
                 }
               </div>
             }
-          </div>
-        }
-
-        <!-- Reorder point / level (row of two) — sits after Manage Unit Cost
-             to match the old project's field order. -->
-        @if (fieldsOptions()?.branchProduct?.reorderPoint?.isVisible || fieldsOptions()?.branchProduct?.reorderLevel?.isVisible) {
-          <div class="pf-row">
-            @if (fieldsOptions()?.branchProduct?.reorderPoint?.isVisible) {
-              <div class="pf-field pf-field--half">
-                <label class="pf-label">{{ 'PRODUCTS.FORM.REORDER_POINT' | translate }}</label>
-                <input type="number" class="pf-input" formControlName="reorderPoint" min="0"/>
-              </div>
-            }
-            @if (fieldsOptions()?.branchProduct?.reorderLevel?.isVisible) {
-              <div class="pf-field pf-field--half">
-                <label class="pf-label">{{ 'PRODUCTS.FORM.REORDER_LEVEL' | translate }}</label>
-                <input type="number" class="pf-input" formControlName="reorderLevel" min="0"/>
-              </div>
-            }
-          </div>
-        }
-
-        <!-- Location picker — per-branch, paged + searchable -->
-        @if (fieldsOptions()?.branchProduct?.location?.isVisible) {
-          <div class="pf-field">
-            <label class="pf-label">{{ 'PRODUCTS.FORM.LOCATION' | translate }}</label>
-            <app-search-dropdown
-              formControlName="locationId"
-              [loadFn]="loadLocations"
-              [displayWith]="locationDisplay"
-              [toValue]="toValueId"
-              [placeholder]="'PRODUCTS.FORM.SELECT_LOCATION' | translate"
-            />
-          </div>
-        }
-
-        <!-- Advance Pricing — header + dropdown selector + conditional fields -->
-        @if (fieldsOptions()?.branchProduct?.pricingType?.isVisible) {
-          <h5 class="pf-bp-section-title">{{ 'PRODUCTS.FORM.ADVANCE_PRICING' | translate }}</h5>
-
-          <div class="pf-field">
-            <label class="pf-label">{{ 'PRODUCTS.FORM.SELECTED_PRICING_TYPE' | translate }}</label>
-            <app-search-dropdown
-              [items]="PRICING_TYPE_OPTIONS"
-              [displayWith]="$any(pricingTypeDisplay)"
-              [compareWith]="$any(branchCompare)"
-              [searchable]="false"
-              [clearable]="false"
-              [value]="$any(selectedPricingTypeOption())"
-              (valueChange)="setPricingType($any($event)?.value ?? '')"
-              [placeholder]="'PRODUCTS.FORM.PRICING_TYPE_PLACEHOLDER' | translate"
-            />
-          </div>
-
-          <!-- Buy-down fields -->
-          @if (selectedPricingTypeValue() === 'buyDownPrice') {
-            <p class="pf-hint">{{ 'PRODUCTS.FORM.BUY_DOWN_HINT' | translate }}</p>
-            <div class="pf-row">
-              @if (fieldsOptions()?.branchProduct?.buyDownQty?.isVisible) {
-                <div class="pf-field pf-field--half">
-                  <label class="pf-label">{{ 'PRODUCTS.FORM.BUY_DOWN_QTY' | translate }}</label>
-                  <input type="number" class="pf-input" formControlName="buyDownQty" min="0"/>
-                </div>
-              }
-              @if (fieldsOptions()?.branchProduct?.buyDownPrice?.isVisible) {
-                <div class="pf-field pf-field--half">
-                  <label class="pf-label">{{ 'PRODUCTS.FORM.BUY_DOWN_PRICE' | translate }}</label>
-                  <input
-                    type="number"
-                    class="pf-input"
-                    formControlName="buyDownPrice"
-                    min="0"
-                    [class.pf-input--warn]="buyDownPriceIsFree()"
-                  />
-                  @if (buyDownPriceIsFree()) {
-                    <small class="pf-warn">{{ 'PRODUCTS.PRICING.ITEM_WILL_BE_FREE' | translate }}</small>
-                  }
-                </div>
-              }
-            </div>
           }
-
-          <!-- Price boundary fields -->
-          @if (selectedPricingTypeValue() === 'priceBoundary') {
-            <p class="pf-hint">{{ 'PRODUCTS.FORM.PRICE_BOUNDARY_HINT' | translate }}</p>
-            <div class="pf-row">
-              @if (fieldsOptions()?.branchProduct?.priceBoundriesFrom?.isVisible) {
-                <div class="pf-field pf-field--half">
-                  <label class="pf-label">{{ 'PRODUCTS.FORM.PRICE_FROM' | translate }}</label>
-                  <input
-                    type="number"
-                    class="pf-input"
-                    formControlName="priceBoundriesFrom"
-                    min="0"
-                    [class.pf-input--invalid]="priceBoundsInvalid()"
-                  />
-                </div>
-              }
-              @if (fieldsOptions()?.branchProduct?.priceBoundriesTo?.isVisible) {
-                <div class="pf-field pf-field--half">
-                  <label class="pf-label">{{ 'PRODUCTS.FORM.PRICE_TO' | translate }}</label>
-                  <input
-                    type="number"
-                    class="pf-input"
-                    formControlName="priceBoundriesTo"
-                    min="0"
-                    [class.pf-input--invalid]="priceBoundsInvalid()"
-                  />
-                </div>
-              }
-            </div>
-            @if (priceBoundsInvalid()) {
-              <p class="pf-error">{{ 'PRODUCTS.FORM.PRICE_BOUNDARY_INVALID' | translate }}</p>
-            }
-          }
-        }
-
-        <!-- Price-by-qty nested FormArray (pricing-type triggered) -->
-        @if (selectedPricingTypeValue() === 'priceByQty' && fieldsOptions()?.branchProduct?.priceByQty) {
-          <app-pf-branch-price-by-qty
-            [array]="$any(grp.get('priceByQty'))"
-            [fieldsOptions]="fieldsOptions()"
-          />
-        }
-
-        <!-- Serials (serialized product type) -->
-        @if (productInfo().type === 'serialized' && fieldsOptions()?.branchProduct?.serials?.isVisible) {
-          <app-pf-branch-serials
-            [array]="$any(grp.get('serials'))"
-            [fieldsOptions]="fieldsOptions()"
-            [productInfo]="productInfo()"
-            [otherBranchesSerials]="otherBranchesSerials()"
-          />
-        }
-
-        <!-- Batches (batch product type) -->
-        @if (productInfo().type === 'batch' && fieldsOptions()?.branchProduct?.batches?.isVisible) {
-          <app-pf-branch-batches
-            [array]="$any(grp.get('batches'))"
-            [fieldsOptions]="fieldsOptions()"
-            [productInfo]="productInfo()"
-          />
-        }
+        </div>
       </div>
+
+      <!-- ═══ Bulk bar ═══ -->
+      @if (selectedCount()) {
+        <div class="pf-bp-bulk">
+          <strong>{{ 'PRODUCTS.FORM.N_BRANCHES_SELECTED' | translate: { count: selectedCount() } }}</strong>
+
+          <button type="button" class="pf-chip-btn pf-chip-btn--primary" (click)="openBulkEdit()">
+            {{ 'PRODUCTS.FORM.BULK_EDIT_FIELDS' | translate }}
+          </button>
+
+          <button type="button" class="pf-chip-btn" (click)="bulkCopyFromActive()">
+            {{ 'PRODUCTS.FORM.BULK_COPY_FROM' | translate: { name: activeBranchName() } }}
+          </button>
+
+          @if (showSerialsTab()) {
+            <button type="button" class="pf-chip-btn" (click)="openImport('serials')">
+              {{ 'PRODUCTS.FORM.IO_IMPORT_SERIALS' | translate }}
+            </button>
+          }
+          @if (showBatchesTab()) {
+            <button type="button" class="pf-chip-btn" (click)="openImport('batches')">
+              {{ 'PRODUCTS.FORM.IO_IMPORT_BATCHES' | translate }}
+            </button>
+          }
+
+          <button type="button" class="pf-bp-link pf-bp-bulk__clear" (click)="clearSelection()">
+            {{ 'PRODUCTS.FORM.CLEAR_SELECTION' | translate }}
+          </button>
+        </div>
+      }
     }
-    }
-  </div>
+  }
 </section>

@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   signal,
@@ -85,6 +86,17 @@ export class BranchSerialsComponent {
    * push/removeAt. The signal input itself doesn't notify on in-place mutation.
    */
   private arrayTick = signal(0);
+
+  constructor() {
+    // The array is also written from outside (the branch section's import
+    // flow). Mirror those mutations into the local tick so the filtered
+    // view recomputes — an in-place push doesn't notify the signal graph.
+    effect((onCleanup) => {
+      const arr = this.array();
+      const sub = arr.valueChanges.subscribe(() => this.arrayTick.update(n => n + 1));
+      onCleanup(() => sub.unsubscribe());
+    });
+  }
 
   // ─── Filter options for the status dropdown ──────────────────────────
   readonly STATUS_OPTIONS: StatusOption[] = [

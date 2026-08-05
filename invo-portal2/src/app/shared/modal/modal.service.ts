@@ -84,8 +84,11 @@ export class ModalRef<R = any> {
       return;
     }
 
-    // Add the closing class that triggers the CSS exit animation.
+    // Add the closing class that triggers the CSS exit animation. The pane
+    // is on its way out, so stop it swallowing clicks meant for the page
+    // underneath during those ~240ms.
     pane.classList.add('modal-closing');
+    pane.style.pointerEvents = 'none';
 
     // Also fade the backdrop.
     const backdrop = this.overlayRef.backdropElement;
@@ -95,16 +98,27 @@ export class ModalRef<R = any> {
     }
 
     // Wait for the animation to end, then dispose.
+    let done = false;
     const onDone = () => {
-      pane.removeEventListener('animationend', onDone);
+      if (done) return;                 // fallback + animationend can race
+      done = true;
+      pane.removeEventListener('animationend', onAnimEnd as EventListener);
       clearTimeout(fallback);
       this.overlayRef.dispose();
     };
 
-    pane.addEventListener('animationend', onDone, { once: true });
+    // `animationend` bubbles: any animated descendant (a spinner, a chip
+    // pop, a panel that animates as it unmounts) would otherwise dispose
+    // the overlay mid-slide, so only the pane's own animation counts.
+    const onAnimEnd = (event: AnimationEvent) => {
+      if (event.target !== pane) return;
+      onDone();
+    };
+    pane.addEventListener('animationend', onAnimEnd as EventListener);
 
-    // Fallback in case animationend doesn't fire (detached element, etc.)
-    const fallback = setTimeout(onDone, 300);
+    // Fallback in case animationend doesn't fire (detached element, etc.).
+    // Comfortably past the longest exit animation (drawer: 240ms).
+    const fallback = setTimeout(onDone, 400);
   }
 }
 

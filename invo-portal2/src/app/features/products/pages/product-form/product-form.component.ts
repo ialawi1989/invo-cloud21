@@ -67,6 +67,7 @@ import { ProductMediaCardComponent }     from './components/product-media/produc
 import { ProductTabBuilderSectionComponent } from './components/tab-builder/tab-builder-section.component';
 import { ProductFormSkeletonComponent } from './components/product-form-skeleton/product-form-skeleton.component';
 import { SeoSettingsComponent } from './components/seo-settings/seo-settings.component';
+import { CollapsibleCardsDirective } from '@shared/directives/collapsible-cards.directive';
 
 type FormStatus = 'new' | 'edit';
 
@@ -117,6 +118,7 @@ type FormStatus = 'new' | 'edit';
     ProductTabBuilderSectionComponent,
     ProductFormSkeletonComponent,
     SeoSettingsComponent,
+    CollapsibleCardsDirective,
   ],
   templateUrl: './product-form.component.html',
   styleUrl: './product-form.component.scss',

@@ -1,33 +1,46 @@
 @use '../../_shared-form.scss' as *;
 @include pfCard;
 
+// ─────────────────────────────────────────────────────────────────────────
+// Branch section — master/detail.
+// Everything here is written with logical properties (inline-start/end,
+// margin-inline-*) so the whole section mirrors under [dir=rtl] without a
+// second stylesheet. Chevrons flip via a scaleX on the RTL host.
+// ─────────────────────────────────────────────────────────────────────────
+
 .pf-card__header { flex-wrap: wrap; gap: 12px; }
 
 .pf-bp-summary {
   margin-inline-start: auto;
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
+  font-size: 12.5px;
   color: #64748b;
-
-  &__item strong { color: #0f172a; margin-inline-start: 4px; }
 }
 
-// Single / Bulk mode toggle — pushed to the far end of the header
-// via `margin-inline-start: auto` (was balanced by the old Total-stock
-// tile before it was removed).
-// The Single Branch / Bulk Edit toggle is now `<app-segmented-toggle>`.
-// Push it to the trailing edge so it keeps the original header layout.
-.pf-bp-mode-toggle { margin-inline-start: auto; }
+.pf-bp-badge {
+  border: 0;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
 
-// Branch tabs strip — replaces the legacy .pf-bp-picker dropdown row.
-// Sits under the card header; the strip itself is the visual container, so
-// the wrapper just provides breathing room and a faint separator before the
-// per-branch panel below.
-.pf-bp-tabs {
-  display: block;
-  padding: 14px 18px 12px;
-  border-bottom: 1px solid #f1f5f9;
+  &--error {
+    background: #fee2e2;
+    color: #b91c1c;
+    &:hover { background: #fecaca; }
+  }
+}
+
+.pf-bp-chev {
+  background: none;
+  border: 0;
+  padding: 2px 6px;
+  color: #94a3b8;
+  cursor: pointer;
+  line-height: 1;
+  transition: transform .18s;
+
+  &--up { transform: rotate(180deg); }
 }
 
 .pf-bp-skeleton {
@@ -37,283 +50,6 @@
   gap: 12px;
 }
 
-// ── Card-style "Different price" checkbox ─────────────────────────────────
-.pf-bp-card-check {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: border-color .12s, background .12s;
-  margin: 8px 0 12px;
-  position: relative;
-
-  &:hover { border-color: #cbd5e1; }
-
-  // Hide the native checkbox but keep it layout-inert and clickable via label.
-  input {
-    position: absolute;
-    inset-inline-start: -9999px;
-    opacity: 0;
-    width: 0; height: 0;
-  }
-
-  &__box {
-    width: 20px; height: 20px;
-    border: 1.5px solid #cbd5e1;
-    border-radius: 4px;
-    display: inline-flex; align-items: center; justify-content: center;
-    color: #fff; background: #fff;
-    flex-shrink: 0;
-    transition: background .12s, border-color .12s;
-
-    svg { width: 14px; height: 14px; opacity: 0; transition: opacity .12s; }
-  }
-
-  &__label {
-    font-size: 13px;
-    font-weight: 500;
-    color: #1e293b;
-  }
-
-  // :has() bubbles checked state from the native input to the card.
-  &:has(input:checked) {
-    border-color: #a6d8df;
-    background: #eff9fb;
-
-    .pf-bp-card-check__box {
-      background: #32acc1;
-      border-color: #32acc1;
-      svg { opacity: 1; }
-    }
-  }
-}
-
-// ── Manage Stock collapsible ──────────────────────────────────────────────
-.pf-bp-manage {
-  margin: 12px 0;
-
-  &__toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: transparent;
-    border: none;
-    padding: 0;
-    color: #32acc1;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-
-    svg { transition: transform .15s; }
-  }
-  &__chev--open { transform: rotate(180deg); }
-
-  &__formula {
-    display: block;
-    margin-top: 2px;
-    font-size: 12px;
-    color: #32acc1;
-  }
-
-  &__body {
-    margin-top: 10px;
-    padding: 12px 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    background: #fafbfc;
-  }
-}
-
-// ── Advance Pricing section header ────────────────────────────────────────
-.pf-bp-section-title {
-  margin: 20px 0 8px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-// Bulk-edit table — all branches as rows, each cell editable.
-.pf-bp-bulk {
-  padding: 14px 18px 18px;
-
-  &__scroll {
-    overflow-x: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    background: #fff;
-  }
-}
-
-.pf-bp-bulk-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 13px;
-
-  th, td {
-    padding: 10px 12px;
-    text-align: start;
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
-    white-space: nowrap;
-  }
-  thead th {
-    background: #f8fafc;
-    color: #64748b;
-    font-weight: 600;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: .4px;
-    border-bottom: 1px solid #e2e8f0;
-    position: sticky; top: 0; z-index: 1;
-  }
-  tbody tr:last-child td { border-bottom: none; }
-
-  &__name {
-    font-weight: 600;
-    color: #1e293b;
-    min-width: 120px;
-  }
-  // ON HAND / UNIT COST cells. The <td> must stay `display: table-cell` or
-  // it leaves the table column layout and the content stacks vertically
-  // under the ON HAND column instead of sitting in its own column. Space
-  // inline children (dot + value + Adjust button) via margin.
-  &__stock {
-    white-space: nowrap;
-
-    > .pf-bp-bulk-dot,
-    > .pf-bp-bulk-val,
-    > .pf-chip-btn,
-    > .pf-input--compact {
-      vertical-align: middle;
-    }
-
-    > *:not(:first-child) { margin-inline-start: 8px; }
-  }
-}
-
-.pf-bp-check {
-  width: 18px; height: 18px;
-  accent-color: #32acc1;
-  cursor: pointer;
-}
-
-.pf-bp-bulk-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  display: inline-block; flex-shrink: 0;
-
-  &--good { background: #22c55e; }
-  &--warn { background: #f59e0b; }
-  &--bad  { background: #ef4444; }
-}
-.pf-bp-bulk-val { font-weight: 500; color: #1e293b; }
-
-// "Default" indicator in the bulk-edit Different-Price column — shown when
-// `has_different_price` is false. Read-only hint; user toggles the override
-// via the single-branch panel.
-.pf-bp-bulk-default {
-  font-size: 12px;
-  font-style: italic;
-  color: #94a3b8;
-}
-
-:host ::ng-deep .pf-input--compact {
-  padding: 6px 8px;
-  font-size: 13px;
-  width: 80px;
-  min-width: 80px;
-  text-align: center;
-}
-
-// Summary footer (Available / Online / Low Stock)
-.pf-bp-bulk-summary {
-  margin-top: 16px;
-  padding: 16px 20px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-
-  @media (max-width: 640px) { grid-template-columns: repeat(3, 1fr); }
-
-  &__item {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    font-size: 12px; color: #64748b;
-  }
-  &__num {
-    font-size: 20px;
-    font-weight: 700;
-
-    &--good  { color: #22c55e; }
-    &--info  { color: #32acc1; }
-    &--warn  { color: #f59e0b; }
-    &--muted { color: #6366f1; }
-  }
-}
-
-// Tabs ─────────────────────────────────────────────────────────────────────
-.pf-bp-tabs {
-  display: flex;
-  gap: 6px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #f1f5f9;
-  background: #fafbfc;
-  overflow-x: auto;
-  scrollbar-width: thin;
-}
-
-.pf-bp-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #475569;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
-
-  &:hover { background: #f8fafc; }
-  &--active {
-    background: #d9f2f6;
-    color: #143742;
-    border-color: #a5dde6;
-  }
-
-  &__badge {
-    display: inline-flex;
-    min-width: 22px;
-    justify-content: center;
-    padding: 1px 7px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #fff;
-    letter-spacing: 0.2px;
-
-    &--good { background: #16a34a; }
-    &--warn { background: #f59e0b; }
-    &--bad  { background: #dc2626; }
-  }
-}
-
-// Panel ───────────────────────────────────────────────────────────────────
-.pf-bp-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
 .pf-bp-empty {
   text-align: center;
   padding: 36px 16px;
@@ -321,9 +57,421 @@
   font-size: 13px;
 }
 
-.pf-row--thirds {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  @media (max-width: 720px) { grid-template-columns: 1fr; }
+// ── Grid ─────────────────────────────────────────────────────────────────
+.pf-bp-grid {
+  display: grid;
+  // The list is a navigator, not a workspace — it takes a share of the card
+  // rather than a fixed 280px, so the detail pane keeps the room on wide
+  // screens while the list stays readable on narrow ones.
+  grid-template-columns: clamp(180px, 22%, 250px) minmax(0, 1fr);
+  transition: grid-template-columns .18s ease;
+
+  // Rail mode — master pane collapsed to a narrow strip (desktop only).
+  &--rail {
+    grid-template-columns: 48px minmax(0, 1fr);
+
+    .pf-bp-master__full { display: none; }
+    .pf-bp-rail { display: flex; }
+  }
+}
+
+.pf-bp-master {
+  border-inline-end: 1px solid #eef2f7;
+  background: #fbfcfe;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pf-bp-rail {
+  display: none;               // shown only in rail mode
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+
+  &__count {
+    font-size: 11px;
+    font-weight: 700;
+    color: #0f7c8c;
+    background: #e2f6f9;
+    padding: 2px 6px;
+    border-radius: 999px;
+  }
+  &__label {
+    writing-mode: vertical-rl;
+    font-size: 11.5px;
+    color: #94a3b8;
+    letter-spacing: .05em;
+  }
+}
+
+.pf-bp-icon-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  flex: none;
+
+  &:hover { background: #f5f7fa; color: #334155; }
+}
+
+// ── Master: search + chips ───────────────────────────────────────────────
+.pf-bp-search {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 10px 10px 0;
+
+  input {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.pf-bp-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  padding: 8px 10px 9px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.pf-bp-chip {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+
+  span { margin-inline-start: 4px; opacity: .8; }
+
+  &:hover { background: #f5f7fa; }
+  &--on {
+    background: #e2f6f9;
+    border-color: #a5dde6;
+    color: #0f7c8c;
+    font-weight: 600;
+  }
+}
+
+// ── Master: list ─────────────────────────────────────────────────────────
+.pf-bp-list {
+  overflow: auto;
+  max-height: 520px;
+  scrollbar-width: thin;
+}
+
+.pf-bp-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border-bottom: 1px solid #f4f6fa;
+  border-inline-start: 3px solid transparent;
+  cursor: pointer;
+  font-size: 13px;
+  color: #475569;
+
+  &:hover { background: #f4f6fa; }
+
+  // Active row is filled, not tinted — at this column width a pale
+  // background plus a 3px edge didn't read as "this is the one you're
+  // editing", which is the single most important state in the list.
+  &--active {
+    background: #32acc1;
+    // No accent edge — the fill is the state. The transparent 3px border
+    // stays so the row's text doesn't shift against its neighbours.
+    border-bottom-color: #32acc1;
+    font-weight: 600;
+    color: #fff;
+
+    &:hover { background: #2ba3b8; }
+
+    // Status dot needs a rim to stay legible on the fill.
+    .pf-bp-dot { box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .9); }
+    .pf-bp-pill--override { background: rgba(255, 255, 255, .22); color: #fff; }
+    .pf-bp-pill--error    { background: #fff; color: #b91c1c; }
+    // The shared checkbox is a white square with a slate border — invisible
+    // against the fill until it's ticked.
+    .pf-bp-check:not(:checked) {
+      background: rgba(255, 255, 255, .2);
+      border-color: rgba(255, 255, 255, .85);
+    }
+    .pf-bp-check:checked {
+      background-color: #0b5c68;
+      border-color: #0b5c68;
+    }
+  }
+
+  &__name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.pf-bp-check {
+  width: 16px;
+  height: 16px;
+  accent-color: #32acc1;
+  cursor: pointer;
+  flex: none;
+}
+
+.pf-bp-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+
+  &--good { background: #22c55e; }
+  &--warn { background: #f59e0b; }
+  &--off  { background: #cbd5e1; }
+}
+
+.pf-bp-pill {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 500;
+  white-space: nowrap;
+  background: #f1f5f9;
+  color: #64748b;
+
+  &--ok       { background: #dcfce7; color: #15803d; }
+  &--on       { background: #e0f2fe; color: #0369a1; }
+  &--off      { background: #f1f5f9; color: #64748b; }
+  &--warn     { background: #fef3c7; color: #92400e; }
+  &--error    { background: #fee2e2; color: #b91c1c; font-weight: 700; }
+  &--override { background: #f3e8ff; color: #7e22ce; }
+
+  // On-hand pill in the detail header — tone follows the same thresholds as
+  // the list dot (none / at-or-below reorder point / healthy).
+  &--stock-good { background: #eef7f0; color: #15803d; }
+  &--stock-warn { background: #fef3c7; color: #92400e; }
+  &--stock-bad  { background: #fee2e2; color: #b91c1c; }
+}
+
+.pf-bp-list-empty {
+  padding: 26px 14px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12.5px;
+
+  p { margin: 0 0 10px; }
+}
+
+.pf-bp-sentinel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 15px 12px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.pf-bp-list-end {
+  text-align: center;
+  padding: 13px 12px;
+  color: #b4bac6;
+  font-size: 11.5px;
+}
+
+.pf-bp-spin {
+  width: 13px;
+  height: 13px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #32acc1;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pfBpSpin .7s linear infinite;
+}
+@keyframes pfBpSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .pf-bp-spin { animation: none; border-top-color: #e2e8f0; }
+}
+
+.pf-bp-master__foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  border-top: 1px solid #eef2f7;
+  font-size: 11px;
+  color: #94a3b8;
+
+  > span { flex: 1; min-width: 0; }
+}
+
+.pf-bp-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: #0f7c8c;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover { color: #0b5c68; }
+}
+
+// ── Detail pane ──────────────────────────────────────────────────────────
+.pf-bp-detail {
+  padding: 16px 18px 20px;
+  min-width: 0;
+}
+
+.pf-bp-back {
+  display: none;               // mobile only
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  &__pos { font-size: 12px; color: #94a3b8; }
+}
+
+.pf-bp-detail__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.pf-bp-detail__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.pf-bp-alert {
+  border-radius: 8px;
+  padding: 10px 13px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  margin-bottom: 13px;
+
+  ul { margin: 0; padding-inline-start: 18px; }
+
+  &--error { background: #fef2f2; color: #b91c1c; }
+  &--info  { background: #eff6ff; color: #1e40af; }
+}
+
+// ── Detail tabs ──────────────────────────────────────────────────────────
+.pf-bp-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid #eef2f7;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.pf-bp-tab {
+  padding: 8px 13px;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: #64748b;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover { background: #f7f8fb; color: #334155; }
+  &--on {
+    border-bottom-color: #32acc1;
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  &__count { font-size: 11px; color: #94a3b8; margin-inline-start: 4px; }
+}
+
+// ── Detail bits ──────────────────────────────────────────────────────────
+.pf-bp-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.pf-bp-stat {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 11px;
+  text-align: center;
+
+  strong {
+    display: block;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  span { font-size: 11.5px; color: #64748b; }
+
+  &--bad { color: #dc2626; }
+}
+
+.pf-bp-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.pf-bp-inherit {
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 13px;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    color: #1e293b;
+    cursor: pointer;
+
+    input { width: 16px; height: 16px; accent-color: #32acc1; cursor: pointer; }
+  }
+
+  &__hint {
+    margin-inline-start: auto;
+    font-size: 12px;
+    color: #64748b;
+  }
+}
+
+.pf-bp-formula {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #32acc1;
+}
+
+.pf-bp-section-title {
+  margin: 20px 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
 }
 
 .pf-field--inline {
@@ -333,28 +481,70 @@
   gap: 12px;
 }
 
-// Pricing-type chip group ───────────────────────────────────────────────────
-.pf-chip-group {
+// ── Bulk bar ─────────────────────────────────────────────────────────────
+.pf-bp-bulk {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 9px;
   flex-wrap: wrap;
+  padding: 10px 16px;
+  background: #e2f6f9;
+  border-top: 1px solid #a5dde6;
+
+  strong { color: #0f7c8c; font-size: 13px; }
+
+  &__clear { margin-inline-start: auto; }
+
+  // Primary action of the bar — the bulk editor.
+  .pf-chip-btn--primary {
+    background: #32acc1;
+    border-color: #32acc1;
+    color: #fff;
+
+    &:hover { background: #2795a8; border-color: #2795a8; }
+  }
 }
 
-.pf-chip {
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  border-radius: 999px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  color: #475569;
-  cursor: pointer;
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
-
-  &:hover { background: #f8fafc; }
-  &--active {
-    background: #143742;
-    color: #fff;
-    border-color: #143742;
+// ── Responsive: list ⇄ detail below 820px ────────────────────────────────
+@media (max-width: 820px) {
+  .pf-bp-grid,
+  .pf-bp-grid--rail {
+    grid-template-columns: 1fr;
   }
+
+  // The rail is a net loss on a phone — the full pane always wins.
+  .pf-bp-rail { display: none !important; }
+  .pf-bp-master__full { display: block !important; }
+  .pf-bp-collapse-btn { display: none; }
+
+  .pf-bp-master {
+    border-inline-end: 0;
+    border-bottom: 1px solid #eef2f7;
+  }
+
+  // A nested scroll region on touch fights the page scroll and breaks the
+  // observer root — let the list grow and scroll with the page instead.
+  .pf-bp-list { max-height: none; overflow: visible; }
+
+  .pf-bp-grid--mob-list   .pf-bp-detail { display: none; }
+  .pf-bp-grid--mob-detail .pf-bp-master { display: none; }
+  .pf-bp-grid--mob-detail .pf-bp-back   { display: flex; }
+
+  .pf-bp-detail { padding: 14px 13px 18px; }
+  .pf-bp-bulk   { padding: 9px 12px; }
+}
+
+// ── RTL ──────────────────────────────────────────────────────────────────
+// Directional glyphs (back / expand / collapse chevrons) point the other
+// way in Arabic; the layout itself already mirrors via logical properties.
+:host-context([dir='rtl']) {
+  .pf-bp-icon-btn svg,
+  .pf-bp-back__icon { transform: scaleX(-1); }
+}
+
+// Keep the compact input override scoped — the master search box uses the
+// same class and must stay full-width and start-aligned.
+:host ::ng-deep .pf-input--compact {
+  padding: 6px 8px;
+  font-size: 13px;
 }

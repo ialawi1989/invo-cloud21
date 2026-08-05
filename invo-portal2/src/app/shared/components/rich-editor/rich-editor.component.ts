@@ -124,27 +124,6 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
          [class.re--disabled]="disabled()"
          [class.re--bare]="bare()"
          [class.re--fullscreen]="isFullscreen()">
-      <!-- Fullscreen toggle — pinned to the top-right of the host
-           regardless of mode (HTML / wysiwyg). Square 28x28 button
-           with the "expand corners" / "collapse corners" icon. -->
-      <button type="button"
-              class="re-fullscreen-toggle"
-              (mousedown)="$event.preventDefault(); toggleFullscreen()"
-              [appReTooltip]="isFullscreen() ? 'Exit fullscreen' : 'Fullscreen'"
-              [attr.aria-pressed]="isFullscreen()"
-              aria-label="Toggle fullscreen">
-        @if (isFullscreen()) {
-          <!-- Collapse corners (4 inward arrows) -->
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M9 3v4H5V5h2V3h2zm6 0h2v2h2v2h-4V3zM9 21H7v-2H5v-2h4v4zm6 0v-4h4v2h-2v2h-2z"/>
-          </svg>
-        } @else {
-          <!-- Expand corners (4 outward arrows) -->
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M5 5h4V3H3v6h2V5zm14 0v4h2V3h-6v2h4zM5 19v-4H3v6h6v-2H5zm14 0h-4v2h6v-6h-2v4z"/>
-          </svg>
-        }
-      </button>
       <!-- Ricos-style outer shell:
              .re-static-toolbar  — sticky, centred, full-width toolbar
              .re-editor-page     — scroll container
@@ -465,6 +444,29 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
           </button>
         }
         </div>
+
+        <!-- Fullscreen toggle — a pinned end-cap of the toolbar rather
+             than an absolutely-positioned overlay on the host, so it
+             can never land on top of a toolbar button. Flex order puts
+             it at the trailing edge, which mirrors under RTL for free. -->
+        <button type="button"
+                class="re-fullscreen-toggle"
+                (mousedown)="$event.preventDefault(); toggleFullscreen()"
+                [appReTooltip]="isFullscreen() ? 'Exit fullscreen' : 'Fullscreen'"
+                [attr.aria-pressed]="isFullscreen()"
+                aria-label="Toggle fullscreen">
+          @if (isFullscreen()) {
+            <!-- Collapse corners (4 inward arrows) -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M9 3v4H5V5h2V3h2zm6 0h2v2h2v2h-4V3zM9 21H7v-2H5v-2h4v4zm6 0v-4h4v2h-2v2h-2z"/>
+            </svg>
+          } @else {
+            <!-- Expand corners (4 outward arrows) -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M5 5h4V3H3v6h2V5zm14 0v4h2V3h-6v2h4zM5 19v-4H3v6h6v-2H5zm14 0h-4v2h6v-6h-2v4z"/>
+            </svg>
+          }
+        </button>
 
         <!-- HTML source toggle removed from the toolbar by request. The
              toggleMode()/mode() logic is left intact for re-enabling. -->
@@ -3120,14 +3122,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re--bare.re-editor-host { background: transparent; }
     .re--bare .re-static-toolbar { background: #ffffff; }
 
-    /* Fullscreen toggle button — pinned at the top-right corner of
-       the editor host. 28×28 square with the expand/collapse
-       glyph. Sits above the sticky toolbar's z-index so it stays
-       reachable even when the toolbar is positioned over content. */
+    /* Fullscreen toggle button — the toolbar's trailing end-cap. It
+       takes its own space in the flex row (never overlapping a
+       button) and stays put while the rail above it wraps. 28×28
+       square with the expand/collapse glyph. */
     .re-fullscreen-toggle {
-      position: absolute;
-      top: 6px;
-      right: 6px;
+      flex: none;
+      align-self: center;
+      margin-inline-start: 4px;
       width: 28px;
       height: 28px;
       display: inline-flex;
@@ -3139,7 +3141,6 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       border: 1px solid var(--ricos-custom-border-color, #e2e8f0);
       border-radius: 6px;
       cursor: pointer;
-      z-index: 30;
       transition: background-color .12s, border-color .12s, color .12s;
     }
     .re-fullscreen-toggle:hover {

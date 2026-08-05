@@ -414,6 +414,53 @@ body:has(.wc) .wc__editor .re__surface {
   to   { transform: translateX(0); }
 }
 
+// Drawer close — slides back out the way it came in.
+//
+// Without these, `.modal-closing` falls through to the generic
+// `modal-pane-out` fade and the drawer dissolves in place instead of
+// leaving the screen. The extra class in each selector outranks that rule,
+// and no opacity is touched, so the panel stays fully opaque as it travels.
+// A full-height panel sliding across the viewport repaints everything behind
+// it. Promoting it to its own layer keeps the exit a GPU transform instead of
+// a full-page paint — that's the stutter you see on a heavy form.
+.cdk-overlay-pane.invo-drawer-panel--ltr.modal-closing,
+.cdk-overlay-pane.invo-drawer-panel--rtl.modal-closing,
+.cdk-overlay-pane.invo-drawer-panel--bottom.modal-closing {
+  will-change: transform;
+  pointer-events: none;
+}
+
+.cdk-overlay-pane.invo-drawer-panel--ltr.modal-closing {
+  animation: drawer-out-ltr 0.24s cubic-bezier(0.4, 0, 1, 1) both;
+}
+@keyframes drawer-out-ltr {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+
+.cdk-overlay-pane.invo-drawer-panel--rtl.modal-closing {
+  animation: drawer-out-rtl 0.24s cubic-bezier(0.4, 0, 1, 1) both;
+}
+@keyframes drawer-out-rtl {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+
+.cdk-overlay-pane.invo-drawer-panel--bottom.modal-closing {
+  animation: drawer-out-bottom 0.24s cubic-bezier(0.4, 0, 1, 1) both;
+}
+@keyframes drawer-out-bottom {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+
+// The drawer's content root is `.drawer-panel`, not `.modal-panel`, so the
+// content scale-out never applied — but guard it anyway in case a drawer
+// ever hosts modal chrome.
+.modal-closing app-drawer-container .drawer-panel {
+  animation: none;
+}
+
 // ── Drawer flush-edge fix ────────────────────────────────────────────────────
 // CDK overlay container adds padding — override so drawer is edge-to-edge
 .cdk-overlay-container {
@@ -560,4 +607,54 @@ select[readonly] {
 .cdk-drag-dragging {
   // No text selection painted across labels the pointer sweeps over.
   user-select: none;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Collapsible form cards (`appCollapsibleCards`).
+//
+// The chevron is created by the directive at runtime, so it carries no
+// component-encapsulation attribute — these rules have to live globally to
+// reach it. The collapsed rule hides everything after the header; the
+// controls stay mounted, so validation and the save payload don't change.
+// ─────────────────────────────────────────────────────────────────────────
+// The toggle is pinned to the trailing edge and the header reserves room
+// for it, rather than claiming the space with `margin-inline-start: auto`.
+// An auto margin would compete with header actions that already use one
+// (SEO's "Edit SEO Settings"), splitting the free space between them and
+// leaving the action stranded mid-header.
+// `!important` is load-bearing: each section component includes the shared
+// `pfCard` mixin locally, so its own `.pf-card__header { padding: 14px 18px }`
+// shorthand is an encapsulated rule injected after this file — without it the
+// reserved space is overwritten and the toggle lands on top of a header
+// action (SEO's "Edit SEO Settings").
+.pf-card__header:has(> .pf-card__chev),
+[data-pf-card-header]:has(> .pf-card__chev) {
+  position: relative;
+  padding-inline-end: 46px !important;
+}
+
+.pf-card__chev {
+  position: absolute;
+  inset-inline-end: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border: 0;
+  background: none;
+  color: #94a3b8;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: transform .18s ease, color .12s, background-color .12s;
+
+  &:hover { color: #475569; background: #f1f5f9; }
+  &--up   { transform: translateY(-50%) rotate(180deg); }
+}
+
+.pf-card.is-collapsed > *:not([data-pf-card-header]):not(.pf-card__header) {
+  display: none !important;
 }

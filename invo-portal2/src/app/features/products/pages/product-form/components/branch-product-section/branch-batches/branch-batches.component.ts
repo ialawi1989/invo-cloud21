@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   signal,
@@ -61,6 +62,17 @@ export class BranchBatchesComponent {
    * computeds that iterate `controls` need a separate signal dep to re-run.
    */
   private arrayTick = signal(0);
+
+  constructor() {
+    // The array is also written from outside (the branch section's import
+    // flow). Mirror those mutations into the local tick so the filtered
+    // view recomputes — an in-place push doesn't notify the signal graph.
+    effect((onCleanup) => {
+      const arr = this.array();
+      const sub = arr.valueChanges.subscribe(() => this.arrayTick.update(n => n + 1));
+      onCleanup(() => sub.unsubscribe());
+    });
+  }
 
   visibleIndices = computed<number[]>(() => {
     this.arrayTick();
