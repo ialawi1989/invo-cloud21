@@ -31,6 +31,19 @@ import {
  * needs setting defaults and the legacy slug maps, which ship bundled in
  * `page-type.fallback.ts`. Keep that file in step with the backend manifest.
  */
+/**
+ * Page setting key → the site-config key that provides its default. Mirrors the
+ * `precedence: 'default'` entries of OPTION_RELOCATIONS in the backend module.
+ */
+const SITE_DEFAULT_KEYS: Record<string, string> = {
+  product_style:      'defaultProductStyle',
+  product_image_size: 'defaultProductImageFit',
+  default_view:       'defaultListingView',
+  page_limit:         'defaultPageLimit',
+  sort_By:            'defaultSortBy',
+  long_product_name:  'allowLongProductName',
+};
+
 @Injectable({ providedIn: 'root' })
 export class PageTypeService {
   private manifestSig = signal<PageTypeManifest>(FALLBACK_MANIFEST);
@@ -81,13 +94,36 @@ export class PageTypeService {
     return this.manifestSig().legacySources[slug] ?? null;
   }
 
-  /** Stored settings with every manifest default applied for unset keys. */
-  settingsFor(pageType: string, stored: Record<string, any> | null | undefined): Record<string, any> {
+  /**
+   * Effective settings for a page: PAGE value → SITE default → manifest default.
+   *
+   * Several legacy options moved up to site config because every merchant set
+   * them identically on every listing (card style, view, page size…). They stay
+   * overridable per page, so the page wins when it has a value — and an
+   * un-migrated page, which still carries its own copy, behaves exactly as it
+   * did before anything moved.
+   *
+   * `siteDefaults` maps a page key to its site-config key, e.g.
+   * `product_style → defaultProductStyle`.
+   */
+  settingsFor(
+    pageType: string,
+    stored: Record<string, any> | null | undefined,
+    siteCommerce?: Record<string, any> | null,
+  ): Record<string, any> {
     const out: Record<string, any> = { ...(stored ?? {}) };
+
     for (const field of this.fieldsOf(pageType)) {
-      if (out[field.key] === undefined && field.default !== undefined) {
-        out[field.key] = field.default;
+      if (out[field.key] !== undefined && out[field.key] !== '') continue;
+
+      const siteKey = SITE_DEFAULT_KEYS[field.key];
+      const siteValue = siteKey ? siteCommerce?.[siteKey] : undefined;
+      if (siteValue !== undefined && siteValue !== '') {
+        out[field.key] = siteValue;
+        continue;
       }
+
+      if (field.default !== undefined) out[field.key] = field.default;
     }
     return out;
   }
@@ -102,14 +138,14 @@ export class PageTypeService {
    * Normalise a raw row (`{ name, template }` from `theme/getPage/:slug`) into
    * the shape components consume.
    */
-  resolve(slug: string, row: any | null): ResolvedPage {
+  resolve(slug: string, row: any | null, siteCommerce?: Record<string, any> | null): ResolvedPage {
     const template = row?.template ?? null;
     const pageType = this.pageTypeFor(slug, template);
     return {
       slug,
       name:     String(row?.name ?? ''),
       pageType,
-      settings: this.settingsFor(pageType, template?.settings),
+      settings: this.settingsFor(pageType, template?.settings, siteCommerce),
       source:   pageType === 'product-list' ? this.sourceFor(slug, template) : null,
       sections: Array.isArray(template?.sections) ? template.sections : [],
       missing:  !row,

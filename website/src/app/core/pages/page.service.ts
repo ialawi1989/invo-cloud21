@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { TenantService } from '../../features/blog/services/tenant.service';
 import { PageTypeService } from '../page-types/page-type.service';
+import { SiteConfigService } from '../site-config/site-config.service';
 import { ResolvedPage } from '../page-types/page-type.types';
 
 interface Envelope<T> { success: boolean; msg: string; data: T; }
@@ -26,6 +27,7 @@ export class PageService {
   private http     = inject(HttpClient);
   private tenant   = inject(TenantService);
   private registry = inject(PageTypeService);
+  private siteConfig = inject(SiteConfigService);
 
   private cache = new Map<string, ResolvedPage>();
 
@@ -36,7 +38,9 @@ export class PageService {
 
     // The registry must be loaded before resolving, or a legacy row would fall
     // back to `content` and a listing page would render as an empty canvas.
-    await this.registry.load();
+    // Site config supplies defaults for settings that moved up from pages, so
+    // it has to be in hand before a page is resolved.
+    await Promise.all([this.registry.load(), this.siteConfig.load()]);
 
     let row: any = null;
     try {
@@ -52,7 +56,7 @@ export class PageService {
       row = null;
     }
 
-    const resolved = this.registry.resolve(key, row);
+    const resolved = this.registry.resolve(key, row, this.siteConfig.commerce());
     this.cache.set(key, resolved);
     return resolved;
   }
