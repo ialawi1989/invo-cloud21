@@ -17,6 +17,7 @@ import { PreviewService } from '../../services/preview.service';
 import { CustomizerRoot } from '../../customizer-root.component';
 import { DynamicComponentComponent } from '../../components/dynamic/dynamic-component.component';
 import { ProductListPage } from '../product-list/product-list.page';
+import { CategoryListPage } from '../category-list/category-list.page';
 
 /**
  * Renders whatever page lives at this URL, by TYPE.
@@ -36,8 +37,13 @@ import { ProductListPage } from '../product-list/product-list.page';
 @Component({
   selector: 'app-page-host',
   standalone: true,
-  imports: [CommonModule, CustomizerRoot, ProductListPage, DynamicComponentComponent],
+  imports: [CommonModule, CustomizerRoot, ProductListPage, CategoryListPage, DynamicComponentComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    .ph-gap { padding: 72px 20px; text-align: center; }
+    .ph-gap__title { margin: 0 0 6px; font-size: 18px; font-weight: 600; color: #374151; }
+    .ph-gap__hint  { margin: 0; font-size: 14px; color: #9ca3af; }
+  `],
   template: `
     <!-- Sections saved in the builder render AROUND the page's own output, so a
          system page (a listing, checkout) can carry a banner or some copy while
@@ -51,9 +57,21 @@ import { ProductListPage } from '../product-list/product-list.page';
       @case ('product-list') {
         <app-product-list-page [page]="page()!" />
       }
-      @default {
-        <!-- content pages (and anything not yet ported) keep the editor canvas -->
+      @case ('category-list') {
+        <app-category-list-page [page]="page()!" />
+      }
+      @case ('content') {
         <app-customizer-root />
+      }
+      @default {
+        <!-- A type the registry classifies but this app cannot render yet
+             (cart, checkout, account, booking). Saying so beats an empty
+             canvas that looks like a page whose content went missing — and it
+             keeps any sections the merchant added visible above and below. -->
+        <div class="ph-gap">
+          <p class="ph-gap__title">This page isn't available yet</p>
+          <p class="ph-gap__hint">It's being moved over to the new storefront.</p>
+        </div>
       }
     }
 

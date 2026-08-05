@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { ResolvedPage } from '../../core/page-types/page-type.types';
 import { ListingApiService, ListingGroup } from './listing.api';
@@ -129,6 +129,7 @@ import { ListingApiService, ListingGroup } from './listing.api';
 export class ProductListPage {
   private api    = inject(ListingApiService);
   private router = inject(Router);
+  private route  = inject(ActivatedRoute);
 
   /** The resolved page row - type, settings (defaults applied) and source. */
   page = input.required<ResolvedPage>();
@@ -160,14 +161,27 @@ export class ProductListPage {
 
   ngOnChanges(): void { void this.sync(); }
 
+  /**
+   * The page's source, narrowed by any filter in the URL.
+   *
+   * Category tiles link here with `?categoryId=`, so the same listing serves
+   * "everything" and "one category" — the old storefront needed a separate
+   * route for that.
+   */
   private source() {
-    return this.page()?.source ?? { kind: 'catalog' as const };
+    const base: any = this.page()?.source ?? { kind: 'catalog' as const };
+    const categoryId = this.route.snapshot.queryParamMap.get('categoryId');
+    if (!categoryId) return base;
+    return { ...base, categoryIds: [categoryId] };
   }
 
   private async sync(): Promise<void> {
     const page = this.page();
-    if (!page || this.loadedFor === page.slug) return;
-    this.loadedFor = page.slug;
+    if (!page) return;
+    // Keyed on the filter too, so navigating between categories reloads.
+    const key = `${page.slug}|${this.route.snapshot.queryParamMap.get('categoryId') ?? ''}`;
+    if (this.loadedFor === key) return;
+    this.loadedFor = key;
 
     this.loading.set(true);
     this.pageNo.set(1);

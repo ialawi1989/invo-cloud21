@@ -147,6 +147,9 @@ export class ListingApiService {
           branchId:     opts.branchId,
           collectionId: source.collectionId,
           categoryIds:  source.categoryIds ?? [],
+          // The legacy endpoint takes a single id as well as the array; send
+          // both so a category link works whichever it reads.
+          ...(source.categoryIds?.length ? { categoryId: source.categoryIds[0] } : {}),
         });
         return this.flat(data, page, limit);
       }
