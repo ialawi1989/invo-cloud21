@@ -491,7 +491,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
     /* Header */
     .manager-header {
       padding: 24px 32px;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid var(--border-color);
       background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     }
 
@@ -511,7 +511,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
       width: 48px;
       height: 48px;
       border-radius: 12px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
       color: white;
       display: flex;
       align-items: center;
@@ -522,13 +522,13 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
       margin: 0;
       font-size: 20px;
       font-weight: 700;
-      color: #111827;
+      color: var(--text-primary);
     }
 
     .header-title p {
       margin: 2px 0 0;
       font-size: 13px;
-      color: #6b7280;
+      color: var(--text-secondary);
     }
 
     .active-theme-badge {
@@ -554,7 +554,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
     /* Tabs */
     .tabs-container {
       padding: 0 32px;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid var(--border-color);
       background: #ffffff;
     }
 
@@ -571,7 +571,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
       background: transparent;
       border: none;
       border-bottom: 2px solid transparent;
-      color: #6b7280;
+      color: var(--text-secondary);
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
@@ -596,7 +596,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
       border-radius: 100px;
       font-size: 12px;
       font-weight: 600;
-      color: #6b7280;
+      color: var(--text-secondary);
     }
 
     .tab.active .tab-count {
@@ -608,7 +608,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
     .filters-container {
       padding: 16px 32px;
       background: #fafafa;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .filters {
@@ -620,18 +620,18 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
 
     .filter-label {
       font-size: 13px;
-      color: #6b7280;
+      color: var(--text-secondary);
       margin-right: 8px;
     }
 
     .filter-btn {
       padding: 6px 14px;
       background: #ffffff;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--border-color);
       border-radius: 100px;
       font-size: 13px;
       font-weight: 500;
-      color: #6b7280;
+      color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.2s ease;
       font-family: inherit;
@@ -664,7 +664,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
     /* Theme Card */
     .theme-card {
       background: #ffffff;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--border-color);
       border-radius: 16px;
       overflow: hidden;
       transition: all 0.3s ease;
@@ -806,13 +806,13 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
       margin: 0;
       font-size: 16px;
       font-weight: 600;
-      color: #111827;
+      color: var(--text-primary);
     }
 
     .card-desc {
       margin: 4px 0 0;
       font-size: 13px;
-      color: #6b7280;
+      color: var(--text-secondary);
     }
 
     .category-badge {
@@ -821,7 +821,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
       border-radius: 100px;
       font-size: 11px;
       font-weight: 500;
-      color: #6b7280;
+      color: var(--text-secondary);
       text-transform: capitalize;
       white-space: nowrap;
     }
@@ -852,7 +852,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
 
     .sections-label {
       font-size: 11px;
-      color: #9ca3af;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -923,20 +923,20 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
       align-items: center;
       justify-content: space-between;
       padding: 20px 24px;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .modal-header h3 {
       margin: 0;
       font-size: 18px;
       font-weight: 600;
-      color: #111827;
+      color: var(--text-primary);
     }
 
     .modal-header p {
       margin: 4px 0 0;
       font-size: 13px;
-      color: #6b7280;
+      color: var(--text-secondary);
     }
 
     .modal-actions {
@@ -982,7 +982,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
     }
 
     .btn-secondary:hover {
-      background: #e5e7eb;
+      background: var(--border-color);
     }
 
     .btn-icon {
@@ -990,11 +990,11 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
       height: 40px;
       padding: 0;
       background: #f3f4f6;
-      color: #6b7280;
+      color: var(--text-secondary);
     }
 
     .btn-icon:hover {
-      background: #e5e7eb;
+      background: var(--border-color);
       color: #374151;
     }
 
@@ -1009,7 +1009,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
       margin: 0 0 16px;
       font-size: 13px;
       font-weight: 600;
-      color: #6b7280;
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -1018,7 +1018,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
     .live-preview {
       border-radius: 12px;
       overflow: hidden;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--border-color);
     }
 
     .preview-header {
@@ -1130,7 +1130,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
 
     .color-name {
       font-size: 10px;
-      color: #6b7280;
+      color: var(--text-secondary);
       text-transform: capitalize;
     }
 
@@ -1138,7 +1138,7 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
       display: flex;
       justify-content: space-between;
       padding: 8px 0;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid var(--border-color);
       font-size: 13px;
     }
 
@@ -1147,11 +1147,11 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
     }
 
     .detail-row span {
-      color: #6b7280;
+      color: var(--text-secondary);
     }
 
     .detail-row strong {
-      color: #111827;
+      color: var(--text-primary);
     }
 
     /* Homepage Preview */
@@ -1193,13 +1193,13 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
       margin: 0;
       font-size: 14px;
       font-weight: 600;
-      color: #111827;
+      color: var(--text-primary);
     }
 
     .timeline-content p {
       margin: 4px 0 0;
       font-size: 12px;
-      color: #6b7280;
+      color: var(--text-secondary);
     }
 
     .recommended-themes {
@@ -1272,13 +1272,13 @@ type ThemeFilter = 'all' | ThemeCategory | 'landing' | 'ecommerce' | 'portfolio'
       margin: 0 0 8px;
       font-size: 20px;
       font-weight: 600;
-      color: #111827;
+      color: var(--text-primary);
     }
 
     .confirm-modal p {
       margin: 0 0 24px;
       font-size: 14px;
-      color: #6b7280;
+      color: var(--text-secondary);
       line-height: 1.6;
     }
 

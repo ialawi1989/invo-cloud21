@@ -1,0 +1,74 @@
+// ─────────────────────────────────────────────────────────────────────────
+// Page-builder palette.
+//
+// The builder was lifted from a standalone app whose variables lived in its
+// own global `styles.css`. That file wasn't ported (a global palette from a
+// prototype has no business leaking into the portal), so every
+// `var(--primary-*)` inside the builder resolved to nothing and the UI fell
+// back to browser defaults — which is why it came up purple/black instead of
+// brand teal.
+//
+// The variables are re-declared here, SCOPED to the builder, and mapped onto
+// the portal's own tokens (`--color-brand-*`, defined in src/styles.scss) so
+// the builder follows the app theme instead of keeping a second copy of it.
+// The prototype's own values were already #32acc1, so this is a re-pointing,
+// not a recolour.
+//
+// Included by the builder's host component only.
+// ─────────────────────────────────────────────────────────────────────────
+
+:host {
+  // Layout metrics
+  --header-height: 56px;
+  --sidebar-width: 320px;
+  --right-panel-width: 280px;
+
+  // Brand ramp — follows the portal, with the prototype's values as the
+  // fallback so the builder still renders correctly if a token is renamed.
+  --primary-50:  #f0fafb;
+  --primary-100: #d9f2f6;
+  --primary-200: #b8e6ed;
+  --primary-300: #87d4e0;
+  --primary-400: #4fbdcc;
+  --primary-500: var(--color-brand-500, #32acc1);
+  --primary-600: var(--color-brand-600, #2691a4);
+  --primary-700: var(--color-brand-700, #207484);
+  --primary-800: #286472;
+  --primary-900: #255361;
+  --primary-950: #143742;
+
+  --primary-color: var(--color-brand-500, #32acc1);
+  --primary-hover: var(--color-brand-600, #2691a4);
+  --primary-light: #d9f2f6;
+  --primary-dark:  var(--color-brand-700, #207484);
+
+  // Status — same values the rest of the portal uses for toasts and badges.
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color:   #ef4444;
+
+  // Surfaces
+  --bg-white:    #ffffff;
+  --bg-gray-50:  #f8fafc;
+  --bg-gray-100: #f1f5f9;
+  --bg-gray-200: #e2e8f0;
+  --bg-input:    #f1f5f9;
+  // The builder's chrome bar. The prototype used near-black (#1a1a2e); the
+  // portal's darkest brand shade keeps it recessive without reading as a
+  // different product bolted into the page.
+  --bg-dark:     #143742;
+
+  // Text — slate, matching the portal's body copy rather than pure greys.
+  --text-primary:   #0f172a;
+  --text-secondary: #64748b;
+  --text-muted:     #94a3b8;
+
+  // Borders + shape
+  --border-color:  #e2e8f0;
+  --border-radius: 8px;
+
+  // Shadows — flatter than the prototype's, in line with the portal's cards.
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, .04);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, .08);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, .10);
+}

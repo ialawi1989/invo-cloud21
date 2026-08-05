@@ -51,6 +51,10 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
   selector: 'app-customizer',
   standalone: true,
   imports: [CommonModule, FormsModule, ControlPanelComponent, PreviewFrameComponent],
+  // Palette lives in one file and cascades to every child through :host —
+  // CSS custom properties inherit, so the panels and the preview chrome pick
+  // it up without importing anything.
+  styleUrls: ['../../page-builder.theme.scss'],
   template: `
     <div class="customizer-layout">
       <!-- Header -->
@@ -491,14 +495,14 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
     
     .dropdown-search {
       padding: 12px;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       align-items: center;
       gap: 8px;
     }
     
     .dropdown-search svg {
-      color: #9ca3af;
+      color: var(--text-muted);
       flex-shrink: 0;
     }
     
@@ -507,12 +511,12 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
       border: none;
       outline: none;
       font-size: 14px;
-      color: #111827;
+      color: var(--text-primary);
       background: transparent;
     }
     
     .dropdown-search input::placeholder {
-      color: #9ca3af;
+      color: var(--text-muted);
     }
     
     .dropdown-list {
@@ -560,7 +564,7 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #6b7280;
+      color: var(--text-secondary);
       flex-shrink: 0;
     }
     
@@ -582,19 +586,19 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
     }
     
     .submenu-arrow {
-      color: #9ca3af;
+      color: var(--text-muted);
     }
     
     .page-submenu {
       margin-top: 2px;
       margin-left: 8px;
       padding-left: 12px;
-      border-left: 1px solid #e5e7eb;
+      border-left: 1px solid var(--border-color);
     }
     
     .dropdown-footer {
       padding: 12px;
-      border-top: 1px solid #e5e7eb;
+      border-top: 1px solid var(--border-color);
     }
     
     .create-template-btn {

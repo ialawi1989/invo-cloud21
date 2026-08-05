@@ -61,7 +61,7 @@ import { StorefrontUrlService } from '@core/auth/storefront-url.service';
     }
     
     .preview-wrapper {
-      background: #1a1a2e;
+      background: var(--bg-dark);
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
