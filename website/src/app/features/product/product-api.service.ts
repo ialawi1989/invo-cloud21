@@ -21,6 +21,18 @@ export interface StorefrontProduct {
   UOM?:          string;
   warning?:      string;
   productAttributes?: Array<{ name?: string; value?: string; [k: string]: any }>;
+  /** Stock on hand. `null` means the product isn't stock-tracked. */
+  quantity?:     number | null;
+  type?:         string;
+  /** Shapes that force the shopper to choose before the product can be added
+   *  to a cart — see `ProductPage.requiresChoices`. */
+  optionGroups?: Array<{ minSelectable?: number; [k: string]: any }>;
+  selection?:      unknown[];
+  fixedSelection?: unknown[];
+  package?:        unknown[];
+  fixedPackage?:   unknown[];
+  dimensions?:     unknown[];
+  measurements?:   unknown;
   /** `{ name: { en, ar }, body: { … } }` — per-language overrides. */
   translation?:  Record<string, Record<string, string>>;
   [k: string]: any;

@@ -93,18 +93,30 @@ import { CartApiService } from '../cart/cart.api';
             <p class="pp__warn">{{ product()?.warning }}</p>
           }
 
-          <div class="pp__buy">
-            <div class="pp__qty">
-              <button type="button" (click)="stepQty(-1)" [disabled]="qty() <= 1 || adding()"
-                      aria-label="Decrease quantity">−</button>
-              <span>{{ qty() }}</span>
-              <button type="button" (click)="stepQty(1)" [disabled]="adding()"
-                      aria-label="Increase quantity">+</button>
+          @if (canAdd()) {
+            <div class="pp__buy">
+              <div class="pp__qty">
+                <button type="button" (click)="stepQty(-1)" [disabled]="qty() <= 1 || adding()"
+                        aria-label="Decrease quantity">−</button>
+                <span>{{ qty() }}</span>
+                <button type="button" (click)="stepQty(1)" [disabled]="adding()"
+                        aria-label="Increase quantity">+</button>
+              </div>
+              <button type="button" class="pp__btn pp__btn--buy" [disabled]="adding()" (click)="addToCart()">
+                {{ adding() ? 'Adding…' : 'Add to cart' }}
+              </button>
             </div>
-            <button type="button" class="pp__btn pp__btn--buy" [disabled]="adding()" (click)="addToCart()">
-              {{ adding() ? 'Adding…' : 'Add to cart' }}
-            </button>
-          </div>
+          } @else if (outOfStock()) {
+            <p class="pp__warn">Out of stock.</p>
+          } @else {
+            <!-- Options, variants, package contents and measurements aren't
+                 ported yet. Saying so beats an Add button that would send an
+                 incomplete order line. -->
+            <p class="pp__warn">
+              This product needs options chosen before it can be ordered, which isn't
+              available here yet.
+            </p>
+          }
 
           @if (addError(); as err) {
             <p class="pp__warn" role="alert">{{ err }}</p>
@@ -281,6 +293,35 @@ export class ProductPage implements OnInit {
   });
 
   // ── Add to cart ────────────────────────────────────────────────────────
+  /**
+   * Does this product need the shopper to choose something first?
+   *
+   * Same rule as the old storefront's `productRequiresUserInput`. Such a
+   * product can never be added with a bare `{productId, qty}` — a package with
+   * no chosen items or a variant product with no variant is a broken order
+   * line, not a sale. There is no option picker in this storefront yet, so the
+   * button is disabled and says why instead of quietly sending a bad line.
+   */
+  requiresChoices = computed<boolean>(() => {
+    const p = this.product();
+    if (!p) return false;
+    if ((p.optionGroups ?? []).some(g => Number(g?.minSelectable ?? 0) > 0)) return true;
+    if ((p.selection ?? []).length || (p.fixedSelection ?? []).length) return true;
+    if ((p.package ?? []).length || (p.fixedPackage ?? []).length) return true;
+    if ((p.dimensions ?? []).length) return true;
+    if (p.type === 'tailoring' && p.measurements) return true;
+    return false;
+  });
+
+  /** `quantity === null` means the product isn't stock-tracked, which is not
+   *  the same as "none left". */
+  outOfStock = computed<boolean>(() => {
+    const q = this.product()?.quantity;
+    return q !== null && q !== undefined && Number(q) <= 0;
+  });
+
+  canAdd = computed<boolean>(() => !this.requiresChoices() && !this.outOfStock());
+
   qty      = signal<number>(1);
   adding   = signal<boolean>(false);
   added    = signal<boolean>(false);

@@ -106,6 +106,12 @@ export class CartApiService {
   /** Persist the cart session id minted by createCart / addItem. */
   setSessionId(sessionId: string): void {
     this._state.update(s => ({ ...s, sessionId }));
+    this.persistSessionId(sessionId);
+  }
+
+  /** Storage half of setSessionId, without touching state — used from
+   *  normalise(), which is building the new state itself. */
+  private persistSessionId(sessionId: string): void {
     if (!isPlatformBrowser(this.platformId)) return;
     try {
       window.localStorage.setItem(CART_SESSION_KEY, sessionId);
@@ -291,8 +297,16 @@ export class CartApiService {
         })),
       }));
 
+    // The session id can ROTATE. createCart mints a fresh GUID whenever the
+    // service, branch or table changes, and the new one only ever comes back
+    // on the response. Keeping the old one leaves us pointing at a Redis key
+    // that no longer exists — the cart reads as empty and checkout fails with
+    // "Cart is not created". So the response always wins.
+    const live = String(src?.onlineData?.sessionId || sessionId || '');
+    if (live && live !== sessionId) this.persistSessionId(live);
+
     return {
-      sessionId: String(sessionId),
+      sessionId: live,
       lines,
       subTotal:  Number(src.subTotal ?? 0),
       tax:       Number(src.invoiceTaxTotal ?? 0),
