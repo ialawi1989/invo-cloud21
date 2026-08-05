@@ -23,6 +23,37 @@ interface FetchOptions {
 // reach the database and cause "invalid input syntax for type uuid" errors.
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// A product can also be addressed by its SEO slug (`/menu/product/credit-notes`).
+// Slugs still have to be shaped like slugs — the point of the UUID gate was to
+// keep bot noise and truncated ids away from the database, and that holds here.
+const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{0,120}$/i;
+
+/** True when `key` is safe to send upstream as a product lookup key. */
+export function isProductKey(key: string): boolean {
+  return UUID_REGEX.test(key) || SLUG_REGEX.test(key);
+}
+
+/** Slugify exactly as the dashboard does when deriving a default URL slug,
+ *  so `Credit Notes` ⇄ `credit-notes` round-trips. */
+function slugify(value: string): string {
+  return String(value ?? '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/** HTML-escape a meta value. Without this a quote in a product name or an
+ *  og:description closes the attribute and the rest of the tag leaks into
+ *  the document. */
+function esc(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 /**
  * Generic fetch wrapper for API calls
  */
@@ -72,6 +103,40 @@ async function getProductData(apiUrl: string, productId: string, visitor?: Fetch
   return await fetchFromAPI(apiUrl, { method: 'POST', body: { productId }, visitor });
 }
 
+/**
+ * Resolve a product SEO slug to its id.
+ *
+ * `shop/getProduct` keys on a UUID column, so a slug URL would otherwise come
+ * back as `invalid input syntax for type uuid` and the page would be flagged
+ * 404 despite rendering. `generalSearch` is public and returns id + name, so
+ * we search the de-slugified words and match on the slugified name.
+ *
+ * Temporary: delete once `ShopRepo.getProduct` accepts a slug directly. It
+ * also can't resolve a slug that was hand-edited away from the product name.
+ */
+async function resolveProductSlug(
+  apiUrl: string,
+  slug: string,
+  visitor?: FetchOptions['visitor'],
+): Promise<string | null> {
+  const searchTerm = slug.replace(/-+/g, ' ').trim();
+  if (!searchTerm) return null;
+  const searchUrl = apiUrl.replace(/getProduct$/, 'generalSearch');
+  if (searchUrl === apiUrl) return null;
+  try {
+    const data: any = await fetchFromAPI(searchUrl, {
+      method: 'POST',
+      body: { searchTerm, page: 1, limit: 20 },
+      visitor,
+    });
+    const list: any[] = data?.list ?? [];
+    const hit = list.find(item => slugify(item?.name) === slug.toLowerCase());
+    return hit?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function getPageData(apiUrl: string, slug: string, visitor?: FetchOptions['visitor']): Promise<Product | null> {
   if (!slug || slug === 'null' || slug === 'undefined') return null;
   return await fetchFromAPI(`${apiUrl}/theme/getPage/${slug}`, { method: 'GET', visitor });
@@ -94,24 +159,63 @@ export async function generateMetaTags(
 ): Promise<string | null> {
   if (!productId || productId === 'null' || !apiUrl) return null;
 
-  // FIX: Validate UUID format before hitting the API.
-  if (!UUID_REGEX.test(productId)) {
-    console.warn('[generateMetaTags] Invalid UUID format, skipping meta fetch:', productId);
+  // FIX: keep malformed keys away from the API — a UUID or a slug, nothing else.
+  if (!isProductKey(productId)) {
+    console.warn('[generateMetaTags] Invalid product key, skipping meta fetch:', productId);
     return null;
   }
 
   try {
-    const productData: any = await getProductData(apiUrl, productId, visitor) || {};
+    // A slug has to become an id before the product lookup will accept it.
+    const resolvedId = UUID_REGEX.test(productId)
+      ? productId
+      : await resolveProductSlug(apiUrl, productId, visitor);
+    if (!resolvedId) {
+      console.warn('[generateMetaTags] Could not resolve product key:', productId);
+      return null;
+    }
+
+    const productData: any = await getProductData(apiUrl, resolvedId, visitor) || {};
     if (!productData || !productData.name) {
       console.warn('No product data found for meta tags');
       return null;
     }
+
+    // Per-page SEO overrides authored in the dashboard (SEO Settings →
+    // Basics / Social share). The backend ships them on the product payload;
+    // when a field is blank the product's own values stand in, which is
+    // exactly how the dashboard previews it.
+    const seo = productData.seo ?? productData.seoOverride ?? {};
+
+    const title       = seo.titleTag        || productData.name;
+    const description = seo.metaDescription || productData.description || '';
+    const image       = seo.ogImage         || productData.mediaUrl || '';
+
+    const ogTitle       = seo.ogTitle       || title;
+    const ogDescription = seo.ogDescription || description;
+
+    // X (Twitter) falls back to the OG values, matching the dashboard preview.
+    const xTitle       = seo.xTitle       || ogTitle;
+    const xDescription = seo.xDescription || ogDescription;
+    const xImage       = seo.xImage       || image;
+
+    const robots = seo.robots
+      || (seo.indexable === false ? 'noindex, nofollow' : 'index, follow');
+
     return `
-      <meta property="og:title" content="${productData.name}">
-      <meta property="og:description" content="${productData.description || ''}">
-      <meta property="og:image" content="${productData.mediaUrl || ''}">
-      <meta property="og:url" content="${referer}">
+      <title>${esc(title)}</title>
+      <link rel="canonical" href="${esc(referer)}">
+      <meta name="description" content="${esc(description)}">
+      <meta name="robots" content="${esc(robots)}">
+      <meta property="og:title" content="${esc(ogTitle)}">
+      <meta property="og:description" content="${esc(ogDescription)}">
+      <meta property="og:image" content="${esc(image)}">
+      <meta property="og:url" content="${esc(referer)}">
       <meta property="og:type" content="product">
+      <meta name="twitter:card" content="summary_large_image">
+      <meta name="twitter:title" content="${esc(xTitle)}">
+      <meta name="twitter:description" content="${esc(xDescription)}">
+      <meta name="twitter:image" content="${esc(xImage)}">
     `;
   } catch (error) {
     console.error('Error generating product meta tags:', error);

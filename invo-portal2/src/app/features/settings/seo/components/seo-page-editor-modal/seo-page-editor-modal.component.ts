@@ -102,6 +102,10 @@ export class SeoPageEditorModalComponent {
    *  so the user sees exactly where the page will resolve. */
   readonly liveUrl = computed(() => this.storefront.pageUrl(this.data.row.pageUrl));
 
+  /** Live URL of the *draft* path, so the preview's title link follows the
+   *  slug the user is editing rather than the one they opened with. */
+  readonly livePreviewUrl = computed(() => this.storefront.pageUrl(this.draft().pageUrl));
+
   /** Bare host (no protocol) of the live storefront — used by the
    *  social-share preview to mimic what the OG card will show. */
   readonly siteHost = computed(() => {

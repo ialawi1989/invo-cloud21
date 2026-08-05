@@ -248,6 +248,27 @@ async function resolveSlug(host: string): Promise<string> {
 
 // UUID v4 validation regex.
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// Products are addressable by id OR by their SEO slug (`/menu/product/credit-notes`),
+// so the meta-fetch gate accepts both shapes. It stays a gate: anything that is
+// neither a uuid nor a slug still falls through without touching the API.
+const PRODUCT_SLUG_REGEX = /^[a-z0-9][a-z0-9-]{0,120}$/i;
+
+/**
+ * Absolute URL of the request itself — what `og:url` / `canonical` must be.
+ *
+ * These used to be fed `req.headers['referer']`, which is the page the visitor
+ * came FROM, and is absent entirely when a crawler fetches the URL directly.
+ * That's every Facebook / X / WhatsApp unfurl, so the share card carried an
+ * empty og:url. `x-forwarded-proto` is honoured because we sit behind
+ * CloudFront, where `req.protocol` reports http.
+ */
+function absoluteUrl(req: any): string {
+  const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'https').toString().split(',')[0].trim();
+  const host  = (req.headers['x-forwarded-host'] || req.headers.host || '').toString().split(',')[0].trim();
+  if (!host) return '';
+  return `${proto}://${host}${req.originalUrl || req.url || ''}`;
+}
+const isProductKey = (key: string) => UUID_REGEX.test(key) || PRODUCT_SLUG_REGEX.test(key);
 
 // First-path segments that are framework routes, NOT storefront page slugs.
 // The `/:slug` Open-Graph handler must skip these so it never treats them as
@@ -376,8 +397,8 @@ app.get('*/product/:id', async (req: any, res: any, next: any) => {
     return res.status(400).send('Product ID is required');
   }
 
-  if (!UUID_REGEX.test(productId)) {
-    console.warn('[product] Invalid UUID format, skipping SSR meta-tag fetch:', productId);
+  if (!isProductKey(productId)) {
+    console.warn('[product] Invalid product key, skipping SSR meta-tag fetch:', productId);
     return next();
   }
 
@@ -391,7 +412,7 @@ app.get('*/product/:id', async (req: any, res: any, next: any) => {
 
   const apiUrl = `${Config.BASE_URL}/ecommerce/${sub}/shop/getProduct`;
   try {
-    const metaTags = await generateMetaTags(productId, apiUrl, req.headers['referer'], getVisitorContext(req));
+    const metaTags = await generateMetaTags(productId, apiUrl, absoluteUrl(req), getVisitorContext(req));
     const response = await angularApp.handle(req);
     if (!response) return next();
 
@@ -436,7 +457,7 @@ app.get('/:slug', async (req: any, res: any, next: any) => {
   const apiUrl = `${Config.BASE_URL}/ecommerce/${sub}`;
 
   try {
-    const metaTags = await generatePageMetaTags(apiUrl, slug, req.headers['referer'], getVisitorContext(req));
+    const metaTags = await generatePageMetaTags(apiUrl, slug, absoluteUrl(req), getVisitorContext(req));
     const response = await angularApp.handle(req);
     if (!response) return next();
 
@@ -474,7 +495,7 @@ app.get('', async (req: any, res: any, next: any) => {
 
   const apiUrl = `${Config.BASE_URL}/ecommerce/${sub}`;
   try {
-    const metaTags = await generateCompanyMetaTags(apiUrl, req.headers['referer'], getVisitorContext(req));
+    const metaTags = await generateCompanyMetaTags(apiUrl, absoluteUrl(req), getVisitorContext(req));
     if (!metaTags) return next();
     const response = await angularApp.handle(req);
     if (!response) return next();

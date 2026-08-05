@@ -1,0 +1,36 @@
+{
+  "WEBSITE": {
+    "PAGE_TYPES": {
+      "TITLE": "Page type",
+      "NO_SETTINGS": "This page type has no settings yet.",
+      "SOURCE": "Products from",
+      "SOURCE_MENU": "Menu",
+      "SOURCE_CATALOG": "Catalog",
+      "SOURCE_COLLECTION": "Collection",
+      "SOURCE_SEARCH": "Search results",
+      "MANIFEST_UNAVAILABLE": "Page settings couldn't be loaded — showing the built-in defaults."
+    },
+    "PAGES": {
+      "TITLE": "Pages",
+      "SUBTITLE": "Every page on your storefront, and what each one is.",
+      "SEARCH": "Search pages",
+      "ADD": "Add page",
+      "NEW": "New page",
+      "EMPTY": "No pages yet.",
+      "COL_NAME": "Page",
+      "COL_TYPE": "Type",
+      "COL_SOURCE": "Products from",
+      "COL_URL": "URL",
+      "HOME": "Home",
+      "SET_HOME": "Set as home page",
+      "HOME_SET": "Home page updated",
+      "BASICS": "Basics",
+      "SETTINGS": "Page settings",
+      "NAME": "Name",
+      "URL": "URL",
+      "IS_HOME": "Use as home page",
+      "SAVED": "Page saved",
+      "CONFIRM_DELETE": "Delete \"{{name}}\"? Visitors following a link to it will get a not-found page."
+    }
+  }
+}

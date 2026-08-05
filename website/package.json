@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --port 4600",
+    "start": "ng serve --host 0.0.0.0 --port 4600",
     "watch": "ng build --watch --configuration development",
     "version:bump": "node scripts/bump-version.mjs",
     "prebuild": "node scripts/bump-version.mjs",

@@ -131,15 +131,16 @@ export class SeoSettingsComponent implements OnInit {
   row = computed<SeoPageRow>(() => {
     const p = this.productInfo();
     const seo = this.overrideData();
-    // Storefront route for the product detail page is fixed —
-    // `/menu/product/{productId}`. The user-editable URL slug stays
-    // as a descriptive suffix appended to the path so SEO previews
-    // still surface keyword-rich slugs (e.g.
-    // `/menu/product/<id>/my-product-slug`), but the canonical
-    // routing key is always the id.
+    // Storefront route is `/menu/product/{key}` — one segment. The key is
+    // the slug when the product has one, falling back to the id.
+    //
+    // NOTE: the storefront resolves that segment as a product id today
+    // (NewWebsite `:parent/product/:id` → `getProduct/:id`), so a slug URL
+    // only resolves once slug lookup ships there. Until then this preview
+    // shows the intended canonical URL, not a guaranteed-live one.
     const slug = seo.urlSlug?.trim() || slugify(p.name || '');
     const id = String(p.id ?? 'new');
-    const pagePath = `/menu/product/${id}${slug ? `/${slug}` : ''}`;
+    const pagePath = `/menu/product/${slug || id}`;
     // Real "main image" for the product. `defaultImage` is the
     // legacy flat field and is often blank — the live image usually
     // lives on `mediaUrl.defaultUrl` or the first `productMedia`
@@ -234,15 +235,17 @@ export class SeoSettingsComponent implements OnInit {
       return;
     }
 
-    // The row's pageUrl carries the full storefront path including
-    // the fixed `/menu/product/<id>` prefix. Strip the prefix off
-    // before persisting so `urlSlug` is a clean descriptive suffix
-    // (matching how the row is rebuilt on read).
+    // The row's pageUrl carries the full storefront path — `/menu/product/`
+    // plus the routing key. Strip the prefix so `urlSlug` persists as the
+    // bare key (matching how the row is rebuilt on read), and drop it
+    // entirely when the user left the id in place: that's "no slug", not a
+    // slug that happens to be a UUID.
     const rawPath = (result.pageUrl ?? '').replace(/^\//, '');
-    const prefix  = `menu/product/${productId}`;
-    const slug    = rawPath.startsWith(prefix)
+    const prefix  = 'menu/product/';
+    let slug      = rawPath.startsWith(prefix)
       ? rawPath.slice(prefix.length).replace(/^\//, '')
       : rawPath;
+    if (slug === productId) slug = '';
     const patch: SeoOverridePatch = {
       focusKeyword:    result.focusKeyword,
       urlSlug:         slug,

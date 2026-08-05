@@ -27,7 +27,24 @@
 // ────────────────────────────────────────────────────────────────────
 
 const PROD_DASHBOARD_URL = '';
-const DEV_DASHBOARD_URL  = 'http://localhost:4700';
+const DEV_DASHBOARD_PORT = 4700;
+const DEV_DASHBOARD_URL  = `http://localhost:${DEV_DASHBOARD_PORT}`;
+
+/**
+ * Dashboard origin in dev, derived from the host the storefront was opened
+ * from — the same rule `resolveApiBase` uses.
+ *
+ * A literal `localhost:4700` breaks LAN testing: reach the storefront at
+ * `http://10.2.2.89:4600` and the customizer's postMessage origin check
+ * compares against `http://localhost:4700`, never matches, and the preview
+ * handshake silently fails. Falls back to localhost during SSR.
+ */
+function devDashboardOrigin(): string {
+  if (typeof window !== 'undefined' && window.location?.hostname) {
+    return `${window.location.protocol}//${window.location.hostname}:${DEV_DASHBOARD_PORT}`;
+  }
+  return DEV_DASHBOARD_URL;
+}
 
 // Public blog API base used by the blog feature. The blog API can be
 // hosted separately from the ecommerce backend — typically on the
@@ -77,7 +94,7 @@ function resolveDashboardUrl(prod: boolean): string {
     const injected = (window as any).__DASHBOARD_ORIGIN__;
     if (typeof injected === 'string' && injected.length) return injected;
   }
-  return prod ? PROD_DASHBOARD_URL : DEV_DASHBOARD_URL;
+  return prod ? PROD_DASHBOARD_URL : devDashboardOrigin();
 }
 
 function resolveCustomizerAllowlist(prod: boolean): string[] {
@@ -88,7 +105,11 @@ function resolveCustomizerAllowlist(prod: boolean): string[] {
   if (Array.isArray(fromWindow)) {
     return fromWindow.filter((o): o is string => typeof o === 'string' && o.length > 0);
   }
-  return prod ? [] : ['http://localhost:4700'];
+  // Dev: accept the dashboard on whichever host this page came from AND on
+  // localhost, so a LAN-IP session and a localhost session both work without
+  // a rebuild.
+  if (prod) return [];
+  return [...new Set([devDashboardOrigin(), DEV_DASHBOARD_URL])];
 }
 
 const isProd = isProdHost();

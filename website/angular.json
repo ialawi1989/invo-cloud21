@@ -88,6 +88,7 @@
           "defaultConfiguration": "development",
           "options": {
             "port": 4600,
+            "host": "0.0.0.0",
             "allowedHosts": true,
             "liveReload": true,
             "watch": true,

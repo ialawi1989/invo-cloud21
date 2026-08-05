@@ -124,9 +124,15 @@ export const APP_ROUTES: Routes = [
     path: 'blog', canMatch: [isParamMode],
     children: BLOG_CHILDREN,
   },
+  // Product detail (parameter mode) — declared BEFORE `:page` so
+  // `menu/product/x` is never swallowed as a one-segment page slug.
+  {
+    path: 'product/:key', canMatch: [isParamMode],
+    loadComponent: () => import('./features/product/product.page').then(m => m.ProductPage),
+  },
   {
     path: ':page', canMatch: [isParamMode],
-    loadComponent: () => import('./customizer-root.component').then(m => m.CustomizerRoot),
+    loadComponent: () => import('./features/page-host/page-host.component').then(m => m.PageHostComponent),
   },
 
   // ── Subdirectory mode + lang-less entry points ────────────────────────
@@ -140,6 +146,28 @@ export const APP_ROUTES: Routes = [
   // Blog at /:lang/blog/* — before ":lang/:page" so "blog" is never a page slug.
   ...BLOG_ROUTES,
 
+  // Product detail — CANONICAL: one product, one URL. Provenance travels in
+  // `?from=<listing-slug>`, never in the path, so Back/breadcrumbs work and a
+  // product isn't indexed under five different URLs.
+  {
+    path: ':lang/product/:key',
+    canActivate: [langGuard],
+    loadComponent: () => import('./features/product/product.page').then(m => m.ProductPage),
+  },
+
+  // Legacy provenance-in-path URLs (`/menu/product/:id`, `/shop/product/:id`,
+  // `/collections/…`, `/search/…`, `/products/…`) → canonical, carrying the old
+  // parent segment through as `?from=` so nothing is lost.
+  {
+    path: ':lang/:parent/product/:key',
+    canActivate: [langGuard],
+    loadComponent: () => import('./features/product/legacy-product-redirect').then(m => m.LegacyProductRedirect),
+  },
+  {
+    path: ':parent/product/:key', canMatch: [isParamMode],
+    loadComponent: () => import('./features/product/legacy-product-redirect').then(m => m.LegacyProductRedirect),
+  },
+
   // Storefront home + arbitrary page (customizer canvas, CSR).
   {
     path: ':lang',
@@ -149,7 +177,7 @@ export const APP_ROUTES: Routes = [
   {
     path: ':lang/:page',
     canActivate: [langGuard],
-    loadComponent: () => import('./customizer-root.component').then(m => m.CustomizerRoot),
+    loadComponent: () => import('./features/page-host/page-host.component').then(m => m.PageHostComponent),
   },
 
   // Legacy lang-less deep links → prepend default language (subdirectory only).

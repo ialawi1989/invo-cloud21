@@ -38,11 +38,25 @@ export const serverRoutes: ServerRoute[] = [
   { path: ':lang/blog/authors/:authorEmployeeId', renderMode: RenderMode.Server },
   { path: ':lang/blog/:slug', renderMode: RenderMode.Server },
 
-  // Customizer canvas (home + arbitrary page) — must stay CSR. `:page` is the
-  // parameter-mode lang-less page; `:lang` / `:lang/:page` are subdirectory.
-  { path: ':page', renderMode: RenderMode.Client },
+  // Product detail — SSR so the Express meta-tag injection in server.ts has a
+  // rendered document to inject into, and crawlers get the OG/Twitter tags.
+  // Must stay BEFORE the `:page` / `:lang/:page` entries.
+  { path: 'product/:key', renderMode: RenderMode.Server },
+  { path: ':lang/product/:key', renderMode: RenderMode.Server },
+
+  // Legacy provenance-in-path URLs — SSR'd so a crawler following an old link
+  // is redirected rather than served an empty client shell.
+  { path: ':parent/product/:key', renderMode: RenderMode.Server },
+  { path: ':lang/:parent/product/:key', renderMode: RenderMode.Server },
+
+  // Home stays CSR — it's the customizer canvas, which needs `window` and
+  // postMessage. `:page` / `:lang/:page` now go through PageHost, which may
+  // render a product listing, so they are SSR'd for SEO; PageHost renders the
+  // canvas immediately (without waiting on the network) when the dashboard is
+  // driving the page, so the editor is unaffected.
   { path: ':lang', renderMode: RenderMode.Client },
-  { path: ':lang/:page', renderMode: RenderMode.Client },
+  { path: ':page', renderMode: RenderMode.Server },
+  { path: ':lang/:page', renderMode: RenderMode.Server },
 
   // Everything else (not-found, etc.) — SSR.
   { path: '**', renderMode: RenderMode.Server },

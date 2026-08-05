@@ -244,7 +244,12 @@
             </div>
           </div>
         </div>
-        <a class="g-preview__title" href="#">{{ previewTitle() }}</a>
+        <!-- Opens the live page in a new tab — the editor is a drawer over
+             unsaved work, so navigating this tab away would lose it. -->
+        <a class="g-preview__title"
+           [href]="livePreviewUrl()"
+           target="_blank"
+           rel="noopener noreferrer">{{ previewTitle() }}</a>
       </div>
     </section>
 

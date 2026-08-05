@@ -230,6 +230,20 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/website/content-library/pages/content-item/content-item.component').then(m => m.ContentItemPageComponent),
       },
+      // ── Pages (the storefront's page rows, typed via the registry) ───────
+      // The sidebar has linked /page-builder all along; this is the screen.
+      {
+        path: 'page-builder',
+        loadComponent: () =>
+          import('./features/website/pages/pages-list/pages-list.component').then(m => m.WebsitePagesListComponent),
+      },
+      {
+        path: 'page-builder/:id',
+        loadComponent: () =>
+          import('./features/website/pages/page-form/page-form.component').then(m => m.WebsitePageFormComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
+
       // ── Navigation (menus + mobile icon bar) ─────────────────────────────
       {
         path: 'navigation-list',
