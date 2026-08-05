@@ -1,0 +1,79 @@
+<app-list-page
+  [pageTitle]="'WEBSITE.PAGES.TITLE' | translate"
+  [columns]="columns"
+  [dataSource]="loadPages"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="[]"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'page'"
+  [mobileCardConfig]="mobileCardConfig"
+  (rowClicked)="onRowClick($event)">
+
+  <!-- "Add page" is generated from the manifest: every type marked `multiple`
+       becomes an entry, so the menu grows on its own when a page type is added
+       server-side. -->
+  <div listHeaderActions class="flex items-center gap-3">
+    <app-dropdown-menu-btn
+      [items]="addMenuItems()"
+      [appendToBody]="true"
+      align="end"
+      triggerClass="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg font-medium whitespace-nowrap bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      <span>{{ 'WEBSITE.PAGES.ADD' | translate }}</span>
+    </app-dropdown-menu-btn>
+  </div>
+
+  <!-- Name + home badge -->
+  <ng-template listCellTemplate="name" let-row>
+    <span class="inline-flex items-center gap-2 min-w-0">
+      <span class="font-medium text-slate-900 min-w-0 break-words list-interactive-cell">
+        {{ row.name || row.slug || '—' }}
+      </span>
+      @if (row.isHomePage) {
+        <span class="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+          {{ 'WEBSITE.PAGES.HOME' | translate }}
+        </span>
+      }
+    </span>
+  </ng-template>
+
+  <!-- What the page IS — the registry made visible to a merchant. -->
+  <ng-template listCellTemplate="pageType" let-row>
+    <span class="inline-block rounded-full bg-cyan-50 px-2.5 py-0.5 text-[11px] font-semibold text-cyan-800">
+      {{ typeTitle(row.pageType) }}
+    </span>
+  </ng-template>
+
+  <!-- Where a listing's products come from. Blank for every other type. -->
+  <ng-template listCellTemplate="source" let-row>
+    @if (row.source) {
+      <span class="text-slate-600">{{ sourceTitle(row.source.kind) }}</span>
+    } @else {
+      <span class="text-slate-300">—</span>
+    }
+  </ng-template>
+
+  <ng-template listCellTemplate="slug" let-row>
+    <span class="font-mono text-[12px] text-slate-500">/{{ row.slug }}</span>
+  </ng-template>
+
+  <ng-template listRowActions let-row>
+    <app-dropdown-menu-btn
+      [items]="rowMenu(row)"
+      [appendToBody]="true"
+      [chevron]="false"
+      align="end"
+      triggerClass="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+      </svg>
+    </app-dropdown-menu-btn>
+  </ng-template>
+</app-list-page>
