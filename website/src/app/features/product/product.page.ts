@@ -13,6 +13,7 @@ import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { ProductApiService, StorefrontProduct } from './product-api.service';
+import { CartApiService } from '../cart/cart.api';
 
 /**
  * Product detail — temporary storefront page.
@@ -90,6 +91,27 @@ import { ProductApiService, StorefrontProduct } from './product-api.service';
 
           @if (product()?.warning) {
             <p class="pp__warn">{{ product()?.warning }}</p>
+          }
+
+          <div class="pp__buy">
+            <div class="pp__qty">
+              <button type="button" (click)="stepQty(-1)" [disabled]="qty() <= 1 || adding()"
+                      aria-label="Decrease quantity">−</button>
+              <span>{{ qty() }}</span>
+              <button type="button" (click)="stepQty(1)" [disabled]="adding()"
+                      aria-label="Increase quantity">+</button>
+            </div>
+            <button type="button" class="pp__btn pp__btn--buy" [disabled]="adding()" (click)="addToCart()">
+              {{ adding() ? 'Adding…' : 'Add to cart' }}
+            </button>
+          </div>
+
+          @if (addError(); as err) {
+            <p class="pp__warn" role="alert">{{ err }}</p>
+          } @else if (added()) {
+            <p class="pp__added" role="status">
+              Added to your cart. <a [routerLink]="cartLink()">View cart</a>
+            </p>
           }
 
           @if (descriptionHtml()) {
@@ -181,6 +203,18 @@ import { ProductApiService, StorefrontProduct } from './product-api.service';
       border: 3px solid #e5e7eb; border-top-color: #6d3bf5;
       animation: ppspin .8s linear infinite;
     }
+    .pp__buy { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; flex-wrap: wrap; }
+    .pp__qty { display: inline-flex; align-items: center; gap: 12px; border: 1px solid #e1e5eb; border-radius: 999px; padding: 5px 12px; }
+    .pp__qty button {
+      width: 26px; height: 26px; border: 0; background: none; color: #374151;
+      font-size: 17px; line-height: 1; cursor: pointer;
+    }
+    .pp__qty button:disabled { opacity: .4; cursor: default; }
+    .pp__btn--buy { border: 0; cursor: pointer; font-weight: 600; }
+    .pp__btn--buy:disabled { opacity: .6; cursor: default; }
+    .pp__added { font-size: 14px; color: #15803d; margin: 0 0 14px; }
+    .pp__added a { color: inherit; font-weight: 600; }
+
     @keyframes ppspin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { .pp__spinner { animation: none; } }
   `],
@@ -192,6 +226,7 @@ export class ProductPage implements OnInit {
   private title      = inject(Title);
   private meta       = inject(Meta);
   private destroyRef = inject(DestroyRef);
+  private cart       = inject(CartApiService);
 
   loading = signal<boolean>(true);
   product = signal<StorefrontProduct | null>(null);
@@ -244,6 +279,40 @@ export class ProductPage implements OnInit {
     if (from) return lang ? ['/', lang, from] : ['/', from];
     return lang ? ['/', lang] : ['/'];
   });
+
+  // ── Add to cart ────────────────────────────────────────────────────────
+  qty      = signal<number>(1);
+  adding   = signal<boolean>(false);
+  added    = signal<boolean>(false);
+  addError = signal<string>('');
+
+  /** The cart page, language-prefixed the same way backLink is. */
+  cartLink = computed<any[]>(() => {
+    const lang = this.lang();
+    return lang ? ['/', lang, 'cart'] : ['/', 'cart'];
+  });
+
+  stepQty(delta: number): void {
+    this.qty.update(q => Math.max(1, q + delta));
+  }
+
+  async addToCart(): Promise<void> {
+    const p = this.product();
+    if (!p?.id || this.adding()) return;
+
+    this.adding.set(true);
+    this.addError.set('');
+    this.added.set(false);
+    try {
+      const res = await this.cart.addItem(p.id, this.qty());
+      if (res.ok) this.added.set(true);
+      // The server's reason — out of stock, max per ticket, required options —
+      // is the only useful thing to show, so it is shown verbatim.
+      else this.addError.set(res.msg || 'Could not add to cart');
+    } finally {
+      this.adding.set(false);
+    }
+  }
 
   backLabel = computed<string>(() => {
     const from = this.from();

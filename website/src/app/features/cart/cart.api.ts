@@ -112,6 +112,77 @@ export class CartApiService {
     } catch { /* storage disabled — the cart lives for this page view only */ }
   }
 
+  /**
+   * The cart session id, creating the cart first if this visitor hasn't got one.
+   *
+   * `addItem` validates `sessionId` as a UUID, so there is no "add and let the
+   * server create it" path — the cart has to exist first. `createCart` mints the
+   * GUID and returns it at `onlineData.sessionId`.
+   */
+  private async ensureSession(): Promise<string> {
+    const existing = this.sessionId();
+    if (existing) return existing;
+
+    const env = await firstValueFrom(
+      this.http.post<Envelope<any>>(this.url('createCart'), {}, {
+        headers: this.headers(),
+        withCredentials: true,
+      }),
+    );
+    const sid = String(env?.data?.onlineData?.sessionId ?? '');
+    if (!sid) throw new Error(env?.msg || 'Could not start a cart');
+    this.setSessionId(sid);
+    return sid;
+  }
+
+  /**
+   * Add a product to the cart.
+   *
+   * `options` / `selectedItems` carry variant and package choices; a product
+   * with required option groups will be rejected by the server if they're
+   * missing, and that message is passed back rather than swallowed — there is
+   * no option picker in this storefront yet.
+   */
+  async addItem(
+    productId: string,
+    qty = 1,
+    extras: { options?: unknown[]; selectedItems?: unknown[]; note?: string; menuId?: string } = {},
+  ): Promise<{ ok: boolean; msg?: string }> {
+    try {
+      const sessionId = await this.ensureSession();
+      const env = await firstValueFrom(
+        this.http.post<Envelope<any>>(this.url('addItem'), {
+          sessionId,
+          productId,
+          qty,
+          ...extras,
+        }, { headers: this.headers(), withCredentials: true }),
+      );
+
+      if (Array.isArray(env?.data?.lines)) {
+        this._state.set(this.normalise(env.data, sessionId));
+      } else {
+        await this.load();
+      }
+      if (env?.success === false) return { ok: false, msg: env?.msg };
+      return { ok: true };
+    } catch (e: any) {
+      // Out of stock, max-qty-per-ticket and missing-options all arrive here
+      // with a message worth showing.
+      const errs = e?.error?.errors;
+      return {
+        ok: false,
+        msg: Array.isArray(errs) ? errs.map((x: any) => x?.msg).filter(Boolean).join(', ')
+          : (e?.error?.msg ?? e?.message ?? 'Could not add to cart'),
+      };
+    }
+  }
+
+  /** Total item count, for a header badge. */
+  count(): number {
+    return this._state().lines.reduce((n, l) => n + l.qty, 0);
+  }
+
   /** Load the cart for the current session. No session = an empty cart, not an
    *  error: a first-time visitor simply hasn't got one yet. */
   async load(): Promise<CartState> {
