@@ -172,8 +172,13 @@ export class WebsitePagesListComponent implements OnInit {
 
   rowMenu = (page: WebsitePage): DropdownMenuBtnItem[] => {
     const items: DropdownMenuBtnItem[] = [
-      { label: 'COMMON.ACTIONS.EDIT', click: () => this.onRowClick({ row: page }) },
+      { label: 'WEBSITE.PAGES.EDIT_SETTINGS', click: () => this.onRowClick({ row: page }) },
     ];
+    // Only a dynamic page has a canvas to arrange. A static page is a system
+    // page (cart, checkout, a listing) whose look comes from settings.
+    if (page.rowType === 'Page' && page.id) {
+      items.push({ label: 'WEBSITE.PAGES.EDIT_CONTENT', click: () => void this.router.navigate(['/page-builder', page.id, 'editor']) });
+    }
     // Only a content page makes sense as a home page — a checkout or a listing
     // as the landing page would be a mistake, not a choice.
     if (!page.isHomePage && page.pageType === 'content') {

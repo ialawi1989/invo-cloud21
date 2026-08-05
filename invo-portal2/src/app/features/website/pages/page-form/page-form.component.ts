@@ -107,6 +107,19 @@ interface Option { id: string; name: string; }
                             (checkedChange)="patch({ isHomePage: $event })"/>
               </div>
             }
+
+            <!-- The canvas belongs to dynamic pages. A static page is a system
+                 page whose look comes from the settings below, not from
+                 arranged sections — offering a builder there would be a dead
+                 end. -->
+            @if (canOpenBuilder()) {
+              <div class="field field--inline">
+                <span class="field-label">{{ 'WEBSITE.PAGES.OPEN_BUILDER_HINT' | translate }}</span>
+                <button type="button" class="btn btn-ghost" (click)="openBuilder()">
+                  {{ 'WEBSITE.PAGES.EDIT_CONTENT' | translate }}
+                </button>
+              </div>
+            }
           </div>
         </section>
 
@@ -194,6 +207,14 @@ export class WebsitePageFormComponent implements OnInit, CanLeaveComponent {
   );
 
   canSave = computed<boolean>(() => !!this.page().name.trim() && !!this.page().slug.trim());
+
+  /** Saved dynamic pages only — a builder needs a row to write sections into. */
+  canOpenBuilder = computed<boolean>(() => !!this.page().id && this.page().rowType === 'Page');
+
+  openBuilder(): void {
+    const id = this.page().id;
+    if (id) void this.router.navigate(['/page-builder', id, 'editor']);
+  }
 
   async ngOnInit(): Promise<void> {
     // Both before first paint: labels come from this feature's translations,

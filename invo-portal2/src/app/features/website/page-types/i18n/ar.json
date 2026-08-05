@@ -34,7 +34,10 @@
       "KIND": "النوع",
       "KIND_ALL": "الكل",
       "KIND_DYNAMIC": "ديناميكية",
-      "KIND_STATIC": "ثابتة"
+      "KIND_STATIC": "ثابتة",
+      "EDIT_SETTINGS": "تعديل الإعدادات",
+      "EDIT_CONTENT": "فتح المُنشئ",
+      "OPEN_BUILDER_HINT": "رتّب أقسام هذه الصفحة في المُنشئ المرئي."
     }
   }
 }

@@ -243,6 +243,15 @@ export const routes: Routes = [
           import('./features/website/pages/page-form/page-form.component').then(m => m.WebsitePageFormComponent),
         canDeactivate: [unsavedChangesGuard],
       },
+      {
+        // The visual builder — dynamic (content) pages only. Static pages are
+        // system pages with settings and no canvas; the editor redirects them
+        // back to their settings form.
+        path: 'page-builder/:id/editor',
+        loadComponent: () =>
+          import('./features/website/pages/page-editor/page-editor.component').then(m => m.WebsitePageEditorComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
 
       // ── Navigation (menus + mobile icon bar) ─────────────────────────────
       {

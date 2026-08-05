@@ -34,7 +34,10 @@
       "KIND": "Kind",
       "KIND_ALL": "All",
       "KIND_DYNAMIC": "Dynamic",
-      "KIND_STATIC": "Static"
+      "KIND_STATIC": "Static",
+      "EDIT_SETTINGS": "Edit settings",
+      "EDIT_CONTENT": "Open builder",
+      "OPEN_BUILDER_HINT": "Arrange this page's sections in the visual builder."
     }
   }
 }
