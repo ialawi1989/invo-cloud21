@@ -21,6 +21,7 @@ import { CategoryListPage } from '../category-list/category-list.page';
 import { AccountPage } from '../account/account.page';
 import { BookingPage } from '../booking/booking.page';
 import { CartPage } from '../cart/cart.page';
+import { CheckoutPage } from '../checkout/checkout.page';
 
 /**
  * Renders whatever page lives at this URL, by TYPE.
@@ -40,7 +41,7 @@ import { CartPage } from '../cart/cart.page';
 @Component({
   selector: 'app-page-host',
   standalone: true,
-  imports: [CommonModule, CustomizerRoot, ProductListPage, CategoryListPage, AccountPage, BookingPage, CartPage, DynamicComponentComponent],
+  imports: [CommonModule, CustomizerRoot, ProductListPage, CategoryListPage, AccountPage, BookingPage, CartPage, CheckoutPage, DynamicComponentComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .ph-gap { padding: 72px 20px; text-align: center; }
@@ -72,14 +73,19 @@ import { CartPage } from '../cart/cart.page';
       @case ('cart') {
         <app-cart-page [page]="page()!" />
       }
+      @case ('checkout') {
+        <app-checkout-page [page]="page()!" />
+      }
       @case ('content') {
         <app-customizer-root />
       }
       @default {
-        <!-- A type the registry classifies but this app cannot render yet
-             (checkout). Saying so beats an empty
-             canvas that looks like a page whose content went missing — and it
-             keeps any sections the merchant added visible above and below. -->
+        <!-- A type the registry classifies but this app cannot render yet.
+             Every page type now has a renderer, so this is reachable only via a
+             type added to the manifest without one here. Saying so beats an
+             empty canvas that looks like a page whose content went missing —
+             and it keeps any sections the merchant added visible above and
+             below. -->
         <div class="ph-gap">
           <p class="ph-gap__title">This page isn't available yet</p>
           <p class="ph-gap__hint">It's being moved over to the new storefront.</p>

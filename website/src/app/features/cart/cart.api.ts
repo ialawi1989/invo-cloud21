@@ -103,6 +103,23 @@ export class CartApiService {
     }
   }
 
+  /**
+   * Forget the cart session.
+   *
+   * Checkout DESTROYS the Redis cart — `getCart` on a checked-out session
+   * answers `success:false / "cart not created"`. Holding on to that id would
+   * make every later `addItem` reuse a dead session and fail forever, so the
+   * shopper could never start a second order. Clearing it means the next add
+   * mints a fresh cart, which is what a returning shopper expects.
+   */
+  clearSession(): void {
+    this._state.set(EMPTY);
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      window.localStorage.removeItem(CART_SESSION_KEY);
+    } catch { /* storage disabled — nothing to forget */ }
+  }
+
   /** Persist the cart session id minted by createCart / addItem. */
   setSessionId(sessionId: string): void {
     this._state.update(s => ({ ...s, sessionId }));
@@ -205,7 +222,14 @@ export class CartApiService {
           withCredentials: true,
         }),
       );
-      const state = this.normalise(env?.data, sid);
+      // A session that no longer has a cart behind it — the usual cause is that
+      // it was checked out, which deletes it. Forget it, or every later add
+      // reuses a dead id and the shopper can never start a second order.
+      if (env?.success === false || !env?.data) {
+        this.clearSession();
+        return EMPTY;
+      }
+      const state = this.normalise(env.data, sid);
       this._state.set(state);
       return state;
     } catch {

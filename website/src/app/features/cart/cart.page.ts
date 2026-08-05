@@ -85,11 +85,7 @@ import { CurrencyService } from '../../core/currency/currency.service';
 
         <div class="ct__actions">
           <a class="ct__link" [routerLink]="shopLink()">Continue shopping</a>
-          <!-- Checkout is not ported yet. Linking to a page that can't complete
-               an order would lose the sale silently; saying so does not. -->
-          <button type="button" class="ct__btn" disabled title="Checkout is being moved over">
-            Checkout unavailable
-          </button>
+          <a class="ct__btn" [routerLink]="checkoutLink()">Checkout</a>
         </div>
       }
     </section>
@@ -201,13 +197,19 @@ export class CartPage {
     }
   }
 
+  /** `['/']` or `['/', 'en']`, matching however this URL is addressed. */
+  private langPrefix(): string[] {
+    const first = this.router.url.split('?')[0].split('/').filter(Boolean)[0] ?? '';
+    return first && first.length <= 5 ? ['/', first] : ['/'];
+  }
+
   /** Back to the store's primary listing, never a hardcoded /shop. */
   shopLink = computed<any[]>(() => {
     const slug = String(this.siteConfig.value('commerce', 'primaryListingSlug', '') || 'shop');
-    const first = this.router.url.split('?')[0].split('/').filter(Boolean)[0] ?? '';
-    const isLang = !!first && first.length <= 5;
-    return isLang ? ['/', first, slug] : ['/', slug];
+    return [...this.langPrefix(), slug];
   });
+
+  checkoutLink = computed<any[]>(() => [...this.langPrefix(), 'checkout']);
 
   thumb(line: CartLine): string {
     return line.imageUrl ? `url("${line.imageUrl}")` : 'none';
