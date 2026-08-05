@@ -11,7 +11,7 @@ import { LoadingOverlayComponent } from '@shared/components/spinner/loading-over
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { ToastService } from '@shared/components/toast/toast.service';
-import { withTranslations } from '@core/i18n/with-translations';
+import { LanguageService } from '@core/i18n/language.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 
 import { PageSettingsFormComponent } from '../../page-types/page-settings-form.component';
@@ -157,6 +157,7 @@ export class WebsitePageFormComponent implements OnInit, CanLeaveComponent {
   private router    = inject(Router);
   private toast     = inject(ToastService);
   private translate = inject(TranslateService);
+  private lang      = inject(LanguageService);
 
   loading = signal<boolean>(true);
   saving  = signal<boolean>(false);
@@ -194,10 +195,13 @@ export class WebsitePageFormComponent implements OnInit, CanLeaveComponent {
 
   canSave = computed<boolean>(() => !!this.page().name.trim() && !!this.page().slug.trim());
 
-  constructor() { withTranslations('website/page-types'); }
-
   async ngOnInit(): Promise<void> {
-    await this.registry.load();
+    // Both before first paint: labels come from this feature's translations,
+    // type names and defaults from the registry.
+    await Promise.all([
+      this.lang.loadFeature('website/page-types'),
+      this.registry.load(),
+    ]);
     const id = this.route.snapshot.paramMap.get('id');
 
     try {

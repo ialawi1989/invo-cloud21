@@ -30,7 +30,11 @@
       "URL": "URL",
       "IS_HOME": "Use as home page",
       "SAVED": "Page saved",
-      "CONFIRM_DELETE": "Delete \"{{name}}\"? Visitors following a link to it will get a not-found page."
+      "CONFIRM_DELETE": "Delete \"{{name}}\"? Visitors following a link to it will get a not-found page.",
+      "KIND": "Kind",
+      "KIND_ALL": "All",
+      "KIND_DYNAMIC": "Dynamic",
+      "KIND_STATIC": "Static"
     }
   }
 }

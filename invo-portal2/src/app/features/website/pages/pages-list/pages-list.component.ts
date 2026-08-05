@@ -9,6 +9,7 @@ import {
   ListRowActionsDirective,
 } from '@shared/components/list-page';
 import {
+  FilterConfig,
   ListQueryParams,
   MobileCardConfig,
   TableColumn,
@@ -20,7 +21,7 @@ import {
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
-import { withTranslations } from '@core/i18n/with-translations';
+import { LanguageService } from '@core/i18n/language.service';
 
 import { PageTypeService } from '../../page-types/page-type.service';
 import { WebsitePage, WebsitePagesService } from '../services/website-pages.service';
@@ -57,10 +58,12 @@ export class WebsitePagesListComponent implements OnInit {
   private toast     = inject(ToastService);
   private modal     = inject(ModalService);
   private translate = inject(TranslateService);
+  private lang      = inject(LanguageService);
 
   @ViewChild(ListPageComponent) listPage?: ListPageComponent;
 
   columns: TableColumn[] = [];
+  filters: FilterConfig[] = [];
 
   paginationConfig = { enabled: true, pageLimits: [15, 25, 50, 100], default: 15 };
   searchConfig     = { enabled: true, placeholder: '', debounceMs: 300 };
@@ -68,12 +71,14 @@ export class WebsitePagesListComponent implements OnInit {
   emptyState       = { title: '', message: '' };
   mobileCardConfig: MobileCardConfig = { showThumbnail: false, metricKeys: [], secondaryKey: 'slug' };
 
-  constructor() { withTranslations('website/page-types'); }
-
   async ngOnInit(): Promise<void> {
-    // The registry names the types and sources this table renders, so it has to
-    // land before the first paint.
-    await this.registry.load();
+    // Await BOTH before building the config: the column labels come from this
+    // feature's translations and the type names from the registry. Reading
+    // either too early is what put raw i18n keys in the header.
+    await Promise.all([
+      this.lang.loadFeature('website/page-types'),
+      this.registry.load(),
+    ]);
     this.initTranslations();
   }
 
@@ -100,6 +105,21 @@ export class WebsitePagesListComponent implements OnInit {
     ];
     this.searchConfig.placeholder = t('WEBSITE.PAGES.SEARCH');
     this.emptyState = { title: t('WEBSITE.PAGES.EMPTY'), message: '' };
+
+    // Dynamic vs Static, as the old page list separated them: a dynamic page is
+    // built from sections in the editor; a static one is a system page (menu,
+    // checkout, cart…) that only carries settings.
+    this.filters = [{
+      key: 'kind',
+      label: t('WEBSITE.PAGES.KIND'),
+      type: 'status',
+      defaultValue: 'all',
+      options: [
+        { label: t('WEBSITE.PAGES.KIND_ALL'),     value: 'all' },
+        { label: t('WEBSITE.PAGES.KIND_DYNAMIC'), value: 'dynamic' },
+        { label: t('WEBSITE.PAGES.KIND_STATIC'),  value: 'static' },
+      ],
+    }];
   }
 
   /**
@@ -110,11 +130,16 @@ export class WebsitePagesListComponent implements OnInit {
   loadPages = async (params: ListQueryParams) => {
     const all = await this.service.list();
 
+    const kind = String(params.filter?.['kind'] ?? 'all');
+    let rows = kind === 'all'
+      ? all
+      : all.filter(p => (kind === 'static' ? p.rowType === 'StaticPage' : p.rowType === 'Page'));
+
     const term = (params.searchTerm || '').trim().toLowerCase();
-    let rows = term
-      ? all.filter(p =>
-          p.name.toLowerCase().includes(term) || p.slug.toLowerCase().includes(term))
-      : all;
+    if (term) {
+      rows = rows.filter(p =>
+        p.name.toLowerCase().includes(term) || p.slug.toLowerCase().includes(term));
+    }
 
     const sort = params.sortBy;
     if (sort?.sortValue) {

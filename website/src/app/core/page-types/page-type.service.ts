@@ -1,8 +1,5 @@
-import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
 
-import { environment } from '../../../environments/environment';
 import { FALLBACK_MANIFEST } from './page-type.fallback';
 import {
   ListingSource,
@@ -11,8 +8,6 @@ import {
   ResolvedPage,
   SettingField,
 } from './page-type.types';
-
-interface Envelope<T> { success: boolean; msg: string; data: T; }
 
 /**
  * Page-type registry client.
@@ -29,38 +24,23 @@ interface Envelope<T> { success: boolean; msg: string; data: T; }
  *   1. `template.pageType`   (new rows)
  *   2. legacy slug → type    (every existing row)
  *   3. `content`             (anything else)
+ *
+ * The manifest is NOT fetched here. It is an editing catalog — every page type
+ * and every setting a merchant can configure — so it lives behind dashboard
+ * auth, and a shop visitor has no business enumerating it. The storefront only
+ * needs setting defaults and the legacy slug maps, which ship bundled in
+ * `page-type.fallback.ts`. Keep that file in step with the backend manifest.
  */
 @Injectable({ providedIn: 'root' })
 export class PageTypeService {
-  private http = inject(HttpClient);
-
   private manifestSig = signal<PageTypeManifest>(FALLBACK_MANIFEST);
-  private loaded = false;
-  private inFlight: Promise<void> | null = null;
 
   manifest = this.manifestSig.asReadonly();
 
-  /** Fetch the live manifest once. Safe to call repeatedly and safe to fail —
-   *  the bundled fallback keeps the site rendering. */
+  /** Kept as a promise so callers can `await` it without caring that the
+   *  manifest is bundled rather than fetched. */
   load(): Promise<void> {
-    if (this.loaded) return Promise.resolve();
-    return (this.inFlight ??= this.doLoad());
-  }
-
-  private async doLoad(): Promise<void> {
-    try {
-      const env = await firstValueFrom(
-        this.http.get<Envelope<PageTypeManifest>>(`${environment.apiBase}/v1/website/pageTypes`),
-      );
-      if (env?.success && env.data?.pageTypes?.length) {
-        this.manifestSig.set(env.data);
-      }
-    } catch {
-      // Endpoint not mounted yet / offline — the fallback already covers us.
-    } finally {
-      this.loaded = true;
-      this.inFlight = null;
-    }
+    return Promise.resolve();
   }
 
   typeDef(id: string): PageTypeDef | null {

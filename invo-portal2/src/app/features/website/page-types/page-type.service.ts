@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { ApiService } from '@core/http/api.service';
 
+import { FALLBACK_MANIFEST } from './page-type.fallback';
 import {
   ListingSource,
   PageTypeDef,
@@ -15,39 +16,51 @@ import {
  * settings schema now comes from the backend, so the dashboard form, the
  * storefront renderer and the stored blob can't drift apart.
  *
- * Loads once and caches. If the endpoint isn't mounted yet the manifest is
- * empty and callers should fall back to their existing behaviour — this service
- * never throws.
+ * Loads once and caches. The endpoint is additive and may not be mounted on a
+ * given deployment, so a bundled fallback ships with the app: without it the
+ * Pages screen would come up with no type names, an empty "Add page" menu and
+ * no setting defaults, which reads as broken rather than degraded. The live
+ * manifest always wins. This service never throws.
  */
 @Injectable({ providedIn: 'root' })
 export class PageTypeService {
   private api = inject(ApiService);
 
-  private manifestSig = signal<PageTypeManifest | null>(null);
-  private inFlight: Promise<PageTypeManifest | null> | null = null;
+  private manifestSig = signal<PageTypeManifest>(FALLBACK_MANIFEST);
+  private loaded = false;
+  private inFlight: Promise<PageTypeManifest> | null = null;
 
   manifest = this.manifestSig.asReadonly();
 
-  async load(): Promise<PageTypeManifest | null> {
-    if (this.manifestSig()) return this.manifestSig();
+  /** True while running on the bundled copy — the endpoint isn't mounted. */
+  private fromFallback = signal<boolean>(true);
+  usingFallback = this.fromFallback.asReadonly();
+
+  async load(): Promise<PageTypeManifest> {
+    if (this.loaded) return this.manifestSig();
     return (this.inFlight ??= this.doLoad());
   }
 
-  private async doLoad(): Promise<PageTypeManifest | null> {
+  private async doLoad(): Promise<PageTypeManifest> {
     try {
       const res = await this.api.request<any>(this.api.get('website/pageTypes'));
       const data = res?.data ?? null;
-      if (data?.pageTypes?.length) this.manifestSig.set(data as PageTypeManifest);
+      if (data?.pageTypes?.length) {
+        this.manifestSig.set(data as PageTypeManifest);
+        this.fromFallback.set(false);
+      }
     } catch {
-      // Endpoint not mounted yet — see the backend module README.
+      // Endpoint not mounted yet — the bundled manifest carries the screen.
+      // See the backend module README for the one line that mounts it.
     } finally {
+      this.loaded = true;
       this.inFlight = null;
     }
     return this.manifestSig();
   }
 
   types(): PageTypeDef[] {
-    return this.manifestSig()?.pageTypes ?? [];
+    return this.manifestSig().pageTypes ?? [];
   }
 
   typeDef(id: string): PageTypeDef | null {
@@ -75,11 +88,11 @@ export class PageTypeService {
 
   /** Legacy slug → page type, for rows saved before `pageType` existed. */
   pageTypeForSlug(slug: string): string {
-    return this.manifestSig()?.legacySlugs?.[slug] ?? 'content';
+    return this.manifestSig().legacySlugs?.[slug] ?? 'content';
   }
 
   sourceForSlug(slug: string): ListingSource | null {
-    return this.manifestSig()?.legacySources?.[slug] ?? null;
+    return this.manifestSig().legacySources?.[slug] ?? null;
   }
 
   /**
