@@ -6,12 +6,13 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 import { ResolvedPage } from '../../core/page-types/page-type.types';
 import { ShopperAuthService } from '../blog/services/shopper-auth.service';
 import { AccountApiService, AccountOrder, AccountProfile } from './account.api';
+import { CurrencyService } from '../../core/currency/currency.service';
 
 type AccountTab = 'orders' | 'profile';
 
@@ -30,7 +31,7 @@ type AccountTab = 'orders' | 'profile';
 @Component({
   selector: 'app-account-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, DecimalPipe],
+  imports: [CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="ac">
@@ -74,7 +75,7 @@ type AccountTab = 'orders' | 'profile';
                     @if (order.createdAt) { <span>{{ order.createdAt | date: 'medium' }}</span> }
                     @if (order.serviceName) { <span>{{ order.serviceName }}</span> }
                   </div>
-                  <span class="ac__order-total">{{ order.total | number: '1.3-3' }}</span>
+                  <span class="ac__order-total">{{ currency.format(order.total) }}</span>
                 </li>
               }
             </ul>
@@ -138,6 +139,8 @@ type AccountTab = 'orders' | 'profile';
 })
 export class AccountPage {
   private api  = inject(AccountApiService);
+  /** Public: templates render every price through this. */
+  currency = inject(CurrencyService);
   private auth = inject(ShopperAuthService);
 
   page = input.required<ResolvedPage>();

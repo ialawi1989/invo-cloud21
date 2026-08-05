@@ -9,6 +9,7 @@ import { catchError } from 'rxjs/operators';
 import { APP_ROUTES } from './app.routes';
 import { APP_CONFIG, AppConfig } from './app-config.token';
 import { TenantService } from './features/blog/services/tenant.service';
+import { CurrencyService } from './core/currency/currency.service';
 import { BlogSettingsService } from './features/blog/services/blog-settings.service';
 import { NavigationService } from './features/navigation/services/navigation.service';
 
@@ -51,6 +52,17 @@ export const appConfig: ApplicationConfig = {
     // Resolve the tenant slug once, before routing fires any blog request.
     // Mirrors oldEco's initializeApp (subdomain / localhost / custom domain).
     provideAppInitializer(() => inject(TenantService).resolve()),
+
+    // Currency symbol + decimal places, on BOTH server and browser, and
+    // AWAITED — unlike the warm-ups below. A price is not decoration: if SSR
+    // paints `1.00` and the client later corrects it to `BHD 1.000`, the
+    // shopper has already read the wrong number. Blocking here costs one
+    // request that the page needs anyway.
+    provideAppInitializer(() => {
+      const tenant   = inject(TenantService);
+      const currency = inject(CurrencyService);
+      return tenant.resolve().then(() => currency.load());
+    }),
 
     // Warm blog settings on every route (browser only) so site-wide
     // analytics (GA4 / Search Console) initialise even on non-blog

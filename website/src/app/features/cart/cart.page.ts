@@ -6,12 +6,13 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 
 import { ResolvedPage } from '../../core/page-types/page-type.types';
 import { SiteConfigService } from '../../core/site-config/site-config.service';
 import { CartApiService, CartLine } from './cart.api';
+import { CurrencyService } from '../../core/currency/currency.service';
 
 /**
  * Cart — the `cart` page type.
@@ -27,7 +28,7 @@ import { CartApiService, CartLine } from './cart.api';
 @Component({
   selector: 'app-cart-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, DecimalPipe],
+  imports: [CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="ct">
@@ -57,7 +58,7 @@ import { CartApiService, CartLine } from './cart.api';
                   <span class="ct__sub">{{ sub.qty }}× {{ sub.name }}</span>
                 }
                 @if (line.note) { <span class="ct__note">{{ line.note }}</span> }
-                <span class="ct__unit">{{ line.unitPrice | number: '1.3-3' }} each</span>
+                <span class="ct__unit">{{ currency.format(line.unitPrice) }} each</span>
               </div>
 
               <div class="ct__qty">
@@ -66,7 +67,7 @@ import { CartApiService, CartLine } from './cart.api';
                 <button type="button" [disabled]="busy()" (click)="step(line, 1)" aria-label="Increase">+</button>
               </div>
 
-              <span class="ct__total">{{ line.total | number: '1.3-3' }}</span>
+              <span class="ct__total">{{ currency.format(line.total) }}</span>
 
               <button type="button" class="ct__remove" [disabled]="busy()"
                       (click)="remove(line)" aria-label="Remove">×</button>
@@ -75,11 +76,11 @@ import { CartApiService, CartLine } from './cart.api';
         </ul>
 
         <div class="ct__summary">
-          @if (cart().subTotal) { <div><span>Subtotal</span><span>{{ cart().subTotal | number: '1.3-3' }}</span></div> }
-          @if (cart().discount) { <div><span>Discount</span><span>−{{ cart().discount | number: '1.3-3' }}</span></div> }
-          @if (cart().delivery) { <div><span>Delivery</span><span>{{ cart().delivery | number: '1.3-3' }}</span></div> }
-          @if (cart().tax)      { <div><span>Tax</span><span>{{ cart().tax | number: '1.3-3' }}</span></div> }
-          <div class="ct__grand"><span>Total</span><span>{{ cart().total | number: '1.3-3' }}</span></div>
+          @if (cart().subTotal) { <div><span>Subtotal</span><span>{{ currency.format(cart().subTotal) }}</span></div> }
+          @if (cart().discount) { <div><span>Discount</span><span>−{{ currency.format(cart().discount) }}</span></div> }
+          @if (cart().delivery) { <div><span>Delivery</span><span>{{ currency.format(cart().delivery) }}</span></div> }
+          @if (cart().tax)      { <div><span>Tax</span><span>{{ currency.format(cart().tax) }}</span></div> }
+          <div class="ct__grand"><span>Total</span><span>{{ currency.format(cart().total) }}</span></div>
         </div>
 
         <div class="ct__actions">
@@ -148,6 +149,8 @@ import { CartApiService, CartLine } from './cart.api';
 })
 export class CartPage {
   private api        = inject(CartApiService);
+  /** Public: templates render every price through this. */
+  currency = inject(CurrencyService);
   private siteConfig = inject(SiteConfigService);
   private router     = inject(Router);
 

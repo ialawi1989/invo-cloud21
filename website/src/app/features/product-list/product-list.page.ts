@@ -6,11 +6,12 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { ResolvedPage } from '../../core/page-types/page-type.types';
 import { ListingApiService, ListingGroup } from './listing.api';
+import { CurrencyService } from '../../core/currency/currency.service';
 
 /**
  * Product listing — ONE component for what used to be three pages.
@@ -28,7 +29,7 @@ import { ListingApiService, ListingGroup } from './listing.api';
 @Component({
   selector: 'app-product-list-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, DecimalPipe],
+  imports: [CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="pl">
@@ -60,7 +61,7 @@ import { ListingApiService, ListingGroup } from './listing.api';
                        [style.background-size]="imageSize()"></div>
                   <div class="pl__info">
                     <span class="pl__name" [class.pl__name--clamp]="!longName()">{{ p.name }}</span>
-                    <span class="pl__price">{{ p.defaultPrice | number: '1.3-3' }}</span>
+                    <span class="pl__price">{{ currency.format(p.defaultPrice) }}</span>
                   </div>
                 </a>
               }
@@ -130,6 +131,8 @@ export class ProductListPage {
   private api    = inject(ListingApiService);
   private router = inject(Router);
   private route  = inject(ActivatedRoute);
+  /** Public: templates render every price through this. */
+  currency = inject(CurrencyService);
 
   /** The resolved page row - type, settings (defaults applied) and source. */
   page = input.required<ResolvedPage>();

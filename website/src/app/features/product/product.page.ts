@@ -7,13 +7,14 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { ProductApiService, StorefrontProduct } from './product-api.service';
 import { CartApiService } from '../cart/cart.api';
+import { CurrencyService } from '../../core/currency/currency.service';
 
 /**
  * Product detail — temporary storefront page.
@@ -36,7 +37,7 @@ import { CartApiService } from '../cart/cart.api';
 @Component({
   selector: 'app-product-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, DecimalPipe],
+  imports: [CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (loading()) {
@@ -83,9 +84,9 @@ import { CartApiService } from '../cart/cart.api';
           <h1 class="pp__title">{{ name() }}</h1>
 
           <p class="pp__price">
-            <span class="pp__price-now">{{ product()?.defaultPrice | number: '1.3-3' }}</span>
+            <span class="pp__price-now">{{ currency.format(product()?.defaultPrice) }}</span>
             @if (hasCompare()) {
-              <span class="pp__price-was">{{ product()?.comparePriceAt | number: '1.3-3' }}</span>
+              <span class="pp__price-was">{{ currency.format(product()?.comparePriceAt) }}</span>
             }
           </p>
 
@@ -233,6 +234,8 @@ import { CartApiService } from '../cart/cart.api';
 })
 export class ProductPage implements OnInit {
   private route      = inject(ActivatedRoute);
+  /** Public: templates render every price through this. */
+  currency = inject(CurrencyService);
   private api        = inject(ProductApiService);
   private sanitizer  = inject(DomSanitizer);
   private title      = inject(Title);
