@@ -90,6 +90,11 @@ export interface EmployeeOptions {
    *  keyed by product type so e.g. service products and kit products
    *  can each carry their own layout. */
   productForm?: ProductFormPrefsByType;
+  /** Guided tours this user has already been shown / dismissed, keyed by tour
+   *  id. Stored here rather than in localStorage so it follows the person
+   *  across browsers; note the endpoint is scoped per company, so dismissing a
+   *  tour at one company doesn't dismiss it at another they also work for. */
+  toursSeen?: { [tourKey: string]: boolean };
 }
 
 @Injectable({ providedIn: 'root' })

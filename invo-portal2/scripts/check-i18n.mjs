@@ -27,6 +27,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'src');
+/** The app-wide bundles live outside src/, and are just as gate-worthy. */
+const EXTRA_DIRS = [join(ROOT, 'public', 'i18n')];
 const PLACEHOLDER = 'TODO_AR';
 
 /** Every directory named `i18n` under src/. */
@@ -63,7 +65,11 @@ const problems = [];
 let placeholders = 0;
 let checked = 0;
 
-for (const dir of findI18nDirs(SRC)) {
+const dirs = [...findI18nDirs(SRC), ...EXTRA_DIRS.filter((d) => {
+  try { return statSync(d).isDirectory(); } catch { return false; }
+})];
+
+for (const dir of dirs) {
   const en = read(join(dir, 'en.json'));
   const ar = read(join(dir, 'ar.json'));
   const where = relative(ROOT, dir).replace(/\\/g, '/');

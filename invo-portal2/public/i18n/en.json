@@ -1,5 +1,12 @@
 {
   "COMMON": {
+    "TOUR": {
+      "NEXT": "Next",
+      "BACK": "Back",
+      "DONE": "Got it",
+      "PROGRESS": "{{current}} of {{total}}",
+      "DONT_SHOW_AGAIN": "Don't show this again"
+    },
     "SAVE": "Save",
     "SAVING": "Saving…",
     "CANCEL": "Cancel",

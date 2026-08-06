@@ -2,6 +2,9 @@
 @use 'styles/content-library-design-system';
 @use 'styles/product-detail-badges';
 @use 'styles/print';
+// Guided-tour popover styling. Global because driver.js renders into <body>,
+// but every selector is scoped to our own tour — see the file header.
+@use 'styles/guided-tour';
 
 // Leaflet map styles — only loaded once globally so the location-edit
 // modal doesn't have to ship them per-instance.

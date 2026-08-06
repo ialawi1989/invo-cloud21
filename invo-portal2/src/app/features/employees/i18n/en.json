@@ -82,6 +82,63 @@
       "EMPLOYMENT_DETAILS": "Employment details"
     },
 
+    "TOUR": {
+      "START": "Take a tour",
+      "NOTHING_TO_SHOW": "There's nothing to walk through on this screen yet.",
+      "INTRO": {
+        "TITLE": "👋 The employee form",
+        "BODY": "A quick walkthrough of each section, in the order you'd normally fill it in. Use the buttons or ← / → to move, and Esc to leave at any point."
+      },
+      "SYSTEM_ACCESS": {
+        "TITLE": "1. System access",
+        "BODY": "Turn this off for someone who works here but never signs in — a warehouse or kitchen worker. They still get a record, attendance and HR details; they just get no credentials, no roles and no privilege set."
+      },
+      "BASIC": {
+        "TITLE": "2. Basic information",
+        "BODY": "The employee's name, plus the credentials for however they sign in. Which credential fields appear depends on the roles you pick in the next step."
+      },
+      "EMAIL": {
+        "TITLE": "3. Email",
+        "BODY": "The address a Cloud Admin signs in with. It's checked as you type: if it already belongs to an InvoCloud user, you'll be offered the invitation flow instead."
+      },
+      "PASSWORD": {
+        "TITLE": "4. Password",
+        "BODY": "At least 8 characters. When editing someone later, leave this alone to keep their current password — you only fill it in to change it."
+      },
+      "ROLES": {
+        "TITLE": "5. Employee roles",
+        "BODY": "Cloud Admin signs in to this portal with an email and password. POS User signs in at the till with a pass code. Driver is an extra flag for deliveries, not a sign-in method. At least one sign-in role stays selected."
+      },
+      "ACCESS": {
+        "TITLE": "6. Access & permissions",
+        "BODY": "The privilege set decides what this person can see and do. The MSR field holds a swipe-card id, if your tills use them."
+      },
+      "IMAGE": {
+        "TITLE": "7. Photo",
+        "BODY": "Pick a photo from the media library. It shows on the employee list and at the till."
+      },
+      "BRANCHES": {
+        "TITLE": "8. Branch assignment",
+        "BODY": "Choose every branch this person works at. One of them is the primary branch, marked with a star — that's the one their till prices and services are pulled from."
+      },
+      "PRIMARY_STAR": {
+        "TITLE": "9. The primary branch",
+        "BODY": "Click a star to make that branch primary. Only one can be, and it matters: the till uses the primary branch to decide which prices and services this employee gets."
+      },
+      "EMPLOYMENT": {
+        "TITLE": "10. Employment",
+        "BODY": "Hire date, and a termination date once someone leaves. Leaving the termination date empty means they're still employed."
+      },
+      "HR_PROFILE": {
+        "TITLE": "11. Personal details",
+        "BODY": "The person behind the account: contact details, nationality, address, emergency contacts and dependants. Required fields are marked; the rest can be filled in over time."
+      },
+      "HR_EMPLOYMENT": {
+        "TITLE": "12. Employment details",
+        "BODY": "Department, position, manager and contract terms. Department and position offer the values already used elsewhere in your company — pick one, or type a new one."
+      }
+    },
+
     "FIELDS": {
       "PROFILE": {
         "NAME_AR": "Full name (Arabic)",

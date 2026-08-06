@@ -1,0 +1,182 @@
+// ── Guided tour (driver.js) ──────────────────────────────────────────────────
+//
+// driver.js renders its popover and overlay into <body>, outside any component,
+// so these rules have to be global. They are nonetheless **scoped to our own
+// tour**: every selector requires either
+//
+//   • `.driver-popover.app-guided-tour`  — the popoverClass GuidedTourService
+//     sets, or
+//   • `html.app-guided-tour-active`      — the marker the service puts on the
+//     root element for the lifetime of a tour.
+//
+// Nothing here applies to any other driver.js consumer. In particular the
+// custom-report builder's tour (`popoverClass: 'crb-tour'`) is untouched — it
+// currently runs with no stylesheet at all, which is its own ticket
+// (docs/tickets/driver-css-never-imported.md); fixing that inside an employees
+// change would alter a shipped feature nobody would trace back to this PR.
+//
+// The vendor stylesheet is deliberately NOT imported. Note that parts of it are
+// structural rather than decorative — `position: fixed`, the z-index, and the
+// pointer-events gating below are what make a tour work at all, so they are
+// reproduced here rather than skipped.
+
+// ── Interaction gating ───────────────────────────────────────────────────────
+// While a tour drives, only the popover and the spotlit element accept input.
+html.app-guided-tour-active {
+  .driver-overlay { pointer-events: none; }
+
+  // Everything is inert…
+  * { pointer-events: none; }
+
+  // …except the popover and the element being explained.
+  .driver-popover,
+  .driver-popover *,
+  .driver-active-element,
+  .driver-active-element * { pointer-events: auto; }
+
+  &.driver-no-scroll { overflow: hidden; }
+}
+
+// ── Popover ──────────────────────────────────────────────────────────────────
+.driver-popover.app-guided-tour {
+  all: unset;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  inset-inline-end: 0;
+  z-index: 1000000000;
+
+  display: block;
+  min-width: 260px;
+  max-width: 340px;
+  margin: 0;
+  padding: 16px 18px;
+
+  font-family: inherit;
+  color: #0f172a;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+
+  .driver-popover-title {
+    display: block;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #0f172a;
+  }
+
+  .driver-popover-description {
+    margin: 6px 0 0;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: #475569;
+  }
+
+  .driver-popover-close-btn {
+    all: unset;
+    position: absolute;
+    top: 6px;
+    inset-inline-end: 10px;
+    width: 28px;
+    height: 26px;
+    font-size: 18px;
+    line-height: 26px;
+    text-align: center;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: color 120ms ease;
+
+    &:hover, &:focus { color: #0f172a; }
+  }
+
+  .driver-popover-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .driver-popover-progress-text {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  .driver-popover-navigation-btns {
+    display: flex;
+    flex-grow: 1;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .driver-popover-footer-btn {
+    all: unset;
+    box-sizing: border-box;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #475569;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+    &:hover, &:focus { background: #f8fafc; color: #0f172a; }
+
+    // The last button is the primary action (Next / Done).
+    &:last-child {
+      color: #fff;
+      background: #32acc1;
+      border-color: #32acc1;
+
+      &:hover, &:focus { background: #2a93a6; border-color: #2a93a6; }
+    }
+  }
+
+  .driver-popover-btn-disabled { opacity: .5; pointer-events: none; }
+
+  // ── Arrow ──
+  .driver-popover-arrow {
+    content: "";
+    position: absolute;
+    border: 6px solid #fff;
+  }
+  .driver-popover-arrow-side-left   { left: 100%;  border-top-color: transparent; border-bottom-color: transparent; border-right-color: transparent; }
+  .driver-popover-arrow-side-right  { right: 100%; border-top-color: transparent; border-bottom-color: transparent; border-left-color: transparent; }
+  .driver-popover-arrow-side-top    { top: 100%;   border-bottom-color: transparent; border-left-color: transparent; border-right-color: transparent; }
+  .driver-popover-arrow-side-bottom { bottom: 100%; border-top-color: transparent; border-left-color: transparent; border-right-color: transparent; }
+  .driver-popover-arrow-side-center,
+  .driver-popover-arrow-side-over,
+  .driver-popover-arrow-none { display: none; }
+
+  // ── "Don't show this again" row ──
+  .app-guided-tour__dsa-row {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+  }
+  .app-guided-tour__dsa {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #64748b;
+    cursor: pointer;
+  }
+}
+
+// ── RTL ──────────────────────────────────────────────────────────────────────
+// driver.js writes the popover into <body>, which carries dir="rtl" for Arabic,
+// so text direction is inherited. What does NOT flip on its own is the order of
+// the navigation buttons: driver.js appends Previous then Next, and under RTL
+// the primary action should sit on the visual left.
+[dir="rtl"] .driver-popover.app-guided-tour {
+  .driver-popover-navigation-btns { flex-direction: row-reverse; }
+  .driver-popover-footer { flex-direction: row-reverse; }
+}

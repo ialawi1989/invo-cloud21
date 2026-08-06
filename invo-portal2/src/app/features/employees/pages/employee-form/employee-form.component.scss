@@ -163,6 +163,32 @@
   }
 }
 
+// ── "Take a tour" button in the page header ───────────────────────────
+.tour-btn {
+  flex-shrink: 0;
+  align-self: flex-start;
+  gap: 6px;
+
+  span[aria-hidden] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  // The label is supporting detail — drop it on narrow screens, where the
+  // circled "?" alone still reads (and keeps its accessible name).
+  @media (max-width: 640px) {
+    .tour-btn__label { display: none; }
+  }
+}
+
 // ── Inline notice (e.g. "the previous pass code is being retired") ────
 .notice {
   margin: 0 0 14px;

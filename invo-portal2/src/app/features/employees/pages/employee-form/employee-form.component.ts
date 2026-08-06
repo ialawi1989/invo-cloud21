@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  OnDestroy,
   OnInit,
   computed,
   inject,
@@ -58,6 +59,8 @@ import {
 } from '../../models/field-manifest.types';
 import { countryOptions, languageOptions } from '../../models/employee-catalogs';
 import { hrFieldsEnabled } from '../../employee-feature-flags';
+import { GuidedTourService } from '@shared/services/guided-tour.service';
+import { EMPLOYEE_FORM_TOUR, EMPLOYEE_TOUR_KEY } from './employee-form.tour';
 import { FieldRendererComponent } from './components/field-renderer/field-renderer.component';
 // Branch list source — the settings service already wraps `branch/getBranches`
 // and normalises the wire shape. CompanyService carries no branch collection,
@@ -105,7 +108,7 @@ interface Option {
   templateUrl: './employee-form.component.html',
   styleUrl: './employee-form.component.scss',
 })
-export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
+export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveComponent {
   private fb          = inject(FormBuilder);
   private service     = inject(EmployeeService);
   private manifestSvc = inject(EmployeeFieldManifestService);
@@ -117,6 +120,7 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
   private router      = inject(Router);
   private toast       = inject(ToastService);
   private modal       = inject(ModalService);
+  private tour        = inject(GuidedTourService);
 
   /** Credential rules (legacy: password >= 8, pass code >= 4 digits). */
   readonly passwordMinLength = 8;
@@ -959,6 +963,26 @@ export class EmployeeFormComponent implements OnInit, CanLeaveComponent {
 
   cancel(): void {
     this.router.navigate(['/employees']);
+  }
+
+  // ── Guided tour ────────────────────────────────────────────────────────
+  /**
+   * Walk through the form's cards. Triggered only by the header button —
+   * never automatically: this form is where someone is mid-task, and on a new
+   * employee the steps most worth seeing (email / password) don't exist yet
+   * because no role has been chosen.
+   *
+   * Steps whose anchor isn't rendered — the flagged HR cards, the credential
+   * fields for a POS-only account, the primary-branch star before any branch
+   * is picked — are dropped by the service rather than pointing at nothing.
+   */
+  async startTour(): Promise<void> {
+    const shown = await this.tour.run(EMPLOYEE_FORM_TOUR, { tourKey: EMPLOYEE_TOUR_KEY });
+    if (shown === 0) this.toast.error('EMPLOYEES.TOUR.NOTHING_TO_SHOW');
+  }
+
+  ngOnDestroy(): void {
+    this.tour.stop();
   }
 
   /** Resolves once the form leaves the PENDING state (async validators done). */

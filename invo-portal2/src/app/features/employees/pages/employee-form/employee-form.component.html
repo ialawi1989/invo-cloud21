@@ -4,6 +4,18 @@
       <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
       <h1 class="page-title">{{ pageTitle() }}</h1>
     </div>
+    <!-- Replays the guided tour. Button-only: the tour is never auto-started
+         here, since this form is where someone is mid-task. -->
+    <button
+      type="button"
+      class="btn btn-ghost btn-sm tour-btn"
+      [attr.aria-label]="'EMPLOYEES.TOUR.START' | translate"
+      [attr.title]="'EMPLOYEES.TOUR.START' | translate"
+      [disabled]="loading()"
+      (click)="startTour()">
+      <span aria-hidden="true">?</span>
+      <span class="tour-btn__label">{{ 'EMPLOYEES.TOUR.START' | translate }}</span>
+    </button>
   </header>
 
   @if (loading()) {
@@ -17,7 +29,7 @@
              Off = a person on the record with no login: no credentials, no
              roles, no privilege set. Attendance and HR data still attach to
              them normally. -->
-        <section class="card">
+        <section class="card" data-tour="emp-system-access">
           <div class="card__body">
             <div class="access-toggle">
               <app-toggle
@@ -32,7 +44,7 @@
         </section>
 
         <!-- ── Basic Information ── -->
-        <section class="card">
+        <section class="card" data-tour="emp-basic">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.BASIC_INFORMATION' | translate }}</h2>
           </header>
@@ -66,7 +78,7 @@
               </div>
 
               @if (showEmailPassword()) {
-                <div class="field">
+                <div class="field" data-tour="emp-email">
                   <label class="field-label" for="emp-email">
                     {{ 'EMPLOYEES.FORM.EMAIL' | translate }}<span class="required">*</span>
                   </label>
@@ -98,7 +110,7 @@
                 </div>
 
                 <!-- Password -->
-                <div class="field">
+                <div class="field" data-tour="emp-password">
                   <label class="field-label field-label--with-action" for="emp-password">
                     <span>
                       {{ 'EMPLOYEES.FORM.PASSWORD' | translate }}
@@ -180,7 +192,7 @@
         <!-- Roles and access only exist for employees who sign in. -->
         @if (hasSystemAccess()) {
         <!-- ── Employee Roles ── -->
-        <section class="card">
+        <section class="card" data-tour="emp-roles">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYEE_ROLES' | translate }}</h2>
           </header>
@@ -234,7 +246,7 @@
         </section>
 
         <!-- ── Access & Permissions ── -->
-        <section class="card">
+        <section class="card" data-tour="emp-access">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.ACCESS_PERMISSIONS' | translate }}</h2>
           </header>
@@ -284,7 +296,7 @@
              the EMPLOYEE_HR_FIELDS flag is on. The flag stays off until the
              backend can store what they collect — see employee-feature-flags.ts. -->
         @if (profileGroup(); as group) {
-          <section class="card">
+          <section class="card" data-tour="emp-hr-profile">
             <header class="card__head">
               <h2 class="card__title">{{ 'EMPLOYEES.FORM.PERSONAL_DETAILS' | translate }}</h2>
             </header>
@@ -304,7 +316,7 @@
              The hire and termination dates stay where they were, in the side
              column: they're top-level fields and stay authoritative. -->
         @if (employmentGroup(); as group) {
-          <section class="card">
+          <section class="card" data-tour="emp-hr-employment">
             <header class="card__head">
               <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT_DETAILS' | translate }}</h2>
             </header>
@@ -328,7 +340,7 @@
       <div class="form-grid__side">
 
         <!-- ── Image ── -->
-        <section class="card">
+        <section class="card" data-tour="emp-image">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.IMAGE' | translate }}</h2>
           </header>
@@ -362,7 +374,7 @@
         </section>
 
         <!-- ── Branch Assignment ── -->
-        <section class="card">
+        <section class="card" data-tour="emp-branches">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.BRANCH_ASSIGNMENT' | translate }}</h2>
           </header>
@@ -387,6 +399,7 @@
                   <li class="branch-list__item" [class.branch-list__item--primary]="b.id === primaryBranchId()">
                     <button
                       type="button"
+                      [attr.data-tour]="$first ? 'emp-primary-star' : null"
                       class="branch-list__star"
                       [class.branch-list__star--on]="b.id === primaryBranchId()"
                       [disabled]="isSuperAdmin()"
@@ -408,7 +421,7 @@
         </section>
 
         <!-- ── Employment ── -->
-        <section class="card">
+        <section class="card" data-tour="emp-employment">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT' | translate }}</h2>
           </header>
