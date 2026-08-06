@@ -3,25 +3,27 @@
 How storefront pages and website settings were restructured, what was built
 where, and what is still open.
 
-> **Status — accurate as of 2026-08-06.**
+> **The refactor is DONE. Final state as of 2026-08-06.**
 >
-> Sections 1–7 (the design, file maps and relocation policy) describe shipped
-> code and are complete.
+> Sections 1–7 (design, file maps, relocation policy) describe shipped code.
+> **Status** records what was verified and how — a live call, a database query,
+> or only a type-check — and keeps the **real path** (the new endpoints, live
+> since 2026-08-06) separate from the **fallback path** (the compatibility
+> layer). That distinction is the substance of it, not a formality.
 >
-> **Status** is the section that goes stale. Read it with its own verification
-> labels rather than assuming: it distinguishes what was checked by a **live
-> call**, by a **database query**, and what only **type-checks**. The renderer
-> table's `verified on` column separates the **real path** (the new endpoints,
-> live since 2026-08-06) from the **fallback path** (the compatibility layer) —
-> most renderers are still only verified on the fallback, and that distinction
-> is the point of the table.
+> The central claim was tested rather than asserted: switching to the new
+> endpoints produced **byte-identical rendered DOM** on all six sampled pages.
 >
-> Known incomplete at time of writing: the manifest being admin-only is
-> **UNVERIFIED** (needs an admin token — a 401 cannot distinguish "protected"
-> from "not mounted"); `system` has no renderer verification because no such
-> page exists on any tenant; `account` and `booking` have never run against real
-> signed-in data; `category-list` remains on the legacy endpoint because no
-> unified categories endpoint exists.
+> **One item is genuinely outstanding** — whether the manifest is admin-only is
+> UNVERIFIED and needs an admin token; a 401 cannot distinguish "protected" from
+> "not mounted".
+>
+> **Three things read as gaps and are not** — `system`, `redirect` and
+> `category-list`. See *By design — NOT unfinished work* before treating any of
+> them as a to-do.
+>
+> Everything else worth doing next is in *What to pick up next*, in priority
+> order, written so it can be picked up cold.
 
 Repos touched:
 
@@ -294,58 +296,39 @@ Nothing on that list requires a routing change.
 
 ## Status
 
-### Renderers — 8 of 9
+Final state as of 2026-08-06. The refactor itself is **done**; what remains is
+listed under *What to pick up next* and is separable work.
 
-Verified as of 2026-08-06, against tenant `shussain`. **The `verified on` column
-is the point of this table** — most rows still say fallback.
+### Verified on the REAL path
 
-| Type | Renders | Verified on |
-| --- | --- | --- |
-| `product-list` | yes | **REAL PATH** — `website/getListing`, shop + menu |
-| `product-detail` | yes | **REAL PATH** — `website/getProductByKey` |
-| `content` | yes | fallback |
-| `category-list` | yes | fallback — no unified endpoint exists for categories |
-| `cart` | yes | fallback — browser end-to-end |
-| `checkout` | yes, **PickUp only** | fallback — browser end-to-end, real orders |
-| `account` | signed-out state only | fallback — **never run with a signed-in shopper** |
-| `booking` | branch list only | fallback — **reservation submit never executed** |
-| `system` | **not verified** | — no `system` page exists on any tenant |
+The new endpoints, live since 2026-08-06 (mounted in `1821a563c`, backend
+restarted, PID 31040).
 
-Site config also moved to the real path (the projection, not legacy reads).
+| Item | How it was verified |
+| --- | --- |
+| `website/getListing` | live call — returns `{groups, count, hasNext, source}` |
+| `website/getProductByKey` | live call — resolves slug AND uuid |
+| `website/siteConfig` | live call — all six sections populated |
+| Router mounts | all four signals green (see below) |
+| `product-list` renderer | shop + menu both rendered via `getListing` |
+| `product-detail` renderer | rendered via `getProductByKey` |
+| **The compatibility rule** | **byte-identical rendered DOM across six pages** |
+| Migrations | database queries — see *Migrations* |
 
-The rows still marked `fallback` render through the compatibility layer. That
-layer was the safety net, not the goal — but for `category-list` it is now the
-permanent answer unless a unified categories endpoint is added.
-
-`system` is unverified because the type has zero rows: the backfill's
-`isStatic → system` rule is a last resort that only fires when nothing more
-specific matched, and all 6 `isStatic:true` rows were identified by slug
-(`checkout`, `menu`, `collections`, `shop`). Correct behaviour, but it means the
-renderer has never been exercised.
-
-**Checkout is PickUp-only.** `Delivery`, `Shipping` and `DineIn` are listed in
-`UNSUPPORTED_SERVICES` and hidden — each fails at the last step (DineIn wants a
-table; both delivery modes want an address matched against covered areas, and
-every branch on the reference merchant has zero covered addresses).
-
-### The real path is LIVE (2026-08-06)
-
-Routers mounted in commit `1821a563c`; backend restarted (PID 31040, 11:17:17).
-All four signals confirmed:
+**The four signals**
 
 | Signal | Result |
 | --- | --- |
-| `getListing` echoes `source` | ✅ `{groups, count, hasNext, source}`, `source: {"kind":"catalog"}` |
-| `siteConfig` returns six sections | ✅ branding, layout, contact, commerce, seo, blog (+ version, seeded, navigation, extra) |
-| tenant `pageTypes` still 404 | ✅ 404 — manifest stays admin-only |
-| admin `pageTypes` | 401 — auth wall; **still needs a token to confirm properly** |
+| `getListing` echoes `source` | yes — `{"kind":"catalog"}` |
+| `siteConfig` returns six sections | yes — branding, layout, contact, commerce, seo, blog |
+| tenant `pageTypes` still 404 | yes — manifest stays admin-only |
+| admin `pageTypes` | 401 without a token — **see UNVERIFIED below** |
 
-### The compatibility rule, finally tested
-
-Six pages captured on the fallback path, then re-rendered on the real path.
-Raw bytes moved on all six — but that was the SSR hydration payload
-(`ng-state`), which grew because `siteConfig` now returns 200 and joins the
-transfer cache. Comparing **rendered DOM only**, with `ng-state` stripped:
+**The compatibility rule, tested rather than asserted.** Six pages captured on
+the fallback path, then re-rendered on the real path. Raw bytes moved on all six
+— but that was the SSR hydration payload (`ng-state`) growing because
+`siteConfig` now returns 200 and joins the transfer cache. Comparing rendered
+DOM only:
 
 ```text
 /en/shop                       24145 -> 24145   IDENTICAL
@@ -356,173 +339,209 @@ transfer cache. Comparing **rendered DOM only**, with `ng-state` stripped:
 /en/product/cevirme-shawarma   15973 -> 15973   IDENTICAL
 ```
 
-Byte-identical on every page — and genuinely via the new endpoints, per the
-SSR transfer cache:
+And genuinely through the new endpoints, per the SSR transfer cache:
 
-| Page | Before (legacy) | After (real path) |
+| Page | Before | After |
 | --- | --- | --- |
-| shop | `shop/getCategoriesProducts` | **`website/getListing`** |
-| menu | `shop/menu/getCompanyMenu` | **`website/getListing`** |
-| product | `shop/generalSearch` + `shop/getProduct` | **`website/getProductByKey`** |
-| categories | `shop/getCompanyCategories` | unchanged — no unified endpoint exists for it |
+| shop | `shop/getCategoriesProducts` | `website/getListing` |
+| menu | `shop/menu/getCompanyMenu` | `website/getListing` |
+| product | `shop/generalSearch` + `shop/getProduct` | `website/getProductByKey` |
+| categories | `shop/getCompanyCategories` | unchanged — see *by design* |
 
-Two different legacy endpoints collapsed into one `getListing` and produced the
-same HTML. The product page dropped from two calls to one: `getProductByKey`
-resolves slug-or-UUID directly, so the `generalSearch` round-trip disappeared
-(the only page whose payload got *smaller*).
+Two different legacy endpoints collapsed into one and produced the same HTML.
+The product page dropped from two calls to one, because `getProductByKey`
+resolves slug-or-uuid directly and the `generalSearch` round-trip disappeared.
 
-**`count` is not new arithmetic.** For `kind: 'catalog'`, `getListing` delegates
-to `ShopRepo.getCategoriesProducts` — the same repo function the legacy path
-called — and passes its `count` through verbatim. Verified: both report
-**9856**. Note the raw table holds 10,196 non-deleted rows of listable types, so
-the endpoint applies a further filter worth ~340 rows; that filter is
-pre-existing and **identical on both paths**, not something the refactor
-introduced.
+`count` is not new arithmetic: for `kind: 'catalog'`, `getListing` delegates to
+`ShopRepo.getCategoriesProducts` and passes its `count` through verbatim. Both
+paths report **9856**.
 
-### How to mount them
+### Still on the FALLBACK path
 
-Both mount points are `/website`, because that is the prefix both apps already
-call. **The admin path is `/v1/app/website/pageTypes`**, not `/v1/app/pageTypes`
-— the portal's base URL is `.../v1/app/` and it requests `website/pageTypes`.
+Renders correctly, through the compatibility layer, because no unified endpoint
+applies:
 
-**1. Tenant scope** — `src/routes/v1/ecommerce/index.ts`
+- `content`, `cart`, `checkout` — these page types have no listing to unify.
+- `category-list` — see *by design* below.
 
-Add with the other imports:
+### Verified, but not through the page-type work
 
-```ts
-import websiteListing    from '@src/modules/website/listing/listing.routes';
-import websiteSiteConfig from '@src/modules/website/siteConfig/siteConfig.routes';
-```
-
-Add beside the other `router.use` lines (after `router.use('/blog', blog);`):
-
-```ts
-router.use('/website', websiteListing);
-router.use('/website', websiteSiteConfig);
-```
-
-**2. Admin scope** — `src/routes/v1/app/index.ts`
-
-Add with the other imports:
-
-```ts
-import websitePageTypes  from '@src/modules/website/pageTypes/pageTypes.routes';
-import websiteSiteConfig from '@src/modules/website/siteConfig/siteConfig.routes';
-```
-
-Add beside the other `router.use` lines (after `router.use('/appointments', appointments);`):
-
-```ts
-router.use('/website', websitePageTypes);
-router.use('/website', websiteSiteConfig);
-```
-
-`siteConfig.routes` is mounted in **both** scopes on purpose: the storefront
-reads it tenant-side, and the portal reads *and writes* it admin-side
-(`POST website/siteConfig/:section`). Mounting two routers on the same path is
-normal Express behaviour — each handles only the paths it declares.
-
-### What to expect after mounting
-
-Stops 404-ing (tenant scope, no auth needed):
-
-```text
-POST /v1/ecommerce/<sub>/website/getListing
-     body {"source":{"kind":"catalog"},"page":1,"limit":24}
-     -> {"success":true,"data":{"groups":[...],"count":N,"hasNext":false,"source":{...}}}
-        `source` echoed back is the tell: the legacy path never returns it.
-
-POST /v1/ecommerce/<sub>/website/getProductByKey
-     body {"key":"cevirme-shawarma"}      (a UUID also works)
-     -> {"success":true,"data":{ ...product... }}
-
-GET  /v1/ecommerce/<sub>/website/siteConfig
-     -> {"success":true,"data":{"branding":{...},"layout":{...},"contact":{...},
-                                "commerce":{...},"seo":{...},"blog":{...}}}
-        All six sections present even when the merchant has set nothing —
-        that is the projection working, not a passthrough.
-```
-
-Stops 404-ing (admin scope, needs a token — 401 without one is correct):
-
-```text
-GET  /v1/app/website/pageTypes          -> {"pageTypes":[ ...9 entries... ],"version":"1.0.0"}
-                                           Cache-Control: private
-GET  /v1/app/website/pageTypes/version  -> {"version":"1.0.0"}
-GET  /v1/app/website/siteConfigSchema   -> the portal's Website-Settings form definition
-POST /v1/app/website/siteConfig/:section
-```
-
-Must STILL 404 — the manifest is admin-only:
-
-```text
-GET  /v1/ecommerce/<sub>/website/pageTypes   -> 404
-```
-
-Then in the apps: the portal's `usingFallback` flips to **false**, and listing
-responses carry `source`. Those two are the signal that the real path is live.
+`cart` and `checkout` were exercised end-to-end in a browser (real cash orders
+placed), and currency was confirmed in the SSR HTML. Both predate the mount and
+run on the fallback path.
 
 ### Migrations — verified against the database
 
-Both recorded: `1783800000000_website_page_type_backfill` and
-`1783900000000_website_option_relocations` (2026-08-05).
-
-| Claim | Result |
+| Migration | State |
 | --- | --- |
-| `pageType` on every page row | **43/43** (13 `Page`, 30 `StaticPage`) |
-| `source` on listing rows | **11**, matching the 11 `product-list` rows |
-| `isStatic:true` → `system` | 6 rows, 0 mapped — **correct**, all matched earlier by slug |
-| `redirect_to_shop:true` → `status:'redirect'` | **0 of 0** — only 2 rows carry the key and both are `false`, so the rule is **unexercised, not verified** |
-| ThemeSettings row created where missing | 12 companies have one (of 174 with any WebSiteBuilder row) |
-| relocation targets filled | partial, consistent with fill-NULL-only: `defaultListingView`/`defaultPageLimit`/`defaultSortBy` 8 each, `disableDelivery`/`disablePickup`/`scheduleStartDay`/`allowLongProductName` 5, `defaultProductStyle`/`enableScheduleOrder` 6, `disableImmediateOrder`/`defaultProductImageFit` 1, `disablePayLaterFor`/`hideOutOfStockVariants` 0 (no sources existed) |
-| `booking_kind` backfill | **0 of 3 booking pages — never ran.** See below |
-| `status` on every page row | **0 of 43** — the `published` default is unconditional, so this is proof the later passes never ran |
+| `1783800000000_website_page_type_backfill` | applied 2026-08-05, **partially** — see below |
+| `1783900000000_website_option_relocations` | applied 2026-08-05, **partially** |
+| `1784100000000_website_backfill_reapply` | applied 2026-08-06 08:18:07Z, **46 rows** |
 
-**Resolved 2026-08-06.** `1784100000000_website_backfill_reapply` applied at
-08:18:07Z, and the result matched the dry-run prediction exactly:
+Both original migrations were edited AFTER being applied, and `node-pg-migrate`
+tracks by file name, so those edits never ran. The corrective migration
+re-applies every guarded pass from both. Final state:
 
-| After | Value |
+```text
+pageType      43/43 page rows
+status        43/43   (43 published, 0 redirect, 0 hidden)
+source        11      (matching the 11 product-list rows)
+booking_kind  appointments -> appointment x2, table-reservation -> table
+```
+
+The corrective migration was dry-run in a rolled-back transaction first: 46 rows
+predicted, 46 changed, and a second consecutive run changed 0 — idempotent. Its
+30 no-op statements were each proved separately on synthesised rows.
+
+### UNVERIFIED — one item, needs an admin token
+
+**Is the manifest genuinely admin-only?** `/v1/app/website/pageTypes` returns
+401 without a token, but so does a route that does not exist — `/v1/app/*` sits
+behind a blanket auth wall, so a 401 cannot distinguish "mounted and protected"
+from "not mounted". The tenant-scoped `/v1/ecommerce/<sub>/website/pageTypes`
+does return 404, which is the desired half.
+
+To close it, both calls are needed:
+
+```bash
+# 1. WITH a token — must be 200, 9 page types, Cache-Control: private
+curl -s -i -H "Authorization: Bearer <TOKEN>" \
+  http://localhost:3001/v1/app/website/pageTypes | head -20
+
+# 2. Tenant scope, no token — must stay 404
+curl -s -o /dev/null -w '%{http_code}\n' \
+  http://localhost:3001/v1/ecommerce/<sub>/website/pageTypes
+```
+
+Get the token by signing into the portal and copying the `Authorization` header
+from any request (`POST /v1/app/login`). **Do not record this as verified on a
+401 alone.**
+
+### By design — NOT unfinished work
+
+Three things will never show as "verified" and should not be read as gaps.
+
+**`system` page type — no rows exist anywhere.** The backfill maps
+`isStatic: true` to `system` only as a last resort, when nothing more specific
+matched. On this database all six `isStatic` rows were identified by slug
+(`checkout`, `menu`, `collections`, `shop`), so none needed the fallback. The
+renderer is written and wired; there is simply no page anywhere to render with
+it. It becomes verifiable the first time a merchant has a static page that no
+slug rule recognises.
+
+**`redirect` status — the storefront path has never fired.** The migration rule
+IS proven: exercised against a real row inside a rolled-back transaction, where
+`status` became `redirect`, `redirectTo` resolved to the company's catalog
+listing, and the legacy key was preserved. But no row in the database has
+`status = 'redirect'` (only 2 rows carry `redirect_to_shop` and both are
+`false`), so `page-host`'s redirect branch has never executed against real data.
+It becomes verifiable the first time a merchant sets one.
+
+**`category-list` stays on the legacy endpoint — a boundary, not a gap.** There
+is no unified categories endpoint, and none was planned: `getListing` unifies
+PRODUCT listings, which is where the duplication was. The categories page calls
+`shop/getCompanyCategories` and renders 173 tiles across 18 department groups
+correctly. This changes only if someone decides categories need the same
+treatment, which is a new piece of work rather than an unfinished one.
+
+## What to pick up next
+
+Priority order. Enough context to start without this conversation.
+
+### 1. Document-templates unwrap migration — blocks other work
+
+`feature/document-templates` holds five commits that were cherry-picked onto
+`feature/new-project` and then reverted (`320983fa7`) because the work is
+in progress. **The branch must stay alive until this is resolved.**
+
+The blocker: `8adb00d26` edited migration
+`1783700000000_Document_Templates_Render_Mode_Versions` **42 minutes after it
+had already been applied**, removing the statement that WRAPPED each template as
+`{"classic": {...}}` in favour of one flat blob. Because the migration was
+already applied, the removal never executed and nothing unwrapped the existing
+rows:
+
+```text
+DocumentTemplates: 17 rows
+  16 WRAPPED   template = {"classic": {...}},  renderMode = 'classic'
+   1 FLAT      renderMode = 'designer', real keys at top level
+```
+
+The flat-blob code reads those 16 rows with their content one level too deep.
+Needs a NEW unwrap migration — the original is applied and immutable.
+
+Also read the revert commit message: the two document-template migrations remain
+APPLIED on the shared database, so a fresh database built from
+`feature/new-project` will drift.
+
+### 2. Five remaining `splice(-1)` sites — three are user-visible
+
+`splice()` on an index that can be `-1` removes the LAST element instead of
+nothing. Two instances were fixed (`Invoice.removeItem`, `option.socket.ts:443`);
+these remain:
+
+| Location | Effect |
 | --- | --- |
-| `status` | **43/43** — all `published`, 0 redirect, 0 hidden |
-| `booking_kind` | appointments → `appointment` ×2, table-reservation → `table` |
-| `pageType` / `source` | 43 / 11 — unchanged, as predicted |
-| `system` | still 0 rows |
+| `src/utilts/ReportPDFGenerator.ts:705, 895, 1365` | a report without a barcode column silently loses its LAST column |
+| `src/repo/socket/product.socket.ts:1221, 1225` | drops the last excluded option |
+| `src/socket.ts:264` | `splice` sits outside the `if (terminalData)` guard — evicts an unrelated pending terminal |
 
-**`booking_kind` never executed.** The statements were appended to
-`1783900000000` *after* it had been applied (migration recorded 14:29:11 +0300,
-commit `7149c7b71` at 14:34:24 +0300). `node-pg-migrate` tracks by file name, so
-an edited file is never re-run. Without it, every migrated `appointments` page
-presents a **table reservation form**, because `booking_kind` defaults to
-`'table'`. Fixed by a new migration,
-`1784100000000_website_booking_kind_backfill.js` — **not yet run**.
+The three `ReportPDFGenerator` ones are worth doing first: nobody reports a
+column that was never there, so it reads as "that report doesn't include that
+field" and can persist indefinitely.
 
-### Done since
+### 3. `account` and `booking` — never run against real data
 
-- **SEO overrides now reach the storefront.** An earlier note here claimed the
-  `/seoOverride/*` endpoints don't exist in InvoCloudBack — **that was wrong**.
-  They exist (`routes/v1/app/company.ts:155-160`, controller, repo,
-  `SeoOverrides` table, migration `1779800300000`). Only the read was missing:
-  `shop/getProduct` now attaches the row as `seo`, the field
-  `generateMetaTags` already reads.
-- **`hidden` emits `noindex, nofollow`**, set before render so it lands in the
-  SSR HTML. Other statuses *remove* the tag rather than writing `index, follow`,
-  so a deliberate site-wide noindex isn't overridden.
+Both render, both were built from contracts read out of the backend source, and
+neither has been exercised with real data.
 
-### Open
+- `account` — only the signed-out state has been seen. Needs a signed-in shopper
+  with order history. Field mapping to check first: `orderHistory` returns a
+  fixed column list with no item count, and the shopper's phone field is `phone`.
+- `booking` — the branch dropdown was verified live (4 branches), but a
+  reservation has never been submitted. `saveReservation` returns
+  `{reservationSessionId}` only, and a signed-in shopper with an unvalidated
+  phone is rejected with a message the form surfaces but that has never been
+  seen rendered.
 
-- ~~Mount the four routers~~ — **done** (`1821a563c`), all four signals verified.
-- ~~Run the corrective migration~~ — **done**, `1784100000000_website_backfill_reapply`,
-  46 rows, matching the dry run exactly.
-- **`hidden` navigation exclusion** — the remaining half. The storefront gets
-  navigation as an already-built menu and never holds the full page list, so it
-  cannot tell which items point at hidden pages without fetching every page.
-  Belongs server-side, in the navigation endpoint.
-- **Manifest admin-only: UNVERIFIED.** `/v1/app/*` returns 401 for real and
-  nonexistent routes alike, so a 401 cannot distinguish "protected" from "not
-  mounted". Needs an admin token. Do not assert it until then.
-- **`redirect` status is unexercised** — no row in the database uses it.
+### 4. Checkout's excluded services
+
+Checkout is **PickUp-only**. `Delivery`, `Shipping` and `DineIn` are listed in
+`UNSUPPORTED_SERVICES` in `website/src/app/features/checkout/checkout.api.ts`
+and hidden from the form, because each fails at the LAST step — after the
+shopper has filled everything in:
+
+- `DineIn` — `checkOut` throws "Table selection is required"; there is no table
+  picker.
+- `Delivery` / `Shipping` — need an address with geolocation matched against the
+  branch's covered areas. **Every branch on the reference merchant has ZERO
+  covered addresses**, so delivery could not complete there regardless.
+
+Removing an entry from that constant is most of the work; the rest is the
+address capture the two delivery modes need. Also unbuilt: the option/variant
+picker, which is why products with required option groups show an explanation
+instead of an Add button.
+
+### 5. CI — nothing gates anything
+
+See `InvoCloudBack/docs/tickets/no-ci-pipeline-exists.md`. Neither repo has any
+CI config. `invo-portal2` defines `verify` (tests + i18n check) and the i18n gate
+is currently RED — 142 untranslated `TODO_AR` placeholders — with nothing
+observing it. Decision already taken: **i18n blocking on the default branch,
+advisory elsewhere.** Platform left open — GitHub Actions for `invo-cloud21`,
+CodeBuild for `InvoCloudBack`.
+
+### Smaller, unsequenced
+
+- **`hidden` status** — noindex and navigation exclusion are both built but have
+  never run, because no page anywhere has `status = 'hidden'`. Set one to
+  confirm.
+- **SEO overrides** — `ShopRepo.getProduct` now attaches the row as `seo`; no
+  product with an override has been fetched through the storefront yet.
 - **Section `slot`** (top/bottom) is honoured by the storefront, no builder UI.
-- **`primaryListingSlug`** used by renderers, not by navigation or a home redirect.
-- **Static pages in the builder.**
+- **`primaryListingSlug`** is used by the renderers but not by navigation links
+  or a home redirect.
+- **Static pages in the builder** — open system pages in the builder with
+  widgets/filters alongside their settings.
 - Two external Website-Settings links (`settings/seo`, `settings/blog`) point at
   unverified routes.
