@@ -1,3 +1,15 @@
 node_modules
 # Backend
 backend/
+
+# Angular build cache — regenerated on every build, ~22 MB in website/ alone.
+# NOTE: these paths were already tracked when this entry was added, and
+# .gitignore does not affect tracked files. Untracking them needs:
+#     git rm -r --cached website/.angular dashboard/.angular
+# which is a 146-file deletion commit and has not been done yet.
+.angular/
+**/.angular/cache/
+
+# Build output
+dist/
+out-tsc/

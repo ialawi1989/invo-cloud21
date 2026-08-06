@@ -28,8 +28,6 @@ export interface BranchExportData {
   buckets: Record<ExportScope, BranchIoBucket[]>;
   /** Name of the branch behind the `branch` scope. */
   activeBranchName: string;
-  /** How many branches are currently multi-selected in the list. */
-  selectedCount: number;
 }
 
 export interface BranchExportResult {
@@ -40,7 +38,7 @@ export interface BranchExportResult {
 
 /**
  * Export side of the branch import/export pair. Picks a scope (this
- * branch / the selected branches / all), a format and the columns, then
+ * branch / all branches), a format and the columns, then
  * hands the choice back — the section component owns the actual write so
  * the modal stays free of FormArray knowledge.
  */
@@ -166,11 +164,6 @@ export class BranchExportModalComponent {
         value: 'branch' as ExportScope,
         label: this.translate.instant('PRODUCTS.FORM.IO_SCOPE_BRANCH', { name: this.data.activeBranchName }),
         count: countRows(b.branch), disabled: false,
-      },
-      {
-        value: 'selected' as ExportScope,
-        label: this.translate.instant('PRODUCTS.FORM.IO_SCOPE_SELECTED', { count: this.data.selectedCount }),
-        count: countRows(b.selected), disabled: this.data.selectedCount === 0,
       },
       {
         value: 'all' as ExportScope,

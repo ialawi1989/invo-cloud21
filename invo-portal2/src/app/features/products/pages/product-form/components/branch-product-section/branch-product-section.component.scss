@@ -201,16 +201,6 @@
     .pf-bp-dot { box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .9); }
     .pf-bp-pill--override { background: rgba(255, 255, 255, .22); color: #fff; }
     .pf-bp-pill--error    { background: #fff; color: #b91c1c; }
-    // The shared checkbox is a white square with a slate border — invisible
-    // against the fill until it's ticked.
-    .pf-bp-check:not(:checked) {
-      background: rgba(255, 255, 255, .2);
-      border-color: rgba(255, 255, 255, .85);
-    }
-    .pf-bp-check:checked {
-      background-color: #0b5c68;
-      border-color: #0b5c68;
-    }
   }
 
   &__name {
@@ -220,14 +210,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-}
-
-.pf-bp-check {
-  width: 16px;
-  height: 16px;
-  accent-color: #32acc1;
-  cursor: pointer;
-  flex: none;
 }
 
 .pf-bp-dot {
@@ -481,28 +463,13 @@
   gap: 12px;
 }
 
-// ── Bulk bar ─────────────────────────────────────────────────────────────
-.pf-bp-bulk {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  flex-wrap: wrap;
-  padding: 10px 16px;
-  background: #e2f6f9;
-  border-top: 1px solid #a5dde6;
+// Standing bulk-edit action in the master pane foot.
+.pf-bp-master__foot .pf-chip-btn--primary {
+  background: #32acc1;
+  border-color: #32acc1;
+  color: #fff;
 
-  strong { color: #0f7c8c; font-size: 13px; }
-
-  &__clear { margin-inline-start: auto; }
-
-  // Primary action of the bar — the bulk editor.
-  .pf-chip-btn--primary {
-    background: #32acc1;
-    border-color: #32acc1;
-    color: #fff;
-
-    &:hover { background: #2795a8; border-color: #2795a8; }
-  }
+  &:hover { background: #2795a8; border-color: #2795a8; }
 }
 
 // ── Responsive: list ⇄ detail below 820px ────────────────────────────────
@@ -531,7 +498,6 @@
   .pf-bp-grid--mob-detail .pf-bp-back   { display: flex; }
 
   .pf-bp-detail { padding: 14px 13px 18px; }
-  .pf-bp-bulk   { padding: 9px 12px; }
 }
 
 // ── RTL ──────────────────────────────────────────────────────────────────

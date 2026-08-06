@@ -18,7 +18,7 @@ import { buildXlsxBlob } from '@shared/components/import-wizard/xlsx-writer';
 export type BranchIoKind = 'serials' | 'batches';
 export type ImportMode   = 'add' | 'upsert' | 'replace';
 export type ExportFormat = 'csv' | 'xlsx';
-export type ExportScope  = 'branch' | 'selected' | 'all';
+export type ExportScope  = 'branch' | 'all';
 
 /** One exportable/importable branch bucket — canonical FormArray index kept
  *  alongside the name so nothing has to be looked up by position later. */

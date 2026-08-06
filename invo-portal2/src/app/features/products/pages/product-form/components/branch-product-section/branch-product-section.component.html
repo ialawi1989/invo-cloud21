@@ -108,11 +108,6 @@
                      (click)="openBranch(row.index)"
                      (keydown.enter)="openBranch(row.index)"
                      (keydown.space)="openBranch(row.index); $event.preventDefault()">
-                  <input type="checkbox"
-                         class="pf-bp-check"
-                         [checked]="isSelected(row.index)"
-                         [attr.aria-label]="row.name"
-                         (click)="toggleSelect(row.index, $event)"/>
                   <span class="pf-bp-row__name">{{ row.name }}</span>
                   @if (isOverride(row.index)) {
                     <span class="pf-bp-pill pf-bp-pill--override">{{ 'PRODUCTS.FORM.PRICE' | translate }}</span>
@@ -154,14 +149,13 @@
               }
             </div>
 
+            <!-- Bulk edit is a standing action, not something the list has to
+                 be put into a selection mode to reach — the branches it
+                 applies to are picked inside the modal. -->
             <div class="pf-bp-master__foot">
               <span>{{ 'PRODUCTS.FORM.LIST_LOADED' | translate: { loaded: pagedRows().length, total: visibleRows().length } }}</span>
-              <button type="button" class="pf-bp-link" (click)="toggleSelectAllMatching()">
-                @if (allMatchingSelected()) {
-                  {{ 'PRODUCTS.FORM.CLEAR_SELECTION' | translate }}
-                } @else {
-                  {{ 'PRODUCTS.FORM.SELECT_ALL_MATCHING' | translate: { count: visibleRows().length } }}
-                }
+              <button type="button" class="pf-chip-btn pf-chip-btn--primary" (click)="openBulkEdit()">
+                {{ 'PRODUCTS.FORM.BULK_EDIT_FIELDS' | translate }}
               </button>
             </div>
           </div>
@@ -528,36 +522,6 @@
           }
         </div>
       </div>
-
-      <!-- ═══ Bulk bar ═══ -->
-      @if (selectedCount()) {
-        <div class="pf-bp-bulk">
-          <strong>{{ 'PRODUCTS.FORM.N_BRANCHES_SELECTED' | translate: { count: selectedCount() } }}</strong>
-
-          <button type="button" class="pf-chip-btn pf-chip-btn--primary" (click)="openBulkEdit()">
-            {{ 'PRODUCTS.FORM.BULK_EDIT_FIELDS' | translate }}
-          </button>
-
-          <button type="button" class="pf-chip-btn" (click)="bulkCopyFromActive()">
-            {{ 'PRODUCTS.FORM.BULK_COPY_FROM' | translate: { name: activeBranchName() } }}
-          </button>
-
-          @if (showSerialsTab()) {
-            <button type="button" class="pf-chip-btn" (click)="openImport('serials')">
-              {{ 'PRODUCTS.FORM.IO_IMPORT_SERIALS' | translate }}
-            </button>
-          }
-          @if (showBatchesTab()) {
-            <button type="button" class="pf-chip-btn" (click)="openImport('batches')">
-              {{ 'PRODUCTS.FORM.IO_IMPORT_BATCHES' | translate }}
-            </button>
-          }
-
-          <button type="button" class="pf-bp-link pf-bp-bulk__clear" (click)="clearSelection()">
-            {{ 'PRODUCTS.FORM.CLEAR_SELECTION' | translate }}
-          </button>
-        </div>
-      }
     }
   }
 </section>

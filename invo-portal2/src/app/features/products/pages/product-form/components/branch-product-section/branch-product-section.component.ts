@@ -132,11 +132,12 @@ const FIELD_LABELS: Record<string, string> = {
  *
  * Layout:
  *   • master pane — search, filter chips, infinite-scrolling branch list,
- *     multi-select checkboxes, collapsible to a rail on desktop
+ *     a standing "Bulk edit…" action, collapsible to a rail on desktop
  *   • detail pane — only the active branch is rendered (its controls are
  *     the only ones in the DOM), split into Settings / Stock / Pricing /
  *     Serials / Batches tabs
- *   • bulk bar — appears while the selection is non-empty, writing through
+ *   • bulk edit modal — owns both which branches to write to and what to
+ *     write (field values or a copy of the active branch), writing through
  *     the FormArray so it stays the single source of truth
  *
  * Under 820px the two panes alternate (list ⇄ detail) instead of sitting
@@ -236,8 +237,6 @@ export class BranchProductSectionComponent implements OnInit {
 
   filter      = signal<ListFilter>('all');
   loadedCount = signal<number>(PAGE_SIZE);
-  /** Canonical FormArray indexes that are multi-selected. */
-  private selection = signal<Set<number>>(new Set());
 
   private listBox  = viewChild<ElementRef<HTMLElement>>('listBox');
   private sentinel = viewChild<ElementRef<HTMLElement>>('sentinel');
@@ -431,55 +430,14 @@ export class BranchProductSectionComponent implements OnInit {
     this.loadedCount.update(n => n + PAGE_SIZE);
   }
 
-  // ─── Selection ─────────────────────────────────────────────────────────
-  selectedCount = computed<number>(() => this.selection().size);
-
-  isSelected(index: number): boolean { return this.selection().has(index); }
-
-  toggleSelect(index: number, event?: Event): void {
-    event?.stopPropagation();
-    this.selection.update((s) => {
-      const next = new Set(s);
-      if (next.has(index)) next.delete(index); else next.add(index);
-      return next;
-    });
-  }
-
-  /** All rows matching the current filter — loaded or not. */
-  allMatchingSelected = computed<boolean>(() => {
-    const vis = this.visibleRows();
-    if (!vis.length) return false;
-    const sel = this.selection();
-    return vis.every(r => sel.has(r.index));
-  });
-
-  toggleSelectAllMatching(): void {
-    const vis = this.visibleRows();
-    if (this.allMatchingSelected()) {
-      this.selection.update((s) => {
-        const next = new Set(s);
-        vis.forEach(r => next.delete(r.index));
-        return next;
-      });
-      return;
-    }
-    this.selection.update((s) => {
-      const next = new Set(s);
-      vis.forEach(r => next.add(r.index));
-      return next;
-    });
-  }
-
-  clearSelection(): void { this.selection.set(new Set()); }
-
   // ─── Bulk actions ──────────────────────────────────────────────────────
-  private eachSelected(fn: (grp: FormGroup, index: number) => void): void {
-    const sel = [...this.selection()];
-    sel.forEach((i) => {
+  /** Runs `fn` over the branches the bulk modal targeted. */
+  private eachOf(targets: number[], fn: (grp: FormGroup, index: number) => void): void {
+    targets.forEach((i) => {
       const grp = this.groupAt(i);
       if (grp) fn(grp, i);
     });
-    if (sel.length) this.rows.markAsDirty();
+    if (targets.length) this.rows.markAsDirty();
   }
 
   /**
@@ -525,21 +483,39 @@ export class BranchProductSectionComponent implements OnInit {
     return fields;
   }
 
-  /** Open the bulk editor and write whatever came back onto every selection. */
+  /**
+   * Open the bulk editor. The modal owns both halves of the operation —
+   * which branches to write to and what to write — so it needs no
+   * pre-existing selection in the list.
+   */
   async openBulkEdit(): Promise<void> {
-    if (!this.selectedCount()) return;
     const fields = this.bulkEditFields();
-    if (!fields.length) return;
 
     const ref = this.modals.open<BranchBulkEditModalComponent, BulkEditData, BulkEditResult | undefined>(
       BranchBulkEditModalComponent,
-      { size: 'md', data: { selectedCount: this.selectedCount(), fields } },
+      {
+        // Two columns (branch picker | fields) need the wider shell.
+        size: 'lg',
+        data: {
+          branches:    this.allRows().map(r => ({ index: r.index, name: r.name })),
+          preselected: [this.activeTab()],
+          sourceIndex: this.activeTab(),
+          sourceName:  this.activeBranchName(),
+          fields,
+        },
+      },
     );
 
-    const patch = await ref.afterClosed();
-    if (!patch) return;
+    const result = await ref.afterClosed();
+    if (!result) return;
 
-    this.eachSelected((grp) => {
+    if (result.mode === 'copy') {
+      this.copySettingsTo(result.targets);
+      return;
+    }
+
+    const patch = result.patch ?? {};
+    this.eachOf(result.targets, (grp) => {
       grp.patchValue(patch);
       // The price override drags its validators along — same rule the
       // single-branch checkbox applies.
@@ -565,13 +541,13 @@ export class BranchProductSectionComponent implements OnInit {
     priceCtl.updateValueAndValidity({ emitEvent: false });
   }
 
-  /** Copies the operational settings of the active branch onto every
-   *  selected branch — the one bulk operation the old UI couldn't do. */
-  bulkCopyFromActive(): void {
+  /** Copies the operational settings of the active branch onto the branches
+   *  ticked in the bulk modal — the one bulk operation the old UI couldn't do. */
+  private copySettingsTo(targets: number[]): void {
     const src = this.groupAt(this.activeTab());
     if (!src) return;
     const v = src.getRawValue() as any;
-    this.eachSelected((grp, i) => {
+    this.eachOf(targets, (grp, i) => {
       if (i === this.activeTab()) return;
       grp.patchValue({
         available:           v.available,
@@ -1298,9 +1274,8 @@ export class BranchProductSectionComponent implements OnInit {
 
   async openExport(kind: BranchIoKind): Promise<void> {
     const buckets: Record<ExportScope, BranchIoBucket[]> = {
-      branch:   this.bucketsFor(kind, [this.activeTab()]),
-      selected: this.bucketsFor(kind, [...this.selection()]),
-      all:      this.bucketsFor(kind, this.allRows().map(r => r.index)),
+      branch: this.bucketsFor(kind, [this.activeTab()]),
+      all:    this.bucketsFor(kind, this.allRows().map(r => r.index)),
     };
 
     const ref = this.modals.open<BranchExportModalComponent, BranchExportData, BranchExportResult | undefined>(
@@ -1311,7 +1286,6 @@ export class BranchProductSectionComponent implements OnInit {
           kind,
           buckets,
           activeBranchName: this.activeBranchName(),
-          selectedCount:    this.selectedCount(),
         },
       },
     );
