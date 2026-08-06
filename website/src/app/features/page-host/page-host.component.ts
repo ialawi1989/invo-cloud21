@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { PageService } from '../../core/pages/page.service';
@@ -104,6 +105,7 @@ export class PageHostComponent implements OnInit {
   private pages      = inject(PageService);
   private preview    = inject(PreviewService);
   private destroyRef = inject(DestroyRef);
+  private meta       = inject(Meta);
 
   page = signal<ResolvedPage | null>(null);
 
@@ -157,9 +159,30 @@ export class PageHostComponent implements OnInit {
       return;
     }
 
+    // `hidden` means "reachable if you have the link, but not advertised". It
+    // has to keep search engines out, or the page is hidden in name only —
+    // still indexed, still arriving from search results. Set before render so
+    // the tag is in the SSR HTML, which is the copy a crawler reads.
+    this.applyRobots(page.missing ? null : page.status);
+
     this.page.set(page);
     // A missing row falls back to the canvas rather than a 404 — same as today.
     this.renderAs.set(page.missing ? 'content' : page.pageType);
+  }
+
+  /**
+   * Robots directive for the resolved page.
+   *
+   * Removed rather than set to `index, follow` for a normal page: absent means
+   * "use the site default", and writing an explicit allow here would override a
+   * site-wide noindex someone set deliberately.
+   */
+  private applyRobots(status: string | null): void {
+    if (status === 'hidden') {
+      this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
+    } else {
+      this.meta.removeTag("name='robots'");
+    }
   }
 
   /** The customizer drives the canvas over postMessage; PreviewService holds
