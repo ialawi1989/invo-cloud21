@@ -12,7 +12,9 @@ where, and what is still open.
 > layer). That distinction is the substance of it, not a formality.
 >
 > The central claim was tested rather than asserted: switching to the new
-> endpoints produced **byte-identical rendered DOM** on all six sampled pages.
+> endpoints produced **byte-identical rendered DOM** on all six sampled pages
+> — for MIGRATED rows. Unmigrated-row parity is a separate question, tested
+> separately (43/43) after a real inference bug was found and fixed.
 >
 > **One item is genuinely outstanding** — whether the manifest is admin-only is
 > UNVERIFIED and needs an admin token; a 401 cannot distinguish "protected" from
@@ -107,11 +109,19 @@ template.pageType  →  template.templateType  →  slug  →  content
 > the runtime inference reads `custom` and returns `content`. This is the actual
 > cause of the "page appearing as Content" symptom noted during the migration.
 >
-> **Fix (not yet applied):** remove `custom` from `legacyTemplateTypes` in three
-> places — `pageTypes.manifest.ts`, `website/.../page-type.fallback.ts`,
-> `invo-portal2/.../page-type.fallback.ts`. `blog: 'content'` is harmless (no
-> row uses it, and no `blog` slug rule exists, so it would reach `content`
-> anyway) but is equally redundant.
+> **FIXED 2026-08-06.** `custom` and `blog` removed from `legacyTemplateTypes`
+> in all three copies — `pageTypes.manifest.ts` and both
+> `page-type.fallback.ts` files. `blog` went too: no row used it and no `blog`
+> slug rule exists, so it reached `content` via the catch-all anyway, and an
+> entry that only works by accident invites the same confusion later.
+>
+> **Verified against every real row.** Each of the 43 page rows had `pageType`
+> stripped to simulate an unmigrated row, then runtime inference was compared
+> with what the migration assigned: **43/43 agree.** Re-running the same test
+> with the old map gives **22/43, with 21 disagreements — every one a `custom`
+> row** (`shop` → content instead of product-list, `checkout` → content,
+> `appointments` → content, and so on). The test fails before the fix and passes
+> after, so it is testing the thing that was broken.
 
 ### Page status replaces `redirect_to_shop`
 
@@ -377,11 +387,11 @@ restarted, PID 31040).
 | tenant `pageTypes` still 404 | yes — manifest stays admin-only |
 | admin `pageTypes` | 401 without a token — **see UNVERIFIED below** |
 
-**The compatibility rule, tested rather than asserted.** Six pages captured on
-the fallback path, then re-rendered on the real path. Raw bytes moved on all six
-— but that was the SSR hydration payload (`ng-state`) growing because
-`siteConfig` now returns 200 and joins the transfer cache. Comparing rendered
-DOM only:
+**The compatibility rule, tested rather than asserted — for MIGRATED rows.**
+Six pages captured on the fallback path, then re-rendered on the real path. Raw
+bytes moved on all six — but that was the SSR hydration payload (`ng-state`)
+growing because `siteConfig` now returns 200 and joins the transfer cache.
+Comparing rendered DOM only:
 
 ```text
 /en/shop                       24145 -> 24145   IDENTICAL
@@ -391,6 +401,19 @@ DOM only:
 /en/checkout                   13413 -> 13413   IDENTICAL
 /en/product/cevirme-shawarma   15973 -> 15973   IDENTICAL
 ```
+
+> **What this test did and did not prove.** Every row on this database already
+> carried `pageType`, so the diff exercised the *migrated* path only. It proves
+> **migrated-row parity** — legacy endpoints and new endpoints render the same
+> HTML for a row that has been backfilled.
+>
+> It says nothing about **unmigrated-row parity**, which turned out to be a
+> different question with a different answer: the `custom` templateType bug
+> meant an unmigrated row resolved to a different page type entirely, and the
+> byte-identical diff could not have caught it. That is covered separately by
+> the 43/43 inference test in *Type inference*.
+>
+> Two questions, two tests. Do not read either as covering the other.
 
 And genuinely through the new endpoints, per the SSR transfer cache:
 

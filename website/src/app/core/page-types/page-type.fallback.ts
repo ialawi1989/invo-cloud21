@@ -83,7 +83,12 @@ export const FALLBACK_MANIFEST: PageTypeManifest = {
     menu: 'product-list', shop: 'product-list', collection: 'product-list',
     'view-product': 'product-detail',
     appointment: 'booking', 'table-reservation': 'booking',
-    blog: 'content', custom: 'content',
+    // NOTE: 'custom' and 'blog' removed 2026-08-06. This map OUTRANKS the slug,
+    // and 'custom' is a generic marker rather than a kind — 22 of 43 page rows
+    // carry it across SIX different types, so mapping it to 'content' mistyped
+    // 21 of 22 unmigrated rows (an unmigrated `shop` rendered as a content
+    // canvas). Keep in step with LEGACY_TEMPLATE_TYPES in the backend manifest
+    // and with the 1783800000000 backfill migration.
   },
 
   legacyTemplateSources: {
