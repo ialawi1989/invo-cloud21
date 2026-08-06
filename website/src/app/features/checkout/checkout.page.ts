@@ -45,7 +45,14 @@ import {
              flag — cash checkout returns no order data of its own. -->
         <div class="co__done">
           <p class="co__done-title">Order placed</p>
-          <p class="co__done-ref">Reference <strong>{{ order.reference }}</strong></p>
+          @if (order.reference) {
+            <p class="co__done-ref">Reference <strong>{{ order.reference }}</strong></p>
+          } @else {
+            <!-- The order number is issued when the store accepts the order,
+                 so there is nothing to quote yet. Better to say that than to
+                 show the internal row id as if it were a reference. -->
+            <p class="co__done-ref">You'll get an order number once the store confirms it.</p>
+          }
           @if (order.total) { <p class="co__muted">{{ currency.format(order.total) }}</p> }
           @if (order.serviceName) { <p class="co__muted">{{ order.serviceName }}</p> }
           <p class="co__muted">Pay when you collect or receive your order.</p>

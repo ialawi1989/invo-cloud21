@@ -68,7 +68,12 @@ type AccountTab = 'orders' | 'profile';
               @for (order of orders(); track order.id) {
                 <li class="ac__order">
                   <div class="ac__order-main">
-                    <span class="ac__order-ref">#{{ order.reference }}</span>
+                    @if (order.reference) {
+                      <span class="ac__order-ref">#{{ order.reference }}</span>
+                    } @else {
+                      <!-- Numbered on acceptance, not at placement. -->
+                      <span class="ac__order-ref ac__order-ref--pending">Awaiting confirmation</span>
+                    }
                     @if (order.status) { <span class="ac__chip">{{ order.status }}</span> }
                   </div>
                   <div class="ac__order-meta">
@@ -110,6 +115,7 @@ type AccountTab = 'orders' | 'profile';
     }
     .ac__order-main { display: flex; align-items: center; gap: 8px; }
     .ac__order-ref { font-weight: 600; color: #111827; }
+    .ac__order-ref--pending { font-weight: 500; color: #9ca3af; font-style: italic; }
     .ac__order-meta { grid-column: 1; display: flex; gap: 12px; font-size: 12.5px; color: #9ca3af; }
     .ac__order-total { grid-row: 1 / span 2; font-weight: 700; color: #111827; }
     .ac__chip {

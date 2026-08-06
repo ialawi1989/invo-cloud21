@@ -215,9 +215,12 @@ export class CheckoutApiService {
       if (!d?.id) return null;
       return {
         id:          String(d.id),
-        // invoiceNumber is assigned by the backend and can legitimately be
-        // blank on a draft, so the id is the fallback the shopper can quote.
-        reference:   String(d.invoiceNumber || d.refrenceNumber || d.id),
+        // Blank until staff ACCEPT the order: InvoiceRepo.saveOpenInvoice
+        // assigns the number then (and flips onlineStatus to 'Accepted'), so a
+        // freshly placed online order genuinely has no human-facing reference.
+        // Falling back to the row id would hand the shopper a UUID and imply it
+        // is a number they can quote, which it is not.
+        reference:   String(d.invoiceNumber || ''),
         total:       Number(d.total ?? 0),
         status:      String(d.onlineData?.onlineStatus ?? d.status ?? ''),
         serviceName: String(d.serviceName ?? ''),

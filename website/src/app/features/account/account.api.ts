@@ -81,7 +81,10 @@ export class AccountApiService {
       hasNext: !!data?.hasNext,
       list: rows.map(o => ({
         id:          String(o?.id ?? ''),
-        reference:   String(o?.invoiceNumber ?? o?.id ?? ''),
+        // Blank until the store accepts the order — the number is issued by
+        // InvoiceRepo.saveOpenInvoice, not at placement. The id is not a
+        // substitute; it's a UUID the shopper can do nothing with.
+        reference:   String(o?.invoiceNumber ?? ''),
         // Selected as `onlineData->>'onlineStatus'`, so it can legitimately be null.
         status:      String(o?.status ?? ''),
         total:       Number(o?.total ?? 0),
