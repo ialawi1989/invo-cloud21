@@ -37,8 +37,15 @@ export interface CartState {
   currency:  string;
 }
 
-/** Where the cart session id lives between page views. */
-const CART_SESSION_KEY = 'cartSession';
+/**
+ * Where the cart session id lives between page views.
+ *
+ * Must stay `sessionId` — the key NewWebsite uses — so a shopper who has a cart
+ * on the old storefront still has it after cutover. It does not collide with
+ * the shopper session, which lives under `shopperSession` here (and `auth` in
+ * NewWebsite); the two are different values and always were.
+ */
+const CART_SESSION_KEY = 'sessionId';
 
 const EMPTY: CartState = {
   sessionId: '', lines: [], subTotal: 0, tax: 0,
