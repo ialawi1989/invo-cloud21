@@ -13,12 +13,38 @@
       <!-- ═══ Main column ═══ -->
       <div class="form-grid__main">
 
+        <!-- ── System access ──
+             Off = a person on the record with no login: no credentials, no
+             roles, no privilege set. Attendance and HR data still attach to
+             them normally. -->
+        <section class="card">
+          <div class="card__body">
+            <div class="access-toggle">
+              <app-toggle
+                [checked]="hasSystemAccess()"
+                (checkedChange)="toggleSystemAccess($event)"
+                [label]="'EMPLOYEES.FORM.SYSTEM_ACCESS' | translate"
+                [hint]="(hasSystemAccess()
+                  ? 'EMPLOYEES.FORM.SYSTEM_ACCESS_HINT'
+                  : 'EMPLOYEES.FORM.SYSTEM_ACCESS_OFF_HINT') | translate"/>
+            </div>
+          </div>
+        </section>
+
         <!-- ── Basic Information ── -->
         <section class="card">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.BASIC_INFORMATION' | translate }}</h2>
           </header>
           <div class="card__body">
+            @if (accessBeingRestored()) {
+              <!-- Revocation leaves the stored credential alone (it's shared
+                   with this person's other companies) — so restoring access
+                   retires it explicitly rather than reinstating it. -->
+              <p class="notice notice--warn">
+                {{ 'EMPLOYEES.FORM.CREDENTIALS_RETIRED_HINT' | translate }}
+              </p>
+            }
             <!-- Credential fields pack into one flowing grid; which appear
                  depends on the selected role(s) — Cloud → Email + Password,
                  POS → Pass Code + MSR (mirrors the legacy role blocks). -->
@@ -95,7 +121,9 @@
                       <p class="field-error">{{ 'EMPLOYEES.FORM.PASSWORD_MIN' | translate }}</p>
                     }
                   }
-                  @if (!isCreate()) {
+                  <!-- Restoring access retires the dormant credential, so
+                       "keep the current one" isn't offered. -->
+                  @if (!credentialsRequired()) {
                     <app-toggle
                       size="sm"
                       [checked]="changePassword()"
@@ -135,7 +163,7 @@
                       <p class="field-error">{{ 'EMPLOYEES.FORM.PASSCODE_IN_USE' | translate }}</p>
                     }
                   }
-                  @if (!isCreate()) {
+                  @if (!credentialsRequired()) {
                     <app-toggle
                       size="sm"
                       [checked]="changePassCode()"
@@ -149,6 +177,8 @@
           </div>
         </section>
 
+        <!-- Roles and access only exist for employees who sign in. -->
+        @if (hasSystemAccess()) {
         <!-- ── Employee Roles ── -->
         <section class="card">
           <header class="card__head">
@@ -236,7 +266,7 @@
                     formControlName="msr"
                   />
                 }
-                @if (!isCreate()) {
+                @if (!credentialsRequired()) {
                   <app-toggle
                     size="sm"
                     [checked]="changeMSR()"
@@ -247,6 +277,51 @@
             </div>
           </div>
         </section>
+        }
+
+        <!-- ── Personal details (manifest-driven) ──
+             Both HR cards hang off the manifest groups, which only exist when
+             the EMPLOYEE_HR_FIELDS flag is on. The flag stays off until the
+             backend can store what they collect — see employee-feature-flags.ts. -->
+        @if (profileGroup(); as group) {
+          <section class="card">
+            <header class="card__head">
+              <h2 class="card__title">{{ 'EMPLOYEES.FORM.PERSONAL_DETAILS' | translate }}</h2>
+            </header>
+            <div class="card__body">
+              <app-field-renderer
+                [descriptors]="profileFields()"
+                [group]="group"
+                path="profile"
+                [values]="formValues()"
+                [optionSources]="optionSources()"
+                [requiredMode]="requiredMode()"/>
+            </div>
+          </section>
+        }
+
+        <!-- ── Employment details (manifest-driven) ──
+             The hire and termination dates stay where they were, in the side
+             column: they're top-level fields and stay authoritative. -->
+        @if (employmentGroup(); as group) {
+          <section class="card">
+            <header class="card__head">
+              <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT_DETAILS' | translate }}</h2>
+            </header>
+            <div class="card__body">
+              <app-field-renderer
+                [descriptors]="employmentFields()"
+                [group]="group"
+                path="employment"
+                [values]="formValues()"
+                [optionSources]="optionSources()"
+                [optionLoaders]="optionLoaders()"
+                [suggestionSources]="suggestionSources()"
+                [computedValues]="computedValues()"
+                [requiredMode]="requiredMode()"/>
+            </div>
+          </section>
+        }
       </div>
 
       <!-- ═══ Side column ═══ -->

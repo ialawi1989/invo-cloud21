@@ -72,7 +72,154 @@
       "SELECT_BRANCHES": "Select branches",
       "SEARCH_BRANCHES": "Search branches",
       "NO_BRANCHES": "No branches assigned yet",
-      "SAVED": "Employee saved"
+      "SAVED": "Employee saved",
+
+      "SYSTEM_ACCESS": "System access",
+      "SYSTEM_ACCESS_HINT": "This employee signs in to the portal or the POS.",
+      "SYSTEM_ACCESS_OFF_HINT": "No login. The record still holds attendance and HR details.",
+      "PERSONAL_DETAILS": "Personal details",
+      "CREDENTIALS_RETIRED_HINT": "The previous pass code and swipe id are retired on restoring access — enter new ones. Access was ended by removing this employee's roles, not by deleting the credential, which is shared with any other company they work for.",
+      "EMPLOYMENT_DETAILS": "Employment details"
+    },
+
+    "FIELDS": {
+      "PROFILE": {
+        "NAME_AR": "Full name (Arabic)",
+        "NAME_AR_HINT": "Used on official documents and payroll files.",
+        "EMPLOYEE_NUMBER": "Employee number",
+        "EMPLOYEE_NUMBER_HINT": "HR's own number for this employee — not the POS pass code.",
+        "MOBILE": "Mobile",
+        "PERSONAL_EMAIL": "Personal email",
+        "PERSONAL_EMAIL_HINT": "Kept after the work email is closed.",
+        "GENDER": "Gender",
+        "DATE_OF_BIRTH": "Date of birth",
+        "NATIONALITY": "Nationality",
+        "MARITAL_STATUS": "Marital status",
+        "LANGUAGES": "Languages",
+        "ADDRESS": "Address",
+        "ADDRESS_COUNTRY": "Country",
+        "ADDRESS_CITY": "City",
+        "ADDRESS_BLOCK": "Block",
+        "ADDRESS_ROAD": "Road",
+        "ADDRESS_BUILDING": "Building",
+        "ADDRESS_FLAT": "Flat",
+        "ADDRESS_POSTAL_CODE": "Postal code",
+        "EMERGENCY_CONTACTS": "Emergency contacts",
+        "EMERGENCY_CONTACT_ROW": "Contact",
+        "ADD_EMERGENCY_CONTACT": "Add contact",
+        "CONTACT_NAME": "Name",
+        "CONTACT_RELATIONSHIP": "Relationship",
+        "CONTACT_PHONE": "Phone",
+        "CONTACT_IS_PRIMARY": "Primary contact",
+        "DEPENDENTS": "Dependants",
+        "DEPENDENTS_HINT": "Used later for insurance and family visas.",
+        "DEPENDENT_ROW": "Dependant",
+        "ADD_DEPENDENT": "Add dependant",
+        "DEPENDENT_NAME": "Name",
+        "DEPENDENT_RELATIONSHIP": "Relationship",
+        "DEPENDENT_DOB": "Date of birth",
+        "DEPENDENT_CPR": "CPR number",
+        "DEPENDENT_IS_INSURED": "Covered by insurance",
+        "DEPENDENT_IS_ON_VISA": "On a family visa",
+        "EDUCATION": "Education",
+        "EDUCATION_ROW": "Qualification",
+        "ADD_EDUCATION": "Add qualification",
+        "EDUCATION_LEVEL": "Level",
+        "EDUCATION_INSTITUTION": "Institution",
+        "EDUCATION_YEAR": "Graduation year",
+        "EDUCATION_FIELD": "Field of study"
+      },
+
+      "EMPLOYMENT": {
+        "SENIORITY_DATE": "Seniority date",
+        "SENIORITY_DATE_HINT": "Defaults to the hire date; differs on a rehire or a transfer.",
+        "EMPLOYMENT_TYPE": "Employment type",
+        "STATUS": "Employment status",
+        "DEPARTMENT": "Department",
+        "POSITION": "Position",
+        "LOOKUP_HINT": "Pick a value already in use, or type a new one.",
+        "JOB_GRADE": "Grade",
+        "IS_DEPARTMENT_HEAD": "Department head",
+        "REPORTS_TO": "Reports to",
+        "COST_CENTER": "Cost centre",
+        "PROBATION_MONTHS": "Probation (months)",
+        "PROBATION_END": "Probation ends",
+        "CONTRACT_START": "Contract start",
+        "CONTRACT_END": "Contract end",
+        "NOTICE_PERIOD_DAYS": "Notice period (days)",
+        "WEEKLY_HOURS": "Contracted hours per week",
+        "WEEKLY_HOURS_HINT": "Drives overtime and part-time proration."
+      },
+
+      "RENDERER": {
+        "ADD_ROW": "Add",
+        "REMOVE_ROW": "Remove",
+        "NO_ROWS": "Nothing added yet",
+        "SELECT": "Select…"
+      },
+
+      "VALIDATION": {
+        "FORMAT": "Check the format of this value",
+        "MAX_LENGTH": "Use at most {{max}} characters",
+        "MIN": "Must be at least {{min}}",
+        "MAX": "Must be at most {{max}}",
+        "INVALID": "This value isn't valid"
+      }
+    },
+
+    "OPTIONS": {
+      "GENDER": {
+        "MALE": "Male",
+        "FEMALE": "Female"
+      },
+
+      "MARITAL": {
+        "SINGLE": "Single",
+        "MARRIED": "Married",
+        "DIVORCED": "Divorced",
+        "WIDOWED": "Widowed"
+      },
+
+      "RELATIONSHIP": {
+        "SPOUSE": "Spouse",
+        "CHILD": "Child",
+        "PARENT": "Parent",
+        "SIBLING": "Sibling",
+        "FRIEND": "Friend",
+        "OTHER": "Other"
+      },
+
+      "EDUCATION_LEVEL": {
+        "HIGH_SCHOOL": "High school",
+        "DIPLOMA": "Diploma",
+        "BACHELOR": "Bachelor's degree",
+        "MASTER": "Master's degree",
+        "DOCTORATE": "Doctorate",
+        "OTHER": "Other"
+      },
+
+      "EMPLOYMENT_TYPE": {
+        "FULL_TIME": "Full-time",
+        "PART_TIME": "Part-time",
+        "CONTRACT": "Contract"
+      },
+
+      "EMPLOYMENT_STATUS": {
+        "ACTIVE": "Active",
+        "PROBATION": "Probation",
+        "ON_LEAVE": "On leave",
+        "SUSPENDED": "Suspended",
+        "NOTICE_PERIOD": "Notice period",
+        "TERMINATED": "Terminated"
+      },
+
+      "JOB_GRADE": {
+        "A": "Grade A",
+        "B": "Grade B",
+        "C": "Grade C",
+        "D": "Grade D",
+        "E": "Grade E"
+      }
     },
 
     "INVITE": {

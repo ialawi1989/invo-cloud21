@@ -1,0 +1,216 @@
+<!-- Entry point: the descriptors handed in, bound to the group handed in. -->
+<ng-container
+  *ngTemplateOutlet="fieldList; context: { $implicit: descriptors(), g: group(), p: path(), inRow: false }"
+/>
+
+<!--
+  One list of descriptors. Recursive through `ngTemplateOutlet` so nested
+  groups and repeatable rows reuse the exact same field markup — controls bind
+  by instance (`[formControl]`), so recursion doesn't depend on an ancestor
+  form directive being in scope.
+-->
+<ng-template #fieldList let-fields let-g="g" let-p="p" let-inRow="inRow">
+  <div class="fr-grid">
+    @for (d of fields; track d.key) {
+      @if (visible(d)) {
+        @switch (d.type) {
+
+          <!-- ── Nested group (e.g. profile.address) ── -->
+          @case ('group') {
+            <fieldset class="fr-fieldset">
+              <legend class="fr-fieldset__legend">{{ d.labelKey | translate }}</legend>
+              <ng-container
+                *ngTemplateOutlet="fieldList; context: {
+                  $implicit: d.fields ?? [],
+                  g: childGroup(g, d.key),
+                  p: fullPath(p, d),
+                  inRow: inRow
+                }"
+              />
+            </fieldset>
+          }
+
+          <!-- ── Repeatable rows (emergency contacts, dependants, education) ── -->
+          @case ('group[]') {
+            <div class="fr-repeat">
+              <div class="fr-repeat__head">
+                <span class="fr-repeat__title">{{ d.labelKey | translate }}</span>
+                <button type="button" class="btn btn-ghost btn-sm" (click)="addRow(g, d)">
+                  {{ (d.addLabelKey ?? 'EMPLOYEES.FIELDS.RENDERER.ADD_ROW') | translate }}
+                </button>
+              </div>
+              @if (d.hintKey) {
+                <p class="field-hint">{{ d.hintKey | translate }}</p>
+              }
+
+              @for (row of rows(g, d.key); track $index) {
+                <div class="fr-row">
+                  <div class="fr-row__head">
+                    <span class="fr-row__title">{{ rowLabel(d, $index) }}</span>
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm btn-danger"
+                      (click)="removeRow(g, d, $index)">
+                      {{ 'EMPLOYEES.FIELDS.RENDERER.REMOVE_ROW' | translate }}
+                    </button>
+                  </div>
+                  <ng-container
+                    *ngTemplateOutlet="fieldList; context: {
+                      $implicit: d.fields ?? [],
+                      g: row,
+                      p: fullPath(p, d),
+                      inRow: true
+                    }"
+                  />
+                </div>
+              } @empty {
+                <p class="fr-repeat__empty">{{ 'EMPLOYEES.FIELDS.RENDERER.NO_ROWS' | translate }}</p>
+              }
+            </div>
+          }
+
+          <!-- ── Read-only computed value (never posted) ── -->
+          @case ('computed') {
+            <div class="field fr-field">
+              <label class="field-label">{{ d.labelKey | translate }}</label>
+              <p class="fr-computed">{{ computedText(p, d) }}</p>
+              @if (d.hintKey) { <p class="field-hint">{{ d.hintKey | translate }}</p> }
+            </div>
+          }
+
+          <!-- ── Boolean ── -->
+          @case ('boolean') {
+            <div class="field fr-field fr-field--toggle">
+              <app-toggle
+                size="sm"
+                [formControl]="control(g, d.key)"
+                [label]="d.labelKey | translate"
+                [hint]="d.hintKey ? (d.hintKey | translate) : ''"/>
+            </div>
+          }
+
+          <!-- ── Everything else: label + control + error ── -->
+          @default {
+            <div class="field fr-field" [class.fr-field--wide]="d.type === 'longtext' || d.type === 'multiselect'">
+              <label class="field-label" [attr.for]="fieldId(p, d)">
+                {{ d.labelKey | translate }}
+                @if (required(d, g, inRow)) { <span class="required">*</span> }
+              </label>
+
+              @switch (d.type) {
+
+                @case ('date') {
+                  <app-date-picker
+                    [formControl]="control(g, d.key)"
+                    triggerClass="input"/>
+                }
+
+                @case ('select') {
+                  <app-search-dropdown
+                    [formControl]="control(g, d.key)"
+                    [items]="optionsFor(d)"
+                    [displayWith]="optionDisplay"
+                    [toValue]="optionToValue"
+                    [compareWith]="optionCompare"
+                    [searchable]="optionsFor(d).length > 8"
+                    [placeholder]="'EMPLOYEES.FIELDS.RENDERER.SELECT' | translate"
+                    [searchPlaceholder]="'COMMON.SEARCH' | translate"/>
+                }
+
+                @case ('reference') {
+                  <!-- `loadFn` takes precedence over `items`: a reference to a
+                       table that grows is searched and paged server-side. -->
+                  <app-search-dropdown
+                    [formControl]="control(g, d.key)"
+                    [items]="optionsFor(d)"
+                    [loadFn]="loaderFor(d)"
+                    [displayWith]="optionDisplay"
+                    [toValue]="optionToValue"
+                    [compareWith]="optionCompare"
+                    [placeholder]="'EMPLOYEES.FIELDS.RENDERER.SELECT' | translate"
+                    [searchPlaceholder]="'COMMON.SEARCH' | translate"/>
+                }
+
+                @case ('multiselect') {
+                  <app-search-dropdown
+                    [formControl]="control(g, d.key)"
+                    [items]="optionsFor(d)"
+                    [multiple]="true"
+                    [displayWith]="optionDisplay"
+                    [toValue]="optionToValue"
+                    [compareWith]="optionCompare"
+                    [placeholder]="'EMPLOYEES.FIELDS.RENDERER.SELECT' | translate"
+                    [searchPlaceholder]="'COMMON.SEARCH' | translate"/>
+                }
+
+                @case ('longtext') {
+                  <textarea
+                    [id]="fieldId(p, d)"
+                    class="input fr-textarea"
+                    rows="3"
+                    [formControl]="control(g, d.key)"
+                    [class.input--invalid]="invalid(control(g, d.key))"
+                  ></textarea>
+                }
+
+                @case ('number') {
+                  <input
+                    [id]="fieldId(p, d)"
+                    type="number"
+                    class="input"
+                    [attr.min]="d.min ?? null"
+                    [attr.max]="d.max ?? null"
+                    [formControl]="control(g, d.key)"
+                    [class.input--invalid]="invalid(control(g, d.key))"
+                  />
+                }
+
+                @case ('currency') {
+                  <input
+                    [id]="fieldId(p, d)"
+                    type="number"
+                    class="input"
+                    [attr.min]="d.min ?? null"
+                    [attr.max]="d.max ?? null"
+                    [formControl]="control(g, d.key)"
+                    [class.input--invalid]="invalid(control(g, d.key))"
+                  />
+                }
+
+                @default {
+                  <!-- text / email / phone. `suggestionSource` renders a
+                       datalist: department and position are free text today and
+                       a lookup entity later, so we offer the values already in
+                       use without forcing them. -->
+                  <input
+                    [id]="fieldId(p, d)"
+                    [type]="d.type === 'email' ? 'email' : d.type === 'phone' ? 'tel' : 'text'"
+                    class="input"
+                    [attr.inputmode]="d.type === 'phone' ? 'tel' : null"
+                    [attr.maxlength]="d.maxLength ?? null"
+                    [attr.list]="suggestionsFor(d).length ? fieldId(p, d) + '-list' : null"
+                    [formControl]="control(g, d.key)"
+                    [class.input--invalid]="invalid(control(g, d.key))"
+                  />
+                  @if (suggestionsFor(d).length) {
+                    <datalist [id]="fieldId(p, d) + '-list'">
+                      @for (s of suggestionsFor(d); track s) {
+                        <option [value]="s"></option>
+                      }
+                    </datalist>
+                  }
+                }
+              }
+
+              @if (errorFor(control(g, d.key)); as err) {
+                <p class="field-error">{{ err.key | translate: err.params }}</p>
+              } @else if (d.hintKey) {
+                <p class="field-hint">{{ d.hintKey | translate }}</p>
+              }
+            </div>
+          }
+        }
+      }
+    }
+  </div>
+</ng-template>

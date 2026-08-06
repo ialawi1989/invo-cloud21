@@ -1,0 +1,198 @@
+// Field renderer — deliberately reuses the employee form's visual language
+// (.field / .field-label / .input / .btn come from the page's own stylesheet,
+// which is not view-encapsulated away since these elements live in this
+// component's template; the classes below are the renderer-specific chrome).
+
+:host {
+  display: block;
+}
+
+.fr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.fr-field {
+  margin-bottom: 0;
+  min-width: 0;
+
+  // Long text and multi-selects get the full row.
+  &--wide { grid-column: 1 / -1; }
+
+  &--toggle {
+    justify-content: center;
+    padding-top: 22px;
+  }
+}
+
+// ── Local copies of the page field chrome (encapsulated styles don't cross
+//    component boundaries, so the renderer restates what it uses) ──────────
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  .required { color: #ef4444; font-weight: 700; }
+}
+
+.field-hint {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.field-error {
+  margin: 0;
+  font-size: 12px;
+  color: #dc2626;
+}
+
+.input {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: #32acc1;
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+
+  &--invalid { border-color: #ef4444; }
+  &--invalid:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12); }
+
+  &:disabled {
+    background: #f8fafc;
+    color: #475569;
+    cursor: not-allowed;
+  }
+}
+
+.fr-textarea {
+  resize: vertical;
+  min-height: 76px;
+}
+
+.btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+  &-ghost {
+    background: #fff; color: #475569; border-color: #e5e7eb;
+    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+  }
+  &-danger {
+    color: #b91c1c; border-color: #fecaca;
+    &:hover:not(:disabled) { background: #fef2f2; color: #991b1b; }
+  }
+  &-sm { padding: 5px 12px; font-size: 13px; }
+}
+
+// ── Nested group (profile.address) ────────────────────────────────────────
+.fr-fieldset {
+  grid-column: 1 / -1;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px 16px;
+  margin: 0;
+  min-width: 0;
+
+  &__legend {
+    padding: 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+  }
+}
+
+// ── Repeatable rows ───────────────────────────────────────────────────────
+.fr-repeat {
+  grid-column: 1 / -1;
+  min-width: 0;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  &__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  &__empty {
+    margin: 8px 0 0;
+    padding: 14px;
+    background: #f8fafc;
+    border: 1px dashed #e2e8f0;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 13px;
+    color: #94a3b8;
+  }
+}
+
+.fr-row {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px 14px;
+  margin-top: 10px;
+  background: #fcfdfe;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  &__title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+  }
+}
+
+// ── Computed (read-only) value ────────────────────────────────────────────
+.fr-computed {
+  margin: 0;
+  padding: 9px 12px;
+  font-size: 14px;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px dashed #e2e8f0;
+  border-radius: 8px;
+}

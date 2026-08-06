@@ -163,6 +163,28 @@
   }
 }
 
+// ── Inline notice (e.g. "the previous pass code is being retired") ────
+.notice {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+
+  &--warn {
+    color: #92400e;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+  }
+}
+
+// ── System access toggle ──────────────────────────────────────────────
+.access-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
 // ── Role toggles ──────────────────────────────────────────────────────
 .toggles {
   display: flex;

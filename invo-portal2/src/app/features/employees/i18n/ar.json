@@ -72,7 +72,154 @@
       "SELECT_BRANCHES": "اختر الفروع",
       "SEARCH_BRANCHES": "ابحث عن فرع",
       "NO_BRANCHES": "لم يتم تعيين أي فرع بعد",
-      "SAVED": "تم حفظ الموظف"
+      "SAVED": "تم حفظ الموظف",
+
+      "SYSTEM_ACCESS": "TODO_AR: System access",
+      "SYSTEM_ACCESS_HINT": "TODO_AR: This employee signs in to the portal or the POS.",
+      "SYSTEM_ACCESS_OFF_HINT": "TODO_AR: No login. The record still holds attendance and HR details.",
+      "PERSONAL_DETAILS": "TODO_AR: Personal details",
+      "CREDENTIALS_RETIRED_HINT": "TODO_AR: The previous pass code and swipe id are retired on restoring access — enter new ones. Access was ended by removing this employee's roles, not by deleting the credential, which is shared with any other company they work for.",
+      "EMPLOYMENT_DETAILS": "TODO_AR: Employment details"
+    },
+
+    "FIELDS": {
+      "PROFILE": {
+        "NAME_AR": "TODO_AR: Full name (Arabic)",
+        "NAME_AR_HINT": "TODO_AR: Used on official documents and payroll files.",
+        "EMPLOYEE_NUMBER": "TODO_AR: Employee number",
+        "EMPLOYEE_NUMBER_HINT": "TODO_AR: HR's own number for this employee — not the POS pass code.",
+        "MOBILE": "TODO_AR: Mobile",
+        "PERSONAL_EMAIL": "TODO_AR: Personal email",
+        "PERSONAL_EMAIL_HINT": "TODO_AR: Kept after the work email is closed.",
+        "GENDER": "TODO_AR: Gender",
+        "DATE_OF_BIRTH": "TODO_AR: Date of birth",
+        "NATIONALITY": "TODO_AR: Nationality",
+        "MARITAL_STATUS": "TODO_AR: Marital status",
+        "LANGUAGES": "TODO_AR: Languages",
+        "ADDRESS": "TODO_AR: Address",
+        "ADDRESS_COUNTRY": "TODO_AR: Country",
+        "ADDRESS_CITY": "TODO_AR: City",
+        "ADDRESS_BLOCK": "TODO_AR: Block",
+        "ADDRESS_ROAD": "TODO_AR: Road",
+        "ADDRESS_BUILDING": "TODO_AR: Building",
+        "ADDRESS_FLAT": "TODO_AR: Flat",
+        "ADDRESS_POSTAL_CODE": "TODO_AR: Postal code",
+        "EMERGENCY_CONTACTS": "TODO_AR: Emergency contacts",
+        "EMERGENCY_CONTACT_ROW": "TODO_AR: Contact",
+        "ADD_EMERGENCY_CONTACT": "TODO_AR: Add contact",
+        "CONTACT_NAME": "TODO_AR: Name",
+        "CONTACT_RELATIONSHIP": "TODO_AR: Relationship",
+        "CONTACT_PHONE": "TODO_AR: Phone",
+        "CONTACT_IS_PRIMARY": "TODO_AR: Primary contact",
+        "DEPENDENTS": "TODO_AR: Dependants",
+        "DEPENDENTS_HINT": "TODO_AR: Used later for insurance and family visas.",
+        "DEPENDENT_ROW": "TODO_AR: Dependant",
+        "ADD_DEPENDENT": "TODO_AR: Add dependant",
+        "DEPENDENT_NAME": "TODO_AR: Name",
+        "DEPENDENT_RELATIONSHIP": "TODO_AR: Relationship",
+        "DEPENDENT_DOB": "TODO_AR: Date of birth",
+        "DEPENDENT_CPR": "TODO_AR: CPR number",
+        "DEPENDENT_IS_INSURED": "TODO_AR: Covered by insurance",
+        "DEPENDENT_IS_ON_VISA": "TODO_AR: On a family visa",
+        "EDUCATION": "TODO_AR: Education",
+        "EDUCATION_ROW": "TODO_AR: Qualification",
+        "ADD_EDUCATION": "TODO_AR: Add qualification",
+        "EDUCATION_LEVEL": "TODO_AR: Level",
+        "EDUCATION_INSTITUTION": "TODO_AR: Institution",
+        "EDUCATION_YEAR": "TODO_AR: Graduation year",
+        "EDUCATION_FIELD": "TODO_AR: Field of study"
+      },
+
+      "EMPLOYMENT": {
+        "SENIORITY_DATE": "TODO_AR: Seniority date",
+        "SENIORITY_DATE_HINT": "TODO_AR: Defaults to the hire date; differs on a rehire or a transfer.",
+        "EMPLOYMENT_TYPE": "TODO_AR: Employment type",
+        "STATUS": "TODO_AR: Employment status",
+        "DEPARTMENT": "TODO_AR: Department",
+        "POSITION": "TODO_AR: Position",
+        "LOOKUP_HINT": "TODO_AR: Pick a value already in use, or type a new one.",
+        "JOB_GRADE": "TODO_AR: Grade",
+        "IS_DEPARTMENT_HEAD": "TODO_AR: Department head",
+        "REPORTS_TO": "TODO_AR: Reports to",
+        "COST_CENTER": "TODO_AR: Cost centre",
+        "PROBATION_MONTHS": "TODO_AR: Probation (months)",
+        "PROBATION_END": "TODO_AR: Probation ends",
+        "CONTRACT_START": "TODO_AR: Contract start",
+        "CONTRACT_END": "TODO_AR: Contract end",
+        "NOTICE_PERIOD_DAYS": "TODO_AR: Notice period (days)",
+        "WEEKLY_HOURS": "TODO_AR: Contracted hours per week",
+        "WEEKLY_HOURS_HINT": "TODO_AR: Drives overtime and part-time proration."
+      },
+
+      "RENDERER": {
+        "ADD_ROW": "TODO_AR: Add",
+        "REMOVE_ROW": "TODO_AR: Remove",
+        "NO_ROWS": "TODO_AR: Nothing added yet",
+        "SELECT": "TODO_AR: Select…"
+      },
+
+      "VALIDATION": {
+        "FORMAT": "TODO_AR: Check the format of this value",
+        "MAX_LENGTH": "TODO_AR: Use at most {{max}} characters",
+        "MIN": "TODO_AR: Must be at least {{min}}",
+        "MAX": "TODO_AR: Must be at most {{max}}",
+        "INVALID": "TODO_AR: This value isn't valid"
+      }
+    },
+
+    "OPTIONS": {
+      "GENDER": {
+        "MALE": "TODO_AR: Male",
+        "FEMALE": "TODO_AR: Female"
+      },
+
+      "MARITAL": {
+        "SINGLE": "TODO_AR: Single",
+        "MARRIED": "TODO_AR: Married",
+        "DIVORCED": "TODO_AR: Divorced",
+        "WIDOWED": "TODO_AR: Widowed"
+      },
+
+      "RELATIONSHIP": {
+        "SPOUSE": "TODO_AR: Spouse",
+        "CHILD": "TODO_AR: Child",
+        "PARENT": "TODO_AR: Parent",
+        "SIBLING": "TODO_AR: Sibling",
+        "FRIEND": "TODO_AR: Friend",
+        "OTHER": "TODO_AR: Other"
+      },
+
+      "EDUCATION_LEVEL": {
+        "HIGH_SCHOOL": "TODO_AR: High school",
+        "DIPLOMA": "TODO_AR: Diploma",
+        "BACHELOR": "TODO_AR: Bachelor's degree",
+        "MASTER": "TODO_AR: Master's degree",
+        "DOCTORATE": "TODO_AR: Doctorate",
+        "OTHER": "TODO_AR: Other"
+      },
+
+      "EMPLOYMENT_TYPE": {
+        "FULL_TIME": "TODO_AR: Full-time",
+        "PART_TIME": "TODO_AR: Part-time",
+        "CONTRACT": "TODO_AR: Contract"
+      },
+
+      "EMPLOYMENT_STATUS": {
+        "ACTIVE": "TODO_AR: Active",
+        "PROBATION": "TODO_AR: Probation",
+        "ON_LEAVE": "TODO_AR: On leave",
+        "SUSPENDED": "TODO_AR: Suspended",
+        "NOTICE_PERIOD": "TODO_AR: Notice period",
+        "TERMINATED": "TODO_AR: Terminated"
+      },
+
+      "JOB_GRADE": {
+        "A": "TODO_AR: Grade A",
+        "B": "TODO_AR: Grade B",
+        "C": "TODO_AR: Grade C",
+        "D": "TODO_AR: Grade D",
+        "E": "TODO_AR: Grade E"
+      }
     },
 
     "INVITE": {

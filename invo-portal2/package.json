@@ -6,7 +6,10 @@
     "start": "ng serve --host 0.0.0.0 --port 4700",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test --no-watch",
+    "test:watch": "ng test",
+    "verify": "npm run test && npm run i18n:check",
+    "i18n:check": "node scripts/check-i18n.mjs"
   },
   "private": true,
   "packageManager": "npm@10.9.4",

@@ -51,6 +51,62 @@ export class EmployeeService {
     return this.api.request<any>(this.api.post('employee/saveEmployee', employee));
   }
 
+  /**
+   * Distinct department / position values in use, for the free-text
+   * autocomplete on those two fields.
+   *
+   * This must be its own `SELECT DISTINCT` endpoint, not a sweep over
+   * `getEmployeeList`. That list is paginated *and* selects a fixed column
+   * list (`id, name, email, admin, user, superAdmin, media.url`) — it neither
+   * returns the `employment` group nor covers every employee, so mining it
+   * would produce a suggestion list that is silently both wrong and partial.
+   *
+   * `employee/getEmploymentLookups` doesn't exist on the backend yet; until it
+   * does this answers with empty lists, and the fields work as plain free text.
+   */
+  async getEmploymentLookups(): Promise<{ departments: string[]; positions: string[] }> {
+    try {
+      const res = await this.api.request<any>(this.api.get('employee/getEmploymentLookups'));
+      const data = res?.data ?? {};
+      const clean = (list: any): string[] =>
+        Array.isArray(list)
+          ? [...new Set(list.map((v: any) => String(v ?? '').trim()).filter(Boolean))]
+              .sort((a, b) => a.localeCompare(b))
+          : [];
+      return { departments: clean(data.departments), positions: clean(data.positions) };
+    } catch {
+      return { departments: [], positions: [] };
+    }
+  }
+
+  /**
+   * One page of employees for a picker — server-side search and paging, so a
+   * "reports to" dropdown never truncates at whatever limit the caller guessed.
+   */
+  async searchEmployees(params: { page: number; limit: number; searchTerm: string }): Promise<{
+    items: { id: string; name: string }[];
+    hasMore: boolean;
+  }> {
+    try {
+      const res = await this.api.request<any>(this.api.post('employee/getEmployeeList', {
+        page: params.page,
+        limit: params.limit,
+        searchTerm: params.searchTerm,
+        sortBy: {},
+      }));
+      const rows: any[] = res?.data?.list ?? [];
+      const pageCount = Number(res?.data?.pageCount ?? 1);
+      return {
+        items: rows
+          .map((r) => ({ id: r.id ?? r._id ?? '', name: r.name ?? '' }))
+          .filter((r) => !!r.id),
+        hasMore: params.page < pageCount,
+      };
+    } catch {
+      return { items: [], hasMore: false };
+    }
+  }
+
   // ─── Uniqueness checks ───────────────────────────────────────────────────
 
   /**
@@ -169,6 +225,15 @@ export class EmployeeService {
       resetPasswordDate:        e.resetPasswordDate ?? null,
       hireDate:                 e.hireDate ?? null,
       terminationDate:          e.terminationDate ?? null,
+      // Absent means "has access" — every record predating the flag.
+      hasSystemAccess:          e.hasSystemAccess ?? true,
+      // The API decides HR-data ownership, per UNION arm. Absent means owner.
+      isHrDataOwner:            e.isHrDataOwner ?? true,
+      // Groups are passed through only when the record actually has them.
+      // Defaulting to `{}` here would make every save write back an empty
+      // object onto a record that never had one.
+      ...(e.profile    ? { profile:    e.profile }    : {}),
+      ...(e.employment ? { employment: e.employment } : {}),
     };
   }
 }

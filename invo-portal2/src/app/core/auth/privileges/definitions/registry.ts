@@ -35,6 +35,7 @@ import { discountSecurity } from './discountSecurity';
 import { DomainSettingsSecurity } from './DomainSettingsSecurity';
 import { employeeAttendenceSecurity } from './employeeAttendenceSecurity';
 import { employeeInvitationSecurity } from './employeeInvitationSecurity';
+import { employeeProfileSecurity } from './employeeProfileSecurity';
 import { employeeScheduleSecurity } from './employeeScheduleSecurity';
 import { employeeSecurity } from './employeeSecurity';
 import { estimateBuilderSecurity } from './estimateBuilderSecurity';
@@ -182,6 +183,7 @@ export const SECURITY_DEFINITIONS = {
   pendingOrderSecurity,
   waitingListSecurity,
   employeeSecurity,
+  employeeProfileSecurity,
   employeeScheduleSecurity,
   employeeAttendenceSecurity,
   employeeInvitationSecurity,
