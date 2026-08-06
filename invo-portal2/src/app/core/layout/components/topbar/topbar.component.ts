@@ -640,7 +640,9 @@ export class TopbarComponent {
 
   constructor() {
     this.favsService.load();
-    this.branchSvc.load();
+    // Boot-time warm-up. A failure here is not fatal — the service stays
+    // "not loaded" so whoever needs the list next retries it.
+    void this.branchSvc.load().catch(() => {});
     document.addEventListener('fullscreenchange', () => {
       this.isFullscreen.set(!!document.fullscreenElement);
     });

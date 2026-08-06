@@ -563,9 +563,12 @@ export class BranchProductSectionComponent implements OnInit {
     });
   }
 
+  /** Same fallback the list rows use — a blank name reads as a broken label
+   *  in the detail header, the export modal and the bulk-edit mode strip. */
   activeBranchName = computed<string>(() => {
     void this.rowsTick();
-    return String(this.groupAt(this.activeTab())?.value['branchName'] ?? '');
+    return String(this.groupAt(this.activeTab())?.value['branchName'] ?? '')
+      || this.translate.instant('PRODUCTS.FORM.UNNAMED_BRANCH');
   });
 
   // ─── Detail tabs ───────────────────────────────────────────────────────

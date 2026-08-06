@@ -186,8 +186,7 @@ export interface BulkEditResult {
         {{ 'COMMON.CANCEL' | translate }}
       </button>
       <button type="button" class="btn btn-primary" [disabled]="!canApply()" (click)="apply()">
-        {{ (mode() === 'copy' ? 'PRODUCTS.FORM.BULK_COPY_APPLY' : 'PRODUCTS.FORM.BULK_EDIT_APPLY')
-             | translate: { count: targetCount() } }}
+        {{ applyLabelKey() | translate: { count: targetCount() } }}
       </button>
     </app-modal-footer>
   `,
@@ -329,6 +328,15 @@ export class BranchBulkEditModalComponent {
     if (!vis.length) return false;
     const picked = this.picked();
     return vis.every(b => picked.has(b.index));
+  });
+
+  /** ngx-translate has no plural rules — one key per form. */
+  applyLabelKey = computed<string>(() => {
+    const one = this.targetCount() === 1;
+    if (this.mode() === 'copy') {
+      return one ? 'PRODUCTS.FORM.BULK_COPY_APPLY_ONE' : 'PRODUCTS.FORM.BULK_COPY_APPLY';
+    }
+    return one ? 'PRODUCTS.FORM.BULK_EDIT_APPLY_ONE' : 'PRODUCTS.FORM.BULK_EDIT_APPLY';
   });
 
   canApply = computed<boolean>(() =>

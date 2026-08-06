@@ -21,16 +21,35 @@ export class BranchConnectionService {
   branches = signal<BranchConnection[]>([]);
   loaded   = signal(false);
 
-  async load(): Promise<void> {
-    try {
-      const res = await firstValueFrom(
-        this.http.post<any>(`${this.baseUrl}branch/getBranchConnectionList`, { sortBy: {} })
-      );
-      const list: any[] = res?.data?.list ?? res?.data ?? [];
-      this.branches.set(list.map(b => this.mapBranch(b)));
-    } finally {
-      this.loaded.set(true);
-    }
+  /** De-dupes concurrent callers — the topbar fires a load on boot and a
+   *  feature page often asks for the same list a tick later. */
+  private inFlight: Promise<void> | null = null;
+
+  /**
+   * Every consumer guards with `if (!loaded()) load()`, so `loaded` must
+   * mean "we have the list", not "we tried once". Marking it on failure
+   * (the old `finally`) left the whole app with a permanently empty list
+   * after a single transient error — branches then render as "Unnamed
+   * branch" everywhere, with no path back short of a reload.
+   */
+  async load(force = false): Promise<void> {
+    if (!force && this.loaded()) return;
+    if (this.inFlight) return this.inFlight;
+
+    this.inFlight = (async () => {
+      try {
+        const res = await firstValueFrom(
+          this.http.post<any>(`${this.baseUrl}branch/getBranchConnectionList`, { sortBy: {} })
+        );
+        const list: any[] = res?.data?.list ?? res?.data ?? [];
+        this.branches.set(list.map(b => this.mapBranch(b)));
+        this.loaded.set(true);
+      } finally {
+        this.inFlight = null;
+      }
+    })();
+
+    return this.inFlight;
   }
 
   async connect(branchId: string, token: string): Promise<void> {

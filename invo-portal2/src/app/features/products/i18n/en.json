@@ -858,6 +858,8 @@
       "BULK_EDIT_TITLE":       "Bulk edit branches",
       "BULK_EDIT_HINT":        "Tick a field to apply it to the {{count}} selected branches. Fields you leave unticked are not changed.",
       "BULK_EDIT_APPLY":       "Apply to {{count}} branches",
+      "BULK_EDIT_APPLY_ONE":   "Apply to 1 branch",
+      "BULK_COPY_APPLY_ONE":   "Copy to 1 branch",
       "BULK_EDIT_TARGETS":     "Branches to update",
       "BULK_EDIT_FIELDS_LABEL": "Fields to apply",
       "BULK_EDIT_WHAT_COPIES":  "What gets copied",

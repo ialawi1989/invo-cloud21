@@ -858,6 +858,8 @@
       "BULK_EDIT_TITLE":       "تعديل جماعي للفروع",
       "BULK_EDIT_HINT":        "حدّد أي حقل لتطبيقه على الفروع المحددة ({{count}}). الحقول غير المحددة لن تتغير.",
       "BULK_EDIT_APPLY":       "تطبيق على {{count}} فرع",
+      "BULK_EDIT_APPLY_ONE":   "تطبيق على فرع واحد",
+      "BULK_COPY_APPLY_ONE":   "نسخ إلى فرع واحد",
       "BULK_EDIT_TARGETS":     "الفروع المراد تحديثها",
       "BULK_EDIT_FIELDS_LABEL": "الحقول المراد تطبيقها",
       "BULK_EDIT_WHAT_COPIES":  "ما الذي سيتم نسخه",
