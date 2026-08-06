@@ -10,10 +10,15 @@ import { FieldManifest } from '../models/field-manifest.types';
  * ────────────────────────────
  * Source of the HR field descriptors the employee form renders.
  *
- * `employee/fieldManifest` doesn't exist on the backend yet, so this asks for
- * it and falls back to the built-in catalog when the call fails or answers with
- * something that isn't a manifest. The day the endpoint ships it simply starts
- * winning — no change here and none in the form.
+ * The backend is canonical: `GET employee/fieldManifest` answers with the
+ * manifest, and the built-in catalog is used only when that call fails or
+ * returns something that isn't a manifest — an unreachable backend, or a
+ * deployment mid-flight. A field added to the backend manifest reaches this
+ * form on the next request with no frontend deploy.
+ *
+ * The fallback is deliberately silent: a malformed response degrades to the
+ * local copy rather than breaking the form. That also means divergence between
+ * the two produces no error, which is why the backend copy carries the tests.
  *
  * The result is cached for the lifetime of the app: the manifest is schema, not
  * data, and re-fetching it per form open buys nothing.

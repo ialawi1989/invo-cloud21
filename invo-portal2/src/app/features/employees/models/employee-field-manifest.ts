@@ -1,10 +1,24 @@
 /**
- * Built-in employee field manifest — phase 1 (`profile.*` + `employment.*`).
+ * Employee field manifest — **offline fallback only. Not the source of truth.**
  *
- * This is the fallback the form renders when `employee/fieldManifest` isn't
- * available yet; once the endpoint ships it wins and this catalog documents the
- * shape it must return. Every key here is namespaced under its group, so none
- * of the 13 existing top-level fields is touched.
+ * The canonical manifest lives in the backend at
+ * `InvoCloudBack/src/repo/admin/employeeFieldManifest.ts` and is served by
+ * `GET employee/fieldManifest`. `EmployeeFieldManifestService` asks for that
+ * first and uses it whenever it can be reached — which is the normal case — so
+ * this file is what keeps the form rendering when the endpoint is unreachable
+ * or a deployment is mid-flight.
+ *
+ * Two consequences worth knowing before editing it:
+ *
+ *  • **A field added only here is invisible in practice.** The backend answers
+ *    every real request, so its copy wins. Add the field there; mirror it here
+ *    only to keep the offline experience honest.
+ *  • **Divergence is silent.** Nothing compares the two at build time — they are
+ *    in different repositories. If this file drifts, the only symptom is that
+ *    the form looks different when the backend is down.
+ *
+ * Every key here is namespaced under its group, so none of the 13 existing
+ * top-level fields is touched.
  *
  * Deliberately **not** in phase 1:
  *  • `employment.contractDocument`, `profile.education[].certificate` — `file`
