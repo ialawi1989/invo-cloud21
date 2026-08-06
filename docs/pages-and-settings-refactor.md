@@ -76,7 +76,7 @@ system  · cart · checkout · account · booking
 Adding a page type is now one manifest entry plus one component in the
 storefront's switch. No routing changes, no dashboard changes.
 
-### Type inference (why the migration is optional)
+### Type inference
 
 When `pageType` is absent it is derived, in this order:
 
@@ -84,13 +84,34 @@ When `pageType` is absent it is derived, in this order:
 template.pageType  →  template.templateType  →  slug  →  content
 ```
 
-Both frontends implement the same chain, so an unmigrated row resolves
-identically to a migrated one. Running the backfill is an optimisation, not a
-prerequisite.
-
-*(Worth noting: a page appearing as "Content" was traced to
-`template.templateType`, not to a missing slug or an empty manifest — the
-inference order matters when diagnosing.)*
+> ⚠️ **The runtime map and the migration DISAGREE, and the runtime one is
+> wrong.** Corrected claim, 2026-08-06 — this section previously said an
+> unmigrated row "resolves identically to a migrated one". It does not.
+>
+> `legacyTemplateTypes` in the manifest and in **both** bundled fallbacks
+> contains `custom: 'content'` and `blog: 'content'`. The migration's
+> `TEMPLATE_TYPES` contains neither.
+>
+> `templateType` outranks `slug`, so for a row without `pageType` the migration
+> types `shop` as `product-list` (via slug) while the runtime types it
+> **`content`** (via `custom`).
+>
+> Measured: `custom` is on **22 of 43** page rows, and those rows resolve to
+> **six different page types** — product-list 11, checkout 5, booking 3,
+> account 1, product-detail 1, content 1. `custom` carries no type information;
+> it is a generic marker. Mapping it to `content` would mistype 21 of 22 rows.
+>
+> **The migration is correct. No already-migrated row is mistyped** — the
+> backfill never consulted `custom`, so every row was typed by slug, `isStatic`
+> or the content catch-all. The damage is confined to *unmigrated* rows, where
+> the runtime inference reads `custom` and returns `content`. This is the actual
+> cause of the "page appearing as Content" symptom noted during the migration.
+>
+> **Fix (not yet applied):** remove `custom` from `legacyTemplateTypes` in three
+> places — `pageTypes.manifest.ts`, `website/.../page-type.fallback.ts`,
+> `invo-portal2/.../page-type.fallback.ts`. `blog: 'content'` is harmless (no
+> row uses it, and no `blog` slug rule exists, so it would reach `content`
+> anyway) but is equally redundant.
 
 ### Page status replaces `redirect_to_shop`
 
@@ -224,8 +245,8 @@ unreachable. This is deliberate: the public site should not depend on an
 admin-scoped endpoint being up.
 
 **Settings resolve in three steps** — page value → site default → manifest
-default. `SITE_DEFAULT_KEYS` maps each page setting to its site-wide
-counterpart:
+default — **but step 2 applies to exactly six keys**, not to settings in
+general. `SITE_DEFAULT_KEYS` in `page-type.service.ts` is the whole list:
 
 ```ts
 product_style      -> defaultProductStyle
@@ -235,6 +256,38 @@ page_limit         -> defaultPageLimit
 sort_By            -> defaultSortBy
 long_product_name  -> allowLongProductName
 ```
+
+Every other field skips straight from step 1 to step 3.
+
+> ⚠️ **The seven `authority` relocations have no resolution path.** Corrected
+> claim, 2026-08-06 — this section previously implied the chain was general.
+>
+> `enable_schedule_order`, `disable_immediate_order`,
+> `start_day_for_schedule_order`, `disable_pay_later_for`, `disable_delivery`,
+> `disable_pickup` and `disable_out_of_stock_matrix_dimensions` each have a
+> destination in the relocation map and a field in the site-config schema, but
+> nothing in `settingsFor()` consults them. A site-level `disableDelivery` does
+> not override a page's `disable_delivery`.
+>
+> **This is not a plumbing gap.** Nothing reads those keys at all — neither
+> the page-level name nor the site-level one appears anywhere in the storefront,
+> the portal or the backend outside the manifest and schema definitions
+> themselves. The old storefront DID read all seven, always from
+> `pageData.template.settings.<key>`:
+>
+> | key | read by, in NewWebsite |
+> | --- | --- |
+> | the six ordering / delivery keys | `pages/checkout/checkout.component.ts`, `components/service-selector-pop/` |
+> | `disable_out_of_stock_matrix_dimensions` | `components/product/product-view/matrix-options/` |
+>
+> The new storefront reads none of them because **the features that consume them
+> are unported**: checkout is PickUp-only with no service selector, and there is
+> no variant/matrix picker. Wiring site values into `settingsFor()` now would
+> build resolution for something with no reader.
+>
+> **Correct sequencing:** port the feature first (service selector, scheduling,
+> variant picker), and decide page-vs-site at that point. The relocation map
+> already records the intent — `authority` means the site value should win.
 
 **`page-host` renders saved builder sections *around* the core**, so a system
 page (a listing, checkout) can carry a banner or copy while keeping the thing it
