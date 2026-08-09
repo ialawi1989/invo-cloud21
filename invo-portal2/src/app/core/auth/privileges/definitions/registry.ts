@@ -33,8 +33,14 @@ import { dimensionSecurity } from './dimensionSecurity';
 import { dineInSecurity } from './dineInSecurity';
 import { discountSecurity } from './discountSecurity';
 import { DomainSettingsSecurity } from './DomainSettingsSecurity';
+import { employeeAssetSecurity } from './employeeAssetSecurity';
 import { employeeAttendenceSecurity } from './employeeAttendenceSecurity';
+import { employeeDisciplinarySecurity } from './employeeDisciplinarySecurity';
+import { employeeDocumentSecurity } from './employeeDocumentSecurity';
 import { employeeInvitationSecurity } from './employeeInvitationSecurity';
+import { employeeLeaveSecurity } from './employeeLeaveSecurity';
+import { employeePayrollSecurity } from './employeePayrollSecurity';
+import { employeePerformanceSecurity } from './employeePerformanceSecurity';
 import { employeeProfileSecurity } from './employeeProfileSecurity';
 import { employeeScheduleSecurity } from './employeeScheduleSecurity';
 import { employeeSecurity } from './employeeSecurity';
@@ -184,6 +190,16 @@ export const SECURITY_DEFINITIONS = {
   waitingListSecurity,
   employeeSecurity,
   employeeProfileSecurity,
+  // HR phases 2–5. All default-deny server-side: until an administrator ticks
+  // these, nobody but a company admin can reach documents, assets, leave,
+  // reviews, disciplinary records or pay. That is deliberate, but it means the
+  // feature does nothing at all until these are configured.
+  employeeDocumentSecurity,
+  employeeAssetSecurity,
+  employeeLeaveSecurity,
+  employeePerformanceSecurity,
+  employeeDisciplinarySecurity,
+  employeePayrollSecurity,
   employeeScheduleSecurity,
   employeeAttendenceSecurity,
   employeeInvitationSecurity,

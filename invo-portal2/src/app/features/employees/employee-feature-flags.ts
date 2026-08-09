@@ -22,19 +22,33 @@ import { FeatureService } from '@core/auth/feature.service';
 import { environment } from '../../../environments/environment';
 
 /**
- * The key as it is stored in `Companies.features` and toggled by the admin
- * portal's Manage Features grid (`invoAdminProtal`, pages/manage-features).
+ * The keys as they are stored in `Companies.features` and written by the admin
+ * portal's HR master toggle (`invoAdminProtal`, core/models/company-features).
  *
- * Lowercase deliberately, and it must stay that way: that grid lowercases every
- * key on the way in and out, and `FeatureService.isEnabled()` matches exactly —
- * so an upper-case constant here could never be switched on by anyone.
+ * Lowercase deliberately, and it must stay that way: that screen lowercases
+ * every key on the way in and out, and `FeatureService.isEnabled()` matches
+ * exactly — so an upper-case constant here could never be switched on.
  *
- * The symbol keeps its descriptive name so call sites read clearly; only the
- * wire value is `'hr'`. When later HR phases arrive they are expected to become
- * sub-features (`hr.documents`, `hr.payroll`) under an HR group, the way
- * promotions did — at which point this becomes the master key.
+ * ── THERE IS NO BARE `hr` FALLBACK, ON PURPOSE ───────────────────────────────
+ * `hr` was split into these two sub-keys before any company had it, and the
+ * admin portal no longer writes the bare string. Accepting it here as well
+ * would be the obvious "safe" move and is exactly what makes this class of
+ * mismatch unresolvable: two spellings that both work mean nobody can tell
+ * which is authoritative, and the dead one is never removed.
+ *
+ * That is the state promotions is in — 167 companies on the bare key, one on
+ * sub-keys, and a portal gating on the string the admin screen stopped writing.
+ * `hr` is enabled for no company, so there is nothing to be compatible with.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
-export const EMPLOYEE_HR_FIELDS = 'hr';
+export const HR_PROFILE = 'hr.profile';
+export const HR_DOCUMENTS = 'hr.documents';
+
+/**
+ * @deprecated Use {@link HR_PROFILE}. Kept only so existing call sites keep
+ * compiling; it now points at the sub-key, never at bare `hr`.
+ */
+export const EMPLOYEE_HR_FIELDS = HR_PROFILE;
 
 /** Local-only override, ignored in production. */
 function devOverride(flag: string): boolean {
@@ -54,6 +68,23 @@ function devOverride(flag: string): boolean {
  */
 export function hrFieldsEnabled(): Signal<boolean> {
   const features = inject(FeatureService);
-  const enabled = features.isEnabled$(EMPLOYEE_HR_FIELDS);
-  return computed(() => enabled() || devOverride(EMPLOYEE_HR_FIELDS));
+  const enabled = features.isEnabled$(HR_PROFILE);
+  return computed(() => enabled() || devOverride(HR_PROFILE));
+}
+
+/**
+ * Whether the documents tab may be rendered.
+ *
+ * A separate grant from the profile cards: a merchant can run employee records
+ * without ever storing identity documents, and the two are toggled
+ * independently by the admin portal.
+ *
+ * Note the dev override key changed with the flag — it is now
+ * `ff.hr.documents`, not `ff.hr`. Any QA note still saying `ff.hr` will appear
+ * to do nothing.
+ */
+export function hrDocumentsEnabled(): Signal<boolean> {
+  const features = inject(FeatureService);
+  const enabled = features.isEnabled$(HR_DOCUMENTS);
+  return computed(() => enabled() || devOverride(HR_DOCUMENTS));
 }
