@@ -3,6 +3,7 @@ import { CanActivateFn, Routes } from '@angular/router';
 import { LanguageService } from '@core/i18n/language.service';
 import { privilegeGuard } from '@core/guards/privilege.guard';
 import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
+import { hrPrivilegeGuard } from './hr-privilege';
 
 /**
  * Employees — team members, invitations, schedules, privileges & attendance.
@@ -17,7 +18,9 @@ import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
  *   /employees/schedule        → team schedule board
  *   /employees/my-account      → the signed-in employee's own account
  *   /employees/invitation/:id  → invite / edit invited employee (0 = new)
- *   /employees/:id             → employee form (0 = new)
+ *   /employees/:id             → employee record shell; default child is the
+ *                                employee form, unchanged (0 = new)
+ *   /employees/:id/documents   → documents tab
  *
  * Static segments are declared before `:id` so they win the match.
  */
@@ -96,11 +99,43 @@ export const EMPLOYEES_ROUTES: Routes = [
       import('./pages/employee-invitation/employee-invitation.component').then(m => m.EmployeeInvitationComponent),
   },
   {
+    /**
+     * The employee record. `:id` gained children in HR phase 2 — the shell
+     * renders a tab strip and an outlet, and the DEFAULT CHILD is the employee
+     * form at the same URL, so `/employees/:id` behaves exactly as before and
+     * every existing link and bookmark keeps working.
+     *
+     * `unsavedChangesGuard` moved to the profile child, deliberately. On the
+     * parent it would fire when switching tabs — which is not leaving the
+     * record, so prompting there is noise. On the child it fires exactly when
+     * the profile form is dirty and the user navigates away from it, including
+     * to another tab, which is the case worth interrupting.
+     */
     path: ':id',
     canActivate: [translationsLoaded, privilegeGuard],
-    canDeactivate: [unsavedChangesGuard],
     data: { permissionPath: 'employeeSecurity.actions.add.access' },
     loadComponent: () =>
-      import('./pages/employee-form/employee-form.component').then(m => m.EmployeeFormComponent),
+      import('./pages/employee-record/employee-record.component').then(m => m.EmployeeRecordComponent),
+    children: [
+      {
+        // Today's form, at today's URL.
+        path: '',
+        canDeactivate: [unsavedChangesGuard],
+        loadComponent: () =>
+          import('./pages/employee-form/employee-form.component').then(m => m.EmployeeFormComponent),
+      },
+      /**
+       * HR module tabs land here, one per commit, each alongside its component
+       * and its entry flipped to `ready` in employee-record.component.ts.
+       *
+       * They are guarded with `hrPrivilegeGuard`, NOT `privilegeGuard`: the
+       * latter is default-allow and would admit everyone to routes whose every
+       * request the API refuses. See features/employees/hr-privilege.ts.
+       *
+       * The guard is a backstop for a typed or bookmarked URL — the primary
+       * control is that the tab is absent from the strip for anyone without the
+       * grant.
+       */
+    ],
   },
 ];

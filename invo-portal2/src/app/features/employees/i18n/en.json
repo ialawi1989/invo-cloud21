@@ -8,7 +8,6 @@
     "SEARCH_PLACEHOLDER": "Search employees…",
     "EMPTY": "No employees yet",
     "NO_MATCH": "No employees match your search",
-
     "LIST": {
       "AVATAR": "Avatar",
       "NAME": "Name",
@@ -18,7 +17,6 @@
       "POS_USER": "POS User",
       "IS_DRIVER": "Driver"
     },
-
     "FORM": {
       "ADD_TITLE": "New employee",
       "EDIT_TITLE": "Edit employee",
@@ -73,7 +71,6 @@
       "SEARCH_BRANCHES": "Search branches",
       "NO_BRANCHES": "No branches assigned yet",
       "SAVED": "Employee saved",
-
       "SYSTEM_ACCESS": "System access",
       "SYSTEM_ACCESS_HINT": "This employee signs in to the portal or the POS.",
       "SYSTEM_ACCESS_OFF_HINT": "No login. The record still holds attendance and HR details.",
@@ -81,7 +78,6 @@
       "CREDENTIALS_RETIRED_HINT": "The previous pass code and swipe id are retired on restoring access — enter new ones. Access was ended by removing this employee's roles, not by deleting the credential, which is shared with any other company they work for.",
       "EMPLOYMENT_DETAILS": "Employment details"
     },
-
     "TOUR": {
       "START": "Take a tour",
       "NOTHING_TO_SHOW": "There's nothing to walk through on this screen yet.",
@@ -138,7 +134,6 @@
         "BODY": "Department, position, manager and contract terms. Department and position offer the values already used elsewhere in your company — pick one, or type a new one."
       }
     },
-
     "FIELDS": {
       "PROFILE": {
         "NAME_AR": "Full name (Arabic)",
@@ -186,7 +181,6 @@
         "EDUCATION_YEAR": "Graduation year",
         "EDUCATION_FIELD": "Field of study"
       },
-
       "EMPLOYMENT": {
         "SENIORITY_DATE": "Seniority date",
         "SENIORITY_DATE_HINT": "Defaults to the hire date; differs on a rehire or a transfer.",
@@ -207,14 +201,12 @@
         "WEEKLY_HOURS": "Contracted hours per week",
         "WEEKLY_HOURS_HINT": "Drives overtime and part-time proration."
       },
-
       "RENDERER": {
         "ADD_ROW": "Add",
         "REMOVE_ROW": "Remove",
         "NO_ROWS": "Nothing added yet",
         "SELECT": "Select…"
       },
-
       "VALIDATION": {
         "FORMAT": "Check the format of this value",
         "MAX_LENGTH": "Use at most {{max}} characters",
@@ -223,20 +215,17 @@
         "INVALID": "This value isn't valid"
       }
     },
-
     "OPTIONS": {
       "GENDER": {
         "MALE": "Male",
         "FEMALE": "Female"
       },
-
       "MARITAL": {
         "SINGLE": "Single",
         "MARRIED": "Married",
         "DIVORCED": "Divorced",
         "WIDOWED": "Widowed"
       },
-
       "RELATIONSHIP": {
         "SPOUSE": "Spouse",
         "CHILD": "Child",
@@ -245,7 +234,6 @@
         "FRIEND": "Friend",
         "OTHER": "Other"
       },
-
       "EDUCATION_LEVEL": {
         "HIGH_SCHOOL": "High school",
         "DIPLOMA": "Diploma",
@@ -254,13 +242,11 @@
         "DOCTORATE": "Doctorate",
         "OTHER": "Other"
       },
-
       "EMPLOYMENT_TYPE": {
         "FULL_TIME": "Full-time",
         "PART_TIME": "Part-time",
         "CONTRACT": "Contract"
       },
-
       "EMPLOYMENT_STATUS": {
         "ACTIVE": "Active",
         "PROBATION": "Probation",
@@ -269,7 +255,6 @@
         "NOTICE_PERIOD": "Notice period",
         "TERMINATED": "Terminated"
       },
-
       "JOB_GRADE": {
         "A": "Grade A",
         "B": "Grade B",
@@ -278,7 +263,6 @@
         "E": "Grade E"
       }
     },
-
     "INVITE": {
       "TITLE": "Invite employee",
       "INVITATION_DETAILS": "Invitation Details",
@@ -299,7 +283,6 @@
       "NO_BRANCHES": "No branches assigned",
       "SENT": "Invitation sent"
     },
-
     "SCHEDULE": {
       "TITLE": "Employee Schedule",
       "TEAM_MEMBER": "Team Member",
@@ -354,7 +337,6 @@
       "DELETE_TIMEOFF_CONFIRM_TITLE": "Delete time off?",
       "DELETE_TIMEOFF_CONFIRM_MSG": "This time off will be removed from the schedule.",
       "SAVED": "Schedule saved",
-
       "SCHEDULED_SHIFTS": "Scheduled shifts",
       "THIS_WEEK": "This week",
       "NOT_WORKING": "Not working",
@@ -382,7 +364,6 @@
       "SORT_NAME_ASC": "Name (A–Z)",
       "SORT_NAME_DESC": "Name (Z–A)"
     },
-
     "MY_ACCOUNT": {
       "TITLE": "My Account",
       "SAVED": "Account updated",
@@ -394,7 +375,6 @@
       "PASSCODE_HINT": "Passcode must be at least 4 digits",
       "TWO_FACTOR_HINT": "Require a one-time code from your authenticator app when signing in"
     },
-
     "PRIVILEGES": {
       "TITLE": "Privileges",
       "SUBTITLE": "Reusable permission sets you can assign to employees",
@@ -424,7 +404,6 @@
       "COPY_FROM_ROLE_TITLE": "Copy permissions from a role",
       "CUSTOMIZE_DASHBOARD": "Customize dashboard"
     },
-
     "ATTENDANCE": {
       "TITLE": "Attendance Log",
       "SUBTITLE": "Clock-in / clock-out records for your team",
@@ -455,6 +434,16 @@
       "TOTAL_HOURS": "Total Hours",
       "DATE": "Date",
       "SAVED": "Attendance adjusted"
+    },
+    "TABS": {
+      "ARIA_LABEL": "Employee record sections",
+      "PROFILE": "Profile",
+      "DOCUMENTS": "Documents",
+      "ASSETS": "Assets",
+      "LEAVE": "Leave",
+      "PERFORMANCE": "Performance",
+      "DISCIPLINARY": "Disciplinary",
+      "PAYROLL": "Payroll"
     }
   }
 }

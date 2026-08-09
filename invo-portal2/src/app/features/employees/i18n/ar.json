@@ -8,7 +8,6 @@
     "SEARCH_PLACEHOLDER": "ابحث عن موظف…",
     "EMPTY": "لا يوجد موظفون بعد",
     "NO_MATCH": "لا يوجد موظفون مطابقون لبحثك",
-
     "LIST": {
       "AVATAR": "الصورة الرمزية",
       "NAME": "الاسم",
@@ -18,7 +17,6 @@
       "POS_USER": "مستخدم نقطة البيع",
       "IS_DRIVER": "سائق"
     },
-
     "FORM": {
       "ADD_TITLE": "موظف جديد",
       "EDIT_TITLE": "تعديل موظف",
@@ -73,7 +71,6 @@
       "SEARCH_BRANCHES": "ابحث عن فرع",
       "NO_BRANCHES": "لم يتم تعيين أي فرع بعد",
       "SAVED": "تم حفظ الموظف",
-
       "SYSTEM_ACCESS": "TODO_AR: System access",
       "SYSTEM_ACCESS_HINT": "TODO_AR: This employee signs in to the portal or the POS.",
       "SYSTEM_ACCESS_OFF_HINT": "TODO_AR: No login. The record still holds attendance and HR details.",
@@ -81,7 +78,6 @@
       "CREDENTIALS_RETIRED_HINT": "TODO_AR: The previous pass code and swipe id are retired on restoring access — enter new ones. Access was ended by removing this employee's roles, not by deleting the credential, which is shared with any other company they work for.",
       "EMPLOYMENT_DETAILS": "TODO_AR: Employment details"
     },
-
     "TOUR": {
       "START": "TODO_AR: Take a tour",
       "NOTHING_TO_SHOW": "TODO_AR: There's nothing to walk through on this screen yet.",
@@ -138,7 +134,6 @@
         "BODY": "TODO_AR: Department, position, manager and contract terms. Department and position offer the values already used elsewhere in your company — pick one, or type a new one."
       }
     },
-
     "FIELDS": {
       "PROFILE": {
         "NAME_AR": "TODO_AR: Full name (Arabic)",
@@ -186,7 +181,6 @@
         "EDUCATION_YEAR": "TODO_AR: Graduation year",
         "EDUCATION_FIELD": "TODO_AR: Field of study"
       },
-
       "EMPLOYMENT": {
         "SENIORITY_DATE": "TODO_AR: Seniority date",
         "SENIORITY_DATE_HINT": "TODO_AR: Defaults to the hire date; differs on a rehire or a transfer.",
@@ -207,14 +201,12 @@
         "WEEKLY_HOURS": "TODO_AR: Contracted hours per week",
         "WEEKLY_HOURS_HINT": "TODO_AR: Drives overtime and part-time proration."
       },
-
       "RENDERER": {
         "ADD_ROW": "TODO_AR: Add",
         "REMOVE_ROW": "TODO_AR: Remove",
         "NO_ROWS": "TODO_AR: Nothing added yet",
         "SELECT": "TODO_AR: Select…"
       },
-
       "VALIDATION": {
         "FORMAT": "TODO_AR: Check the format of this value",
         "MAX_LENGTH": "TODO_AR: Use at most {{max}} characters",
@@ -223,20 +215,17 @@
         "INVALID": "TODO_AR: This value isn't valid"
       }
     },
-
     "OPTIONS": {
       "GENDER": {
         "MALE": "TODO_AR: Male",
         "FEMALE": "TODO_AR: Female"
       },
-
       "MARITAL": {
         "SINGLE": "TODO_AR: Single",
         "MARRIED": "TODO_AR: Married",
         "DIVORCED": "TODO_AR: Divorced",
         "WIDOWED": "TODO_AR: Widowed"
       },
-
       "RELATIONSHIP": {
         "SPOUSE": "TODO_AR: Spouse",
         "CHILD": "TODO_AR: Child",
@@ -245,7 +234,6 @@
         "FRIEND": "TODO_AR: Friend",
         "OTHER": "TODO_AR: Other"
       },
-
       "EDUCATION_LEVEL": {
         "HIGH_SCHOOL": "TODO_AR: High school",
         "DIPLOMA": "TODO_AR: Diploma",
@@ -254,13 +242,11 @@
         "DOCTORATE": "TODO_AR: Doctorate",
         "OTHER": "TODO_AR: Other"
       },
-
       "EMPLOYMENT_TYPE": {
         "FULL_TIME": "TODO_AR: Full-time",
         "PART_TIME": "TODO_AR: Part-time",
         "CONTRACT": "TODO_AR: Contract"
       },
-
       "EMPLOYMENT_STATUS": {
         "ACTIVE": "TODO_AR: Active",
         "PROBATION": "TODO_AR: Probation",
@@ -269,7 +255,6 @@
         "NOTICE_PERIOD": "TODO_AR: Notice period",
         "TERMINATED": "TODO_AR: Terminated"
       },
-
       "JOB_GRADE": {
         "A": "TODO_AR: Grade A",
         "B": "TODO_AR: Grade B",
@@ -278,7 +263,6 @@
         "E": "TODO_AR: Grade E"
       }
     },
-
     "INVITE": {
       "TITLE": "دعوة موظف",
       "INVITATION_DETAILS": "تفاصيل الدعوة",
@@ -299,7 +283,6 @@
       "NO_BRANCHES": "لا توجد فروع معينة",
       "SENT": "تم إرسال الدعوة"
     },
-
     "SCHEDULE": {
       "TITLE": "جدول الموظف",
       "TEAM_MEMBER": "عضو الفريق",
@@ -354,7 +337,6 @@
       "DELETE_TIMEOFF_CONFIRM_TITLE": "حذف الوقت المستقطع؟",
       "DELETE_TIMEOFF_CONFIRM_MSG": "سيتم إزالة هذا الوقت المستقطع من الجدول.",
       "SAVED": "تم حفظ الجدول",
-
       "SCHEDULED_SHIFTS": "المناوبات المجدولة",
       "THIS_WEEK": "هذا الأسبوع",
       "NOT_WORKING": "غير عامل",
@@ -382,7 +364,6 @@
       "SORT_NAME_ASC": "الاسم (أ–ي)",
       "SORT_NAME_DESC": "الاسم (ي–أ)"
     },
-
     "MY_ACCOUNT": {
       "TITLE": "حسابي",
       "SAVED": "تم تحديث الحساب",
@@ -394,7 +375,6 @@
       "PASSCODE_HINT": "يجب أن يتكون رمز المرور من 4 أرقام على الأقل",
       "TWO_FACTOR_HINT": "طلب رمز لمرة واحدة من تطبيق المصادقة عند تسجيل الدخول"
     },
-
     "PRIVILEGES": {
       "TITLE": "الصلاحيات",
       "SUBTITLE": "مجموعات صلاحيات قابلة لإعادة الاستخدام يمكن تعيينها للموظفين",
@@ -424,7 +404,6 @@
       "COPY_FROM_ROLE_TITLE": "نسخ الصلاحيات من دور",
       "CUSTOMIZE_DASHBOARD": "تخصيص لوحة التحكم"
     },
-
     "ATTENDANCE": {
       "TITLE": "سجل الحضور",
       "SUBTITLE": "سجلات تسجيل الدخول والخروج لفريقك",
@@ -455,6 +434,16 @@
       "TOTAL_HOURS": "إجمالي الساعات",
       "DATE": "التاريخ",
       "SAVED": "تم تعديل الحضور"
+    },
+    "TABS": {
+      "ARIA_LABEL": "أقسام ملف الموظف",
+      "PROFILE": "الملف الشخصي",
+      "DOCUMENTS": "الوثائق",
+      "ASSETS": "العُهد",
+      "LEAVE": "الإجازات",
+      "PERFORMANCE": "الأداء",
+      "DISCIPLINARY": "الإجراءات التأديبية",
+      "PAYROLL": "الرواتب"
     }
   }
 }

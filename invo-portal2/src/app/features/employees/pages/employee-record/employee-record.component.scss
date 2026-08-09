@@ -1,0 +1,56 @@
+/**
+ * The employee record shell.
+ *
+ * Sits above the tab's own page, which keeps its existing header and layout —
+ * the profile form is unchanged by this commit, so the strip must not assume
+ * anything about what renders below it.
+ */
+.employee-record {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.record-tabs {
+  display: flex;
+  gap: 0.25rem;
+  // Horizontally scrollable rather than wrapping: seven tabs on a narrow
+  // screen would otherwise push the page content below the fold.
+  overflow-x: auto;
+  scrollbar-width: thin;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  padding: 0 0.25rem;
+
+  &__tab {
+    flex: 0 0 auto;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-muted, #6b7280);
+    text-decoration: none;
+    white-space: nowrap;
+    // Transparent rather than absent, so the active state does not shift the
+    // row by 2px when it appears.
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+      color: var(--text-color, #111827);
+    }
+
+    &--active {
+      color: var(--primary-color, #2563eb);
+      border-bottom-color: var(--primary-color, #2563eb);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary-color, #2563eb);
+      outline-offset: -2px;
+      border-radius: 2px;
+    }
+  }
+}
+
+.employee-record__body {
+  min-width: 0;
+}

@@ -1,0 +1,26 @@
+<div class="employee-record">
+  @if (showTabs()) {
+    <!-- Tabs are absent, not disabled, when the flag is off or the grant is
+         missing — see the component for why. `routerLinkActive` with
+         `exact: true` on the profile tab stops it staying highlighted while a
+         child tab is open, since its URL is a prefix of every other tab's. -->
+    <nav class="record-tabs" role="tablist"
+         [attr.aria-label]="'EMPLOYEES.TABS.ARIA_LABEL' | translate">
+      @for (tab of tabs(); track tab.path) {
+        <a class="record-tabs__tab"
+           role="tab"
+           [routerLink]="linkFor(tab)"
+           routerLinkActive="record-tabs__tab--active"
+           [routerLinkActiveOptions]="{ exact: tab.path === '' }"
+           #rla="routerLinkActive"
+           [attr.aria-selected]="rla.isActive">
+          {{ tab.labelKey | translate }}
+        </a>
+      }
+    </nav>
+  }
+
+  <div class="employee-record__body">
+    <router-outlet />
+  </div>
+</div>
