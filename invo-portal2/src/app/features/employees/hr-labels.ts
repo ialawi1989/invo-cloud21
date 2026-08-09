@@ -1,9 +1,10 @@
 /**
  * Translate a server label key into the portal's namespace.
  *
- * The server sends `employees.documents.type.nationalId`; this feature's
- * translations live under `EMPLOYEES.DOCUMENTS.TYPE.NATIONAL_ID`. The two
- * conventions differ, neither side is going to change, so the mapping is
+ * The server sends `employees.documents.type.nationalId` and
+ * `employees.assets.category.idCard`; this feature's translations live under
+ * `EMPLOYEES.DOCUMENTS.TYPE.NATIONAL_ID` and `EMPLOYEES.ASSETS.CATEGORY.ID_CARD`.
+ * The two conventions differ, neither side is going to change, so the mapping is
  * mechanical and stated in exactly one place: dots preserved, camelCase split,
  * upper snake case.
  *

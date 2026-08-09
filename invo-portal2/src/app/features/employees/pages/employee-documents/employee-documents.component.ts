@@ -16,8 +16,8 @@ import {
   EmployeeDocumentService,
   FileCatalog,
 } from '../../services/employee-document.service';
-import { DocumentError, describeError } from './document-error';
-import { portalKey } from './document-labels';
+import { HrError, describeError } from '../../hr-error';
+import { portalKey } from '../../hr-labels';
 
 /**
  * The documents tab — identity documents and their attachments.
@@ -27,7 +27,7 @@ import { portalKey } from './document-labels';
  * first upload anyone performs is also the first execution of the migration's
  * delete trigger, the storage-key generation, the child row and the audit —
  * none of which has ever run. The error path is built to say what actually
- * failed (see document-error.ts) because it will be read a lot.
+ * failed (see ../../hr-error.ts) because it will be read a lot.
  * ─────────────────────────────────────────────────────────────────────────────
  *
  * ── COMPUTED FIELDS ARE SHOWN, NEVER RECOMPUTED ──────────────────────────────
@@ -61,7 +61,7 @@ export class EmployeeDocumentsComponent {
 
   readonly loading = signal(true);
   readonly busy = signal<string | null>(null);
-  readonly error = signal<DocumentError | null>(null);
+  readonly error = signal<HrError | null>(null);
   readonly documents = signal<EmployeeDocument[]>([]);
   readonly types = signal<DocumentTypeDescriptor[]>([]);
   readonly catalog = signal<FileCatalog | null>(null);
@@ -220,7 +220,7 @@ export class EmployeeDocumentsComponent {
     if (catalog) {
       if (catalog.accepted.length && !catalog.accepted.includes(file.type)) {
         this.error.set({
-          titleKey: 'EMPLOYEES.DOCUMENTS.ERR.TYPE_REJECTED',
+          titleKey: 'EMPLOYEES.HR.ERR.TYPE_REJECTED',
           detail: file.type || file.name,
           hintKey: null,
         });
@@ -228,7 +228,7 @@ export class EmployeeDocumentsComponent {
       }
       if (file.size > catalog.maxBytes) {
         this.error.set({
-          titleKey: 'EMPLOYEES.DOCUMENTS.ERR.TOO_LARGE',
+          titleKey: 'EMPLOYEES.HR.ERR.TOO_LARGE',
           detail: `${Math.round(file.size / 1024 / 1024)}MB`,
           hintKey: null,
         });

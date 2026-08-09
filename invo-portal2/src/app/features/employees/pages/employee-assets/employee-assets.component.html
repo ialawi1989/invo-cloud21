@@ -1,0 +1,295 @@
+<div class="employee-assets">
+
+  @if (error(); as err) {
+    <div class="hr-error" role="alert">
+      <div class="hr-error__title">{{ err.titleKey | translate }}</div>
+      @if (err.hintKey) {
+        <div class="hr-error__hint">{{ err.hintKey | translate }}</div>
+      }
+      @if (err.detail) {
+        <!-- The server's own words, untranslated so the string stays searchable. -->
+        <pre class="hr-error__detail">{{ err.detail }}</pre>
+      }
+      <button type="button" class="hr-error__dismiss" (click)="error.set(null)">
+        {{ 'COMMON.DISMISS' | translate }}
+      </button>
+    </div>
+  }
+
+  <div class="asset-header">
+    <h2 class="asset-header__title">{{ 'EMPLOYEES.ASSETS.TITLE' | translate }}</h2>
+    @if (canEdit() && !editing()) {
+      <button type="button" class="btn btn-primary" (click)="startAdd()">
+        {{ 'EMPLOYEES.ASSETS.ADD' | translate }}
+      </button>
+    }
+  </div>
+
+  <!--
+    Said out loud rather than hidden. Without the catalogue the pickers are
+    empty and the conditional rules cannot be applied here, so the server does
+    all the refusing — a form that silently behaves differently is worse than
+    one that says why.
+  -->
+  @if (catalogMissing()) {
+    <div class="asset-note">{{ 'EMPLOYEES.ASSETS.NO_CATALOG' | translate }}</div>
+  }
+
+  @if (editing()) {
+    <form class="asset-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="asset-form__grid">
+        <label class="asset-field">
+          <span class="asset-field__label">{{ 'EMPLOYEES.ASSETS.FIELD.TAG' | translate }} <em>*</em></span>
+          <input class="form-control" type="text" formControlName="assetTag"
+                 [class.is-invalid]="tagError()" />
+          <!--
+            The clash message beside the field that caused it. It names who
+            currently holds the tag, and since tags are unique company-wide the
+            holder is very often not on this screen at all — that name is the
+            only way to find where it went.
+          -->
+          @if (tagError(); as clash) {
+            <span class="asset-field__error">{{ clash }}</span>
+          }
+          <span class="asset-field__hint">{{ 'EMPLOYEES.ASSETS.TAG_HINT' | translate }}</span>
+        </label>
+
+        <label class="asset-field">
+          <span class="asset-field__label">{{ 'EMPLOYEES.ASSETS.FIELD.CATEGORY' | translate }} <em>*</em></span>
+          <app-search-dropdown
+            formControlName="category"
+            [items]="catalog().categories"
+            [displayWith]="optionName"
+            [toValue]="optionKey"
+            [compareWith]="optionMatches"
+            [placeholder]="'EMPLOYEES.ASSETS.FIELD.CATEGORY' | translate">
+          </app-search-dropdown>
+        </label>
+
+        <label class="asset-field asset-field--wide">
+          <span class="asset-field__label">{{ 'EMPLOYEES.ASSETS.FIELD.DESCRIPTION' | translate }} <em>*</em></span>
+          <input class="form-control" type="text" formControlName="description" />
+        </label>
+
+        <label class="asset-field">
+          <span class="asset-field__label">{{ 'EMPLOYEES.ASSETS.FIELD.SERIAL' | translate }}</span>
+          <input class="form-control" type="text" formControlName="serialNumber" />
+        </label>
+
+        <label class="asset-field">
+          <span class="asset-field__label">{{ 'EMPLOYEES.ASSETS.FIELD.VALUE' | translate }}</span>
+          <input class="form-control" type="number" min="0" step="0.01" formControlName="value" />
+          <!-- Blank is not zero: zero is a claim about worth, and it feeds the
+               loss-deduction estimate. -->
+          <span class="asset-field__hint">{{ 'EMPLOYEES.ASSETS.VALUE_HINT' | translate }}</span>
+        </label>
+
+        <label class="asset-field">
+          <span class="asset-field__label">{{ 'EMPLOYEES.ASSETS.FIELD.ASSIGNED_DATE' | translate }} <em>*</em></span>
+          <input class="form-control" type="date" formControlName="assignedDate" />
+        </label>
+
+        <label class="asset-field">
+          <span class="asset-field__label">{{ 'EMPLOYEES.ASSETS.FIELD.CONDITION_OUT' | translate }} <em>*</em></span>
+          <app-search-dropdown
+            formControlName="conditionOut"
+            [items]="catalog().conditions"
+            [displayWith]="optionName"
+            [toValue]="optionKey"
+            [compareWith]="optionMatches"
+            [placeholder]="'EMPLOYEES.ASSETS.FIELD.CONDITION_OUT' | translate">
+          </app-search-dropdown>
+        </label>
+
+        <label class="asset-field">
+          <span class="asset-field__label">{{ 'EMPLOYEES.ASSETS.FIELD.EXPECTED_RETURN' | translate }}</span>
+          <input class="form-control" type="date" formControlName="expectedReturnDate" />
+        </label>
+
+        <label class="asset-field">
+          <span class="asset-field__label">{{ 'EMPLOYEES.ASSETS.FIELD.STATUS' | translate }} <em>*</em></span>
+          <app-search-dropdown
+            formControlName="status"
+            [items]="catalog().statuses"
+            [displayWith]="optionName"
+            [toValue]="optionKey"
+            [compareWith]="optionMatches"
+            [placeholder]="'EMPLOYEES.ASSETS.FIELD.STATUS' | translate">
+          </app-search-dropdown>
+        </label>
+
+        <!--
+          THE CONDITIONAL PAIR.
+
+          Shown only when the server's catalogue says this status expects the
+          item back (expectsReturn), required when it does, and cleared when it
+          does not — a condition recorded for a laptop nobody ever saw again is
+          a fiction, and Lost is exactly where someone would tick "Good" to
+          clear the form.
+
+          `unknown` — no catalogue — shows them without requiring them. The
+          portal could not read the rule, so it does not invent one.
+        -->
+        @if (returnMode() !== 'forbidden') {
+          <label class="asset-field">
+            <span class="asset-field__label">
+              {{ 'EMPLOYEES.ASSETS.FIELD.RETURN_DATE' | translate }}
+              @if (returnMode() === 'required') { <em>*</em> }
+            </span>
+            <input class="form-control" type="date" formControlName="returnDate" />
+          </label>
+
+          <label class="asset-field">
+            <span class="asset-field__label">
+              {{ 'EMPLOYEES.ASSETS.FIELD.CONDITION_IN' | translate }}
+              @if (returnMode() === 'required') { <em>*</em> }
+            </span>
+            <app-search-dropdown
+              formControlName="conditionIn"
+              [items]="catalog().conditions"
+              [displayWith]="optionName"
+              [toValue]="optionKey"
+              [compareWith]="optionMatches"
+              [placeholder]="'EMPLOYEES.ASSETS.FIELD.CONDITION_IN' | translate">
+            </app-search-dropdown>
+          </label>
+        }
+
+        <label class="asset-field asset-field--wide">
+          <span class="asset-field__label">{{ 'EMPLOYEES.ASSETS.FIELD.NOTES' | translate }}</span>
+          <textarea class="form-control" rows="2" formControlName="notes"></textarea>
+        </label>
+      </div>
+
+      <div class="asset-form__actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="busy() !== null">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <div class="asset-loading">{{ 'COMMON.LOADING' | translate }}</div>
+  } @else if (!assignments().length) {
+    <div class="asset-empty">{{ 'EMPLOYEES.ASSETS.EMPTY' | translate }}</div>
+  } @else {
+    <div class="asset-list">
+      @for (a of assignments(); track trackAssignment($index, a)) {
+        <article class="asset-card" [class.asset-card--open]="isOpen(a) === true">
+          <header class="asset-card__head">
+            <div class="asset-card__ident">
+              <span class="asset-card__tag">{{ a.assetTag }}</span>
+              <span class="asset-card__desc">{{ a.description }}</span>
+              @if (a.category) {
+                <span class="asset-chip">{{ categoryLabel(a) | translate }}</span>
+              }
+            </div>
+
+            <div class="asset-card__state">
+              @if (a.status) {
+                <span class="asset-chip asset-chip--status">{{ statusLabel(a) | translate }}</span>
+              }
+              <!--
+                The server's flag, rendered as sent. Three states: overdue,
+                on time, and "the server didn't say" — which gets its own
+                styling rather than borrowing the reassuring one.
+              -->
+              <span [class]="overdueClass(a)">{{ overdueKey(a) | translate }}</span>
+            </div>
+          </header>
+
+          <dl class="asset-facts">
+            @if (a.assignedDate) {
+              <div><dt>{{ 'EMPLOYEES.ASSETS.FIELD.ASSIGNED_DATE' | translate }}</dt><dd>{{ a.assignedDate }}</dd></div>
+            }
+            @if (a.expectedReturnDate) {
+              <div>
+                <dt>{{ 'EMPLOYEES.ASSETS.FIELD.EXPECTED_RETURN' | translate }}</dt>
+                <dd>
+                  {{ a.expectedReturnDate }}
+                  <!-- Shown only when the server sent it. Never derived here. -->
+                  @if (a.daysUntilReturn !== null) {
+                    <span class="asset-days">
+                      @if (a.daysUntilReturn < 0) {
+                        ({{ -a.daysUntilReturn }} {{ 'EMPLOYEES.ASSETS.DAYS_LATE' | translate }})
+                      } @else {
+                        ({{ a.daysUntilReturn }} {{ 'EMPLOYEES.ASSETS.DAYS_LEFT' | translate }})
+                      }
+                    </span>
+                  }
+                </dd>
+              </div>
+            }
+            @if (a.returnDate) {
+              <div><dt>{{ 'EMPLOYEES.ASSETS.FIELD.RETURN_DATE' | translate }}</dt><dd>{{ a.returnDate }}</dd></div>
+            }
+            @if (a.conditionOut) {
+              <div><dt>{{ 'EMPLOYEES.ASSETS.FIELD.CONDITION_OUT' | translate }}</dt><dd>{{ conditionLabel(a.conditionOut) | translate }}</dd></div>
+            }
+            @if (a.conditionIn) {
+              <div><dt>{{ 'EMPLOYEES.ASSETS.FIELD.CONDITION_IN' | translate }}</dt><dd>{{ conditionLabel(a.conditionIn) | translate }}</dd></div>
+            }
+            @if (a.serialNumber) {
+              <div><dt>{{ 'EMPLOYEES.ASSETS.FIELD.SERIAL' | translate }}</dt><dd>{{ a.serialNumber }}</dd></div>
+            }
+            @if (a.value !== null) {
+              <div><dt>{{ 'EMPLOYEES.ASSETS.FIELD.VALUE' | translate }}</dt><dd>{{ a.value | mycurrency }}</dd></div>
+            }
+          </dl>
+
+          @if (a.notes) {
+            <p class="asset-notes">{{ a.notes }}</p>
+          }
+
+          <!-- The signed handover acknowledgement, if one was attached. -->
+          <div class="asset-files">
+            @for (file of a.files; track trackFile($index, file)) {
+              <div class="asset-file">
+                <span class="asset-file__name">{{ file.fileName }}</span>
+                <span class="asset-file__size">{{ fileSize(file) }}</span>
+                <button type="button" class="btn btn-link"
+                        [disabled]="busy() === file.id" (click)="download(file)">
+                  {{ 'EMPLOYEES.ASSETS.DOWNLOAD' | translate }}
+                </button>
+                @if (canEdit()) {
+                  <button type="button" class="btn btn-link btn-link--danger"
+                          [disabled]="busy() === file.id" (click)="removeFile(file)">
+                    {{ 'COMMON.DELETE' | translate }}
+                  </button>
+                }
+              </div>
+            }
+
+            @if (canUpload()) {
+              <label class="asset-upload">
+                <input type="file" hidden [disabled]="busy() === a.id"
+                       (change)="onFilePicked(a, $event)" />
+                <span class="btn btn-secondary btn-sm">
+                  {{ (busy() === a.id
+                      ? 'EMPLOYEES.ASSETS.UPLOADING'
+                      : 'EMPLOYEES.ASSETS.UPLOAD_HANDOVER') | translate }}
+                </span>
+              </label>
+            }
+          </div>
+
+          @if (canEdit()) {
+            <footer class="asset-card__actions">
+              <button type="button" class="btn btn-link" (click)="startEdit(a)">
+                {{ 'COMMON.EDIT' | translate }}
+              </button>
+              <button type="button" class="btn btn-link btn-link--danger"
+                      [disabled]="busy() === a.id" (click)="remove(a)">
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            </footer>
+          }
+        </article>
+      }
+    </div>
+  }
+</div>

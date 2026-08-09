@@ -10,15 +10,15 @@
     untranslated, so the string stays searchable.
   -->
   @if (error(); as err) {
-    <div class="doc-error" role="alert">
-      <div class="doc-error__title">{{ err.titleKey | translate }}</div>
+    <div class="hr-error" role="alert">
+      <div class="hr-error__title">{{ err.titleKey | translate }}</div>
       @if (err.hintKey) {
-        <div class="doc-error__hint">{{ err.hintKey | translate }}</div>
+        <div class="hr-error__hint">{{ err.hintKey | translate }}</div>
       }
       @if (err.detail) {
-        <pre class="doc-error__detail">{{ err.detail }}</pre>
+        <pre class="hr-error__detail">{{ err.detail }}</pre>
       }
-      <button type="button" class="doc-error__dismiss" (click)="error.set(null)">
+      <button type="button" class="hr-error__dismiss" (click)="error.set(null)">
         {{ 'COMMON.DISMISS' | translate }}
       </button>
     </div>
@@ -50,8 +50,8 @@
   <!-- Storage state, stated once and up front rather than at the moment of failure. -->
   @if (canEdit() && catalog() && !catalog()!.storageConfigured) {
     <div class="doc-note">
-      {{ 'EMPLOYEES.DOCUMENTS.ERR.NO_STORAGE' | translate }} —
-      {{ 'EMPLOYEES.DOCUMENTS.ERR.NO_STORAGE_HINT' | translate }}
+      {{ 'EMPLOYEES.HR.ERR.NO_STORAGE' | translate }} —
+      {{ 'EMPLOYEES.HR.ERR.NO_STORAGE_HINT' | translate }}
     </div>
   }
 

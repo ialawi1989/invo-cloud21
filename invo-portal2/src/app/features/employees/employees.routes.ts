@@ -21,6 +21,7 @@ import { hrPrivilegeGuard } from './hr-privilege';
  *   /employees/:id             → employee record shell; default child is the
  *                                employee form, unchanged (0 = new)
  *   /employees/:id/documents   → documents tab
+ *   /employees/:id/assets      → assets tab
  *
  * Static segments are declared before `:id` so they win the match.
  */
@@ -146,6 +147,17 @@ export const EMPLOYEES_ROUTES: Routes = [
         loadComponent: () =>
           import('./pages/employee-documents/employee-documents.component')
             .then(m => m.EmployeeDocumentsComponent),
+      },
+      {
+        path: 'assets',
+        canActivate: [hrPrivilegeGuard],
+        // `view` on `employeeAssetSecurity`. The edit grant is checked inside
+        // the tab, not here: an employee may read what they are said to be
+        // holding without being able to mark their own laptop returned.
+        data: { hrGroup: 'employeeAssetSecurity', hrAction: 'view' },
+        loadComponent: () =>
+          import('./pages/employee-assets/employee-assets.component')
+            .then(m => m.EmployeeAssetsComponent),
       },
     ],
   },

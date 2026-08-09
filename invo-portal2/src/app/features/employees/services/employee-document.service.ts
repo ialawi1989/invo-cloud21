@@ -1,9 +1,13 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
 
 import { ApiService } from '@core/http/api.service';
-import { environment } from '../../../../environments/environment';
+import {
+  FILE_ENTITY,
+  FileCatalog,
+  HrFile,
+  EmployeeFileService,
+  mapHrFiles,
+} from './employee-file.service';
 
 /**
  * Employee documents and their attachments.
@@ -22,15 +26,14 @@ import { environment } from '../../../../environments/environment';
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-/** A file attached to a document. Never carries the storage key — by design. */
-export interface DocumentFile {
-  id: string;
-  fileName: string;
-  contentType: string;
-  sizeBytes: number | null;
-  uploadedAt: string | null;
-  uploadedBy: string | null;
-}
+/**
+ * A file attached to a document.
+ *
+ * The same shape every HR entity's attachments have — the server serves them
+ * all through one file layer. Re-exported under the old name so the documents
+ * tab keeps reading in its own vocabulary.
+ */
+export type DocumentFile = HrFile;
 
 /** Server-computed expiry state. Never recomputed client-side — see below. */
 export type DocumentStatus = 'Valid' | 'Expiring' | 'Expired';
@@ -80,20 +83,15 @@ export interface DocumentTypeDescriptor {
   conditionalFields?: string[];
 }
 
-export interface FileCatalog {
-  maxBytes: number;
-  accepted: string[];
-  storageConfigured: boolean;
-}
+export type { FileCatalog };
 
 /** The entity key the file endpoints use for a document attachment. */
-export const DOCUMENT_ENTITY = 'employeeDocument';
+export const DOCUMENT_ENTITY = FILE_ENTITY.document;
 
 @Injectable({ providedIn: 'root' })
 export class EmployeeDocumentService {
   private api = inject(ApiService);
-  private http = inject(HttpClient);
-  private baseUrl = environment.backendUrl;
+  private files = inject(EmployeeFileService);
 
   // ─── Documents ─────────────────────────────────────────────────────────
 
@@ -136,70 +134,34 @@ export class EmployeeDocumentService {
   }
 
   // ─── Attachments ───────────────────────────────────────────────────────
+  //
+  // Delegated to EmployeeFileService. The entity key is the only thing
+  // documents-specific about any of it; the transport, the never-cache rule
+  // and the defensive mapping belong to the file layer, which four tabs share.
 
-  /**
-   * What may be attached, and whether storage is configured at all.
-   *
-   * `storageConfigured: false` means `AWS_HR_DOCUMENTS_BUCKET` is unset on the
-   * server. The upload control is disabled with that reason rather than left
-   * to fail on submit.
-   */
-  async fileCatalog(): Promise<FileCatalog> {
-    const res = await this.api.request<any>(this.api.get('employee/fileCatalog'));
-    return {
-      maxBytes: res?.data?.maxBytes ?? 10 * 1024 * 1024,
-      accepted: Array.isArray(res?.data?.accepted) ? res.data.accepted : [],
-      // Defaults to false: if the catalog cannot be read, assume storage is not
-      // available rather than offering an upload that will fail.
-      storageConfigured: res?.data?.storageConfigured === true,
-    };
+  /** What may be attached, and whether storage is configured at all. */
+  fileCatalog(): Promise<FileCatalog> {
+    return this.files.catalog();
+  }
+
+  upload(parentId: string, file: File): Promise<void> {
+    return this.files.upload(DOCUMENT_ENTITY, parentId, file);
   }
 
   /**
-   * Upload an attachment.
+   * A download URL, fresh every time.
    *
-   * multipart/form-data via `HttpClient.post` with a `FormData` body — the
-   * portal's established upload path (see `media.service.ts`), and what the
-   * server's `express-fileupload` middleware expects. `ApiService` is bypassed
-   * deliberately: it sets a JSON content type, and a multipart request must let
-   * the browser set its own boundary.
+   * Documents are a CONFIDENTIAL entity server-side, so every issuance also
+   * writes an audit row naming who asked. Caching the URL would detach the
+   * download from the person who performed it as well as outliving its 300
+   * seconds.
    */
-  async upload(parentId: string, file: File): Promise<void> {
-    const form = new FormData();
-    form.append('file', file, file.name);
-    form.append('entityType', DOCUMENT_ENTITY);
-    form.append('parentId', parentId);
-
-    const res: any = await firstValueFrom(
-      this.http.post<any>(`${this.baseUrl}employee/uploadFile`, form),
-    );
-    if (res?.success === false) throw new Error(res?.msg || 'Upload failed');
+  downloadUrl(fileId: string): Promise<{ url: string; fileName: string }> {
+    return this.files.downloadUrl(DOCUMENT_ENTITY, fileId);
   }
 
-  /**
-   * Get a download URL for one attachment.
-   *
-   * **The URL is used exactly as issued and never stored.** It is valid for 300
-   * seconds, and every issuance writes an audit row naming who asked — caching
-   * it would both outlive its validity and detach the download from the person
-   * who performed it. A fresh call per download is the point, not an
-   * inefficiency.
-   */
-  async downloadUrl(fileId: string): Promise<{ url: string; fileName: string }> {
-    const res = await this.api.request<any>(
-      this.api.get(`employee/getFileUrl/${DOCUMENT_ENTITY}/${fileId}`),
-    );
-    if (res?.success === false || !res?.data?.url) {
-      throw new Error(res?.msg || 'Could not get a download link');
-    }
-    return { url: res.data.url, fileName: res.data.fileName ?? 'document' };
-  }
-
-  async removeFile(fileId: string): Promise<void> {
-    const res = await this.api.request<any>(
-      this.api.get(`employee/deleteFile/${DOCUMENT_ENTITY}/${fileId}`),
-    );
-    if (res?.success === false) throw new Error(res?.msg || 'Could not remove the file');
+  removeFile(fileId: string): Promise<void> {
+    return this.files.remove(DOCUMENT_ENTITY, fileId);
   }
 
   // ─── Mapping ───────────────────────────────────────────────────────────
@@ -237,18 +199,7 @@ export class EmployeeDocumentService {
       // unknown status must not read as a good one.
       status: (r?.status as DocumentStatus) ?? null,
       daysRemaining: typeof r?.daysRemaining === 'number' ? r.daysRemaining : null,
-      files: Array.isArray(r?.files) ? r.files.map((f: any) => this.mapFile(f)) : [],
-    };
-  }
-
-  private mapFile(f: any): DocumentFile {
-    return {
-      id: f?.id ?? '',
-      fileName: f?.fileName ?? 'file',
-      contentType: f?.contentType ?? '',
-      sizeBytes: typeof f?.sizeBytes === 'number' ? f.sizeBytes : null,
-      uploadedAt: f?.uploadedAt ?? null,
-      uploadedBy: f?.uploadedBy ?? null,
+      files: mapHrFiles(r?.files),
     };
   }
 }

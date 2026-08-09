@@ -483,7 +483,9 @@
         "EXPIRY_DATE": "Expiry date",
         "ISSUING_COUNTRY": "Issuing country",
         "NOTES": "Notes"
-      },
+      }
+    },
+    "HR": {
       "ERR": {
         "FAILED": "The request failed",
         "NOT_DEPLOYED": "This feature is not available on the server",
@@ -497,6 +499,58 @@
         "UNREACHABLE": "Could not reach the server",
         "TOO_LARGE": "That file is too large",
         "TYPE_REJECTED": "That file type is not accepted"
+      }
+    },
+    "ASSETS": {
+      "TITLE": "Assets",
+      "ADD": "Issue an asset",
+      "EMPTY": "Nothing has been issued to this employee.",
+      "NO_CATALOG": "The asset catalogue could not be loaded, so the pickers are empty and the rules about return details are not applied here. Saving still works — the server will say what it does not accept.",
+      "OVERDUE": "Overdue",
+      "ON_TIME": "On time",
+      "OVERDUE_UNKNOWN": "Return status unknown",
+      "DAYS_LEFT": "days left",
+      "DAYS_LATE": "days late",
+      "DOWNLOAD": "Download",
+      "UPLOAD_HANDOVER": "Attach handover form",
+      "UPLOADING": "Uploading…",
+      "TAG_HINT": "Unique across the whole company — one tag, one physical item.",
+      "VALUE_HINT": "Leave blank if not recorded. Blank is not the same as zero.",
+      "CATEGORY": {
+        "LAPTOP": "Laptop",
+        "PHONE": "Phone",
+        "ID_CARD": "ID card",
+        "KEYS": "Keys",
+        "VEHICLE": "Vehicle",
+        "OTHER": "Other"
+      },
+      "STATUS": {
+        "ASSIGNED": "Assigned",
+        "RETURNED": "Returned",
+        "DAMAGED": "Damaged",
+        "LOST": "Lost",
+        "WRITTEN_OFF": "Written off"
+      },
+      "CONDITION": {
+        "NEW": "New",
+        "GOOD": "Good",
+        "FAIR": "Fair",
+        "POOR": "Poor",
+        "DAMAGED": "Damaged"
+      },
+      "FIELD": {
+        "TAG": "Asset tag",
+        "CATEGORY": "Category",
+        "DESCRIPTION": "Description",
+        "SERIAL": "Serial number",
+        "VALUE": "Value",
+        "ASSIGNED_DATE": "Issued on",
+        "CONDITION_OUT": "Condition on handover",
+        "EXPECTED_RETURN": "Expected back",
+        "RETURN_DATE": "Returned on",
+        "CONDITION_IN": "Condition on return",
+        "STATUS": "Status",
+        "NOTES": "Notes"
       }
     }
   }

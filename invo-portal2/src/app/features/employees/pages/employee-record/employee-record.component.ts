@@ -148,7 +148,7 @@ export class EmployeeRecordComponent {
       // only. They ride on the profile flag until sub-keys are added for them,
       // which is a deliberate choice: shipping a tab no flag can turn off would
       // be worse than one that follows the module it belongs to.
-      enabled: () => this.profileFlag(), ready: false,
+      enabled: () => this.profileFlag(), ready: true,
     },
     {
       path: 'leave', labelKey: 'EMPLOYEES.TABS.LEAVE',
