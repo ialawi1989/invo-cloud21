@@ -136,6 +136,17 @@ export const EMPLOYEES_ROUTES: Routes = [
        * control is that the tab is absent from the strip for anyone without the
        * grant.
        */
+      {
+        path: 'documents',
+        canActivate: [hrPrivilegeGuard],
+        // `view`, spelled as the server's `employeeDocumentSecurity` helper
+        // checks it. Pinned by hr-privilege-contract.spec.ts on this side and
+        // hrPrivilegeContract.test.ts on the server's.
+        data: { hrGroup: 'employeeDocumentSecurity', hrAction: 'view' },
+        loadComponent: () =>
+          import('./pages/employee-documents/employee-documents.component')
+            .then(m => m.EmployeeDocumentsComponent),
+      },
     ],
   },
 ];

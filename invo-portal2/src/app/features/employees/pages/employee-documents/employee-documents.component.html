@@ -1,0 +1,229 @@
+<div class="employee-documents">
+
+  <!--
+    THE ERROR BANNER IS THE MOST IMPORTANT THING ON THIS PAGE.
+
+    Nothing in the file layer has ever executed, so the first upload is the
+    first run of the storage key, the child row, the delete trigger and the
+    audit. A generic toast would make each failure a debugging session; this
+    names the likely cause and shows the server's own words underneath,
+    untranslated, so the string stays searchable.
+  -->
+  @if (error(); as err) {
+    <div class="doc-error" role="alert">
+      <div class="doc-error__title">{{ err.titleKey | translate }}</div>
+      @if (err.hintKey) {
+        <div class="doc-error__hint">{{ err.hintKey | translate }}</div>
+      }
+      @if (err.detail) {
+        <pre class="doc-error__detail">{{ err.detail }}</pre>
+      }
+      <button type="button" class="doc-error__dismiss" (click)="error.set(null)">
+        {{ 'COMMON.DISMISS' | translate }}
+      </button>
+    </div>
+  }
+
+  <!--
+    Server-returned warnings from the last save — the required-file rules.
+    Advice, not a refusal: the server returns them rather than rejecting, and
+    the UI must not enforce ahead of it.
+  -->
+  @if (warnings().length) {
+    <div class="doc-warnings">
+      <div class="doc-warnings__title">{{ 'EMPLOYEES.DOCUMENTS.WARNINGS' | translate }}</div>
+      <ul>
+        @for (w of warnings(); track w) { <li>{{ w }}</li> }
+      </ul>
+    </div>
+  }
+
+  <div class="doc-header">
+    <h2 class="doc-header__title">{{ 'EMPLOYEES.DOCUMENTS.TITLE' | translate }}</h2>
+    @if (canEdit() && !editing()) {
+      <button type="button" class="btn btn-primary" (click)="startAdd()">
+        {{ 'EMPLOYEES.DOCUMENTS.ADD' | translate }}
+      </button>
+    }
+  </div>
+
+  <!-- Storage state, stated once and up front rather than at the moment of failure. -->
+  @if (canEdit() && catalog() && !catalog()!.storageConfigured) {
+    <div class="doc-note">
+      {{ 'EMPLOYEES.DOCUMENTS.ERR.NO_STORAGE' | translate }} —
+      {{ 'EMPLOYEES.DOCUMENTS.ERR.NO_STORAGE_HINT' | translate }}
+    </div>
+  }
+
+  @if (editing()) {
+    <form class="doc-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="doc-form__grid">
+        <label class="doc-field">
+          <span class="doc-field__label">{{ 'EMPLOYEES.DOCUMENTS.FIELD.TYPE' | translate }}</span>
+          <app-search-dropdown
+            formControlName="type"
+            [items]="types()"
+            [displayWith]="typeName"
+            [toValue]="typeKey"
+            [compareWith]="typeMatches"
+            [placeholder]="'EMPLOYEES.DOCUMENTS.FIELD.TYPE' | translate">
+          </app-search-dropdown>
+        </label>
+
+        <label class="doc-field">
+          <span class="doc-field__label">{{ 'EMPLOYEES.DOCUMENTS.FIELD.NUMBER' | translate }}</span>
+          <input class="form-control" type="text" formControlName="number" />
+        </label>
+
+        <label class="doc-field">
+          <span class="doc-field__label">{{ 'EMPLOYEES.DOCUMENTS.FIELD.ISSUE_DATE' | translate }}</span>
+          <input class="form-control" type="date" formControlName="issueDate" />
+        </label>
+
+        <label class="doc-field">
+          <span class="doc-field__label">
+            {{ 'EMPLOYEES.DOCUMENTS.FIELD.EXPIRY_DATE' | translate }}
+            <!-- The server's own descriptor decides this, not a list held here. -->
+            @if (selectedType()?.expiryRequired) { <em>*</em> }
+          </span>
+          <input class="form-control" type="date" formControlName="expiryDate" />
+        </label>
+
+        <label class="doc-field">
+          <span class="doc-field__label">{{ 'EMPLOYEES.DOCUMENTS.FIELD.ISSUING_COUNTRY' | translate }}</span>
+          <input class="form-control" type="text" formControlName="issuingCountry" />
+        </label>
+
+        <label class="doc-field doc-field--wide">
+          <span class="doc-field__label">{{ 'EMPLOYEES.DOCUMENTS.FIELD.NOTES' | translate }}</span>
+          <textarea class="form-control" rows="2" formControlName="notes"></textarea>
+        </label>
+      </div>
+
+      <div class="doc-form__actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="busy() !== null">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <div class="doc-loading">{{ 'COMMON.LOADING' | translate }}</div>
+  } @else if (!documents().length) {
+    <div class="doc-empty">{{ 'EMPLOYEES.DOCUMENTS.EMPTY' | translate }}</div>
+  } @else {
+    <div class="doc-list">
+      @for (doc of documents(); track trackDocument($index, doc)) {
+        <article class="doc-card">
+          <header class="doc-card__head">
+            <div class="doc-card__ident">
+              <span class="doc-card__type">{{ typeLabel(doc) | translate }}</span>
+              <span class="doc-card__number">{{ doc.number }}</span>
+              @if (doc.isVerified) {
+                <span class="doc-badge doc-badge--verified">
+                  {{ 'EMPLOYEES.DOCUMENTS.VERIFIED' | translate }}
+                </span>
+              }
+            </div>
+
+            <div class="doc-card__status">
+              <!--
+                Rendered exactly as the server computed it. A null status shows
+                as UNKNOWN with its own styling — never as Valid. An expired
+                passport that reads "Valid" because a field was missing is
+                indistinguishable from working software.
+              -->
+              <span [class]="statusClass(doc)">{{ statusKey(doc) | translate }}</span>
+              @if (doc.expiryDate) {
+                <span class="doc-card__expiry">
+                  {{ 'EMPLOYEES.DOCUMENTS.EXPIRES' | translate }} {{ doc.expiryDate }}
+                  <!-- Shown only when sent. Not derived from expiryDate here. -->
+                  @if (doc.daysRemaining !== null) {
+                    ({{ doc.daysRemaining }} {{ 'EMPLOYEES.DOCUMENTS.DAYS' | translate }})
+                  }
+                </span>
+              }
+            </div>
+          </header>
+
+          <!-- ── Attachments — the point of this whole tab ── -->
+          <div class="doc-files">
+            @if (!doc.files.length) {
+              <div class="doc-files__empty">{{ 'EMPLOYEES.DOCUMENTS.NO_FILES' | translate }}</div>
+            } @else {
+              @for (file of doc.files; track trackFile($index, file)) {
+                <div class="doc-file">
+                  <span class="doc-file__name">{{ file.fileName }}</span>
+                  <span class="doc-file__size">{{ fileSize(file) }}</span>
+                  <button
+                    type="button"
+                    class="btn btn-link"
+                    [disabled]="busy() === file.id"
+                    (click)="download(file)">
+                    {{ 'EMPLOYEES.DOCUMENTS.DOWNLOAD' | translate }}
+                  </button>
+                  @if (canEdit()) {
+                    <button
+                      type="button"
+                      class="btn btn-link btn-link--danger"
+                      [disabled]="busy() === file.id"
+                      (click)="removeFile(file)">
+                      {{ 'COMMON.DELETE' | translate }}
+                    </button>
+                  }
+                </div>
+              }
+            }
+
+            @if (canUpload()) {
+              <label class="doc-upload">
+                <input
+                  type="file"
+                  hidden
+                  [disabled]="busy() === doc.id"
+                  (change)="onFilePicked(doc, $event)" />
+                <span class="btn btn-secondary btn-sm">
+                  {{ (busy() === doc.id
+                      ? 'EMPLOYEES.DOCUMENTS.UPLOADING'
+                      : 'EMPLOYEES.DOCUMENTS.UPLOAD') | translate }}
+                </span>
+              </label>
+            }
+          </div>
+
+          <footer class="doc-card__actions">
+            @if (canEdit()) {
+              <button type="button" class="btn btn-link" (click)="startEdit(doc)">
+                {{ 'COMMON.EDIT' | translate }}
+              </button>
+            }
+            @if (canVerify()) {
+              <button
+                type="button"
+                class="btn btn-link"
+                [disabled]="busy() === doc.id"
+                (click)="toggleVerified(doc)">
+                {{ (doc.isVerified
+                    ? 'EMPLOYEES.DOCUMENTS.UNVERIFY'
+                    : 'EMPLOYEES.DOCUMENTS.VERIFY') | translate }}
+              </button>
+            }
+            @if (canEdit()) {
+              <button
+                type="button"
+                class="btn btn-link btn-link--danger"
+                [disabled]="busy() === doc.id"
+                (click)="remove(doc)">
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            }
+          </footer>
+        </article>
+      }
+    </div>
+  }
+</div>

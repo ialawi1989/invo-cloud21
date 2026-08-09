@@ -444,6 +444,60 @@
       "PERFORMANCE": "Performance",
       "DISCIPLINARY": "Disciplinary",
       "PAYROLL": "Payroll"
+    },
+    "DOCUMENTS": {
+      "TITLE": "Documents",
+      "ADD": "Add document",
+      "EMPTY": "No documents recorded for this employee yet.",
+      "NO_FILES": "No files attached.",
+      "UPLOAD": "Attach a file",
+      "UPLOADING": "Uploading…",
+      "DOWNLOAD": "Download",
+      "VERIFY": "Mark verified",
+      "UNVERIFY": "Remove verification",
+      "VERIFIED": "Verified",
+      "EXPIRES": "Expires",
+      "DAYS": "days",
+      "WARNINGS": "Saved, with the following left outstanding",
+      "STATUS": {
+        "VALID": "Valid",
+        "EXPIRING": "Expiring soon",
+        "EXPIRED": "Expired",
+        "UNKNOWN": "Status unknown"
+      },
+      "TYPE": {
+        "NATIONAL_ID": "National ID",
+        "PASSPORT": "Passport",
+        "VISA": "Visa",
+        "WORK_PERMIT": "Work permit",
+        "DRIVING_LICENCE": "Driving licence",
+        "HEALTH_CARD": "Health card",
+        "QUALIFICATION": "Qualification",
+        "CONTRACT": "Contract",
+        "OTHER": "Other"
+      },
+      "FIELD": {
+        "TYPE": "Document type",
+        "NUMBER": "Document number",
+        "ISSUE_DATE": "Issue date",
+        "EXPIRY_DATE": "Expiry date",
+        "ISSUING_COUNTRY": "Issuing country",
+        "NOTES": "Notes"
+      },
+      "ERR": {
+        "FAILED": "The request failed",
+        "NOT_DEPLOYED": "This feature is not available on the server",
+        "NOT_DEPLOYED_HINT": "The endpoint returned 404. The HR routes may not be deployed to this environment yet.",
+        "NOT_PERMITTED": "You do not have permission to do that",
+        "NOT_PERMITTED_HINT": "HR permissions must be granted explicitly. Check the employee's privilege set for the Documents permissions.",
+        "NO_STORAGE": "Document storage is not configured",
+        "NO_STORAGE_HINT": "The server has no document storage bucket set. Files cannot be uploaded until it is configured.",
+        "UPLOAD_REJECTED": "The server did not receive the file",
+        "UPLOAD_REJECTED_HINT": "The request reached the server but no file arrived with it — usually the upload middleware or the form field name rather than the file itself.",
+        "UNREACHABLE": "Could not reach the server",
+        "TOO_LARGE": "That file is too large",
+        "TYPE_REJECTED": "That file type is not accepted"
+      }
     }
   }
 }

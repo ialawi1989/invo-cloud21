@@ -1,0 +1,246 @@
+/**
+ * The documents tab.
+ *
+ * Deliberately plain. The status badges are the only place colour carries
+ * meaning, and `--unknown` is styled as its own thing rather than borrowing the
+ * healthy green — a missing status must not look like a good one.
+ */
+.employee-documents {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0.25rem;
+  min-width: 0;
+}
+
+// ─── Error banner ────────────────────────────────────────────────────────
+.doc-error {
+  border: 1px solid var(--danger-color, #dc2626);
+  border-radius: 6px;
+  background: var(--danger-bg, #fef2f2);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  &__title {
+    font-weight: 600;
+    color: var(--danger-color, #b91c1c);
+  }
+
+  &__hint {
+    font-size: 0.875rem;
+    color: var(--text-color, #111827);
+  }
+
+  /**
+   * The server's own words, monospaced and unwrapped-but-scrollable.
+   * This is the string someone will paste into a search; it must survive
+   * copy-paste intact.
+   */
+  &__detail {
+    margin: 0;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 8rem;
+    overflow: auto;
+    color: var(--text-muted, #6b7280);
+  }
+
+  &__dismiss {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.8125rem;
+    color: var(--danger-color, #b91c1c);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
+
+.doc-warnings {
+  border: 1px solid var(--warning-color, #f59e0b);
+  border-radius: 6px;
+  background: var(--warning-bg, #fffbeb);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+
+  &__title { font-weight: 600; margin-bottom: 0.25rem; }
+  ul { margin: 0; padding-inline-start: 1.25rem; }
+}
+
+.doc-note {
+  border: 1px dashed var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--text-muted, #6b7280);
+}
+
+// ─── Header ──────────────────────────────────────────────────────────────
+.doc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  &__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
+
+// ─── Editor ──────────────────────────────────────────────────────────────
+.doc-form {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 1rem;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+}
+
+.doc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+
+  &--wide { grid-column: 1 / -1; }
+
+  &__label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-muted, #6b7280);
+
+    em { color: var(--danger-color, #dc2626); font-style: normal; }
+  }
+}
+
+// ─── List ────────────────────────────────────────────────────────────────
+.doc-loading,
+.doc-empty {
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.875rem;
+}
+
+.doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.doc-card {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  &__ident {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  &__type { font-weight: 600; }
+  &__number { color: var(--text-muted, #6b7280); font-size: 0.875rem; }
+
+  &__status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__expiry { font-size: 0.8125rem; color: var(--text-muted, #6b7280); }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+    padding-top: 0.5rem;
+  }
+}
+
+.doc-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &--valid    { background: #dcfce7; color: #166534; }
+  &--expiring { background: #fef3c7; color: #92400e; }
+  &--expired  { background: #fee2e2; color: #991b1b; }
+  &--verified { background: #e0e7ff; color: #3730a3; }
+
+  /**
+   * Absent status. Neutral and visibly different from every real state — the
+   * point is that it reads as "we do not know", not as a pass.
+   */
+  &--unknown {
+    background: repeating-linear-gradient(45deg, #f3f4f6, #f3f4f6 4px, #e5e7eb 4px, #e5e7eb 8px);
+    color: #4b5563;
+  }
+}
+
+// ─── Attachments ─────────────────────────────────────────────────────────
+.doc-files {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  &__empty {
+    font-size: 0.8125rem;
+    color: var(--text-muted, #6b7280);
+  }
+}
+
+.doc-file {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.875rem;
+  min-width: 0;
+
+  &__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__size { color: var(--text-muted, #6b7280); font-size: 0.75rem; }
+}
+
+.doc-upload {
+  align-self: flex-start;
+  cursor: pointer;
+  margin-top: 0.25rem;
+}
