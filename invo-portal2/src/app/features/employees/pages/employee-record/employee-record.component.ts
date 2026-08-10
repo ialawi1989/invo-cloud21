@@ -188,7 +188,7 @@ export class EmployeeRecordComponent {
     {
       path: 'performance', labelKey: 'EMPLOYEES.TABS.PERFORMANCE',
       group: 'employeePerformanceSecurity', action: 'view',
-      enabled: () => this.profileFlag(), ready: false,
+      enabled: () => this.profileFlag(), ready: true,
     },
     {
       path: 'disciplinary', labelKey: 'EMPLOYEES.TABS.DISCIPLINARY',

@@ -23,6 +23,7 @@ import { hrPrivilegeGuard } from './hr-privilege';
  *   /employees/:id/documents   → documents tab
  *   /employees/:id/assets      → assets tab
  *   /employees/:id/leave       → leave tab (reachable by the subject with no grant)
+ *   /employees/:id/performance → performance reviews and trainings
  *
  * Static segments are declared before `:id` so they win the match.
  */
@@ -182,6 +183,20 @@ export const EMPLOYEES_ROUTES: Routes = [
         loadComponent: () =>
           import('./pages/employee-leave/employee-leave.component')
             .then(m => m.EmployeeLeaveComponent),
+      },
+      {
+        path: 'performance',
+        canActivate: [hrPrivilegeGuard],
+        // `view` only. The subject and the named reviewer also reach reviews
+        // server-side, but neither is knowable from the route — the reviewer
+        // is a property of individual ROWS, not of the record — so the guard
+        // asks the one question it can answer and the tab asks the rest per
+        // review. No hrSelfAllowed: reading your own calibration is not the
+        // same question as reading your own leave.
+        data: { hrGroup: 'employeePerformanceSecurity', hrAction: 'view' },
+        loadComponent: () =>
+          import('./pages/employee-performance/employee-performance.component')
+            .then(m => m.EmployeePerformanceComponent),
       },
     ],
   },

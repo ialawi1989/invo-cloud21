@@ -635,6 +635,98 @@
         "REASON": "السبب",
         "STATUS": "الحالة"
       }
+    },
+    "PERFORMANCE": {
+      "REVIEWS": "تقييمات الأداء",
+      "ADD_REVIEW": "إضافة تقييم",
+      "NO_REVIEWS": "لا توجد تقييمات أداء مسجّلة.",
+      "TRAININGS": "الدورات التدريبية",
+      "ADD_TRAINING": "إضافة دورة",
+      "NO_TRAININGS": "لا توجد دورات مسجّلة.",
+      "NO_CATALOG": "تعذّر تحميل قائمة بيانات الأداء. ستظهر الحالات والتقييمات فارغة، ولن تُطبَّق هنا قواعد من يحق له الكتابة — والخادم ما زال يطبّقها.",
+      "GOALS": "الأهداف",
+      "ADD_GOAL": "إضافة هدف",
+      "COMPETENCIES": "الجدارات",
+      "ADD_COMPETENCY": "إضافة جدارة",
+      "WEIGHT_TOTAL": "مجموع الأوزان",
+      "WEIGHT_MUST_BE_100": "يجب أن يساوي 100",
+      "GOAL_SCORE": "الأهداف",
+      "COMPETENCY_SCORE": "الجدارات",
+      "COMPUTED_SCORE": "المحتسَب",
+      "CALIBRATED_SCORE": "المعدَّل يدويًا",
+      "EFFECTIVE_SCORE": "المعتمَد",
+      "OVERRIDDEN": "تم تعديل هذه الدرجة يدويًا",
+      "NO_REASON": "لم يُسجَّل سبب للتعديل.",
+      "CALIBRATE": "تعديل الدرجة",
+      "RECALIBRATE": "تغيير التعديل",
+      "SAVE_CALIBRATION": "حفظ التعديل",
+      "CALIBRATION_NOTE": "تبقى الدرجة المحتسَبة كما هي. هذا يسجّل تعديلاً بجانبها.",
+      "REASON_REQUIRED": "سبب تغيير الدرجة (مطلوب)",
+      "SELF_ASSESSMENT": "التقييم الذاتي",
+      "WRITE_SELF_ASSESSMENT": "اكتب تقييمك الذاتي",
+      "ACKNOWLEDGE": "إقرار",
+      "ACK_COMMENT": "تعليق (اختياري)",
+      "ACKNOWLEDGED_ON": "تم الإقرار في",
+      "LOCKED": "تم الإقرار — لم يعد قابلاً للتعديل",
+      "YOUR_REVIEW": "أنت المُقيِّم",
+      "DOWNLOAD": "تنزيل",
+      "ATTACH": "إرفاق مستند",
+      "ATTACH_CERTIFICATE": "إرفاق الشهادة",
+      "FIELD": {
+        "CYCLE": "دورة التقييم",
+        "STATUS": "الحالة",
+        "PERIOD_START": "الفترة من",
+        "PERIOD_END": "الفترة إلى",
+        "REVIEWER": "المُقيِّم",
+        "MANAGER_FEEDBACK": "ملاحظات المدير",
+        "PIP": "خطة تحسين الأداء"
+      },
+      "GOAL": {
+        "TITLE": "الهدف",
+        "METRIC": "المؤشر",
+        "TARGET": "المستهدف",
+        "WEIGHT": "الوزن %",
+        "ACHIEVED": "المُنجَز"
+      },
+      "COMPETENCY": {
+        "NAME": "الجدارة",
+        "RATING": "التقييم",
+        "COMMENT": "تعليق"
+      },
+      "CYCLE": {
+        "ANNUAL": "سنوي",
+        "SEMI_ANNUAL": "نصف سنوي",
+        "QUARTERLY": "ربع سنوي",
+        "PROBATION": "فترة التجربة",
+        "AD_HOC": "استثنائي"
+      },
+      "STATUS": {
+        "DRAFT": "مسودة",
+        "SELF_ASSESSMENT": "التقييم الذاتي",
+        "MANAGER_REVIEW": "مراجعة المدير",
+        "CALIBRATION": "المعايرة",
+        "AWAITING_ACKNOWLEDGEMENT": "بانتظار الإقرار",
+        "ACKNOWLEDGED": "تم الإقرار"
+      },
+      "RATING": {
+        "UNSATISFACTORY": "غير مُرضٍ",
+        "NEEDS_IMPROVEMENT": "يحتاج إلى تحسين",
+        "MEETS_EXPECTATIONS": "يلبي التوقعات",
+        "EXCEEDS_EXPECTATIONS": "يفوق التوقعات",
+        "OUTSTANDING": "متميّز"
+      },
+      "TRAINING": {
+        "NAME": "الدورة",
+        "PROVIDER": "الجهة المقدِّمة",
+        "COMPLETED": "تاريخ الإتمام",
+        "EXPIRY": "تاريخ الانتهاء",
+        "EXPIRES": "تنتهي في",
+        "COST": "التكلفة",
+        "NOTES": "ملاحظات",
+        "REMINDERS": "التذكيرات",
+        "DAYS_BEFORE": "يومًا قبل الانتهاء",
+        "EXPIRY_HINT": "يغذّي محرّك التذكيرات. لا تُحتسب حالة انتهاء للدورات، لذا يُعرض التاريخ فقط."
+      }
     }
   }
 }

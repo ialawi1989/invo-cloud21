@@ -34,6 +34,7 @@ const HR_TABS = [
   { path: 'documents', hrGroup: 'employeeDocumentSecurity', hrAction: 'view' },
   { path: 'assets', hrGroup: 'employeeAssetSecurity', hrAction: 'view' },
   { path: 'leave', hrGroup: 'employeeLeaveSecurity', hrAction: 'view', hrSelfAllowed: true },
+  { path: 'performance', hrGroup: 'employeePerformanceSecurity', hrAction: 'view' },
 ];
 
 describe('the HR tab routes', () => {

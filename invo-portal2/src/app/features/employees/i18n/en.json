@@ -635,6 +635,98 @@
         "REASON": "Reason",
         "STATUS": "Status"
       }
+    },
+    "PERFORMANCE": {
+      "REVIEWS": "Performance reviews",
+      "ADD_REVIEW": "Add review",
+      "NO_REVIEWS": "No performance reviews recorded.",
+      "TRAININGS": "Trainings",
+      "ADD_TRAINING": "Add training",
+      "NO_TRAININGS": "No trainings recorded.",
+      "NO_CATALOG": "The performance catalogue could not be loaded. Statuses and ratings will be blank, and the rules about who may write what are not applied here — the server still enforces them.",
+      "GOALS": "Goals",
+      "ADD_GOAL": "Add goal",
+      "COMPETENCIES": "Competencies",
+      "ADD_COMPETENCY": "Add competency",
+      "WEIGHT_TOTAL": "Weights total",
+      "WEIGHT_MUST_BE_100": "must add up to 100",
+      "GOAL_SCORE": "Goals",
+      "COMPETENCY_SCORE": "Competencies",
+      "COMPUTED_SCORE": "Computed",
+      "CALIBRATED_SCORE": "Calibrated",
+      "EFFECTIVE_SCORE": "Counts as",
+      "OVERRIDDEN": "This score was overridden by hand",
+      "NO_REASON": "No reason was recorded for the override.",
+      "CALIBRATE": "Calibrate",
+      "RECALIBRATE": "Change the calibration",
+      "SAVE_CALIBRATION": "Save calibration",
+      "CALIBRATION_NOTE": "The computed score is kept as it is. This records an override alongside it.",
+      "REASON_REQUIRED": "Why the score was changed (required)",
+      "SELF_ASSESSMENT": "Self-assessment",
+      "WRITE_SELF_ASSESSMENT": "Write your self-assessment",
+      "ACKNOWLEDGE": "Acknowledge",
+      "ACK_COMMENT": "Comment (optional)",
+      "ACKNOWLEDGED_ON": "Acknowledged",
+      "LOCKED": "Acknowledged — no longer editable",
+      "YOUR_REVIEW": "You are the reviewer",
+      "DOWNLOAD": "Download",
+      "ATTACH": "Attach document",
+      "ATTACH_CERTIFICATE": "Attach certificate",
+      "FIELD": {
+        "CYCLE": "Review cycle",
+        "STATUS": "Status",
+        "PERIOD_START": "Period from",
+        "PERIOD_END": "Period to",
+        "REVIEWER": "Reviewer",
+        "MANAGER_FEEDBACK": "Manager feedback",
+        "PIP": "Performance improvement plan"
+      },
+      "GOAL": {
+        "TITLE": "Goal",
+        "METRIC": "Metric",
+        "TARGET": "Target",
+        "WEIGHT": "Weight %",
+        "ACHIEVED": "Achieved"
+      },
+      "COMPETENCY": {
+        "NAME": "Competency",
+        "RATING": "Rating",
+        "COMMENT": "Comment"
+      },
+      "CYCLE": {
+        "ANNUAL": "Annual",
+        "SEMI_ANNUAL": "Semi-annual",
+        "QUARTERLY": "Quarterly",
+        "PROBATION": "Probation",
+        "AD_HOC": "Ad hoc"
+      },
+      "STATUS": {
+        "DRAFT": "Draft",
+        "SELF_ASSESSMENT": "Self-assessment",
+        "MANAGER_REVIEW": "Manager review",
+        "CALIBRATION": "Calibration",
+        "AWAITING_ACKNOWLEDGEMENT": "Awaiting acknowledgement",
+        "ACKNOWLEDGED": "Acknowledged"
+      },
+      "RATING": {
+        "UNSATISFACTORY": "Unsatisfactory",
+        "NEEDS_IMPROVEMENT": "Needs improvement",
+        "MEETS_EXPECTATIONS": "Meets expectations",
+        "EXCEEDS_EXPECTATIONS": "Exceeds expectations",
+        "OUTSTANDING": "Outstanding"
+      },
+      "TRAINING": {
+        "NAME": "Course",
+        "PROVIDER": "Provider",
+        "COMPLETED": "Completed",
+        "EXPIRY": "Expires",
+        "EXPIRES": "Expires",
+        "COST": "Cost",
+        "NOTES": "Notes",
+        "REMINDERS": "Reminders",
+        "DAYS_BEFORE": "days before expiry",
+        "EXPIRY_HINT": "Feeds the reminder engine. No expiry status is computed for trainings, so only the date is shown."
+      }
     }
   }
 }

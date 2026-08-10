@@ -1,0 +1,542 @@
+<div class="employee-performance">
+
+  @if (error(); as err) {
+    <div class="hr-error" role="alert">
+      <div class="hr-error__title">{{ err.titleKey | translate }}</div>
+      @if (err.hintKey) { <div class="hr-error__hint">{{ err.hintKey | translate }}</div> }
+      @if (err.detail) { <pre class="hr-error__detail">{{ err.detail }}</pre> }
+      <button type="button" class="hr-error__dismiss" (click)="error.set(null)">
+        {{ 'COMMON.DISMISS' | translate }}
+      </button>
+    </div>
+  }
+
+  @if (catalogMissing()) {
+    <div class="perf-note">{{ 'EMPLOYEES.PERFORMANCE.NO_CATALOG' | translate }}</div>
+  }
+
+  <!-- ═══ REVIEWS ═══════════════════════════════════════════════════════ -->
+  <div class="perf-header">
+    <h2 class="perf-header__title">{{ 'EMPLOYEES.PERFORMANCE.REVIEWS' | translate }}</h2>
+    @if (canEditAnything() && !editing()) {
+      <button type="button" class="btn btn-primary" (click)="startAdd()">
+        {{ 'EMPLOYEES.PERFORMANCE.ADD_REVIEW' | translate }}
+      </button>
+    }
+  </div>
+
+  @if (editing()) {
+    <form class="perf-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="perf-form__grid">
+        <label class="perf-field">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.FIELD.CYCLE' | translate }} <em>*</em></span>
+          <app-search-dropdown
+            formControlName="reviewCycle"
+            [items]="catalog().cycles"
+            [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+            [placeholder]="'EMPLOYEES.PERFORMANCE.FIELD.CYCLE' | translate">
+          </app-search-dropdown>
+        </label>
+
+        <label class="perf-field">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.FIELD.STATUS' | translate }} <em>*</em></span>
+          <!--
+            Locked statuses are excluded: `Acknowledged` is reached by the
+            employee acknowledging, not by a manager selecting it. The server's
+            transition table refuses it from here anyway.
+          -->
+          <app-search-dropdown
+            formControlName="status"
+            [items]="editableStatuses()"
+            [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+            [searchable]="false" [clearable]="false">
+          </app-search-dropdown>
+        </label>
+
+        <label class="perf-field">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.FIELD.PERIOD_START' | translate }} <em>*</em></span>
+          <input class="form-control" type="date" formControlName="periodStart" />
+        </label>
+
+        <label class="perf-field">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.FIELD.PERIOD_END' | translate }} <em>*</em></span>
+          <input class="form-control" type="date" formControlName="periodEnd" />
+        </label>
+
+        <label class="perf-field">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.FIELD.REVIEWER' | translate }}</span>
+          <input class="form-control" type="text" formControlName="reviewerName" />
+        </label>
+
+        <label class="perf-field perf-field--wide">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.FIELD.MANAGER_FEEDBACK' | translate }}</span>
+          <textarea class="form-control" rows="3" formControlName="managerFeedback"></textarea>
+        </label>
+
+        <label class="perf-field perf-field--wide">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.FIELD.PIP' | translate }}</span>
+          <textarea class="form-control" rows="2" formControlName="pip"></textarea>
+        </label>
+      </div>
+
+      <!-- ── GOALS, with the weight total live ── -->
+      <section class="perf-sub">
+        <header class="perf-sub__head">
+          <h3 class="perf-sub__title">{{ 'EMPLOYEES.PERFORMANCE.GOALS' | translate }}</h3>
+          <!--
+            THE RUNNING TOTAL.
+
+            The server refuses a non-empty goal list whose weights do not add to
+            100. Discovering that after entering six goals is a bad way to learn
+            the rule, so the total is shown as it is typed and turns red the
+            moment it stops adding up.
+          -->
+          <span class="perf-weights" [class.perf-weights--bad]="!weightsOk()">
+            {{ 'EMPLOYEES.PERFORMANCE.WEIGHT_TOTAL' | translate }} {{ currentWeightTotal() }}
+            @if (!weightsOk()) {
+              — {{ 'EMPLOYEES.PERFORMANCE.WEIGHT_MUST_BE_100' | translate }}
+            }
+          </span>
+          <button type="button" class="btn btn-link" (click)="addGoal()">
+            {{ 'EMPLOYEES.PERFORMANCE.ADD_GOAL' | translate }}
+          </button>
+        </header>
+
+        <div formArrayName="goals" class="perf-rows">
+          @for (g of goals.controls; track trackIndex($index); let i = $index) {
+            <div class="perf-row" [formGroupName]="i">
+              <input class="form-control" type="text" formControlName="title"
+                     [placeholder]="'EMPLOYEES.PERFORMANCE.GOAL.TITLE' | translate" />
+              <input class="form-control" type="text" formControlName="metric"
+                     [placeholder]="'EMPLOYEES.PERFORMANCE.GOAL.METRIC' | translate" />
+              <input class="form-control form-control--num" type="number" formControlName="target"
+                     [placeholder]="'EMPLOYEES.PERFORMANCE.GOAL.TARGET' | translate" />
+              <input class="form-control form-control--num" type="number" formControlName="weight"
+                     (input)="onWeightInput()"
+                     [placeholder]="'EMPLOYEES.PERFORMANCE.GOAL.WEIGHT' | translate" />
+              <input class="form-control form-control--num" type="number" formControlName="achieved"
+                     [placeholder]="'EMPLOYEES.PERFORMANCE.GOAL.ACHIEVED' | translate" />
+              <button type="button" class="btn btn-link btn-link--danger" (click)="removeGoal(i)">
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="perf-sub">
+        <header class="perf-sub__head">
+          <h3 class="perf-sub__title">{{ 'EMPLOYEES.PERFORMANCE.COMPETENCIES' | translate }}</h3>
+          <button type="button" class="btn btn-link" (click)="addCompetency()">
+            {{ 'EMPLOYEES.PERFORMANCE.ADD_COMPETENCY' | translate }}
+          </button>
+        </header>
+
+        <div formArrayName="competencies" class="perf-rows">
+          @for (c of competencies.controls; track trackIndex($index); let i = $index) {
+            <div class="perf-row" [formGroupName]="i">
+              <input class="form-control" type="text" formControlName="competency"
+                     [placeholder]="'EMPLOYEES.PERFORMANCE.COMPETENCY.NAME' | translate" />
+              <app-search-dropdown
+                formControlName="rating"
+                [items]="catalog().ratingScale"
+                [displayWith]="ratingName" [toValue]="ratingKey" [compareWith]="ratingMatches"
+                [searchable]="false"
+                [placeholder]="'EMPLOYEES.PERFORMANCE.COMPETENCY.RATING' | translate">
+              </app-search-dropdown>
+              <input class="form-control" type="text" formControlName="comment"
+                     [placeholder]="'EMPLOYEES.PERFORMANCE.COMPETENCY.COMMENT' | translate" />
+              <button type="button" class="btn btn-link btn-link--danger" (click)="removeCompetency(i)">
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+
+      <div class="perf-form__actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="busy() !== null || !weightsOk()">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <div class="perf-loading">{{ 'COMMON.LOADING' | translate }}</div>
+  } @else if (!reviews().length) {
+    <div class="perf-empty">{{ 'EMPLOYEES.PERFORMANCE.NO_REVIEWS' | translate }}</div>
+  } @else {
+    <div class="perf-list">
+      @for (r of reviews(); track trackReview($index, r)) {
+        <article class="perf-card" [class.perf-card--final]="locked(r) === true">
+          <header class="perf-card__head">
+            <div class="perf-card__ident">
+              <span class="perf-card__cycle">{{ cycleLabel(r) | translate }}</span>
+              <span class="perf-card__period">{{ r.periodStart }} → {{ r.periodEnd }}</span>
+              @if (r.reviewerName) {
+                <span class="perf-chip">{{ r.reviewerName }}</span>
+              }
+              @if (isReviewerOf(r)) {
+                <span class="perf-chip">{{ 'EMPLOYEES.PERFORMANCE.YOUR_REVIEW' | translate }}</span>
+              }
+            </div>
+            <span [class]="statusClass(r)">{{ statusLabel(r) | translate }}</span>
+          </header>
+
+          <!--
+            ══ THE THREE SCORES ═══════════════════════════════════════════
+            The computed figure is always shown. When a calibration exists it
+            sits BESIDE it, marked as an override, with its reason and its
+            author — never replacing it. The server deliberately preserves the
+            original, and showing only the effective number would throw away
+            precisely what it kept.
+          -->
+          <div class="perf-scores">
+            <div class="perf-score">
+              <span class="perf-score__label">{{ 'EMPLOYEES.PERFORMANCE.GOAL_SCORE' | translate }}</span>
+              <span class="perf-score__value">{{ score(r.goalScore) }}</span>
+            </div>
+            <div class="perf-score">
+              <span class="perf-score__label">{{ 'EMPLOYEES.PERFORMANCE.COMPETENCY_SCORE' | translate }}</span>
+              <span class="perf-score__value">{{ score(r.competencyScore) }}</span>
+            </div>
+            <div class="perf-score perf-score--computed">
+              <span class="perf-score__label">{{ 'EMPLOYEES.PERFORMANCE.COMPUTED_SCORE' | translate }}</span>
+              <span class="perf-score__value"
+                    [class.perf-score__value--superseded]="isCalibrated(r)">
+                {{ score(r.finalScore) }}
+              </span>
+            </div>
+
+            @if (isCalibrated(r)) {
+              <div class="perf-score perf-score--calibrated">
+                <span class="perf-score__label">{{ 'EMPLOYEES.PERFORMANCE.CALIBRATED_SCORE' | translate }}</span>
+                <span class="perf-score__value">{{ score(r.calibratedScore) }}</span>
+              </div>
+            }
+
+            <div class="perf-score perf-score--effective">
+              <span class="perf-score__label">{{ 'EMPLOYEES.PERFORMANCE.EFFECTIVE_SCORE' | translate }}</span>
+              <span class="perf-score__value">{{ score(r.effectiveScore) }}</span>
+            </div>
+          </div>
+
+          @if (isCalibrated(r)) {
+            <!-- The override, as an override. Who changed it and why. -->
+            <div class="perf-calibration">
+              <span class="perf-calibration__title">
+                {{ 'EMPLOYEES.PERFORMANCE.OVERRIDDEN' | translate }}
+                @if (r.calibratedAt) { — {{ r.calibratedAt }} }
+              </span>
+              @if (r.calibrationReason) {
+                <p class="perf-calibration__reason">{{ r.calibrationReason }}</p>
+              } @else {
+                <!-- The server requires one, so its absence is worth saying. -->
+                <p class="perf-calibration__reason perf-calibration__reason--missing">
+                  {{ 'EMPLOYEES.PERFORMANCE.NO_REASON' | translate }}
+                </p>
+              }
+            </div>
+          }
+
+          @if (r.goals.length) {
+            <ul class="perf-goals">
+              @for (g of r.goals; track trackIndex($index)) {
+                <li>
+                  <span class="perf-goals__title">{{ g.title }}</span>
+                  <span class="perf-goals__weight">{{ g.weight ?? '—' }}%</span>
+                  <span class="perf-goals__figures">
+                    {{ g.achieved ?? '—' }} / {{ g.target ?? '—' }}
+                    @if (g.metric) { <em>{{ g.metric }}</em> }
+                  </span>
+                </li>
+              }
+            </ul>
+          }
+
+          @if (r.competencies.length) {
+            <ul class="perf-competencies">
+              @for (c of r.competencies; track trackIndex($index)) {
+                <li>
+                  <span>{{ c.competency }}</span>
+                  <span class="perf-competencies__rating">
+                    {{ c.rating ?? '—' }}
+                    @if (c.rating !== null) { — {{ ratingLabel(c.rating) | translate }} }
+                  </span>
+                </li>
+              }
+            </ul>
+          }
+
+          @if (r.managerFeedback) {
+            <p class="perf-text"><strong>{{ 'EMPLOYEES.PERFORMANCE.FIELD.MANAGER_FEEDBACK' | translate }}:</strong> {{ r.managerFeedback }}</p>
+          }
+          @if (r.pip) {
+            <p class="perf-text perf-text--pip"><strong>{{ 'EMPLOYEES.PERFORMANCE.FIELD.PIP' | translate }}:</strong> {{ r.pip }}</p>
+          }
+
+          <!-- ── The employee's own words ── -->
+          @if (r.selfAssessment) {
+            <p class="perf-text"><strong>{{ 'EMPLOYEES.PERFORMANCE.SELF_ASSESSMENT' | translate }}:</strong> {{ r.selfAssessment }}</p>
+          }
+
+          @if (selfAssessing() === r.id) {
+            <div class="perf-inline">
+              <textarea class="form-control" rows="3"
+                        [value]="selfAssessmentText()" (input)="onSelfAssessmentInput($event)"
+                        [placeholder]="'EMPLOYEES.PERFORMANCE.SELF_ASSESSMENT' | translate"></textarea>
+              <div class="perf-inline__actions">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="selfAssessing.set(null)">
+                  {{ 'COMMON.CANCEL' | translate }}
+                </button>
+                <button type="button" class="btn btn-primary btn-sm"
+                        [disabled]="busy() === r.id" (click)="saveSelfAssessment(r)">
+                  {{ 'COMMON.SAVE' | translate }}
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- ── Calibration editor ── -->
+          @if (calibrating() === r.id) {
+            <div class="perf-inline">
+              <p class="perf-inline__note">{{ 'EMPLOYEES.PERFORMANCE.CALIBRATION_NOTE' | translate }}</p>
+              <input class="form-control form-control--num" type="number" min="0" max="100" step="0.01"
+                     [value]="calibrationScore()" (input)="onCalibrationScore($event)"
+                     [placeholder]="'EMPLOYEES.PERFORMANCE.CALIBRATED_SCORE' | translate" />
+              <!-- Required by the server, and required here: a moderated score
+                   with no explanation is one nobody can defend. -->
+              <textarea class="form-control" rows="2"
+                        [value]="calibrationReason()" (input)="onCalibrationReason($event)"
+                        [placeholder]="'EMPLOYEES.PERFORMANCE.REASON_REQUIRED' | translate"></textarea>
+              <div class="perf-inline__actions">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="calibrating.set(null)">
+                  {{ 'COMMON.CANCEL' | translate }}
+                </button>
+                <button type="button" class="btn btn-primary btn-sm"
+                        [disabled]="busy() === r.id || !calibrationValid()"
+                        (click)="saveCalibration(r)">
+                  {{ 'EMPLOYEES.PERFORMANCE.SAVE_CALIBRATION' | translate }}
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (r.acknowledgedAt) {
+            <p class="perf-ack">
+              {{ 'EMPLOYEES.PERFORMANCE.ACKNOWLEDGED_ON' | translate }} {{ r.acknowledgedAt }}
+              @if (r.acknowledgementComment) { — {{ r.acknowledgementComment }} }
+            </p>
+          }
+
+          <!-- Attachments — the PIP document. Confidential; downloads audited. -->
+          @if (r.files.length || (canUpload() && mayEdit(r))) {
+            <div class="perf-files">
+              @for (file of r.files; track trackFile($index, file)) {
+                <div class="perf-file">
+                  <span class="perf-file__name">{{ file.fileName }}</span>
+                  <span class="perf-file__size">{{ fileSize(file) }}</span>
+                  <button type="button" class="btn btn-link"
+                          [disabled]="busy() === file.id" (click)="downloadReviewFile(file)">
+                    {{ 'EMPLOYEES.PERFORMANCE.DOWNLOAD' | translate }}
+                  </button>
+                </div>
+              }
+              @if (canUpload() && mayEdit(r)) {
+                <label class="perf-upload">
+                  <input type="file" hidden [disabled]="busy() === r.id"
+                         (change)="onReviewFilePicked(r, $event)" />
+                  <span class="btn btn-secondary btn-sm">
+                    {{ 'EMPLOYEES.PERFORMANCE.ATTACH' | translate }}
+                  </span>
+                </label>
+              }
+            </div>
+          }
+
+          <footer class="perf-card__actions">
+            @if (mayEdit(r)) {
+              <button type="button" class="btn btn-link" (click)="startEdit(r)">
+                {{ 'COMMON.EDIT' | translate }}
+              </button>
+            }
+            <!-- A separate grant from edit. Moderation is not the reviewer
+                 restating their own arithmetic. -->
+            @if (mayCalibrate(r) && calibrating() !== r.id) {
+              <button type="button" class="btn btn-link" (click)="startCalibration(r)">
+                {{ (isCalibrated(r)
+                    ? 'EMPLOYEES.PERFORMANCE.RECALIBRATE'
+                    : 'EMPLOYEES.PERFORMANCE.CALIBRATE') | translate }}
+              </button>
+            }
+            <!-- The employee's own acts. Authorised against the row's status,
+                 not against any privilege. -->
+            @if (maySelfAssess(r) && selfAssessing() !== r.id) {
+              <button type="button" class="btn btn-link" (click)="startSelfAssessment(r)">
+                {{ 'EMPLOYEES.PERFORMANCE.WRITE_SELF_ASSESSMENT' | translate }}
+              </button>
+            }
+            @if (mayAcknowledge(r)) {
+              <span class="perf-acknowledge">
+                <input class="form-control form-control--sm" type="text"
+                       [placeholder]="'EMPLOYEES.PERFORMANCE.ACK_COMMENT' | translate"
+                       [value]="acknowledgeComment()" (input)="onAcknowledgeInput($event)" />
+                <button type="button" class="btn btn-primary btn-sm"
+                        [disabled]="busy() === r.id" (click)="acknowledge(r)">
+                  {{ 'EMPLOYEES.PERFORMANCE.ACKNOWLEDGE' | translate }}
+                </button>
+              </span>
+            }
+            @if (mayEdit(r)) {
+              <button type="button" class="btn btn-link btn-link--danger"
+                      [disabled]="busy() === r.id" (click)="remove(r)">
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            }
+            @if (locked(r) === true) {
+              <span class="perf-locked">{{ 'EMPLOYEES.PERFORMANCE.LOCKED' | translate }}</span>
+            }
+          </footer>
+        </article>
+      }
+    </div>
+  }
+
+  <!-- ═══ TRAININGS ═════════════════════════════════════════════════════ -->
+  <div class="perf-header perf-header--section">
+    <h2 class="perf-header__title">{{ 'EMPLOYEES.PERFORMANCE.TRAININGS' | translate }}</h2>
+    @if (canEditAnything() && !editingTraining()) {
+      <button type="button" class="btn btn-primary" (click)="startAddTraining()">
+        {{ 'EMPLOYEES.PERFORMANCE.ADD_TRAINING' | translate }}
+      </button>
+    }
+  </div>
+
+  @if (editingTraining()) {
+    <form class="perf-form" [formGroup]="trainingForm" (ngSubmit)="submitTraining()">
+      <div class="perf-form__grid">
+        <label class="perf-field">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.TRAINING.NAME' | translate }} <em>*</em></span>
+          <input class="form-control" type="text" formControlName="name" />
+        </label>
+        <label class="perf-field">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.TRAINING.PROVIDER' | translate }}</span>
+          <input class="form-control" type="text" formControlName="provider" />
+        </label>
+        <label class="perf-field">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.TRAINING.COMPLETED' | translate }}</span>
+          <input class="form-control" type="date" formControlName="completionDate" />
+        </label>
+        <label class="perf-field">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.TRAINING.EXPIRY' | translate }}</span>
+          <input class="form-control" type="date" formControlName="expiryDate" />
+          <span class="perf-field__hint">{{ 'EMPLOYEES.PERFORMANCE.TRAINING.EXPIRY_HINT' | translate }}</span>
+        </label>
+        <label class="perf-field">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.TRAINING.COST' | translate }}</span>
+          <input class="form-control" type="number" min="0" step="0.01" formControlName="cost" />
+        </label>
+        <label class="perf-field perf-field--wide">
+          <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.TRAINING.NOTES' | translate }}</span>
+          <textarea class="form-control" rows="2" formControlName="notes"></textarea>
+        </label>
+      </div>
+      <div class="perf-form__actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelTraining()">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="busy() !== null">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (!loading() && !trainings().length) {
+    <div class="perf-empty">{{ 'EMPLOYEES.PERFORMANCE.NO_TRAININGS' | translate }}</div>
+  } @else {
+    <div class="perf-list">
+      @for (t of trainings(); track trackTraining($index, t)) {
+        <article class="perf-card perf-card--training">
+          <header class="perf-card__head">
+            <div class="perf-card__ident">
+              <span class="perf-card__cycle">{{ t.name }}</span>
+              @if (t.provider) { <span class="perf-chip">{{ t.provider }}</span> }
+            </div>
+            <!--
+              NO EXPIRY BADGE, deliberately.
+
+              `getTrainings` returns the rows undecorated — no `status`, no
+              `daysRemaining`, unlike a document. The date still drives the
+              reminder engine server-side, but nothing computes a state for it,
+              and inventing one here would be the portal deciding a rule the
+              server has not stated.
+            -->
+            @if (t.expiryDate) {
+              <span class="perf-expiry">
+                {{ 'EMPLOYEES.PERFORMANCE.TRAINING.EXPIRES' | translate }} {{ t.expiryDate }}
+              </span>
+            }
+          </header>
+
+          <dl class="perf-facts">
+            @if (t.completionDate) {
+              <div><dt>{{ 'EMPLOYEES.PERFORMANCE.TRAINING.COMPLETED' | translate }}</dt><dd>{{ t.completionDate }}</dd></div>
+            }
+            @if (t.cost !== null) {
+              <div><dt>{{ 'EMPLOYEES.PERFORMANCE.TRAINING.COST' | translate }}</dt><dd>{{ t.cost | mycurrency }}</dd></div>
+            }
+            @if (t.reminderDays.length) {
+              <div>
+                <dt>{{ 'EMPLOYEES.PERFORMANCE.TRAINING.REMINDERS' | translate }}</dt>
+                <dd>{{ t.reminderDays.join(', ') }} {{ 'EMPLOYEES.PERFORMANCE.TRAINING.DAYS_BEFORE' | translate }}</dd>
+              </div>
+            }
+          </dl>
+
+          @if (t.notes) { <p class="perf-text">{{ t.notes }}</p> }
+
+          @if (t.files.length || (canUpload() && canEditAnything())) {
+            <div class="perf-files">
+              @for (file of t.files; track trackFile($index, file)) {
+                <div class="perf-file">
+                  <span class="perf-file__name">{{ file.fileName }}</span>
+                  <span class="perf-file__size">{{ fileSize(file) }}</span>
+                  <button type="button" class="btn btn-link"
+                          [disabled]="busy() === file.id" (click)="downloadTrainingFile(file)">
+                    {{ 'EMPLOYEES.PERFORMANCE.DOWNLOAD' | translate }}
+                  </button>
+                </div>
+              }
+              @if (canUpload() && canEditAnything()) {
+                <label class="perf-upload">
+                  <input type="file" hidden [disabled]="busy() === t.id"
+                         (change)="onTrainingFilePicked(t, $event)" />
+                  <span class="btn btn-secondary btn-sm">
+                    {{ 'EMPLOYEES.PERFORMANCE.ATTACH_CERTIFICATE' | translate }}
+                  </span>
+                </label>
+              }
+            </div>
+          }
+
+          @if (canEditAnything()) {
+            <footer class="perf-card__actions">
+              <button type="button" class="btn btn-link" (click)="startEditTraining(t)">
+                {{ 'COMMON.EDIT' | translate }}
+              </button>
+              <button type="button" class="btn btn-link btn-link--danger"
+                      [disabled]="busy() === t.id" (click)="removeTraining(t)">
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            </footer>
+          }
+        </article>
+      }
+    </div>
+  }
+</div>
