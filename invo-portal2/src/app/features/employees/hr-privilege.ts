@@ -107,16 +107,44 @@ export function hrGrantFor(
 }
 
 /**
+ * Is the record being viewed the signed-in employee's own?
+ *
+ * The `:id` lives on the PARENT route — HR tabs are children of
+ * `/employees/:id` — so the parent is checked first and the route's own params
+ * only as a fallback.
+ */
+export function isOwnRecord(route: { paramMap: any; parent?: any }, auth: AuthService): boolean {
+  const id = route.parent?.paramMap?.get('id') ?? route.paramMap?.get('id') ?? null;
+  const me = (auth.currentEmployee as any)?.id ?? null;
+  return !!id && !!me && String(id) === String(me);
+}
+
+/**
  * Route guard for HR areas.
  *
  * Route data:
- *   hrGroup   — e.g. `employeeDocumentSecurity`
- *   hrAction  — e.g. `view`
+ *   hrGroup       — e.g. `employeeDocumentSecurity`
+ *   hrAction      — e.g. `view`
+ *   hrSelfAllowed — optional; the subject reaches their own record without any
+ *                   grant. See below.
  *
  * Deliberately NOT `privilegeGuard`, which would admit everyone. On denial the
  * user is returned to the employee record rather than sent to `/403`: they got
  * here from a tab, and a tab they may not open should not exist for them — the
  * guard is the backstop for a typed URL, not the primary control.
+ *
+ * ── WHY hrSelfAllowed EXISTS ─────────────────────────────────────────────────
+ * Leave is the one module where the subject is the normal author: the server
+ * admits them on `isSelf(callerId, employeeId)` with no privilege at all. A
+ * guard requiring `employeeLeaveSecurity.view` would lock every employee out of
+ * their own leave — the exact people the module is for — while the API would
+ * have served them perfectly happily.
+ *
+ * It is opt-in per route rather than blanket, because it is emphatically NOT
+ * true of the other modules. Someone reading their own disciplinary record
+ * before the meeting, or their own performance calibration, is a different
+ * question with a different answer, and the server does not grant it.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 export const hrPrivilegeGuard: CanActivateFn = (route) => {
   const router = inject(Router);
@@ -126,6 +154,8 @@ export const hrPrivilegeGuard: CanActivateFn = (route) => {
   const group: string | undefined = route.data['hrGroup'];
   const action: string | undefined = route.data['hrAction'];
   if (!group || !action) return false;
+
+  if (route.data['hrSelfAllowed'] === true && isOwnRecord(route, auth)) return true;
 
   if (hrGrantFor(privileges, auth, group, action)) return true;
 

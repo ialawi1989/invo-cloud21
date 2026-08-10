@@ -41,6 +41,9 @@ export const FILE_ENTITY = {
   asset: 'employeeAsset',
   disciplinary: 'employeeDisciplinary',
   performance: 'employeePerformance',
+  training: 'employeeTraining',
+  /** Sick-leave evidence. Medical information, so downloads are audited. */
+  leave: 'employeeLeave',
 } as const;
 
 export type FileEntity = (typeof FILE_ENTITY)[keyof typeof FILE_ENTITY];

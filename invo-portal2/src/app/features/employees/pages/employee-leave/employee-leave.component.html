@@ -1,0 +1,341 @@
+<div class="employee-leave">
+
+  @if (error(); as err) {
+    <div class="hr-error" role="alert">
+      <div class="hr-error__title">{{ err.titleKey | translate }}</div>
+      @if (err.hintKey) { <div class="hr-error__hint">{{ err.hintKey | translate }}</div> }
+      @if (err.detail) { <pre class="hr-error__detail">{{ err.detail }}</pre> }
+      <button type="button" class="hr-error__dismiss" (click)="error.set(null)">
+        {{ 'COMMON.DISMISS' | translate }}
+      </button>
+    </div>
+  }
+
+  @if (warnings().length) {
+    <div class="leave-warnings">
+      <div class="leave-warnings__title">{{ 'EMPLOYEES.LEAVE.WARNINGS' | translate }}</div>
+      <ul>@for (w of warnings(); track w) { <li>{{ w }}</li> }</ul>
+    </div>
+  }
+
+  <!--
+    ── THE BALANCE, ALWAYS WITH THE PERIOD IT COVERS ──────────────────────────
+    Never a bare number. Every figure here is qualified by the window the SERVER
+    resolved and by how it chose it. A remaining figure without its period is a
+    number people plan around and the server disagrees with.
+  -->
+  @if (balance(); as b) {
+    <section class="leave-balance" [class.leave-balance--fallback]="balanceIsFallback()">
+      <header class="leave-balance__head">
+        <h2 class="leave-balance__title">{{ 'EMPLOYEES.LEAVE.BALANCE' | translate }}</h2>
+        <div class="leave-balance__period">
+          @if (b.yearStart && b.yearEnd) {
+            {{ 'EMPLOYEES.LEAVE.PERIOD' | translate }} {{ b.yearStart }} → {{ b.yearEnd }}
+          } @else {
+            <!-- No window means no figure can be read. Said, not hidden. -->
+            <span class="leave-balance__nowindow">{{ 'EMPLOYEES.LEAVE.NO_PERIOD' | translate }}</span>
+          }
+          <span class="leave-basis" [class.leave-basis--fallback]="balanceIsFallback()">
+            {{ basisKey() | translate }}
+          </span>
+        </div>
+      </header>
+
+      <!--
+        The loud one. The profile asked for a hire-anniversary year, the record
+        has no hire date, and the figures below quietly cover the calendar year
+        instead. That is a fallback, and it must not read as an answer.
+      -->
+      @if (balanceIsFallback()) {
+        <p class="leave-balance__warning">{{ 'EMPLOYEES.LEAVE.FALLBACK_WARNING' | translate }}</p>
+      }
+      @if (!basisKnown()) {
+        <p class="leave-balance__warning">{{ 'EMPLOYEES.LEAVE.BASIS_UNKNOWN_WARNING' | translate }}</p>
+      }
+
+      <dl class="leave-figures">
+        <div>
+          <dt>{{ 'EMPLOYEES.LEAVE.ENTITLEMENT' | translate }}</dt>
+          <dd>{{ b.entitlementDays ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'EMPLOYEES.LEAVE.OPENING' | translate }}</dt>
+          <dd>{{ b.openingBalance ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'EMPLOYEES.LEAVE.CARRY_OVER' | translate }}</dt>
+          <dd>{{ b.carryOverDays ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'EMPLOYEES.LEAVE.USED' | translate }}</dt>
+          <dd>{{ b.usedDays ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
+        </div>
+        <div class="leave-figures__remaining">
+          <dt>{{ 'EMPLOYEES.LEAVE.REMAINING' | translate }}</dt>
+          <dd>{{ b.remainingDays ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
+        </div>
+      </dl>
+
+      <!--
+        Stated next to the figure it qualifies. Pending requests are already
+        deducted; without this line someone reads "remaining" as approved-only
+        and books against days the server has spoken for.
+      -->
+      <p class="leave-balance__note">{{ 'EMPLOYEES.LEAVE.PENDING_COUNTS' | translate }}</p>
+
+      @if (b.byType.length) {
+        <ul class="leave-bytype">
+          @for (t of b.byType; track t.leaveType) {
+            <li>
+              <span class="leave-bytype__name">{{ t.leaveType }}</span>
+              <span class="leave-bytype__days">{{ t.days ?? '—' }}</span>
+              <span class="leave-bytype__flag">
+                {{ (t.deductsBalance
+                    ? 'EMPLOYEES.LEAVE.DEDUCTS'
+                    : 'EMPLOYEES.LEAVE.NOT_DEDUCTED') | translate }}
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  } @else if (!loading()) {
+    <div class="leave-note">{{ 'EMPLOYEES.LEAVE.NO_BALANCE' | translate }}</div>
+  }
+
+  <div class="leave-header">
+    <h2 class="leave-header__title">{{ 'EMPLOYEES.LEAVE.REQUESTS' | translate }}</h2>
+    <!--
+      Gated on `mayCreateRequest`, which is self OR the edit grant. Gating on the
+      grant alone would hide the button from every employee the module is for.
+    -->
+    @if (canCreate() && !editing()) {
+      <button type="button" class="btn btn-primary" (click)="startAdd()">
+        {{ 'EMPLOYEES.LEAVE.ADD' | translate }}
+      </button>
+    }
+  </div>
+
+  @if (editing()) {
+    <form class="leave-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="leave-form__grid">
+        <label class="leave-field">
+          <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.TYPE' | translate }} <em>*</em></span>
+          <app-search-dropdown
+            formControlName="leaveType"
+            [items]="catalog().types"
+            [displayWith]="optionName"
+            [toValue]="optionKey"
+            [compareWith]="optionMatches"
+            [placeholder]="'EMPLOYEES.LEAVE.FIELD.TYPE' | translate">
+          </app-search-dropdown>
+        </label>
+
+        <label class="leave-field">
+          <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.START' | translate }} <em>*</em></span>
+          <input class="form-control" type="date" formControlName="startDate"
+                 (change)="refreshSuggestion()" />
+        </label>
+
+        <label class="leave-field">
+          <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.END' | translate }} <em>*</em></span>
+          <input class="form-control" type="date" formControlName="endDate"
+                 (change)="refreshSuggestion()" />
+        </label>
+
+        <label class="leave-field">
+          <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.HALF_DAY' | translate }}</span>
+          <app-search-dropdown
+            formControlName="halfDay"
+            [items]="halfDayOptions"
+            [displayWith]="optionName"
+            [toValue]="optionKey"
+            [compareWith]="optionMatches"
+            [searchable]="false"
+            [clearable]="false"
+            (valueChange)="refreshSuggestion()">
+          </app-search-dropdown>
+        </label>
+
+        <!--
+          ── THE DECIDED FIGURE, NOT THE SUGGESTION ─────────────────────────
+          This number is what the balance deducts and what stays on the record.
+          The server's count is offered beside it and can be applied with one
+          click, but it is a SUGGESTION: no holiday calendar exists, so it
+          excludes rest days and not public holidays. Presenting it as the
+          answer would be claiming a precision the server does not have.
+        -->
+        <label class="leave-field leave-field--days">
+          <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.DAYS' | translate }} <em>*</em></span>
+          <input class="form-control" type="number" min="0" step="0.5" formControlName="days" />
+
+          <span class="leave-field__hint">
+            @if (suggestionPending()) {
+              {{ 'EMPLOYEES.LEAVE.SUGGESTION_LOADING' | translate }}
+            } @else if (suggestion() !== null) {
+              {{ 'EMPLOYEES.LEAVE.SUGGESTION' | translate }} {{ suggestion() }}
+              @if (daysDifferFromSuggestion()) {
+                <button type="button" class="btn btn-link btn-sm" (click)="useSuggestion()">
+                  {{ 'EMPLOYEES.LEAVE.USE_SUGGESTION' | translate }}
+                </button>
+              }
+            } @else {
+              <!-- Null is not zero — an inverted range or one over the server's
+                   366-day bound. Zero is a legitimate answer for a range that
+                   falls entirely on rest days. -->
+              {{ 'EMPLOYEES.LEAVE.NO_SUGGESTION' | translate }}
+            }
+          </span>
+
+          @if (catalog().suggestionExcludesPublicHolidays) {
+            <span class="leave-field__caveat">
+              {{ 'EMPLOYEES.LEAVE.EXCLUDES_HOLIDAYS' | translate }}
+            </span>
+          }
+        </label>
+
+        <label class="leave-field">
+          <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.STATUS' | translate }}</span>
+          <!-- Draft and Pending only. Approve and reject have their own
+               endpoint so a save can never approve something in passing. -->
+          <app-search-dropdown
+            formControlName="status"
+            [items]="draftStatusOptions"
+            [displayWith]="optionName"
+            [toValue]="optionKey"
+            [compareWith]="optionMatches"
+            [searchable]="false"
+            [clearable]="false">
+          </app-search-dropdown>
+        </label>
+
+        <label class="leave-field leave-field--wide">
+          <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.REASON' | translate }}</span>
+          <textarea class="form-control" rows="2" formControlName="reason"></textarea>
+        </label>
+      </div>
+
+      <div class="leave-form__actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="busy() !== null">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <div class="leave-loading">{{ 'COMMON.LOADING' | translate }}</div>
+  } @else if (!requests().length) {
+    <div class="leave-empty">{{ 'EMPLOYEES.LEAVE.EMPTY' | translate }}</div>
+  } @else {
+    <div class="leave-list">
+      @for (r of requests(); track trackRequest($index, r)) {
+        <article class="leave-card">
+          <header class="leave-card__head">
+            <div class="leave-card__ident">
+              <span class="leave-card__type">{{ typeLabel(r) | translate }}</span>
+              <span class="leave-card__dates">{{ r.startDate }} → {{ r.endDate }}</span>
+              <span class="leave-card__days">
+                <!-- The stored figure, as decided. Not recalculated. -->
+                {{ r.days ?? '—' }} {{ 'EMPLOYEES.LEAVE.DAYS' | translate }}
+              </span>
+            </div>
+            <div class="leave-card__state">
+              <span [class]="statusClass(r)">{{ statusLabel(r) | translate }}</span>
+              @if (consumes(r) === true && deducts(r) === true) {
+                <!-- Why the remaining figure already reflects this request. -->
+                <span class="leave-chip">{{ 'EMPLOYEES.LEAVE.COUNTED' | translate }}</span>
+              }
+            </div>
+          </header>
+
+          @if (r.reason) { <p class="leave-card__reason">{{ r.reason }}</p> }
+
+          @if (r.decidedAt) {
+            <p class="leave-card__decision">
+              {{ 'EMPLOYEES.LEAVE.DECIDED_ON' | translate }} {{ r.decidedAt }}
+              @if (r.decisionComment) { — {{ r.decisionComment }} }
+            </p>
+          }
+
+          <!-- Sick-leave evidence. -->
+          @if (r.files.length || canUpload()) {
+            <div class="leave-files">
+              @for (file of r.files; track trackFile($index, file)) {
+                <div class="leave-file">
+                  <span class="leave-file__name">{{ file.fileName }}</span>
+                  <span class="leave-file__size">{{ fileSize(file) }}</span>
+                  <button type="button" class="btn btn-link"
+                          [disabled]="busy() === file.id" (click)="download(file)">
+                    {{ 'EMPLOYEES.LEAVE.DOWNLOAD' | translate }}
+                  </button>
+                </div>
+              }
+              @if (canUpload() && mayEdit(r)) {
+                <label class="leave-upload">
+                  <input type="file" hidden [disabled]="busy() === r.id"
+                         (change)="onFilePicked(r, $event)" />
+                  <span class="btn btn-secondary btn-sm">
+                    {{ (busy() === r.id
+                        ? 'EMPLOYEES.LEAVE.UPLOADING'
+                        : 'EMPLOYEES.LEAVE.ATTACH_EVIDENCE') | translate }}
+                  </span>
+                </label>
+              }
+            </div>
+          }
+
+          <footer class="leave-card__actions">
+            @if (mayEdit(r)) {
+              <button type="button" class="btn btn-link" (click)="startEdit(r)">
+                {{ 'COMMON.EDIT' | translate }}
+              </button>
+            }
+            @for (next of nextStatuses(r); track next) {
+              <button type="button" class="btn btn-link"
+                      [disabled]="busy() === r.id" (click)="setStatus(r, next)">
+                {{ statusActionKey(next) | translate }}
+              </button>
+            }
+
+            <!--
+              ── DECIDE, AND THE ONE CASE IT IS WITHHELD ────────────────────
+              Shown only to an approver, only on a Pending request, and never on
+              their own. Self-approval is refused by the server outright — the
+              approver holds the privilege legitimately, they simply must not use
+              it on themselves — so the reason is stated rather than the controls
+              silently vanishing.
+            -->
+            @if (mayDecide(r)) {
+              <span class="leave-decide">
+                <input class="form-control form-control--sm" type="text"
+                       [placeholder]="'EMPLOYEES.LEAVE.COMMENT' | translate"
+                       [value]="decisionComment()" (input)="onCommentInput($event)" />
+                <button type="button" class="btn btn-primary btn-sm"
+                        [disabled]="busy() === r.id" (click)="decide(r, 'Approved')">
+                  {{ 'EMPLOYEES.LEAVE.APPROVE' | translate }}
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm"
+                        [disabled]="busy() === r.id" (click)="decide(r, 'Rejected')">
+                  {{ 'EMPLOYEES.LEAVE.REJECT' | translate }}
+                </button>
+              </span>
+            } @else if (isOwnPending(r)) {
+              <span class="leave-selfnote">{{ 'EMPLOYEES.LEAVE.NO_SELF_APPROVAL' | translate }}</span>
+            }
+
+            @if (mayDelete(r)) {
+              <button type="button" class="btn btn-link btn-link--danger"
+                      [disabled]="busy() === r.id" (click)="remove(r)">
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            }
+          </footer>
+        </article>
+      }
+    </div>
+  }
+</div>

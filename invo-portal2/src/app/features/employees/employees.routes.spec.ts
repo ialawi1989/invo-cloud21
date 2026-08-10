@@ -33,6 +33,7 @@ const childRoute = (path: string): Route | undefined =>
 const HR_TABS = [
   { path: 'documents', hrGroup: 'employeeDocumentSecurity', hrAction: 'view' },
   { path: 'assets', hrGroup: 'employeeAssetSecurity', hrAction: 'view' },
+  { path: 'leave', hrGroup: 'employeeLeaveSecurity', hrAction: 'view', hrSelfAllowed: true },
 ];
 
 describe('the HR tab routes', () => {
@@ -67,8 +68,25 @@ describe('the HR tab routes', () => {
         expect(childRoute(tab.path)!.data).toEqual({
           hrGroup: tab.hrGroup,
           hrAction: tab.hrAction,
+          ...(tab.hrSelfAllowed ? { hrSelfAllowed: true } : {}),
         });
       });
     });
   }
+
+  /**
+   * The self escape hatch, asserted as an exception rather than a feature.
+   *
+   * `hrSelfAllowed` waives the grant for the subject of the record. That is
+   * correct for leave — the server admits them on `isSelf` — and wrong for
+   * everything else: reading your own disciplinary record before the meeting,
+   * or your own performance calibration, is a different question and the server
+   * says no. If a future tab is given this flag by copy-paste, this fails.
+   */
+  it('waives the grant for the subject on the leave tab only', () => {
+    const waived = recordRoute().children!
+      .filter(c => c.data?.['hrSelfAllowed'] === true)
+      .map(c => c.path);
+    expect(waived).toEqual(['leave']);
+  });
 });

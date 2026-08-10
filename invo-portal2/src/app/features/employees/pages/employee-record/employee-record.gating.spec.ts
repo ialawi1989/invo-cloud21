@@ -216,6 +216,40 @@ describe('visibleTabs — the three conditions', () => {
     expect(visibleTabs([readyTab()], { isNew: true, hasGrant: allow })).toEqual([]);
   });
 
+  /**
+   * The leave exception.
+   *
+   * `selfAllowed` waives the GRANT for the subject of the record, and nothing
+   * else. Without it, an employee with no leave privilege — which is every
+   * employee, since HR is default-deny — would find their own leave tab absent
+   * while the API would have served them perfectly happily.
+   */
+  it('shows a selfAllowed tab on one’s own record without any grant', () => {
+    const leave = readyTab({ path: 'leave', selfAllowed: true });
+    expect(visibleTabs([leave], { isNew: false, hasGrant: deny, isOwnRecord: true }))
+      .toHaveLength(1);
+  });
+
+  it('does not extend that waiver to anyone else’s record', () => {
+    const leave = readyTab({ path: 'leave', selfAllowed: true });
+    expect(visibleTabs([leave], { isNew: false, hasGrant: deny, isOwnRecord: false }))
+      .toEqual([]);
+  });
+
+  it('does not waive the feature flag along with the grant', () => {
+    // A module the company has not bought stays off, own record or not.
+    const leave = readyTab({ path: 'leave', selfAllowed: true, enabled: () => false });
+    expect(visibleTabs([leave], { isNew: false, hasGrant: allow, isOwnRecord: true }))
+      .toEqual([]);
+  });
+
+  it('leaves every other tab needing its grant on one’s own record', () => {
+    // Reading your own disciplinary record is a different question from reading
+    // your own leave, and the server answers it differently.
+    expect(visibleTabs([readyTab()], { isNew: false, hasGrant: deny, isOwnRecord: true }))
+      .toEqual([]);
+  });
+
   it('asks for the exact group and action the tab declares', () => {
     // A payroll tab checking `view` instead of `viewPay` would hide the tab
     // from someone who holds the grant — the API names them differently.

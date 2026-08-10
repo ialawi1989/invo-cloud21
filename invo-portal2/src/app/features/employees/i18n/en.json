@@ -552,6 +552,89 @@
         "STATUS": "Status",
         "NOTES": "Notes"
       }
+    },
+    "LEAVE": {
+      "BALANCE": "Leave balance",
+      "PERIOD": "For",
+      "NO_PERIOD": "The period this covers is unknown",
+      "NO_BALANCE": "No leave balance could be loaded for this employee.",
+      "PENDING_COUNTS": "Pending requests are already counted as used — the remaining figure reflects them, not just approved leave.",
+      "FALLBACK_WARNING": "This employee's leave year is set to run from their hire anniversary, but no hire date is recorded. The figures below cover the calendar year instead, which is probably not the right twelve months.",
+      "BASIS_UNKNOWN_WARNING": "The server did not say which leave year these figures cover. Treat them as indicative.",
+      "BASIS": {
+        "COMPANY_YEAR": "Calendar year",
+        "HIRE_ANNIVERSARY": "From hire anniversary",
+        "HIRE_UNAVAILABLE": "Fallback — no hire date",
+        "EXPLICIT": "Custom period",
+        "UNKNOWN": "Period basis unknown"
+      },
+      "ENTITLEMENT": "Entitlement",
+      "OPENING": "Opening",
+      "CARRY_OVER": "Carried over",
+      "USED": "Used",
+      "REMAINING": "Remaining",
+      "UNKNOWN": "—",
+      "DEDUCTS": "deducted from entitlement",
+      "NOT_DEDUCTED": "not deducted",
+      "COUNTED": "Counted against the balance",
+      "REQUESTS": "Leave requests",
+      "ADD": "Request leave",
+      "EMPTY": "No leave requests yet.",
+      "DAYS": "days",
+      "WARNINGS": "Saved, with the following left outstanding",
+      "DECIDED_ON": "Decided",
+      "APPROVE": "Approve",
+      "REJECT": "Reject",
+      "COMMENT": "Comment (optional)",
+      "NO_SELF_APPROVAL": "You cannot approve your own leave request.",
+      "DOWNLOAD": "Download",
+      "ATTACH_EVIDENCE": "Attach evidence",
+      "UPLOADING": "Uploading…",
+      "SUGGESTION": "The server suggests",
+      "SUGGESTION_LOADING": "Calculating…",
+      "NO_SUGGESTION": "The server could not suggest a figure for these dates.",
+      "USE_SUGGESTION": "Use it",
+      "EXCLUDES_HOLIDAYS": "The suggestion excludes rest days but not public holidays — no holiday calendar is configured. Enter the figure that was actually agreed.",
+      "HALF_DAY": {
+        "NONE": "Full days",
+        "FIRST": "Half day at the start",
+        "LAST": "Half day at the end"
+      },
+      "STATUS": {
+        "DRAFT": "Draft",
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "CANCELLED": "Cancelled"
+      },
+      "ACTION": {
+        "PENDING": "Submit for approval",
+        "DRAFT": "Return to draft",
+        "CANCELLED": "Cancel request"
+      },
+      "TYPE": {
+        "ANNUAL": "Annual leave",
+        "SICK": "Sick leave",
+        "TRAINING": "Training",
+        "OTHER": "Other absence",
+        "UNPAID": "Unpaid leave",
+        "MATERNITY": "Maternity leave",
+        "PATERNITY": "Paternity leave",
+        "BEREAVEMENT": "Bereavement leave"
+      },
+      "YEAR": {
+        "COMPANY": "Calendar year",
+        "HIRE_ANNIVERSARY": "Hire anniversary"
+      },
+      "FIELD": {
+        "TYPE": "Leave type",
+        "START": "From",
+        "END": "To",
+        "HALF_DAY": "Half day",
+        "DAYS": "Days",
+        "REASON": "Reason",
+        "STATUS": "Status"
+      }
     }
   }
 }

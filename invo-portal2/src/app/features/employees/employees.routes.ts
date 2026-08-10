@@ -22,6 +22,7 @@ import { hrPrivilegeGuard } from './hr-privilege';
  *                                employee form, unchanged (0 = new)
  *   /employees/:id/documents   → documents tab
  *   /employees/:id/assets      → assets tab
+ *   /employees/:id/leave       → leave tab (reachable by the subject with no grant)
  *
  * Static segments are declared before `:id` so they win the match.
  */
@@ -158,6 +159,29 @@ export const EMPLOYEES_ROUTES: Routes = [
         loadComponent: () =>
           import('./pages/employee-assets/employee-assets.component')
             .then(m => m.EmployeeAssetsComponent),
+      },
+      {
+        path: 'leave',
+        canActivate: [hrPrivilegeGuard],
+        data: {
+          hrGroup: 'employeeLeaveSecurity',
+          hrAction: 'view',
+          /**
+           * The subject reaches their own leave with no grant at all — the
+           * server admits them on `isSelf`, because leave is the module where
+           * the employee is the author. Requiring the view grant here would
+           * lock every employee out of their own leave while the API would
+           * have served them.
+           *
+           * Set on this route ONLY. Reading your own disciplinary record or
+           * your own calibration is a different question, and the server
+           * answers it differently.
+           */
+          hrSelfAllowed: true,
+        },
+        loadComponent: () =>
+          import('./pages/employee-leave/employee-leave.component')
+            .then(m => m.EmployeeLeaveComponent),
       },
     ],
   },

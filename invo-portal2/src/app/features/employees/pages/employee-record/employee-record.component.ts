@@ -67,6 +67,19 @@ export interface RecordTab {
    * matching child route.
    */
   ready: boolean;
+  /**
+   * May the subject open this tab on their OWN record without a grant?
+   *
+   * True for leave only, and it matters: leave is the module where the employee
+   * is the normal author, and the server admits them on `isSelf` with no
+   * privilege at all. Gating the tab on `employeeLeaveSecurity.view` would hide
+   * leave from every employee it is for, while the API would have served them.
+   *
+   * Deliberately opt-in per tab. It is NOT true of the others — reading your own
+   * disciplinary record or your own calibration is a different question, and the
+   * server answers it differently.
+   */
+  selfAllowed?: boolean;
 }
 
 /**
@@ -79,10 +92,15 @@ export interface RecordTab {
  * grant check running at all.
  *
  * @param hasGrant supplied by the caller so this stays free of injection.
+ * @param isOwnRecord whether the viewer is the subject of this record.
  */
 export function visibleTabs(
   all: RecordTab[],
-  opts: { isNew: boolean; hasGrant: (group: string, action: string) => boolean },
+  opts: {
+    isNew: boolean;
+    hasGrant: (group: string, action: string) => boolean;
+    isOwnRecord?: boolean;
+  },
 ): RecordTab[] {
   if (opts.isNew) return [];
   return all.filter(tab => {
@@ -92,6 +110,10 @@ export function visibleTabs(
     if (!tab.enabled()) return false;
     // The profile tab is the record itself and needs no HR grant.
     if (!tab.group || !tab.action) return true;
+    // Leave, on one's own record. The feature flag above still applies — this
+    // waives the GRANT, not the question of whether the company bought the
+    // module.
+    if (tab.selfAllowed && opts.isOwnRecord) return true;
     // Explicit grant only. NOT PrivilegeService.check(), which is
     // default-allow — see hr-privilege.ts.
     return opts.hasGrant(tab.group, tab.action);
@@ -123,6 +145,12 @@ export class EmployeeRecordComponent {
 
   readonly isNew = computed(() => this.employeeId() === '0');
 
+  /** Is this the signed-in employee's own record? Leave turns on this. */
+  readonly isOwnRecord = computed(() => {
+    const me = (this.auth.currentEmployee as any)?.id ?? null;
+    return !!me && String(me) === String(this.employeeId());
+  });
+
   /**
    * Every tab this record could have, before gating.
    *
@@ -153,7 +181,9 @@ export class EmployeeRecordComponent {
     {
       path: 'leave', labelKey: 'EMPLOYEES.TABS.LEAVE',
       group: 'employeeLeaveSecurity', action: 'view',
-      enabled: () => this.profileFlag(), ready: false,
+      // The only tab an employee reaches on their own record without a grant.
+      selfAllowed: true,
+      enabled: () => this.profileFlag(), ready: true,
     },
     {
       path: 'performance', labelKey: 'EMPLOYEES.TABS.PERFORMANCE',
@@ -185,6 +215,7 @@ export class EmployeeRecordComponent {
     visibleTabs(this.ALL_TABS, {
       isNew: this.isNew(),
       hasGrant: (group, action) => hrGrantFor(this.privileges, this.auth, group, action),
+      isOwnRecord: this.isOwnRecord(),
     }),
   );
 
