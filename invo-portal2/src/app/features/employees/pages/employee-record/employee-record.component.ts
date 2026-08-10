@@ -205,7 +205,7 @@ export class EmployeeRecordComponent {
       // and bank details are separate. Getting this wrong would hide the tab
       // from someone who holds the grant, or show it to someone who does not.
       group: 'employeePayrollSecurity', action: 'viewPay',
-      enabled: () => this.profileFlag(), ready: false,
+      enabled: () => this.profileFlag(), ready: true,
     },
   ];
 

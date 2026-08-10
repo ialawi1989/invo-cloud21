@@ -1,0 +1,479 @@
+<div class="employee-payroll">
+
+  @if (error(); as err) {
+    <div class="hr-error" role="alert">
+      <div class="hr-error__title">{{ err.titleKey | translate }}</div>
+      @if (err.hintKey) { <div class="hr-error__hint">{{ err.hintKey | translate }}</div> }
+      @if (err.detail) { <pre class="hr-error__detail">{{ err.detail }}</pre> }
+      <button type="button" class="hr-error__dismiss" (click)="error.set(null)">
+        {{ 'COMMON.DISMISS' | translate }}
+      </button>
+    </div>
+  }
+
+  @if (isOwnRecord()) {
+    <div class="pay-note">{{ 'EMPLOYEES.PAYROLL.SUBJECT_NOTE' | translate }}</div>
+  }
+
+  <!-- ═══ PAY ═══════════════════════════════════════════════════════════
+       Gated on viewPay alone. The bank panel below asks a separate question
+       and neither answer implies the other. -->
+  @if (canViewPay()) {
+    <section class="pay-panel">
+      <header class="pay-panel__head">
+        <h2 class="pay-panel__title">{{ 'EMPLOYEES.PAYROLL.CURRENT_PAY' | translate }}</h2>
+        @if (canEditPay() && !recording()) {
+          <!-- "Record a pay change", never "Edit salary": that is what the
+               server does, and calling it editing invites someone to expect
+               the old figure to disappear. -->
+          <button type="button" class="btn btn-primary" (click)="startRecordChange()">
+            {{ 'EMPLOYEES.PAYROLL.RECORD_CHANGE' | translate }}
+          </button>
+        }
+      </header>
+
+      @if (loading()) {
+        <div class="pay-loading">{{ 'COMMON.LOADING' | translate }}</div>
+      } @else if (!current()) {
+        <div class="pay-empty">{{ 'EMPLOYEES.PAYROLL.NO_PAY' | translate }}</div>
+      } @else if (current(); as c) {
+        <div class="pay-figures">
+          <div class="pay-figure">
+            <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.BASIC' | translate }}</span>
+            <span class="pay-figure__value">{{ money(c.basicSalary, c.currency) }}</span>
+          </div>
+          <div class="pay-figure">
+            <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.GROSS' | translate }}</span>
+            <span class="pay-figure__value">{{ money(c.grossSalary, c.currency) }}</span>
+          </div>
+          <div class="pay-figure">
+            <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.DEDUCTIONS' | translate }}</span>
+            <span class="pay-figure__value">{{ money(c.recurringDeductions, c.currency) }}</span>
+          </div>
+
+          <!--
+            ══ THE FIGURE MOST LIKELY TO MISLEAD ═════════════════════════
+            NOT take-home pay. Gratuity, GOSI and WPS are not calculated, so
+            this is gross minus the recurring deductions that ARE recorded and
+            nothing else. The disclaimer sits against the number rather than in
+            a footnote, because a footnote is not read by someone scanning for
+            a salary figure.
+          -->
+          <div class="pay-figure pay-figure--net">
+            <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.NET_BEFORE_STATUTORY' | translate }}</span>
+            <span class="pay-figure__value">{{ money(c.netBeforeStatutory, c.currency) }}</span>
+            @if (!statutoryIncluded()) {
+              <span class="pay-figure__caveat">{{ 'EMPLOYEES.PAYROLL.NOT_TAKE_HOME' | translate }}</span>
+            }
+          </div>
+        </div>
+
+        <dl class="pay-facts">
+          @if (c.effectiveFrom) {
+            <div><dt>{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_FROM' | translate }}</dt><dd>{{ c.effectiveFrom }}</dd></div>
+          }
+          @if (c.payFrequency) {
+            <div><dt>{{ 'EMPLOYEES.PAYROLL.FREQUENCY' | translate }}</dt><dd>{{ frequencyLabel(c.payFrequency) | translate }}</dd></div>
+          }
+          @if (c.paymentMethod) {
+            <div><dt>{{ 'EMPLOYEES.PAYROLL.METHOD' | translate }}</dt><dd>{{ methodLabel(c.paymentMethod) | translate }}</dd></div>
+          }
+          @if (c.changeReason) {
+            <div><dt>{{ 'EMPLOYEES.PAYROLL.LAST_CHANGE' | translate }}</dt><dd>{{ reasonLabel(c.changeReason) | translate }}</dd></div>
+          }
+        </dl>
+
+        @if (c.components.length) {
+          <ul class="pay-components">
+            @for (comp of c.components; track trackIndex($index)) {
+              <li>
+                <span class="pay-components__name">{{ componentLabel(comp.type) | translate }}</span>
+                <span class="pay-components__amount">
+                  @if (comp.calculation === 'PercentOfBasic') {
+                    <!-- 25 means 25%, never 0.25. -->
+                    {{ comp.amount ?? '—' }}%
+                  } @else {
+                    {{ money(comp.amount, c.currency) }}
+                  }
+                </span>
+                <span class="pay-components__flag">
+                  {{ (comp.isRecurring === false
+                      ? 'EMPLOYEES.PAYROLL.ONE_OFF'
+                      : 'EMPLOYEES.PAYROLL.RECURRING') | translate }}
+                </span>
+              </li>
+            }
+          </ul>
+        }
+      }
+
+      @if (recording()) {
+        <form class="pay-form" [formGroup]="payForm" (ngSubmit)="submitPayChange()">
+          <!-- Stated at the top of the form so nobody is surprised by the
+               history growing a row rather than the figure being replaced. -->
+          <p class="pay-form__note">{{ 'EMPLOYEES.PAYROLL.CHANGE_NOTE' | translate }}</p>
+
+          <div class="pay-form__grid">
+            <label class="pay-field">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_FROM' | translate }} <em>*</em></span>
+              <input class="form-control" type="date" formControlName="effectiveFrom" />
+              <span class="pay-field__hint">{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_HINT' | translate }}</span>
+            </label>
+
+            <label class="pay-field">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.BASIC' | translate }} <em>*</em></span>
+              <input class="form-control form-control--num" type="number" min="0" step="0.001"
+                     formControlName="basicSalary" />
+            </label>
+
+            <label class="pay-field">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.CURRENCY' | translate }} <em>*</em></span>
+              <input class="form-control" type="text" maxlength="3" formControlName="currency" />
+            </label>
+
+            <label class="pay-field">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.FREQUENCY' | translate }} <em>*</em></span>
+              <app-search-dropdown
+                formControlName="payFrequency"
+                [items]="catalog().frequencies"
+                [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+                [searchable]="false"
+                [placeholder]="'EMPLOYEES.PAYROLL.FREQUENCY' | translate">
+              </app-search-dropdown>
+            </label>
+
+            <label class="pay-field">
+              <!-- Required. A pay history with no reasons cannot answer
+                   "promotion or correction", which is where every dispute and
+                   every pay-equity review starts. -->
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.CHANGE_REASON' | translate }} <em>*</em></span>
+              <app-search-dropdown
+                formControlName="changeReason"
+                [items]="catalog().changeReasons"
+                [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+                [searchable]="false"
+                [placeholder]="'EMPLOYEES.PAYROLL.CHANGE_REASON' | translate">
+              </app-search-dropdown>
+            </label>
+
+            <label class="pay-field">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.METHOD' | translate }}</span>
+              <app-search-dropdown
+                formControlName="paymentMethod"
+                [items]="catalog().paymentMethods"
+                [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+                [searchable]="false"
+                [placeholder]="'EMPLOYEES.PAYROLL.METHOD' | translate">
+              </app-search-dropdown>
+            </label>
+
+            <label class="pay-field pay-field--wide">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.CHANGE_NOTE_FIELD' | translate }}</span>
+              <textarea class="form-control" rows="2" formControlName="changeNote"></textarea>
+            </label>
+          </div>
+
+          <section class="pay-sub">
+            <header class="pay-sub__head">
+              <h3 class="pay-sub__title">{{ 'EMPLOYEES.PAYROLL.COMPONENTS' | translate }}</h3>
+              <button type="button" class="btn btn-link" (click)="addComponent()">
+                {{ 'EMPLOYEES.PAYROLL.ADD_COMPONENT' | translate }}
+              </button>
+            </header>
+            <div formArrayName="components" class="pay-rows">
+              @for (comp of components.controls; track trackIndex($index); let i = $index) {
+                <div class="pay-row" [formGroupName]="i">
+                  <app-search-dropdown
+                    formControlName="type"
+                    [items]="catalog().componentTypes"
+                    [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+                    [placeholder]="'EMPLOYEES.PAYROLL.COMPONENT_TYPE' | translate">
+                  </app-search-dropdown>
+                  <app-search-dropdown
+                    formControlName="calculation"
+                    [items]="calculationOptions()"
+                    [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+                    [searchable]="false" [clearable]="false">
+                  </app-search-dropdown>
+                  <input class="form-control form-control--num" type="number" step="0.001"
+                         formControlName="amount"
+                         [placeholder]="'EMPLOYEES.PAYROLL.AMOUNT_OR_PERCENT' | translate" />
+                  <button type="button" class="btn btn-link btn-link--danger" (click)="removeComponent(i)">
+                    {{ 'COMMON.DELETE' | translate }}
+                  </button>
+                </div>
+              }
+            </div>
+          </section>
+
+          <div class="pay-form__actions">
+            <button type="button" class="btn btn-secondary" (click)="cancelRecord()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="busy() !== null">
+              {{ 'EMPLOYEES.PAYROLL.RECORD_CHANGE' | translate }}
+            </button>
+          </div>
+        </form>
+      }
+
+      <!-- ── HISTORY ── -->
+      @if (history().length) {
+        <section class="pay-sub">
+          <h3 class="pay-sub__title">{{ 'EMPLOYEES.PAYROLL.HISTORY' | translate }}</h3>
+          <div class="pay-history">
+            @for (row of history(); track trackRow($index, row)) {
+              <div class="pay-history__row"
+                   [class.pay-history__row--current]="row.isCurrent === true"
+                   [class.pay-history__row--future]="row.isFuture === true">
+                <span class="pay-history__date">{{ row.effectiveFrom }}</span>
+                <span class="pay-history__amount">{{ money(row.basicSalary, row.currency) }}</span>
+                <span class="pay-history__reason">{{ reasonLabel(row.changeReason) | translate }}</span>
+                <!--
+                  Which row is in force and which is scheduled comes from the
+                  SERVER — it flags isCurrent and isFuture so the portal does
+                  not re-derive them and disagree with the as-of query.
+                -->
+                @if (row.isCurrent === true) {
+                  <span class="pay-chip pay-chip--current">{{ 'EMPLOYEES.PAYROLL.IN_FORCE' | translate }}</span>
+                } @else if (row.isFuture === true) {
+                  <span class="pay-chip pay-chip--future">{{ 'EMPLOYEES.PAYROLL.SCHEDULED' | translate }}</span>
+                }
+                @if (row.changeNote) { <span class="pay-history__note">{{ row.changeNote }}</span> }
+                @if (canEditPay()) {
+                  <button type="button" class="btn btn-link btn-link--danger"
+                          [disabled]="busy() === row.id" (click)="removeRow(row)">
+                    {{ 'COMMON.DELETE' | translate }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+          <p class="pay-sub__note">{{ 'EMPLOYEES.PAYROLL.HISTORY_NOTE' | translate }}</p>
+        </section>
+      }
+
+      <!-- ── LOANS ── -->
+      <section class="pay-sub">
+        <header class="pay-sub__head">
+          <h3 class="pay-sub__title">{{ 'EMPLOYEES.PAYROLL.LOANS' | translate }}</h3>
+          @if (canEditLoans() && !editingLoan()) {
+            <button type="button" class="btn btn-link" (click)="startAddLoan()">
+              {{ 'EMPLOYEES.PAYROLL.ADD_LOAN' | translate }}
+            </button>
+          }
+        </header>
+
+        @if (editingLoan()) {
+          <form class="pay-form" [formGroup]="loanForm" (ngSubmit)="submitLoan()">
+            <div class="pay-form__grid">
+              <label class="pay-field">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.LOAN_AMOUNT' | translate }} <em>*</em></span>
+                <input class="form-control form-control--num" type="number" min="0" step="0.001" formControlName="amount" />
+              </label>
+              <label class="pay-field">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.CURRENCY' | translate }}</span>
+                <input class="form-control" type="text" maxlength="3" formControlName="currency" />
+              </label>
+              <label class="pay-field">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.INSTALMENT' | translate }}</span>
+                <input class="form-control form-control--num" type="number" min="0" step="0.001" formControlName="instalment" />
+              </label>
+              <label class="pay-field">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.START_DATE' | translate }}</span>
+                <input class="form-control" type="date" formControlName="startDate" />
+              </label>
+              <label class="pay-field">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.REPAID' | translate }}</span>
+                <input class="form-control form-control--num" type="number" min="0" step="0.001" formControlName="repaidAmount" />
+                <!-- The balance follows what has actually been repaid, not
+                     elapsed time — counting instalments off the calendar would
+                     write off money through months when nothing was deducted. -->
+                <span class="pay-field__hint">{{ 'EMPLOYEES.PAYROLL.REPAID_HINT' | translate }}</span>
+              </label>
+              <label class="pay-field pay-field--wide">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.NOTES' | translate }}</span>
+                <textarea class="form-control" rows="2" formControlName="notes"></textarea>
+              </label>
+            </div>
+            <div class="pay-form__actions">
+              <button type="button" class="btn btn-secondary" (click)="cancelLoan()">{{ 'COMMON.CANCEL' | translate }}</button>
+              <button type="submit" class="btn btn-primary" [disabled]="busy() !== null">{{ 'COMMON.SAVE' | translate }}</button>
+            </div>
+          </form>
+        }
+
+        @if (!loans().length) {
+          <div class="pay-empty">{{ 'EMPLOYEES.PAYROLL.NO_LOANS' | translate }}</div>
+        } @else {
+          <div class="pay-loans">
+            @for (l of loans(); track trackLoan($index, l)) {
+              <div class="pay-loan" [class.pay-loan--settled]="l.isSettled === true">
+                <span class="pay-loan__amount">{{ money(l.amount, l.currency) }}</span>
+                <span class="pay-loan__balance">
+                  {{ 'EMPLOYEES.PAYROLL.BALANCE' | translate }} {{ money(l.balance, l.currency) }}
+                </span>
+                @if (l.instalment !== null) {
+                  <span class="pay-loan__instalment">
+                    {{ money(l.instalment, l.currency) }} {{ 'EMPLOYEES.PAYROLL.PER_PERIOD' | translate }}
+                  </span>
+                }
+                @if (l.isSettled === true) {
+                  <span class="pay-chip">{{ 'EMPLOYEES.PAYROLL.SETTLED' | translate }}</span>
+                }
+                @if (canEditLoans()) {
+                  <button type="button" class="btn btn-link" (click)="startEditLoan(l)">
+                    {{ 'COMMON.EDIT' | translate }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+      </section>
+    </section>
+  }
+
+  <!-- ═══ BANK ══════════════════════════════════════════════════════════
+       Its own grant. Absent entirely without viewBank, even for someone who
+       can see every salary figure above. -->
+  @if (canViewBank()) {
+    <section class="pay-panel pay-panel--bank">
+      <header class="pay-panel__head">
+        <h2 class="pay-panel__title">{{ 'EMPLOYEES.PAYROLL.BANK' | translate }}</h2>
+        @if (canEditBank() && !editingBank()) {
+          <button type="button" class="btn btn-primary" (click)="startEditBank()">
+            {{ 'EMPLOYEES.PAYROLL.CHANGE_BANK' | translate }}
+          </button>
+        }
+      </header>
+
+      @if (!bank() && !editingBank()) {
+        <div class="pay-empty">{{ 'EMPLOYEES.PAYROLL.NO_BANK' | translate }}</div>
+      } @else if (bank(); as b) {
+        <dl class="pay-facts">
+          @if (b.bankName) { <div><dt>{{ 'EMPLOYEES.PAYROLL.BANK_NAME' | translate }}</dt><dd>{{ b.bankName }}</dd></div> }
+          @if (b.iban) { <div><dt>{{ 'EMPLOYEES.PAYROLL.IBAN' | translate }}</dt><dd class="pay-iban">{{ b.iban }}</dd></div> }
+          @if (b.swift) { <div><dt>{{ 'EMPLOYEES.PAYROLL.SWIFT' | translate }}</dt><dd>{{ b.swift }}</dd></div> }
+          @if (b.accountHolderName) { <div><dt>{{ 'EMPLOYEES.PAYROLL.ACCOUNT_HOLDER' | translate }}</dt><dd>{{ b.accountHolderName }}</dd></div> }
+        </dl>
+
+        @if (b.splitAccounts.length) {
+          <ul class="pay-splits">
+            @for (s of b.splitAccounts; track trackIndex($index)) {
+              <li>
+                <span>{{ s.bankName }}</span>
+                <span class="pay-iban">{{ s.iban }}</span>
+                <span class="pay-splits__pct">{{ s.percentage ?? '—' }}%</span>
+              </li>
+            }
+          </ul>
+        }
+      }
+
+      @if (editingBank()) {
+        <form class="pay-form" [formGroup]="bankForm" (ngSubmit)="submitBank()">
+          <div class="pay-form__grid">
+            <label class="pay-field">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.BANK_NAME' | translate }} <em>*</em></span>
+              <input class="form-control" type="text" formControlName="bankName" (input)="onBankInput()" />
+            </label>
+
+            <label class="pay-field pay-field--wide">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.IBAN' | translate }} <em>*</em></span>
+              <input class="form-control pay-iban" type="text" formControlName="iban"
+                     (input)="onBankInput()"
+                     [class.is-invalid]="ibanValid() === false" />
+              <!--
+                Checked as it is typed. The server's answer is authoritative,
+                but a transposed character caught here is worth far more than
+                one caught after a salary has gone to the wrong account.
+              -->
+              @if (ibanValid() === false) {
+                <span class="pay-field__error">{{ 'EMPLOYEES.PAYROLL.IBAN_INVALID' | translate }}</span>
+              } @else if (ibanValid() === true) {
+                <span class="pay-field__ok">{{ 'EMPLOYEES.PAYROLL.IBAN_OK' | translate }}</span>
+              }
+            </label>
+
+            <label class="pay-field">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.SWIFT' | translate }}</span>
+              <input class="form-control" type="text" formControlName="swift" (input)="onBankInput()" />
+            </label>
+
+            <label class="pay-field">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.ACCOUNT_HOLDER' | translate }}</span>
+              <input class="form-control" type="text" formControlName="accountHolderName" (input)="onBankInput()" />
+            </label>
+          </div>
+
+          <!--
+            What the audit will record. Last four only, matching exactly what
+            the server stores — the audit keeps no more than this on purpose,
+            so nothing describing the change shows more.
+          -->
+          @if (ibanChangePreview(); as preview) {
+            <p class="pay-audit-note">
+              {{ 'EMPLOYEES.PAYROLL.AUDIT_NOTE' | translate }}
+              <span class="pay-iban">{{ preview.from || '—' }}</span>
+              →
+              <span class="pay-iban">{{ preview.to }}</span>
+            </p>
+          }
+
+          <section class="pay-sub">
+            <header class="pay-sub__head">
+              <h3 class="pay-sub__title">{{ 'EMPLOYEES.PAYROLL.SPLIT_ACCOUNTS' | translate }}</h3>
+              <span class="pay-weights" [class.pay-weights--bad]="!splitsOk()">
+                {{ 'EMPLOYEES.PAYROLL.SPLIT_TOTAL' | translate }} {{ splitTotal() }}%
+                @if (!splitsOk()) { — {{ 'EMPLOYEES.PAYROLL.SPLIT_MUST_BE_100' | translate }} }
+              </span>
+              <button type="button" class="btn btn-link" (click)="addSplit()">
+                {{ 'EMPLOYEES.PAYROLL.ADD_SPLIT' | translate }}
+              </button>
+            </header>
+
+            <div formArrayName="splitAccounts" class="pay-rows">
+              @for (s of splitAccounts.controls; track trackIndex($index); let i = $index) {
+                <div class="pay-row pay-row--split" [formGroupName]="i">
+                  <input class="form-control" type="text" formControlName="bankName"
+                         (input)="onBankInput()"
+                         [placeholder]="'EMPLOYEES.PAYROLL.BANK_NAME' | translate" />
+                  <input class="form-control pay-iban" type="text" formControlName="iban"
+                         (input)="onBankInput()"
+                         [placeholder]="'EMPLOYEES.PAYROLL.IBAN' | translate" />
+                  <input class="form-control form-control--num" type="number" min="0" max="100" step="0.01"
+                         formControlName="percentage" (input)="onBankInput()"
+                         [placeholder]="'EMPLOYEES.PAYROLL.PERCENT' | translate" />
+                  <button type="button" class="btn btn-link btn-link--danger" (click)="removeSplit(i)">
+                    {{ 'COMMON.DELETE' | translate }}
+                  </button>
+                </div>
+              }
+            </div>
+
+            @if (invalidSplitIbans().length) {
+              <span class="pay-field__error">
+                {{ 'EMPLOYEES.PAYROLL.SPLIT_IBAN_INVALID' | translate }} {{ invalidSplitIbans().join(', ') }}
+              </span>
+            }
+          </section>
+
+          <div class="pay-form__actions">
+            <button type="button" class="btn btn-secondary" (click)="cancelBank()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
+            <button type="submit" class="btn btn-primary"
+                    [disabled]="busy() !== null || !bankFormValid()">
+              {{ 'COMMON.SAVE' | translate }}
+            </button>
+          </div>
+        </form>
+      }
+    </section>
+  }
+
+  @if (!canViewPay() && !canViewBank()) {
+    <div class="pay-empty">{{ 'EMPLOYEES.PAYROLL.NOTHING_VISIBLE' | translate }}</div>
+  }
+</div>

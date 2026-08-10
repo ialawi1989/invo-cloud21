@@ -36,6 +36,10 @@ const HR_TABS = [
   { path: 'leave', hrGroup: 'employeeLeaveSecurity', hrAction: 'view', hrSelfAllowed: true },
   { path: 'performance', hrGroup: 'employeePerformanceSecurity', hrAction: 'view' },
   { path: 'disciplinary', hrGroup: 'employeeDisciplinarySecurity', hrAction: 'view', hrSelfAllowed: true },
+  // viewPay, not view. Payroll's grants are named differently because pay and
+  // bank details are separate; asking for `view` would deny everyone who holds
+  // the grant, with no error anywhere saying why.
+  { path: 'payroll', hrGroup: 'employeePayrollSecurity', hrAction: 'viewPay' },
 ];
 
 /**

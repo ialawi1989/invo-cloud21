@@ -25,6 +25,7 @@ import { hrPrivilegeGuard } from './hr-privilege';
  *   /employees/:id/leave       → leave tab (reachable by the subject with no grant)
  *   /employees/:id/performance → performance reviews and trainings
  *   /employees/:id/disciplinary → disciplinary records (subject may read their own)
+ *   /employees/:id/payroll     → pay, bank details and loans
  *
  * Static segments are declared before `:id` so they win the match.
  */
@@ -220,6 +221,24 @@ export const EMPLOYEES_ROUTES: Routes = [
         loadComponent: () =>
           import('./pages/employee-disciplinary/employee-disciplinary.component')
             .then(m => m.EmployeeDisciplinaryComponent),
+      },
+      {
+        path: 'payroll',
+        canActivate: [hrPrivilegeGuard],
+        // `viewPay`, NOT `view` — payroll's grants are named differently
+        // because pay and bank details are separate. The guard can only ask one
+        // question, so it asks the broader of the two entry conditions and the
+        // tab gates each panel on its own grant; someone holding `viewBank`
+        // alone reaches the route and sees the bank panel only.
+        //
+        // No hrSelfAllowed: the server admits the subject on `isSelf`, but a
+        // waiver here would open the route to anyone viewing their own record
+        // and the panels below already handle it — `mayViewPay` and
+        // `mayViewBank` both return true for the subject.
+        data: { hrGroup: 'employeePayrollSecurity', hrAction: 'viewPay' },
+        loadComponent: () =>
+          import('./pages/employee-payroll/employee-payroll.component')
+            .then(m => m.EmployeePayrollComponent),
       },
     ],
   },

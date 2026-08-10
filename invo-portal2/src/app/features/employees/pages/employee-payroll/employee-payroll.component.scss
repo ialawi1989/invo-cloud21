@@ -1,0 +1,341 @@
+/**
+ * The payroll tab.
+ *
+ * Two panels, styled identically on purpose — they are peers, not a section and
+ * a sub-section, because their access rules are independent and someone may see
+ * either without the other.
+ *
+ * The one piece of emphasis is the caveat under netBeforeStatutory. It is the
+ * figure most likely to be mistaken for take-home pay, so it is attached to the
+ * number rather than placed in a footnote.
+ */
+.employee-payroll {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0.25rem;
+  min-width: 0;
+}
+
+// ─── Shared HR error banner ──────────────────────────────────────────────
+.hr-error {
+  border: 1px solid var(--danger-color, #dc2626);
+  border-radius: 6px;
+  background: var(--danger-bg, #fef2f2);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  &__title { font-weight: 600; color: var(--danger-color, #b91c1c); }
+  &__hint  { font-size: 0.875rem; color: var(--text-color, #111827); }
+
+  &__detail {
+    margin: 0;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 8rem;
+    overflow: auto;
+    color: var(--text-muted, #6b7280);
+  }
+
+  &__dismiss {
+    align-self: flex-start;
+    background: none; border: none; padding: 0;
+    font-size: 0.8125rem;
+    color: var(--danger-color, #b91c1c);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
+
+.pay-note {
+  border: 1px dashed var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--text-muted, #6b7280);
+}
+
+// ─── Panels ──────────────────────────────────────────────────────────────
+.pay-panel {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  &__title { margin: 0; font-size: 1rem; font-weight: 600; }
+}
+
+.pay-loading,
+.pay-empty {
+  padding: 1.5rem 0;
+  text-align: center;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.875rem;
+}
+
+// ─── Figures ─────────────────────────────────────────────────────────────
+.pay-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.pay-figure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+
+  &__label {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted, #9ca3af);
+  }
+
+  &__value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /**
+   * The caveat that stops this being read as net pay.
+   *
+   * Deliberately not muted into invisibility — it is the most consequential
+   * sentence on the screen, and it wraps under the figure it belongs to rather
+   * than sitting at the bottom of the panel.
+   */
+  &--net {
+    padding-inline-start: 1rem;
+    border-inline-start: 2px solid #f59e0b;
+    max-width: 22rem;
+
+    .pay-figure__value { color: #92400e; }
+  }
+
+  &__caveat {
+    font-size: 0.75rem;
+    color: #92400e;
+    line-height: 1.35;
+  }
+}
+
+.pay-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.375rem 1rem;
+  margin: 0;
+
+  dt { font-size: 0.75rem; color: var(--text-muted, #6b7280); }
+  dd { margin: 0; font-size: 0.875rem; }
+}
+
+/** IBANs and account numbers, monospaced so digits can be compared by eye. */
+.pay-iban {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0.02em;
+  word-break: break-all;
+}
+
+.pay-components,
+.pay-splits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+
+  li { display: flex; gap: 0.75rem; align-items: baseline; }
+}
+
+.pay-components {
+  &__name { flex: 1; min-width: 0; }
+  &__amount { font-weight: 600; font-variant-numeric: tabular-nums; }
+  &__flag { color: var(--text-muted, #9ca3af); font-size: 0.75rem; }
+}
+
+.pay-splits__pct { margin-inline-start: auto; font-weight: 600; }
+
+// ─── Forms ───────────────────────────────────────────────────────────────
+.pay-form {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+
+  &__note {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--text-muted, #4b5563);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}
+
+.pay-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+
+  &--wide { grid-column: 1 / -1; }
+
+  &__label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-muted, #6b7280);
+
+    em { color: var(--danger-color, #dc2626); font-style: normal; }
+  }
+
+  &__hint { font-size: 0.75rem; color: var(--text-muted, #9ca3af); }
+  &__error { font-size: 0.8125rem; font-weight: 500; color: var(--danger-color, #b91c1c); }
+  &__ok { font-size: 0.75rem; color: #166534; }
+}
+
+.form-control.is-invalid { border-color: var(--danger-color, #dc2626); }
+.form-control--num { text-align: end; font-variant-numeric: tabular-nums; }
+
+.pay-sub {
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  padding-top: 0.75rem;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+
+  &__title { margin: 0; font-size: 0.875rem; font-weight: 600; }
+  &__note { margin: 0.5rem 0 0; font-size: 0.75rem; color: var(--text-muted, #9ca3af); }
+}
+
+/** The split total. Red the moment it stops adding to 100. */
+.pay-weights {
+  font-size: 0.8125rem;
+  color: var(--text-muted, #6b7280);
+  margin-inline-start: auto;
+
+  &--bad { color: var(--danger-color, #b91c1c); font-weight: 600; }
+}
+
+/** What the audit will keep of a changed IBAN — no more than four characters. */
+.pay-audit-note {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted, #6b7280);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.pay-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.pay-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 8rem auto;
+  gap: 0.375rem;
+  align-items: center;
+
+  &--split { grid-template-columns: 1fr 1.5fr 7rem auto; }
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+// ─── History ─────────────────────────────────────────────────────────────
+.pay-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  &__row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.375rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+
+    /** In force today. */
+    &--current { background: #eff6ff; font-weight: 500; }
+    /** Effective from a future date — scheduled, not applied. */
+    &--future { background: #fffbeb; }
+  }
+
+  &__date { font-variant-numeric: tabular-nums; color: var(--text-muted, #4b5563); }
+  &__amount { font-weight: 600; font-variant-numeric: tabular-nums; }
+  &__reason { color: var(--text-muted, #6b7280); }
+  &__note { color: var(--text-muted, #9ca3af); font-size: 0.8125rem; }
+}
+
+.pay-chip {
+  display: inline-block;
+  padding: 0.0625rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: var(--chip-bg, #f3f4f6);
+  color: var(--text-muted, #4b5563);
+
+  &--current { background: #dbeafe; color: #1e40af; }
+  &--future  { background: #fef3c7; color: #92400e; }
+}
+
+// ─── Loans ───────────────────────────────────────────────────────────────
+.pay-loans {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.pay-loan {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+
+  &--settled { color: var(--text-muted, #9ca3af); }
+
+  &__amount { font-weight: 600; font-variant-numeric: tabular-nums; }
+  &__balance { font-variant-numeric: tabular-nums; }
+  &__instalment { color: var(--text-muted, #6b7280); font-size: 0.8125rem; }
+}
