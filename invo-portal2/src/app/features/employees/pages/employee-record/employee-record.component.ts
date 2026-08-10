@@ -8,7 +8,16 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '@core/auth/auth.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 
-import { hrDocumentsEnabled, hrFieldsEnabled } from '../../employee-feature-flags';
+import {
+  HR_ASSETS,
+  HR_DISCIPLINARY,
+  HR_LEAVE,
+  HR_PAYROLL,
+  HR_PERFORMANCE,
+  hrDocumentsEnabled,
+  hrFieldsEnabled,
+  hrModuleEnabled,
+} from '../../employee-feature-flags';
 import { hrGrantFor } from '../../hr-privilege';
 
 /**
@@ -134,8 +143,24 @@ export class EmployeeRecordComponent {
   private readonly privileges = inject(PrivilegeService);
   private readonly auth = inject(AuthService);
 
+  /**
+   * One flag per module.
+   *
+   * Every tab now gates on its OWN key. They rode on `hr.profile` while the
+   * later modules had no key of their own; that placeholder is gone, and the
+   * keys were added in invoAdminProtal before any company was switched on, so
+   * nothing needed migrating.
+   *
+   * `profileFlag` still gates the profile cards on the employee form — it is
+   * not a stand-in for anything else any more.
+   */
   private readonly profileFlag = hrFieldsEnabled();
   private readonly documentsFlag = hrDocumentsEnabled();
+  private readonly assetsFlag = hrModuleEnabled(HR_ASSETS);
+  private readonly leaveFlag = hrModuleEnabled(HR_LEAVE);
+  private readonly performanceFlag = hrModuleEnabled(HR_PERFORMANCE);
+  private readonly disciplinaryFlag = hrModuleEnabled(HR_DISCIPLINARY);
+  private readonly payrollFlag = hrModuleEnabled(HR_PAYROLL);
 
   /** The record being viewed. `'0'` means a new employee. */
   readonly employeeId = toSignal(
@@ -171,24 +196,19 @@ export class EmployeeRecordComponent {
     {
       path: 'assets', labelKey: 'EMPLOYEES.TABS.ASSETS',
       group: 'employeeAssetSecurity', action: 'view',
-      // Assets, leave, performance, disciplinary and payroll have no flag of
-      // their own yet — the admin portal writes hr.profile and hr.documents
-      // only. They ride on the profile flag until sub-keys are added for them,
-      // which is a deliberate choice: shipping a tab no flag can turn off would
-      // be worse than one that follows the module it belongs to.
-      enabled: () => this.profileFlag(), ready: true,
+      enabled: () => this.assetsFlag(), ready: true,
     },
     {
       path: 'leave', labelKey: 'EMPLOYEES.TABS.LEAVE',
       group: 'employeeLeaveSecurity', action: 'view',
       // The only tab an employee reaches on their own record without a grant.
       selfAllowed: true,
-      enabled: () => this.profileFlag(), ready: true,
+      enabled: () => this.leaveFlag(), ready: true,
     },
     {
       path: 'performance', labelKey: 'EMPLOYEES.TABS.PERFORMANCE',
       group: 'employeePerformanceSecurity', action: 'view',
-      enabled: () => this.profileFlag(), ready: true,
+      enabled: () => this.performanceFlag(), ready: true,
     },
     {
       path: 'disciplinary', labelKey: 'EMPLOYEES.TABS.DISCIPLINARY',
@@ -197,7 +217,7 @@ export class EmployeeRecordComponent {
       // with `isSelf`. Unlike leave they may not author anything here beyond
       // their own statement and appeal grounds; the tab enforces that.
       selfAllowed: true,
-      enabled: () => this.profileFlag(), ready: true,
+      enabled: () => this.disciplinaryFlag(), ready: true,
     },
     {
       path: 'payroll', labelKey: 'EMPLOYEES.TABS.PAYROLL',
@@ -205,7 +225,7 @@ export class EmployeeRecordComponent {
       // and bank details are separate. Getting this wrong would hide the tab
       // from someone who holds the grant, or show it to someone who does not.
       group: 'employeePayrollSecurity', action: 'viewPay',
-      enabled: () => this.profileFlag(), ready: true,
+      enabled: () => this.payrollFlag(), ready: true,
     },
   ];
 

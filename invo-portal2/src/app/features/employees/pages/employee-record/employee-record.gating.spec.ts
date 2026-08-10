@@ -9,7 +9,15 @@ import { AuthService } from '@core/auth/auth.service';
 import { FeatureService } from '@core/auth/feature.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 
-import { HR_DOCUMENTS, HR_PROFILE } from '../../employee-feature-flags';
+import {
+  HR_ASSETS,
+  HR_DISCIPLINARY,
+  HR_DOCUMENTS,
+  HR_LEAVE,
+  HR_PAYROLL,
+  HR_PERFORMANCE,
+  HR_PROFILE,
+} from '../../employee-feature-flags';
 import { EmployeeRecordComponent, RecordTab, visibleTabs } from './employee-record.component';
 
 /**
@@ -134,6 +142,62 @@ describe('employee record shell — tab gating', () => {
       privileges: null,
     });
     expect(tabPaths(f)).toContain('');
+  });
+});
+
+/**
+ * One key per tab.
+ *
+ * ── THE FAILURE THIS CATCHES ─────────────────────────────────────────────────
+ * Five of these tabs used to gate on `hr.profile` because they had no key of
+ * their own. If any of them still does — or if a new tab is added by copying an
+ * existing one and its flag comes along — the tab appears the moment a merchant
+ * is sold a completely different module. For payroll and disciplinary that is
+ * every salary and every warning in the company, switched on by someone who
+ * ticked "Profile & Employment".
+ *
+ * Each case enables EXACTLY ONE key and asserts exactly one HR tab appears.
+ * Enabling several at once would pass against a tab wired to the wrong flag, so
+ * the whole point would go untested.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+describe('employee record shell — one feature key per tab', () => {
+  beforeEach(() => TestBed.resetTestingModule());
+
+  const CASES: { key: string; path: string }[] = [
+    { key: HR_DOCUMENTS, path: 'documents' },
+    { key: HR_ASSETS, path: 'assets' },
+    { key: HR_LEAVE, path: 'leave' },
+    { key: HR_PERFORMANCE, path: 'performance' },
+    { key: HR_DISCIPLINARY, path: 'disciplinary' },
+    { key: HR_PAYROLL, path: 'payroll' },
+  ];
+
+  for (const { key, path } of CASES) {
+    it(`shows only ${path} when ${key} alone is enabled`, async () => {
+      // ADMIN so the grant is not what is being measured — this case is about
+      // the flag, and only the flag.
+      const f = await mount({ features: [key], employee: ADMIN, privileges: {} });
+      const hrTabs = tabPaths(f).filter(p => p !== '');
+      expect(hrTabs).toEqual([path]);
+    });
+  }
+
+  it('shows no HR tab when only hr.profile is enabled', () => {
+    // The placeholder these five used to ride on. Profile gates the cards on
+    // the employee form and nothing else; if it still opens a tab, that tab is
+    // reachable by anyone sold the cheapest HR module.
+    return mount({ features: [HR_PROFILE], employee: ADMIN, privileges: {} })
+      .then(f => expect(tabPaths(f).filter(p => p !== '')).toEqual([]));
+  });
+
+  it('shows every HR tab when all seven keys are enabled', async () => {
+    const f = await mount({
+      features: [HR_PROFILE, ...CASES.map(c => c.key)],
+      employee: ADMIN,
+      privileges: {},
+    });
+    expect(tabPaths(f).filter(p => p !== '')).toEqual(CASES.map(c => c.path));
   });
 });
 

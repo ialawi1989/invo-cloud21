@@ -43,6 +43,17 @@ import { environment } from '../../../environments/environment';
  */
 export const HR_PROFILE = 'hr.profile';
 export const HR_DOCUMENTS = 'hr.documents';
+export const HR_ASSETS = 'hr.assets';
+export const HR_LEAVE = 'hr.leave';
+export const HR_PERFORMANCE = 'hr.performance';
+export const HR_DISCIPLINARY = 'hr.disciplinary';
+export const HR_PAYROLL = 'hr.payroll';
+
+/** Every HR key, for the tab strip and for tests that assert coverage. */
+export const HR_FEATURE_KEYS = [
+  HR_PROFILE, HR_DOCUMENTS, HR_ASSETS, HR_LEAVE,
+  HR_PERFORMANCE, HR_DISCIPLINARY, HR_PAYROLL,
+] as const;
 
 /**
  * @deprecated Use {@link HR_PROFILE}. Kept only so existing call sites keep
@@ -73,18 +84,30 @@ export function hrFieldsEnabled(): Signal<boolean> {
 }
 
 /**
- * Whether the documents tab may be rendered.
+ * Whether one HR module's tab may be rendered.
  *
- * A separate grant from the profile cards: a merchant can run employee records
- * without ever storing identity documents, and the two are toggled
- * independently by the admin portal.
+ * ── EVERY MODULE HAS ITS OWN KEY ─────────────────────────────────────────────
+ * Assets, leave, performance, disciplinary and payroll used to ride on
+ * `hr.profile` because they had no key of their own. They have one now
+ * (invoAdminProtal `FEATURE_GROUPS`), added before any company was switched on
+ * so there was nothing to migrate.
  *
- * Note the dev override key changed with the flag — it is now
- * `ff.hr.documents`, not `ff.hr`. Any QA note still saying `ff.hr` will appear
- * to do nothing.
+ * The two that most needed separating are payroll and disciplinary. A merchant
+ * buying HR to track passport expiry has not thereby bought a screen showing
+ * every salary in the company, and "HR is on" must never quietly mean
+ * "disciplinary records are on".
+ *
+ * The dev override key follows the flag: `ff.hr.payroll`, not `ff.hr`. Any QA
+ * note still saying `ff.hr` will appear to do nothing.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
-export function hrDocumentsEnabled(): Signal<boolean> {
+export function hrModuleEnabled(key: string): Signal<boolean> {
   const features = inject(FeatureService);
-  const enabled = features.isEnabled$(HR_DOCUMENTS);
-  return computed(() => enabled() || devOverride(HR_DOCUMENTS));
+  const enabled = features.isEnabled$(key);
+  return computed(() => enabled() || devOverride(key));
+}
+
+/** Whether the documents tab may be rendered. */
+export function hrDocumentsEnabled(): Signal<boolean> {
+  return hrModuleEnabled(HR_DOCUMENTS);
 }
