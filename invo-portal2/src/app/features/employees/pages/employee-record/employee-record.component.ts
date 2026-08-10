@@ -193,7 +193,11 @@ export class EmployeeRecordComponent {
     {
       path: 'disciplinary', labelKey: 'EMPLOYEES.TABS.DISCIPLINARY',
       group: 'employeeDisciplinarySecurity', action: 'view',
-      enabled: () => this.profileFlag(), ready: false,
+      // The subject may READ their own warnings — the server's `mayRead` opens
+      // with `isSelf`. Unlike leave they may not author anything here beyond
+      // their own statement and appeal grounds; the tab enforces that.
+      selfAllowed: true,
+      enabled: () => this.profileFlag(), ready: true,
     },
     {
       path: 'payroll', labelKey: 'EMPLOYEES.TABS.PAYROLL',

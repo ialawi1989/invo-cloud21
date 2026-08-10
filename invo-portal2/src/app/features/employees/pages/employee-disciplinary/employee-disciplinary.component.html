@@ -1,0 +1,420 @@
+<div class="employee-disciplinary">
+
+  @if (error(); as err) {
+    <div class="hr-error" role="alert">
+      <div class="hr-error__title">{{ err.titleKey | translate }}</div>
+      @if (err.hintKey) { <div class="hr-error__hint">{{ err.hintKey | translate }}</div> }
+      @if (err.detail) { <pre class="hr-error__detail">{{ err.detail }}</pre> }
+      <button type="button" class="hr-error__dismiss" (click)="error.set(null)">
+        {{ 'COMMON.DISMISS' | translate }}
+      </button>
+    </div>
+  }
+
+  <!--
+    ── THE ESCALATION PANEL ───────────────────────────────────────────────────
+    HR only. Hidden from the subject even though they may read every record
+    behind it: this is the figure someone consults while deciding whether to
+    escalate, and the subject reading it changes the process it is part of. The
+    server refuses it to them; the panel is absent rather than left to error.
+  -->
+  @if (canSeeEscalation() && escalation(); as esc) {
+    <section class="disc-escalation">
+      <h2 class="disc-escalation__title">{{ 'EMPLOYEES.DISCIPLINARY.ESCALATION' | translate }}</h2>
+      <div class="disc-escalation__body">
+        @if (esc.level === null) {
+          <span class="disc-escalation__unknown">{{ 'EMPLOYEES.DISCIPLINARY.LEVEL_UNKNOWN' | translate }}</span>
+        } @else if (esc.level === 0) {
+          <span>{{ 'EMPLOYEES.DISCIPLINARY.NO_LIVE_WARNINGS' | translate }}</span>
+        } @else {
+          <span class="disc-escalation__level">{{ escalationLabel() | translate }}</span>
+          <span class="disc-escalation__count">
+            {{ esc.liveCount ?? '—' }} {{ 'EMPLOYEES.DISCIPLINARY.LIVE_COUNT' | translate }}
+          </span>
+        }
+      </div>
+      <!-- Spent warnings are excluded from the level but still on the record. -->
+      <p class="disc-escalation__note">{{ 'EMPLOYEES.DISCIPLINARY.ESCALATION_NOTE' | translate }}</p>
+    </section>
+  }
+
+  <div class="disc-header">
+    <h2 class="disc-header__title">{{ 'EMPLOYEES.DISCIPLINARY.TITLE' | translate }}</h2>
+    @if (canEdit() && !editing()) {
+      <button type="button" class="btn btn-primary" (click)="startAdd()">
+        {{ 'EMPLOYEES.DISCIPLINARY.ADD' | translate }}
+      </button>
+    }
+  </div>
+
+  <!-- Said to the subject, once, at the top: what they can and cannot do here. -->
+  @if (isOwnRecordPage() && !canEdit()) {
+    <div class="disc-note">{{ 'EMPLOYEES.DISCIPLINARY.SUBJECT_NOTE' | translate }}</div>
+  }
+
+  @if (editing()) {
+    <form class="disc-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="disc-form__grid">
+        <label class="disc-field">
+          <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.TYPE' | translate }} <em>*</em></span>
+          <app-search-dropdown
+            formControlName="warningType"
+            [items]="catalog().warningTypes"
+            [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+            [placeholder]="'EMPLOYEES.DISCIPLINARY.FIELD.TYPE' | translate">
+          </app-search-dropdown>
+        </label>
+
+        <label class="disc-field">
+          <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.SEVERITY' | translate }} <em>*</em></span>
+          <app-search-dropdown
+            formControlName="severity"
+            [items]="catalog().severities"
+            [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+            [searchable]="false"
+            [placeholder]="'EMPLOYEES.DISCIPLINARY.FIELD.SEVERITY' | translate">
+          </app-search-dropdown>
+        </label>
+
+        <label class="disc-field">
+          <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.REASON' | translate }} <em>*</em></span>
+          <app-search-dropdown
+            formControlName="reason"
+            [items]="catalog().reasons"
+            [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+            [placeholder]="'EMPLOYEES.DISCIPLINARY.FIELD.REASON' | translate">
+          </app-search-dropdown>
+        </label>
+
+        <label class="disc-field">
+          <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.INCIDENT_DATE' | translate }} <em>*</em></span>
+          <!-- The server refuses a future incident date: a warning for
+               something that has not happened is a typo or a fabrication. -->
+          <input class="form-control" type="date" formControlName="incidentDate" [max]="today" />
+        </label>
+
+        <label class="disc-field">
+          <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.REPORTED_DATE' | translate }} <em>*</em></span>
+          <input class="form-control" type="date" formControlName="reportedDate" />
+        </label>
+
+        <label class="disc-field">
+          <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.EXPIRY' | translate }}</span>
+          <input class="form-control" type="date" formControlName="expiryDate" />
+          <span class="disc-field__hint">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.EXPIRY_HINT' | translate }}</span>
+        </label>
+
+        <label class="disc-field">
+          <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.STATEMENT_DEADLINE' | translate }}</span>
+          <input class="form-control" type="date" formControlName="statementDeadline" />
+          <!-- Setting this is what gives the employee a window to answer in. -->
+          <span class="disc-field__hint">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.DEADLINE_HINT' | translate }}</span>
+        </label>
+
+        <label class="disc-field">
+          <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.PAYROLL_IMPACT' | translate }}</span>
+          <app-search-dropdown
+            formControlName="payrollImpact"
+            [items]="catalog().payrollImpactTypes"
+            [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+            [searchable]="false"
+            [placeholder]="'EMPLOYEES.DISCIPLINARY.FIELD.PAYROLL_IMPACT' | translate">
+          </app-search-dropdown>
+        </label>
+
+        <label class="disc-field disc-field--wide">
+          <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.DESCRIPTION' | translate }}</span>
+          <textarea class="form-control" rows="3" formControlName="description"></textarea>
+        </label>
+
+        <label class="disc-field disc-field--wide">
+          <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.ACTION_TAKEN' | translate }} <em>*</em></span>
+          <textarea class="form-control" rows="2" formControlName="actionTaken"></textarea>
+        </label>
+
+        <label class="disc-field disc-field--wide">
+          <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.NOTES' | translate }}</span>
+          <textarea class="form-control" rows="2" formControlName="notes"></textarea>
+        </label>
+      </div>
+
+      <div class="disc-form__actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="busy() !== null">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <div class="disc-loading">{{ 'COMMON.LOADING' | translate }}</div>
+  } @else if (!records().length) {
+    <div class="disc-empty">{{ 'EMPLOYEES.DISCIPLINARY.EMPTY' | translate }}</div>
+  } @else {
+    <div class="disc-list">
+      @for (r of records(); track trackRecord($index, r)) {
+        <article class="disc-card" [class.disc-card--spent]="r.isSpent === true">
+          <header class="disc-card__head">
+            <div class="disc-card__ident">
+              <span class="disc-card__type">{{ typeLabel(r) | translate }}</span>
+              @if (r.severity) {
+                <span class="disc-chip">{{ severityLabel(r) | translate }}</span>
+              }
+              @if (r.reason) {
+                <span class="disc-chip">{{ reasonLabel(r) | translate }}</span>
+              }
+              @if (endsEmployment(r) === true) {
+                <span class="disc-chip disc-chip--ends">{{ 'EMPLOYEES.DISCIPLINARY.ENDS_EMPLOYMENT' | translate }}</span>
+              }
+            </div>
+            <!--
+              Rendered exactly as the server computed it. Spent means expired OR
+              overturned on appeal — an overturned warning is withdrawn, not
+              merely old. Null gets its own look; unknown is not "live".
+            -->
+            <span [class]="spentClass(r)">{{ spentKey(r) | translate }}</span>
+          </header>
+
+          <dl class="disc-facts">
+            @if (r.incidentDate) {
+              <div><dt>{{ 'EMPLOYEES.DISCIPLINARY.FIELD.INCIDENT_DATE' | translate }}</dt><dd>{{ r.incidentDate }}</dd></div>
+            }
+            @if (r.reportedDate) {
+              <div><dt>{{ 'EMPLOYEES.DISCIPLINARY.FIELD.REPORTED_DATE' | translate }}</dt><dd>{{ r.reportedDate }}</dd></div>
+            }
+            @if (r.expiryDate) {
+              <div><dt>{{ 'EMPLOYEES.DISCIPLINARY.FIELD.EXPIRY' | translate }}</dt><dd>{{ r.expiryDate }}</dd></div>
+            }
+            @if (r.issuedByName) {
+              <div><dt>{{ 'EMPLOYEES.DISCIPLINARY.ISSUED_BY' | translate }}</dt><dd>{{ r.issuedByName }}</dd></div>
+            }
+          </dl>
+
+          @if (r.description) { <p class="disc-text">{{ r.description }}</p> }
+          @if (r.actionTaken) {
+            <p class="disc-text"><strong>{{ 'EMPLOYEES.DISCIPLINARY.FIELD.ACTION_TAKEN' | translate }}:</strong> {{ r.actionTaken }}</p>
+          }
+
+          <!-- ── Acknowledgement, and the witness ── -->
+          <div class="disc-ack">
+            @if (r.refusedToSign === true) {
+              <span class="disc-ack__refused">
+                {{ 'EMPLOYEES.DISCIPLINARY.REFUSED_TO_SIGN' | translate }}
+                @if (r.witnessName) {
+                  — {{ 'EMPLOYEES.DISCIPLINARY.WITNESSED_BY' | translate }} {{ r.witnessName }}
+                } @else {
+                  <!-- The server requires one, so its absence is worth saying. -->
+                  <em class="disc-ack__nowitness">{{ 'EMPLOYEES.DISCIPLINARY.NO_WITNESS' | translate }}</em>
+                }
+              </span>
+            } @else if (r.acknowledged === true) {
+              <span class="disc-ack__signed">
+                {{ 'EMPLOYEES.DISCIPLINARY.ACKNOWLEDGED' | translate }}
+                @if (r.acknowledgedAt) { — {{ r.acknowledgedAt }} }
+              </span>
+            } @else if (r.acknowledged === false) {
+              <span class="disc-ack__pending">{{ 'EMPLOYEES.DISCIPLINARY.NOT_ACKNOWLEDGED' | translate }}</span>
+            } @else {
+              <!-- Tri-state: the server sent nothing, which is not the same as
+                   "not acknowledged" on a record about whether someone was
+                   shown their own warning. -->
+              <span class="disc-ack__unknown">{{ 'EMPLOYEES.DISCIPLINARY.ACK_UNKNOWN' | translate }}</span>
+            }
+          </div>
+
+          @if (acknowledging() === r.id) {
+            <div class="disc-inline">
+              <label class="disc-check">
+                <input type="checkbox" [checked]="ackRefused()" (change)="onRefusedChange($event)" />
+                {{ 'EMPLOYEES.DISCIPLINARY.REFUSED_TO_SIGN' | translate }}
+              </label>
+              @if (ackRefused()) {
+                <!--
+                  Mandatory, and enforced before the request rather than after.
+                  The witness can only be obtained at the moment of entry; an
+                  error an hour later is too late to be worth anything.
+                -->
+                <input class="form-control" type="text"
+                       [value]="ackWitness()" (input)="onWitnessInput($event)"
+                       [placeholder]="'EMPLOYEES.DISCIPLINARY.WITNESS_REQUIRED' | translate" />
+                <span class="disc-inline__note">{{ 'EMPLOYEES.DISCIPLINARY.WITNESS_NOTE' | translate }}</span>
+              }
+              <div class="disc-inline__actions">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="acknowledging.set(null)">
+                  {{ 'COMMON.CANCEL' | translate }}
+                </button>
+                <button type="button" class="btn btn-primary btn-sm"
+                        [disabled]="busy() === r.id || !ackComplete()"
+                        (click)="saveAcknowledgement(r)">
+                  {{ 'COMMON.SAVE' | translate }}
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- ── The employee's statement — theirs alone ── -->
+          @if (r.employeeStatement) {
+            <div class="disc-statement">
+              <span class="disc-statement__label">{{ 'EMPLOYEES.DISCIPLINARY.STATEMENT' | translate }}</span>
+              <p class="disc-statement__text">{{ r.employeeStatement }}</p>
+            </div>
+          }
+
+          @if (writingStatement() === r.id) {
+            <div class="disc-inline">
+              <textarea class="form-control" rows="4"
+                        [value]="statementText()" (input)="onStatementInput($event)"
+                        [placeholder]="'EMPLOYEES.DISCIPLINARY.STATEMENT_PLACEHOLDER' | translate"></textarea>
+              <span class="disc-inline__note">
+                {{ 'EMPLOYEES.DISCIPLINARY.STATEMENT_NOTE' | translate }}
+                @if (r.statementDeadline) { ({{ r.statementDeadline }}) }
+              </span>
+              <div class="disc-inline__actions">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="writingStatement.set(null)">
+                  {{ 'COMMON.CANCEL' | translate }}
+                </button>
+                <button type="button" class="btn btn-primary btn-sm"
+                        [disabled]="busy() === r.id" (click)="saveStatement(r)">
+                  {{ 'COMMON.SAVE' | translate }}
+                </button>
+              </div>
+            </div>
+          }
+
+          <!--
+            The window has closed. Said outright rather than by the absence of a
+            button: a right that has expired reads very differently from one
+            that was never offered.
+          -->
+          @if (windowClosed(r)) {
+            <p class="disc-closed">
+              {{ 'EMPLOYEES.DISCIPLINARY.WINDOW_CLOSED' | translate }}
+              @if (r.statementDeadline) { ({{ r.statementDeadline }}) }
+            </p>
+          }
+
+          <!-- ── Appeal ── -->
+          @if (r.appeal; as ap) {
+            <div class="disc-appeal">
+              <span class="disc-appeal__title">
+                {{ 'EMPLOYEES.DISCIPLINARY.APPEAL' | translate }}
+                @if (ap.submittedAt) { — {{ ap.submittedAt }} }
+              </span>
+              @if (ap.grounds) { <p class="disc-appeal__grounds">{{ ap.grounds }}</p> }
+              @if (ap.outcome) {
+                <span class="disc-appeal__outcome"
+                      [class.disc-appeal__outcome--overturned]="outcomeOverturns(ap.outcome) === true">
+                  {{ outcomeLabel(ap.outcome) | translate }}
+                  @if (outcomeOverturns(ap.outcome) === true) {
+                    — {{ 'EMPLOYEES.DISCIPLINARY.WITHDRAWN' | translate }}
+                  }
+                </span>
+              } @else {
+                <span class="disc-appeal__pending">{{ 'EMPLOYEES.DISCIPLINARY.APPEAL_PENDING' | translate }}</span>
+              }
+            </div>
+          }
+
+          @if (appealing() === r.id) {
+            <div class="disc-inline">
+              <textarea class="form-control" rows="3"
+                        [value]="appealGrounds()" (input)="onGroundsInput($event)"
+                        [placeholder]="'EMPLOYEES.DISCIPLINARY.GROUNDS_REQUIRED' | translate"></textarea>
+              <div class="disc-inline__actions">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="appealing.set(null)">
+                  {{ 'COMMON.CANCEL' | translate }}
+                </button>
+                <button type="button" class="btn btn-primary btn-sm"
+                        [disabled]="busy() === r.id || !appealValid()" (click)="submitAppeal(r)">
+                  {{ 'EMPLOYEES.DISCIPLINARY.SUBMIT_APPEAL' | translate }}
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Evidence. Confidential; downloads audited. -->
+          @if (r.files.length || canUpload()) {
+            <div class="disc-files">
+              @for (file of r.files; track trackFile($index, file)) {
+                <div class="disc-file">
+                  <span class="disc-file__name">{{ file.fileName }}</span>
+                  <span class="disc-file__size">{{ fileSize(file) }}</span>
+                  <button type="button" class="btn btn-link"
+                          [disabled]="busy() === file.id" (click)="download(file)">
+                    {{ 'EMPLOYEES.DISCIPLINARY.DOWNLOAD' | translate }}
+                  </button>
+                </div>
+              }
+              @if (canUpload()) {
+                <label class="disc-upload">
+                  <input type="file" hidden [disabled]="busy() === r.id"
+                         (change)="onFilePicked(r, $event)" />
+                  <span class="btn btn-secondary btn-sm">
+                    {{ 'EMPLOYEES.DISCIPLINARY.ATTACH_EVIDENCE' | translate }}
+                  </span>
+                </label>
+              }
+            </div>
+          }
+
+          <footer class="disc-card__actions">
+            @if (canEdit()) {
+              <button type="button" class="btn btn-link" (click)="startEdit(r)">
+                {{ 'COMMON.EDIT' | translate }}
+              </button>
+            }
+            @if (mayAcknowledge() && acknowledging() !== r.id) {
+              <button type="button" class="btn btn-link" (click)="startAcknowledge(r)">
+                {{ 'EMPLOYEES.DISCIPLINARY.RECORD_ACKNOWLEDGEMENT' | translate }}
+              </button>
+            }
+            <!-- The employee's own acts. No privilege reaches either. -->
+            @if (mayWriteStatement(r) && writingStatement() !== r.id) {
+              <button type="button" class="btn btn-link" (click)="startStatement(r)">
+                {{ (r.employeeStatement
+                    ? 'EMPLOYEES.DISCIPLINARY.EDIT_STATEMENT'
+                    : 'EMPLOYEES.DISCIPLINARY.WRITE_STATEMENT') | translate }}
+              </button>
+            }
+            @if (mayAppeal(r) && appealing() !== r.id) {
+              <button type="button" class="btn btn-link" (click)="startAppeal(r)">
+                {{ (r.appeal?.submittedAt
+                    ? 'EMPLOYEES.DISCIPLINARY.EDIT_APPEAL'
+                    : 'EMPLOYEES.DISCIPLINARY.APPEAL_THIS') | translate }}
+              </button>
+            }
+
+            <!--
+              Deciding the appeal. A separate grant, and never on a warning the
+              decider issued — the server refuses that case outright. When it is
+              withheld for that reason the reason is stated, because an appeal
+              officer seeing no controls would otherwise assume a bug.
+            -->
+            @if (mayDecideAppeal(r)) {
+              <span class="disc-decide">
+                @for (o of catalog().appealOutcomes; track o.key) {
+                  <button type="button" class="btn btn-secondary btn-sm"
+                          [disabled]="busy() === r.id" (click)="decideAppeal(r, o.key)">
+                    {{ optionName(o) }}
+                  </button>
+                }
+              </span>
+            } @else if (isOwnIssuedAppeal(r)) {
+              <span class="disc-selfnote">{{ 'EMPLOYEES.DISCIPLINARY.NO_SELF_APPEAL' | translate }}</span>
+            }
+
+            @if (canEdit()) {
+              <button type="button" class="btn btn-link btn-link--danger"
+                      [disabled]="busy() === r.id" (click)="remove(r)">
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            }
+          </footer>
+        </article>
+      }
+    </div>
+  }
+</div>

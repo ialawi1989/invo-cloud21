@@ -727,6 +727,94 @@
         "DAYS_BEFORE": "days before expiry",
         "EXPIRY_HINT": "Feeds the reminder engine. No expiry status is computed for trainings, so only the date is shown."
       }
+    },
+    "DISCIPLINARY": {
+      "TITLE": "Disciplinary records",
+      "ADD": "Issue a warning",
+      "EMPTY": "No disciplinary records.",
+      "SUBJECT_NOTE": "These are the records held about you. You can read them, add your own statement while the response period is open, and appeal.",
+      "ESCALATION": "Escalation position",
+      "ESCALATION_NOTE": "Spent warnings — expired or overturned on appeal — stay on the record but are excluded from this figure.",
+      "LEVEL_UNKNOWN": "The escalation position could not be determined.",
+      "NO_LIVE_WARNINGS": "No live warnings",
+      "LIVE_COUNT": "live",
+      "SPENT": "Spent",
+      "LIVE": "Live",
+      "SPENT_UNKNOWN": "Status unknown",
+      "ENDS_EMPLOYMENT": "Ends employment",
+      "ISSUED_BY": "Issued by",
+      "ACKNOWLEDGED": "Acknowledged by the employee",
+      "NOT_ACKNOWLEDGED": "Not yet acknowledged",
+      "ACK_UNKNOWN": "Acknowledgement not recorded",
+      "REFUSED_TO_SIGN": "Refused to sign",
+      "WITNESSED_BY": "witnessed by",
+      "NO_WITNESS": "no witness was named",
+      "WITNESS_REQUIRED": "Name of the witness (required)",
+      "WITNESS_NOTE": "A refusal to sign must name a witness. Enter it now — it cannot be added convincingly later.",
+      "RECORD_ACKNOWLEDGEMENT": "Record acknowledgement",
+      "STATEMENT": "Employee's statement",
+      "STATEMENT_PLACEHOLDER": "Your account of what happened",
+      "STATEMENT_NOTE": "This is your own statement. It can be changed until the response period closes, after which it is fixed. Deadline:",
+      "WRITE_STATEMENT": "Add your statement",
+      "EDIT_STATEMENT": "Edit your statement",
+      "WINDOW_CLOSED": "The response period has closed, so the statement can no longer be changed. Deadline was",
+      "APPEAL": "Appeal",
+      "APPEAL_THIS": "Appeal this warning",
+      "EDIT_APPEAL": "Update the appeal grounds",
+      "SUBMIT_APPEAL": "Submit appeal",
+      "GROUNDS_REQUIRED": "Grounds for the appeal (required)",
+      "APPEAL_PENDING": "Submitted — awaiting a decision",
+      "WITHDRAWN": "the warning is withdrawn",
+      "NO_SELF_APPEAL": "You issued this warning, so you cannot decide the appeal against it.",
+      "DOWNLOAD": "Download",
+      "ATTACH_EVIDENCE": "Attach evidence",
+      "FIELD": {
+        "TYPE": "Warning type",
+        "SEVERITY": "Severity",
+        "REASON": "Reason",
+        "INCIDENT_DATE": "Incident date",
+        "REPORTED_DATE": "Reported date",
+        "EXPIRY": "Expires",
+        "EXPIRY_HINT": "After this date the warning is spent and no longer counts towards escalation. Leave blank if it never lapses.",
+        "STATEMENT_DEADLINE": "Response deadline",
+        "DEADLINE_HINT": "Until this date the employee may write their own statement. Leave blank to give no response period.",
+        "DESCRIPTION": "What happened",
+        "ACTION_TAKEN": "Action taken",
+        "PAYROLL_IMPACT": "Payroll impact",
+        "NOTES": "Notes"
+      },
+      "TYPE": {
+        "VERBAL": "Verbal warning",
+        "WRITTEN": "Written warning",
+        "FINAL_WRITTEN": "Final written warning",
+        "SUSPENSION": "Suspension",
+        "DISMISSAL": "Dismissal"
+      },
+      "SEVERITY": {
+        "LOW": "Low",
+        "MEDIUM": "Medium",
+        "HIGH": "High",
+        "GROSS": "Gross misconduct"
+      },
+      "REASON": {
+        "ATTENDANCE": "Attendance",
+        "CONDUCT": "Conduct",
+        "PERFORMANCE": "Performance",
+        "POLICY_BREACH": "Policy breach",
+        "SAFETY": "Safety",
+        "OTHER": "Other"
+      },
+      "APPEAL_OUTCOME": {
+        "UPHELD": "Upheld",
+        "REDUCED": "Reduced",
+        "OVERTURNED": "Overturned"
+      },
+      "PAYROLL": {
+        "NONE": "None",
+        "UNPAID_SUSPENSION": "Unpaid suspension",
+        "DEDUCTION": "Deduction",
+        "LOSS_RECOVERY": "Loss recovery"
+      }
     }
   }
 }

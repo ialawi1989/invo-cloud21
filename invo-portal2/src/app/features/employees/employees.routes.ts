@@ -24,6 +24,7 @@ import { hrPrivilegeGuard } from './hr-privilege';
  *   /employees/:id/assets      → assets tab
  *   /employees/:id/leave       → leave tab (reachable by the subject with no grant)
  *   /employees/:id/performance → performance reviews and trainings
+ *   /employees/:id/disciplinary → disciplinary records (subject may read their own)
  *
  * Static segments are declared before `:id` so they win the match.
  */
@@ -197,6 +198,28 @@ export const EMPLOYEES_ROUTES: Routes = [
         loadComponent: () =>
           import('./pages/employee-performance/employee-performance.component')
             .then(m => m.EmployeePerformanceComponent),
+      },
+      {
+        path: 'disciplinary',
+        canActivate: [hrPrivilegeGuard],
+        data: {
+          hrGroup: 'employeeDisciplinarySecurity',
+          hrAction: 'view',
+          /**
+           * The SECOND route to carry this, and for a different reason from
+           * leave's. There the subject is the author; here they are only a
+           * reader — but `mayRead` in the controller opens with
+           * `if (isSelf(...)) return true`, because a warning nobody is allowed
+           * to show the employee is not a warning.
+           *
+           * The tab enforces the rest: no edit, no acknowledgement, and the
+           * escalation panel is absent for them entirely.
+           */
+          hrSelfAllowed: true,
+        },
+        loadComponent: () =>
+          import('./pages/employee-disciplinary/employee-disciplinary.component')
+            .then(m => m.EmployeeDisciplinaryComponent),
       },
     ],
   },

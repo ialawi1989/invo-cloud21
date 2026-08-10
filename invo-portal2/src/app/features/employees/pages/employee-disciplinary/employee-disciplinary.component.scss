@@ -1,0 +1,344 @@
+/**
+ * The disciplinary tab.
+ *
+ * Deliberately sober. This screen is read in meetings and attached to
+ * grievances; nothing on it should look like a dashboard. The only strong
+ * colours are on the three states that carry consequences: spent, refused to
+ * sign, and an overturned appeal.
+ */
+.employee-disciplinary {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0.25rem;
+  min-width: 0;
+}
+
+// ─── Shared HR error banner ──────────────────────────────────────────────
+.hr-error {
+  border: 1px solid var(--danger-color, #dc2626);
+  border-radius: 6px;
+  background: var(--danger-bg, #fef2f2);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  &__title { font-weight: 600; color: var(--danger-color, #b91c1c); }
+  &__hint  { font-size: 0.875rem; color: var(--text-color, #111827); }
+
+  &__detail {
+    margin: 0;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 8rem;
+    overflow: auto;
+    color: var(--text-muted, #6b7280);
+  }
+
+  &__dismiss {
+    align-self: flex-start;
+    background: none; border: none; padding: 0;
+    font-size: 0.8125rem;
+    color: var(--danger-color, #b91c1c);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
+
+// ─── Escalation (HR only) ────────────────────────────────────────────────
+.disc-escalation {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  &__title { margin: 0; font-size: 0.875rem; font-weight: 600; }
+
+  &__body {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  &__level { font-size: 1.125rem; font-weight: 700; }
+  &__count { font-size: 0.8125rem; color: var(--text-muted, #6b7280); }
+  &__unknown { font-size: 0.875rem; font-style: italic; color: var(--text-muted, #6b7280); }
+  &__note { margin: 0; font-size: 0.75rem; color: var(--text-muted, #9ca3af); }
+}
+
+.disc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  &__title { margin: 0; font-size: 1rem; font-weight: 600; }
+}
+
+.disc-note {
+  border: 1px dashed var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--text-muted, #6b7280);
+}
+
+// ─── Editor ──────────────────────────────────────────────────────────────
+.disc-form {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 1rem;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+}
+
+.disc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+
+  &--wide { grid-column: 1 / -1; }
+
+  &__label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-muted, #6b7280);
+
+    em { color: var(--danger-color, #dc2626); font-style: normal; }
+  }
+
+  &__hint { font-size: 0.75rem; color: var(--text-muted, #9ca3af); }
+}
+
+// ─── Records ─────────────────────────────────────────────────────────────
+.disc-loading,
+.disc-empty {
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.875rem;
+}
+
+.disc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.disc-card {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  /**
+   * Spent — expired or overturned. Dimmed, because it is history and excluded
+   * from escalation, but never hidden: it is still part of the record.
+   */
+  &--spent {
+    background: var(--muted-bg, #fafafa);
+    border-style: dashed;
+  }
+
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  &__ident {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  &__type { font-weight: 600; }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+    padding-top: 0.5rem;
+  }
+}
+
+.disc-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &--live  { background: #fee2e2; color: #991b1b; }
+  &--spent { background: #f3f4f6; color: #6b7280; }
+
+  /** The server did not say. Neither live nor spent — visibly neither. */
+  &--unknown {
+    background: repeating-linear-gradient(45deg, #f3f4f6, #f3f4f6 4px, #e5e7eb 4px, #e5e7eb 8px);
+    color: #4b5563;
+  }
+}
+
+.disc-chip {
+  display: inline-block;
+  padding: 0.0625rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  background: var(--chip-bg, #f3f4f6);
+  color: var(--text-muted, #4b5563);
+
+  /** Suspension and dismissal are outcomes, not warnings. */
+  &--ends { background: #fee2e2; color: #991b1b; font-weight: 600; }
+}
+
+.disc-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.375rem 1rem;
+  margin: 0;
+
+  dt { font-size: 0.75rem; color: var(--text-muted, #6b7280); }
+  dd { margin: 0; font-size: 0.875rem; }
+}
+
+.disc-text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted, #374151);
+}
+
+// ─── Acknowledgement ─────────────────────────────────────────────────────
+.disc-ack {
+  font-size: 0.8125rem;
+
+  &__signed  { color: #166534; }
+  &__refused { color: #991b1b; font-weight: 600; }
+  &__pending { color: var(--text-muted, #6b7280); }
+  &__unknown { color: var(--text-muted, #9ca3af); font-style: italic; }
+
+  /** A refusal recorded without a witness. The server requires one. */
+  &__nowitness { color: var(--danger-color, #b91c1c); font-style: italic; }
+}
+
+.disc-check {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+}
+
+// ─── The employee's statement ────────────────────────────────────────────
+.disc-statement {
+  border-inline-start: 3px solid var(--primary-color, #2563eb);
+  padding-inline-start: 0.75rem;
+
+  &__label {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted, #6b7280);
+  }
+
+  &__text { margin: 0.125rem 0 0; font-size: 0.875rem; }
+}
+
+/** Said outright, not implied by a missing button. */
+.disc-closed {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--text-muted, #6b7280);
+}
+
+// ─── Appeal ──────────────────────────────────────────────────────────────
+.disc-appeal {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  &__title { font-size: 0.75rem; font-weight: 600; color: var(--text-muted, #4b5563); }
+  &__grounds { margin: 0; font-size: 0.875rem; }
+  &__pending { font-size: 0.8125rem; font-style: italic; color: #92400e; }
+
+  &__outcome {
+    font-size: 0.8125rem;
+    font-weight: 600;
+
+    /** Overturned — the warning is withdrawn, whatever its expiry says. */
+    &--overturned { color: #166534; }
+  }
+}
+
+.disc-decide {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+/** Why an appeal officer sees no controls on a warning they issued. */
+.disc-selfnote {
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--text-muted, #6b7280);
+}
+
+.disc-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  padding: 0.625rem;
+
+  &__note { font-size: 0.75rem; color: var(--text-muted, #6b7280); }
+  &__actions { display: flex; justify-content: flex-end; gap: 0.375rem; }
+}
+
+.disc-files {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.disc-file {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.875rem;
+  min-width: 0;
+
+  &__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__size { color: var(--text-muted, #6b7280); font-size: 0.75rem; }
+}
+
+.disc-upload { align-self: flex-start; cursor: pointer; }

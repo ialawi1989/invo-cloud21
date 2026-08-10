@@ -35,7 +35,30 @@ const HR_TABS = [
   { path: 'assets', hrGroup: 'employeeAssetSecurity', hrAction: 'view' },
   { path: 'leave', hrGroup: 'employeeLeaveSecurity', hrAction: 'view', hrSelfAllowed: true },
   { path: 'performance', hrGroup: 'employeePerformanceSecurity', hrAction: 'view' },
+  { path: 'disciplinary', hrGroup: 'employeeDisciplinarySecurity', hrAction: 'view', hrSelfAllowed: true },
 ];
+
+/**
+ * Routes where the SUBJECT reaches their own record without any grant.
+ *
+ * Written out as a literal, not derived from HR_TABS, so adding one is a
+ * deliberate edit here rather than a side effect of editing the table above.
+ * Each entry needs its own justification from the server:
+ *
+ *   leave         the subject is the AUTHOR — the controller falls back to
+ *                 `isSelf` on create and edit. Gating on the grant would hide
+ *                 leave from every employee it is for.
+ *   disciplinary  the subject is only a READER, but `mayRead` opens with
+ *                 `if (isSelf(...)) return true`: a warning nobody may show the
+ *                 employee is not a warning. Everything else on that tab —
+ *                 editing, acknowledging, and the escalation figure — is still
+ *                 withheld from them.
+ *
+ * It is NOT true of documents, assets or performance. Reading your own
+ * passport scan, your own asset list or your own calibration are three
+ * different questions and the server answers all three with the grant.
+ */
+const SELF_ALLOWED_PATHS = ['leave', 'disciplinary'];
 
 describe('the HR tab routes', () => {
   it('leaves the profile as the default child at the record URL', () => {
@@ -78,16 +101,15 @@ describe('the HR tab routes', () => {
   /**
    * The self escape hatch, asserted as an exception rather than a feature.
    *
-   * `hrSelfAllowed` waives the grant for the subject of the record. That is
-   * correct for leave — the server admits them on `isSelf` — and wrong for
-   * everything else: reading your own disciplinary record before the meeting,
-   * or your own performance calibration, is a different question and the server
-   * says no. If a future tab is given this flag by copy-paste, this fails.
+   * `hrSelfAllowed` waives the GRANT for the subject of the record — never the
+   * feature flag, and never anything beyond reading. Two routes carry it and
+   * both are justified against the server above; the flag is exactly the kind
+   * that spreads by copy-paste, so any third route trips this.
    */
-  it('waives the grant for the subject on the leave tab only', () => {
+  it('waives the grant for the subject on only the routes that justify it', () => {
     const waived = recordRoute().children!
       .filter(c => c.data?.['hrSelfAllowed'] === true)
       .map(c => c.path);
-    expect(waived).toEqual(['leave']);
+    expect(waived).toEqual(SELF_ALLOWED_PATHS);
   });
 });
