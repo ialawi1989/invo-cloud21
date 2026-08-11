@@ -831,8 +831,6 @@
       "EFFECTIVE_FROM": "Effective from",
       "EFFECTIVE_HINT": "A future date schedules the change; it will not apply until then.",
       "CURRENCY": "Currency",
-      "FREQUENCY": "Pay frequency",
-      "METHOD": "Payment method",
       "LAST_CHANGE": "Last change",
       "CHANGE_REASON": "Reason for the change",
       "CHANGE_NOTE_FIELD": "Note",
@@ -877,7 +875,39 @@
       "SPLIT_TOTAL": "Total",
       "SPLIT_MUST_BE_100": "must come to 100%",
       "SPLIT_IBAN_INVALID": "Check the IBAN on split account",
-      "PERCENT": "%"
+      "PERCENT": "%",
+      "FREQUENCY_LABEL": "Pay frequency",
+      "METHOD_LABEL": "Payment method",
+      "FREQUENCY": {
+        "MONTHLY": "Monthly",
+        "BI_WEEKLY": "Every two weeks",
+        "WEEKLY": "Weekly"
+      },
+      "METHOD": {
+        "BANK_TRANSFER": "Bank transfer",
+        "CASH": "Cash",
+        "CHEQUE": "Cheque"
+      },
+      "REASON": {
+        "ANNUAL_REVIEW": "Annual review",
+        "PROMOTION": "Promotion",
+        "MARKET_ADJUSTMENT": "Market adjustment",
+        "CORRECTION": "Correction",
+        "INITIAL_SETUP": "Initial setup"
+      },
+      "COMPONENT": {
+        "HOUSING": "Housing allowance",
+        "TRANSPORT": "Transport allowance",
+        "MOBILE": "Mobile allowance",
+        "FOOD": "Food allowance",
+        "EDUCATION": "Education allowance",
+        "BONUS": "Bonus",
+        "OTHER_EARNING": "Other earning",
+        "LOAN_REPAYMENT": "Loan repayment",
+        "ABSENCE": "Absence deduction",
+        "PENALTY": "Penalty",
+        "OTHER_DEDUCTION": "Other deduction"
+      }
     }
   }
 }

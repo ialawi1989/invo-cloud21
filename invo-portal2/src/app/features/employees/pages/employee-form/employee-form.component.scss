@@ -452,3 +452,22 @@
   font-size: 13px;
   color: #94a3b8;
 }
+
+/**
+ * Hire and termination inside the Employment details card.
+ *
+ * They moved out of the side column so the whole subject sits in one place —
+ * previously "Employment" (two dates) was a sidebar card while "Employment
+ * details" was a large card in the main flow, which read as two topics.
+ *
+ * Two columns to match the manifest grid below them, collapsing on narrow
+ * screens the same way.
+ */
+.emp-dates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px 16px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}

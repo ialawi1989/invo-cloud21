@@ -831,8 +831,6 @@
       "EFFECTIVE_FROM": "يسري من",
       "EFFECTIVE_HINT": "التاريخ المستقبلي يجدول التغيير ولا يُطبَّق قبل حلوله.",
       "CURRENCY": "العملة",
-      "FREQUENCY": "دورية الصرف",
-      "METHOD": "طريقة الدفع",
       "LAST_CHANGE": "آخر تغيير",
       "CHANGE_REASON": "سبب التغيير",
       "CHANGE_NOTE_FIELD": "ملاحظة",
@@ -877,7 +875,39 @@
       "SPLIT_TOTAL": "الإجمالي",
       "SPLIT_MUST_BE_100": "يجب أن يساوي 100%",
       "SPLIT_IBAN_INVALID": "راجع رقم الآيبان في الحساب رقم",
-      "PERCENT": "%"
+      "PERCENT": "%",
+      "FREQUENCY_LABEL": "دورية الصرف",
+      "METHOD_LABEL": "طريقة الدفع",
+      "FREQUENCY": {
+        "MONTHLY": "شهري",
+        "BI_WEEKLY": "كل أسبوعين",
+        "WEEKLY": "أسبوعي"
+      },
+      "METHOD": {
+        "BANK_TRANSFER": "تحويل بنكي",
+        "CASH": "نقدًا",
+        "CHEQUE": "شيك"
+      },
+      "REASON": {
+        "ANNUAL_REVIEW": "المراجعة السنوية",
+        "PROMOTION": "ترقية",
+        "MARKET_ADJUSTMENT": "تعديل حسب السوق",
+        "CORRECTION": "تصحيح",
+        "INITIAL_SETUP": "الإعداد الأولي"
+      },
+      "COMPONENT": {
+        "HOUSING": "بدل سكن",
+        "TRANSPORT": "بدل مواصلات",
+        "MOBILE": "بدل هاتف",
+        "FOOD": "بدل طعام",
+        "EDUCATION": "بدل تعليم",
+        "BONUS": "مكافأة",
+        "OTHER_EARNING": "استحقاق آخر",
+        "LOAN_REPAYMENT": "سداد سلفة",
+        "ABSENCE": "خصم غياب",
+        "PENALTY": "غرامة",
+        "OTHER_DEDUCTION": "خصم آخر"
+      }
     }
   }
 }

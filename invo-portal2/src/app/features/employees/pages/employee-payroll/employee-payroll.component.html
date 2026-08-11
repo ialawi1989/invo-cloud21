@@ -73,10 +73,10 @@
             <div><dt>{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_FROM' | translate }}</dt><dd>{{ c.effectiveFrom }}</dd></div>
           }
           @if (c.payFrequency) {
-            <div><dt>{{ 'EMPLOYEES.PAYROLL.FREQUENCY' | translate }}</dt><dd>{{ frequencyLabel(c.payFrequency) | translate }}</dd></div>
+            <div><dt>{{ 'EMPLOYEES.PAYROLL.FREQUENCY_LABEL' | translate }}</dt><dd>{{ frequencyLabel(c.payFrequency) | translate }}</dd></div>
           }
           @if (c.paymentMethod) {
-            <div><dt>{{ 'EMPLOYEES.PAYROLL.METHOD' | translate }}</dt><dd>{{ methodLabel(c.paymentMethod) | translate }}</dd></div>
+            <div><dt>{{ 'EMPLOYEES.PAYROLL.METHOD_LABEL' | translate }}</dt><dd>{{ methodLabel(c.paymentMethod) | translate }}</dd></div>
           }
           @if (c.changeReason) {
             <div><dt>{{ 'EMPLOYEES.PAYROLL.LAST_CHANGE' | translate }}</dt><dd>{{ reasonLabel(c.changeReason) | translate }}</dd></div>
@@ -132,13 +132,13 @@
             </label>
 
             <label class="pay-field">
-              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.FREQUENCY' | translate }} <em>*</em></span>
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.FREQUENCY_LABEL' | translate }} <em>*</em></span>
               <app-search-dropdown
                 formControlName="payFrequency"
                 [items]="catalog().frequencies"
                 [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
                 [searchable]="false"
-                [placeholder]="'EMPLOYEES.PAYROLL.FREQUENCY' | translate">
+                [placeholder]="'EMPLOYEES.PAYROLL.FREQUENCY_LABEL' | translate">
               </app-search-dropdown>
             </label>
 
@@ -157,13 +157,13 @@
             </label>
 
             <label class="pay-field">
-              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.METHOD' | translate }}</span>
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.METHOD_LABEL' | translate }}</span>
               <app-search-dropdown
                 formControlName="paymentMethod"
                 [items]="catalog().paymentMethods"
                 [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
                 [searchable]="false"
-                [placeholder]="'EMPLOYEES.PAYROLL.METHOD' | translate">
+                [placeholder]="'EMPLOYEES.PAYROLL.METHOD_LABEL' | translate">
               </app-search-dropdown>
             </label>
 

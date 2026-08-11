@@ -329,6 +329,24 @@
             [(open)]="employmentOpen"
             data-tour="emp-hr-employment">
             <div class="card__body">
+            <!-- Hire and termination live WITH the rest of employment, not in
+                 the side column. They are top-level employee fields rather than
+                 manifest ones, so they are rendered here explicitly and stay
+                 present whether or not the HR group loaded. -->
+            <div class="emp-dates" data-tour="emp-employment">
+              <div class="field">
+                <label class="field-label">{{ 'EMPLOYEES.FORM.HIRE_DATE' | translate }}</label>
+                <app-date-picker formControlName="hireDate" triggerClass="input"/>
+              </div>
+              <div class="field">
+                <label class="field-label">{{ 'EMPLOYEES.FORM.TERMINATION_DATE' | translate }}</label>
+                <app-date-picker
+                  formControlName="terminationDate"
+                  [min]="$any(form.controls['hireDate'].value) || null"
+                  triggerClass="input"/>
+                <p class="field-hint">{{ 'EMPLOYEES.FORM.TERMINATION_HINT' | translate }}</p>
+              </div>
+            </div>
               <app-field-renderer
                 [descriptors]="employmentFields()"
                 [group]="group"
@@ -341,6 +359,36 @@
                 [requiredMode]="requiredMode()"/>
             </div>
           </app-collapsible-card>
+        } @else {
+          <!-- The HR employment group is absent (flag off, or this caller is
+               not the HR data owner). The two dates are still the employee's
+               own top-level fields, so they get a plain card rather than
+               vanishing along with the manifest. -->
+          <section class="card">
+            <header class="card__head">
+              <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT' | translate }}</h2>
+            </header>
+            <div class="card__body">
+            <!-- Hire and termination live WITH the rest of employment, not in
+                 the side column. They are top-level employee fields rather than
+                 manifest ones, so they are rendered here explicitly and stay
+                 present whether or not the HR group loaded. -->
+            <div class="emp-dates" data-tour="emp-employment">
+              <div class="field">
+                <label class="field-label">{{ 'EMPLOYEES.FORM.HIRE_DATE' | translate }}</label>
+                <app-date-picker formControlName="hireDate" triggerClass="input"/>
+              </div>
+              <div class="field">
+                <label class="field-label">{{ 'EMPLOYEES.FORM.TERMINATION_DATE' | translate }}</label>
+                <app-date-picker
+                  formControlName="terminationDate"
+                  [min]="$any(form.controls['hireDate'].value) || null"
+                  triggerClass="input"/>
+                <p class="field-hint">{{ 'EMPLOYEES.FORM.TERMINATION_HINT' | translate }}</p>
+              </div>
+            </div>
+            </div>
+          </section>
         }
       </div>
 
@@ -428,26 +476,6 @@
           </div>
         </section>
 
-        <!-- ── Employment ── -->
-        <section class="card" data-tour="emp-employment">
-          <header class="card__head">
-            <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT' | translate }}</h2>
-          </header>
-          <div class="card__body">
-            <div class="field">
-              <label class="field-label">{{ 'EMPLOYEES.FORM.HIRE_DATE' | translate }}</label>
-              <app-date-picker formControlName="hireDate" triggerClass="input"/>
-            </div>
-            <div class="field">
-              <label class="field-label">{{ 'EMPLOYEES.FORM.TERMINATION_DATE' | translate }}</label>
-              <app-date-picker
-                formControlName="terminationDate"
-                [min]="$any(form.controls['hireDate'].value) || null"
-                triggerClass="input"/>
-              <p class="field-hint">{{ 'EMPLOYEES.FORM.TERMINATION_HINT' | translate }}</p>
-            </div>
-          </div>
-        </section>
       </div>
     </div>
   }
