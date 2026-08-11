@@ -251,7 +251,15 @@ const CASES: Case[] = [
         frequencies: [{ key: 'Monthly', labelKey: 'employees.payroll.frequency.monthly', perYear: 12 }],
         paymentMethods: [{ key: 'BankTransfer', labelKey: 'employees.payroll.method.bankTransfer', needsBank: true }],
         changeReasons: [{ key: 'Promotion', labelKey: 'employees.payroll.reason.promotion' }],
-        componentTypes: [{ key: 'Housing', labelKey: 'employees.payroll.component.housing', direction: 'earning' }],
+        // Bonus is the newest catalogue entry (backend db8b4f991) and the one
+        // most likely to ship with no Arabic string, so it is rendered here
+        // rather than assumed. A deduction is included too: `direction` picks
+        // a different branch in the template.
+        componentTypes: [
+          { key: 'Housing', labelKey: 'employees.payroll.component.housing', direction: 'earning' },
+          { key: 'Bonus', labelKey: 'employees.payroll.component.bonus', direction: 'earning' },
+          { key: 'Penalty', labelKey: 'employees.payroll.component.penalty', direction: 'deduction' },
+        ],
         calculationMethods: ['Fixed', 'PercentOfBasic'],
         statutoryCalculationsAvailable: false,
       },
@@ -266,7 +274,13 @@ const CASES: Case[] = [
         currency: 'BHD', payFrequency: 'Monthly', changeReason: 'Promotion',
         changeNote: null, paymentMethod: 'BankTransfer',
         socialInsuranceApplicable: true, wpsEnabled: false, gosiNumber: null,
-        components: [{ type: 'Housing', direction: 'earning', amount: 25, calculation: 'PercentOfBasic', isRecurring: true, effectiveFrom: null, effectiveTo: null }],
+        components: [
+          { type: 'Housing', direction: 'earning', amount: 25, calculation: 'PercentOfBasic', isRecurring: true, effectiveFrom: null, effectiveTo: null },
+          // Non-recurring by design: a bonus is a one-off, and this is the
+          // path that distinguishes it from any other earning.
+          { type: 'Bonus', direction: 'earning', amount: 500, calculation: 'Fixed', isRecurring: false, effectiveFrom: '2026-03-01', effectiveTo: null },
+          { type: 'Penalty', direction: 'deduction', amount: 50, calculation: 'Fixed', isRecurring: false, effectiveFrom: null, effectiveTo: null },
+        ],
         grossSalary: 1562.5, recurringDeductions: 0, netBeforeStatutory: 1562.5,
         statutoryDeductionsIncluded: false, isCurrent: true, isFuture: false,
       },
