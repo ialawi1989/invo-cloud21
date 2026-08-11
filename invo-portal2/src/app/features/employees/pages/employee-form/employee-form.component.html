@@ -294,12 +294,20 @@
         <!-- ── Personal details (manifest-driven) ──
              Both HR cards hang off the manifest groups, which only exist when
              the EMPLOYEE_HR_FIELDS flag is on. The flag stays off until the
-             backend can store what they collect — see employee-feature-flags.ts. -->
+             backend can store what they collect — see employee-feature-flags.ts.
+
+             COLLAPSIBLE, not tabbed. These two cards carry ~15 required fields
+             between them and the form has a single Save; with tabbed panes an
+             invalid submit would do nothing visible whenever the offending
+             field sat on a hidden tab. Collapsed content is still in the DOM,
+             so validation, browser find and autofill all keep working — and
+             `revealInvalidSections()` opens whichever card holds the first
+             error before scrolling to it. -->
         @if (profileGroup(); as group) {
-          <section class="card" data-tour="emp-hr-profile">
-            <header class="card__head">
-              <h2 class="card__title">{{ 'EMPLOYEES.FORM.PERSONAL_DETAILS' | translate }}</h2>
-            </header>
+          <app-collapsible-card
+            [title]="'EMPLOYEES.FORM.PERSONAL_DETAILS' | translate"
+            [(open)]="personalOpen"
+            data-tour="emp-hr-profile">
             <div class="card__body">
               <app-field-renderer
                 [descriptors]="profileFields()"
@@ -309,17 +317,17 @@
                 [optionSources]="optionSources()"
                 [requiredMode]="requiredMode()"/>
             </div>
-          </section>
+          </app-collapsible-card>
         }
 
         <!-- ── Employment details (manifest-driven) ──
              The hire and termination dates stay where they were, in the side
              column: they're top-level fields and stay authoritative. -->
         @if (employmentGroup(); as group) {
-          <section class="card" data-tour="emp-hr-employment">
-            <header class="card__head">
-              <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT_DETAILS' | translate }}</h2>
-            </header>
+          <app-collapsible-card
+            [title]="'EMPLOYEES.FORM.EMPLOYMENT_DETAILS' | translate"
+            [(open)]="employmentOpen"
+            data-tour="emp-hr-employment">
             <div class="card__body">
               <app-field-renderer
                 [descriptors]="employmentFields()"
@@ -332,7 +340,7 @@
                 [computedValues]="computedValues()"
                 [requiredMode]="requiredMode()"/>
             </div>
-          </section>
+          </app-collapsible-card>
         }
       </div>
 

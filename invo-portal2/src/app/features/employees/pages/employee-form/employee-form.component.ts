@@ -58,6 +58,7 @@ import {
   RequiredMode,
 } from '../../models/field-manifest.types';
 import { countryOptions, languageOptions } from '../../models/employee-catalogs';
+import { CollapsibleCardComponent } from '@shared/components/collapsible-card/collapsible-card.component';
 import { hrFieldsEnabled } from '../../employee-feature-flags';
 import { GuidedTourService } from '@shared/services/guided-tour.service';
 import { EMPLOYEE_FORM_TOUR, EMPLOYEE_TOUR_KEY } from './employee-form.tour';
@@ -103,6 +104,7 @@ interface Option {
     SearchDropdownComponent,
     DatePickerComponent,
     FieldRendererComponent,
+    CollapsibleCardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-form.component.html',
@@ -203,6 +205,43 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
    * untouched through the `...original` spread.
    */
   hrFields = hrFieldsEnabled();
+
+  /**
+   * Disclosure state for the two HR cards.
+   *
+   * Open by default. They hold most of the required fields, so starting them
+   * closed would hide the work rather than organise it — collapsing is for
+   * getting them OUT of the way once filled, on a record you opened to change
+   * one thing.
+   */
+  personalOpen = signal(true);
+  employmentOpen = signal(true);
+
+  /**
+   * Open whichever collapsible section holds an invalid control, then scroll to
+   * the first one.
+   *
+   * This is the piece that makes collapsing safe. `save()` returns early on an
+   * invalid form; without this, a control inside a closed card would fail
+   * validation with nothing on screen changing — the same silent dead-end that
+   * tabbed panes would have produced, which is the reason this form is not
+   * tabbed.
+   */
+  private revealInvalidSections(): void {
+    const profileInvalid = this.profileGroup()?.invalid === true;
+    const employmentInvalid = this.employmentGroup()?.invalid === true;
+    if (profileInvalid) this.personalOpen.set(true);
+    if (employmentInvalid) this.employmentOpen.set(true);
+
+    // After the sections have opened, put the first offending control on
+    // screen — an opened card three screens down is still invisible.
+    queueMicrotask(() => {
+      const el = document.querySelector<HTMLElement>(
+        '.ng-invalid[formControlName], .ng-invalid input, .ng-invalid select, .ng-invalid textarea',
+      );
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
 
   manifest = signal<FieldManifest | null>(null);
 
@@ -841,7 +880,10 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
     // The email / pass-code probes are async — let any in-flight check settle
     // before deciding, otherwise a fast save would slip past them.
     if (this.form.pending) await this.whenSettled();
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.revealInvalidSections();
+      return;
+    }
 
     this.saving.set(true);
     try {

@@ -15,7 +15,11 @@
 .cc__head:has(+ .cc__body) { border-bottom: 1px solid #f1f5f9; }
 
 .cc__toggle {
-  display: flex; align-items: center; gap: 10px;
+  /* `space-between` puts the chevron at the END of the header rather than in
+     front of the title — the disclosure control reads as the row's affordance
+     and stops the titles of stacked cards from being indented away from the
+     card edge. */
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
   flex: 1; min-width: 0;
   padding: 0; border: 0; background: transparent;
   font: inherit; text-align: start; cursor: pointer;
@@ -23,12 +27,14 @@
 
 .cc__chevron {
   display: inline-flex; flex-shrink: 0;
+  margin-inline-start: auto;   /* stays at the end even beside a long subtitle */
   color: #94a3b8;
   transition: transform 150ms ease, color 120ms ease;
   .cc__toggle:hover & { color: var(--color-brand-600, #0e7490); }
-  &--open { transform: rotate(90deg); }
+  transform: rotate(90deg);          /* closed → points down */
+  &--open { transform: rotate(-90deg); } /* open → points up */
 }
-:host-context([dir="rtl"]) .cc__chevron { transform: rotate(180deg); &--open { transform: rotate(90deg); } }
+/* Vertical chevrons need no RTL mirroring — down/up read the same either way. */
 
 .cc__titles { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .cc__title { font-size: 15px; font-weight: 600; color: #0f172a; }

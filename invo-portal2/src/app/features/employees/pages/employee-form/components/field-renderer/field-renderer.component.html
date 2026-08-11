@@ -17,8 +17,8 @@
 
           <!-- ── Nested group (e.g. profile.address) ── -->
           @case ('group') {
-            <fieldset class="fr-fieldset">
-              <legend class="fr-fieldset__legend">{{ d.labelKey | translate }}</legend>
+            <div class="fr-group">
+              <h3 class="fr-group__title">{{ d.labelKey | translate }}</h3>
               <ng-container
                 *ngTemplateOutlet="fieldList; context: {
                   $implicit: d.fields ?? [],
@@ -27,7 +27,7 @@
                   inRow: inRow
                 }"
               />
-            </fieldset>
+            </div>
           }
 
           <!-- ── Repeatable rows (emergency contacts, dependants, education) ── -->

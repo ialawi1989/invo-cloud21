@@ -115,16 +115,20 @@
 }
 
 // ── Nested group (profile.address) ────────────────────────────────────────
-.fr-fieldset {
+/**
+ * A nested group (profile.address) reads as a labelled band, not a boxed
+ * fieldset. The box drew a second border inside a card that already has one,
+ * and nesting borders makes a long form look busier the more structure it
+ * gains. A heading plus a rule carries the same grouping with less furniture.
+ */
+.fr-group {
   grid-column: 1 / -1;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 14px 16px 16px;
-  margin: 0;
   min-width: 0;
 
-  &__legend {
-    padding: 0 6px;
+  &__title {
+    margin: 4px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e8f0;
     font-size: 12px;
     font-weight: 600;
     color: #475569;

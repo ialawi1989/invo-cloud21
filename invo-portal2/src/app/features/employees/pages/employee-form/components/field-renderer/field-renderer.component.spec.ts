@@ -82,7 +82,12 @@ describe('field-renderer', () => {
 
   it('renders a nested group and offers free-text suggestions', () => {
     const host: HTMLElement = mount().fixture.nativeElement;
-    expect(host.querySelector('.fr-fieldset')).toBeTruthy();
+    // A nested group renders as a labelled band, not a <fieldset>. Asserting
+    // the group renders AND that no fieldset comes back, so the plain-band
+    // decision is pinned rather than just the class name being swapped.
+    expect(host.querySelector('.fr-group')).toBeTruthy();
+    expect(host.querySelector('.fr-group__title')?.textContent?.trim()).toBeTruthy();
+    expect(host.querySelector('fieldset')).toBeNull();
     expect(host.querySelectorAll('datalist option').length).toBe(2);
   });
 
