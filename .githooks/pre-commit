@@ -1,0 +1,4 @@
+#!/bin/sh
+# Secrets guard. Enable with:  git config core.hooksPath .githooks
+# See scripts/check-secrets.sh for what it blocks and why.
+exec "$(git rev-parse --show-toplevel)/scripts/check-secrets.sh" --staged

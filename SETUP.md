@@ -120,3 +120,36 @@ Unused prototype; its builder now lives in the portal. Nothing references it.
 ```bash
 rm -rf dashboard
 ```
+
+## Secrets guard (one command, do this on every clone)
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Git does not install hooks from a repository automatically and there is no way
+to make it — a fresh clone has the guard's *files* but not the guard. Until you
+run that line, nothing is checking your commits.
+
+It blocks two things: an env file in the index, and AWS/Sentry credential
+patterns in staged content. The env check reads `git ls-files`, not the diff,
+because the failure it exists to stop is a `.env` that entered the index years
+ago and is re-committed silently on every branch — adding such a file to
+`.gitignore` does nothing, since `.gitignore` only governs *untracked* paths.
+That mistake has now been made in four of this product's repositories.
+
+CI runs the same script over every tracked file
+(`.github/workflows/secrets-guard.yml`), so a missing hook or `--no-verify`
+does not get a change through.
+
+If it blocks you, read the message — it prints the untrack-then-ignore sequence
+and the `git ls-files --error-unmatch` check that proves the fix worked. The
+allowlist `.secrets-guard-allow` is for pre-existing ticketed exposures only,
+not for getting a commit through.
+
+Run it by hand any time:
+
+```bash
+./scripts/check-secrets.sh --staged   # what the hook does
+./scripts/check-secrets.sh --all      # what CI does
+```
