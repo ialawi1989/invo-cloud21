@@ -96,6 +96,14 @@ export interface LeaveRequest {
   files: LeaveFile[];
 }
 
+export interface AirTicketEntitlement {
+  isEntitled: boolean | null;
+  class: string | null;
+  destination: string | null;
+  dependantsCovered: boolean | null;
+  lastIssued: string | null;
+}
+
 export interface LeaveProfile {
   policyName: string | null;
   leaveYearStart: string | null;
@@ -104,8 +112,23 @@ export interface LeaveProfile {
   carryOverDays: number | null;
   carryOverExpiry: string | null;
   encashmentEligible: boolean | null;
-  airTicket: boolean | null;
   delegateEmployeeId: string | null;
+  accrualRateDays: number | null;
+  accrualOverrideReason: string | null;
+  /**
+   * Set once the first leave year has closed. After that the opening balance is
+   * FIXED — the server keeps the stored value and ignores whatever is sent, so
+   * the field must be shown read-only rather than silently discarded.
+   */
+  openingBalanceLockedAt: string | null;
+  airTicket: AirTicketEntitlement | null;
+  /**
+   * False. Encashment and the air ticket are stored and nothing is computed
+   * from them — no payout value, no accrual, no next-due date. Read from the
+   * response rather than hardcoded, so the day those calculations land the
+   * caveat disappears on its own.
+   */
+  entitlementValuesCalculated: boolean;
   /** Joined from the employee record; what a HireAnniversary year needs. */
   hireDate: string | null;
 }
@@ -167,10 +190,42 @@ export class EmployeeLeaveService {
       carryOverDays: num(r?.carryOverDays),
       carryOverExpiry: r?.carryOverExpiry ?? null,
       encashmentEligible: typeof r?.encashmentEligible === 'boolean' ? r.encashmentEligible : null,
-      airTicket: typeof r?.airTicket === 'boolean' ? r.airTicket : null,
       delegateEmployeeId: r?.delegateEmployeeId ?? null,
+      accrualRateDays: num(r?.accrualRateDays),
+      accrualOverrideReason: r?.accrualOverrideReason ?? null,
+      openingBalanceLockedAt: r?.openingBalanceLockedAt ?? null,
+      airTicket: r?.airTicket
+        ? {
+            isEntitled: typeof r.airTicket.isEntitled === 'boolean' ? r.airTicket.isEntitled : null,
+            class: r.airTicket.class ?? null,
+            destination: r.airTicket.destination ?? null,
+            dependantsCovered:
+              typeof r.airTicket.dependantsCovered === 'boolean' ? r.airTicket.dependantsCovered : null,
+            lastIssued: r.airTicket.lastIssued ?? null,
+          }
+        : null,
+      // Defaults to FALSE when absent: assume nothing is computed and keep the
+      // caveat up. Assuming the other way would present a stored eligibility
+      // flag as if a value had been worked out from it.
+      entitlementValuesCalculated: r?.entitlementValuesCalculated === true,
       hireDate: r?.hireDate ?? null,
     };
+  }
+
+  /**
+   * Save the leave profile — this is what sets someone's entitlement.
+   *
+   * HR only: the server requires `employeeLeaveSecurity.edit` and does NOT fall
+   * back to `isSelf`, unlike a leave request. Nobody sets their own entitlement.
+   *
+   * `openingBalance` is ignored by the server once `openingBalanceLockedAt` is
+   * set — the first leave-year close freezes it, because every historical
+   * balance is derived from it.
+   */
+  async saveProfile(payload: Record<string, unknown>): Promise<{ id: string }> {
+    const res = await this.api.request<any>(this.api.post('employee/saveLeaveProfile', payload));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not save the leave profile');
+    return { id: res?.data?.id ?? '' };
   }
 
   async requests(employeeId: string): Promise<LeaveRequest[]> {

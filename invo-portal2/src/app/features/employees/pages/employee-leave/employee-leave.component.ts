@@ -107,6 +107,14 @@ export class EmployeeLeaveComponent {
 
   readonly isOwnRecord = computed(() => isSelf(this.actor()));
   readonly canCreate = computed(() => mayCreateRequest(this.actor()));
+  /**
+   * Setting entitlement is HR's act and HR's alone.
+   *
+   * The server requires `employeeLeaveSecurity.edit` on `saveLeaveProfile` and
+   * — unlike a leave request — does NOT fall back to `isSelf`. Nobody sets
+   * their own entitlement.
+   */
+  readonly canEditProfile = computed(() => this.actor().canEdit);
   readonly canUpload = computed(() => this.fileCatalog()?.storageConfigured === true);
 
   /** Per-request, not per-screen — the rules differ by status and by author. */
@@ -177,6 +185,101 @@ export class EmployeeLeaveComponent {
       case 'Explicit': return 'EMPLOYEES.LEAVE.BASIS.EXPLICIT';
       default: return 'EMPLOYEES.LEAVE.BASIS.UNKNOWN';
     }
+  }
+
+  // ─── The leave profile — what makes the balance mean anything ──────────
+  //
+  // Until this exists the balance panel reads 0 of 0 for every employee, which
+  // is why the screen was not honest without it.
+
+  readonly editingProfile = signal(false);
+
+  readonly profileForm = this.fb.group({
+    policyName: this.fb.control<string | null>(null),
+    leaveYearStart: this.fb.control<string>('CompanyYear', Validators.required),
+    annualEntitlementDays: this.fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
+    openingBalance: this.fb.control<number | null>(null),
+    carryOverDays: this.fb.control<number | null>(null),
+    carryOverExpiry: this.fb.control<string | null>(null),
+    accrualRateDays: this.fb.control<number | null>(null),
+    accrualOverrideReason: this.fb.control<string | null>(null),
+    encashmentEligible: this.fb.control<boolean>(false),
+    delegateEmployeeId: this.fb.control<string | null>(null),
+  });
+
+  /**
+   * Frozen after the first leave-year close.
+   *
+   * The server keeps the stored value and ignores whatever is sent, so an
+   * editable box here would accept a number and silently discard it — the
+   * write-only-columns shape. Shown read-only with the reason instead.
+   */
+  readonly openingBalanceLocked = computed(() => !!this.profile()?.openingBalanceLockedAt);
+
+  /** The server refuses an accrual override with no reason. So does the form. */
+  readonly accrualNeedsReason = computed(() => {
+    this.profileTick();
+    const rate = this.profileForm.controls.accrualRateDays.value;
+    const reason = this.profileForm.controls.accrualOverrideReason.value;
+    return rate !== null && rate !== undefined && !String(reason ?? '').trim();
+  });
+
+  readonly profileTick = signal(0);
+  onProfileInput(): void { this.profileTick.update(n => n + 1); }
+
+  startEditProfile(): void {
+    const p = this.profile();
+    this.profileForm.reset({
+      policyName: p?.policyName ?? null,
+      leaveYearStart: p?.leaveYearStart ?? 'CompanyYear',
+      annualEntitlementDays: p?.annualEntitlementDays ?? null,
+      openingBalance: p?.openingBalance ?? null,
+      carryOverDays: p?.carryOverDays ?? null,
+      carryOverExpiry: p?.carryOverExpiry ?? null,
+      accrualRateDays: p?.accrualRateDays ?? null,
+      accrualOverrideReason: p?.accrualOverrideReason ?? null,
+      encashmentEligible: p?.encashmentEligible ?? false,
+      delegateEmployeeId: p?.delegateEmployeeId ?? null,
+    });
+    if (this.openingBalanceLocked()) this.profileForm.controls.openingBalance.disable();
+    this.onProfileInput();
+    this.error.set(null);
+    this.editingProfile.set(true);
+  }
+
+  cancelProfile(): void { this.editingProfile.set(false); }
+
+  async submitProfile(): Promise<void> {
+    if (this.profileForm.invalid || this.accrualNeedsReason()) {
+      this.profileForm.markAllAsTouched();
+      return;
+    }
+    this.busy.set('profile');
+    this.error.set(null);
+    try {
+      // getRawValue() so a disabled (locked) opening balance is still sent —
+      // the server ignores it when locked, and omitting it entirely would look
+      // like a deliberate clear on a profile that is not locked yet.
+      await this.service.saveProfile({
+        employeeId: this.employeeId,
+        ...this.profileForm.getRawValue(),
+      });
+      this.editingProfile.set(false);
+      await this.load();
+    } catch (e) {
+      this.error.set(describeError(e));
+    } finally {
+      this.busy.set(null);
+    }
+  }
+
+  /** Year-start options come from the catalogue, never a local list. */
+  readonly yearStartOptions = computed(() => this.catalog().yearStarts);
+
+  /** The catalogue's label for a year-start key, falling back to the raw key. */
+  yearStartLabel(key: string | null): string {
+    const found = this.catalog().yearStarts.find(y => y.key === key);
+    return found?.labelKey ? portalKey(found.labelKey) : (key ?? '');
   }
 
   // ─── Requests ──────────────────────────────────────────────────────────

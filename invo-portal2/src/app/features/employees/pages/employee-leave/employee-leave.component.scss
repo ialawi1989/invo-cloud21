@@ -342,3 +342,88 @@
 }
 
 .leave-upload { align-self: flex-start; cursor: pointer; }
+
+// ─── The leave profile ───────────────────────────────────────────────────
+.leave-profile {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  &__title { margin: 0; font-size: 0.9375rem; font-weight: 600; }
+
+  /** No profile at all — the balance below cannot mean anything yet. */
+  &__empty {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #92400e;
+  }
+
+  &__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.375rem 1rem;
+    margin: 0;
+
+    dt { font-size: 0.75rem; color: var(--text-muted, #6b7280); }
+    dd { margin: 0; font-size: 0.9375rem; font-weight: 600; }
+  }
+
+  &__sub {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-muted, #6b7280);
+  }
+
+  /**
+   * Encashment and the air ticket are stored, never computed from. Quiet but
+   * always present while the flag says so — the same treatment the payroll
+   * net figure gets.
+   */
+  &__caveat {
+    margin: 0;
+    font-size: 0.75rem;
+    font-style: italic;
+    color: #92400e;
+  }
+}
+
+/**
+ * What the balance excludes.
+ *
+ * Deliberately NOT muted into invisibility. Once entitlement is settable these
+ * figures get planned around, and the day count behind them still ignores
+ * public holidays.
+ */
+.leave-balance__caveat {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #92400e;
+  line-height: 1.35;
+}
+
+.leave-check {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  grid-column: 1 / -1;
+}
+
+.leave-field__error {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--danger-color, #b91c1c);
+}
+
+.form-control.is-invalid { border-color: var(--danger-color, #dc2626); }

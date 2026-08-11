@@ -2,8 +2,13 @@ import { ErrorHandler, Type, provideZonelessChangeDetection } from '@angular/cor
 import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { beforeEach, describe, expect, it } from 'vitest';
+
+// The REAL bundles. Without them every key resolves to itself and the
+// unresolved-key guard below would be meaningless — see expectNoUnresolvedKeys.
+import employeesEn from '../i18n/en.json';
+import commonEn from '../../../../../public/i18n/en.json';
 
 import { EmployeeAssetsComponent } from './employee-assets/employee-assets.component';
 import { EmployeeDisciplinaryComponent } from './employee-disciplinary/employee-disciplinary.component';
@@ -128,7 +133,20 @@ const CASES: Case[] = [
       catalog: { types: [], statuses: [], yearStarts: [], suggestedDays: null, suggestionExcludesPublicHolidays: true },
     },
     populated: {
-      profile: { policyName: 'Std', leaveYearStart: 'CompanyYear', annualEntitlementDays: 30, openingBalance: 0, carryOverDays: 0, carryOverExpiry: null, encashmentEligible: true, airTicket: false, delegateEmployeeId: null, hireDate: '2020-01-01' },
+      profile: {
+        policyName: 'Std', leaveYearStart: 'CompanyYear', annualEntitlementDays: 30,
+        openingBalance: 0, carryOverDays: 5, carryOverExpiry: '2026-03-31',
+        encashmentEligible: true, delegateEmployeeId: null,
+        accrualRateDays: 2.5, accrualOverrideReason: 'pro-rata',
+        // Locked, so the opening balance renders read-only with its reason.
+        openingBalanceLockedAt: '2026-01-01T00:00:00Z',
+        airTicket: { isEntitled: true, class: 'Economy', destination: 'BAH',
+                     dependantsCovered: true, lastIssued: '2025-07-01' },
+        // The house rule: stored, nothing computed from it.
+        entitlementValuesCalculated: false,
+        hireDate: '2020-01-01',
+      },
+      saveProfile: { id: 'lp1' },
       fileCatalog: FILE_CATALOG,
       catalog: {
         types: [{ key: 'Annual leave', labelKey: 'employees.leave.type.annual', deductsBalance: true, paid: true }],
@@ -299,6 +317,11 @@ async function render(c: Case, data: Record<string, unknown>): Promise<{
     ],
   }).compileComponents();
 
+  // Load the real strings, so a key that fails to resolve is genuinely absent
+  // from the bundle rather than merely absent from the test.
+  TestBed.inject(TranslateService).setTranslation('en', { ...commonEn, ...employeesEn });
+  TestBed.inject(TranslateService).use('en');
+
   const fixture = TestBed.createComponent(c.component);
 
   /**
@@ -332,6 +355,39 @@ function expectNoTemplateErrors(errors: unknown[]): void {
   expect(first ? `${first?.name ?? 'Error'}: ${first?.message ?? first}` : null).toBeNull();
 }
 
+/**
+ * The shape of a translation key that never resolved.
+ *
+ * `EMPLOYEES.PAYROLL.COMPONENT.HOUSING` — screaming snake, at least one dot.
+ * ngx-translate returns the key itself on a miss, so an unresolved label is
+ * indistinguishable from working software until someone looks at the screen.
+ */
+const UNRESOLVED_KEY = /^[A-Z][A-Z0-9_]*(\.[A-Z0-9_]+)+$/;
+
+/**
+ * Assert nothing rendered as a raw translation key.
+ *
+ * ── WHY THIS IS A CLASS, NOT A BUG ───────────────────────────────────────────
+ * The payroll tab shipped with EMPLOYEES.PAYROLL.FREQUENCY and .METHOD defined
+ * as STRINGS while portalKey() maps the server's labelKeys onto
+ * `…FREQUENCY.MONTHLY` — a string cannot be a namespace, so every frequency,
+ * method, change reason and component name rendered as a dotted key. REASON and
+ * COMPONENT had no block at all.
+ *
+ * The smoke tests passed throughout, because they assert a component RENDERS,
+ * not that its text is readable. This closes exactly that gap, for all six tabs
+ * at once, and it costs one pass over the rendered text.
+ *
+ * Whitespace-separated tokens rather than the whole string: labels sit inside
+ * sentences, so a substring match would miss them.
+ */
+function expectNoUnresolvedKeys(fixture: ComponentFixture<unknown>, label: string): void {
+  const text = String(fixture.nativeElement.textContent ?? '');
+  const unresolved = [...new Set(text.split(/\s+/).filter(t => UNRESOLVED_KEY.test(t)))];
+  expect(unresolved.length ? `${label}: unresolved translation keys -> ${unresolved.join(', ')}` : null)
+    .toBeNull();
+}
+
 describe('HR tab components — do they render at all', () => {
   beforeEach(() => TestBed.resetTestingModule());
 
@@ -340,12 +396,14 @@ describe('HR tab components — do they render at all', () => {
       it('renders with no data', async () => {
         const { fixture, errors } = await render(c, c.empty);
         expectNoTemplateErrors(errors);
+        expectNoUnresolvedKeys(fixture, `${c.name} (empty)`);
         expect(fixture.nativeElement.textContent).toBeDefined();
       });
 
       it('renders with one row in every collection', async () => {
         const { fixture, errors } = await render(c, c.populated);
         expectNoTemplateErrors(errors);
+        expectNoUnresolvedKeys(fixture, `${c.name} (populated)`);
         // A marker from the DATA, not just "some text" — otherwise a harness
         // that only ever renders the loading state passes every case.
         expect(String(fixture.nativeElement.textContent)).toContain(c.marker);
@@ -373,6 +431,7 @@ describe('HR tab components — do they render at all', () => {
         for (const k of catalogKeys) degraded[k] = c.empty[k];
         const { fixture, errors } = await render(c, degraded);
         expectNoTemplateErrors(errors);
+        expectNoUnresolvedKeys(fixture, `${c.name} (no catalogue)`);
         expect(String(fixture.nativeElement.textContent).trim().length).toBeGreaterThan(0);
       });
     });
