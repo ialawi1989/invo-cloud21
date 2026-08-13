@@ -30,19 +30,30 @@ import { SpinnerComponent } from '../../../../../shared/components/spinner';
     .search-icon { position:absolute; left:13px; color:#94a3b8; pointer-events:none; }
     .search-input { height:40px; width:300px; border:1px solid #e2e8f0; border-radius:8px; padding:0 14px 0 38px; font-size:14px; font-family:inherit; color:#0f172a; background:#fff; outline:none; box-sizing:border-box; }
     .search-input:focus { border-color:var(--color-brand-500); box-shadow:0 0 0 3px rgba(50,172,193,.12); }
-    .section-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; padding-bottom:12px; border-bottom:1px solid #e2e8f0; }
-    .section-title { font-size:16px; font-weight:600; color:#0f172a; }
-    .section-badge { font-size:13px; color:#64748b; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff; }
-    .card { padding:20px; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; cursor:pointer; transition:all .15s; position:relative; min-height:130px; display:flex; flex-direction:column; justify-content:space-between; }
-    .card:hover { background:#f8fafc; }
-    .card-top { display:flex; align-items:flex-start; justify-content:space-between; }
-    .card-name { font-size:14px; font-weight:600; color:#0f172a; margin:0 0 4px; }
-    .card-count { font-size:13px; color:#64748b; }
-    .card-menu-btn { width:28px; height:28px; border:none; background:transparent; cursor:pointer; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#94a3b8; flex-shrink:0; opacity:0; transition:.12s; }
-    .card:hover .card-menu-btn { opacity:1; }
+    /* Table card - same shape as the storefront admin's CMS index: one card,
+       a counted title, then the table. The card grid showed a name and a
+       count and nothing else; the columns carry the rest. */
+    .table-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; }
+    .table-card-head { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:14px 18px; border-bottom:1px solid #e2e8f0; }
+    .section-head { display:flex; align-items:center; gap:10px; margin:0; }
+    .section-title { font-size:15px; font-weight:600; color:#0f172a; }
+    .section-badge { display:inline-grid; place-items:center; min-width:22px; height:22px; padding:0 7px; border-radius:999px; background:#f1f5f9; color:#64748b; font-size:12px; font-weight:600; }
+    .tbl { width:100%; border-collapse:collapse; font-size:14px; }
+    .tbl th { text-align:start; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:#94a3b8; padding:10px 18px; background:#f8fafc; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+    .tbl td { padding:14px 18px; border-bottom:1px solid #f1f5f9; color:#334155; vertical-align:middle; }
+    .tbl tbody tr:last-child td { border-bottom:0; }
+    .tbl tbody tr { cursor:pointer; transition:background .12s; }
+    .tbl tbody tr:hover { background:#f8fafc; }
+    .name-cell { display:flex; align-items:center; gap:10px; }
+    .name-icon { display:grid; place-items:center; width:26px; height:26px; flex-shrink:0; border-radius:6px; background:var(--color-brand-500); color:#fff; }
+    .name-main { font-weight:600; color:#0f172a; }
+    .name-sub { display:block; font-size:12px; color:#94a3b8; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .muted { color:#64748b; }
+    .code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; background:#f1f5f9; color:#334155; padding:3px 7px; border-radius:5px; }
+    .row-actions { position:relative; text-align:end; }
+    .card-menu-btn { width:28px; height:28px; border:none; background:transparent; cursor:pointer; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; color:#94a3b8; flex-shrink:0; transition:.12s; }
     .card-menu-btn:hover { background:#f1f5f9; color:#334155; }
-    .dropdown { position:absolute; top:44px; right:12px; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.1); min-width:190px; z-index:200; padding:4px 0; }
+    .dropdown { position:absolute; top:32px; right:8px; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.1); min-width:190px; z-index:200; padding:4px 0; text-align:start; }
     .dd-item { display:flex; align-items:center; gap:10px; padding:9px 16px; font-size:13px; color:#334155; cursor:pointer; transition:background .1s; }
     .dd-item:hover { background:#f8fafc; }
     .dd-item.del { color:#dc2626; }
@@ -58,13 +69,13 @@ import { SpinnerComponent } from '../../../../../shared/components/spinner';
       <app-breadcrumbs [items]="breadcrumbs" navClass="mb-2" />
       <div class="top-bar">
         <div>
-          <h1 class="page-title">Content Library</h1>
+          <h1 class="page-title">CMS</h1>
           <p class="page-sub">Store and manage content to display anywhere on your site.</p>
         </div>
         <div class="top-actions">
           <button class="btn btn-outline" (click)="openNewCollection()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Create Library
+            Create Collection
           </button>
         </div>
       </div>
@@ -94,44 +105,82 @@ import { SpinnerComponent } from '../../../../../shared/components/spinner';
           <p class="empty-p">Create your first collection to start managing content.</p>
           <button class="btn btn-primary" (click)="openNewCollection()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Create Library
+            Create Collection
           </button>
         </div>
       }
 
-      <!-- Collections grid -->
+      <!-- Collections table -->
       @if (!loading() && collections().length > 0) {
-        <div class="section-head">
-          <span class="section-title">Your Collections</span>
-          <span class="section-badge">{{ collections().length }}</span>
-        </div>
-        <div class="grid">
-          @for (coll of filteredCollections(); track coll.id) {
-            <div class="card" (click)="openCollection(coll)">
-              <div class="card-top">
-                <div>
-                  <p class="card-name">{{ coll.template?.displayName || coll.name }}</p>
-                </div>
-                <button class="card-menu-btn" (click)="toggleMenu($event, coll.id)">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>
-                </button>
-                @if (openMenuId() === coll.id) {
-                  <div class="dropdown" (click)="$event.stopPropagation()">
-                    <div class="dd-item" (click)="openCollection(coll); openMenuId.set(null)">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                      Edit library
-                    </div>
-                    <div class="dd-sep"></div>
-                    <div class="dd-item del" (click)="deleteCollection($event, coll)">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-                      Delete library
-                    </div>
-                  </div>
-                }
-              </div>
-              <p class="card-count">{{ coll.itemCount ?? 0 }} {{ (coll.itemCount ?? 0) === 1 ? 'item' : 'items' }}</p>
+        <div class="table-card">
+          <div class="table-card-head">
+            <div class="section-head">
+              <span class="section-title">All collections</span>
+              <span class="section-badge">{{ filteredCollections().length }}</span>
             </div>
-          }
+          </div>
+
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Collection</th>
+                <th>Items</th>
+                <th>Site pages</th>
+                <th>Fields</th>
+                <th>Read in a theme</th>
+                <th>Last updated</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (coll of filteredCollections(); track coll.id) {
+                <tr (click)="openCollection(coll)">
+                  <td>
+                    <span class="name-cell">
+                      <span class="name-icon" aria-hidden="true">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+                      </span>
+                      <span>
+                        <span class="name-main">{{ coll.template?.displayName || coll.name }}</span>
+                        <span class="name-sub">{{ coll.template?.slug }}</span>
+                      </span>
+                    </span>
+                  </td>
+
+                  <td class="muted">{{ coll.itemCount ?? 0 }} {{ (coll.itemCount ?? 0) === 1 ? 'item' : 'items' }}</td>
+
+                  <!-- The collection model carries no per-item page flag yet,
+                       so this stays a dash rather than a guess. -->
+                  <td class="muted">&mdash;</td>
+
+                  <td class="muted">{{ coll.fieldCount ?? 0 }}</td>
+
+                  <td><code class="code">content.{{ coll.template?.slug }}</code></td>
+
+                  <td class="muted">{{ coll.updatedAt ? (coll.updatedAt | date: 'd MMM y') : '—' }}</td>
+
+                  <td class="row-actions">
+                    <button class="card-menu-btn" (click)="toggleMenu($event, coll.id)" aria-label="Actions">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>
+                    </button>
+                    @if (openMenuId() === coll.id) {
+                      <div class="dropdown" (click)="$event.stopPropagation()">
+                        <div class="dd-item" (click)="openCollection(coll); openMenuId.set(null)">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          Edit items
+                        </div>
+                        <div class="dd-sep"></div>
+                        <div class="dd-item del" (click)="deleteCollection($event, coll)">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                          Delete collection
+                        </div>
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       }
     </div>
@@ -147,7 +196,7 @@ export class ContentLibraryListComponent implements OnInit, OnDestroy {
   readonly breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', routerLink: '/', icon: 'home', iconOnly: true },
     { label: 'Website Content', routerLink: '/website' },
-    { label: 'Content Library' },
+    { label: 'CMS' },
   ];
 
   loading     = signal(true);
@@ -180,13 +229,25 @@ export class ContentLibraryListComponent implements OnInit, OnDestroy {
       const withCounts = await Promise.all(list.map(async (c: Website) => {
         try {
           const { count } = await this.cms.getItems(c.id);
-          return { ...c, itemCount: count };
-        } catch { return { ...c, itemCount: 0 }; }
+          return { ...c, itemCount: count, ...this.meta(c) };
+        } catch { return { ...c, itemCount: 0, ...this.meta(c) }; }
       }));
       this.collections.set(withCounts);
     } finally {
       this.loading.set(false);
     }
+  }
+
+  /**
+   * Row extras the table needs. `updatedAt` is non-enumerable on the Website
+   * instance (see the service) so a spread would drop it - it has to be
+   * copied across by name.
+   */
+  private meta(c: any): { fieldCount: number; updatedAt: string | null } {
+    return {
+      fieldCount: c.template?.fields?.length ?? 0,
+      updatedAt: (c as any).updatedAt ?? null,
+    };
   }
 
   openCollection(coll: any): void {

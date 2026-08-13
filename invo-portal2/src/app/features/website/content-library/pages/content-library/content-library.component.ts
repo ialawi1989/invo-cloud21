@@ -1076,7 +1076,7 @@ export class ContentLibraryComponent implements OnInit, OnDestroy {
 
   collBreadcrumbs = computed<BreadcrumbItem[]>(() => [
     { label: 'Home', routerLink: '/', icon: 'home', iconOnly: true },
-    { label: 'Content Library', routerLink: '/website/content-library' },
+    { label: 'CMS', routerLink: '/website/content-library' },
     { label: this.collection()?.template?.displayName || '…' },
   ]);
   items        = signal<Website[]>([]);

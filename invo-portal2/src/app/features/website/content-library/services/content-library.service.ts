@@ -33,6 +33,16 @@ export class ContentLibraryService {
       const w = new Website();
       if (!item.type) item.type = 'ContentLibrary';
       w.ParseJson(item);
+      // The list needs a "last updated" column, but `Website` deliberately
+      // declares no timestamp — `ParseJson` copies only declared keys and
+      // `toCleanJson` walks `for..in`, so a plain assignment here would ride
+      // along into every save payload. Non-enumerable keeps it readable
+      // without ever being serialised back.
+      Object.defineProperty(w, 'updatedAt', {
+        value: item.updatedAt ?? item.modifiedDate ?? item.updateDate ?? null,
+        enumerable: false,
+        writable: true,
+      });
       return w;
     });
   }

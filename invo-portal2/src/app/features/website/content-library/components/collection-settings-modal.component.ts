@@ -203,7 +203,7 @@ export interface CollectionSettingsData {
         @if (tab() === 'settings') {
 
           <!-- Collection name -->
-          <p class="form-label">Library name</p>
+          <p class="form-label">Collection name</p>
           <input class="form-input" [(ngModel)]="collName"/>
 
           <div class="divider"></div>

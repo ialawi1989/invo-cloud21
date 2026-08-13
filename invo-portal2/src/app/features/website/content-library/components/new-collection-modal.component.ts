@@ -12,12 +12,12 @@ import { ContentLibraryService } from '../services/content-library.service';
   template: `
     <div style="min-width:360px">
       <div style="padding:20px 24px 14px;border-bottom:1px solid #f0f2f5;display:flex;align-items:center;justify-content:space-between">
-        <h3 style="font-size:16px;font-weight:600;color:#111827;margin:0">New Library</h3>
+        <h3 style="font-size:16px;font-weight:600;color:#111827;margin:0">New Collection</h3>
         <button (click)="ref.dismiss()" style="border:none;background:transparent;cursor:pointer;color:#9ca3af;font-size:18px;line-height:1">✕</button>
       </div>
       <div style="padding:20px 24px">
         <div style="margin-bottom:16px">
-          <label style="display:block;font-size:12px;font-weight:500;color:#374151;margin-bottom:6px">Library name</label>
+          <label style="display:block;font-size:12px;font-weight:500;color:#374151;margin-bottom:6px">Collection name</label>
           <input [(ngModel)]="name" (ngModelChange)="onNameChange()" (keydown.enter)="confirm()"
                  placeholder="e.g. Blog Posts"
                  style="width:100%;height:40px;border:1.5px solid #e5e7eb;border-radius:8px;padding:0 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box"/>
@@ -50,7 +50,7 @@ import { ContentLibraryService } from '../services/content-library.service';
         <button (click)="confirm()" [disabled]="loading()"
                 style="flex:1;height:40px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;background:#32acc1;color:#fff;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
           @if (loading()) { <span style="width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .6s linear infinite;display:inline-block"></span> }
-          Create Library
+          Create Collection
         </button>
       </div>
     </div>
