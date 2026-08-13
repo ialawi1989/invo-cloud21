@@ -202,7 +202,7 @@ export const SIDE_MENU: SideMenuItem[] = [
     subItems: [
       { id: 131, label: 'MENU.SUB.PAGE_BUILDER', link: '/page-builder', requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
       { id: 132, label: 'MENU.SUB.NAVIGATION', link: '/navigation-list', matchLinks: ['/mobile-icon-bar'], requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
-      { id: 136, label: 'CMS', link: '/website/content-library', requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
+      { id: 136, label: 'Content Library', link: '/website/content-library', requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
       { id: 138, label: 'MENU.SUB.MULTILINGUAL', link: '/settings/translations', requiredPermission: '' },
       { id: 133, label: 'MENU.SUB.WEBSITE_SETTINGS', link: '/website-settings', requiredPermission: 'websiteSettingsSecurity.actions.view.access' },
       { id: 134, label: 'MENU.SUB.DOMAIN_SETTINGS', link: '/domain-settings', requiredPermission: 'DomainSettingsSecurity.actions.view.access' },

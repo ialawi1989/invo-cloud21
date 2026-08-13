@@ -345,7 +345,7 @@ export class ContentItemPageComponent implements OnInit {
 
   itemBreadcrumbs = computed<BreadcrumbItem[]>(() => [
     { label: 'Home', routerLink: '/', icon: 'home', iconOnly: true },
-    { label: 'CMS', routerLink: '/website/content-library' },
+    { label: 'Content Library', routerLink: '/website/content-library' },
     { label: this.collectionName(), routerLink: `/website/content-library/${this.collectionId}` },
     { label: this.isNew ? 'New Item' : (this.formData['title'] || 'Edit Item') },
   ]);

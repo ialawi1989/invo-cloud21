@@ -396,7 +396,7 @@ function blankForm(): FormState {
                 <label class="form-label">
                   Help text (optional)
                   <span class="info-ico"
-                        [appTooltip]="'Shown as a hint below the field in the CMS editor so authors know what to enter.'"
+                        [appTooltip]="'Shown as a hint below the field in the Content Library editor so authors know what to enter.'"
                         aria-label="Help text info">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                   </span>

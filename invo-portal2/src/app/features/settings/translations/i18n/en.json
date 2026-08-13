@@ -60,7 +60,7 @@
       "INTERFACE": "Site text",
       "BUSINESS": "Business info",
       "STORE": "Store",
-      "CMS": "CMS collections"
+      "CMS": "Content Library"
     },
     "ENTITIES": {
       "PAGE_CONTENT": {
@@ -112,8 +112,8 @@
         "DESC": "Names for your matrix items."
       },
       "CMS": {
-        "LABEL": "CMS collections",
-        "DESC": "Content stored in your CMS collections."
+        "LABEL": "Content Library",
+        "DESC": "Content stored in your Content Library collections."
       }
     },
     "FIELDS": {

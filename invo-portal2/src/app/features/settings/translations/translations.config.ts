@@ -8,7 +8,7 @@
  * `ready` to true with a `source`.
  *
  * Grouping mirrors Wix's Translation Manager layout: Site pages,
- * Business info, then store/CMS collections.
+ * Business info, then store/Content Library collections.
  */
 
 export interface TranslationFieldConfig {

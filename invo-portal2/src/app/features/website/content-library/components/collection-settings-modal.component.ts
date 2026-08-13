@@ -277,7 +277,7 @@ export interface CollectionSettingsData {
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="2 6 5 9 10 3"/></svg>
               </div>
               <p class="mc-title">Advanced</p>
-              <p class="mc-desc">Set custom permissions per role for the site and CMS</p>
+              <p class="mc-desc">Set custom permissions per role for the site and Content Library</p>
             </div>
           </div>
 

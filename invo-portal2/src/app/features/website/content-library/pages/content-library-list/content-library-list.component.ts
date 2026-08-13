@@ -69,7 +69,7 @@ import { SpinnerComponent } from '../../../../../shared/components/spinner';
       <app-breadcrumbs [items]="breadcrumbs" navClass="mb-2" />
       <div class="top-bar">
         <div>
-          <h1 class="page-title">CMS</h1>
+          <h1 class="page-title">Content Library</h1>
           <p class="page-sub">Store and manage content to display anywhere on your site.</p>
         </div>
         <div class="top-actions">
@@ -196,7 +196,7 @@ export class ContentLibraryListComponent implements OnInit, OnDestroy {
   readonly breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', routerLink: '/', icon: 'home', iconOnly: true },
     { label: 'Website Content', routerLink: '/website' },
-    { label: 'CMS' },
+    { label: 'Content Library' },
   ];
 
   loading     = signal(true);
