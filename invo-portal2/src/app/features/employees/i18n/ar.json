@@ -443,7 +443,8 @@
       "LEAVE": "الإجازات",
       "PERFORMANCE": "الأداء",
       "DISCIPLINARY": "الإجراءات التأديبية",
-      "PAYROLL": "الرواتب"
+      "PAYROLL": "الرواتب",
+      "BENEFITS": "TODO_AR: Benefits"
     },
     "DOCUMENTS": {
       "TITLE": "الوثائق",
@@ -926,6 +927,51 @@
         "ABSENCE": "خصم غياب",
         "PENALTY": "غرامة",
         "OTHER_DEDUCTION": "خصم آخر"
+      }
+    },
+    "BENEFITS": {
+      "ELIGIBILITY": "الأهلية",
+      "ELIGIBILITY_HINT": "TODO_AR: Entitlements usually begin after probation.",
+      "ELIGIBILITY_START": "TODO_AR: Entitlements begin",
+      "HEALTH": "التأمين الصحي",
+      "HEALTH_EMPTY": "لا يوجد تأمين صحي مسجل.",
+      "PROVIDER": "مزود الخدمة",
+      "POLICY_NUMBER": "رقم الوثيقة",
+      "CLASS": {
+        "CLASS_A": "TODO_AR: Class A",
+        "CLASS_B": "TODO_AR: Class B",
+        "CLASS_C": "TODO_AR: Class C"
+      },
+      "START_DATE": "تاريخ البداية",
+      "EXPIRY_DATE": "تاريخ الانتهاء",
+      "END_DATE": "تاريخ النهاية",
+      "OPEN_ENDED": "TODO_AR: Open-ended",
+      "ACTIVE": "ساري",
+      "EXPIRED": "منتهي",
+      "DEPENDANTS_COVERED": "TODO_AR: Dependants covered",
+      "NO_DEPENDANTS": "TODO_AR: No dependants covered.",
+      "RETIREMENT": "TODO_AR: Retirement plan",
+      "RETIREMENT_EMPTY": "TODO_AR: No retirement plan recorded.",
+      "SCHEME": "TODO_AR: Scheme",
+      "EMPLOYEE_RATE": "TODO_AR: Employee contribution",
+      "EMPLOYER_RATE": "TODO_AR: Employer contribution",
+      "ENROLLED_ON": "TODO_AR: Enrolled on",
+      "HOUSING": "TODO_AR: Company housing",
+      "HOUSING_NOT_PROVIDED": "TODO_AR: No company housing provided.",
+      "UNIT": "TODO_AR: Unit",
+      "HOUSING_BLOCKED": "TODO_AR: This employee receives a housing allowance in payroll, so company housing cannot also be provided.",
+      "HOUSING_CONFLICT": "TODO_AR: This record has both company housing and a housing allowance in payroll.",
+      "VEHICLE": "TODO_AR: Company vehicle",
+      "VEHICLE_EMPTY": "TODO_AR: No company vehicle issued.",
+      "VEHICLE_HINT": "TODO_AR: Vehicles are recorded as assets.",
+      "ASSET": "TODO_AR: Asset",
+      "OTHER": "مزايا أخرى",
+      "OTHER_EMPTY": "لا توجد مزايا أخرى مسجلة.",
+      "NOT_SET": "غير محدد",
+      "SCHEME_VALUE": {
+        "GOSI": "TODO_AR: GOSI",
+        "PRIVATE": "TODO_AR: Private scheme",
+        "NONE": "TODO_AR: No scheme"
       }
     }
   }

@@ -1,0 +1,68 @@
+// Benefits tab. Mirrors the assets tab's card layout so the record tabs read as
+// one screen rather than six; only the tokens differ.
+.benefits {
+  &__card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e6e8ec);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  &__title { font-size: .95rem; font-weight: 600; margin: 0 0 .5rem; }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: .75rem 1.5rem;
+  }
+
+  &__field { display: flex; flex-direction: column; gap: .15rem; }
+  &__label { font-size: .75rem; color: var(--text-muted, #6b7280); }
+  &__value { font-size: .875rem; }
+  &__value--muted { color: var(--text-muted, #6b7280); }
+
+  &__hint { font-size: .75rem; color: var(--text-muted, #6b7280); margin: 0 0 .5rem; }
+  // The housing rule's explanation — deliberately not styled as an error, since
+  // being blocked is a correct state rather than a fault.
+  &__hint--block { color: var(--warning-text, #92400e); }
+
+  &__empty { font-size: .875rem; color: var(--text-muted, #6b7280); margin: 0; }
+  &__error {
+    font-size: .8125rem;
+    color: var(--danger-text, #991b1b);
+    background: var(--danger-bg, #fef2f2);
+    border-radius: 6px;
+    padding: .5rem .75rem;
+    margin-bottom: .75rem;
+  }
+
+  &__chip {
+    display: inline-block;
+    font-size: .75rem;
+    padding: .1rem .45rem;
+    border-radius: 999px;
+    background: var(--chip-bg, #eef2ff);
+    margin-inline-end: .25rem;
+  }
+  &__chip--ok   { background: var(--success-bg, #ecfdf5); color: var(--success-text, #065f46); }
+  &__chip--warn { background: var(--danger-bg, #fef2f2);  color: var(--danger-text, #991b1b); }
+
+  &__list { list-style: none; margin: 0; padding: 0; }
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: .75rem;
+    align-items: center;
+    padding: .4rem 0;
+    border-bottom: 1px solid var(--border-color, #e6e8ec);
+    &:last-child { border-bottom: 0; }
+  }
+  &__row-name  { font-size: .875rem; }
+  &__row-value { font-size: .875rem; font-variant-numeric: tabular-nums; }
+  &__row-dates { font-size: .75rem; color: var(--text-muted, #6b7280); }
+
+  &__files { list-style: none; margin: .5rem 0 0; padding: 0; font-size: .8125rem; }
+  &__link  { text-decoration: underline; }
+  &__loading { font-size: .875rem; color: var(--text-muted, #6b7280); }
+}

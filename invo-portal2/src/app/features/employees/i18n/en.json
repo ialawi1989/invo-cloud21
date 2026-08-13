@@ -443,7 +443,8 @@
       "LEAVE": "Leave",
       "PERFORMANCE": "Performance",
       "DISCIPLINARY": "Disciplinary",
-      "PAYROLL": "Payroll"
+      "PAYROLL": "Payroll",
+      "BENEFITS": "Benefits"
     },
     "DOCUMENTS": {
       "TITLE": "Documents",
@@ -926,6 +927,51 @@
         "ABSENCE": "Absence deduction",
         "PENALTY": "Penalty",
         "OTHER_DEDUCTION": "Other deduction"
+      }
+    },
+    "BENEFITS": {
+      "ELIGIBILITY": "Eligibility",
+      "ELIGIBILITY_HINT": "Entitlements usually begin after probation.",
+      "ELIGIBILITY_START": "Entitlements begin",
+      "HEALTH": "Health insurance",
+      "HEALTH_EMPTY": "No health insurance recorded.",
+      "PROVIDER": "Provider",
+      "POLICY_NUMBER": "Policy number",
+      "CLASS": {
+        "CLASS_A": "Class A",
+        "CLASS_B": "Class B",
+        "CLASS_C": "Class C"
+      },
+      "START_DATE": "Start date",
+      "EXPIRY_DATE": "Expiry date",
+      "END_DATE": "End date",
+      "OPEN_ENDED": "Open-ended",
+      "ACTIVE": "Active",
+      "EXPIRED": "Expired",
+      "DEPENDANTS_COVERED": "Dependants covered",
+      "NO_DEPENDANTS": "No dependants covered.",
+      "RETIREMENT": "Retirement plan",
+      "RETIREMENT_EMPTY": "No retirement plan recorded.",
+      "SCHEME": "Scheme",
+      "EMPLOYEE_RATE": "Employee contribution",
+      "EMPLOYER_RATE": "Employer contribution",
+      "ENROLLED_ON": "Enrolled on",
+      "HOUSING": "Company housing",
+      "HOUSING_NOT_PROVIDED": "No company housing provided.",
+      "UNIT": "Unit",
+      "HOUSING_BLOCKED": "This employee receives a housing allowance in payroll, so company housing cannot also be provided.",
+      "HOUSING_CONFLICT": "This record has both company housing and a housing allowance in payroll. Only one should apply — correct whichever is wrong.",
+      "VEHICLE": "Company vehicle",
+      "VEHICLE_EMPTY": "No company vehicle issued.",
+      "VEHICLE_HINT": "Vehicles are recorded as assets, so they are returned and cleared with everything else.",
+      "ASSET": "Asset",
+      "OTHER": "Other benefits",
+      "OTHER_EMPTY": "No other benefits recorded.",
+      "NOT_SET": "Not set",
+      "SCHEME_VALUE": {
+        "GOSI": "GOSI",
+        "PRIVATE": "Private scheme",
+        "NONE": "No scheme"
       }
     }
   }

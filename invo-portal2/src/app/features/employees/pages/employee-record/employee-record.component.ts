@@ -10,6 +10,7 @@ import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 
 import {
   HR_ASSETS,
+  HR_BENEFITS,
   HR_DISCIPLINARY,
   HR_LEAVE,
   HR_PAYROLL,
@@ -161,6 +162,7 @@ export class EmployeeRecordComponent {
   private readonly performanceFlag = hrModuleEnabled(HR_PERFORMANCE);
   private readonly disciplinaryFlag = hrModuleEnabled(HR_DISCIPLINARY);
   private readonly payrollFlag = hrModuleEnabled(HR_PAYROLL);
+  private readonly benefitsFlag = hrModuleEnabled(HR_BENEFITS);
 
   /** The record being viewed. `'0'` means a new employee. */
   readonly employeeId = toSignal(
@@ -226,6 +228,16 @@ export class EmployeeRecordComponent {
       // from someone who holds the grant, or show it to someone who does not.
       group: 'employeePayrollSecurity', action: 'viewPay',
       enabled: () => this.payrollFlag(), ready: true,
+    },
+    {
+      path: 'benefits', labelKey: 'EMPLOYEES.TABS.BENEFITS',
+      group: 'employeeBenefitSecurity', action: 'view',
+      // STAGED, NOT LIVE. `ready: false` hides the tab entirely (see the guard
+      // in visibleTabs): the route is not registered, and a tab pointing at an
+      // unregistered route is a dead link. Flip to true in the same change that
+      // adds the child route, the endpoints, the privilege group and the
+      // feature key — none of which land alone.
+      enabled: () => this.benefitsFlag(), ready: false,
     },
   ];
 

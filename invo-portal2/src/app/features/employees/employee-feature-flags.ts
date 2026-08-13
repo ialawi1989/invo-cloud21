@@ -48,11 +48,16 @@ export const HR_LEAVE = 'hr.leave';
 export const HR_PERFORMANCE = 'hr.performance';
 export const HR_DISCIPLINARY = 'hr.disciplinary';
 export const HR_PAYROLL = 'hr.payroll';
+/**
+ * Benefits. STAGED — the tab is `ready: false` until the endpoints exist, so
+ * switching this key on alone shows nothing. See employee-record.component.ts.
+ */
+export const HR_BENEFITS = 'hr.benefits';
 
 /** Every HR key, for the tab strip and for tests that assert coverage. */
 export const HR_FEATURE_KEYS = [
   HR_PROFILE, HR_DOCUMENTS, HR_ASSETS, HR_LEAVE,
-  HR_PERFORMANCE, HR_DISCIPLINARY, HR_PAYROLL,
+  HR_PERFORMANCE, HR_DISCIPLINARY, HR_PAYROLL, HR_BENEFITS,
 ] as const;
 
 /**

@@ -1,0 +1,201 @@
+@if (loading()) {
+  <p class="benefits__loading">{{ 'COMMON.LOADING' | translate }}</p>
+} @else {
+
+  @if (error()) {
+    <div class="benefits__error" role="alert">
+      <strong>{{ error()!.titleKey | translate }}</strong>
+      @if (error()!.detail) { <span>{{ error()!.detail }}</span> }
+    </div>
+  }
+
+  <!-- ── Eligibility ─────────────────────────────────────────────────────── -->
+  <section class="benefits__card">
+    <h3 class="benefits__title">{{ 'EMPLOYEES.BENEFITS.ELIGIBILITY' | translate }}</h3>
+    <p class="benefits__hint">{{ 'EMPLOYEES.BENEFITS.ELIGIBILITY_HINT' | translate }}</p>
+    <div class="benefits__field">
+      <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.ELIGIBILITY_START' | translate }}</span>
+      <span class="benefits__value">
+        {{ record().eligibilityStart || ('EMPLOYEES.BENEFITS.NOT_SET' | translate) }}
+      </span>
+    </div>
+  </section>
+
+  <!-- ── Health insurance ────────────────────────────────────────────────── -->
+  <section class="benefits__card">
+    <h3 class="benefits__title">{{ 'EMPLOYEES.BENEFITS.HEALTH' | translate }}</h3>
+
+    @if (!record().healthInsurance.provider && !record().healthInsurance.policyNumber) {
+      <p class="benefits__empty">{{ 'EMPLOYEES.BENEFITS.HEALTH_EMPTY' | translate }}</p>
+    } @else {
+      <div class="benefits__grid">
+        <div class="benefits__field">
+          <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.PROVIDER' | translate }}</span>
+          <span class="benefits__value">{{ record().healthInsurance.provider }}</span>
+        </div>
+        <div class="benefits__field">
+          <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.POLICY_NUMBER' | translate }}</span>
+          <span class="benefits__value">{{ record().healthInsurance.policyNumber }}</span>
+        </div>
+        <div class="benefits__field">
+          <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.CLASS' | translate }}</span>
+          <span class="benefits__value">{{ classLabel(record().healthInsurance.class) | translate }}</span>
+        </div>
+        <div class="benefits__field">
+          <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.START_DATE' | translate }}</span>
+          <span class="benefits__value">{{ record().healthInsurance.startDate }}</span>
+        </div>
+        <div class="benefits__field">
+          <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.EXPIRY_DATE' | translate }}</span>
+          <span class="benefits__value">
+            {{ record().healthInsurance.expiryDate }}
+            <!-- Null means the dates were never recorded — rendered as unknown,
+                 never as "active". -->
+            @if (insuranceActive() === true) {
+              <span class="benefits__chip benefits__chip--ok">{{ 'EMPLOYEES.BENEFITS.ACTIVE' | translate }}</span>
+            } @else if (insuranceActive() === false) {
+              <span class="benefits__chip benefits__chip--warn">{{ 'EMPLOYEES.BENEFITS.EXPIRED' | translate }}</span>
+            }
+          </span>
+        </div>
+      </div>
+
+      <div class="benefits__field">
+        <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.DEPENDANTS_COVERED' | translate }}</span>
+        @if (record().healthInsurance.dependantsCovered.length === 0) {
+          <span class="benefits__value benefits__value--muted">
+            {{ 'EMPLOYEES.BENEFITS.NO_DEPENDANTS' | translate }}
+          </span>
+        } @else {
+          <span class="benefits__value">
+            @for (id of record().healthInsurance.dependantsCovered; track trackId($index, id)) {
+              <span class="benefits__chip">{{ dependantName(id) }}</span>
+            }
+          </span>
+        }
+      </div>
+
+      @if (record().healthInsurance.card.length > 0) {
+        <ul class="benefits__files">
+          @for (f of record().healthInsurance.card; track f.id) {
+            <li>{{ f.fileName }}</li>
+          }
+        </ul>
+      }
+    }
+  </section>
+
+  <!-- ── Retirement ──────────────────────────────────────────────────────── -->
+  <section class="benefits__card">
+    <h3 class="benefits__title">{{ 'EMPLOYEES.BENEFITS.RETIREMENT' | translate }}</h3>
+    @if (!record().retirementPlan.scheme) {
+      <p class="benefits__empty">{{ 'EMPLOYEES.BENEFITS.RETIREMENT_EMPTY' | translate }}</p>
+    } @else {
+      <div class="benefits__grid">
+        <div class="benefits__field">
+          <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.SCHEME' | translate }}</span>
+          <span class="benefits__value">{{ schemeLabel(record().retirementPlan.scheme) | translate }}</span>
+        </div>
+        <div class="benefits__field">
+          <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.EMPLOYEE_RATE' | translate }}</span>
+          <!-- Null renders as unknown. An empty rate must never show as 0%. -->
+          <span class="benefits__value">
+            {{ employeeRatePercent() === null
+                ? ('EMPLOYEES.BENEFITS.NOT_SET' | translate)
+                : employeeRatePercent() + '%' }}
+          </span>
+        </div>
+        <div class="benefits__field">
+          <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.EMPLOYER_RATE' | translate }}</span>
+          <span class="benefits__value">
+            {{ employerRatePercent() === null
+                ? ('EMPLOYEES.BENEFITS.NOT_SET' | translate)
+                : employerRatePercent() + '%' }}
+          </span>
+        </div>
+        <div class="benefits__field">
+          <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.ENROLLED_ON' | translate }}</span>
+          <span class="benefits__value">{{ record().retirementPlan.enrolledOn }}</span>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- ── Company housing ─────────────────────────────────────────────────── -->
+  <section class="benefits__card">
+    <h3 class="benefits__title">{{ 'EMPLOYEES.BENEFITS.HOUSING' | translate }}</h3>
+
+    <!-- The rule, stated where it applies rather than only in the spec. -->
+    @if (housingConflict()) {
+      <div class="benefits__error" role="alert">
+        {{ 'EMPLOYEES.BENEFITS.HOUSING_CONFLICT' | translate }}
+      </div>
+    } @else if (housingBlock() === 'payrollHousingComponent') {
+      <p class="benefits__hint benefits__hint--block">
+        {{ 'EMPLOYEES.BENEFITS.HOUSING_BLOCKED' | translate }}
+      </p>
+    }
+
+    @if (!record().companyHousing.isProvided) {
+      <p class="benefits__empty">{{ 'EMPLOYEES.BENEFITS.HOUSING_NOT_PROVIDED' | translate }}</p>
+    } @else {
+      <div class="benefits__grid">
+        <div class="benefits__field">
+          <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.UNIT' | translate }}</span>
+          <span class="benefits__value">{{ record().companyHousing.unit }}</span>
+        </div>
+        <div class="benefits__field">
+          <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.START_DATE' | translate }}</span>
+          <span class="benefits__value">{{ record().companyHousing.startDate }}</span>
+        </div>
+        <div class="benefits__field">
+          <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.END_DATE' | translate }}</span>
+          <span class="benefits__value">
+            {{ record().companyHousing.endDate || ('EMPLOYEES.BENEFITS.OPEN_ENDED' | translate) }}
+          </span>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- ── Company vehicle — a REFERENCE, never a free-text field ──────────── -->
+  <section class="benefits__card">
+    <h3 class="benefits__title">{{ 'EMPLOYEES.BENEFITS.VEHICLE' | translate }}</h3>
+    @if (!record().companyVehicle.assetId) {
+      <p class="benefits__empty">{{ 'EMPLOYEES.BENEFITS.VEHICLE_EMPTY' | translate }}</p>
+    } @else {
+      <div class="benefits__field">
+        <span class="benefits__label">{{ 'EMPLOYEES.BENEFITS.ASSET' | translate }}</span>
+        <span class="benefits__value">
+          <a [routerLink]="['../assets']" class="benefits__link">
+            {{ record().companyVehicle.assetTag }}
+          </a>
+          <span class="benefits__value--muted">{{ record().companyVehicle.description }}</span>
+        </span>
+      </div>
+    }
+    <p class="benefits__hint">{{ 'EMPLOYEES.BENEFITS.VEHICLE_HINT' | translate }}</p>
+  </section>
+
+  <!-- ── Other benefits ──────────────────────────────────────────────────── -->
+  <section class="benefits__card">
+    <h3 class="benefits__title">{{ 'EMPLOYEES.BENEFITS.OTHER' | translate }}</h3>
+    @if (record().other.length === 0) {
+      <p class="benefits__empty">{{ 'EMPLOYEES.BENEFITS.OTHER_EMPTY' | translate }}</p>
+    } @else {
+      <ul class="benefits__list">
+        @for (row of record().other; track trackOther($index, row)) {
+          <li class="benefits__row">
+            <span class="benefits__row-name">{{ row.name }}</span>
+            <span class="benefits__row-value">{{ row.value }}</span>
+            <span class="benefits__row-dates">
+              {{ row.startDate }}
+              @if (row.endDate) { – {{ row.endDate }} }
+            </span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+}
