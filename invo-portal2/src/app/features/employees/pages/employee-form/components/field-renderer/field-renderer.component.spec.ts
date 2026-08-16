@@ -113,3 +113,47 @@ describe('field-renderer', () => {
     expect(rows().length).toBe(0);
   });
 });
+
+describe('field-renderer — the Education certificate hint', () => {
+  /**
+   * Education gets NO file attachment, deliberately: it is jsonb inside the
+   * employee record, and the file layer attaches to rows in registered
+   * entities. The hint points at Documents -> `Qualification`, which is the
+   * better home anyway — it gains expiry tracking and verification.
+   */
+  function component() {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [FieldRendererComponent, TranslateModule.forRoot()],
+    });
+    return TestBed.createComponent(FieldRendererComponent).componentInstance;
+  }
+
+  it('offers the Documents pointer on the education group', () => {
+    const c = component();
+
+    expect(c.extraHintKey({ key: 'education', type: 'group[]', labelKey: 'EDU' } as FieldDescriptor))
+      .toBe('EMPLOYEES.FORM.EDUCATION_CERTIFICATE_HINT');
+  });
+
+  it('offers nothing on any other group', () => {
+    // The inverse. A mutant returning the key unconditionally satisfies the
+    // test above and puts a note about qualification certificates under
+    // emergency contacts and dependants.
+    const c = component();
+
+    expect(c.extraHintKey({ key: 'dependents', type: 'group[]', labelKey: 'DEP' } as FieldDescriptor)).toBeNull();
+    expect(c.extraHintKey({ key: 'emergencyContacts', type: 'group[]', labelKey: 'EC' } as FieldDescriptor)).toBeNull();
+  });
+
+  it("defers to the manifest's own hint when the server supplies one", () => {
+    // A server-side hint must win rather than render two paragraphs. Mutant:
+    // drop the `if (d.hintKey) return null` guard — it compiles, runs, and
+    // reddens here only.
+    const c = component();
+
+    expect(c.extraHintKey({
+      key: 'education', type: 'group[]', labelKey: 'EDU', hintKey: 'SERVER.HINT',
+    } as FieldDescriptor)).toBeNull();
+  });
+});

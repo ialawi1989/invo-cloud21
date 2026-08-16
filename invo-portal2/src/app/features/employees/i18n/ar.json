@@ -76,7 +76,8 @@
       "SYSTEM_ACCESS_OFF_HINT": "TODO_AR: No login. The record still holds attendance and HR details.",
       "PERSONAL_DETAILS": "TODO_AR: Personal details",
       "CREDENTIALS_RETIRED_HINT": "TODO_AR: The previous pass code and swipe id are retired on restoring access — enter new ones. Access was ended by removing this employee's roles, not by deleting the credential, which is shared with any other company they work for.",
-      "EMPLOYMENT_DETAILS": "TODO_AR: Employment details"
+      "EMPLOYMENT_DETAILS": "TODO_AR: Employment details",
+      "EDUCATION_CERTIFICATE_HINT": "TODO_AR: To attach a certificate, add it under Documents with the type \"Qualification\" — documents also track expiry and verification."
     },
     "TOUR": {
       "START": "TODO_AR: Take a tour",
@@ -927,7 +928,14 @@
         "ABSENCE": "خصم غياب",
         "PENALTY": "غرامة",
         "OTHER_DEDUCTION": "خصم آخر"
-      }
+      },
+      "TAX_IDENTIFIER": "TODO_AR: Tax identifier",
+      "TAX_IDENTIFIER_HINT": "TODO_AR: TIN / tax code / NI number",
+      "TAX_COUNTRY": "TODO_AR: Tax country",
+      "TAX_COUNTRY_HINT": "TODO_AR: e.g. BH",
+      "TAX_RATE": "TODO_AR: Withholding rate (%)",
+      "TAX_NOTES": "TODO_AR: Tax notes",
+      "TAX_NOT_CALCULATED": "TODO_AR: Tax information is recorded here only. No tax is calculated or deducted from any figure on this page."
     },
     "BENEFITS": {
       "ELIGIBILITY": "الأهلية",

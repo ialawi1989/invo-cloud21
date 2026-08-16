@@ -171,6 +171,39 @@
               <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.CHANGE_NOTE_FIELD' | translate }}</span>
               <textarea class="form-control" rows="2" formControlName="changeNote"></textarea>
             </label>
+
+            <!-- ── Tax information — STORED, NOT CALCULATED ────────────────
+                 No country's tax scheme is modelled: the fields hold what
+                 someone was told to apply. Nothing subtracts the rate from
+                 anything, and netBeforeStatutory deliberately still excludes
+                 it — turning a disclaimed figure into a wrongly-computed one
+                 would be worse than the disclaimer. -->
+            <label class="pay-field">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.TAX_IDENTIFIER' | translate }}</span>
+              <input class="form-control" type="text" formControlName="taxIdentifier"
+                     [placeholder]="'EMPLOYEES.PAYROLL.TAX_IDENTIFIER_HINT' | translate" />
+            </label>
+
+            <label class="pay-field">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.TAX_COUNTRY' | translate }}</span>
+              <input class="form-control" type="text" maxlength="2" formControlName="taxCountry"
+                     [placeholder]="'EMPLOYEES.PAYROLL.TAX_COUNTRY_HINT' | translate" />
+            </label>
+
+            <label class="pay-field">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.TAX_RATE' | translate }}</span>
+              <input class="form-control form-control--num" type="number" min="0" max="100" step="0.01"
+                     formControlName="taxRatePercent" />
+            </label>
+
+            <label class="pay-field pay-field--wide">
+              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.TAX_NOTES' | translate }}</span>
+              <textarea class="form-control" rows="2" formControlName="taxNotes"></textarea>
+            </label>
+
+            <p class="pay-field pay-field--wide pay-note">
+              {{ 'EMPLOYEES.PAYROLL.TAX_NOT_CALCULATED' | translate }}
+            </p>
           </div>
 
           <section class="pay-sub">

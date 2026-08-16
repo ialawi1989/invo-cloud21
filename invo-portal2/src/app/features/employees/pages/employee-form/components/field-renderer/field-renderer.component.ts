@@ -159,6 +159,33 @@ export class FieldRendererComponent {
   }
 
   /** Row heading: "Contact 1", "Dependant 2", … */
+  /**
+   * A client-side hint for a group the manifest has no `hintKey` for.
+   *
+   * ── WHY EDUCATION POINTS AT DOCUMENTS ────────────────────────────────────
+   * The spec lists a certificate attachment against Education. It does not get
+   * one, deliberately: education is jsonb INSIDE the employee record, and the
+   * file layer attaches to rows in registered entities — so an attachment here
+   * would mean a seventh file entity plus a table to hang it off.
+   *
+   * Documents is the better home regardless of that cost. A qualification
+   * certificate filed there gains expiry tracking and the verify/edit split,
+   * neither of which a jsonb blob can offer. So the hint points people at the
+   * `Qualification` document type rather than apologising for a missing
+   * control.
+   *
+   * Keyed on the field key rather than driven by the manifest because the
+   * manifest is served by the backend, and this is a portal-side navigational
+   * hint about a portal-side screen — nothing the server should have to know.
+   * ─────────────────────────────────────────────────────────────────────────
+   */
+  extraHintKey(d: FieldDescriptor): string | null {
+    // Only when the manifest has not supplied its own hint, so a server-side
+    // one always wins rather than rendering two paragraphs.
+    if (d.hintKey) return null;
+    return d.key === 'education' ? 'EMPLOYEES.FORM.EDUCATION_CERTIFICATE_HINT' : null;
+  }
+
   rowLabel(d: FieldDescriptor, index: number): string {
     this.i18nTick();
     const key = d.rowLabelKey ?? d.labelKey;

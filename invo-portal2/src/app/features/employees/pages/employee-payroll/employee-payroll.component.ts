@@ -167,6 +167,13 @@ export class EmployeePayrollComponent {
     socialInsuranceApplicable: this.fb.control<boolean>(false),
     wpsEnabled: this.fb.control<boolean>(false),
     gosiNumber: this.fb.control<string | null>(null),
+    // Tax information — HELD, never computed from. No country's scheme is
+    // encoded, so nothing here can be silently wrong; see the migration
+    // header on 1784900000000_employee_payroll_tax.js.
+    taxIdentifier: this.fb.control<string | null>(null),
+    taxCountry: this.fb.control<string | null>(null),
+    taxRatePercent: this.fb.control<number | null>(null),
+    taxNotes: this.fb.control<string | null>(null),
     components: this.fb.array<any>([]),
   });
 
@@ -209,6 +216,14 @@ export class EmployeePayrollComponent {
       socialInsuranceApplicable: c?.socialInsuranceApplicable ?? false,
       wpsEnabled: c?.wpsEnabled ?? false,
       gosiNumber: c?.gosiNumber ?? null,
+      // Carried into the new row like the rest: tax details rarely change with
+      // a pay rise, and retyping them invites a transcription error in an
+      // identifier nobody re-checks. Effective dating still applies — this
+      // seeds a NEW row, it does not edit the old one.
+      taxIdentifier: c?.taxIdentifier ?? null,
+      taxCountry: c?.taxCountry ?? null,
+      taxRatePercent: c?.taxRatePercent ?? null,
+      taxNotes: c?.taxNotes ?? null,
     });
     this.components.clear();
     (c?.components ?? []).forEach(x => this.components.push(this.componentGroup(x)));

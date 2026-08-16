@@ -76,7 +76,8 @@
       "SYSTEM_ACCESS_OFF_HINT": "No login. The record still holds attendance and HR details.",
       "PERSONAL_DETAILS": "Personal details",
       "CREDENTIALS_RETIRED_HINT": "The previous pass code and swipe id are retired on restoring access — enter new ones. Access was ended by removing this employee's roles, not by deleting the credential, which is shared with any other company they work for.",
-      "EMPLOYMENT_DETAILS": "Employment details"
+      "EMPLOYMENT_DETAILS": "Employment details",
+      "EDUCATION_CERTIFICATE_HINT": "To attach a certificate, add it under Documents with the type \"Qualification\" — documents also track expiry and verification."
     },
     "TOUR": {
       "START": "Take a tour",
@@ -927,7 +928,14 @@
         "ABSENCE": "Absence deduction",
         "PENALTY": "Penalty",
         "OTHER_DEDUCTION": "Other deduction"
-      }
+      },
+      "TAX_IDENTIFIER": "Tax identifier",
+      "TAX_IDENTIFIER_HINT": "TIN / tax code / NI number",
+      "TAX_COUNTRY": "Tax country",
+      "TAX_COUNTRY_HINT": "e.g. BH",
+      "TAX_RATE": "Withholding rate (%)",
+      "TAX_NOTES": "Tax notes",
+      "TAX_NOT_CALCULATED": "Tax information is recorded here only. No tax is calculated or deducted from any figure on this page."
     },
     "BENEFITS": {
       "ELIGIBILITY": "Eligibility",

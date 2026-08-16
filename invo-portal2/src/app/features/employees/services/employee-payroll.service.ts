@@ -60,6 +60,11 @@ export interface PayrollRow {
   socialInsuranceApplicable: boolean | null;
   wpsEnabled: boolean | null;
   gosiNumber: string | null;
+  /** Tax information — stored only, never used in any calculation. */
+  taxIdentifier: string | null;
+  taxCountry: string | null;
+  taxRatePercent: number | null;
+  taxNotes: string | null;
   components: PayComponent[];
 
   /** Computed on read from the components active on the day asked about. */
@@ -250,6 +255,14 @@ export class EmployeePayrollService {
         typeof r?.socialInsuranceApplicable === 'boolean' ? r.socialInsuranceApplicable : null,
       wpsEnabled: typeof r?.wpsEnabled === 'boolean' ? r.wpsEnabled : null,
       gosiNumber: r?.gosiNumber ?? null,
+      taxIdentifier: r?.taxIdentifier ?? null,
+      taxCountry: r?.taxCountry ?? null,
+      // Postgres numeric arrives as a STRING. Left as a number here so the
+      // form's number input binds, and null when absent rather than 0 — a
+      // missing rate is not a zero rate.
+      taxRatePercent: r?.taxRatePercent === null || r?.taxRatePercent === undefined
+        ? null : Number(r.taxRatePercent),
+      taxNotes: r?.taxNotes ?? null,
       components: Array.isArray(r?.components)
         ? r.components.map((c: any) => ({
             type: c?.type ?? null,

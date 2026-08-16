@@ -42,6 +42,9 @@
               @if (d.hintKey) {
                 <p class="field-hint">{{ d.hintKey | translate }}</p>
               }
+              @if (extraHintKey(d); as extraHint) {
+                <p class="field-hint">{{ extraHint | translate }}</p>
+              }
 
               @for (row of rows(g, d.key); track $index) {
                 <div class="fr-row">
