@@ -38,7 +38,33 @@ import { environment } from '../../../environments/environment';
  *
  * That is the state promotions is in — 167 companies on the bare key, one on
  * sub-keys, and a portal gating on the string the admin screen stopped writing.
- * `hr` is enabled for no company, so there is nothing to be compatible with.
+ *
+ * ── THE REASON, WHICH IS THE MECHANISM AND NOT THE COUNT ─────────────────────
+ * This used to end "`hr` is enabled for no company, so there is nothing to be
+ * compatible with". **That step is now false** — measured on dev across 175
+ * companies, one company carries bare `hr` alongside the sub-keys:
+ *
+ *     hr          bare-only 0   both 1   sub-keys-only 2
+ *     promotions  bare-only 167 both 0   sub-keys-only 1
+ *
+ * The promotions row reproduces the figures this comment itself cites, which is
+ * what makes the `hr` row trustworthy rather than just another number.
+ *
+ * The DECISION does not change, because the count was never the real reason.
+ * **Bare `hr` is inert but permanent.** No screen writes it — `toggleGroup`
+ * touches only the seven sub-keys and `id: 'hr'` is a heading, not a written
+ * key — but `companies-form.component.ts` (`normalizeFeatures`) loads the
+ * stored array and saves it back verbatim, so a legacy value survives every
+ * save, forever, while never being newly created.
+ *
+ * That is why a fallback would be wrong regardless of how many companies have
+ * it: accepting bare `hr` here would **retroactively give a dead value meaning**
+ * for whichever companies happen to still carry it, with no way to tell which
+ * of them ever meant it. Unlike the count, that reason does not expire.
+ *
+ * The failure this guards against — a company on bare `hr` only, every HR tab
+ * hidden, no visible cause — has **zero instances** today. Keep it that way by
+ * not making the bare key mean anything.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 export const HR_PROFILE = 'hr.profile';
