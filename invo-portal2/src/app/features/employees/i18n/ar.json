@@ -990,6 +990,25 @@
       "SAVE_EMPLOYEE_FIRST": "TODO_AR: Save the employee first — there is no record to attach files to yet.",
       "NO_UPLOAD_PERMISSION": "TODO_AR: You do not have permission to attach files to this employee.",
       "STORAGE_UNCONFIGURED": "TODO_AR: Document storage is not configured on this server."
+    },
+    "HOLIDAYS": {
+      "TITLE": "TODO_AR: Holiday calendars",
+      "ADD_CALENDAR": "TODO_AR: Add a calendar",
+      "ADD_DAY": "TODO_AR: Add a day",
+      "NAME": "TODO_AR: Calendar name",
+      "NAME_REQUIRED": "TODO_AR: A calendar needs a name",
+      "COUNTRY": "TODO_AR: Country",
+      "DATE": "TODO_AR: Date",
+      "DAY_NAME": "TODO_AR: Holiday",
+      "RECURRING": "TODO_AR: Recurs yearly",
+      "DAYS": "TODO_AR: days",
+      "NO_DAYS": "TODO_AR: No days in this calendar yet.",
+      "NONE": "TODO_AR: No holiday calendars yet.",
+      "UNNAMED": "TODO_AR: Untitled calendar",
+      "DUPLICATE_DATES": "TODO_AR: The same date appears more than once",
+      "SAVED": "TODO_AR: Calendar saved",
+      "UNAVAILABLE": "TODO_AR: This server does not offer holiday calendars yet. Nothing is missing from your data — the feature is not deployed here.",
+      "SCOPE_NOTE": "TODO_AR: Calendars are managed here only. Leave day counts already recorded are unchanged, and whether the leave suggestion excludes public holidays is decided by the server."
     }
   }
 }

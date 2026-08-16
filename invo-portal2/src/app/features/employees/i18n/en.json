@@ -990,6 +990,25 @@
       "SAVE_EMPLOYEE_FIRST": "Save the employee first — there is no record to attach files to yet.",
       "NO_UPLOAD_PERMISSION": "You do not have permission to attach files to this employee.",
       "STORAGE_UNCONFIGURED": "Document storage is not configured on this server."
+    },
+    "HOLIDAYS": {
+      "TITLE": "Holiday calendars",
+      "ADD_CALENDAR": "Add a calendar",
+      "ADD_DAY": "Add a day",
+      "NAME": "Calendar name",
+      "NAME_REQUIRED": "A calendar needs a name",
+      "COUNTRY": "Country",
+      "DATE": "Date",
+      "DAY_NAME": "Holiday",
+      "RECURRING": "Recurs yearly",
+      "DAYS": "days",
+      "NO_DAYS": "No days in this calendar yet.",
+      "NONE": "No holiday calendars yet.",
+      "UNNAMED": "Untitled calendar",
+      "DUPLICATE_DATES": "The same date appears more than once",
+      "SAVED": "Calendar saved",
+      "UNAVAILABLE": "This server does not offer holiday calendars yet. Nothing is missing from your data — the feature is not deployed here.",
+      "SCOPE_NOTE": "Calendars are managed here only. Leave day counts already recorded are unchanged, and whether the leave suggestion excludes public holidays is decided by the server."
     }
   }
 }

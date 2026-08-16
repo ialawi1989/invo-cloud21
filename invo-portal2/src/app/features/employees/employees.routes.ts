@@ -89,6 +89,18 @@ export const EMPLOYEES_ROUTES: Routes = [
       import('./pages/employee-schedule/employee-schedule.component').then(m => m.EmployeeScheduleComponent),
   },
   {
+    // Holiday calendars — the last piece of Leave. Gated on the same view
+    // grant as leave itself: a calendar is leave configuration, and someone
+    // who may not see leave has no reason to see which days are public
+    // holidays for every branch.
+    path: 'holiday-calendars',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'employeeLeaveSecurity.actions.view' },
+    loadComponent: () =>
+      import('./pages/holiday-calendars/holiday-calendars.component')
+        .then(m => m.HolidayCalendarsComponent),
+  },
+  {
     path: 'my-account',
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
