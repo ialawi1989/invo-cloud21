@@ -973,6 +973,15 @@
         "PRIVATE": "Private scheme",
         "NONE": "No scheme"
       }
+    },
+    "FILES": {
+      "DOCUMENTS": "Documents",
+      "ATTACH": "Attach a file",
+      "NONE": "No files attached",
+      "NO_DOCUMENTS_YET": "No documents yet. Add one on the Documents tab, then attach files to it here.",
+      "SAVE_EMPLOYEE_FIRST": "Save the employee first — there is no record to attach files to yet.",
+      "NO_UPLOAD_PERMISSION": "You do not have permission to attach files to this employee.",
+      "STORAGE_UNCONFIGURED": "Document storage is not configured on this server."
     }
   }
 }

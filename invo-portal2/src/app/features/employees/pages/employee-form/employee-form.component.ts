@@ -59,7 +59,16 @@ import {
 } from '../../models/field-manifest.types';
 import { countryOptions, languageOptions } from '../../models/employee-catalogs';
 import { CollapsibleCardComponent } from '@shared/components/collapsible-card/collapsible-card.component';
-import { hrFieldsEnabled } from '../../employee-feature-flags';
+import { hrFieldsEnabled, hrDocumentsEnabled } from '../../employee-feature-flags';
+import { hrGrantFor } from '../../hr-privilege';
+import { AuthService } from '@core/auth/auth.service';
+import {
+  AttachmentAccess,
+  HrFileAttachmentsComponent,
+  attachmentAccess,
+} from '../../components/hr-file-attachments/hr-file-attachments.component';
+import { EmployeeDocument, EmployeeDocumentService } from '../../services/employee-document.service';
+import { EmployeeFileService, FILE_ENTITY } from '../../services/employee-file.service';
 import { GuidedTourService } from '@shared/services/guided-tour.service';
 import { EMPLOYEE_FORM_TOUR, EMPLOYEE_TOUR_KEY } from './employee-form.tour';
 import { FieldRendererComponent } from './components/field-renderer/field-renderer.component';
@@ -105,6 +114,7 @@ interface Option {
     DatePickerComponent,
     FieldRendererComponent,
     CollapsibleCardComponent,
+    HrFileAttachmentsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-form.component.html',
@@ -113,6 +123,9 @@ interface Option {
 export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveComponent {
   private fb          = inject(FormBuilder);
   private service     = inject(EmployeeService);
+  private documentService = inject(EmployeeDocumentService);
+  private fileService = inject(EmployeeFileService);
+  private auth        = inject(AuthService);
   private manifestSvc = inject(EmployeeFieldManifestService);
   private branchSvc   = inject(BranchSettingsService);
   private privilegeSvc = inject(PrivilegeService);
@@ -205,6 +218,54 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
    * untouched through the `...original` spread.
    */
   hrFields = hrFieldsEnabled();
+
+  // ── Document attachments ───────────────────────────────────────────────
+  /**
+   * The employee's documents and their files, surfaced on the form itself so
+   * an attachment does not require finding the Documents tab first.
+   *
+   * The upload path is `HrFileAttachmentsComponent` and
+   * `EmployeeFileService` — the same ones the Documents tab uses. Nothing here
+   * posts a file itself: a second upload path would be a second place for the
+   * signed-URL and content-type rules to drift.
+   */
+  private documentsFlag = hrDocumentsEnabled();
+  readonly documents = signal<EmployeeDocument[]>([]);
+  private fileCatalogOk = signal<boolean>(false);
+
+  /**
+   * Whether the section renders, and whether its control is usable.
+   *
+   * Three gates, exactly the ones the tab strip applies: the company has the
+   * module, the viewer holds the grant, and there is a record to attach to.
+   * A new employee sees the section disabled with a reason rather than a
+   * control that would fail on submit.
+   */
+  readonly attachAccess = computed<AttachmentAccess>(() => attachmentAccess({
+    isNew: this.isCreate(),
+    featureEnabled: this.documentsFlag(),
+    canView: hrGrantFor(this.privilegeSvc, this.auth, 'employeeDocumentSecurity', 'view'),
+    canEdit: hrGrantFor(this.privilegeSvc, this.auth, 'employeeDocumentSecurity', 'edit'),
+    storageConfigured: this.fileCatalogOk(),
+  }));
+
+  /** Reload the document list after an upload or a removal. */
+  async reloadDocuments(): Promise<void> {
+    const id = this.employeeId();
+    if (!id || this.isCreate()) { this.documents.set([]); return; }
+    try {
+      this.documents.set(await this.documentService.list(id));
+    } catch {
+      // A failed document list must not take the whole form down — the rest of
+      // the record is still editable and still saveable.
+      this.documents.set([]);
+    }
+  }
+
+  trackDocument = (_: number, d: EmployeeDocument) => d.id;
+
+  /** Entity key for the attachments component — documents, on this form. */
+  readonly documentEntity = FILE_ENTITY.document;
 
   /**
    * Disclosure state for the two HR cards.
@@ -516,13 +577,23 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
       // With the HR fields flagged off there's nothing to fetch and nothing to
       // build: the form is exactly the pre-phase-1 form plus the access flag.
       const hr = this.hrFields();
-      const [, , data, manifest, lookups] = await Promise.all([
+      // Documents and the file catalogue ride along with the rest rather than
+      // waiting for the record: neither blocks the form, and both resolve
+      // before the section can be interacted with. A failure in either leaves
+      // the section empty and the form fully usable.
+      const docsWanted = !this.isCreate() && this.documentsFlag();
+      const [, , data, manifest, lookups, docs, catalog] = await Promise.all([
         this.loadPrivileges(),
         this.loadBranches(),
         this.isCreate() ? Promise.resolve(null) : this.service.getOne(id!),
         hr ? this.manifestSvc.getManifest() : Promise.resolve(null),
         hr ? this.service.getEmploymentLookups() : Promise.resolve({ departments: [], positions: [] }),
+        docsWanted ? this.documentService.list(id!).catch(() => []) : Promise.resolve([]),
+        this.documentsFlag() ? this.fileService.catalog().catch(() => null) : Promise.resolve(null),
       ]);
+
+      this.documents.set(docs);
+      this.fileCatalogOk.set(catalog?.storageConfigured === true);
 
       this.departmentSuggestions.set(lookups.departments);
       this.positionSuggestions.set(lookups.positions);

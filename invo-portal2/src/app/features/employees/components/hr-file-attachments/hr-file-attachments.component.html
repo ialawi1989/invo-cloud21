@@ -1,0 +1,43 @@
+<div class="hr-files">
+  @if (error(); as err) {
+    <div class="hr-files__error" role="alert">
+      <span>{{ err.titleKey | translate }}</span>
+      @if (err.detail) { <span class="hr-files__error-detail">{{ err.detail }}</span> }
+      @if (err.hintKey) { <span class="hr-files__error-hint">{{ err.hintKey | translate }}</span> }
+    </div>
+  }
+
+  @if (attachments().length) {
+    <ul class="hr-files__list">
+      @for (file of attachments(); track trackFile($index, file)) {
+        <li class="hr-files__item" [class.hr-files__item--busy]="busy() === file.id">
+          <button type="button" class="hr-files__name"
+                  [disabled]="busy() === file.id"
+                  (click)="download(file)">
+            {{ file.fileName }}
+          </button>
+          <span class="hr-files__size">{{ fileSize(file) }}</span>
+          @if (canUpload()) {
+            <button type="button" class="hr-files__remove"
+                    [disabled]="busy() === file.id"
+                    [attr.aria-label]="'COMMON.DELETE' | translate"
+                    (click)="remove(file)">×</button>
+          }
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="hr-files__empty">{{ 'EMPLOYEES.FILES.NONE' | translate }}</p>
+  }
+
+  @if (canUpload()) {
+    <label class="hr-files__upload">
+      <input type="file" hidden [accept]="acceptAttr()" (change)="onFilePicked($event)" />
+      <span>{{ 'EMPLOYEES.FILES.ATTACH' | translate }}</span>
+    </label>
+  } @else if (disabledReasonKey(); as reasonKey) {
+    <!-- Shown, never enabled: the control exists so the user knows the feature
+         does, and stating the reason beats a button that fails on submit. -->
+    <p class="hr-files__disabled">{{ reasonKey | translate }}</p>
+  }
+</div>

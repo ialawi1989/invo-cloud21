@@ -973,6 +973,15 @@
         "PRIVATE": "TODO_AR: Private scheme",
         "NONE": "TODO_AR: No scheme"
       }
+    },
+    "FILES": {
+      "DOCUMENTS": "TODO_AR: Documents",
+      "ATTACH": "TODO_AR: Attach a file",
+      "NONE": "TODO_AR: No files attached",
+      "NO_DOCUMENTS_YET": "TODO_AR: No documents yet. Add one on the Documents tab, then attach files to it here.",
+      "SAVE_EMPLOYEE_FIRST": "TODO_AR: Save the employee first — there is no record to attach files to yet.",
+      "NO_UPLOAD_PERMISSION": "TODO_AR: You do not have permission to attach files to this employee.",
+      "STORAGE_UNCONFIGURED": "TODO_AR: Document storage is not configured on this server."
     }
   }
 }

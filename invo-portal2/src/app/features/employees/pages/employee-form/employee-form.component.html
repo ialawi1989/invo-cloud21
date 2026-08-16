@@ -189,6 +189,48 @@
           </div>
         </section>
 
+        <!-- ── Documents ──────────────────────────────────────────────────
+             Attachments reachable from the form itself, so adding a passport
+             does not mean finding the Documents tab first. Same upload path as
+             that tab: <app-hr-file-attachments> over EmployeeFileService.
+             Hidden entirely without the hr.documents key AND the
+             employeeDocumentSecurity.view grant — see attachmentAccess(). -->
+        @if (attachAccess().visible) {
+        <section class="card" data-tour="emp-documents">
+          <header class="card__head">
+            <h2 class="card__title">{{ 'EMPLOYEES.FILES.DOCUMENTS' | translate }}</h2>
+          </header>
+          <div class="card__body">
+            @if (attachAccess().canUpload) {
+              @if (documents().length) {
+                <ul class="doc-attachments">
+                  @for (doc of documents(); track trackDocument($index, doc)) {
+                    <li class="doc-attachments__doc">
+                      <span class="doc-attachments__title">
+                        {{ doc.type }}@if (doc.number) { <span class="doc-attachments__num">{{ doc.number }}</span> }
+                      </span>
+                      <app-hr-file-attachments
+                        [entity]="documentEntity"
+                        [parentId]="doc.id"
+                        [attachments]="doc.files ?? []"
+                        [canUpload]="true"
+                        (changed)="reloadDocuments()" />
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <!-- Files hang off a DOCUMENT, not off the employee, so there
+                     is nothing to attach to until one exists. Said plainly
+                     rather than offering a control with no parent. -->
+                <p class="doc-attachments__none">{{ 'EMPLOYEES.FILES.NO_DOCUMENTS_YET' | translate }}</p>
+              }
+            } @else if (attachAccess().reasonKey; as reasonKey) {
+              <p class="doc-attachments__none">{{ reasonKey | translate }}</p>
+            }
+          </div>
+        </section>
+        }
+
         <!-- Roles and access only exist for employees who sign in. -->
         @if (hasSystemAccess()) {
         <!-- ── Employee Roles ── -->
