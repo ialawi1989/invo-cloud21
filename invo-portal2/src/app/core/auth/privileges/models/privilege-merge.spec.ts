@@ -22,6 +22,16 @@ import { hasHrGrant } from '../../../../features/employees/hr-privilege';
  * and the one thing that must never change about it is the value a merged-in
  * group carries.
  *
+ * ── WHERE A DENIAL ACTUALLY COMES FROM ───────────────────────────────────────
+ * The raw payload and the runtime object are not the same shape, and reading
+ * only the first leads to the wrong diagnosis. A legacy set arrives over the
+ * wire with no HR groups in it at all; after `setPrivileges()` runs it through
+ * `ParseJson`, the in-memory tree HAS those groups, carrying no `access`. So an
+ * HR denial is a merged-in group nobody has ticked — not a missing one.
+ * The outcome is identical, the cause is not: "the record is broken" sends the
+ * next reader to this file, "nobody has ticked it" sends them to the privilege
+ * form, which is where the fix is.
+ *
  * ── THE VALUE THAT MUST STAY ABSENT ──────────────────────────────────────────
  * The definitions declare no `access` at all — only `name` and `securityType` —
  * and `PrivilegeSetting` initialises it to `null`. That omission is
