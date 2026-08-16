@@ -445,7 +445,8 @@
       "PERFORMANCE": "Performance",
       "DISCIPLINARY": "Disciplinary",
       "PAYROLL": "Payroll",
-      "BENEFITS": "Benefits"
+      "BENEFITS": "Benefits",
+      "EOS": "End of service"
     },
     "DOCUMENTS": {
       "TITLE": "Documents",
@@ -1009,6 +1010,18 @@
       "SAVED": "Calendar saved",
       "UNAVAILABLE": "This server does not offer holiday calendars yet. Nothing is missing from your data — the feature is not deployed here.",
       "SCOPE_NOTE": "Calendars are managed here only. Leave day counts already recorded are unchanged, and whether the leave suggestion excludes public holidays is decided by the server."
+    },
+    "EOS": {
+      "BLOCKED_OPEN_ASSETS": "Company property is still assigned to this employee",
+      "BLOCKED_DEPARTMENT": "Clearance is blocked",
+      "PENDING_DEPARTMENT": "Clearance is still pending",
+      "NEEDS_TYPE": "Choose an end-of-service type",
+      "NEEDS_LAST_DAY": "Enter the last working day",
+      "NEEDS_REASON": "Enter a reason",
+      "NEEDS_REHIRE_REASON": "Marking someone as not eligible for rehire needs a reason",
+      "NEEDS_VISA_CANCELLATION": "Enter the visa cancellation date",
+      "NEEDS_OVERRIDE_REASON": "An overridden settlement line needs a reason",
+      "NOT_CALCULATED": "No settlement figure is calculated. Every amount below is entered by hand, and nothing here works out gratuity, leave encashment or notice pay."
     }
   }
 }

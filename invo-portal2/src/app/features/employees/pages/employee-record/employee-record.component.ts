@@ -11,6 +11,7 @@ import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import {
   HR_ASSETS,
   HR_BENEFITS,
+  HR_EOS,
   HR_DISCIPLINARY,
   HR_LEAVE,
   HR_PAYROLL,
@@ -163,6 +164,7 @@ export class EmployeeRecordComponent {
   private readonly disciplinaryFlag = hrModuleEnabled(HR_DISCIPLINARY);
   private readonly payrollFlag = hrModuleEnabled(HR_PAYROLL);
   private readonly benefitsFlag = hrModuleEnabled(HR_BENEFITS);
+  private readonly eosFlag = hrModuleEnabled(HR_EOS);
 
   /** The record being viewed. `'0'` means a new employee. */
   readonly employeeId = toSignal(
@@ -238,6 +240,16 @@ export class EmployeeRecordComponent {
       // adds the child route, the endpoints, the privilege group and the
       // feature key — none of which land alone.
       enabled: () => this.benefitsFlag(), ready: false,
+    },
+    {
+      path: 'end-of-service', labelKey: 'EMPLOYEES.TABS.EOS',
+      group: 'employeeEosSecurity', action: 'view',
+      // STAGED, NOT LIVE — same as Benefits. `ready: false` hides it entirely,
+      // because the child route is not registered and a tab pointing at an
+      // unregistered route is a dead link. Flip to true in the same change
+      // that adds the route, the endpoints, the privilege group and turns on
+      // the `hr.eos` key. None of those land alone.
+      enabled: () => this.eosFlag(), ready: false,
     },
   ];
 
