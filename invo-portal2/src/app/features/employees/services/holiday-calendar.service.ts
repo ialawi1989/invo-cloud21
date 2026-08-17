@@ -8,7 +8,13 @@ import {
 } from './holiday-calendar.types';
 
 /**
- * Holiday calendars, against endpoints that DO NOT EXIST YET.
+ * Holiday calendars.
+ *
+ * **CORRECTED 2026-08-17.** This header said "against endpoints that DO NOT
+ * EXIST YET". They exist as of `InvoCloudBack faec0e074`, and they implement
+ * the contract this file already called. The degradation below is kept — a
+ * deployment that has not migrated yet must still open the screen without an
+ * error page — but it is no longer the expected case.
  *
  * ── HOW IT DEGRADES, AND WHY THAT IS THE POINT ───────────────────────────────
  * Every call answers rather than throws. A missing endpoint produces

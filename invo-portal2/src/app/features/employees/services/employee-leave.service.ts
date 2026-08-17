@@ -279,12 +279,30 @@ export class EmployeeLeaveService {
    * one implementation of "how many days is that". The portal counting its own
    * would disagree the moment rest days become configurable.
    */
-  async catalog(range?: { startDate: string; endDate: string; halfDay?: string }): Promise<LeaveCatalog> {
+  async catalog(
+    range?: { startDate: string; endDate: string; halfDay?: string },
+    /**
+     * The branch whose holiday calendar applies.
+     *
+     * ── NO CALLER SUPPLIES THIS YET, AND THAT IS SAFE ──────────────────────
+     * The server excludes public holidays only for a branch that HAS a
+     * calendar, and answers `suggestionExcludesPublicHolidays: true` when it
+     * cannot tell — which is what happens while this is undefined. So the
+     * count is unchanged and the disclaimer stays.
+     *
+     * That is the conservative direction on purpose: the failure of guessing a
+     * branch would be a suggestion that silently excluded the WRONG branch's
+     * holidays. Wiring it up needs the employee's branch on the leave screen,
+     * which it does not currently load.
+     */
+    branchId?: string,
+  ): Promise<LeaveCatalog> {
     const query = range
       ? `?startDate=${encodeURIComponent(range.startDate)}`
         + `&endDate=${encodeURIComponent(range.endDate)}`
         + `&halfDay=${encodeURIComponent(range.halfDay ?? 'none')}`
-      : '';
+        + (branchId ? `&branchId=${encodeURIComponent(branchId)}` : '')
+      : (branchId ? `?branchId=${encodeURIComponent(branchId)}` : '');
     const res = await this.api.request<any>(this.api.get(`employee/leaveCatalog${query}`));
     const d = res?.data;
     return {
