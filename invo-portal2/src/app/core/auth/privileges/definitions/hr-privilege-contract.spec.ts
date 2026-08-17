@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { employeeAssetSecurity } from './employeeAssetSecurity';
+import { employeeEosSecurity } from './employeeEosSecurity';
 import { employeeDisciplinarySecurity } from './employeeDisciplinarySecurity';
 import { employeeDocumentSecurity } from './employeeDocumentSecurity';
 import { employeeLeaveSecurity } from './employeeLeaveSecurity';
@@ -39,6 +40,7 @@ const CONTRACT: Record<string, string[]> = {
   employeeProfileSecurity: ['viewSensitive'],
   employeeDocumentSecurity: ['view', 'edit', 'verify'],
   employeeAssetSecurity: ['view', 'edit'],
+  employeeEosSecurity: ['view', 'edit', 'complete'],
   employeeDisciplinarySecurity: ['view', 'edit', 'decideAppeal'],
   employeePerformanceSecurity: ['view', 'edit', 'calibrate'],
   employeeLeaveSecurity: ['view', 'edit', 'approve'],
@@ -53,6 +55,7 @@ const DEFINITIONS: Record<string, () => any> = {
   employeePerformanceSecurity,
   employeeLeaveSecurity,
   employeePayrollSecurity,
+  employeeEosSecurity,
 };
 
 describe('HR privilege contract', () => {
