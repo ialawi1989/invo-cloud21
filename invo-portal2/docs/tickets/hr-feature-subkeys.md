@@ -1,6 +1,45 @@
 # `hr` became `hr.profile` + `hr.documents` — the portal still asks for `hr`
 
 **Status** Portal side DONE. The change described below is implemented.
+**Reconciled** 2026-08-17 — see the two corrections below.
+
+> ## CORRECTED 2026-08-17 — two claims in the body have expired
+>
+> Verified against `invo-portal2 @ storefront-preview-ssr-routing bcde083` and
+> `invoAdminProtal` (branch `feature/addfeatures-to-company`).
+>
+> **1. "TWO keys" is now NINE.** `[read]` `hr.profile`, `hr.documents`,
+> `hr.assets`, `hr.leave`, `hr.performance`, `hr.disciplinary`, `hr.payroll`,
+> `hr.benefits`, `hr.eos` — one per module, none riding on another. The "change
+> needed here" section below describes the first two only; it was completed and
+> then extended.
+>
+> **2. "`hr` is enabled for no company" is FALSE.** `[executed]` Measured on
+> dev across 175 companies:
+>
+> ```
+> hr          bare-only 0    both 1   sub-keys-only 2
+> promotions  bare-only 167  both 0   sub-keys-only 1
+> ```
+>
+> The promotions row reproduces the figures this ticket itself cites, which is
+> the control that makes the `hr` row trustworthy rather than just a number.
+>
+> **The decision does not change, because the count was never the real reason.**
+> Bare `hr` is INERT BUT PERMANENT: no screen writes it — `toggleGroup` touches
+> only the sub-keys and `id: 'hr'` is a heading — but
+> `companies-form.component.ts` (`normalizeFeatures`) loads the stored array and
+> saves it back verbatim, so a legacy value survives every save while never
+> being newly created.
+>
+> That is why the portal must never accept bare `hr` as a fallback: it would
+> retroactively give a dead value meaning for whichever companies still carry
+> it, with no way to tell which of them ever meant it. Unlike "enabled for no
+> company", that reason does not expire — which is the whole lesson of this
+> reconciliation pass.
+>
+> The failure this guards against — a company on bare `hr` ONLY, every HR tab
+> dark with no visible cause — has **zero instances**.
 **Admin side** Done — `invoAdminProtal` commit `7e93ffa`.
 **Portal side** Done — `HR_PROFILE` / `HR_DOCUMENTS`, no bare-`hr` fallback,
 `hrFieldsEnabled()` on `hr.profile`, new `hrDocumentsEnabled()` on
