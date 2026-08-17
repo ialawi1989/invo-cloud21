@@ -253,3 +253,29 @@ export function settlementTotal(lines: SettlementLine[]): number | null {
   if (entered.length !== lines.length) return null;
   return entered.reduce((sum, l) => sum + (l.amount as number), 0);
 }
+
+/**
+ * The i18n key for a blocker the SERVER sent.
+ *
+ * The server speaks `eos.needsType`; the bundle holds
+ * `EMPLOYEES.EOS.NEEDS_TYPE`. Something has to translate between them, and it
+ * is the portal's job — the server has no business knowing this app's key
+ * layout, and a server that emitted portal keys could never serve a second
+ * client.
+ *
+ * Without this the blockers rendered as raw `eos.needsType` on screen. It was
+ * invisible to every rule test, because the rules only ever assert the key
+ * STRING; only rendering the template catches it.
+ */
+export function blockerLabelKey(key: string): string {
+  // IDEMPOTENT. Two sources feed this: the SERVER sends `eos.needsType`, and
+  // this module's own completionBlockers() already returns the full
+  // `EMPLOYEES.EOS.NEEDS_TYPE`. Prefixing an already-prefixed key produced
+  // `EMPLOYEES.EOS.EMPLOYEES.EOS.NEEDS_TYPE`, which resolves to nothing and
+  // renders raw. Caught by the render test; invisible to every rule test,
+  // because the rules only ever compare the key string to itself.
+  if (key.startsWith('EMPLOYEES.')) return key;
+  const bare = key.startsWith('eos.') ? key.slice(4) : key;
+  const upper = bare.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toUpperCase();
+  return `EMPLOYEES.EOS.${upper}`;
+}

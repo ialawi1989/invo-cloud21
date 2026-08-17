@@ -22,6 +22,7 @@ import {
   ClearanceRow,
   EosRecord,
   SettlementLine,
+  blockerLabelKey,
   completionBlockers,
   noticeServedDays,
   settlementTotal,
@@ -125,6 +126,14 @@ export class EmployeeEosComponent implements OnInit {
       this.statutoryAvailable.set(caps.statutoryCalculationsAvailable);
       this.openAssetCount.set(this.service.lastOpenAssetCount());
       this.serverBlockers.set([]);
+    } catch (e) {
+      // The service degrades reads itself, so this should be unreachable — but
+      // "should be" is how a tab ends up rendering a blank white screen. A
+      // caught failure shows the empty record and the error, which is at least
+      // legible; leaving it uncaught left `record()` null and the template
+      // rendered NOTHING AT ALL. Found by the render test, not by reading.
+      this.record.set(blankRecord());
+      this.error.set(describeError(e));
     } finally {
       this.loading.set(false);
     }
@@ -239,6 +248,20 @@ export class EmployeeEosComponent implements OnInit {
     }
   }
 
+  /** Server blocker key -> bundle key. See employee-eos.types.ts. */
+  blockerLabelKey = blockerLabelKey;
+
   trackClearance = (i: number) => i;
   trackLine = (i: number) => i;
+}
+
+/** The shape the server returns for an employee who has not left. */
+function blankRecord(): EosRecord {
+  return {
+    id: null, type: null, noticeGivenDate: null, lastWorkingDay: null,
+    reason: null, rehireEligible: true, rehireReason: null,
+    exitInterview: { conductedBy: null, date: null, summary: null },
+    clearance: [], settlement: [],
+    visaCancellationDate: null, accessRevokedAt: null, completedAt: null,
+  };
 }

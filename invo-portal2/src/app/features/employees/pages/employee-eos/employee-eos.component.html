@@ -97,7 +97,7 @@
           {{ 'EMPLOYEES.EOS.BLOCKED_OPEN_ASSETS' | translate }} ({{ openAssetCount() }})
         </p>
       }
-      <table class="eos-table">
+      <table class="eos-table" data-test="clearance">
         <thead>
           <tr>
             <th>{{ 'EMPLOYEES.EOS.DEPARTMENT' | translate }}</th>
@@ -206,7 +206,7 @@
                gate and knows things this screen does not, the visa rule
                included. -->
           @for (b of (serverBlockers().length ? serverBlockers() : blockers()); track $index) {
-            <li>{{ b.key | translate }}@if (b.detail) { — {{ b.detail }} }</li>
+            <li>{{ blockerLabelKey(b.key) | translate }}@if (b.detail) { — {{ b.detail }} }</li>
           }
         </ul>
       </section>
