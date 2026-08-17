@@ -28,7 +28,7 @@ const row = (over: Partial<ClearanceRow> = {}): ClearanceRow => ({
 });
 
 const line = (over: Partial<SettlementLine> = {}): SettlementLine => ({
-  id: '', labelKey: 'UNPAID_SALARY', amount: 100, calculationNote: null,
+  id: '', lineKey: 'UNPAID_SALARY', amount: 100, calculationNote: null,
   isOverridden: false, overrideReason: null, ...over,
 });
 

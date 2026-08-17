@@ -244,12 +244,12 @@ export class EmployeeRecordComponent {
     {
       path: 'end-of-service', labelKey: 'EMPLOYEES.TABS.EOS',
       group: 'employeeEosSecurity', action: 'view',
-      // STAGED, NOT LIVE — same as Benefits. `ready: false` hides it entirely,
-      // because the child route is not registered and a tab pointing at an
-      // unregistered route is a dead link. Flip to true in the same change
-      // that adds the route, the endpoints, the privilege group and turns on
-      // the `hr.eos` key. None of those land alone.
-      enabled: () => this.eosFlag(), ready: false,
+      // LIVE as of this change. The route is registered, the endpoints exist
+      // (InvoCloudBack 8bebfe1fe, proven end to end by hr-eos-probe.ts), the
+      // employeeEosSecurity group is pinned on both sides and `hr.eos` is in
+      // the admin portal's FEATURE_GROUPS. All four landed together, which is
+      // the condition the staging comment set.
+      enabled: () => this.eosFlag(), ready: true,
     },
   ];
 

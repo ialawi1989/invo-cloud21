@@ -10,10 +10,16 @@ import {
 } from './employee-eos.types';
 
 /**
- * End of Service, against endpoints that DO NOT EXIST YET.
+ * End of Service.
  *
- * Reads degrade to "unavailable" rather than throwing, so the staged tab can be
- * opened without an error page. Writes do NOT degrade: an EOS someone believes
+ * The endpoints exist as of InvoCloudBack `8bebfe1fe`; this was written against
+ * a proposed contract and the server implements it. Two shapes were reconciled
+ * on the server side rather than here, and the divergence is recorded in
+ * docs/hr-api-reference.md: `exitInterview` is nested, and settlement lines are
+ * keyed `lineKey`.
+ *
+ * Reads still degrade to "unavailable" rather than throwing — a deployment that
+ * has not migrated yet must not show an error page. Writes do NOT degrade: an EOS someone believes
  * they recorded, and did not, is the worst outcome available here — it is the
  * record that says whether a person still has system access.
  *
@@ -35,6 +41,8 @@ import {
 export class EmployeeEosService {
   private api = inject(ApiService);
 
+  private openAssets = 0;
+
   private capabilities: EosCapabilities = {
     available: true,
     // Assumed FALSE until the server says otherwise, so the disclaimer shows
@@ -46,6 +54,18 @@ export class EmployeeEosService {
 
   lastCapabilities(): EosCapabilities {
     return this.capabilities;
+  }
+
+  /**
+   * How many assets the employee still holds, as of the last `get`.
+   *
+   * The SERVER's count, from its own definition of "still assigned". Kept
+   * beside the record rather than derived here: a second definition would
+   * disagree the first time an asset status is added, and the disagreement
+   * would show as clearance that cannot complete for no visible reason.
+   */
+  lastOpenAssetCount(): number {
+    return this.openAssets;
   }
 
   /** The record, or a blank seeded one when there is none yet. */
@@ -63,6 +83,7 @@ export class EmployeeEosService {
         statutoryCalculationsAvailable: res?.data?.statutoryCalculationsAvailable === true,
         reason: null,
       };
+      this.openAssets = Number(res?.data?.openAssetCount ?? 0);
       return res?.data ? mapRecord(res.data) : blank();
     } catch (e: any) {
       this.capabilities = { available: false, statutoryCalculationsAvailable: false, reason: e?.message ?? null };
@@ -98,11 +119,23 @@ export class EmployeeEosService {
    * revocation. A screen that completed as a side effect of saving would make
    * that a typo away.
    */
-  async complete(employeeId: string, record: EosRecord): Promise<void> {
+  async complete(
+    employeeId: string,
+    record: EosRecord,
+  ): Promise<{ blockers?: { key: string; detail: string | null }[] }> {
     const res = await this.api.request<any>(
       this.api.post('employee/completeEos', { employeeId, ...record } as any),
     );
-    if (res?.success === false) throw new Error(res?.msg || 'Could not complete');
+    if (res?.success === false) {
+      // A refusal because clearance is outstanding is NOT an error — it is the
+      // workflow working, and the server sends every reason. Returned rather
+      // than thrown so the screen can list them; only a refusal with no
+      // blockers is a genuine failure worth raising.
+      const blockers = res?.data?.blockers;
+      if (Array.isArray(blockers) && blockers.length) return { blockers };
+      throw new Error(res?.msg || 'Could not complete');
+    }
+    return {};
   }
 }
 
@@ -170,7 +203,7 @@ function mapClearance(r: any): ClearanceRow {
 function mapLine(l: any): SettlementLine {
   return {
     id: String(l?.id ?? ''),
-    labelKey: l?.labelKey ?? '',
+    lineKey: l?.lineKey ?? '',
     // null, never 0 — an undecided line is not a zero line.
     amount: l?.amount === null || l?.amount === undefined ? null : Number(l.amount),
     calculationNote: l?.calculationNote ?? null,

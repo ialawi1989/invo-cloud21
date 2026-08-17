@@ -1,0 +1,231 @@
+@if (record(); as rec) {
+  <div class="eos">
+    <!-- Driven by the SERVER's statutoryCalculationsAvailable, never hardcoded:
+         the day a jurisdiction rule set exists the server flips it and this
+         banner disappears with no portal release. -->
+    @if (!statutoryAvailable()) {
+      <p class="eos__banner">{{ 'EMPLOYEES.EOS.NOT_CALCULATED' | translate }}</p>
+    }
+
+    @if (isCompleted()) {
+      <p class="eos__completed">{{ 'EMPLOYEES.EOS.IS_COMPLETED' | translate }}</p>
+    }
+
+    @if (error(); as err) {
+      <div class="eos__error" role="alert">
+        <span>{{ err.titleKey | translate }}</span>
+        @if (err.detail) { <span class="eos__error-detail">{{ err.detail }}</span> }
+      </div>
+    }
+
+    <section class="eos__card">
+      <h2 class="eos__title">{{ 'EMPLOYEES.EOS.DETAILS' | translate }}</h2>
+      <div class="eos__fields">
+        <label class="eos-field">
+          <span class="eos-field__label">{{ 'EMPLOYEES.EOS.TYPE' | translate }}</span>
+          <select class="form-control" [value]="rec.type ?? ''"
+                  [disabled]="!canEdit() || isCompleted()"
+                  (change)="onField('type', $event)">
+            <option value="">—</option>
+            <option value="Resignation">{{ 'EMPLOYEES.EOS.TYPE_RESIGNATION' | translate }}</option>
+            <option value="Termination">{{ 'EMPLOYEES.EOS.TYPE_TERMINATION' | translate }}</option>
+            <option value="EndOfContract">{{ 'EMPLOYEES.EOS.TYPE_END_OF_CONTRACT' | translate }}</option>
+            <option value="Retirement">{{ 'EMPLOYEES.EOS.TYPE_RETIREMENT' | translate }}</option>
+            <option value="DeathInService">{{ 'EMPLOYEES.EOS.TYPE_DEATH' | translate }}</option>
+          </select>
+        </label>
+
+        <label class="eos-field">
+          <span class="eos-field__label">{{ 'EMPLOYEES.EOS.NOTICE_GIVEN' | translate }}</span>
+          <input class="form-control" type="date" [value]="rec.noticeGivenDate ?? ''"
+                 [disabled]="!canEdit() || isCompleted()"
+                 (change)="onField('noticeGivenDate', $event)" />
+        </label>
+
+        <label class="eos-field">
+          <span class="eos-field__label">{{ 'EMPLOYEES.EOS.LAST_WORKING_DAY' | translate }}</span>
+          <input class="form-control" type="date" [value]="rec.lastWorkingDay ?? ''"
+                 [disabled]="!canEdit() || isCompleted()"
+                 (change)="onField('lastWorkingDay', $event)" />
+        </label>
+
+        <div class="eos-field">
+          <span class="eos-field__label">{{ 'EMPLOYEES.EOS.NOTICE_SERVED' | translate }}</span>
+          <!-- Computed from the two dates and nothing else. Blank, not 0, when
+               either date is missing — 0 is a real answer. -->
+          <span class="eos-field__value">{{ noticeServed() === null ? '—' : noticeServed() }}</span>
+        </div>
+
+        <label class="eos-field eos-field--wide">
+          <span class="eos-field__label">{{ 'EMPLOYEES.EOS.REASON' | translate }}</span>
+          <input class="form-control" type="text" [value]="rec.reason ?? ''"
+                 [disabled]="!canEdit() || isCompleted()"
+                 (change)="onField('reason', $event)" />
+        </label>
+
+        <label class="eos-field">
+          <span class="eos-field__label">{{ 'EMPLOYEES.EOS.REHIRE_ELIGIBLE' | translate }}</span>
+          <input type="checkbox" [checked]="rec.rehireEligible"
+                 [disabled]="!canEdit() || isCompleted()" (change)="onRehire($event)" />
+        </label>
+
+        @if (!rec.rehireEligible) {
+          <!-- It follows someone for years. It does not get to be an
+               unexplained checkbox, and the server refuses completion without
+               this. -->
+          <label class="eos-field eos-field--wide">
+            <span class="eos-field__label">{{ 'EMPLOYEES.EOS.REHIRE_REASON' | translate }}</span>
+            <input class="form-control" type="text" [value]="rec.rehireReason ?? ''"
+                   [disabled]="!canEdit() || isCompleted()"
+                   (change)="onField('rehireReason', $event)" />
+          </label>
+        }
+
+        <label class="eos-field">
+          <span class="eos-field__label">{{ 'EMPLOYEES.EOS.VISA_CANCELLED' | translate }}</span>
+          <input class="form-control" type="date" [value]="rec.visaCancellationDate ?? ''"
+                 [disabled]="!canEdit() || isCompleted()"
+                 (change)="onField('visaCancellationDate', $event)" />
+        </label>
+      </div>
+    </section>
+
+    <section class="eos__card">
+      <h2 class="eos__title">{{ 'EMPLOYEES.EOS.CLEARANCE' | translate }}</h2>
+      @if (openAssetCount() > 0) {
+        <p class="eos__blocker">
+          {{ 'EMPLOYEES.EOS.BLOCKED_OPEN_ASSETS' | translate }} ({{ openAssetCount() }})
+        </p>
+      }
+      <table class="eos-table">
+        <thead>
+          <tr>
+            <th>{{ 'EMPLOYEES.EOS.DEPARTMENT' | translate }}</th>
+            <th>{{ 'EMPLOYEES.EOS.STATUS' | translate }}</th>
+            <th>{{ 'EMPLOYEES.EOS.BLOCKING_REASON' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rec.clearance; track trackClearance($index)) {
+            <tr>
+              <td>{{ row.department }}</td>
+              <td>
+                <select class="form-control" [value]="row.status"
+                        [disabled]="!canEdit() || isCompleted()"
+                        (change)="onClearanceStatus($index, $event)">
+                  <option value="Pending">{{ 'EMPLOYEES.EOS.PENDING' | translate }}</option>
+                  <option value="Cleared">{{ 'EMPLOYEES.EOS.CLEARED' | translate }}</option>
+                  <option value="Blocked">{{ 'EMPLOYEES.EOS.BLOCKED' | translate }}</option>
+                </select>
+              </td>
+              <td>
+                @if (row.status === 'Blocked') {
+                  <input class="form-control" type="text" [value]="row.blockingReason ?? ''"
+                         [disabled]="!canEdit() || isCompleted()"
+                         (change)="onClearanceReason($index, $event)" />
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <section class="eos__card">
+      <h2 class="eos__title">{{ 'EMPLOYEES.EOS.SETTLEMENT' | translate }}</h2>
+      <table class="eos-table">
+        <thead>
+          <tr>
+            <th>{{ 'EMPLOYEES.EOS.LINE' | translate }}</th>
+            <th>{{ 'EMPLOYEES.EOS.AMOUNT' | translate }}</th>
+            <th>{{ 'EMPLOYEES.EOS.CALCULATION_NOTE' | translate }}</th>
+            <th>{{ 'EMPLOYEES.EOS.OVERRIDDEN' | translate }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of rec.settlement; track trackLine($index)) {
+            <tr>
+              <td>{{ line.lineKey }}</td>
+              <td>
+                <input class="form-control form-control--num" type="number" step="0.001"
+                       [value]="line.amount ?? ''"
+                       [disabled]="!canEdit() || isCompleted()"
+                       (change)="onLineAmount($index, $event)" />
+              </td>
+              <td>
+                <input class="form-control" type="text" [value]="line.calculationNote ?? ''"
+                       [disabled]="!canEdit() || isCompleted()"
+                       (change)="onLineNote($index, $event)" />
+              </td>
+              <td>
+                <input type="checkbox" [checked]="line.isOverridden"
+                       [disabled]="!canEdit() || isCompleted()"
+                       (change)="onLineOverride($index, $event)" />
+                @if (line.isOverridden) {
+                  <input class="form-control" type="text" [value]="line.overrideReason ?? ''"
+                         [placeholder]="'EMPLOYEES.EOS.OVERRIDE_REASON' | translate"
+                         [disabled]="!canEdit() || isCompleted()"
+                         (change)="onLineOverrideReason($index, $event)" />
+                }
+              </td>
+              <td>
+                @if (canEdit() && !isCompleted()) {
+                  <button type="button" class="btn btn-ghost btn-sm btn-danger"
+                          (click)="removeLine($index)">{{ 'COMMON.DELETE' | translate }}</button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="eos-table__empty">
+              {{ 'EMPLOYEES.EOS.NO_LINES' | translate }}
+            </td></tr>
+          }
+        </tbody>
+      </table>
+
+      <p class="eos__total">
+        {{ 'EMPLOYEES.EOS.TOTAL' | translate }}:
+        <!-- BLANK while any line is undecided. A total over a partial
+             settlement presents an incomplete figure as final. -->
+        <strong>{{ total() === null ? ('EMPLOYEES.EOS.TOTAL_PENDING' | translate) : (total() | mycurrency) }}</strong>
+      </p>
+
+      @if (canEdit() && !isCompleted()) {
+        <button type="button" class="btn btn-ghost" (click)="addLine()">
+          {{ 'EMPLOYEES.EOS.ADD_LINE' | translate }}
+        </button>
+      }
+    </section>
+
+    @if (blockers().length || serverBlockers().length) {
+      <section class="eos__card eos__card--blockers">
+        <h2 class="eos__title">{{ 'EMPLOYEES.EOS.CANNOT_COMPLETE' | translate }}</h2>
+        <ul>
+          <!-- The server's list wins when it has spoken: it re-checks every
+               gate and knows things this screen does not, the visa rule
+               included. -->
+          @for (b of (serverBlockers().length ? serverBlockers() : blockers()); track $index) {
+            <li>{{ b.key | translate }}@if (b.detail) { — {{ b.detail }} }</li>
+          }
+        </ul>
+      </section>
+    }
+
+    <div class="eos__actions">
+      @if (canEdit() && !isCompleted()) {
+        <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="save()">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      }
+      @if (canComplete() && !isCompleted()) {
+        <button type="button" class="btn btn-danger" [disabled]="saving() || blockers().length > 0"
+                (click)="complete()">
+          {{ 'EMPLOYEES.EOS.COMPLETE' | translate }}
+        </button>
+      }
+    </div>
+  </div>
+}
+
+<app-loading-overlay [show]="loading()" />

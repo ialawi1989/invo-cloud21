@@ -53,7 +53,7 @@ export interface ClearanceRow {
  */
 export interface SettlementLine {
   id: string;
-  labelKey: string;
+  lineKey: string;
   /** Manually entered. Null means "not yet decided", never zero. */
   amount: number | null;
   calculationNote: string | null;
@@ -233,7 +233,7 @@ export function completionBlockers(
   }
   for (const line of record.settlement) {
     if (line.isOverridden && !line.overrideReason?.trim()) {
-      out.push({ key: 'EMPLOYEES.EOS.NEEDS_OVERRIDE_REASON', detail: line.labelKey });
+      out.push({ key: 'EMPLOYEES.EOS.NEEDS_OVERRIDE_REASON', detail: line.lineKey });
     }
   }
   return out;

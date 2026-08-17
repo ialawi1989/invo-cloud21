@@ -235,6 +235,17 @@ export const EMPLOYEES_ROUTES: Routes = [
             .then(m => m.EmployeeDisciplinaryComponent),
       },
       {
+        // End of Service. `complete` is a separate grant, but the guard can
+        // only ask one question, so it asks the broader entry condition — the
+        // tab itself hides the completion button from anyone without it.
+        path: 'end-of-service',
+        canActivate: [hrPrivilegeGuard],
+        data: { hrGroup: 'employeeEosSecurity', hrAction: 'view' },
+        loadComponent: () =>
+          import('./pages/employee-eos/employee-eos.component')
+            .then(m => m.EmployeeEosComponent),
+      },
+      {
         path: 'payroll',
         canActivate: [hrPrivilegeGuard],
         // `viewPay`, NOT `view` — payroll's grants are named differently
