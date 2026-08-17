@@ -8,6 +8,32 @@ import { AuthService } from '@core/auth/auth.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 
+import { BranchSettingsService } from '../../../settings/services/branch-settings.service';
+
+/** A branch a leave request can be filed against. */
+interface Branch { id: string; name: string; }
+
+/**
+ * Which branch's holiday calendar applies to a request.
+ *
+ * ── THE REQUEST DECIDES, NEVER THE EMPLOYEE ─────────────────────────────────
+ * `EmployeeLeaveRequests` carries its own `branchId`, and that is the one whose
+ * holidays are excluded. `Employees.branchId` is NOT a substitute: it is set
+ * from `branches[0]` — array order, chosen by nobody — so falling back to it
+ * would make a leave-day count depend on which branch happens to be first in an
+ * array. Silently, irreproducibly, in a number deducted from a balance.
+ *
+ * Exported so the rule is asserted where it actually runs. `refreshSuggestion`
+ * calls this; a test that re-declared the logic would pass while the component
+ * did something else.
+ * ────────────────────────────────────────────────────────────────────────────
+ */
+export function branchForSuggestion(form: { branchId: string | null }): string | undefined {
+  // `undefined`, not `''`. An empty string is a branch id matching nothing,
+  // which reads the same here and differently to the server: the parameter has
+  // to be OMITTED for the server to answer "cannot tell".
+  return form.branchId ?? undefined;
+}
 import { HrError, describeError } from '../../hr-error';
 import { portalKey } from '../../hr-labels';
 import { hrGrantFor } from '../../hr-privilege';
@@ -68,6 +94,7 @@ export class EmployeeLeaveComponent {
   private readonly privileges = inject(PrivilegeService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
+  private readonly branchSvc = inject(BranchSettingsService);
   private readonly translate = inject(TranslateService);
 
   readonly employeeId =
@@ -296,12 +323,68 @@ export class EmployeeLeaveComponent {
     days: this.fb.control<number | null>(null, Validators.required),
     reason: this.fb.control<string | null>(null),
     /**
+     * The branch this leave is taken FROM, and therefore whose holiday calendar
+     * decides which days do not count.
+     *
+     * ── TAKEN FROM THE REQUEST, NEVER FROM THE EMPLOYEE ────────────────────
+     * `EmployeeLeaveRequests` carries its own `branchId`, and that is the one
+     * that applies. `Employees.branchId` is NOT a substitute: it is set from
+     * `branches[0]` — array order, chosen by nobody — so wiring holiday
+     * exclusion to it would make a leave-day count depend on which branch
+     * happens to be first in an array. Silently, and irreproducibly.
+     *
+     * Optional on purpose. Left empty, the server answers "cannot tell", the
+     * count is unchanged and the disclaimer stays. That conservative direction
+     * is already implemented server-side and is the correct answer to "we do
+     * not know which branch".
+     */
+    branchId: this.fb.control<string | null>(null),
+    /**
      * Draft or Pending only. Approve and reject go through `decide`, so that
      * saving a request can never approve it in passing — mirroring the server,
      * which refuses `Approved`/`Rejected` from this endpoint outright.
      */
     status: this.fb.control<string>('Draft', Validators.required),
   });
+
+  /** Branches to file a request against. Empty is a valid choice — see the
+   *  `branchId` control. */
+  readonly branches = signal<Branch[]>([]);
+
+  private async loadBranches(): Promise<void> {
+    try {
+      const res = await this.branchSvc.getList({ page: 1, limit: 1000, searchTerm: '' });
+      this.branches.set(res.list.map((b: any) => ({ id: b.id, name: b.name })));
+    } catch {
+      // A failed branch list is not a failed screen: the field is optional and
+      // an empty list simply means no branch can be chosen, which the server
+      // already handles.
+      this.branches.set([]);
+    }
+  }
+
+  displayBranch = (b: Branch): string => b?.name ?? '';
+
+  /** The branch object for the id currently in the form, for the dropdown. */
+  readonly selectedBranch = computed(() => {
+    const id = this.formVersion() && this.form.controls.branchId.value;
+    return this.branches().find(b => b.id === id) ?? null;
+  });
+
+  onBranchChange(value: Branch | Branch[] | null): void {
+    // The shared dropdown is multi-select capable, so its output is widened to
+    // an array. This field is single-select; taking [0] rather than casting
+    // keeps it correct if someone ever turns multiple on.
+    const b = Array.isArray(value) ? (value[0] ?? null) : value;
+    this.form.controls.branchId.setValue(b?.id ?? null);
+    this.formVersion.update(n => n + 1);
+    // The branch changes which holidays apply, so the count has to be asked
+    // again — this is the whole point of the field.
+    void this.refreshSuggestion();
+  }
+
+  /** Bumped so `selectedBranch` recomputes; the form is not a signal. */
+  private readonly formVersion = signal(0);
 
   /** The server's count for the range currently in the form. */
   readonly suggestion = signal<number | null>(null);
@@ -315,16 +398,22 @@ export class EmployeeLeaveComponent {
    * the disagreement would show up as a balance nobody could reconcile.
    */
   async refreshSuggestion(): Promise<void> {
-    const { startDate, endDate, halfDay } = this.form.getRawValue();
+    const { startDate, endDate, halfDay, branchId } = this.form.getRawValue();
     if (!startDate || !endDate) {
       this.suggestion.set(null);
       return;
     }
     this.suggestionPending.set(true);
     try {
-      const catalog = await this.service.catalog({
-        startDate, endDate, halfDay: halfDay ?? 'none',
-      });
+      // The branch from THIS REQUEST. `?? undefined` rather than `?? ''` so an
+      // unset branch omits the parameter entirely and the server answers
+      // "cannot tell" — an empty string would be a branch id that matches
+      // nothing, which reads the same to this code and differently to the
+      // server.
+      const catalog = await this.service.catalog(
+        { startDate, endDate, halfDay: halfDay ?? 'none' },
+        branchForSuggestion({ branchId }),
+      );
       this.suggestion.set(catalog.suggestedDays);
       // Keep the disclaimer in step with what the server just said.
       this.catalog.set({ ...this.catalog(), suggestionExcludesPublicHolidays: catalog.suggestionExcludesPublicHolidays });
@@ -357,7 +446,7 @@ export class EmployeeLeaveComponent {
   startAdd(): void {
     this.form.reset({
       leaveType: null, startDate: null, endDate: null, halfDay: 'none',
-      days: null, reason: null, status: 'Draft',
+      days: null, reason: null, branchId: null, status: 'Draft',
     });
     this.suggestion.set(null);
     this.warnings.set([]);
@@ -373,6 +462,8 @@ export class EmployeeLeaveComponent {
       halfDay: r.halfDay ?? 'none',
       days: r.days,
       reason: r.reason,
+      // Whatever branch the request was filed against — not the employee's.
+      branchId: r.branchId ?? null,
       status: r.status ?? 'Draft',
     });
     this.suggestion.set(null);

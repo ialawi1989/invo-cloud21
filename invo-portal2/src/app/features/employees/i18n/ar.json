@@ -597,7 +597,7 @@
       "SUGGESTION_LOADING": "جارٍ الحساب…",
       "NO_SUGGESTION": "تعذّر على الخادم اقتراح عدد أيام لهذه التواريخ.",
       "USE_SUGGESTION": "استخدمه",
-      "EXCLUDES_HOLIDAYS": "الاقتراح يستثني أيام الراحة لكنه لا يستثني العطلات الرسمية — لا يوجد تقويم عطلات مُهيّأ. أدخل العدد المتفق عليه فعليًا.",
+      "EXCLUDES_HOLIDAYS": "TODO_AR: Excludes rest days. Public holidays are excluded only when the chosen branch has a holiday calendar.",
       "HALF_DAY": {
         "NONE": "أيام كاملة",
         "FIRST": "نصف يوم في البداية",
@@ -643,7 +643,10 @@
         "ACCRUAL_RATE": "معدل الاستحقاق (أيام)",
         "ACCRUAL_REASON": "سبب التعديل",
         "ENCASHMENT": "مؤهل لصرف بدل الإجازة",
-        "AIR_TICKET": "تذكرة السفر"
+        "AIR_TICKET": "تذكرة السفر",
+        "BRANCH": "TODO_AR: Branch",
+        "BRANCH_ANY": "TODO_AR: No branch",
+        "BRANCH_HINT": "TODO_AR: Public holidays are excluded only when the chosen branch has a holiday calendar."
       },
       "PROFILE": "استحقاق الإجازات",
       "SET_PROFILE": "تحديد الاستحقاق",
@@ -656,7 +659,7 @@
       "ACCRUAL_REASON_REQUIRED": "تعديل معدل الاستحقاق يستوجب ذكر السبب.",
       "EXPIRES_ON": "تنتهي في",
       "ENTITLEMENT_NOT_CALCULATED": "يُسجَّل هنا استحقاق بدل الإجازة وتذكرة السفر دون احتساب أي قيمة منهما — لا قيمة صرف ولا استحقاق متراكم ولا تاريخ استحقاق قادم. هذه القواعد تختلف بحسب الدولة وغير مطبَّقة.",
-      "EXCLUDES_HOLIDAYS_BALANCE": "احتساب الأيام خلف هذه الأرقام يستثني أيام الراحة دون العطلات الرسمية — لا يوجد تقويم عطلات مُهيّأ — لذا قد يستهلك الطلب الذي يتضمن عطلة أيامًا أقل مما هو معروض."
+      "EXCLUDES_HOLIDAYS_BALANCE": "TODO_AR: Day counts behind these figures exclude rest days. Public holidays are excluded only for a branch that has a holiday calendar, so a request spanning one may consume fewer days than shown."
     },
     "PERFORMANCE": {
       "REVIEWS": "تقييمات الأداء",

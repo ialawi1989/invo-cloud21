@@ -385,6 +385,26 @@
           </app-search-dropdown>
         </label>
 
+        <!-- ── The branch this leave is taken from ────────────────────────
+             Whose holiday calendar decides which days do not count. Optional:
+             left empty the server answers "cannot tell", the count is unchanged
+             and the disclaimer stays. It is NOT defaulted to the employee's
+             primary branch — that value comes from array order and would make
+             the day count depend on something nobody chose. -->
+        <label class="leave-field">
+          <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.BRANCH' | translate }}</span>
+          <app-search-dropdown
+            [items]="branches()"
+            [value]="selectedBranch()"
+            [displayWith]="displayBranch"
+            [placeholder]="'EMPLOYEES.LEAVE.FIELD.BRANCH_ANY' | translate"
+            (valueChange)="onBranchChange($event)">
+          </app-search-dropdown>
+          <span class="leave-field__hint">
+            {{ 'EMPLOYEES.LEAVE.FIELD.BRANCH_HINT' | translate }}
+          </span>
+        </label>
+
         <label class="leave-field leave-field--wide">
           <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.REASON' | translate }}</span>
           <textarea class="form-control" rows="2" formControlName="reason"></textarea>

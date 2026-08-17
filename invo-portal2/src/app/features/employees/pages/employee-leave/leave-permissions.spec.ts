@@ -49,6 +49,9 @@ const request = (over: Partial<LeaveRequest> = {}): LeaveRequest => ({
   id: 'req-1',
   employeeId: 'emp-2',
   leaveType: 'Annual leave',
+  // The branch this request was filed against. Null is the normal case: it is
+  // optional, and an unset branch means the server keeps disclaiming.
+  branchId: null,
   status: 'Pending',
   startDate: '2026-03-01',
   endDate: '2026-03-05',

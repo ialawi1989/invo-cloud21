@@ -597,7 +597,7 @@
       "SUGGESTION_LOADING": "Calculating…",
       "NO_SUGGESTION": "The server could not suggest a figure for these dates.",
       "USE_SUGGESTION": "Use it",
-      "EXCLUDES_HOLIDAYS": "The suggestion excludes rest days but not public holidays — no holiday calendar is configured. Enter the figure that was actually agreed.",
+      "EXCLUDES_HOLIDAYS": "Excludes rest days. Public holidays are excluded only when the chosen branch has a holiday calendar.",
       "HALF_DAY": {
         "NONE": "Full days",
         "FIRST": "Half day at the start",
@@ -643,7 +643,10 @@
         "ACCRUAL_RATE": "Accrual rate (days)",
         "ACCRUAL_REASON": "Reason for the override",
         "ENCASHMENT": "Eligible for encashment",
-        "AIR_TICKET": "Air ticket"
+        "AIR_TICKET": "Air ticket",
+        "BRANCH": "Branch",
+        "BRANCH_ANY": "No branch",
+        "BRANCH_HINT": "Public holidays are excluded only when the chosen branch has a holiday calendar."
       },
       "PROFILE": "Leave entitlement",
       "SET_PROFILE": "Set entitlement",
@@ -656,7 +659,7 @@
       "ACCRUAL_REASON_REQUIRED": "An accrual override must record why.",
       "EXPIRES_ON": "expires",
       "ENTITLEMENT_NOT_CALCULATED": "Encashment and air-ticket entitlement are recorded here but nothing is calculated from them — no payout value, no accrual and no next-due date. Those rules differ by country and are not implemented.",
-      "EXCLUDES_HOLIDAYS_BALANCE": "Day counts behind these figures exclude rest days but not public holidays — no holiday calendar is configured — so a request spanning one may consume fewer days than shown."
+      "EXCLUDES_HOLIDAYS_BALANCE": "Day counts behind these figures exclude rest days. Public holidays are excluded only for a branch that has a holiday calendar, so a request spanning one may consume fewer days than shown."
     },
     "PERFORMANCE": {
       "REVIEWS": "Performance reviews",

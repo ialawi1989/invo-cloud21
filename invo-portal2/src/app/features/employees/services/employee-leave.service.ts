@@ -90,6 +90,11 @@ export interface LeaveRequest {
   days: number | null;
   reason: string | null;
   handoverToEmployeeId: string | null;
+  /**
+   * The branch this leave was filed against — whose holiday calendar decides
+   * which days do not count. NOT the employee's primary branch.
+   */
+  branchId: string | null;
   decidedBy: string | null;
   decidedAt: string | null;
   decisionComment: string | null;
@@ -391,6 +396,7 @@ export class EmployeeLeaveService {
       days: num(r?.days),
       reason: r?.reason ?? null,
       handoverToEmployeeId: r?.handoverToEmployeeId ?? null,
+      branchId: r?.branchId ?? null,
       decidedBy: r?.decidedBy ?? null,
       decidedAt: r?.decidedAt ?? null,
       decisionComment: r?.decisionComment ?? null,
