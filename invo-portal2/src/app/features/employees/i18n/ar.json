@@ -173,15 +173,15 @@
         "CONTACT_PHONE": "الهاتف",
         "CONTACT_IS_PRIMARY": "جهة الاتصال الأساسية",
         "DEPENDENTS": "المُعالون",
-        "DEPENDENTS_HINT": "تُستخدم لاحقاً للتأمين وتأشيرات العائلة.",
+        "DEPENDENTS_HINT": "TODO_AR: Used later for insurance and family visas.",
         "DEPENDENT_ROW": "مُعال",
         "ADD_DEPENDENT": "إضافة مُعال",
         "DEPENDENT_NAME": "الاسم",
         "DEPENDENT_RELATIONSHIP": "صلة القرابة",
         "DEPENDENT_DOB": "تاريخ الميلاد",
-        "DEPENDENT_CPR": "الرقم الشخصي",
-        "DEPENDENT_IS_INSURED": "مشمول بالتأمين",
-        "DEPENDENT_IS_ON_VISA": "على تأشيرة عائلية",
+        "DEPENDENT_CPR": "TODO_AR: CPR number",
+        "DEPENDENT_IS_INSURED": "TODO_AR: Covered by insurance",
+        "DEPENDENT_IS_ON_VISA": "TODO_AR: On a family visa",
         "EDUCATION": "المؤهلات",
         "EDUCATION_ROW": "مؤهل",
         "ADD_EDUCATION": "إضافة مؤهل",
@@ -191,24 +191,24 @@
         "EDUCATION_FIELD": "التخصّص"
       },
       "EMPLOYMENT": {
-        "SENIORITY_DATE": "تاريخ الأقدمية",
-        "SENIORITY_DATE_HINT": "يساوي تاريخ المباشرة افتراضياً، ويختلف عند إعادة التعيين أو النقل.",
+        "SENIORITY_DATE": "TODO_AR: Seniority date",
+        "SENIORITY_DATE_HINT": "TODO_AR: Defaults to the hire date; differs on a rehire or a transfer.",
         "EMPLOYMENT_TYPE": "نوع التوظيف",
         "STATUS": "حالة التوظيف",
         "DEPARTMENT": "القسم",
         "POSITION": "المنصب",
         "LOOKUP_HINT": "اختر قيمة مستخدمة، أو اكتب جديدة.",
-        "JOB_GRADE": "الدرجة",
+        "JOB_GRADE": "TODO_AR: Grade",
         "IS_DEPARTMENT_HEAD": "رئيس القسم",
         "REPORTS_TO": "يتبع إدارياً",
-        "COST_CENTER": "مركز التكلفة",
-        "PROBATION_MONTHS": "فترة التجربة (بالأشهر)",
-        "PROBATION_END": "تنتهي فترة التجربة",
+        "COST_CENTER": "TODO_AR: Cost centre",
+        "PROBATION_MONTHS": "TODO_AR: Probation (months)",
+        "PROBATION_END": "TODO_AR: Probation ends",
         "CONTRACT_START": "بداية العقد",
         "CONTRACT_END": "نهاية العقد",
-        "NOTICE_PERIOD_DAYS": "مدة الإشعار (بالأيام)",
-        "WEEKLY_HOURS": "ساعات العمل التعاقدية أسبوعياً",
-        "WEEKLY_HOURS_HINT": "تُحتسب على أساسها الساعات الإضافية ونسب الدوام الجزئي."
+        "NOTICE_PERIOD_DAYS": "TODO_AR: Notice period (days)",
+        "WEEKLY_HOURS": "TODO_AR: Contracted hours per week",
+        "WEEKLY_HOURS_HINT": "TODO_AR: Drives overtime and part-time proration."
       },
       "RENDERER": {
         "ADD_ROW": "إضافة",
@@ -244,32 +244,32 @@
         "OTHER": "أخرى"
       },
       "EDUCATION_LEVEL": {
-        "HIGH_SCHOOL": "الثانوية العامة",
-        "DIPLOMA": "دبلوم",
-        "BACHELOR": "بكالوريوس",
-        "MASTER": "ماجستير",
-        "DOCTORATE": "دكتوراه",
+        "HIGH_SCHOOL": "TODO_AR: High school",
+        "DIPLOMA": "TODO_AR: Diploma",
+        "BACHELOR": "TODO_AR: Bachelor's degree",
+        "MASTER": "TODO_AR: Master's degree",
+        "DOCTORATE": "TODO_AR: Doctorate",
         "OTHER": "أخرى"
       },
       "EMPLOYMENT_TYPE": {
         "FULL_TIME": "دوام كامل",
         "PART_TIME": "دوام جزئي",
-        "CONTRACT": "عقد"
+        "CONTRACT": "TODO_AR: Contract"
       },
       "EMPLOYMENT_STATUS": {
         "ACTIVE": "على رأس العمل",
-        "PROBATION": "تحت التجربة",
+        "PROBATION": "TODO_AR: Probation",
         "ON_LEAVE": "في إجازة",
-        "SUSPENDED": "موقوف",
-        "NOTICE_PERIOD": "فترة الإشعار",
-        "TERMINATED": "منتهية خدمته"
+        "SUSPENDED": "TODO_AR: Suspended",
+        "NOTICE_PERIOD": "TODO_AR: Notice period",
+        "TERMINATED": "TODO_AR: Terminated"
       },
       "JOB_GRADE": {
-        "A": "الدرجة A",
-        "B": "الدرجة B",
-        "C": "الدرجة C",
-        "D": "الدرجة D",
-        "E": "الدرجة E"
+        "A": "TODO_AR: Grade A",
+        "B": "TODO_AR: Grade B",
+        "C": "TODO_AR: Grade C",
+        "D": "TODO_AR: Grade D",
+        "E": "TODO_AR: Grade E"
       }
     },
     "INVITE": {
@@ -958,9 +958,9 @@
       "PROVIDER": "مزود الخدمة",
       "POLICY_NUMBER": "رقم الوثيقة",
       "CLASS": {
-        "CLASS_A": "الفئة A",
-        "CLASS_B": "الفئة B",
-        "CLASS_C": "الفئة C"
+        "CLASS_A": "TODO_AR: Class A",
+        "CLASS_B": "TODO_AR: Class B",
+        "CLASS_C": "TODO_AR: Class C"
       },
       "START_DATE": "تاريخ البداية",
       "EXPIRY_DATE": "تاريخ الانتهاء",
@@ -970,9 +970,9 @@
       "EXPIRED": "منتهي",
       "DEPENDANTS_COVERED": "المُعالون المشمولون",
       "NO_DEPENDANTS": "لا مُعالين مشمولين.",
-      "RETIREMENT": "خطة التقاعد",
+      "RETIREMENT": "TODO_AR: Retirement plan",
       "RETIREMENT_EMPTY": "لا خطة تقاعد مسجَّلة.",
-      "SCHEME": "النظام",
+      "SCHEME": "TODO_AR: Scheme",
       "EMPLOYEE_RATE": "اشتراك الموظف",
       "EMPLOYER_RATE": "اشتراك صاحب العمل",
       "ENROLLED_ON": "تاريخ الاشتراك",
@@ -989,8 +989,8 @@
       "OTHER_EMPTY": "لا توجد مزايا أخرى مسجلة.",
       "NOT_SET": "غير محدد",
       "SCHEME_VALUE": {
-        "GOSI": "التأمينات الاجتماعية",
-        "PRIVATE": "نظام خاص",
+        "GOSI": "TODO_AR: GOSI",
+        "PRIVATE": "TODO_AR: Private scheme",
         "NONE": "بلا نظام"
       }
     },

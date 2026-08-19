@@ -36,7 +36,7 @@ import { ScrollTopButtonComponent } from '@shared/components/scroll-top/scroll-t
       margin-top: 56px;
       margin-left: 240px;
       /* Published for FIXED-position children — the sticky form footer above
-         all. `position: fixed` escapes this margin, so a full-width bar runs
+         all. A position:fixed child escapes this margin, so a full-width bar runs
          underneath the sidebar (z-index 1000 against the bar's 60) and its
          start edge is simply covered. Custom properties still inherit through
          the DOM to fixed descendants, so the bar can read the same number the

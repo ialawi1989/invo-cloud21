@@ -376,7 +376,10 @@ function expectNoTemplateErrors(errors: unknown[]): void {
  * ngx-translate returns the key itself on a miss, so an unresolved label is
  * indistinguishable from working software until someone looks at the screen.
  */
-const UNRESOLVED_KEY = /^[A-Z][A-Z0-9_]*(\.[A-Z0-9_]+)+$/;
+// Unanchored and GLOBAL, to match the whole-string search below. The anchored
+// per-token form this replaced could only ever match a token that WAS the key
+// with nothing attached to it.
+const UNRESOLVED_KEY = /[A-Z][A-Z0-9_]*(?:\.[A-Z0-9_]+)+/g;
 
 /**
  * Assert nothing rendered as a raw translation key.
@@ -392,12 +395,22 @@ const UNRESOLVED_KEY = /^[A-Z][A-Z0-9_]*(\.[A-Z0-9_]+)+$/;
  * not that its text is readable. This closes exactly that gap, for all six tabs
  * at once, and it costs one pass over the rendered text.
  *
- * Whitespace-separated tokens rather than the whole string: labels sit inside
- * sentences, so a substring match would miss them.
+ * ── SEARCH THE WHOLE STRING, NEVER SPLIT ON WHITESPACE ──────────────────────
+ * This function used to split `textContent` into tokens and test each one. That
+ * fails SILENTLY: adjacent inline elements render with no whitespace between
+ * them, so a label and its value concatenate —
+ * `ClassEMPLOYEES.BENEFITS.CLASS.CLASS_AStart date` — and a per-token match
+ * never sees the key. `employee-benefits.smoke.spec.ts` found this the hard
+ * way: its POPULATED case passed while displaying two raw keys, and a mutant
+ * that deleted the key from the bundle passed too.
+ *
+ * A guard that cannot go red is not a guard. Same implementation as the
+ * benefits spec, deliberately — two copies that disagree is how one of them
+ * silently stops working.
  */
 function expectNoUnresolvedKeys(fixture: ComponentFixture<unknown>, label: string): void {
   const text = String(fixture.nativeElement.textContent ?? '');
-  const unresolved = [...new Set(text.split(/\s+/).filter(t => UNRESOLVED_KEY.test(t)))];
+  const unresolved = [...new Set(text.match(UNRESOLVED_KEY) ?? [])].sort();
   expect(unresolved.length ? `${label}: unresolved translation keys -> ${unresolved.join(', ')}` : null)
     .toBeNull();
 }
