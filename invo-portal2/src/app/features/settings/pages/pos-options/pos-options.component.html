@@ -45,6 +45,37 @@
 
         <hr class="card__divider"/>
 
+        <!-- Weekly rest days. 0 IS SUNDAY, matching the server's getUTCDay();
+             the labels come from the same ordered list so the numbering cannot
+             drift between the two. Leaving it empty means "not chosen" and the
+             company keeps inheriting Friday + Saturday. -->
+        <div class="field-row">
+          <label class="field-label" for="rest-days">
+            {{ 'SETTINGS.POS_OPTIONS.OPTIONS.REST_DAYS' | translate }}
+          </label>
+          <app-search-dropdown
+            id="rest-days"
+            formControlName="restDays"
+            [items]="restDayItems()"
+            [multiple]="true"
+            [displayWith]="dayDisplay"
+            [toValue]="dayToValue"
+            [compareWith]="dayCompare"
+            [searchable]="false"
+            [placeholder]="'SETTINGS.POS_OPTIONS.OPTIONS.REST_DAYS_PLACEHOLDER' | translate"/>
+          <p class="field-hint">
+            {{ 'SETTINGS.POS_OPTIONS.OPTIONS.REST_DAYS_HINT' | translate }}
+            @if (restDaysAreDefault()) {
+              <!-- "Chose Fri+Sat" and "we assumed Fri+Sat" are the same two
+                   days and different claims. The server distinguishes them
+                   with restDaysAreDefault; so does this line. -->
+              <strong>{{ 'SETTINGS.POS_OPTIONS.OPTIONS.REST_DAYS_ASSUMED' | translate }}</strong>
+            }
+          </p>
+        </div>
+
+        <hr class="card__divider"/>
+
         <div class="field-row">
           <span class="field-label">{{ 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS' | translate }}</span>
           <p class="field-hint">{{ 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS_HINT' | translate }}</p>

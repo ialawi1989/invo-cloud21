@@ -43,6 +43,12 @@ interface ToggleSpec {
   hintKey:     string;
 }
 
+/** One selectable weekday. `value` IS the day number — 0 is Sunday. */
+interface RestDayItem {
+  value: number;
+  label: string;
+}
+
 /** Specs for the "Point-of-Sale options" section. */
 const POS_TOGGLES: readonly ToggleSpec[] = [
   { controlName: 'allowOnlyOneCashierPerTerminal', labelKey: 'SETTINGS.POS_OPTIONS.OPTIONS.ALLOW_ONLY_ONE_CASHIER',           hintKey: 'SETTINGS.POS_OPTIONS.OPTIONS.ALLOW_ONLY_ONE_CASHIER_HINT' },
@@ -147,6 +153,9 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
     options:         this.fb.group(this.buildToggleGroup(POS_TOGGLES, {
       maxReferneceNumber: [99],
       voidReasons:        this.fb.array([] as FormControl<string>[]),
+      // Seeded from the record in `patchFromCompany`; [5,6] only as the shown
+      // fallback, never written unless the user leaves it as their answer.
+      restDays:           [[5, 6] as number[]],
     })),
     printingOptions: this.fb.group(this.buildToggleGroup(PRINT_TOGGLES, {
       numberOfReceiptWhenSent: [0],
@@ -157,6 +166,58 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
 
   /** New-void-reason scratch input — kept outside the form. */
   voidReasonDraft = signal<string>('');
+
+  // ─── Weekly rest days ────────────────────────────────────────────────────
+  /**
+   * The company's weekly rest days, stored on `options.restDays`.
+   *
+   * **0 IS SUNDAY**, matching `Date.getUTCDay()`, which is what the server's
+   * `suggestedDays` calls. ISO numbering (1 = Monday) would put every company's
+   * rest days one day out while every leave count still looked plausible —
+   * a premise that has already moved every expectation by one, twice.
+   *
+   * Lives here rather than in a leave screen because `options` is where
+   * company-level settings already are, and because this page ALREADY merges
+   * the whole blob on save (see `save()`). A dedicated rest-days save would
+   * post a partial `options` and silently wipe the six POS flags that share it.
+   */
+  readonly restDayOptions: ReadonlyArray<{ value: number; labelKey: string }> = [
+    { value: 0, labelKey: 'SETTINGS.POS_OPTIONS.DAY.SUNDAY' },
+    { value: 1, labelKey: 'SETTINGS.POS_OPTIONS.DAY.MONDAY' },
+    { value: 2, labelKey: 'SETTINGS.POS_OPTIONS.DAY.TUESDAY' },
+    { value: 3, labelKey: 'SETTINGS.POS_OPTIONS.DAY.WEDNESDAY' },
+    { value: 4, labelKey: 'SETTINGS.POS_OPTIONS.DAY.THURSDAY' },
+    { value: 5, labelKey: 'SETTINGS.POS_OPTIONS.DAY.FRIDAY' },
+    { value: 6, labelKey: 'SETTINGS.POS_OPTIONS.DAY.SATURDAY' },
+  ];
+
+  /** Translated on read so the list follows the active language. */
+  restDayItems = computed<RestDayItem[]>(() => {
+    this.i18nTick();
+    return this.restDayOptions.map((d) => ({
+      value: d.value,
+      label: this.translate.instant(d.labelKey),
+    }));
+  });
+
+  // All three callbacks take the SAME item type. Typing `displayWith` against
+  // `{ label }` alone let Angular infer the dropdown's generic from it, and
+  // `toValue` — which needs `value` — then failed to assign.
+  dayDisplay = (d: RestDayItem) => d.label;
+  dayToValue = (d: RestDayItem) => d.value;
+  dayCompare = (a: RestDayItem | number, b: RestDayItem | number) =>
+    (typeof a === 'object' ? a?.value : a) === (typeof b === 'object' ? b?.value : b);
+
+  /**
+   * Whether the company has actually chosen, as opposed to inheriting Fri+Sat.
+   *
+   * The same two numbers mean different things — "the company chose Friday and
+   * Saturday" and "nobody has said, so we assumed Friday and Saturday" — and
+   * the server reports which via `restDaysAreDefault`. The form shows the
+   * assumed days so the field is never mysteriously blank, and this drives the
+   * hint that says they are assumed.
+   */
+  readonly restDaysAreDefault = signal<boolean>(true);
 
   /** Convenience accessors for the template. */
   optionsGroup  = this.form.get('options')         as FormGroup;
@@ -230,9 +291,32 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
         options: Record<string, unknown> & { voidReasons: string[] };
         printingOptions: Record<string, unknown>;
       };
+      // Rest days: an empty selection is "not chosen", NOT "works seven days".
+      // The server collapses `[]` to the default anyway, so writing it would
+      // store a value that reads back as an assumption while looking like a
+      // decision. Omitting the key keeps "never chosen" visible in the data.
+      const restDays = Array.isArray(v.options['restDays'])
+        ? (v.options['restDays'] as number[]).filter((d) => Number.isInteger(d) && d >= 0 && d <= 6)
+        : [];
+
+      // Spread the STORED options first, so anything this screen does not
+      // render — a flag added by another release, say — survives the save.
+      const mergedOptions: Record<string, unknown> = {
+        ...(this.company()?.options ?? {}),
+        ...v.options,
+      };
+      if (restDays.length) {
+        mergedOptions['restDays'] = [...new Set(restDays)].sort((a, b) => a - b);
+      } else {
+        // DELETED FROM THE MERGED OBJECT, not merely omitted from the form's
+        // half. Omitting it there would let the stored value survive the
+        // spread, so clearing the field would silently fail to clear.
+        delete mergedOptions['restDays'];
+      }
+
       const merged = {
         ...(this.company() ?? {}),
-        options:         { ...(this.company()?.options ?? {}),         ...v.options         },
+        options:         mergedOptions,
         printingOptions: { ...(this.company()?.printingOptions ?? {}), ...v.printingOptions },
         // `voidReasons` lives at the company root in the legacy model —
         // mirror it so older readers still find it where they expect.
@@ -290,6 +374,27 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
     if (print.printVoidedItems == null) {
       this.form.get(['printingOptions', 'printVoidedItems'])?.setValue(true, { emitEvent: false });
     }
+    // Rest days. Anything that is not a clean list of 0-6 day numbers is
+    // treated as unset rather than partially honoured — the same rule the
+    // server's `restDaysFor` applies, so the screen and the API never disagree
+    // about what a malformed setting means.
+    //
+    // `typeof d === 'number'` comes FIRST and is load-bearing: Number(null) is
+    // 0, as are Number('') and Number(false), so an unchecked null entry would
+    // show Sunday as a chosen rest day.
+    const rawDays = Array.isArray(opts.restDays) ? opts.restDays : [];
+    const days = rawDays
+      .filter((d: any) => typeof d === 'number' || (typeof d === 'string' && String(d).trim() !== ''))
+      .map((d: any) => Number(d))
+      .filter((d: number) => Number.isInteger(d) && d >= 0 && d <= 6);
+    const chosen = [...new Set<number>(days)].sort((a, b) => a - b);
+    // Empty means the company has not chosen. Show the assumed days so the
+    // field is never mysteriously blank, but remember that they are assumed —
+    // the hint says so, and `save()` will not write them back unless the user
+    // leaves them as their answer.
+    this.restDaysAreDefault.set(chosen.length === 0);
+    this.form.get(['options', 'restDays'])
+      ?.setValue(chosen.length ? chosen : [5, 6], { emitEvent: false });
     // Void reasons (FormArray)
     while (this.voidReasons.length > 0) this.voidReasons.removeAt(0, { emitEvent: false });
     const reasons: string[] = Array.isArray(c.voidReasons) ? c.voidReasons : [];

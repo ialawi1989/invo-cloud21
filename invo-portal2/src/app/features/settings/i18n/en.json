@@ -358,6 +358,15 @@
       "SECTION_PRINT":     "Printing options",
       "SECTION_PRINT_DESC":"How receipts and kitchen tickets are formatted and printed.",
 
+      "DAY": {
+        "SUNDAY":    "Sunday",
+        "MONDAY":    "Monday",
+        "TUESDAY":   "Tuesday",
+        "WEDNESDAY": "Wednesday",
+        "THURSDAY":  "Thursday",
+        "FRIDAY":    "Friday",
+        "SATURDAY":  "Saturday"
+      },
       "OPTIONS": {
         "ALLOW_ONLY_ONE_CASHIER":          "Allow only one cashier per terminal",
         "ALLOW_ONLY_ONE_CASHIER_HINT":     "Prevents two cashiers from being signed in on the same terminal at once.",
@@ -386,6 +395,10 @@
 
         "MAX_REF":                         "Maximum reference number",
         "MAX_REF_HINT":                    "Highest serial used for daily reference numbers before they reset.",
+        "REST_DAYS":                       "Weekly rest days",
+        "REST_DAYS_PLACEHOLDER":           "Select rest days",
+        "REST_DAYS_HINT":                  "Used when suggesting how many days a leave request costs. Leave empty to keep the default.",
+        "REST_DAYS_ASSUMED":               "Not set \u2014 Friday and Saturday are assumed.",
 
         "VOID_REASONS":                    "Void reasons",
         "VOID_REASONS_HINT":               "Predefined reasons cashiers can pick from when voiding an item.",
