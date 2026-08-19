@@ -1,11 +1,11 @@
 {
   "COMMON": {
     "TOUR": {
-      "NEXT": "TODO_AR: Next",
-      "BACK": "TODO_AR: Back",
-      "DONE": "TODO_AR: Got it",
-      "PROGRESS": "TODO_AR: {{current}} of {{total}}",
-      "DONT_SHOW_AGAIN": "TODO_AR: Don't show this again"
+      "NEXT": "التالي",
+      "BACK": "السابق",
+      "DONE": "فهمت",
+      "PROGRESS": "{{current}} من {{total}}",
+      "DONT_SHOW_AGAIN": "لا تعرض هذا مجدداً"
     },
     "SAVE": "حفظ",
     "SAVING": "جاري الحفظ…",
