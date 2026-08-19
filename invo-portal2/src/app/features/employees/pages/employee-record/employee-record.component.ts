@@ -1,8 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {
+  ActivatedRoute,
+  NavigationEnd,
+  Router,
+  RouterLink,
+  RouterOutlet,
+} from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
+import { filter, map, startWith } from 'rxjs';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '@core/auth/auth.service';
@@ -134,7 +140,7 @@ export function visibleTabs(
 @Component({
   selector: 'app-employee-record',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, TranslateModule],
+  imports: [CommonModule, RouterOutlet, RouterLink, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-record.component.html',
   styleUrls: ['./employee-record.component.scss'],
@@ -281,5 +287,46 @@ export class EmployeeRecordComponent {
     return tab.path
       ? ['/employees', this.employeeId(), tab.path]
       : ['/employees', this.employeeId()];
+  }
+
+  // ── Which tab is current ─────────────────────────────────────────────────
+  /**
+   * The child segment after `/employees/:id`, or `''` at the record root.
+   *
+   * `routerLinkActive` cannot answer this on its own. The profile tab's URL is
+   * a prefix of every other tab's, so it needs `exact: true` — but the profile
+   * FORM now lives at `.../edit`, which `exact` does not match. The result was
+   * a strip with nothing highlighted whenever the form was open: the user
+   * could see seven tabs and no indication of where they were.
+   *
+   * Reading the segment directly answers both cases and keeps the rule in one
+   * place instead of splitting it across seven template bindings.
+   */
+  private readonly childSegment = toSignal(
+    this.router.events.pipe(
+      filter((e) => e instanceof NavigationEnd),
+      map(() => this.segmentFromUrl()),
+      startWith(this.segmentFromUrl()),
+    ),
+    { initialValue: '' },
+  );
+
+  private segmentFromUrl(): string {
+    const id = this.employeeId();
+    if (!id) return '';
+    const path = this.router.url.split('?')[0];
+    const after = path.split(`/employees/${id}`)[1] ?? '';
+    return after.replace(/^\//, '').split('/')[0] ?? '';
+  }
+
+  /**
+   * Is this the tab on screen?
+   *
+   * `edit` counts as the profile tab: it is the profile form, reached from an
+   * overview pencil, and the record has not changed underneath the user.
+   */
+  isActiveTab(tab: RecordTab): boolean {
+    const seg = this.childSegment();
+    return tab.path ? seg === tab.path : seg === '' || seg === 'edit';
   }
 }

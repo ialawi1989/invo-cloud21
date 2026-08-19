@@ -1,0 +1,152 @@
+<div class="emp-overview">
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else if (record(); as r) {
+
+    <!-- ── Identity header ── -->
+    <header class="emp-hero">
+      <div class="emp-hero__who">
+        <div class="emp-hero__avatar">
+          @if (avatar()) {
+            <img [src]="avatar()" [alt]="name()"/>
+          } @else {
+            <span class="emp-hero__initial" aria-hidden="true">{{ name().charAt(0) }}</span>
+          }
+        </div>
+        <div>
+          <h1 class="emp-hero__name">
+            {{ name() }}
+            @if (employeeNumber()) {
+              <span class="emp-hero__badge">{{ employeeNumber() }}</span>
+            }
+          </h1>
+          @if (position()) {
+            <p class="emp-hero__role">{{ position() }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="emp-hero__actions">
+        <!-- The overflow menu holds the two actions that END something, kept
+             out of the main row so neither is a stray click away. -->
+        <div class="emp-menu">
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            [attr.aria-label]="'COMMON.ACTIONS' | translate"
+            [attr.aria-expanded]="menuOpen()"
+            (click)="toggleMenu()">
+            <span aria-hidden="true">&#8943;</span>
+          </button>
+          @if (menuOpen()) {
+            <ul class="emp-menu__list" role="menu">
+              <li role="none">
+                <!-- Terminating routes to End of Service, the module that
+                     already owns the gates (open assets, clearance, final
+                     settlement). A second termination path would bypass them. -->
+                <button
+                  type="button"
+                  role="menuitem"
+                  class="emp-menu__item"
+                  [disabled]="isTerminated()"
+                  (click)="terminate()">
+                  {{ 'EMPLOYEES.OVERVIEW.TERMINATE' | translate }}
+                </button>
+              </li>
+            </ul>
+          }
+        </div>
+        <a class="btn btn-ghost btn-sm" routerLink="/employees">{{ 'COMMON.CLOSE' | translate }}</a>
+      </div>
+    </header>
+
+    <!-- ── Sections ──
+         A card is absent when it has nothing to show, rather than present and
+         empty: an empty "Payment Details" reads as missing data, when the real
+         answer is that this caller cannot see it or nobody entered it. -->
+    <div class="emp-cards">
+
+      <section class="card">
+        <header class="card__head">
+          <h2 class="card__title">{{ 'EMPLOYEES.FORM.BASIC_INFORMATION' | translate }}</h2>
+          <button type="button" class="icon-btn"
+                  [attr.aria-label]="'COMMON.EDIT' | translate"
+                  (click)="edit('basic')">&#9998;</button>
+        </header>
+        <div class="card__body">
+          <dl class="kv">
+            @for (row of basicRows(); track row.labelKey) {
+              <div class="kv__row">
+                <dt class="kv__key">{{ row.labelKey | translate }}</dt>
+                <dd class="kv__val">{{ row.value }}</dd>
+              </div>
+            }
+          </dl>
+        </div>
+      </section>
+
+      @if (personalRows().length) {
+        <section class="card">
+          <header class="card__head">
+            <h2 class="card__title">{{ 'EMPLOYEES.FORM.PERSONAL_DETAILS' | translate }}</h2>
+            <button type="button" class="icon-btn"
+                    [attr.aria-label]="'COMMON.EDIT' | translate"
+                    (click)="edit('personal')">&#9998;</button>
+          </header>
+          <div class="card__body">
+            <dl class="kv">
+              @for (row of personalRows(); track row.labelKey) {
+                <div class="kv__row">
+                  <dt class="kv__key">{{ row.labelKey | translate }}</dt>
+                  <dd class="kv__val">{{ row.value }}</dd>
+                </div>
+              }
+            </dl>
+          </div>
+        </section>
+      }
+
+      @if (employmentRows().length) {
+        <section class="card">
+          <header class="card__head">
+            <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT_DETAILS' | translate }}</h2>
+            <button type="button" class="icon-btn"
+                    [attr.aria-label]="'COMMON.EDIT' | translate"
+                    (click)="edit('employment')">&#9998;</button>
+          </header>
+          <div class="card__body">
+            <dl class="kv">
+              @for (row of employmentRows(); track row.labelKey) {
+                <div class="kv__row">
+                  <dt class="kv__key">{{ row.labelKey | translate }}</dt>
+                  <dd class="kv__val">{{ row.value }}</dd>
+                </div>
+              }
+            </dl>
+          </div>
+        </section>
+      }
+
+      @if (paymentRows().length) {
+        <section class="card">
+          <header class="card__head">
+            <h2 class="card__title">{{ 'EMPLOYEES.WIZARD.PAYMENT' | translate }}</h2>
+            <button type="button" class="icon-btn"
+                    [attr.aria-label]="'COMMON.EDIT' | translate"
+                    (click)="edit('payment')">&#9998;</button>
+          </header>
+          <div class="card__body">
+            <dl class="kv">
+              @for (row of paymentRows(); track row.labelKey) {
+                <div class="kv__row">
+                  <dt class="kv__key">{{ row.labelKey | translate }}</dt>
+                  <dd class="kv__val">{{ row.value }}</dd>
+                </div>
+              }
+            </dl>
+          </div>
+        </section>
+      }
+    </div>
+  }
+</div>

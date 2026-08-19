@@ -13,6 +13,7 @@ import employeesEn from '../../i18n/en.json';
 import commonEn from '../../../../../../public/i18n/en.json';
 
 import { EmployeeEosService } from '../../services/employee-eos.service';
+import { EmployeeService } from '../../services/employee.service';
 import { EosRecord } from '../../services/employee-eos.types';
 import { EmployeeEosComponent } from './employee-eos.component';
 
@@ -61,6 +62,15 @@ function expectNoUnresolvedKeys(fixture: ComponentFixture<unknown>, label: strin
   ).toBeNull();
 }
 
+const RAIL_EMPLOYEE: any = {
+  id: 'emp-1', name: 'Fatima Al-Sayed', email: 'f@example.com', avatar: '',
+  admin: false, superAdmin: false, user: true, isDriver: false, isInvitedUser: false,
+  branchId: 'br-1', branches: [], hasSystemAccess: true,
+  hireDate: '2025-07-14', terminationDate: null,
+  profile: { employeeNumber: 'E-633648' },
+  employment: { position: 'Senior Accountant', employmentType: 'Full-time' },
+};
+
 const BLANK: EosRecord = {
   id: null, type: null, noticeGivenDate: null, lastWorkingDay: null,
   reason: null, rehireEligible: true, rehireReason: null,
@@ -95,6 +105,8 @@ const POPULATED: EosRecord = {
 async function render(opts: {
   record?: EosRecord;
   rejects?: boolean;
+  /** Make the identity-rail lookup fail, leaving the form untouched. */
+  employeeRejects?: boolean;
   openAssets?: number;
   statutory?: boolean;
 }) {
@@ -107,6 +119,14 @@ async function render(opts: {
       provideHttpClient(),
       provideRouter([]),
       { provide: ErrorHandler, useValue: handler },
+      {
+        provide: EmployeeService,
+        useValue: {
+          getOne: opts.employeeRejects
+            ? () => Promise.reject(new Error('refused'))
+            : () => Promise.resolve(RAIL_EMPLOYEE),
+        },
+      },
       {
         provide: EmployeeEosService,
         useValue: {
@@ -293,6 +313,10 @@ describe('employee EOS tab — the SERVER refuses', () => {
         provideRouter([]),
         { provide: ErrorHandler, useValue: handler },
         {
+          provide: EmployeeService,
+          useValue: { getOne: () => Promise.resolve(RAIL_EMPLOYEE) },
+        },
+        {
           provide: EmployeeEosService,
           useValue: {
             get: () => Promise.resolve(POPULATED),
@@ -339,6 +363,44 @@ describe('employee EOS tab — the SERVER refuses', () => {
     // Nothing that still looks like a key — dotted or bare UPPER_SNAKE.
     expect(panelText).not.toMatch(/[A-Z][A-Z0-9]*_[A-Z0-9_]+/);
     expect(handler.errors).toEqual([]);
+  });
+});
+
+/**
+ * The confirmatory rail.
+ *
+ * Stubbing `EmployeeService` made the rail POSSIBLE; without these it is still
+ * verified nowhere, and a rail that silently stopped rendering would leave
+ * every other test green. This is the screen where acting on the wrong person
+ * cannot be undone, so "the identity panel is on screen" is a claim worth
+ * asserting rather than assuming.
+ */
+describe('employee EOS tab — the identity rail', () => {
+  it('names the employee and the facts that tell two people apart', async () => {
+    const { text } = await render({ record: POPULATED });
+
+    expect(text).toContain('Fatima Al-Sayed');
+    // The number, the position and the hire date — a name alone does not
+    // distinguish two employees who share one.
+    expect(text).toContain('E-633648');
+    expect(text).toContain('Senior Accountant');
+    // dd/mm/yyyy, and the 14th — not the 13th, which is what `new Date()` on a
+    // bare ISO day yields west of Greenwich.
+    expect(text).toContain('14/07/2025');
+  });
+
+  it('still renders the form when the employee lookup fails', async () => {
+    // The rail is confirmatory, not functional. Losing it must not cost the
+    // user the offboarding screen — which is exactly what folding this fetch
+    // into the record's own await once did.
+    const { text, errors } = await render({
+      record: POPULATED,
+      employeeRejects: true,
+    });
+
+    expect(text).toContain('End of service details');
+    expect(text).not.toContain('E-633648');
+    expect(errors).toEqual([]);
   });
 });
 

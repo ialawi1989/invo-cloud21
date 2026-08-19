@@ -38,7 +38,7 @@ function anchorsIn(fixture: ComponentFixture<unknown>): string[] {
     .filter(Boolean);
 }
 
-function setup(opts: { hrFields?: boolean; record?: any } = {}) {
+function setup(opts: { hrFields?: boolean; record?: any; id?: string; features?: string[] } = {}) {
   const record = opts.record ?? {
     id: 'emp-1', name: 'Sara Ahmed', email: 'sara@example.com', avatar: '',
     admin: true, superAdmin: false, user: true, isDriver: false, isInvitedUser: false,
@@ -77,11 +77,18 @@ function setup(opts: { hrFields?: boolean; record?: any } = {}) {
       { provide: ModalService, useValue: { open: vi.fn() } },
       { provide: EmployeeOptionsService, useValue: { get: vi.fn().mockResolvedValue(null), patch: vi.fn().mockResolvedValue(undefined) } },
       { provide: Router, useValue: { navigate: vi.fn() } },
-      { provide: ActivatedRoute, useValue: { snapshot: { paramMap: new Map([['id', 'emp-1']]) } } },
+      {
+        provide: ActivatedRoute,
+        useValue: { snapshot: { paramMap: new Map([['id', opts.id ?? 'emp-1']]) } },
+      },
     ],
   });
 
-  if (opts.hrFields) TestBed.inject(FeatureService).setFeatures([EMPLOYEE_HR_FIELDS]);
+  const features = [
+    ...(opts.hrFields ? [EMPLOYEE_HR_FIELDS] : []),
+    ...(opts.features ?? []),
+  ];
+  if (features.length) TestBed.inject(FeatureService).setFeatures(features);
 
   const fixture = TestBed.createComponent(EmployeeFormComponent);
   return { fixture, component: fixture.componentInstance };
@@ -133,6 +140,11 @@ describe('employee-form tour anchors — HR flag OFF (what production sees)', ()
     const conditional = new Set<string>([
       EMPLOYEE_TOUR_ANCHORS.hrProfile,       // flag off
       EMPLOYEE_TOUR_ANCHORS.hrEmployment,    // flag off
+      // Editing an existing employee, so there is no wizard and no step strip.
+      EMPLOYEE_TOUR_ANCHORS.stepper,
+      // Bank details need `employeePayrollSecurity.editBank`, which this
+      // fixture's privilege stub does not grant.
+      EMPLOYEE_TOUR_ANCHORS.payment,
     ]);
     const missing = EMPLOYEE_FORM_TOUR
       .map((s) => s.anchor)
@@ -146,6 +158,45 @@ describe('employee-form tour anchors — HR flag OFF (what production sees)', ()
   });
 });
 
+/**
+ * The two conditional anchors, asserted where they DO render.
+ *
+ * Without these, `stepper` and `payment` would appear in the catalog and in
+ * both "unaccounted for" exemption lists and nowhere else — so a typo in either
+ * `data-tour` attribute would ship green. An exemption that is never balanced
+ * by a positive case is not a condition, it is a hole.
+ */
+describe('employee-form tour anchors — the conditional two', () => {
+  it('renders the step-strip anchor while creating', async () => {
+    // `id: '0'` is what puts the form into the wizard.
+    const ctx = setup({ id: '0' });
+    await load(ctx.fixture);
+    expect(anchorsIn(ctx.fixture)).toContain(EMPLOYEE_TOUR_ANCHORS.stepper);
+  });
+
+  it('does NOT render it while editing', async () => {
+    const ctx = setup({ id: 'emp-1' });
+    await load(ctx.fixture);
+    expect(anchorsIn(ctx.fixture)).not.toContain(EMPLOYEE_TOUR_ANCHORS.stepper);
+  });
+
+  it('renders the payment anchor on the payment step, with the payroll module on', async () => {
+    const ctx = setup({ id: '0', features: ['hr.payroll'] });
+    await load(ctx.fixture);
+    // The card lives on the last step, so walk there first — the wizard shows
+    // one step at a time and the anchor is genuinely not in the DOM until then.
+    ctx.component.goToStep(ctx.component.steps().length - 1);
+    ctx.fixture.detectChanges();
+    expect(anchorsIn(ctx.fixture)).toContain(EMPLOYEE_TOUR_ANCHORS.payment);
+  });
+
+  it('offers no payment step at all without the payroll module', async () => {
+    const ctx = setup({ id: '0' });
+    await load(ctx.fixture);
+    expect(ctx.component.steps().map((s) => s.key)).not.toContain('payment');
+  });
+});
+
 describe('employee-form tour anchors — HR flag ON', () => {
   it('adds the two HR anchors and keeps the rest', async () => {
     const ctx = setup({ hrFields: true });
@@ -155,10 +206,16 @@ describe('employee-form tour anchors — HR flag ON', () => {
     expect(present.has(EMPLOYEE_TOUR_ANCHORS.hrProfile)).toBe(true);
     expect(present.has(EMPLOYEE_TOUR_ANCHORS.hrEmployment)).toBe(true);
 
+    // The HR flag says nothing about the wizard or about `editBank`, so those
+    // two anchors are still legitimately absent here.
+    const conditional = new Set<string>([
+      EMPLOYEE_TOUR_ANCHORS.stepper,
+      EMPLOYEE_TOUR_ANCHORS.payment,
+    ]);
     const missing = EMPLOYEE_FORM_TOUR
       .map((s) => s.anchor)
       .filter((a): a is string => !!a)
-      .filter((a) => !present.has(a));
+      .filter((a) => !present.has(a) && !conditional.has(a));
     expect(missing).toEqual([]);
   });
 });
@@ -237,6 +294,8 @@ describe('employee-form tour catalog', () => {
   it('walks the form in the order the cards appear', () => {
     const order = EMPLOYEE_FORM_TOUR.map((s) => s.anchor).filter(Boolean);
     expect(order).toEqual([
+      // The step strip sits above every card, so it is walked first.
+      EMPLOYEE_TOUR_ANCHORS.stepper,
       EMPLOYEE_TOUR_ANCHORS.systemAccess,
       EMPLOYEE_TOUR_ANCHORS.basic,
       EMPLOYEE_TOUR_ANCHORS.email,
@@ -249,6 +308,8 @@ describe('employee-form tour catalog', () => {
       EMPLOYEE_TOUR_ANCHORS.employment,
       EMPLOYEE_TOUR_ANCHORS.hrProfile,
       EMPLOYEE_TOUR_ANCHORS.hrEmployment,
+      // Last card on the last step.
+      EMPLOYEE_TOUR_ANCHORS.payment,
     ]);
   });
 

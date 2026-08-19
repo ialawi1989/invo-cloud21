@@ -13,14 +13,21 @@ import { GuidedTourStep } from '@shared/services/guided-tour.service';
  *    steps go.
  *  • A record with no branches yet → no primary-branch star → that step goes,
  *    while the Branch Assignment step (whose copy explains the star) stays.
+ *  • The create wizard shows ONE step at a time → the anchors on the other
+ *    three steps are not in the DOM → the tour becomes a tour of the step the
+ *    user is actually on, with no per-step catalog to maintain.
  *
  * Bumping `EMPLOYEE_TOUR_KEY` re-shows the tour for everyone; do that when the
  * form changes enough that the walkthrough would otherwise mislead.
  */
-export const EMPLOYEE_TOUR_KEY = 'employee_form_v1';
+// v2: the create flow became a four-step wizard and the record page became a
+// read-only overview. A tour written for one long page would now walk people
+// past cards that are on a different step.
+export const EMPLOYEE_TOUR_KEY = 'employee_form_v2';
 
 /** Anchor names, exported so the template and its test agree on the spelling. */
 export const EMPLOYEE_TOUR_ANCHORS = {
+  stepper: 'emp-stepper',
   systemAccess: 'emp-system-access',
   basic: 'emp-basic',
   email: 'emp-email',
@@ -33,6 +40,7 @@ export const EMPLOYEE_TOUR_ANCHORS = {
   employment: 'emp-employment',
   hrProfile: 'emp-hr-profile',
   hrEmployment: 'emp-hr-employment',
+  payment: 'emp-payment',
 } as const;
 
 const A = EMPLOYEE_TOUR_ANCHORS;
@@ -42,6 +50,14 @@ export const EMPLOYEE_FORM_TOUR: GuidedTourStep[] = [
     titleKey: 'EMPLOYEES.TOUR.INTRO.TITLE',
     bodyKey: 'EMPLOYEES.TOUR.INTRO.BODY',
     align: 'center',
+  },
+  // Wizard only — absent when editing, where there is no step strip and the
+  // step-by-step copy would describe a flow the user is not in.
+  {
+    anchor: A.stepper,
+    titleKey: 'EMPLOYEES.TOUR.STEPPER.TITLE',
+    bodyKey: 'EMPLOYEES.TOUR.STEPPER.BODY',
+    side: 'block-end',
   },
   {
     anchor: A.systemAccess,
@@ -116,6 +132,14 @@ export const EMPLOYEE_FORM_TOUR: GuidedTourStep[] = [
     anchor: A.hrEmployment,
     titleKey: 'EMPLOYEES.TOUR.HR_EMPLOYMENT.TITLE',
     bodyKey: 'EMPLOYEES.TOUR.HR_EMPLOYMENT.BODY',
+    side: 'block-end',
+  },
+  // Rendered only where `editBank` is held, so this step disappears for
+  // everyone who could not have saved an account anyway.
+  {
+    anchor: A.payment,
+    titleKey: 'EMPLOYEES.TOUR.PAYMENT.TITLE',
+    bodyKey: 'EMPLOYEES.TOUR.PAYMENT.BODY',
     side: 'block-end',
   },
 ];

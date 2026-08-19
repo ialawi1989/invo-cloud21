@@ -1,5 +1,11 @@
 @if (record(); as rec) {
   <div class="eos">
+    <!-- Split into a form column and a summary rail. The rail is read-only and
+         exists for one reason: this is the screen where acting on the wrong
+         employee is unrecoverable, so the record identifies itself beside the
+         controls rather than only in the tab strip above them. -->
+    <div class="eos__split">
+    <div class="eos__main">
     <!-- Driven by the SERVER's statutoryCalculationsAvailable, never hardcoded:
          the day a jurisdiction rule set exists the server flips it and this
          banner disappears with no portal release. -->
@@ -212,6 +218,51 @@
       </section>
     }
 
+    </div>
+
+    @if (employee(); as emp) {
+      <aside class="eos__aside">
+        <div class="eos-who">
+          <div class="eos-who__avatar">
+            @if (emp.avatar) {
+              <img [src]="emp.avatar" [alt]="emp.name"/>
+            } @else {
+              <span aria-hidden="true">{{ emp.name.charAt(0) }}</span>
+            }
+          </div>
+          <h2 class="eos-who__name">{{ emp.name }}</h2>
+
+          <dl class="eos-who__facts">
+            @if (employeeNumber()) {
+              <div class="eos-who__row">
+                <dt>{{ 'EMPLOYEES.FIELDS.PROFILE.EMPLOYEE_NUMBER' | translate }}</dt>
+                <dd>{{ employeeNumber() }}</dd>
+              </div>
+            }
+            @if (employmentType()) {
+              <div class="eos-who__row">
+                <dt>{{ 'EMPLOYEES.FIELDS.EMPLOYMENT.EMPLOYMENT_TYPE' | translate }}</dt>
+                <dd>{{ employmentType() }}</dd>
+              </div>
+            }
+            @if (position()) {
+              <div class="eos-who__row">
+                <dt>{{ 'EMPLOYEES.FIELDS.EMPLOYMENT.POSITION' | translate }}</dt>
+                <dd>{{ position() }}</dd>
+              </div>
+            }
+            @if (hireDate()) {
+              <div class="eos-who__row">
+                <dt>{{ 'EMPLOYEES.FORM.HIRE_DATE' | translate }}</dt>
+                <dd>{{ hireDate() }}</dd>
+              </div>
+            }
+          </dl>
+        </div>
+      </aside>
+    }
+    </div>
+
     <div class="eos__actions">
       @if (canEdit() && !isCompleted()) {
         <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="save()">
@@ -224,6 +275,7 @@
           {{ 'EMPLOYEES.EOS.COMPLETE' | translate }}
         </button>
       }
+      <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
     </div>
   </div>
 }

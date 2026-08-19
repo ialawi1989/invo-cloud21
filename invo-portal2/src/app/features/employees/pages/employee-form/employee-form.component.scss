@@ -471,3 +471,105 @@
   padding-bottom: 16px;
   border-bottom: 1px solid #f1f5f9;
 }
+
+// ── Wizard / focused-edit layout ─────────────────────────────────────────────
+// One step (or one section) is a single column of cards, centred and narrow
+// enough to read. The two-column grid is for the full form only, where the
+// image and branch picker earn a side rail.
+.form-grid--single {
+  display: block;
+  max-width: 780px;
+  margin-inline: auto;
+
+  .form-grid__main,
+  .form-grid__side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+
+  // The side column follows the main one instead of sitting beside it — on a
+  // single step there is nothing to sit beside.
+  .form-grid__side { margin-top: 16px; }
+}
+
+// Pushed to the far end of the sticky footer, opposite the buttons.
+.mandatory-legend {
+  margin-inline-start: auto;
+  font-size: 12px;
+  color: #e11d48;                       // rose-600
+  align-self: center;
+}
+
+// ── Payment method chooser ───────────────────────────────────────────────────
+// Radio semantics on buttons: the control is a single choice, and a real
+// <input type="radio"> cannot carry the card hit-area without a label wrapper
+// that fights the focus ring.
+.pay-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.pay-method {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  min-width: 170px;
+  border: 1.5px solid #e2e8f0;          // slate-200
+  border-radius: 10px;
+  background: #ffffff;
+  text-align: start;
+  transition: border-color .15s, background-color .15s;
+
+  &:hover { border-color: var(--color-brand-300); }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, .25);
+  }
+
+  &__mark {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    border: 1.5px solid #cbd5e1;        // slate-300
+    flex-shrink: 0;
+    position: relative;
+    transition: border-color .15s;
+  }
+
+  &__label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;                     // slate-900
+  }
+
+  &--on {
+    border-color: var(--color-brand-500);
+    background: var(--color-brand-50);
+
+    .pay-method__mark {
+      border-color: var(--color-brand-500);
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 3px;
+        border-radius: 999px;
+        background: var(--color-brand-500);
+      }
+    }
+  }
+}
+
+// Sub-heading inside a card, above a related block of fields.
+.card__subtitle {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}

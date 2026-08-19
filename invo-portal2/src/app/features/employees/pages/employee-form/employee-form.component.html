@@ -2,7 +2,7 @@
   <header class="page-header">
     <div class="page-header__titles">
       <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-title">{{ pageTitle() }}</h1>
+      <h1 class="page-title">{{ sectionTitle() }}</h1>
     </div>
     <!-- Replays the guided tour. Button-only: the tour is never auto-started
          here, since this form is where someone is mid-task. -->
@@ -18,10 +18,21 @@
     </button>
   </header>
 
+  <!-- The wizard's progress strip. Absent when editing: a single-section edit
+       and the full form are both one screen, and a one-step stepper is noise. -->
+  @if (wizardActive()) {
+    <app-form-stepper
+      data-tour="emp-stepper"
+      [steps]="steps()"
+      [current]="step()"
+      [furthest]="furthestStep()"
+      (stepSelected)="goToStep($event)"/>
+  }
+
   @if (loading()) {
     <div class="loading"><span class="spinner spinner--lg"></span></div>
   } @else {
-    <div class="form-grid">
+    <div class="form-grid" [class.form-grid--single]="wizardActive() || editSection()">
       <!-- ═══ Main column ═══ -->
       <div class="form-grid__main">
 
@@ -29,6 +40,7 @@
              Off = a person on the record with no login: no credentials, no
              roles, no privilege set. Attendance and HR data still attach to
              them normally. -->
+        @if (showsSection('basic')) {
         <section class="card" data-tour="emp-system-access">
           <div class="card__body">
             <div class="access-toggle">
@@ -188,6 +200,7 @@
             </div>
           </div>
         </section>
+        }
 
         <!-- ── Documents ──────────────────────────────────────────────────
              Attachments reachable from the form itself, so adding a passport
@@ -195,7 +208,7 @@
              that tab: <app-hr-file-attachments> over EmployeeFileService.
              Hidden entirely without the hr.documents key AND the
              employeeDocumentSecurity.view grant — see attachmentAccess(). -->
-        @if (attachAccess().visible) {
+        @if (showsSection('personal') && attachAccess().visible) {
         <section class="card" data-tour="emp-documents">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FILES.DOCUMENTS' | translate }}</h2>
@@ -232,7 +245,7 @@
         }
 
         <!-- Roles and access only exist for employees who sign in. -->
-        @if (hasSystemAccess()) {
+        @if (showsSection('basic') && hasSystemAccess()) {
         <!-- ── Employee Roles ── -->
         <section class="card" data-tour="emp-roles">
           <header class="card__head">
@@ -345,7 +358,7 @@
              so validation, browser find and autofill all keep working — and
              `revealInvalidSections()` opens whichever card holds the first
              error before scrolling to it. -->
-        @if (profileGroup(); as group) {
+        @if (showsSection('personal') && profileGroup(); as group) {
           <app-collapsible-card
             [title]="'EMPLOYEES.FORM.PERSONAL_DETAILS' | translate"
             [(open)]="personalOpen"
@@ -365,6 +378,7 @@
         <!-- ── Employment details (manifest-driven) ──
              The hire and termination dates stay where they were, in the side
              column: they're top-level fields and stay authoritative. -->
+        @if (showsSection('employment')) {
         @if (employmentGroup(); as group) {
           <app-collapsible-card
             [title]="'EMPLOYEES.FORM.EMPLOYMENT_DETAILS' | translate"
@@ -432,11 +446,77 @@
             </div>
           </section>
         }
+        }
+
+        <!-- ── Payment details ────────────────────────────────────
+             Bank details are a payroll record on their own endpoint, not an
+             employee column — the card only appears where `editBank` is held.
+             Cash and cheque need no account, so the fields collapse rather
+             than sitting there asking for an IBAN nobody will use. -->
+        @if (showsSection('payment') && canEditBank()) {
+        <section class="card" data-tour="emp-payment" [formGroup]="bankForm">
+          <header class="card__head">
+            <h2 class="card__title">{{ 'EMPLOYEES.WIZARD.PAYMENT_QUESTION' | translate }}</h2>
+          </header>
+          <div class="card__body">
+            <div class="pay-methods" role="radiogroup"
+                 [attr.aria-label]="'EMPLOYEES.WIZARD.PAYMENT_QUESTION' | translate">
+              @for (m of ['BankTransfer', 'Cash', 'Cheque']; track m) {
+                <button
+                  type="button"
+                  role="radio"
+                  class="pay-method"
+                  [class.pay-method--on]="bankForm.controls.paymentMethod.value === m"
+                  [attr.aria-checked]="bankForm.controls.paymentMethod.value === m"
+                  (click)="selectPaymentMethod($any(m))">
+                  <span class="pay-method__mark" aria-hidden="true"></span>
+                  <span class="pay-method__label">
+                    {{ 'EMPLOYEES.WIZARD.METHOD_' + m.toUpperCase() | translate }}
+                  </span>
+                </button>
+              }
+            </div>
+
+            <!-- The method is a column on the PAY REVISION, not on the bank
+                 record. With no revision to carry forward there is nowhere to
+                 store it, and saying so beats a control that silently does
+                 nothing — which is exactly what shipped first. -->
+            @if (!canStoreMethod()) {
+              <p class="notice notice--warn">
+                {{ 'EMPLOYEES.WIZARD.METHOD_NEEDS_PAY' | translate }}
+              </p>
+            }
+
+            @if (paysToBank()) {
+              <h3 class="card__subtitle">{{ 'EMPLOYEES.WIZARD.BANK_INFORMATION' | translate }}</h3>
+              <div class="grid grid--2">
+                <div class="field">
+                  <label class="field-label" for="bank-name">{{ 'EMPLOYEES.WIZARD.BANK_NAME' | translate }}</label>
+                  <input id="bank-name" type="text" class="input" formControlName="bankName"/>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="bank-holder">{{ 'EMPLOYEES.WIZARD.ACCOUNT_HOLDER' | translate }}</label>
+                  <input id="bank-holder" type="text" class="input" formControlName="accountHolderName"/>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="bank-iban">{{ 'EMPLOYEES.WIZARD.IBAN' | translate }}</label>
+                  <input id="bank-iban" type="text" class="input" formControlName="iban"/>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="bank-swift">{{ 'EMPLOYEES.WIZARD.SWIFT' | translate }}</label>
+                  <input id="bank-swift" type="text" class="input" formControlName="swift"/>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+        }
       </div>
 
       <!-- ═══ Side column ═══ -->
       <div class="form-grid__side">
 
+        @if (showsSection('basic')) {
         <!-- ── Image ── -->
         <section class="card" data-tour="emp-image">
           <header class="card__head">
@@ -517,7 +597,7 @@
             }
           </div>
         </section>
-
+        }
       </div>
     </div>
   }
@@ -525,16 +605,46 @@
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
 
   <app-form-sticky-footer>
-    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-      {{ 'COMMON.CANCEL' | translate }}
-    </button>
-    <button
-      type="button"
-      class="btn btn-primary"
-      (click)="save()"
-      [disabled]="saving() || loading() || form.invalid"
-    >
-      {{ 'COMMON.SAVE' | translate }}
-    </button>
+    @if (wizardActive()) {
+      <!-- Back is absent on step 1 rather than disabled: there is nothing
+           behind it, and Cancel already covers leaving. -->
+      @if (step() > 0) {
+        <button type="button" class="btn btn-ghost" (click)="back()" [disabled]="saving()">
+          {{ 'COMMON.BACK' | translate }}
+        </button>
+      }
+      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <!-- Skip only past step 1: the employee has to exist before the steps
+           that edit it, so there is nothing to skip TO from there. -->
+      @if (step() > 0) {
+        <button type="button" class="btn btn-ghost" (click)="skipStep()" [disabled]="saving()">
+          {{ 'COMMON.SKIP' | translate }}
+        </button>
+      }
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="saveAndContinue()"
+        [disabled]="saving() || loading()"
+      >
+        {{ (isLastStep() ? 'COMMON.SAVE' : 'COMMON.SAVE_AND_CONTINUE') | translate }}
+      </button>
+      <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
+    } @else {
+      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="save()"
+        [disabled]="saving() || loading() || form.invalid"
+      >
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+      <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
+    }
   </app-form-sticky-footer>
 </div>

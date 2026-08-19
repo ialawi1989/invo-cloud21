@@ -18,8 +18,10 @@ import { hrPrivilegeGuard } from './hr-privilege';
  *   /employees/schedule        → team schedule board
  *   /employees/my-account      → the signed-in employee's own account
  *   /employees/invitation/:id  → invite / edit invited employee (0 = new)
+ *   /employees/0               → add-employee wizard (four steps)
  *   /employees/:id             → employee record shell; default child is the
- *                                employee form, unchanged (0 = new)
+ *                                read-only overview
+ *   /employees/:id/edit        → the form; `?section=` narrows it to one card
  *   /employees/:id/documents   → documents tab
  *   /employees/:id/assets      → assets tab
  *   /employees/:id/leave       → leave tab (reachable by the subject with no grant)
@@ -117,16 +119,34 @@ export const EMPLOYEES_ROUTES: Routes = [
   },
   {
     /**
+     * Creating an employee, declared BEFORE `:id` so the literal wins the
+     * match. It bypasses the record shell entirely: there is no record yet, so
+     * a tab strip would point at tabs that cannot load, and the wizard supplies
+     * its own progress header instead.
+     */
+    path: '0',
+    canActivate: [translationsLoaded, privilegeGuard],
+    canDeactivate: [unsavedChangesGuard],
+    data: { permissionPath: 'employeeSecurity.actions.add.access' },
+    loadComponent: () =>
+      import('./pages/employee-form/employee-form.component').then(m => m.EmployeeFormComponent),
+  },
+  {
+    /**
      * The employee record. `:id` gained children in HR phase 2 — the shell
-     * renders a tab strip and an outlet, and the DEFAULT CHILD is the employee
-     * form at the same URL, so `/employees/:id` behaves exactly as before and
-     * every existing link and bookmark keeps working.
+     * renders a tab strip and an outlet.
      *
-     * `unsavedChangesGuard` moved to the profile child, deliberately. On the
+     * The DEFAULT CHILD is now the read-only overview rather than the form:
+     * opening a person is far more often a lookup than an edit, and each
+     * overview card's pencil opens `edit?section=…` for the one section it
+     * owns. `/employees/:id` therefore still resolves for every existing link
+     * and bookmark — it just answers with the record instead of a form.
+     *
+     * `unsavedChangesGuard` sits on the `edit` child, deliberately. On the
      * parent it would fire when switching tabs — which is not leaving the
      * record, so prompting there is noise. On the child it fires exactly when
-     * the profile form is dirty and the user navigates away from it, including
-     * to another tab, which is the case worth interrupting.
+     * the form is dirty and the user navigates away from it, including to
+     * another tab, which is the case worth interrupting.
      */
     path: ':id',
     canActivate: [translationsLoaded, privilegeGuard],
@@ -135,8 +155,17 @@ export const EMPLOYEES_ROUTES: Routes = [
       import('./pages/employee-record/employee-record.component').then(m => m.EmployeeRecordComponent),
     children: [
       {
-        // Today's form, at today's URL.
+        // What the record shows when you open it: the overview, read-only.
         path: '',
+        loadComponent: () =>
+          import('./pages/employee-overview/employee-overview.component')
+            .then(m => m.EmployeeOverviewComponent),
+      },
+      {
+        // The form, reached from an overview pencil. `?section=` narrows it to
+        // one card; without it the whole form renders, which is what a direct
+        // link or a bookmark to `/employees/:id/edit` still gets.
+        path: 'edit',
         canDeactivate: [unsavedChangesGuard],
         loadComponent: () =>
           import('./pages/employee-form/employee-form.component').then(m => m.EmployeeFormComponent),

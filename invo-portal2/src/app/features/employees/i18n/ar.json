@@ -133,6 +133,14 @@
       "HR_EMPLOYMENT": {
         "TITLE": "TODO_AR: 12. Employment details",
         "BODY": "TODO_AR: Department, position, manager and contract terms. Department and position offer the values already used elsewhere in your company — pick one, or type a new one."
+      },
+      "STEPPER": {
+        "TITLE": "أربع خطوات",
+        "BODY": "كل خطوة تُحفظ قبل الانتقال، فيمكنك التوقف بعد أي منها والعودة لاحقاً. الخطوات المكتملة تبقى قابلة للنقر."
+      },
+      "PAYMENT": {
+        "TITLE": "طريقة الدفع",
+        "BODY": "التحويل البنكي يطلب بيانات الحساب. النقد والشيك لا يحتاجان شيئاً إضافياً، لذا تختفي الحقول."
       }
     },
     "FIELDS": {
@@ -1070,6 +1078,33 @@
       "eos.needsRehireReason": "TODO_AR: Marking someone as not eligible for rehire needs a reason",
       "eos.needsVisaCancellation": "TODO_AR: Enter the visa cancellation date",
       "eos.needsOverrideReason": "TODO_AR: An overridden settlement line needs a reason"
+    },
+    "WIZARD": {
+      "BASIC": "البيانات الأساسية",
+      "PERSONAL": "البيانات الشخصية",
+      "EMPLOYMENT": "بيانات التوظيف",
+      "PAYMENT": "بيانات الدفع",
+      "EDIT_BASIC": "البيانات الأساسية لـ {{name}}",
+      "EDIT_PERSONAL": "البيانات الشخصية لـ {{name}}",
+      "EDIT_EMPLOYMENT": "بيانات التوظيف لـ {{name}}",
+      "EDIT_PAYMENT": "بيانات الدفع لـ {{name}}",
+      "PAYMENT_QUESTION": "كيف تريد دفع راتب هذا الموظف؟",
+      "METHOD_BANKTRANSFER": "تحويل بنكي",
+      "METHOD_CASH": "نقداً",
+      "METHOD_CHEQUE": "شيك",
+      "BANK_INFORMATION": "معلومات البنك",
+      "BANK_NAME": "اسم البنك",
+      "ACCOUNT_HOLDER": "اسم صاحب الحساب",
+      "IBAN": "رقم الآيبان",
+      "SWIFT": "سويفت / BIC",
+      "METHOD_NEEDS_PAY": "طريقة الدفع تُحفظ مع راتب الموظف. حدّد الراتب من تبويب الرواتب أولاً، ثم اختر طريقة الدفع.",
+      "METHOD_CHANGE_NOTE": "تغيّرت طريقة الدفع. لم تتغيّر مبالغ الراتب.",
+      "PAYMENT_METHOD": "طريقة الدفع"
+    },
+    "OVERVIEW": {
+      "WORK_LOCATION": "موقع العمل",
+      "ROLES": "الأدوار",
+      "TERMINATE": "إنهاء خدمة الموظف"
     }
   }
 }

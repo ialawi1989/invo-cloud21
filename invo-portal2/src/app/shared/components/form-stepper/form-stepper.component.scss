@@ -1,0 +1,112 @@
+// ────────────────────────────────────────────────────────────────────────────
+// `<app-form-stepper>` — numbered progress header for multi-step forms.
+//
+// Brand tokens only (`--color-brand-*`), so the strip re-tints with the rest of
+// the app when the palette in styles.scss changes. The slate greys are the same
+// literals the import wizard and the global checkbox use.
+// ────────────────────────────────────────────────────────────────────────────
+
+.stepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  padding: 20px 16px 18px;
+  // Long labels on a narrow viewport scroll rather than wrap into a second
+  // row — a stepper that reflows stops reading as a single track.
+  overflow-x: auto;
+  flex-wrap: nowrap;
+
+  &__step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    min-width: 96px;
+  }
+
+  &__dot {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;          // slate-300
+    color: #64748b;                        // slate-500
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0;
+    transition: background-color .15s, border-color .15s, color .15s;
+
+    // A step you cannot go back to is not a control. Reset the cursor rather
+    // than showing `not-allowed`, which reads as an error the user caused.
+    &:disabled { cursor: default; }
+
+    &:not(:disabled):hover {
+      border-color: var(--color-brand-500);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, .25);
+    }
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;                        // slate-500
+    text-align: center;
+    white-space: nowrap;
+    transition: color .15s;
+  }
+
+  // The line sits level with the middle of the dots, not with the labels
+  // underneath them — hence the fixed offset rather than `align-self: center`.
+  &__line {
+    height: 1.5px;
+    background: #e2e8f0;                   // slate-200
+    flex: 1 1 auto;
+    min-width: 32px;
+    max-width: 180px;
+    margin-top: 17px;
+  }
+
+  // ── Current step ──
+  &__step--active {
+    .stepper__dot {
+      border-color: var(--color-brand-500);
+      color: var(--color-brand-700);
+      background: var(--color-brand-50);
+    }
+    .stepper__label {
+      color: #0f172a;                      // slate-900
+      font-weight: 700;
+    }
+  }
+
+  // ── Completed steps ──
+  &__step--done {
+    .stepper__dot {
+      background: var(--color-brand-500);
+      border-color: var(--color-brand-500);
+      color: #ffffff;
+    }
+    .stepper__label { color: var(--color-brand-700); }
+  }
+}
+
+@media (max-width: 640px) {
+  .stepper {
+    justify-content: flex-start;
+    padding-inline: 8px;
+
+    &__step { min-width: 76px; }
+    &__label { font-size: 12px; }
+    &__line { min-width: 16px; }
+  }
+}

@@ -1,0 +1,193 @@
+// ────────────────────────────────────────────────────────────────────────────
+// Employee record overview — read-only cards with a pencil per section.
+//
+// Two-column key/value rows inside each card, collapsing to one column on a
+// narrow viewport. Brand tokens only, so the page re-tints with the app.
+// ────────────────────────────────────────────────────────────────────────────
+
+.emp-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ── Identity header ─────────────────────────────────────────────────────────
+.emp-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  &__who {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &__avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+    background: var(--color-brand-50);
+    color: var(--color-brand-700);
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    img { width: 100%; height: 100%; object-fit: cover; }
+  }
+
+  &__initial {
+    font-size: 24px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  &__name {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;                       // slate-900
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  // The employee number, not the pass code — see EmployeeProfile.
+  &__badge {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;                       // slate-600
+    background: #f1f5f9;                  // slate-100
+    border-radius: 6px;
+    padding: 3px 8px;
+  }
+
+  &__role {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: var(--color-brand-700);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+// ── Overflow menu ───────────────────────────────────────────────────────────
+.emp-menu {
+  position: relative;
+
+  &__list {
+    position: absolute;
+    inset-inline-end: 0;
+    top: calc(100% + 6px);
+    min-width: 190px;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;            // slate-200
+    border-radius: 10px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, .10);
+    z-index: 20;
+  }
+
+  &__item {
+    display: block;
+    width: 100%;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    text-align: start;
+    font-size: 14px;
+    color: #0f172a;
+
+    &:hover:not(:disabled) { background: #f8fafc; }   // slate-50
+
+    // Already terminated. Dimmed rather than hidden, so the absence of the
+    // action is explained by the state instead of looking like a missing menu.
+    &:disabled { color: #94a3b8; cursor: not-allowed; }
+  }
+}
+
+// ── Cards ───────────────────────────────────────────────────────────────────
+.emp-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 0;
+  background: transparent;
+  color: #64748b;                          // slate-500
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color .15s, color .15s;
+
+  &:hover {
+    background: var(--color-brand-50);
+    color: var(--color-brand-700);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, .25);
+  }
+}
+
+// ── Key / value list ────────────────────────────────────────────────────────
+.kv {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 40px;
+  row-gap: 14px;
+
+  &__row {
+    display: grid;
+    grid-template-columns: minmax(140px, 40%) 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  &__key {
+    margin: 0;
+    font-size: 14px;
+    color: #64748b;                        // slate-500
+  }
+
+  &__val {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;                        // slate-900
+    // A long address or email must wrap inside its cell rather than widening
+    // the grid and pushing the page into a horizontal scroll.
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 860px) {
+  .kv { grid-template-columns: minmax(0, 1fr); }
+}

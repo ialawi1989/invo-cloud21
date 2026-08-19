@@ -191,7 +191,13 @@
       "FRIDAY": "Friday",
       "SATURDAY": "Saturday"
     },
-    "BACK_TO_TOP": "Back to top"
+    "BACK_TO_TOP": "Back to top",
+    "SKIP": "Skip",
+    "SAVE_AND_CONTINUE": "Save and Continue",
+    "STEPS": "Steps",
+    "MANDATORY_LEGEND": "* indicates mandatory fields",
+    "ENABLED": "Enabled",
+    "DISABLED": "Disabled"
   },
   "AUTH": {
     "WELCOME_BACK": "Welcome back",

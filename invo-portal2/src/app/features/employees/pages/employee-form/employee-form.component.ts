@@ -59,7 +59,17 @@ import {
 } from '../../models/field-manifest.types';
 import { countryOptions, languageOptions } from '../../models/employee-catalogs';
 import { CollapsibleCardComponent } from '@shared/components/collapsible-card/collapsible-card.component';
-import { hrFieldsEnabled, hrDocumentsEnabled } from '../../employee-feature-flags';
+import {
+  FormStep,
+  FormStepperComponent,
+} from '@shared/components/form-stepper/form-stepper.component';
+import {
+  HR_PAYROLL,
+  hrFieldsEnabled,
+  hrDocumentsEnabled,
+  hrModuleEnabled,
+} from '../../employee-feature-flags';
+import { EmployeePayrollService, PayrollRow } from '../../services/employee-payroll.service';
 import { hrGrantFor } from '../../hr-privilege';
 import { AuthService } from '@core/auth/auth.service';
 import {
@@ -115,6 +125,7 @@ interface Option {
     FieldRendererComponent,
     CollapsibleCardComponent,
     HrFileAttachmentsComponent,
+    FormStepperComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-form.component.html',
@@ -129,6 +140,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
   private manifestSvc = inject(EmployeeFieldManifestService);
   private branchSvc   = inject(BranchSettingsService);
   private privilegeSvc = inject(PrivilegeService);
+  private payrollSvc  = inject(EmployeePayrollService);
   private translate   = inject(TranslateService);
   private destroyRef  = inject(DestroyRef);
   private route       = inject(ActivatedRoute);
@@ -153,6 +165,165 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
 
   /** Loaded record — spread into the save payload so unknown fields survive. */
   private original = signal<EmployeeDetails | null>(null);
+
+  // ── Add-employee wizard ────────────────────────────────────────────────
+  /**
+   * Creating an employee is a four-step flow; editing one is not.
+   *
+   * The flag is captured ONCE, at load, and never recomputed — `isCreate()`
+   * flips to false the moment step 1 persists the record, and a wizard that
+   * dissolved under the user at that point would be worse than no wizard. The
+   * remaining steps then run as ordinary edits against the id just returned,
+   * which is also what makes the attachments step usable: there is finally a
+   * record to hang a file off.
+   *
+   * Editing keeps the single long page. Someone who opened a record to change
+   * a phone number should not have to walk four steps to reach Save.
+   */
+  readonly wizardActive = signal<boolean>(false);
+  readonly step = signal<number>(0);
+  /** Highest step reached, so the strip can navigate backwards but not ahead. */
+  readonly furthestStep = signal<number>(0);
+
+  /**
+   * Which controls each step owns.
+   *
+   * This is the ONLY place the split is declared — `stepInvalid` and the
+   * template both read it, so a control that moves between steps cannot end up
+   * validated on one screen and rendered on another. A name missing here would
+   * be silently unvalidated, so `allStepControlNames` is asserted against the
+   * form in `ngOnInit`.
+   */
+  private readonly STEP_CONTROLS: Record<string, string[]> = {
+    basic:      ['hasSystemAccess', 'name', 'email', 'password', 'passcode', 'msr',
+                 'admin', 'user', 'isDriver', 'superAdmin', 'privilegeId',
+                 'branchIds', 'branchId'],
+    personal:   ['profile'],
+    employment: ['hireDate', 'terminationDate', 'employment'],
+    // Bank details live on their own form and their own endpoint — nothing in
+    // `form` belongs to this step.
+    payment:    [],
+  };
+
+  /**
+   * Whether the payment step is offered at all.
+   *
+   * Bank details are a payroll record, not an employee column: they need the
+   * module AND `editBank`, which is deliberately separate from `viewBank`
+   * because the fraud is changing an account number, not reading one. Without
+   * both, the wizard is three steps rather than four steps with a dead one.
+   */
+  private payrollFlag = hrModuleEnabled(HR_PAYROLL);
+  readonly canEditBank = computed<boolean>(() =>
+    this.payrollFlag() && hrGrantFor(this.privilegeSvc, this.auth, 'employeePayrollSecurity', 'editBank'));
+
+  readonly steps = computed<FormStep[]>(() => {
+    const out: FormStep[] = [
+      { key: 'basic',      labelKey: 'EMPLOYEES.WIZARD.BASIC' },
+      { key: 'personal',   labelKey: 'EMPLOYEES.WIZARD.PERSONAL' },
+      { key: 'employment', labelKey: 'EMPLOYEES.WIZARD.EMPLOYMENT' },
+    ];
+    if (this.canEditBank()) out.push({ key: 'payment', labelKey: 'EMPLOYEES.WIZARD.PAYMENT' });
+    return out;
+  });
+
+  readonly stepKey = computed<string>(() => this.steps()[this.step()]?.key ?? 'basic');
+  readonly isLastStep = computed<boolean>(() => this.step() >= this.steps().length - 1);
+
+  /**
+   * Which single section this form was opened to edit, from `?section=`.
+   *
+   * Set by the overview's pencils. One section on screen, one Save — the
+   * focused editor from the design, and the reason the record page can be
+   * read-only without making a small correction a trip through a long form.
+   * Null means the whole form, which is what the wizard and any direct link
+   * still get.
+   */
+  readonly editSection = signal<string | null>(null);
+
+  /**
+   * Is a section on screen right now?
+   *
+   * The single question every card asks, so one template serves three shapes:
+   * the four-step wizard, a focused single-section edit, and the full page.
+   * Nothing here tests a step index directly — a card that did would have to
+   * be updated again the next time a step moves.
+   */
+  showsSection(key: string): boolean {
+    if (this.wizardActive()) return this.stepKey() === key;
+    const only = this.editSection();
+    return !only || only === key;
+  }
+
+  /** Heading for a focused edit — "Fatima's personal details". */
+  readonly sectionTitle = computed<string>(() => {
+    const key = this.editSection();
+    if (!key) return this.pageTitle();
+    return this.translate.instant(`EMPLOYEES.WIZARD.EDIT_${key.toUpperCase()}`, {
+      name: this.original()?.name ?? '',
+    });
+  });
+
+  /**
+   * Bank details, step 4. Kept out of `form` because it posts to a different
+   * endpoint with a different grant — merging them would make one Save button
+   * responsible for two authorisations.
+   */
+  readonly bankForm = this.fb.group({
+    paymentMethod:     ['BankTransfer' as 'BankTransfer' | 'Cash' | 'Cheque'],
+    bankName:          [''],
+    accountHolderName: [''],
+    iban:              [''],
+    swift:             [''],
+  });
+
+  readonly paysToBank = computed<boolean>(() => this.paymentMethod() === 'BankTransfer');
+  private paymentMethod = signal<'BankTransfer' | 'Cash' | 'Cheque'>('BankTransfer');
+
+  /**
+   * The pay revision in force, if any.
+   *
+   * `paymentMethod` is a column on `EmployeePayrollProfiles`, NOT on
+   * `EmployeeBankDetails` — the two are different tables behind different
+   * endpoints, and the method is versioned WITH pay. So changing it means
+   * writing a new revision carrying the existing figures forward, and with no
+   * revision to carry there is nowhere to put the answer at all.
+   *
+   * The first version of this step posted the method to `saveBankDetails`,
+   * which silently dropped it: the endpoint has no such field, and picking
+   * Cash skipped the call entirely. The control looked like it saved and never
+   * did.
+   */
+  readonly currentPay = signal<PayrollRow | null>(null);
+
+  /** Can the chosen method actually be stored? Only atop an existing revision. */
+  readonly canStoreMethod = computed<boolean>(() => !!this.currentPay());
+
+  selectPaymentMethod(method: 'BankTransfer' | 'Cash' | 'Cheque'): void {
+    this.paymentMethod.set(method);
+    this.bankForm.controls.paymentMethod.setValue(method);
+    this.bankForm.markAsDirty();
+  }
+
+  /** Load the pay revision the method rides on, once there is a record. */
+  private async loadCurrentPay(): Promise<void> {
+    const id = this.employeeId();
+    if (!id || this.isCreate() || !this.canEditBank()) return;
+    try {
+      const row = await this.payrollSvc.current(id);
+      this.currentPay.set(row);
+      const method = row?.paymentMethod;
+      if (method === 'BankTransfer' || method === 'Cash' || method === 'Cheque') {
+        this.paymentMethod.set(method);
+        this.bankForm.controls.paymentMethod.setValue(method, { emitEvent: false });
+        // Seeded, not edited — a pristine form must not post a revision that
+        // changes nothing.
+        this.bankForm.controls.paymentMethod.markAsPristine();
+      }
+    } catch {
+      this.currentPay.set(null);
+    }
+  }
 
   // ── Dropdown data ──────────────────────────────────────────────────────
   privileges = signal<Option[]>([]);
@@ -568,8 +739,28 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
   }
 
   async ngOnInit(): Promise<void> {
-    const id = this.route.snapshot.paramMap.get('id');
+    // The id can live on EITHER route. `/employees/0` carries it itself, but
+    // `/employees/:id/edit` carries it on the PARENT — the record shell owns
+    // `:id` and this child declares no params of its own. Angular does not
+    // inherit params down into a child of a component-bearing route, so
+    // reading only `this.route` here returned null on every focused edit: the
+    // form decided it was creating, loaded nothing, and rendered the wizard
+    // over an existing employee. Same lookup order as `isOwnRecord`.
+    const id = this.route.snapshot.paramMap.get('id')
+      ?? this.route.parent?.snapshot.paramMap.get('id')
+      ?? null;
     this.employeeId.set(id);
+    // Captured before anything can save and flip `isCreate()`. See wizardActive.
+    this.wizardActive.set(this.isCreate());
+    // `?section=basic` — a focused edit launched from the record overview.
+    // Ignored while creating: the wizard already decides what is on screen.
+    // Optional chaining because a snapshot need not carry a query map — the
+    // route stubs in the specs supply `paramMap` alone, and a form that only
+    // loads under a fully-populated router is a form nothing can test.
+    const section = this.route.snapshot.queryParamMap?.get('section')
+      ?? this.route.parent?.snapshot.queryParamMap?.get('section')
+      ?? null;
+    this.editSection.set(this.isCreate() ? null : section);
 
     this.loading.set(true);
     try {
@@ -594,6 +785,9 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
 
       this.documents.set(docs);
       this.fileCatalogOk.set(catalog?.storageConfigured === true);
+      // The payment step's method rides on the pay revision, so the revision
+      // has to be in hand before the step can seed or save it.
+      void this.loadCurrentPay();
 
       this.departmentSuggestions.set(lookups.departments);
       this.positionSuggestions.set(lookups.positions);
@@ -945,15 +1139,166 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
     msr.updateValueAndValidity({ emitEvent: false });
   }
 
+  // ── Wizard navigation ──────────────────────────────────────────────────
+  /**
+   * Is any control belonging to `stepIndex` currently invalid?
+   *
+   * Asks the step's OWN controls rather than `form.invalid`, which is what lets
+   * step 1 save while the HR groups on later steps are still empty and
+   * therefore failing their required rules.
+   */
+  private stepInvalid(stepIndex: number): boolean {
+    const key = this.steps()[stepIndex]?.key;
+    const names = key ? this.STEP_CONTROLS[key] ?? [] : [];
+    return names.some((n) => this.form.get(n)?.invalid === true);
+  }
+
+  /** Touch a step's controls so their errors surface before we judge them. */
+  private touchStep(stepIndex: number): void {
+    const key = this.steps()[stepIndex]?.key;
+    for (const name of (key ? this.STEP_CONTROLS[key] ?? [] : [])) {
+      this.form.get(name)?.markAllAsTouched();
+    }
+  }
+
+  goToStep(index: number): void {
+    if (index < 0 || index >= this.steps().length) return;
+    this.step.set(index);
+    this.furthestStep.set(Math.max(this.furthestStep(), index));
+    // A step change is a page change as far as the reader is concerned; without
+    // this the user lands mid-form on whatever the last step's scroll left.
+    queueMicrotask(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }
+
+  back(): void {
+    this.goToStep(this.step() - 1);
+  }
+
+  /**
+   * Save what this step collected, then advance.
+   *
+   * Every step persists, so an interruption after step 2 leaves a real
+   * employee with real personal details rather than nothing. That is also why
+   * step 1 must succeed before the rest are reachable: steps 2–4 are edits of
+   * a record that has to exist first.
+   */
+  async saveAndContinue(): Promise<void> {
+    const index = this.step();
+    this.touchStep(index);
+    if (this.form.pending) await this.whenSettled();
+    if (this.stepInvalid(index)) {
+      this.revealInvalidSections();
+      return;
+    }
+
+    const ok = this.stepKey() === 'payment' ? await this.saveBank() : await this.save({ stay: true });
+    if (!ok) return;
+
+    if (this.isLastStep()) {
+      this.router.navigate(['/employees']);
+      return;
+    }
+    this.goToStep(index + 1);
+  }
+
+  /**
+   * Leave a step's fields empty and move on.
+   *
+   * Offered only where the server genuinely accepts the absence — the HR groups
+   * are omitted from the payload when nothing was filled in, and bank details
+   * are a separate record that simply doesn't get created. Step 1 has no Skip:
+   * there is no employee without it.
+   */
+  skipStep(): void {
+    if (this.isLastStep()) {
+      this.router.navigate(['/employees']);
+      return;
+    }
+    this.goToStep(this.step() + 1);
+  }
+
+  /**
+   * The payment step: the method and, when it is a transfer, the account.
+   *
+   * TWO endpoints, because the data lives in two tables. The account goes to
+   * `saveBankDetails`; the method is a column on the pay revision and goes to
+   * `savePayroll`, carrying the existing figures forward unchanged so only the
+   * method differs. Cash and cheque write no account at all — and used to write
+   * nothing whatsoever, which is the bug this replaces.
+   */
+  private async saveBank(): Promise<boolean> {
+    const id = this.employeeId();
+    // Nothing to attach to yet: a clean skip, not a failure to dismiss.
+    if (!id || this.isCreate()) return true;
+    if (this.bankForm.pristine) return true;
+
+    const v = this.bankForm.getRawValue();
+    this.saving.set(true);
+    try {
+      // ── The account, only where one is used ──
+      if (this.paysToBank() && (v.bankName || v.iban || v.accountHolderName || v.swift)) {
+        await this.payrollSvc.saveBankDetails({
+          employeeId:        id,
+          bankName:          v.bankName || null,
+          accountHolderName: v.accountHolderName || null,
+          iban:              v.iban || null,
+          swift:             v.swift || null,
+        });
+      }
+
+      // ── The method, on a new pay revision ──
+      const pay = this.currentPay();
+      if (pay && v.paymentMethod && v.paymentMethod !== pay.paymentMethod) {
+        await this.payrollSvc.recordChange({
+          employeeId:    id,
+          // Everything carried forward — this revision exists to change the
+          // method and must not quietly restate someone's salary.
+          basicSalary:   pay.basicSalary,
+          currency:      pay.currency,
+          payFrequency:  pay.payFrequency ?? 'Monthly',
+          components:    pay.components ?? [],
+          effectiveFrom: toIsoDateOnly(new Date()),
+          // `Correction` is the honest reason: nothing about the pay changed.
+          changeReason:  'Correction',
+          changeNote:    this.translate.instant('EMPLOYEES.WIZARD.METHOD_CHANGE_NOTE'),
+          paymentMethod: v.paymentMethod,
+        });
+      }
+
+      this.bankForm.markAsPristine();
+      return true;
+    } catch (e: any) {
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
+      return false;
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
   // ── Save / cancel ──────────────────────────────────────────────────────
-  async save(): Promise<void> {
-    this.form.markAllAsTouched();
+  /**
+   * `stay: true` keeps the user on the form after a successful save — the
+   * wizard's steps 1–3 need the record persisted without leaving the page.
+   * Returns whether the save succeeded, which the wizard uses to decide
+   * whether advancing is safe.
+   */
+  async save(options: { stay?: boolean } = {}): Promise<boolean> {
+    // In the wizard only the steps already visited are judged: the later ones
+    // hold required fields the user has not been shown yet.
+    if (this.wizardActive()) {
+      for (let i = 0; i <= this.step(); i++) this.touchStep(i);
+    } else {
+      this.form.markAllAsTouched();
+    }
     // The email / pass-code probes are async — let any in-flight check settle
     // before deciding, otherwise a fast save would slip past them.
     if (this.form.pending) await this.whenSettled();
-    if (this.form.invalid) {
+    const invalid = this.wizardActive()
+      ? Array.from({ length: this.step() + 1 }, (_, i) => i).some((i) => this.stepInvalid(i))
+      : this.form.invalid;
+    if (invalid) {
       this.revealInvalidSections();
-      return;
+      return false;
     }
 
     this.saving.set(true);
@@ -1058,24 +1403,63 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
       }
 
       const res = await this.service.save(payload);
-      if (res?.success) {
-        this.dirty.set(false);
-        this.form.markAsPristine();
-        this.toast.success(this.translate.instant('EMPLOYEES.FORM.SAVED'));
-        this.router.navigate(['/employees']);
-      } else {
+      if (!res?.success) {
         this.toast.error('COMMON.SAVE_FAILED', res?.msg);
+        return false;
       }
+
+      this.dirty.set(false);
+      this.form.markAsPristine();
+      this.toast.success(this.translate.instant('EMPLOYEES.FORM.SAVED'));
+
+      // The id only comes back on a create, and the wizard's later steps are
+      // edits of it — without adopting it here, step 2 would create a SECOND
+      // employee. `original` is seeded too so the payload spread keeps working.
+      // Outside the wizard nothing calls `saveBank` — the footer's single Save
+      // posts the employee form and stopped there, so the payment section on a
+      // focused edit (and on the full page) collected a method and an account
+      // and then discarded both. The wizard routes through `saveAndContinue`
+      // instead, which is why this only ever broke on the edit screens.
+      if (!this.wizardActive() && this.showsSection('payment') && this.bankForm.dirty) {
+        if (!(await this.saveBank())) return false;
+      }
+
+      const newId = res?.data?.id ?? null;
+      if (this.isCreate() && newId) {
+        this.employeeId.set(String(newId));
+        this.original.set({ ...(this.original() ?? {}), id: String(newId) } as EmployeeDetails);
+        await this.reloadDocuments();
+        // `loadCurrentPay` bailed during ngOnInit because the record did not
+        // exist yet. Now it does, so ask again — otherwise the payment step
+        // would always believe there is no revision to hang the method on.
+        await this.loadCurrentPay();
+      }
+
+      if (!options.stay) this.router.navigate(this.doneRoute());
+      return true;
     } catch (e: any) {
       console.error('[employee-form] save failed', e);
       this.toast.error('COMMON.SAVE_FAILED', e?.message);
+      return false;
     } finally {
       this.saving.set(false);
     }
   }
 
+  /**
+   * Where Save and Cancel go.
+   *
+   * A focused edit returns to the record it was launched from — sending the
+   * user back to the list would lose the record they were reading. Everything
+   * else returns to the list, as before.
+   */
+  private doneRoute(): any[] {
+    const id = this.employeeId();
+    return this.editSection() && id ? ['/employees', id] : ['/employees'];
+  }
+
   cancel(): void {
-    this.router.navigate(['/employees']);
+    this.router.navigate(this.doneRoute());
   }
 
   // ── Guided tour ────────────────────────────────────────────────────────

@@ -65,20 +65,43 @@ const HR_TABS = [
 const SELF_ALLOWED_PATHS = ['leave', 'disciplinary'];
 
 describe('the HR tab routes', () => {
-  it('leaves the profile as the default child at the record URL', () => {
-    // `/employees/:id` must still render the form. Adding siblings must not
-    // displace it — every existing link and bookmark points there.
+  it('answers the record URL with a default child', () => {
+    // `/employees/:id` must still resolve. Adding siblings must not displace
+    // it — every existing link and bookmark points there. What it renders
+    // changed (the read-only overview, not the form); that it resolves has not.
     expect(childRoute('')).toBeDefined();
   });
 
-  it('keeps the unsaved-changes guard on the profile child only', () => {
-    // On the parent it would fire when switching tabs, which is not leaving the
-    // record — prompting there is noise.
-    expect(childRoute('')!.canDeactivate).toBeDefined();
+  it('registers the form at `edit`, so a pencil has somewhere to go', () => {
+    // The overview's per-section pencils navigate to `edit?section=…`. Without
+    // this route every one of them is a dead link, and the overview becomes a
+    // page you cannot correct anything from.
+    expect(childRoute('edit')).toBeDefined();
+  });
+
+  it('keeps the unsaved-changes guard on the form child only', () => {
+    // The guard belongs where there is something to lose. The overview is
+    // read-only, so prompting on the way out of it is a prompt about nothing;
+    // on the parent it would fire when switching tabs, which is not leaving
+    // the record.
+    expect(childRoute('edit')!.canDeactivate).toBeDefined();
+    expect(childRoute('')!.canDeactivate).toBeUndefined();
     expect(recordRoute().canDeactivate).toBeUndefined();
     for (const tab of HR_TABS) {
       expect(childRoute(tab.path)!.canDeactivate).toBeUndefined();
     }
+  });
+
+  it('routes creation outside the record shell', () => {
+    // `/employees/0` is the wizard, and it is declared BEFORE `:id` so the
+    // literal wins the match. If `:id` caught it, a brand-new employee would
+    // render the record shell — a tab strip over tabs that cannot load, and an
+    // overview of a record that does not exist.
+    const create = EMPLOYEES_ROUTES.findIndex(r => r.path === '0');
+    const record = EMPLOYEES_ROUTES.findIndex(r => r.path === ':id');
+    expect(create).toBeGreaterThanOrEqual(0);
+    expect(create).toBeLessThan(record);
+    expect(EMPLOYEES_ROUTES[create].canDeactivate).toBeDefined();
   });
 
   for (const tab of HR_TABS) {

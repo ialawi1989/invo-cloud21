@@ -1,0 +1,28 @@
+<!-- `aria-label` names the strip; each step carries its own current/disabled
+     state so a screen reader can announce position without reading the whole
+     bar. The connecting line is decorative and hidden from the tree. -->
+<nav class="stepper" [attr.aria-label]="'COMMON.STEPS' | translate">
+  @for (s of steps(); track s.key; let i = $index, last = $last) {
+    <div class="stepper__step"
+         [class.stepper__step--active]="i === current()"
+         [class.stepper__step--done]="isDone(i)">
+      <button
+        type="button"
+        class="stepper__dot"
+        [disabled]="!isNavigable(i)"
+        [attr.aria-current]="i === current() ? 'step' : null"
+        (click)="select(i)">
+        @if (isDone(i)) {
+          <span aria-hidden="true">&#10003;</span>
+        } @else {
+          {{ i + 1 }}
+        }
+      </button>
+      <span class="stepper__label">{{ s.labelKey | translate }}</span>
+    </div>
+
+    @if (!last) {
+      <span class="stepper__line" aria-hidden="true"></span>
+    }
+  }
+</nav>

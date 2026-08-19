@@ -462,7 +462,9 @@ export class EmployeeScheduleComponent implements OnInit {
       { label: this.translate.instant('EMPLOYEES.SCHEDULE.ADD_TIME_OFF'),         click: () => this.openTimeOff(employee) },
       { header: 'EMPLOYEES.SCHEDULE.TEAM_MEMBER_SECTION', separator: true,
         label: this.translate.instant('EMPLOYEES.SCHEDULE.VIEW_TEAM_MEMBER'),     click: () => this.router.navigate(['/employees', employee.employeeId]) },
-      { label: this.translate.instant('EMPLOYEES.SCHEDULE.EDIT_TEAM_MEMBER'),     click: () => this.router.navigate(['/employees', employee.employeeId]) },
+      // Straight to the form, not the overview: the menu item says EDIT, and
+      // landing on a read-only page would make it a two-click no-op.
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.EDIT_TEAM_MEMBER'),     click: () => this.router.navigate(['/employees', employee.employeeId, 'edit']) },
     ];
   }
 

@@ -191,7 +191,13 @@
       "FRIDAY": "الجمعة",
       "SATURDAY": "السبت"
     },
-    "BACK_TO_TOP": "العودة للأعلى"
+    "BACK_TO_TOP": "العودة للأعلى",
+    "SKIP": "تخطي",
+    "SAVE_AND_CONTINUE": "حفظ ومتابعة",
+    "STEPS": "الخطوات",
+    "MANDATORY_LEGEND": "* تشير إلى الحقول الإلزامية",
+    "ENABLED": "مُفعّل",
+    "DISABLED": "مُعطّل"
   },
   "AUTH": {
     "WELCOME_BACK": "مرحباً بعودتك",

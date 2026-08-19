@@ -7,13 +7,15 @@
     <nav class="record-tabs" role="tablist"
          [attr.aria-label]="'EMPLOYEES.TABS.ARIA_LABEL' | translate">
       @for (tab of tabs(); track tab.path) {
+        <!-- Active state is computed from the URL, not `routerLinkActive`:
+             the profile tab's URL is a prefix of every other tab's, so it
+             needs `exact`, and `exact` does not match the form at `.../edit`.
+             See `isActiveTab`. -->
         <a class="record-tabs__tab"
            role="tab"
            [routerLink]="linkFor(tab)"
-           routerLinkActive="record-tabs__tab--active"
-           [routerLinkActiveOptions]="{ exact: tab.path === '' }"
-           #rla="routerLinkActive"
-           [attr.aria-selected]="rla.isActive">
+           [class.record-tabs__tab--active]="isActiveTab(tab)"
+           [attr.aria-selected]="isActiveTab(tab)">
           {{ tab.labelKey | translate }}
         </a>
       }

@@ -17,6 +17,8 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import { hrGrantFor } from '../../hr-privilege';
+import { EmployeeService } from '../../services/employee.service';
+import { EmployeeDetails } from '../../models/employee.types';
 import { EmployeeEosService } from '../../services/employee-eos.service';
 import {
   ClearanceRow,
@@ -58,6 +60,7 @@ import { describeError, HrError } from '../../hr-error';
 })
 export class EmployeeEosComponent implements OnInit {
   private service = inject(EmployeeEosService);
+  private employees = inject(EmployeeService);
   private route = inject(ActivatedRoute);
   private toast = inject(ToastService);
   private privileges = inject(PrivilegeService);
@@ -74,6 +77,30 @@ export class EmployeeEosComponent implements OnInit {
   serverBlockers = signal<{ key: string; detail: string | null }[]>([]);
 
   private employeeId = signal<string>('');
+
+  // ── Who is being offboarded ──────────────────────────────────────────────
+  /**
+   * The employee, for the summary rail beside the form.
+   *
+   * Ending someone's employment is the one screen where "which record am I
+   * on?" must never be a guess, and the tab strip above shows a name but not
+   * the number, the position or the hire date that distinguish two people with
+   * the same one. Read-only and purely confirmatory — nothing here is posted.
+   */
+  readonly employee = signal<EmployeeDetails | null>(null);
+
+  readonly employeeNumber = computed(() => this.employee()?.profile?.employeeNumber ?? '');
+  readonly position       = computed(() => this.employee()?.employment?.position ?? '');
+  readonly employmentType = computed(() => this.employee()?.employment?.employmentType ?? '');
+
+  /** dd/mm/yyyy. Split, not `new Date()` — a bare ISO day parses as UTC
+   *  midnight and renders as the day before west of Greenwich. */
+  hireDate = computed<string>(() => {
+    const iso = this.employee()?.hireDate;
+    if (!iso) return '';
+    const [y, m, d] = String(iso).slice(0, 10).split('-');
+    return y && m && d ? `${d}/${m}/${y}` : '';
+  });
 
   readonly canEdit = computed(() =>
     hrGrantFor(this.privileges, this.auth, 'employeeEosSecurity', 'edit'));
@@ -114,7 +141,25 @@ export class EmployeeEosComponent implements OnInit {
     const id = this.route.parent?.snapshot.paramMap.get('id')
       ?? this.route.snapshot.paramMap.get('id') ?? '';
     this.employeeId.set(id);
+    this.loadEmployee();
     await this.load();
+  }
+
+  /**
+   * The summary rail's data, fetched ALONGSIDE the record and never awaited
+   * with it.
+   *
+   * Two reasons, and the second was found the hard way. It is confirmatory,
+   * not functional: a failed or slow lookup must cost the user the rail, never
+   * the offboarding screen. And putting it in the same `await` as the record
+   * added a microtask hop to the record's own path — which was enough to make
+   * every render test see an empty screen, because the record signal had not
+   * been set by the time change detection ran.
+   */
+  private loadEmployee(): void {
+    this.employees.getOne(this.employeeId())
+      .then((e) => this.employee.set(e))
+      .catch(() => this.employee.set(null));
   }
 
   private async load(): Promise<void> {

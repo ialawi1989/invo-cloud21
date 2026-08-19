@@ -133,6 +133,14 @@
       "HR_EMPLOYMENT": {
         "TITLE": "12. Employment details",
         "BODY": "Department, position, manager and contract terms. Department and position offer the values already used elsewhere in your company — pick one, or type a new one."
+      },
+      "STEPPER": {
+        "TITLE": "Four steps",
+        "BODY": "Each step saves before moving on, so you can stop after any of them and come back later. Completed steps stay clickable."
+      },
+      "PAYMENT": {
+        "TITLE": "How they get paid",
+        "BODY": "Bank transfer asks for the account. Cash and cheque need nothing further, so the fields disappear."
       }
     },
     "FIELDS": {
@@ -1070,6 +1078,33 @@
       "eos.needsRehireReason": "Marking someone as not eligible for rehire needs a reason",
       "eos.needsVisaCancellation": "Enter the visa cancellation date",
       "eos.needsOverrideReason": "An overridden settlement line needs a reason"
+    },
+    "WIZARD": {
+      "BASIC": "Basic Details",
+      "PERSONAL": "Personal Details",
+      "EMPLOYMENT": "Employment Details",
+      "PAYMENT": "Payment Details",
+      "EDIT_BASIC": "{{name}}'s basic details",
+      "EDIT_PERSONAL": "{{name}}'s personal details",
+      "EDIT_EMPLOYMENT": "{{name}}'s employment details",
+      "EDIT_PAYMENT": "{{name}}'s payment details",
+      "PAYMENT_QUESTION": "How would you like to pay this employee?",
+      "METHOD_BANKTRANSFER": "Bank transfer",
+      "METHOD_CASH": "Cash",
+      "METHOD_CHEQUE": "Cheque",
+      "BANK_INFORMATION": "Bank information",
+      "BANK_NAME": "Bank name",
+      "ACCOUNT_HOLDER": "Account holder name",
+      "IBAN": "IBAN",
+      "SWIFT": "SWIFT / BIC",
+      "METHOD_NEEDS_PAY": "The payment method is recorded with the employee's pay. Set their salary on the Payroll tab first, then choose how they are paid.",
+      "METHOD_CHANGE_NOTE": "Payment method changed. Pay figures unchanged.",
+      "PAYMENT_METHOD": "Payment method"
+    },
+    "OVERVIEW": {
+      "WORK_LOCATION": "Work location",
+      "ROLES": "Roles",
+      "TERMINATE": "Terminate employee"
     }
   }
 }

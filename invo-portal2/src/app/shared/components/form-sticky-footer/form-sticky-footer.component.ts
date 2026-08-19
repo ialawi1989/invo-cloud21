@@ -36,7 +36,12 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
     .ffs {
       position: fixed;
-      inset-inline: 0;
+      /* Physical \`left\`, deliberately: the layout reserves its sidebar space
+         with \`margin-left\` regardless of text direction, so a logical
+         property here would flip away from the thing it is matching.
+         Falls back to 0 for any page rendered outside the app shell. */
+      left: var(--app-content-start, 0px);
+      right: 0;
       bottom: 0;
       z-index: 60;
       background: rgba(255, 255, 255, 0.92);
@@ -44,6 +49,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       -webkit-backdrop-filter: saturate(180%) blur(6px);
       border-top: 1px solid #e5e7eb;
       box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.06);
+      /* Matches the sidebar's own transition so the two edges move together
+         when it collapses, rather than the bar snapping ahead of it. */
+      transition: left .25s ease;
     }
 
     .ffs__inner {

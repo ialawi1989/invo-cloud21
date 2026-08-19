@@ -35,6 +35,13 @@ import { ScrollTopButtonComponent } from '@shared/components/scroll-top/scroll-t
     .main-content {
       margin-top: 56px;
       margin-left: 240px;
+      /* Published for FIXED-position children — the sticky form footer above
+         all. `position: fixed` escapes this margin, so a full-width bar runs
+         underneath the sidebar (z-index 1000 against the bar's 60) and its
+         start edge is simply covered. Custom properties still inherit through
+         the DOM to fixed descendants, so the bar can read the same number the
+         layout is using instead of hard-coding a copy that drifts. */
+      --app-content-start: 240px;
       min-height: calc(100vh - 56px);
       padding: 24px;
       /* Light-gray app canvas so white cards/tables read as distinct surfaces
@@ -42,7 +49,7 @@ import { ScrollTopButtonComponent } from '@shared/components/scroll-top/scroll-t
       background: #eef2f6;
       transition: margin-left .25s ease;
     }
-    .main-content.collapsed { margin-left: 56px; }
+    .main-content.collapsed { margin-left: 56px; --app-content-start: 56px; }
     .main-content.no-padding {
       padding: 0;
       /* dvh (dynamic viewport height) excludes the mobile browser's toolbars,
@@ -57,7 +64,9 @@ import { ScrollTopButtonComponent } from '@shared/components/scroll-top/scroll-t
     }
 
     @media (max-width: 991px) {
-      .main-content { margin-left: 0 !important; overflow-x: hidden; }
+      /* The sidebar becomes an overlay below this width, so nothing is
+         reserved for it and the bar spans the full viewport again. */
+      .main-content { margin-left: 0 !important; --app-content-start: 0px; overflow-x: hidden; }
     }
     @media (max-width: 576px) {
       .main-content:not(.no-padding) { padding: 16px; }
