@@ -221,6 +221,13 @@ export const EMPLOYEE_FIELD_MANIFEST: FieldManifest = {
             { key: 'institution', type: 'text', labelKey: 'EMPLOYEES.FIELDS.PROFILE.EDUCATION_INSTITUTION', required: true, maxLength: 160 },
             { key: 'graduationYear', type: 'number', labelKey: 'EMPLOYEES.FIELDS.PROFILE.EDUCATION_YEAR', required: true, min: 1950, max: 2100 },
             { key: 'fieldOfStudy', type: 'text', labelKey: 'EMPLOYEES.FIELDS.PROFILE.EDUCATION_FIELD', maxLength: 160 },
+            // Verification (spec 4.1). Mirrors the server manifest exactly —
+            // this file is the fallback used when the endpoint is unavailable,
+            // so a field present in one and absent from the other renders
+            // differently depending on whether a request succeeded.
+            { key: 'isVerified', type: 'boolean', labelKey: 'EMPLOYEES.FIELDS.PROFILE.EDUCATION_IS_VERIFIED', access: 'restricted' },
+            { key: 'verifiedBy', type: 'computed', labelKey: 'EMPLOYEES.FIELDS.PROFILE.EDUCATION_VERIFIED_BY', access: 'restricted' },
+            { key: 'verifiedAt', type: 'computed', labelKey: 'EMPLOYEES.FIELDS.PROFILE.EDUCATION_VERIFIED_AT', access: 'restricted' },
           ],
         },
       ],

@@ -188,7 +188,10 @@
         "EDUCATION_LEVEL": "المستوى",
         "EDUCATION_INSTITUTION": "الجهة التعليمية",
         "EDUCATION_YEAR": "سنة التخرّج",
-        "EDUCATION_FIELD": "التخصّص"
+        "EDUCATION_FIELD": "التخصّص",
+        "EDUCATION_IS_VERIFIED": "الشهادة مُتحقّق منها",
+        "EDUCATION_VERIFIED_BY": "تمّ التحقّق بواسطة",
+        "EDUCATION_VERIFIED_AT": "تاريخ التحقّق"
       },
       "EMPLOYMENT": {
         "SENIORITY_DATE": "TODO_AR: Seniority date",

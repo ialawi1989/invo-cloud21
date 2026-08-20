@@ -188,7 +188,10 @@
         "EDUCATION_LEVEL": "Level",
         "EDUCATION_INSTITUTION": "Institution",
         "EDUCATION_YEAR": "Graduation year",
-        "EDUCATION_FIELD": "Field of study"
+        "EDUCATION_FIELD": "Field of study",
+        "EDUCATION_IS_VERIFIED": "Certificate verified",
+        "EDUCATION_VERIFIED_BY": "Verified by",
+        "EDUCATION_VERIFIED_AT": "Verified on"
       },
       "EMPLOYMENT": {
         "SENIORITY_DATE": "Seniority date",
