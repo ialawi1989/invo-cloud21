@@ -156,6 +156,11 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
       // Seeded from the record in `patchFromCompany`; [5,6] only as the shown
       // fallback, never written unless the user leaves it as their answer.
       restDays:           [[5, 6] as number[]],
+      // "This company works seven days a week." A SEPARATE control, because an
+      // empty day list is ambiguous on its own: it means both "no rest days"
+      // and "nobody has chosen", and those are stored differently — `[]` and
+      // absent. Without this the user can only ever express the second.
+      worksEveryDay:      [false],
     })),
     printingOptions: this.fb.group(this.buildToggleGroup(PRINT_TOGGLES, {
       numberOfReceiptWhenSent: [0],
@@ -305,7 +310,16 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
         ...(this.company()?.options ?? {}),
         ...v.options,
       };
-      if (restDays.length) {
+      // `worksEveryDay` never reaches the server — it is how this screen asks
+      // the question, not how the answer is stored. The answer is the empty
+      // array itself, which is what `restDaysFor` reads as "seven days".
+      const worksEveryDay = v.options['worksEveryDay'] === true;
+      delete mergedOptions['worksEveryDay'];
+
+      if (worksEveryDay) {
+        // An explicit choice, distinct from never having chosen.
+        mergedOptions['restDays'] = [];
+      } else if (restDays.length) {
         mergedOptions['restDays'] = [...new Set(restDays)].sort((a, b) => a - b);
       } else {
         // DELETED FROM THE MERGED OBJECT, not merely omitted from the form's
@@ -392,7 +406,14 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
     // field is never mysteriously blank, but remember that they are assumed —
     // the hint says so, and `save()` will not write them back unless the user
     // leaves them as their answer.
-    this.restDaysAreDefault.set(chosen.length === 0);
+    // Three states, not two. An empty ARRAY is a company that works every day;
+    // an ABSENT key is a company that has not chosen. Collapsing them is the
+    // defect this screen's server counterpart just stopped doing.
+    const hasKey = Array.isArray(opts.restDays);
+    const worksEveryDay = hasKey && chosen.length === 0;
+
+    this.restDaysAreDefault.set(!hasKey);
+    this.form.get(['options', 'worksEveryDay'])?.setValue(worksEveryDay, { emitEvent: false });
     this.form.get(['options', 'restDays'])
       ?.setValue(chosen.length ? chosen : [5, 6], { emitEvent: false });
     // Void reasons (FormArray)

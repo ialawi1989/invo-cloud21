@@ -214,6 +214,67 @@ describe('rest days on the POS options screen', () => {
       expect(sent.someFlagFromAnotherRelease).toBe(true);
     });
 
+    describe('the seven-day company — three states, not two', () => {
+      it('sends an EMPTY ARRAY when the company works every day', async () => {
+        // The state that could not be expressed at all before. Empty is an
+        // ANSWER; the server reads it as "no rest days" with isDefault false.
+        const ctx = setup();
+        await load(ctx.fixture);
+
+        ctx.component.form.get(['options', 'worksEveryDay'])?.setValue(true);
+        await ctx.component.save();
+
+        const sent = sentOptions(ctx.saveCompany);
+        expect(sent.restDays).toEqual([]);
+        // The toggle is how the screen asks the question, never how the answer
+        // is stored — it must not leak into the blob.
+        expect('worksEveryDay' in sent).toBe(false);
+      });
+
+      it('OMITS the key when nothing is chosen and the toggle is off', async () => {
+        // The other of the two states that used to be one. Absent means "not
+        // chosen"; sending [] here would claim a decision nobody made.
+        const ctx = setup();
+        await load(ctx.fixture);
+
+        ctx.component.form.get(['options', 'worksEveryDay'])?.setValue(false);
+        ctx.component.form.get(['options', 'restDays'])?.setValue([]);
+        await ctx.component.save();
+
+        expect('restDays' in sentOptions(ctx.saveCompany)).toBe(false);
+      });
+
+      it('the toggle WINS over any days left selected', async () => {
+        // Otherwise a company that ticks "works every day" without first
+        // clearing Fri+Sat saves the days and the toggle silently does nothing.
+        const ctx = setup();
+        await load(ctx.fixture);
+
+        ctx.component.form.get(['options', 'restDays'])?.setValue([5, 6]);
+        ctx.component.form.get(['options', 'worksEveryDay'])?.setValue(true);
+        await ctx.component.save();
+
+        expect(sentOptions(ctx.saveCompany).restDays).toEqual([]);
+      });
+
+      it('loads a stored empty array back as the toggle, not as "not chosen"', async () => {
+        const ctx = setup({ ...COMPANY, options: { ...COMPANY.options, restDays: [] } });
+        await load(ctx.fixture);
+
+        expect(ctx.component.form.get(['options', 'worksEveryDay'])?.value).toBe(true);
+        // And it is NOT reported as an assumption — the company chose this.
+        expect(ctx.component.restDaysAreDefault()).toBe(false);
+      });
+
+      it('loads an ABSENT key as not chosen, with the toggle off', async () => {
+        const ctx = setup();
+        await load(ctx.fixture);
+
+        expect(ctx.component.form.get(['options', 'worksEveryDay'])?.value).toBe(false);
+        expect(ctx.component.restDaysAreDefault()).toBe(true);
+      });
+    });
+
     it('never sends a day outside 0-6', async () => {
       const ctx = setup();
       await load(ctx.fixture);
