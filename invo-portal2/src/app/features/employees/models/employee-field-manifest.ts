@@ -342,6 +342,7 @@ export const EMPLOYEE_FIELD_MANIFEST: FieldManifest = {
           key: 'contractEndDate',
           type: 'date',
           labelKey: 'EMPLOYEES.FIELDS.EMPLOYMENT.CONTRACT_END',
+          hintKey: 'EMPLOYEES.FIELDS.EMPLOYMENT.CONTRACT_DOCUMENT_HINT',
           visibleWhen: "employment.employmentType == 'Contract'",
           requiredWhen: "employment.employmentType == 'Contract'",
           access: 'internal',

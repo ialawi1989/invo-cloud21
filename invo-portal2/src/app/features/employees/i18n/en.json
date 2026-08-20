@@ -208,6 +208,7 @@
         "PROBATION_MONTHS": "Probation (months)",
         "PROBATION_END": "Probation ends",
         "CONTRACT_START": "Contract start",
+        "CONTRACT_DOCUMENT_HINT": "To attach the signed contract, add it under Documents with the type \"Contract\" — documents also track expiry and verification.",
         "CONTRACT_END": "Contract end",
         "NOTICE_PERIOD_DAYS": "Notice period (days)",
         "WEEKLY_HOURS": "Contracted hours per week",

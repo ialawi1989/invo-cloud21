@@ -208,6 +208,7 @@
         "PROBATION_MONTHS": "TODO_AR: Probation (months)",
         "PROBATION_END": "TODO_AR: Probation ends",
         "CONTRACT_START": "بداية العقد",
+        "CONTRACT_DOCUMENT_HINT": "لإرفاق العقد الموقّع، أضفه ضمن المستندات بنوع \"عقد\" — والمستندات تتبع الانتهاء والتحقق أيضاً.",
         "CONTRACT_END": "نهاية العقد",
         "NOTICE_PERIOD_DAYS": "TODO_AR: Notice period (days)",
         "WEEKLY_HOURS": "TODO_AR: Contracted hours per week",
