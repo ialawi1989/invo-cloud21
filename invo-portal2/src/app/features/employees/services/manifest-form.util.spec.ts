@@ -6,6 +6,7 @@ import {
   applyManifestRules,
   buildGroupControl,
   buildRowGroup,
+  dateAfterValidator,
   evalCondition,
   extractGroupValue,
   patchGroupValue,
@@ -201,5 +202,79 @@ describe('applyManifestRules', () => {
     const rows = rootForm().get('employment.contacts') as FormArray;
     rows.push(buildRowGroup(fb, FIELDS[8].fields!));
     expect((rows.at(0) as FormGroup).get('name')!.hasError('required')).toBe(true);
+  });
+});
+
+describe('dateAfterValidator - a contract must have length', () => {
+  /**
+   * Two sibling dates in one group, which is the shape the rule reads.
+   *
+   * The `updateValueAndValidity()` is not ceremony. FormBuilder runs a
+   * validator while constructing the control, BEFORE it is attached to the
+   * group - so `control.parent` is null on that first pass and the rule
+   * correctly declines to judge. The app re-validates through
+   * `applyManifestRules()` on every value change; this mirrors that, and the
+   * test below pins the behaviour so it is a decision rather than a surprise.
+   */
+  function pair(start: string | Date | null, end: string | Date | null) {
+    const g = fb.group({
+      contractStartDate: [start as any],
+      contractEndDate: [end as any, dateAfterValidator('contractStartDate')],
+    });
+    const end$ = g.get('contractEndDate')!;
+    end$.updateValueAndValidity();
+    return end$;
+  }
+
+  it('declines to judge before the control has a parent', () => {
+    // Documents WHY pair() re-validates. A rule that errored here would put a
+    // red border on a field the moment the form is built.
+    const orphan = fb.control('2025-12-31', dateAfterValidator('contractStartDate'));
+    expect(orphan.valid).toBe(true);
+  });
+
+  it('refuses an end date BEFORE the start', () => {
+    expect(pair('2026-01-01', '2025-12-31').hasError('dateAfter')).toBe(true);
+  });
+
+  it('refuses the SAME DAY for both', () => {
+    // The case a `>=` comparison lets through, and the reason the rule is
+    // written with `>`. A contract starting and ending on 2026-01-01 has no
+    // length. The server agrees: `end <= start` throws.
+    expect(pair('2026-01-01', '2026-01-01').hasError('dateAfter')).toBe(true);
+  });
+
+  it('accepts an end date after the start, if only by a day', () => {
+    expect(pair('2026-01-01', '2026-01-02').valid).toBe(true);
+  });
+
+  it('says nothing when either date is empty', () => {
+    // Emptiness is `required`s question. Answering it here would put two
+    // messages on one field.
+    expect(pair(null, '2026-01-02').valid).toBe(true);
+    expect(pair('2026-01-01', null).valid).toBe(true);
+  });
+
+  it('ignores the time of day on the same date', () => {
+    // Date objects for one day differ by their clock, and comparing them
+    // directly would read 09:00 as later than 08:00 on that date - letting
+    // the same-day contract through by the width of a clock.
+    expect(pair(new Date(2026, 0, 1, 9, 0), new Date(2026, 0, 1, 17, 0))
+      .hasError('dateAfter')).toBe(true);
+  });
+
+  it('RE-JUDGES when the start date moves', () => {
+    // The rule lives in the per-field validator set precisely so that
+    // `applyManifestRules()` re-runs it. A validator that only ever saw the
+    // start date it was built with would call this pair valid forever.
+    const g = fb.group({
+      contractStartDate: ['2026-01-01' as any],
+      contractEndDate: ['2026-06-01' as any, dateAfterValidator('contractStartDate')],
+    });
+    expect(g.get('contractEndDate')!.valid).toBe(true);
+
+    g.get('contractStartDate')!.setValue('2026-12-01');
+    g.get('contractEndDate')!.updateValueAndValidity();
+    expect(g.get('contractEndDate')!.hasError('dateAfter')).toBe(true);
   });
 });

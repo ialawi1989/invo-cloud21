@@ -177,10 +177,42 @@ export class EmployeeService {
     return res?.success ? res.data : false;
   }
 
-  async deleteEmployeeOffDay(offDayId: string): Promise<any> {
-    const res = await this.api.request<any>(this.api.get(`employee/deleteEmployeeOffDay/${offDayId}`));
-    return res?.success ? res.data : false;
+  /**
+   * Cancel leave, one entry or many.
+   *
+   * CANCELS rather than deletes: the row records that leave was asked for and
+   * withdrawn, and a delete throws away the only answer to "why was this
+   * person marked off". Cancelled consumes no balance and is filtered out of
+   * every rota and booking read, so every screen looks the same as a delete.
+   *
+   * One entry covers every DAY of a multi-day leave, because the days are one
+   * row - which is what makes clearing a week a single action.
+   */
+  async cancelEmployeeOffDays(offDayIds: string[], reason?: string): Promise<any> {
+    const res = await this.api.request<any>(
+      this.api.post('employee/cancelEmployeeOffDays', { offDayIds, reason }),
+    );
+    return res;
   }
+
+  /**
+   * Approve or reject, through the SAME endpoint the HR leave screen uses.
+   *
+   * Not a board-specific decision path: two of them would mean two audit
+   * trails and two places for the approval rules to drift apart.
+   */
+  async decideLeaveRequest(requestId: string, decision: 'Approved' | 'Rejected', comment?: string): Promise<any> {
+    const res = await this.api.request<any>(
+      this.api.post('employee/decideLeaveRequest', { requestId, decision, comment }),
+    );
+    return res;
+  }
+
+  /*
+   * `deleteEmployeeOffDay` is retired. The server endpoint erased a row
+   * matched on id alone, with no company scope, from the table that holds
+   * every leave request. Use `cancelEmployeeOffDays`.
+   */
 
   async saveEmployeeSchedule(data: any): Promise<any> {
     const res = await this.api.request<any>(this.api.post('employee/saveEmployeeSchedule', data));

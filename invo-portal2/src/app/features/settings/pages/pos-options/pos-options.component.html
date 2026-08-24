@@ -45,47 +45,6 @@
 
         <hr class="card__divider"/>
 
-        <!-- Weekly rest days. 0 IS SUNDAY, matching the server's getUTCDay();
-             the labels come from the same ordered list so the numbering cannot
-             drift between the two. Leaving it empty means "not chosen" and the
-             company keeps inheriting Friday + Saturday. -->
-        <div class="field-row">
-          <label class="field-label" for="rest-days">
-            {{ 'SETTINGS.POS_OPTIONS.OPTIONS.REST_DAYS' | translate }}
-          </label>
-          <!-- Disabled, not hidden, when the company works every day: hiding it
-               would leave the reader wondering where the field went, and the
-               days are still worth seeing while the box is ticked. -->
-          <app-search-dropdown
-            id="rest-days"
-            [disabled]="optionsGroup.get('worksEveryDay')?.value === true"
-            formControlName="restDays"
-            [items]="restDayItems()"
-            [multiple]="true"
-            [displayWith]="dayDisplay"
-            [toValue]="dayToValue"
-            [compareWith]="dayCompare"
-            [searchable]="false"
-            [placeholder]="'SETTINGS.POS_OPTIONS.OPTIONS.REST_DAYS_PLACEHOLDER' | translate"/>
-          <app-toggle
-            size="sm"
-            [checked]="optionsGroup.get('worksEveryDay')?.value === true"
-            (checkedChange)="optionsGroup.get('worksEveryDay')?.setValue($event)"
-            [label]="'SETTINGS.POS_OPTIONS.OPTIONS.WORKS_EVERY_DAY' | translate"
-            [hint]="'SETTINGS.POS_OPTIONS.OPTIONS.WORKS_EVERY_DAY_HINT' | translate"/>
-
-          <p class="field-hint">
-            {{ 'SETTINGS.POS_OPTIONS.OPTIONS.REST_DAYS_HINT' | translate }}
-            @if (restDaysAreDefault()) {
-              <!-- "Chose Fri+Sat" and "we assumed Fri+Sat" are the same two
-                   days and different claims. The server distinguishes them
-                   with restDaysAreDefault; so does this line. -->
-              <strong>{{ 'SETTINGS.POS_OPTIONS.OPTIONS.REST_DAYS_ASSUMED' | translate }}</strong>
-            }
-          </p>
-        </div>
-
-        <hr class="card__divider"/>
 
         <div class="field-row">
           <span class="field-label">{{ 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS' | translate }}</span>

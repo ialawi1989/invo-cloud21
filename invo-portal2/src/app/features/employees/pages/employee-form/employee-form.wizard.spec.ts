@@ -485,3 +485,70 @@ describe('the add-employee wizard', () => {
     expect(ctx.router.navigate).toHaveBeenCalledWith(['/employees']);
   });
 });
+
+describe('required stays strict for the whole wizard', () => {
+  /*
+   * ── THE HOLE THIS CLOSES ───────────────────────────────────────────────────
+   * `requiredMode` used to read `isCreate()`, which flips to FALSE the moment
+   * step 1 persists the record. Steps 2-4 of the ADD flow then validated as
+   * ordinary edits, where `required` is advisory — so nationality, date of
+   * birth and the rest of the personal step were never enforced on anybody,
+   * on the one screen whose whole job is to collect them.
+   *
+   * Measured on dev 2026-08-24: 292 employees with a company, ONE with a
+   * nationality, a field the manifest has marked `required` since phase 1.
+   *
+   * Nationality is the sharp case rather than a representative one: social
+   * insurance is selected by it, and the scheme has three tiers, so a blank is
+   * not a blank field on a form — it is a contribution the engine cannot
+   * compute and must either refuse or guess.
+   * See docs/reference/gosi-bahrain.md.
+   */
+
+  it('is strict AFTER step 1 has saved and isCreate() has flipped', async () => {
+    const ctx = setup({ id: '0', features: ['hr.profile'] });
+    await load(ctx.fixture);
+
+    expect(ctx.component.requiredMode()).toBe('strict');
+
+    fillStepOne(ctx.component);
+    await ctx.component.saveAndContinue();
+    await flush();
+
+    // The precondition. Without this the assertion below could pass because
+    // the record never saved, which is a different test passing by accident.
+    expect(ctx.component.isCreate()).toBe(false);
+    expect(ctx.component.requiredMode()).toBe('strict');
+  });
+
+  it('will not let the wizard finish while nationality is blank', async () => {
+    // `hr.profile` is what puts the manifest groups on the form at all; without
+    // it there is no nationality control to assert about.
+    const ctx = setup({ id: '0', features: ['hr.profile'] });
+    await load(ctx.fixture);
+    fillStepOne(ctx.component);
+    await ctx.component.saveAndContinue();
+    await flush();
+
+    const nationality = ctx.component.form.get('profile.nationality');
+    expect(nationality).toBeTruthy();
+
+    nationality!.setValue('');
+    nationality!.updateValueAndValidity();
+    expect(nationality!.valid).toBe(false);
+
+    nationality!.setValue('OM');
+    nationality!.updateValueAndValidity();
+    expect(nationality!.valid).toBe(true);
+  });
+
+  it('leaves an EXISTING record lenient', async () => {
+    // The regression this must not cause: an admin changing a pass code on a
+    // record that predates the manifest is not asked for a nationality.
+    const ctx = setup({ parentId: 'emp-1' });
+    await load(ctx.fixture);
+
+    expect(ctx.component.wizardActive()).toBe(false);
+    expect(ctx.component.requiredMode()).toBe('lenient');
+  });
+});

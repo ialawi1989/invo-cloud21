@@ -155,8 +155,14 @@
                           [items]="dayOffMenu(employee, day, off)"
                           [chevron]="false"
                           [appendToBody]="true"
-                          triggerClass="chip chip-off">
+                          [triggerClass]="off.status === 'Pending' ? 'chip chip-off chip-pending' : 'chip chip-off'">
                           {{ off.type }}
+                          @if (off.status === 'Pending') {
+                            <span class="chip-badge"
+                                  [title]="'EMPLOYEES.SCHEDULE.PENDING_HR_HINT' | translate">
+                              {{ 'EMPLOYEES.SCHEDULE.PENDING_SHORT' | translate }}
+                            </span>
+                          }
                         </app-dropdown-menu-btn>
                       }
                     } @else if (day && day.shift.length) {

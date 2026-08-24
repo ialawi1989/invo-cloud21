@@ -191,3 +191,9 @@
 @media (max-width: 860px) {
   .kv { grid-template-columns: minmax(0, 1fr); }
 }
+
+.kv__empty {
+  margin: 0;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.875rem;
+}

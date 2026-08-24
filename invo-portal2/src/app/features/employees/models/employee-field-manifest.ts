@@ -189,7 +189,7 @@ export const EMPLOYEE_FIELD_MANIFEST: FieldManifest = {
             { key: 'name', type: 'text', labelKey: 'EMPLOYEES.FIELDS.PROFILE.CONTACT_NAME', required: true, maxLength: 120 },
             { key: 'relationship', type: 'select', labelKey: 'EMPLOYEES.FIELDS.PROFILE.CONTACT_RELATIONSHIP', required: true, options: RELATIONSHIP_OPTIONS },
             { key: 'phone', type: 'phone', labelKey: 'EMPLOYEES.FIELDS.PROFILE.CONTACT_PHONE', required: true, pattern: PHONE_PATTERN },
-            { key: 'isPrimary', type: 'boolean', labelKey: 'EMPLOYEES.FIELDS.PROFILE.CONTACT_IS_PRIMARY' },
+            { key: 'isPrimary', type: 'boolean', labelKey: 'EMPLOYEES.FIELDS.PROFILE.CONTACT_IS_PRIMARY', exclusiveInGroup: true },
           ],
         },
         {
@@ -341,6 +341,7 @@ export const EMPLOYEE_FIELD_MANIFEST: FieldManifest = {
         {
           key: 'contractEndDate',
           type: 'date',
+          afterField: 'contractStartDate',
           labelKey: 'EMPLOYEES.FIELDS.EMPLOYMENT.CONTRACT_END',
           hintKey: 'EMPLOYEES.FIELDS.EMPLOYMENT.CONTRACT_DOCUMENT_HINT',
           visibleWhen: "employment.employmentType == 'Contract'",

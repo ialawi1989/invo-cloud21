@@ -19,6 +19,16 @@ export interface ScheduleDayOff {
   type:     string;
   /** Persistence id used for edit / delete. */
   offDayId: string;
+  /**
+   * What HR decided, or `Approved` for a company that has no HR module and
+   * whose supervisor is therefore the authority.
+   *
+   * The board shows it because otherwise the two screens describe the same day
+   * differently: HR says awaiting approval and the rota says the person is
+   * off, with nothing on either screen reconciling them. Rejected entries do
+   * not arrive here at all - they are not absences.
+   */
+  status?: 'Draft' | 'Pending' | 'Approved' | 'Rejected' | 'Cancelled' | string;
 }
 
 /** One day cell for a team member. */

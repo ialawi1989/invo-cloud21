@@ -60,6 +60,13 @@ import {
   TimeoffFormData,
   TimeoffFormResult,
 } from './components/timeoff-form/timeoff-form.component';
+import { AuthService } from '@core/auth/auth.service';
+import { PrivilegeService } from '@core/auth/privileges/privilege.service';
+import { hrGrantFor } from '../../hr-privilege';
+import {
+  PendingLeaveModalComponent,
+  PendingLeaveModalData,
+} from './components/pending-leave-modal/pending-leave-modal.component';
 
 interface BranchOption { id: string; name: string; }
 
@@ -122,6 +129,43 @@ export class EmployeeScheduleComponent implements OnInit {
   private translate       = inject(TranslateService);
   private router          = inject(Router);
   private destroyRef      = inject(DestroyRef);
+  private privileges      = inject(PrivilegeService);
+  private auth            = inject(AuthService);
+
+  /**
+   * May this user decide a leave?
+   *
+   * The SAME grant the HR leave screen reads, so a supervisor who can approve
+   * there can approve here and one who cannot sees neither action. Anything
+   * else would make the board a way around the privilege.
+   *
+   * A computed, not a plain call: the privilege payload hydrates after the
+   * component is built, and a value read once would decide from an empty
+   * payload and never revisit it.
+   */
+  readonly canApproveLeave = computed(() =>
+    hrGrantFor(this.privileges, this.auth, 'employeeLeaveSecurity', 'approve'));
+
+  /**
+   * How many DISTINCT leaves are waiting on a decision for this person.
+   *
+   * By row id, not by day: a leave spanning a week draws seven chips over one
+   * row, and counting days would say "7 waiting" for one request - a number
+   * nobody could reconcile with the list they are about to open.
+   *
+   * Read from data the board already has, so it costs no request. Without it
+   * the row menu is a blind door: nothing on the roster says whether opening
+   * it will show a queue or an empty panel.
+   */
+  pendingLeaveCount(employee: ScheduleEmployee): number {
+    const ids = new Set<string>();
+    for (const d of employee.days ?? []) {
+      for (const off of d.dayOffShift ?? []) {
+        if (off.status === 'Pending') ids.add(off.offDayId);
+      }
+    }
+    return ids.size;
+  }
 
   loading  = signal<boolean>(false);
   branches = signal<BranchOption[]>([]);
@@ -448,10 +492,27 @@ export class EmployeeScheduleComponent implements OnInit {
   }
 
   dayOffMenu(employee: ScheduleEmployee, day: ScheduleDay, off: ScheduleDayOff): DropdownMenuBtnItem[] {
-    return [
-      { label: this.translate.instant('COMMON.EDIT'),                 click: () => this.openEditDayOff(employee, day, off) },
-      { label: this.translate.instant('COMMON.DELETE'), danger: true, click: () => this.deleteDayOff(off.offDayId) },
+    const items: DropdownMenuBtnItem[] = [
+      { label: this.translate.instant('COMMON.EDIT'), click: () => this.openEditDayOff(employee, day, off) },
     ];
+
+    // Only a PENDING leave is a decision waiting to be made. Offering approve
+    // on one already approved invites a second decision over the first, and
+    // the audit would then show two.
+    if (off.status === 'Pending' && this.canApproveLeave()) {
+      items.push(
+        { label: this.translate.instant('EMPLOYEES.SCHEDULE.APPROVE_LEAVE'),
+          click: () => this.decideDayOff(off, 'Approved') },
+        { label: this.translate.instant('EMPLOYEES.SCHEDULE.REJECT_LEAVE'), danger: true,
+          click: () => this.decideDayOff(off, 'Rejected') },
+      );
+    }
+
+    items.push({
+      label: this.translate.instant('EMPLOYEES.SCHEDULE.CANCEL_LEAVE'), danger: true,
+      click: () => this.cancelDayOff(off.offDayId),
+    });
+    return items;
   }
 
   /** Team-member row menu (pencil), mirroring Fresha's two-section layout. */
@@ -460,6 +521,9 @@ export class EmployeeScheduleComponent implements OnInit {
       { header: 'EMPLOYEES.SCHEDULE.SCHEDULE_SECTION',
         label: this.translate.instant('EMPLOYEES.SCHEDULE.SET_REPEATING_SHIFTS'), click: () => this.openRegular(employee) },
       { label: this.translate.instant('EMPLOYEES.SCHEDULE.ADD_TIME_OFF'),         click: () => this.openTimeOff(employee) },
+      // Deciding leave is a task somebody sits down to do, so it opens its own
+      // surface instead of putting controls on every leave cell of the rota.
+      { label: this.manageLeaveLabel(employee),                                   click: () => this.openLeaveManager(employee) },
       { header: 'EMPLOYEES.SCHEDULE.TEAM_MEMBER_SECTION', separator: true,
         label: this.translate.instant('EMPLOYEES.SCHEDULE.VIEW_TEAM_MEMBER'),     click: () => this.router.navigate(['/employees', employee.employeeId]) },
       // Straight to the form, not the overview: the menu item says EDIT, and
@@ -619,17 +683,81 @@ export class EmployeeScheduleComponent implements OnInit {
     }
   }
 
-  async deleteDayOff(offDayId: string): Promise<void> {
+  /**
+   * The menu label, carrying the count when there is one.
+   *
+   * Only when there IS one: "Leave requests (0)" is noise on every row of a
+   * roster where most people have nothing pending, and a zero in a badge reads
+   * as a thing to look at.
+   */
+  private manageLeaveLabel(employee: ScheduleEmployee): string {
+    const n = this.pendingLeaveCount(employee);
+    const base = this.translate.instant('EMPLOYEES.SCHEDULE.MANAGE_LEAVE');
+    return n > 0 ? `${base} (${n})` : base;
+  }
+
+  /**
+   * Leave for one team member: filtered, decided, cancelled.
+   *
+   * Reloads the board on close whatever the result. A decision taken in there
+   * changes what the rota should show, and leaving the board on its old data
+   * would have the two disagree on the screen they share.
+   */
+  async openLeaveManager(employee: ScheduleEmployee): Promise<void> {
+    const ref = this.modal.open<PendingLeaveModalComponent, PendingLeaveModalData, boolean>(
+      PendingLeaveModalComponent,
+      { data: { employeeId: employee.employeeId, employeeName: employee.employeeName } },
+    );
+    await ref.afterClosed();
+    await this.afterSave();
+  }
+
+  /**
+   * Cancel a leave and every day of it.
+   *
+   * The board draws one chip per day, but a leave is ONE row spanning its
+   * dates, so this clears the whole span in a single request. The confirmation
+   * says so - a supervisor clicking Friday must not be surprised that Monday
+   * went with it.
+   */
+  async cancelDayOff(offDayId: string): Promise<void> {
     const ok = await this.confirm(
-      'EMPLOYEES.SCHEDULE.DELETE_TIMEOFF_CONFIRM_TITLE',
-      'EMPLOYEES.SCHEDULE.DELETE_TIMEOFF_CONFIRM_MSG',
+      'EMPLOYEES.SCHEDULE.CANCEL_TIMEOFF_CONFIRM_TITLE',
+      'EMPLOYEES.SCHEDULE.CANCEL_TIMEOFF_CONFIRM_MSG',
     );
     if (!ok) return;
     try {
-      await this.employeeService.deleteEmployeeOffDay(offDayId);
+      const res = await this.employeeService.cancelEmployeeOffDays([offDayId]);
+      // Reported, not assumed: somebody else may have decided it a moment ago.
+      if ((res?.data?.cancelled ?? 0) === 0) {
+        this.toast.error('EMPLOYEES.SCHEDULE.CANCEL_LEAVE_SKIPPED');
+      } else {
+        this.toast.success('COMMON.SAVED_OK');
+      }
       await this.afterSave();
     } catch (e) {
-      console.error('[employee-schedule] delete time off failed', e);
+      console.error('[employee-schedule] cancel time off failed', e);
+      this.toast.error('COMMON.SAVE_FAILED');
+    }
+  }
+
+  /** Approve or reject, through the HR module's own endpoint. */
+  async decideDayOff(off: ScheduleDayOff, decision: 'Approved' | 'Rejected'): Promise<void> {
+    const ok = await this.confirm(
+      decision === 'Approved'
+        ? 'EMPLOYEES.SCHEDULE.APPROVE_CONFIRM_TITLE'
+        : 'EMPLOYEES.SCHEDULE.REJECT_CONFIRM_TITLE',
+      decision === 'Approved'
+        ? 'EMPLOYEES.SCHEDULE.APPROVE_CONFIRM_MSG'
+        : 'EMPLOYEES.SCHEDULE.REJECT_CONFIRM_MSG',
+    );
+    if (!ok) return;
+    try {
+      await this.employeeService.decideLeaveRequest(off.offDayId, decision);
+      this.toast.success('COMMON.SAVED_OK');
+      await this.afterSave();
+    } catch (e) {
+      console.error('[employee-schedule] leave decision failed', e);
       this.toast.error('COMMON.SAVE_FAILED');
     }
   }

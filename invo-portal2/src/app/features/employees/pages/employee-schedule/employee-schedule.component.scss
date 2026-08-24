@@ -455,3 +455,19 @@ $ink: #111827;
   .controls__right { justify-content: space-between; flex-wrap: wrap; }
   .branch-select { flex: 1; min-width: 0; }
 }
+
+/* A leave awaiting HR. Dashed rather than a different colour: the day IS
+   provisionally blocked, so it must still read as time off, while the
+   outline says the decision has not been made. */
+.chip-pending {
+  border-style: dashed;
+  opacity: 0.85;
+}
+.chip-badge {
+  margin-inline-start: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+

@@ -1,11 +1,13 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   HostListener,
   Input,
   Output,
   forwardRef,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -114,13 +116,31 @@ export class ToggleComponent implements ControlValueAccessor {
   // ─── ControlValueAccessor plumbing ────────────────────────────────
   // Lets the toggle bind to reactive forms via `formControlName` /
   // `formControl` / `[ngModel]` exactly like a native checkbox.
+  private cdr = inject(ChangeDetectorRef);
+
   private onChangeFn:  (v: boolean) => void = () => {};
   private onTouchedFn: () => void = () => {};
 
-  writeValue(v: boolean): void { this.checked = !!v; }
+  /**
+   * `markForCheck` is not optional here, and its absence is invisible.
+   *
+   * This component is OnPush, so a value written by the FORM rather than by
+   * a click in this view repaints nothing: the model says off and the switch
+   * keeps showing on. A click marks only the view it happened in, so the
+   * symptom appears exactly when one toggle changes another - which is how
+   * it surfaced, as a second `Primary contact` that would not switch off.
+   */
+  writeValue(v: boolean): void {
+    this.checked = !!v;
+    this.cdr.markForCheck();
+  }
   registerOnChange(fn: (v: boolean) => void): void { this.onChangeFn = fn; }
   registerOnTouched(fn: () => void): void { this.onTouchedFn = fn; }
-  setDisabledState(isDisabled: boolean): void { this.disabled = isDisabled; }
+  setDisabledState(isDisabled: boolean): void {
+    this.disabled = isDisabled;
+    // Same reason as writeValue: disabling through the form is not a click.
+    this.cdr.markForCheck();
+  }
 
   onToggle(ev: Event): void {
     ev.stopPropagation();

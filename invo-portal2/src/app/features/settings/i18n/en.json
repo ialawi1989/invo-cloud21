@@ -395,12 +395,6 @@
 
         "MAX_REF":                         "Maximum reference number",
         "MAX_REF_HINT":                    "Highest serial used for daily reference numbers before they reset.",
-        "REST_DAYS":                       "Weekly rest days",
-        "REST_DAYS_PLACEHOLDER":           "Select rest days",
-        "WORKS_EVERY_DAY":                  "Works seven days a week",
-        "WORKS_EVERY_DAY_HINT":            "Tick this for a company with no weekly rest day. Leaving it unticked with no days selected means the rest days have simply not been set.",
-        "REST_DAYS_HINT":                  "Used when suggesting how many days a leave request costs. Leave empty to keep the default.",
-        "REST_DAYS_ASSUMED":               "Not set \u2014 Friday and Saturday are assumed.",
 
         "VOID_REASONS":                    "Void reasons",
         "VOID_REASONS_HINT":               "Predefined reasons cashiers can pick from when voiding an item.",

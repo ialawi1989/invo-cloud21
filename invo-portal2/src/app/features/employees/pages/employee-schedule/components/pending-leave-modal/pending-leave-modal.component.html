@@ -1,0 +1,140 @@
+<app-modal-header
+  [title]="'EMPLOYEES.SCHEDULE.PENDING_LEAVE_TITLE' | translate: { name: employeeName }"/>
+
+<div class="pl-body">
+  <!-- Filters ABOVE the empty state, so "no results" can be corrected without
+       closing and reopening. Hiding them when the list is empty would leave a
+       filtered-to-nothing view with no way back. -->
+  <div class="pl-filters">
+    <div class="pl-filter">
+      <span class="pl-filter__label">{{ 'EMPLOYEES.SCHEDULE.FILTER_STATUS' | translate }}</span>
+      <app-search-dropdown
+        class="pl-filter__control"
+        [items]="statusItems()"
+        [value]="statusItem()"
+        (valueChange)="onStatusPicked($event)"
+        [displayWith]="itemLabel"
+        [compareWith]="itemCompare"
+        [searchable]="false"/>
+    </div>
+
+    @if (typeOptions().length > 2) {
+      <!-- Shown only when there is more than one type present: a filter with a
+           single real option is a control that cannot change anything. -->
+      <div class="pl-filter">
+        <span class="pl-filter__label">{{ 'EMPLOYEES.SCHEDULE.FILTER_TYPE' | translate }}</span>
+        <app-search-dropdown
+          class="pl-filter__control"
+          [items]="typeItems()"
+          [value]="typeItem()"
+          (valueChange)="onTypePicked($event)"
+          [displayWith]="itemLabel"
+          [compareWith]="itemCompare"
+          [searchable]="false"/>
+      </div>
+    }
+  </div>
+
+  @if (loading()) {
+    <p class="pl-empty">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (!rows().length) {
+    <p class="pl-empty">
+      {{ (filter() === 'Pending' && typeFilter() === 'All'
+            ? 'EMPLOYEES.SCHEDULE.NO_PENDING_LEAVE'
+            : 'EMPLOYEES.SCHEDULE.NO_MATCHING_LEAVE') | translate }}
+    </p>
+  } @else {
+    <!-- Selection only. The actions used to sit on this line and it read as
+         one long strip of words with no boundary between "what is selected"
+         and "what will happen to it". -->
+    <div class="pl-selectbar">
+      <label class="pl-check">
+        <input type="checkbox" [checked]="allSelected()" (change)="toggleAll()"/>
+        <span>{{ 'EMPLOYEES.SCHEDULE.SELECT_ALL' | translate }}</span>
+      </label>
+      @if (selectedCount() > 0) {
+        <span class="pl-count">
+          {{ 'EMPLOYEES.SCHEDULE.SELECTED_COUNT' | translate: { count: selectedCount() } }}
+        </span>
+      }
+    </div>
+
+    <!-- The bulk bar: its own strip, and only once something is selected. A bar
+         that is always present invites a click with nothing chosen. -->
+    @if (selectedCount() > 0) {
+      <div class="pl-bulkbar" role="group"
+           [attr.aria-label]="'EMPLOYEES.SCHEDULE.BULK_BAR' | translate">
+        @if (selectionDecidable()) {
+          <button type="button" class="btn btn-sm" [disabled]="working()"
+                  (click)="decide('Approved')">
+            {{ 'EMPLOYEES.SCHEDULE.APPROVE_LEAVE' | translate }}
+          </button>
+          <button type="button" class="btn btn-sm btn-danger" [disabled]="working()"
+                  (click)="decide('Rejected')">
+            {{ 'EMPLOYEES.SCHEDULE.REJECT_LEAVE' | translate }}
+          </button>
+        }
+        @if (selectionCancellable()) {
+          <button type="button" class="btn btn-sm btn-danger" [disabled]="working()"
+                  (click)="cancel()">
+            {{ 'EMPLOYEES.SCHEDULE.CANCEL_LEAVE' | translate }}
+          </button>
+        }
+      </div>
+    }
+
+    <ul class="pl-list">
+      @for (r of rows(); track r.id) {
+        <li class="pl-row">
+          <label class="pl-check pl-row__tick">
+            <input type="checkbox" [checked]="isSelected(r.id)" (change)="toggle(r.id)"/>
+          </label>
+
+          <div class="pl-info">
+            <div class="pl-info__head">
+              <strong class="pl-type">{{ r.leaveType }}</strong>
+              <span class="pl-status" [class]="'pl-status--' + statusOf(r).toLowerCase()">
+                {{ statusLabelKey(statusOf(r)) | translate }}
+              </span>
+            </div>
+            <div class="pl-info__meta">
+              <span class="pl-dates">{{ dateRange(r) }}</span>
+              <span class="pl-days">{{ daysLabel(r) }}</span>
+            </div>
+            @if (r.reason) {
+              <p class="pl-reason">{{ r.reason }}</p>
+            }
+          </div>
+
+          <!-- Per-row actions as well as the bulk bar: deciding ONE request is
+               the common case, and making it require a tick first would add a
+               click to the thing people do most. -->
+          <div class="pl-actions">
+            @if (canDecide(r)) {
+              <button type="button" class="btn btn-sm" [disabled]="working()"
+                      (click)="decide('Approved', r)">
+                {{ 'EMPLOYEES.SCHEDULE.APPROVE_LEAVE' | translate }}
+              </button>
+              <button type="button" class="btn btn-sm btn-danger" [disabled]="working()"
+                      (click)="decide('Rejected', r)">
+                {{ 'EMPLOYEES.SCHEDULE.REJECT_LEAVE' | translate }}
+              </button>
+            }
+            @if (canCancel(r)) {
+              <button type="button" class="btn btn-sm btn-ghost" [disabled]="working()"
+                      (click)="cancel(r)">
+                {{ 'EMPLOYEES.SCHEDULE.CANCEL_LEAVE' | translate }}
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btn-cancel" (click)="close()">
+    {{ 'COMMON.CLOSE' | translate }}
+  </button>
+</app-modal-footer>

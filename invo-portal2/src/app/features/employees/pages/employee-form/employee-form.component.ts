@@ -501,8 +501,25 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
    * predates every field in this manifest, so demanding a nationality before
    * an admin can change someone's pass code would be a regression. A field
    * that *does* hold a value still can't be blanked.
+   *
+   * ── WHY `wizardActive()` AND NOT `isCreate()` ALONE ──────────────────────
+   * `isCreate()` flips to false the moment step 1 persists the record — which
+   * is by design, and which used to take strict validation with it. Steps 2
+   * to 4 of the ADD flow then ran as ordinary edits, so every `required` field
+   * on them (nationality, date of birth, the whole personal step) became
+   * advisory before the user had ever seen it.
+   *
+   * That is not a theoretical gap. Measured on dev 2026-08-24: 292 employees
+   * carry a company and ONE carries a nationality, a field the manifest has
+   * marked `required` since phase 1. This is the path those 291 records came
+   * in through.
+   *
+   * The wizard is one act of creation whatever the id says, so it is strict
+   * throughout. Editing an existing record is unaffected — `wizardActive` is
+   * captured at load and is only ever true for the Add flow.
    */
-  requiredMode = computed<RequiredMode>(() => (this.isCreate() ? 'strict' : 'lenient'));
+  requiredMode = computed<RequiredMode>(() =>
+    (this.isCreate() || this.wizardActive() ? 'strict' : 'lenient'));
 
   profileGroup = computed<FormGroup | null>(() => {
     this.manifest();

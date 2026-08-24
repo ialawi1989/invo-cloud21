@@ -183,10 +183,47 @@ describe('the employee record overview', () => {
     expect(keys).not.toContain('EMPLOYEES.FORM.TERMINATION_DATE');
   });
 
-  it('shows no personal card at all for a record with no HR profile', async () => {
+  it('still has no ROWS for a record with no HR profile', async () => {
     const ctx = setup({ record: { ...RECORD, profile: undefined } });
     await load(ctx.fixture);
     expect(ctx.component.personalRows()).toEqual([]);
+  });
+
+  it('OFFERS the section anyway, so the pencil is reachable', async () => {
+    /*
+     * This reverses an earlier decision, deliberately.
+     *
+     * Hiding an empty section was the honest rendering of "no data" - but the
+     * pencil that enters that data lives in the section header, and the only
+     * other action on this page is Terminate. So a record with no `profile`
+     * offered no way to give it one. Measured on dev: 291 of 292 employees
+     * predate these groups, which is not an edge case, it is the table.
+     *
+     * The empty line says the data is missing, so the honesty is kept without
+     * the dead end.
+     */
+    const ctx = setup({
+      record: { ...RECORD, profile: undefined, employment: undefined },
+    });
+    await load(ctx.fixture);
+
+    const el: HTMLElement = ctx.fixture.nativeElement;
+
+    /*
+     * NAMED, not counted. A `>= 2` on the empty lines passed with this very
+     * section hidden, because the other two sections met the threshold on
+     * their own - the mutant that restored the old guard stayed green. A
+     * count is not an assertion about the section it is meant to be about.
+     */
+    const section = Array.from(el.querySelectorAll('section.card')).find((c) =>
+      c.querySelector('.card__title')?.textContent?.includes('PERSONAL_DETAILS'),
+    );
+    expect(section).toBeTruthy();
+
+    // Says the data is missing...
+    expect(section!.querySelector('.kv__empty')).toBeTruthy();
+    // ...and offers the way to enter it. Reaching the editor is the point.
+    expect(section!.querySelector('.card__head .icon-btn')).toBeTruthy();
   });
 
   // ── Bank details ─────────────────────────────────────────────────────────

@@ -85,7 +85,7 @@
         </div>
       </section>
 
-      @if (personalRows().length) {
+      @if (record()) {
         <section class="card">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.PERSONAL_DETAILS' | translate }}</h2>
@@ -95,6 +95,9 @@
           </header>
           <div class="card__body">
             <dl class="kv">
+              @if (!personalRows().length) {
+                <p class="kv__empty">{{ 'EMPLOYEES.OVERVIEW.SECTION_EMPTY' | translate }}</p>
+              }
               @for (row of personalRows(); track row.labelKey) {
                 <div class="kv__row">
                   <dt class="kv__key">{{ row.labelKey | translate }}</dt>
@@ -106,7 +109,7 @@
         </section>
       }
 
-      @if (employmentRows().length) {
+      @if (record()) {
         <section class="card">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT_DETAILS' | translate }}</h2>
@@ -116,6 +119,9 @@
           </header>
           <div class="card__body">
             <dl class="kv">
+              @if (!employmentRows().length) {
+                <p class="kv__empty">{{ 'EMPLOYEES.OVERVIEW.SECTION_EMPTY' | translate }}</p>
+              }
               @for (row of employmentRows(); track row.labelKey) {
                 <div class="kv__row">
                   <dt class="kv__key">{{ row.labelKey | translate }}</dt>
@@ -127,7 +133,7 @@
         </section>
       }
 
-      @if (paymentRows().length) {
+      @if (record()) {
         <section class="card">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.WIZARD.PAYMENT' | translate }}</h2>
@@ -137,6 +143,9 @@
           </header>
           <div class="card__body">
             <dl class="kv">
+              @if (!paymentRows().length) {
+                <p class="kv__empty">{{ 'EMPLOYEES.OVERVIEW.SECTION_EMPTY' | translate }}</p>
+              }
               @for (row of paymentRows(); track row.labelKey) {
                 <div class="kv__row">
                   <dt class="kv__key">{{ row.labelKey | translate }}</dt>

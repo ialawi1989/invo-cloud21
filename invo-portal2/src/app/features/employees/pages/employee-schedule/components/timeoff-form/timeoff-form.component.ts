@@ -16,6 +16,7 @@ import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
+import { FeatureService } from '@core/auth/feature.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import { EmployeeService } from '../../../../services/employee.service';
@@ -87,6 +88,24 @@ export class TimeoffFormComponent {
   private ref      = inject<ModalRef<TimeoffFormResult>>(MODAL_REF);
   private toast    = inject(ToastService);
   private employeeService = inject(EmployeeService);
+  private features = inject(FeatureService);
+
+  /**
+   * APPLY, not SAVE, when the company owns the HR leave module.
+   *
+   * The board may raise a leave; only HR approves it. Labelling that button
+   * "Save" tells the supervisor the matter is settled when the server has in
+   * fact stored it as `Pending` — the screen would be claiming an authority
+   * the request does not have.
+   *
+   * A company WITHOUT the module has no second authority, and there the
+   * supervisor's decision IS the decision, so "Save" is honest. Same rule as
+   * the server's `leaveAuthorityFor`, read from the same feature list, so the
+   * two cannot say different things.
+   */
+  readonly needsApproval = computed(() => this.features.isEnabled('hr.leave'));
+  readonly actionLabelKey = computed(() =>
+    this.needsApproval() ? 'EMPLOYEES.SCHEDULE.APPLY' : 'COMMON.SAVE');
 
   readonly typeOptions = TYPE_OPTIONS;
 

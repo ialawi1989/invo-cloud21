@@ -125,6 +125,38 @@ function blankFor(d: FieldDescriptor): any {
   }
 }
 
+/**
+ * `afterField` — this date must fall strictly after a sibling date.
+ *
+ * STRICTLY. Equal dates are refused, which is the whole reason this is not
+ * a `>=`: a contract starting and ending on 2026-01-01 has no duration. The
+ * server says the same (`end <= start` throws), and the two must agree or
+ * the form accepts what the save then rejects.
+ *
+ * Reads the sibling through `control.parent`, so the rule is written once
+ * and holds at group level and inside a `group[]` row alike.
+ *
+ * An empty date on either side yields no error: emptiness is `required`s
+ * question, and answering it here would put two messages on one field.
+ */
+export function dateAfterValidator(siblingKey: string): ValidatorFn {
+  return (control) => {
+    const self = toDateOnly(control.value);
+    const other = toDateOnly(control.parent?.get(siblingKey)?.value);
+    if (!self || !other) return null;
+
+    const a = toIsoDateOnly(other);
+    const b = toIsoDateOnly(self);
+    if (!a || !b) return null;
+
+    // Compared as `YYYY-MM-DD` text rather than as Date instances: two
+    // Dates on the same day differ by time-of-day, and `>` on them would
+    // read 09:00 as later than 08:00 on that same date — letting the
+    // same-day contract through by the width of a clock.
+    return b > a ? null : { dateAfter: { field: siblingKey } };
+  };
+}
+
 /** Format / range validators that apply whenever the field is visible. */
 function staticValidators(d: FieldDescriptor): ValidatorFn[] {
   const v: ValidatorFn[] = [];
@@ -133,6 +165,11 @@ function staticValidators(d: FieldDescriptor): ValidatorFn[] {
   if (d.maxLength != null) v.push(Validators.maxLength(d.maxLength));
   if (d.min != null) v.push(Validators.min(d.min));
   if (d.max != null) v.push(Validators.max(d.max));
+  // Cross-field, but it belongs in this set: `applyManifestRules()`
+  // reapplies these on every value change, so editing the START date
+  // re-runs the rule on the END date. Attached once at build time it
+  // would judge the end date against a start that had since moved.
+  if (d.afterField) v.push(dateAfterValidator(d.afterField));
   return v;
 }
 

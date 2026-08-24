@@ -23,6 +23,56 @@ import { FieldManifest } from '../models/field-manifest.types';
  * The result is cached for the lifetime of the app: the manifest is schema, not
  * data, and re-fetching it per form open buys nothing.
  */
+/**
+ * Flags that describe how the BROWSER validates or renders a field, as opposed
+ * to what the company stores. The server owns the field list; these belong to
+ * whoever ships the renderer that honours them.
+ */
+const CLIENT_BEHAVIOUR_KEYS = ['exclusiveInGroup', 'afterField'] as const;
+
+/**
+ * Fill client-owned flags from the built-in catalog onto the served manifest.
+ *
+ * WHY THIS EXISTS. `exclusiveInGroup` and `afterField` change nothing on the
+ * server - it stores the same jsonb either way - but the served manifest is
+ * what the renderer reads, so adding one to the portal alone did nothing until
+ * the backend was restarted. That failed silently, twice, and both times looked
+ * like a broken feature rather than a stale process.
+ *
+ * ONLY FILLS WHAT IS ABSENT. A server that names one of these keys wins, so
+ * the backend can still turn a behaviour off. This adds nothing to fields the
+ * server does not send: it is an overlay, never a merge of two field lists.
+ */
+export function overlayClientBehaviour(served: FieldManifest, local: FieldManifest): FieldManifest {
+  const index = new Map<string, any>();
+  const walk = (fields: any[], path: string) => {
+    for (const f of fields ?? []) {
+      const key = `${path}.${f.key}`;
+      index.set(key, f);
+      if (f.fields) walk(f.fields, key);
+    }
+  };
+  for (const g of local.groups ?? []) walk(g.fields, g.key);
+
+  const apply = (fields: any[], path: string) => {
+    for (const f of fields ?? []) {
+      const key = `${path}.${f.key}`;
+      const source = index.get(key);
+      if (source) {
+        for (const flag of CLIENT_BEHAVIOUR_KEYS) {
+          if (f[flag] === undefined && source[flag] !== undefined) f[flag] = source[flag];
+        }
+      }
+      if (f.fields) apply(f.fields, key);
+    }
+  };
+  // Serialised first: the response object is the one the renderer keeps, and
+  // writing flags onto a shared reference would be invisible mutation.
+  const out: FieldManifest = JSON.parse(JSON.stringify(served));
+  for (const g of out.groups ?? []) apply(g.fields, g.key);
+  return out;
+}
+
 @Injectable({ providedIn: 'root' })
 export class EmployeeFieldManifestService {
   private api = inject(ApiService);
@@ -49,7 +99,10 @@ export class EmployeeFieldManifestService {
       const data = res?.data;
       if (res?.success && this.looksLikeManifest(data)) {
         this.fromBackend = true;
-        return data as FieldManifest;
+        // Client-owned rendering flags are filled in from the built-in
+        // catalog, so a renderer behaviour ships with the portal instead of
+        // waiting on a backend restart. See overlayClientBehaviour().
+        return overlayClientBehaviour(data as FieldManifest, EMPLOYEE_FIELD_MANIFEST);
       }
     } catch {
       // Endpoint missing or unreachable — the catalog below is the contract.

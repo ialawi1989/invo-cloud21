@@ -57,6 +57,34 @@ export interface FieldDescriptor {
 
   /** Always required (subject to `requiredMode` — see the renderer). */
   required?: boolean;
+
+  /**
+   * Only ONE row in a `group[]` may carry this flag.
+   *
+   * Declared here rather than hardcoded in the renderer, because the constraint
+   * belongs to the field: emergency contacts have exactly one primary, and
+   * anything else with the same shape will too.
+   *
+   * The renderer turns the sibling flags OFF when one is turned on, so two
+   * primaries cannot be created. The SERVER still refuses two — this makes the
+   * refusal unreachable through the form, it does not replace it. A rule only
+   * the browser enforces is advice, and `saveEmployee` accepts the whole record
+   * from any client.
+   */
+  exclusiveInGroup?: boolean;
+  /**
+   * This date must fall strictly AFTER the sibling date named here.
+   *
+   * Strictly: a contract that ends on the day it starts has no duration,
+   * and `assertContractDatesOrdered` refuses `end <= start`. Same-day is
+   * exactly the case a `>=` comparison lets through, so it is the one
+   * worth naming.
+   *
+   * The sibling is resolved off the control parent, so this works
+   * unchanged inside a `group[]` row. As with `exclusiveInGroup`, the
+   * server still refuses it — this moves the refusal to the field.
+   */
+  afterField?: string;
   /** Required only while this condition holds. */
   requiredWhen?: string;
   /** Rendered only while this condition holds. A hidden field is never

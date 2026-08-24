@@ -84,9 +84,14 @@
           <!-- ── Boolean ── -->
           @case ('boolean') {
             <div class="field fr-field fr-field--toggle">
+              <!-- `exclusiveInGroup` makes this behave as one choice across the
+                   rows rather than a checkbox per row: turning it on turns the
+                   others off. Without it a user can tick two primaries and only
+                   learn on save that one is allowed. -->
               <app-toggle
                 size="sm"
                 [formControl]="control(g, d.key)"
+                (checkedChange)="onExclusiveToggle(d, g, $event)"
                 [label]="d.labelKey | translate"
                 [hint]="d.hintKey ? (d.hintKey | translate) : ''"/>
             </div>
@@ -105,7 +110,7 @@
                 @case ('date') {
                   <app-date-picker
                     [formControl]="control(g, d.key)"
-                    triggerClass="input"/>
+                    [triggerClass]="invalid(control(g, d.key)) ? 'input input--invalid' : 'input'"/>
                 }
 
                 @case ('select') {

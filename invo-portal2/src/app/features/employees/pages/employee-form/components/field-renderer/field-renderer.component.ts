@@ -148,6 +148,38 @@ export class FieldRendererComponent {
 
   // ─── Repeatable rows ─────────────────────────────────────────────────────
 
+  /**
+   * Keep an `exclusiveInGroup` flag true on ONE row only.
+   *
+   * Turning it on turns it off everywhere else, so two primaries cannot be
+   * created — the server refusal becomes unreachable through the form rather
+   * than being replaced by this. Turning it OFF is left alone: "no primary" is
+   * a state the user may legitimately pass through while re-choosing, and the
+   * server catches it on save if they stop there.
+   *
+   * `row.parent` is the FormArray the row sits in. Reached from the row rather
+   * than threaded down from the parent, because the renderer recurses and the
+   * boolean case only ever receives the row it belongs to.
+   */
+  onExclusiveToggle(d: FieldDescriptor, row: FormGroup, checked: boolean): void {
+    if (!d.exclusiveInGroup || !checked) return;
+
+    const siblings = row.parent as FormArray | null;
+    if (!siblings || !('controls' in siblings)) return;
+
+    for (const other of siblings.controls) {
+      if (other === row) continue;
+      const flag = (other as FormGroup).get(d.key);
+      // `emitEvent: false` so clearing a sibling does not re-enter this handler
+      // — and `markAsDirty` explicitly, because a silent change the user caused
+      // must still count as an edit.
+      if (flag?.value === true) {
+        flag.setValue(false, { emitEvent: false });
+        flag.markAsDirty();
+      }
+    }
+  }
+
   addRow(group: FormGroup, d: FieldDescriptor): void {
     const array = group.get(d.key) as FormArray;
     array.push(buildRowGroup(this.fb, d.fields ?? []));
@@ -233,6 +265,7 @@ export class FieldRendererComponent {
     if (e['maxlength']) return { key: 'EMPLOYEES.FIELDS.VALIDATION.MAX_LENGTH', params: { max: e['maxlength'].requiredLength } };
     if (e['min'])       return { key: 'EMPLOYEES.FIELDS.VALIDATION.MIN', params: { min: e['min'].min } };
     if (e['max'])       return { key: 'EMPLOYEES.FIELDS.VALIDATION.MAX', params: { max: e['max'].max } };
+    if (e['dateAfter']) return { key: 'EMPLOYEES.FIELDS.VALIDATION.DATE_AFTER' };
     return { key: 'EMPLOYEES.FIELDS.VALIDATION.INVALID' };
   }
 

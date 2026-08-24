@@ -76,6 +76,13 @@
     {{ 'EMPLOYEES.SCHEDULE.TOTAL_TIME_OFF' | translate }}:
     <strong>{{ 'EMPLOYEES.SCHEDULE.DAYS_COUNT' | translate: { count: totalDays() } }}</strong>
   </div>
+  @if (needsApproval()) {
+  <div class="tf-total">
+    <!-- Says where the request goes. Without this the supervisor cannot tell
+         why the entry is not simply in effect. -->
+    {{ 'EMPLOYEES.SCHEDULE.PENDING_HR_HINT' | translate }}
+  </div>
+  }
 </div>
 
 <app-modal-footer>
@@ -83,6 +90,6 @@
     {{ 'COMMON.CANCEL' | translate }}
   </button>
   <button type="button" class="btn-save" (click)="save()">
-    {{ 'COMMON.SAVE' | translate }}
+    {{ actionLabelKey() | translate }}
   </button>
 </app-modal-footer>

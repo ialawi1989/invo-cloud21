@@ -29,7 +29,13 @@ const FIELDS: FieldDescriptor[] = [
     key: 'contacts',
     type: 'group[]',
     labelKey: 'CONTACTS',
-    fields: [{ key: 'name', type: 'text', labelKey: 'NAME', required: true }],
+    fields: [
+      { key: 'name', type: 'text', labelKey: 'NAME', required: true },
+      { key: 'isPrimary', type: 'boolean', labelKey: 'PRIMARY', exclusiveInGroup: true },
+      // A NON-exclusive boolean beside it, so the tests can show the handler
+      // touches only what it was told to.
+      { key: 'isArchived', type: 'boolean', labelKey: 'ARCHIVED' },
+    ],
   },
 ];
 
@@ -155,5 +161,132 @@ describe('field-renderer — the Education certificate hint', () => {
     expect(c.extraHintKey({
       key: 'education', type: 'group[]', labelKey: 'EDU', hintKey: 'SERVER.HINT',
     } as FieldDescriptor)).toBeNull();
+  });
+});
+
+
+describe('field-renderer — an exclusive flag across repeated rows', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [FieldRendererComponent, TranslateModule.forRoot()],
+    });
+  });
+
+  /** Three contact rows, so "the others" is plural and an off-by-one shows. */
+  function threeRows() {
+    const { fixture, group } = mount();
+    const c = fixture.componentInstance;
+    const desc = FIELDS.find((f) => f.key === 'contacts')!;
+    c.addRow(group, desc);
+    c.addRow(group, desc);
+    c.addRow(group, desc);
+    const rows = c.rows(group, 'contacts');
+    return { c, rows, primary: desc.fields!.find((f) => f.key === 'isPrimary')! };
+  }
+
+  it('turning one ON turns the others OFF', () => {
+    const { c, rows, primary } = threeRows();
+    rows[0].get('isPrimary')!.setValue(true);
+
+    rows[2].get('isPrimary')!.setValue(true);
+    c.onExclusiveToggle(primary, rows[2], true);
+
+    expect(rows[0].get('isPrimary')!.value).toBe(false);
+    expect(rows[1].get('isPrimary')!.value).toBe(false);
+    expect(rows[2].get('isPrimary')!.value).toBe(true);
+  });
+
+  it('turning one OFF leaves the others alone', () => {
+    // "No primary" is a state the user may pass through while re-choosing. The
+    // server catches it on save if they stop there; the form must not fight
+    // them mid-edit.
+    const { c, rows, primary } = threeRows();
+    rows[1].get('isPrimary')!.setValue(true);
+
+    rows[1].get('isPrimary')!.setValue(false);
+    c.onExclusiveToggle(primary, rows[1], false);
+
+    expect(rows.map((r) => r.get('isPrimary')!.value)).toEqual([false, false, false]);
+  });
+
+  it('does NOT touch a boolean that is not exclusive', () => {
+    // The inverse that stops this being "clear every sibling boolean". Without
+    // it, a handler ignoring the flag entirely would pass every case above.
+    const { c, rows } = threeRows();
+    const archived = FIELDS.find((f) => f.key === 'contacts')!
+      .fields!.find((f) => f.key === 'isArchived')!;
+
+    rows[0].get('isArchived')!.setValue(true);
+    rows[1].get('isArchived')!.setValue(true);
+    c.onExclusiveToggle(archived, rows[1], true);
+
+    expect(rows[0].get('isArchived')!.value).toBe(true);
+  });
+
+  it('marks a cleared sibling DIRTY, so the change is saved', () => {
+    // The row was changed by the user's click even though they did not touch
+    // that row. A pristine control here means the save path can skip it.
+    const { c, rows, primary } = threeRows();
+    rows[0].get('isPrimary')!.setValue(true);
+    rows[0].get('isPrimary')!.markAsPristine();
+
+    c.onExclusiveToggle(primary, rows[1], true);
+
+    expect(rows[0].get('isPrimary')!.dirty).toBe(true);
+  });
+});
+
+describe('field-renderer - the exclusive flag through the RENDERED template', () => {
+  /**
+   * The tests above call `onExclusiveToggle` directly, which proves the handler
+   * and NOTHING about the template being wired to it. A missing
+   * `(checkedChange)` binding passes every one of them and fails in the
+   * browser - the exact shape of the defect reported against this feature.
+   *
+   * So this one CLICKS, through the DOM, on the buttons a user clicks.
+   *
+   * Clicking rather than calling `addRow()` is also what makes the rows appear
+   * at all: the renderer is OnPush and nothing about a FormArray growing marks
+   * it dirty. In the browser the growth comes FROM a click inside the view, so
+   * it always renders. Driven programmatically it does not, and the empty
+   * state is a harness artefact rather than a finding.
+   */
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [FieldRendererComponent, TranslateModule.forRoot()],
+    });
+  });
+
+  it('CLICKING the toggle in one row turns the others off', () => {
+    const { fixture, group } = mount();
+    const el: HTMLElement = fixture.nativeElement;
+
+    const addButton = el.querySelector('.fr-repeat__head button') as HTMLElement;
+    addButton.click();
+    fixture.detectChanges();
+    addButton.click();
+    fixture.detectChanges();
+
+    const rowEls = el.querySelectorAll('.fr-row');
+    expect(rowEls.length).toBe(2);
+
+    const primaryOf = (i: number) =>
+      rowEls[i].querySelectorAll('app-toggle [role="switch"]')[0] as HTMLElement;
+
+    primaryOf(0).click();
+    fixture.detectChanges();
+
+    const rows = fixture.componentInstance.rows(group, 'contacts');
+    expect(rows[0].get('isPrimary')!.value).toBe(true);
+
+    primaryOf(1).click();
+    fixture.detectChanges();
+
+    expect(rows[1].get('isPrimary')!.value).toBe(true);
+    // The whole point: the first one goes off WITHOUT being touched.
+    expect(rows[0].get('isPrimary')!.value).toBe(false);
+    expect(primaryOf(0).getAttribute('aria-checked')).toBe('false');
   });
 });
