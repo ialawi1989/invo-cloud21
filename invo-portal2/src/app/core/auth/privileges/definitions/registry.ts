@@ -35,6 +35,7 @@ import { discountSecurity } from './discountSecurity';
 import { DomainSettingsSecurity } from './DomainSettingsSecurity';
 import { employeeAssetSecurity } from './employeeAssetSecurity';
 import { employeeEosSecurity } from './employeeEosSecurity';
+import { employeeGosiSecurity } from './employeeGosiSecurity';
 import { employeeAttendenceSecurity } from './employeeAttendenceSecurity';
 import { employeeDisciplinarySecurity } from './employeeDisciplinarySecurity';
 import { employeeDocumentSecurity } from './employeeDocumentSecurity';
@@ -202,6 +203,7 @@ export const SECURITY_DEFINITIONS = {
   employeeDisciplinarySecurity,
   employeePayrollSecurity,
   employeeEosSecurity,
+  employeeGosiSecurity,
   employeeScheduleSecurity,
   employeeAttendenceSecurity,
   employeeInvitationSecurity,

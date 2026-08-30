@@ -16,6 +16,7 @@ import { hrPrivilegeGuard } from './hr-privilege';
  *   /employees/attendance      → attendance log
  *   /employees/attendance/:id  → attendance adjust form
  *   /employees/schedule        → team schedule board
+ *   /employees/gosi-settings   → GOSI contribution-rate & tier-3 gratuity policy
  *   /employees/my-account      → the signed-in employee's own account
  *   /employees/invitation/:id  → invite / edit invited employee (0 = new)
  *   /employees/0               → add-employee wizard (four steps)
@@ -101,6 +102,21 @@ export const EMPLOYEES_ROUTES: Routes = [
     loadComponent: () =>
       import('./pages/holiday-calendars/holiday-calendars.component')
         .then(m => m.HolidayCalendarsComponent),
+  },
+  {
+    // GOSI (Bahrain social insurance) contribution-rate & tier-3 gratuity
+    // policy storage. Company-wide statutory configuration, not personal
+    // employee data, so it lives as a standalone employees page rather than
+    // an employee-record tab. Gated like the other HR modules on
+    // `hrPrivilegeGuard` (default-deny) — see hr-privilege.ts — because
+    // `employeeGosiSecurity` has no `access` filled in by default and a
+    // `privilegeGuard` (default-allow) gate would show the page to everyone
+    // while every request inside it was refused by the API.
+    path: 'gosi-settings',
+    canActivate: [translationsLoaded, hrPrivilegeGuard],
+    data: { hrGroup: 'employeeGosiSecurity', hrAction: 'view' },
+    loadComponent: () =>
+      import('./pages/gosi-settings/gosi-settings.component').then(m => m.GosiSettingsComponent),
   },
   {
     path: 'my-account',
