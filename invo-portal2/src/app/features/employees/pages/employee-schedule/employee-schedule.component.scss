@@ -186,6 +186,44 @@ $ink: #111827;
   .day-hours { font-size: 12px; color: #6b7280; }
 }
 
+/*
+ * The holiday layer — a header tint + name badge, informational only.
+ *
+ * Deliberately confined to `thead`/day-header chrome: nothing under `tbody`
+ * changes when a column is `.holiday-col`, so a shift chip for someone
+ * scheduled to work that day renders exactly as it would on any other day.
+ * See employee-schedule.component.ts `holidayName()`.
+ */
+th.holiday-col {
+  background: rgba($warning, 0.08);
+}
+
+.holiday-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #b45309;
+  background: rgba($warning, 0.16);
+  border: 1px solid rgba($warning, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Mobile: the badge sits inline after the date label instead of stacked.
+.mday__label, .mcard__dayhead span {
+  .holiday-badge { margin-inline-start: 6px; }
+}
+
+.mday.holiday-col, .mcard.holiday-col .mcard__dayhead {
+  background: rgba($warning, 0.06);
+}
+
 .emp-cell {
   display: flex;
   align-items: center;

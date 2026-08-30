@@ -68,6 +68,20 @@ export interface HolidayCalendarAvailability {
   reason: string | null;
 }
 
+/**
+ * One named holiday inside a requested range — what
+ * `HolidayCalendarService.forRange` returns for the schedule board.
+ *
+ * Deliberately not `HolidayDay`: that carries a persistence `id` and a
+ * `recurring` flag that belong to editing a calendar, neither of which the
+ * board needs or should touch. This is read-only display data.
+ */
+export interface ScheduleHoliday {
+  /** ISO date, `YYYY-MM-DD`. */
+  date: string;
+  name: string;
+}
+
 // ─── Pure rules ───────────────────────────────────────────────────────────────
 
 /** `YYYY-MM-DD` for a date, in LOCAL time — a holiday is a calendar day. */

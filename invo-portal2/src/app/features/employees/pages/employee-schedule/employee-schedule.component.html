@@ -99,9 +99,17 @@
           <tr>
             <th class="emp-col">{{ 'EMPLOYEES.SCHEDULE.TEAM_MEMBER' | translate }}</th>
             @for (date of currentWeek(); track date; let i = $index) {
-              <th [title]="dayTooltip(i)">
+              <th [title]="dayTooltip(i)" [class.holiday-col]="!!holidayName(date)">
                 <div class="day-head">
                   <span class="day-name">{{ date | date: 'EEE, MMM d' }}</span>
+                  @if (holidayName(date); as hName) {
+                    <span class="holiday-badge">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1v.2h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/>
+                      </svg>
+                      {{ hName }}
+                    </span>
+                  }
                   <span class="day-hours">
                     {{ hoursByDay()[i] || 0 }} {{ 'EMPLOYEES.SCHEDULE.HR_SUFFIX' | translate }}
                   </span>
@@ -268,8 +276,13 @@
           @if (isEmpExpanded(employee.employeeId)) {
             <div class="mcard__days">
               @for (date of currentWeek(); track date; let i = $index) {
-                <div class="mday">
-                  <span class="mday__label">{{ date | date: 'EEE, MMM d' }}</span>
+                <div class="mday" [class.holiday-col]="!!holidayName(date)">
+                  <span class="mday__label">
+                    {{ date | date: 'EEE, MMM d' }}
+                    @if (holidayName(date); as hName) {
+                      <span class="holiday-badge">{{ hName }}</span>
+                    }
+                  </span>
                   <div class="cell cell--inline">
                     <ng-container *ngTemplateOutlet="cellTpl; context: { employee: employee, day: getDayData(employee, i), date: date }" />
                   </div>
@@ -281,9 +294,14 @@
       }
     } @else {
       @for (date of currentWeek(); track date; let i = $index) {
-        <div class="mcard mcard--open">
+        <div class="mcard mcard--open" [class.holiday-col]="!!holidayName(date)">
           <div class="mcard__dayhead">
-            <span>{{ date | date: 'EEEE, MMM d' }}</span>
+            <span>
+              {{ date | date: 'EEEE, MMM d' }}
+              @if (holidayName(date); as hName) {
+                <span class="holiday-badge">{{ hName }}</span>
+              }
+            </span>
             <span class="mcard__dayhours">{{ hoursByDay()[i] || 0 }} {{ 'EMPLOYEES.SCHEDULE.HR_SUFFIX' | translate }}</span>
           </div>
           <div class="mcard__days">

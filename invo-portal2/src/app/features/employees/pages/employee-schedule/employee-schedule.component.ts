@@ -36,6 +36,7 @@ import {
 } from '@shared/modal/demo/confirm-modal.component';
 
 import { EmployeeService } from '../../services/employee.service';
+import { HolidayCalendarService } from '../../services/holiday-calendar.service';
 import { BranchSettingsService } from '../../../settings/services/branch-settings.service';
 import {
   ScheduleDay,
@@ -123,6 +124,7 @@ const SORT_OPTIONS: SortOption[] = [
 })
 export class EmployeeScheduleComponent implements OnInit {
   private employeeService = inject(EmployeeService);
+  private holidayService  = inject(HolidayCalendarService);
   private branchService   = inject(BranchSettingsService);
   private modal           = inject(ModalService);
   private toast           = inject(ToastService);
@@ -171,6 +173,21 @@ export class EmployeeScheduleComponent implements OnInit {
   branches = signal<BranchOption[]>([]);
   branchId = signal<string | null>(null);
   employees = signal<ScheduleEmployee[]>([]);
+
+  /**
+   * Public holidays in the visible week, by ISO date → name.
+   *
+   * Informational only — see `HolidayCalendarService.forRange`. A date
+   * appearing here never removes or blocks anything already in `employees()`;
+   * an employee scheduled to work that day still renders their shift exactly
+   * as if the date carried no marking at all.
+   */
+  holidays = signal<Record<string, string>>({});
+
+  /** The holiday name for a date, or `null` when the day carries no marking. */
+  holidayName(date: string): string | null {
+    return this.holidays()[date] || null;
+  }
 
   readonly sortOptions = SORT_OPTIONS;
   /** Active row-ordering (persisted only for the session). */
@@ -427,6 +444,10 @@ export class EmployeeScheduleComponent implements OnInit {
     const week = this.currentWeek();
     if (!branchId || week.length < 7) return;
     this.loading.set(true);
+    // Fired alongside, not awaited together with a shared try/catch: a
+    // holiday-fetch failure must never take the shift board down with it —
+    // see `loadHolidays`.
+    void this.loadHolidays(branchId, week[0], week[6]);
     try {
       const raw = await this.employeeService.getEmployeesSchedule({
         branchId,
@@ -439,6 +460,24 @@ export class EmployeeScheduleComponent implements OnInit {
       this.employees.set([]);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  /**
+   * Load the holiday layer for the visible week. Isolated from `load()`'s
+   * own try/catch on purpose: this is decoration on top of the shift data,
+   * never a gate on it, so it must not be able to blank the board or hold up
+   * `loading`.
+   */
+  private async loadHolidays(branchId: string, from: string, to: string): Promise<void> {
+    try {
+      const list = await this.holidayService.forRange(branchId, from, to);
+      const map: Record<string, string> = {};
+      for (const h of list) if (h.date) map[h.date] = h.name;
+      this.holidays.set(map);
+    } catch (e) {
+      console.error('[employee-schedule] load holidays failed', e);
+      this.holidays.set({});
     }
   }
 
@@ -532,13 +571,19 @@ export class EmployeeScheduleComponent implements OnInit {
     ];
   }
 
-  /** Native-title tooltip for a day header: bookable vs non-bookable split. */
+  /** Native-title tooltip for a day header: bookable vs non-bookable split,
+   *  plus the holiday name when the day carries one. */
   dayTooltip(index: number): string {
     const bookable = this.hoursByDay()[index] || 0;
     const b = this.translate.instant('EMPLOYEES.SCHEDULE.BOOKABLE');
     const n = this.translate.instant('EMPLOYEES.SCHEDULE.NON_BOOKABLE');
     const suffix = this.translate.instant('EMPLOYEES.SCHEDULE.HR_SUFFIX');
-    return `${b}: ${bookable} ${suffix}\n${n}: 0 ${suffix}`;
+    const base = `${b}: ${bookable} ${suffix}\n${n}: 0 ${suffix}`;
+    const date = this.currentWeek()[index];
+    const holiday = date ? this.holidayName(date) : null;
+    if (!holiday) return base;
+    const label = this.translate.instant('EMPLOYEES.SCHEDULE.PUBLIC_HOLIDAY');
+    return `${label}: ${holiday}\n${base}`;
   }
 
   // ─── Modal openers ───────────────────────────────────────────────────────

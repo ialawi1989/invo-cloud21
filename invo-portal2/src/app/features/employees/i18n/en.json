@@ -406,7 +406,8 @@
       "SORT_HOURS_DESC": "Hours (most first)",
       "SORT_HOURS_ASC": "Hours (fewest first)",
       "SORT_NAME_ASC": "Name (A–Z)",
-      "SORT_NAME_DESC": "Name (Z–A)"
+      "SORT_NAME_DESC": "Name (Z–A)",
+      "PUBLIC_HOLIDAY": "Public holiday"
     },
     "MY_ACCOUNT": {
       "TITLE": "My Account",

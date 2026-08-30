@@ -5,6 +5,7 @@ import {
   HolidayCalendar,
   HolidayCalendarAvailability,
   HolidayDay,
+  ScheduleHoliday,
 } from './holiday-calendar.types';
 
 /**
@@ -86,6 +87,34 @@ export class HolidayCalendarService {
       this.api.get(`employee/deleteHolidayCalendar/${calendarId}`),
     );
     if (res?.success === false) throw new Error(res?.msg || 'Could not remove the calendar');
+  }
+
+  /**
+   * Named holidays for ONE branch, restricted to `[from, to]` — the schedule
+   * board's read. See `docs/tickets/schedule-board-has-no-concept-of-a-
+   * public-holiday.md` in InvoCloudBack.
+   *
+   * Degrades to `[]` on any failure, same reasoning as `list()`: the board
+   * must render its shifts whether or not this call succeeds — a holiday
+   * marking is decoration, never a gate on the schedule itself.
+   */
+  async forRange(branchId: string, from: string, to: string): Promise<ScheduleHoliday[]> {
+    if (!branchId || !from) return [];
+    try {
+      const res = await this.api.request<any>(
+        this.api.post('employee/getScheduleHolidays', { branchId, from, to: to || from }),
+      );
+      if (res?.success === false) return [];
+      const raw = Array.isArray(res?.data?.holidays) ? res.data.holidays : [];
+      return raw.map((h: any): ScheduleHoliday => ({
+        date: String(h?.date ?? '').slice(0, 10),
+        name: String(h?.name ?? ''),
+      }));
+    } catch {
+      // A missing/failed endpoint is "no marking today", never an error the
+      // board surfaces — see the class header on how reads degrade.
+      return [];
+    }
   }
 }
 

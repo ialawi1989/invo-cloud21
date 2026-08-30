@@ -406,7 +406,8 @@
       "SORT_HOURS_DESC": "الساعات (الأكثر أولاً)",
       "SORT_HOURS_ASC": "الساعات (الأقل أولاً)",
       "SORT_NAME_ASC": "الاسم (أ–ي)",
-      "SORT_NAME_DESC": "الاسم (ي–أ)"
+      "SORT_NAME_DESC": "الاسم (ي–أ)",
+      "PUBLIC_HOLIDAY": "عطلة رسمية"
     },
     "MY_ACCOUNT": {
       "TITLE": "حسابي",
