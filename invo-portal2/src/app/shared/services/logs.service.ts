@@ -19,8 +19,8 @@ export interface LogsParams {
   limit?: number;
   /** Entity keys to scope the log to, e.g. ['MenuRecipe']. */
   sourceTable?: string[];
-  /** Narrow to a single record of that entity. */
-  sourceId?: string;
+  /** Narrow to one or more records of that entity. */
+  sourceId?: string | string[];
   searchTerm?: string;
   branchId?: string[];
   employeeId?: string[];
@@ -50,7 +50,11 @@ export class LogsService {
       page: params.page ?? 1,
       limit: params.limit ?? 15,
       source_table: params.sourceTable ?? [],
-      source_id: params.sourceId ?? '',
+      // Backend binds this as a Postgres `uuid[]` param (`= any($n::uuid[])`)
+      // — a bare string fails the cast, so always send an array.
+      source_id: params.sourceId
+        ? (Array.isArray(params.sourceId) ? params.sourceId : [params.sourceId])
+        : [],
       searchTerm: params.searchTerm ?? '',
       branch_id: params.branchId ?? [],
       employee_id: params.employeeId ?? [],

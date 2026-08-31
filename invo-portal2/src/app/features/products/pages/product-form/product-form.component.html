@@ -38,6 +38,18 @@
           {{ 'PRODUCTS.ACTIONS.PRINT_LABEL' | translate }}
         </button>
       }
+
+      <!-- Activity log — only meaningful once the product exists; the
+           New Product flow has nothing to show history for yet. -->
+      @if (isExistingProduct()) {
+        <button type="button" class="btn btn-ghost page-header__action"
+          (click)="openHistory()" [disabled]="loading()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/>
+          </svg>
+          {{ 'COMMON.LOGS.SHOW' | translate }}
+        </button>
+      }
     </div>
   </header>
 

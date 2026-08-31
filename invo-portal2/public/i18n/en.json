@@ -138,7 +138,10 @@
     "LOGS": {
       "TITLE": "Activity log",
       "SHOW": "Show logs",
-      "EMPTY": "No activity recorded yet"
+      "EMPTY": "No activity recorded yet",
+      "CHANGED_FROM_TO": "Changed from {{from}} to {{to}}",
+      "RESTORE": "Restore this value",
+      "RESTORED": "Restored — remember to save"
     },
     "REMOVE": "Remove",
     "ALL": "All",

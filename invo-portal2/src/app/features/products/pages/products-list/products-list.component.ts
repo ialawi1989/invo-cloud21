@@ -37,6 +37,10 @@ import {
   DropdownMenuBtnComponent,
   DropdownMenuBtnItem,
 } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import {
+  LogsDrawerComponent,
+  LogsDrawerData,
+} from '@shared/components/logs-drawer/logs-drawer.component';
 
 @Component({
   selector: 'app-products-list',
@@ -902,8 +906,17 @@ export class ProductsListComponent implements OnInit {
     this.router.navigate(['/products/products-availability'], { queryParams: this.bulkHandoffParams() });
   }
 
+  /** Activity log — the legacy entity key for products is 'Products'. */
   openLogs(): void {
-    console.log('Open logs');
+    this.modalService.open<LogsDrawerComponent, LogsDrawerData, void>(LogsDrawerComponent, {
+      drawer: true,
+      drawerWidth: '480px',
+      drawerResizable: true,
+      data: {
+        sourceTable: 'Products',
+        title: this.lang.instant('PRODUCTS.TITLE'),
+      },
+    });
   }
 
   /**

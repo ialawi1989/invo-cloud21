@@ -55,6 +55,21 @@
             <p class="ld-card__comment">{{ entry.comment }}</p>
           }
 
+          @let diff = fieldDiff(entry);
+          @if (diff) {
+            <div class="ld-card__diff">
+              <span class="ld-card__diff-text">
+                <strong>{{ diff.label }}</strong>:
+                {{ 'COMMON.LOGS.CHANGED_FROM_TO' | translate:{ from: diff.oldValue, to: diff.newValue } }}
+              </span>
+              @if (data.onRestore) {
+                <button type="button" class="ld-card__restore" (click)="restore(entry)">
+                  {{ 'COMMON.LOGS.RESTORE' | translate }}
+                </button>
+              }
+            </div>
+          }
+
           @let rows = metaRows(entry);
           @if (rows.length) {
             <dl class="ld-card__meta">

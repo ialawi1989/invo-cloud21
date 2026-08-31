@@ -30,6 +30,11 @@ import {
   ConfirmModalComponent,
   ConfirmModalData,
 } from '@shared/modal/demo/confirm-modal.component';
+import {
+  LogsDrawerComponent,
+  LogsDrawerData,
+} from '@shared/components/logs-drawer/logs-drawer.component';
+import { ToastService } from '@shared/components/toast/toast.service';
 
 import { ProductsService } from '../../services/products.service';
 import { Product } from '../../models/product-form.model';
@@ -131,6 +136,7 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
   private productsService = inject(ProductsService);
   private translate = inject(TranslateService);
   private modalService = inject(ModalService);
+  private toast = inject(ToastService);
   private el = inject(ElementRef<HTMLElement>);
   readonly privileges = inject(PrivilegeService);
 
@@ -481,6 +487,44 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
     const info = this.productInfo();
     if (!info) return;
     this.productsService.showGenerateBarcode(info);
+  }
+
+  /**
+   * Maps the backend's `meta.field` diff keys (see `LogsDrawerComponent`'s
+   * `FIELD_DIFFS`) to the reactive-form path that field lives at. Only
+   * `name`/`defaultPrice`/`barcode` are diffed by the backend today — see
+   * `product.controller.ts` `editProduct()` — so that's all a "Restore"
+   * action can act on; every other field has no history to restore.
+   */
+  private static readonly HISTORY_FIELD_PATHS: Record<string, [group: string, control: string]> = {
+    name:         ['common', 'name'],
+    barcode:      ['common', 'barcode'],
+    defaultPrice: ['pricing', 'defaultPrice'],
+  };
+
+  /** Activity log for this product, with per-field "Restore" on the 3
+   *  fields the backend actually diffs (name/price/barcode — see above). */
+  openHistory(): void {
+    this.modalService.open<LogsDrawerComponent, LogsDrawerData, void>(LogsDrawerComponent, {
+      drawer: true,
+      drawerWidth: '480px',
+      drawerResizable: true,
+      data: {
+        sourceTable: 'Products',
+        sourceId: this.productId(),
+        title: this.pageTitle(),
+        onRestore: (field, value) => this.restoreHistoryField(field, value),
+      },
+    });
+  }
+
+  private restoreHistoryField(field: string, value: string): void {
+    const path = ProductFormComponent.HISTORY_FIELD_PATHS[field];
+    const control = path && this.productForm.get(path);
+    if (!control) return;
+    control.patchValue(field === 'defaultPrice' ? Number(value) : value);
+    control.markAsDirty();
+    this.toast.success('COMMON.LOGS.RESTORED');
   }
 
   // ── Save ───────────────────────────────────────────────────────────────────
