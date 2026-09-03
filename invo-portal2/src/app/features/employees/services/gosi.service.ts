@@ -119,6 +119,8 @@ function mapSettingsRow(r: any): GosiSettingsRow {
     wageFloor: num(r?.wageFloor),
     wageCeiling: num(r?.wageCeiling),
 
+    reviewIntervalMonths: num(r?.reviewIntervalMonths),
+
     source: r?.source ?? null,
     notes: r?.notes ?? null,
 
