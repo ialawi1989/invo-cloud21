@@ -37,6 +37,7 @@
                   <th>{{ 'EMPLOYEES.GOSI.RATES.WAGE_FLOOR' | translate }}</th>
                   <th>{{ 'EMPLOYEES.GOSI.RATES.WAGE_CEILING' | translate }}</th>
                   <th>{{ 'EMPLOYEES.GOSI.RATES.SOURCE' | translate }}</th>
+                  <th>{{ 'EMPLOYEES.GOSI.RATES.NEXT_REVIEW' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -81,6 +82,13 @@
                     <td>{{ p.wageFloor ?? '—' }}</td>
                     <td>{{ p.wageCeiling ?? '—' }}</td>
                     <td class="gosi-table__source" [title]="p.notes ?? ''">{{ p.source ?? '—' }}</td>
+                    <td>
+                      @if (nextReviewDue(p); as due) {
+                        <span [class.gosi-review--overdue]="reviewOverdue(p)">{{ due }}</span>
+                      } @else {
+                        —
+                      }
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -193,6 +201,23 @@
                 <label class="field-label" for="gosi-wage-ceiling">{{ 'EMPLOYEES.GOSI.RATES.WAGE_CEILING' | translate }}</label>
                 <input id="gosi-wage-ceiling" type="number" class="input input--narrow" min="0" step="0.001"
                        formControlName="wageCeiling" />
+              </div>
+
+              <div class="field-row">
+                <label class="field-label" for="gosi-review-interval">
+                  {{ 'EMPLOYEES.GOSI.RATES.REVIEW_INTERVAL' | translate }}
+                </label>
+                <app-search-dropdown
+                  id="gosi-review-interval"
+                  [items]="reviewIntervalOptions"
+                  [displayWith]="reviewIntervalDisplay"
+                  [compareWith]="reviewIntervalCompare"
+                  [toValue]="reviewIntervalToValue"
+                  [value]="selectedReviewInterval()"
+                  [searchable]="false"
+                  [clearable]="false"
+                  (valueChange)="setReviewInterval($any($event))"/>
+                <p class="field-hint">{{ 'EMPLOYEES.GOSI.RATES.REVIEW_INTERVAL_HINT' | translate }}</p>
               </div>
 
               <div class="field-row">

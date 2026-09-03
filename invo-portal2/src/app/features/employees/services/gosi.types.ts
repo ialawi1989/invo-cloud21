@@ -39,6 +39,14 @@ export interface GosiSettingsRow {
   wageFloor: number | null;
   wageCeiling: number | null;
 
+  /** Months between required re-checks of this row's figures against the
+   *  official source (12 or 24 today), or `null` for no reminder. The
+   *  stakeholder does not know the real escalation figures and would rather
+   *  be prompted to look them up on a schedule than have the auto-escalation
+   *  fields above guess at an annual increment — this is a reminder, never a
+   *  computation. */
+  reviewIntervalMonths: number | null;
+
   /** Provenance — required on save. The source site blocks automated
    *  verification, so this is the audit trail for where a figure came from. */
   source: string | null;

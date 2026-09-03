@@ -59,6 +59,12 @@
   white-space: nowrap;
 }
 
+// A passed review-reminder date — a nudge, never a block on saving.
+.gosi-review--overdue {
+  color: #b45309;
+  font-weight: 600;
+}
+
 // ── Add-period form ────────────────────────────────────────────────────
 .gosi-form {
   margin-top: 14px;

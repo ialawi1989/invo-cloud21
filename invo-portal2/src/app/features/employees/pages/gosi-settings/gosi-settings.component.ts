@@ -38,6 +38,25 @@ const WAGE_BASIS_OPTIONS: readonly WageBasisOption[] = [
   { value: 'basic_plus_allowances', labelKey: 'EMPLOYEES.GOSI.WAGE_BASIS_BASIC_PLUS_ALLOWANCES' },
 ];
 
+/**
+ * How often this row's figures should be re-checked against the official
+ * source. Added because the real GOSI escalation figures (open question 1.a)
+ * are unknown — rather than guess an annual increment, the stakeholder asked
+ * for a review REMINDER instead. `null` = no reminder configured, distinct
+ * from the auto-escalation fields already on the form: those compute a
+ * number with no human involved, this only says when a human should look.
+ */
+interface ReviewIntervalOption {
+  value: number | null;
+  labelKey: string;
+}
+
+const REVIEW_INTERVAL_OPTIONS: readonly ReviewIntervalOption[] = [
+  { value: null, labelKey: 'EMPLOYEES.GOSI.REVIEW_INTERVAL_NONE' },
+  { value: 12, labelKey: 'EMPLOYEES.GOSI.REVIEW_INTERVAL_YEARLY' },
+  { value: 24, labelKey: 'EMPLOYEES.GOSI.REVIEW_INTERVAL_EVERY_2_YEARS' },
+];
+
 /** The tier-3 decision, rendered as a 3-item dropdown rather than a toggle so
  *  "not yet decided" is a visible, selectable state — not a hidden default. */
 type Tier3Decision = 'undecided' | 'yes' | 'no';
@@ -117,6 +136,7 @@ export class GosiSettingsComponent implements OnInit {
 
   readonly wageBasisOptions: WageBasisOption[] = [...WAGE_BASIS_OPTIONS];
   readonly tier3DecisionOptions: Tier3DecisionOption[] = [...TIER3_DECISION_OPTIONS];
+  readonly reviewIntervalOptions: ReviewIntervalOption[] = [...REVIEW_INTERVAL_OPTIONS];
 
   // ─── Privilege gates ───────────────────────────────────────────────────
   canView = computed(() => hrGrantFor(this.privileges, this.auth, 'employeeGosiSecurity', 'view'));
@@ -135,6 +155,31 @@ export class GosiSettingsComponent implements OnInit {
   sortedPeriods = computed<GosiSettingsRow[]>(() =>
     [...this.periods()].sort((a, b) => (a.effectiveFrom < b.effectiveFrom ? 1 : -1)),
   );
+
+  /**
+   * `effectiveFrom + reviewIntervalMonths`, for the list to show a reminder
+   * date. `null` when the row has no interval set — display-only, mirrors
+   * `nextReviewDue` in the backend's `employeeGosiTypes.ts` exactly so the
+   * two never disagree about what date a given interval implies.
+   */
+  nextReviewDue(row: GosiSettingsRow): string | null {
+    if (row.reviewIntervalMonths == null) return null;
+    const [y, m, d] = row.effectiveFrom.slice(0, 10).split('-').map(Number);
+    if (!y || !m || !d) return null;
+    const due = new Date(Date.UTC(y, m - 1 + row.reviewIntervalMonths, d));
+    const yy = due.getUTCFullYear();
+    const mm = String(due.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(due.getUTCDate()).padStart(2, '0');
+    return `${yy}-${mm}-${dd}`;
+  }
+
+  /** Whether that reminder date has already passed — drives a badge, not a
+   *  block: an overdue review is a nudge, never something that stops a save. */
+  reviewOverdue(row: GosiSettingsRow): boolean {
+    const due = this.nextReviewDue(row);
+    if (!due) return false;
+    return due < new Date().toISOString().slice(0, 10);
+  }
 
   /** The current tier-3 policy is whichever row has the latest `effectiveFrom`. */
   currentTier3 = computed<GosiTier3PolicyRow | null>(() => {
@@ -168,6 +213,8 @@ export class GosiSettingsComponent implements OnInit {
     wageBasis: [null as WageBasis | null],
     wageFloor: [null as number | null],
     wageCeiling: [null as number | null],
+
+    reviewIntervalMonths: [null as number | null],
 
     source: ['', Validators.required],
     notes: [''],
@@ -234,6 +281,20 @@ export class GosiSettingsComponent implements OnInit {
     this.periodForm.get('wageBasis')?.setValue(opt?.value ?? null);
   }
 
+  reviewIntervalDisplay = (o: ReviewIntervalOption | null) => (o ? this.translate.instant(o.labelKey) : '');
+  reviewIntervalCompare = (a: ReviewIntervalOption | null, b: ReviewIntervalOption | null) =>
+    (a?.value ?? null) === (b?.value ?? null);
+  reviewIntervalToValue = (o: ReviewIntervalOption | null) => o?.value ?? null;
+
+  selectedReviewInterval(): ReviewIntervalOption | null {
+    const v: number | null = this.periodForm.get('reviewIntervalMonths')?.value ?? null;
+    return this.reviewIntervalOptions.find((o) => o.value === v) ?? this.reviewIntervalOptions[0];
+  }
+
+  setReviewInterval(opt: ReviewIntervalOption | null): void {
+    this.periodForm.get('reviewIntervalMonths')?.setValue(opt?.value ?? null);
+  }
+
   async saveRatePeriod(): Promise<void> {
     if (!this.canEdit()) return;
     if (this.periodForm.invalid) {
@@ -260,6 +321,7 @@ export class GosiSettingsComponent implements OnInit {
         wageBasis: v.wageBasis,
         wageFloor: v.wageFloor,
         wageCeiling: v.wageCeiling,
+        reviewIntervalMonths: v.reviewIntervalMonths,
         source: v.source,
         notes: v.notes || null,
       });
