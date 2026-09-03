@@ -13,21 +13,20 @@ import { GuidedTourStep } from '@shared/services/guided-tour.service';
  *    steps go.
  *  • A record with no branches yet → no primary-branch star → that step goes,
  *    while the Branch Assignment step (whose copy explains the star) stays.
- *  • The create wizard shows ONE step at a time → the anchors on the other
- *    three steps are not in the DOM → the tour becomes a tour of the step the
- *    user is actually on, with no per-step catalog to maintain.
+ *  • Create and edit are the same single scrolling page, so every anchor the
+ *    role/flag/grant checks allow is on screen together — there is no longer
+ *    a step to walk one at a time.
  *
  * Bumping `EMPLOYEE_TOUR_KEY` re-shows the tour for everyone; do that when the
  * form changes enough that the walkthrough would otherwise mislead.
  */
-// v2: the create flow became a four-step wizard and the record page became a
-// read-only overview. A tour written for one long page would now walk people
-// past cards that are on a different step.
-export const EMPLOYEE_TOUR_KEY = 'employee_form_v2';
+// v3: the add-employee flow went back to a single page (it had briefly been a
+// four-step wizard in v2). The step-strip anchor is gone; everyone who saw v2
+// gets the tour again on the page shape they now actually have.
+export const EMPLOYEE_TOUR_KEY = 'employee_form_v3';
 
 /** Anchor names, exported so the template and its test agree on the spelling. */
 export const EMPLOYEE_TOUR_ANCHORS = {
-  stepper: 'emp-stepper',
   systemAccess: 'emp-system-access',
   basic: 'emp-basic',
   email: 'emp-email',
@@ -50,14 +49,6 @@ export const EMPLOYEE_FORM_TOUR: GuidedTourStep[] = [
     titleKey: 'EMPLOYEES.TOUR.INTRO.TITLE',
     bodyKey: 'EMPLOYEES.TOUR.INTRO.BODY',
     align: 'center',
-  },
-  // Wizard only — absent when editing, where there is no step strip and the
-  // step-by-step copy would describe a flow the user is not in.
-  {
-    anchor: A.stepper,
-    titleKey: 'EMPLOYEES.TOUR.STEPPER.TITLE',
-    bodyKey: 'EMPLOYEES.TOUR.STEPPER.BODY',
-    side: 'block-end',
   },
   {
     anchor: A.systemAccess,

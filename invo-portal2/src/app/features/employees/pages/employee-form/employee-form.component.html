@@ -18,21 +18,10 @@
     </button>
   </header>
 
-  <!-- The wizard's progress strip. Absent when editing: a single-section edit
-       and the full form are both one screen, and a one-step stepper is noise. -->
-  @if (wizardActive()) {
-    <app-form-stepper
-      data-tour="emp-stepper"
-      [steps]="steps()"
-      [current]="step()"
-      [furthest]="furthestStep()"
-      (stepSelected)="goToStep($event)"/>
-  }
-
   @if (loading()) {
     <div class="loading"><span class="spinner spinner--lg"></span></div>
   } @else {
-    <div class="form-grid" [class.form-grid--single]="wizardActive() || editSection()">
+    <div class="form-grid" [class.form-grid--single]="!!editSection()">
       <!-- ═══ Main column ═══ -->
       <div class="form-grid__main">
 
@@ -605,46 +594,17 @@
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
 
   <app-form-sticky-footer>
-    @if (wizardActive()) {
-      <!-- Back is absent on step 1 rather than disabled: there is nothing
-           behind it, and Cancel already covers leaving. -->
-      @if (step() > 0) {
-        <button type="button" class="btn btn-ghost" (click)="back()" [disabled]="saving()">
-          {{ 'COMMON.BACK' | translate }}
-        </button>
-      }
-      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-        {{ 'COMMON.CANCEL' | translate }}
-      </button>
-      <!-- Skip only past step 1: the employee has to exist before the steps
-           that edit it, so there is nothing to skip TO from there. -->
-      @if (step() > 0) {
-        <button type="button" class="btn btn-ghost" (click)="skipStep()" [disabled]="saving()">
-          {{ 'COMMON.SKIP' | translate }}
-        </button>
-      }
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="saveAndContinue()"
-        [disabled]="saving() || loading()"
-      >
-        {{ (isLastStep() ? 'COMMON.SAVE' : 'COMMON.SAVE_AND_CONTINUE') | translate }}
-      </button>
-      <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
-    } @else {
-      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-        {{ 'COMMON.CANCEL' | translate }}
-      </button>
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="save()"
-        [disabled]="saving() || loading() || form.invalid"
-      >
-        {{ 'COMMON.SAVE' | translate }}
-      </button>
-      <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
-    }
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="saving() || loading() || form.invalid"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+    <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
   </app-form-sticky-footer>
 </div>

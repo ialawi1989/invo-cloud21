@@ -19,7 +19,7 @@ import { hrPrivilegeGuard } from './hr-privilege';
  *   /employees/gosi-settings   → GOSI contribution-rate & tier-3 gratuity policy
  *   /employees/my-account      → the signed-in employee's own account
  *   /employees/invitation/:id  → invite / edit invited employee (0 = new)
- *   /employees/0               → add-employee wizard (four steps)
+ *   /employees/0               → add-employee form (single page)
  *   /employees/:id             → employee record shell; default child is the
  *                                read-only overview
  *   /employees/:id/edit        → the form; `?section=` narrows it to one card
@@ -137,8 +137,8 @@ export const EMPLOYEES_ROUTES: Routes = [
     /**
      * Creating an employee, declared BEFORE `:id` so the literal wins the
      * match. It bypasses the record shell entirely: there is no record yet, so
-     * a tab strip would point at tabs that cannot load, and the wizard supplies
-     * its own progress header instead.
+     * a tab strip would point at tabs that cannot load. The single-page form
+     * supplies its own header instead.
      */
     path: '0',
     canActivate: [translationsLoaded, privilegeGuard],

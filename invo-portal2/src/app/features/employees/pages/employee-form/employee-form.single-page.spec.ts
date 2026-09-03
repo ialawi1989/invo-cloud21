@@ -18,24 +18,20 @@ import { EMPLOYEE_FIELD_MANIFEST } from '../../models/employee-field-manifest';
 import { EmployeeFormComponent } from './employee-form.component';
 
 /**
- * The add-employee wizard.
+ * The employee form, back to a single page.
  *
- * ── WHAT THESE ACTUALLY GUARD ────────────────────────────────────────────────
- * The wizard's whole structure rests on one thing: step 1 creates the employee
- * and ADOPTS the id the API returns, so steps 2-4 are updates of that record.
- * If the id is not adopted, every later step still posts `id: null` and the
- * server dutifully inserts another employee — four steps, four people, no error
- * anywhere. Nothing about the screen looks wrong while it happens.
- *
- * So the sharp assertion is not "step 1 saved" (a create always saves). It is
- * that the SECOND save carries the id and `formStatus: 'edit'`. That is the
- * only observable that differs between the working and broken versions, which
- * is why it is asserted directly on the payload rather than on the step index.
- *
- * Verified by mutation: dropping the `employeeId.set(newId)` line in `save()`
- * reddens "the second step updates the record step 1 created" on its
- * `formStatus` expectation, while every other test here still passes.
- * ─────────────────────────────────────────────────────────────────────────────
+ * This form was briefly a four-step wizard; the stakeholder asked for it back
+ * as one scrollable page with one Save. These tests cover what that means in
+ * practice:
+ *  - creating a brand-new employee is ONE save, not a sequence gated by steps;
+ *  - bank details (a separate endpoint) still get posted on that same create,
+ *    which only works if the employee id returned by the first call is
+ *    adopted BEFORE the bank save is attempted — the ordering bug a wizard
+ *    could never have surfaced, because there the bank step ran strictly
+ *    after the id-adopting step had already completed;
+ *  - validation surfaces across the WHOLE form on submit, not gated by step;
+ *  - the `?section=` focused single-card edit (from the record overview) is
+ *    untouched by any of this.
  */
 
 const flush = () => new Promise<void>((r) => setTimeout(r, 0));
@@ -142,19 +138,6 @@ function setup(opts: {
   };
 }
 
-/**
- * Create the employee, then jump to the payment step.
- *
- * Going through step 1 for real matters: `saveBank` refuses while `isCreate()`
- * is still true, so a test that only called `goToStep` would exercise the early
- * return rather than the post.
- */
-async function createThenPayment(ctx: ReturnType<typeof setup>): Promise<void> {
-  fillStepOne(ctx.component);
-  await ctx.component.saveAndContinue();
-  ctx.component.goToStep(ctx.component.steps().length - 1);
-}
-
 async function load(fixture: ComponentFixture<EmployeeFormComponent>): Promise<void> {
   fixture.detectChanges();
   await flush();
@@ -162,8 +145,9 @@ async function load(fixture: ComponentFixture<EmployeeFormComponent>): Promise<v
   fixture.detectChanges();
 }
 
-/** The minimum step 1 will accept — a cloud account needs a real email. */
-function fillStepOne(component: EmployeeFormComponent): void {
+/** The minimum the top-of-page fields will accept — a cloud account needs a
+ *  real email. */
+function fillRequiredFields(component: EmployeeFormComponent): void {
   component.form.patchValue({
     name: 'Fatima Al-Sayed',
     email: 'fatima@example.com',
@@ -173,135 +157,78 @@ function fillStepOne(component: EmployeeFormComponent): void {
   component.form.markAsDirty();
 }
 
-describe('the add-employee wizard', () => {
-  it('is on for a new employee and off for an existing one', async () => {
+describe('the employee form is one page', () => {
+  it('shows every section together, for a new employee and an existing one alike', async () => {
     const create = setup({ id: '0' });
     await load(create.fixture);
-    expect(create.component.wizardActive()).toBe(true);
+    for (const key of ['basic', 'personal', 'employment', 'payment']) {
+      expect(create.component.showsSection(key)).toBe(true);
+    }
 
     const edit = setup({ id: 'emp-1' });
     await load(edit.fixture);
-    expect(edit.component.wizardActive()).toBe(false);
-  });
-
-  it('shows one step at a time', async () => {
-    const ctx = setup({ id: '0' });
-    await load(ctx.fixture);
-
-    expect(ctx.component.showsSection('basic')).toBe(true);
-    expect(ctx.component.showsSection('personal')).toBe(false);
-
-    ctx.component.goToStep(1);
-    expect(ctx.component.showsSection('basic')).toBe(false);
-    expect(ctx.component.showsSection('personal')).toBe(true);
-  });
-
-  it('shows everything at once when editing', async () => {
-    const ctx = setup({ id: 'emp-1' });
-    await load(ctx.fixture);
-    // Not a step index question — the edit page is one page.
     for (const key of ['basic', 'personal', 'employment', 'payment']) {
-      expect(ctx.component.showsSection(key)).toBe(true);
+      expect(edit.component.showsSection(key)).toBe(true);
     }
   });
 
-  it('refuses to leave step 1 with nothing filled in', async () => {
+  it('refuses to save with nothing filled in', async () => {
     const ctx = setup({ id: '0' });
     await load(ctx.fixture);
 
-    await ctx.component.saveAndContinue();
+    await ctx.component.save();
 
-    // Both halves matter: not advancing is the visible symptom, but not
-    // POSTING is the one that would otherwise create a nameless employee.
     expect(ctx.save).not.toHaveBeenCalled();
-    expect(ctx.component.step()).toBe(0);
   });
 
-  it('saves step 1 and advances', async () => {
+  it('creates a new employee with a single save call', async () => {
     const ctx = setup({ id: '0' });
     await load(ctx.fixture);
-    fillStepOne(ctx.component);
+    fillRequiredFields(ctx.component);
 
-    await ctx.component.saveAndContinue();
+    const ok = await ctx.component.save();
 
+    expect(ok).toBe(true);
     expect(ctx.save).toHaveBeenCalledTimes(1);
     expect(ctx.save.mock.calls[0][0]).toMatchObject({ id: null, formStatus: 'new' });
-    expect(ctx.component.step()).toBe(1);
+    expect(ctx.router.navigate).toHaveBeenCalledWith(['/employees']);
   });
 
-  it('the second step UPDATES the record step 1 created', async () => {
-    // The test this file exists for. A wizard that re-creates on every step
-    // passes every other assertion here.
+  it('does not navigate away when the save is refused', async () => {
     const ctx = setup({ id: '0' });
     await load(ctx.fixture);
-    fillStepOne(ctx.component);
-
-    await ctx.component.saveAndContinue();   // step 1 → creates
-    await ctx.component.saveAndContinue();   // step 2 → must update
-
-    expect(ctx.save).toHaveBeenCalledTimes(2);
-    const second = ctx.save.mock.calls[1][0];
-    expect(second.formStatus).toBe('edit');
-    expect(second.id).toBe(NEW_ID);
-  });
-
-  it('does not advance when the save is refused', async () => {
-    const ctx = setup({ id: '0' });
-    await load(ctx.fixture);
-    fillStepOne(ctx.component);
+    fillRequiredFields(ctx.component);
     ctx.save.mockResolvedValueOnce({ success: false, msg: 'Employee Email Already Exist' });
 
-    await ctx.component.saveAndContinue();
+    const ok = await ctx.component.save();
 
-    // Advancing here would strand the user on step 2 editing a record that was
-    // never created, and every later save would fail the same way.
-    expect(ctx.component.step()).toBe(0);
+    expect(ok).toBe(false);
+    expect(ctx.router.navigate).not.toHaveBeenCalled();
   });
 
-  it('lets Skip move on without posting anything', async () => {
-    const ctx = setup({ id: '0' });
-    await load(ctx.fixture);
-    fillStepOne(ctx.component);
-    await ctx.component.saveAndContinue();
-    ctx.save.mockClear();
-
-    ctx.component.skipStep();
-
-    expect(ctx.save).not.toHaveBeenCalled();
-    expect(ctx.component.step()).toBe(2);
-  });
-
-  it('remembers the furthest step reached, so Back does not lock the way forward', async () => {
-    const ctx = setup({ id: '0' });
-    await load(ctx.fixture);
-
-    ctx.component.goToStep(2);
-    ctx.component.back();
-
-    expect(ctx.component.step()).toBe(1);
-    expect(ctx.component.furthestStep()).toBe(2);
-  });
-
-  it('offers the payment step only with the payroll module on', async () => {
+  it('offers the payment section only with the payroll module on', async () => {
     const without = setup({ id: '0' });
     await load(without.fixture);
-    expect(without.component.steps().map((s) => s.key)).toEqual(['basic', 'personal', 'employment']);
+    expect(without.component.canEditBank()).toBe(false);
 
     const withPayroll = setup({ id: '0', features: ['hr.payroll'] });
     await load(withPayroll.fixture);
-    expect(withPayroll.component.steps().map((s) => s.key)).toContain('payment');
+    expect(withPayroll.component.canEditBank()).toBe(true);
   });
 
-  // ── Bank details, step 4 ────────────────────────────────────────────────
-  // `saveBank` has three early returns and they are not interchangeable:
-  // no id / still creating, not paying to a bank, and nothing typed. A test
-  // that only walked the happy path would pass with any of the three deleted,
-  // so each has its own case and its own inverse.
-  describe('the payment step', () => {
-    it('posts the account when paying by bank transfer', async () => {
+  // ── Bank details on the SAME save as the create ─────────────────────────
+  // Bank details post to a different endpoint than the employee record, and
+  // that endpoint needs a real employee id. On a brand-new employee the id
+  // only exists once `save()`'s own EmployeeService call returns it — so the
+  // bank post has to run AFTER that id is adopted onto the component, in the
+  // very same submit. A wizard never had to get this right, because its
+  // payment step ran as an independent, later save against an id that had
+  // already landed.
+  describe('bank details, saved alongside a brand-new employee', () => {
+    it('posts the account once the new id has been adopted', async () => {
       const ctx = setup({ id: '0', features: ['hr.payroll'] });
       await load(ctx.fixture);
-      await createThenPayment(ctx);
+      fillRequiredFields(ctx.component);
 
       ctx.component.selectPaymentMethod('BankTransfer');
       ctx.component.bankForm.patchValue({
@@ -311,11 +238,11 @@ describe('the add-employee wizard', () => {
       });
       ctx.component.bankForm.markAsDirty();
 
-      await ctx.component.saveAndContinue();
+      await ctx.component.save();
 
       expect(ctx.saveBankDetails).toHaveBeenCalledTimes(1);
-      // The id is the whole point: an account posted against the wrong
-      // employee redirects someone else's salary.
+      // The id is the whole point: posted against the freshly created
+      // employee, not against null / undefined.
       expect(ctx.saveBankDetails.mock.calls[0][0]).toMatchObject({
         employeeId: NEW_ID,
         iban: 'BH67BMAG00001299123456',
@@ -325,74 +252,61 @@ describe('the add-employee wizard', () => {
     it('posts nothing when they are paid in cash', async () => {
       const ctx = setup({ id: '0', features: ['hr.payroll'] });
       await load(ctx.fixture);
-      await createThenPayment(ctx);
+      fillRequiredFields(ctx.component);
 
-      // Typed first, THEN switched to cash — so passing requires the method
-      // check, not merely an untouched form. Without it a stale IBAN from a
-      // changed mind would be saved against someone paid in notes.
       ctx.component.bankForm.patchValue({ iban: 'BH67BMAG00001299123456' });
       ctx.component.bankForm.markAsDirty();
       ctx.component.selectPaymentMethod('Cash');
 
-      await ctx.component.saveAndContinue();
+      await ctx.component.save();
 
       expect(ctx.saveBankDetails).not.toHaveBeenCalled();
     });
 
-    it('posts nothing when the form was never touched', async () => {
+    it('posts nothing when the payment card was never touched', async () => {
       const ctx = setup({ id: '0', features: ['hr.payroll'] });
       await load(ctx.fixture);
-      await createThenPayment(ctx);
+      fillRequiredFields(ctx.component);
 
-      // Bank transfer is the default, so without the pristine check every
-      // employee would get an empty account row written on finish.
-      await ctx.component.saveAndContinue();
+      await ctx.component.save();
 
       expect(ctx.saveBankDetails).not.toHaveBeenCalled();
     });
 
-    it('stays on the step when the account is refused', async () => {
+    it('reports failure and does not navigate when the account is refused', async () => {
       const ctx = setup({ id: '0', features: ['hr.payroll'] });
       await load(ctx.fixture);
-      await createThenPayment(ctx);
-      const last = ctx.component.step();
+      fillRequiredFields(ctx.component);
 
       ctx.component.bankForm.patchValue({ iban: 'not-an-iban' });
       ctx.component.bankForm.markAsDirty();
       ctx.saveBankDetails.mockRejectedValueOnce(new Error('That IBAN is not valid'));
 
-      await ctx.component.saveAndContinue();
+      const ok = await ctx.component.save();
 
-      // Leaving for the list here would report success for a save the server
-      // rejected, and the user would never learn the account is missing.
-      expect(ctx.component.step()).toBe(last);
-      expect(ctx.router.navigate).not.toHaveBeenCalledWith(['/employees']);
+      // The employee record itself was created — the account failed
+      // afterwards — so leaving for the list here would report success for a
+      // save that only half-happened.
+      expect(ok).toBe(false);
+      expect(ctx.router.navigate).not.toHaveBeenCalled();
     });
   });
 
   // ── The focused editor, at /employees/:id/edit ──────────────────────────
+  // Untouched by the wizard→single-page change: a separate, still-wanted
+  // feature reached from the record overview's per-section pencil.
   describe('a focused edit reached from the overview', () => {
     it('finds the id on the PARENT route and loads the record', async () => {
       // The regression this describes: `:id` belongs to the record shell, and
       // Angular does not inherit params into a child of a component-bearing
       // route. Reading only the child's paramMap returned null, so the form
-      // believed it was creating — it fetched nothing and showed the wizard.
+      // believed it was creating.
       const ctx = setup({ parentId: 'emp-77', section: 'personal' });
       await load(ctx.fixture);
 
       expect(ctx.getOne).toHaveBeenCalledWith('emp-77');
       expect(ctx.component.employeeId()).toBe('emp-77');
       expect(ctx.component.isCreate()).toBe(false);
-    });
-
-    it('is not a wizard', async () => {
-      // The visible half of the same bug, asserted separately: `wizardActive`
-      // is captured from `isCreate()`, so a null id turned an edit into a
-      // four-step create over somebody who already exists.
-      const ctx = setup({ parentId: 'emp-77', section: 'personal' });
-      await load(ctx.fixture);
-
-      expect(ctx.component.wizardActive()).toBe(false);
     });
 
     it('narrows to the requested section and nothing else', async () => {
@@ -417,11 +331,10 @@ describe('the add-employee wizard', () => {
   /**
    * Changing how an existing employee is paid.
    *
-   * This is the screen the bug was found on — `/employees/:id/edit?section=
-   * payment`, not the wizard. `paymentMethod` is a column on the PAY REVISION,
-   * so it goes to `savePayroll`; posting it to `saveBankDetails` (which has no
-   * such column) dropped it, and picking Cash skipped that call entirely, so
-   * nothing whatsoever was written.
+   * `/employees/:id/edit?section=payment`. `paymentMethod` is a column on the
+   * PAY REVISION, so it goes to `savePayroll`; posting it to `saveBankDetails`
+   * (which has no such column) dropped it, and picking Cash skipped that call
+   * entirely, so nothing whatsoever was written.
    */
   describe('changing the payment method on an existing employee', () => {
     const editPayment = () =>
@@ -446,8 +359,7 @@ describe('the add-employee wizard', () => {
 
     it('writes no revision when the method did not change', async () => {
       // Seeded from the record as BankTransfer. Re-picking it must not
-      // manufacture a revision that changes nothing — pay history is read by
-      // humans, and a row saying "Correction" that corrects nothing is noise.
+      // manufacture a revision that changes nothing.
       const ctx = editPayment();
       await load(ctx.fixture);
 
@@ -458,8 +370,6 @@ describe('the add-employee wizard', () => {
     });
 
     it('cannot store a method when the employee has no pay on file', async () => {
-      // Nowhere to put it: the column lives on the revision. The step says so
-      // rather than accepting a choice it is going to drop.
       const ctx = setup({
         parentId: 'emp-77', section: 'payment', features: ['hr.payroll'], pay: null,
       });
@@ -475,8 +385,6 @@ describe('the add-employee wizard', () => {
   });
 
   it('leaves the list for the record when a focused edit finishes', async () => {
-    // `?section=` is absent from this route stub, so this is the plain edit
-    // form and Cancel returns to the list — the control for the case below.
     const ctx = setup({ id: 'emp-1' });
     await load(ctx.fixture);
 
@@ -486,49 +394,19 @@ describe('the add-employee wizard', () => {
   });
 });
 
-describe('required stays strict for the whole wizard', () => {
-  /*
-   * ── THE HOLE THIS CLOSES ───────────────────────────────────────────────────
-   * `requiredMode` used to read `isCreate()`, which flips to FALSE the moment
-   * step 1 persists the record. Steps 2-4 of the ADD flow then validated as
-   * ordinary edits, where `required` is advisory — so nationality, date of
-   * birth and the rest of the personal step were never enforced on anybody,
-   * on the one screen whose whole job is to collect them.
-   *
-   * Measured on dev 2026-08-24: 292 employees with a company, ONE with a
-   * nationality, a field the manifest has marked `required` since phase 1.
-   *
-   * Nationality is the sharp case rather than a representative one: social
-   * insurance is selected by it, and the scheme has three tiers, so a blank is
-   * not a blank field on a form — it is a contribution the engine cannot
-   * compute and must either refuse or guess.
-   * See docs/reference/gosi-bahrain.md.
-   */
-
-  it('is strict AFTER step 1 has saved and isCreate() has flipped', async () => {
+describe('required stays strict throughout create, lenient on an existing record', () => {
+  it('is strict while creating', async () => {
     const ctx = setup({ id: '0', features: ['hr.profile'] });
     await load(ctx.fixture);
 
     expect(ctx.component.requiredMode()).toBe('strict');
-
-    fillStepOne(ctx.component);
-    await ctx.component.saveAndContinue();
-    await flush();
-
-    // The precondition. Without this the assertion below could pass because
-    // the record never saved, which is a different test passing by accident.
-    expect(ctx.component.isCreate()).toBe(false);
-    expect(ctx.component.requiredMode()).toBe('strict');
   });
 
-  it('will not let the wizard finish while nationality is blank', async () => {
+  it('will not let a create save while nationality is blank', async () => {
     // `hr.profile` is what puts the manifest groups on the form at all; without
     // it there is no nationality control to assert about.
     const ctx = setup({ id: '0', features: ['hr.profile'] });
     await load(ctx.fixture);
-    fillStepOne(ctx.component);
-    await ctx.component.saveAndContinue();
-    await flush();
 
     const nationality = ctx.component.form.get('profile.nationality');
     expect(nationality).toBeTruthy();
@@ -548,7 +426,7 @@ describe('required stays strict for the whole wizard', () => {
     const ctx = setup({ parentId: 'emp-1' });
     await load(ctx.fixture);
 
-    expect(ctx.component.wizardActive()).toBe(false);
+    expect(ctx.component.isCreate()).toBe(false);
     expect(ctx.component.requiredMode()).toBe('lenient');
   });
 });
