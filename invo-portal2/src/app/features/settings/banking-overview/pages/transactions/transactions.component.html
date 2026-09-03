@@ -50,8 +50,8 @@
       } @else {
         {{ row.reference || '—' }}
       }
-      @if (row.user?.userName) {
-        <div class="txn-user">{{ row.user.userName }}</div>
+      @if (row.user?.userName; as userName) {
+        <div class="txn-user">{{ userName }}</div>
       }
     </ng-template>
 
