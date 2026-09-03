@@ -1,0 +1,208 @@
+.fr-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 24px 60px;
+}
+
+.fr-title {
+  margin: 8px 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+.fr-sub { margin: 0 0 16px; font-size: 13px; color: #64748b; }
+
+.fr-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.fr-card__title {
+  margin: 0 0 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+// ─── File upload + mapping ────────────────────────────────────────────
+.fr-files {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 720px) {
+  .fr-files { grid-template-columns: 1fr; }
+}
+
+.fr-file-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+.fr-file-panel__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.fr-drop {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+
+  &:hover { border-color: var(--color-brand-600, #2691a4); color: var(--color-brand-600, #2691a4); }
+}
+
+.fr-file-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+.fr-file-status--ok { color: #15803d; }
+.fr-file-clear {
+  border: none;
+  background: none;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+
+  &:hover { color: #0f172a; }
+}
+
+.fr-mapping {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.fr-mapping__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+// ─── Match settings ────────────────────────────────────────────────────
+.fr-method-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.fr-tolerance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+
+  input {
+    width: 110px;
+    padding: 7px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #0f172a;
+  }
+}
+
+.fr-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+// ─── Results ────────────────────────────────────────────────────────────
+.fr-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.fr-summary__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #64748b;
+
+  strong { font-size: 18px; color: #0f172a; }
+}
+.fr-summary__item--ok strong { color: #15803d; }
+.fr-summary__item--warn strong { color: #b45309; }
+
+.fr-result-tabs { margin-bottom: 14px; }
+
+.fr-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.fr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  white-space: nowrap;
+
+  thead th {
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+  }
+  tbody td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+  }
+}
+
+// Visual grouping for the matched table's two column sets — a soft
+// divider between File 1's and File 2's columns rather than a literal
+// "F1_"/"F2_" prefix on every header, since this table component
+// doesn't support true multi-level grouped headers.
+.fr-table__group--f1 { background: rgba(38, 145, 164, 0.04); }
+.fr-table__group--f2 { background: rgba(180, 83, 9, 0.04); }
+.fr-table__divider { border-left: 2px solid #e2e8f0; }
+
+.fr-empty {
+  text-align: center;
+  padding: 32px 0;
+  color: #94a3b8;
+  margin: 0;
+}

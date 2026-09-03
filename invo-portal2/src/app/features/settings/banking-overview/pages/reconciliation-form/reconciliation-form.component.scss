@@ -1,0 +1,222 @@
+.rf-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 24px 120px;
+  position: relative;
+}
+
+.rf-title {
+  margin: 8px 0 12px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.rf-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.rf-card--flush { padding: 0; overflow: hidden; }
+
+.rf-fields {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.rf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+
+  input {
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #0f172a;
+    min-width: 160px;
+  }
+}
+
+.rf-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.rf-summary__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #64748b;
+
+  strong { font-size: 15px; color: #0f172a; }
+}
+.rf-summary__item--ok strong { color: #15803d; }
+.rf-summary__item--bad strong { color: #b91c1c; }
+
+.rf-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.rf-search {
+  position: relative;
+  input {
+    padding: 8px 30px 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 13px;
+    min-width: 220px;
+  }
+  button {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 16px;
+  }
+}
+
+.rf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  thead th {
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+  }
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+  }
+}
+.rf-table__check { width: 36px; text-align: center; }
+.rf-table__num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.rf-row--opening { background: #f8fafc; font-weight: 600; }
+.rf-user { font-size: 12px; color: #64748b; font-weight: 400; }
+.rf-empty { text-align: center; padding: 32px 0; color: #94a3b8; }
+
+.rf-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 13px;
+
+  button {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.rf-spacer { height: 24px; }
+
+.rf-attachments-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+}
+
+.rf-attachments {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rf-attachment {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+
+  a { color: #0f172a; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+}
+
+.rf-attachment__remove {
+  border: none;
+  background: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0;
+}
+.rf-attachment__remove:hover { color: #b91c1c; }
+
+.rf-attachments-empty {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* Mid-emphasis footer action ("Save and Reconcile Later") — sits between
+   `.btn-ghost` (Cancel) and `.btn-primary` (Reconcile). */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid #00a8b8;
+  border-radius: 8px;
+  background: #fff;
+  color: #00a8b8;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.btn-secondary:hover:not(:disabled) { background: #e6f9fb; }
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; }

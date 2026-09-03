@@ -1,0 +1,52 @@
+<app-list-shell
+  [title]="'BANKING_OVERVIEW.TITLE' | translate"
+  [breadcrumbs]="breadcrumbs()"
+  [search]="search()"
+  [searchPlaceholder]="'BANKING_OVERVIEW.SEARCH_PLACEHOLDER' | translate"
+  [searchLive]="true"
+  (searchChange)="onSearch($event)"
+  (searchClear)="onClearSearch()"
+  [loading]="loading()"
+  [hasRows]="filteredRows().length > 0"
+  [cardFlush]="true">
+  <a shellActions routerLink="/account/banking-overview/file-reconciliation" class="btn btn-ghost">
+    {{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.TITLE' | translate }}
+  </a>
+  <table class="bo-table">
+    <thead>
+      <tr>
+        <th>{{ 'BANKING_OVERVIEW.LIST.NAME' | translate }}</th>
+        <th>{{ 'BANKING_OVERVIEW.LIST.TYPE' | translate }}</th>
+        <th class="bo-table__num">{{ 'BANKING_OVERVIEW.LIST.BALANCE' | translate }}</th>
+        <th class="bo-table__actions"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of filteredRows(); track row.id) {
+        <tr class="bo-row" (click)="openTransactions(row)">
+          <td class="bo-table__name">{{ row.name }}</td>
+          <td>{{ row.type }}</td>
+          <td class="bo-table__num">{{ row.balance | mycurrency }}</td>
+          <td class="bo-table__actions">
+            <button type="button" class="bo-link" (click)="openTransactions(row); $event.stopPropagation()">
+              {{ 'BANKING_OVERVIEW.LIST.VIEW_TRANSACTIONS' | translate }}
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+    @if (filteredRows().length > 0) {
+      <tfoot>
+        <tr>
+          <td colspan="2">{{ 'BANKING_OVERVIEW.LIST.TOTAL' | translate }}</td>
+          <td class="bo-table__num">{{ totalBalance() | mycurrency }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    }
+  </table>
+
+  <div shellEmpty>
+    <p>{{ 'BANKING_OVERVIEW.LIST.EMPTY' | translate }}</p>
+  </div>
+</app-list-shell>

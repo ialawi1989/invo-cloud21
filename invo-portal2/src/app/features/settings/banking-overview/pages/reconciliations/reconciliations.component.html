@@ -1,0 +1,65 @@
+<div class="rec-page">
+  <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+  <div class="rec-header">
+    <h1 class="rec-title">{{ 'BANKING_OVERVIEW.LIST.RECONCILIATIONS' | translate }}</h1>
+    <button type="button" class="btn btn-primary"
+            [disabled]="initiateDisabled()"
+            [title]="initiateDisabled() ? ('BANKING_OVERVIEW.RECONCILIATIONS.INITIATE_DISABLED_HINT' | translate) : ''"
+            (click)="initiate()">
+      {{ 'BANKING_OVERVIEW.RECONCILIATIONS.INITIATE' | translate }}
+    </button>
+  </div>
+
+  <app-banking-account-header [name]="accountName()"/>
+
+  <div class="rec-toolbar">
+    <app-segmented-toggle
+      [options]="statusOptions"
+      [value]="statusFilter()"
+      (valueChange)="onStatusChange($event)"/>
+
+    <app-search-dropdown
+      class="rec-branch"
+      [items]="branches()"
+      [displayWith]="branchDisplay"
+      [compareWith]="branchCompare"
+      [multiple]="true"
+      [value]="selectedBranches()"
+      (valueChange)="onBranchChange($event)"
+      [placeholder]="'BANKING_OVERVIEW.FILTERS.ALL_BRANCHES' | translate"/>
+  </div>
+
+  <app-list-page
+    [columns]="columns"
+    [dataSource]="loadReconciliations"
+    [pagination]="{ enabled: true, pageLimits: [15, 25, 50], default: 15 }"
+    [search]="{ enabled: true, placeholder: ('COMMON.SEARCH' | translate) }"
+    [sorting]="{ enabled: false }"
+    [emptyState]="{ title: ('BANKING_OVERVIEW.RECONCILIATIONS.EMPTY' | translate) }"
+    (rowClicked)="view($event.row)">
+
+    <ng-template listCellTemplate="reconciledAt" let-row>
+      {{ row.reconciledAt ? (row.reconciledAt | date:'mediumDate') : '—' }}
+    </ng-template>
+
+    <ng-template listCellTemplate="from" let-row>
+      {{ row.from | date:'mediumDate' }} – {{ row.to ? (row.to | date:'mediumDate') : '—' }}
+    </ng-template>
+
+    <ng-template listCellTemplate="closingBalance" let-row>
+      {{ row.closingBalance | mycurrency }}
+    </ng-template>
+
+    <ng-template listCellTemplate="status" let-row>
+      @if (row.status === 'reconciled') {
+        <span class="rec-badge rec-badge--done">{{ 'BANKING_OVERVIEW.STATUS.RECONCILED' | translate }}</span>
+      } @else {
+        <span class="rec-badge rec-badge--progress">{{ 'BANKING_OVERVIEW.STATUS.IN_PROGRESS' | translate }}</span>
+      }
+    </ng-template>
+
+    <ng-template listRowActions let-row>
+      <app-dropdown-menu-btn [items]="rowMenuItems(row)" align="end"/>
+    </ng-template>
+  </app-list-page>
+</div>

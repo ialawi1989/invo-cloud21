@@ -1,0 +1,74 @@
+<div class="txn-page">
+  <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+  <h1 class="txn-title">{{ 'BANKING_OVERVIEW.TRANSACTIONS.TITLE' | translate }}</h1>
+
+  <app-banking-account-header [name]="accountName()"/>
+
+  <div class="txn-toolbar">
+    <app-segmented-toggle
+      [options]="statusOptions"
+      [value]="statusFilter()"
+      (valueChange)="onStatusChange($event)"/>
+
+    <div class="txn-dates">
+      <input type="date" class="txn-date-input"
+             [ngModel]="fromDate()"
+             (ngModelChange)="fromDate.set($event); onDateChange()"
+             [attr.aria-label]="'COMMON.FROM' | translate"/>
+      <span class="txn-date-sep">–</span>
+      <input type="date" class="txn-date-input"
+             [ngModel]="toDate()"
+             (ngModelChange)="toDate.set($event); onDateChange()"
+             [attr.aria-label]="'COMMON.TO' | translate"/>
+    </div>
+
+    <app-search-dropdown
+      class="txn-branch"
+      [items]="branches()"
+      [displayWith]="branchDisplay"
+      [compareWith]="branchCompare"
+      [value]="selectedBranch()"
+      (valueChange)="onBranchChange($event)"
+      [placeholder]="'BANKING_OVERVIEW.FILTERS.ALL_BRANCHES' | translate"/>
+
+    <button type="button" class="btn btn-primary txn-reconcile-btn" (click)="reconcileAccount()">
+      {{ 'BANKING_OVERVIEW.TRANSACTIONS.RECONCILE_ACCOUNT' | translate }}
+    </button>
+  </div>
+
+  <app-list-page
+    [columns]="columns"
+    [dataSource]="loadTransactions"
+    [pagination]="{ enabled: true, pageLimits: [15, 25, 50, 100], default: 15 }"
+    [search]="{ enabled: true, placeholder: ('BANKING_OVERVIEW.TRANSACTIONS.SEARCH_PLACEHOLDER' | translate) }"
+    [sorting]="{ enabled: true, defaultSort: { key: 'date', direction: 'desc' } }"
+    [emptyState]="{ title: ('BANKING_OVERVIEW.TRANSACTIONS.EMPTY' | translate) }">
+
+    <ng-template listCellTemplate="reference" let-row>
+      @if (row.referenceId && row.reference) {
+        <span class="txn-ref">{{ row.reference }}</span>
+      } @else {
+        {{ row.reference || '—' }}
+      }
+      @if (row.user?.userName) {
+        <div class="txn-user">{{ row.user.userName }}</div>
+      }
+    </ng-template>
+
+    <ng-template listCellTemplate="Debit" let-row>
+      {{ row.Debit ? (row.Debit | mycurrency) : '—' }}
+    </ng-template>
+
+    <ng-template listCellTemplate="Credit" let-row>
+      {{ row.Credit ? (row.Credit | mycurrency) : '—' }}
+    </ng-template>
+
+    <ng-template listCellTemplate="reconcile" let-row>
+      @if (row.reconcile) {
+        <span class="txn-badge txn-badge--reconciled">{{ 'BANKING_OVERVIEW.STATUS.RECONCILED' | translate }}</span>
+      } @else {
+        <span class="txn-badge txn-badge--open">{{ 'BANKING_OVERVIEW.STATUS.UNRECONCILED' | translate }}</span>
+      }
+    </ng-template>
+  </app-list-page>
+</div>

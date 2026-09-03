@@ -1,0 +1,167 @@
+<div class="rf-page">
+  <app-loading-overlay [show]="loading()" [fullScreen]="false"/>
+
+  <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+  <h1 class="rf-title">
+    {{ (isNew() ? 'BANKING_OVERVIEW.FORM.NEW_TITLE' : 'BANKING_OVERVIEW.FORM.EDIT_TITLE') | translate }}
+  </h1>
+
+  <app-banking-account-header [name]="accountName()"/>
+
+  <div class="rf-card">
+    <div class="rf-fields">
+      <label class="rf-field">
+        <span>{{ 'BANKING_OVERVIEW.FORM.FROM_DATE' | translate }}</span>
+        <input type="date" [ngModel]="fromDate()" (ngModelChange)="onFromDateChange($event)"
+               [disabled]="status() === 'reconciled'"/>
+      </label>
+      <label class="rf-field">
+        <span>{{ 'BANKING_OVERVIEW.FORM.TO_DATE' | translate }}</span>
+        <input type="date" [ngModel]="toDate()" (ngModelChange)="onToDateChange($event)"
+               [min]="fromDate()" [disabled]="status() === 'reconciled'"/>
+      </label>
+      <label class="rf-field">
+        <span>{{ 'BANKING_OVERVIEW.FORM.CLOSING_BALANCE' | translate }}</span>
+        <input type="number" min="0" step="0.001"
+               [ngModel]="closingBalance()" (ngModelChange)="onClosingBalanceChange($event)"
+               [disabled]="status() === 'reconciled'"/>
+      </label>
+    </div>
+
+    <div class="rf-summary">
+      <div class="rf-summary__item">
+        <span>{{ 'BANKING_OVERVIEW.FORM.TOTAL_DEBIT' | translate }}</span>
+        <strong>{{ totalDebit() | mycurrency }}</strong>
+      </div>
+      <div class="rf-summary__item">
+        <span>{{ 'BANKING_OVERVIEW.FORM.TOTAL_CREDIT' | translate }}</span>
+        <strong>{{ totalCredit() | mycurrency }}</strong>
+      </div>
+      <div class="rf-summary__item">
+        <span>{{ 'BANKING_OVERVIEW.FORM.CLEARED_AMOUNT' | translate }}</span>
+        <strong>{{ clearedAmount() | mycurrency }}</strong>
+      </div>
+      <div class="rf-summary__item" [class.rf-summary__item--bad]="difference() !== 0" [class.rf-summary__item--ok]="difference() === 0">
+        <span>{{ 'BANKING_OVERVIEW.FORM.DIFFERENCE' | translate }}</span>
+        <strong>{{ difference() | mycurrency }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="rf-card">
+    <div class="rf-attachments-head">
+      <h3>{{ 'BANKING_OVERVIEW.FORM.ATTACHMENTS' | translate }}</h3>
+      @if (status() !== 'reconciled') {
+        <button type="button" class="btn btn-ghost btn-sm" (click)="addAttachment()">
+          {{ 'BANKING_OVERVIEW.FORM.ATTACH_FILE' | translate }}
+        </button>
+      }
+    </div>
+    @if (attachments().length) {
+      <ul class="rf-attachments">
+        @for (att of attachments(); track att.id) {
+          <li class="rf-attachment">
+            <a [href]="att.mediaUrl" target="_blank" rel="noopener">{{ att.mediaName }}</a>
+            @if (status() !== 'reconciled') {
+              <button type="button" class="rf-attachment__remove" (click)="removeAttachment(att.id)">&times;</button>
+            }
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="rf-attachments-empty">{{ 'BANKING_OVERVIEW.FORM.ATTACHMENTS_EMPTY' | translate }}</p>
+    }
+  </div>
+
+  @if (status() !== '') {
+    <div class="rf-toolbar">
+      <app-segmented-toggle
+        [options]="filterOptions"
+        [value]="filter()"
+        (valueChange)="onFilterChange($event)"/>
+
+    <div class="rf-search">
+      <input type="text" [ngModel]="searchTerm()" (ngModelChange)="onSearchChange($event)"
+             [placeholder]="'COMMON.SEARCH' | translate"/>
+      @if (searchTerm()) {
+        <button type="button" (click)="clearSearch()">&times;</button>
+      }
+    </div>
+  </div>
+
+  <div class="rf-card rf-card--flush">
+    <table class="rf-table">
+      <thead>
+        <tr>
+          <th class="rf-table__check">
+            <input type="checkbox" [checked]="selectAll()"
+                   (change)="toggleSelectAll($any($event.target).checked)"/>
+          </th>
+          <th>{{ 'BANKING_OVERVIEW.TRANSACTIONS.DATE' | translate }}</th>
+          <th>{{ 'BANKING_OVERVIEW.TRANSACTIONS.TYPE' | translate }}</th>
+          <th>{{ 'BANKING_OVERVIEW.TRANSACTIONS.DETAILS' | translate }}</th>
+          <th class="rf-table__num">{{ 'BANKING_OVERVIEW.TRANSACTIONS.DEBIT' | translate }}</th>
+          <th class="rf-table__num">{{ 'BANKING_OVERVIEW.TRANSACTIONS.CREDIT' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (openingBalanceRow(); as ob) {
+          <tr class="rf-row rf-row--opening">
+            <td class="rf-table__check"><input type="checkbox" [checked]="true" disabled/></td>
+            <td>{{ ob.date | date:'mediumDate' }}</td>
+            <td>{{ 'BANKING_OVERVIEW.FORM.OPENING_BALANCE' | translate }}</td>
+            <td>{{ ob.transactionDetails }}</td>
+            <td class="rf-table__num">{{ ob.Debit ? (ob.Debit | mycurrency) : '—' }}</td>
+            <td class="rf-table__num">{{ ob.Credit ? (ob.Credit | mycurrency) : '—' }}</td>
+          </tr>
+        }
+        @for (row of pagedTransactions(); track trackRow($index, row)) {
+          <tr class="rf-row">
+            <td class="rf-table__check">
+              <input type="checkbox" [checked]="row.reconcile" (change)="toggleRow(row)"/>
+            </td>
+            <td>{{ row.date | date:'mediumDate' }}</td>
+            <td>
+              {{ row.reference || '—' }}
+              @if (row.user?.userName; as userName) { <div class="rf-user">{{ userName }}</div> }
+            </td>
+            <td>{{ row.transactionDetails || '—' }}</td>
+            <td class="rf-table__num">{{ row.Debit ? (row.Debit | mycurrency) : '—' }}</td>
+            <td class="rf-table__num">{{ row.Credit ? (row.Credit | mycurrency) : '—' }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="rf-empty">{{ 'BANKING_OVERVIEW.FORM.EMPTY' | translate }}</td></tr>
+        }
+      </tbody>
+    </table>
+
+    @if (pageCount() > 1) {
+      <div class="rf-pager">
+        <button type="button" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">‹</button>
+        <span>{{ page() }} / {{ pageCount() }}</span>
+        <button type="button" [disabled]="page() >= pageCount()" (click)="goToPage(page() + 1)">›</button>
+      </div>
+    }
+    </div>
+  }
+
+  <div class="rf-spacer"></div>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+
+    @if (status() === '') {
+      <button type="button" class="btn btn-primary" [disabled]="!headerValid() || loading()" (click)="startReconciliation()">
+        {{ 'BANKING_OVERVIEW.FORM.START_RECONCILIATION' | translate }}
+      </button>
+    }
+    @if (status() === 'in-progress') {
+      <button type="button" class="btn btn-secondary" [disabled]="saving()" (click)="saveDraft()">
+        {{ 'BANKING_OVERVIEW.FORM.SAVE_DRAFT' | translate }}
+      </button>
+      <button type="button" class="btn btn-primary" [disabled]="!canSave() || saving()" (click)="save()">
+        {{ 'BANKING_OVERVIEW.FORM.RECONCILE_COUNT' | translate:{ count: selectedCount() } }}
+      </button>
+    }
+  </app-form-sticky-footer>
+</div>

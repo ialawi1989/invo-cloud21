@@ -463,6 +463,15 @@ export const routes: Routes = [
           import('./features/settings/opening-balances/opening-balances.routes').then(m => m.OPENING_BALANCES_ROUTES)
       },
       {
+        // Banking Overview — bank/cash account balances, per-account
+        // transaction ledger and the bank-reconciliation workflow. Lives
+        // under `/account/*` alongside Chart of Accounts / Opening
+        // Balances (legacy sidebar grouping).
+        path: 'account/banking-overview',
+        loadChildren: () =>
+          import('./features/settings/banking-overview/banking-overview.routes').then(m => m.BANKING_OVERVIEW_ROUTES)
+      },
+      {
         // Analytics — store-wide GA4 traffic + e-commerce + realtime and
         // GSC search. Distinct from the blog-scoped `/blog/analytics`.
         path: 'analytics',
