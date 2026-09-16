@@ -69,11 +69,18 @@ export class AccountService {
 
   /** Sub-accounts whose `type` matches the given type. Used by the
    *  form's "Parent account" dropdown — the legacy filters parent
-   *  candidates by the new account's type. */
-  async getParentsByType(type: string): Promise<Account[]> {
+   *  candidates by the new account's type.
+   *
+   *  `excludeAccountId` is the account currently being edited: the backend
+   *  query (`"Accounts".id <> $accountId`) excludes it from the candidate
+   *  list so an account can never be picked as its own parent. Omitted on
+   *  add, since there's nothing to exclude yet. */
+  async getParentsByType(type: string, excludeAccountId?: string | null): Promise<Account[]> {
     if (!type) return [];
+    const body: { type: string; accountId?: string } = { type };
+    if (excludeAccountId) body.accountId = excludeAccountId;
     const res = await this.api.request<any>(
-      this.api.post('accounts/getParentAccountListByType', { type }),
+      this.api.post('accounts/getParentAccountListByType', body),
     );
     const raw = res?.data?.list ?? res?.data ?? [];
     if (!Array.isArray(raw)) return [];

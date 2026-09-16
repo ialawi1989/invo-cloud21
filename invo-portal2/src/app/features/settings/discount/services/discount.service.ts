@@ -1,5 +1,7 @@
 import { Injectable, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { ApiService } from '@core/http';
+import { resolveLocalizedName } from '@shared/utils/localized-name';
 import {
   Discount,
   DiscountListParams,
@@ -33,6 +35,7 @@ export interface DiscountItemRef {
 @Injectable({ providedIn: 'root' })
 export class DiscountService {
   private api = inject(ApiService);
+  private translate = inject(TranslateService);
 
   async getList(params: DiscountListParams = {}): Promise<DiscountListResponse> {
     const body = {
@@ -200,17 +203,10 @@ export class DiscountService {
    *  may be either a plain string or a `{en, ar, …}` translation
    *  map. Returns `''` rather than `"[object Object]"` when the
    *  shape is unrecognised. */
+  /** Resolves a row's name in the active UI language — see
+   *  `resolveLocalizedName` for the shared logic. */
   private flattenName(raw: any): string {
-    const dn = raw?.displayName;
-    if (typeof dn === 'string' && dn.trim()) return dn;
-    const n = raw?.name;
-    if (typeof n === 'string') return n;
-    if (n && typeof n === 'object') {
-      for (const v of Object.values(n)) {
-        if (typeof v === 'string' && v.trim()) return v as string;
-      }
-    }
-    return '';
+    return resolveLocalizedName(raw, this.translate.currentLang);
   }
 
   /** Paginated employee list — wraps `employee/getEmployeeList`

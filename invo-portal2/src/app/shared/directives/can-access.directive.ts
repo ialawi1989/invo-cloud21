@@ -8,7 +8,9 @@ import { PermissionService } from '../../core/auth/permission.service';
 import { Permission } from '../../core/auth/auth.models';
 
 export interface CanAccessInput {
-  feature?:    string;
+  /** A single feature key or a list — with a list, any one enabled
+   *  feature is enough (see `FeatureService.isEnabled`). */
+  feature?:    string | string[];
   permission?: Permission | Permission[];
 }
 

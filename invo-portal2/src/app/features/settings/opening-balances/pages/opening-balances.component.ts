@@ -34,6 +34,8 @@ import {
 } from '@shared/components/logs-drawer/logs-drawer.component';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 
+import { resolveLocalizedName } from '@shared/utils/localized-name';
+
 import { BranchSettingsService } from '../../../settings/services/branch-settings.service';
 import { accountTypeKey } from '../../chart-of-accounts/utils/account-types';
 import { OpeningBalancesService } from '../services/opening-balances.service';
@@ -49,7 +51,11 @@ import {
   ImportExportResult,
 } from './components/import-export-modal.component';
 
-interface BranchOption { id: string; name: string; }
+interface BranchOption {
+  id: string;
+  name: string;
+  translation?: Record<string, Record<string, string> | undefined>;
+}
 
 /** One `type` bucket inside a parent-type group (Current Assets only). */
 interface TypeGroup { type: string; label: string; accounts: OpeningBalanceAccount[]; }
@@ -136,7 +142,7 @@ export class OpeningBalancesComponent implements OnInit, CanLeaveComponent {
     ];
   });
 
-  branchDisplay = (b: BranchOption) => b?.name ?? '';
+  branchDisplay = (b: BranchOption) => resolveLocalizedName(b, this.translate.currentLang);
   branchCompare = (a: BranchOption, b: BranchOption) => a?.id === b?.id;
   selectedBranch = computed<BranchOption | null>(
     () => this.branches().find((b) => b.id === this.branchId()) ?? null,
@@ -224,7 +230,7 @@ export class OpeningBalancesComponent implements OnInit, CanLeaveComponent {
   private async loadBranches(): Promise<void> {
     try {
       const res = await this.branchSvc.getList({ limit: 200 });
-      this.branches.set(res.list.map((b) => ({ id: b.id, name: b.name })));
+      this.branches.set(res.list.map((b) => ({ id: b.id, name: b.name, translation: b.translation })));
       const main = res.list.find((b) => b.mainBranch) ?? res.list[0];
       this.branchId.set(main?.id ?? null);
     } catch (e) {

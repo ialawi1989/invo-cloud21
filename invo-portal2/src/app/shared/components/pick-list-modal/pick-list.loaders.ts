@@ -1,15 +1,20 @@
 import { ApiService } from '@core/http/api.service';
+import { TranslateService } from '@ngx-translate/core';
+
+import { resolveLocalizedName } from '@shared/utils/localized-name';
 
 import { PickListLoader, PickedListItem } from './pick-list-modal.component';
 
 /**
  * Ready-made loaders for `<app-pick-list-modal>`. Kept beside the modal so a
  * caller wiring up a picker doesn't have to know the endpoint or the response
- * quirks — pass `categoryLoader(api)` and be done.
+ * quirks — pass `categoryLoader(api, translate)` and be done.
  */
 
-/** Categories — `product/getCategoryList`. */
-export function categoryLoader(api: ApiService): PickListLoader {
+/** Categories — `product/getCategoryList`. `translate` resolves each row's
+ *  name in the active UI language (via `resolveLocalizedName`), falling
+ *  back to the base name — same convention as `LocalizedNamePipe`. */
+export function categoryLoader(api: ApiService, translate: TranslateService): PickListLoader {
   return async ({ page, limit, searchTerm }) => {
     const res = await api.request<any>(
       api.post('product/getCategoryList', { page, limit, searchTerm, sortBy: {} }),
@@ -19,27 +24,10 @@ export function categoryLoader(api: ApiService): PickListLoader {
     const list: PickedListItem[] = raw
       .map((c) => ({
         id: String(c?.id ?? c?._id ?? ''),
-        name: flattenName(c),
+        name: resolveLocalizedName(c, translate.currentLang),
         image: c?.mediaUrl?.thumbnailUrl ?? c?.image ?? undefined,
       }))
       .filter((c) => c.id);
     return { list, count: Number(data?.count ?? raw.length) || 0 };
   };
-}
-
-/**
- * `name` may arrive as a translation map rather than a string — prefer the
- * pre-resolved `displayName`, else the first non-empty value in the map.
- */
-function flattenName(raw: any): string {
-  const dn = raw?.displayName;
-  if (typeof dn === 'string' && dn.trim()) return dn;
-  const n = raw?.name;
-  if (typeof n === 'string') return n;
-  if (n && typeof n === 'object') {
-    for (const v of Object.values(n)) {
-      if (typeof v === 'string' && v.trim()) return v;
-    }
-  }
-  return '';
 }

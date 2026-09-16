@@ -30,6 +30,7 @@ import {
 } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DropdownLoadFn } from '@shared/components/dropdown/search-dropdown.types';
+import { resolveLocalizedName } from '@shared/utils/localized-name';
 import {
   TranslationModalComponent,
   TranslationModalData,
@@ -507,7 +508,7 @@ export class ProductsCollectionsFormComponent implements OnInit, CanLeaveCompone
       return async ({ page, pageSize, search }) => {
         const res = await this.products.getProductList({ page, limit: pageSize, searchTerm: search, sortBy: {}, filter: {} });
         return {
-          items: res.list.map((p: any) => ({ label: p.name, value: p.name })),
+          items: res.list.map((p: any) => ({ label: resolveLocalizedName(p, this.translate.currentLang), value: p.name })),
           hasMore: page * pageSize < res.count,
         };
       };

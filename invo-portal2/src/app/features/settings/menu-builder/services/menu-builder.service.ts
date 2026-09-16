@@ -1,5 +1,7 @@
 import { inject, Injectable } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { ApiService } from '@core/http';
+import { resolveLocalizedName } from '@shared/utils/localized-name';
 import {
   COLOR_SCHEMES,
   DEFAULT_COLOR_SCHEME,
@@ -37,6 +39,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class MenuBuilderService {
   private api = inject(ApiService);
+  private translate = inject(TranslateService);
 
   // ─── List ────────────────────────────────────────────────────────────
   async getList(params: { page?: number; limit?: number; search?: string } = {}): Promise<MenuListPage> {
@@ -120,7 +123,11 @@ export class MenuBuilderService {
     return {
       list: list.map((p) => ({
         id:           String(p?.id ?? ''),
-        name:         String(p?.name ?? ''),
+        // NOTE: `product/menuProductList` doesn't currently SELECT
+        // `Products.translation`, so `resolveLocalizedName` falls back to
+        // the plain name today. Wired up so this localizes automatically
+        // once the backend adds that column, matching every other picker.
+        name:         resolveLocalizedName(p, this.translate.currentLang),
         defaultImage: String(p?.defaultImage ?? p?.image ?? ''),
         color:        String(p?.color ?? ''),
         categoryId:   String(p?.categoryId   ?? ''),

@@ -33,6 +33,7 @@ import {
   SegmentedToggleOption,
 } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { resolveLocalizedName } from '@shared/utils/localized-name';
 import { getProductTypeBadgeStyle } from '../../../../products/utils/product-type-badge';
 
 import {
@@ -73,7 +74,7 @@ interface CategoryOption {
   name:  string;
   image?: string;
 }
-interface BranchOption   { id: string; name: string; }
+interface BranchOption   { id: string; name: string; translation?: Record<string, Record<string, string> | undefined>; }
 interface EmployeeOption { id: string; name: string; }
 
 /**
@@ -194,7 +195,7 @@ export class DiscountFormComponent implements OnInit, CanLeaveComponent {
   });
 
   // ─── Dropdown adapters (generic over `{ id, name }`) ────────────
-  display = (o: { name?: string } | null) => o?.name ?? '';
+  display = (o: { name?: string } | null) => resolveLocalizedName(o, this.translate.currentLang);
   compare = (a: { id?: string } | null, b: { id?: string } | null) => (a?.id ?? '') === (b?.id ?? '');
   toValue = (o: { id?: string } | null) => o?.id ?? '';
 
@@ -227,7 +228,7 @@ export class DiscountFormComponent implements OnInit, CanLeaveComponent {
       limit:      params.pageSize,
       searchTerm: params.search || '',
     });
-    const mapped: BranchOption[] = res.list.map(b => ({ id: b.id, name: b.name }));
+    const mapped: BranchOption[] = res.list.map(b => ({ id: b.id, name: b.name, translation: b.translation }));
     if (params.page === 1) this.mergeBranchCache(mapped);
     const hasMore = params.page * params.pageSize < res.count;
     return { items: mapped, hasMore } satisfies DropdownLoadResult<BranchOption>;
@@ -525,7 +526,7 @@ export class DiscountFormComponent implements OnInit, CanLeaveComponent {
     >(PickListModalComponent, {
       size: 'md',
       data: {
-        load:        categoryLoader(this.api),
+        load:        categoryLoader(this.api, this.translate),
         selectedIds: this.discount().items,
         title:       this.translate.instant('DISCOUNT.PICKER.CATEGORIES_TITLE'),
       },
@@ -809,7 +810,7 @@ export class DiscountFormComponent implements OnInit, CanLeaveComponent {
   private async preloadBranches(): Promise<void> {
     try {
       const res = await this.branchSvc.getList({ page: 1, limit: 100 });
-      this.mergeBranchCache(res.list.map(b => ({ id: b.id, name: b.name })));
+      this.mergeBranchCache(res.list.map(b => ({ id: b.id, name: b.name, translation: b.translation })));
     } catch { /* dropdown will lazy-load on open */ }
   }
 
@@ -850,27 +851,12 @@ export class DiscountFormComponent implements OnInit, CanLeaveComponent {
     };
   }
 
-  /** Resolve a backend row's `name` to a plain string. The
-   *  `name` field is sometimes a translation map (`{en, ar}`),
-   *  sometimes a plain string. `displayName` is the server-side
-   *  resolved variant when present. Falls through to the first
-   *  non-empty value in the map, or the id, so we never emit
-   *  `"[object Object]"`. */
+  /** Resolve a backend row's `name` to a plain string in the active UI
+   *  language — see `resolveLocalizedName` for the shared logic (reused
+   *  across banking-overview, opening-balances, price-label, etc.). Falls
+   *  back to the id so we never render an empty chip. */
   private resolveName(raw: any): string {
-    if (!raw) return '';
-    const dn = raw?.displayName;
-    if (typeof dn === 'string' && dn.trim()) return dn;
-    const n = raw?.name;
-    if (typeof n === 'string') return n;
-    if (n && typeof n === 'object') {
-      const lang = this.translate.currentLang || this.translate.defaultLang;
-      const langed = lang && n[lang];
-      if (typeof langed === 'string' && langed.trim()) return langed;
-      for (const v of Object.values(n)) {
-        if (typeof v === 'string' && v.trim()) return v;
-      }
-    }
-    return String(raw?.id ?? '');
+    return resolveLocalizedName(raw, this.translate.currentLang) || String(raw?.id ?? '');
   }
 
   private mergeProductCache(items: ProductOption[]): void {

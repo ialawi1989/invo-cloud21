@@ -78,6 +78,19 @@ export class ReportViewComponent implements OnInit {
     return m ? this.favs.isFavorite(m.slug) : false;
   });
 
+  /**
+   * True when this report requires a single branch selection (`requireBranch`)
+   * and the filter state doesn't have exactly one chosen yet. Mirrors
+   * InvoCloudFront2's required-entity-filter gate (`required-filters.util.ts`):
+   * calling the API before the mandatory selection is made either errors or
+   * returns garbage, so the fetch is held back and a prompt is shown instead.
+   */
+  requiredFiltersMissing = computed(() => {
+    const m = this.meta();
+    if (!m?.filters?.requireBranch) return false;
+    return (this.filterState().branches?.length ?? 0) !== 1;
+  });
+
   exportItems = computed<DropdownMenuBtnItem[]>(() => {
     const m = this.meta();
     if (!m?.export) return [];
@@ -174,6 +187,15 @@ export class ReportViewComponent implements OnInit {
   async load(): Promise<void> {
     const meta = this.meta();
     if (!meta) return;
+    if (this.requiredFiltersMissing()) {
+      // Required branch not chosen yet — don't call the API (it would error
+      // or return unscoped data); clear any stale result and wait for the
+      // filter bar to supply one.
+      this.result.set(null);
+      this.error.set(null);
+      this.loading.set(false);
+      return;
+    }
     this.loading.set(true);
     this.error.set(null);
     try {
@@ -194,7 +216,7 @@ export class ReportViewComponent implements OnInit {
 
   async export(type: 'pdf' | 'xlsx' | 'csv'): Promise<void> {
     const meta = this.meta();
-    if (!meta) return;
+    if (!meta || this.requiredFiltersMissing()) return;
     try {
       await this.service.export(meta, type, this.toApiFilter());
     } catch (e: any) {

@@ -37,6 +37,15 @@ export interface ReportFilterFlags {
   singleBranch?: boolean;
   /** Show the "compare to previous period" toggle. */
   compare?: boolean;
+  /**
+   * Block the report's API call until exactly one branch is selected (e.g. a
+   * "Daily Closing"-style report that needs a concrete `branchId`). Mirrors
+   * InvoCloudFront2's required-entity-filter gate — narrowed here to branch
+   * selection since that is the only entity-style picker the generic report
+   * shell currently exposes; other pickers (product/employee/customer/
+   * supplier/discount) don't have an equivalent filter-bar control yet.
+   */
+  requireBranch?: boolean;
 }
 
 /** Optional chart rendered above the table. Maps normalized rows → series. */

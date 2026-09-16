@@ -151,7 +151,13 @@ export class CompanyService {
 
   // ─── Feature helpers (delegates to FeatureService) ──────────────────────
 
-  hasFeature(feature: string): boolean {
+  /** Accepts a single feature key or a list — true if ANY of the listed
+   *  features is enabled on the plan. Some privileges are gated by more
+   *  than one plan feature (e.g. a "campaigns" privilege behind stamp
+   *  cards, points, or coupons), so a single-string check alone can't
+   *  express that; `FeatureService.isEnabled` carries the actual any-match
+   *  logic. */
+  hasFeature(feature: string | string[]): boolean {
     return this.featureService.isEnabled(feature);
   }
 

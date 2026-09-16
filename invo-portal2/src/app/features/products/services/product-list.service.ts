@@ -1,5 +1,7 @@
 import { Injectable, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/http';
+import { resolveLocalizedName } from '@shared/utils/localized-name';
 import { ProductListParams, ProductListResponse, DropdownPage } from './product.types';
 
 /**
@@ -9,6 +11,7 @@ import { ProductListParams, ProductListResponse, DropdownPage } from './product.
 @Injectable({ providedIn: 'root' })
 export class ProductListService {
   private api = inject(ApiService);
+  private translate = inject(TranslateService);
 
   async getProductList(params: ProductListParams): Promise<ProductListResponse> {
     const res = await this.api.request(this.api.post('product/getProductList', params));
@@ -101,7 +104,10 @@ export class ProductListService {
     const data = res?.data;
     const list = data?.list || data || [];
     const count = data?.count || list.length;
-    const items = list.map((d: any) => ({ label: d.name, value: d.id || d._id }));
+    const items = list.map((d: any) => ({
+      label: resolveLocalizedName(d, this.translate.currentLang),
+      value: d.id || d._id,
+    }));
     return { items, hasMore: params.page * params.pageSize < count };
   }
 
@@ -126,7 +132,10 @@ export class ProductListService {
     const data = res?.data;
     const list = data?.list || data || [];
     const count = data?.count || list.length;
-    const items = list.map((c: any) => ({ label: c.name, value: c.id || c._id }));
+    const items = list.map((c: any) => ({
+      label: resolveLocalizedName(c, this.translate.currentLang),
+      value: c.id || c._id,
+    }));
     return { items, hasMore: params.page * params.pageSize < count };
   }
 

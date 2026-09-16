@@ -16,6 +16,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { resolveLocalizedName } from '@shared/utils/localized-name';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import {
   ListCellTemplateDirective,
@@ -40,7 +41,11 @@ import { BankingOverviewService } from '../../services/banking-overview.service'
 import { ReconciliationListRow } from '../../services/banking-overview.types';
 import { AccountHeaderComponent } from '../../components/account-header/account-header.component';
 
-interface BranchOption { id: string; name: string; }
+interface BranchOption {
+  id: string;
+  name: string;
+  translation?: Record<string, Record<string, string> | undefined>;
+}
 
 type StatusFilter = '' | 'in-progress' | 'reconciled';
 
@@ -105,7 +110,7 @@ export class ReconciliationsComponent implements OnInit {
     { value: 'reconciled',   label: 'BANKING_OVERVIEW.STATUS.RECONCILED' },
   ];
 
-  branchDisplay = (b: BranchOption) => b?.name ?? '';
+  branchDisplay = (b: BranchOption) => resolveLocalizedName(b, this.translate.currentLang);
   branchCompare = (a: BranchOption, b: BranchOption) => a?.id === b?.id;
   selectedBranches = computed<BranchOption[]>(() => {
     const ids = new Set(this.selectedBranchIds());
@@ -172,7 +177,7 @@ export class ReconciliationsComponent implements OnInit {
   private async loadBranches(): Promise<void> {
     try {
       const res = await this.branchSvc.getList({ limit: 200 });
-      this.branches.set(res.list.map(b => ({ id: b.id, name: b.name })));
+      this.branches.set(res.list.map(b => ({ id: b.id, name: b.name, translation: b.translation })));
     } catch (e) {
       console.error('[banking-overview] loadBranches failed', e);
     }

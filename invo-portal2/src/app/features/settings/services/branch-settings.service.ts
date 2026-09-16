@@ -12,6 +12,13 @@ export interface BranchSummary {
   onlineAvailability:    boolean;
   startSubscriptionDate?: string | null;
   endSubscriptionDate?:   string | null;
+  /** Per-language name overrides (`branch/getBranches` selects it too) —
+   *  lets dropdowns/pickers render the active UI language via
+   *  `resolveLocalizedName`/`| localizedName` instead of always English. */
+  translation?: {
+    name?: { en: string; ar: string };
+    [key: string]: any;
+  };
 }
 
 export interface BranchDetails extends BranchSummary {
@@ -23,17 +30,9 @@ export interface BranchDetails extends BranchSummary {
   // edit them but we still round-trip them so save doesn't drop the data.
   workingHours?: any;
   deliveryTimes?: any;
-  /**
-   * Per-language overrides for translatable fields (`name`, etc.). Mirrors
-   * the legacy `Translation` shape (`{ <field>: { en, ar } }`) so saved
-   * translations round-trip transparently. Anything else the backend
-   * already stored (title, alias, …) is preserved via the form's
-   * `original` snapshot spread.
-   */
-  translation?: {
-    name?: { en: string; ar: string };
-    [key: string]: any;
-  };
+  // `translation` (per-language overrides, e.g. `{ name: { en, ar } }`) is
+  // inherited from `BranchSummary` — kept there so list rows can also
+  // resolve a localized name without a full `getOne` fetch.
 }
 
 export interface BranchListParams {
@@ -113,6 +112,9 @@ export class BranchSettingsService {
       onlineAvailability:    !!b.onlineAvailability,
       startSubscriptionDate: b.startSubscriptionDate ?? null,
       endSubscriptionDate:   b.endSubscriptionDate   ?? null,
+      // `branch/getBranches` selects `Branches.translation` too — pass it
+      // through so list-based pickers can render a localized name.
+      translation:           (b.translation && typeof b.translation === 'object') ? { ...b.translation } : undefined,
     };
   }
 

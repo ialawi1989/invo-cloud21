@@ -21,6 +21,7 @@ import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import type { ModalRef } from '@shared/modal/modal.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { resolveLocalizedName } from '@shared/utils/localized-name';
 import { getProductTypeBadgeStyle } from '../../../../products/utils/product-type-badge';
 
 import { ProductsService } from '../../../../products/services/products.service';
@@ -274,7 +275,7 @@ export class PickProductPlModalComponent implements OnInit, AfterViewInit, OnDes
         const seedPrice = this.data.existingPrices?.[id];
         const row: ProductRow = {
           id,
-          name:         p?.name ?? '',
+          name:         resolveLocalizedName(p, this.translate.currentLang),
           barcode:      p?.barcode,
           type:         p?.type,
           defaultPrice: p?.defaultPrice != null ? Number(p.defaultPrice) : undefined,

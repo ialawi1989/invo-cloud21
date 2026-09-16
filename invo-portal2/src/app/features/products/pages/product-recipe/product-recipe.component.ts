@@ -136,7 +136,7 @@ export class ProductRecipeComponent implements OnInit {
   /** Category filter — single-select picker (acts as a filter, applies on click). */
   async openCategoryPicker(): Promise<void> {
     const result = await this.openPicker({
-      load: categoryLoader(this.api),
+      load: categoryLoader(this.api, this.translate),
       multiple: false,
       selectedIds: this.categoryId() ? [this.categoryId()] : [],
       title: this.translate.instant('PRODUCTS.PRODUCT_RECIPE.PICK_CATEGORY'),

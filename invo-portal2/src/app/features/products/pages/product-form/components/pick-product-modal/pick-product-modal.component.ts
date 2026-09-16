@@ -11,11 +11,12 @@ import {
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import type { ModalRef } from '@shared/modal/modal.service';
+import { resolveLocalizedName } from '@shared/utils/localized-name';
 
 import { ProductsService } from '../../../../services/products.service';
 
@@ -75,6 +76,7 @@ export interface PickProductResult {
 })
 export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestroy {
   private products = inject(ProductsService);
+  private translate = inject(TranslateService);
   private modalRef = inject<ModalRef<PickProductResult>>(MODAL_REF);
   data             = inject<PickProductModalData>(MODAL_DATA) ?? {};
 
@@ -135,11 +137,14 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
         // Without an explicit columns set the backend returns a reduced row
         // shape (no image/price). Request only the fields this picker maps
         // (PickedProduct) so thumbnails + prices come back without over-fetching.
-        columns: ['name', 'image', 'barcode', 'SKU', 'UOM', 'unitCost', 'defaultPrice', 'type', 'category'],
+        // `translation` is included so the row name can be localized —
+        // omitting it from an explicit columns list makes the backend drop
+        // the field entirely (it's not part of the reduced default set).
+        columns: ['name', 'translation', 'image', 'barcode', 'SKU', 'UOM', 'unitCost', 'defaultPrice', 'type', 'category'],
       });
       const rows: PickedProduct[] = (res.list ?? []).map((r: any) => ({
         id:       r.id ?? r._id,
-        name:     r.name ?? '',
+        name:     resolveLocalizedName(r, this.translate.currentLang),
         barcode:  r.barcode,
         sku:      r.sku,
         UOM:      r.UOM,

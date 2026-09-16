@@ -151,7 +151,8 @@
       "RETRY": "Retry",
       "LOAD_ERROR": "Could not load this report.",
       "NOT_FOUND_TITLE": "Report not found",
-      "NOT_FOUND_MSG": "This report doesn't exist or has been moved."
+      "NOT_FOUND_MSG": "This report doesn't exist or has been moved.",
+      "SELECT_BRANCH_PROMPT": "Select a branch to load this report."
     }
   }
 }

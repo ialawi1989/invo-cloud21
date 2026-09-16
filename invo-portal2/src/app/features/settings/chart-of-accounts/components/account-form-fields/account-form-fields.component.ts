@@ -163,10 +163,11 @@ export class AccountFormFieldsComponent implements OnChanges {
     if (this.parentsForType() === type) return;
     this.parentsForType.set(type);
     try {
-      const rows = await this.service.getParentsByType(type);
-      // Drop the row being edited from its own parent picker so
-      // users can't self-reference.
       const editingId = this.value?.id;
+      // Pass the account being edited so the backend excludes it from its own
+      // parent picker (circular-reference guard). Keep the client-side
+      // filter too as a defense-in-depth backstop.
+      const rows = await this.service.getParentsByType(type, editingId);
       this.parents.set(editingId ? rows.filter(r => r.id !== editingId) : rows);
     } catch {
       this.parents.set([]);

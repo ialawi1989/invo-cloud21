@@ -55,7 +55,12 @@
     </div>
 
     <!-- ── Body ───────────────────────────────────────────────── -->
-    @if (loading()) {
+    @if (requiredFiltersMissing()) {
+      <div class="rv-error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p>{{ 'REPORTS.VIEW.SELECT_BRANCH_PROMPT' | translate }}</p>
+      </div>
+    } @else if (loading()) {
       <div class="rv-loading">
         <div class="rv-kpi-skel">
           @for (i of [1,2,3,4]; track i) { <div class="rv-skel-tile"></div> }
