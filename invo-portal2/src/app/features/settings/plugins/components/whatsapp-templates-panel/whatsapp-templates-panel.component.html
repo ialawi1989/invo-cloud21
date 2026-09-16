@@ -9,10 +9,11 @@
     </button>
   </div>
 
-  @if (!pluginEnabled) {
+  @if (!pluginSavedEnabled) {
     <p class="tp__warn">{{ 'PLUGINS.TEMPLATES.DISABLED_WARNING' | translate }}</p>
   }
 
+  @if (pluginSavedEnabled) {
   <div class="tp__cols">
     <!-- Local → sync (only when the parent supplied local templates) -->
     @if (localTemplates.length) {
@@ -71,4 +72,5 @@
       }
     </div>
   </div>
+  }
 </section>

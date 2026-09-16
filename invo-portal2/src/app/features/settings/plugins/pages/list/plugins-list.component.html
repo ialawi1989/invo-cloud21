@@ -30,6 +30,9 @@
     @for (group of groups(); track trackGroup($index, group)) {
       <section class="pl-group">
         <h2 class="pl-group__title">{{ groupLabel(group.type) | translate }}</h2>
+        @if (groupHint(group.type); as hint) {
+          <p class="pl-group__hint">{{ hint | translate }}</p>
+        }
         <ul class="pl-rows">
           @for (plugin of group.list; track trackRow($index, plugin)) {
             <li class="pl-card"

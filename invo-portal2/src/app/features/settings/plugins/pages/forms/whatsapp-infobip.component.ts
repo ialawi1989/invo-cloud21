@@ -66,13 +66,18 @@ const E164 = /^\+?[0-9]{6,20}$/;
             <div class="pf-toggle-row__hint">{{ 'PLUGINS.COMMON.ENABLED_HINT' | translate }}</div>
           </div>
           <label class="pf-switch">
-            <input type="checkbox" [(ngModel)]="plugin.settings.enable" (ngModelChange)="markDirty()" name="enable"/>
+            <input type="checkbox" [(ngModel)]="plugin.settings.enable"
+                   [disabled]="!plugin.settings.enable && !canEnable"
+                   (ngModelChange)="markDirty()" name="enable"/>
             <span class="pf-switch__track"><span class="pf-switch__thumb"></span></span>
           </label>
         </div>
+        @if (!plugin.settings.enable && !canEnable) {
+          <p class="pf-hint">{{ 'PLUGINS.WHATSAPP.CANT_ENABLE_INFOBIP' | translate }}</p>
+        }
       </div>
 
-      <app-whatsapp-templates-panel [pluginEnabled]="!!plugin.settings.enable"/>
+      <app-whatsapp-templates-panel [pluginEnabled]="!!plugin.settings.enable" [pluginSavedEnabled]="savedEnabled"/>
     </app-plugin-form-shell>
   `,
 })
@@ -81,6 +86,16 @@ export class WhatsappInfobipComponent extends PluginFormBase implements OnInit {
   protected titleKey = 'PLUGINS.WHATSAPP.INFOBIP_TITLE';
 
   errors: { baseUrl?: boolean; sender?: boolean } = {};
+
+  /**
+   * Persisted "saved AND enabled" state — the templates panel only reveals
+   * its lists once this is true. Read from `plugin` on every check (not a
+   * signal) since `init()`/`afterSave()` mutate `plugin` directly and this
+   * component runs default (non-OnPush) change detection.
+   */
+  get savedEnabled(): boolean {
+    return !!(this.plugin.id && this.plugin.settings.enable);
+  }
 
   ngOnInit(): void { void this.init(['infobip_apiKey']); }
 
@@ -95,6 +110,17 @@ export class WhatsappInfobipComponent extends PluginFormBase implements OnInit {
     return !this.errors.baseUrl && !this.errors.sender;
   }
 
+  /** Whether the Enable toggle may be switched on — all required fields
+   *  must be present first. (API key is only required when creating; on
+   *  edit the stored one is kept.) Turning the toggle OFF is always allowed. */
+  get canEnable(): boolean {
+    const s = this.plugin.settings;
+    const baseUrl = (s.infobip_baseUrl ?? '').trim();
+    const sender  = (s.infobip_sender ?? '').trim();
+    const apiKey  = (s.infobip_apiKey ?? '').trim();
+    return !!baseUrl && !!sender && (!this.isNew || !!apiKey);
+  }
+
   save(): void {
     this.submitted.set(true);
     if (!this.validate()) return;
@@ -106,5 +132,15 @@ export class WhatsappInfobipComponent extends PluginFormBase implements OnInit {
     };
     if (this.shouldSendSecret('infobip_apiKey')) settings['infobip_apiKey'] = (s.infobip_apiKey ?? '').trim();
     void this.persist({ ...this.basePayload(), settings });
+  }
+
+  /** Stay on the form after saving (rather than navigating back to the
+   *  list) so the templates panel can reveal itself in place once the
+   *  plugin is confirmed saved+enabled. Blank the just-saved secret and
+   *  clear its dirty flag so the field falls back to the masked/kept state. */
+  protected override afterSave(): void {
+    this.plugin.settings.infobip_apiKey = '';
+    this.clearSecretDirty('infobip_apiKey');
+    this.submitted.set(false);
   }
 }

@@ -2,7 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  OnChanges,
   OnInit,
+  SimpleChanges,
   inject,
   signal,
 } from '@angular/core';
@@ -47,13 +49,20 @@ interface SyncedTemplate {
   templateUrl: './whatsapp-templates-panel.component.html',
   styleUrl: './whatsapp-templates-panel.component.scss',
 })
-export class WhatsappTemplatesPanelComponent implements OnInit {
+export class WhatsappTemplatesPanelComponent implements OnInit, OnChanges {
   private service = inject(PluginService);
   private toast   = inject(ToastService);
   private translate = inject(TranslateService);
 
   /** When false, mutation buttons are disabled with a hint. */
   @Input() pluginEnabled = false;
+  /**
+   * True only when the plugin is BOTH saved and enabled (persisted state —
+   * not the live toggle). Until a save persists an enabled plugin there's no
+   * provider to sync templates with, so the lists stay hidden behind an
+   * enable-and-save hint and nothing is fetched.
+   */
+  @Input() pluginSavedEnabled = false;
   /** Optional local templates available to sync. */
   @Input() localTemplates: LocalTemplate[] = [];
 
@@ -66,8 +75,30 @@ export class WhatsappTemplatesPanelComponent implements OnInit {
   deleting = signal<Record<string, boolean>>({});
   resyncing = signal<Record<string, boolean>>({});
 
+  /** Guards against re-fetching every time an @Input reference changes. */
+  private templatesLoaded = false;
+
   ngOnInit(): void {
-    void this.loadSynced();
+    this.maybeLoadSynced();
+  }
+
+  /**
+   * The parent flips `pluginSavedEnabled` to true after an in-place save, so
+   * lazy-load on that transition too (not just on first render). Reset the
+   * guard when it goes back to false so a later re-enable reloads fresh.
+   */
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['pluginSavedEnabled']) {
+      if (!this.pluginSavedEnabled) this.templatesLoaded = false;
+      this.maybeLoadSynced();
+    }
+  }
+
+  private maybeLoadSynced(): void {
+    if (this.pluginSavedEnabled && !this.templatesLoaded) {
+      this.templatesLoaded = true;
+      void this.loadSynced();
+    }
   }
 
   async loadSynced(): Promise<void> {
@@ -80,8 +111,15 @@ export class WhatsappTemplatesPanelComponent implements OnInit {
         this.synced.set([]);
         return;
       }
-      this.activeProvider.set(res?.data?.provider ?? '');
-      this.synced.set(this.normalizeSynced(res?.data));
+      // `provider` sits at the top level of the response envelope
+      // (`{ success, provider, data, msg }` — see
+      // WhatsappTemplateProvider.listTemplates on the backend), and `data`
+      // is the raw provider payload itself (Graph API's `{ data, paging }`
+      // for Meta, Infobip's `{ templates, ... }` for Infobip) — NOT
+      // `res.data.provider` / `res.data.data.*`. Hand the whole envelope to
+      // normalizeSynced rather than just `res.data`.
+      this.activeProvider.set(res?.provider ?? res?.data?.provider ?? '');
+      this.synced.set(this.normalizeSynced(res));
     } catch {
       this.error.set('Failed to load templates');
       this.synced.set([]);

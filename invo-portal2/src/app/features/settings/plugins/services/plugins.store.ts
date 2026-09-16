@@ -87,10 +87,22 @@ export class PluginsStore {
   }
 
   /** Optimistic enable toggle from the list. Flips locally for snappy
-   *  feedback, persists via `savePlugin`, rolls back on failure. */
+   *  feedback, persists via `savePlugin`, rolls back on failure.
+   *
+   *  WhatsApp is a single channel: turning one provider on auto-disables
+   *  any other enabled WhatsApp provider, both locally and persisted, so
+   *  the backend never has more than one active at a time. */
   async toggleEnabled(plugin: Plugin): Promise<void> {
     const next = !plugin.settings.enable;
     this.patch(plugin.pluginName, next);
+
+    const siblings = next && plugin.type === 'WhatsApp'
+      ? this.plugins().filter(
+          p => p.type === 'WhatsApp' && p.pluginName !== plugin.pluginName && p.settings.enable,
+        )
+      : [];
+    siblings.forEach(s => this.patch(s.pluginName, false));
+
     const def = findPluginByName(plugin.pluginName);
     const payload: Plugin = {
       ...plugin,
@@ -101,11 +113,25 @@ export class PluginsStore {
     const ok = await this.service.setEnabled(payload);
     if (!ok) {
       this.patch(plugin.pluginName, !next);
+      siblings.forEach(s => this.patch(s.pluginName, true));
       this.toast.error('COMMON.SAVE_FAILED');
-    } else {
-      // Refresh so a freshly-created plugin picks up its new id.
-      void this.load({ force: true });
+      return;
     }
+
+    // Persist the auto-disabled siblings too — only ones already saved
+    // server-side have anything to disable.
+    for (const sibling of siblings.filter(s => s.id)) {
+      const siblingDef = findPluginByName(sibling.pluginName);
+      await this.service.setEnabled({
+        ...sibling,
+        slug: sibling.slug || siblingDef?.slug || '',
+        type: sibling.type || siblingDef?.type || '',
+        settings: { ...sibling.settings, enable: false },
+      });
+    }
+
+    // Refresh so a freshly-created plugin picks up its new id.
+    void this.load({ force: true });
   }
 
   private patch(name: string, enable: boolean): void {

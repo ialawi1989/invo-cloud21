@@ -137,6 +137,12 @@ export class PluginsListComponent implements OnInit {
       .replace(/^_|_$/g, '');
   }
 
+  /** Optional i18n key for a hint shown under a group heading (e.g. the
+   *  WhatsApp group's single-provider constraint). Empty for most groups. */
+  groupHint(type: string): string {
+    return type === 'WhatsApp' ? 'PLUGINS.GROUPS.WHATSAPP_HINT' : '';
+  }
+
   canClick(plugin: Plugin): boolean {
     return !!findPluginByName(plugin.pluginName)?.hasForm;
   }

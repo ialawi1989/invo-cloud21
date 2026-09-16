@@ -14,6 +14,7 @@
 export type PluginType =
   | 'Aggregator (Manual Entry)'
   | 'Aggregator'
+  | 'WhatsApp'
   | 'Notifications'
   | 'Utilities'
   | 'Analytics'
@@ -56,6 +57,9 @@ export interface PluginSettings {
   // WhatsApp (Meta)
   Token?:   string;
   PhoneId?: string;
+  /** WhatsApp Business Account ID — required by the Meta Graph API for the
+   *  template-management endpoints (list/create/edit templates). */
+  WabaId?:  string;
 
   // Infobip (WhatsApp + SMS)
   infobip_baseUrl?: string;

@@ -44,10 +44,15 @@ export const PLUGIN_REGISTRY: PluginDef[] = [
   // ── Aggregators (integrated) ───────────────────────────────────────
   { name: 'GrubTech', slug: 'grub-tech', type: 'Aggregator', logo: LOGO + 'GrubTech.png', descKey: 'PLUGINS.DESC.GRUBTECH', hasForm: true },
 
+  // ── WhatsApp — a single channel; only one provider may be enabled at a
+  // time (enforced in PluginsStore.toggleEnabled). Its own group so the
+  // mutually-exclusive choice reads as one decision, not three notification
+  // channels.
+  { name: 'Whatsapp Notifications', slug: 'whatsapp-notifications', type: 'WhatsApp', logo: LOGO + 'whatsapp_logo.png',          descKey: 'PLUGINS.DESC.WA_NOTIF',    hasForm: true },
+  { name: 'Whatsapp Infobip',       slug: 'whatsapp-infobip',       type: 'WhatsApp', logo: LOGO + 'whatsapp_infobip_logo.png',  descKey: 'PLUGINS.DESC.WA_INFOBIP',  hasForm: true },
+  { name: 'Whatsapp WaSender',      slug: 'whatsapp-wasender',      type: 'WhatsApp', logo: LOGO + 'whatsapp_wasender_logo.png', descKey: 'PLUGINS.DESC.WA_WASENDER', hasForm: true },
+
   // ── Notifications ──────────────────────────────────────────────────
-  { name: 'Whatsapp Notifications', slug: 'whatsapp-notifications', type: 'Notifications', logo: LOGO + 'whatsapp_logo.png',          descKey: 'PLUGINS.DESC.WA_NOTIF',    hasForm: true },
-  { name: 'Whatsapp Infobip',       slug: 'whatsapp-infobip',       type: 'Notifications', logo: LOGO + 'whatsapp_infobip_logo.png',  descKey: 'PLUGINS.DESC.WA_INFOBIP',  hasForm: true },
-  { name: 'Whatsapp WaSender',      slug: 'whatsapp-wasender',      type: 'Notifications', logo: LOGO + 'whatsapp_wasender_logo.png', descKey: 'PLUGINS.DESC.WA_WASENDER', hasForm: true },
   { name: 'Sms Infobip',            slug: 'sms-infobip',            type: 'Notifications', logo: LOGO + 'sms_infobip_logo.png',       descKey: 'PLUGINS.DESC.SMS_INFOBIP', hasForm: true },
   { name: 'Sms BareedSMS',          slug: 'sms-bareedsms',          type: 'Notifications', logo: LOGO + 'sms_bareedsms_logo.png',     descKey: 'PLUGINS.DESC.SMS_BAREED',  hasForm: true },
   { name: 'Email SMTP',             slug: 'email-smtp',             type: 'Notifications', logo: LOGO + 'email_smtp_logo.png',        descKey: 'PLUGINS.DESC.SMTP',        hasForm: true },
@@ -79,6 +84,7 @@ export const PLUGIN_REGISTRY: PluginDef[] = [
 export const PLUGIN_GROUP_ORDER: PluginType[] = [
   'Aggregator (Manual Entry)',
   'Aggregator',
+  'WhatsApp',
   'Notifications',
   'Utilities',
   'Analytics',

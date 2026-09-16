@@ -124,7 +124,8 @@ export abstract class PluginFormBase implements CanLeaveComponent {
     };
   }
 
-  /** Persist a payload. Returns true on success. Handles toast + nav. */
+  /** Persist a payload. Returns true on success. Handles toast + the
+   *  post-save step ({@link afterSave}, navigate-back by default). */
   protected async persist(payload: Record<string, unknown>): Promise<boolean> {
     this.saving.set(true);
     try {
@@ -134,14 +135,31 @@ export abstract class PluginFormBase implements CanLeaveComponent {
         this.submitted.set(false);
         return false;
       }
+      if (res.id) this.plugin.id = res.id;
       this.saved.set(true);
       this.dirty.set(false);
       this.toast.success('PLUGINS.COMMON.SAVED');
-      this.back();
+      this.afterSave();
       return true;
     } finally {
       this.saving.set(false);
     }
+  }
+
+  /** Called once a save has succeeded. Default behaviour is every other
+   *  plugin form's current behaviour: navigate back to the list. Override
+   *  (without calling `back()`) for a form that stays open after saving —
+   *  e.g. so an embedded panel can reveal itself once the plugin is
+   *  confirmed persisted, rather than navigating away immediately. */
+  protected afterSave(): void {
+    this.back();
+  }
+
+  /** Clear a secret's "re-typed this session" flag (e.g. after a save on a
+   *  form that stays open, so the field falls back to showing the
+   *  masked/kept state rather than resending the same value forever). */
+  protected clearSecretDirty(key: string): void {
+    this.secretsDirty.delete(key);
   }
 
   /** Run a connection test for the given payload (same shape as save).
