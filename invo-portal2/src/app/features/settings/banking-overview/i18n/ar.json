@@ -19,7 +19,8 @@
       "IN_PROGRESS": "قيد التنفيذ"
     },
     "FILTERS": {
-      "ALL_BRANCHES": "كل الفروع"
+      "ALL_BRANCHES": "كل الفروع",
+      "DATE_RANGE": "الفترة الزمنية"
     },
     "TRANSACTIONS": {
       "TITLE": "الحركات",

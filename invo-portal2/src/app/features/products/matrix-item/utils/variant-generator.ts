@@ -6,9 +6,16 @@
  *
  * Derivation rules (must stay byte-for-byte compatible with the legacy app so
  * existing products keep matching on regeneration):
- *   • name    = `${matrixName} ${attr1}[ ${attr2}[ ${attr3}]]`  (trailing space kept)
+ *   • name    = `${matrixName} ${attr1}[ ${attr2}[ ${attr3}]]`   (single spaces,
+ *     no leading/trailing/doubled whitespace — see `normalizeName`)
  *   • barcode = `${matrixBarcode}${code1}${code2}${code3}`       (no separator)
  *   • sku     = `${matrixBarcode}_${[code1, code2, code3].join('_')}`
+ *
+ * Matrix/dimension/attribute names typed with leading, trailing, or repeated
+ * spaces used to flow straight through into the generated product name (e.g.
+ * `"newMatrixTesting  Red "`), and those extra spaces broke storefront product
+ * search (the polluted name doesn't match a clean search term). Every name
+ * that reaches `generateVariants` is run through `normalizeName` first.
  */
 
 import {
@@ -16,6 +23,15 @@ import {
   Dimension,
   MatrixProduct,
 } from '../services/matrix-item.types';
+
+/** Collapse repeated whitespace and trim. Keeps generated product names free
+ *  of the double/leading/trailing spaces that break product search on the
+ *  storefront. Used at every entry point that feeds a matrix/dimension/
+ *  attribute name (typed input, translation dialog, saved-dimension picker,
+ *  and variant generation itself). */
+export function normalizeName(value: unknown): string {
+  return String(value ?? '').replace(/\s+/g, ' ').trim();
+}
 
 export interface BranchRef {
   id: string;
@@ -62,7 +78,8 @@ export function generateVariants(params: {
   /** Previous products to carry ids/stock over from. */
   previous: MatrixProduct[];
 }): MatrixProduct[] {
-  const { matrixName, matrixBarcode, unitCost, dimensions, branches } = params;
+  const { matrixBarcode, unitCost, dimensions, branches } = params;
+  const matrixName = normalizeName(params.matrixName);
   const old = Array.isArray(params.previous) ? clone(params.previous) : [];
   const seed = seedBranchProducts(branches, unitCost);
 
@@ -90,10 +107,13 @@ export function generateVariants(params: {
   const out: MatrixProduct[] = [];
   for (const combo of combos) {
     const attrs = combo.map((idx, dimIdx) => attrLists[dimIdx][idx]);
-    const names = attrs.map((a) => a.name);
+    const names = attrs.map((a) => normalizeName(a.name));
     const codes = attrs.map((a) => a.code ?? '');
 
-    const nameSuffix = names.join(' ') + ' ';
+    // Join with single spaces and drop any empty parts — no leading, trailing,
+    // or doubled whitespace regardless of what was typed for the matrix or
+    // attribute names.
+    const fullName = [matrixName, ...names].filter((p) => p !== '').join(' ');
     const barcode = matrixBarcode + codes.join('');
     const sku = matrixBarcode + '_' + codes.join('_');
 
@@ -106,14 +126,14 @@ export function generateVariants(params: {
         p &&
         (p.sku === sku ||
           p.barcode === barcode ||
-          (p.attribute1 === attribute1 &&
-            p.attribute2 === attribute2 &&
-            p.attribute3 === attribute3)),
+          (normalizeName(p.attribute1) === attribute1 &&
+            normalizeName(p.attribute2) === attribute2 &&
+            normalizeName(p.attribute3) === attribute3)),
     );
 
     out.push({
       id: existing?.id || existing?.productId || '',
-      name: matrixName + ' ' + nameSuffix,
+      name: fullName,
       barcode,
       sku,
       attribute1,

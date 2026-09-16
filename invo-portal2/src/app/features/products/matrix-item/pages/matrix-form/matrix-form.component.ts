@@ -58,6 +58,7 @@ import {
   allDimensionsHaveAttributes,
   buildBarcodeComparison,
   generateVariants,
+  normalizeName,
   regenerateBarcodesAndSkus,
   stripCodelessAttributes,
 } from '../../utils/variant-generator';
@@ -437,7 +438,12 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
   // ─── Name / barcode / cost ────────────────────────────────────────────
   onNameChange(): void {
     if (this.isEdit()) return;
-    const name = this.form.controls.matrixName.value ?? '';
+    // Trim stray leading/trailing/repeated whitespace as soon as the name is
+    // typed — untrimmed values used to flow straight into generateVariants()
+    // and produce variant product names with double spaces, which broke
+    // storefront product search.
+    const name = normalizeName(this.form.controls.matrixName.value);
+    this.form.controls.matrixName.setValue(name, { emitEvent: false });
     this.patchModel((m) => {
       m.name = name;
       if (m.translation?.name) m.translation.name.en = name;
@@ -702,12 +708,16 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
     );
     const result = await ref.afterClosed();
     if (!result) return;
+    // Trim the English name coming back from the translation dialog too —
+    // otherwise a translated name with stray whitespace still reaches
+    // generateVariants() untrimmed.
+    const trimmedName = normalizeName(result['en']);
     this.patchModel((m) => {
       const t = m.translation ?? emptyTranslation();
-      m.translation = { ...t, name: { ...result } };
-      m.name = result['en'];
+      m.translation = { ...t, name: { ...result, en: trimmedName } };
+      m.name = trimmedName;
     });
-    this.form.controls.matrixName.setValue(result.en, { emitEvent: false });
+    this.form.controls.matrixName.setValue(trimmedName, { emitEvent: false });
     if (!this.isEdit()) this.regenerate();
   }
 
@@ -751,6 +761,35 @@ export class MatrixFormComponent implements OnInit, CanLeaveComponent {
 
     this.saving.set(true);
     const payload: MatrixItem = JSON.parse(JSON.stringify(this.matrixInfo()));
+    // Final trim pass before the payload leaves the form — belt-and-suspenders
+    // alongside the entry-point trimming above (onNameChange / translateName /
+    // the dimension & attribute modals) so nothing untrimmed can reach the
+    // backend even via a path that bypassed one of those (e.g. data loaded in
+    // edit mode). Stray whitespace here becomes a double space baked into every
+    // generated variant name, which breaks storefront product search.
+    payload.name = normalizeName(payload.name);
+    if (payload.translation?.name) {
+      for (const lang of Object.keys(payload.translation.name)) {
+        payload.translation.name[lang] = normalizeName(payload.translation.name[lang]);
+      }
+    }
+    for (const d of payload.dimensions) {
+      d.name = normalizeName(d.name);
+      if (d.translation?.name) {
+        for (const lang of Object.keys(d.translation.name)) {
+          d.translation.name[lang] = normalizeName(d.translation.name[lang]);
+        }
+      }
+      for (const a of d.attributes) {
+        a.name = normalizeName(a.name);
+        if (a.translation?.name) {
+          for (const lang of Object.keys(a.translation.name)) {
+            a.translation.name[lang] = normalizeName(a.translation.name[lang]);
+          }
+        }
+      }
+    }
+    for (const p of payload.products) p.name = normalizeName(p.name);
     // Per-variant images are persisted separately via `bulkProductMedia`, so
     // strip them from the matrix save payload (saveMatrix ignores them anyway).
     // `matrixInfo()` keeps its copy for `persistVariantImages()` below.

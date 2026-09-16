@@ -10,17 +10,12 @@
       [value]="statusFilter()"
       (valueChange)="onStatusChange($event)"/>
 
-    <div class="txn-dates">
-      <input type="date" class="txn-date-input"
-             [ngModel]="fromDate()"
-             (ngModelChange)="fromDate.set($event); onDateChange()"
-             [attr.aria-label]="'COMMON.FROM' | translate"/>
-      <span class="txn-date-sep">–</span>
-      <input type="date" class="txn-date-input"
-             [ngModel]="toDate()"
-             (ngModelChange)="toDate.set($event); onDateChange()"
-             [attr.aria-label]="'COMMON.TO' | translate"/>
-    </div>
+    <app-date-picker
+      class="txn-dates"
+      mode="range"
+      [value]="dateRange()"
+      (valueChange)="onDateRangeChange($event)"
+      [placeholder]="'BANKING_OVERVIEW.FILTERS.DATE_RANGE' | translate"/>
 
     <app-search-dropdown
       class="txn-branch"

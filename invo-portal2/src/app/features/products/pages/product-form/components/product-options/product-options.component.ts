@@ -203,7 +203,7 @@ export class ProductOptionsComponent implements OnInit {
       orderByWeight:           [!!info.orderByWeight],
       discountableInPOS:       [info.isDiscountable !== false],   // null treated as true
       maxItemPerTicket:        [info.maxItemPerTicket ?? 0, [Validators.min(0)]],
-      preparationTime:         [info.serviceTime ?? 0, [Validators.min(this.minServiceTime)]],
+      preparationTime:         [info.preparationTime ?? 0, [Validators.min(this.minServiceTime)]],
       serviceTime:             [info.serviceTime ?? 0, [Validators.min(this.minServiceTime)]],
       kitchenName:             [info.kitchenName ?? ''],
       warning:                 [info.warning ?? ''],
@@ -238,13 +238,13 @@ export class ProductOptionsComponent implements OnInit {
         p.orderByWeight     = !!v.orderByWeight;
         p.isDiscountable    = !!v.discountableInPOS;
         p.maxItemPerTicket  = Number(v.maxItemPerTicket ?? 0);
-        // preparationTime and serviceTime both ultimately feed into
-        // `productInfo.serviceTime` on the model — whichever field is
-        // visible for this product type wins. Visibility is mutually
-        // exclusive by fieldsOptions so the two controls are never both
-        // shown together.
-        if (this.showPreparationTime()) p.serviceTime = Number(v.preparationTime ?? 0);
-        else if (this.showServiceTime()) p.serviceTime = Number(v.serviceTime ?? 0);
+        // FIX: preparationTime used to be written back into `p.serviceTime`
+        // (it shares that field's fallback/model plumbing since both are
+        // "duration" fields), which silently clobbered whichever of the two
+        // fields wasn't the one the user actually edited. Each control now
+        // writes only to its own model field.
+        if (this.showPreparationTime()) p.preparationTime = Number(v.preparationTime ?? 0);
+        if (this.showServiceTime()) p.serviceTime = Number(v.serviceTime ?? 0);
         p.kitchenName       = v.kitchenName ?? '';
         p.warning           = v.warning ?? '';
         (p as any).itemMessage             = v.itemMessage ?? '';

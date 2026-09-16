@@ -79,7 +79,7 @@ export class Product {
   recipes: ProductRecipe[] = [];
   selection: SelectionItem[] = [];
   serviceStatus: any;
-  serviceTime = 30;
+  serviceTime = 10;
   tags: string[] = [];
   tagsArr: any[] = [];
   taxes: any[] = [];
@@ -108,7 +108,7 @@ export class Product {
   taxId: any = null;
   taxPercentage: any = 0;
   isChild = false;
-  preparationTime = 0;
+  preparationTime = 30;
   mediaId: string | null = null;
   mediaUrl: ProductImage = new ProductImage();
   orderByWeight = false;

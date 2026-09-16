@@ -25,6 +25,7 @@ import {
   emptyTranslation,
   getPresetsForDimension,
 } from '../../services/matrix-item.types';
+import { normalizeName } from '../../utils/variant-generator';
 
 export interface AddAttributeModalData {
   dimension: Dimension;
@@ -135,22 +136,22 @@ export class AddAttributeModalComponent {
 
   // ── Validation ────────────────────────────────────────────────────
   readonly nameError = computed<string | null>(() => {
-    const n = this.newName().trim();
+    const n = normalizeName(this.newName());
     if (!n) return null; // empty is not an *error* yet — just disables Add
-    const dup = this.attrs().some((a) => a.name.toLowerCase() === n.toLowerCase());
+    const dup = this.attrs().some((a) => normalizeName(a.name).toLowerCase() === n.toLowerCase());
     return dup ? 'MATRIX.ATTRIBUTE.NAME_DUPLICATE' : null;
   });
 
   readonly codeError = computed<string | null>(() => {
-    const c = this.newCode().trim();
+    const c = normalizeName(this.newCode());
     if (!c) return null;
-    const dup = this.attrs().some((a) => a.code.toLowerCase() === c.toLowerCase());
+    const dup = this.attrs().some((a) => normalizeName(a.code).toLowerCase() === c.toLowerCase());
     return dup ? 'MATRIX.ATTRIBUTE.CODE_DUPLICATE' : null;
   });
 
   readonly canAdd = computed<boolean>(() => {
-    const name = this.newName().trim();
-    const code = this.newCode().trim();
+    const name = normalizeName(this.newName());
+    const code = normalizeName(this.newCode());
     if (!name || !code) return false;
     if (this.nameError() || this.codeError()) return false;
     if (this.isColorDimension() && !this.newValue()) return false;
@@ -170,8 +171,8 @@ export class AddAttributeModalComponent {
   // ── Mutations ─────────────────────────────────────────────────────
   addCustom(): void {
     if (!this.canAdd()) return;
-    const name = this.newName().trim();
-    const code = this.newCode().trim();
+    const name = normalizeName(this.newName());
+    const code = normalizeName(this.newCode());
     const attr = emptyAttribute();
     attr.name = name;
     attr.code = code;
@@ -190,8 +191,8 @@ export class AddAttributeModalComponent {
     );
     if (preset?.id) {
       attr.id = preset.id;
-      attr.name = preset.name;
-      attr.code = preset.code;
+      attr.name = normalizeName(preset.name);
+      attr.code = normalizeName(preset.code);
     }
 
     this.attrs.update((list) => [...list, attr]);
@@ -201,12 +202,12 @@ export class AddAttributeModalComponent {
   addPreset(preset: AttributePreset): void {
     if (this.isAdded(preset.code, preset.name)) return;
     const attr = emptyAttribute();
-    attr.name = preset.name;
-    attr.code = preset.code;
+    attr.name = normalizeName(preset.name);
+    attr.code = normalizeName(preset.code);
     attr.value = preset.value;
     attr.isNew = true;
     attr.translation = emptyTranslation();
-    attr.translation.name.en = preset.name;
+    attr.translation.name.en = attr.name;
     this.attrs.update((list) => [...list, attr]);
   }
 

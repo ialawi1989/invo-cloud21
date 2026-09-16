@@ -11,6 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { ModalService } from '@shared/modal/modal.service';
+import { ToastService } from '@shared/components/toast/toast.service';
 import {
   TranslationModalComponent,
   TranslationModalData,
@@ -43,6 +44,7 @@ import {
   BulkTranslationModalComponent,
   BulkTranslationModalData,
 } from '../bulk-translation-modal/bulk-translation-modal.component';
+import { normalizeName } from '../../utils/variant-generator';
 
 const MAX_DIMENSIONS = 3;
 
@@ -70,6 +72,7 @@ import { TranslateLinkComponent } from '@shared/components/translate-link/transl
 })
 export class ManageDimensionsComponent {
   private modal = inject(ModalService);
+  private toast = inject(ToastService);
 
   /** Two-way — parent owns the array; we replace it on every mutation. */
   dimensions = model<Dimension[]>([]);
@@ -100,6 +103,20 @@ export class ManageDimensionsComponent {
     return t.includes('color');
   }
 
+  /** Case-insensitive, whitespace-normalized key for duplicate-name checks. */
+  private nameKey(value: string): string {
+    return normalizeName(value).toLowerCase();
+  }
+
+  /** True when `name` matches (case-insensitively) another dimension on the
+   *  matrix, other than the one at `excludeIndex`. */
+  private isDuplicateDimensionName(name: string, excludeIndex?: number): boolean {
+    const key = this.nameKey(name);
+    return this.dimensions().some(
+      (d, i) => i !== excludeIndex && this.nameKey(d.name) === key,
+    );
+  }
+
   // ─── Mutation helpers ─────────────────────────────────────────────────
   /** Replace the dimensions array from a mutator applied to a shallow clone,
    *  keeping change detection honest for OnPush + signal `model`. */
@@ -122,8 +139,13 @@ export class ManageDimensionsComponent {
     );
     const dim = await ref.afterClosed();
     if (!dim) return;
-    // Skip duplicates by name/id (matches legacy guard).
-    if (this.dimensions().some((d) => d.name === dim.name || d.id === dim.id)) return;
+    // Reject duplicates by id or by name (case-insensitive, whitespace
+    // normalized) — the add-dimension modal already blocks this via its own
+    // `existingNames` check, but re-guard here for any caller that bypasses it.
+    if (this.dimensions().some((d) => d.id === dim.id) || this.isDuplicateDimensionName(dim.name)) {
+      this.toast.error('DIMENSIONS.FORM.NAME_DUPLICATE');
+      return;
+    }
     this.update((draft) => draft.push(dim));
   }
 
@@ -135,13 +157,19 @@ export class ManageDimensionsComponent {
     );
     const picked = await ref.afterClosed();
     if (!picked?.length) return;
+    let skippedDuplicate = false;
     this.update((draft) => {
       for (const dim of picked) {
         if (draft.length >= MAX_DIMENSIONS) break;
-        if (draft.some((d) => d.name === dim.name || d.id === dim.id)) continue;
+        const key = this.nameKey(dim.name);
+        if (draft.some((d) => d.id === dim.id || this.nameKey(d.name) === key)) {
+          skippedDuplicate = true;
+          continue;
+        }
         draft.push(dim);
       }
     });
+    if (skippedDuplicate) this.toast.error('DIMENSIONS.FORM.NAME_DUPLICATE');
   }
 
   removeDimension(index: number): void {
@@ -186,12 +214,21 @@ export class ManageDimensionsComponent {
     const initial = dim.translation?.name ?? { en: dim.name, ar: '' };
     const result = await this.openTranslationModal({ ...initial, en: initial.en || dim.name }, dim.name);
     if (!result) return;
+    // Trim the English name coming back from the dialog, then reject it if it
+    // now collides (case-insensitively) with another dimension already on the
+    // matrix — keep the previous name/translation as-is rather than silently
+    // creating two dimensions with the same effective name.
+    const trimmedName = normalizeName(result.en);
+    if (this.isDuplicateDimensionName(trimmedName, index)) {
+      this.toast.error('DIMENSIONS.FORM.NAME_DUPLICATE');
+      return;
+    }
     this.update((draft) => {
       const t = draft[index].translation ?? emptyTranslation();
       draft[index] = {
         ...draft[index],
-        name: result.en,
-        translation: { ...t, name: { ...result } },
+        name: trimmedName,
+        translation: { ...t, name: { ...result, en: trimmedName } },
       };
     }, false);
   }
@@ -201,13 +238,14 @@ export class ManageDimensionsComponent {
     const initial = attr.translation?.name ?? { en: attr.name, ar: '' };
     const result = await this.openTranslationModal({ ...initial, en: initial.en || attr.name }, attr.name);
     if (!result) return;
+    const trimmedName = normalizeName(result.en);
     this.update((draft) => {
       const attrs = [...draft[dimIndex].attributes];
       const t = attrs[attrIndex].translation ?? emptyTranslation();
       attrs[attrIndex] = {
         ...attrs[attrIndex],
-        name: result.en,
-        translation: { ...t, name: { ...result } },
+        name: trimmedName,
+        translation: { ...t, name: { ...result, en: trimmedName } },
       };
       draft[dimIndex] = { ...draft[dimIndex], attributes: attrs };
     }, false);

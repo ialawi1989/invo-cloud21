@@ -25,6 +25,7 @@ import {
   emptyDimension,
   emptyTranslation,
 } from '../../services/matrix-item.types';
+import { normalizeName } from '../../utils/variant-generator';
 
 export interface AddDimensionModalData {
   existingNames: string[];
@@ -56,10 +57,11 @@ export class AddDimensionModalComponent {
   private modalRef = inject<ModalRef<Dimension | null>>(MODAL_REF);
   private data = inject<AddDimensionModalData>(MODAL_DATA) ?? { existingNames: [] };
 
-  /** Lowercased set of names already on the matrix — rejects duplicates and
-   *  hides already-added predefined suggestions. */
+  /** Lowercased, whitespace-normalized set of names already on the matrix —
+   *  rejects duplicates (case-insensitively) and hides already-added
+   *  predefined suggestions. */
   private takenNames = new Set(
-    (this.data.existingNames ?? []).map((n) => n.trim().toLowerCase()),
+    (this.data.existingNames ?? []).map((n) => normalizeName(n).toLowerCase()),
   );
 
   // ── Form state ────────────────────────────────────────────────────
@@ -78,14 +80,14 @@ export class AddDimensionModalComponent {
   );
 
   readonly nameError = computed<string | null>(() => {
-    const n = this.name().trim();
+    const n = normalizeName(this.name());
     if (!n) return null;
     if (this.takenNames.has(n.toLowerCase())) return 'DIMENSIONS.FORM.NAME_DUPLICATE';
     return null;
   });
 
   readonly canConfirm = computed<boolean>(
-    () => !!this.name().trim() && !this.nameError(),
+    () => !!normalizeName(this.name()) && !this.nameError(),
   );
 
   constructor() {
@@ -100,7 +102,7 @@ export class AddDimensionModalComponent {
   // ── Close ─────────────────────────────────────────────────────────
   confirm(): void {
     if (!this.canConfirm()) return;
-    const name = this.name().trim();
+    const name = normalizeName(this.name());
     const dim = emptyDimension();
     dim.name = name;
     dim.type = name.toLowerCase().replace(/\s+/g, '');

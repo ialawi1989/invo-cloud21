@@ -87,6 +87,34 @@ export class CustomizerService {
     this.syncToPreview();
   }
 
+  /** Bulk-replace the whole component list — e.g. applying a homepage
+   *  template. Unlike calling `addComponent` per item, this keeps each
+   *  incoming component's own `settings` (fresh ids are still minted so a
+   *  re-applied template never collides with itself) and only touches
+   *  history/preview once instead of once per component.
+   *
+   *  Templates only specify the settings they care about (e.g. just
+   *  `title`/`subtitle`), so each component's own defaults are merged in
+   *  underneath — otherwise fields the settings form/renderer expects would
+   *  come through `undefined` for anything the template didn't set. */
+  replaceComponents(components: PageComponent[]): void {
+    const fresh = components.map((c, i) => {
+      const definition = COMPONENT_LIBRARY.find(d => d.type === c.type);
+      return {
+        ...c,
+        id: generateId(),
+        order: i,
+        settings: { ...(definition?.defaultSettings ?? {}), ...c.settings },
+      };
+    });
+
+    this._components.set(fresh);
+    this._selectedComponentId.set(null);
+    this._hasUnsavedChanges.set(true);
+    this.addToHistory();
+    this.syncToPreview();
+  }
+
   removeComponent(id: string): void {
     const components = this._components().filter(c => c.id !== id);
     // Reorder

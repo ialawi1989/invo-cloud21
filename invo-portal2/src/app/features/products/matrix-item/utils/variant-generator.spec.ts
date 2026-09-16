@@ -5,6 +5,7 @@ import {
   regenerateBarcodesAndSkus,
   buildBarcodeComparison,
   allDimensionsHaveAttributes,
+  normalizeName,
 } from './variant-generator';
 import {
   Dimension,
@@ -41,7 +42,7 @@ describe('generateVariants', () => {
 
     expect(out).toHaveLength(4);
     const first = out[0];
-    expect(first.name).toBe('Tee Red Small ');
+    expect(first.name).toBe('Tee Red Small');
     expect(first.barcode).toBe('100REDSML');
     expect(first.sku).toBe('100_RED_SML');
     expect(first.attribute1).toBe('Red');
@@ -117,6 +118,21 @@ describe('generateVariants', () => {
     expect(blue.branchProduct[0].onHand).toBe(0);
   });
 
+  it('collapses stray whitespace in the matrix and attribute names so the generated name has no double/trailing spaces', () => {
+    const out = generateVariants({
+      matrixName: '  newMatrixTesting  ',
+      matrixBarcode: '1',
+      unitCost: 0,
+      dimensions: [dim('Color', [{ name: ' Red  ', code: 'RED' }])],
+      branches,
+      previous: [],
+    });
+    expect(out).toHaveLength(1);
+    expect(out[0].name).toBe('newMatrixTesting Red');
+    expect(out[0].name).not.toMatch(/ {2}/);
+    expect(out[0].name).not.toMatch(/^ | $/);
+  });
+
   it('returns empty for zero dimensions', () => {
     expect(
       generateVariants({
@@ -155,6 +171,16 @@ describe('buildBarcodeComparison', () => {
       oldBarcode: '100RED', newBarcode: '200RED',
       oldSku: '100_RED', newSku: '200_RED',
     });
+  });
+});
+
+describe('normalizeName', () => {
+  it('collapses repeated internal whitespace and trims the ends', () => {
+    expect(normalizeName('  Red   Small  ')).toBe('Red Small');
+  });
+  it('coerces null/undefined to an empty string', () => {
+    expect(normalizeName(null)).toBe('');
+    expect(normalizeName(undefined)).toBe('');
   });
 });
 

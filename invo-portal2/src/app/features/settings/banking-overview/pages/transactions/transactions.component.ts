@@ -9,7 +9,6 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -25,6 +24,8 @@ import type {
 } from '@shared/components/list-page/interfaces/list-page.types';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
+import type { DateRange } from '@shared/components/datepicker/date-picker.types';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 
@@ -47,7 +48,6 @@ type ReconcileFilter = 'all' | 'reconciled' | 'unreconciled';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     RouterModule,
     TranslateModule,
     MycurrencyPipe,
@@ -55,6 +55,7 @@ type ReconcileFilter = 'all' | 'reconciled' | 'unreconciled';
     ListCellTemplateDirective,
     SegmentedToggleComponent,
     SearchDropdownComponent,
+    DatePickerComponent,
     BreadcrumbsComponent,
     AccountHeaderComponent,
   ],
@@ -76,8 +77,7 @@ export class TransactionsComponent implements OnInit {
   accountName = signal<string>('');
 
   statusFilter = signal<ReconcileFilter>('all');
-  fromDate     = signal<string | null>(null);
-  toDate       = signal<string | null>(null);
+  dateRange    = signal<DateRange | null>(null);
   branches     = signal<BranchOption[]>([]);
   branchId     = signal<string | null>(null);
 
@@ -153,8 +153,18 @@ export class TransactionsComponent implements OnInit {
     this.listPage?.refresh();
   }
 
-  onDateChange(): void {
+  onDateRangeChange(value: DateRange | Date | null): void {
+    // `mode="range"` always yields a DateRange (or null); the union is only
+    // there because DatePickerComponent's output type isn't mode-narrowed.
+    this.dateRange.set(value && !(value instanceof Date) ? value : null);
     this.listPage?.refresh();
+  }
+
+  /** `yyyy-MM-dd`, local calendar date (not UTC) so day boundaries match
+   *  what the user picked regardless of timezone offset. */
+  private toIsoDate(d: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 
   onBranchChange(option: BranchOption | BranchOption[] | null): void {
@@ -165,11 +175,12 @@ export class TransactionsComponent implements OnInit {
 
   loadTransactions = async (params: ListQueryParams): Promise<ListResponse<ReconciliationTransaction>> => {
     const status = this.statusFilter();
+    const range  = this.dateRange();
     const res = await this.service.getTransactions({
       accountId:     this.accountId(),
       branchId:      this.branchId(),
-      fromDate:      this.fromDate(),
-      toDate:        this.toDate(),
+      fromDate:      range?.start ? this.toIsoDate(range.start) : null,
+      toDate:        range?.end   ? this.toIsoDate(range.end)   : null,
       reconcile:     status === 'all' ? undefined : status === 'reconciled',
       sortDirection: params.sortBy?.sortDirection === 'asc' ? 'ASC' : 'DESC',
       page:          params.page,

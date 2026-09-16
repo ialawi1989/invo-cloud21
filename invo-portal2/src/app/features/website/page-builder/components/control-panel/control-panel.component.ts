@@ -830,9 +830,8 @@ export class ControlPanelComponent {
     this.closeThemeManager(); 
   }
   
-  onHomepageApplied(homepage: HomepageTemplate) { 
-    this.customizer.components().forEach(c => this.customizer.removeComponent(c.id)); 
-    homepage.components.forEach(c => this.customizer.addComponent(c.type)); 
-    this.closeThemeManager(); 
+  onHomepageApplied(homepage: HomepageTemplate) {
+    this.customizer.replaceComponents(homepage.components);
+    this.closeThemeManager();
   }
 }

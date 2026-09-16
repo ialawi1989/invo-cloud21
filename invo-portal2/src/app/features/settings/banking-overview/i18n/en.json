@@ -19,7 +19,8 @@
       "IN_PROGRESS": "In progress"
     },
     "FILTERS": {
-      "ALL_BRANCHES": "All branches"
+      "ALL_BRANCHES": "All branches",
+      "DATE_RANGE": "Date range"
     },
     "TRANSACTIONS": {
       "TITLE": "Transactions",
