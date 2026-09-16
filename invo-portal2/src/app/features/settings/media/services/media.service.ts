@@ -23,8 +23,41 @@ export class MediaService {
   // Configuration
   static readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
   static readonly SUPPORTED_IMAGE_TYPES = [
-    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'
+    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+    'image/heic', 'image/heif'
   ];
+
+  /**
+   * A failure reason worth showing next to the file, instead of a bare
+   * "Upload failed" for everything. Matters most for failures that only
+   * appear on some devices — a photo large enough to pass client-side
+   * checks but refused by the server, or a mobile connection dropping
+   * mid-upload.
+   */
+  private describeUploadFailure(err: any): string {
+    const status = err?.status;
+    const serverMessage = err?.error?.message || err?.error?.error || err?.message;
+
+    if (status === 413) return 'File is too large for the server to accept';
+    if (status === 415) return 'The server rejected this file type';
+    if (status === 0) return 'Connection interrupted before the upload finished';
+
+    return status ? `${serverMessage || 'Upload failed'} (HTTP ${status})` : (serverMessage || 'Upload failed');
+  }
+
+  /** MIME type → extension, for files whose name carries no usable one. */
+  private static readonly MIME_EXTENSIONS: Record<string, string> = {
+    'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/png': 'png',
+    'image/gif': 'gif', 'image/webp': 'webp', 'image/svg+xml': 'svg',
+    'image/heic': 'heic', 'image/heif': 'heif',
+    'application/pdf': 'pdf',
+    'application/msword': 'doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+    'application/vnd.ms-excel': 'xls',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+    'application/vnd.ms-powerpoint': 'ppt',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+  };
   static readonly SUPPORTED_DOCUMENT_TYPES = [
     'application/pdf',
     'application/msword',
@@ -127,12 +160,13 @@ export class MediaService {
   }
 
   private async executeUpload(file: File, uploadId: string): Promise<IMediaUploadResult> {
-    const extension = this.extractExtension(file.name);
+    const extension = this.getFileExtension(file);
     const category = this.resolveCategory(file.type, extension);
+    const uploadName = this.getUploadFileName(file);
 
     const formData = new FormData();
-    formData.append('file', file, file.name);
-    formData.append('name', file.name);
+    formData.append('file', file, uploadName);
+    formData.append('name', uploadName);
     formData.append('size', file.size.toString());
     formData.append('type', file.type);
     formData.append('extension', extension);
@@ -147,8 +181,7 @@ export class MediaService {
         this.http.post<any>(`${this.baseUrl}media/importMedia`, formData)
       );
     } catch (httpError: any) {
-      const status = httpError?.status || 'unknown';
-      const msg = httpError?.error?.message || httpError?.message || `Server error (${status})`;
+      const msg = this.describeUploadFailure(httpError);
       return {
         success: false,
         error: msg,
@@ -420,9 +453,44 @@ export class MediaService {
     return `${date.getFullYear()}_${date.getMonth() + 1}_${date.getDate()}`;
   }
 
-  extractExtension(filename: string): string {
-    const dotIndex = filename.lastIndexOf('.');
-    return dotIndex !== -1 ? filename.slice(dotIndex + 1) : '';
+  /**
+   * The file's extension, from its name where there is one and from its MIME
+   * type otherwise.
+   *
+   * `name.split('.').pop()` — the naive approach — returns an empty string (or the
+   * whole filename) when the name contains no dot. iOS hands over camera-roll
+   * photos named like `045886A7-FD68-476C-9C0A-1B2C3D4E5F60`, with no
+   * extension, so that produced a blank `extension` field server-side and
+   * rejected/mismatched file-type handling — a problem specific to files
+   * picked on iOS, since the same photo on Android/desktop arrives as
+   * `IMG_1234.jpg` and works fine.
+   */
+  getFileExtension(file: { name?: string; type?: string }): string {
+    const name = file.name || '';
+    const dot = name.lastIndexOf('.');
+    const fromName = dot > 0 ? name.slice(dot + 1).toLowerCase() : '';
+
+    // Anything longer than a real extension is a filename fragment, not a suffix.
+    if (/^[a-z0-9]{1,5}$/.test(fromName)) return fromName;
+
+    return MediaService.MIME_EXTENSIONS[(file.type || '').toLowerCase()] || fromName;
+  }
+
+  /**
+   * The filename to actually hand the server. An extension-less name (see
+   * `getFileExtension`) confuses server-side handling that infers file type
+   * from the uploaded filename, not just the separate `extension` field —
+   * this appends the MIME-resolved extension when the name doesn't already
+   * carry a usable one.
+   */
+  private getUploadFileName(file: File): string {
+    const name = file.name || 'upload';
+    const dot = name.lastIndexOf('.');
+    const hasExtension = dot > 0 && /^[a-z0-9]{1,5}$/i.test(name.slice(dot + 1));
+    if (hasExtension) return name;
+
+    const extension = this.getFileExtension(file);
+    return extension ? `${name}.${extension}` : name;
   }
 
   getMimeTypeFromExtension(extension: string): string {

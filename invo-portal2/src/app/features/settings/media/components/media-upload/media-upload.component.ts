@@ -224,7 +224,7 @@ export class MediaUploadComponent implements OnInit, OnDestroy {
    * Outline SVGs for each category are inline in the template.
    */
   getFileIconKind(file: File): 'pdf' | 'doc' | 'sheet' | 'archive' | 'file' {
-    const ext = this.mediaService.extractExtension(file.name).toLowerCase();
+    const ext = this.mediaService.getFileExtension(file).toLowerCase();
     if (ext === 'pdf') return 'pdf';
     if (['doc', 'docx', 'rtf', 'txt'].includes(ext)) return 'doc';
     if (['xls', 'xlsx', 'ppt', 'pptx', 'csv'].includes(ext)) return 'sheet';
