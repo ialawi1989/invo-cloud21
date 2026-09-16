@@ -121,6 +121,66 @@
   > p { margin: 0; font-size: 13px; }
 }
 
+// Row-checkbox + "select all" + bulk "Increase by" tool, shown
+// above the row list once at least one row exists. The bulk toolbar
+// itself only renders once at least one row is checked, so it reads
+// as a distinct, momentary control bar rather than blending into
+// the list above it.
+.lines-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #f1f5f9;
+
+  &__select-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #475569;
+    cursor: pointer;
+    > input { margin: 0; }
+  }
+}
+
+.bulk-price-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(38, 145, 164, 0.08);
+  border: 1px solid rgba(38, 145, 164, 0.25);
+  border-radius: 8px;
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0e7490;
+    white-space: nowrap;
+  }
+  &__dropdown {
+    min-width: 90px;
+  }
+  &__dropdown--operand {
+    min-width: 60px;
+  }
+  &__amount {
+    width: 80px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 12px;
+    background: #fff;
+    &:focus {
+      outline: 0;
+      border-color: var(--color-brand-400, #7dd3fc);
+    }
+  }
+}
+
 .lines {
   list-style: none;
   margin: 0;
@@ -130,12 +190,18 @@
 
   &__row {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: auto 1fr auto auto;
     align-items: center;
     gap: 12px;
     padding: 10px 16px;
     border-bottom: 1px solid #f1f5f9;
     &:last-child { border-bottom: 0; }
+  }
+
+  &__check {
+    display: inline-flex;
+    align-items: center;
+    > input { margin: 0; cursor: pointer; }
   }
 
   &__main {

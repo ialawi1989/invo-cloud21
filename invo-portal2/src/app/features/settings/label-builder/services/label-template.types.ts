@@ -184,6 +184,21 @@ export class ZplBarcode implements LabelElement {
   data = 'Barcode';
   height = 40;
   showValue = false;
+  /** Barcode symbology — drives the jsbarcode-based preview/PNG
+   *  render (`BarcodePreviewComponent`, `png-export.ts`) AND its
+   *  per-format value validation. Mirrors the legacy `barcode.ts`
+   *  field one-for-one (same default) so existing templates without
+   *  it fall back to CODE128 exactly like before.
+   *
+   *  NOTE — matches legacy scope exactly: this only changes what the
+   *  *browser* renders (editor canvas, PNG export, print preview).
+   *  `toLABEL()` below is untouched and always emits CODE128 ZPL
+   *  (`^B3N,N`) regardless of `format` — the legacy port never wired
+   *  the format selector into the ZPL emitter either, so an actual
+   *  Zebra printer still prints CODE128 for every barcode element.
+   *  Wiring per-format ZPL commands (`^BE`, `^BU`, `^B3`, …) is a
+   *  separate, larger change and out of scope here. */
+  format = 'CODE128';
   position: Position = { x: 0, y: 0 };
   locked = false;
   hidden = false;
@@ -200,6 +215,86 @@ export class ZplBarcode implements LabelElement {
     // 4th param — `Y` to show, `N` to hide.
     const showLine = this.showValue ? 'Y' : 'N';
     return `^FO${this.position.x},${this.position.y}^BY1^B3N,N,${this.height},${showLine}^FD${this.data}^FS`;
+  }
+}
+
+/** Barcode symbologies the browser-side renderer (`jsbarcode`, used
+ *  by both `BarcodePreviewComponent` and `png-export.ts`) supports.
+ *  Every value here is a real jsbarcode format string — nothing is
+ *  listed that would silently render blank. `note` is a short usage
+ *  hint shown under the format picker in the inspector. */
+export const BARCODE_FORMATS: ReadonlyArray<{ value: string; label: string; note: string }> = [
+  { value: 'CODE128',  label: 'CODE128',   note: 'General purpose. Accepts letters, numbers and symbols. Good default choice.' },
+  { value: 'CODE128A', label: 'CODE128A',  note: 'CODE128 subset A. Uppercase letters, numbers and control characters only.' },
+  { value: 'CODE128B', label: 'CODE128B',  note: 'CODE128 subset B. Upper/lowercase letters, numbers and punctuation.' },
+  { value: 'CODE128C', label: 'CODE128C',  note: 'CODE128 subset C. Numbers only, in pairs (even digit count). Most compact for numeric data.' },
+  { value: 'EAN13',    label: 'EAN13',     note: 'Standard 13-digit retail product barcode (International Article Number).' },
+  { value: 'UPC',      label: 'UPC',       note: '12-digit retail product barcode, common in the US and Canada.' },
+  { value: 'EAN8',     label: 'EAN8',      note: 'Shortened 8-digit EAN barcode, used on small packages.' },
+  { value: 'EAN5',     label: 'EAN5',      note: '5-digit supplemental barcode, e.g. for book/publication pricing.' },
+  { value: 'EAN2',     label: 'EAN2',      note: '2-digit supplemental barcode, e.g. for magazine issue numbers.' },
+  { value: 'CODE39',   label: 'CODE39',    note: 'Letters, numbers and some symbols. Common in logistics and government use.' },
+  { value: 'ITF',      label: 'ITF',       note: 'Interleaved 2 of 5. Numbers only, must have an even number of digits.' },
+  { value: 'ITF14',    label: 'ITF14',     note: '14-digit ITF barcode used on shipping cartons and pallets.' },
+  { value: 'MSI',      label: 'MSI',       note: 'Numeric barcode commonly used for inventory and warehouse shelf labels.' },
+  { value: 'MSI10',    label: 'MSI10',     note: 'MSI barcode with a Modulo-10 check digit.' },
+  { value: 'MSI11',    label: 'MSI11',     note: 'MSI barcode with a Modulo-11 check digit.' },
+  { value: 'MSI1010',  label: 'MSI1010',   note: 'MSI barcode with two Modulo-10 check digits.' },
+  { value: 'MSI1110',  label: 'MSI1110',   note: 'MSI barcode with Modulo-11 then Modulo-10 check digits.' },
+  { value: 'pharmacode', label: 'Pharmacode', note: 'Numeric barcode used for pharmaceutical packaging control.' },
+  { value: 'codabar',  label: 'Codabar',   note: 'Numbers and a few symbols. Common in libraries and blood banks.' },
+];
+
+/**
+ * Whether `value` is well-formed enough for `format` to render
+ * something meaningful via jsbarcode, instead of a broken/blank
+ * barcode. Ported 1:1 from the legacy `label-builder.component.ts` /
+ * `label-renderer.service.ts` validators (same regexes, same format
+ * set) — used by both the live canvas preview and the PNG/print
+ * export path so a mis-formatted value shows the same "invalid"
+ * placeholder everywhere instead of a silently blank barcode.
+ */
+export function isBarcodeValueValid(value: string | undefined | null, format?: string): boolean {
+  if (value == null || String(value).trim() === '') return false;
+
+  const val = String(value).trim();
+  const fmt = (format || '').toString().toUpperCase();
+
+  switch (fmt) {
+    case 'EAN13':
+      return /^\d{12,13}$/.test(val);
+    case 'EAN8':
+      return /^\d{7,8}$/.test(val);
+    case 'EAN5':
+      return /^\d{5}$/.test(val);
+    case 'EAN2':
+      return /^\d{2}$/.test(val);
+    case 'UPC':
+      return /^\d{11,12}$/.test(val);
+    case 'CODE128C':
+      return /^\d+$/.test(val) && val.length % 2 === 0;
+    case 'ITF':
+      return /^\d+$/.test(val) && val.length % 2 === 0;
+    case 'ITF14':
+      return /^\d{14}$/.test(val);
+    case 'MSI':
+    case 'MSI10':
+    case 'MSI11':
+    case 'MSI1010':
+    case 'MSI1110':
+    case 'PHARMACODE':
+      return /^\d+$/.test(val);
+    case 'CODABAR':
+      return /^[A-D0-9\-$:/.+]+$/i.test(val);
+    case 'CODE39':
+      return /^[A-Z0-9\-. $/+%]+$/.test(val);
+    case 'CODE128':
+    case 'CODE128A':
+    case 'CODE128B':
+    default:
+      // General purpose formats accept most characters; empty was
+      // already ruled out above.
+      return true;
   }
 }
 

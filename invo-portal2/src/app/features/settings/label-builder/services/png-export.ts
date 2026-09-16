@@ -31,6 +31,7 @@ import {
   ZplRectangle,
   ZplTextBox,
   ZplVerticalLine,
+  isBarcodeValueValid,
 } from './label-template.types';
 import { LabelDataMap, resolveTokens } from './token-resolver';
 
@@ -46,6 +47,32 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
     img.onerror = () => resolve(null);
     img.src = src;
   });
+}
+
+/** Draws a "BARCODE" placeholder box — used instead of a blank or
+ *  broken barcode whenever the resolved value doesn't fit the
+ *  element's chosen symbology. Mirrors the legacy
+ *  `drawInvalidBarcodePlaceholder` treatment (thin border, centered
+ *  spaced-out label) so exported PNGs and print previews read the
+ *  same as the live editor canvas. */
+function drawInvalidBarcodePlaceholder(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  el: ZplBarcode,
+): void {
+  const width  = 120;
+  const height = el.height;
+  ctx.strokeStyle = '#dddddd';
+  ctx.lineWidth   = 1;
+  ctx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
+  ctx.fillStyle = '#0f172a';
+  ctx.font      = '11px sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign    = 'center';
+  ctx.fillText('B A R C O D E', x + width / 2, y + height / 2);
+  ctx.textAlign    = 'left';
+  ctx.textBaseline = 'alphabetic';
 }
 
 async function renderElement(
@@ -82,11 +109,23 @@ async function renderElement(
 
     case 'Barcode': {
       const e = el as ZplBarcode;
+      const format = e.format || 'CODE128';
+      const value = resolve(String(e.data || '0000')) || '0000';
+
+      // A value that doesn't fit the chosen symbology (wrong digit
+      // count, disallowed characters, …) draws the same gray
+      // "BARCODE" placeholder the legacy `label-renderer.service.ts`
+      // used, instead of a blank/broken barcode in the exported PNG
+      // or the print-label preview.
+      if (!isBarcodeValueValid(value, format)) {
+        drawInvalidBarcodePlaceholder(ctx, x, y, e);
+        return;
+      }
+
       const scratch = document.createElement('canvas');
       try {
-        const value = resolve(String(e.data || '0000')) || '0000';
         JsBarcode(scratch, value, {
-          format:        'CODE128',
+          format,
           height:        e.height,
           margin:        0,
           displayValue:  !!e.showValue,
@@ -96,7 +135,10 @@ async function renderElement(
         });
         ctx.drawImage(scratch, x, y);
       } catch {
-        // Bad input — skip the draw, the export keeps going.
+        // jsbarcode threw even though the value passed our own shape
+        // check — fall back to the placeholder rather than leaving a
+        // gap in the exported label.
+        drawInvalidBarcodePlaceholder(ctx, x, y, e);
       }
       return;
     }

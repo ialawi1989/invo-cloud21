@@ -45,6 +45,7 @@ import { ProductCrudService } from '@features/products/services/product-crud.ser
 
 import { LabelBuilderService } from '../../services/label-builder.service';
 import {
+  BARCODE_FORMATS,
   DPI_PRESETS,
   generateZpl,
   LabelElement,
@@ -568,6 +569,36 @@ export class LabelBuilderFormComponent implements OnInit, CanLeaveComponent {
    *  dropdown carries. Recomputes when `template()` changes. */
   dpiSelected = computed(() =>
     this.dpiItems.find(o => o.id === this.template().dpi) ?? null);
+
+  // ─── Barcode-format dropdown wiring (app-search-dropdown) ─────────
+  // Every jsbarcode symbology the browser-side renderer supports
+  // (`BarcodePreviewComponent`, `png-export.ts`) — see
+  // `BARCODE_FORMATS` for the full catalog + per-format usage notes.
+  readonly barcodeFormats: { value: string; label: string; note: string }[] = [...BARCODE_FORMATS];
+  barcodeFormatDisplay = (item: { value: string; label: string }) => item?.label ?? '';
+  barcodeFormatCompare = (a: any, b: any) => (a?.value ?? a) === (b?.value ?? b);
+  /** Map the selected barcode element's `format` string onto the
+   *  dropdown's item shape. Falls back to CODE128 (index 0) so an
+   *  unrecognised/legacy value still shows a selection instead of
+   *  a blank trigger. */
+  barcodeFormatSelected = computed(() => {
+    const el = this.asBarcode(this.selectedElement());
+    if (!el) return null;
+    return this.barcodeFormats.find(f => f.value === el.format) ?? this.barcodeFormats[0];
+  });
+  /** Usage note for the currently-selected format — shown as a small
+   *  hint under the dropdown, same purpose as the legacy inspector's
+   *  `getBarcodeFormatNote()`. */
+  barcodeFormatNote = computed<string>(() => this.barcodeFormatSelected()?.note ?? '');
+  /** The dropdown's `valueChange` emits the full item object (its
+   *  `[(value)]` model always holds the raw item, not a toValue
+   *  projection) — extract `.value` before patching the element,
+   *  same pattern as `onTemplateChange` in the print-label modal. */
+  onBarcodeFormatChange(event: any): void {
+    const value = event && typeof event === 'object' ? event.value : event;
+    if (!value) return;
+    this.patchElement('format', value);
+  }
 
   /** Dummy product / invoiceLine context for the live canvas preview.
    *  Fed into `resolveTokens()` so a textbox showing `!product.name`
@@ -1850,7 +1881,7 @@ export class LabelBuilderFormComponent implements OnInit, CanLeaveComponent {
   private static readonly DEFAULT_GROUPS: Record<string, string[][]> = {
     __label__:      [['properties'], ['sample'], ['size']],
     Textbox:        [['content'], ['style'], ['transform']],
-    Barcode:        [['content'], ['size'], ['options'], ['transform']],
+    Barcode:        [['content'], ['format'], ['size'], ['options'], ['transform']],
     QrCode:         [['content'], ['size'], ['transform']],
     Rectangle:      [['size'], ['transform']],
     Circle:         [['size'], ['transform']],
@@ -1873,6 +1904,7 @@ export class LabelBuilderFormComponent implements OnInit, CanLeaveComponent {
   readonly slotTitleKey: Record<string, string> = {
     content:    'LABEL_BUILDER.FORM.INSPECTOR.CONTENT',
     style:      'LABEL_BUILDER.FORM.INSPECTOR.STYLE',
+    format:     'LABEL_BUILDER.FORM.INSPECTOR.FORMAT',
     size:       'LABEL_BUILDER.FORM.INSPECTOR.SIZE',
     options:    'LABEL_BUILDER.FORM.INSPECTOR.OPTIONS',
     source:     'LABEL_BUILDER.FORM.INSPECTOR.SOURCE',

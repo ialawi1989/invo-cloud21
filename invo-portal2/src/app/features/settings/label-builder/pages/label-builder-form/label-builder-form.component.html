@@ -209,7 +209,8 @@
                 <app-barcode-preview
                   [data]="resolve(asBarcode(el)!.data)"
                   [height]="asBarcode(el)!.height"
-                  [showValue]="asBarcode(el)!.showValue"/>
+                  [showValue]="asBarcode(el)!.showValue"
+                  [format]="asBarcode(el)!.format"/>
               }
               @case ('QrCode') {
                 <app-qrcode-preview
@@ -584,6 +585,27 @@
                             [ngModelOptions]="{ standalone: true }"/>
                         </label>
                       }
+                    }
+                  }
+                }
+
+                <!-- ─── Format slot (Barcode symbology) ─────────────── -->
+                @case ('format') {
+                  @if (asBarcode(selectedElement()); as b) {
+                    <label class="lbf-field">
+                      <span>{{ 'LABEL_BUILDER.FORM.INSPECTOR.BARCODE_FORMAT' | translate }}</span>
+                      <app-search-dropdown
+                        class="lbf-field__dropdown"
+                        [items]="barcodeFormats"
+                        [displayWith]="barcodeFormatDisplay"
+                        [compareWith]="barcodeFormatCompare"
+                        [clearable]="false"
+                        [searchable]="true"
+                        [value]="barcodeFormatSelected()"
+                        (valueChange)="onBarcodeFormatChange($event)"/>
+                    </label>
+                    @if (barcodeFormatNote()) {
+                      <p class="lbf-field-note">{{ barcodeFormatNote() }}</p>
                     }
                   }
                 }

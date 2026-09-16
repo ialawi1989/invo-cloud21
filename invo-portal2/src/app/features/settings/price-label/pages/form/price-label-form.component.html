@@ -61,9 +61,57 @@
           </button>
         </div>
       } @else {
+        <div class="lines-toolbar">
+          <label class="lines-toolbar__select-all">
+            <input type="checkbox"
+              [checked]="allProductsChecked()"
+              (change)="toggleSelectAllProducts($any($event.target).checked)"/>
+            <span>{{ 'PRICE_LABEL.FORM.SELECTED_COUNT' | translate: { count: checkedProductCount() } }}</span>
+          </label>
+
+          @if (checkedProductCount() > 0) {
+            <div class="bulk-price-toolbar">
+              <span class="bulk-price-toolbar__label">{{ 'PRICE_LABEL.FORM.INCREASE_BY' | translate }}</span>
+              <app-search-dropdown
+                [items]="operandItems"
+                [value]="operandDropdownValue('product')"
+                (valueChange)="setOperand('product', $event)"
+                [displayWith]="displayDropdownItem"
+                [compareWith]="compareDropdownItem"
+                [searchable]="false"
+                [clearable]="false"
+                triggerClass="bulk-price-toolbar__dropdown bulk-price-toolbar__dropdown--operand"/>
+              <input type="number" min="0" step="0.001"
+                class="bulk-price-toolbar__amount"
+                [placeholder]="'PRICE_LABEL.FORM.VALUE' | translate"
+                [ngModel]="productPriceIncreaseBy()"
+                (ngModelChange)="productPriceIncreaseBy.set($event === '' ? null : +$event)"/>
+              <app-search-dropdown
+                [items]="modeItems"
+                [value]="modeDropdownValue('product')"
+                (valueChange)="setMode('product', $event)"
+                [displayWith]="displayDropdownItem"
+                [compareWith]="compareDropdownItem"
+                [searchable]="false"
+                [clearable]="false"
+                triggerClass="bulk-price-toolbar__dropdown"/>
+              <button type="button" class="btn btn-primary btn-sm"
+                [disabled]="productPriceIncreaseBy() == null"
+                (click)="applyBulkPriceChange('product')">
+                {{ 'COMMON.APPLY' | translate }}
+              </button>
+            </div>
+          }
+        </div>
+
         <ul class="lines">
           @for (line of label().productsPrices; track trackLine($index, line)) {
             <li class="lines__row">
+              <label class="lines__check">
+                <input type="checkbox"
+                  [checked]="isProductChecked(line.productId)"
+                  (change)="toggleProductChecked(line.productId, $any($event.target).checked)"/>
+              </label>
               <div class="lines__main">
                 <strong class="lines__name">{{ line.productName || '—' }}</strong>
                 <div class="lines__chips">
@@ -126,9 +174,57 @@
           </button>
         </div>
       } @else {
+        <div class="lines-toolbar">
+          <label class="lines-toolbar__select-all">
+            <input type="checkbox"
+              [checked]="allOptionsChecked()"
+              (change)="toggleSelectAllOptions($any($event.target).checked)"/>
+            <span>{{ 'PRICE_LABEL.FORM.SELECTED_COUNT' | translate: { count: checkedOptionCount() } }}</span>
+          </label>
+
+          @if (checkedOptionCount() > 0) {
+            <div class="bulk-price-toolbar">
+              <span class="bulk-price-toolbar__label">{{ 'PRICE_LABEL.FORM.INCREASE_BY' | translate }}</span>
+              <app-search-dropdown
+                [items]="operandItems"
+                [value]="operandDropdownValue('option')"
+                (valueChange)="setOperand('option', $event)"
+                [displayWith]="displayDropdownItem"
+                [compareWith]="compareDropdownItem"
+                [searchable]="false"
+                [clearable]="false"
+                triggerClass="bulk-price-toolbar__dropdown bulk-price-toolbar__dropdown--operand"/>
+              <input type="number" min="0" step="0.001"
+                class="bulk-price-toolbar__amount"
+                [placeholder]="'PRICE_LABEL.FORM.VALUE' | translate"
+                [ngModel]="optionPriceIncreaseBy()"
+                (ngModelChange)="optionPriceIncreaseBy.set($event === '' ? null : +$event)"/>
+              <app-search-dropdown
+                [items]="modeItems"
+                [value]="modeDropdownValue('option')"
+                (valueChange)="setMode('option', $event)"
+                [displayWith]="displayDropdownItem"
+                [compareWith]="compareDropdownItem"
+                [searchable]="false"
+                [clearable]="false"
+                triggerClass="bulk-price-toolbar__dropdown"/>
+              <button type="button" class="btn btn-primary btn-sm"
+                [disabled]="optionPriceIncreaseBy() == null"
+                (click)="applyBulkPriceChange('option')">
+                {{ 'COMMON.APPLY' | translate }}
+              </button>
+            </div>
+          }
+        </div>
+
         <ul class="lines">
           @for (opt of label().optionsPrices; track trackOption($index, opt)) {
             <li class="lines__row">
+              <label class="lines__check">
+                <input type="checkbox"
+                  [checked]="isOptionChecked(opt.optionId)"
+                  (change)="toggleOptionChecked(opt.optionId, $any($event.target).checked)"/>
+              </label>
               <div class="lines__main">
                 <strong class="lines__name">{{ opt.name || '—' }}</strong>
                 @if (opt.defaultPrice != null) {

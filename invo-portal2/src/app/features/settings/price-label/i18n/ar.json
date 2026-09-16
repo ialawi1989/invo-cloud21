@@ -25,7 +25,14 @@
       "OPTIONS":           "الخيارات",
       "PICK_OPTIONS":      "اختيار خيارات",
       "OPTIONS_EMPTY_HINT":"لا توجد خيارات بعد — اختر خيارات القائمة التي تريد استبدال سعرها.",
-      "DEFAULT_PRICE":     "الافتراضي"
+      "DEFAULT_PRICE":     "الافتراضي",
+      "SELECTED_COUNT":    "{{count}} محدد",
+      "INCREASE_BY":       "زيادة بمقدار",
+      "INCREASE":          "+",
+      "DECREASE":          "−",
+      "AMOUNT":            "مبلغ",
+      "PERCENT":           "%",
+      "VALUE":             "القيمة"
     },
     "PICKER": {
       "SEARCH":         "ابحث عن المنتجات…",

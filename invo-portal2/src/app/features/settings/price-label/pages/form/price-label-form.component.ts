@@ -21,6 +21,7 @@ import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { CompanyService } from '@core/auth/company.service';
 import { getProductTypeBadgeStyle } from '../../../../products/utils/product-type-badge';
 import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -28,6 +29,7 @@ import {
   DropdownMenuBtnComponent,
   DropdownMenuBtnItem,
 } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 
 import {
   PickProductPlModalComponent,
@@ -88,6 +90,7 @@ import {
     TooltipDirective,
     DropdownMenuBtnComponent,
     MycurrencyPipe,
+    SearchDropdownComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './price-label-form.component.html',
@@ -100,6 +103,7 @@ export class PriceLabelFormComponent implements OnInit, CanLeaveComponent {
   private modal     = inject(ModalService);
   private toast     = inject(ToastService);
   private service   = inject(PriceLabelService);
+  private companyService = inject(CompanyService);
   private destroyRef = inject(DestroyRef);
 
   loading = signal<boolean>(false);
@@ -112,6 +116,154 @@ export class PriceLabelFormComponent implements OnInit, CanLeaveComponent {
   /** Hash of the loaded state — compared with the live label on
    *  navigation to drive the unsaved-changes guard. */
   private cleanSnapshot = signal<string>('');
+
+  // ─── Bulk "Increase by" tool ────────────────────────────────────
+  // Row checkboxes are tracked here (not on the line objects) so the
+  // "picked" state never round-trips to the server. Operand (+/-)
+  // and mode (amount/percent) are dropdowns rather than a typed
+  // string, so clicking Apply repeatedly can never compound into
+  // something like "+15%+12%" — each click re-applies the same,
+  // unambiguous delta to each checked row's *current* price.
+  checkedProductIds = signal<Set<string>>(new Set());
+  checkedOptionIds  = signal<Set<string>>(new Set());
+
+  productPriceOperand = signal<'+' | '-'>('+');
+  productPriceMode    = signal<'amount' | 'percent'>('amount');
+  productPriceIncreaseBy = signal<number | null>(null);
+
+  optionPriceOperand = signal<'+' | '-'>('+');
+  optionPriceMode    = signal<'amount' | 'percent'>('amount');
+  optionPriceIncreaseBy = signal<number | null>(null);
+
+  readonly operandItems: { value: '+' | '-'; label: string }[] = [
+    { value: '+', label: 'PRICE_LABEL.FORM.INCREASE' },
+    { value: '-', label: 'PRICE_LABEL.FORM.DECREASE' },
+  ];
+  readonly modeItems: { value: 'amount' | 'percent'; label: string }[] = [
+    { value: 'amount',  label: 'PRICE_LABEL.FORM.AMOUNT' },
+    { value: 'percent', label: 'PRICE_LABEL.FORM.PERCENT' },
+  ];
+  displayDropdownItem = (item: any) => this.translate.instant(item?.label ?? '');
+  compareDropdownItem = (a: any, b: any) => (a?.value ?? a) === (b?.value ?? b);
+
+  // `<app-search-dropdown>`'s `[(value)]` model always holds the full
+  // item object (not the toValue-transformed primitive), so the
+  // operand/mode signals — which store the plain '+'/'-' or
+  // 'amount'/'percent' value — are bridged through these helpers
+  // rather than bound directly to the dropdown.
+  operandDropdownValue(mode: 'product' | 'option') {
+    const current = mode === 'product' ? this.productPriceOperand() : this.optionPriceOperand();
+    return this.operandItems.find(o => o.value === current) ?? this.operandItems[0];
+  }
+  modeDropdownValue(mode: 'product' | 'option') {
+    const current = mode === 'product' ? this.productPriceMode() : this.optionPriceMode();
+    return this.modeItems.find(o => o.value === current) ?? this.modeItems[0];
+  }
+  setOperand(target: 'product' | 'option', item: any): void {
+    const value: '+' | '-' = item?.value ?? '+';
+    if (target === 'product') this.productPriceOperand.set(value);
+    else this.optionPriceOperand.set(value);
+  }
+  setMode(target: 'product' | 'option', item: any): void {
+    const value: 'amount' | 'percent' = item?.value ?? 'amount';
+    if (target === 'product') this.productPriceMode.set(value);
+    else this.optionPriceMode.set(value);
+  }
+
+  checkedProductCount = computed<number>(() => this.checkedProductIds().size);
+  checkedOptionCount  = computed<number>(() => this.checkedOptionIds().size);
+
+  isProductChecked(productId: string): boolean {
+    return this.checkedProductIds().has(productId);
+  }
+  isOptionChecked(optionId: string): boolean {
+    return this.checkedOptionIds().has(optionId);
+  }
+
+  toggleProductChecked(productId: string, checked: boolean): void {
+    this.checkedProductIds.update(prev => {
+      const next = new Set(prev);
+      if (checked) next.add(productId); else next.delete(productId);
+      return next;
+    });
+  }
+  toggleOptionChecked(optionId: string, checked: boolean): void {
+    this.checkedOptionIds.update(prev => {
+      const next = new Set(prev);
+      if (checked) next.add(optionId); else next.delete(optionId);
+      return next;
+    });
+  }
+
+  toggleSelectAllProducts(checked: boolean): void {
+    this.checkedProductIds.set(
+      checked ? new Set(this.label().productsPrices.map(p => p.productId)) : new Set(),
+    );
+  }
+  toggleSelectAllOptions(checked: boolean): void {
+    this.checkedOptionIds.set(
+      checked ? new Set(this.label().optionsPrices.map(o => o.optionId)) : new Set(),
+    );
+  }
+  allProductsChecked = computed<boolean>(() => {
+    const lines = this.label().productsPrices;
+    return lines.length > 0 && this.checkedProductCount() === lines.length;
+  });
+  allOptionsChecked = computed<boolean>(() => {
+    const lines = this.label().optionsPrices;
+    return lines.length > 0 && this.checkedOptionCount() === lines.length;
+  });
+
+  /** Rounds to the company's configured decimal places (same rule
+   *  `MycurrencyPipe` uses), so a defaulted or bulk-adjusted price
+   *  like 10 shows as 10.000 for a 3-decimal currency instead of a
+   *  bare 10. */
+  roundToCompanyDecimals(value: number): number {
+    const decimals = this.companyService.settings()?.settings?.afterDecimal ?? 3;
+    return Number((value ?? 0).toFixed(decimals));
+  }
+
+  /** Applies the "Increase by" tool to every CHECKED product/option
+   *  row at once, off each row's *current* price (or its default
+   *  price when it has none yet). Operand + mode are dropdowns
+   *  (never typed), so re-clicking Apply is always a fresh, single
+   *  delta — never compounds. */
+  applyBulkPriceChange(type: 'product' | 'option'): void {
+    const operand = type === 'product' ? this.productPriceOperand() : this.optionPriceOperand();
+    const mode    = type === 'product' ? this.productPriceMode()    : this.optionPriceMode();
+    const amount  = type === 'product' ? this.productPriceIncreaseBy() : this.optionPriceIncreaseBy();
+    if (amount == null || isNaN(amount)) return;
+
+    const isPercent = mode === 'percent';
+    const sign = operand === '-' ? -1 : 1;
+    const checkedIds = type === 'product' ? this.checkedProductIds() : this.checkedOptionIds();
+    if (checkedIds.size === 0) return;
+
+    const adjust = (base: number): number => {
+      const delta = isPercent ? base * (amount / 100) : amount;
+      return this.roundToCompanyDecimals(Math.max(0, base + sign * delta));
+    };
+
+    if (type === 'product') {
+      this.label.update(l => ({
+        ...l,
+        productsPrices: l.productsPrices.map(p =>
+          checkedIds.has(p.productId)
+            ? { ...p, price: adjust(p.price ?? p.defaultPrice ?? 0) }
+            : p,
+        ),
+      }));
+    } else {
+      this.label.update(l => ({
+        ...l,
+        optionsPrices: l.optionsPrices.map(o =>
+          checkedIds.has(o.optionId)
+            ? { ...o, price: adjust(o.price ?? o.defaultPrice ?? 0) }
+            : o,
+        ),
+      }));
+    }
+  }
 
   isExisting = computed<boolean>(() => !!this.label().id);
 
@@ -175,6 +327,12 @@ export class PriceLabelFormComponent implements OnInit, CanLeaveComponent {
       ...l,
       productsPrices: l.productsPrices.filter(p => p.productId !== productId),
     }));
+    this.checkedProductIds.update(prev => {
+      if (!prev.has(productId)) return prev;
+      const next = new Set(prev);
+      next.delete(productId);
+      return next;
+    });
   }
 
   // ─── Options handlers ───────────────────────────────────────────
@@ -193,6 +351,12 @@ export class PriceLabelFormComponent implements OnInit, CanLeaveComponent {
       ...l,
       optionsPrices: l.optionsPrices.filter(o => o.optionId !== optionId),
     }));
+    this.checkedOptionIds.update(prev => {
+      if (!prev.has(optionId)) return prev;
+      const next = new Set(prev);
+      next.delete(optionId);
+      return next;
+    });
   }
 
   // ─── Picker ─────────────────────────────────────────────────────
@@ -240,9 +404,13 @@ export class PriceLabelFormComponent implements OnInit, CanLeaveComponent {
         barcode:      p.barcode ?? prior?.barcode,
         type:         p.type    ?? prior?.type,
         defaultPrice: p.defaultPrice ?? prior?.defaultPrice,
-        // Override price priority: user's prior override > picker
-        // seed (which already considered existingPrices) > 0.
-        price:        prior?.price ?? p.price ?? 0,
+        // A row the user already has (and may have manually edited)
+        // keeps whatever price it carries. A newly picked row has no
+        // price yet — default it to the product's defaultPrice
+        // (rounded to the company's decimal places) rather than 0.
+        price: prior
+          ? prior.price
+          : this.roundToCompanyDecimals(p.defaultPrice ?? p.price ?? 0),
       };
     });
     this.label.update(l => ({ ...l, productsPrices: next }));
@@ -271,16 +439,21 @@ export class PriceLabelFormComponent implements OnInit, CanLeaveComponent {
     const existing = new Set(this.label().optionsPrices.map(o => o.optionId));
     const additions: PriceLabelOptionLine[] = picks
       .filter(p => !existing.has(p.id))
-      .map(p => ({
-        optionId:     p.id,
-        // Prefer the localised display name when the option has
-        // one — `getOptions` returns both `name` and `displayName`.
-        name:         p.displayName || p.name,
-        defaultPrice: Number(p.price ?? 0) || 0,
-        // Seed the override with the catalog price so the user
-        // lands on a sensible starting value instead of 0.
-        price:        Number(p.price ?? 0) || 0,
-      }));
+      .map(p => {
+        const defaultPrice = Number(p.price ?? 0) || 0;
+        return {
+          optionId:     p.id,
+          // Prefer the localised display name when the option has
+          // one — `getOptions` returns both `name` and `displayName`.
+          name:         p.displayName || p.name,
+          defaultPrice,
+          // Newly picked option — seed the override with the
+          // catalog price (rounded to the company's decimal
+          // places) so the user lands on a sensible starting value
+          // instead of 0.
+          price: this.roundToCompanyDecimals(defaultPrice),
+        };
+      });
     if (!additions.length) return;
     this.label.update(l => ({
       ...l,

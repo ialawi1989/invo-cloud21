@@ -948,6 +948,17 @@
   }
 }
 
+// Small usage hint shown under a field — e.g. the barcode format
+// picker's per-symbology note ("Standard 13-digit retail product
+// barcode…"). Same muted-text treatment used elsewhere in the
+// inspector.
+.lbf-field-note {
+  margin: -2px 0 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #94a3b8;
+}
+
 // Inspector form rows.
 .lbf-field {
   display: flex;

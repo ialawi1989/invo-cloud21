@@ -25,7 +25,14 @@
       "OPTIONS":           "Options",
       "PICK_OPTIONS":      "Pick options",
       "OPTIONS_EMPTY_HINT":"No options yet — pick the menu options whose price you want to override.",
-      "DEFAULT_PRICE":     "Default"
+      "DEFAULT_PRICE":     "Default",
+      "SELECTED_COUNT":    "{{count}} selected",
+      "INCREASE_BY":       "Increase by",
+      "INCREASE":          "+",
+      "DECREASE":          "−",
+      "AMOUNT":            "Amount",
+      "PERCENT":           "%",
+      "VALUE":             "Value"
     },
     "PICKER": {
       "SEARCH":         "Search products…",
