@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "prestart": "node scripts/apply-env.mjs",
     "start": "ng serve --host 0.0.0.0 --port 4700",
+    "prebuild": "node scripts/apply-env.mjs",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --no-watch",
@@ -39,6 +41,7 @@
     "ng-apexcharts": "^2.4.0",
     "qrcode": "^1.5.4",
     "rxjs": "~7.8.0",
+    "socket.io-client": "^4.8.3",
     "tslib": "^2.3.0",
     "xlsx": "^0.18.5",
     "zone.js": "^0.16.1"

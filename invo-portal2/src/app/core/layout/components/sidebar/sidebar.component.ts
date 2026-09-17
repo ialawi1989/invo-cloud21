@@ -174,6 +174,17 @@ export const SIDE_MENU: SideMenuItem[] = [
     link: '/reports',
     requiredPermission: 'reportsSecurity.actions.view.access',
   },
+  // ── Tracking Map ───────────────────────────────────────────────────
+  // Live driver-location dashboard, ported from the legacy portal's
+  // `/tracking-map`. Kept BETA-badged like the original while the
+  // backend's `/tracking` socket room bug (see tracking-map.service.ts)
+  // is still open.
+  {
+    id: 16, label: 'MENU.TRACKING_MAP', icon: 'map',
+    link: '/tracking-map',
+    badge: { text: 'BETA', variant: 'danger' },
+    requiredPermission: 'mapTrackingSecurity.actions.view.access',
+  },
   // ── Analytics ──────────────────────────────────────────────────────
   // Promoted to a top-level entry (was buried under Website Content): it's the
   // general, store-wide analytics home for every enabled tool (GA4 traffic +
@@ -936,6 +947,7 @@ export class SidebarComponent implements OnInit {
       plugin: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>`,
       web: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
       blog: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>`,
+      map: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
     };
     return icons[name ?? ''] ?? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/></svg>`;
   }

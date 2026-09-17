@@ -1,0 +1,26 @@
+<div class="tracking-map">
+  <aside class="sidebar">
+    <header class="sidebar-header">
+      <div class="sidebar-header__title">
+        <h1>{{ 'TRACKING_MAP.TITLE' | translate }}</h1>
+        <span class="live-badge" [class.is-live]="tracking.socketConnected()">
+          <span class="live-dot"></span>
+          {{ (tracking.socketConnected() ? 'TRACKING_MAP.LIVE' : 'TRACKING_MAP.OFFLINE') | translate }}
+        </span>
+      </div>
+      <p>{{ 'TRACKING_MAP.SUBTITLE' | translate }}</p>
+    </header>
+
+    <app-branch-filter />
+    <app-driver-search />
+
+    <div class="sidebar-body">
+      <app-driver-filter />
+      <app-driver-list />
+    </div>
+  </aside>
+
+  <main class="map-pane">
+    <app-driver-map />
+  </main>
+</div>

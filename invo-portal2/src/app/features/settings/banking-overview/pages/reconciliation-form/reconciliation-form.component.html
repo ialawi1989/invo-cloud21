@@ -2,9 +2,14 @@
   <app-loading-overlay [show]="loading()" [fullScreen]="false"/>
 
   <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-  <h1 class="rf-title">
-    {{ (isNew() ? 'BANKING_OVERVIEW.FORM.NEW_TITLE' : 'BANKING_OVERVIEW.FORM.EDIT_TITLE') | translate }}
-  </h1>
+  <div class="rf-header">
+    <h1 class="rf-title">
+      {{ (isNew() ? 'BANKING_OVERVIEW.FORM.NEW_TITLE' : 'BANKING_OVERVIEW.FORM.EDIT_TITLE') | translate }}
+    </h1>
+    <a [routerLink]="['/account/banking-overview/file-reconciliation', accountId()]" class="btn btn-ghost btn-sm">
+      {{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.TITLE' | translate }}
+    </a>
+  </div>
 
   <app-banking-account-header [name]="accountName()"/>
 

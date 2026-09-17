@@ -28,15 +28,6 @@
 }
 
 // ─── File upload + mapping ────────────────────────────────────────────
-.fr-files {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-@media (max-width: 720px) {
-  .fr-files { grid-template-columns: 1fr; }
-}
-
 .fr-file-panel {
   display: flex;
   flex-direction: column;
@@ -107,6 +98,20 @@
   font-weight: 600;
   color: #64748b;
 }
+
+// ─── Our transactions (fetched) ────────────────────────────────────────
+.fr-our-data {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.fr-date-range { min-width: 220px; }
+.fr-our-data__status {
+  font-size: 13px;
+  color: #64748b;
+}
+.fr-our-data__error { color: #b91c1c; }
 
 // ─── Match settings ────────────────────────────────────────────────────
 .fr-method-row {

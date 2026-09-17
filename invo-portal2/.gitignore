@@ -42,3 +42,10 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Local dev config — never committed (repo's secrets guard blocks tracked
+# .env files; see scripts/check-secrets.sh at the repo root). .env is the
+# shared default, .env.local overrides it when present; copy
+# example.env.local to get started. See scripts/apply-env.mjs.
+.env
+.env.local

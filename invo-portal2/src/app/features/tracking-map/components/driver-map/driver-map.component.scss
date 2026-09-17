@@ -1,0 +1,158 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.map-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e4e7ec;
+}
+
+.map-canvas {
+  width: 100%;
+  height: 100%;
+  background: #f1f5f9;
+}
+
+.map-toolbar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 500;
+  display: flex;
+  gap: 8px;
+}
+
+.map-toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px -2px rgba(15, 23, 42, 0.15);
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.map-toolbar__btn.is-on {
+  background: #eef7f8;
+  color: #2691a4;
+  border-color: #bfe3e7;
+}
+
+.map-notice {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  background: rgba(15, 23, 42, 0.85);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+}
+
+// ── Marker styles (rendered via L.divIcon, so plain global-ish selectors) ──
+::ng-deep .tm-driver-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+::ng-deep .tm-driver-pin {
+  width: 28px;
+  height: 28px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  border: 2px solid #fff;
+}
+
+::ng-deep .tm-driver-initial {
+  transform: rotate(-45deg);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+::ng-deep .tm-driver-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #1a1d29;
+  background: #fff;
+  padding: 1px 6px;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+::ng-deep .tm-branch-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+::ng-deep .tm-branch-pin {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1a1d29;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+::ng-deep .tm-branch-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #1a1d29;
+  background: #fff;
+  padding: 1px 6px;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+::ng-deep .tm-customer-marker { pointer-events: none; }
+
+::ng-deep .tm-customer-pin {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #f59e0b;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+::ng-deep .tm-popup {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #1a1d29;
+
+  strong { display: block; margin-bottom: 2px; }
+}

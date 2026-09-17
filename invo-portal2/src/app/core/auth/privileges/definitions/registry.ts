@@ -109,6 +109,7 @@ import { vatPayment } from './vatPayment';
 import { waitingListSecurity } from './waitingListSecurity';
 import { websiteBuilderSecurity } from './websiteBuilderSecurity';
 import { websiteAnalyticsSecurity } from './websiteAnalyticsSecurity';
+import { mapTrackingSecurity } from './mapTrackingSecurity';
 import { websiteSettingsSecurity } from './websiteSettingsSecurity';
 import { workOrderSecurity } from './workOrderSecurity';
 import { customReportsSecurity } from '../../../../features/reports/custom/custom-reports.privileges';
@@ -217,6 +218,7 @@ export const SECURITY_DEFINITIONS = {
   blogSecurity,
   reportsSecurity,
   customReportsSecurity,
+  mapTrackingSecurity,
   privilegeSecurity,
   accountSecurity,
   customerSecurity,

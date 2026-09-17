@@ -17,6 +17,11 @@
 const PROD_BACKEND_URL   = 'https://devback.invopos.co/v1/app/';
 const DEV_BACKEND_URL    = 'http://10.2.2.89:3001/v1/app/';
 
+// Socket.IO server root (no `/v1/app` suffix, no trailing slash) — the
+// Tracking Map feature connects its `/tracking` namespace to this host.
+const PROD_SOCKET_URL    = 'https://devback.invopos.co';
+const DEV_SOCKET_URL     = 'http://10.2.2.89:3001';
+
 const PROD_DASHBOARD_URL = '';
 const DEV_DASHBOARD_URL  = 'http://localhost:4700';
 
@@ -59,6 +64,7 @@ export const environment = {
   tier,
   production:   isProd,
   backendUrl:   isProd ? PROD_BACKEND_URL   : DEV_BACKEND_URL,
+  socketUrl:    isProd ? PROD_SOCKET_URL    : DEV_SOCKET_URL,
   dashboardUrl: isProd ? PROD_DASHBOARD_URL : DEV_DASHBOARD_URL,
   websiteUrl:   isProd ? PROD_WEBSITE_URL   : DEV_WEBSITE_URL,
 };

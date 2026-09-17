@@ -2,12 +2,17 @@
   <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
   <div class="rec-header">
     <h1 class="rec-title">{{ 'BANKING_OVERVIEW.LIST.RECONCILIATIONS' | translate }}</h1>
-    <button type="button" class="btn btn-primary"
-            [disabled]="initiateDisabled()"
-            [title]="initiateDisabled() ? ('BANKING_OVERVIEW.RECONCILIATIONS.INITIATE_DISABLED_HINT' | translate) : ''"
-            (click)="initiate()">
-      {{ 'BANKING_OVERVIEW.RECONCILIATIONS.INITIATE' | translate }}
-    </button>
+    <div class="rec-header__actions">
+      <a [routerLink]="['/account/banking-overview/file-reconciliation', accountId()]" class="btn btn-ghost">
+        {{ 'BANKING_OVERVIEW.RECONCILIATIONS.RECONCILE_BY_FILE' | translate }}
+      </a>
+      <button type="button" class="btn btn-primary"
+              [disabled]="initiateDisabled()"
+              [title]="initiateDisabled() ? ('BANKING_OVERVIEW.RECONCILIATIONS.INITIATE_DISABLED_HINT' | translate) : ''"
+              (click)="initiate()">
+        {{ 'BANKING_OVERVIEW.RECONCILIATIONS.INITIATE' | translate }}
+      </button>
+    </div>
   </div>
 
   <app-banking-account-header [name]="accountName()"/>

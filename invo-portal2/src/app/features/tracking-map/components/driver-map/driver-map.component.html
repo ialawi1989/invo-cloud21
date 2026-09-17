@@ -1,0 +1,16 @@
+<div class="map-shell">
+  <div #mapEl class="map-canvas"></div>
+
+  <div class="map-toolbar">
+    <button type="button" class="map-toolbar__btn" [class.is-on]="pathVisible()" (click)="togglePathVisibility()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12h4l3 8 4-16 3 8h4"/>
+      </svg>
+      {{ 'TRACKING_MAP.TOGGLE_TRAIL' | translate }}
+    </button>
+  </div>
+
+  @if (showsNoTrackingNotice) {
+    <div class="map-notice">{{ 'TRACKING_MAP.NO_TRACKING_NOTICE' | translate }}</div>
+  }
+</div>

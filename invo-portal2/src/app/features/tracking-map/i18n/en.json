@@ -1,0 +1,47 @@
+{
+  "TRACKING_MAP": {
+    "TITLE": "Tracking Map",
+    "SUBTITLE": "Live locations for all company drivers",
+    "LIVE": "Live",
+    "OFFLINE": "Reconnecting…",
+    "SEARCH_PLACEHOLDER": "Search by name or phone",
+    "DRIVERS": "Drivers",
+    "ORDER": "order",
+    "ORDERS": "orders",
+    "EMPTY_LIST": "No drivers match this filter or search.",
+    "TOGGLE_TRAIL": "Trail",
+    "NO_TRACKING_NOTICE": "Off-shift drivers aren't tracked live",
+
+    "BRANCH_FILTER": {
+      "PLACEHOLDER": "Select branch",
+      "SEARCH": "Search branches",
+      "ALL": "All Branches"
+    },
+
+    "FILTER": {
+      "ALL": "All",
+      "ON_SHIFT": "On Shift",
+      "OFF_SHIFT": "Off Shift",
+      "TO_CUSTOMER": "To Customer",
+      "TO_RESTAURANT": "To Restaurant"
+    },
+
+    "STATUS": {
+      "ON_SHIFT": "On shift",
+      "OFF_SHIFT": "Off shift"
+    },
+
+    "ACTIVITY": {
+      "IDLE": "On shift",
+      "TO_CUSTOMER": "To customer",
+      "TO_RESTAURANT": "To restaurant",
+      "JUST_DELIVERED": "Just delivered an order"
+    },
+
+    "ORDER_STATUS": {
+      "TO_RESTAURANT": "Heading to restaurant ({{branch}})",
+      "TO_CUSTOMER": "Heading to customer",
+      "DELIVERED": "Delivered"
+    }
+  }
+}

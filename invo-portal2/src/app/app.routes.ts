@@ -131,6 +131,11 @@ export const routes: Routes = [
           import('./features/reports/reports.routes').then(m => m.REPORTS_ROUTES),
       },
       {
+        path: 'tracking-map',
+        loadChildren: () =>
+          import('./features/tracking-map/tracking-map.routes').then(m => m.TRACKING_MAP_ROUTES),
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./features/settings/settings.component').then(m => m.SettingsComponent),

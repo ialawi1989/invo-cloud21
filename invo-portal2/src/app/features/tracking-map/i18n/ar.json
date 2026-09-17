@@ -1,0 +1,47 @@
+{
+  "TRACKING_MAP": {
+    "TITLE": "خريطة التتبع",
+    "SUBTITLE": "المواقع المباشرة لجميع سائقي الشركة",
+    "LIVE": "مباشر",
+    "OFFLINE": "جاري إعادة الاتصال…",
+    "SEARCH_PLACEHOLDER": "ابحث بالاسم أو الهاتف",
+    "DRIVERS": "السائقون",
+    "ORDER": "طلب",
+    "ORDERS": "طلبات",
+    "EMPTY_LIST": "لا يوجد سائقون مطابقون لهذا الفلتر أو البحث.",
+    "TOGGLE_TRAIL": "المسار",
+    "NO_TRACKING_NOTICE": "السائقون خارج الدوام لا يتم تتبعهم مباشرة",
+
+    "BRANCH_FILTER": {
+      "PLACEHOLDER": "اختر الفرع",
+      "SEARCH": "ابحث عن الفروع",
+      "ALL": "كل الفروع"
+    },
+
+    "FILTER": {
+      "ALL": "الكل",
+      "ON_SHIFT": "في الدوام",
+      "OFF_SHIFT": "خارج الدوام",
+      "TO_CUSTOMER": "متجه للعميل",
+      "TO_RESTAURANT": "متجه للمطعم"
+    },
+
+    "STATUS": {
+      "ON_SHIFT": "في الدوام",
+      "OFF_SHIFT": "خارج الدوام"
+    },
+
+    "ACTIVITY": {
+      "IDLE": "في الدوام",
+      "TO_CUSTOMER": "متجه للعميل",
+      "TO_RESTAURANT": "متجه للمطعم",
+      "JUST_DELIVERED": "تم التسليم للتو"
+    },
+
+    "ORDER_STATUS": {
+      "TO_RESTAURANT": "متجه للمطعم ({{branch}})",
+      "TO_CUSTOMER": "متجه للعميل",
+      "DELIVERED": "تم التسليم"
+    }
+  }
+}

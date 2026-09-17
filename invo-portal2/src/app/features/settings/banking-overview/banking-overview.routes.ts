@@ -39,12 +39,12 @@ export const BANKING_OVERVIEW_ROUTES: Routes = [
         .then(m => m.ReconciliationFormComponent),
   },
   {
-    // Generic two-file, client-side reconciliation — deliberately NOT
-    // scoped to :accountId (see the component's doc-comment). Reuses
-    // the same view permission as the rest of Banking Overview since
-    // there's no dedicated privilege for it and this is an ungated
-    // read/compare-only tool with no persistence.
-    path: 'file-reconciliation',
+    // File-to-data reconciliation: one uploaded bank-statement CSV
+    // compared against this account's own transaction history (fetched
+    // for the chosen date range), using the same view permission as the
+    // rest of Banking Overview since there's no dedicated privilege for
+    // it and this is a read/compare-only tool with no persistence.
+    path: 'file-reconciliation/:accountId',
     canActivate: [privilegeGuard],
     data: PERMISSION,
     loadComponent: () =>

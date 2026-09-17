@@ -33,6 +33,7 @@ function str(v: unknown): string {
  *
  *   POST   accounts/bankOverView
  *   POST   accounts/getReconcilationsRecords
+ *   POST   accounts/getReconcilationByTransactionNumber
  *   POST   accounts/getReconcilationRecordsById
  *   POST   accounts/getReconcilationList
  *   GET    accounts/getReconcilation/:id
@@ -106,6 +107,31 @@ export class BankingOverviewService {
       }),
     );
     return this.toPaged(res?.data);
+  }
+
+  /** Ledger rows of `accountId` whose reference number exactly matches
+   *  (case-insensitive, trimmed) one of `transactionNumbers`, regardless
+   *  of date. Sent in chunks so a large statement stays within request
+   *  size limits. */
+  async getTransactionsByTransactionNumber(
+    accountId: string,
+    transactionNumbers: string[],
+    branchId: string | null = null,
+  ): Promise<ReconciliationTransaction[]> {
+    const unique = [...new Set(transactionNumbers.map(n => n.trim()).filter(Boolean))];
+    const CHUNK = 1000;
+    const out: ReconciliationTransaction[] = [];
+    for (let i = 0; i < unique.length; i += CHUNK) {
+      const res = await this.api.request<any>(
+        this.api.post('accounts/getReconcilationByTransactionNumber', {
+          accountId,
+          branchId: branchId || null,
+          transactionNumbers: unique.slice(i, i + CHUNK),
+        }),
+      );
+      out.push(...this.toPaged(res?.data).list);
+    }
+    return out;
   }
 
   /** Rows belonging to one saved reconciliation period. Pass

@@ -44,7 +44,8 @@
       "INITIATE_DISABLED_HINT": "Finish or wait out the current reconciliation period before starting a new one.",
       "UNDO": "Undo",
       "DELETE_TITLE": "Delete this reconciliation?",
-      "DELETE_MESSAGE": "This removes the period and unlinks its transactions. This can't be undone."
+      "DELETE_MESSAGE": "This removes the period and unlinks its transactions. This can't be undone.",
+      "RECONCILE_BY_FILE": "Reconcile by File"
     },
     "FORM": {
       "NEW_TITLE": "New Reconciliation",
@@ -74,19 +75,24 @@
     },
     "FILE_RECONCILIATION": {
       "TITLE": "File Reconciliation",
-      "SUBTITLE": "Compare two CSV exports and find matching, unmatched, and mismatched records — everything runs in your browser, nothing is saved.",
-      "STEP_UPLOAD": "1. Upload files & map columns",
-      "STEP_METHOD": "2. Match settings",
-      "STEP_RESULTS": "3. Results",
-      "FILE_1": "File 1",
-      "FILE_2": "File 2",
-      "PICK_FILE": "Choose CSV file",
+      "SUBTITLE": "Compare an uploaded bank-statement file against this account's own transactions and find matching, unmatched, and mismatched records. Matching runs in your browser and nothing is saved — your transactions are fetched live, the statement file isn't uploaded anywhere.",
+      "STEP_UPLOAD": "1. Upload your file & map columns",
+      "STEP_OUR_DATA": "2. Our transactions",
+      "STEP_METHOD": "3. Match settings",
+      "STEP_RESULTS": "4. Results",
+      "YOUR_FILE": "Your file",
+      "PICK_FILE": "Choose CSV or Excel file",
       "CHANGE_FILE": "Choose a different file",
       "ROWS": "rows",
       "REFERENCE_COLUMN": "Reference column",
       "AMOUNT_COLUMN": "Amount column",
       "DATE_COLUMN": "Date/Time column",
       "SELECT_COLUMN": "Select a column…",
+      "REFRESH": "Refresh",
+      "LOADING_TRANSACTIONS": "Loading transactions",
+      "OUR_TRANSACTIONS_SUMMARY": "{{count}} transactions loaded for the selected date range",
+      "NO_TRANSACTIONS_FOR_RANGE": "No transactions found for this date range.",
+      "ERROR_LOAD_TRANSACTIONS": "Couldn't load this account's transactions. Please try again.",
       "METHOD_REFERENCE": "Unique Reference Number",
       "METHOD_AMOUNT_DATE": "Amount + Date/Time",
       "METHOD_BOTH": "Try Both",
@@ -94,12 +100,12 @@
       "RUN": "Reconcile",
       "RESET": "Reset",
       "TAB_MATCHED": "Matched",
-      "TAB_UNMATCHED_1": "Unmatched (File 1)",
-      "TAB_UNMATCHED_2": "Unmatched (File 2)",
+      "TAB_UNMATCHED_1": "Unmatched (Your file)",
+      "TAB_UNMATCHED_2": "Unmatched (Our transactions)",
       "EMPTY_MATCHED": "No matching records found with the current settings.",
       "EMPTY_UNMATCHED": "No unmatched records — everything lined up.",
-      "ERROR_EMPTY_FILE": "That file doesn't look like a valid CSV — no columns were found.",
-      "ERROR_PARSE_FAILED": "Couldn't read that file. Please check it's a valid CSV."
+      "ERROR_EMPTY_FILE": "No columns were found in that file.",
+      "ERROR_PARSE_FAILED": "Couldn't read that file. Please check it's a valid CSV or Excel file."
     }
   }
 }

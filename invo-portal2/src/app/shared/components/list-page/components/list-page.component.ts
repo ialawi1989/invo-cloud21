@@ -119,6 +119,17 @@ import {
   templateUrl: './list-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
+    /* Custom elements have no display rule in the UA stylesheet — without this,
+       <app-list-page> defaults to inline and its card can render narrower than
+       sibling block content (a title row, a toolbar) instead of matching its
+       parent's width. Consumers opting into [fitContent] override this to
+       flex via the :host(.lp-host-fullbleed) rule below; this is just the
+       base case every other consumer relies on implicitly. */
+    :host {
+      display: block;
+      width: 100%;
+    }
+
     /* ── Sticky columns (checkbox + primary on the start edge, actions
        on the end edge) ─────────────────────────────────────────────────
        Keep the sticky cells opaque so rows underneath don't bleed through

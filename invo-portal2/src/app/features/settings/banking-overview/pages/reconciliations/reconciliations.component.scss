@@ -18,6 +18,12 @@
   letter-spacing: -0.01em;
 }
 
+.rec-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .rec-toolbar {
   display: flex;
   align-items: center;

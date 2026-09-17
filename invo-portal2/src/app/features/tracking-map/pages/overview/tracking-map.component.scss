@@ -1,0 +1,108 @@
+:host {
+  display: block;
+  height: calc(100dvh - var(--tm-header-offset, 64px));
+  min-height: 620px;
+  font-family: inherit;
+  color: #1a1d29;
+}
+
+.tracking-map {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 16px;
+  height: 100%;
+  padding: 16px;
+  background: #f7f8fa;
+  box-sizing: border-box;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.sidebar-header {
+  h1 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: #6b7280;
+  }
+}
+
+.sidebar-header__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.live-badge.is-live {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.live-badge.is-live .live-dot {
+  animation: tm-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes tm-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.sidebar-body {
+  display: flex;
+  gap: 10px;
+  min-height: 0;
+  flex: 1;
+}
+
+.map-pane {
+  min-height: 0;
+  min-width: 0;
+}
+
+// Stack the sidebar above the map on narrow viewports.
+@media (max-width: 900px) {
+  .tracking-map {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(320px, 55vh);
+  }
+
+  .sidebar {
+    max-height: 55vh;
+  }
+}
