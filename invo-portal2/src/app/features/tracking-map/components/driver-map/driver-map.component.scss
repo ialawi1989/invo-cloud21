@@ -65,6 +65,36 @@
   border-radius: 999px;
 }
 
+.map-live-count {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  z-index: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #fff;
+  color: #1a1d29;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.25);
+}
+
+.map-live-count__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #16a34a;
+  animation: tm-map-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes tm-map-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
 // ── Marker styles (rendered via L.divIcon, so plain global-ish selectors) ──
 ::ng-deep .tm-driver-marker {
   display: flex;

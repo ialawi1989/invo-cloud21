@@ -1,0 +1,15 @@
+<div class="chip-row">
+  @for (chip of chips(); track chip.value) {
+    <button
+      type="button"
+      class="chip"
+      [class.is-on]="isActive(chip.value)"
+      [attr.data-filter]="chip.value"
+      (click)="tracking.setFilter(chip.value)"
+    >
+      <span class="chip-dot"></span>
+      {{ chip.label | translate }}
+      <span class="chip-count">{{ chip.count }}</span>
+    </button>
+  }
+</div>

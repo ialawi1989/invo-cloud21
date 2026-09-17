@@ -115,9 +115,12 @@ export class DriverMapComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.map = L.map(this.mapEl().nativeElement, { center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM, zoomControl: true });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Esri's "World Street Map" — free, no API key (unlike CARTO's raster
+    // basemaps, which now watermark unauthenticated requests). Cleaner and
+    // less label-cluttered than raw OSM tiles for a live-tracking map.
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      attribution: '&copy; OpenStreetMap',
+      attribution: 'Tiles &copy; Esri — Esri, DeLorme, NAVTEQ',
     }).addTo(this.map);
 
     const drivers = this.mapDrivers() as LocatableDriver[];

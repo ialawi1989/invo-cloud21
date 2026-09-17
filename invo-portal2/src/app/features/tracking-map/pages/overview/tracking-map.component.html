@@ -3,21 +3,26 @@
     <header class="sidebar-header">
       <div class="sidebar-header__title">
         <h1>{{ 'TRACKING_MAP.TITLE' | translate }}</h1>
-        <span class="live-badge" [class.is-live]="tracking.socketConnected()">
-          <span class="live-dot"></span>
-          {{ (tracking.socketConnected() ? 'TRACKING_MAP.LIVE' : 'TRACKING_MAP.OFFLINE') | translate }}
-        </span>
+        <div class="sidebar-header__actions">
+          <span class="live-badge" [class.is-live]="tracking.socketConnected()">
+            <span class="live-dot"></span>
+            {{ (tracking.socketConnected() ? 'TRACKING_MAP.LIVE' : 'TRACKING_MAP.OFFLINE') | translate }}
+          </span>
+          <button type="button" class="refresh-btn" (click)="tracking.refresh()" [attr.aria-label]="'COMMON.REFRESH' | translate">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <p>{{ 'TRACKING_MAP.SUBTITLE' | translate }}</p>
     </header>
 
     <app-branch-filter />
     <app-driver-search />
-
-    <div class="sidebar-body">
-      <app-driver-filter />
-      <app-driver-list />
-    </div>
+    <app-driver-filter />
+    <app-driver-list />
   </aside>
 
   <main class="map-pane">

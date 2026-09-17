@@ -14,7 +14,7 @@
           [class.dimmed]="driver.status === 'off-shift'"
           (click)="select(driver.id)"
         >
-          <span class="avatar" [attr.data-status]="driver.status">
+          <span class="avatar" [attr.data-status]="driver.status" [attr.data-activity]="driver.activity">
             @if (driver.avatarUrl) {
               <img [src]="driver.avatarUrl" [alt]="driver.name" />
             } @else {

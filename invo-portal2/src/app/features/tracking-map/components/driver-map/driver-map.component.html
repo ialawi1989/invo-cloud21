@@ -12,5 +12,11 @@
 
   @if (showsNoTrackingNotice) {
     <div class="map-notice">{{ 'TRACKING_MAP.NO_TRACKING_NOTICE' | translate }}</div>
+  } @else {
+    <div class="map-live-count">
+      <span class="map-live-count__dot"></span>
+      {{ mapDrivers().length }}
+      {{ (mapDrivers().length === 1 ? 'TRACKING_MAP.DRIVER_LIVE' : 'TRACKING_MAP.DRIVERS_LIVE') | translate }}
+    </div>
   }
 </div>

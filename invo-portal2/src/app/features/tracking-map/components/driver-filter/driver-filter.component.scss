@@ -1,0 +1,63 @@
+:host {
+  display: block;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #e4e7ec;
+  border-radius: 999px;
+  background: #fff;
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.chip:hover:not(.is-on) { background: #f8fafc; border-color: #cbd5e1; }
+
+.chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #94a3b8;
+  flex: 0 0 auto;
+}
+
+.chip[data-filter='on-shift'] .chip-dot { background: #16a34a; }
+.chip[data-filter='off-shift'] .chip-dot { background: #9ca3af; }
+.chip[data-filter='to-customer'] .chip-dot { background: #b45309; }
+.chip[data-filter='to-restaurant'] .chip-dot { background: #7c3aed; }
+
+.chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #eef2f6;
+  color: #64748b;
+}
+
+.chip.is-on {
+  background: #2691a4;
+  border-color: #2691a4;
+  color: #fff;
+  box-shadow: 0 2px 6px -1px rgba(38, 145, 164, 0.45);
+}
+
+.chip.is-on .chip-dot { background: #fff; }
+.chip.is-on .chip-count { background: rgba(255, 255, 255, 0.25); color: #fff; }

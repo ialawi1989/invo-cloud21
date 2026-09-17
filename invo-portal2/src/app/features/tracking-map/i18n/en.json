@@ -11,6 +11,8 @@
     "EMPTY_LIST": "No drivers match this filter or search.",
     "TOGGLE_TRAIL": "Trail",
     "NO_TRACKING_NOTICE": "Off-shift drivers aren't tracked live",
+    "DRIVER_LIVE": "driver live on map",
+    "DRIVERS_LIVE": "drivers live on map",
 
     "BRANCH_FILTER": {
       "PLACEHOLDER": "Select branch",

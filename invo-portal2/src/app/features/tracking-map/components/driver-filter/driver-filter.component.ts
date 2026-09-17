@@ -1,34 +1,37 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
+import { TranslateModule } from '@ngx-translate/core';
 import { DRIVER_FILTER_OPTIONS, DriverFilter } from '../../services/tracking-map.types';
 import { TrackingMapService } from '../../services/tracking-map.service';
 
+interface FilterChip {
+  value: DriverFilter;
+  label: string;
+  count: number;
+}
+
+/**
+ * Filter chips as a wrapping pill row (not a shared `app-segmented-toggle`,
+ * which only lays out a single line or a full vertical stack — neither fits
+ * 5 chips in a narrow sidebar without either overflowing or leaving a tall,
+ * mostly-empty rail next to the driver list).
+ */
 @Component({
   selector: 'app-driver-filter',
   standalone: true,
-  imports: [SegmentedToggleComponent],
+  imports: [TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [`
-    :host {
-      display: block;
-      flex: 0 0 128px;
-    }
-  `],
-  template: `
-    <app-segmented-toggle
-      [options]="options()"
-      [value]="tracking.activeFilter()"
-      [vertical]="true"
-      size="sm"
-      (valueChange)="tracking.setFilter($event)"
-    />
-  `,
+  templateUrl: './driver-filter.component.html',
+  styleUrl: './driver-filter.component.scss',
 })
 export class DriverFilterComponent {
   readonly tracking = inject(TrackingMapService);
 
-  readonly options = computed<SegmentedToggleOption<DriverFilter>[]>(() => {
+  readonly chips = computed<FilterChip[]>(() => {
     const counts = this.tracking.filterCounts();
     return DRIVER_FILTER_OPTIONS.map(o => ({ value: o.value, label: o.label, count: counts[o.value] }));
   });
+
+  isActive(value: DriverFilter): boolean {
+    return this.tracking.activeFilter() === value;
+  }
 }
