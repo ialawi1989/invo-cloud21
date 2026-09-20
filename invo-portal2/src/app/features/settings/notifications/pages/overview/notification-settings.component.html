@@ -1,0 +1,292 @@
+<div class="ns">
+  <header class="ns-head">
+    <div>
+      <h1>{{ 'NOTIFICATIONS_SETTINGS.TITLE' | translate }}</h1>
+      <p>{{ 'NOTIFICATIONS_SETTINGS.SUBTITLE' | translate }}</p>
+    </div>
+  </header>
+
+  <div class="ns-summary">
+    <div class="ns-card">
+      <span class="ns-card__label">{{ 'NOTIFICATIONS_SETTINGS.TOTAL_EVENTS' | translate }}</span>
+      <span class="ns-card__value">{{ totalEventsCount() }}</span>
+    </div>
+    <div class="ns-card ns-card--success">
+      <span class="ns-card__label">{{ 'NOTIFICATIONS_SETTINGS.ENABLED' | translate }}</span>
+      <span class="ns-card__value">{{ enabledCount() }}</span>
+    </div>
+    <div class="ns-card ns-card--warn">
+      <span class="ns-card__label">{{ 'NOTIFICATIONS_SETTINGS.NEEDS_ATTENTION' | translate }}</span>
+      <span class="ns-card__value">{{ issueCount() }}</span>
+    </div>
+  </div>
+
+  <div class="ns-tabs">
+    <button type="button" class="ns-tab" [class.is-on]="tab() === 'events'" (click)="setTab('events')">
+      {{ 'NOTIFICATIONS_SETTINGS.TAB_EVENTS' | translate }}
+    </button>
+    <button type="button" class="ns-tab" [class.is-on]="tab() === 'templates'" (click)="setTab('templates')">
+      {{ 'NOTIFICATIONS_SETTINGS.TAB_TEMPLATES' | translate }}
+    </button>
+    <button type="button" class="ns-tab" [class.is-on]="tab() === 'logs'" (click)="setTab('logs')">
+      {{ 'NOTIFICATIONS_SETTINGS.TAB_LOGS' | translate }}
+    </button>
+  </div>
+
+  <!-- ============== EVENTS TAB ============== -->
+  @if (tab() === 'events') {
+    <div class="ns-filterbar">
+      <input type="text" class="ns-input" [placeholder]="'NOTIFICATIONS_SETTINGS.SEARCH_EVENTS' | translate" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+
+      <app-search-dropdown
+        class="ns-dropdown"
+        [items]="categoryOptions()"
+        [displayWith]="optionLabel"
+        [toValue]="optionValue"
+        [compareWith]="optionCompare"
+        [ngModel]="categoryFilter()"
+        (ngModelChange)="categoryFilter.set($event)"
+        [clearable]="false"
+        [searchable]="false"
+      />
+
+      <app-search-dropdown
+        class="ns-dropdown"
+        [items]="channelOptions()"
+        [displayWith]="optionLabel"
+        [toValue]="optionValue"
+        [compareWith]="optionCompare"
+        [ngModel]="channelFilter()"
+        (ngModelChange)="channelFilter.set($event)"
+        [clearable]="false"
+        [searchable]="false"
+      />
+
+      <app-search-dropdown
+        class="ns-dropdown"
+        [items]="statusOptions()"
+        [displayWith]="optionLabel"
+        [toValue]="optionValue"
+        [compareWith]="optionCompare"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)"
+        [clearable]="false"
+        [searchable]="false"
+      />
+    </div>
+
+    @if (eventsLoading()) {
+      <div class="ns-loading">{{ 'NOTIFICATIONS_SETTINGS.LOADING_EVENTS' | translate }}</div>
+    } @else {
+      @for (group of filteredGroups(); track group.category.id) {
+        <div class="ns-group">
+          <div class="ns-group__head">
+            <h3>{{ group.category.name | translate }}</h3>
+            <span class="ns-group__count">{{ group.events.length }}</span>
+          </div>
+
+          @for (ev of group.events; track trackById($index, ev)) {
+            <div class="ns-event" [class.is-off]="!ev.enabled">
+              <label class="ns-switch">
+                <input type="checkbox" [checked]="ev.enabled" [disabled]="!canEdit()" (change)="toggleEvent(ev)" />
+                <span class="ns-switch__track"><span class="ns-switch__thumb"></span></span>
+              </label>
+
+              <div class="ns-event__info">
+                <div class="ns-event__name">{{ ev.name | translate }}</div>
+                <div class="ns-event__desc">{{ ev.description | translate }}</div>
+              </div>
+
+              <div class="ns-event__channels">
+                <button type="button" class="ns-chan" [attr.data-role]="channelRole(ev, 'sms')" [disabled]="!ev.enabled || !canEdit()" (click)="cycleChannel(ev, 'sms')">
+                  SMS
+                  @if (channelRole(ev, 'sms') !== 'off') { <span class="ns-chan__role">{{ channelRole(ev, 'sms') === 'primary' ? '1°' : '2°' }}</span> }
+                </button>
+                <button type="button" class="ns-chan" [attr.data-role]="channelRole(ev, 'email')" [disabled]="!ev.enabled || !canEdit()" (click)="cycleChannel(ev, 'email')">
+                  Email
+                  @if (channelRole(ev, 'email') !== 'off') { <span class="ns-chan__role">{{ channelRole(ev, 'email') === 'primary' ? '1°' : '2°' }}</span> }
+                </button>
+                @if (whatsappEnabled()) {
+                  <button type="button" class="ns-chan" [attr.data-role]="channelRole(ev, 'whatsapp')" [disabled]="!ev.enabled || !canEdit()" (click)="cycleChannel(ev, 'whatsapp')">
+                    WhatsApp
+                    @if (channelRole(ev, 'whatsapp') !== 'off') { <span class="ns-chan__role">{{ channelRole(ev, 'whatsapp') === 'primary' ? '1°' : '2°' }}</span> }
+                  </button>
+                }
+              </div>
+
+              <span class="ns-status" [attr.data-status]="statusOf(ev)">
+                {{ statusLabelKey(ev) | translate }}
+              </span>
+
+              <button type="button" class="ns-configure-btn" (click)="openConfigure(ev)">
+                {{ 'NOTIFICATIONS_SETTINGS.CONFIGURE' | translate }}
+              </button>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <div class="ns-save-bar">
+      <button type="button" class="ns-btn ns-btn--primary" [disabled]="saving() || !canEdit()" (click)="save()">
+        {{ 'NOTIFICATIONS_SETTINGS.SAVE_CHANGES' | translate }}
+      </button>
+    </div>
+  }
+
+  <!-- ============== TEMPLATES TAB ============== -->
+  @if (tab() === 'templates') {
+    @if (!canEditTemplates()) {
+      <div class="ns-banner">
+        {{ 'NOTIFICATIONS_SETTINGS.NO_TEMPLATE_ACCESS' | translate }}
+      </div>
+    }
+
+    <div class="ns-panel">
+      <div class="ns-panel__toolbar">
+        <input type="text" class="ns-input" [placeholder]="'NOTIFICATIONS_SETTINGS.SEARCH_TEMPLATES' | translate" [ngModel]="templateSearch()" (ngModelChange)="templateSearch.set($event)" />
+        <button type="button" class="ns-btn" (click)="reloadTemplates()">{{ 'COMMON.REFRESH' | translate }}</button>
+        @if (canEditTemplates()) {
+          <button type="button" class="ns-btn ns-btn--primary" (click)="createTemplate()">{{ 'NOTIFICATIONS_SETTINGS.NEW_TEMPLATE' | translate }}</button>
+        }
+      </div>
+
+      <table class="ns-table">
+        <thead>
+          <tr>
+            <th>{{ 'NOTIFICATIONS_SETTINGS.COL_TITLE' | translate }}</th>
+            <th>{{ 'NOTIFICATIONS_SETTINGS.COL_EVENT' | translate }}</th>
+            <th>{{ 'NOTIFICATIONS_SETTINGS.COL_TYPE' | translate }}</th>
+            <th>{{ 'NOTIFICATIONS_SETTINGS.COL_OUTPUT_TYPE' | translate }}</th>
+            <th>{{ 'NOTIFICATIONS_SETTINGS.COL_CREATED' | translate }}</th>
+            <th>{{ 'NOTIFICATIONS_SETTINGS.COL_UPDATED' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (templatesLoading()) {
+            <tr><td colspan="6" class="ns-table__empty">{{ 'NOTIFICATIONS_SETTINGS.LOADING_TEMPLATES' | translate }}</td></tr>
+          } @else if (filteredTemplates().length === 0) {
+            <tr><td colspan="6" class="ns-table__empty">{{ 'NOTIFICATIONS_SETTINGS.NO_TEMPLATES' | translate }}</td></tr>
+          } @else {
+            @for (t of filteredTemplates(); track trackByTemplateId($index, t)) {
+              <tr (click)="editTemplate(t)">
+                <td class="ns-table__title">{{ t.title }}</td>
+                <td>
+                  @if (t.eventType) { <span class="ns-badge">{{ t.eventType }}</span> } @else { <span class="ns-badge ns-badge--muted">{{ 'NOTIFICATIONS_SETTINGS.GENERIC' | translate }}</span> }
+                </td>
+                <td><span class="ns-badge ns-badge--muted">{{ t.type }}</span></td>
+                <td><span class="ns-badge ns-badge--info">{{ t.outputType }}</span></td>
+                <td class="ns-muted">{{ t.createdAt ? (t.createdAt | date: 'yyyy-MM-dd') : '—' }}{{ t.createdBy ? ' · ' + t.createdBy : '' }}</td>
+                <td class="ns-muted">{{ t.updatedAt ? (t.updatedAt | date: 'yyyy-MM-dd') : '—' }}{{ t.updatedBy ? ' · ' + t.updatedBy : '' }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- ============== LOGS TAB ============== -->
+  @if (tab() === 'logs') {
+    <div class="ns-panel">
+      <div class="ns-panel__toolbar ns-panel__toolbar--wrap">
+        <app-search-dropdown
+          class="ns-dropdown"
+          [items]="logChannelFilterOptions()"
+          [displayWith]="optionLabel"
+          [toValue]="optionValue"
+          [compareWith]="optionCompare"
+          [ngModel]="logsFilter().channel"
+          (ngModelChange)="patchLogsFilter({ channel: $event }); applyLogsFilter()"
+          [clearable]="false"
+          [searchable]="false"
+        />
+        <app-search-dropdown
+          class="ns-dropdown"
+          [items]="logStatusFilterOptions()"
+          [displayWith]="optionLabel"
+          [toValue]="optionValue"
+          [compareWith]="optionCompare"
+          [ngModel]="logsFilter().status"
+          (ngModelChange)="patchLogsFilter({ status: $event }); applyLogsFilter()"
+          [clearable]="false"
+          [searchable]="false"
+        />
+        <input type="text" class="ns-input" [placeholder]="'NOTIFICATIONS_SETTINGS.EVENT_TYPE_PLACEHOLDER' | translate" [ngModel]="logsFilter().eventType" (ngModelChange)="patchLogsFilter({ eventType: $event })" (keyup.enter)="applyLogsFilter()" />
+        <app-date-picker
+          mode="range"
+          [value]="logsDateRange()"
+          [placeholder]="'NOTIFICATIONS_SETTINGS.ALL_TIME' | translate"
+          (valueChange)="onLogsDateRange($any($event))"
+        />
+        <button type="button" class="ns-btn" (click)="applyLogsFilter()">{{ 'COMMON.SEARCH' | translate }}</button>
+        <button type="button" class="ns-btn" (click)="clearLogsFilter()">{{ 'COMMON.CLEAR' | translate }}</button>
+        <button type="button" class="ns-btn" (click)="loadLogs()">{{ 'COMMON.REFRESH' | translate }}</button>
+      </div>
+
+      <div class="ns-table-scroll">
+        <table class="ns-table">
+          <thead>
+            <tr>
+              <th>{{ 'NOTIFICATIONS_SETTINGS.COL_TIME' | translate }}</th>
+              <th>{{ 'NOTIFICATIONS_SETTINGS.COL_EVENT' | translate }}</th>
+              <th>{{ 'NOTIFICATIONS_SETTINGS.COL_CHANNEL' | translate }}</th>
+              <th>{{ 'NOTIFICATIONS_SETTINGS.COL_RECIPIENT' | translate }}</th>
+              <th>{{ 'NOTIFICATIONS_SETTINGS.COL_PROVIDER' | translate }}</th>
+              <th>{{ 'NOTIFICATIONS_SETTINGS.COL_STATUS' | translate }}</th>
+              <th>{{ 'NOTIFICATIONS_SETTINGS.COL_DETAIL' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (logsLoading()) {
+              <tr><td colspan="7" class="ns-table__empty">{{ 'NOTIFICATIONS_SETTINGS.LOADING_LOGS' | translate }}</td></tr>
+            } @else if (logs().length === 0) {
+              <tr><td colspan="7" class="ns-table__empty">{{ 'NOTIFICATIONS_SETTINGS.NO_LOGS' | translate }}</td></tr>
+            } @else {
+              @for (log of logs(); track $index) {
+                <tr>
+                  <td class="ns-muted ns-nowrap">{{ log.createdAt | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+                  <td><code>{{ log.eventType }}</code></td>
+                  <td class="ns-nowrap">{{ channelLabel(log.channel) }}</td>
+                  <td>{{ log.recipient }}</td>
+                  <td class="ns-muted ns-nowrap">{{ logProviderLabel(log.provider) }}</td>
+                  <td class="ns-nowrap"><span class="ns-badge" [class.ns-badge--success]="log.status === 'success'" [class.ns-badge--danger]="log.status === 'failure'">{{ log.status }}</span></td>
+                  <td class="ns-truncate" [title]="log.status === 'success' ? (log.messageId ?? '') : (log.error ?? '')">
+                    {{ log.status === 'success' ? (log.messageId || '—') : (log.error || 'unknown error') }}
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ns-pager">
+        <div class="ns-pager__size">
+          <span class="ns-muted">{{ 'NOTIFICATIONS_SETTINGS.ROWS_PER_PAGE' | translate }}</span>
+          <app-search-dropdown
+            class="ns-dropdown ns-dropdown--sm"
+            [items]="logsLimitFilterOptions()"
+            [displayWith]="optionLabel"
+            [toValue]="optionValue"
+            [compareWith]="optionCompare"
+            [ngModel]="logsFilter().limit"
+            (ngModelChange)="changeLogsLimit($event)"
+            [clearable]="false"
+            [searchable]="false"
+          />
+        </div>
+        <div class="ns-pager__btns">
+          <span class="ns-muted">{{ 'NOTIFICATIONS_SETTINGS.PAGE' | translate }} {{ logsPageNumber() }}</span>
+          <button type="button" class="ns-btn ns-btn--icon" [disabled]="logsLoading() || (logsFilter().offset ?? 0) === 0" (click)="prevLogsPage()" [attr.aria-label]="'COMMON.PREVIOUS' | translate">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button type="button" class="ns-btn ns-btn--icon" [disabled]="logsLoading() || !logsHasNext()" (click)="nextLogsPage()" [attr.aria-label]="'COMMON.NEXT' | translate">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

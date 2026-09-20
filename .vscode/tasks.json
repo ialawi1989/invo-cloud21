@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ng serve (invo-portal2)",
+      "type": "shell",
+      "command": "ng serve --host 0.0.0.0 --port 4700 --host 0.0.0.0",
+      "options": {
+        "cwd": "${workspaceFolder}/invo-portal2"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "Changes detected"
+          },
+          "endsPattern": {
+            "regexp": "bundle generation (complete|failed)"
+          }
+        }
+      }
+    }
+  ]
+}

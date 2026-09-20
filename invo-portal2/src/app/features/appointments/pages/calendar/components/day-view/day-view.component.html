@@ -1,0 +1,56 @@
+<div class="day-grid" #gridEl>
+  <div class="day-grid__inner" [style.min-width.px]="56 + employees().length * 130">
+    <div class="day-grid__time-col">
+      <div class="day-col__header"></div>
+      @for (slot of timeSlots; track slot) {
+        <div class="day-grid__time-label" [style.height.px]="SLOT_HEIGHT">
+          @if (slot.endsWith(':00')) { {{ slot }} }
+        </div>
+      }
+    </div>
+
+    @for (emp of employees(); track emp.id) {
+      <div class="day-col" [attr.data-employee-id]="emp.id">
+        <div class="day-col__header">
+          <span class="day-col__avatar" [style.background]="color(emp.id)">{{ initials(emp.name) }}</span>
+          <span class="day-col__name">{{ emp.name }}</span>
+        </div>
+
+        <div class="day-col__body" [style.height.px]="bodyHeight" (pointerdown)="onBodyPointerDown($event, emp)">
+          @for (slot of timeSlots; track slot) {
+            <div class="day-col__cell" [style.height.px]="SLOT_HEIGHT" [class.is-past]="isSlotPast(slot)"></div>
+          }
+
+          @if (isToday()) {
+            <div class="day-col__now-line" [style.top.px]="nowTop()"></div>
+          }
+
+          @if (creatingPreview(); as preview) {
+            @if (preview.employeeId === emp.id) {
+              <div class="day-col__creating" [style.top.px]="preview.top" [style.height.px]="preview.height"></div>
+            }
+          }
+
+          @for (task of tasksFor(emp.id); track task.taskId) {
+            <div
+              class="appt-card"
+              [attr.data-status]="statusOf(task)"
+              [style.top.px]="topFor(task)"
+              [style.height.px]="heightFor(task)"
+              (pointerdown)="onCardPointerDown($event, task)"
+              (click)="onCardClick($event, task)"
+            >
+              <span class="appt-card__customer">{{ task.customerName || ('APPOINTMENTS.WALK_IN' | translate) }}</span>
+              <span class="appt-card__service">{{ task.serviceName }}</span>
+              <span class="appt-card__time">{{ timeRangeLabel(task) }}</span>
+
+              @if (canEdit() && !task.isInvoiced) {
+                <div class="appt-card__resize-handle" (pointerdown)="onResizeHandlePointerDown($event, task)"></div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

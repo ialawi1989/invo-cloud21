@@ -1,0 +1,89 @@
+@if (journal(); as j) {
+  <div class="rjv-page">
+    <header class="page-header">
+      <div class="page-header__titles">
+        <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+        <h1 class="page-title">
+          {{ j.name }}
+          <div class="rjv-actions">
+            @if (canEdit) {
+              <button type="button" class="btn btn-outline" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
+            }
+            @if (canDeleteRecord()) {
+              <button type="button" class="btn btn-outline-danger" (click)="delete()">{{ 'COMMON.DELETE' | translate }}</button>
+            }
+          </div>
+        </h1>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="card__body">
+        <dl class="rjv-dl">
+          <div class="rjv-dl__row">
+            <dt>{{ 'COMMON.BRANCH' | translate }}</dt>
+            <dd>{{ j.branchName || '—' }}</dd>
+          </div>
+          <div class="rjv-dl__row">
+            <dt>{{ 'RECURRING_JOURNAL.LIST.START_DATE' | translate }}</dt>
+            <dd>{{ j.startDate | date: 'dd/MM/yyyy' }}</dd>
+          </div>
+          @if (j.endTerm === 'by') {
+            <div class="rjv-dl__row">
+              <dt>{{ 'RECURRING_JOURNAL.LIST.END_DATE' | translate }}</dt>
+              <dd>{{ j.endDate | date: 'dd/MM/yyyy' }}</dd>
+            </div>
+          }
+          <div class="rjv-dl__row">
+            <dt>{{ 'RECURRING_JOURNAL.LIST.CREATED_AT' | translate }}</dt>
+            <dd>{{ j.createdAt | date: 'dd/MM/yyyy' }}</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="card__body card__body--bordered">
+        <p class="rjv-label">{{ 'RECURRING_JOURNAL.LIST.FREQUENCY' | translate }}</p>
+        <h3 class="rjv-value">{{ frequencyLabel() }}</h3>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card__body">
+        <p class="rjv-label">{{ 'RECURRING_JOURNAL.LIST.NEXT_JOURNAL_DATE' | translate }}</p>
+        <h3 class="rjv-value">{{ j.nextJournalDate ? (j.nextJournalDate | date: 'dd/MM/yyyy') : '—' }}</h3>
+      </div>
+    </section>
+
+    @if (j.childJournals && j.childJournals.length > 0) {
+      <section class="card">
+        <header class="card__head">
+          <h2 class="card__title">{{ 'RECURRING_JOURNAL.VIEW.ALL_CHILD_JOURNALS' | translate }}</h2>
+        </header>
+        <div class="card__body rjv-table-wrap">
+          <table class="rjv-table">
+            <thead>
+              <tr>
+                <th>{{ 'RECURRING_JOURNAL.VIEW.DATE' | translate }}</th>
+                <th>{{ 'RECURRING_JOURNAL.VIEW.REFERENCE_NUMBER' | translate }}</th>
+                <th>{{ 'RECURRING_JOURNAL.VIEW.STATUS' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (child of j.childJournals; track child.id) {
+                <tr>
+                  <td>
+                    {{ child.journalDate | date: 'dd/MM/yyyy' }}
+                    <br/><span class="rjv-muted">{{ child.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                  </td>
+                  <td>{{ child.reference || '—' }}</td>
+                  <td><span class="rjv-status-dot">{{ child.status }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  </div>
+}
+
+<app-loading-overlay [show]="loading()"/>

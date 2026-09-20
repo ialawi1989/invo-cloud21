@@ -1,0 +1,47 @@
+<div class="st">
+  <div class="st__header">
+    <h1>{{ 'APPOINTMENTS.SERVICE_TEAM.TITLE' | translate }}</h1>
+    <p>{{ 'APPOINTMENTS.SERVICE_TEAM.SUBTITLE' | translate }}</p>
+  </div>
+
+  @if (loading()) {
+    <div class="st__state">{{ 'APPOINTMENTS.SERVICE_TEAM.LOADING' | translate }}</div>
+  } @else if (rows().length === 0) {
+    <div class="st__state">{{ 'APPOINTMENTS.SERVICE_TEAM.EMPTY' | translate }}</div>
+  } @else {
+    <div class="st__table-wrap">
+      <table class="st__table">
+        <thead>
+          <tr>
+            <th class="st__service-col">{{ 'APPOINTMENTS.FORM.SERVICES' | translate }}</th>
+            @for (s of staff(); track trackByStaffId($index, s)) {
+              <th>{{ s.name }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track trackByServiceId($index, row)) {
+            <tr>
+              <td class="st__service-col">
+                {{ row.serviceName }}
+                @if (row.checked.size === 0) {
+                  <span class="st__hint">{{ 'APPOINTMENTS.SERVICE_TEAM.ANY_STAFF_HINT' | translate }}</span>
+                }
+              </td>
+              @for (s of staff(); track trackByStaffId($index, s)) {
+                <td class="st__cell">
+                  <input
+                    type="checkbox"
+                    [checked]="isChecked(row, s.id)"
+                    [disabled]="row.saving"
+                    (change)="toggle(row, s.id)"
+                  />
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

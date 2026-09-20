@@ -20,6 +20,8 @@ import { TooltipDirective } from '../../../../shared/directives/tooltip.directiv
 import { BranchConnectionService } from '../../services/branch.service';
 import { BranchesPanelComponent } from './branches-panel.component';
 import { RecentUpdatesPanelComponent } from './recent-updates-panel.component';
+import { NotificationsPanelComponent } from './notifications-panel.component';
+import { PendingOrdersService } from '../../services/pending-orders.service';
 
 import type { FavPage as FavTab } from '../../services/favorites.service';
 
@@ -118,13 +120,18 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
         </button>
 
         <!-- Notifications -->
-        <button class="icon-action icon-action--badge" [appTooltip]="'TOPBAR.NOTIFICATIONS' | translate">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-        </button>
+        <div class="icon-action-wrap">
+          <button class="icon-action" (click)="openNotifications()" [appTooltip]="'TOPBAR.NOTIFICATIONS' | translate">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </button>
+          @if (pendingOrders.count() > 0) {
+            <span class="icon-count icon-count--danger">{{ pendingOrders.count() }}</span>
+          }
+        </div>
 
         <!-- Branch connections -->
         <div class="icon-action-wrap icon-action--mobile-hide">
@@ -416,6 +423,7 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
       pointer-events: none; white-space: nowrap;
       display: flex; align-items: center; justify-content: center;
     }
+    .icon-count--danger { background: #ef4444; }
     .avatar-btn {
       width: 32px; height: 32px; margin-left: 4px;
       display: flex; align-items: center; justify-content: center;
@@ -608,6 +616,7 @@ export class TopbarComponent {
   langService          = inject(LanguageService);
   branchSvc            = inject(BranchConnectionService) as BranchConnectionService;
   get connectedBranches() { return this.branchSvc.connectedCount; }
+  pendingOrders        = inject(PendingOrdersService);
 
   logoImgError    = false;
   qaOpen          = signal(false);
@@ -643,6 +652,7 @@ export class TopbarComponent {
     // Boot-time warm-up. A failure here is not fatal — the service stays
     // "not loaded" so whoever needs the list next retries it.
     void this.branchSvc.load().catch(() => {});
+    void this.pendingOrders.load();
     document.addEventListener('fullscreenchange', () => {
       this.isFullscreen.set(!!document.fullscreenElement);
     });
@@ -766,6 +776,12 @@ export class TopbarComponent {
 
   openUpdates(): void {
     this.modal.open(RecentUpdatesPanelComponent, {
+      drawer: true, drawerWidth: '380px', closeOnBackdrop: true,
+    });
+  }
+
+  openNotifications(): void {
+    this.modal.open(NotificationsPanelComponent, {
       drawer: true, drawerWidth: '380px', closeOnBackdrop: true,
     });
   }

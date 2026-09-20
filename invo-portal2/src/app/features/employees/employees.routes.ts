@@ -38,6 +38,13 @@ const translationsLoaded: CanActivateFn = async () => {
   return true;
 };
 
+/** Service Team's strings live in the Appointments i18n namespace, not Employees'. */
+const serviceTeamTranslationsLoaded: CanActivateFn = async () => {
+  const lang = inject(LanguageService);
+  await Promise.all([lang.loadFeature('employees'), lang.loadFeature('appointments')]);
+  return true;
+};
+
 export const EMPLOYEES_ROUTES: Routes = [
   {
     path: '',
@@ -117,6 +124,17 @@ export const EMPLOYEES_ROUTES: Routes = [
     data: { hrGroup: 'employeeGosiSecurity', hrAction: 'view' },
     loadComponent: () =>
       import('./pages/gosi-settings/gosi-settings.component').then(m => m.GosiSettingsComponent),
+  },
+  {
+    // Services × staff capability matrix for Appointments — lives under
+    // Employees (not Appointments) because it's staff configuration, same
+    // as schedule/attendance. Gated on Appointments' own `serviceTeam`
+    // action rather than an employees privilege.
+    path: 'service-team',
+    canActivate: [serviceTeamTranslationsLoaded, privilegeGuard],
+    data: { permissionPath: 'appointmentsSecurity.actions.serviceTeam.access' },
+    loadComponent: () =>
+      import('./pages/service-team/service-team.component').then(m => m.ServiceTeamComponent),
   },
   {
     path: 'my-account',

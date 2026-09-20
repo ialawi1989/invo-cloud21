@@ -1,0 +1,180 @@
+<div class="mjf-page">
+  <app-loading-overlay [show]="loading()" [fullScreen]="false"/>
+
+  <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+
+  <div class="mjf-header">
+    <h1 class="mjf-title">
+      {{ (isNew() ? 'MANUAL_JOURNALS.FORM.NEW_TITLE' : 'MANUAL_JOURNALS.FORM.EDIT_TITLE') | translate }}
+    </h1>
+  </div>
+
+  <div class="mjf-card">
+    <div class="mjf-fields">
+      <label class="mjf-field">
+        <span>{{ 'MANUAL_JOURNALS.FORM.BRANCH' | translate }}</span>
+        <app-search-dropdown
+          [items]="branches()"
+          [value]="selectedBranch()"
+          (valueChange)="onBranchChange($event)"
+          [displayWith]="branchDisplay"
+          [compareWith]="branchCompare"
+          [toValue]="branchToValue"
+          [clearable]="false"
+          [placeholder]="'MANUAL_JOURNALS.FORM.SELECT_BRANCH' | translate">
+        </app-search-dropdown>
+      </label>
+
+      <label class="mjf-field">
+        <span>{{ 'MANUAL_JOURNALS.FORM.DATE' | translate }}</span>
+        <app-date-picker
+          mode="single"
+          [value]="journalDate()"
+          (valueChange)="onDateChange($any($event))"
+          [max]="today">
+        </app-date-picker>
+      </label>
+
+      <label class="mjf-field">
+        <span>{{ 'MANUAL_JOURNALS.FORM.REFERENCE' | translate }}</span>
+        <input type="text" [ngModel]="reference()" (ngModelChange)="onReferenceChange($event)"/>
+      </label>
+    </div>
+
+    <div class="mjf-fields">
+      <label class="mjf-field mjf-field--wide">
+        <span>{{ 'MANUAL_JOURNALS.FORM.NOTES' | translate }}</span>
+        <textarea rows="2" [ngModel]="notes()" (ngModelChange)="onNotesChange($event)"></textarea>
+      </label>
+
+      <div class="mjf-field mjf-field--wide">
+        <span>{{ 'COMMON.ATTACHMENT' | translate }}</span>
+        <div class="mjf-attachments">
+          @for (a of attachments(); track a.id) {
+            <span class="mjf-attachment-chip">
+              {{ a.mediaName }}
+              <button type="button" (click)="removeAttachment(a.id)" aria-label="remove">×</button>
+            </span>
+          }
+          <button type="button" class="mjf-btn mjf-btn--ghost" (click)="addAttachment()">
+            {{ 'MANUAL_JOURNALS.FORM.ATTACH_FILE' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mjf-card">
+    <h3 class="mjf-card-title">{{ 'MANUAL_JOURNALS.FORM.LINES_TITLE' | translate }}</h3>
+
+    @if (accountsLoaded()) {
+      <table class="mjf-lines-table">
+        <thead>
+          <tr>
+            <th class="mjf-col-account">{{ 'MANUAL_JOURNALS.FORM.ACCOUNT' | translate }}</th>
+            <th>{{ 'MANUAL_JOURNALS.FORM.REFERENCE_CODE' | translate }}</th>
+            <th class="mjf-col-amount">{{ 'MANUAL_JOURNALS.FORM.DEBIT' | translate }}</th>
+            <th class="mjf-col-amount">{{ 'MANUAL_JOURNALS.FORM.CREDIT' | translate }}</th>
+            <th class="mjf-col-actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of activeLines(); track trackLine($index, line)) {
+            <tr>
+              <td class="mjf-col-account">
+                <app-search-dropdown
+                  [items]="sortedAccounts()"
+                  [value]="selectedAccount(line)"
+                  (valueChange)="onAccountChange(line, $event)"
+                  [displayWith]="accountDisplay"
+                  [compareWith]="accountCompare"
+                  [toValue]="accountToValue"
+                  [groupBy]="accountGroupBy"
+                  [clearable]="false"
+                  [placeholder]="'MANUAL_JOURNALS.FORM.SELECT_ACCOUNT' | translate">
+                </app-search-dropdown>
+              </td>
+              <td>
+                <input type="text" [ngModel]="line.code" (ngModelChange)="onCodeChange(line, $event)"/>
+              </td>
+              <td class="mjf-col-amount">
+                <input type="number" min="0" step="0.001"
+                  [ngModel]="line.debit" (ngModelChange)="onDebitChange(line, $event)"/>
+              </td>
+              <td class="mjf-col-amount">
+                <input type="number" min="0" step="0.001"
+                  [ngModel]="line.credit" (ngModelChange)="onCreditChange(line, $event)"/>
+              </td>
+              <td class="mjf-col-actions">
+                <button type="button" class="mjf-btn mjf-btn--danger-ghost" (click)="removeLine(line)">
+                  {{ 'COMMON.DELETE' | translate }}
+                </button>
+              </td>
+            </tr>
+            <tr class="mjf-desc-row">
+              <td colspan="2">
+                <textarea rows="1" [ngModel]="line.description" (ngModelChange)="onDescriptionChange(line, $event)"
+                  [placeholder]="'MANUAL_JOURNALS.FORM.DESCRIPTION_PLACEHOLDER' | translate"></textarea>
+              </td>
+              <td colspan="3"></td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <th class="mjf-col-account"></th>
+            <th>{{ 'MANUAL_JOURNALS.FORM.TOTAL' | translate }}</th>
+            <th class="mjf-col-amount">{{ totals().debitsTotal | mycurrency }}</th>
+            <th class="mjf-col-amount">{{ totals().creditsTotal | mycurrency }}</th>
+            <th class="mjf-col-actions"
+                [class.mjf-balance--bad]="balanceDiff() !== 0"
+                [class.mjf-balance--ok]="balanceDiff() === 0">
+              {{ balanceDiff() | mycurrency }}
+            </th>
+          </tr>
+        </tfoot>
+      </table>
+    }
+
+    <div class="mjf-lines-footer">
+      <button type="button" class="mjf-btn mjf-btn--ghost" (click)="addLine()">
+        + {{ 'MANUAL_JOURNALS.FORM.ADD_LINE' | translate }}
+      </button>
+    </div>
+
+    @if (activeLines().length < 2) {
+      <div class="mjf-alert mjf-alert--danger">
+        {{ 'MANUAL_JOURNALS.FORM.MIN_TWO_LINES' | translate }}
+      </div>
+    } @else if (hasZeroLine()) {
+      <div class="mjf-alert mjf-alert--danger">
+        {{ 'MANUAL_JOURNALS.FORM.ZERO_LINE' | translate }}
+      </div>
+    } @else if (balanceDiff() !== 0) {
+      <div class="mjf-alert mjf-alert--danger">
+        {{ 'MANUAL_JOURNALS.FORM.NOT_BALANCED' | translate }}
+      </div>
+    }
+  </div>
+</div>
+
+<app-form-sticky-footer>
+  <button type="button" class="btn btn-ghost" (click)="cancel()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  @if (!isNew()) {
+    <button type="button" class="btn btn-ghost" (click)="view()">
+      {{ 'COMMON.VIEW' | translate }}
+    </button>
+  }
+  @if (status() === 'Draft' || status() === '') {
+    <button type="button" class="btn btn-ghost" [disabled]="saveDraftDisabled()"
+      [title]="missingTooltip()" (click)="save('Draft')">
+      {{ 'COMMON.SAVE_DRAFT' | translate }}
+    </button>
+  }
+  <button type="button" class="btn btn-primary" [disabled]="saveDisabled()"
+    [title]="missingTooltip()" (click)="save('Open')">
+    {{ 'COMMON.SAVE' | translate }}
+  </button>
+</app-form-sticky-footer>

@@ -1,0 +1,29 @@
+<div class="agd">
+  <header class="agd__head">
+    <h3>{{ data.title }}</h3>
+  </header>
+
+  <div class="agd__body">
+    @if (data.tasks.length === 0) {
+      <div class="agd__empty">{{ 'APPOINTMENTS.NO_APPOINTMENTS' | translate }}</div>
+    } @else {
+      <ul class="agd__list">
+        @for (task of data.tasks; track trackByTaskId($index, task)) {
+          <li>
+            <button type="button" class="agd__card" [attr.data-status]="statusOf(task)" (click)="open(task)">
+              <span class="agd__time">{{ timeRange(task) }}</span>
+              <span class="agd__customer">{{ task.customerName || ('APPOINTMENTS.WALK_IN' | translate) }}</span>
+              <span class="agd__service">{{ task.serviceName }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  @if (data.canAdd) {
+    <div class="agd__footer">
+      <button type="button" class="agd__add-btn" (click)="addNew()">+ {{ 'APPOINTMENTS.NEW_APPOINTMENT' | translate }}</button>
+    </div>
+  }
+</div>

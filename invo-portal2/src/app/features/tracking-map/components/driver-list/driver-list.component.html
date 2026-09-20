@@ -4,15 +4,27 @@
 </div>
 
 <ul class="driver-list">
-  @if (drivers().length > 0) {
+  @if (showSkeleton()) {
+    @for (_ of [1, 2, 3, 4]; track $index) {
+      <li class="driver-row driver-row--skeleton">
+        <app-skeleton [rounded]="true" width="36px" height="36px" />
+        <span class="driver-info">
+          <app-skeleton variant="line" width="60%" height="13px" />
+          <app-skeleton variant="line" width="35%" height="10px" />
+        </span>
+      </li>
+    }
+  } @else if (drivers().length > 0) {
     @for (driver of drivers(); track trackById($index, driver)) {
       <li>
-        <button
-          type="button"
+        <div
           class="driver-row"
+          role="button"
+          tabindex="0"
           [class.selected]="selectedDriverId() === driver.id"
           [class.dimmed]="driver.status === 'off-shift'"
           (click)="select(driver.id)"
+          (keydown.enter)="select(driver.id)"
         >
           <span class="avatar" [attr.data-status]="driver.status" [attr.data-activity]="driver.activity">
             @if (driver.avatarUrl) {
@@ -42,29 +54,16 @@
             }
 
             @if (driver.currentOrders.length > 0) {
-              <span class="order-count-badge">
+              <button type="button" class="order-count-badge" (click)="openOrders(driver, $event)">
                 {{ driver.currentOrders.length }}
                 {{ (driver.currentOrders.length === 1 ? 'TRACKING_MAP.ORDER' : 'TRACKING_MAP.ORDERS') | translate }}
-              </span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
             }
           </span>
-        </button>
-
-        @if (selectedDriverId() === driver.id && driver.currentOrders.length > 0) {
-          <ul class="order-sublist">
-            @for (order of driver.currentOrders; track trackByOrderId($index, order)) {
-              <li class="order-row">
-                <a class="order-row-btn" [routerLink]="['/account/invoices/view', order.id]" (click)="$event.stopPropagation()">
-                  <span class="order-invoice">#{{ order.invoiceNumber }}</span>
-                  <span class="order-status" [attr.data-status]="order.deliveryOrderStatus">
-                    {{ orderStatusLabel(order) | translate: { branch: branchNameFor(order.branchId) } }}
-                  </span>
-                  <span class="order-total">{{ order.total | mycurrency }}</span>
-                </a>
-              </li>
-            }
-          </ul>
-        }
+        </div>
       </li>
     }
   } @else {

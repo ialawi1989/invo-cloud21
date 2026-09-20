@@ -13,6 +13,7 @@
     "NO_TRACKING_NOTICE": "Off-shift drivers aren't tracked live",
     "DRIVER_LIVE": "driver live on map",
     "DRIVERS_LIVE": "drivers live on map",
+    "NO_ACTIVE_ORDERS": "No active orders.",
 
     "BRANCH_FILTER": {
       "PLACEHOLDER": "Select branch",

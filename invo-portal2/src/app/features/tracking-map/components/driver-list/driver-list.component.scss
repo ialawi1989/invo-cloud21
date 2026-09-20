@@ -52,7 +52,14 @@
   transition: background 120ms ease, border-color 120ms ease;
 }
 
+.driver-row--skeleton {
+  cursor: default;
+
+  .driver-info { gap: 6px; }
+}
+
 .driver-row:hover { background: #f8fafc; }
+.driver-row:focus-visible { outline: 2px solid #2691a4; outline-offset: 1px; }
 .driver-row.selected { background: #eef7f8; border-color: #bfe3e7; }
 .driver-row.dimmed { opacity: 0.55; }
 
@@ -140,39 +147,24 @@
   &[data-activity='just-delivered-an-order'] { background: #dcfce7; color: #16a34a; }
 }
 
+// Opens the orders drawer — distinct from the row's own click (select on map).
 .order-count-badge {
-  font-size: 10px;
-  color: #64748b;
-}
-
-.order-sublist {
-  list-style: none;
-  margin: 2px 0 6px 46px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.order-row-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  background: #f8fafc;
-  border: 1px solid #eef2f6;
-  border-radius: 8px;
-  text-decoration: none;
-  color: inherit;
-  font-size: 12px;
+  gap: 3px;
+  padding: 2px 7px;
+  border: 1px solid #cfe8ec;
+  border-radius: 999px;
+  background: #eef7f8;
+  color: #2691a4;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease;
 }
 
-.order-row-btn:hover { background: #eef7f8; border-color: #bfe3e7; }
-
-.order-invoice { font-weight: 700; color: #1a1d29; }
-.order-status { flex: 1; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.order-total { font-weight: 700; color: #1a1d29; }
+.order-count-badge:hover { background: #dcf0f2; border-color: #9ecdd4; }
+.order-count-badge:focus-visible { outline: 2px solid #2691a4; outline-offset: 1px; }
 
 .empty-state {
   display: flex;

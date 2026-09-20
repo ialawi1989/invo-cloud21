@@ -1,0 +1,44 @@
+<header class="dod__head">
+  <span class="dod__avatar" [attr.data-status]="driver.status" [attr.data-activity]="driver.activity">
+    @if (driver.avatarUrl) {
+      <img [src]="driver.avatarUrl" [alt]="driver.name" />
+    } @else {
+      {{ driver.name.charAt(0) }}
+    }
+  </span>
+  <span class="dod__info">
+    <span class="dod__name">{{ driver.name }}</span>
+    <span class="dod__meta">
+      @if (driver.phone) { <span>{{ driver.phone }}</span> }
+      <span class="dod__activity" [attr.data-activity]="driver.activity">{{ activityLabel() | translate }}</span>
+    </span>
+  </span>
+</header>
+
+<div class="dod__subhead">
+  {{ 'TRACKING_MAP.ORDERS' | translate }}
+  <span class="dod__count">{{ driver.currentOrders.length }}</span>
+</div>
+
+<ul class="dod__list">
+  @for (order of driver.currentOrders; track trackByOrderId($index, order)) {
+    <li class="dod__order">
+      <a class="dod__order-link" [routerLink]="['/account/invoices/view', order.id]" (click)="goToInvoice()">
+        <div class="dod__order-top">
+          <span class="dod__invoice">#{{ order.invoiceNumber }}</span>
+          <span class="dod__total">{{ order.total | mycurrency }}</span>
+        </div>
+        <div class="dod__order-bottom">
+          <span class="dod__status" [attr.data-status]="order.deliveryOrderStatus">
+            {{ orderStatusLabel(order) | translate: { branch: branchNameFor(order.branchId) } }}
+          </span>
+          @if (order.customerAddress?.title) {
+            <span class="dod__address">{{ order.customerAddress?.title }}</span>
+          }
+        </div>
+      </a>
+    </li>
+  } @empty {
+    <li class="dod__empty">{{ 'TRACKING_MAP.NO_ACTIVE_ORDERS' | translate }}</li>
+  }
+</ul>

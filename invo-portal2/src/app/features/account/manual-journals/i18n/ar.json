@@ -1,0 +1,54 @@
+{
+  "MANUAL_JOURNALS": {
+    "LIST": {
+      "TITLE": "القيود اليدوية",
+      "ADD_NEW": "إضافة قيد",
+      "SHOW_LOGS": "عرض السجلات",
+      "SEARCH_PLACEHOLDER": "ابحث بالمرجع أو الفرع…",
+      "DATE": "التاريخ",
+      "REFERENCE": "المرجع",
+      "BRANCH": "الفرع",
+      "EMPLOYEE": "الموظف",
+      "AMOUNT": "المبلغ",
+      "STATUS": "الحالة",
+      "EMPTY": "لا توجد قيود لعرضها.",
+      "DELETE_TITLE": "حذف القيد؟",
+      "DELETE_MESSAGE": "سيتم حذف القيد \"{{reference}}\" نهائيًا. لا يمكن التراجع عن هذا الإجراء."
+    },
+    "STATUS": {
+      "DRAFT": "مسودة",
+      "OPEN": "مفتوح"
+    },
+    "FORM": {
+      "NEW_TITLE": "قيد جديد",
+      "EDIT_TITLE": "تعديل القيد",
+      "VIEW_TITLE": "عرض القيد",
+      "BRANCH": "الفرع",
+      "SELECT_BRANCH": "اختر فرعًا",
+      "DATE": "التاريخ",
+      "REFERENCE": "رقم المرجع",
+      "NOTES": "ملاحظات",
+      "LINES_TITLE": "بنود القيد",
+      "ACCOUNT": "الحساب",
+      "SELECT_ACCOUNT": "اختر حسابًا",
+      "REFERENCE_CODE": "المرجع",
+      "DEBIT": "مدين",
+      "CREDIT": "دائن",
+      "DESCRIPTION": "الوصف",
+      "DESCRIPTION_PLACEHOLDER": "أدخل وصفًا",
+      "ADD_LINE": "إضافة بند",
+      "MIN_TWO_LINES": "يجب إضافة حسابين على الأقل.",
+      "ZERO_LINE": "يوجد حساب أو أكثر بقيمة مدين ودائن صفر.",
+      "NOT_BALANCED": "يجب أن يتساوى إجمالي المدين مع إجمالي الدائن.",
+      "FIELD_BRANCH": "الفرع",
+      "FIELD_LINE_ACCOUNT": "الحساب (لكل بند)",
+      "MISSING_HEADER": "الحقول المطلوبة الناقصة:",
+      "ATTACH_FILE": "إرفاق ملف",
+      "CONFIRM_REMOVE_LINE_TITLE": "إزالة البند؟",
+      "CONFIRM_REMOVE_LINE_MESSAGE": "سيتم إزالة هذا البند من القيد.",
+      "COMMENTS": "التعليقات",
+      "ADD_COMMENT": "إضافة تعليق",
+      "OPEN_JOURNAL": "فتح القيد"
+    }
+  }
+}

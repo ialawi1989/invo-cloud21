@@ -474,6 +474,8 @@ export class SettingsComponent {
           i18nPrefix: 'SERVICE_MANAGEMENT' },
         { label: 'SETTINGS.ITEMS.PLUGINS', description: 'SETTINGS.ITEMS.PLUGINS_DESC', link: '/settings/plugins', privilege: 'pluginsSecurity.actions.view.access',
           i18nPrefix: 'PLUGINS' },
+        { label: 'SETTINGS.ITEMS.NOTIFICATIONS', description: 'SETTINGS.ITEMS.NOTIFICATIONS_DESC', link: '/settings/notifications', privilege: 'notificationSettingsSecurity.actions.view.access',
+          i18nPrefix: 'NOTIFICATIONS_SETTINGS' },
         { label: 'SETTINGS.ITEMS.IMPORT_FROM_INVO',   description: 'SETTINGS.ITEMS.IMPORT_FROM_INVO_DESC',   privilege: 'companySettingsSecurity.access',
           i18nPrefix: 'SETTINGS.IMPORT_FROM_INVO',
           popup: { component: () => import('./components/import-from-invo/import-from-invo.component').then(m => m.ImportFromInvoComponent), size: 'md' } },

@@ -93,6 +93,7 @@ import { recurringBillSecurity } from './recurringBillSecurity';
 import { recurringExpenseSecurity } from './recurringExpenseSecurity';
 import { recurringInvoiceSecurity } from './recurringInvoiceSecurity';
 import { recurringJournalSecurity } from './recurringJournalSecurity';
+import { appointmentsSecurity } from './appointmentsSecurity';
 import { reportsSecurity } from './reportsSecurity';
 import { salonSecurity } from './salonSecurity';
 import { salesTargetSecurity } from './salesTargetSecurity';
@@ -110,6 +111,8 @@ import { waitingListSecurity } from './waitingListSecurity';
 import { websiteBuilderSecurity } from './websiteBuilderSecurity';
 import { websiteAnalyticsSecurity } from './websiteAnalyticsSecurity';
 import { mapTrackingSecurity } from './mapTrackingSecurity';
+import { notificationSettingsSecurity } from './notificationSettingsSecurity';
+import { messageTemplatesSecurity } from './messageTemplatesSecurity';
 import { websiteSettingsSecurity } from './websiteSettingsSecurity';
 import { workOrderSecurity } from './workOrderSecurity';
 import { customReportsSecurity } from '../../../../features/reports/custom/custom-reports.privileges';
@@ -219,6 +222,9 @@ export const SECURITY_DEFINITIONS = {
   reportsSecurity,
   customReportsSecurity,
   mapTrackingSecurity,
+  notificationSettingsSecurity,
+  messageTemplatesSecurity,
+  appointmentsSecurity,
   privilegeSecurity,
   accountSecurity,
   customerSecurity,

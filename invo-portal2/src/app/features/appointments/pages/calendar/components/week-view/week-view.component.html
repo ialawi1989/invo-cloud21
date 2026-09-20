@@ -1,0 +1,76 @@
+<div class="week-grid">
+  <div class="week-grid__header">
+    <div class="week-grid__time-col"></div>
+    @for (day of days(); track trackByDay($index, day)) {
+      <div class="week-grid__day-header" [class.is-today]="isToday(day)" (click)="dayClick.emit(day)">
+        <span class="week-grid__day-name">{{ dayName(day) }}</span>
+        <span class="week-grid__day-num">{{ day.getDate() }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="week-grid__body">
+    <div class="week-grid__time-col">
+      @for (slot of timeSlots; track slot) {
+        <div class="week-grid__time-label" [style.height.px]="SLOT_HEIGHT">
+          @if (slot.endsWith(':00')) { {{ slot }} }
+        </div>
+      }
+    </div>
+
+    @for (day of days(); track trackByDay($index, day)) {
+      <div
+        class="week-grid__day-col"
+        [attr.data-day-key]="trackByDay(0, day)"
+        [style.height.px]="bodyHeight"
+        (pointerdown)="onColumnPointerDown($event, day)"
+      >
+        @for (slot of timeSlots; track slot) {
+          <div
+            class="week-grid__slot-btn"
+            [style.height.px]="SLOT_HEIGHT"
+            [class.is-past]="isSlotPast(day, slot)"
+          ></div>
+        }
+
+        <div class="week-grid__overlay">
+          @for (group of groupsFor(day); track trackByGroup($index, group)) {
+            @if (group.length === 1) {
+              <div
+                class="week-appt"
+                [attr.data-status]="statusOf(group[0])"
+                [style.top.px]="top(group[0])"
+                [style.height.px]="height(group[0])"
+                (pointerdown)="onCardPointerDown($event, group[0])"
+                (click)="onGroupClick(day, group)"
+              >
+                <span class="week-appt__title">{{ group[0].customerName || ('APPOINTMENTS.WALK_IN' | translate) }} · {{ group[0].serviceName }}</span>
+                @if (height(group[0]) > 28) {
+                  <span class="week-appt__time">{{ timeRangeLabel(group[0]) }}</span>
+                }
+                @if (canEdit() && !group[0].isInvoiced) {
+                  <div class="week-appt__resize-handle" (pointerdown)="onResizeHandlePointerDown($event, group[0])"></div>
+                }
+              </div>
+            } @else {
+              <div
+                class="week-appt week-appt--group"
+                [style.top.px]="groupTop(group)"
+                [style.height.px]="groupHeight(group)"
+                (click)="onGroupClick(day, group)"
+              >
+                <span class="week-appt__title">{{ group.length }} {{ 'APPOINTMENTS.APPOINTMENTS' | translate }}</span>
+              </div>
+            }
+          }
+
+          @if (creatingPreview(); as preview) {
+            @if (preview.dayKeyValue === trackByDay(0, day)) {
+              <div class="week-grid__creating" [style.top.px]="preview.top" [style.height.px]="preview.height"></div>
+            }
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

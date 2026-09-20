@@ -1,0 +1,206 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.day-grid {
+  height: 100%;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+}
+
+.day-grid__inner {
+  display: flex;
+}
+
+.day-grid__time-col {
+  flex: 0 0 56px;
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 5;
+  border-right: 1px solid #f1f5f9;
+}
+
+.day-col__header {
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background: #fff;
+  border-bottom: 1px solid #e4e7ec;
+}
+
+.day-grid__time-label {
+  font-size: 10.5px;
+  color: #94a3b8;
+  text-align: right;
+  padding-right: 8px;
+  transform: translateY(-6px);
+}
+
+.day-col {
+  flex: 1 1 130px;
+  min-width: 130px;
+  border-right: 1px solid #f1f5f9;
+
+  &:last-child { border-right: none; }
+}
+
+.day-col__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.day-col__avatar {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-col__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1d29;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-col__body {
+  position: relative;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.day-col__creating {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  border-radius: 5px;
+  background: rgba(38, 145, 164, 0.16);
+  border: 1.5px dashed #2691a4;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.day-col__cell {
+  border-bottom: 1px solid #f8fafc;
+  box-sizing: border-box;
+
+  &:nth-child(4n) { border-bottom-color: #f1f5f9; }
+
+  // Clearly disabled-looking — a diagonal hatch (like Google Calendar's past
+  // slots) reads as "unavailable" at a glance, unlike a barely-there tint.
+  &.is-past {
+    background:
+      repeating-linear-gradient(
+        135deg,
+        #eef1f4,
+        #eef1f4 6px,
+        #f6f7f9 6px,
+        #f6f7f9 12px
+      );
+    cursor: not-allowed;
+  }
+}
+
+.day-col__now-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 2px solid #dc2626;
+  z-index: 4;
+  pointer-events: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #dc2626;
+  }
+}
+
+.appt-card {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  border-radius: 8px;
+  padding: 4px 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  cursor: grab;
+  border-left: 3px solid;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+  touch-action: none;
+  z-index: 2;
+
+  &:active { cursor: grabbing; }
+
+  &[data-status='booked'] { background: #eef2f6; border-left-color: #6b7280; }
+  &[data-status='checked-in'] { background: #eff6ff; border-left-color: #2563eb; }
+  &[data-status='paid'] { background: #f0fdf4; border-left-color: #16a34a; }
+}
+
+.appt-card__resize-handle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  cursor: ns-resize;
+  touch-action: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 1px;
+    width: 24px;
+    height: 2px;
+    transform: translateX(-50%);
+    border-radius: 2px;
+    background: rgba(15, 23, 42, 0.25);
+  }
+}
+
+.appt-card__customer {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #1a1d29;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appt-card__service {
+  font-size: 10.5px;
+  color: #475569;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appt-card__time {
+  font-size: 10px;
+  color: #94a3b8;
+  white-space: nowrap;
+}

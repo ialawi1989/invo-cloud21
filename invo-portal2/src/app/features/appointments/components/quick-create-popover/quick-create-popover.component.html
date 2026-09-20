@@ -1,0 +1,84 @@
+<div class="qc">
+  <div class="qc__eyebrow">{{ data.employeeName }}</div>
+
+  <button type="button" class="qc__service-btn" [class.qc__service-btn--error]="serviceInvalid()" (click)="pickService()">
+    @if (productName()) {
+      <span class="qc__service-name">{{ productName() }}</span>
+    } @else {
+      <span class="qc__service-placeholder">{{ 'APPOINTMENTS.FORM.SELECT_SERVICE' | translate }}</span>
+    }
+  </button>
+  @if (serviceInvalid()) {
+    <span class="qc__error-text">{{ 'APPOINTMENTS.FORM.SERVICE_REQUIRED' | translate }}</span>
+  }
+
+  <div class="qc__row qc__row--time">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span class="qc__range">{{ rangeLabel() }}</span>
+  </div>
+
+  <div class="qc__row qc__row--fields">
+    <app-search-dropdown
+      class="qc__time"
+      [items]="timeOptions"
+      [displayWith]="optionLabel"
+      [compareWith]="timeCompare"
+      [toValue]="optionValue"
+      [ngModel]="timeValue()"
+      (ngModelChange)="onTimeChange($event)"
+      [clearable]="false"
+    />
+    <app-search-dropdown
+      class="qc__duration"
+      [items]="durationOptions"
+      [displayWith]="optionLabel"
+      [compareWith]="durationCompare"
+      [toValue]="optionValue"
+      [ngModel]="duration()"
+      (ngModelChange)="duration.set($event)"
+      [clearable]="false"
+    />
+  </div>
+
+  <div class="qc__row">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+
+    @if (!isWalkIn()) {
+      <div class="qc__customer" [class.qc__field--error]="customerInvalid()">
+        <app-search-dropdown
+          [loadFn]="customerSearchFn"
+          [displayWith]="customerDisplay"
+          [ngModel]="customer()"
+          (ngModelChange)="customer.set($event)"
+          [placeholder]="'APPOINTMENTS.FORM.SEARCH_CUSTOMER' | translate"
+        />
+      </div>
+    } @else {
+      <input
+        type="text"
+        class="qc__input"
+        [class.qc__field--error]="customerInvalid()"
+        [ngModel]="walkInContact()"
+        (ngModelChange)="walkInContact.set($event)"
+        [placeholder]="'APPOINTMENTS.FORM.WALK_IN_CUSTOMER' | translate"
+      />
+    }
+  </div>
+  @if (customerInvalid()) {
+    <span class="qc__error-text qc__error-text--customer">{{ 'APPOINTMENTS.FORM.CUSTOMER_REQUIRED' | translate }}</span>
+  }
+
+  <label class="qc__walkin">
+    <input type="checkbox" [ngModel]="isWalkIn()" (ngModelChange)="isWalkIn.set($event)" />
+    {{ 'APPOINTMENTS.FORM.WALK_IN_CUSTOMER' | translate }}
+  </label>
+</div>
+
+<app-modal-footer>
+  <button type="button" class="qc__more-btn" (click)="moreOptions()">
+    {{ 'APPOINTMENTS.QUICK_CREATE.MORE_OPTIONS' | translate }}
+  </button>
+  <button type="button" class="qc__save-btn" [disabled]="saving()" (click)="save()">
+    {{ 'APPOINTMENTS.FORM.SAVE' | translate }}
+  </button>
+</app-modal-footer>

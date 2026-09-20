@@ -1,0 +1,81 @@
+<app-modal-header [title]="'APPOINTMENTS.PRINT_SCHEDULE.TITLE' | translate" />
+
+<div class="psm">
+  <div class="psm__controls">
+    <div class="psm__field">
+      <label>{{ 'APPOINTMENTS.STAFF' | translate }}</label>
+      <app-search-dropdown
+        [items]="employeeOptions()"
+        [displayWith]="optionLabel"
+        [compareWith]="optionCompare"
+        [toValue]="optionValue"
+        [ngModel]="employeeId()"
+        (ngModelChange)="onEmployeeChange($event)"
+        [placeholder]="'APPOINTMENTS.STAFF' | translate"
+      />
+    </div>
+
+    <div class="psm__field">
+      <label>{{ 'APPOINTMENTS.FORM.DATE' | translate }}</label>
+      <app-date-picker mode="single" [value]="date()" (valueChange)="onDateChange($event)" />
+    </div>
+
+    <div class="psm__field">
+      <label>{{ 'APPOINTMENTS.PRINT_SCHEDULE.PAPER_SIZE' | translate }}</label>
+      <app-segmented-toggle [options]="paperSizeOptions" [value]="paperSize()" (valueChange)="paperSize.set($event)" />
+    </div>
+
+    <button type="button" class="psm__preview-btn" [disabled]="loading() || !employeeId()" (click)="generatePreview()">
+      {{ 'APPOINTMENTS.PRINT_SCHEDULE.GENERATE_PREVIEW' | translate }}
+    </button>
+  </div>
+
+  <div class="psm__preview">
+    @if (loading()) {
+      <div class="psm__state">…</div>
+    } @else if (!schedule()) {
+      <div class="psm__state">{{ 'APPOINTMENTS.PRINT_SCHEDULE.NO_PREVIEW' | translate }}</div>
+    } @else if (schedule()!.appointments.length === 0) {
+      <div class="psm__state">{{ 'APPOINTMENTS.PRINT_SCHEDULE.NO_APPOINTMENTS' | translate }}</div>
+    } @else {
+      <table class="psm__table">
+        <thead>
+          <tr>
+            <th>{{ 'APPOINTMENTS.PRINT_SCHEDULE.COL_TIME' | translate }}</th>
+            <th>{{ 'APPOINTMENTS.PRINT_SCHEDULE.COL_DURATION' | translate }}</th>
+            <th>{{ 'APPOINTMENTS.PRINT_SCHEDULE.COL_CLIENT' | translate }}</th>
+            <th>{{ 'APPOINTMENTS.PRINT_SCHEDULE.COL_PHONE' | translate }}</th>
+            <th>{{ 'APPOINTMENTS.PRINT_SCHEDULE.COL_SERVICE' | translate }}</th>
+            <th>{{ 'APPOINTMENTS.PRINT_SCHEDULE.COL_NOTES' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of schedule()!.appointments; track $index) {
+            <tr>
+              <td>{{ a.time }}</td>
+              <td>{{ a.duration }}</td>
+              <td>{{ a.client }}</td>
+              <td>{{ a.phone }}</td>
+              <td>{{ a.service }}</td>
+              <td>{{ a.notes }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>
+
+<app-modal-footer>
+  <button type="button" class="psm__btn-cancel" (click)="ref.dismiss()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button
+    type="button"
+    class="psm__btn-print"
+    [disabled]="!schedule() || printing()"
+    (click)="print()"
+  >
+    {{ 'APPOINTMENTS.PRINT_SCHEDULE.PRINT' | translate }}
+  </button>
+</app-modal-footer>

@@ -1,0 +1,76 @@
+<app-list-page
+  style="--lp-actions-w: 110px"
+  [pageTitle]="'RECURRING_JOURNAL.LIST.TITLE' | translate"
+  [columns]="columns"
+  [dataSource]="loadRecurringJournals"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="filters"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'recurringJournal'"
+  (rowClicked)="onRowClick($event)">
+
+  <!-- ═══ Header Action Button ═══ -->
+  @if (canAdd) {
+    <div listHeaderActions class="flex items-center gap-3">
+      <button type="button"
+        (click)="addNew()"
+        class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        {{ 'RECURRING_JOURNAL.LIST.ADD_NEW' | translate }}
+      </button>
+    </div>
+  }
+
+  <!-- Frequency — "Every N <period>" sentence, matches legacy wording. -->
+  <ng-template listCellTemplate="frequency" let-row>
+    {{ frequencyLabel(row) }}
+  </ng-template>
+
+  <!-- End date — only meaningful when endTerm == 'by'. -->
+  <ng-template listCellTemplate="endDate" let-row>
+    @if (row.endTerm === 'by' && row.endDate) {
+      {{ row.endDate | date: 'dd/MM/yyyy' }}
+    } @else {
+      <span class="text-slate-400">—</span>
+    }
+  </ng-template>
+
+  <!-- Row actions — Edit (inline) + overflow menu (Delete, gated). -->
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center justify-end" (click)="$event.stopPropagation()">
+      <button type="button"
+        (click)="view(row)"
+        class="me-2 px-4 h-9 inline-flex items-center rounded-full border border-slate-200 bg-white text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
+        {{ 'RECURRING_JOURNAL.ACTIONS.VIEW' | translate }}
+      </button>
+      @if (canAdd) {
+        <button type="button"
+          (click)="edit(row); $event.stopPropagation()"
+          class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity
+                 me-2 px-4 h-9 inline-flex items-center rounded-full
+                 bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700">
+          {{ 'COMMON.EDIT' | translate }}
+        </button>
+      }
+      @if (hasRowMenu(row)) {
+        <app-dropdown-menu-btn
+          [items]="rowMenuItems(row)"
+          [appendToBody]="true"
+          [chevron]="false"
+          align="end"
+          triggerClass="rj-row-menu">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="5"  cy="12" r="1.75"/>
+            <circle cx="12" cy="12" r="1.75"/>
+            <circle cx="19" cy="12" r="1.75"/>
+          </svg>
+        </app-dropdown-menu-btn>
+      }
+    </div>
+  </ng-template>
+</app-list-page>

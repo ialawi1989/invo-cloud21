@@ -114,6 +114,8 @@
       "SERVICE_MANAGEMENT_DESC":   "Configure the services your business offers, including service types and pricing.",
       "PLUGINS":                   "Plugins",
       "PLUGINS_DESC":              "Delivery aggregators, notification gateways, fiscal utilities, and Content AI.",
+      "NOTIFICATIONS":             "Notifications",
+      "NOTIFICATIONS_DESC":        "Configure which events send SMS/Email/WhatsApp notifications, manage message templates, and view delivery logs.",
       "IMPORT_FROM_INVO":          "Import from Invo",
       "IMPORT_FROM_INVO_DESC":     "Import company data from another Invo account."
     },

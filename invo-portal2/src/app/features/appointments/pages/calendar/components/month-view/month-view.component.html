@@ -1,0 +1,23 @@
+<div class="month-grid">
+  <div class="month-grid__weekdays">
+    @for (name of dayNames; track name) {
+      <div class="month-grid__weekday">{{ name }}</div>
+    }
+  </div>
+  <div class="month-grid__cells">
+    @for (day of cells(); track trackByDay($index, day)) {
+      <button
+        type="button"
+        class="month-cell"
+        [class.is-outside]="!isCurrentMonth(day)"
+        [class.is-today]="isToday(day)"
+        (click)="dayClick.emit(day)"
+      >
+        <span class="month-cell__num">{{ day.getDate() }}</span>
+        @if (countFor(day) > 0) {
+          <span class="month-cell__badge">{{ countFor(day) }}</span>
+        }
+      </button>
+    }
+  </div>
+</div>

@@ -1,0 +1,62 @@
+<app-list-page
+  [pageTitle]="'MANUAL_JOURNALS.LIST.TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="loadJournals"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="[]"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'manual-journal'"
+  (rowClicked)="onRowClick($event)">
+
+  <div listHeaderActions class="mj-header-actions">
+    <button type="button" class="mj-btn mj-btn--ghost" (click)="openLogs()">
+      {{ 'MANUAL_JOURNALS.LIST.SHOW_LOGS' | translate }}
+    </button>
+    <button type="button" (click)="add()"
+      class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      {{ 'MANUAL_JOURNALS.LIST.ADD_NEW' | translate }}
+    </button>
+  </div>
+
+  <ng-template listCellTemplate="amount" let-row>
+    <span class="tabular-nums">{{ row.amount | mycurrency }}</span>
+  </ng-template>
+
+  <ng-template listCellTemplate="status" let-row>
+    <span class="mj-status" [class.mj-status--draft]="row.status === 'Draft'" [class.mj-status--open]="row.status === 'Open'">
+      {{ (row.status ? ('MANUAL_JOURNALS.STATUS.' + row.status.toUpperCase()) : '—') | translate }}
+    </span>
+  </ng-template>
+
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+      <button type="button" (click)="view(row)"
+        class="px-4 h-9 inline-flex items-center rounded-full bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200">
+        {{ 'COMMON.VIEW' | translate }}
+      </button>
+      @if (hasRowMenu(row)) {
+        <app-dropdown-menu-btn
+          [items]="rowMenuItems(row)"
+          [appendToBody]="true"
+          [chevron]="false"
+          align="end"
+          triggerClass="mj-row-menu">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="5" cy="12" r="1.75"/>
+            <circle cx="12" cy="12" r="1.75"/>
+            <circle cx="19" cy="12" r="1.75"/>
+          </svg>
+        </app-dropdown-menu-btn>
+      }
+    </div>
+  </ng-template>
+</app-list-page>

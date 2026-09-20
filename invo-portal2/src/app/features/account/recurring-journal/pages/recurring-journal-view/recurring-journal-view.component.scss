@@ -1,0 +1,88 @@
+.rjv-page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 16px 24px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header { display: flex; flex-direction: column; gap: 4px; }
+.page-title {
+  margin: 8px 0 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rjv-actions { margin-inline-start: auto; display: flex; gap: 8px; }
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+
+  &__head { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; }
+  &__title { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+  &__body { padding: 16px; }
+  &__body--bordered { border-top: 1px solid #f1f5f9; }
+}
+
+.rjv-dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 0;
+
+  &__row { display: flex; flex-direction: column; gap: 2px; }
+
+  dt { font-size: 12px; font-weight: 600; color: #64748b; }
+  dd { margin: 0; font-size: 14px; color: #0f172a; }
+}
+
+.rjv-label { margin: 0 0 4px; font-size: 12px; color: #64748b; }
+.rjv-value { margin: 0; font-size: 16px; font-weight: 600; color: #0f172a; }
+.rjv-muted { font-size: 11px; color: #94a3b8; }
+
+.rjv-table-wrap { overflow-x: auto; }
+.rjv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th, td { padding: 8px; text-align: start; border-bottom: 1px solid #f1f5f9; }
+  th { color: #475569; font-weight: 600; font-size: 12px; }
+}
+
+.rjv-status-dot {
+  display: inline-flex;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+
+  &-outline { color: var(--color-brand-600, #4f46e5); border-color: var(--color-brand-200, #c7d2fe); &:hover { background: #f5f3ff; } }
+  &-outline-danger { color: #b91c1c; border-color: #fecaca; &:hover { background: #fef2f2; } }
+}

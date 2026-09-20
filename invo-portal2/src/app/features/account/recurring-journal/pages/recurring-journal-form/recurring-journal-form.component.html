@@ -1,0 +1,144 @@
+<div class="rjf-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+    </div>
+  </header>
+
+  <section class="card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'RECURRING_JOURNAL.FORM.DETAILS' | translate }}</h2>
+    </header>
+    <div class="card__body">
+      <div class="rjf-row">
+        <label class="rjf-field rjf-field--wide">
+          <span class="rjf-field__label">{{ 'RECURRING_JOURNAL.LIST.PROFILE_NAME' | translate }}</span>
+          <input type="text" class="rjf-input" [ngModel]="journal().name" (ngModelChange)="setName($event)"
+            [class.rjf-input--invalid]="nameError() && submitAttempted()"/>
+          @if (nameError() && submitAttempted()) {
+            <span class="field-err">{{ nameError() | translate }}</span>
+          }
+        </label>
+      </div>
+
+      <div class="rjf-row">
+        <label class="rjf-field">
+          <span class="rjf-field__label">{{ 'RECURRING_JOURNAL.LIST.START_DATE' | translate }}</span>
+          <input type="date" class="rjf-input" [ngModel]="journal().startDate" (ngModelChange)="setStartDate($event)"
+            [class.rjf-input--invalid]="startDateError() && submitAttempted()"/>
+          @if (startDateError() && submitAttempted()) {
+            <span class="field-err">{{ startDateError() | translate }}</span>
+          }
+        </label>
+
+        <label class="rjf-field">
+          <span class="rjf-field__label">{{ 'RECURRING_JOURNAL.FORM.END' | translate }}</span>
+          <app-search-dropdown
+            [items]="endTermOptions"
+            [displayWith]="optDisplay"
+            [compareWith]="optCompare"
+            [toValue]="optToValue"
+            [value]="selectedEndTerm()"
+            [clearable]="false"
+            (valueChange)="setEndTerm($event)"/>
+        </label>
+
+        @if (journal().endTerm === 'by') {
+          <label class="rjf-field">
+            <span class="rjf-field__label">{{ 'RECURRING_JOURNAL.LIST.END_DATE' | translate }}</span>
+            <input type="date" class="rjf-input" [ngModel]="journal().endDate" [min]="journal().startDate"
+              (ngModelChange)="setEndDate($event)"
+              [class.rjf-input--invalid]="endDateError() && submitAttempted()"/>
+            @if (endDateError() && submitAttempted()) {
+              <span class="field-err">{{ endDateError() | translate }}</span>
+            }
+          </label>
+        }
+      </div>
+
+      <div class="rjf-row">
+        <label class="rjf-field">
+          <span class="rjf-field__label">{{ 'RECURRING_JOURNAL.FORM.PERIODICITY' | translate }}</span>
+          <app-search-dropdown
+            [items]="periodicityOptions"
+            [displayWith]="optDisplay"
+            [compareWith]="optCompare"
+            [toValue]="optToValue"
+            [value]="selectedPeriodicity()"
+            [clearable]="false"
+            (valueChange)="setPeriodicity($event)"/>
+        </label>
+
+        <label class="rjf-field">
+          <span class="rjf-field__label">{{ onFieldLabelKey() | translate }}</span>
+          <app-search-dropdown
+            [items]="currentOnOptions()"
+            [displayWith]="optDisplay"
+            [compareWith]="optCompare"
+            [toValue]="optToValue"
+            [value]="selectedOn()"
+            [clearable]="false"
+            (valueChange)="setOn($event)"/>
+        </label>
+
+        <label class="rjf-field">
+          <span class="rjf-field__label">{{ 'RECURRING_JOURNAL.FORM.EVERY' | translate }}</span>
+          <div class="rjf-input-group">
+            <input type="number" min="1" class="rjf-input" [ngModel]="journal().repeatData.periodQty"
+              (ngModelChange)="setPeriodQty($event)"/>
+            <span class="rjf-input-group__suffix">{{ periodUnitLabelKey() | translate }}</span>
+          </div>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'RECURRING_JOURNAL.FORM.MANUAL_JOURNAL_FORM' | translate }}</h2>
+    </header>
+    <div class="card__body">
+      <label class="rjf-field rjf-field--wide">
+        <span class="rjf-field__label">{{ 'RECURRING_JOURNAL.FORM.BRANCH' | translate }}</span>
+        <app-search-dropdown
+          [items]="branches()"
+          [displayWith]="branchDisplay"
+          [compareWith]="branchCompare"
+          [toValue]="branchToValue"
+          [value]="selectedBranch()"
+          [clearable]="false"
+          [disabled]="isExisting()"
+          (valueChange)="setBranch($event)"/>
+        @if (branchError() && submitAttempted()) {
+          <span class="field-err">{{ branchError() | translate }}</span>
+        }
+        @if (isExisting()) {
+          <span class="rjf-field__hint">{{ 'RECURRING_JOURNAL.FORM.BRANCH_LOCKED_HINT' | translate }}</span>
+        }
+      </label>
+    </div>
+  </section>
+
+  <app-journal-lines-editor
+    [lines]="journal().transactionDetails?.lines ?? []"
+    [formStatus]="formStatus()"
+    (linesChange)="setLines($event)"/>
+
+  <footer class="save-bar">
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    @if (isExisting()) {
+      <button type="button" class="btn btn-ghost" (click)="view()" [disabled]="saving()">
+        {{ 'RECURRING_JOURNAL.ACTIONS.VIEW' | translate }}
+      </button>
+    }
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
+      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+      {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+    </button>
+  </footer>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

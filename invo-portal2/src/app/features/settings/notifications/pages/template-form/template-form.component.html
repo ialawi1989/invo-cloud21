@@ -1,0 +1,122 @@
+<div class="tf">
+  <header class="tf-head">
+    <h1>{{ (isEditMode() ? 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.EDIT_TITLE' : 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.NEW_TITLE') | translate }}</h1>
+    <div class="tf-head__actions">
+      <button type="button" class="tf-btn" (click)="cancel()">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.CANCEL' | translate }}</button>
+      <button type="button" class="tf-btn tf-btn--primary" [disabled]="saving()" (click)="save()">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.SAVE' | translate }}</button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="tf-loading">…</div>
+  } @else {
+    <div class="tf-layout">
+      <div class="tf-main">
+        <div class="tf-field">
+          <label class="tf-label">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.TITLE_LABEL' | translate }}</label>
+          <input
+            type="text"
+            class="tf-input"
+            [placeholder]="'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.TITLE_PLACEHOLDER' | translate"
+            [ngModel]="template().title"
+            (ngModelChange)="patch({ title: $event })"
+          />
+        </div>
+
+        <div class="tf-row">
+          <div class="tf-field">
+            <label class="tf-label">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.EVENT_TYPE' | translate }}</label>
+            <app-search-dropdown
+              [items]="eventTypeOptions()"
+              [displayWith]="optionLabel"
+              [toValue]="optionValue"
+              [compareWith]="optionCompare"
+              [groupBy]="optionGroup"
+              [ngModel]="template().eventType"
+              (ngModelChange)="patch({ eventType: $event })"
+              [clearable]="false"
+            />
+          </div>
+          <div class="tf-field">
+            <label class="tf-label">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.OUTPUT_TYPE' | translate }}</label>
+            <app-search-dropdown
+              [items]="outputTypeOptions"
+              [displayWith]="optionLabel"
+              [toValue]="optionValue"
+              [compareWith]="optionCompare"
+              [ngModel]="template().outputType"
+              (ngModelChange)="patch({ outputType: $event })"
+              [clearable]="false"
+              [searchable]="false"
+            />
+          </div>
+        </div>
+
+        <div class="tf-field">
+          <label class="tf-label">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.BODY' | translate }}</label>
+          <p class="tf-hint">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.BODY_HINT' | translate }}</p>
+          <textarea
+            #bodyInput
+            class="tf-textarea"
+            rows="10"
+            [ngModel]="body"
+            (ngModelChange)="setBody($event)"
+          ></textarea>
+        </div>
+
+        <div class="tf-field">
+          <label class="tf-label">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.SAMPLE_DATA' | translate }}</label>
+          <p class="tf-hint">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.SAMPLE_DATA_HINT' | translate }}</p>
+          <textarea
+            class="tf-textarea tf-textarea--mono"
+            rows="8"
+            [ngModel]="sampleDataText()"
+            (ngModelChange)="sampleDataText.set($event)"
+          ></textarea>
+          @if (sampleDataError()) { <p class="tf-error">{{ sampleDataError() }}</p> }
+        </div>
+
+        <div class="tf-preview">
+          <div class="tf-preview__head">
+            <h4>{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.PREVIEW' | translate }}</h4>
+            <button type="button" class="tf-btn" [disabled]="previewLoading()" (click)="preview()">
+              {{ (previewLoading() ? 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.RENDERING' : 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.PREVIEW') | translate }}
+            </button>
+          </div>
+          @if (previewError()) {
+            <div class="tf-preview__error">{{ previewError() }}</div>
+          } @else if (template().outputType === 'HTML') {
+            <div class="tf-preview__body" [innerHTML]="previewOutput()"></div>
+          } @else {
+            <pre class="tf-preview__body tf-preview__body--pre">{{ previewOutput() }}</pre>
+          }
+        </div>
+      </div>
+
+      <aside class="tf-side">
+        <h4 class="tf-side__title">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.VARIABLES' | translate }}</h4>
+        <input
+          type="text"
+          class="tf-input tf-input--sm"
+          [placeholder]="'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.SEARCH_VARIABLES' | translate"
+          [ngModel]="variableSearch()"
+          (ngModelChange)="variableSearch.set($event)"
+        />
+
+        <div class="tf-var-list">
+          @for (group of variableGroups(); track group.group) {
+            <div class="tf-var-group">
+              <div class="tf-var-group__title">{{ group.group }}</div>
+              @for (v of group.items; track v.token) {
+                <button type="button" class="tf-var" (click)="insertVariable(v)" [title]="v.description ?? ''">
+                  <span class="tf-var__token">{{ '{{' + v.token + '}}' }}</span>
+                  <span class="tf-var__label">{{ v.label }}</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </aside>
+    </div>
+  }
+</div>

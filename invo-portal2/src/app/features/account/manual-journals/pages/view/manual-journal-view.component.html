@@ -1,0 +1,130 @@
+<div class="mjv-page">
+  <app-loading-overlay [show]="loading()" [fullScreen]="false"/>
+
+  <div class="d-print-none">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+  </div>
+
+  <div class="mjv-actions d-print-none">
+    <button type="button" class="mjv-btn" (click)="back()">{{ 'COMMON.BACK' | translate }}</button>
+    <button type="button" class="mjv-btn mjv-btn--primary" (click)="print()">{{ 'COMMON.PRINT' | translate }}</button>
+    @if (journal().status === 'Draft') {
+      <button type="button" class="mjv-btn mjv-btn--primary" (click)="openJournal()">
+        {{ 'MANUAL_JOURNALS.FORM.OPEN_JOURNAL' | translate }}
+      </button>
+    }
+    @if (!journal().reconciled) {
+      <button type="button" class="mjv-btn mjv-btn--primary" (click)="editJournal()">{{ 'COMMON.EDIT' | translate }}</button>
+      <button type="button" class="mjv-btn" (click)="cloneJournal()">{{ 'COMMON.CLONE' | translate }}</button>
+      <button type="button" class="mjv-btn mjv-btn--danger" (click)="deleteJournal()">{{ 'COMMON.DELETE' | translate }}</button>
+    }
+  </div>
+
+  <div class="mjv-card">
+    <div class="mjv-header-row">
+      <div>
+        <div class="mjv-label">{{ 'MANUAL_JOURNALS.LIST.REFERENCE' | translate }}</div>
+        <div class="mjv-value">{{ journal().reference || '—' }}</div>
+      </div>
+      <div>
+        <div class="mjv-label">{{ 'MANUAL_JOURNALS.LIST.DATE' | translate }}</div>
+        <div class="mjv-value">{{ journal().journalDate | date:'dd/MM/yyyy' }}</div>
+      </div>
+      <div>
+        <div class="mjv-label">{{ 'MANUAL_JOURNALS.LIST.BRANCH' | translate }}</div>
+        <div class="mjv-value">{{ journal().branchName || '—' }}</div>
+      </div>
+      <div>
+        <div class="mjv-label">{{ 'MANUAL_JOURNALS.LIST.STATUS' | translate }}</div>
+        <div class="mjv-value">
+          <span class="mjv-status" [class.mjv-status--draft]="journal().status === 'Draft'" [class.mjv-status--open]="journal().status === 'Open'">
+            {{ (journal().status ? ('MANUAL_JOURNALS.STATUS.' + journal().status.toUpperCase()) : '—') | translate }}
+          </span>
+        </div>
+      </div>
+    </div>
+    @if (journal().notes) {
+      <div>
+        <div class="mjv-label">{{ 'MANUAL_JOURNALS.FORM.NOTES' | translate }}</div>
+        <div class="mjv-value">{{ journal().notes }}</div>
+      </div>
+    }
+  </div>
+
+  <div class="mjv-card">
+    <table class="mjv-lines-table">
+      <thead>
+        <tr>
+          <th>{{ 'MANUAL_JOURNALS.FORM.ACCOUNT' | translate }}</th>
+          <th>{{ 'MANUAL_JOURNALS.FORM.REFERENCE_CODE' | translate }}</th>
+          <th>{{ 'MANUAL_JOURNALS.FORM.DESCRIPTION' | translate }}</th>
+          <th class="mjv-col-amount">{{ 'MANUAL_JOURNALS.FORM.DEBIT' | translate }}</th>
+          <th class="mjv-col-amount">{{ 'MANUAL_JOURNALS.FORM.CREDIT' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of journal().lines; track line.id || $index) {
+          <tr>
+            <td>{{ line.accountName || '—' }}</td>
+            <td>{{ line.code || '—' }}</td>
+            <td>{{ line.description || '—' }}</td>
+            <td class="mjv-col-amount">{{ line.debit | mycurrency }}</td>
+            <td class="mjv-col-amount">{{ line.credit | mycurrency }}</td>
+          </tr>
+        }
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan="3">{{ 'MANUAL_JOURNALS.FORM.TOTAL' | translate }}</th>
+          <th class="mjv-col-amount">{{ totals().debitsTotal | mycurrency }}</th>
+          <th class="mjv-col-amount">{{ totals().creditsTotal | mycurrency }}</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="mjv-card d-print-none">
+    <h4 class="mjv-card-title">{{ 'MANUAL_JOURNALS.FORM.COMMENTS' | translate }}</h4>
+    <ul class="mjv-comments">
+      @for (comment of journal().comments; track comment) {
+        <li class="mjv-comment">
+          <div class="mjv-comment-head">
+            <span class="mjv-comment-date">{{ comment.date | date:'dd/MM/yyyy HH:mm' }}</span>
+            <button type="button" class="mjv-btn mjv-btn--danger-ghost" (click)="removeComment(comment)">
+              {{ 'COMMON.DELETE' | translate }}
+            </button>
+          </div>
+          <div class="mjv-comment-author">{{ 'COMMON.BY' | translate }} {{ comment.employeeName || '—' }}</div>
+          <p class="mjv-comment-text">{{ comment.comment }}</p>
+        </li>
+      }
+    </ul>
+
+    @if (!showCommentBox()) {
+      <button type="button" class="mjv-btn" (click)="openCommentBox()">
+        + {{ 'MANUAL_JOURNALS.FORM.ADD_COMMENT' | translate }}
+      </button>
+    } @else {
+      <textarea rows="2" class="mjv-comment-input" [ngModel]="newComment()" (ngModelChange)="newComment.set($event)"
+        [placeholder]="'MANUAL_JOURNALS.FORM.COMMENTS' | translate"></textarea>
+      <button type="button" class="mjv-btn mjv-btn--primary" [disabled]="commentsSaving()" (click)="addComment()">
+        {{ 'MANUAL_JOURNALS.FORM.ADD_COMMENT' | translate }}
+      </button>
+    }
+  </div>
+
+  <div class="mjv-card d-print-none">
+    <h4 class="mjv-card-title">{{ 'COMMON.ATTACHMENT' | translate }}</h4>
+    <div class="mjv-attachments">
+      @for (a of journal().attachment; track a.id) {
+        <span class="mjv-attachment-chip">
+          <a [href]="a.mediaUrl" target="_blank" rel="noopener">{{ a.mediaName }}</a>
+          <button type="button" (click)="removeAttach(a)" aria-label="remove">×</button>
+        </span>
+      }
+      <button type="button" class="mjv-btn" (click)="addAttachment()">
+        {{ 'MANUAL_JOURNALS.FORM.ATTACH_FILE' | translate }}
+      </button>
+    </div>
+  </div>
+</div>

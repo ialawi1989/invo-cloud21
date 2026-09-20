@@ -13,6 +13,7 @@
     "NO_TRACKING_NOTICE": "السائقون خارج الدوام لا يتم تتبعهم مباشرة",
     "DRIVER_LIVE": "سائق مباشر على الخريطة",
     "DRIVERS_LIVE": "سائقين مباشرين على الخريطة",
+    "NO_ACTIVE_ORDERS": "لا توجد طلبات نشطة.",
 
     "BRANCH_FILTER": {
       "PLACEHOLDER": "اختر الفرع",

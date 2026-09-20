@@ -1,0 +1,87 @@
+<div class="jle-card">
+  <h4 class="jle-title">{{ 'RECURRING_JOURNAL.FORM.JOURNAL_LINE' | translate }}</h4>
+
+  <div class="jle-table-wrap">
+    <table class="jle-table">
+      <thead>
+        <tr>
+          <th class="jle-col-account">{{ 'RECURRING_JOURNAL.FORM.ACCOUNT' | translate }}</th>
+          <th>{{ 'RECURRING_JOURNAL.FORM.REFERENCE' | translate }}</th>
+          <th class="jle-col-amount">{{ 'RECURRING_JOURNAL.FORM.DEBIT' | translate }}</th>
+          <th class="jle-col-amount">{{ 'RECURRING_JOURNAL.FORM.CREDIT' | translate }}</th>
+          <th class="jle-col-action"></th>
+        </tr>
+      </thead>
+      <tbody *ngIf="accountsLoaded">
+        <ng-container *ngFor="let line of lines; let i = index">
+          <tr *ngIf="!line.isVoided">
+            <td class="jle-col-account">
+              <app-search-dropdown
+                [items]="accounts"
+                [displayWith]="accountDisplay"
+                [compareWith]="accountCompare"
+                [toValue]="accountToValue"
+                [groupBy]="accountGroupBy"
+                [value]="selectedAccount(line)"
+                [clearable]="false"
+                [placeholder]="'RECURRING_JOURNAL.FORM.ACCOUNT_PLACEHOLDER' | translate"
+                (valueChange)="setAccount(line, $event)"/>
+            </td>
+            <td>
+              <input type="text" class="jle-input" [(ngModel)]="line.code" (ngModelChange)="linesChange.emit(lines)"/>
+            </td>
+            <td class="jle-col-amount">
+              <input type="number" min="0" step="0.01" class="jle-input jle-input--num"
+                [(ngModel)]="line.debit" (ngModelChange)="onDebitChange(line)"/>
+            </td>
+            <td class="jle-col-amount">
+              <input type="number" min="0" step="0.01" class="jle-input jle-input--num"
+                [(ngModel)]="line.credit" (ngModelChange)="onCreditChange(line)"/>
+            </td>
+            <td class="jle-col-action">
+              <button type="button" class="jle-btn jle-btn--danger" (click)="removeLine(line)">
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!line.isVoided" class="jle-desc-row">
+            <td colspan="1" class="jle-desc-cell">
+              <textarea class="jle-input" rows="1"
+                [placeholder]="'RECURRING_JOURNAL.FORM.DESCRIPTION_PLACEHOLDER' | translate"
+                [(ngModel)]="line.description" (ngModelChange)="linesChange.emit(lines)"></textarea>
+            </td>
+            <td colspan="4"></td>
+          </tr>
+        </ng-container>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th class="jle-col-account"></th>
+          <th>{{ 'RECURRING_JOURNAL.FORM.TOTAL' | translate }}</th>
+          <th class="jle-col-amount">{{ linesDebitsTotal | mycurrency }}</th>
+          <th class="jle-col-amount">{{ linesCreditsTotal | mycurrency }}</th>
+          <th class="jle-col-action" [class.jle-diff--bad]="isUnbalanced">
+            {{ (linesDebitsTotal - linesCreditsTotal) | mycurrency }}
+          </th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="jle-actions">
+    <button type="button" class="jle-btn jle-btn--primary" (click)="addLine()">
+      + {{ 'RECURRING_JOURNAL.FORM.ADD_LINE' | translate }}
+    </button>
+  </div>
+
+  @if (hasLessThanTwoLines) {
+    <div class="jle-alert jle-alert--danger">
+      {{ 'RECURRING_JOURNAL.FORM.MIN_TWO_LINES' | translate }}
+    </div>
+  }
+  @if (!hasLessThanTwoLines && isUnbalanced) {
+    <div class="jle-alert jle-alert--danger">
+      {{ 'RECURRING_JOURNAL.FORM.MUST_BALANCE' | translate }}
+    </div>
+  }
+</div>

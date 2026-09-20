@@ -1,0 +1,91 @@
+<div class="cal">
+  <aside class="cal-sidebar">
+    <button type="button" class="cal-new-btn" (click)="newAppointment()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      {{ 'APPOINTMENTS.NEW_APPOINTMENT' | translate }}
+    </button>
+
+    <app-date-picker
+      [inline]="true"
+      mode="single"
+      [value]="currentDate()"
+      (valueChange)="onMiniCalendarChange($event)"
+      [showFooter]="false"
+    />
+
+    <div class="cal-sidebar__staff">
+      <div class="cal-sidebar__staff-title">{{ 'APPOINTMENTS.STAFF' | translate }}</div>
+      <ul class="cal-staff-list">
+        @for (emp of employees(); track trackByEmployeeId($index, emp)) {
+          <li>
+            <label class="cal-staff-row">
+              <input type="checkbox" [checked]="selectedEmployeeIds().size === 0 || selectedEmployeeIds().has(emp.id)" (change)="toggleEmployee(emp.id)" />
+              <span class="cal-staff-dot" [style.background]="color(emp.id)"></span>
+              <span class="cal-staff-name">{{ emp.name }}</span>
+            </label>
+          </li>
+        }
+      </ul>
+    </div>
+  </aside>
+
+  <main class="cal-main">
+    <header class="cal-toolbar">
+      <div class="cal-toolbar__nav">
+        <button type="button" class="cal-nav-btn" (click)="goToday()">{{ 'APPOINTMENTS.TODAY' | translate }}</button>
+        <button type="button" class="cal-nav-btn cal-nav-btn--icon" (click)="step(-1)" [attr.aria-label]="'COMMON.PREVIOUS' | translate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button type="button" class="cal-nav-btn cal-nav-btn--icon" (click)="step(1)" [attr.aria-label]="'COMMON.NEXT' | translate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <h2 class="cal-toolbar__range">{{ rangeLabel() }}</h2>
+      </div>
+
+      <div class="cal-toolbar__views">
+        <button type="button" class="cal-view-btn" [class.is-on]="view() === 'day'" (click)="setView('day')">{{ 'APPOINTMENTS.VIEW_DAY' | translate }}</button>
+        <button type="button" class="cal-view-btn" [class.is-on]="view() === 'week'" (click)="setView('week')">{{ 'APPOINTMENTS.VIEW_WEEK' | translate }}</button>
+        <button type="button" class="cal-view-btn" [class.is-on]="view() === 'month'" (click)="setView('month')">{{ 'APPOINTMENTS.VIEW_MONTH' | translate }}</button>
+      </div>
+
+      <button type="button" class="cal-print-btn" (click)="openPrintSchedule()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        {{ 'APPOINTMENTS.PRINT_SCHEDULE.TITLE' | translate }}
+      </button>
+    </header>
+
+    <div class="cal-body">
+      @if (view() === 'day') {
+        <app-day-view
+          [date]="currentDate()"
+          [employees]="visibleEmployees()"
+          [tasks]="visibleTasks()"
+          [canEdit]="canAdd()"
+          (slotClick)="onDaySlotClick($event)"
+          (taskClick)="openTask($event)"
+          (reschedule)="onReschedule($event)"
+          (resize)="onResize($event)"
+        />
+      } @else if (view() === 'week') {
+        <app-week-view
+          [date]="currentDate()"
+          [tasks]="visibleTasks()"
+          [canEdit]="canAdd()"
+          (slotClick)="onWeekSlotClick($event)"
+          (dayClick)="onDayHeaderClick($event)"
+          (taskClick)="openTask($event)"
+          (reschedule)="onWeekReschedule($event)"
+          (resize)="onWeekResize($event)"
+        />
+      } @else {
+        <app-month-view
+          [date]="currentDate()"
+          [tasks]="visibleTasks()"
+          (dayClick)="onDayHeaderClick($event)"
+        />
+      }
+    </div>
+  </main>
+</div>

@@ -100,6 +100,17 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 44, label: 'MENU.SUB.ATTENDANCE', link: '/employees/attendance', requiredPermission: 'employeeAttendenceSecurity.actions.view.access' },
     ],
   },
+  // ── Appointments ───────────────────────────────────────────────────
+  {
+    id: 18, label: 'MENU.APPOINTMENTS', icon: 'calendar',
+    requiredPermission: '',
+    badge: { text: 'BETA', variant: 'danger' },
+    subItems: [
+      { id: 181, label: 'MENU.SUB.APPOINTMENTS_CALENDAR', link: '/appointments', requiredPermission: 'appointmentsSecurity.actions.view.access' },
+      { id: 182, label: 'MENU.SUB.APPOINTMENTS_WAITLIST', link: '/appointments/waitlist', requiredPermission: 'appointmentsSecurity.actions.view.access' },
+      { id: 183, label: 'MENU.SUB.SERVICE_TEAM', link: '/employees/service-team', requiredPermission: 'appointmentsSecurity.actions.serviceTeam.access' },
+    ],
+  },
   // ── Accounts ───────────────────────────────────────────────────────
   {
     id: 6, label: 'MENU.ACCOUNTS', icon: 'account',
@@ -107,7 +118,7 @@ export const SIDE_MENU: SideMenuItem[] = [
     subItems: [
       { id: 61, label: 'MENU.SUB.CHART_OF_ACCOUNTS', link: '/account/chart-of-accounts', requiredPermission: 'accountSecurity.actions.view.access' },
       { id: 62, label: 'MENU.SUB.OPENING_BALANCES', link: '/account/opening-balances', requiredPermission: 'openingBalances.actions.view.access' },
-      { id: 63, label: 'MENU.SUB.MANUAL_JOURNALS', link: '/account/journal', requiredPermission: 'manualJournalSecurity.actions.view.access' },
+      { id: 63, label: 'MENU.SUB.MANUAL_JOURNALS', link: '/account/manual-journals', requiredPermission: 'manualJournalSecurity.actions.view.access' },
       { id: 64, label: 'MENU.SUB.RECURRING_JOURNALS', link: '/account/recurring-journal', requiredPermission: 'recurringJournalSecurity.actions.view.access' },
       { id: 65, label: 'MENU.SUB.BUDGET', link: '/account/budget', requiredPermission: 'budgetSecurity.actions.view.access' },
       { id: 66, label: 'MENU.SUB.BANKING_OVERVIEW', link: '/account/banking-overview', requiredPermission: 'bankingOverview.actions.view.access' },
@@ -205,6 +216,16 @@ export const SIDE_MENU: SideMenuItem[] = [
     id: 12, label: 'MENU.PLUGINS', icon: 'plugin',
     link: '/settings/plugins',
     requiredPermission: 'pluginsSecurity.actions.view.access',
+  },
+  // ── Notifications ──────────────────────────────────────────────────
+  // Matches the legacy sidebar's top-level "Notifications" entry
+  // (bell icon + BETA badge) rather than leaving it buried only inside
+  // the /settings hub tiles.
+  {
+    id: 17, label: 'MENU.NOTIFICATIONS', icon: 'bell',
+    link: '/settings/notifications',
+    badge: { text: 'BETA', variant: 'danger' },
+    requiredPermission: 'notificationSettingsSecurity.actions.view.access',
   },
   // ── Website Content ────────────────────────────────────────────────
   {
@@ -948,6 +969,8 @@ export class SidebarComponent implements OnInit {
       web: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
       blog: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>`,
       map: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+      bell: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
+      calendar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
     };
     return icons[name ?? ''] ?? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/></svg>`;
   }

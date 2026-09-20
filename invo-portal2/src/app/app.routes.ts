@@ -433,6 +433,13 @@ export const routes: Routes = [
           import('./features/settings/plugins/plugins.routes').then(m => m.PLUGINS_ROUTES)
       },
       {
+        // Notifications — which events send SMS/Email/WhatsApp, message
+        // templates, and delivery logs.
+        path: 'settings/notifications',
+        loadChildren: () =>
+          import('./features/settings/notifications/notifications-settings.routes').then(m => m.NOTIFICATIONS_SETTINGS_ROUTES)
+      },
+      {
         // Service Management — POS service types (DineIn, PickUp,
         // Delivery, CarHop, Salon, Catering, Retail) with per-branch
         // setting overrides + drag-reorder.
@@ -468,6 +475,24 @@ export const routes: Routes = [
           import('./features/settings/opening-balances/opening-balances.routes').then(m => m.OPENING_BALANCES_ROUTES)
       },
       {
+        // Manual Journals — double-entry journal list/form/view. Lives
+        // under `/account/*` alongside Chart of Accounts / Opening
+        // Balances / Recurring Journal in the sidebar's "Accounts" group.
+        path: 'account/manual-journals',
+        loadChildren: () =>
+          import('./features/account/manual-journals/manual-journals.routes').then(m => m.MANUAL_JOURNALS_ROUTES)
+      },
+      {
+        // Recurring Journal — CRUD for recurring-journal templates (the
+        // schedule + debit/credit line template a child Journal is
+        // generated from). Lives under `/account/*` alongside Chart of
+        // Accounts / Opening Balances / Manual Journals in the sidebar's
+        // "Accounts" group (sidebar entry id 64 already points here).
+        path: 'account/recurring-journal',
+        loadChildren: () =>
+          import('./features/account/recurring-journal/recurring-journal.routes').then(m => m.RECURRING_JOURNAL_ROUTES)
+      },
+      {
         // Banking Overview — bank/cash account balances, per-account
         // transaction ledger and the bank-reconciliation workflow. Lives
         // under `/account/*` alongside Chart of Accounts / Opening
@@ -489,6 +514,13 @@ export const routes: Routes = [
         path: 'employees',
         loadChildren: () =>
           import('./features/employees/employees.routes').then(m => m.EMPLOYEES_ROUTES)
+      },
+      {
+        // Appointments — booking calendar (day/week/month), the booking
+        // form, and the waitlist queue.
+        path: 'appointments',
+        loadChildren: () =>
+          import('./features/appointments/appointments.routes').then(m => m.APPOINTMENTS_ROUTES)
       }
       // ── Add features here as you build them ──────────────────────────────
     ],

@@ -1,0 +1,102 @@
+<div class="ecd">
+  <header class="ecd__head">
+    <div class="ecd-muted">{{ data.categoryLabel(event().categoryId) | translate }}</div>
+    <h3>{{ event().name | translate }}</h3>
+  </header>
+
+  <div class="ecd__body">
+    <p class="ecd-muted">{{ event().description | translate }}</p>
+
+    <label class="ecd-toggle-row">
+      <input type="checkbox" [checked]="event().enabled" [disabled]="!data.canEdit" (change)="toggleEnabled()" />
+      {{ 'NOTIFICATIONS_SETTINGS.ENABLE_EVENT' | translate }}
+    </label>
+
+    <h4 class="ecd__section">{{ 'NOTIFICATIONS_SETTINGS.DELIVERY_CHANNEL' | translate }}</h4>
+
+    <div class="ecd__row">
+      <div>
+        <label class="ecd-label">{{ 'NOTIFICATIONS_SETTINGS.PRIMARY' | translate }}</label>
+        <app-search-dropdown
+          [items]="primaryChannelOptions()"
+          [displayWith]="optionLabel"
+          [toValue]="optionValue"
+          [compareWith]="optionCompare"
+          [ngModel]="event().primaryChannel"
+          (ngModelChange)="onPrimaryChange($event)"
+          [disabled]="!event().enabled || !data.canEdit"
+          [clearable]="false"
+          [searchable]="false"
+        />
+      </div>
+      <div>
+        <label class="ecd-label">{{ 'NOTIFICATIONS_SETTINGS.FALLBACK' | translate }}</label>
+        <app-search-dropdown
+          [items]="fallbackChannelOptions()"
+          [displayWith]="optionLabel"
+          [toValue]="optionValue"
+          [compareWith]="optionCompare"
+          [ngModel]="event().fallbackChannel"
+          (ngModelChange)="patch({ fallbackChannel: $event })"
+          [disabled]="!event().enabled || !event().primaryChannel || !data.canEdit"
+          [clearable]="false"
+          [searchable]="false"
+        />
+      </div>
+    </div>
+
+    @for (c of activeChannels(event()); track c) {
+      <div class="ecd-channel">
+        <div class="ecd-channel__head">
+          <span>{{ data.channelLabel(c) }}</span>
+          <span class="ecd-badge" [class.ecd-badge--info]="channelRole(event(), c) !== 'primary'">
+            {{ channelRole(event(), c) === 'primary' ? ('NOTIFICATIONS_SETTINGS.PRIMARY' | translate) : ('NOTIFICATIONS_SETTINGS.FALLBACK' | translate) }}
+          </span>
+          <span class="ecd-badge ecd-badge--muted">{{ data.providerLabel(c) }}</span>
+        </div>
+        <label class="ecd-label">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE' | translate }}</label>
+        <app-search-dropdown
+          [items]="templateOptions(c)"
+          [displayWith]="optionLabel"
+          [toValue]="optionValue"
+          [compareWith]="optionCompare"
+          [ngModel]="event().channels[c].templateId"
+          (ngModelChange)="onTemplateChange(c, $event)"
+          [disabled]="!data.canEdit"
+          [clearable]="false"
+        />
+        <div class="ecd-channel__foot">
+          <button type="button" class="ecd-btn ecd-btn--sm" (click)="sendTest(c)">{{ 'NOTIFICATIONS_SETTINGS.SEND_TEST' | translate }}</button>
+        </div>
+      </div>
+    }
+
+    <h4 class="ecd__section">{{ 'NOTIFICATIONS_SETTINGS.RECIPIENTS' | translate }}</h4>
+
+    <label class="ecd-toggle-row">
+      <input type="checkbox" [ngModel]="event().recipients.customer" [disabled]="!data.canEdit" (ngModelChange)="patch({ recipients: { ...event().recipients, customer: $event } })" />
+      {{ 'NOTIFICATIONS_SETTINGS.CUSTOMER_RECIPIENT' | translate }}
+    </label>
+
+    <label class="ecd-label">{{ 'NOTIFICATIONS_SETTINGS.EMPLOYEES_TO_NOTIFY' | translate }} ({{ event().recipients.employeeIds.length }})</label>
+    <input type="text" class="ecd-input ecd-input--full" [placeholder]="'NOTIFICATIONS_SETTINGS.SEARCH_EMPLOYEES' | translate" [ngModel]="employeeSearch()" (ngModelChange)="employeeSearch.set($event)" />
+
+    <div class="ecd-employee-picker">
+      @for (emp of filteredEmployees(); track emp.id) {
+        <label class="ecd-employee-row">
+          <input type="checkbox" [checked]="isEmployeeSelected(emp.id)" [disabled]="!data.canEdit" (change)="toggleEmployee(emp.id)" />
+          <span class="ecd-employee-row__name">{{ emp.name }}</span>
+          @if (emp.admin || emp.superAdmin) {
+            <span class="ecd-badge">{{ 'NOTIFICATIONS_SETTINGS.ROLE_ADMIN' | translate }}</span>
+          }
+          <span class="ecd-muted">{{ emp.email }}</span>
+        </label>
+      }
+    </div>
+  </div>
+
+  <div class="ecd__footer">
+    <button type="button" class="ecd-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button type="button" class="ecd-btn ecd-btn--primary" [disabled]="!data.canEdit" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+  </div>
+</div>

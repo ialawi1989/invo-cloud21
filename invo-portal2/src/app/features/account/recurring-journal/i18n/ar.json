@@ -1,0 +1,83 @@
+{
+  "RECURRING_JOURNAL": {
+    "LIST": {
+      "TITLE": "القيود المتكررة",
+      "ADD_NEW": "إضافة جديد",
+      "PROFILE_NAME": "اسم الملف",
+      "BRANCH_NAME": "الفرع",
+      "FREQUENCY": "التكرار",
+      "START_DATE": "تاريخ البدء",
+      "END_DATE": "تاريخ الانتهاء",
+      "CREATED_AT": "تاريخ الإنشاء",
+      "NEXT_JOURNAL_DATE": "تاريخ القيد التالي",
+      "FREQUENCY_SENTENCE_MONTH": "كل {{qty}} شهر (أشهر)",
+      "FREQUENCY_SENTENCE_YEAR": "كل {{qty}} سنة (سنوات)",
+      "FREQUENCY_SENTENCE_WEEK": "كل {{qty}} أسبوع (أسابيع)"
+    },
+    "ACTIONS": {
+      "VIEW": "عرض"
+    },
+    "FORM": {
+      "NEW_TITLE": "قيد متكرر جديد",
+      "EDIT_TITLE": "تعديل القيد المتكرر",
+      "DETAILS": "التفاصيل",
+      "END": "ينتهي",
+      "END_NONE": "بدون",
+      "END_BY": "بتاريخ",
+      "PERIODICITY": "يتكرر",
+      "ON_DAY": "في يوم",
+      "ON_WEEKDAY": "في يوم الأسبوع",
+      "ON_MONTH": "في شهر",
+      "EVERY": "كل",
+      "MONTH": "شهر (أشهر)",
+      "WEEK": "أسبوع (أسابيع)",
+      "YEAR": "سنة (سنوات)",
+      "WEEKLY": "أسبوعي",
+      "MONTHLY": "شهري",
+      "YEARLY": "سنوي",
+      "MANUAL_JOURNAL_FORM": "نموذج القيد",
+      "BRANCH": "الفرع",
+      "BRANCH_LOCKED_HINT": "لا يمكن تغيير الفرع بعد إنشاء القيد المتكرر.",
+      "JOURNAL_LINE": "بنود القيد",
+      "ACCOUNT": "الحساب",
+      "ACCOUNT_PLACEHOLDER": "اختر حسابًا",
+      "REFERENCE": "المرجع",
+      "DEBIT": "مدين",
+      "CREDIT": "دائن",
+      "DESCRIPTION_PLACEHOLDER": "أدخل وصفًا",
+      "ADD_LINE": "إضافة بند",
+      "TOTAL": "الإجمالي",
+      "MIN_TWO_LINES": "يجب إضافة حسابين على الأقل.",
+      "MUST_BALANCE": "يجب أن يتساوى إجمالي المدين مع إجمالي الدائن."
+    },
+    "VIEW": {
+      "ALL_CHILD_JOURNALS": "القيود المُنشأة",
+      "DATE": "التاريخ",
+      "REFERENCE_NUMBER": "رقم المرجع",
+      "STATUS": "الحالة"
+    },
+    "WEEKDAYS": {
+      "MONDAY": "الإثنين",
+      "TUESDAY": "الثلاثاء",
+      "WEDNESDAY": "الأربعاء",
+      "THURSDAY": "الخميس",
+      "FRIDAY": "الجمعة",
+      "SATURDAY": "السبت",
+      "SUNDAY": "الأحد"
+    },
+    "MONTHS": {
+      "JAN": "1 يناير",
+      "FEB": "1 فبراير",
+      "MAR": "1 مارس",
+      "APR": "1 أبريل",
+      "MAY": "1 مايو",
+      "JUN": "1 يونيو",
+      "JUL": "1 يوليو",
+      "AUG": "1 أغسطس",
+      "SEP": "1 سبتمبر",
+      "OCT": "1 أكتوبر",
+      "NOV": "1 نوفمبر",
+      "DEC": "1 ديسمبر"
+    }
+  }
+}

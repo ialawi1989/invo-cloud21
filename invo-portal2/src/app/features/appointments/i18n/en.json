@@ -1,0 +1,108 @@
+{
+  "APPOINTMENTS": {
+    "TITLE": "Appointments",
+    "SUBTITLE": "Book, reschedule, and check in appointments.",
+    "NEW_APPOINTMENT": "New Appointment",
+    "NO_APPOINTMENTS": "No appointments.",
+    "APPOINTMENTS": "appointments",
+    "WALK_IN": "Walk-in",
+    "STAFF": "Staff",
+    "TODAY": "Today",
+    "VIEW_DAY": "Day",
+    "VIEW_WEEK": "Week",
+    "VIEW_MONTH": "Month",
+    "NO_ADD_PERMISSION": "You don't have permission to add appointments.",
+    "RESCHEDULED": "Appointment rescheduled",
+    "RESCHEDULE_FAILED": "Couldn't reschedule — the new time may be unavailable.",
+
+    "FORM": {
+      "NEW_TITLE": "New Appointment",
+      "EDIT_TITLE": "Edit Appointment",
+      "CUSTOMER": "Customer",
+      "SEARCH_CUSTOMER": "Search customers",
+      "CREATE_CUSTOMER": "+ Create new customer",
+      "WALK_IN_CUSTOMER": "Walk-in (no customer record)",
+      "SERVICES": "Services",
+      "ADD_SERVICE": "+ Add service",
+      "SELECT_SERVICE": "Select a service",
+      "STAFF": "Staff",
+      "DATE": "Date",
+      "START_TIME": "Start time",
+      "DURATION": "Duration",
+      "MIN": "min",
+      "PRICE": "Price",
+      "DISCOUNT": "Discount",
+      "NOTES": "Notes",
+      "REMOVE": "Remove",
+      "TOTAL": "Total",
+      "SAVE": "Save Appointment",
+      "CHECK_IN": "Check In",
+      "PAY": "Go to Payment",
+      "CANCEL_APPOINTMENT": "Cancel Appointment",
+      "CANCEL_UNAVAILABLE": "This appointment is already checked in and can no longer be cancelled here.",
+      "CANCEL_REASON_TITLE": "Cancel appointment",
+      "CANCEL_REASON_LABEL": "Reason (optional)",
+      "CANCEL_REASON_PLACEHOLDER": "Let the customer know why…",
+      "CONFIRM_CANCEL": "Cancel appointment",
+      "KEEP": "Keep appointment",
+      "BACK": "Back to calendar",
+      "SAVED": "Appointment saved",
+      "SAVE_FAILED": "Failed to save appointment",
+      "CHECKED_IN": "Checked in",
+      "CHECK_IN_FAILED": "Failed to check in",
+      "CANCELLED": "Appointment cancelled",
+      "CANCEL_FAILED": "Failed to cancel appointment",
+      "CUSTOMER_REQUIRED": "Add a customer or mark this as a walk-in.",
+      "SERVICE_REQUIRED": "Add at least one service.",
+      "READ_ONLY_PAID": "This appointment has been paid and can't be edited.",
+      "FROM_WAITLIST": "Booked from the waitlist"
+    },
+
+    "WAITLIST": {
+      "TITLE": "Waitlist",
+      "SUBTITLE": "Customers waiting for an opening — convert them into a booked appointment.",
+      "COL_CUSTOMER": "Customer",
+      "COL_SERVICES": "Services",
+      "COL_REQUESTED": "Requested",
+      "COL_STAFF": "Preferred staff",
+      "NO_PREFERRED_TIME": "No preferred time",
+      "ANY_STAFF": "Any",
+      "CONVERT": "Book",
+      "EMPTY": "The waitlist is empty.",
+      "LOADING": "Loading waitlist…",
+      "CONVERT_FAILED": "Failed to load this waitlist entry."
+    },
+
+    "QUICK_CREATE": {
+      "MORE_OPTIONS": "More options"
+    },
+
+    "PRINT_SCHEDULE": {
+      "TITLE": "Print Employee Schedule",
+      "PAPER_SIZE": "Paper size",
+      "GENERATE_PREVIEW": "Generate Preview",
+      "NO_PREVIEW": "Choose a staff member and date, then generate a preview.",
+      "NO_APPOINTMENTS": "No appointments on this day.",
+      "EMPLOYEE_REQUIRED": "Choose a staff member first.",
+      "LOAD_FAILED": "Couldn't load this schedule.",
+      "POPUP_BLOCKED": "Your browser blocked the print window — allow pop-ups and try again.",
+      "PRINT": "Print",
+      "COL_TIME": "Time",
+      "COL_DURATION": "Duration",
+      "COL_CLIENT": "Client",
+      "COL_PHONE": "Phone",
+      "COL_SERVICE": "Service",
+      "COL_NOTES": "Notes"
+    },
+
+    "SERVICE_TEAM": {
+      "TITLE": "Service Team",
+      "SUBTITLE": "Choose which staff can perform each bookable service. Leave a service unchecked-for-everyone to allow any staff member.",
+      "ANY_STAFF_HINT": "Any staff member can perform this service.",
+      "SAVED": "Updated",
+      "SAVE_FAILED": "Failed to save",
+      "LOADING": "Loading…",
+      "EMPTY": "No bookable services found."
+    }
+  }
+}

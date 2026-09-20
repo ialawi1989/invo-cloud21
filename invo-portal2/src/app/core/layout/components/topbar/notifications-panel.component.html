@@ -1,0 +1,82 @@
+<div class="np">
+  <header class="np-header">
+    <div>
+      <h2 class="np-title">{{ 'NOTIFICATIONS_PANEL.TITLE' | translate }}</h2>
+      <p class="np-sub">{{ 'NOTIFICATIONS_PANEL.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="np-actions">
+      <button
+        type="button"
+        class="np-icon-btn"
+        [class.is-on]="pending.soundEnabled()"
+        (click)="pending.toggleSound()"
+        [title]="(pending.soundEnabled() ? 'NOTIFICATIONS_PANEL.SOUND_ON' : 'NOTIFICATIONS_PANEL.SOUND_OFF') | translate"
+      >
+        @if (pending.soundEnabled()) {
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+        } @else {
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5 6 9H2v6h4l5 4V5Z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+          </svg>
+        }
+      </button>
+      <button type="button" class="np-icon-btn" (click)="pending.load()" [title]="'NOTIFICATIONS_PANEL.REFRESH' | translate">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="np-body">
+    @if (pending.loading() && !pending.loaded()) {
+      <div class="np-empty"><span class="np-spin"></span> {{ 'NOTIFICATIONS_PANEL.LOADING' | translate }}</div>
+    } @else if (pending.orders().length === 0) {
+      <div class="np-empty">{{ 'NOTIFICATIONS_PANEL.EMPTY' | translate }}</div>
+    } @else {
+      <ul class="np-list">
+        @for (order of pending.orders(); track trackById($index, order)) {
+          <li class="np-item">
+            <div class="np-item-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              </svg>
+            </div>
+            <div class="np-item-body">
+              <div class="np-item-top">
+                <span class="np-invoice">#{{ order.invoiceNumber }}</span>
+                <span class="np-time">{{ order.createdAt | date: 'dd/MM HH:mm' }}</span>
+              </div>
+              @if (order.customerName) {
+                <div class="np-line">{{ 'NOTIFICATIONS_PANEL.CUSTOMER' | translate }}: <strong>{{ order.customerName }}</strong></div>
+              }
+              <div class="np-line">{{ 'NOTIFICATIONS_PANEL.BRANCH' | translate }}: <strong>{{ order.branchName }}</strong></div>
+
+              @if (needsReview(order)) {
+                <div class="np-warn">{{ 'NOTIFICATIONS_PANEL.NEEDS_REVIEW' | translate }}</div>
+                <div class="np-item-actions">
+                  <button type="button" class="np-btn np-btn--primary" (click)="reviewOrder(order)">
+                    {{ 'NOTIFICATIONS_PANEL.REVIEW_ORDER' | translate }}
+                  </button>
+                </div>
+              } @else {
+                <div class="np-item-actions">
+                  <button type="button" class="np-btn np-btn--accept" [disabled]="isBusy(order)" (click)="accept(order)">
+                    {{ 'NOTIFICATIONS_PANEL.ACCEPT' | translate }}
+                  </button>
+                  <button type="button" class="np-btn np-btn--reject" [disabled]="isBusy(order)" (click)="reject(order)">
+                    {{ 'NOTIFICATIONS_PANEL.REJECT' | translate }}
+                  </button>
+                </div>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

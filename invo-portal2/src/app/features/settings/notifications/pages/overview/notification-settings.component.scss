@@ -1,0 +1,333 @@
+:host {
+  display: block;
+  color: #1a1d29;
+}
+
+.ns {
+  // The app's floating scroll-to-top button is fixed at bottom:24px/right:24px,
+  // 44px across — without this, page content that ends near the bottom (like
+  // the Logs pager) renders its last controls right under that button.
+  padding-bottom: 88px;
+}
+
+.ns-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  h1 { margin: 0; font-size: 20px; font-weight: 700; }
+  p { margin: 4px 0 0; font-size: 13px; color: #6b7280; }
+}
+
+.ns-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ns-card {
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ns-card__label { font-size: 12px; color: #6b7280; }
+.ns-card__value { font-size: 22px; font-weight: 700; }
+.ns-card--success .ns-card__value { color: #16a34a; }
+.ns-card--warn .ns-card__value { color: #b45309; }
+
+.ns-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  width: fit-content;
+  margin-bottom: 16px;
+}
+
+.ns-tab {
+  padding: 7px 16px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ns-tab.is-on { background: #fff; color: #1a1d29; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1); }
+
+.ns-filterbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.ns-input, .ns-select {
+  padding: 7px 10px;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  color: #1a1d29;
+}
+
+.ns-input { min-width: 220px; flex: 1 1 220px; }
+.ns-select--sm { padding: 4px 8px; width: auto; }
+.ns-dropdown { min-width: 170px; }
+.ns-dropdown--sm { min-width: 90px; }
+
+.ns-loading { padding: 24px; text-align: center; color: #94a3b8; font-size: 13px; }
+
+.ns-group {
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.ns-group__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+
+  h3 { margin: 0; font-size: 14px; font-weight: 700; }
+}
+
+.ns-group__count {
+  background: #eef2f6;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.ns-event {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border-top: 1px solid #f1f5f9;
+
+  &:first-of-type { border-top: none; }
+  &.is-off { opacity: 0.55; }
+}
+
+.ns-switch { position: relative; flex: 0 0 auto; cursor: pointer; }
+.ns-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.ns-switch__track {
+  display: block;
+  width: 34px;
+  height: 19px;
+  background: #cbd5e1;
+  border-radius: 999px;
+  transition: background 120ms ease;
+  position: relative;
+}
+.ns-switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 120ms ease;
+}
+.ns-switch input:checked + .ns-switch__track { background: #2691a4; }
+.ns-switch input:checked + .ns-switch__track .ns-switch__thumb { transform: translateX(15px); }
+
+.ns-event__info { flex: 1; min-width: 0; }
+.ns-event__name { font-size: 13.5px; font-weight: 600; }
+.ns-event__desc { font-size: 12px; color: #6b7280; margin-top: 1px; }
+
+.ns-event__channels { display: flex; gap: 6px; flex: 0 0 auto; }
+
+.ns-chan {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border: 1px solid #e4e7ec;
+  border-radius: 999px;
+  background: #fff;
+  color: #94a3b8;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled { cursor: not-allowed; opacity: 0.5; }
+  &[data-role='primary'] { background: #eef7f8; color: #2691a4; border-color: #bfe3e7; }
+  &[data-role='fallback'] { background: #fef3e2; color: #b45309; border-color: #fcd9a8; }
+}
+
+.ns-chan__role { font-weight: 700; }
+
+.ns-status {
+  flex: 0 0 auto;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+
+  &[data-status='active'] { background: #dcfce7; color: #16a34a; }
+  &[data-status='disabled'] { background: #f1f5f9; color: #94a3b8; }
+  &[data-status='partial'] { background: #fef3e2; color: #b45309; }
+  &[data-status='needs_setup'] { background: #fee2e2; color: #dc2626; }
+}
+
+.ns-configure-btn {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ns-configure-btn:hover { background: #f8fafc; }
+
+.ns-save-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 0;
+  background: linear-gradient(180deg, rgba(247, 248, 250, 0) 0%, #f7f8fa 40%);
+}
+
+.ns-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #e4e7ec;
+  background: #fff;
+  color: #1a1d29;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ns-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.ns-btn--primary { background: #2691a4; border-color: #2691a4; color: #fff; }
+.ns-btn--primary:hover:not(:disabled) { background: #227d8d; }
+.ns-btn--sm { padding: 5px 10px; font-size: 11.5px; }
+
+.ns-banner {
+  background: #fef3e2;
+  border: 1px solid #fcd9a8;
+  color: #92400e;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  margin-bottom: 12px;
+}
+
+.ns-panel {
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.ns-panel__toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.ns-panel__toolbar--wrap { flex-wrap: wrap; }
+
+.ns-table-scroll {
+  overflow-x: auto;
+  // Room for the app's floating scroll-to-top button so the last column
+  // (message id / error) never renders underneath it.
+  padding-right: 8px;
+  margin-right: -8px;
+}
+
+.ns-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 12.5px;
+
+  th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #94a3b8;
+    padding: 8px 10px;
+    border-bottom: 1px solid #e4e7ec;
+  }
+
+  td { padding: 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: #f8fafc; }
+}
+
+.ns-table__empty { text-align: center; padding: 24px; color: #94a3b8; }
+.ns-table__title { font-weight: 600; }
+
+.ns-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef7f8;
+  color: #2691a4;
+}
+.ns-badge--muted { background: #f1f5f9; color: #94a3b8; }
+.ns-badge--info { background: #e0f2fe; color: #0369a1; }
+.ns-badge--success { background: #dcfce7; color: #16a34a; }
+.ns-badge--danger { background: #fee2e2; color: #dc2626; }
+
+.ns-muted { color: #94a3b8; }
+.ns-nowrap { white-space: nowrap; }
+.ns-truncate { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.ns-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 12px;
+}
+
+.ns-pager__size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ns-pager__btns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ns-btn--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+}

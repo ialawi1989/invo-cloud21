@@ -1,0 +1,83 @@
+{
+  "RECURRING_JOURNAL": {
+    "LIST": {
+      "TITLE": "Recurring Journals",
+      "ADD_NEW": "Add new",
+      "PROFILE_NAME": "Profile name",
+      "BRANCH_NAME": "Branch",
+      "FREQUENCY": "Frequency",
+      "START_DATE": "Start date",
+      "END_DATE": "End date",
+      "CREATED_AT": "Created at",
+      "NEXT_JOURNAL_DATE": "Next journal date",
+      "FREQUENCY_SENTENCE_MONTH": "Every {{qty}} month(s)",
+      "FREQUENCY_SENTENCE_YEAR": "Every {{qty}} year(s)",
+      "FREQUENCY_SENTENCE_WEEK": "Every {{qty}} week(s)"
+    },
+    "ACTIONS": {
+      "VIEW": "View"
+    },
+    "FORM": {
+      "NEW_TITLE": "New recurring journal",
+      "EDIT_TITLE": "Edit recurring journal",
+      "DETAILS": "Details",
+      "END": "Ends",
+      "END_NONE": "None",
+      "END_BY": "By",
+      "PERIODICITY": "Repeats",
+      "ON_DAY": "On day",
+      "ON_WEEKDAY": "On weekday",
+      "ON_MONTH": "On month",
+      "EVERY": "Every",
+      "MONTH": "Month(s)",
+      "WEEK": "Week(s)",
+      "YEAR": "Year(s)",
+      "WEEKLY": "Weekly",
+      "MONTHLY": "Monthly",
+      "YEARLY": "Yearly",
+      "MANUAL_JOURNAL_FORM": "Journal template",
+      "BRANCH": "Branch",
+      "BRANCH_LOCKED_HINT": "The branch can't be changed once the recurring journal is created.",
+      "JOURNAL_LINE": "Journal lines",
+      "ACCOUNT": "Account",
+      "ACCOUNT_PLACEHOLDER": "Select an account",
+      "REFERENCE": "Reference",
+      "DEBIT": "Debit",
+      "CREDIT": "Credit",
+      "DESCRIPTION_PLACEHOLDER": "Enter a description",
+      "ADD_LINE": "Add line",
+      "TOTAL": "Total",
+      "MIN_TWO_LINES": "You must add at least two accounts.",
+      "MUST_BALANCE": "Total debits and credits should be equal."
+    },
+    "VIEW": {
+      "ALL_CHILD_JOURNALS": "Generated journals",
+      "DATE": "Date",
+      "REFERENCE_NUMBER": "Reference number",
+      "STATUS": "Status"
+    },
+    "WEEKDAYS": {
+      "MONDAY": "Monday",
+      "TUESDAY": "Tuesday",
+      "WEDNESDAY": "Wednesday",
+      "THURSDAY": "Thursday",
+      "FRIDAY": "Friday",
+      "SATURDAY": "Saturday",
+      "SUNDAY": "Sunday"
+    },
+    "MONTHS": {
+      "JAN": "Jan 1st",
+      "FEB": "Feb 1st",
+      "MAR": "Mar 1st",
+      "APR": "Apr 1st",
+      "MAY": "May 1st",
+      "JUN": "Jun 1st",
+      "JUL": "Jul 1st",
+      "AUG": "Aug 1st",
+      "SEP": "Sep 1st",
+      "OCT": "Oct 1st",
+      "NOV": "Nov 1st",
+      "DEC": "Dec 1st"
+    }
+  }
+}

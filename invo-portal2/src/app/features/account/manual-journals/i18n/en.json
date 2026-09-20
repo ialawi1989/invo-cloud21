@@ -1,0 +1,54 @@
+{
+  "MANUAL_JOURNALS": {
+    "LIST": {
+      "TITLE": "Manual Journals",
+      "ADD_NEW": "Add Journal",
+      "SHOW_LOGS": "Show logs",
+      "SEARCH_PLACEHOLDER": "Search reference or branch…",
+      "DATE": "Date",
+      "REFERENCE": "Reference",
+      "BRANCH": "Branch",
+      "EMPLOYEE": "Employee",
+      "AMOUNT": "Amount",
+      "STATUS": "Status",
+      "EMPTY": "No journals to show.",
+      "DELETE_TITLE": "Delete journal?",
+      "DELETE_MESSAGE": "This will permanently delete journal \"{{reference}}\". This cannot be undone."
+    },
+    "STATUS": {
+      "DRAFT": "Draft",
+      "OPEN": "Open"
+    },
+    "FORM": {
+      "NEW_TITLE": "New Journal",
+      "EDIT_TITLE": "Edit Journal",
+      "VIEW_TITLE": "View Journal",
+      "BRANCH": "Branch",
+      "SELECT_BRANCH": "Select a branch",
+      "DATE": "Date",
+      "REFERENCE": "Reference number",
+      "NOTES": "Notes",
+      "LINES_TITLE": "Journal lines",
+      "ACCOUNT": "Account",
+      "SELECT_ACCOUNT": "Select an account",
+      "REFERENCE_CODE": "Reference",
+      "DEBIT": "Debit",
+      "CREDIT": "Credit",
+      "DESCRIPTION": "Description",
+      "DESCRIPTION_PLACEHOLDER": "Enter a description",
+      "ADD_LINE": "Add Line",
+      "MIN_TWO_LINES": "You must add at least two accounts.",
+      "ZERO_LINE": "One or more accounts' debit and credit are both zero.",
+      "NOT_BALANCED": "Total debits must equal total credits.",
+      "FIELD_BRANCH": "Branch",
+      "FIELD_LINE_ACCOUNT": "Account (on every line)",
+      "MISSING_HEADER": "Missing required fields:",
+      "ATTACH_FILE": "Attach file",
+      "CONFIRM_REMOVE_LINE_TITLE": "Remove line?",
+      "CONFIRM_REMOVE_LINE_MESSAGE": "This line will be removed from the journal.",
+      "COMMENTS": "Comments",
+      "ADD_COMMENT": "Add Comment",
+      "OPEN_JOURNAL": "Open Journal"
+    }
+  }
+}

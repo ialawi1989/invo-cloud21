@@ -1,0 +1,173 @@
+<div class="af">
+  <div class="af__header">
+    <button class="af__back" (click)="back()">← {{ 'APPOINTMENTS.FORM.BACK' | translate }}</button>
+    <h1>{{ (isEditMode() ? 'APPOINTMENTS.FORM.EDIT_TITLE' : 'APPOINTMENTS.FORM.NEW_TITLE') | translate }}</h1>
+  </div>
+
+  @if (loading()) {
+    <div class="af__loading">…</div>
+  } @else {
+    @if (readOnly()) {
+      <div class="af__notice">{{ 'APPOINTMENTS.FORM.READ_ONLY_PAID' | translate }}</div>
+    }
+    @if (waitlistId()) {
+      <div class="af__notice af__notice--info">{{ 'APPOINTMENTS.FORM.FROM_WAITLIST' | translate }}</div>
+    }
+
+    <section class="af__card">
+      <h2>{{ 'APPOINTMENTS.FORM.CUSTOMER' | translate }}</h2>
+
+      <label class="af__walkin">
+        <input type="checkbox" [ngModel]="isWalkIn()" (ngModelChange)="isWalkIn.set($event)" [disabled]="readOnly()" />
+        {{ 'APPOINTMENTS.FORM.WALK_IN_CUSTOMER' | translate }}
+      </label>
+
+      @if (!isWalkIn()) {
+        <app-search-dropdown
+          [loadFn]="customerSearchFn"
+          [displayWith]="customerDisplay"
+          [ngModel]="customer()"
+          (ngModelChange)="customer.set($event)"
+          [placeholder]="'APPOINTMENTS.FORM.SEARCH_CUSTOMER' | translate"
+          [disabled]="readOnly()"
+        />
+      } @else {
+        <input
+          type="text"
+          class="af__input"
+          [ngModel]="walkInContact()"
+          (ngModelChange)="walkInContact.set($event)"
+          [placeholder]="'APPOINTMENTS.FORM.WALK_IN_CUSTOMER' | translate"
+          [disabled]="readOnly()"
+        />
+      }
+    </section>
+
+    <section class="af__card">
+      <h2>{{ 'APPOINTMENTS.FORM.SERVICES' | translate }}</h2>
+
+      <div class="af__rows">
+        @for (row of visibleRows(); track trackByRowId($index, row)) {
+          <div class="af__row">
+            <div class="af__row-service">
+              <button type="button" class="af__pick-btn" (click)="pickService(row)" [disabled]="readOnly()">
+                {{ row.productName || ('APPOINTMENTS.FORM.SELECT_SERVICE' | translate) }}
+              </button>
+            </div>
+
+            <app-search-dropdown
+              class="af__row-employee"
+              [items]="employeeOptions()"
+              [displayWith]="optionLabel"
+              [compareWith]="optionCompare"
+              [toValue]="optionValue"
+              [ngModel]="row.employeeId"
+              (ngModelChange)="patchRow(row.rowId, { employeeId: $event })"
+              [placeholder]="'APPOINTMENTS.FORM.STAFF' | translate"
+              [clearable]="true"
+              [disabled]="readOnly()"
+            />
+
+            <app-date-picker
+              class="af__row-date"
+              mode="single"
+              [value]="row.startTime"
+              (valueChange)="onDateChange(row, $event)"
+              [disabled]="readOnly()"
+            />
+
+            <app-search-dropdown
+              class="af__row-time"
+              [items]="timeOptions"
+              [displayWith]="optionLabel"
+              [compareWith]="optionCompare"
+              [toValue]="optionValue"
+              [ngModel]="timeValue(row)"
+              (ngModelChange)="onTimeChange(row, $event)"
+              [clearable]="false"
+              [disabled]="readOnly()"
+            />
+
+            <app-search-dropdown
+              class="af__row-duration"
+              [items]="durationOptionsFor(row)"
+              [displayWith]="optionLabel"
+              [compareWith]="optionCompare"
+              [toValue]="optionValue"
+              [ngModel]="row.duration"
+              (ngModelChange)="patchRow(row.rowId, { duration: $event })"
+              [clearable]="false"
+              [disabled]="readOnly()"
+            />
+
+            <input
+              type="number"
+              class="af__input af__row-price"
+              [ngModel]="row.price"
+              (ngModelChange)="patchRow(row.rowId, { price: $event })"
+              [placeholder]="'APPOINTMENTS.FORM.PRICE' | translate"
+              [disabled]="readOnly()"
+            />
+
+            <input
+              type="number"
+              class="af__input af__row-discount"
+              [ngModel]="row.discount"
+              (ngModelChange)="patchRow(row.rowId, { discount: $event })"
+              [placeholder]="'APPOINTMENTS.FORM.DISCOUNT' | translate"
+              [disabled]="readOnly()"
+            />
+
+            <button
+              type="button"
+              class="af__row-remove"
+              (click)="removeRow(row)"
+              [disabled]="readOnly()"
+              [title]="'APPOINTMENTS.FORM.REMOVE' | translate"
+            >
+              ✕
+            </button>
+          </div>
+        }
+      </div>
+
+      <button type="button" class="af__add-row" (click)="addRow()" [disabled]="readOnly()">
+        {{ 'APPOINTMENTS.FORM.ADD_SERVICE' | translate }}
+      </button>
+
+      <div class="af__total">
+        <span>{{ 'APPOINTMENTS.FORM.TOTAL' | translate }}</span>
+        <strong>{{ total() | mycurrency }}</strong>
+      </div>
+    </section>
+
+    <div class="af__actions">
+      @if (!readOnly()) {
+        <button type="button" class="af__btn af__btn--primary" [disabled]="saving()" (click)="save()">
+          {{ 'APPOINTMENTS.FORM.SAVE' | translate }}
+        </button>
+
+        @if (!isInvoiced()) {
+          <button type="button" class="af__btn" [disabled]="saving()" (click)="checkIn()">
+            {{ 'APPOINTMENTS.FORM.CHECK_IN' | translate }}
+          </button>
+        }
+
+        @if (isInvoiced() && !isPaid()) {
+          <button type="button" class="af__btn" (click)="goToPayment()">
+            {{ 'APPOINTMENTS.FORM.PAY' | translate }}
+          </button>
+        }
+
+        @if (isEditMode() && !isInvoiced() && canDelete()) {
+          <button type="button" class="af__btn af__btn--danger" [disabled]="saving()" (click)="cancel()">
+            {{ 'APPOINTMENTS.FORM.CANCEL_APPOINTMENT' | translate }}
+          </button>
+        }
+        @if (isEditMode() && isInvoiced()) {
+          <span class="af__cancel-hint">{{ 'APPOINTMENTS.FORM.CANCEL_UNAVAILABLE' | translate }}</span>
+        }
+      }
+    </div>
+  }
+</div>
