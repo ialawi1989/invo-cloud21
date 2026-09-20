@@ -14,7 +14,6 @@
     "NO_ADD_PERMISSION": "You don't have permission to add appointments.",
     "RESCHEDULED": "Appointment rescheduled",
     "RESCHEDULE_FAILED": "Couldn't reschedule — the new time may be unavailable.",
-
     "FORM": {
       "NEW_TITLE": "New Appointment",
       "EDIT_TITLE": "Edit Appointment",
@@ -55,9 +54,21 @@
       "CUSTOMER_REQUIRED": "Add a customer or mark this as a walk-in.",
       "SERVICE_REQUIRED": "Add at least one service.",
       "READ_ONLY_PAID": "This appointment has been paid and can't be edited.",
-      "FROM_WAITLIST": "Booked from the waitlist"
+      "FROM_WAITLIST": "Booked from the waitlist",
+      "PRODUCTS": "Products (shared)",
+      "PRODUCT": "Product",
+      "NO_PRODUCTS": "No products added.",
+      "ADD_PRODUCT": "+ Add product",
+      "QTY": "Qty",
+      "SUBTOTAL": "Subtotal",
+      "PRODUCTS_TOTAL": "Products total",
+      "SERVICES_TOTAL": "Services total",
+      "GRAND_TOTAL": "Grand total",
+      "ROW_TOTAL": "Row total",
+      "CONFIRM_TIME": "No preferred time - please confirm a date & time.",
+      "STAFF_BUSY": "{{name}} is already booked at {{time}}. Choose another time or staff member.",
+      "BACK_BTN": "Back"
     },
-
     "WAITLIST": {
       "TITLE": "Waitlist",
       "SUBTITLE": "Customers waiting for an opening — convert them into a booked appointment.",
@@ -72,11 +83,10 @@
       "LOADING": "Loading waitlist…",
       "CONVERT_FAILED": "Failed to load this waitlist entry."
     },
-
     "QUICK_CREATE": {
-      "MORE_OPTIONS": "More options"
+      "MORE_OPTIONS": "More options",
+      "TIME_IN_PAST": "This time has already passed — pick a later time."
     },
-
     "PRINT_SCHEDULE": {
       "TITLE": "Print Employee Schedule",
       "PAPER_SIZE": "Paper size",
@@ -94,7 +104,6 @@
       "COL_SERVICE": "Service",
       "COL_NOTES": "Notes"
     },
-
     "SERVICE_TEAM": {
       "TITLE": "Service Team",
       "SUBTITLE": "Choose which staff can perform each bookable service. Leave a service unchecked-for-everyone to allow any staff member.",

@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { ErrorService } from '@core/http/error.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
@@ -12,11 +13,12 @@ import { EmployeeService } from '../../../employees/services/employee.service';
 import { ProductsService } from '../../../products/services/products.service';
 import { PickProductModalComponent, PickProductResult } from '../../../products/pages/product-form/components/pick-product-modal/pick-product-modal.component';
 import { AppointmentsService } from '../../services/appointments.service';
+import { AppointmentBranchService } from '../../services/appointment-branch.service';
 import { WaitlistService } from '../../services/waitlist.service';
 import { CustomerLite, CustomerLookupService } from '../../services/customer-lookup.service';
 import { AppointmentPrefillService } from '../../services/appointment-prefill.service';
 import { AppointmentLine, AppointmentPayload, EmployeeLite, WaitlistPrefill } from '../../models/appointment.types';
-import { DURATION_OPTIONS, TIME_SLOTS, addMinutes, dateAtTime, formatTime } from '../../utils/time-utils';
+import { DURATION_OPTIONS, TIME_SLOTS, addMinutes, dateAtTime, formatTime, formatTimeAmPm, isPast } from '../../utils/time-utils';
 import { unwrapOptionValue } from '../../utils/option-compare';
 import { CancelReasonModalComponent, CancelReasonResult } from '../../components/cancel-reason-modal/cancel-reason-modal.component';
 
@@ -32,6 +34,21 @@ interface ServiceRow {
   price: number;
   discount: number;
   notes: string;
+  isDeleted?: boolean;
+  /** Waitlist entry had no concrete time - the user must confirm a date & time. */
+  confirmTime?: boolean;
+}
+
+/** A non-service (inventory) product line shared across the whole appointment. */
+interface ProductRow {
+  rowId: string;
+  lineId?: string;
+  productId: string;
+  productName: string;
+  price: number;
+  qty: number;
+  discount: number;
+  note: string;
   isDeleted?: boolean;
 }
 
@@ -51,6 +68,8 @@ export class AppointmentFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
+  private errorService = inject(ErrorService);
+  private branchSvc = inject(AppointmentBranchService);
   private translate = inject(TranslateService);
   private modal = inject(ModalService);
   private employeeSvc = inject(EmployeeService);
@@ -79,12 +98,37 @@ export class AppointmentFormComponent implements OnInit {
   walkInContact = signal('');
 
   rows = signal<ServiceRow[]>([]);
+  products = signal<ProductRow[]>([]);
+  visibleProducts = computed(() => this.products().filter(p => !p.isDeleted));
 
   /** Read-only once paid — nothing left to do here but view. */
   readonly readOnly = computed(() => this.isPaid());
 
   private readonly baseDurationOptions: FilterOption<number>[] = DURATION_OPTIONS.map(m => ({ value: m, label: this.formatDurationLabel(m) }));
-  readonly timeOptions: FilterOption<string>[] = TIME_SLOTS.map(t => ({ value: t, label: t }));
+  // Same "14:15 (2:15 PM)" label the legacy form showed.
+  private readonly allTimeOptions: FilterOption<string>[] = TIME_SLOTS.map(t => ({
+    value: t,
+    label: `${t} (${formatTimeAmPm(dateAtTime(new Date(), t))})`,
+  }));
+
+  /** Slots already gone today are dropped (legacy disabled them); the row's own current time is always kept so an existing value still displays. */
+  timeOptionsFor(row: ServiceRow): FilterOption<string>[] {
+    const now = new Date();
+    const sameDay = row.startTime.toDateString() === now.toDateString();
+    if (!sameDay) return this.allTimeOptions;
+    const current = formatTime(row.startTime);
+    return this.allTimeOptions.filter(o => o.value === current || !isPast(dateAtTime(row.startTime, o.value)));
+  }
+
+  private productCache = new Map<string, any>();
+  availabilityErrors = signal<Record<string, string>>({});
+  rowTotal(row: ServiceRow): number {
+    return Math.max(0, row.price - (row.discount || 0));
+  }
+  /** Existing lines of an already checked-in appointment can't be edited (legacy parity). */
+  rowLocked(row: ServiceRow): boolean {
+    return this.readOnly() || (this.isInvoiced() && !!row.lineId);
+  }
   readonly optionLabel = (o: FilterOption<unknown>) => o.label;
   readonly optionValue = (o: FilterOption<unknown>) => o.value;
   // `compareWith` is called with (option, rawValue) when resolving the
@@ -106,11 +150,21 @@ export class AppointmentFormComponent implements OnInit {
       .sort((a, b) => a.value - b.value);
   }
 
-  total = computed(() =>
+  servicesTotal = computed(() =>
     this.rows()
       .filter(r => !r.isDeleted)
       .reduce((sum, r) => sum + Math.max(0, r.price - r.discount), 0),
   );
+
+  productsTotal = computed(() =>
+    this.visibleProducts().reduce((sum, p) => sum + this.productRowTotal(p), 0),
+  );
+
+  total = computed(() => this.servicesTotal() + this.productsTotal());
+
+  productRowTotal(p: ProductRow): number {
+    return Math.max(0, p.price * p.qty - (p.discount || 0));
+  }
 
   async ngOnInit(): Promise<void> {
     await this.loadEmployees();
@@ -196,10 +250,32 @@ export class AppointmentFormComponent implements OnInit {
       this.walkInContact.set(raw.customerContact ?? '');
     }
 
-    const allLines = raw.lines ?? [];
-    const lines = focusTaskId && allLines.length > 1
-      ? allLines.filter(l => l.id === focusTaskId)
-      : allLines;
+    const allLines = (raw.lines ?? []).filter(l => !l.isDeleted);
+    // The backend has no separate product-line table - services and
+    // inventory products are both lines; a service carries a duration.
+    const isServiceLine = (l: AppointmentLine) => l.selectedItem?.type === 'service' || l.serviceDuration > 0;
+    const serviceLines = allLines.filter(isServiceLine);
+    const lines = focusTaskId && serviceLines.length > 1
+      ? serviceLines.filter(l => l.id === focusTaskId)
+      : serviceLines;
+
+    const productRows = allLines.filter(l => !isServiceLine(l)).map((l): ProductRow => ({
+      rowId: `prod-${rowSeq++}`,
+      lineId: l.id,
+      productId: l.productId,
+      productName: '',
+      price: l.price,
+      qty: l.qty || 1,
+      discount: l.discountAmount ?? 0,
+      note: l.note ?? '',
+    }));
+    this.products.set(productRows);
+    void Promise.all(productRows.map(async r => {
+      try {
+        const product = await this.productsSvc.getProduct(r.productId);
+        if (product?.name) this.patchProduct(r.rowId, { productName: product.name });
+      } catch { /* keep blank name */ }
+    }));
 
     const rows = lines
       .filter(l => !l.isDeleted)
@@ -222,6 +298,7 @@ export class AppointmentFormComponent implements OnInit {
       rows.filter(r => r.productId).map(async r => {
         try {
           const product = await this.productsSvc.getProduct(r.productId!);
+          this.productCache.set(r.productId!, product);
           if (product?.name) this.patchRow(r.rowId, { productName: product.name });
         } catch {
           // Keep the blank name — the id is still preserved for save.
@@ -246,6 +323,7 @@ export class AppointmentFormComponent implements OnInit {
             productName: l.serviceName ?? '',
             employeeId: l.salesEmployeeId,
             startTime: l.serviceDate ? new Date(l.serviceDate) : new Date(),
+            confirmTime: !l.serviceDate,
             duration: l.serviceDuration,
             price: l.price,
             discount: 0,
@@ -284,8 +362,101 @@ export class AppointmentFormComponent implements OnInit {
     }
   }
 
+  private effective(product: any, employeeId: string | null): { price: number; duration: number } {
+    const override = employeeId ? product?.employeePrices?.find((p: any) => p.employeeId === employeeId) : null;
+    return {
+      price: override?.price ?? product?.defaultPrice ?? 0,
+      duration: override?.serviceTime || product?.serviceTime || 30,
+    };
+  }
+
+  onEmployeeChange(row: ServiceRow, employeeId: string | null): void {
+    const product = row.productId ? this.productCache.get(row.productId) : null;
+    // Staff-specific pricing/duration follows the chosen employee (legacy getEffectivePrice).
+    this.patchRow(row.rowId, product ? { employeeId, ...this.effective(product, employeeId) } : { employeeId });
+    void this.checkAvailability(row.rowId);
+  }
+
+  onDurationChange(row: ServiceRow, duration: number): void {
+    this.patchRow(row.rowId, { duration });
+    void this.checkAvailability(row.rowId);
+  }
+
+  onPriceChange(row: ServiceRow, price: number): void {
+    const p = Math.max(0, Number(price) || 0);
+    this.patchRow(row.rowId, { price: p, discount: Math.min(row.discount, p) });
+  }
+
+  onDiscountChange(row: ServiceRow, discount: number): void {
+    this.patchRow(row.rowId, { discount: Math.min(Math.max(0, Number(discount) || 0), row.price) });
+  }
+
+  /** Is the chosen staff member already booked over this row's slot? (excludes this appointment itself) */
+  async checkAvailability(rowId: string): Promise<string | null> {
+    const row = this.rows().find(r => r.rowId === rowId);
+    const clear = () => this.availabilityErrors.update(e => { const { [rowId]: _drop, ...rest } = e; return rest; });
+    if (!row || row.isDeleted || !row.employeeId || !row.productId) { clear(); return null; }
+
+    const dayStart = new Date(row.startTime); dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart); dayEnd.setDate(dayEnd.getDate() + 1);
+    const tasks = await this.appointmentsSvc.getAppointments({ from: dayStart, to: dayEnd, employeeIds: [row.employeeId] });
+
+    const start = row.startTime.getTime();
+    const end = start + row.duration * 60_000;
+    const ownId = this.appointmentId();
+    const conflict = tasks.some(t => {
+      if (ownId && t.id === ownId) return false;
+      const s = new Date(t.serviceDate).getTime();
+      return start < s + t.serviceDuration * 60_000 && end > s;
+    });
+    if (!conflict) { clear(); return null; }
+
+    const name = this.employees().find(e => e.id === row.employeeId)?.name ?? '';
+    const msg = this.translate.instant('APPOINTMENTS.FORM.STAFF_BUSY', { name, time: formatTime(row.startTime) });
+    this.availabilityErrors.update(e => ({ ...e, [rowId]: msg }));
+    return msg;
+  }
+
   patchRow(rowId: string, patch: Partial<ServiceRow>): void {
     this.rows.update(list => list.map(r => (r.rowId === rowId ? { ...r, ...patch } : r)));
+  }
+
+  patchProduct(rowId: string, patch: Partial<ProductRow>): void {
+    this.products.update(list => list.map(p => (p.rowId === rowId ? { ...p, ...patch } : p)));
+  }
+
+  async addProducts(): Promise<void> {
+    const existing = this.visibleProducts().map(p => p.productId);
+    const result = await this.modal.open<PickProductModalComponent, unknown, PickProductResult>(PickProductModalComponent, {
+      size: 'lg',
+      data: { multiple: true, excludedIds: existing },
+    }).afterClosed();
+
+    for (const picked of result?.added ?? []) {
+      if (picked.type === 'service') continue;
+      // Re-adding a product that was removed just un-deletes its line.
+      const removed = this.products().find(p => p.productId === picked.id && p.isDeleted);
+      if (removed) { this.patchProduct(removed.rowId, { isDeleted: false }); continue; }
+
+      const rowId = `prod-${rowSeq++}`;
+      this.products.update(list => [...list, {
+        rowId, productId: picked.id, productName: picked.name, price: picked.price ?? 0, qty: 1, discount: 0, note: '',
+      }]);
+      try {
+        const full = await this.productsSvc.getProduct(picked.id);
+        if (full?.defaultPrice != null) this.patchProduct(rowId, { price: full.defaultPrice });
+      } catch { /* keep list-level price */ }
+    }
+  }
+
+  removeProduct(p: ProductRow): void {
+    if (p.lineId) this.patchProduct(p.rowId, { isDeleted: true });
+    else this.products.update(list => list.filter(x => x.rowId !== p.rowId));
+  }
+
+  setProductQty(p: ProductRow, qty: number): void {
+    if (!(qty > 0)) { this.removeProduct(p); return; }
+    this.patchProduct(p.rowId, { qty });
   }
 
   async pickService(row: ServiceRow): Promise<void> {
@@ -301,6 +472,7 @@ export class AppointmentFormComponent implements OnInit {
     let price = picked.price ?? 0;
     try {
       const full = await this.productsSvc.getProduct(picked.id);
+      this.productCache.set(picked.id, full);
       duration = full?.serviceTime ?? duration;
       price = full?.defaultPrice ?? price;
       const override = row.employeeId ? full?.employeePrices?.find((p: any) => p.employeeId === row.employeeId) : null;
@@ -313,6 +485,7 @@ export class AppointmentFormComponent implements OnInit {
     }
 
     this.patchRow(row.rowId, { productId: picked.id, productName: picked.name, duration, price });
+    void this.checkAvailability(row.rowId);
   }
 
   formatDurationLabel(minutes: number): string {
@@ -327,13 +500,15 @@ export class AppointmentFormComponent implements OnInit {
   }
 
   onTimeChange(row: ServiceRow, hhmm: string): void {
-    this.patchRow(row.rowId, { startTime: dateAtTime(row.startTime, hhmm) });
+    this.patchRow(row.rowId, { startTime: dateAtTime(row.startTime, hhmm), confirmTime: false });
+    void this.checkAvailability(row.rowId);
   }
 
   onDateChange(row: ServiceRow, value: unknown): void {
     if (!(value instanceof Date)) return;
     const time = formatTime(row.startTime);
-    this.patchRow(row.rowId, { startTime: dateAtTime(value, time) });
+    this.patchRow(row.rowId, { startTime: dateAtTime(value, time), confirmTime: false });
+    void this.checkAvailability(row.rowId);
   }
 
   customerSearchFn = async (params: { search: string; page: number; pageSize: number }) => {
@@ -344,23 +519,51 @@ export class AppointmentFormComponent implements OnInit {
 
   visibleRows = computed(() => this.rows().filter(r => !r.isDeleted));
 
-  private validate(): string | null {
-    if (!this.isWalkIn() && !this.customer()) return this.translate.instant('APPOINTMENTS.FORM.CUSTOMER_REQUIRED');
-    if (this.isWalkIn() && !this.walkInContact().trim()) return this.translate.instant('APPOINTMENTS.FORM.CUSTOMER_REQUIRED');
-    if (this.visibleRows().filter(r => r.productId).length === 0) return this.translate.instant('APPOINTMENTS.FORM.SERVICE_REQUIRED');
+  private async firstAvailabilityConflict(): Promise<string | null> {
+    for (const r of this.visibleRows().filter(x => x.productId)) {
+      const msg = await this.checkAvailability(r.rowId);
+      if (msg) return msg;
+    }
     return null;
   }
 
-  private buildPayload(): AppointmentPayload {
-    const branchId = this.rows().find(r => r.employeeId)?.employeeId
-      ? (this.employees().find(e => e.id === this.rows().find(r => r.employeeId)!.employeeId)?.branchId ?? null)
-      : null;
+  private validate(): string | null {
+    if (!this.isWalkIn() && !this.customer()) return this.translate.instant('APPOINTMENTS.FORM.CUSTOMER_REQUIRED');
+    if (this.isWalkIn() && !this.walkInContact().trim()) return this.translate.instant('APPOINTMENTS.FORM.CUSTOMER_REQUIRED');
+    const serviceRows = this.visibleRows().filter(r => r.productId);
+    if (serviceRows.length === 0) return this.translate.instant('APPOINTMENTS.FORM.SERVICE_REQUIRED');
+    // Re-checked against a fresh `new Date()` right before saving — a row's
+    // time can slide into the past while the form sits open, and the
+    // backend rejects that too, so catch it here with a clear reason
+    // instead of a failed network round-trip.
+    if (serviceRows.some(r => r.confirmTime)) return this.translate.instant('APPOINTMENTS.FORM.CONFIRM_TIME');
+    if (serviceRows.some(r => isPast(r.startTime))) return this.translate.instant('APPOINTMENTS.QUICK_CREATE.TIME_IN_PAST');
+    return null;
+  }
+
+  private async buildPayload(): Promise<AppointmentPayload> {
+    // `?? null` alone isn't enough — `EmployeeLite.branchId` can come back as
+    // `""` (no branch assigned) rather than `null`/`undefined`, and Postgres
+    // rejects `""` for a uuid column outright.
+    const firstEmployeeId = this.rows().find(r => r.employeeId)?.employeeId;
+    const branchId = await this.branchSvc.resolve(
+      firstEmployeeId ? this.employees().find(e => e.id === firstEmployeeId)?.branchId : null,
+    );
+    const lineBranch = async (employeeId: string | null) =>
+      this.branchSvc.resolve(employeeId ? this.employees().find(e => e.id === employeeId)?.branchId : null);
+    const rowBranches = new Map<string, string | null>();
+    for (const r of this.rows()) rowBranches.set(r.rowId, await lineBranch(r.employeeId));
 
     const lines: AppointmentLine[] = this.rows()
       .filter(r => r.productId || r.isDeleted)
       .map(r => ({
         id: r.lineId,
         productId: r.productId!,
+        // Each line's own `branchId` — see the AppointmentLine doc comment;
+        // `EstimateLine.branchId` defaults to `""` server-side, not `null`.
+        // Resolved per-row since a multi-service appointment can mix staff
+        // from different branches.
+        branchId: rowBranches.get(r.rowId) ?? null,
         salesEmployeeId: r.employeeId,
         employeeId: r.employeeId,
         serviceDate: r.startTime.toISOString(),
@@ -374,10 +577,29 @@ export class AppointmentFormComponent implements OnInit {
         isDeleted: r.isDeleted,
       }));
 
+    for (const p of this.products().filter(x => x.productId || x.isDeleted)) {
+      lines.push({
+        id: p.lineId,
+        productId: p.productId,
+        branchId,
+        salesEmployeeId: null,
+        employeeId: null,
+        serviceDate: new Date().toISOString(),
+        serviceDuration: 0,
+        price: p.price,
+        qty: p.qty,
+        total: this.productRowTotal(p),
+        subTotal: p.price * p.qty,
+        discountAmount: p.discount,
+        note: p.note || undefined,
+        isDeleted: p.isDeleted,
+      });
+    }
+
     return {
       id: this.appointmentId() ?? undefined,
       branchId,
-      customerId: this.customer()?.id ?? null,
+      customerId: this.customer()?.id || null,
       customerContact: this.isWalkIn() ? this.walkInContact() : undefined,
       employeeId: this.rows()[0]?.employeeId ?? null,
       lines,
@@ -388,9 +610,12 @@ export class AppointmentFormComponent implements OnInit {
     const error = this.validate();
     if (error) { this.toast.error(error); return; }
 
+    const busy = await this.firstAvailabilityConflict();
+    if (busy) { this.toast.error(busy); return; }
+
     this.saving.set(true);
     try {
-      const payload = this.buildPayload();
+      const payload = await this.buildPayload();
       const res = await this.appointmentsSvc.saveAppointment(payload);
       const wlId = this.waitlistId();
       if (wlId) {
@@ -399,8 +624,10 @@ export class AppointmentFormComponent implements OnInit {
       this.toast.success(this.translate.instant('APPOINTMENTS.FORM.SAVED'));
       this.router.navigate(['/appointments']);
       void res;
-    } catch {
-      this.toast.error(this.translate.instant('APPOINTMENTS.FORM.SAVE_FAILED'));
+    } catch (err) {
+      // Surface the backend's actual reason (e.g. a past-time or
+      // missing-line validation message) instead of a generic toast.
+      await this.errorService.handleError(err);
     } finally {
       this.saving.set(false);
     }
@@ -410,13 +637,16 @@ export class AppointmentFormComponent implements OnInit {
     const error = this.validate();
     if (error) { this.toast.error(error); return; }
 
+    const busy = await this.firstAvailabilityConflict();
+    if (busy) { this.toast.error(busy); return; }
+
     this.saving.set(true);
     try {
-      await this.appointmentsSvc.checkIn(this.buildPayload());
+      await this.appointmentsSvc.checkIn(await this.buildPayload());
       this.toast.success(this.translate.instant('APPOINTMENTS.FORM.CHECKED_IN'));
       this.router.navigate(['/appointments']);
-    } catch {
-      this.toast.error(this.translate.instant('APPOINTMENTS.FORM.CHECK_IN_FAILED'));
+    } catch (err) {
+      await this.errorService.handleError(err);
     } finally {
       this.saving.set(false);
     }
@@ -442,8 +672,8 @@ export class AppointmentFormComponent implements OnInit {
       await this.appointmentsSvc.cancelAppointment(id, result.reason);
       this.toast.success(this.translate.instant('APPOINTMENTS.FORM.CANCELLED'));
       this.router.navigate(['/appointments']);
-    } catch {
-      this.toast.error(this.translate.instant('APPOINTMENTS.FORM.CANCEL_FAILED'));
+    } catch (err) {
+      await this.errorService.handleError(err);
     } finally {
       this.saving.set(false);
     }

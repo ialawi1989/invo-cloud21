@@ -49,7 +49,7 @@
                   <span class="week-appt__time">{{ timeRangeLabel(group[0]) }}</span>
                 }
                 @if (canEdit() && !group[0].isInvoiced) {
-                  <div class="week-appt__resize-handle" (pointerdown)="onResizeHandlePointerDown($event, group[0])"></div>
+                  <div class="week-appt__resize-handle" (pointerdown)="onResizeHandlePointerDown($event, group[0])" (click)="$event.stopPropagation()"></div>
                 }
               </div>
             } @else {

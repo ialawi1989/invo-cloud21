@@ -6,12 +6,14 @@ import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { ErrorService } from '@core/http/error.service';
 import { ProductsService } from '../../../products/services/products.service';
 import { PickProductModalComponent, PickProductResult } from '../../../products/pages/product-form/components/pick-product-modal/pick-product-modal.component';
 import { AppointmentsService } from '../../services/appointments.service';
+import { AppointmentBranchService } from '../../services/appointment-branch.service';
 import { CustomerLite, CustomerLookupService } from '../../services/customer-lookup.service';
 import { AppointmentPayload } from '../../models/appointment.types';
-import { DURATION_OPTIONS, TIME_SLOTS, dateAtTime, formatTime, formatTimeAmPm } from '../../utils/time-utils';
+import { DURATION_OPTIONS, TIME_SLOTS, dateAtTime, formatTime, formatTimeAmPm, isPast } from '../../utils/time-utils';
 import { unwrapOptionValue } from '../../utils/option-compare';
 
 export interface QuickCreateData {
@@ -61,6 +63,8 @@ export class QuickCreatePopoverComponent {
   private customerLookup = inject(CustomerLookupService);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+  private errorService = inject(ErrorService);
+  private branchSvc = inject(AppointmentBranchService);
 
   productId = signal<string | null>(null);
   productName = signal('');
@@ -81,6 +85,12 @@ export class QuickCreatePopoverComponent {
     if (!this.attemptedSave()) return false;
     return this.isWalkIn() ? !this.walkInContact().trim() : !this.customer();
   });
+  // Re-checked against a fresh `new Date()` on every Save click (not just
+  // once when the popup opened) — the slot the user picked can slide into
+  // the past while they're still filling in the service/customer, and the
+  // backend will reject it too, so catch it here with a clear inline reason
+  // instead of a failed network round-trip.
+  timeInvalid = computed(() => this.attemptedSave() && isPast(this.startTime()));
 
   readonly durationOptions: DurationOption[] = DURATION_OPTIONS.map(m => ({ value: m, label: this.formatDurationLabel(m) }));
   readonly timeOptions: TimeOption[] = TIME_SLOTS.map(t => ({ value: t, label: t }));
@@ -145,6 +155,7 @@ export class QuickCreatePopoverComponent {
   }
 
   private validate(): string | null {
+    if (isPast(this.startTime())) return this.translate.instant('APPOINTMENTS.QUICK_CREATE.TIME_IN_PAST');
     if (!this.productId()) return this.translate.instant('APPOINTMENTS.FORM.SERVICE_REQUIRED');
     if (!this.isWalkIn() && !this.customer()) return this.translate.instant('APPOINTMENTS.FORM.CUSTOMER_REQUIRED');
     if (this.isWalkIn() && !this.walkInContact().trim()) return this.translate.instant('APPOINTMENTS.FORM.CUSTOMER_REQUIRED');
@@ -154,21 +165,29 @@ export class QuickCreatePopoverComponent {
   async save(): Promise<void> {
     const error = this.validate();
     if (error) {
+      // Inline red field errors already show what's wrong — no toast
+      // (it would render behind the modal backdrop's blur).
       this.attemptedSave.set(true);
-      this.toast.error(error);
       return;
     }
 
     this.saving.set(true);
     try {
+      // `?? null` alone isn't enough — `EmployeeSummary.branchId` can come
+      // back as `""` (no branch assigned) rather than `null`/`undefined`,
+      // and Postgres rejects `""` for a uuid column outright.
+      const branchId = await this.branchSvc.resolve(this.data.employeeBranchId);
       const payload: AppointmentPayload = {
-        branchId: this.data.employeeBranchId ?? null,
-        customerId: this.customer()?.id ?? null,
+        branchId,
+        customerId: this.customer()?.id || null,
         customerContact: this.isWalkIn() ? this.walkInContact() : undefined,
         employeeId: this.data.employeeId,
         lines: [
           {
             productId: this.productId()!,
+            // The line's own `branchId` — see the AppointmentLine doc comment;
+            // `EstimateLine.branchId` defaults to `""` server-side, not `null`.
+            branchId,
             salesEmployeeId: this.data.employeeId,
             employeeId: this.data.employeeId,
             serviceDate: this.startTime().toISOString(),
@@ -184,8 +203,10 @@ export class QuickCreatePopoverComponent {
       await this.appointmentsSvc.saveAppointment(payload);
       this.toast.success(this.translate.instant('APPOINTMENTS.FORM.SAVED'));
       this.ref.close({ action: 'created' });
-    } catch {
-      this.toast.error(this.translate.instant('APPOINTMENTS.FORM.SAVE_FAILED'));
+    } catch (error) {
+      // Surface the backend's actual reason (e.g. a past-time or missing-line
+      // validation message) instead of a generic toast that hides it.
+      await this.errorService.handleError(error);
     } finally {
       this.saving.set(false);
     }

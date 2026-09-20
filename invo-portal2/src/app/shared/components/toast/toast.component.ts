@@ -87,7 +87,11 @@ import { ToastService } from './toast.service';
       display: flex;
       flex-direction: column;
       gap: 10px;
-      z-index: 2000;
+      /* Must always sit above the CDK overlay container's modal panes/
+         backdrops (z-index 1000) — the same reasoning already documented for
+         .upload-toast-pane in styles.scss. Modal-triggered saves are the
+         most common toast trigger, so this isn't an edge case. */
+      z-index: 99999;
       pointer-events: none;
       max-width: min(420px, calc(100vw - 48px));
     }

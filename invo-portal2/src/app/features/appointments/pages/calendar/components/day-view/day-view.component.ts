@@ -183,8 +183,10 @@ export class DayViewComponent implements OnChanges, OnDestroy {
     const startSlotIndex = this.clampSlotIndex(Math.floor(y / SLOT_HEIGHT));
     // Don't even start the gesture on a past slot — the hatched styling
     // already shows it's disabled; starting a preview that always reverts
-    // on release just looks broken.
-    if (isPast(dateAtTime(this.date(), TIME_SLOTS[startSlotIndex]), this.now())) return;
+    // on release just looks broken. Checked against a fresh `new Date()`,
+    // not the `now` signal (only refreshed every 60s), so a slot that just
+    // ticked into the past isn't briefly treated as still available.
+    if (isPast(dateAtTime(this.date(), TIME_SLOTS[startSlotIndex]))) return;
 
     bodyEl.setPointerCapture(event.pointerId);
     this.creating = { employeeId: employee.id, bodyEl, startSlotIndex };
@@ -221,7 +223,7 @@ export class DayViewComponent implements OnChanges, OnDestroy {
     const fromIndex = Math.round(preview.top / SLOT_HEIGHT);
     const slotCount = Math.round(preview.height / SLOT_HEIGHT);
     const startTime = dateAtTime(this.date(), TIME_SLOTS[fromIndex]);
-    if (isPast(startTime, this.now())) return;
+    if (isPast(startTime)) return;
 
     const duration = slotCount * SLOT_MINUTES;
     this.slotClick.emit({
@@ -384,7 +386,7 @@ export class DayViewComponent implements OnChanges, OnDestroy {
   }
 
   private canDrop(task: AppointmentTask, targetEmployeeId: string, startTime: Date): boolean {
-    if (isPast(startTime, this.now())) return false;
+    if (isPast(startTime)) return false;
     const newStart = minutesSinceMidnight(startTime);
     const newEnd = newStart + task.serviceDuration;
     const siblings = this.tasksFor(targetEmployeeId).filter(t => t.taskId !== task.taskId);
@@ -392,6 +394,51 @@ export class DayViewComponent implements OnChanges, OnDestroy {
       const sStart = minutesSinceMidnight(new Date(s.serviceDate));
       return rangesOverlap(newStart, newEnd, sStart, sStart + s.serviceDuration);
     });
+  }
+
+  // ── Drag the header row to pan horizontally — with many staff columns the
+  // grid needs to scroll sideways, and dragging the header is a much more
+  // discoverable/ergonomic gesture than hunting for the thin scrollbar. ──
+  private panning: { headerEl: HTMLElement; startX: number; startScrollLeft: number; moved: boolean } | null = null;
+
+  onHeaderPointerDown(event: PointerEvent): void {
+    if (event.button !== 0) return;
+    const grid = this.gridEl()?.nativeElement;
+    if (!grid) return;
+    const headerEl = event.currentTarget as HTMLElement;
+    headerEl.setPointerCapture(event.pointerId);
+    this.panning = { headerEl, startX: event.clientX, startScrollLeft: grid.scrollLeft, moved: false };
+
+    headerEl.addEventListener('pointermove', this.onHeaderPointerMove);
+    headerEl.addEventListener('pointerup', this.onHeaderPointerUp);
+    headerEl.addEventListener('pointercancel', this.onHeaderPointerCancel);
+  }
+
+  private onHeaderPointerMove = (event: PointerEvent): void => {
+    if (!this.panning) return;
+    const grid = this.gridEl()?.nativeElement;
+    if (!grid) return;
+    const dx = event.clientX - this.panning.startX;
+    if (Math.abs(dx) > 4) this.panning.moved = true;
+    grid.scrollLeft = this.panning.startScrollLeft - dx;
+  };
+
+  private onHeaderPointerUp = (): void => {
+    if (!this.panning) return;
+    this.detachPanListeners(this.panning.headerEl);
+    this.panning = null;
+  };
+
+  private onHeaderPointerCancel = (): void => {
+    if (!this.panning) return;
+    this.detachPanListeners(this.panning.headerEl);
+    this.panning = null;
+  };
+
+  private detachPanListeners(headerEl: HTMLElement): void {
+    headerEl.removeEventListener('pointermove', this.onHeaderPointerMove);
+    headerEl.removeEventListener('pointerup', this.onHeaderPointerUp);
+    headerEl.removeEventListener('pointercancel', this.onHeaderPointerCancel);
   }
 }
 

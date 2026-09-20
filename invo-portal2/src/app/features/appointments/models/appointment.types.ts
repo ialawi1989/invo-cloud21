@@ -34,6 +34,14 @@ export interface AppointmentLine {
   productId: string;
   salesEmployeeId: string | null;
   employeeId: string | null;
+  /**
+   * Verified against InvoCloudBack's `EstimateLine` model: `branchId` there
+   * defaults to `""` (a class field initializer), not `null` — omitting this
+   * key leaves that empty string in place, which Postgres rejects for the
+   * uuid column outright. Always send it explicitly (`null` is fine; `""` is
+   * not).
+   */
+  branchId: string | null;
   /** ISO 8601, UTC. */
   serviceDate: string;
   serviceDuration: number;
@@ -48,6 +56,8 @@ export interface AppointmentLine {
   /** Marks the line for server-side deletion on save. */
   isDeleted?: boolean;
   discountAmount?: number;
+  /** Read-side only - how the backend tells inventory products from services. */
+  selectedItem?: { type?: string } | null;
 }
 
 export interface AppointmentPayload {

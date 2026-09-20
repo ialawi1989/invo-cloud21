@@ -31,6 +31,13 @@
   z-index: 6;
   background: #fff;
   border-bottom: 1px solid #e4e7ec;
+  // Draggable to pan the grid horizontally when there are more staff
+  // columns than fit on screen — more discoverable than the scrollbar.
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+
+  &:active { cursor: grabbing; }
 }
 
 .day-grid__time-label {
