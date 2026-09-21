@@ -7,6 +7,7 @@ import { ErrorService } from '@core/http/error.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
+import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { EmployeeService } from '../../../employees/services/employee.service';
@@ -55,7 +56,7 @@ let rowSeq = 0;
 @Component({
   selector: 'app-appointment-form',
   standalone: true,
-  imports: [FormsModule, TranslateModule, SearchDropdownComponent, DatePickerComponent, MycurrencyPipe],
+  imports: [FormsModule, TranslateModule, SearchDropdownComponent, DatePickerComponent, MycurrencyPipe, FormStickyFooterComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './appointment-form.component.html',
   styleUrl: './appointment-form.component.scss',
@@ -171,6 +172,16 @@ export class AppointmentFormComponent implements OnInit {
     }
 
     this.isEditMode.set(false);
+
+    // Carried over from the quick-create popup's "More options".
+    const customerId = qp.get('customerId');
+    if (customerId) {
+      this.customer.set({ id: customerId, name: '' });
+      void this.customerLookup.getById(customerId).then(c => { if (c) this.customer.set(c); }).catch(() => {});
+    } else if (qp.get('walkIn') !== null) {
+      this.isWalkIn.set(true);
+      this.walkInContact.set(qp.get('walkIn') ?? '');
+    }
 
     const employeeId = qp.get('employeeId');
     const dateParam = qp.get('date');
@@ -485,17 +496,44 @@ export class AppointmentFormComponent implements OnInit {
     return null;
   }
 
+  /** Set on the first Save/Check-in attempt so fields highlight red inline (not just a toast). */
+  attemptedSave = signal(false);
+
+  customerInvalid(): boolean {
+    if (!this.attemptedSave()) return false;
+    return this.isWalkIn() ? !this.walkInContact().trim() : !this.customer();
+  }
+
+  /** Per-row problems, shown under the offending field once a save was attempted. */
+  rowErrors(row: ServiceRow): { service: boolean; staff: boolean; time: boolean; duration: boolean } {
+    const on = this.attemptedSave();
+    return {
+      service: on && !row.productId,
+      staff: on && !row.employeeId,
+      time: on && !!row.productId && isPast(row.startTime),
+      duration: on && !(row.duration > 0),
+    };
+  }
+
+  productQtyInvalid(p: ProductRow): boolean {
+    return this.attemptedSave() && !(p.qty > 0);
+  }
+
+  /** Anything wrong anywhere on the form (drives the inline highlights). */
+  private hasErrors(): boolean {
+    const rows = this.visibleRows();
+    return (
+      this.customerInvalid() ||
+      rows.length === 0 ||
+      rows.some(r => Object.values(this.rowErrors(r)).some(Boolean)) ||
+      this.visibleProducts().some(p => this.productQtyInvalid(p))
+    );
+  }
+
   private validate(): string | null {
-    if (!this.isWalkIn() && !this.customer()) return this.translate.instant('APPOINTMENTS.FORM.CUSTOMER_REQUIRED');
-    if (this.isWalkIn() && !this.walkInContact().trim()) return this.translate.instant('APPOINTMENTS.FORM.CUSTOMER_REQUIRED');
-    const serviceRows = this.visibleRows().filter(r => r.productId);
-    if (serviceRows.length === 0) return this.translate.instant('APPOINTMENTS.FORM.SERVICE_REQUIRED');
-    // Re-checked against a fresh `new Date()` right before saving — a row's
-    // time can slide into the past while the form sits open, and the
-    // backend rejects that too, so catch it here with a clear reason
-    // instead of a failed network round-trip.
-    if (serviceRows.some(r => isPast(r.startTime))) return this.translate.instant('APPOINTMENTS.QUICK_CREATE.TIME_IN_PAST');
-    return null;
+    // Flip on the inline highlights first, then judge - the error state depends on it.
+    this.attemptedSave.set(true);
+    return this.hasErrors() ? this.translate.instant('APPOINTMENTS.FORM.FIX_ERRORS') : null;
   }
 
   private async buildPayload(): Promise<AppointmentPayload> {

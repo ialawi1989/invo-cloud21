@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, effect, OnDestroy, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ModalService } from '@shared/modal/modal.service';
@@ -6,6 +6,10 @@ import { ToastService } from '@shared/components/toast/toast.service';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { addDays, buildCalendarGrid, formatDate as formatCalendarDate, startOfDay } from '@shared/components/datepicker/date-utils';
 import { LayoutService } from '@core/layout/services/layout.service';
+import { BranchConnectionService } from '@core/layout/services/branch.service';
+import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { FormsModule } from '@angular/forms';
+import { unwrapOptionValue } from '../../utils/option-compare';
 import { EmployeeOptionsService } from '@core/layout/services/employee-options.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { EmployeeService } from '../../../employees/services/employee.service';
@@ -15,10 +19,14 @@ import { employeeColor } from '../../utils/employee-color';
 import { startOfWeek, weekDates } from '../../utils/time-utils';
 import { DayViewComponent, RescheduleEvent, ResizeEvent, SlotClickEvent } from './components/day-view/day-view.component';
 import { WeekViewComponent, WeekSlotClickEvent, WeekRescheduleEvent, WeekResizeEvent } from './components/week-view/week-view.component';
+import { EmployeeServicesComponent } from '../../../products/pages/employee-services/employee-services.component';
+import { ServiceTeamComponent } from '../../../employees/pages/service-team/service-team.component';
+import { EmployeesViewComponent } from './components/employees-view/employees-view.component';
 import { MonthViewComponent } from './components/month-view/month-view.component';
 import { AgendaDrawerComponent, AgendaDrawerData, AgendaDrawerResult } from './components/agenda-drawer/agenda-drawer.component';
 import { PrintScheduleModalComponent, PrintScheduleModalData } from '../../components/print-schedule-modal/print-schedule-modal.component';
 import { QuickCreatePopoverComponent, QuickCreateData, QuickCreateResult } from '../../components/quick-create-popover/quick-create-popover.component';
+import { BranchFilterModalComponent, BranchFilterData } from '../../components/branch-filter-modal/branch-filter-modal.component';
 import { StaffFilterModalComponent, StaffFilterData } from '../../components/staff-filter-modal/staff-filter-modal.component';
 import { QueryParamsService, enumCodec, ParamDef, StringCodec } from '@shared/services/query-params.service';
 
@@ -26,11 +34,16 @@ type CalendarView = 'day' | 'week' | 'month';
 
 const VIEW_PARAM: ParamDef<CalendarView> = { key: 'view', codec: enumCodec(['day', 'week', 'month'] as const, 'day') };
 const DATE_PARAM: ParamDef<string> = { key: 'date', codec: StringCodec };
+// Tool state also lives in the URL so a refresh / shared link keeps the page as it was.
+const MODE_PARAM: ParamDef<'calendar' | 'employees' | 'settings'> = { key: 'mode', codec: enumCodec(['calendar', 'employees', 'settings'] as const, 'calendar') };
+const SETTING_PARAM: ParamDef<'service-team' | 'pricing'> = { key: 'setting', codec: enumCodec(['service-team', 'pricing'] as const, 'service-team') };
+const PANEL_PARAM: ParamDef<'open' | 'closed'> = { key: 'panel', codec: enumCodec(['open', 'closed'] as const, 'open') };
+const SEARCH_PARAM: ParamDef<string> = { key: 'q', codec: StringCodec };
 
 @Component({
   selector: 'app-appointment-calendar',
   standalone: true,
-  imports: [TranslateModule, DatePickerComponent, DayViewComponent, WeekViewComponent, MonthViewComponent],
+  imports: [FormsModule, SearchDropdownComponent, TranslateModule, DatePickerComponent, DayViewComponent, WeekViewComponent, MonthViewComponent, EmployeesViewComponent, ServiceTeamComponent, EmployeeServicesComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './appointment-calendar.component.html',
   styleUrl: './appointment-calendar.component.scss',
@@ -46,6 +59,38 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
   private privileges = inject(PrivilegeService);
   private employeeOptions = inject(EmployeeOptionsService);
   private layout = inject(LayoutService);
+  private branchSvc = inject(BranchConnectionService);
+
+  viewOptions = computed(() => [
+    { value: 'day', label: this.translate.instant('APPOINTMENTS.VIEW_DAY') },
+    { value: 'week', label: this.translate.instant('APPOINTMENTS.VIEW_WEEK') },
+    { value: 'month', label: this.translate.instant('APPOINTMENTS.VIEW_MONTH') },
+  ]);
+  onViewChange(v: string | null): void {
+    if (v === 'day' || v === 'week' || v === 'month') this.setView(v);
+  }
+
+  /** Sidebar sections collapse like Google Calendar's "My calendars". */
+  collapsed = signal<Record<string, boolean>>({});
+  toggleSection(key: string): void {
+    this.collapsed.update(c => ({ ...c, [key]: !c[key] }));
+  }
+
+  /** Branch the calendar is scoped to; `null` = every branch. */
+  selectedBranchId = signal<string | null>(null);
+  branchOptions = computed(() => [
+    { value: '', label: this.translate.instant('APPOINTMENTS.ALL_BRANCHES') },
+    ...this.branchSvc.branches().map(b => ({ value: b.id, label: b.name })),
+  ]);
+  branchLabel = (o: { value: string; label: string }) => o.label;
+  branchValue = (o: { value: string; label: string }) => o.value;
+  branchCompare = (a: unknown, b: unknown) => (unwrapOptionValue(a) ?? '') === (unwrapOptionValue(b) ?? '');
+
+  /** Staff of the selected branch (staff with no branch assigned show under every branch). */
+  branchEmployees = computed(() => {
+    const branch = this.selectedBranchId();
+    return branch ? this.employees().filter(e => !e.branchId || e.branchId === branch) : this.employees();
+  });
 
   readonly canAdd = computed(() => this.privileges.check('appointmentsSecurity.actions.add.access'));
 
@@ -60,12 +105,60 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
 
   visibleEmployees = computed(() => {
     const hidden = this.hiddenEmployeeIds();
-    return this.employees().filter(e => !hidden.has(e.id));
+    return this.branchEmployees().filter(e => !hidden.has(e.id));
   });
+
+  /** Three-letter weekday headings for the mini calendar ("Sun Mon Tue"), like the reference. */
+  readonly dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  /** The "..." tools menu (Print Employee Schedule lives here). */
+  moreOpen = signal(false);
+
+  /** Left panel (mini calendar, branch, staff) can be hidden to give the grid the whole width. */
+  sidebarOpen = signal(this.qp.read({ panel: PANEL_PARAM }).panel === 'open');
+
+  /** Google-style mode toggle: the time grid, or one card per employee with their own appointments. */
+  mode = signal<'calendar' | 'employees' | 'settings'>(this.qp.read({ mode: MODE_PARAM }).mode);
+
+  /** Which entry of the Settings view's side list is open. */
+  setting = signal<'service-team' | 'pricing'>(this.qp.read({ setting: SETTING_PARAM }).setting);
+  readonly canSeePricing = computed(() => this.privileges.check('productSecurity.actions.view.access'));
+  readonly canSeeServiceTeam = computed(() => this.privileges.check('appointmentsSecurity.actions.serviceTeam.access'));
+
+  /** Free-text filter over the appointments already loaded for the current range. */
+  searchTerm = signal(this.qp.read({ q: SEARCH_PARAM }).q ?? '');
+
+  private urlSync = effect(() => {
+    // ONE navigation for all of them: separate writeOne() calls in the same tick each merge
+    // against the not-yet-updated URL, so only the last one survived and the rest were lost.
+    this.qp.write(
+      { mode: MODE_PARAM, panel: PANEL_PARAM, q: SEARCH_PARAM, setting: SETTING_PARAM },
+      { mode: this.mode(), panel: this.sidebarOpen() ? 'open' : 'closed', q: this.searchTerm(), setting: this.setting() },
+    );
+  });
+  /** Search is an icon button that opens into a wide bar (like Google Calendar). */
+  searchOpen = signal(!!this.qp.read({ q: SEARCH_PARAM }).q);
+  private searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+
+  openSearch(): void {
+    this.searchOpen.set(true);
+    setTimeout(() => this.searchInput()?.nativeElement.focus());
+  }
+
+  closeSearch(clear = false): void {
+    if (clear) this.searchTerm.set('');
+    if (!this.searchTerm().trim()) this.searchOpen.set(false);
+  }
 
   visibleTasks = computed(() => {
     const ids = new Set(this.visibleEmployees().map(e => e.id));
-    return this.tasks().filter(t => ids.has(t.employeeId));
+    const term = this.searchTerm().trim().toLowerCase();
+    return this.tasks().filter(t => {
+      if (!ids.has(t.employeeId)) return false;
+      if (!term) return true;
+      return [t.customerName, t.customerPhone, t.serviceName, t.employeeName, t.taskNumber]
+        .some(v => (v ?? '').toString().toLowerCase().includes(term));
+    });
   });
 
   rangeLabel = computed(() => {
@@ -79,14 +172,17 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
   });
 
   async ngOnInit(): Promise<void> {
-    // The calendar is wide — give it the room of a collapsed side menu.
+    // Full-bleed page: no content padding, and the wide grid gets the room of a collapsed side menu.
+    this.layout.setNoPadding(true);
     this.layout.setCollapseSidebar(true);
     await this.loadEmployees();
+    void this.branchSvc.load().catch(() => {});
     await this.restoreStaffFilter();
     await this.loadTasks();
   }
 
   ngOnDestroy(): void {
+    this.layout.setNoPadding(false);
     this.layout.setCollapseSidebar(false);
   }
 
@@ -172,20 +268,45 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
 
   /** The staff the user last hid is remembered per employee (server-side employee options). */
   private async restoreStaffFilter(): Promise<void> {
-    const saved = (await this.employeeOptions.get())?.appointments?.hiddenEmployeeIds;
+    const opts = (await this.employeeOptions.get())?.appointments;
+    if (opts?.branchId) this.selectedBranchId.set(opts.branchId);
+    const saved = opts?.hiddenEmployeeIds;
     if (!saved?.length) return;
     const known = new Set(this.employees().map(e => e.id));
     this.hiddenEmployeeIds.set(new Set(saved.filter(id => known.has(id))));
   }
 
+  selectedBranchLabel = computed(() => {
+    const id = this.selectedBranchId();
+    const name = id ? this.branchSvc.branches().find(b => b.id === id)?.name : null;
+    return `${this.translate.instant('APPOINTMENTS.BRANCH')}: ${name ?? this.translate.instant('APPOINTMENTS.ALL_BRANCHES')}`;
+  });
+
+  openBranchPicker(): void {
+    this.modal.open<BranchFilterModalComponent, BranchFilterData, string>(BranchFilterModalComponent, {
+      size: 'sm',
+      data: { options: this.branchOptions(), selected: this.selectedBranchId() ?? '' },
+    }).afterClosed().then(id => {
+      if (id !== undefined) this.onBranchChange(id);
+    });
+  }
+
+  onBranchChange(id: string | null): void {
+    const branch = id || null;
+    this.selectedBranchId.set(branch);
+    void this.employeeOptions.patch({
+      appointments: { hiddenEmployeeIds: Array.from(this.hiddenEmployeeIds()), branchId: branch },
+    });
+  }
+
   openStaffFilter(): void {
     this.modal.open<StaffFilterModalComponent, StaffFilterData, string[]>(StaffFilterModalComponent, {
       size: 'sm',
-      data: { employees: this.employees(), hiddenIds: Array.from(this.hiddenEmployeeIds()) },
+      data: { employees: this.branchEmployees(), hiddenIds: Array.from(this.hiddenEmployeeIds()) },
     }).afterClosed().then(hidden => {
       if (!hidden) return;
       this.hiddenEmployeeIds.set(new Set(hidden));
-      void this.employeeOptions.patch({ appointments: { hiddenEmployeeIds: hidden } });
+      void this.employeeOptions.patch({ appointments: { hiddenEmployeeIds: hidden, branchId: this.selectedBranchId() } });
     });
   }
 
@@ -201,7 +322,7 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
     return employeeColor(id);
   }
 
-  newAppointment(employeeId?: string, startTime?: Date, duration?: number, productId?: string, price?: number): void {
+  newAppointment(employeeId?: string, startTime?: Date, duration?: number, productId?: string, price?: number, extra?: { customerId?: string; walkInContact?: string }): void {
     if (!this.canAdd()) {
       this.toast.error(this.translate.instant('APPOINTMENTS.NO_ADD_PERMISSION'));
       return;
@@ -215,6 +336,8 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
         ...(duration ? { duration } : {}),
         ...(productId ? { productId } : {}),
         ...(price ? { price } : {}),
+        ...(extra?.customerId ? { customerId: extra.customerId } : {}),
+        ...(extra?.walkInContact ? { walkIn: extra.walkInContact } : {}),
       },
     });
   }
@@ -231,7 +354,8 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
     const data: QuickCreateData = {
       employeeId,
       employeeName: employee?.name ?? '',
-      employeeBranchId: employee?.branchId,
+      // The branch picked on the toolbar wins over the staff member's own.
+      employeeBranchId: this.selectedBranchId() || employee?.branchId,
       startTime,
       duration,
     };
@@ -248,7 +372,10 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
         // The popover already toasted success on save.
         void this.loadTasks();
       } else {
-        this.newAppointment(employeeId, startTime, duration, result.productId, result.price);
+        this.newAppointment(employeeId, result.startTime ?? startTime, result.duration ?? duration, result.productId, result.price, {
+          customerId: result.customerId,
+          walkInContact: result.walkInContact,
+        });
       }
     });
   }

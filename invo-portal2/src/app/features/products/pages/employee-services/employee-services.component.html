@@ -1,8 +1,10 @@
-<div class="es">
+<div class="es" [class.es--embedded]="embedded()">
+  @if (!embedded()) {
   <div class="es__header">
     <h1>{{ 'PRODUCTS.EMPLOYEE_SERVICES.TITLE' | translate }}</h1>
     <p>{{ 'PRODUCTS.EMPLOYEE_SERVICES.HINT' | translate }}</p>
   </div>
+  }
 
   <div class="es__toolbar">
     <input type="text" class="es__search" [ngModel]="search()" (ngModelChange)="search.set($event)"

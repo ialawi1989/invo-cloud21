@@ -7,8 +7,8 @@
   height: 100%;
   overflow: auto;
   background: #fff;
-  border: 1px solid #e4e7ec;
-  border-radius: 12px;
+  border: none;
+  border-radius: 0;
 }
 
 .day-grid__inner {
@@ -86,6 +86,8 @@
 }
 
 .day-col__body {
+  user-select: none;
+  -webkit-user-select: none;
   position: relative;
   cursor: pointer;
   touch-action: none;
@@ -128,20 +130,26 @@
   left: 0;
   right: 0;
   height: 0;
-  border-top: 2px solid #dc2626;
+  border-top: 1px solid #dc2626;
   z-index: 4;
   pointer-events: none;
+}
 
-  &::before {
-    content: '';
-    position: absolute;
-    left: -4px;
-    top: -4px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #dc2626;
-  }
+/* The time pill sits in the sticky gutter, level with the line (like the reference). */
+.day-grid__now-label {
+  position: absolute;
+  left: 4px;
+  right: 6px;
+  transform: translateY(-50%);
+  z-index: 7;
+  padding: 1px 0;
+  border-radius: 4px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-align: center;
+  pointer-events: none;
 }
 
 .appt-card {
@@ -211,3 +219,29 @@
   color: #94a3b8;
   white-space: nowrap;
 }
+
+/* Guide shown while dragging an appointment: a dashed line across every column at the
+   target start time, a ghost of the card in the target column, and the time in the gutter. */
+.day-col__guide-line { position: absolute; left: 0; right: 0; height: 0; border-top: 2px dashed #2563eb; z-index: 6; pointer-events: none; }
+.day-col__guide-ghost { position: absolute; left: 4px; right: 4px; border: 2px dashed #2563eb; border-radius: 8px; background: rgba(37, 99, 235, 0.08); z-index: 3; pointer-events: none; }
+.day-grid__guide-label {
+  position: absolute; left: 4px; right: 6px; transform: translateY(-50%); z-index: 8; padding: 1px 0;
+  border-radius: 4px; background: #2563eb; color: #fff; font-size: 10.5px; font-weight: 700; text-align: center; pointer-events: none;
+}
+
+/* Solid, borderless cards like Google Calendar: filled colour, white text, no left accent. */
+.appt-card {
+  border-left: none;
+  border-radius: 6px;
+  color: #fff;
+  &[data-status='booked'] { background: #039be5; }
+  &[data-status='checked-in'] { background: #3f51b5; }
+  &[data-status='paid'] { background: #0b8043; }
+}
+.appt-card__customer, .appt-card__service { color: #fff; }
+.appt-card__time { color: rgba(255, 255, 255, 0.9); }
+.appt-card__resize-handle::after { background: rgba(255, 255, 255, 0.7); }
+
+/* Colour comes from the employee (inline); status is shown without changing the hue. */
+.appt-card[data-status='checked-in'] { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6); }
+.appt-card[data-status='paid'] { opacity: 0.8; }

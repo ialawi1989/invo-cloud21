@@ -65,7 +65,10 @@
       "GRAND_TOTAL": "Grand total",
       "ROW_TOTAL": "Row total",
       "STAFF_BUSY": "{{name}} is already booked at {{time}}. Choose another time or staff member.",
-      "BACK_BTN": "Back"
+      "BACK_BTN": "Back",
+      "FIX_ERRORS": "Please fix the highlighted fields.",
+      "STAFF_REQUIRED": "Choose a staff member.",
+      "SERVICE_REQUIRED_ROW": "Choose a service."
     },
     "QUICK_CREATE": {
       "MORE_OPTIONS": "More options",
@@ -102,6 +105,39 @@
       "SELECT_ALL": "Select all",
       "CLEAR": "Clear",
       "APPLY": "Apply"
-    }
+    },
+    "ALL_BRANCHES": "All branches",
+    "BRANCH": "Branch",
+    "SEARCH": "Search appointments",
+    "MODE_CALENDAR": "Calendar",
+    "MODE_EMPLOYEES": "Employees",
+    "LIST": {
+      "TITLE": "Appointments",
+      "BY_EMPLOYEE": "By employee",
+      "BY_TIME": "By appointment",
+      "ALL": "All",
+      "UPCOMING": "Upcoming",
+      "PREVIOUS": "Previous",
+      "FILTER": "Filter",
+      "BACK": "Back",
+      "CLEAR_ALL": "Clear all",
+      "F_EMPLOYEE": "Employee",
+      "F_DATE": "Date",
+      "F_STATUS": "Status",
+      "F_SERVICE": "Service",
+      "F_CUSTOMER": "Customer",
+      "D_TODAY": "Today",
+      "D_TOMORROW": "Tomorrow",
+      "D_NEXT7": "Next 7 days",
+      "D_MONTH": "This month",
+      "S_BOOKED": "Booked",
+      "S_CHECKED_IN": "Checked in",
+      "S_PAID": "Paid"
+    },
+    "TOGGLE_PANEL": "Toggle side panel",
+    "MORE": "More",
+    "BRANCH_SEARCH": "Search branches",
+    "MODE_TEAM": "Service team",
+    "SETTINGS": "Settings"
   }
 }

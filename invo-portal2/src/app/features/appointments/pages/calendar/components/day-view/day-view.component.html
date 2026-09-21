@@ -2,6 +2,12 @@
   <div class="day-grid__inner" [style.min-width.px]="56 + employees().length * 130">
     <div class="day-grid__time-col">
       <div class="day-col__header" (pointerdown)="onHeaderPointerDown($event)"></div>
+      @if (dragGuide(); as g) {
+        <div class="day-grid__guide-label" [style.top.px]="56 + g.top">{{ g.label }}</div>
+      }
+      @if (isToday()) {
+        <div class="day-grid__now-label" [style.top.px]="56 + nowTop()">{{ nowLabel() }}</div>
+      }
       @for (slot of timeSlots; track slot) {
         <div class="day-grid__time-label" [style.height.px]="SLOT_HEIGHT">
           @if (slot.endsWith(':00')) { {{ slot }} }
@@ -25,6 +31,13 @@
             <div class="day-col__now-line" [style.top.px]="nowTop()"></div>
           }
 
+          @if (dragGuide(); as g) {
+            <div class="day-col__guide-line" [style.top.px]="g.top"></div>
+            @if (g.employeeId === emp.id) {
+              <div class="day-col__guide-ghost" [style.top.px]="g.top" [style.height.px]="g.height"></div>
+            }
+          }
+
           @if (creatingPreview(); as preview) {
             @if (preview.employeeId === emp.id) {
               <div class="day-col__creating" [style.top.px]="preview.top" [style.height.px]="preview.height"></div>
@@ -35,6 +48,7 @@
             <div
               class="appt-card"
               [attr.data-status]="statusOf(task)"
+              [style.background]="color(task.employeeId)"
               [style.top.px]="topFor(task)"
               [style.height.px]="heightFor(task)"
               (pointerdown)="onCardPointerDown($event, task)"

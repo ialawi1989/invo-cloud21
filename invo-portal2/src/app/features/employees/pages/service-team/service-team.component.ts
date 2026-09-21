@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { EmployeeService } from '../../services/employee.service';
@@ -28,6 +28,9 @@ export class ServiceTeamComponent implements OnInit {
   private capabilitySvc = inject(ServiceCapabilityService);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+
+  /** Embedded inside the appointments calendar: no page title, no page padding. */
+  embedded = input(false);
 
   loading = signal(true);
   staff = signal<StaffColumn[]>([]);
@@ -73,6 +76,37 @@ export class ServiceTeamComponent implements OnInit {
       );
     }
   }
+
+  // ── Drag the matrix left/right to pan, like the calendar's Day view. Checkboxes
+  // and their labels are excluded so ticking still works. ──
+  private pan: { el: HTMLElement; startX: number; startScroll: number } | null = null;
+
+  onPanStart(event: PointerEvent): void {
+    if (event.button !== 0 || (event.target as HTMLElement).closest('input, label, button')) return;
+    event.preventDefault();
+    const el = event.currentTarget as HTMLElement;
+    el.setPointerCapture(event.pointerId);
+    this.pan = { el, startX: event.clientX, startScroll: el.scrollLeft };
+    el.classList.add('is-panning');
+    el.addEventListener('pointermove', this.onPanMove);
+    el.addEventListener('pointerup', this.onPanEnd);
+    el.addEventListener('pointercancel', this.onPanEnd);
+  }
+
+  private onPanMove = (event: PointerEvent): void => {
+    if (!this.pan) return;
+    this.pan.el.scrollLeft = this.pan.startScroll - (event.clientX - this.pan.startX);
+  };
+
+  private onPanEnd = (): void => {
+    if (!this.pan) return;
+    const { el } = this.pan;
+    el.classList.remove('is-panning');
+    el.removeEventListener('pointermove', this.onPanMove);
+    el.removeEventListener('pointerup', this.onPanEnd);
+    el.removeEventListener('pointercancel', this.onPanEnd);
+    this.pan = null;
+  };
 
   trackByServiceId = (_: number, r: ServiceRowState) => r.serviceId;
   trackByStaffId = (_: number, s: StaffColumn) => s.id;

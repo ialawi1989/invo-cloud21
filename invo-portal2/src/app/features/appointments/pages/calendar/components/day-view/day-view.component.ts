@@ -99,6 +99,13 @@ export class DayViewComponent implements OnChanges, OnDestroy {
     return (minutes / SLOT_MINUTES) * SLOT_HEIGHT;
   });
 
+  /** "9:26am" - the label on the current-time line. */
+  nowLabel = computed(() => {
+    const n = this.now();
+    const h = n.getHours() % 12 || 12;
+    return `${h}:${String(n.getMinutes()).padStart(2, '0')}${n.getHours() >= 12 ? 'pm' : 'am'}`;
+  });
+
   tasksByEmployee = computed(() => {
     const map = new Map<string, AppointmentTask[]>();
     for (const t of this.tasks()) {
@@ -178,6 +185,7 @@ export class DayViewComponent implements OnChanges, OnDestroy {
   onBodyPointerDown(event: PointerEvent, employee: EmployeeLite): void {
     if (!this.canEdit() || event.button !== 0 || this.dragging) return;
     if ((event.target as HTMLElement).closest('.appt-card')) return;
+    event.preventDefault();
     const bodyEl = event.currentTarget as HTMLElement;
     const y = event.clientY - bodyEl.getBoundingClientRect().top + bodyEl.scrollTop;
     const startSlotIndex = this.clampSlotIndex(Math.floor(y / SLOT_HEIGHT));
@@ -253,14 +261,21 @@ export class DayViewComponent implements OnChanges, OnDestroy {
   }
 
   // ── Drag to reschedule (pointer events + CSS transform; no DOM cloning) ──
-  private dragging: { task: AppointmentTask; el: HTMLElement; startY: number; startClientY: number } | null = null;
+  private dragging: { task: AppointmentTask; el: HTMLElement; startY: number; startClientX: number; startClientY: number; startColLeft: number; timeEl: HTMLElement | null; timeText: string } | null = null;
   private dragMoved = false;
 
   onCardPointerDown(event: PointerEvent, task: AppointmentTask): void {
     if (!this.canEdit() || event.button !== 0) return;
+    // Stops the browser starting a text selection instead of the drag.
+    event.preventDefault();
     const el = event.currentTarget as HTMLElement;
     el.setPointerCapture(event.pointerId);
-    this.dragging = { task, el, startY: el.offsetTop, startClientY: event.clientY };
+    const timeEl = el.querySelector<HTMLElement>('.appt-card__time');
+    this.dragging = {
+      task, el, startY: el.offsetTop, startClientX: event.clientX, startClientY: event.clientY,
+      startColLeft: el.closest<HTMLElement>('.day-col')?.getBoundingClientRect().left ?? 0,
+      timeEl, timeText: timeEl?.textContent ?? '',
+    };
     this.dragMoved = false;
 
     el.addEventListener('pointermove', this.onPointerMove);
@@ -270,9 +285,22 @@ export class DayViewComponent implements OnChanges, OnDestroy {
 
   private onPointerMove = (event: PointerEvent): void => {
     if (!this.dragging) return;
+    const dx = event.clientX - this.dragging.startClientX;
     const dy = event.clientY - this.dragging.startClientY;
-    if (Math.abs(dy) > 4) this.dragMoved = true;
-    this.dragging.el.style.transform = `translateY(${dy}px)`;
+    if (Math.abs(dy) > 4 || Math.abs(dx) > 4) this.dragMoved = true;
+    // Steps like Google Calendar: the card jumps slot-by-slot (15 min) and column-by-column
+    // instead of gliding, and its time label updates as it goes. Off any column it just follows the pointer.
+    const target = this.dropTarget(event);
+    if (target) {
+      this.dragging.el.style.transform = `translate(${target.colLeft - this.dragging.startColLeft}px, ${target.top - this.dragging.startY}px)`;
+      if (this.dragging.timeEl) {
+        const end = new Date(target.startTime.getTime() + this.dragging.task.serviceDuration * 60_000);
+        this.dragging.timeEl.textContent = `${formatTimeAmPm(target.startTime)} – ${formatTimeAmPm(end)}`;
+      }
+    } else {
+      this.dragging.el.style.transform = `translate(${dx}px, ${dy}px)`;
+    }
+    this.updateDragGuide(event);
     this.dragging.el.style.zIndex = '50';
     this.dragging.el.style.opacity = '0.85';
   };
@@ -281,28 +309,18 @@ export class DayViewComponent implements OnChanges, OnDestroy {
     if (!this.dragging) return;
     const { task, el } = this.dragging;
     this.detachDragListeners(el);
+    this.restoreDragLabel();
     el.style.transform = '';
     el.style.zIndex = '';
     el.style.opacity = '';
 
     if (this.dragMoved) {
-      const targetEl = document.elementFromPoint(event.clientX, event.clientY);
-      const columnEl = targetEl?.closest<HTMLElement>('[data-employee-id]');
-      const targetEmployeeId = columnEl?.dataset['employeeId'];
-      const bodyEl = columnEl?.querySelector<HTMLElement>('.day-col__body');
-
-      if (targetEmployeeId && bodyEl) {
-        const y = event.clientY - bodyEl.getBoundingClientRect().top + bodyEl.scrollTop;
-        const rawMinutes = CALENDAR_START_HOUR * 60 + Math.round(y / SLOT_HEIGHT) * SLOT_MINUTES;
-        const snapped = Math.round(rawMinutes / SLOT_MINUTES) * SLOT_MINUTES;
-        const clamped = Math.max(CALENDAR_START_HOUR * 60, Math.min(snapped, CALENDAR_END_HOUR * 60 - task.serviceDuration));
-        const startTime = dateAtTime(this.date(), `${String(Math.floor(clamped / 60)).padStart(2, '0')}:${String(clamped % 60).padStart(2, '0')}`);
-
-        if (this.canDrop(task, targetEmployeeId, startTime)) {
-          this.reschedule.emit({ task, employeeId: targetEmployeeId, startTime });
-        }
+      const target = this.dropTarget(event);
+      if (target && this.canDrop(task, target.employeeId, target.startTime)) {
+        this.reschedule.emit({ task, employeeId: target.employeeId, startTime: target.startTime });
       }
     }
+    this.dragGuide.set(null);
 
     this.dragging = null;
     // Let the click handler that immediately follows pointerup see the final drag state, then clear it.
@@ -313,17 +331,52 @@ export class DayViewComponent implements OnChanges, OnDestroy {
     if (!this.dragging) return;
     const { el } = this.dragging;
     this.detachDragListeners(el);
+    this.restoreDragLabel();
     el.style.transform = '';
     el.style.zIndex = '';
     el.style.opacity = '';
+    this.dragGuide.set(null);
     this.dragging = null;
     this.dragMoved = false;
   };
+
+  private restoreDragLabel(): void {
+    if (this.dragging?.timeEl) this.dragging.timeEl.textContent = this.dragging.timeText;
+  }
 
   private detachDragListeners(el: HTMLElement): void {
     el.removeEventListener('pointermove', this.onPointerMove);
     el.removeEventListener('pointerup', this.onPointerUp);
     el.removeEventListener('pointercancel', this.onPointerCancel);
+  }
+
+  /** Ghost line + box showing where the dragged appointment would land (snapped to the 15-min grid). */
+  dragGuide = signal<{ employeeId: string; top: number; height: number; label: string } | null>(null);
+
+  /** Where a drop at the pointer would put the card: staff column under the pointer, start snapped from the card's own top edge. */
+  private dropTarget(event: PointerEvent): { employeeId: string; startTime: Date; top: number; colLeft: number } | null {
+    if (!this.dragging) return null;
+    const { task, startY, startClientY } = this.dragging;
+    const columnEl = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-employee-id]');
+    const employeeId = columnEl?.dataset['employeeId'];
+    if (!employeeId) return null;
+
+    const maxSlot = TIME_SLOTS.length - Math.ceil(task.serviceDuration / SLOT_MINUTES);
+    const slot = Math.max(0, Math.min(Math.round((startY + (event.clientY - startClientY)) / SLOT_HEIGHT), maxSlot));
+    const minutes = CALENDAR_START_HOUR * 60 + slot * SLOT_MINUTES;
+    const startTime = dateAtTime(this.date(), `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`);
+    return { employeeId, startTime, top: slot * SLOT_HEIGHT, colLeft: columnEl!.getBoundingClientRect().left };
+  }
+
+  private updateDragGuide(event: PointerEvent): void {
+    const target = this.dropTarget(event);
+    if (!target || !this.dragging) { this.dragGuide.set(null); return; }
+    this.dragGuide.set({
+      employeeId: target.employeeId,
+      top: target.top,
+      height: this.heightFor(this.dragging.task),
+      label: formatTimeAmPm(target.startTime),
+    });
   }
 
   // ── Resize the bottom edge to change duration — booked (not yet invoiced)

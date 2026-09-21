@@ -96,7 +96,7 @@ export interface EmployeeOptions {
    *  tour at one company doesn't dismiss it at another they also work for. */
   toursSeen?: { [tourKey: string]: boolean };
   /** Appointments calendar preferences — which staff columns the user has hidden. */
-  appointments?: { hiddenEmployeeIds?: string[] };
+  appointments?: { hiddenEmployeeIds?: string[]; branchId?: string | null };
 }
 
 @Injectable({ providedIn: 'root' })

@@ -29,6 +29,11 @@ export interface QuickCreateResult {
   /** Carried over to the full form when the user picks "More options". */
   productId?: string;
   price?: number;
+  /** The rest of what was filled in, so nothing typed in the popup is lost. */
+  customerId?: string;
+  walkInContact?: string;
+  startTime?: Date;
+  duration?: number;
 }
 
 interface DurationOption { value: number; label: string; }
@@ -213,6 +218,14 @@ export class QuickCreatePopoverComponent {
   }
 
   moreOptions(): void {
-    this.ref.close({ action: 'more', productId: this.productId() ?? undefined, price: this.price() || undefined });
+    this.ref.close({
+      action: 'more',
+      productId: this.productId() ?? undefined,
+      price: this.price() || undefined,
+      customerId: !this.isWalkIn() ? this.customer()?.id || undefined : undefined,
+      walkInContact: this.isWalkIn() ? this.walkInContact().trim() || undefined : undefined,
+      startTime: this.startTime(),
+      duration: this.duration(),
+    });
   }
 }

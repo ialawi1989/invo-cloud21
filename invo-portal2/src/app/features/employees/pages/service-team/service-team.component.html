@@ -1,15 +1,17 @@
-<div class="st">
+<div class="st" [class.st--embedded]="embedded()">
+  @if (!embedded()) {
   <div class="st__header">
     <h1>{{ 'APPOINTMENTS.SERVICE_TEAM.TITLE' | translate }}</h1>
     <p>{{ 'APPOINTMENTS.SERVICE_TEAM.SUBTITLE' | translate }}</p>
   </div>
+  }
 
   @if (loading()) {
     <div class="st__state">{{ 'APPOINTMENTS.SERVICE_TEAM.LOADING' | translate }}</div>
   } @else if (rows().length === 0) {
     <div class="st__state">{{ 'APPOINTMENTS.SERVICE_TEAM.EMPTY' | translate }}</div>
   } @else {
-    <div class="st__table-wrap">
+    <div class="st__table-wrap" (pointerdown)="onPanStart($event)">
       <table class="st__table">
         <thead>
           <tr>

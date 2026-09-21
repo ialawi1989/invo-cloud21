@@ -158,6 +158,13 @@
   &.is-on { background: #fff; color: #1a1d29; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1); }
 }
 
+.cal-branch { width: 190px; }
+.cal-branch--block { width: 100%; display: block; }
+
+.cal-side-section { display: flex; flex-direction: column; gap: 8px; }
+.cal-side-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; padding: 0 4px; }
+.cal-print-btn--block { width: 100%; justify-content: center; }
+
 .cal-print-btn {
   display: inline-flex;
   align-items: center;
@@ -183,3 +190,232 @@
   .cal { grid-template-columns: 1fr; }
   .cal-sidebar { display: none; }
 }
+
+/* ── Google Calendar look ─────────────────────────────────────────────── */
+.cal { grid-template-columns: 288px 1fr; gap: 12px; }
+
+.cal-new-btn {
+  align-self: flex-start;
+  padding: 12px 22px 12px 16px;
+  border-radius: 999px;
+  border: none;
+  background: #fff;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  &:hover { background: #f8fafc; box-shadow: 0 1px 3px rgba(60, 64, 67, 0.35), 0 6px 10px 4px rgba(60, 64, 67, 0.15); }
+  svg { color: #2691a4; }
+}
+
+/* Compact mini calendar - the shared picker ships a fixed 280px panel. */
+.cal-sidebar app-date-picker ::ng-deep {
+  [role='dialog'] { box-shadow: none !important; border: none !important; background: transparent !important; padding: 0 !important; }
+  [class~='w-[280px]'] { width: 100% !important; }
+  button.h-9 { height: 36px !important; font-size: 14.5px !important; }
+  .text-xs { font-size: 12.5px !important; }
+  .mb-3 { margin-bottom: 10px !important; }
+  .text-sm.font-semibold { font-size: 16px !important; }
+}
+
+.cal-side-section { gap: 4px; }
+.cal-side-title {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; background: none; border: none; cursor: pointer;
+  padding: 6px 4px; font-family: inherit;
+  font-size: 13.5px; font-weight: 600; letter-spacing: 0; text-transform: none; color: #1f2937;
+  border-radius: 6px;
+  &:hover { background: rgba(60, 64, 67, 0.06); }
+}
+.cal-side-chev { color: #6b7280; transition: transform 150ms ease; &.is-collapsed { transform: rotate(180deg); } }
+
+/* Top bar */
+.cal-toolbar { gap: 8px; }
+.cal-toolbar__spacer { flex: 1; }
+.cal-nav-btn { border-radius: 999px; }
+.cal-toolbar__range { font-size: 22px; font-weight: 400; color: #1f2937; margin-left: 10px; }
+.cal-view-select { width: 120px; }
+.cal-view-select ::ng-deep button { border-radius: 999px; }
+.cal-print-btn { border-radius: 999px; }
+.cal-print-btn--block { border-radius: 8px; }
+
+/* The tools live in their own bar, visually apart from the calendar grid. */
+.cal-toolbar {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.cal-search {
+  display: flex; align-items: center; gap: 8px;
+  width: 260px; max-width: 100%;
+  padding: 0 12px; height: 36px;
+  background: #f1f5f9; border: 1px solid transparent; border-radius: 999px;
+  color: #64748b;
+  &:focus-within { background: #fff; border-color: #2691a4; box-shadow: 0 0 0 2px rgba(38, 145, 164, 0.15); }
+  input { flex: 1; min-width: 0; border: none; background: transparent; outline: none; font-size: 13px; font-family: inherit; color: #1f2937; }
+}
+.cal-search__count { font-size: 11px; font-weight: 700; color: #2691a4; background: #e0f2f6; border-radius: 999px; padding: 1px 8px; }
+.cal-search__clear { background: none; border: none; cursor: pointer; color: #94a3b8; padding: 2px; font-size: 12px; &:hover { color: #ef4444; } }
+
+.cal-icon-btn {
+  width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; border-radius: 50%; background: transparent; color: #475569; cursor: pointer;
+  &:hover { background: #f1f5f9; }
+}
+/* Opened search: grows to fill the bar, pushing the other tools to the edge. */
+.cal-search--open { flex: 1 1 auto; width: auto; max-width: 640px; margin-left: auto; height: 48px; font-size: 14px; background: #fff; border: 1px solid #d1d5db; box-shadow: 0 1px 3px rgba(60, 64, 67, 0.2); }
+
+.cal-search--open input { font-size: 14.5px; }
+
+/* Calendar / Employees mode toggle (Google's Calendar|Tasks switch). */
+.cal-mode { display: inline-flex; border: 1px solid #d1d5db; border-radius: 999px; overflow: hidden; }
+.cal-mode__btn {
+  width: 42px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: #fff; color: #475569; cursor: pointer;
+  &:hover { background: #f1f5f9; }
+  &.is-on { background: #d3ecf3; color: #1e6f80; }
+  & + & { border-left: 1px solid #d1d5db; }
+}
+
+/* Panel toggle: hides the left column so the grid gets the whole width. */
+.cal--no-sidebar { grid-template-columns: 1fr; }
+.cal--no-sidebar .cal-sidebar { display: none; }
+.cal-panel-icon { transition: transform 150ms ease; &.is-closed { transform: scaleX(-1); } }
+
+/* ── Flat, single-colour page (Huly-style) ──────────────────────────────────
+   Full-bleed: white surfaces separated by hairline dividers - no cards,
+   shadows, gradients or pills. One accent colour for the active states.     */
+:host { flex: 1 1 auto; min-height: 0; height: auto; background: #fff; }
+
+.cal { gap: 0; height: 100%; background: #fff; }
+
+.cal-sidebar {
+  padding: 16px;
+  gap: 16px;
+  border-right: 1px solid #e5e7eb;
+  background: #fff;
+  overflow-y: auto;
+}
+
+.cal-new-btn {
+  align-self: stretch;
+  justify-content: center;
+  border-radius: 8px;
+  background: #2691a4;
+  color: #fff;
+  box-shadow: none;
+  padding: 9px 14px;
+  font-size: 13.5px;
+  &:hover { background: #227d8d; box-shadow: none; }
+  svg { color: #fff; }
+}
+
+.cal-main { gap: 0; background: #fff; }
+
+.cal-toolbar {
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0;
+  box-shadow: none;
+  background: #fff;
+}
+
+.cal-body { padding: 0; min-height: 0; flex: 1; }
+
+/* Tools: flat, square-ish, one grey outline; teal only when active. */
+.cal-nav-btn,
+.cal-print-btn,
+.cal-mode,
+.cal-search { border-radius: 8px; box-shadow: none; }
+.cal-nav-btn, .cal-print-btn { border: 1px solid #e5e7eb; background: #fff; color: #334155; }
+.cal-nav-btn:hover, .cal-print-btn:hover { background: #f3f4f6; }
+.cal-view-select ::ng-deep button { border-radius: 8px; }
+.cal-mode { border: 1px solid #e5e7eb; }
+.cal-mode__btn { border-radius: 0; &.is-on { background: #e0f2f6; color: #1e6f80; } }
+.cal-mode__btn + .cal-mode__btn { border-left: 1px solid #e5e7eb; }
+.cal-search--open { border: 1px solid #2691a4; background: #fff; box-shadow: none; }
+.cal-icon-btn { border-radius: 8px; }
+.cal-toolbar__range { font-size: 20px; font-weight: 600; color: #111827; }
+
+/* Mini calendar, Huly-style: title left, arrows right, only this month's days. */
+.cal-sidebar app-date-picker ::ng-deep {
+  .flex.items-center.justify-between.mb-3 {
+    justify-content: flex-start;
+    gap: 2px;
+    margin-bottom: 8px !important;
+    > button:nth-child(2) { order: -1; margin-right: auto; padding-left: 0 !important; font-size: 15px !important; font-weight: 700 !important; background: none !important; }
+  }
+  button.text-slate-300 { visibility: hidden; }
+  button.h-9 { border-radius: 6px !important; }
+  .text-xs.font-medium { font-weight: 500 !important; color: #94a3b8 !important; }
+}
+
+/* Fixed bar height - it must not change when the search opens. */
+.cal-toolbar { height: 64px; min-height: 64px; box-sizing: border-box; padding-top: 0; padding-bottom: 0; }
+.cal-search--open { height: 42px; }
+
+.cal-more { position: relative; }
+.cal-more__backdrop { position: fixed; inset: 0; z-index: 40; }
+.cal-more__menu {
+  position: absolute; top: 42px; right: 0; z-index: 41; min-width: 230px;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 6px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+}
+.cal-more__item {
+  width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+  border: none; border-radius: 6px; background: none; cursor: pointer; text-align: left;
+  font-size: 13px; color: #1f2937; font-family: inherit;
+  &:hover { background: #f1f5f9; }
+  svg { color: #64748b; }
+}
+
+/* Match the reference sidebar: airy, hairline-separated sections, quiet type. */
+.cal-sidebar { padding: 0; gap: 0; }
+.cal-sidebar > .cal-new-btn { margin: 16px 16px 12px; align-self: stretch; }
+.cal-sidebar > app-date-picker { display: block; padding: 4px 16px 18px; border-bottom: 1px solid #e5e7eb; }
+.cal-side-section { padding: 10px 16px 14px; border-bottom: 1px solid #e5e7eb; gap: 6px; }
+.cal-side-title { padding: 4px 0; font-size: 13px; font-weight: 600; color: #1f2937; }
+.cal-sidebar app-date-picker ::ng-deep {
+  .flex.items-center.justify-between.mb-3 > button:nth-child(2) { font-size: 14px !important; font-weight: 600 !important; }
+  button.h-9 { font-size: 14px !important; font-weight: 400 !important; border-radius: 4px !important; }
+  button.h-9.bg-brand-600 { background: #2691a4 !important; color: #fff !important; font-weight: 500 !important; }
+  button.h-9 { outline: none !important; }
+  .text-xs.font-medium { font-size: 12.5px !important; color: #9ca3af !important; }
+}
+
+/* The mini calendar must span the whole sidebar, in line with the Branch / Staff controls below.
+   The shared picker nests several shrink-to-fit flex wrappers, so widen every div down to the grid. */
+.cal-sidebar app-date-picker ::ng-deep {
+  [role='dialog'] { width: 100% !important; max-width: none !important; }
+  [role='dialog'] div { width: 100% !important; max-width: none !important; min-width: 0 !important; }
+  [role='dialog'] .gap-3 { gap: 0 !important; }
+  [role='dialog'] .grid.grid-cols-7 { grid-template-columns: repeat(7, minmax(0, 1fr)) !important; }
+}
+
+/* The mini calendar's hidden other-month rows must not leave a blank gap. */
+.cal-sidebar app-date-picker ::ng-deep .grid.grid-cols-7 > button.text-slate-300:nth-last-child(-n+14) {
+  height: 0 !important; min-height: 0 !important; padding: 0 !important; margin: 0 !important; overflow: hidden;
+}
+.cal-sidebar > app-date-picker { padding-bottom: 12px; }
+.cal-side-section { padding-top: 8px; padding-bottom: 10px; }
+
+.cal-more__item.is-on { background: #e0f2f6; color: #1e6f80; font-weight: 600; }
+
+/* Settings view: a side list of settings, the selected one on the right (like Huly's Settings). */
+.cal-icon-btn.is-active { background: #e0f2f6; color: #1e6f80; }
+.cal-settings { display: grid; grid-template-columns: 220px 1fr; height: 100%; min-height: 0; }
+.cal-settings__nav { border-right: 1px solid #e5e7eb; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+.cal-settings__title { font-size: 16px; font-weight: 700; color: #111827; padding: 0 8px 12px; }
+.cal-settings__item {
+  text-align: left; padding: 8px 10px; border: none; border-radius: 6px; background: none; cursor: pointer;
+  font-size: 13.5px; font-family: inherit; color: #334155;
+  &:hover { background: #f1f5f9; }
+  &.is-on { background: #e0f2f6; color: #1e6f80; font-weight: 600; }
+}
+.cal-settings__body { min-width: 0; overflow: auto; }

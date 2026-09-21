@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppointmentTask, appointmentStatus } from '../../../../models/appointment.types';
+import { employeeColor } from '../../../../utils/employee-color';
 import {
   CALENDAR_END_HOUR,
   CALENDAR_START_HOUR,
@@ -118,6 +119,10 @@ export class WeekViewComponent {
     return day.toLocaleDateString(undefined, { weekday: 'short' });
   }
 
+  color(employeeId: string): string {
+    return employeeColor(employeeId);
+  }
+
   statusOf(task: AppointmentTask) {
     return appointmentStatus(task);
   }
@@ -175,14 +180,22 @@ export class WeekViewComponent {
   // receiving move/up/cancel for that pointer, and binding there sidesteps
   // anything else in the app that might intercept a document-level listener
   // first. ──
-  private dragging: { task: AppointmentTask; el: HTMLElement; startClientY: number } | null = null;
+  private dragging: { task: AppointmentTask; el: HTMLElement; startClientX: number; startClientY: number; startColLeft: number; originTop: number; timeEl: HTMLElement | null; timeText: string } | null = null;
   private dragMoved = false;
 
   onCardPointerDown(event: PointerEvent, task: AppointmentTask): void {
     if (!this.canEdit() || event.button !== 0) return;
+    // Stops the browser starting a text selection instead of the drag.
+    event.preventDefault();
     const el = event.currentTarget as HTMLElement;
     el.setPointerCapture(event.pointerId);
-    this.dragging = { task, el, startClientY: event.clientY };
+    const timeEl = el.querySelector<HTMLElement>('.week-appt__time');
+    this.dragging = {
+      task, el, startClientX: event.clientX, startClientY: event.clientY,
+      startColLeft: el.closest<HTMLElement>('.week-grid__day-col')?.getBoundingClientRect().left ?? 0,
+      originTop: parseFloat(el.style.top || '0'),
+      timeEl, timeText: timeEl?.textContent ?? '',
+    };
     this.dragMoved = false;
 
     el.addEventListener('pointermove', this.onPointerMove);
@@ -192,9 +205,21 @@ export class WeekViewComponent {
 
   private onPointerMove = (event: PointerEvent): void => {
     if (!this.dragging) return;
+    const dx = event.clientX - this.dragging.startClientX;
     const dy = event.clientY - this.dragging.startClientY;
-    if (Math.abs(dy) > 4) this.dragMoved = true;
-    this.dragging.el.style.transform = `translateY(${dy}px)`;
+    if (Math.abs(dy) > 4 || Math.abs(dx) > 4) this.dragMoved = true;
+    // Steps like Google Calendar: jumps slot-by-slot and day-by-day, label updating as it goes.
+    const target = this.dropTarget(event);
+    if (target) {
+      this.dragging.el.style.transform = `translate(${target.colLeft - this.dragging.startColLeft}px, ${target.top - this.dragging.originTop}px)`;
+      if (this.dragging.timeEl) {
+        const end = new Date(target.startTime.getTime() + this.dragging.task.serviceDuration * 60_000);
+        this.dragging.timeEl.textContent = `${formatTimeAmPm(target.startTime)} – ${formatTimeAmPm(end)}`;
+      }
+    } else {
+      this.dragging.el.style.transform = `translate(${dx}px, ${dy}px)`;
+    }
+    this.updateDragGuide(event);
     this.dragging.el.style.zIndex = '50';
     this.dragging.el.style.opacity = '0.85';
   };
@@ -203,28 +228,18 @@ export class WeekViewComponent {
     if (!this.dragging) return;
     const { task, el } = this.dragging;
     this.detachDragListeners(el);
+    this.restoreDragLabel();
     el.style.transform = '';
     el.style.zIndex = '';
     el.style.opacity = '';
 
     if (this.dragMoved) {
-      const targetEl = document.elementFromPoint(event.clientX, event.clientY);
-      const columnEl = targetEl?.closest<HTMLElement>('[data-day-key]');
-      const bodyEl = columnEl?.querySelector<HTMLElement>('.week-grid__overlay');
-      const targetDay = this.days().find(d => dayKey(d) === columnEl?.dataset['dayKey']);
-
-      if (targetDay && bodyEl) {
-        const y = event.clientY - bodyEl.getBoundingClientRect().top;
-        const rawMinutes = CALENDAR_START_HOUR * 60 + Math.round(y / SLOT_HEIGHT) * SLOT_MINUTES;
-        const snapped = Math.round(rawMinutes / SLOT_MINUTES) * SLOT_MINUTES;
-        const clamped = Math.max(CALENDAR_START_HOUR * 60, Math.min(snapped, CALENDAR_END_HOUR * 60 - task.serviceDuration));
-        const startTime = dateAtTime(targetDay, `${String(Math.floor(clamped / 60)).padStart(2, '0')}:${String(clamped % 60).padStart(2, '0')}`);
-
-        if (this.canDrop(task, startTime)) {
-          this.reschedule.emit({ task, startTime });
-        }
+      const target = this.dropTarget(event);
+      if (target && this.canDrop(task, target.startTime)) {
+        this.reschedule.emit({ task, startTime: target.startTime });
       }
     }
+    this.dragGuide.set(null);
 
     this.dragging = null;
     setTimeout(() => { this.dragMoved = false; }, 0);
@@ -234,12 +249,47 @@ export class WeekViewComponent {
     if (!this.dragging) return;
     const { el } = this.dragging;
     this.detachDragListeners(el);
+    this.restoreDragLabel();
     el.style.transform = '';
     el.style.zIndex = '';
     el.style.opacity = '';
+    this.dragGuide.set(null);
     this.dragging = null;
     this.dragMoved = false;
   };
+
+  /** Ghost line + box for where the dragged appointment would land. */
+  dragGuide = signal<{ dayKeyValue: string; top: number; height: number; label: string } | null>(null);
+
+  private dropTarget(event: PointerEvent): { startTime: Date; top: number; dayKeyValue: string; colLeft: number } | null {
+    if (!this.dragging) return null;
+    const { task, el, startClientY } = this.dragging;
+    const columnEl = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-day-key]');
+    const targetDay = this.days().find(d => dayKey(d) === columnEl?.dataset['dayKey']);
+    if (!targetDay) return null;
+
+    const originTop = parseFloat(el.style.top || '0');
+    const maxSlot = TIME_SLOTS.length - Math.ceil(task.serviceDuration / SLOT_MINUTES);
+    const slot = Math.max(0, Math.min(Math.round((originTop + (event.clientY - startClientY)) / SLOT_HEIGHT), maxSlot));
+    const minutes = CALENDAR_START_HOUR * 60 + slot * SLOT_MINUTES;
+    const startTime = dateAtTime(targetDay, `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`);
+    return { startTime, top: slot * SLOT_HEIGHT, dayKeyValue: dayKey(targetDay), colLeft: columnEl!.getBoundingClientRect().left };
+  }
+
+  private updateDragGuide(event: PointerEvent): void {
+    const target = this.dropTarget(event);
+    if (!target || !this.dragging) { this.dragGuide.set(null); return; }
+    this.dragGuide.set({
+      dayKeyValue: target.dayKeyValue,
+      top: target.top,
+      height: this.height(this.dragging.task),
+      label: formatTimeAmPm(target.startTime),
+    });
+  }
+
+  private restoreDragLabel(): void {
+    if (this.dragging?.timeEl) this.dragging.timeEl.textContent = this.dragging.timeText;
+  }
 
   private detachDragListeners(el: HTMLElement): void {
     el.removeEventListener('pointermove', this.onPointerMove);

@@ -219,13 +219,40 @@
 .af__muted { margin: 0 0 10px; font-size: 13px; color: #9ca3af; }
 
 .af__summary {
-  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
-  padding: 16px 20px; margin-bottom: 16px;
-  border: 1px solid #d5eef2; border-radius: 12px; background: #eef8fa;
-  font-size: 13px; color: #4b5563;
-  > div { display: flex; gap: 16px; }
+  width: 100%;
+  max-width: 420px;
+  margin: 0 0 16px auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+  > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 18px;
+    font-size: 13.5px;
+    color: #4b5563;
+    border-bottom: 1px solid #f1f5f9;
+
+    span:last-child { font-weight: 600; color: #111827; font-variant-numeric: tabular-nums; }
+  }
 }
-.af__summary-grand { margin-top: 6px; font-size: 16px; color: #111827; strong { font-size: 18px; } }
+
+.af__summary-grand {
+  border-bottom: none !important;
+  padding: 16px 18px !important;
+  background: linear-gradient(135deg, #2691a4, #32acc1);
+  font-size: 14px !important;
+  font-weight: 600;
+  color: #fff !important;
+
+  span { color: #fff !important; }
+  strong { font-size: 20px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+}
 
 @media (max-width: 900px) {
   .af__field--note, .af__row--product .af__field--service { grid-column: span 12; }
@@ -234,3 +261,11 @@
 .af__row-warn, .af__row-error { grid-column: 1 / -1; font-size: 12px; }
 .af__row-warn { color: #b45309; }
 .af__row-error { color: #ef4444; }
+
+.af__btn--danger { background: #fff; border-color: #fecaca; color: #ef4444; &:hover:not(:disabled) { background: #fef2f2; } }
+.af__cancel-hint { margin-right: auto; font-size: 12px; color: #9ca3af; }
+
+/* Inline validation - shown once a save was attempted. */
+.af__err { display: block; margin-top: 4px; font-size: 11.5px; color: #ef4444; }
+.af__field--error { border-radius: 8px; outline: 1.5px solid #ef4444; outline-offset: 1px; }
+.af__input--error, .af__pick-btn--error { border-color: #ef4444 !important; background: #fef2f2 !important; }

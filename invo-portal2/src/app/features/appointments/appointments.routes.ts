@@ -5,7 +5,7 @@ import { privilegeGuard } from '@core/guards/privilege.guard';
 
 const translationsLoaded: CanActivateFn = async () => {
   const lang = inject(LanguageService);
-  await lang.loadFeature('appointments');
+  await Promise.all([lang.loadFeature('appointments'), lang.loadFeature('products')]);
   return true;
 };
 

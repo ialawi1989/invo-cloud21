@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ErrorService } from '@core/http/error.service';
@@ -46,6 +46,9 @@ export class EmployeeServicesComponent implements OnInit {
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
   private errorService = inject(ErrorService);
+
+  /** Embedded in the calendar's Settings view: no page title / page padding. */
+  embedded = input(false);
 
   readonly minServiceTime = MIN_SERVICE_TIME;
   readonly limit = 20;

@@ -1,0 +1,87 @@
+:host { display: block; height: 100%; overflow-y: auto; }
+
+.lv { background: #fff; border: none; border-radius: 0; padding: 0 16px 16px; min-height: 100%; box-sizing: border-box; }
+
+.lv__bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9;
+}
+.lv__title { font-weight: 700; color: #334155; font-size: 14px; }
+.lv__total { font-size: 12px; color: #94a3b8; }
+.lv__spacer { flex: 1; }
+
+.lv__groups { display: flex; flex-direction: column; gap: 10px; }
+.lv__group { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fafafa; }
+
+.lv__head {
+  width: 100%; display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border: none; cursor: pointer; text-align: left; font-family: inherit;
+  color: #1f2937;
+}
+.lv__caret { color: #475569; transition: transform 120ms ease; &.is-collapsed { transform: rotate(-90deg); } }
+.lv__gtitle { font-weight: 600; font-size: 13.5px; }
+.lv__gcount { font-size: 12.5px; color: #64748b; }
+
+.lv__avatar {
+  width: 22px; height: 22px; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.lv__avatar--sm { width: 18px; height: 18px; font-size: 10px; }
+
+.lv__row {
+  width: 100%; display: flex; align-items: center; gap: 14px;
+  padding: 9px 14px; border: none; border-top: 1px solid #eef0f3; background: #f8f8f8;
+  cursor: pointer; text-align: left; font-family: inherit; font-size: 13px; color: #1f2937;
+  &:hover { background: #f0f4f8; }
+}
+.lv__dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #94a3b8; flex-shrink: 0;
+  &[data-status='checked-in'] { border-color: #2563eb; background: #dbeafe; }
+  &[data-status='paid'] { border-color: #16a34a; background: #bbf7d0; }
+}
+.lv__when { display: flex; flex-direction: column; min-width: 128px; strong { font-size: 12.5px; } small { color: #64748b; font-size: 11.5px; } }
+.lv__main { flex: 1; min-width: 0; display: flex; flex-direction: column;
+  strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  small { color: #64748b; font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+.lv__emp { display: inline-flex; align-items: center; gap: 6px; min-width: 130px; color: #475569; font-size: 12.5px; }
+.lv__phone { color: #94a3b8; font-size: 12px; white-space: nowrap; }
+.lv__dur { color: #64748b; font-size: 12px; min-width: 38px; text-align: right; }
+.lv__status {
+  font-size: 11px; font-weight: 600; text-transform: capitalize; padding: 2px 9px; border-radius: 999px;
+  background: #e5e7eb; color: #4b5563;
+  &[data-status='checked-in'] { background: #dbeafe; color: #1d4ed8; }
+  &[data-status='paid'] { background: #dcfce7; color: #15803d; }
+}
+.lv__none { padding: 12px 14px; font-size: 12.5px; color: #9ca3af; background: #f8f8f8; }
+
+.lv__filterbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.lv__filterwrap { position: relative; }
+.lv__filterbtn {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px;
+  border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; font-size: 12.5px; font-weight: 500;
+  color: #334155; cursor: pointer; font-family: inherit;
+  &:hover { background: #f8fafc; }
+}
+.lv__backdrop { position: fixed; inset: 0; z-index: 30; }
+.lv__menu {
+  position: absolute; top: 38px; left: 0; z-index: 31; width: 230px;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 6px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+}
+.lv__mitem {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border: none; border-radius: 6px; background: none; cursor: pointer;
+  font-size: 13px; color: #1f2937; font-family: inherit; text-align: left;
+  &:hover { background: #f1f5f9; }
+  &.is-on { background: #e0f2f6; color: #1e6f80; font-weight: 600; }
+}
+.lv__marrow { color: #94a3b8; }
+.lv__mback { width: 100%; text-align: left; border: none; background: none; cursor: pointer; padding: 6px 10px 8px; font-size: 12px; color: #64748b; font-family: inherit; }
+.lv__mscroll { max-height: 260px; overflow-y: auto; }
+.lv__mcheck { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 6px; font-size: 13px; color: #1f2937; cursor: pointer; &:hover { background: #f1f5f9; } }
+.lv__chip {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 320px; height: 28px; padding: 0 8px 0 10px;
+  border-radius: 999px; background: #e0f2f6; color: #1e6f80; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  button { border: none; background: none; cursor: pointer; color: #1e6f80; padding: 0 2px; font-size: 11px; }
+}
+.lv__clearall { border: none; background: none; cursor: pointer; font-size: 12px; color: #64748b; text-decoration: underline; font-family: inherit; }

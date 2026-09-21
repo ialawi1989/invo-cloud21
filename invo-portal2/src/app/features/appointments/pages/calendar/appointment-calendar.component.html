@@ -1,4 +1,4 @@
-<div class="cal">
+<div class="cal" [class.cal--no-sidebar]="!sidebarOpen() || mode() === 'settings'">
   <aside class="cal-sidebar">
     <button type="button" class="cal-new-btn" (click)="newAppointment()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -8,15 +8,46 @@
     <app-date-picker
       [inline]="true"
       mode="single"
+      [dayNames]="dayNames"
       [value]="currentDate()"
       (valueChange)="onMiniCalendarChange($event)"
       [showFooter]="false"
     />
+
+    <div class="cal-side-section">
+      <button type="button" class="cal-side-title" (click)="toggleSection('branch')">
+        <span>{{ 'APPOINTMENTS.BRANCH' | translate }}</span>
+        <svg class="cal-side-chev" [class.is-collapsed]="collapsed()['branch']" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+      </button>
+      @if (!collapsed()['branch']) {
+        <button type="button" class="cal-print-btn cal-print-btn--block" (click)="openBranchPicker()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+          {{ selectedBranchLabel() }}
+        </button>
+      }
+    </div>
+
+    <div class="cal-side-section">
+      <button type="button" class="cal-side-title" (click)="toggleSection('staff')">
+        <span>{{ 'APPOINTMENTS.STAFF' | translate }}</span>
+        <svg class="cal-side-chev" [class.is-collapsed]="collapsed()['staff']" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+      </button>
+      @if (!collapsed()['staff']) {
+      <button type="button" class="cal-print-btn cal-print-btn--block" (click)="openStaffFilter()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        {{ 'APPOINTMENTS.STAFF' | translate }} ({{ visibleEmployees().length }}/{{ branchEmployees().length }})
+      </button>
+      }
+    </div>
   </aside>
 
   <main class="cal-main">
     <header class="cal-toolbar">
       <div class="cal-toolbar__nav">
+        <button type="button" class="cal-icon-btn" (click)="sidebarOpen.set(!sidebarOpen())"
+          [title]="'APPOINTMENTS.TOGGLE_PANEL' | translate" [attr.aria-pressed]="sidebarOpen()">
+          <svg class="cal-panel-icon" [class.is-closed]="!sidebarOpen()" width="18" height="18" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 5C4.44772 5 4 5.44772 4 6C4 6.55228 4.44772 7 5 7H27C27.5523 7 28 6.55228 28 6C28 5.44772 27.5523 5 27 5H5ZM5 15C4.44772 15 4 15.4477 4 16C4 16.5523 4.44772 17 5 17H15C15.5523 17 16 16.5523 16 16C16 15.4477 15.5523 15 15 15H5ZM19 16L24.3 10.7C24.6866 10.3134 25.3134 10.3134 25.7 10.7C26.0866 11.0866 26.0866 11.7134 25.7 12.1L21.8 16L25.7 19.9C26.0866 20.2866 26.0866 20.9134 25.7 21.3C25.3134 21.6866 24.6866 21.6866 24.3 21.3L19 16ZM4 26C4 25.4477 4.44772 25 5 25H27C27.5523 25 28 25.4477 28 26C28 26.5523 27.5523 27 27 27H5C4.44772 27 4 26.5523 4 26Z"></path></svg>
+        </button>
         <button type="button" class="cal-nav-btn" (click)="goToday()">{{ 'APPOINTMENTS.TODAY' | translate }}</button>
         <button type="button" class="cal-nav-btn cal-nav-btn--icon" (click)="step(-1)" [attr.aria-label]="'COMMON.PREVIOUS' | translate">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -27,27 +58,101 @@
         <h2 class="cal-toolbar__range">{{ rangeLabel() }}</h2>
       </div>
 
-      <div class="cal-toolbar__views">
-        <button type="button" class="cal-view-btn" [class.is-on]="view() === 'day'" (click)="setView('day')">{{ 'APPOINTMENTS.VIEW_DAY' | translate }}</button>
-        <button type="button" class="cal-view-btn" [class.is-on]="view() === 'week'" (click)="setView('week')">{{ 'APPOINTMENTS.VIEW_WEEK' | translate }}</button>
-        <button type="button" class="cal-view-btn" [class.is-on]="view() === 'month'" (click)="setView('month')">{{ 'APPOINTMENTS.VIEW_MONTH' | translate }}</button>
+      <div class="cal-toolbar__spacer"></div>
+
+      @if (searchOpen() || searchTerm()) {
+        <div class="cal-search cal-search--open">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input #searchInput type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+            (keydown.escape)="closeSearch(true)" (blur)="closeSearch()"
+            [placeholder]="'APPOINTMENTS.SEARCH' | translate" />
+          @if (searchTerm()) {
+            <span class="cal-search__count">{{ visibleTasks().length }}</span>
+          }
+          <button type="button" class="cal-search__clear" (mousedown)="$event.preventDefault()" (click)="closeSearch(true)" aria-label="Clear">&#10005;</button>
+        </div>
+      } @else {
+        <button type="button" class="cal-icon-btn" (click)="openSearch()" [attr.aria-label]="'APPOINTMENTS.SEARCH' | translate">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      }
+
+      <div class="cal-mode" role="group">
+        <button type="button" class="cal-mode__btn" [class.is-on]="mode() === 'calendar'" (click)="mode.set('calendar')"
+          [title]="'APPOINTMENTS.MODE_CALENDAR' | translate">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        </button>
+        <button type="button" class="cal-mode__btn" [class.is-on]="mode() === 'employees'" (click)="mode.set('employees')"
+          [title]="'APPOINTMENTS.MODE_EMPLOYEES' | translate">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </button>
       </div>
 
-      <button type="button" class="cal-print-btn" (click)="openStaffFilter()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        {{ 'APPOINTMENTS.STAFF' | translate }} ({{ visibleEmployees().length }}/{{ employees().length }})
+      <app-search-dropdown
+        class="cal-view-select"
+        [items]="viewOptions()"
+        [displayWith]="branchLabel"
+        [compareWith]="branchCompare"
+        [toValue]="branchValue"
+        [ngModel]="view()"
+        (ngModelChange)="onViewChange($event)"
+        [clearable]="false"
+        [searchable]="false"
+      />
+
+      <button type="button" class="cal-icon-btn" [class.is-active]="mode() === 'settings'"
+        (click)="mode.set(mode() === 'settings' ? 'calendar' : 'settings')" [title]="'APPOINTMENTS.SETTINGS' | translate">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
 
-      <button type="button" class="cal-print-btn" (click)="openPrintSchedule()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
-        </svg>
-        {{ 'APPOINTMENTS.PRINT_SCHEDULE.TITLE' | translate }}
-      </button>
+      <div class="cal-more">
+        <button type="button" class="cal-icon-btn" (click)="moreOpen.set(!moreOpen())" [attr.aria-expanded]="moreOpen()"
+          [title]="'APPOINTMENTS.MORE' | translate">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M8 18C9.10457 18 10 17.1046 10 16C10 14.8954 9.10457 14 8 14C6.89543 14 6 14.8954 6 16C6 17.1046 6.89543 18 8 18Z"></path><path d="M16 18C17.1046 18 18 17.1046 18 16C18 14.8954 17.1046 14 16 14C14.8954 14 14 14.8954 14 16C14 17.1046 14.8954 18 16 18Z"></path><path d="M26 16C26 17.1046 25.1046 18 24 18C22.8954 18 22 17.1046 22 16C22 14.8954 22.8954 14 24 14C25.1046 14 26 14.8954 26 16Z"></path></svg>
+        </button>
+        @if (moreOpen()) {
+          <div class="cal-more__backdrop" (click)="moreOpen.set(false)"></div>
+          <div class="cal-more__menu">
+            <button type="button" class="cal-more__item" (click)="moreOpen.set(false); openPrintSchedule()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              {{ 'APPOINTMENTS.PRINT_SCHEDULE.TITLE' | translate }}
+            </button>
+          </div>
+        }
+      </div>
     </header>
 
     <div class="cal-body">
-      @if (view() === 'day') {
+      @if (mode() === 'settings') {
+        <div class="cal-settings">
+          <nav class="cal-settings__nav">
+            <div class="cal-settings__title">{{ 'APPOINTMENTS.SETTINGS' | translate }}</div>
+            @if (canSeeServiceTeam()) {
+              <button type="button" class="cal-settings__item" [class.is-on]="setting() === 'service-team'" (click)="setting.set('service-team')">
+                {{ 'APPOINTMENTS.SERVICE_TEAM.TITLE' | translate }}
+              </button>
+            }
+            @if (canSeePricing()) {
+              <button type="button" class="cal-settings__item" [class.is-on]="setting() === 'pricing'" (click)="setting.set('pricing')">
+                {{ 'PRODUCTS.ACTIONS.EMPLOYEE_SERVICE_PRICING' | translate }}
+              </button>
+            }
+          </nav>
+          <section class="cal-settings__body">
+            @if (setting() === 'pricing' && canSeePricing()) {
+              <app-employee-services [embedded]="true" />
+            } @else {
+              <app-service-team [embedded]="true" />
+            }
+          </section>
+        </div>
+      } @else if (mode() === 'employees') {
+        <app-employees-view
+          [employees]="visibleEmployees()"
+          [tasks]="visibleTasks()"
+          (taskClick)="openTask($event)"
+        />
+      } @else if (view() === 'day') {
         <app-day-view
           [date]="currentDate()"
           [employees]="visibleEmployees()"

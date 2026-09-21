@@ -81,3 +81,14 @@ thead .st__service-col { z-index: 3; background: #f9fafb; }
   cursor: pointer;
   accent-color: #32acc1;
 }
+
+.st--embedded { max-width: none; margin: 0; padding: 16px; }
+:host { display: block; }
+
+.st__table-wrap { cursor: grab; user-select: none; &.is-panning { cursor: grabbing; } }
+.st__cell input[type='checkbox'] { cursor: pointer; }
+
+/* Embedded in Settings: flush with the panel - no padding, no card frame. */
+.st--embedded { padding: 0; }
+.st--embedded .st__table-wrap { border: none; border-radius: 0; }
+.st--embedded .st__state { border: none; border-radius: 0; }

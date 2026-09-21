@@ -65,7 +65,10 @@
       "GRAND_TOTAL": "الإجمالي الكلي",
       "ROW_TOTAL": "إجمالي السطر",
       "STAFF_BUSY": "{{name}} محجوز بالفعل عند {{time}}. اختر وقتًا أو موظفًا آخر.",
-      "BACK_BTN": "رجوع"
+      "BACK_BTN": "رجوع",
+      "FIX_ERRORS": "يرجى تصحيح الحقول المحددة.",
+      "STAFF_REQUIRED": "اختر موظفاً.",
+      "SERVICE_REQUIRED_ROW": "اختر خدمة."
     },
     "QUICK_CREATE": {
       "MORE_OPTIONS": "خيارات إضافية",
@@ -102,6 +105,39 @@
       "SELECT_ALL": "تحديد الكل",
       "CLEAR": "مسح",
       "APPLY": "تطبيق"
-    }
+    },
+    "ALL_BRANCHES": "كل الفروع",
+    "BRANCH": "الفرع",
+    "SEARCH": "ابحث في المواعيد",
+    "MODE_CALENDAR": "التقويم",
+    "MODE_EMPLOYEES": "الموظفون",
+    "LIST": {
+      "TITLE": "المواعيد",
+      "BY_EMPLOYEE": "حسب الموظف",
+      "BY_TIME": "حسب الموعد",
+      "ALL": "الكل",
+      "UPCOMING": "القادمة",
+      "PREVIOUS": "السابقة",
+      "FILTER": "تصفية",
+      "BACK": "رجوع",
+      "CLEAR_ALL": "مسح الكل",
+      "F_EMPLOYEE": "الموظف",
+      "F_DATE": "التاريخ",
+      "F_STATUS": "الحالة",
+      "F_SERVICE": "الخدمة",
+      "F_CUSTOMER": "العميل",
+      "D_TODAY": "اليوم",
+      "D_TOMORROW": "غدًا",
+      "D_NEXT7": "الأيام السبعة القادمة",
+      "D_MONTH": "هذا الشهر",
+      "S_BOOKED": "محجوز",
+      "S_CHECKED_IN": "تم تسجيل الوصول",
+      "S_PAID": "مدفوع"
+    },
+    "TOGGLE_PANEL": "إظهار/إخفاء اللوحة الجانبية",
+    "MORE": "المزيد",
+    "BRANCH_SEARCH": "ابحث عن فرع",
+    "MODE_TEAM": "فريق الخدمة",
+    "SETTINGS": "الإعدادات"
   }
 }

@@ -19,6 +19,7 @@
       </label>
 
       @if (!isWalkIn()) {
+        <div [class.af__field--error]="customerInvalid()">
         <app-search-dropdown
           [loadFn]="customerSearchFn"
           [displayWith]="customerDisplay"
@@ -27,15 +28,20 @@
           [placeholder]="'APPOINTMENTS.FORM.SEARCH_CUSTOMER' | translate"
           [disabled]="readOnly()"
         />
+        </div>
       } @else {
         <input
           type="text"
           class="af__input"
           [ngModel]="walkInContact()"
           (ngModelChange)="walkInContact.set($event)"
+          [class.af__input--error]="customerInvalid()"
           [placeholder]="'APPOINTMENTS.FORM.WALK_IN_CUSTOMER' | translate"
           [disabled]="readOnly()"
         />
+      }
+      @if (customerInvalid()) {
+        <span class="af__err">{{ 'APPOINTMENTS.FORM.CUSTOMER_REQUIRED' | translate }}</span>
       }
     </section>
 
@@ -58,7 +64,7 @@
             </div>
             <div class="af__field af__field--num">
               <label>{{ 'APPOINTMENTS.FORM.QTY' | translate }}</label>
-              <input type="number" min="1" class="af__input" [ngModel]="p.qty"
+              <input type="number" min="1" class="af__input" [class.af__input--error]="productQtyInvalid(p)" [ngModel]="p.qty"
                 (ngModelChange)="setProductQty(p, $event)" [disabled]="readOnly()" />
             </div>
             <div class="af__field af__field--num">
@@ -94,17 +100,19 @@
           <div class="af__row">
             <div class="af__field af__field--service">
               <label>{{ 'APPOINTMENTS.FORM.SELECT_SERVICE' | translate }}</label>
-              <button type="button" class="af__pick-btn" (click)="pickService(row)" [disabled]="rowLocked(row)">
+              <button type="button" class="af__pick-btn" [class.af__pick-btn--error]="rowErrors(row).service" (click)="pickService(row)" [disabled]="rowLocked(row)">
                 @if (row.productName) {
                   <span class="af__pick-name">{{ row.productName }}</span>
                 } @else {
                   <span class="af__pick-placeholder">{{ 'APPOINTMENTS.FORM.SELECT_SERVICE' | translate }}</span>
                 }
               </button>
+              @if (rowErrors(row).service) { <span class="af__err">{{ 'APPOINTMENTS.FORM.SERVICE_REQUIRED_ROW' | translate }}</span> }
             </div>
 
             <div class="af__field af__field--staff">
               <label>{{ 'APPOINTMENTS.FORM.STAFF' | translate }}</label>
+              <div [class.af__field--error]="rowErrors(row).staff">
               <app-search-dropdown
                 [items]="employeeOptions()"
                 [displayWith]="optionLabel"
@@ -116,6 +124,8 @@
                 [clearable]="true"
                 [disabled]="rowLocked(row)"
               />
+              </div>
+              @if (rowErrors(row).staff) { <span class="af__err">{{ 'APPOINTMENTS.FORM.STAFF_REQUIRED' | translate }}</span> }
             </div>
 
             <div class="af__field af__field--date">
@@ -130,6 +140,7 @@
 
             <div class="af__field af__field--time">
               <label>{{ 'APPOINTMENTS.FORM.START_TIME' | translate }}</label>
+              <div [class.af__field--error]="rowErrors(row).time">
               <app-search-dropdown
                 [items]="timeOptionsFor(row)"
                 [displayWith]="optionLabel"
@@ -140,6 +151,8 @@
                 [clearable]="false"
                 [disabled]="rowLocked(row)"
               />
+              </div>
+              @if (rowErrors(row).time) { <span class="af__err">{{ 'APPOINTMENTS.QUICK_CREATE.TIME_IN_PAST' | translate }}</span> }
             </div>
 
             <div class="af__field af__field--duration">
@@ -189,6 +202,10 @@
         }
       </div>
 
+      @if (attemptedSave() && visibleRows().length === 0) {
+        <span class="af__err">{{ 'APPOINTMENTS.FORM.SERVICE_REQUIRED' | translate }}</span>
+      }
+
       <button type="button" class="af__add-row" (click)="addRow()" [disabled]="readOnly()">
         {{ 'APPOINTMENTS.FORM.ADD_SERVICE' | translate }}
       </button>
@@ -201,36 +218,30 @@
       <div class="af__summary-grand"><span>{{ 'APPOINTMENTS.FORM.GRAND_TOTAL' | translate }}</span><strong>{{ total() | mycurrency }}</strong></div>
     </section>
 
-    <div class="af__actions">
-      <button type="button" class="af__btn" (click)="back()">{{ 'APPOINTMENTS.FORM.BACK_BTN' | translate }}</button>
+    <app-form-sticky-footer>
+      @if (isEditMode() && isInvoiced()) {
+        <span class="af__cancel-hint">{{ 'APPOINTMENTS.FORM.CANCEL_UNAVAILABLE' | translate }}</span>
+      }
+      @if (isEditMode() && !isInvoiced() && !readOnly() && canDelete()) {
+        <button type="button" class="btn af__btn--danger" [disabled]="saving()" (click)="cancel()">
+          {{ 'APPOINTMENTS.FORM.CANCEL_APPOINTMENT' | translate }}
+        </button>
+      }
+      <button type="button" class="btn btn-ghost" (click)="back()">{{ 'APPOINTMENTS.FORM.BACK_BTN' | translate }}</button>
       @if (!readOnly()) {
         @if (!isInvoiced()) {
-          <button type="button" class="af__btn af__btn--primary" [disabled]="saving()" (click)="save()">
+          <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="save()">
             {{ 'APPOINTMENTS.FORM.SAVE' | translate }}
           </button>
-        }
-
-        @if (!isInvoiced()) {
-          <button type="button" class="af__btn" [disabled]="saving()" (click)="checkIn()">
+          <button type="button" class="btn btn-ghost" [disabled]="saving()" (click)="checkIn()">
             {{ 'APPOINTMENTS.FORM.CHECK_IN' | translate }}
           </button>
-        }
-
-        @if (isInvoiced() && !isPaid()) {
-          <button type="button" class="af__btn" (click)="goToPayment()">
+        } @else {
+          <button type="button" class="btn btn-primary" (click)="goToPayment()">
             {{ 'APPOINTMENTS.FORM.PAY' | translate }}
           </button>
         }
-
-        @if (isEditMode() && !isInvoiced() && canDelete()) {
-          <button type="button" class="af__btn af__btn--danger" [disabled]="saving()" (click)="cancel()">
-            {{ 'APPOINTMENTS.FORM.CANCEL_APPOINTMENT' | translate }}
-          </button>
-        }
-        @if (isEditMode() && isInvoiced()) {
-          <span class="af__cancel-hint">{{ 'APPOINTMENTS.FORM.CANCEL_UNAVAILABLE' | translate }}</span>
-        }
       }
-    </div>
+    </app-form-sticky-footer>
   }
 </div>

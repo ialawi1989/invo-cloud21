@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, NavigationCancel, NavigationEnd, NavigationError } from '@angular/router';
 
 /**
  * Codec — how to convert a value to/from a query-param string.
@@ -123,6 +123,40 @@ export class QueryParamsService {
   private route  = inject(ActivatedRoute);
 
   /**
+   * Writes are coalesced into ONE navigation. `router.navigate` with
+   * `queryParamsHandling: 'merge'` merges against the URL as it is *now*, so two
+   * writes in the same tick (or while a navigation is still in flight) each
+   * started from the same old URL and only the last one survived - the others
+   * were silently lost. Pending values stay queued until the navigation lands.
+   */
+  private pending: Record<string, string | null> = {};
+  private flushScheduled = false;
+
+  constructor() {
+    this.router.events.subscribe(e => {
+      if (e instanceof NavigationEnd || e instanceof NavigationCancel || e instanceof NavigationError) {
+        // Only clear what has been applied; anything written meanwhile is flushed again by its own microtask.
+        if (!this.flushScheduled) this.pending = {};
+      }
+    });
+  }
+
+  private queue(params: Record<string, string | null>): void {
+    Object.assign(this.pending, params);
+    if (this.flushScheduled) return;
+    this.flushScheduled = true;
+    queueMicrotask(() => {
+      this.flushScheduled = false;
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { ...this.pending },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    });
+  }
+
+  /**
    * Read all registered params from the current URL.
    * Returns a plain object keyed by the param-def keys.
    */
@@ -154,12 +188,7 @@ export class QueryParamsService {
       const encoded = def.codec.encode((values as any)[name]);
       queryParams[def.key] = encoded;
     }
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams,
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
+    this.queue(queryParams);
   }
 
   /**
@@ -167,12 +196,7 @@ export class QueryParamsService {
    */
   writeOne<T>(def: ParamDef<T>, value: T): void {
     const encoded = def.codec.encode(value);
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { [def.key]: encoded },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
+    this.queue({ [def.key]: encoded });
   }
 
   /**
@@ -183,11 +207,6 @@ export class QueryParamsService {
     for (const def of Object.values(defs)) {
       queryParams[def.key] = null;
     }
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams,
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
+    this.queue(queryParams);
   }
 }

@@ -1,0 +1,107 @@
+<div class="lv">
+  <div class="lv__bar">
+    <app-segmented-toggle size="sm" [options]="groupOptions" [value]="groupBy()" (valueChange)="groupBy.set($event)" />
+    <span class="lv__title">{{ 'APPOINTMENTS.LIST.TITLE' | translate }}</span>
+    <span class="lv__total">{{ total() }}</span>
+    <span class="lv__spacer"></span>
+    <app-segmented-toggle size="sm" [options]="filterOptions" [value]="filter()" (valueChange)="filter.set($event)" />
+  </div>
+
+  <div class="lv__filterbar">
+    <div class="lv__filterwrap">
+      <button type="button" class="lv__filterbtn" (click)="toggleMenu()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        {{ 'APPOINTMENTS.LIST.FILTER' | translate }}
+      </button>
+
+      @if (menuOpen()) {
+        <div class="lv__backdrop" (click)="menuOpen.set(false)"></div>
+        <div class="lv__menu">
+          @if (!menuField()) {
+            @for (f of fields; track f.key) {
+              <button type="button" class="lv__mitem" (click)="menuField.set(f.key)">
+                <span>{{ f.label | translate }}</span>
+                <span class="lv__marrow">&rsaquo;</span>
+              </button>
+            }
+          } @else {
+            <button type="button" class="lv__mback" (click)="menuField.set(null)">&lsaquo; {{ 'APPOINTMENTS.LIST.BACK' | translate }}</button>
+            @if (menuField() === 'date') {
+              @for (d of datePresets; track d.key) {
+                <button type="button" class="lv__mitem" [class.is-on]="datePreset() === d.key" (click)="setDate(d.key)">
+                  <span>{{ d.label | translate }}</span>
+                </button>
+              }
+            } @else {
+              <div class="lv__mscroll">
+                @for (o of options(); track o.value) {
+                  <label class="lv__mcheck">
+                    <input type="checkbox" [checked]="isChecked(menuField()!, o.value)" (change)="toggleValue(menuField()!, o.value)" />
+                    <span>{{ menuField() === 'status' ? (o.label | translate) : o.label }}</span>
+                  </label>
+                } @empty {
+                  <div class="lv__none">{{ 'APPOINTMENTS.NO_APPOINTMENTS' | translate }}</div>
+                }
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+
+    @for (c of chips(); track c.field) {
+      <span class="lv__chip">
+        <b>{{ c.label | translate }}:</b>
+        {{ c.field === 'date' ? (c.text | translate) : c.text }}
+        <button type="button" (click)="clearField(c.field)" aria-label="Remove">&#10005;</button>
+      </span>
+    }
+    @if (chips().length > 1) {
+      <button type="button" class="lv__clearall" (click)="clearAll()">{{ 'APPOINTMENTS.LIST.CLEAR_ALL' | translate }}</button>
+    }
+  </div>
+
+  <div class="lv__groups">
+    @for (g of groups(); track trackGroup($index, g)) {
+      <section class="lv__group">
+        <button type="button" class="lv__head" [style.background]="g.tint" (click)="toggle(g.key)">
+          <svg class="lv__caret" [class.is-collapsed]="isCollapsed(g.key)" width="10" height="10" viewBox="0 0 10 10"><path d="M1 3l4 4 4-4z" fill="currentColor"/></svg>
+          @if (g.employee) {
+            <span class="lv__avatar" [style.background]="color(g.employee.id)">{{ initials(g.employee.name) }}</span>
+            <span class="lv__gtitle">{{ g.title }}</span>
+          } @else {
+            <span class="lv__gtitle">{{ g.title | translate }}</span>
+          }
+          <span class="lv__gcount">{{ g.tasks.length }}</span>
+        </button>
+
+        @if (!isCollapsed(g.key)) {
+          @for (t of g.tasks; track t.taskId) {
+            <button type="button" class="lv__row" (click)="taskClick.emit(t)">
+              <span class="lv__dot" [attr.data-status]="status(t)"></span>
+              <span class="lv__when">
+                <strong>{{ dateLabel(t) }}</strong>
+                <small>{{ timeRange(t) }}</small>
+              </span>
+              <span class="lv__main">
+                <strong>{{ t.customerName || ('APPOINTMENTS.WALK_IN' | translate) }}</strong>
+                <small>{{ t.serviceName }}</small>
+              </span>
+              @if (!g.employee) {
+                <span class="lv__emp">
+                  <span class="lv__avatar lv__avatar--sm" [style.background]="color(t.employeeId)">{{ initials(t.employeeName) }}</span>
+                  {{ t.employeeName }}
+                </span>
+              }
+              @if (t.customerPhone) { <span class="lv__phone">{{ t.customerPhone }}</span> }
+              <span class="lv__dur">{{ t.serviceDuration }}m</span>
+              <span class="lv__status" [attr.data-status]="status(t)">{{ status(t) }}</span>
+            </button>
+          } @empty {
+            <div class="lv__none">{{ 'APPOINTMENTS.NO_APPOINTMENTS' | translate }}</div>
+          }
+        }
+      </section>
+    }
+  </div>
+</div>

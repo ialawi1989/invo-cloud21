@@ -39,6 +39,7 @@
               <div
                 class="week-appt"
                 [attr.data-status]="statusOf(group[0])"
+                [style.background]="color(group[0].employeeId)"
                 [style.top.px]="top(group[0])"
                 [style.height.px]="height(group[0])"
                 (pointerdown)="onCardPointerDown($event, group[0])"
@@ -60,6 +61,15 @@
                 (click)="onGroupClick(day, group)"
               >
                 <span class="week-appt__title">{{ group.length }} {{ 'APPOINTMENTS.APPOINTMENTS' | translate }}</span>
+              </div>
+            }
+          }
+
+          @if (dragGuide(); as g) {
+            @if (g.dayKeyValue === trackByDay(0, day)) {
+              <div class="week-grid__guide-line" [style.top.px]="g.top"></div>
+              <div class="week-grid__guide-ghost" [style.top.px]="g.top" [style.height.px]="g.height">
+                <span>{{ g.label }}</span>
               </div>
             }
           }
