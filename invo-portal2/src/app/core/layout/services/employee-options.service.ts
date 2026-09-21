@@ -95,6 +95,8 @@ export interface EmployeeOptions {
    *  across browsers; note the endpoint is scoped per company, so dismissing a
    *  tour at one company doesn't dismiss it at another they also work for. */
   toursSeen?: { [tourKey: string]: boolean };
+  /** Appointments calendar preferences — which staff columns the user has hidden. */
+  appointments?: { hiddenEmployeeIds?: string[] };
 }
 
 @Injectable({ providedIn: 'root' })

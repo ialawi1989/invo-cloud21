@@ -112,6 +112,12 @@
       "SAVE_FAILED": "Failed to save",
       "LOADING": "Loading…",
       "EMPTY": "No bookable services found."
+    },
+    "STAFF_FILTER": {
+      "SEARCH": "Search staff",
+      "SELECT_ALL": "Select all",
+      "CLEAR": "Clear",
+      "APPLY": "Apply"
     }
   }
 }

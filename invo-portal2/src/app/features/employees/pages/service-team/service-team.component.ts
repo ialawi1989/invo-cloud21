@@ -40,7 +40,7 @@ export class ServiceTeamComponent implements OnInit {
         this.employeeSvc.getList({ page: 1, limit: 500 }),
         this.capabilitySvc.getMatrix(),
       ]);
-      this.staff.set(employees.list.filter(e => e.user).map(e => ({ id: e.id, name: e.name })));
+      this.staff.set(employees.list.map(e => ({ id: e.id, name: e.name })));
       this.rows.set(matrix.map(row => ({ ...row, checked: new Set(row.employeeIds), saving: false })));
     } finally {
       this.loading.set(false);

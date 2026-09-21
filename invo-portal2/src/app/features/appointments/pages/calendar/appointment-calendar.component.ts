@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { addDays, buildCalendarGrid, formatDate as formatCalendarDate, startOfDay } from '@shared/components/datepicker/date-utils';
+import { LayoutService } from '@core/layout/services/layout.service';
+import { EmployeeOptionsService } from '@core/layout/services/employee-options.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { EmployeeService } from '../../../employees/services/employee.service';
 import { AppointmentsService } from '../../services/appointments.service';
@@ -17,6 +19,7 @@ import { MonthViewComponent } from './components/month-view/month-view.component
 import { AgendaDrawerComponent, AgendaDrawerData, AgendaDrawerResult } from './components/agenda-drawer/agenda-drawer.component';
 import { PrintScheduleModalComponent, PrintScheduleModalData } from '../../components/print-schedule-modal/print-schedule-modal.component';
 import { QuickCreatePopoverComponent, QuickCreateData, QuickCreateResult } from '../../components/quick-create-popover/quick-create-popover.component';
+import { StaffFilterModalComponent, StaffFilterData } from '../../components/staff-filter-modal/staff-filter-modal.component';
 import { QueryParamsService, enumCodec, ParamDef, StringCodec } from '@shared/services/query-params.service';
 
 type CalendarView = 'day' | 'week' | 'month';
@@ -32,7 +35,7 @@ const DATE_PARAM: ParamDef<string> = { key: 'date', codec: StringCodec };
   templateUrl: './appointment-calendar.component.html',
   styleUrl: './appointment-calendar.component.scss',
 })
-export class AppointmentCalendarComponent implements OnInit {
+export class AppointmentCalendarComponent implements OnInit, OnDestroy {
   private employeeSvc = inject(EmployeeService);
   private appointmentsSvc = inject(AppointmentsService);
   private modal = inject(ModalService);
@@ -41,6 +44,8 @@ export class AppointmentCalendarComponent implements OnInit {
   private router = inject(Router);
   private qp = inject(QueryParamsService);
   private privileges = inject(PrivilegeService);
+  private employeeOptions = inject(EmployeeOptionsService);
+  private layout = inject(LayoutService);
 
   readonly canAdd = computed(() => this.privileges.check('appointmentsSecurity.actions.add.access'));
 
@@ -48,14 +53,14 @@ export class AppointmentCalendarComponent implements OnInit {
   currentDate = signal<Date>(this.readInitialDate());
 
   employees = signal<EmployeeLite[]>([]);
-  selectedEmployeeIds = signal<Set<string>>(new Set());
+  /** Staff the user has unchecked; everyone else is shown (an unchecked box hides just that person). */
+  hiddenEmployeeIds = signal<Set<string>>(new Set());
   tasks = signal<AppointmentTask[]>([]);
   loading = signal(false);
 
   visibleEmployees = computed(() => {
-    const selected = this.selectedEmployeeIds();
-    const all = this.employees();
-    return selected.size === 0 ? all : all.filter(e => selected.has(e.id));
+    const hidden = this.hiddenEmployeeIds();
+    return this.employees().filter(e => !hidden.has(e.id));
   });
 
   visibleTasks = computed(() => {
@@ -74,8 +79,15 @@ export class AppointmentCalendarComponent implements OnInit {
   });
 
   async ngOnInit(): Promise<void> {
+    // The calendar is wide — give it the room of a collapsed side menu.
+    this.layout.setCollapseSidebar(true);
     await this.loadEmployees();
+    await this.restoreStaffFilter();
     await this.loadTasks();
+  }
+
+  ngOnDestroy(): void {
+    this.layout.setCollapseSidebar(false);
   }
 
   private readInitialDate(): Date {
@@ -158,8 +170,27 @@ export class AppointmentCalendarComponent implements OnInit {
     }
   }
 
+  /** The staff the user last hid is remembered per employee (server-side employee options). */
+  private async restoreStaffFilter(): Promise<void> {
+    const saved = (await this.employeeOptions.get())?.appointments?.hiddenEmployeeIds;
+    if (!saved?.length) return;
+    const known = new Set(this.employees().map(e => e.id));
+    this.hiddenEmployeeIds.set(new Set(saved.filter(id => known.has(id))));
+  }
+
+  openStaffFilter(): void {
+    this.modal.open<StaffFilterModalComponent, StaffFilterData, string[]>(StaffFilterModalComponent, {
+      size: 'sm',
+      data: { employees: this.employees(), hiddenIds: Array.from(this.hiddenEmployeeIds()) },
+    }).afterClosed().then(hidden => {
+      if (!hidden) return;
+      this.hiddenEmployeeIds.set(new Set(hidden));
+      void this.employeeOptions.patch({ appointments: { hiddenEmployeeIds: hidden } });
+    });
+  }
+
   toggleEmployee(id: string): void {
-    this.selectedEmployeeIds.update(set => {
+    this.hiddenEmployeeIds.update(set => {
       const next = new Set(set);
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
@@ -225,7 +256,7 @@ export class AppointmentCalendarComponent implements OnInit {
   }
 
   openPrintSchedule(): void {
-    const firstSelected = Array.from(this.selectedEmployeeIds())[0] ?? null;
+    const firstSelected = this.visibleEmployees()[0]?.id ?? null;
     this.modal.open<PrintScheduleModalComponent, PrintScheduleModalData, void>(PrintScheduleModalComponent, {
       size: 'lg',
       data: { employeeId: firstSelected, date: this.currentDate() },

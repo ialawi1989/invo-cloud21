@@ -58,9 +58,14 @@
   color: #111827;
   position: sticky;
   left: 0;
+  z-index: 2;
   background: #fff;
   min-width: 220px;
+  box-shadow: 1px 0 0 #f1f5f9;
 }
+
+/* The header cell of the sticky column also has to sit above the scrolling cells. */
+thead .st__service-col { z-index: 3; background: #f9fafb; }
 
 .st__hint {
   display: block;

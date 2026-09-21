@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { LayoutService } from '../../core/layout/services/layout.service';
@@ -77,6 +77,24 @@ export class MainLayoutComponent {
   readonly layoutSvc   = inject(LayoutService);
   sidebarCollapsed     = signal(false);
   mobileMenuOpen       = signal(false);
+
+  /** Menu state to restore once a page that asked for it collapsed is left. */
+  private restoreCollapsed: boolean | null = null;
+
+  constructor() {
+    effect(() => {
+      const wanted = this.layoutSvc.collapseSidebar();
+      untracked(() => {
+        if (wanted) {
+          this.restoreCollapsed = this.sidebarCollapsed();
+          this.sidebarCollapsed.set(true);
+        } else if (this.restoreCollapsed !== null) {
+          this.sidebarCollapsed.set(this.restoreCollapsed);
+          this.restoreCollapsed = null;
+        }
+      });
+    });
+  }
 
   toggleMobileMenu() { this.mobileMenuOpen.set(!this.mobileMenuOpen()); }
 }
