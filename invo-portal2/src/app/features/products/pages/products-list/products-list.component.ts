@@ -522,6 +522,15 @@ export class ProductsListComponent implements OnInit {
       },
       {
         action: {
+          id: 'employee-services',
+          label: this.lang.instant('PRODUCTS.ACTIONS.EMPLOYEE_SERVICE_PRICING'),
+          color: 'secondary',
+          handler: () => this.router.navigate(['/products/employee-services']),
+        },
+        permission: 'productSecurity.actions.view.access',
+      },
+      {
+        action: {
           id: 'import-export',
           label: this.lang.instant('PRODUCTS.ACTIONS.IMPORT_EXPORT'),
           color: 'secondary',

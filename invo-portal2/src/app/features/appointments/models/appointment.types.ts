@@ -96,36 +96,6 @@ export interface EmployeeAppointments {
   appointments: EmployeeAppointmentEntry[];
 }
 
-/** A pending waitlist entry. */
-export interface WaitlistEntry {
-  id: string;
-  customerId?: string | null;
-  customerName?: string | null;
-  servicesSummary?: string | null;
-  services?: { serviceName?: string; name?: string }[] | null;
-  /** null = no concrete preferred time. */
-  requestedDate?: string | null;
-  /** null = "Any". */
-  preferredStaffName?: string | null;
-}
-
-export interface WaitlistPrefillLine {
-  productId: string;
-  serviceName?: string | null;
-  serviceDuration: number;
-  price: number;
-  /** null = entry had no concrete time. */
-  serviceDate: string | null;
-  /** null = "Any". */
-  salesEmployeeId: string | null;
-}
-
-export interface WaitlistPrefill {
-  customerId: string | null;
-  branchId: string | null;
-  lines: WaitlistPrefillLine[];
-}
-
 /** One row of the services × staff capability matrix — empty `employeeIds` means "any staff". */
 export interface ServiceCapabilityRow {
   serviceId: string;

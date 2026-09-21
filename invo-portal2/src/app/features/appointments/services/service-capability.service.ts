@@ -22,4 +22,9 @@ export class ServiceCapabilityService {
   async saveServiceCapability(serviceId: string, employeeIds: string[]): Promise<void> {
     await this.api.call(this.api.post('appointments/capability/service', { serviceId, employeeIds }));
   }
+
+  /** Full replace of the services one employee is bookable for; empty resets them to "any service". */
+  async saveEmployeeCapability(employeeId: string, serviceIds: string[]): Promise<void> {
+    await this.api.call(this.api.post('appointments/capability/employee', { employeeId, serviceIds }));
+  }
 }

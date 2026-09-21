@@ -107,7 +107,6 @@ export const SIDE_MENU: SideMenuItem[] = [
     badge: { text: 'BETA', variant: 'danger' },
     subItems: [
       { id: 181, label: 'MENU.SUB.APPOINTMENTS_CALENDAR', link: '/appointments', requiredPermission: 'appointmentsSecurity.actions.view.access' },
-      { id: 182, label: 'MENU.SUB.APPOINTMENTS_WAITLIST', link: '/appointments/waitlist', requiredPermission: 'appointmentsSecurity.actions.view.access' },
       { id: 183, label: 'MENU.SUB.SERVICE_TEAM', link: '/employees/service-team', requiredPermission: 'appointmentsSecurity.actions.serviceTeam.access' },
     ],
   },

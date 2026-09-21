@@ -1,0 +1,97 @@
+<div class="es">
+  <div class="es__header">
+    <h1>{{ 'PRODUCTS.EMPLOYEE_SERVICES.TITLE' | translate }}</h1>
+    <p>{{ 'PRODUCTS.EMPLOYEE_SERVICES.HINT' | translate }}</p>
+  </div>
+
+  <div class="es__toolbar">
+    <input type="text" class="es__search" [ngModel]="search()" (ngModelChange)="search.set($event)"
+      (keydown.enter)="onSearch()" [placeholder]="'PRODUCTS.EMPLOYEE_SERVICES.SEARCH' | translate" />
+    <div class="es__pager">
+      <span>{{ page() }} / {{ pageCount() }} ({{ total() }})</span>
+      <button type="button" (click)="goTo(-1)" [disabled]="page() <= 1">&lsaquo;</button>
+      <button type="button" (click)="goTo(1)" [disabled]="page() >= pageCount()">&rsaquo;</button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="es__state">...</div>
+  } @else if (employees().length === 0) {
+    <div class="es__state">{{ 'PRODUCTS.EMPLOYEE_SERVICES.EMPTY' | translate }}</div>
+  } @else {
+    <div class="es__list">
+      @for (emp of employees(); track emp.id) {
+        @let st = state(emp.id);
+        <div class="es__item" [class.is-open]="expandedId() === emp.id">
+          <button type="button" class="es__row" (click)="toggle(emp)">
+            <span class="es__avatar">{{ emp.name.charAt(0).toUpperCase() }}</span>
+            <span class="es__who">
+              <strong>{{ emp.name }}</strong>
+              @if (emp.email) { <small>{{ emp.email }}</small> }
+            </span>
+            @if (st && !st.loading) {
+              <span class="es__badge">{{ st.rows.length }} {{ 'PRODUCTS.EMPLOYEE_SERVICES.SERVICES' | translate }}</span>
+            }
+            @if (st?.dirty) {
+              <span class="es__badge es__badge--warn">{{ 'PRODUCTS.EMPLOYEE_SERVICES.UNSAVED' | translate }}</span>
+            }
+            <span class="es__chev">{{ expandedId() === emp.id ? '&#9650;' : '&#9660;' }}</span>
+          </button>
+
+          @if (expandedId() === emp.id) {
+            <div class="es__body">
+              @if (!st || st.loading) {
+                <div class="es__state">...</div>
+              } @else {
+                <div class="es__actions">
+                  @if (st.rows.length === 0) {
+                    <span class="es__none">{{ 'PRODUCTS.EMPLOYEE_SERVICES.NONE' | translate }}</span>
+                  }
+                  <span class="es__spacer"></span>
+                  <button type="button" class="es__btn" (click)="addServices(emp)">{{ 'PRODUCTS.EMPLOYEE_SERVICES.ADD' | translate }}</button>
+                  <button type="button" class="es__btn es__btn--primary" [disabled]="!st.dirty || st.saving" (click)="save(emp)">
+                    {{ 'PRODUCTS.EMPLOYEE_SERVICES.SAVE' | translate }}
+                  </button>
+                </div>
+
+                @if (st.rows.length > 0) {
+                  <table class="es__table">
+                    <thead>
+                      <tr>
+                        <th>{{ 'PRODUCTS.EMPLOYEE_SERVICES.SERVICE' | translate }}</th>
+                        <th>{{ 'PRODUCTS.EMPLOYEE_SERVICES.DURATION' | translate }}</th>
+                        <th>{{ 'PRODUCTS.EMPLOYEE_SERVICES.PRICE' | translate }}</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of st.rows; track row.productId) {
+                        <tr>
+                          <td class="es__name">{{ row.name }}</td>
+                          <td>
+                            <input type="number" min="0" class="es__input" [class.is-invalid]="row.serviceTime < minServiceTime"
+                              [ngModel]="row.serviceTime" (ngModelChange)="edit(emp, row.productId, { serviceTime: $event })" />
+                            @if (row.serviceTime < minServiceTime) {
+                              <small class="es__err">{{ 'PRODUCTS.EMPLOYEE_SERVICES.MIN_TIME' | translate: { value: minServiceTime } }}</small>
+                            }
+                          </td>
+                          <td>
+                            <input type="number" min="0" class="es__input" [ngModel]="row.price"
+                              (ngModelChange)="edit(emp, row.productId, { price: $event })" />
+                          </td>
+                          <td class="es__del">
+                            <button type="button" class="es__x" (click)="remove(emp, row.productId)">&#10005;</button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -316,6 +316,7 @@
       "ASSIGN_TAX": "Assign Tax",
       "PRINT_LABEL": "Print Label",
       "IMPORT_EXPORT": "Import/Export",
+      "EMPLOYEE_SERVICE_PRICING": "Employee Service Pricing",
       "BULK_BARCODE_PRINT": "Bulk Barcode Print",
       "LABEL_PRINT_BARCODES": "Label Print Barcodes",
       "BULK_IMAGE": "Bulk Image",
@@ -388,6 +389,22 @@
       "NO_META":          "No meta description set — search engines may show a different snippet.",
       "VIEW_LIVE":        "View live page",
       "SAVE_AFTER_CREATE":"Save the product first, then edit its SEO settings."
+    },
+    "EMPLOYEE_SERVICES": {
+      "TITLE": "Employee Service Pricing",
+      "HINT": "Choose the services each staff member performs and set their own price and duration for each. Saving also updates which services they can be booked for.",
+      "SEARCH": "Search employees",
+      "EMPTY": "No employees found.",
+      "SERVICES": "services",
+      "UNSAVED": "Unsaved changes",
+      "NONE": "No services selected.",
+      "ADD": "Select",
+      "SAVE": "Save",
+      "SERVICE": "Service",
+      "DURATION": "Duration (min)",
+      "PRICE": "Price",
+      "MIN_TIME": "Duration can't be less than {{value}} min.",
+      "SAVED": "Saved"
     },
     "BULK_PRINT": {
       "TITLE":              "Bulk Barcode Print",

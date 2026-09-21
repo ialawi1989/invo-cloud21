@@ -17,12 +17,6 @@ export const APPOINTMENTS_ROUTES: Routes = [
     loadComponent: () => import('./pages/calendar/appointment-calendar.component').then(m => m.AppointmentCalendarComponent),
   },
   {
-    path: 'waitlist',
-    canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'appointmentsSecurity.actions.view.access' },
-    loadComponent: () => import('./pages/waitlist/waitlist.component').then(m => m.WaitlistComponent),
-  },
-  {
     path: 'form',
     canActivate: [translationsLoaded, privilegeGuard],
     data: { permissionPath: 'appointmentsSecurity.actions.add.access' },

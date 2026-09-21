@@ -517,7 +517,7 @@ export const routes: Routes = [
       },
       {
         // Appointments — booking calendar (day/week/month), the booking
-        // form, and the waitlist queue.
+        // form, and the service-team capability matrix.
         path: 'appointments',
         loadChildren: () =>
           import('./features/appointments/appointments.routes').then(m => m.APPOINTMENTS_ROUTES)

@@ -14,10 +14,8 @@ import { ProductsService } from '../../../products/services/products.service';
 import { PickProductModalComponent, PickProductResult } from '../../../products/pages/product-form/components/pick-product-modal/pick-product-modal.component';
 import { AppointmentsService } from '../../services/appointments.service';
 import { AppointmentBranchService } from '../../services/appointment-branch.service';
-import { WaitlistService } from '../../services/waitlist.service';
 import { CustomerLite, CustomerLookupService } from '../../services/customer-lookup.service';
-import { AppointmentPrefillService } from '../../services/appointment-prefill.service';
-import { AppointmentLine, AppointmentPayload, EmployeeLite, WaitlistPrefill } from '../../models/appointment.types';
+import { AppointmentLine, AppointmentPayload, EmployeeLite } from '../../models/appointment.types';
 import { DURATION_OPTIONS, TIME_SLOTS, addMinutes, dateAtTime, formatTime, formatTimeAmPm, isPast } from '../../utils/time-utils';
 import { unwrapOptionValue } from '../../utils/option-compare';
 import { CancelReasonModalComponent, CancelReasonResult } from '../../components/cancel-reason-modal/cancel-reason-modal.component';
@@ -35,8 +33,6 @@ interface ServiceRow {
   discount: number;
   notes: string;
   isDeleted?: boolean;
-  /** Waitlist entry had no concrete time - the user must confirm a date & time. */
-  confirmTime?: boolean;
 }
 
 /** A non-service (inventory) product line shared across the whole appointment. */
@@ -75,9 +71,7 @@ export class AppointmentFormComponent implements OnInit {
   private employeeSvc = inject(EmployeeService);
   private productsSvc = inject(ProductsService);
   private appointmentsSvc = inject(AppointmentsService);
-  private waitlistSvc = inject(WaitlistService);
   private customerLookup = inject(CustomerLookupService);
-  private prefillSvc = inject(AppointmentPrefillService);
   private privileges = inject(PrivilegeService);
 
   readonly canDelete = computed(() => this.privileges.check('appointmentsSecurity.actions.delete.access'));
@@ -89,7 +83,6 @@ export class AppointmentFormComponent implements OnInit {
   appointmentId = signal<string | null>(null);
   isInvoiced = signal(false);
   isPaid = signal(false);
-  waitlistId = signal<string | null>(null);
 
   employees = signal<EmployeeLite[]>([]);
 
@@ -178,15 +171,6 @@ export class AppointmentFormComponent implements OnInit {
     }
 
     this.isEditMode.set(false);
-
-    if (qp.get('source') === 'waitlist') {
-      const handoff = this.prefillSvc.take();
-      if (handoff) {
-        this.waitlistId.set(handoff.waitlistId);
-        this.applyWaitlistPrefill(handoff.prefill);
-        return;
-      }
-    }
 
     const employeeId = qp.get('employeeId');
     const dateParam = qp.get('date');
@@ -304,32 +288,6 @@ export class AppointmentFormComponent implements OnInit {
           // Keep the blank name — the id is still preserved for save.
         }
       }),
-    );
-  }
-
-  private applyWaitlistPrefill(prefill: WaitlistPrefill): void {
-    if (prefill.customerId) {
-      this.customer.set({ id: prefill.customerId, name: '' });
-      void this.customerLookup.getById(prefill.customerId).then(c => { if (c) this.customer.set(c); });
-    } else {
-      this.isWalkIn.set(true);
-    }
-
-    this.rows.set(
-      prefill.lines.length > 0
-        ? prefill.lines.map((l): ServiceRow => ({
-            rowId: `row-${rowSeq++}`,
-            productId: l.productId,
-            productName: l.serviceName ?? '',
-            employeeId: l.salesEmployeeId,
-            startTime: l.serviceDate ? new Date(l.serviceDate) : new Date(),
-            confirmTime: !l.serviceDate,
-            duration: l.serviceDuration,
-            price: l.price,
-            discount: 0,
-            notes: '',
-          }))
-        : [this.newRow(null, new Date())],
     );
   }
 
@@ -500,14 +458,14 @@ export class AppointmentFormComponent implements OnInit {
   }
 
   onTimeChange(row: ServiceRow, hhmm: string): void {
-    this.patchRow(row.rowId, { startTime: dateAtTime(row.startTime, hhmm), confirmTime: false });
+    this.patchRow(row.rowId, { startTime: dateAtTime(row.startTime, hhmm) });
     void this.checkAvailability(row.rowId);
   }
 
   onDateChange(row: ServiceRow, value: unknown): void {
     if (!(value instanceof Date)) return;
     const time = formatTime(row.startTime);
-    this.patchRow(row.rowId, { startTime: dateAtTime(value, time), confirmTime: false });
+    this.patchRow(row.rowId, { startTime: dateAtTime(value, time) });
     void this.checkAvailability(row.rowId);
   }
 
@@ -536,7 +494,6 @@ export class AppointmentFormComponent implements OnInit {
     // time can slide into the past while the form sits open, and the
     // backend rejects that too, so catch it here with a clear reason
     // instead of a failed network round-trip.
-    if (serviceRows.some(r => r.confirmTime)) return this.translate.instant('APPOINTMENTS.FORM.CONFIRM_TIME');
     if (serviceRows.some(r => isPast(r.startTime))) return this.translate.instant('APPOINTMENTS.QUICK_CREATE.TIME_IN_PAST');
     return null;
   }
@@ -617,10 +574,6 @@ export class AppointmentFormComponent implements OnInit {
     try {
       const payload = await this.buildPayload();
       const res = await this.appointmentsSvc.saveAppointment(payload);
-      const wlId = this.waitlistId();
-      if (wlId) {
-        await this.waitlistSvc.setStatus(wlId, 'booked').catch(() => {});
-      }
       this.toast.success(this.translate.instant('APPOINTMENTS.FORM.SAVED'));
       this.router.navigate(['/appointments']);
       void res;

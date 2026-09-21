@@ -10,10 +10,6 @@
     @if (readOnly()) {
       <div class="af__notice">{{ 'APPOINTMENTS.FORM.READ_ONLY_PAID' | translate }}</div>
     }
-    @if (waitlistId()) {
-      <div class="af__notice af__notice--info">{{ 'APPOINTMENTS.FORM.FROM_WAITLIST' | translate }}</div>
-    }
-
     <section class="af__card">
       <h2>{{ 'APPOINTMENTS.FORM.CUSTOMER' | translate }}</h2>
 
@@ -183,9 +179,6 @@
               <div class="af__static">{{ rowTotal(row) | mycurrency }}</div>
             </div>
 
-            @if (row.confirmTime) {
-              <div class="af__row-warn">{{ 'APPOINTMENTS.FORM.CONFIRM_TIME' | translate }}</div>
-            }
             @if (availabilityErrors()[row.rowId]; as busyMsg) {
               <div class="af__row-error">{{ busyMsg }}</div>
             }

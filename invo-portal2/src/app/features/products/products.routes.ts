@@ -56,6 +56,15 @@ export const PRODUCTS_ROUTES: Routes = [
     data: { permissionPath: 'productSecurity.actions.add.access' },
   },
   {
+    // Per-employee price + duration for each service (the employee-centric
+    // side of a service product's "Price per team").
+    path: 'employee-services',
+    canActivate: [translationsLoaded, privilegeGuard],
+    loadComponent: () =>
+      import('./pages/employee-services/employee-services.component').then(m => m.EmployeeServicesComponent),
+    data: { permissionPath: 'productSecurity.actions.view.access' },
+  },
+  {
     path: 'bulk-print',
     canActivate: [translationsLoaded, privilegeGuard],
     loadComponent: () =>

@@ -54,7 +54,6 @@
       "CUSTOMER_REQUIRED": "Add a customer or mark this as a walk-in.",
       "SERVICE_REQUIRED": "Add at least one service.",
       "READ_ONLY_PAID": "This appointment has been paid and can't be edited.",
-      "FROM_WAITLIST": "Booked from the waitlist",
       "PRODUCTS": "Products (shared)",
       "PRODUCT": "Product",
       "NO_PRODUCTS": "No products added.",
@@ -65,23 +64,8 @@
       "SERVICES_TOTAL": "Services total",
       "GRAND_TOTAL": "Grand total",
       "ROW_TOTAL": "Row total",
-      "CONFIRM_TIME": "No preferred time - please confirm a date & time.",
       "STAFF_BUSY": "{{name}} is already booked at {{time}}. Choose another time or staff member.",
       "BACK_BTN": "Back"
-    },
-    "WAITLIST": {
-      "TITLE": "Waitlist",
-      "SUBTITLE": "Customers waiting for an opening — convert them into a booked appointment.",
-      "COL_CUSTOMER": "Customer",
-      "COL_SERVICES": "Services",
-      "COL_REQUESTED": "Requested",
-      "COL_STAFF": "Preferred staff",
-      "NO_PREFERRED_TIME": "No preferred time",
-      "ANY_STAFF": "Any",
-      "CONVERT": "Book",
-      "EMPTY": "The waitlist is empty.",
-      "LOADING": "Loading waitlist…",
-      "CONVERT_FAILED": "Failed to load this waitlist entry."
     },
     "QUICK_CREATE": {
       "MORE_OPTIONS": "More options",

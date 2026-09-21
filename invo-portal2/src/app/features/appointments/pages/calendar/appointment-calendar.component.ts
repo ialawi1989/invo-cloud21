@@ -237,6 +237,10 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
     };
     this.modal.open<QuickCreatePopoverComponent, QuickCreateData, QuickCreateResult>(QuickCreatePopoverComponent, {
       size: 'sm',
+      // "More options" navigates right after this closes. The modal service's
+      // history sentinel is popped on a setTimeout(0), which can beat the
+      // (lazy-loaded) route's pushState and bounce the navigation straight back.
+      manageHistory: false,
       data,
     }).afterClosed().then(result => {
       if (!result) return;
@@ -327,6 +331,7 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
     const data: AgendaDrawerData = { title, tasks, canAdd: this.canAdd() };
     this.modal.open<AgendaDrawerComponent, AgendaDrawerData, AgendaDrawerResult>(AgendaDrawerComponent, {
       drawer: true,
+      manageHistory: false, // closes straight into a router navigation (see openQuickCreate)
       data,
     }).afterClosed().then(result => {
       if (!result) return;
