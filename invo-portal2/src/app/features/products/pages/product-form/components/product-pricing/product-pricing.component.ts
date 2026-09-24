@@ -25,6 +25,7 @@ import { ModalService } from '@shared/modal';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { CompanyService } from '@core/auth/company.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { ExactToggleComponent } from '@shared/components/exact-toggle/exact-toggle.component';
 import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 
 import { ProductsService } from '../../../../services/products.service';
@@ -55,12 +56,15 @@ type PriceModel = 'fixedPrice' | 'fixedPriceWOption' | 'totalPrice' | 'totalPric
 @Component({
   selector: 'app-pf-product-pricing',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, TooltipDirective, MycurrencyPipe, MynumberPipe],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, TooltipDirective, MycurrencyPipe, ExactToggleComponent, MynumberPipe],
   templateUrl: './product-pricing.component.html',
   styleUrl: './product-pricing.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductPricingComponent implements OnInit {
+  /** Flips the derived total/profit between rounded and exact values. */
+  showExact = signal(false);
+
   private fb = inject(FormBuilder);
   private destroyRef = inject(DestroyRef);
   private productsService = inject(ProductsService);

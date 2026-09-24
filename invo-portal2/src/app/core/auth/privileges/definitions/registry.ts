@@ -12,6 +12,8 @@ import { branchPaymentsSecurity } from './branchPaymentsSecurity';
 import { branchSettingsSecurity } from './branchSettingsSecurity';
 import { brandSecurity } from './brandSecurity';
 import { budgetSecurity } from './budgetSecurity';
+import { bulkTagsSecurity } from './bulkTagsSecurity';
+import { promotionalVoucherPrivileges } from './promotionalVoucherPrivileges';
 import { businessSettingsSecurity } from './businessSettingsSecurity';
 import { callSecurity } from './callSecurity';
 import { cashierSecurity } from './cashierSecurity';
@@ -173,6 +175,8 @@ export const SECURITY_DEFINITIONS = {
   brandSecurity,
   inventoryLocationsSecurity,
   priceChangeSecurity,
+  bulkTagsSecurity,
+  PromotionalVoucherPrivileges: promotionalVoucherPrivileges,
   productRecipeSecurity,
   bankingOverview,
   openingBalances,

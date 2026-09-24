@@ -65,6 +65,7 @@ export class ProductsService {
   getBulkImportProgress              = ()                                                                            => this.crud.getBulkImportProgress();
   updateBulkPrices                   = (...a: Parameters<ProductCrudService['updateBulkPrices']>)                   => this.crud.updateBulkPrices(...a);
   updateTranslation                  = (...a: Parameters<ProductCrudService['updateTranslation']>)                  => this.crud.updateTranslation(...a);
+  updateBulkCategoryTagsTranslation  = (...a: Parameters<ProductCrudService['updateBulkCategoryTagsTranslation']>)  => this.crud.updateBulkCategoryTagsTranslation(...a);
   generateRandomEan13                = ()                                                                            => this.crud.generateRandomEan13();
   showGenerateBarcode                = (...a: Parameters<ProductCrudService['showGenerateBarcode']>)                => this.crud.showGenerateBarcode(...a);
   productMergeInfo                   = (...a: Parameters<ProductCrudService['productMergeInfo']>)                   => this.crud.productMergeInfo(...a);

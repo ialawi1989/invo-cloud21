@@ -1,0 +1,182 @@
+@if (loaded) {
+  <div class="pf">
+    <header class="page-header">
+      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+      <h1 class="page-header__title">{{ 'PAYMENTS.FORM.PAYMENT' | translate }}</h1>
+    </header>
+
+    <!-- General information -->
+    <section class="pf-card">
+      <h2 class="pf-card__title">{{ 'PAYMENTS.FORM.GENERAL_INFORMATION' | translate }}</h2>
+      <div class="pf-row">
+        <div class="pf-field pf-field--grow">
+          <label>{{ 'PAYMENTS.LIST.CUSTOMER_NAME' | translate }} <span class="req">*</span></label>
+          @if (formStatus === 'new') {
+            <app-customer-picker [value]="customerValue" [allowCreate]="true" [placeholder]="'PAYMENTS.FORM.SELECT_CUSTOMER' | translate"
+              (valueChange)="onCustomer($event)" (createNew)="createCustomer()"/>
+          } @else {
+            <div class="pf-static">{{ payment.customerName }}</div>
+          }
+          @if (fieldError('CUSTOMER'); as e) { <p class="pf-error">{{ e }}</p> }
+          @if (payment.customerId && payment.customerId !== 'WalkIn Customer') {
+            <p class="pf-hint">{{ 'PAYMENTS.FORM.OUTSTANDING_RECEIVABLE' | translate }}: <b>{{ outstandingReceivable | mycurrency }}</b></p>
+          }
+        </div>
+        @if (branches.length > 1) {
+          <div class="pf-field pf-field--grow">
+            <label>{{ 'PAYMENTS.LIST.BRANCH_NAME' | translate }}</label>
+            <app-search-dropdown [items]="branches" [displayWith]="branchLabel" [compareWith]="byId"
+              [value]="branchOf()" (valueChange)="onBranch($any($event))" [clearable]="false" [disabled]="formStatus === 'edit'"/>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Payment -->
+    <section class="pf-card">
+      <h2 class="pf-card__title">{{ 'PAYMENTS.FORM.PAYMENT_FORM' | translate }}</h2>
+
+      <div class="pf-row">
+        <div class="pf-field pf-field--grow">
+          <label>{{ 'PAYMENTS.LIST.PAYMENT_DATE' | translate }} <span class="req">*</span></label>
+          <app-date-picker [value]="payment.paymentDate" (valueChange)="onPaymentDate($event)"/>
+          @if (fieldError('DATE'); as e) { <p class="pf-error">{{ e }}</p> }
+        </div>
+        <div class="pf-field pf-field--grow">
+          <label for="tender">{{ 'PAYMENTS.FORM.PAYMENT_MADE' | translate }} <span class="req">*</span></label>
+          <input id="tender" class="pf-input" [class.is-invalid]="fieldError('AMOUNT')" type="number" min="0" inputmode="decimal"
+            [ngModel]="payment.tenderAmount" (ngModelChange)="onTender($event)"/>
+          @if (hasRate) { <span class="pf-tag">≈ {{ payment.equivalentAmount | mycurrency }} ({{ 'PAYMENTS.FORM.EQUIVALENT_AMOUNT' | translate }})</span> }
+          @if (fieldError('AMOUNT'); as e) { <p class="pf-error">{{ e }}</p> }
+        </div>
+      </div>
+
+      <div class="pf-row">
+        <div class="pf-field pf-field--grow">
+          <label>{{ 'PAYMENTS.LIST.PAYMENT_METHOD' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="paymentMethods" [displayWith]="methodLabel" [compareWith]="byId"
+            [value]="selectedMethod" (valueChange)="onMethod($any($event))" [clearable]="false" [disabled]="methodLocked"
+            [placeholder]="'PAYMENTS.FORM.SELECT_METHOD' | translate"/>
+          @if (selectedMethod) {
+            <div class="pf-tags">
+              @if (selectedMethod.accountName) { <span class="pf-tag">{{ 'PAYMENTS.FORM.ACCOUNT' | translate }}: {{ selectedMethod.accountName }}</span> }
+              @if (hasRate) { <span class="pf-tag">{{ 'PAYMENTS.FORM.RATE' | translate }}: {{ payment.rate }}</span> }
+            </div>
+          }
+          @if (fieldError('METHOD'); as e) { <p class="pf-error">{{ e }}</p> }
+        </div>
+        @if (showBankCharge) {
+          <div class="pf-field pf-field--grow">
+            <label>{{ 'PAYMENTS.FORM.BANK_CHARGE' | translate }}</label>
+            <input class="pf-input" type="number" min="0" [max]="payment.tenderAmount" [ngModel]="payment.bankCharge" (ngModelChange)="onBankCharge($event)"/>
+            <p class="pf-info">{{ 'PAYMENTS.FORM.BANK_CHARGE_INFO' | translate: { payment: payment.paymentMethodName, value: bankChargeRate } }}</p>
+          </div>
+        }
+      </div>
+
+      <div class="pf-field">
+        <label for="ref">{{ 'PAYMENTS.LIST.REFERENCE_NUMBER' | translate }}</label>
+        <input id="ref" class="pf-input" type="text" [(ngModel)]="payment.referenceNumber" (ngModelChange)="markDirty()"/>
+      </div>
+
+      @if (showApplyPrompt) {
+        <div class="pf-prompt">
+          <span>{{ 'PAYMENTS.FORM.APPLY_PROMPT' | translate }}</span>
+          <span class="pf-prompt__actions">
+            <button type="button" class="pf-btn" (click)="doNotApply()">{{ 'COMMON.CANCEL' | translate }}</button>
+            <button type="button" class="pf-btn pf-btn--primary" (click)="applyAmount()">{{ 'PAYMENTS.FORM.APPLY' | translate }}</button>
+          </span>
+        </div>
+      }
+    </section>
+
+    <!-- Invoices being paid -->
+    @if (lines.length || formStatus === 'new') {
+      <section class="pf-card">
+        <div class="pf-lines-head">
+          <h2 class="pf-card__title">{{ 'PAYMENTS.FORM.PAYMENT_LINES' | translate }}</h2>
+          @if (formStatus === 'new') {
+            <div class="pf-tools">
+              @if (branches.length > 1) {
+                <span class="pf-seg">
+                  <button type="button" [class.on]="branchFilter === 'all'" (click)="onBranchFilter('all')">{{ 'PAYMENTS.FORM.ALL_BRANCHES' | translate }}</button>
+                  <button type="button" [class.on]="branchFilter === payment.branchId" (click)="onBranchFilter(payment.branchId)">{{ 'PAYMENTS.FORM.THIS_BRANCH' | translate }}</button>
+                </span>
+              }
+              <input class="pf-input pf-input--search" type="text" [placeholder]="'COMMON.SEARCH' | translate" [(ngModel)]="lineSearch"/>
+              <button type="button" class="pf-btn" [disabled]="!lines.length" (click)="fillAmounts()">{{ 'PAYMENTS.FORM.PAY_IN_FULL' | translate }}</button>
+              <button type="button" class="pf-btn" [disabled]="!lines.length" (click)="resetAmounts()">{{ 'PAYMENTS.FORM.RESET' | translate }}</button>
+            </div>
+          }
+        </div>
+
+        <div class="pf-wrap">
+          <table class="pf-table">
+            <thead>
+              <tr>
+                <th>{{ 'PAYMENTS.FORM.DATE' | translate }}</th>
+                <th>{{ 'PAYMENTS.VIEW.INVOICE_NUMBER' | translate }}</th>
+                <th>{{ 'PAYMENTS.LIST.BRANCH_NAME' | translate }}</th>
+                <th class="end">{{ 'PAYMENTS.LIST.AMOUNT' | translate }}</th>
+                <th class="end">{{ 'PAYMENTS.FORM.BALANCE_DUE' | translate }}</th>
+                <th class="end">{{ 'PAYMENTS.VIEW.PAYMENT_AMOUNT' | translate }}</th>
+                <th class="end">{{ 'PAYMENTS.FORM.BALANCE' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of visibleLines; track l.invoiceId || $index) {
+                <tr>
+                  <td>{{ l.invoiceDate | date: 'yyyy-MM-dd' }}</td>
+                  <td><a [href]="'/account/invoices/view/' + l.invoiceId" target="_blank" rel="noopener">{{ l.invoiceNumber }}</a></td>
+                  <td>{{ l.branchName }}</td>
+                  <td class="end">{{ l.total | mycurrency }}</td>
+                  <td class="end">{{ l.calculateAmountDue | mycurrency }}</td>
+                  <td class="end"><input class="pf-num" type="number" min="0" [max]="l.calculateAmountDue" [ngModel]="l.amount" (ngModelChange)="onLineAmount(l, $event)"/></td>
+                  <td class="end">{{ l.calculateAmountDue - l.amount | mycurrency }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7" class="pf-empty">{{ 'PAYMENTS.FORM.NO_INVOICES' | translate }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pf-totals">
+          <div class="pf-t"><span>{{ 'PAYMENTS.FORM.TOTAL' | translate }}</span><b>{{ totalPayments | mycurrency }}</b></div>
+          @if (payment.tenderAmount > 0) {
+            <div class="pf-t"><span>{{ 'PAYMENTS.FORM.TENDER_RECEIVED' | translate }}</span><b>{{ payment.equivalentAmount | mycurrency }}</b></div>
+            @if (payment.changeEquivalentAmount > 0) {
+              <div class="pf-t">
+                <span>{{ 'PAYMENTS.FORM.CHANGE_AMOUNT' | translate }}</span>
+                <span><b>{{ payment.changeEquivalentAmount | mycurrency }}</b>
+                  @if (isCash) { <button type="button" class="pf-link pf-link--danger" (click)="cancelChange()">{{ 'PAYMENTS.FORM.CANCEL_CHANGE' | translate }}</button> }
+                </span>
+              </div>
+            }
+            @if (payment.calculateAmountInExcess > 0) {
+              <div class="pf-t">
+                <span>{{ 'PAYMENTS.FORM.CREDIT_TO_WALLET' | translate }}</span>
+                <span><b>{{ payment.calculateAmountInExcess | mycurrency }}</b>
+                  @if (canRestoreChange) { <button type="button" class="pf-link" (click)="restoreChange()">{{ 'PAYMENTS.FORM.UNDO' | translate }}</button> }
+                </span>
+              </div>
+            }
+          }
+        </div>
+      </section>
+    }
+
+    <section class="pf-card">
+      <h2 class="pf-card__title">{{ 'PAYMENTS.FORM.ATTACHMENTS' | translate }}</h2>
+      <app-doc-attachments [attachments]="payment.attachment" (changed)="onAttachments($event)"/>
+    </section>
+
+    <app-form-sticky-footer>
+      <button type="button" class="pf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (formStatus === 'edit') {
+        <button type="button" class="pf-btn" (click)="view()">{{ 'COMMON.VIEW' | translate }}</button>
+      }
+      <button type="button" class="pf-btn pf-btn--primary" [disabled]="submitting" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+    </app-form-sticky-footer>
+  </div>
+}

@@ -120,6 +120,7 @@ export class ProductFormPrefsService {
       defaultVisibleFor: { service: false, menuItem: false, menuSelection: false, tailoring: false, package: false },
       requiredFor: ['inventory', 'batch', 'serialized', 'kit'] },
     { id: 'pricing',           side: 'main',  i18nKey: 'PRODUCTS.SECTIONS.PRICING',           defaultVisible: true },
+    { id: 'promotion-settings', side: 'main', i18nKey: 'PRODUCTS.SECTIONS.PROMOTION_SETTINGS', defaultVisible: true, required: true },
     { id: 'inventory',         side: 'main',  i18nKey: 'PRODUCTS.SECTIONS.INVENTORY',         defaultVisible: true },
     { id: 'suppliers',         side: 'main',  i18nKey: 'PRODUCTS.SECTIONS.SUPPLIERS',         defaultVisible: true },
     { id: 'price-by-team',     side: 'main',  i18nKey: 'PRODUCTS.SECTIONS.PRICE_BY_TEAM',     defaultVisible: true },

@@ -160,7 +160,7 @@ export class BulkPrintComponent {
   breadcrumbs = computed<BreadcrumbItem[]>(() => {
     this.i18nTick();
     return [
-      { label: this.translate.instant('PRODUCTS.LIST_TITLE'), routerLink: '/products/list' },
+      { label: this.translate.instant('PRODUCTS.TITLE'), routerLink: '/products/list' },
       { label: this.translate.instant('PRODUCTS.BULK_PRINT.TITLE') },
     ];
   });

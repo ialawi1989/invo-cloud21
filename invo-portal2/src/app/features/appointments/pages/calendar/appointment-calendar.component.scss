@@ -411,7 +411,6 @@
 .cal-icon-btn.is-active { background: #e0f2f6; color: #1e6f80; }
 .cal-settings { display: grid; grid-template-columns: 220px 1fr; height: 100%; min-height: 0; }
 .cal-settings__nav { border-right: 1px solid #e5e7eb; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
-.cal-settings__title { font-size: 16px; font-weight: 700; color: #111827; padding: 0 8px 12px; }
 .cal-settings__item {
   text-align: left; padding: 8px 10px; border: none; border-radius: 6px; background: none; cursor: pointer;
   font-size: 13.5px; font-family: inherit; color: #334155;
@@ -419,3 +418,5 @@
   &.is-on { background: #e0f2f6; color: #1e6f80; font-weight: 600; }
 }
 .cal-settings__body { min-width: 0; overflow: auto; }
+
+.cal-settings__body { height: 100%; }

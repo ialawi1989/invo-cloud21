@@ -10,6 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ExactToggleComponent } from '@shared/components/exact-toggle/exact-toggle.component';
 import {
   FormArray,
   FormBuilder,
@@ -45,12 +46,15 @@ import {
 @Component({
   selector: 'app-pf-recipe-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, ExactToggleComponent],
   templateUrl: './recipe-builder.component.html',
   styleUrl: './recipe-builder.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RecipeBuilderComponent implements OnInit {
+  /** Flips cost figures between rounded (3 dp) and exact values. */
+  showExact = signal(false);
+
   private fb = inject(FormBuilder);
   private destroyRef = inject(DestroyRef);
   private modal = inject(ModalService);

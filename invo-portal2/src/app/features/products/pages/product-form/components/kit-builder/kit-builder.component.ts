@@ -10,6 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ExactToggleComponent } from '@shared/components/exact-toggle/exact-toggle.component';
 import {
   FormArray,
   FormBuilder,
@@ -44,12 +45,15 @@ import {
 @Component({
   selector: 'app-pf-kit-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, ExactToggleComponent],
   templateUrl: './kit-builder.component.html',
   styleUrl: './kit-builder.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KitBuilderComponent implements OnInit {
+  /** Flips cost figures between rounded (3 dp) and exact values. */
+  showExact = signal(false);
+
   private fb = inject(FormBuilder);
   private destroyRef = inject(DestroyRef);
   private modal = inject(ModalService);

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, effect, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -15,7 +15,7 @@ import { ToastService } from './toast.service';
   imports: [CommonModule, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="toast-stack" aria-live="polite" aria-atomic="true">
+    <div #stack class="toast-stack" popover="manual" aria-live="polite" aria-atomic="true">
       @for (t of svc.items(); track t.id) {
         <div [class]="'toast toast--' + t.kind" role="status" (click)="svc.dismiss(t.id)">
           <span class="toast__icon" aria-hidden="true">
@@ -92,6 +92,16 @@ import { ToastService } from './toast.service';
          .upload-toast-pane in styles.scss. Modal-triggered saves are the
          most common toast trigger, so this isn't an edge case. */
       z-index: 99999;
+      /* Promoted to the browser's top layer (popover="manual") so it
+         renders above every modal/overlay regardless of stacking
+         contexts; these reset the popover UA defaults. */
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      overflow: visible;
+      inset-inline-start: auto;
+      inset-block-end: auto;
       pointer-events: none;
       max-width: min(420px, calc(100vw - 48px));
     }
@@ -219,4 +229,19 @@ import { ToastService } from './toast.service';
 })
 export class ToastComponent {
   svc = inject(ToastService);
+  private stack = viewChild<ElementRef<HTMLElement>>('stack');
+
+  constructor() {
+    // Re-assert top-layer placement whenever toasts appear, so a toast
+    // raised from inside a modal is never painted under its backdrop.
+    effect(() => {
+      const el = this.stack()?.nativeElement as (HTMLElement & { showPopover?: () => void; hidePopover?: () => void }) | undefined;
+      if (!el?.showPopover) return;
+      const has = this.svc.items().length > 0;
+      try {
+        if (has) { el.hidePopover?.(); el.showPopover(); }
+        else el.hidePopover?.();
+      } catch { /* already in the desired state */ }
+    });
+  }
 }

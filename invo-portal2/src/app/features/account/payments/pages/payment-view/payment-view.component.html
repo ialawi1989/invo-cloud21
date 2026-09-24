@@ -1,0 +1,25 @@
+@if (payment(); as p) {
+  <div class="pv">
+    <header class="page-header">
+      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+      <h1 class="page-header__title">{{ 'PAYMENTS.VIEW.PAYMENT' | translate }} {{ p.paymentName }}</h1>
+    </header>
+
+    <div class="pv-bar">
+      <button type="button" class="pv-btn pv-btn--danger" (click)="back()">{{ 'COMMON.BACK' | translate }}</button>
+      <span class="pv-spacer"></span>
+      @if (canPrint) {
+        <app-dropdown-menu-btn [items]="printItems()" [appendToBody]="true" align="end" triggerClass="pv-btn">{{ 'PAYMENTS.VIEW.PRINT' | translate }}</app-dropdown-menu-btn>
+      }
+      <button type="button" class="pv-btn" (click)="send()">{{ 'PAYMENTS.VIEW.SEND' | translate }}</button>
+      @if (!p.reconciled && canAdd) {
+        <button type="button" class="pv-btn" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
+      }
+      @if (!p.reconciled && canDelete) {
+        <button type="button" class="pv-btn pv-btn--danger" (click)="remove()">{{ 'COMMON.DELETE' | translate }}</button>
+      }
+    </div>
+
+    <app-payment-receipt [payment]="p"/>
+  </div>
+}

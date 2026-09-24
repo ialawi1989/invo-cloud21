@@ -154,6 +154,16 @@ export class ProductCrudService {
     return this.api.request(this.api.get('product/getBulkImportProgress'));
   }
 
+  /**
+   * One page/chunk of a Shopify catalogue import. Raw envelope — callers
+   * must check `.success` themselves rather than catching, since a
+   * "previous import still in progress" conflict comes back as
+   * `{ success: false, msg }`, not a network failure.
+   */
+  async importShopifyProducts(payload: Record<string, any>): Promise<any> {
+    return this.api.request(this.api.post('product/importShopifyProducts', payload));
+  }
+
   // ─── Bulk Updates ──────────────────────────────────────────
 
   async updateBulkPrices(productList: any[]): Promise<any> {
@@ -162,6 +172,20 @@ export class ProductCrudService {
 
   async updateTranslation(productList: any[]): Promise<any> {
     return this.api.request(this.api.post('product/updateTranslation', { list: productList }));
+  }
+
+  /**
+   * Bulk Tags writes through this same endpoint (shared with the
+   * Categories/Translation bulk editors). It replaces `categoryId`,
+   * `tags` and `translation` wholesale per row, so every caller must
+   * resend the row's *existing* categoryId/translation alongside the
+   * changed field — omitting them wipes those columns rather than
+   * leaving them untouched.
+   */
+  async updateBulkCategoryTagsTranslation(
+    list: { id: string; categoryId: string | null; tags: string[]; translation: any }[],
+  ): Promise<any> {
+    return this.api.request(this.api.post('product/updateBulkCategoryTagsTranslation', { list }));
   }
 
   // ─── Barcode Generation ────────────────────────────────────

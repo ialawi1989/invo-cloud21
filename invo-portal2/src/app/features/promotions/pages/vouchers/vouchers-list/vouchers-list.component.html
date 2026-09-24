@@ -1,0 +1,78 @@
+<app-list-page
+  [pageTitle]="'PROMOTIONS.PROMOTIONS_VOUCHERS.PROMOTIONS_VOUCHERS' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="loadVouchers"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="[]"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  (rowClicked)="onRowClick($event)">
+
+  <div listHeaderActions class="flex items-center gap-3">
+    <button type="button" class="vl-btn" (click)="openHistory()">
+      {{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PROMOTIONS_VOUCHERS_CHANGES' | translate }}
+    </button>
+    @if (canAdd) {
+      <button type="button" class="vl-btn vl-btn--primary" [disabled]="!enabled()" (click)="give()">
+        + {{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.GIVE_PROMOTIONS_VOUCHERS' | translate }}
+      </button>
+    }
+  </div>
+
+  <!-- ═══ Settings summary ═══ -->
+  <div listSubHeader>
+    @if (settings(); as s) {
+      <section class="vl-card" [class.vl-card--disabled]="!s.enabled">
+        <header class="vl-card__head">
+          <h2 class="vl-card__title">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PROMOTIONS_VOUCHER_SETTINGS' | translate }}</h2>
+          <div class="vl-card__tools">
+            @if (canEnableDisable) {
+              @for (k of toggleKeys(); track k) {
+                <app-toggle [checked]="s.enabled" (checkedChange)="toggleEnabled()"
+                  [label]="'PROMOTIONS.PROMOTIONS_VOUCHERS.DISABLE_ENABLE_PROMOTIONAL_VOUCHERS' | translate"/>
+              }
+            }
+            @if (canEditSettings) {
+              <button type="button" class="vl-btn" [disabled]="!s.enabled" (click)="editSettings()">
+                {{ 'COMMON.EDIT' | translate }}
+              </button>
+            }
+          </div>
+        </header>
+        <div class="vl-tiles">
+          <div class="vl-tile">
+            <span class="vl-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PROMOTIONS_VOUCHERS_NAME' | translate }}</span>
+            <span class="vl-tile__value">{{ translate(s.vouchersName, currentLang()) }}</span>
+          </div>
+          <div class="vl-tile">
+            <span class="vl-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTIVE_PERIOD' | translate }}</span>
+            <span class="vl-tile__value">{{ s.activePeriod.value }} {{ 'PROMOTIONS.CUSTOMER_TIERS.' + s.activePeriod.periodUnit | translate }}</span>
+          </div>
+          <div class="vl-tile">
+            <span class="vl-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXPIRY_PERIOD' | translate }}</span>
+            <span class="vl-tile__value">{{ s.expiryPeriod.value }} {{ 'PROMOTIONS.CUSTOMER_TIERS.' + s.expiryPeriod.periodUnit | translate }}</span>
+          </div>
+          <div class="vl-tile">
+            <span class="vl-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXPIRY_SOON_PERIOD' | translate }}</span>
+            <span class="vl-tile__value">{{ s.expirySoonPeriod.value }} {{ 'PROMOTIONS.CUSTOMER_TIERS.' + s.expirySoonPeriod.periodUnit | translate }}</span>
+          </div>
+        </div>
+      </section>
+    }
+  </div>
+
+  <ng-template listCellTemplate="status" let-row>
+    <app-voucher-status-badge [status]="row.status"/>
+  </ng-template>
+  <ng-template listCellTemplate="balance" let-row>
+    <span class="tabular-nums">{{ row.balance | mycurrency }}</span>
+  </ng-template>
+  <ng-template listCellTemplate="givenDate" let-row>{{ row.givenDate | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+  <ng-template listCellTemplate="activeDate" let-row>{{ row.activeDate | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+  <ng-template listCellTemplate="expiryDate" let-row>{{ row.expiryDate | date: 'dd/MM/yyyy' }}</ng-template>
+</app-list-page>

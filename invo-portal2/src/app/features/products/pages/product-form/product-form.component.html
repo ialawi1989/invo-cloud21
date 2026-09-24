@@ -117,6 +117,16 @@
               />
             }
           }
+          @case ('promotion-settings') {
+            @if (fieldsOptions()?.promotionSettings && productInfo().promotionSettings) {
+              <app-pf-promotion-settings
+                [settings]="productInfo().promotionSettings!"
+                [form]="productForm"
+                [fields]="fieldsOptions()?.promotionSettings"
+                [type]="productInfo().type"
+              />
+            }
+          }
           @case ('inventory') {
             @if (fieldsOptions()?.inventory) {
               <app-pf-inventory-details

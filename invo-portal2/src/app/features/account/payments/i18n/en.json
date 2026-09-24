@@ -1,0 +1,90 @@
+{
+  "PAYMENTS": {
+    "DASHBOARD": "Dashboard",
+    "ADD_NEW": "New Payment",
+    "SEARCH_PLACEHOLDER": "Search payments",
+    "EMPTY": "There are no payments",
+    "LIST": {
+      "PAYMENTS_LIST": "Payments",
+      "PAYMENT_NUMBER": "Payment #",
+      "PAYMENT_DATE": "Payment date",
+      "CUSTOMER_NAME": "Customer",
+      "INVOICES": "Invoices",
+      "PAYMENT_METHOD": "Payment method",
+      "REFERENCE_NUMBER": "Reference number",
+      "AMOUNT": "Amount",
+      "BRANCH_NAME": "Branch",
+      "EMPLOYEE_NAME": "Employee",
+      "CREATED_DATE": "Created date"
+    },
+    "FILTERS": {
+      "SOURCE": "Source",
+      "BRANCH": "Branch",
+      "DATE": "Date"
+    },
+    "VIEW": {
+      "VIEW_PAYMENT": "View Payment",
+      "PAYMENT": "Payment",
+      "PRINT": "Print",
+      "SEND": "Send",
+      "CONFIRM_DELETE": "Are you sure you want to delete this payment?",
+      "DELETED": "Deleted successfully",
+      "RECEIPT": "Payment receipt",
+      "RECEIVED_FROM": "Received from",
+      "ADDRESS": "Customer address",
+      "AMOUNT_RECEIVED": "Amount received",
+      "EQUIVALENT_AMOUNT": "Equivalent amount",
+      "PAYMENT_FOR": "Payment for",
+      "INVOICE_NUMBER": "Invoice #",
+      "PAID_ON": "Paid on",
+      "INVOICE_AMOUNT": "Invoice amount",
+      "PAYMENT_AMOUNT": "Payment amount"
+    },
+    "FORM": {
+      "NEW_PAYMENT": "New Payment",
+      "EDIT_PAYMENT": "Edit Payment",
+      "PAYMENT": "Payment",
+      "GENERAL_INFORMATION": "General information",
+      "SELECT_CUSTOMER": "Select or search a customer",
+      "OUTSTANDING_RECEIVABLE": "Outstanding receivable",
+      "PAYMENT_FORM": "Payment",
+      "PAYMENT_MADE": "Payment made",
+      "EQUIVALENT_AMOUNT": "equivalent amount",
+      "SELECT_METHOD": "Select a payment method",
+      "ACCOUNT": "Account",
+      "RATE": "Rate",
+      "BANK_CHARGE": "Bank charge",
+      "BANK_CHARGE_INFO": "Bank charge of {{payment}} is {{value}}",
+      "APPLY_PROMPT": "Would you like the amount to be reflected on the invoices?",
+      "APPLY": "Apply",
+      "PAYMENT_LINES": "Invoices",
+      "ALL_BRANCHES": "All branches",
+      "THIS_BRANCH": "This branch",
+      "PAY_IN_FULL": "Pay in full",
+      "RESET": "Reset",
+      "DATE": "Date",
+      "BALANCE_DUE": "Balance due",
+      "BALANCE": "Balance",
+      "NO_INVOICES": "No open invoices",
+      "TOTAL": "Total",
+      "TENDER_RECEIVED": "Tender amount received",
+      "CHANGE_AMOUNT": "Change amount",
+      "CANCEL_CHANGE": "Cancel change",
+      "CREDIT_TO_WALLET": "Credit to wallet",
+      "UNDO": "Undo",
+      "ATTACHMENTS": "Attachments"
+    },
+    "REQUIRED": {
+      "CUSTOMER": "Customer",
+      "DATE": "Payment date",
+      "AMOUNT": "Payment amount",
+      "METHOD": "Payment method"
+    },
+    "REMAINING": {
+      "TITLE": "Remaining amount",
+      "MESSAGE": "The payment is {{amount}} more than the selected invoices. Where should it go?",
+      "WALLET": "Credit to wallet",
+      "CHANGE": "Give as change"
+    }
+  }
+}

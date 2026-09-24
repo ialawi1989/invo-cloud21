@@ -1,0 +1,97 @@
+<app-list-page
+  [pageTitle]="'INVOICES.LIST.INVOICES_LIST' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="loadInvoices"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="filters"
+  [headerActions]="[]"
+  [bulkActions]="bulkActions"
+  [selectable]="true"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'invoice'"
+  (rowClicked)="onRowClick($event)">
+
+  <div listHeaderActions class="flex items-center gap-3">
+    @if (canAdd) {
+      <button type="button" (click)="add()"
+        class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        {{ 'INVOICES.ADD_NEW' | translate }}
+      </button>
+    }
+    <app-dropdown-menu-btn [items]="moreItems" [appendToBody]="true" [chevron]="false" align="end"
+      triggerClass="flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+      </svg>
+    </app-dropdown-menu-btn>
+  </div>
+
+  <ng-template listCellTemplate="invoiceNumber" let-row>
+    <div class="flex flex-col">
+      <span class="font-semibold text-brand-700">
+        {{ row.invoiceNumber }}
+        @if (row.status === 'Draft') {
+          <span class="ms-1 text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">{{ 'INVOICES.STATUS.Draft' | translate }}</span>
+        }
+      </span>
+      @if (row.refrenceNumber) {
+        <span class="text-xs text-slate-500">{{ 'INVOICES.LIST.REF' | translate }} {{ row.refrenceNumber }}</span>
+      }
+    </div>
+  </ng-template>
+  <ng-template listCellTemplate="total" let-row>
+    <span class="tabular-nums font-semibold">{{ row.total | mycurrency }}</span>
+  </ng-template>
+  <ng-template listCellTemplate="invoiceDate" let-row>{{ row.invoiceDate | date: 'yyyy-MM-dd' }}</ng-template>
+  <ng-template listCellTemplate="dueDate" let-row>{{ row.dueDate | date: 'yyyy-MM-dd' }}</ng-template>
+  <ng-template listCellTemplate="createdAt" let-row>{{ row.createdAt | date: 'yyyy-MM-dd' }}</ng-template>
+  <ng-template listCellTemplate="status" let-row>
+    @if (row.status) {
+      <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">{{ 'INVOICES.STATUS.' + row.status | translate }}</span>
+    }
+  </ng-template>
+  <ng-template listCellTemplate="onlineData" let-row>
+    @if (row.onlineData?.onlineStatus) {
+      <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-sky-50 text-sky-700">{{ row.onlineData.onlineStatus }}</span>
+    }
+  </ng-template>
+  <ng-template listCellTemplate="customerAddress" let-row>{{ address(row.customerAddress) }}</ng-template>
+
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+      <button type="button" (click)="view(row)"
+        class="px-3 h-9 inline-flex items-center rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">
+        {{ 'COMMON.VIEW' | translate }}
+      </button>
+      @if (canEdit(row)) {
+        <button type="button" (click)="edit(row)"
+          class="px-4 h-9 inline-flex items-center rounded-full bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700">
+          {{ 'COMMON.EDIT' | translate }}
+        </button>
+      }
+      @if (canPayRow(row)) {
+        <button type="button" (click)="pay(row)"
+          class="px-3 h-9 inline-flex items-center rounded-full border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-50">
+          {{ 'INVOICES.LIST.PAY' | translate }}
+        </button>
+      }
+      @if (canCredit(row)) {
+        <button type="button" (click)="createCreditNote(row)"
+          class="px-3 h-9 inline-flex items-center rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">
+          {{ 'INVOICES.LIST.CREATE_CREDIT_NOTE' | translate }}
+        </button>
+      }
+      @if (canWriteOff(row)) {
+        <button type="button" (click)="writeOff(row)"
+          class="px-3 h-9 inline-flex items-center rounded-full border border-rose-200 text-rose-700 text-sm font-medium hover:bg-rose-50">
+          {{ 'INVOICES.ACTIONS.WRITE_OFF' | translate }}
+        </button>
+      }
+    </div>
+  </ng-template>
+</app-list-page>

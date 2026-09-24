@@ -521,6 +521,31 @@ export const routes: Routes = [
         path: 'appointments',
         loadChildren: () =>
           import('./features/appointments/appointments.routes').then(m => m.APPOINTMENTS_ROUTES)
+      },
+      {
+        // Customers — Sales section. List first; form + dashboard follow.
+        path: 'account/customers',
+        loadChildren: () =>
+          import('./features/account/customers/customers.routes').then(m => m.CUSTOMERS_ROUTES)
+      },
+      {
+        // Payments — Sales section. List first; view and form follow.
+        path: 'account/payments',
+        loadChildren: () =>
+          import('./features/account/payments/payments.routes').then(m => m.PAYMENTS_ROUTES)
+      },
+      {
+        // Invoices — Sales section. List first; form, view and payment follow.
+        path: 'account/invoices',
+        loadChildren: () =>
+          import('./features/account/invoices/invoices.routes').then(m => m.INVOICES_ROUTES)
+      },
+      {
+        // Promotions — gift vouchers first (settings, give, details, history);
+        // sidebar links /promotions/*.
+        path: 'promotions',
+        loadChildren: () =>
+          import('./features/promotions/promotions.routes').then(m => m.PROMOTIONS_ROUTES)
       }
       // ── Add features here as you build them ──────────────────────────────
     ],

@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { ExactToggleComponent } from '@shared/components/exact-toggle/exact-toggle.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
 import {
@@ -47,12 +48,13 @@ import {
 @Component({
   selector: 'app-prep-recipe-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe],
+  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, ExactToggleComponent],
   templateUrl: './prep-recipe-panel.component.html',
   styleUrl: './prep-recipe-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PrepRecipePanelComponent {
+  showExact = signal(false);
   private service = inject(ProductRecipeService);
   private translate = inject(TranslateService);
   private modal = inject(ModalService);

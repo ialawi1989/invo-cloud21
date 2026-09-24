@@ -1,7 +1,7 @@
 export interface Product {
   id: string;
   name: string;
-  type: 'inventory' | 'serialized' | 'batch' | 'kit' | 'service' | 'package' | 'menuItem' | 'menuSelection' | 'tailoring' | 'matrix';
+  type: 'inventory' | 'serialized' | 'batch' | 'kit' | 'service' | 'package' | 'menuItem' | 'menuSelection' | 'tailoring' | 'voucher' | 'matrix';
   sku: string;
   barcode: string;
   categoryName?: string;

@@ -74,12 +74,14 @@ export class ProductListService {
     );
     const data = res?.data;
     const list = data?.list || data || [];
-    const count = data?.count || list.length;
     const items = list.map((t: any) => ({
       label: t.tag || t.name || t,
       value: t.tag || t.id || t._id || t.name || t,
     }));
-    return { items, hasMore: params.page * params.pageSize < count };
+    // The endpoint's `count` is the first tag's usage count (a `count(*)` per
+    // tag), not the number of tags, so it can't drive paging. A full page
+    // means there may be more; a short page means we've reached the end.
+    return { items, hasMore: list.length >= params.pageSize };
   }
 
   async getDepartments(

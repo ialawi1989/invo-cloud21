@@ -1,0 +1,79 @@
+@if (invoice && payment.lines.length) {
+  <div class="ipp">
+    <header class="page-header">
+      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+      <h1 class="page-header__title">{{ 'INVOICES.PAYMENT.PAYMENT_FOR' | translate }} {{ line.invoiceNumber }}</h1>
+    </header>
+
+    <section class="ipp-card">
+      <h2>{{ 'INVOICES.PAYMENT.PAYMENT' | translate }}</h2>
+
+      <div class="ipp-field">
+        <label class="ipp-label">{{ 'INVOICES.PAYMENT.PAYMENT_METHOD' | translate }} <span class="req">*</span></label>
+        <app-search-dropdown
+          [items]="paymentMethods" [displayWith]="methodLabel" [compareWith]="byId"
+          [value]="selectedMethod" (valueChange)="onMethod($any($event))" [clearable]="false"
+          [placeholder]="'INVOICES.PAYMENT.SELECT_METHOD' | translate"/>
+        @if (selectedMethod) {
+          <div class="ipp-tags">
+            @if (selectedMethod.accountName) { <span class="ipp-tag">{{ 'INVOICES.PAYMENT.ACCOUNT' | translate }}: {{ selectedMethod.accountName }}</span> }
+            @if (hasRate) { <span class="ipp-tag">{{ 'INVOICES.PAYMENT.RATE' | translate }}: {{ selectedMethod.rate }}</span> }
+          </div>
+        }
+      </div>
+
+      @if (isVoucher) {
+        <app-voucher-payment [balance]="balance" [phoneNumber]="invoice.customerPhone"/>
+      } @else {
+        <div class="ipp-row">
+          <div class="ipp-field">
+            <label class="ipp-label" for="amountReceived">
+              {{ 'INVOICES.PAYMENT.AMOUNT' | translate }} ({{ 'INVOICES.PAYMENT.BALANCE' | translate }}: {{ balance | mycurrency }})
+            </label>
+            <div class="ipp-amount">
+              <input id="amountReceived" class="ipp-input" type="number" min="0" [max]="balance"
+                [ngModel]="line.amount" (ngModelChange)="onAmount($event)"/>
+              @if (hasRate && selectedMethod?.symbol) { <span class="ipp-suffix">{{ selectedMethod.symbol }}</span> }
+            </div>
+            @if (hasRate) {
+              <span class="ipp-tag">≈ {{ payment.equivalentAmounts | mycurrency }} ({{ 'INVOICES.PAYMENT.EQUIVALENT_AMOUNT' | translate }})</span>
+            }
+          </div>
+          <div class="ipp-field">
+            <label class="ipp-label">{{ 'INVOICES.PAYMENT.PAYMENT_DATE' | translate }}</label>
+            <app-date-picker [value]="payment.paymentDate" (valueChange)="onPaymentDate($event)"/>
+          </div>
+        </div>
+
+        @if (showBankCharge) {
+          <div class="ipp-field">
+            <label class="ipp-label">{{ 'INVOICES.PAYMENT.BANK_CHARGE' | translate }}</label>
+            <input class="ipp-input" type="number" min="0" [max]="line.amount" [ngModel]="payment.bankCharge" (ngModelChange)="onBankCharge($event)"/>
+            <div class="ipp-info">{{ 'INVOICES.PAYMENT.BANK_CHARGE_INFO' | translate: { payment: payment.paymentMethodName, value: bankChargeRate } }}</div>
+          </div>
+        }
+
+        <div class="ipp-field">
+          <label class="ipp-label">{{ 'INVOICES.PAYMENT.REFERENCE_NUMBER' | translate }}</label>
+          <input class="ipp-input" type="text" [(ngModel)]="payment.referenceNumber"/>
+        </div>
+      }
+
+      @if (addresses.length) {
+        <details class="ipp-adv">
+          <summary>{{ 'INVOICES.FORM.ADVANCED_OPTIONS' | translate }}</summary>
+          <label class="ipp-label">{{ 'INVOICES.LIST.CUSTOMER_ADDRESS' | translate }}</label>
+          <app-search-dropdown
+            [items]="addresses" [displayWith]="addressLabel" [searchable]="false"
+            [value]="addressValue" (valueChange)="onAddress($any($event))" [clearable]="true"
+            [placeholder]="'INVOICES.FORM.SELECT_ADDRESS' | translate"/>
+        </details>
+      }
+    </section>
+
+    <app-form-sticky-footer>
+      <button type="button" class="ipp-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="ipp-btn ipp-btn--primary" [disabled]="!canSave" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+    </app-form-sticky-footer>
+  </div>
+}

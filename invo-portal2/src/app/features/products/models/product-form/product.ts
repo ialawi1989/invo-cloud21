@@ -5,6 +5,7 @@
 
 import { Translation } from '@core/models/translation';
 import { MathUtils } from './math-utils';
+import { ProductPromotionSettings } from '../product-promotion-settings.model';
 import {
   ProductImage,
   Nutrition,
@@ -129,6 +130,8 @@ export class Product {
   threeDModelId = '';
   threeDModel: ProductImage | null = new ProductImage();
   measurements: Measurement = new Measurement();
+  /** Gift-voucher settings (voucher product type); null for every other type. */
+  promotionSettings: ProductPromotionSettings | null = null;
 
   isPurchaseItem = true;
   purchaseAccountId: any = null;
@@ -527,6 +530,12 @@ export class Product {
         const m = new Measurement();
         m.ParseJson(json[key]);
         this.measurements = m;
+      } else if (key === 'promotionSettings') {
+        if (json[key] != null) {
+          const ps = new ProductPromotionSettings();
+          ps.ParseJson(json[key]);
+          this.promotionSettings = ps;
+        }
       } else if (key === 'mediaUrl') {
         const mu = new ProductImage();
         mu.ParseJson(json[key]);

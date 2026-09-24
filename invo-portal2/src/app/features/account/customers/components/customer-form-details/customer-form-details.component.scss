@@ -1,0 +1,113 @@
+:host { display: block; }
+
+.cf-card {
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  &__title { margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; }
+}
+
+.cf-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.cf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  > label { font-size: 13px; font-weight: 600; color: #334155; }
+  &--grow { flex: 1 1 260px; }
+  &--sm { flex: 0 0 200px; }
+}
+.cf-input {
+  padding: 9px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #0f172a;
+  font-family: inherit;
+
+  &:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, 0.12); }
+  &.is-invalid { border-color: #dc2626; }
+}
+.cf-error { margin: 0; font-size: 12px; color: #dc2626; }
+.cf-hint { font-size: 12px; color: #2691a4; }
+.cf-create {
+  display: block; width: 100%; padding: 10px 12px; border: none; background: none;
+  text-align: start; font-size: 13px; font-weight: 600; color: #2691a4; cursor: pointer;
+  &:hover { background: #f1f9fb; }
+}
+
+.cf-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { background: #f8fafc; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &--primary { border-color: #2691a4; background: #2691a4; color: #fff; &:hover:not(:disabled) { background: #227d8d; } }
+  &--end { align-self: flex-end; }
+}
+.cf-link {
+  background: none; border: none; padding: 0; font-size: 12.5px; font-weight: 600; color: #2691a4; cursor: pointer;
+  &:hover { text-decoration: underline; }
+  &--danger { color: #dc2626; }
+}
+
+// ── addresses ─────────────────────────────────────────────────
+.cf-addresses { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.cf-tile {
+  position: relative;
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 14px;
+  min-height: 110px;
+
+  &--add {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    border-style: dashed; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; background: #fff;
+    &:hover { background: #f1f9fb; color: #2691a4; border-color: #2691a4; }
+  }
+}
+.cf-tile__plus { font-size: 24px; line-height: 1; }
+.cf-address {
+  display: flex; flex-direction: column; gap: 8px;
+
+  &.is-default { border-color: #2691a4; background: #f1f9fb; }
+  &.is-editing { grid-column: 1 / -1; background: #fff; }
+  &.has-error { border-color: #dc2626; }
+
+  &__title { font-size: 14px; font-weight: 700; color: #0f172a; }
+  &__summary { font-size: 12.5px; color: #64748b; }
+  &__actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: auto; &--end { justify-content: flex-end; } }
+  &__edit { display: flex; flex-direction: column; gap: 12px; }
+}
+.cf-default {
+  position: absolute; top: 8px; inset-inline-end: 10px; padding: 2px 8px; border-radius: 999px;
+  background: #2691a4; color: #fff; font-size: 11px; font-weight: 700;
+}
+.cf-presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.cf-chip {
+  padding: 4px 12px; border-radius: 999px; border: 1px solid #d0d5dd; background: #fff;
+  font-size: 12px; font-weight: 600; color: #475569; cursor: pointer;
+  &.is-on { background: #2691a4; border-color: #2691a4; color: #fff; }
+}
+
+// ── notes ─────────────────────────────────────────────────────
+.cf-notes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.cf-note {
+  padding: 10px 12px; border-radius: 8px; background: #f8fafc; border: 1px solid #eef2f6;
+  &__head { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; color: #2691a4; font-weight: 600; }
+  &__text { margin: 6px 0 0; font-size: 13.5px; color: #475569; white-space: pre-wrap; }
+}

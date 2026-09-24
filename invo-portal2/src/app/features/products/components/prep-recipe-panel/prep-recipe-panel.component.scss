@@ -134,3 +134,15 @@
 
   &:hover { color: var(--color-brand-700, #0e7490); border-color: #67e8f9; background: #f0fdff; }
 }
+
+.prp-total {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 4px;
+  font-size: 13px;
+  color: #475569;
+
+  strong { color: #0f172a; font-size: 14px; }
+}

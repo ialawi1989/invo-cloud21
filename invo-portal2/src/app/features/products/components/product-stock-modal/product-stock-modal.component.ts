@@ -5,6 +5,7 @@ import { ModalRef, ModalService } from '../../../../shared/modal/modal.service';
 import { ModalHeaderComponent } from '../../../../shared/modal/modal-header.component';
 import { PrivilegeService } from '../../../../core/auth/privileges/privilege.service';
 import { MycurrencyPipe, MynumberPipe } from '../../../../core/pipes';
+import { ExactToggleComponent } from '../../../../shared/components/exact-toggle/exact-toggle.component';
 import { ProductsService, BranchSummary } from '../../services/products.service';
 import { KitBuildModalComponent, KitBuildModalData } from './kit-build-modal.component';
 import { KitBreakModalComponent, KitBreakModalData } from './kit-break-modal.component';
@@ -24,7 +25,7 @@ export interface ProductStockModalData {
 @Component({
   selector: 'app-product-stock-modal',
   standalone: true,
-  imports: [CommonModule, ModalHeaderComponent, MycurrencyPipe, MynumberPipe],
+  imports: [CommonModule, ModalHeaderComponent, MycurrencyPipe, ExactToggleComponent, MynumberPipe],
   template: `
     <app-modal-header
       [title]="data.productName ? (data.productName + ' — Stock') : 'Stock breakdown'" />
@@ -93,7 +94,7 @@ export interface ProductStockModalData {
                   <span class="qty-pill qty-pill--total">{{ totalOnHand() | mynumber }}</span>
                 </th>
                 @if (canViewStockValue) {
-                  <th class="end mono">{{ totalStockValue() | mycurrency }}</th>
+                  <th class="end mono">{{ totalStockValue() | mycurrency:{ exact: showExact() } }} <app-exact-toggle [on]="showExact()" (toggle)="showExact.set(!showExact())"/></th>
                 }
                 @if (isKit) { <th class="end action-col"></th> }
               </tr>
@@ -211,6 +212,7 @@ export class ProductStockModalComponent implements OnInit {
   rows    = signal<BranchSummary[]>([]);
 
   totalOnHand     = computed(() => this.rows().reduce((s, r) => s + Number(r.onHand ?? 0), 0));
+  showExact = signal(false);
   totalStockValue = computed(() => this.rows().reduce((s, r) => s + Number(r.stockValue ?? 0), 0));
 
   get isKit(): boolean { return this.data.productType === 'kit'; }

@@ -1,0 +1,77 @@
+<section class="pf-card" [formGroup]="form()">
+  <header class="pf-card__header">
+    <div class="pf-card__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.59 13.41L13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><path d="M7 7h.01"/>
+      </svg>
+    </div>
+    <h2 class="pf-card__title">{{ 'PRODUCTS.PROMOTION_SETTINGS' | translate }}</h2>
+  </header>
+
+  <div class="pf-card__body">
+    <!-- promotion name -->
+    @if (nameField().isVisible) {
+      <div class="pf-field">
+        <app-translated-string-input
+          [label]="labels().name"
+          [placeholder]="labels().namePlaceholder"
+          [value]="settings().voucherName"
+          (valueChange)="onName($event)"/>
+        @if (hasError('voucherName', 'required')) {
+          <p class="pf-error">{{ 'PRODUCTS.PROMOTION_FORM.THIS_VALUE_IS_REQUIRED' | translate }}</p>
+        }
+      </div>
+    }
+
+    <!-- promotion amount -->
+    @if (amountField().isVisible) {
+      <div class="pf-field">
+        <label class="pf-label" [attr.for]="controlName('initialVoucher')">{{ labels().amount | translate }}</label>
+        <input type="number" class="pf-input" [id]="controlName('initialVoucher')"
+          [formControlName]="controlName('initialVoucher')"
+          [class.pf-input--invalid]="ctl('initialVoucher')?.errors"
+          [placeholder]="labels().amountPlaceholder | translate"/>
+        @if (hasError('initialVoucher', 'required')) {
+          <p class="pf-error">{{ 'PRODUCTS.PROMOTION_FORM.THIS_VALUE_IS_REQUIRED' | translate }}</p>
+        }
+        @if (hasError('initialVoucher', 'min')) {
+          <p class="pf-error">{{ 'PRODUCTS.PROMOTION_FORM.MINIMUM_VALUE' | translate: { value: 0 } }}</p>
+        }
+      </div>
+
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTIVE_PERIOD' | translate }}</label>
+        <app-day-span-control [value]="settings().activePeriod" (valueChange)="onPeriodChange('activePeriod', $event)"/>
+        @if (hasError('activePeriod', 'min')) {
+          <p class="pf-error">{{ 'PRODUCTS.PROMOTION_FORM.MINIMUM_VALUE' | translate: { value: 0 } }}</p>
+        }
+      </div>
+
+      <div class="pf-field">
+        <label class="pf-label">{{ 'PROMOTIONS.PROMOTIONS_POINTS.EXPIRY_PERIOD' | translate }}</label>
+        <app-day-span-control [value]="settings().expiryPeriod" (valueChange)="onPeriodChange('expiryPeriod', $event)"/>
+        @if (hasError('expiryPeriod', 'min')) {
+          <p class="pf-error">{{ 'PRODUCTS.PROMOTION_FORM.MINIMUM_VALUE' | translate: { value: 0 } }}</p>
+        }
+      </div>
+
+      <label class="pf-promo-check">
+        <input type="checkbox" [formControlName]="controlName('oneTimeUse')"/>
+        <span>
+          <strong>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ONE_TIME_USE' | translate }}</strong>
+          <small>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ONE_TIME_USE_HINT' | translate }}</small>
+        </span>
+      </label>
+    }
+
+    @if (privateField().isVisible) {
+      <label class="pf-promo-check">
+        <input type="checkbox" [formControlName]="controlName('private')"/>
+        <span>
+          <strong>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PRIVATE' | translate }}</strong>
+          <small>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PRIVATE_HINT' | translate }}</small>
+        </span>
+      </label>
+    }
+  </div>
+</section>

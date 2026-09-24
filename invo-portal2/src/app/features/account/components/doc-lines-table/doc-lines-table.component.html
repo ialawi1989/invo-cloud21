@@ -1,0 +1,164 @@
+@let d = doc();
+<section class="dl">
+  @if (scanOpen()) {
+    <div class="dl__scan">
+      <label>{{ 'DOC_LINES.ITEM_DETAILS' | translate }}</label>
+      <input #scan class="dl__scan-input" type="text" autofocus
+        [placeholder]="'DOC_LINES.SCAN_PLACEHOLDER' | translate" (keydown.enter)="onScan(scan)"/>
+      <button type="button" class="dl__link dl__link--danger" (click)="scanOpen.set(false)">{{ 'DOC_LINES.CLOSE_SCAN' | translate }} ✕</button>
+    </div>
+    @if (scanMessage()) { <div class="dl__scan-msg">{{ scanMessage() }}</div> }
+  }
+
+  <div class="dl__card">
+    <header class="dl__head">
+      <h3>{{ title() | translate }}</h3>
+      <div class="dl__tools">
+        @if (config().barcodeLookup) {
+          <button type="button" class="dl__link" (click)="scanOpen.set(true)">⌗ {{ 'DOC_LINES.SCAN_ITEM' | translate }}</button>
+        }
+        @if (bulkMenu().length) {
+          <app-dropdown-menu-btn [items]="bulkMenu()" [appendToBody]="true" align="end" triggerClass="dl__link">
+            ✓ {{ 'DOC_LINES.BULK_ACTIONS' | translate }}
+          </app-dropdown-menu-btn>
+        }
+      </div>
+    </header>
+
+    @if (bulkMode()) {
+      <div class="dl__bulk">
+        <div class="dl__bulk-actions">
+          <div class="dl__bulk-field">
+            <app-search-dropdown [items]="accountOptions()" [displayWith]="accountLabel" [compareWith]="byId"
+              [value]="null" (valueChange)="bulkAccount($any($event))" [clearable]="false"
+              [placeholder]="'DOC_LINES.UPDATE_ACCOUNT' | translate"/>
+          </div>
+          <div class="dl__bulk-field">
+            <app-discount-field [amount]="0" [percentage]="true" (changed)="bulkDiscount($event)"/>
+          </div>
+        </div>
+        <button type="button" class="dl__x" (click)="closeBulk()" aria-label="close">✕</button>
+      </div>
+    }
+
+    <div class="dl__wrap">
+      <table class="dl__table">
+        <thead>
+          <tr>
+            <th class="dl__handle-col"></th>
+            @if (bulkMode()) { <th class="dl__check-col"></th> }
+            @for (c of columns(); track c.key) {
+              <th [class.end]="c.type !== 'item'" [class.dl__col-item]="c.type === 'item'" [style.width]="c.type === 'item' ? null : c.width">{{ c.label | translate }}</th>
+            }
+            <th class="dl__act-col"></th>
+          </tr>
+        </thead>
+        <tbody cdkDropList (cdkDropListDropped)="drop($event)">
+          @for (line of d.lines; track trackLine($index, line)) {
+            @let err = errorsFor(line);
+            <tr cdkDrag [cdkDragData]="line" [class.dl__row--voided]="line.isVoided">
+              <td class="dl__handle-col"><span class="dl__handle" cdkDragHandle title="drag">⋮⋮</span></td>
+              @if (bulkMode()) {
+                <td class="dl__check-col"><input type="checkbox" [checked]="isSelected(line)" (change)="toggleSelect(line)"/></td>
+              }
+
+              @for (c of columns(); track c.key) {
+                <td [class.end]="c.type !== 'item'" [class.dl__col-item]="c.type === 'item'" [class.dl__cell--err]="err[c.key]" [attr.title]="err[c.key] ? (err[c.key] | translate) : null">
+                  @switch (c.type) {
+                    @case ('item') {
+                      <div class="dl__item" [class.dl__cell--err]="err['item']">
+                        @if (line.selectedItem?.id) {
+                          <div class="dl__picked">
+                            <span class="dl__item-name">{{ line.selectedItem.name }}</span>
+                            @if (canEditProduct(line)) {
+                              <button type="button" class="dl__x" (click)="clearProduct(line)" aria-label="clear">✕</button>
+                            }
+                          </div>
+                          <textarea class="dl__note" rows="1" [disabled]="isLocked(line)" [ngModel]="line.note" (ngModelChange)="onNote(line, $event)"
+                            [placeholder]="'DOC_LINES.DESCRIPTION' | translate"></textarea>
+                        } @else {
+                          <textarea class="dl__note dl__note--main" rows="2" [disabled]="isLocked(line) || !canEditProduct(line)"
+                            [ngModel]="line.note" (input)="onItemInput(line, $any($event.target).value, $event)"
+                            (focus)="onItemFocus(line, $event)" (keydown.enter)="onItemEnter(line, $any($event.target).value, $event)"
+                            [placeholder]="'DOC_LINES.ITEM_PLACEHOLDER' | translate"></textarea>
+                          @if (activeLine() === line && (results().length || searching())) {
+                            <ul class="dl__panel" [style.top.px]="panelPos().top" [style.left.px]="panelPos().left" [style.width.px]="panelPos().width">
+                              @for (p of results(); track p.id) {
+                                <li (mousedown)="$event.preventDefault()" (click)="pickProduct(line, p)">
+                                  <span class="dl__p-name">{{ p.name }}</span>
+                                  <small>{{ 'DOC_LINES.RATE' | translate }}: {{ p.defaultPrice | mycurrency }}</small>
+                                </li>
+                              }
+                              @if (searching() && !results().length) { <li class="dl__panel-empty">…</li> }
+                            </ul>
+                          }
+                        }
+                        @if (line.isVoided) { <span class="dl__badge">{{ 'DOC_LINES.VOIDED' | translate }}</span> }
+                        @if (line.isReturned) { <span class="dl__badge">{{ 'DOC_LINES.RETURNED' | translate }}</span> }
+                        @if (err['item']) { <div class="dl__err">{{ err['item'] | translate }}</div> }
+                      </div>
+                    }
+                    @case ('qty') {
+                      <app-qty-input size="sm" [allowDecimal]="c.decimal ?? true" [min]="line.minQty || 0" [step]="1"
+                        [disabled]="cellDisabled(line, c)" [ngModel]="value(line, c)" (ngModelChange)="onQty(line, c, $event)"/>
+                    }
+                    @case ('money') {
+                      <input class="dl__num" type="number" inputmode="decimal" [disabled]="cellDisabled(line, c)"
+                        [ngModel]="value(line, c)" (ngModelChange)="onMoney(line, c, $event)"/>
+                    }
+                    @case ('discount') {
+                      <app-discount-field [amount]="line.discountAmount" [percentage]="line.discountPercentage"
+                        [disabled]="cellDisabled(line, c)" (changed)="onDiscount(line, $event)"/>
+                    }
+                    @case ('tax') {
+                      <app-search-dropdown [items]="taxOptions()" [displayWith]="taxLabel" [compareWith]="byId" [searchable]="false"
+                        [value]="taxOf(line)" (valueChange)="onTax(line, $any($event)?.id)"
+                        [clearable]="true" [disabled]="cellDisabled(line, c)" [placeholder]="'DOC_LINES.NO_TAX' | translate"/>
+                    }
+                    @case ('amount') {
+                      <span class="dl__amount">{{ line.total | mycurrency }}</span>
+                    }
+                  }
+                  @if (err[c.key] && c.type !== 'item') { <div class="dl__err">{{ err[c.key] | translate }}</div> }
+                </td>
+              }
+
+              <td class="dl__act-col">
+                <div class="dl__acts">
+                  <app-dropdown-menu-btn [items]="rowMenu(line)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="dl__round">⋯</app-dropdown-menu-btn>
+                  @if (canRemove(line)) {
+                    <button type="button" class="dl__round dl__round--danger" (click)="removeLine(line)" aria-label="remove">✕</button>
+                  }
+                </div>
+              </td>
+            </tr>
+            @if (config().accounts && isInfoOpen(line)) {
+              <tr class="dl__info">
+                <td [attr.colspan]="columns().length + (bulkMode() ? 3 : 2)">
+                  <div class="dl__info-strip">
+                    <span class="dl__info-label">{{ 'DOC_LINES.ACCOUNT' | translate }}</span>
+                    <div class="dl__info-field">
+                      <app-search-dropdown [items]="accountOptions()" [displayWith]="accountLabel" [compareWith]="byId"
+                        [value]="accountOf(line)" (valueChange)="onAccount(line, $any($event)?.id)"
+                        [clearable]="false" [disabled]="!line.isNew || isLocked(line)"
+                        [placeholder]="'DOC_LINES.SELECT_ACCOUNT' | translate"/>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="dl__add">
+    <button type="button" class="dl__btn" (click)="addLine()" [disabled]="editor().lastLineIsEmpty">＋ {{ 'DOC_LINES.ADD_ROW' | translate }}</button>
+    @if (config().bulkItems) {
+      <button type="button" class="dl__btn" (click)="addItemsInBulk()" [disabled]="!ctx().hasScope">＋ {{ 'DOC_LINES.ADD_ITEMS_BULK' | translate }}</button>
+    }
+  </div>
+
+  <ng-content/>
+</section>

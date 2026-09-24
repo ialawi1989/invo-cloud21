@@ -32,6 +32,13 @@ export interface PickedProduct {
   type?:     string;
   /** Thumbnail URL for the product-list row. Falls back to the placeholder SVG. */
   thumbnailUrl?: string;
+  /** Raw category id + tags + translation blob — only populated for
+   *  callers that need to write these fields back (e.g. Bulk Tags),
+   *  since `updateBulkCategoryTagsTranslation` replaces all three
+   *  columns wholesale and needs the untouched ones resent as-is. */
+  categoryId?:  string | null;
+  tags?:        string[];
+  rawTranslation?: any;
 }
 
 export interface PickProductModalData {
@@ -140,7 +147,7 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
         // `translation` is included so the row name can be localized —
         // omitting it from an explicit columns list makes the backend drop
         // the field entirely (it's not part of the reduced default set).
-        columns: ['name', 'translation', 'image', 'barcode', 'SKU', 'UOM', 'unitCost', 'defaultPrice', 'type', 'category'],
+        columns: ['name', 'translation', 'image', 'barcode', 'SKU', 'UOM', 'unitCost', 'defaultPrice', 'type', 'category', 'categoryId', 'tags'],
       });
       const rows: PickedProduct[] = (res.list ?? []).map((r: any) => ({
         id:       r.id ?? r._id,
@@ -155,6 +162,9 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
         // `r.image` is the canonical thumbnail the products-list page renders;
         // keep the mediaUrl/thumbnailUrl fallbacks for older response shapes.
         thumbnailUrl: r.mediaUrl?.thumbnailUrl ?? r.mediaUrl?.defaultUrl ?? r.thumbnailUrl ?? r.image ?? undefined,
+        categoryId: r.categoryId ?? null,
+        tags:       Array.isArray(r.tags) ? r.tags : [],
+        rawTranslation: r.translation ?? null,
       }));
       if (page === 1) this.rows.set(rows);
       else this.rows.update((prev) => [...prev, ...rows]);

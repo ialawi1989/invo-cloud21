@@ -23,6 +23,8 @@
       "BODY": "This builder needs more room than a phone can provide. Please reopen it on a tablet or desktop."
     },
     "DONE": "Done",
+    "SHOW_EXACT": "Show exact value (before rounding)",
+    "SHOW_ROUNDED": "Show rounded value",
     "DUPLICATE": "Duplicate",
     "CLONE": "Clone",
     "COPY_OF": "Copy of {{name}}",
@@ -205,7 +207,8 @@
     "STEPS": "Steps",
     "MANDATORY_LEGEND": "* indicates mandatory fields",
     "ENABLED": "Enabled",
-    "DISABLED": "Disabled"
+    "DISABLED": "Disabled",
+    "OPS": "Oops!"
   },
   "AUTH": {
     "WELCOME_BACK": "Welcome back",
@@ -267,6 +270,7 @@
     "SALES": "Sales",
     "PURCHASE": "Purchase",
     "PROMOTIONS": "Promotions",
+    "GIFT_VOUCHERS": "Gift Vouchers",
     "INVENTORY": "Inventory",
     "REPORTS": "Reports",
     "TRACKING_MAP": "Tracking Map",

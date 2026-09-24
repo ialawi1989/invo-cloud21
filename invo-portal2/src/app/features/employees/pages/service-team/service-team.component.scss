@@ -92,3 +92,11 @@ thead .st__service-col { z-index: 3; background: #f9fafb; }
 .st--embedded { padding: 0; }
 .st--embedded .st__table-wrap { border: none; border-radius: 0; }
 .st--embedded .st__state { border: none; border-radius: 0; }
+
+/* Sticky header row: the table wrap is the scroller (both axes), so the header pins to its top. */
+.st__table thead th { position: sticky; top: 0; z-index: 4; background: #f9fafb; }
+.st__table thead .st__service-col { z-index: 6; }
+.st__table-wrap { max-height: calc(100vh - 200px); }
+:host { display: block; height: 100%; }
+.st--embedded { height: 100%; display: flex; flex-direction: column; }
+.st--embedded .st__table-wrap { flex: 1 1 auto; min-height: 0; max-height: none; }

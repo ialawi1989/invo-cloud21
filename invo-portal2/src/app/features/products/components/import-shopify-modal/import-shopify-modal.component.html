@@ -1,0 +1,237 @@
+<app-modal-header [title]="'PRODUCTS.SHOPIFY_IMPORT.TITLE' | translate" />
+
+@let s = runner.state();
+
+<div class="sim__body">
+  <!-- ═══ Steps 1–2: Source + Options (only while idle) ═══ -->
+  @if (s.status === 'idle') {
+    <div class="sim-steps">
+      <div class="sim-step" [class.sim-step--active]="formStep() === 'source'" [class.sim-step--done]="formStep() === 'options'">
+        <span class="sim-step__dot">1</span>
+        <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.STEP_SOURCE' | translate }}</span>
+      </div>
+      <span class="sim-step__line"></span>
+      <div class="sim-step" [class.sim-step--active]="formStep() === 'options'">
+        <span class="sim-step__dot">2</span>
+        <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.STEP_OPTIONS' | translate }}</span>
+      </div>
+    </div>
+
+    @if (formStep() === 'source') {
+      <app-segmented-toggle [options]="sourceModeOptions" [value]="sourceMode()" (valueChange)="sourceMode.set($any($event))"/>
+
+      @if (sourceMode() === 'url') {
+        <label class="sim-field">
+          <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.SOURCE_URL_LABEL' | translate }}</span>
+          <input type="url" class="sim-input" [ngModel]="sourceUrl()" (ngModelChange)="sourceUrl.set($event)"
+            [placeholder]="'PRODUCTS.SHOPIFY_IMPORT.SOURCE_URL_PLACEHOLDER' | translate"/>
+        </label>
+        <p class="sim-hint">{{ 'PRODUCTS.SHOPIFY_IMPORT.SOURCE_URL_HINT' | translate }}</p>
+      } @else {
+        <label class="sim-field">
+          <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.SOURCE_FILE_LABEL' | translate }}</span>
+          <input type="file" accept="application/json,.json" class="sim-file" (change)="onFileSelected($event)"/>
+        </label>
+        @if (fileName()) {
+          @if (fileProducts()) {
+            <p class="sim-hint sim-hint--ok">{{ fileName() }} — {{ 'PRODUCTS.SHOPIFY_IMPORT.SOURCE_FILE_COUNT' | translate: { count: fileProducts()!.length } }}</p>
+          } @else if (fileError()) {
+            <p class="sim-hint sim-hint--error">{{ fileError() }}</p>
+          }
+        }
+      }
+    }
+
+    @if (formStep() === 'options') {
+      <label class="sim-field">
+        <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_BRANCH' | translate }}</span>
+        <app-search-dropdown
+          [items]="branchItems()"
+          [displayWith]="display"
+          [compareWith]="compare"
+          [toValue]="toValue"
+          [clearable]="true"
+          [searchable]="true"
+          [value]="selectedBranchItem()"
+          (valueChange)="onBranchChange($any($event))"/>
+      </label>
+      @if (hasMultipleBranches() && !branchId()) {
+        <p class="sim-hint sim-hint--warn">{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_BRANCH_REQUIRED_WARNING' | translate }}</p>
+      }
+
+      <label class="sim-field sim-field--inline">
+        <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_UNIT_COST' | translate }}</span>
+        <input type="number" class="sim-input sim-input--sm" min="0" step="0.01" [ngModel]="unitCost()" (ngModelChange)="unitCost.set($event)"/>
+      </label>
+      @if (!unitCost()) {
+        <p class="sim-hint sim-hint--warn">{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_UNIT_COST_WARNING' | translate }}</p>
+      }
+
+      <label class="sim-checkbox">
+        <input type="checkbox" [ngModel]="importStock()" (ngModelChange)="importStock.set($event)"/>
+        <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_IMPORT_STOCK' | translate }}</span>
+      </label>
+      <label class="sim-checkbox">
+        <input type="checkbox" [ngModel]="defaultTax()" (ngModelChange)="defaultTax.set($event)"/>
+        <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_DEFAULT_TAX' | translate }}</span>
+      </label>
+
+      <label class="sim-field">
+        <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_DEPARTMENT' | translate }}</span>
+        <input type="text" class="sim-input" [ngModel]="departmentName()" (ngModelChange)="departmentName.set($event)"
+          [placeholder]="'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_DEPARTMENT_PLACEHOLDER' | translate"/>
+      </label>
+
+      <label class="sim-checkbox">
+        <input type="checkbox" [ngModel]="importImages()" (ngModelChange)="importImages.set($event)"/>
+        <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_IMPORT_IMAGES' | translate }}</span>
+      </label>
+      @if (importImages()) {
+        <label class="sim-field">
+          <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_IMAGE_MODE' | translate }}</span>
+          <app-segmented-toggle [options]="imageModeOptions" [value]="imageMode()" (valueChange)="imageMode.set($any($event))"/>
+        </label>
+      }
+
+      <label class="sim-field">
+        <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_ON_EXISTING' | translate }}</span>
+        <app-segmented-toggle [options]="onExistingOptions" [value]="onExisting()" (valueChange)="onExisting.set($any($event))"/>
+      </label>
+      <p class="sim-hint">{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_ON_EXISTING_HINT' | translate }}</p>
+
+      <button type="button" class="sim-advanced-toggle" (click)="advancedOpen.set(!advancedOpen())">
+        {{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_ADVANCED' | translate }}
+      </button>
+      @if (advancedOpen()) {
+        <label class="sim-field">
+          <span>{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_DROP_TAGS' | translate }}</span>
+          <input type="text" class="sim-input" [ngModel]="dropTagsText()" (ngModelChange)="dropTagsText.set($event)"/>
+        </label>
+        <p class="sim-hint">{{ 'PRODUCTS.SHOPIFY_IMPORT.OPTIONS_DROP_TAGS_HINT' | translate }}</p>
+      }
+    }
+  }
+
+  <!-- ═══ Preview / import running ═══ -->
+  @if (s.status === 'previewing' || s.status === 'importing') {
+    <div class="sim-center">
+      <div class="sim-spinner"></div>
+      <p class="sim-progress-msg">
+        {{ (s.status === 'previewing' ? 'PRODUCTS.SHOPIFY_IMPORT.PROGRESS_PREVIEWING' : 'PRODUCTS.SHOPIFY_IMPORT.PROGRESS_IMPORTING') | translate }}
+      </p>
+      <p class="sim-progress-page">{{ 'PRODUCTS.SHOPIFY_IMPORT.PROGRESS_PAGE' | translate: { page: s.currentPage, total: s.totalPages } }}</p>
+      <div class="sim-progress-bar"><div class="sim-progress-bar__fill" [style.width.%]="(s.currentPage / s.totalPages) * 100"></div></div>
+    </div>
+  }
+
+  <!-- ═══ Conflict ═══ -->
+  @if (s.status === 'conflict') {
+    <div class="sim-center">
+      <h2 class="sim-banner-title sim-banner-title--warn">{{ 'PRODUCTS.SHOPIFY_IMPORT.CONFLICT_TITLE' | translate }}</h2>
+      <p>{{ 'PRODUCTS.SHOPIFY_IMPORT.CONFLICT_MESSAGE' | translate: { progress: s.conflictProgress } }}</p>
+    </div>
+  }
+
+  <!-- ═══ Error ═══ -->
+  @if (s.status === 'error') {
+    <div class="sim-center">
+      <h2 class="sim-banner-title sim-banner-title--error">{{ 'PRODUCTS.SHOPIFY_IMPORT.ERROR_TITLE' | translate }}</h2>
+      <p>{{ s.errorMessage }}</p>
+    </div>
+  }
+
+  <!-- ═══ Preview-ready / Done: the report ═══ -->
+  @if (s.status === 'preview-ready' || s.status === 'done') {
+    @let report = s.status === 'preview-ready' ? s.preview : s.final;
+    @if (report) {
+      <h2 class="sim-banner-title" [class.sim-banner-title--ok]="s.status === 'done'">
+        {{ (s.status === 'preview-ready' ? 'PRODUCTS.SHOPIFY_IMPORT.PREVIEW_TITLE' : 'PRODUCTS.SHOPIFY_IMPORT.DONE_TITLE') | translate }}
+      </h2>
+      <p class="sim-hint">{{ (s.status === 'preview-ready' ? 'PRODUCTS.SHOPIFY_IMPORT.PREVIEW_HINT' : 'PRODUCTS.SHOPIFY_IMPORT.DONE_HINT') | translate }}</p>
+
+      @if (report.slugSupport && (!report.slugSupport.products || !report.slugSupport.matrix)) {
+        <p class="sim-hint sim-hint--warn">{{ 'PRODUCTS.SHOPIFY_IMPORT.SLUG_SUPPORT_WARNING' | translate }}</p>
+      }
+
+      <div class="sim-summary">
+        <div class="sim-summary__tile"><span class="sim-summary__num">{{ report.summary.imported }}</span><span>{{ 'PRODUCTS.SHOPIFY_IMPORT.SUMMARY_IMPORTED' | translate }}</span></div>
+        @if (report.summary.updated || report.summary.toUpdate) {
+          <div class="sim-summary__tile"><span class="sim-summary__num">{{ s.status === 'done' ? report.summary.updated : report.summary.toUpdate }}</span><span>{{ (s.status === 'done' ? 'PRODUCTS.SHOPIFY_IMPORT.SUMMARY_UPDATED' : 'PRODUCTS.SHOPIFY_IMPORT.SUMMARY_TO_UPDATE') | translate }}</span></div>
+        }
+        <div class="sim-summary__tile"><span class="sim-summary__num">{{ report.summary.variants }}</span><span>{{ 'PRODUCTS.SHOPIFY_IMPORT.SUMMARY_VARIANTS' | translate }}</span></div>
+        <div class="sim-summary__tile sim-summary__tile--warn"><span class="sim-summary__num">{{ report.summary.skipped }}</span><span>{{ 'PRODUCTS.SHOPIFY_IMPORT.SUMMARY_SKIPPED' | translate }}</span></div>
+        @if (report.summary.failed) {
+          <div class="sim-summary__tile sim-summary__tile--error"><span class="sim-summary__num">{{ report.summary.failed }}</span><span>{{ 'PRODUCTS.SHOPIFY_IMPORT.SUMMARY_FAILED' | translate }}</span></div>
+        }
+        @if (report.summary.alreadyInCatalogue) {
+          <div class="sim-summary__tile"><span class="sim-summary__num">{{ report.summary.alreadyInCatalogue }}</span><span>{{ 'PRODUCTS.SHOPIFY_IMPORT.SUMMARY_ALREADY' | translate }}</span></div>
+        }
+      </div>
+
+      <div class="sim-tabs">
+        @for (tab of reportTabs(); track tab.key) {
+          <button type="button" class="sim-tab" [class.is-on]="activeTab() === tab.key" (click)="activeTab.set(tab.key)">
+            {{ tab.labelKey | translate: { count: tab.count } }}
+          </button>
+        }
+      </div>
+
+      <div class="sim-item-list">
+        @if (!activeItems().length) {
+          <p class="sim-hint">{{ 'PRODUCTS.SHOPIFY_IMPORT.NO_ITEMS' | translate }}</p>
+        }
+        @for (item of activeItems(); track $index) {
+          <div class="sim-item">
+            <div class="sim-item__row">
+              <strong>{{ item.title || item.handle || '—' }}</strong>
+              @if (item.barcode) { <span class="sim-item__meta">{{ item.barcode }}</span> }
+              @if (item.variants) { <span class="sim-item__meta">{{ item.variants }}×</span> }
+            </div>
+            @if (item.error) {
+              <p class="sim-item__error">{{ item.error }}</p>
+            }
+            @if (item.warnings?.length) {
+              <ul class="sim-item__warnings">
+                @for (w of item.warnings; track $index) { <li>{{ w }}</li> }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
+
+<app-modal-footer>
+  @if (s.status === 'idle' && formStep() === 'source') {
+    <button type="button" class="sim-btn" (click)="ref.close()">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button type="button" class="sim-btn sim-btn--primary" [disabled]="!canGoToOptions()" (click)="formStep.set('options')">
+      {{ 'PRODUCTS.SHOPIFY_IMPORT.NEXT' | translate }}
+    </button>
+  }
+  @if (s.status === 'idle' && formStep() === 'options') {
+    <button type="button" class="sim-btn" (click)="formStep.set('source')">{{ 'PRODUCTS.SHOPIFY_IMPORT.BACK' | translate }}</button>
+    <button type="button" class="sim-btn sim-btn--primary" [disabled]="!canRunDryRun()" (click)="runDryRun()">
+      {{ 'PRODUCTS.SHOPIFY_IMPORT.RUN_DRY_RUN' | translate }}
+    </button>
+  }
+  @if (s.status === 'previewing' || s.status === 'importing') {
+    <button type="button" class="sim-btn" (click)="runner.cancel()">{{ 'PRODUCTS.SHOPIFY_IMPORT.CANCEL' | translate }}</button>
+  }
+  @if (s.status === 'conflict') {
+    <button type="button" class="sim-btn" (click)="ref.close()">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button type="button" class="sim-btn sim-btn--primary" (click)="checkAgain()">{{ 'PRODUCTS.SHOPIFY_IMPORT.CHECK_AGAIN' | translate }}</button>
+  }
+  @if (s.status === 'error') {
+    <button type="button" class="sim-btn" (click)="startOver()">{{ 'PRODUCTS.SHOPIFY_IMPORT.START_OVER' | translate }}</button>
+    <button type="button" class="sim-btn sim-btn--primary" (click)="retry()">{{ 'PRODUCTS.SHOPIFY_IMPORT.RETRY' | translate }}</button>
+  }
+  @if (s.status === 'preview-ready') {
+    <button type="button" class="sim-btn" (click)="backToOptions()">{{ 'PRODUCTS.SHOPIFY_IMPORT.BACK_TO_OPTIONS' | translate }}</button>
+    <button type="button" class="sim-btn sim-btn--primary" (click)="commit()">{{ 'PRODUCTS.SHOPIFY_IMPORT.IMPORT_NOW' | translate }}</button>
+  }
+  @if (s.status === 'done') {
+    <button type="button" class="sim-btn" (click)="startOver()">{{ 'PRODUCTS.SHOPIFY_IMPORT.IMPORT_MORE' | translate }}</button>
+    <button type="button" class="sim-btn sim-btn--primary" (click)="finish()">{{ 'COMMON.DONE' | translate }}</button>
+  }
+</app-modal-footer>

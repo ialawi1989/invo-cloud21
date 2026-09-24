@@ -7,6 +7,8 @@ export interface MycurrencyArgs {
   symbol?: string;
   /** Override decimals (defaults to company settings). */
   afterDecimal?: number;
+  /** Show the exact value (up to 10 dp, trailing zeros trimmed) instead of rounding. */
+  exact?: boolean;
 }
 
 /**
@@ -44,9 +46,13 @@ export class MycurrencyPipe implements PipeTransform {
     const symbol       = args?.symbol       ?? settings?.currencySymbol ?? '';
     const afterDecimal = args?.afterDecimal ?? settings?.afterDecimal   ?? 3;
 
-    const formatted = d
-      .toFixed(afterDecimal)
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    let formatted: string;
+    if (args?.exact) {
+      const [int, frac = ''] = d.toDecimalPlaces(10).toFixed().split('.');
+      formatted = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (frac ? '.' + frac : '');
+    } else {
+      formatted = d.toFixed(afterDecimal).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
 
     return symbol ? `${symbol} ${formatted}` : formatted;
   }

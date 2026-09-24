@@ -1,0 +1,303 @@
+<ng-container [formGroup]="customerForm">
+
+  <!-- ═══ Customer type ═══ -->
+  <section class="cf-card">
+    <h2 class="cf-card__title">{{ 'CUSTOMERS.LIST.CUSTOMER_TYPE' | translate }}</h2>
+    <app-segmented-toggle [options]="typeOptions" [value]="customerData.type" (valueChange)="customerData.type = $any($event); customerForm.markAsDirty()"/>
+  </section>
+
+  <!-- ═══ Basic information ═══ -->
+  <section class="cf-card">
+    <h2 class="cf-card__title">{{ 'CUSTOMERS.FORM.BASIC_INFORMATION' | translate }}</h2>
+
+    @if (customerData.type === 'Individual') {
+      <div class="cf-row">
+        <div class="cf-field cf-field--sm">
+          <label>{{ 'CUSTOMERS.FORM.SALUATION' | translate }}</label>
+          <app-search-dropdown
+            [items]="saluations" [displayWith]="display" [compareWith]="compare" [clearable]="false" [searchable]="false"
+            [value]="pick(saluations, customerData.saluation)"
+            (valueChange)="set('saluation', $any($event)); customerForm.markAsDirty()"/>
+        </div>
+        <div class="cf-field cf-field--grow">
+          <label for="customer_name">{{ 'CUSTOMERS.LIST.NAME' | translate }}</label>
+          <input id="customer_name" type="text" class="cf-input" formControlName="name"
+            [class.is-invalid]="controls['name'].errors"/>
+          @if (controls['name'].errors) { <p class="cf-error">{{ 'CUSTOMERS.FORM.THIS_VALUE_IS_REQUIRED' | translate }}</p> }
+        </div>
+      </div>
+      <div class="cf-field">
+        <label>{{ 'CUSTOMERS.FORM.BIRTHDAY' | translate }}</label>
+        <app-date-picker mode="single" [max]="maxBirthday" [value]="customerData.birthDay ? $any(customerData.birthDay) : null"
+          (valueChange)="onBirthday($event)"/>
+      </div>
+    }
+
+    @if (customerData.type === 'Business') {
+      <div class="cf-row">
+        <div class="cf-field cf-field--grow">
+          <label for="customer_name">{{ 'CUSTOMERS.FORM.COMPANY_NAME' | translate }}</label>
+          <input id="customer_name" type="text" class="cf-input" formControlName="name"
+            [class.is-invalid]="controls['name'].errors"/>
+          @if (controls['name'].errors) { <p class="cf-error">{{ 'CUSTOMERS.FORM.THIS_VALUE_IS_REQUIRED' | translate }}</p> }
+        </div>
+        <div class="cf-field cf-field--grow">
+          <label for="contactName">{{ 'CUSTOMERS.FORM.CONTACT_PERSON' | translate }}</label>
+          <input id="contactName" type="text" class="cf-input" [ngModel]="customerData.contactName"
+            (ngModelChange)="customerData.contactName = $event; customerForm.markAsDirty()" [ngModelOptions]="{ standalone: true }"/>
+        </div>
+      </div>
+      <div class="cf-row">
+        <div class="cf-field cf-field--grow">
+          <label>{{ 'CUSTOMERS.FORM.INDUSTRY' | translate }}</label>
+          <app-search-dropdown
+            [items]="industries" [displayWith]="displayPlain" [compareWith]="compare" [clearable]="true" [searchable]="false"
+            [placeholder]="'CUSTOMERS.FORM.SELECT_AN_INDUSTRY' | translate"
+            [value]="pick(industries, customerData.industry)"
+            (valueChange)="set('industry', $any($event)); customerForm.markAsDirty()"/>
+        </div>
+        @if ((!customerData.hasChild && customerData.id != null) || customerData.id == null) {
+          <div class="cf-field cf-field--grow">
+            <label>{{ 'CUSTOMERS.FORM.PARENT_CUSTOMER' | translate }}</label>
+            <app-search-dropdown
+              [loadFn]="loadParents" [pageSize]="30" [displayWith]="displayPlain" [compareWith]="compare"
+              [clearable]="true" [searchable]="true"
+              [placeholder]="'CUSTOMERS.FORM.SELECT_OR_SEARCH_A_CUSTOMER' | translate"
+              [value]="parentValue()"
+              (valueChange)="onParent($any($event)); customerForm.markAsDirty()">
+              @if (allowCreateParent) {
+                <ng-template #footer>
+                  <button type="button" class="cf-create" (click)="createParent()">+ {{ 'CUSTOMERS.FORM.CREATE_NEW' | translate }}</button>
+                </ng-template>
+              }
+            </app-search-dropdown>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- ═══ Contact information ═══ -->
+  <section class="cf-card">
+    <h2 class="cf-card__title">{{ 'CUSTOMERS.FORM.CONTACT_INFORMATION' | translate }}</h2>
+    <div class="cf-row">
+      <div class="cf-field cf-field--grow">
+        <label for="customer_phone">{{ 'CUSTOMERS.LIST.PHONE' | translate }}</label>
+        <app-phone-input inputId="customer_phone" [defaultCountryCode]="defaultCountryCode" formControlName="phone"/>
+        @if (controls['phone'].errors?.['phoneExists']) { <p class="cf-error">{{ 'CUSTOMERS.FORM.PHONE_ALREADY_EXISTS' | translate }}</p> }
+        @if (controls['phone'].errors?.['required']) { <p class="cf-error">{{ 'CUSTOMERS.FORM.THIS_VALUE_IS_REQUIRED' | translate }}</p> }
+        @if (controls['phone'].errors?.['pattern']) { <p class="cf-error">{{ 'CUSTOMERS.FORM.THIS_VALUE_MUST_BE_DIGITS' | translate }}</p> }
+        @if (controls['phone'].errors?.['minlength']) { <p class="cf-error">{{ 'CUSTOMERS.FORM.THIS_VALUE_MUST_BE_MINIMUM' | translate }} {{ phoneLength }}</p> }
+      </div>
+      <div class="cf-field cf-field--grow">
+        <label for="customer_mobile">{{ 'CUSTOMERS.FORM.MOBILE' | translate }}</label>
+        <app-phone-input inputId="customer_mobile" [defaultCountryCode]="defaultCountryCode" formControlName="mobile"/>
+        @if (controls['mobile'].errors?.['mobileExists']) { <p class="cf-error">{{ 'CUSTOMERS.FORM.MOBILE_ALREADY_EXISTS' | translate }}</p> }
+        @if (controls['mobile'].errors?.['pattern']) { <p class="cf-error">{{ 'CUSTOMERS.FORM.THIS_VALUE_MUST_BE_DIGITS' | translate }}</p> }
+        @if (controls['mobile'].errors?.['minlength']) { <p class="cf-error">{{ 'CUSTOMERS.FORM.THIS_VALUE_MUST_BE_MINIMUM' | translate }} {{ phoneLength }}</p> }
+      </div>
+    </div>
+    <div class="cf-field">
+      <label for="customer_email">{{ 'CUSTOMERS.LIST.EMAIL' | translate }}</label>
+      <input id="customer_email" type="email" class="cf-input" [class.is-invalid]="!customerData.is_email_valid"
+        [ngModel]="customerData.email" (ngModelChange)="customerData.email = $event; customerForm.markAsDirty()"
+        [ngModelOptions]="{ standalone: true }"/>
+      @if (!customerData.is_email_valid) { <p class="cf-error">{{ 'CUSTOMERS.FORM.ENTER_A_VALID_EMAIL' | translate }}</p> }
+    </div>
+  </section>
+
+  <!-- ═══ Addresses ═══ -->
+  <section class="cf-card">
+    <h2 class="cf-card__title">{{ 'CUSTOMERS.FORM.CUSTOMER_ADDRESSES' | translate }}</h2>
+    <ng-container formArrayName="addresses">
+      <div class="cf-addresses">
+        <button type="button" class="cf-tile cf-tile--add" (click)="addAddress()">
+          <span class="cf-tile__plus">+</span>
+          {{ 'CUSTOMERS.FORM.ADD_ADDRESS' | translate }}
+        </button>
+
+        @for (address of customerData.addresses; track $index; let i = $index) {
+          <div class="cf-tile cf-address" [formGroupName]="i"
+            [class.is-default]="address.isDefault" [class.is-editing]="isEditingAddress(i)"
+            [class.has-error]="addressesFormGroup.at(i).get('addressTitle')?.errors">
+
+            @if (address.isDefault) {
+              <span class="cf-default">{{ 'CUSTOMERS.FORM.DEFAULT' | translate }}</span>
+            }
+
+            @if (!isEditingAddress(i)) {
+              <div class="cf-address__body">
+                <div class="cf-address__title">{{ address.title || ('CUSTOMERS.FORM.ADDRESS' | translate) + ' ' + (i + 1) }}</div>
+                @if (getAddressSummary(address); as summary) { <div class="cf-address__summary">{{ summary }}</div> }
+                @if (addressesFormGroup.at(i).get('addressTitle')?.errors?.['required']) {
+                  <div class="cf-error">{{ 'CUSTOMERS.FORM.THIS_VALUE_IS_REQUIRED' | translate }}</div>
+                }
+                @if (addressesFormGroup.at(i).get('addressTitle')?.errors?.['addressExists']) {
+                  <div class="cf-error">{{ 'CUSTOMERS.FORM.NAME_EXISTS' | translate }}</div>
+                }
+              </div>
+              <input type="hidden" formControlName="addressTitle"/>
+              <div class="cf-address__actions">
+                <button type="button" class="cf-link" (click)="editAddress(i)">{{ 'COMMON.EDIT' | translate }}</button>
+                @if (allowDeleteAddress) {
+                  <button type="button" class="cf-link cf-link--danger" (click)="removeAddress(address)">{{ 'COMMON.DELETE' | translate }}</button>
+                }
+                @if (!address.isDefault) {
+                  <button type="button" class="cf-link" (click)="setDefaultAddress(i)">{{ 'CUSTOMERS.FORM.SET_AS_DEFAULT' | translate }}</button>
+                }
+              </div>
+            } @else {
+              <div class="cf-address__edit">
+                <div class="cf-field">
+                  <label>{{ 'CUSTOMERS.FORM.ADDRESS_TITLE' | translate }}</label>
+                  <input type="text" class="cf-input" [value]="address.title" (input)="onAddressTitle(i, $any($event.target).value)"
+                    [class.is-invalid]="addressesFormGroup.at(i).get('addressTitle')?.errors"/>
+                  @if (addressesFormGroup.at(i).get('addressTitle')?.errors?.['required']) { <p class="cf-error">{{ 'CUSTOMERS.FORM.THIS_VALUE_IS_REQUIRED' | translate }}</p> }
+                  @if (addressesFormGroup.at(i).get('addressTitle')?.errors?.['addressExists']) { <p class="cf-error">{{ 'CUSTOMERS.FORM.NAME_EXISTS' | translate }}</p> }
+                  <div class="cf-presets">
+                    @for (preset of addressTitlePresets; track preset.id) {
+                      <button type="button" class="cf-chip" [class.is-on]="address.title === preset.id" (click)="applyTitlePreset(i, preset.id)">
+                        {{ preset.translationKey | translate }}
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                @if (customerData.type !== 'Business') {
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.BLOCK' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.block" [ngModelOptions]="{ standalone: true }"/></div>
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.ROAD' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.road" [ngModelOptions]="{ standalone: true }"/></div>
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.BUILDING' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.building" [ngModelOptions]="{ standalone: true }"/></div>
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.FLAT' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.flat" [ngModelOptions]="{ standalone: true }"/></div>
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.CITY' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.city" [ngModelOptions]="{ standalone: true }"/></div>
+                } @else {
+                  <div class="cf-field">
+                    <label>{{ 'CUSTOMERS.FORM.COUNTRY' | translate }}</label>
+                    <app-search-dropdown [items]="countries" [displayWith]="displayPlainCountry" [compareWith]="compareCountry"
+                      [clearable]="true" [searchable]="true"
+                      [placeholder]="'CUSTOMERS.FORM.COUNTRY' | translate"
+                      [value]="address.country ? { name: address.country } : null"
+                      (valueChange)="address.country = $any($event)?.name ?? ''"/>
+                  </div>
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.REGION' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.region" [ngModelOptions]="{ standalone: true }"/></div>
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.ADDRESS_LINE_1' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.addressLine1" [ngModelOptions]="{ standalone: true }"/></div>
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.ADDRESS_LINE_2' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.addressLine2" [ngModelOptions]="{ standalone: true }"/></div>
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.CITY' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.city" [ngModelOptions]="{ standalone: true }"/></div>
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.DISTRICT' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.district" [ngModelOptions]="{ standalone: true }"/></div>
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.POSTAL_CODE' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.postalCode" [ngModelOptions]="{ standalone: true }"/></div>
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.BUILDING' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.building" [ngModelOptions]="{ standalone: true }"/></div>
+                  <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.OFFICE' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.office" [ngModelOptions]="{ standalone: true }"/></div>
+                }
+
+                <div class="cf-row">
+                  <div class="cf-field cf-field--grow"><label>{{ 'CUSTOMERS.FORM.LAT' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.lat" [ngModelOptions]="{ standalone: true }"/></div>
+                  <div class="cf-field cf-field--grow"><label>{{ 'CUSTOMERS.FORM.LNG' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.lng" [ngModelOptions]="{ standalone: true }"/></div>
+                </div>
+                <div class="cf-field"><label>{{ 'CUSTOMERS.FORM.NOTE' | translate }}</label><input type="text" class="cf-input" [(ngModel)]="address.note" [ngModelOptions]="{ standalone: true }"/></div>
+
+                <div class="cf-address__actions cf-address__actions--end">
+                  <button type="button" class="cf-btn" (click)="cancelAddressEdit(i)">{{ 'COMMON.CANCEL' | translate }}</button>
+                  <button type="button" class="cf-btn cf-btn--primary" (click)="saveAddressEdit(i)">{{ 'COMMON.SAVE' | translate }}</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </ng-container>
+  </section>
+
+  <!-- ═══ Custom fields ═══ -->
+  <app-entity-custom-fields entityType="customer" [parentForm]="customerForm" [valueSource]="customerData.customFields" idPrefix="cf-cust"/>
+
+  <!-- ═══ Financial information ═══ -->
+  <section class="cf-card">
+    <h2 class="cf-card__title">{{ 'CUSTOMERS.FORM.FINANCIAL_INFORMATION' | translate }}</h2>
+    <div class="cf-row">
+      <div class="cf-field cf-field--grow">
+        <label>{{ 'CUSTOMERS.FORM.PRICE' | translate }}</label>
+        <app-search-dropdown [loadFn]="loadPriceLabels" [displayWith]="displayPlain" [compareWith]="compare"
+          [clearable]="true" [searchable]="true" [placeholder]="'CUSTOMERS.FORM.SELECT_A_PRICE' | translate"
+          [value]="currentPriceLabel()" (valueChange)="onPriceLabel($any($event)); customerForm.markAsDirty()"/>
+      </div>
+      <div class="cf-field cf-field--grow">
+        <label for="discount">{{ 'CUSTOMERS.FORM.DISCOUNT_AMOUNT' | translate }}</label>
+        <input id="discount" type="number" max="100" class="cf-input" [ngModel]="customerData.discountAmount"
+          (ngModelChange)="customerData.discountAmount = $event; onChangeDiscount(); customerForm.markAsDirty()"
+          [ngModelOptions]="{ standalone: true }"/>
+      </div>
+    </div>
+    <div class="cf-row">
+      <div class="cf-field cf-field--grow">
+        <label>{{ 'CUSTOMERS.FORM.CURRENCY' | translate }}</label>
+        <app-search-dropdown [loadFn]="loadCurrencies" [displayWith]="displayPlain" [compareWith]="compare"
+          [clearable]="true" [searchable]="true" [placeholder]="'CUSTOMERS.FORM.SELECT_A_CURRENCY' | translate"
+          [value]="currentCurrency()" (valueChange)="onCurrency($any($event)); customerForm.markAsDirty()"/>
+      </div>
+      <div class="cf-field cf-field--grow">
+        <label>{{ 'CUSTOMERS.FORM.PAYMENT_TERM' | translate }}</label>
+        <app-search-dropdown [items]="terms" [displayWith]="displayPlain" [compareWith]="compare"
+          [clearable]="true" [searchable]="false"
+          [value]="pick(terms, customerData.paymentTerm)"
+          (valueChange)="set('paymentTerm', $any($event)); customerForm.markAsDirty()"/>
+      </div>
+    </div>
+    <div class="cf-row">
+      <div class="cf-field cf-field--grow">
+        <label for="creditLimit">{{ 'CUSTOMERS.FORM.CREDIT_LIMIT' | translate }}</label>
+        <input id="creditLimit" type="number" placeholder="0.00" class="cf-input" [ngModel]="customerData.creditLimit"
+          (ngModelChange)="customerData.creditLimit = $event; customerForm.markAsDirty()" [ngModelOptions]="{ standalone: true }"/>
+        <small class="cf-hint">{{ 'CUSTOMERS.FORM.MAX_CREDIT_ALLOWED' | translate }}</small>
+      </div>
+      @if (customerData.type === 'Business') {
+        <div class="cf-field cf-field--grow">
+          <label for="vat">{{ 'CUSTOMERS.FORM.VAT_NUMBER' | translate }}</label>
+          <input id="vat" type="text" class="cf-input" [ngModel]="customerData.vatNumber"
+            (ngModelChange)="customerData.vatNumber = $event; customerForm.markAsDirty()" [ngModelOptions]="{ standalone: true }"/>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ═══ Opening balance (new customers only) ═══ -->
+  @if (formStatus === 'new') {
+    <section class="cf-card">
+      <h2 class="cf-card__title">{{ 'CUSTOMERS.FORM.OPENING_BALANCE' | translate }}</h2>
+      <div class="cf-row">
+        <div class="cf-field cf-field--grow">
+          <label>{{ 'CUSTOMERS.FORM.BRANCH' | translate }}</label>
+          <app-search-dropdown [items]="branchOptions()" [displayWith]="displayPlain" [compareWith]="compare"
+            [clearable]="false" [searchable]="true" [value]="currentBranch()" (valueChange)="onBranchChange($any($event))"/>
+        </div>
+        <div class="cf-field cf-field--grow">
+          <label for="customer_OBalance">{{ 'CUSTOMERS.FORM.OPENING_BALANCE' | translate }}</label>
+          <input id="customer_OBalance" type="number" class="cf-input" [ngModel]="oBalanceData.openingBalance"
+            (ngModelChange)="onOBalanceChange($event)" [ngModelOptions]="{ standalone: true }"/>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ═══ Notes ═══ -->
+  <section class="cf-card">
+    <h2 class="cf-card__title">{{ 'CUSTOMERS.FORM.CUSTOMER_NOTES' | translate }}</h2>
+    <ul class="cf-notes">
+      @for (note of customerData.notes; track $index) {
+        <li class="cf-note">
+          <div class="cf-note__head">
+            <span>{{ note.createdAt | date: 'dd/MM/yyyy HH:mm' }} — {{ 'CUSTOMERS.FORM.BY' | translate }} {{ note.employeeName }}</span>
+            <button type="button" class="cf-link cf-link--danger" (click)="removeNote(note)">{{ 'COMMON.DELETE' | translate }}</button>
+          </div>
+          <p class="cf-note__text">{{ note.note }}</p>
+        </li>
+      }
+    </ul>
+    @if (!showedNoteBox) {
+      <button type="button" class="cf-btn cf-btn--end" (click)="showNoteBox()">{{ 'CUSTOMERS.FORM.ADD_NOTE' | translate }}</button>
+    } @else {
+      <textarea class="cf-input" rows="3" [ngModel]="newNote.note" (ngModelChange)="newNote.note = $event" [ngModelOptions]="{ standalone: true }"></textarea>
+      <button type="button" class="cf-btn cf-btn--primary cf-btn--end" [disabled]="!newNote.note?.trim()" (click)="addNote()">
+        {{ 'CUSTOMERS.FORM.ADD_NOTE' | translate }}
+      </button>
+    }
+  </section>
+</ng-container>

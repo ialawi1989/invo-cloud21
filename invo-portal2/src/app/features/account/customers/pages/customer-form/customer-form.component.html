@@ -1,0 +1,17 @@
+<div class="cfp">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+    <h1 class="page-header__title">{{ 'CUSTOMERS.TEXT' | translate }}</h1>
+  </header>
+
+  @if (customerForm) {
+    <form [formGroup]="customerForm" (ngSubmit)="save()" (keydown.enter)="$event.preventDefault()">
+      <app-customer-form-details [customerData]="customerData" [customerForm]="customerForm" [formStatus]="formStatus"/>
+
+      <app-form-sticky-footer>
+        <button type="button" class="cfp-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+        <button type="submit" class="cfp-btn cfp-btn--primary" [disabled]="!canSave || saving">{{ 'COMMON.SAVE' | translate }}</button>
+      </app-form-sticky-footer>
+    </form>
+  }
+</div>

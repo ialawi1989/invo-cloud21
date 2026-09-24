@@ -26,6 +26,7 @@ import { LanguageService } from '@core/i18n/language.service';
 import { withTranslations } from '@core/i18n/with-translations';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { ModalService } from '@shared/modal/modal.service';
+import { VouchersService } from '@features/promotions/services/vouchers.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 import { PickTaxModalComponent } from '@shared/components/pick-tax-modal/pick-tax-modal.component';
 import { ApiService } from '@core/http/api.service';
@@ -33,6 +34,8 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { getProductTypeBadgeStyle } from '../../utils/product-type-badge';
 import { ProductDetailDrawerComponent, ProductDetailDrawerData } from '../../components/product-detail-drawer/product-detail-drawer.component';
 import { ProductStockModalComponent, ProductStockModalData } from '../../components/product-stock-modal/product-stock-modal.component';
+import { ImportShopifyModalComponent } from '../../components/import-shopify-modal/import-shopify-modal.component';
+import { BulkTagsModalComponent } from '../../components/bulk-tags-modal/bulk-tags-modal.component';
 import {
   DropdownMenuBtnComponent,
   DropdownMenuBtnItem,
@@ -68,6 +71,7 @@ export class ProductsListComponent implements OnInit {
   private lang = inject(LanguageService);
   private privileges = inject(PrivilegeService);
   private modalService = inject(ModalService);
+  private vouchersService = inject(VouchersService);
   private api          = inject(ApiService);
 
   // ── Row-action privilege gates (used by the template) ─────────────────────
@@ -132,7 +136,17 @@ export class ProductsListComponent implements OnInit {
   /** "+ Add New" menu items — one row per product type the user
    *  has permission to create. */
   addNewMenuItems(): DropdownMenuBtnItem[] {
-    return this.addNewActions.map(a => this.toMenuItem(a));
+    const items = this.addNewActions.map(a => this.toMenuItem(a));
+    // Gift vouchers only appear once the company has enabled them (legacy gate).
+    if (this.vouchersEnabled()) {
+      items.push({
+        label: this.lang.instant('PRODUCTS.GIFT_VOUCHER'),
+        click: () => this.addNewProduct('voucher'),
+        disabled: false,
+        danger: false,
+      });
+    }
+    return items;
   }
 
   /** "..." overflow menu items: general actions, then a divider +
@@ -201,11 +215,21 @@ export class ProductsListComponent implements OnInit {
     message: '',
   };
 
+  /** Company gift-voucher switch (promotions → vouchers settings). */
+  vouchersEnabled = signal(false);
+
   async ngOnInit(): Promise<void> {
     // Full-bleed layout is now the default, owned by <app-list-page> itself
     // (desktop-only, self-managed shell) — nothing to wire here.
     await this.lang.loadFeature('products');
     this.initializeTranslations();
+    void this.loadVouchersEnabled();
+  }
+
+  private async loadVouchersEnabled(): Promise<void> {
+    try {
+      this.vouchersEnabled.set(!!(await this.vouchersService.getVouchersSettings())?.enabled);
+    } catch { /* leave the option hidden */ }
   }
 
 
@@ -540,6 +564,15 @@ export class ProductsListComponent implements OnInit {
       },
       {
         action: {
+          id: 'import-shopify',
+          label: this.lang.instant('PRODUCTS.ACTIONS.IMPORT_FROM_SHOPIFY'),
+          color: 'secondary',
+          handler: () => this.openShopifyImport(),
+        },
+        permission: 'productSecurity.actions.importExport.access',
+      },
+      {
+        action: {
           id: 'logs',
           label: this.lang.instant('PRODUCTS.ACTIONS.SHOW_LOGS'),
           color: 'secondary',
@@ -603,6 +636,15 @@ export class ProductsListComponent implements OnInit {
           handler: () => this.showBulkPrint(),
         },
         permission: 'productSecurity.actions.bulkPrint.access',
+      },
+      {
+        action: {
+          id: 'bulk-tags',
+          label: this.lang.instant('PRODUCTS.ACTIONS.BULK_TAGS'),
+          color: 'secondary',
+          handler: () => this.openBulkTags(),
+        },
+        permission: 'bulkTagsSecurity.actions.view.access',
       },
     ];
     bulkCandidates.forEach(({ action, permission }) => {
@@ -889,6 +931,23 @@ export class ProductsListComponent implements OnInit {
   addNewProduct(type: string): void {
     // Route pattern: /products/form/:type/:id (id = 'new' to create)
     this.router.navigate(['/products/form', type, 'new']);
+  }
+
+  openBulkTags(): void {
+    this.modalService.open<BulkTagsModalComponent, void, void>(BulkTagsModalComponent, {
+      size: 'md',
+    });
+  }
+
+  openShopifyImport(): void {
+    // Same closeable-only-via-buttons pattern as the Logs drawer — the
+    // import can run long, so an accidental backdrop click shouldn't
+    // dismiss it. The runner service keeps the import going even if
+    // the modal IS closed mid-run; reopening it re-attaches.
+    this.modalService.open<ImportShopifyModalComponent, void, void>(ImportShopifyModalComponent, {
+      size: 'lg',
+      closeOnBackdrop: false,
+    });
   }
 
   openImportExport(): void {

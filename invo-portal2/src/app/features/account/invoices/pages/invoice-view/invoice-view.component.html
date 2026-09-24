@@ -1,0 +1,78 @@
+@if (invoice(); as inv) {
+  <div class="iv">
+    <header class="iv-head">
+      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+      <h1>{{ 'INVOICES.FORM.INVOICE' | translate }} {{ inv.invoiceNumber }}</h1>
+    </header>
+
+    <div class="iv-bar">
+      <button type="button" class="iv-btn iv-btn--danger" (click)="back()">{{ 'COMMON.BACK' | translate }}</button>
+      <span class="iv-spacer"></span>
+
+      @if (!isMerged(inv)) {
+        @if (canPrint) {
+          <app-dropdown-menu-btn [items]="printItems()" [appendToBody]="true" align="end" triggerClass="iv-btn">
+            {{ 'INVOICES.VIEW.PRINT' | translate }}
+          </app-dropdown-menu-btn>
+        }
+        <app-dropdown-menu-btn [items]="shareItems()" [appendToBody]="true" align="end" triggerClass="iv-btn">
+          {{ 'INVOICES.VIEW.SHARE' | translate }}
+        </app-dropdown-menu-btn>
+        @if (showEdit(inv)) {
+          <button type="button" class="iv-btn" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
+        }
+        @if (showPay(inv)) {
+          <button type="button" class="iv-btn iv-btn--primary" (click)="pay()">{{ 'INVOICES.LIST.PAY' | translate }}</button>
+        }
+        <app-dropdown-menu-btn [items]="exportItems()" [appendToBody]="true" align="end" triggerClass="iv-btn">
+          {{ 'INVOICES.VIEW.EXPORT' | translate }}
+        </app-dropdown-menu-btn>
+        @if (actionItems(inv).length) {
+          <app-dropdown-menu-btn [items]="actionItems(inv)" [appendToBody]="true" align="end" triggerClass="iv-btn">
+            {{ 'INVOICES.VIEW.ACTIONS' | translate }}
+          </app-dropdown-menu-btn>
+        }
+      }
+    </div>
+
+    @if (showApplyCredit(inv)) {
+      <div class="iv-alert">
+        {{ 'INVOICES.VIEW.CREDITS_AVAILABLE' | translate: { value: (customerCredit() | mycurrency) } }}
+        <a href="javascript:void(0)" (click)="applyCredit()">{{ 'INVOICES.VIEW.APPLY_NOW' | translate }}</a>
+      </div>
+    }
+
+    @if (!isMerged(inv)) {
+      <div class="iv-zoom">
+        <label for="iv-zoom">{{ 'INVOICES.VIEW.ZOOM' | translate }}</label>
+        <input id="iv-zoom" type="range" min="40" max="150" [ngModel]="zoom()" (ngModelChange)="setZoom($event)"/>
+        <span>{{ zoom() }}%</span>
+      </div>
+
+      <div class="iv-paper">
+        @if (template() && renderData(); as data) {
+          <div class="iv-paper__scale" [style.zoom]="zoom() / 100">
+            <app-document-paper [template]="template()!" [data]="data"/>
+          </div>
+        } @else if (!loading()) {
+          <div class="iv-empty">{{ 'INVOICES.VIEW.NO_TEMPLATE' | translate }}</div>
+        }
+      </div>
+    } @else {
+      <section class="iv-merged">
+        <p>
+          {{ 'INVOICES.VIEW.MERGED_WITH' | translate }}
+          <a href="javascript:void(0)" (click)="goToInvoice(inv.mergeWith)">#{{ inv.mergeWithInvoiceNumber }}</a>
+        </p>
+        <dl>
+          @if (inv.serviceName) { <div><dt>{{ 'INVOICES.VIEW.SERVICE' | translate }}</dt><dd>{{ inv.serviceName }}</dd></div> }
+          @if (inv.tableName) { <div><dt>{{ 'INVOICES.VIEW.TABLE' | translate }}</dt><dd>{{ inv.tableName }}</dd></div> }
+          @if (inv.invoiceNumber) { <div><dt>{{ 'INVOICES.LIST.INVOICE_NUMBER' | translate }}</dt><dd>#{{ inv.invoiceNumber }}</dd></div> }
+          @if (inv.refrenceNumber) { <div><dt>{{ 'INVOICES.FORM.REFERENCE_NUMBER' | translate }}</dt><dd>{{ inv.refrenceNumber }}</dd></div> }
+          @if (inv.employeeName) { <div><dt>{{ 'INVOICES.LIST.EMPLOYEE_NAME' | translate }}</dt><dd>{{ inv.employeeName }}</dd></div> }
+          @if (inv.branchName) { <div><dt>{{ 'INVOICES.LIST.BRANCH_NAME' | translate }}</dt><dd>{{ inv.branchName }}</dd></div> }
+        </dl>
+      </section>
+    }
+  </div>
+}

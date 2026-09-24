@@ -1,4 +1,5 @@
 import { FieldTemplate } from './field-template';
+import type { ProductPromotionSettingsFields } from '../product-promotion-settings.model';
 
 // Ported from InvoCloudFront2 product-form — drives per-type visibility/validation.
 // This file holds the shared interfaces only; concrete per-type configs live
@@ -56,6 +57,8 @@ export interface Fields {
   purchaseAccount?: FieldTemplate;
   isSaleItem?: FieldTemplate;
   saleAccount?: FieldTemplate;
+  /** Gift-voucher settings block (voucher product type only). */
+  promotionSettings?: ProductPromotionSettingsFields;
 }
 
 export interface PricingFields {

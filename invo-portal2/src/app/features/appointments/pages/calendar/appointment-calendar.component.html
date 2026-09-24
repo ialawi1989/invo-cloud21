@@ -42,6 +42,14 @@
   </aside>
 
   <main class="cal-main">
+    @if (mode() === 'settings') {
+      <header class="cal-toolbar cal-toolbar--settings">
+        <button type="button" class="cal-nav-btn cal-nav-btn--icon" (click)="mode.set('calendar')" [attr.aria-label]="'COMMON.BACK' | translate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h2 class="cal-toolbar__range">{{ 'APPOINTMENTS.SETTINGS' | translate }}</h2>
+      </header>
+    } @else {
     <header class="cal-toolbar">
       <div class="cal-toolbar__nav">
         <button type="button" class="cal-icon-btn" (click)="sidebarOpen.set(!sidebarOpen())"
@@ -121,12 +129,12 @@
         }
       </div>
     </header>
+    }
 
     <div class="cal-body">
       @if (mode() === 'settings') {
         <div class="cal-settings">
           <nav class="cal-settings__nav">
-            <div class="cal-settings__title">{{ 'APPOINTMENTS.SETTINGS' | translate }}</div>
             @if (canSeeServiceTeam()) {
               <button type="button" class="cal-settings__item" [class.is-on]="setting() === 'service-team'" (click)="setting.set('service-team')">
                 {{ 'APPOINTMENTS.SERVICE_TEAM.TITLE' | translate }}

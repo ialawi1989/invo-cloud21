@@ -1,0 +1,67 @@
+<app-modal-header [title]="'PRODUCTS.BULK_TAGS.TITLE' | translate" />
+
+<div class="btm__body">
+  <div class="btm-field">
+    <span>{{ 'PRODUCTS.BULK_TAGS.TAG_LABEL' | translate }}</span>
+    <app-search-dropdown #tagDropdown
+      [loadFn]="loadTags"
+      [displayWith]="display"
+      [compareWith]="compare"
+      [clearable]="true"
+      [searchable]="true"
+      [placeholder]="'PRODUCTS.BULK_TAGS.TAG_PLACEHOLDER' | translate"
+      [searchPlaceholder]="'PRODUCTS.BULK_TAGS.SEARCH_PLACEHOLDER' | translate"
+      [value]="selectedTag()"
+      (valueChange)="onTagChange($any($event))"
+      (searchChange)="tagQuery.set($event)">
+      <ng-template #footer>
+        @if (tagQuery().trim()) {
+          <button type="button" class="btm-create" (click)="createTag()">
+            + {{ 'PRODUCTS.BULK_TAGS.CREATE_TAG' | translate: { tag: tagQuery().trim() } }}
+          </button>
+        }
+      </ng-template>
+    </app-search-dropdown>
+  </div>
+
+  <div class="btm-picked-header">
+    <span class="btm-picked-count">{{ 'PRODUCTS.BULK_TAGS.PICKED_COUNT' | translate: { count: pickedProducts().length } }}</span>
+    <div class="btm-picked-actions">
+      @if (pickedProducts().length) {
+        <button type="button" class="btm-link" (click)="clearAll()">{{ 'PRODUCTS.BULK_TAGS.CLEAR_ALL' | translate }}</button>
+      }
+      <button type="button" class="btm-btn" (click)="openPicker()">{{ 'PRODUCTS.BULK_TAGS.ADD_PRODUCTS' | translate }}</button>
+    </div>
+  </div>
+
+  <div class="btm-list">
+    @if (!pickedProducts().length) {
+      <p class="btm-hint">{{ 'PRODUCTS.BULK_TAGS.EMPTY_HINT' | translate }}</p>
+    }
+    @for (p of pickedProducts(); track p.id) {
+      <div class="btm-row">
+        <div class="btm-row__main">
+          <strong>{{ p.name }}</strong>
+          @if (p.categoryName) { <span class="btm-row__meta">{{ p.categoryName }}</span> }
+        </div>
+        <div class="btm-row__tags">
+          @if (p.tags?.length) {
+            @for (t of p.tags; track t) { <span class="btm-chip">{{ t }}</span> }
+          } @else {
+            <span class="btm-row__meta">{{ 'PRODUCTS.BULK_TAGS.NO_TAGS' | translate }}</span>
+          }
+        </div>
+        <button type="button" class="btm-remove" [attr.aria-label]="'PRODUCTS.BULK_TAGS.REMOVE' | translate" (click)="removeProduct(p.id)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btm-btn" (click)="ref.close()">{{ 'COMMON.CANCEL' | translate }}</button>
+  <button type="button" class="btm-btn btm-btn--primary" [disabled]="!canApply() || saving()" (click)="apply()">
+    {{ 'PRODUCTS.BULK_TAGS.APPLY' | translate }}
+  </button>
+</app-modal-footer>

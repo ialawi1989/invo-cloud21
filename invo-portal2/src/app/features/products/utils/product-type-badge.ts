@@ -31,6 +31,7 @@ const PALETTE: Record<string, { bg: string; color: string }> = {
   menuItem:      { bg: '#ede9fe', color: '#6d28d9' }, // purple
   menuSelection: { bg: '#fee2e2', color: '#b91c1c' }, // red   (was indigo, too close to blue)
   tailoring:     { bg: '#ecfccb', color: '#4d7c0f' }, // lime  (was teal, too close to cyan)
+  voucher:       { bg: '#ffedd5', color: '#c2410c' }, // orange
   matrix:        { bg: '#f1f5f9', color: '#475569' }, // slate
 };
 

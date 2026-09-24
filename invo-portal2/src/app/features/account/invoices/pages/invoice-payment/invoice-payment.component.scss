@@ -1,0 +1,20 @@
+.ipp { padding: 24px; padding-bottom: 96px; max-width: 860px; display: flex; flex-direction: column; gap: 16px; }
+.page-header { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;
+  &__title { margin: 0; font-size: 24px; font-weight: 700; color: #0f172a; } }
+
+.ipp-card { border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; padding: 16px; display: flex; flex-direction: column; gap: 14px;
+  h2 { margin: 0; font-size: 16px; font-weight: 700; color: #0f172a; } }
+.ipp-row { display: grid; gap: 12px; grid-template-columns: 1fr; @media (min-width: 720px) { grid-template-columns: 1fr 1fr; } }
+.ipp-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ipp-label { font-size: 13px; font-weight: 600; color: #475569; }
+.req { color: #dc2626; }
+.ipp-input { border: 1px solid #d0d5dd; border-radius: 8px; padding: 9px 12px; font: inherit; width: 100%; &:focus { outline: 2px solid rgba(38, 145, 164, .25); border-color: #2691a4; } }
+.ipp-amount { display: flex; align-items: center; gap: 8px; }
+.ipp-suffix { font-weight: 600; color: #475569; }
+.ipp-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.ipp-tag { display: inline-block; font-size: 12.5px; color: #475569; background: #f1f5f9; border-radius: 999px; padding: 3px 10px; }
+.ipp-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+.ipp-adv { border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; summary { cursor: pointer; font-weight: 600; color: #334155; } }
+.ipp-btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  &:hover:not(:disabled) { background: #f8fafc; } &:disabled { opacity: .5; cursor: not-allowed; }
+  &--primary { border-color: #2691a4; background: #2691a4; color: #fff; &:hover:not(:disabled) { background: #227d8d; } } }

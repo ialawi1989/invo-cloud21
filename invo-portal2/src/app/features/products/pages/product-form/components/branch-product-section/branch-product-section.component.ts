@@ -41,6 +41,7 @@ import {
   ImportWizardConfig,
 } from '@shared/components/import-wizard/import-wizard.types';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { ExactToggleComponent } from '@shared/components/exact-toggle/exact-toggle.component';
 import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 import { ProductsService } from '../../../../services/products.service';
 
@@ -158,6 +159,7 @@ const FIELD_LABELS: Record<string, string> = {
     BranchSerialsComponent,
     BranchBatchesComponent,
     MycurrencyPipe,
+    ExactToggleComponent,
     MynumberPipe,
   ],
   templateUrl: './branch-product-section.component.html',
@@ -165,6 +167,7 @@ const FIELD_LABELS: Record<string, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BranchProductSectionComponent implements OnInit {
+  showExact = signal(false);
   private fb = inject(FormBuilder);
   private destroyRef = inject(DestroyRef);
   private branchesSvc = inject(BranchConnectionService);

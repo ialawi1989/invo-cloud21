@@ -23,7 +23,8 @@
 
             @if (hideDefaultPriceInput()) {
               <div class="pf-readonly">
-                <strong>{{ totalPriceForDisplay() | mycurrency }}</strong>
+                <strong>{{ totalPriceForDisplay() | mycurrency:{ exact: showExact() } }}</strong>
+                <app-exact-toggle [on]="showExact()" (toggle)="showExact.set(!showExact())"/>
               </div>
               <p class="pf-hint">{{ 'PRODUCTS.PRICING.PRICE_DERIVED_FROM_SELECTION' | translate }}</p>
             } @else {
@@ -119,7 +120,8 @@
           <div class="pf-field">
             <label class="pf-label">{{ 'PRODUCTS.PRICING.PROFIT' | translate }}</label>
             <div class="pf-readonly pf-readonly--strong" [class.pf-readonly--warn]="profit() < 0">
-              {{ profit() | mycurrency }}
+              {{ profit() | mycurrency:{ exact: showExact() } }}
+              <app-exact-toggle [on]="showExact()" (toggle)="showExact.set(!showExact())"/>
             </div>
             @if (profit() < 0) {
               <p class="pf-error">{{ 'PRODUCTS.PRICING.PROFIT_LOSS_WARN' | translate }}</p>

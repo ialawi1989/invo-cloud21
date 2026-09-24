@@ -1,0 +1,143 @@
+<div class="vf-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="page-header__title">
+      {{ (isEdit() ? 'PROMOTIONS.PROMOTIONS_VOUCHERS.EDIT_PROMOTIONS_VOUCHERS' : 'PROMOTIONS.PROMOTIONS_VOUCHERS.GIVE_PROMOTIONS_VOUCHERS') | translate }}
+    </h1>
+  </header>
+
+  @if (!loading() && settings() && !settings()!.enabled) {
+    <div class="vf-disabled">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.SORRY_THE_VOUCHERS_SETTING_IS_DISABLED' | translate }}</div>
+  }
+
+  @if (voucher(); as v) {
+    @if (settings()?.enabled) {
+      <section class="vf-card">
+        <app-translated-string-input
+          label="PROMOTIONS.PROMOTIONS_VOUCHERS.PROMOTIONS_VOUCHERS_NAME"
+          [value]="v.vouchersName" (valueChange)="patch({ vouchersName: $event })"/>
+      </section>
+
+      @if (!isEdit()) {
+        <section class="vf-card">
+          <div class="vf-field">
+            <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.COUNT' | translate }}</label>
+            <input type="number" class="vf-input" [ngModel]="count()" (ngModelChange)="count.set($event)"/>
+            @if (!countValid()) {
+              <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.AMOUNT_MUST_BE_MORE_THAN_0' | translate }}</p>
+            }
+          </div>
+        </section>
+      }
+
+      <section class="vf-card">
+        <div class="vf-field">
+          <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.CUSTOMER' | translate }}</label>
+          <app-customer-picker (valueChange)="onCustomer($event)"/>
+        </div>
+
+        <div class="vf-field">
+          <label>
+            {{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PHONE_NUMBER' | translate }}
+            @if (!v.private) { <span class="vf-optional">({{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.OPTIONAL' | translate }})</span> }
+          </label>
+          <input type="tel" class="vf-input" [disabled]="customerSelected()"
+            [ngModel]="v.phoneNumber" (ngModelChange)="patch({ phoneNumber: $event })"/>
+          @switch (phoneError()) {
+            @case ('REQUIRED') { <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PHONE_NUMBER_IS_REQUIRED' | translate }}</p> }
+            @case ('INVALID') { <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PHONE_NUMBER_IS_INVALID' | translate }}</p> }
+          }
+        </div>
+
+        <div class="vf-field">
+          <label>
+            {{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EMAIL' | translate }}
+            <span class="vf-optional">({{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.OPTIONAL' | translate }})</span>
+          </label>
+          <input type="text" class="vf-input" [disabled]="customerSelected()"
+            [ngModel]="v.customerEmail" (ngModelChange)="patch({ customerEmail: $event })"/>
+          @if (!emailValid()) {
+            <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EMAIL_IS_INVALID' | translate }}</p>
+          }
+        </div>
+      </section>
+
+      @if (!isEdit()) {
+        <section class="vf-card">
+          <div class="vf-field">
+            <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.VOUCHER_AMOUNT' | translate }}</label>
+            <input type="number" class="vf-input" [step]="amountStep()"
+              [ngModel]="v.initialVoucher" (ngModelChange)="patch({ initialVoucher: $event })"
+              (input)="limitDecimals($event)" (blur)="roundAmount()"/>
+            @switch (amountError()) {
+              @case ('LESS_THAN_1') { <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.GIVEN_VOUCHERS_MUST_BE_GREATER_THAN_0' | translate }}</p> }
+              @case ('REQUIRED') { <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.GIVEN_VOUCHERS_REQUIRED' | translate }}</p> }
+            }
+          </div>
+        </section>
+
+        <section class="vf-card vf-card--row">
+          <div class="vf-field">
+            <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTIVE_DATE' | translate }}</label>
+            <app-date-picker mode="single" [min]="v.givenDate" [value]="v.activeDate" (valueChange)="onActiveDate($event)"/>
+            @if (!v.activeDate) {
+              <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTIVE_DATE_REQUIRED' | translate }}</p>
+            }
+          </div>
+          <div class="vf-field">
+            <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXPIRY_DATE' | translate }}</label>
+            <app-date-picker mode="single" [min]="minExpiry()" [value]="v.expiryDate" (valueChange)="onExpiryDate($event)"/>
+            @if (!v.expiryDate) {
+              <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXPIRY_DATE_REQUIRED' | translate }}</p>
+            }
+          </div>
+        </section>
+      }
+
+      <section class="vf-card">
+        <label class="vf-check">
+          <input type="checkbox" [ngModel]="v.oneTimeUse" (ngModelChange)="patch({ oneTimeUse: $event })"/>
+          <span>
+            <strong>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ONE_TIME_USE' | translate }}</strong>
+            <small>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ONE_TIME_USE_HINT' | translate }}</small>
+          </span>
+        </label>
+        <label class="vf-check">
+          <input type="checkbox" [ngModel]="v.private" (ngModelChange)="patch({ private: $event })"/>
+          <span>
+            <strong>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PRIVATE' | translate }}</strong>
+            <small>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PRIVATE_HINT' | translate }}</small>
+          </span>
+        </label>
+      </section>
+
+      <section class="vf-card">
+        @if (isEdit()) {
+          <app-translated-string-input label="PROMOTIONS.PROMOTIONS_VOUCHERS.REASON"
+            [value]="editReason()" (valueChange)="editReason.set($event)"/>
+          <div class="vf-field">
+            <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.NOTE' | translate }}</label>
+            <textarea class="vf-input" rows="3" [ngModel]="editNotes()" (ngModelChange)="editNotes.set($event)"></textarea>
+          </div>
+        } @else {
+          <app-translated-string-input label="PROMOTIONS.PROMOTIONS_VOUCHERS.REASON" [required]="true"
+            [value]="v.reason" (valueChange)="patch({ reason: $event })"/>
+          @if (!reasonValid()) {
+            <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.REASON_REQUIRED' | translate }}</p>
+          }
+          <div class="vf-field">
+            <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.NOTE' | translate }}</label>
+            <textarea class="vf-input" rows="3" [ngModel]="v.note" (ngModelChange)="patch({ note: $event })"></textarea>
+          </div>
+        }
+      </section>
+
+      <app-form-sticky-footer>
+        <button type="button" class="vf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+        <button type="button" class="vf-btn vf-btn--primary" [disabled]="!formValid() || saving()" (click)="save()">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </app-form-sticky-footer>
+    }
+  }
+</div>

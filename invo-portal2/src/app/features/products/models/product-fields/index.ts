@@ -14,6 +14,7 @@ import { packageFields }       from './package.fields';
 import { menuItemFields }      from './menuItem.fields';
 import { menuSelectionFields } from './menuSelection.fields';
 import { tailoringFields }     from './tailoring.fields';
+import { voucherFields }       from './voucher.fields';
 
 // Re-export individual configs so consumers can import a single type lazily.
 export {
@@ -26,6 +27,7 @@ export {
   menuItemFields,
   menuSelectionFields,
   tailoringFields,
+  voucherFields,
 };
 
 /**
@@ -45,4 +47,5 @@ export class ProductFields {
   menuItem:      Fields = menuItemFields;
   menuSelection: Fields = menuSelectionFields;
   tailoring:     Fields = tailoringFields;
+  voucher:       Fields = voucherFields;
 }

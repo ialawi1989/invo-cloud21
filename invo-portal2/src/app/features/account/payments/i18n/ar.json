@@ -1,0 +1,90 @@
+{
+  "PAYMENTS": {
+    "DASHBOARD": "لوحة التحكم",
+    "ADD_NEW": "دفعة جديدة",
+    "SEARCH_PLACEHOLDER": "البحث في المدفوعات",
+    "EMPTY": "لا توجد مدفوعات",
+    "LIST": {
+      "PAYMENTS_LIST": "المدفوعات",
+      "PAYMENT_NUMBER": "رقم الدفعة",
+      "PAYMENT_DATE": "تاريخ الدفع",
+      "CUSTOMER_NAME": "العميل",
+      "INVOICES": "الفواتير",
+      "PAYMENT_METHOD": "طريقة الدفع",
+      "REFERENCE_NUMBER": "الرقم المرجعي",
+      "AMOUNT": "المبلغ",
+      "BRANCH_NAME": "الفرع",
+      "EMPLOYEE_NAME": "الموظف",
+      "CREATED_DATE": "تاريخ الإنشاء"
+    },
+    "FILTERS": {
+      "SOURCE": "المصدر",
+      "BRANCH": "الفرع",
+      "DATE": "التاريخ"
+    },
+    "VIEW": {
+      "VIEW_PAYMENT": "عرض الدفعة",
+      "PAYMENT": "دفعة",
+      "PRINT": "طباعة",
+      "SEND": "إرسال",
+      "CONFIRM_DELETE": "هل أنت متأكد من حذف هذه الدفعة؟",
+      "DELETED": "تم الحذف بنجاح",
+      "RECEIPT": "إيصال دفع",
+      "RECEIVED_FROM": "مستلم من",
+      "ADDRESS": "عنوان العميل",
+      "AMOUNT_RECEIVED": "المبلغ المستلم",
+      "EQUIVALENT_AMOUNT": "المبلغ المعادل",
+      "PAYMENT_FOR": "دفعة عن",
+      "INVOICE_NUMBER": "رقم الفاتورة",
+      "PAID_ON": "تاريخ الدفع",
+      "INVOICE_AMOUNT": "مبلغ الفاتورة",
+      "PAYMENT_AMOUNT": "مبلغ الدفعة"
+    },
+    "FORM": {
+      "NEW_PAYMENT": "دفعة جديدة",
+      "EDIT_PAYMENT": "تعديل الدفعة",
+      "PAYMENT": "دفعة",
+      "GENERAL_INFORMATION": "معلومات عامة",
+      "SELECT_CUSTOMER": "اختر أو ابحث عن عميل",
+      "OUTSTANDING_RECEIVABLE": "المستحقات القائمة",
+      "PAYMENT_FORM": "الدفعة",
+      "PAYMENT_MADE": "المبلغ المدفوع",
+      "EQUIVALENT_AMOUNT": "المبلغ المعادل",
+      "SELECT_METHOD": "اختر طريقة الدفع",
+      "ACCOUNT": "الحساب",
+      "RATE": "سعر الصرف",
+      "BANK_CHARGE": "رسوم البنك",
+      "BANK_CHARGE_INFO": "رسوم البنك لـ {{payment}} هي {{value}}",
+      "APPLY_PROMPT": "هل تريد تطبيق المبلغ على الفواتير؟",
+      "APPLY": "تطبيق",
+      "PAYMENT_LINES": "الفواتير",
+      "ALL_BRANCHES": "كل الفروع",
+      "THIS_BRANCH": "هذا الفرع",
+      "PAY_IN_FULL": "سداد كامل",
+      "RESET": "إعادة ضبط",
+      "DATE": "التاريخ",
+      "BALANCE_DUE": "المبلغ المستحق",
+      "BALANCE": "الرصيد",
+      "NO_INVOICES": "لا توجد فواتير مفتوحة",
+      "TOTAL": "الإجمالي",
+      "TENDER_RECEIVED": "المبلغ المستلم",
+      "CHANGE_AMOUNT": "مبلغ الباقي",
+      "CANCEL_CHANGE": "إلغاء الباقي",
+      "CREDIT_TO_WALLET": "إضافة إلى المحفظة",
+      "UNDO": "تراجع",
+      "ATTACHMENTS": "المرفقات"
+    },
+    "REQUIRED": {
+      "CUSTOMER": "العميل",
+      "DATE": "تاريخ الدفع",
+      "AMOUNT": "مبلغ الدفعة",
+      "METHOD": "طريقة الدفع"
+    },
+    "REMAINING": {
+      "TITLE": "المبلغ المتبقي",
+      "MESSAGE": "الدفعة أكبر من الفواتير المحددة بمبلغ {{amount}}. أين تريد إضافته؟",
+      "WALLET": "إضافة إلى المحفظة",
+      "CHANGE": "إعادته كباقي"
+    }
+  }
+}

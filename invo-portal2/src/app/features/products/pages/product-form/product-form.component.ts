@@ -38,6 +38,8 @@ import { ToastService } from '@shared/components/toast/toast.service';
 
 import { ProductsService } from '../../services/products.service';
 import { Product } from '../../models/product-form.model';
+import { VouchersService } from '@features/promotions/services/vouchers.service';
+import { PromotionSettingsComponent } from './components/promotion-settings/promotion-settings.component';
 import { Fields, ProductFields } from '../../models/product-fields.model';
 
 import { ProductFormPrefsService } from './services/product-form-prefs.service';
@@ -86,7 +88,7 @@ type FormStatus = 'new' | 'edit';
  *
  * Route:  /products/form/:type/:id
  * `type` is one of: inventory | serialized | batch | kit | service |
- *                   package | menuItem | menuSelection | tailoring
+ *                   package | menuItem | menuSelection | tailoring | voucher
  * `id`   is '0' for a new product, otherwise the existing product id.
  */
 @Component({
@@ -99,6 +101,7 @@ type FormStatus = 'new' | 'edit';
     BreadcrumbsComponent,
     CommonFieldsComponent,
     ProductPricingComponent,
+    PromotionSettingsComponent,
     InventoryDetailsComponent,
     CategoryOptionsComponent,
     SupplierListProductComponent,
@@ -134,6 +137,7 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private productsService = inject(ProductsService);
+  private vouchersService = inject(VouchersService);
   private translate = inject(TranslateService);
   private modalService = inject(ModalService);
   private toast = inject(ToastService);
@@ -143,7 +147,7 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
   // ── Types accepted by the form ──────────────────────────────────────────────
   private static readonly ALLOWED_TYPES = [
     'inventory', 'serialized', 'batch', 'kit', 'service',
-    'package', 'menuItem', 'menuSelection', 'tailoring',
+    'package', 'menuItem', 'menuSelection', 'tailoring', 'voucher',
   ] as const;
 
   // ── Reactive state (signals) ────────────────────────────────────────────────
@@ -306,6 +310,19 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
       info.type = type;
     }
 
+    // Voucher-type products carry promotion settings; when a product has none yet
+    // they start from the company's gift-voucher defaults (legacy behaviour —
+    // note the legacy default omits oneTimeUse / private).
+    if (this.fieldsOptions()?.promotionSettings != null && info.promotionSettings == null) {
+      const def = await this.vouchersService.getVouchersSettings();
+      info.promotionSettings = {
+        voucherName: def.vouchersName,
+        initialVoucher: 1,
+        expiryPeriod: def.expiryPeriod,
+        activePeriod: def.activePeriod,
+      } as any;
+    }
+
     this.productInfo.set(info);
 
     // Reset form group for the new context
@@ -418,6 +435,7 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
     ids.add('branches');
     ids.add('product-options');
     if (f?.pricing)                                               ids.add('pricing');
+    if (f?.promotionSettings && this.productInfo().promotionSettings) ids.add('promotion-settings');
     if (f?.inventory)                                             ids.add('inventory');
     if (f?.suppliers?.isVisible
         && this.privileges.check('productSecurity.actions.supplierSection.access')) ids.add('suppliers');
@@ -656,6 +674,7 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
       case 'menuItem':      return 'MENU_ITEM';
       case 'menuSelection': return 'MENU_SELECTION';
       case 'tailoring':     return 'TAILORING';
+      case 'voucher':       return 'VOUCHER';
       default:              return type.toUpperCase();
     }
   }

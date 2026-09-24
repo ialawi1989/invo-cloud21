@@ -6,6 +6,7 @@ import { ModalRef } from '../../../../shared/modal/modal.service';
 import { ModalHeaderComponent } from '../../../../shared/modal/modal-header.component';
 import { ModalFooterComponent } from '../../../../shared/modal/modal-footer.component';
 import { MycurrencyPipe, MynumberPipe } from '../../../../core/pipes';
+import { ExactToggleComponent } from '../../../../shared/components/exact-toggle/exact-toggle.component';
 import { ProductsService, BranchSummary, KitBuilderUsage } from '../../services/products.service';
 
 export interface KitBuildModalData {
@@ -19,7 +20,7 @@ export interface KitBuildModalData {
 @Component({
   selector: 'app-kit-build-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalHeaderComponent, ModalFooterComponent, MycurrencyPipe, MynumberPipe],
+  imports: [CommonModule, FormsModule, ModalHeaderComponent, ModalFooterComponent, MycurrencyPipe, MynumberPipe, ExactToggleComponent],
   template: `
     <app-modal-header
       [title]="'Build a kit'"
@@ -68,10 +69,10 @@ export interface KitBuildModalData {
                   <span class="usage-pill">×{{ u.qty | mynumber }}</span>
                 </td>
                 <td class="end">
-                  <span class="mono">{{ u.qty * u.unitCost | mycurrency }}</span>
+                  <span class="mono">{{ u.qty * u.unitCost | mycurrency:{ exact: showExact() } }}</span>
                   @if (qty() > 0) {
                     <div class="delta delta--down">
-                      −{{ qty() * u.qty * u.unitCost | mycurrency }}
+                      −{{ qty() * u.qty * u.unitCost | mycurrency:{ exact: showExact() } }}
                     </div>
                   }
                 </td>
@@ -84,9 +85,10 @@ export interface KitBuildModalData {
               <th></th>
               <th class="usage-col"></th>
               <th class="end">
-                <span class="mono">{{ totalCost() | mycurrency }}</span>
+                <span class="mono">{{ totalCost() | mycurrency:{ exact: showExact() } }}</span>
+                <app-exact-toggle [on]="showExact()" (toggle)="showExact.set(!showExact())"/>
                 @if (qty() > 0) {
-                  <div class="delta delta--down">−{{ qty() * totalCost() | mycurrency }}</div>
+                  <div class="delta delta--down">−{{ qty() * totalCost() | mycurrency:{ exact: showExact() } }}</div>
                 }
               </th>
             </tr>
@@ -203,6 +205,7 @@ export class KitBuildModalComponent {
   ref  = inject<ModalRef<{ onHand?: number }>>(MODAL_REF);
   private svc = inject(ProductsService);
 
+  showExact = signal(false);
   qty   = signal(0);
   busy  = signal(false);
   error = signal<string | null>(null);

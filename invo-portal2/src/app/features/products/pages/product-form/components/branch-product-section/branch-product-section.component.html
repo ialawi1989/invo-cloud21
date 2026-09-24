@@ -292,7 +292,8 @@
                     }
                     @if (canViewStockValue) {
                       <div class="pf-bp-stat">
-                        <strong>{{ activeStockValue() | mycurrency }}</strong>
+                        <strong>{{ activeStockValue() | mycurrency:{ exact: showExact() } }}</strong>
+                        <app-exact-toggle [on]="showExact()" (toggle)="showExact.set(!showExact())"/>
                         <span>{{ 'PRODUCTS.FORM.STOCK_VALUE' | translate }}</span>
                       </div>
                     }
@@ -394,7 +395,8 @@
                   @if (canManageUnitCost && productInfo().id) {
                     <div class="pf-bp-stats">
                       <div class="pf-bp-stat">
-                        <strong [class.pf-bp-stat--bad]="activeBranchProfit() < 0">{{ activeBranchProfit() | mycurrency }}</strong>
+                        <strong [class.pf-bp-stat--bad]="activeBranchProfit() < 0">{{ activeBranchProfit() | mycurrency:{ exact: showExact() } }}</strong>
+                        <app-exact-toggle [on]="showExact()" (toggle)="showExact.set(!showExact())"/>
                         <span>{{ 'PRODUCTS.PRICING.PROFIT' | translate }}</span>
                       </div>
                       <div class="pf-bp-stat">

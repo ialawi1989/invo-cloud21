@@ -1,0 +1,64 @@
+<app-modal-header [title]="data.title | translate" />
+
+<div class="pam__body">
+  @if (kind === 'extend') {
+    <div class="pam-field">
+      <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXPIRY_DATE' | translate }}</label>
+      <app-date-picker mode="single" [min]="today" [value]="endDate()" (valueChange)="onDate($event)"/>
+      @if (!dateValid()) {
+        <p class="pam-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXPIRY_DATE_REQUIRED' | translate }}</p>
+      }
+    </div>
+  }
+
+  @if (kind === 'spend' || kind === 'refund') {
+    <div class="pam-field">
+      <label>{{ (kind === 'spend' ? 'PROMOTIONS.PROMOTIONS_VOUCHERS.VOUCHERS_AMOUNT' : 'PROMOTIONS.PROMOTIONS_VOUCHERS.AMOUNT') | translate }}</label>
+      <input type="number" class="pam-input" [step]="amountStep()"
+        [disabled]="!!data.oneTimeUse"
+        [ngModel]="amount()" (ngModelChange)="amount.set($event)" (input)="onAmountInput($event)"/>
+      @if (data.oneTimeUse) {
+        <p class="pam-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ITS_ONE_TIME_USE' | translate }}</p>
+      }
+      @switch (amountError()) {
+        @case ('LESS_THAN_0') { <p class="pam-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.GIVEN_VOUCHERS_MUST_BE_GREATER_THAN_0' | translate }}</p> }
+        @case ('LESS_THAN_1') { <p class="pam-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.GIVEN_VOUCHERS_MUST_BE_GREATER_THAN_0' | translate }}</p> }
+        @case ('REQUIRED') { <p class="pam-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.GIVEN_VOUCHERS_REQUIRED' | translate }}</p> }
+        @case ('MORE_THAN_BALANCE') { <p class="pam-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.GIVEN_VOUCHERS_MORE_THAN_ACTIVE_VOUCHERS' | translate }}</p> }
+      }
+    </div>
+  }
+
+  @if (kind === 'spend') {
+    <div class="pam-field">
+      <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ORDER_NUMBER' | translate }}</label>
+      <app-invoice-picker [phoneNumber]="data.phoneNumber ?? ''" [value]="invoice()" (valueChange)="onInvoice($event)"/>
+    </div>
+  }
+
+  @if (kind === 'email') {
+    <div class="pam-field">
+      <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EMAIL' | translate }}</label>
+      <input type="email" class="pam-input" [ngModel]="email()" (ngModelChange)="email.set($event)"/>
+      @if (email() && !emailValid()) {
+        <p class="pam-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EMAIL_IS_INVALID' | translate }}</p>
+      }
+    </div>
+  }
+
+  <app-translated-string-input label="PROMOTIONS.PROMOTIONS_VOUCHERS.REASON"
+    [required]="true" [value]="reason()" (valueChange)="reason.set($event)"/>
+  @if (!reasonValid()) {
+    <p class="pam-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.REASON_REQUIRED' | translate }}</p>
+  }
+
+  <div class="pam-field">
+    <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.NOTE' | translate }}</label>
+    <textarea class="pam-input" rows="3" [ngModel]="note()" (ngModelChange)="note.set($event)"></textarea>
+  </div>
+</div>
+
+<app-modal-footer>
+  <button type="button" class="pam-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+  <button type="button" class="pam-btn pam-btn--primary" [disabled]="!valid()" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+</app-modal-footer>

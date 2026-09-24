@@ -56,7 +56,8 @@
 
         <div class="prp-line__cost">
           <label>{{ 'PRODUCTS.PRODUCT_RECIPE.LINE_COST' | translate }}</label>
-          <strong>{{ lineCost(item) | mycurrency }}</strong>
+          <strong>{{ lineCost(item) | mycurrency:{ exact: showExact() } }}</strong>
+          <app-exact-toggle [on]="showExact()" (toggle)="showExact.set(!showExact())"/>
         </div>
 
         <div class="prp-line__actions">
@@ -79,6 +80,12 @@
       </li>
     }
   </ul>
+
+  <div class="prp-total">
+    <span>{{ 'PRODUCTS.PRODUCT_RECIPE.TOTAL_COST' | translate }}</span>
+    <strong>{{ totalCost() | mycurrency:{ exact: showExact() } }}</strong>
+    <app-exact-toggle [on]="showExact()" (toggle)="showExact.set(!showExact())"/>
+  </div>
 
   <button type="button" class="prp-addstrip" (click)="addItems()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>

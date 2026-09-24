@@ -1,0 +1,295 @@
+@if (customer(); as c) {
+  <div class="cd">
+    <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+
+    <header class="cd-head">
+      <div class="cd-head__who">
+        <span class="cd-avatar">{{ initial(c) }}</span>
+        <div>
+          <h1>{{ c.name }}</h1>
+          <div class="cd-sub">
+            @if (subCustomers().length) {
+              <span>{{ subCustomers().length }} {{ 'CUSTOMERS.DASHBOARD_PAGE.SUB_CUSTOMERS_LOWERCASE' | translate }}</span>
+            }
+            @if (c.parentName) {
+              <span><b>{{ 'CUSTOMERS.DASHBOARD_PAGE.PARENT' | translate }}:</b> {{ c.parentName }}</span>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="cd-head__actions">
+        <a class="cd-btn cd-btn--primary" [routerLink]="['/account/invoices/new']" [queryParams]="{ customerId: customerId }">+ {{ 'CUSTOMERS.DASHBOARD_PAGE.NEW_INVOICE' | translate }}</a>
+        <a class="cd-btn" [routerLink]="['/account/customers', customerId]">{{ 'COMMON.EDIT' | translate }}</a>
+      </div>
+    </header>
+
+    @if (c.hasChild) {
+      <section class="cd-card cd-sub-toggle">
+        <label class="cd-check">
+          <input type="checkbox" [ngModel]="includeSub()" (ngModelChange)="onIncludeSub($event)"/>
+          {{ 'CUSTOMERS.DASHBOARD_PAGE.INCLUDE_SUB_CUSTOMERS_DATA' | translate }}
+        </label>
+        @if (includeSub()) {
+          <span class="cd-pill">{{ 'CUSTOMERS.DASHBOARD_PAGE.CONSOLIDATED_VIEW_ACTIVE' | translate }}</span>
+          <div class="cd-sublist">
+            <h4>{{ 'CUSTOMERS.DASHBOARD_PAGE.SUB_CUSTOMERS_INCLUDED' | translate }}</h4>
+            <div class="cd-grid cd-grid--3">
+              @for (s of subCustomers(); track s.id ?? $index) {
+                <div class="cd-mini">
+                  <div>
+                    <b>{{ s.name }}</b>
+                    <small>{{ 'CUSTOMERS.DASHBOARD_PAGE.UNUSED_CREDIT' | translate }}: {{ (s.unusedCredit || 0) | mycurrency }}</small>
+                  </div>
+                  <span class="cd-neg">{{ s.outStandingRecivables | mycurrency }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </section>
+    }
+
+    @if (overview(); as o) {
+      <div class="cd-grid cd-grid--3">
+        <div class="cd-kpi cd-kpi--red">
+          <span>{{ 'CUSTOMERS.DASHBOARD_PAGE.OUTSTANDING_RECEIVABLE' | translate }}</span>
+          <strong>{{ o.outStandingRecivable | mycurrency }}</strong>
+        </div>
+        <div class="cd-kpi cd-kpi--blue">
+          <span>{{ 'CUSTOMERS.DASHBOARD_PAGE.WALLET_BALANCE' | translate }}</span>
+          <strong>{{ (o.unusedCredit || 0) | mycurrency }}</strong>
+        </div>
+        <div class="cd-kpi cd-kpi--green">
+          <span>{{ 'CUSTOMERS.DASHBOARD_PAGE.CREDIT_LIMIT' | translate }}</span>
+          <strong>{{ (c.creditLimit || 0) | mycurrency }}</strong>
+        </div>
+      </div>
+    }
+
+    <div class="cd-grid cd-grid--3">
+      <section class="cd-card">
+        <h4>{{ 'CUSTOMERS.DASHBOARD_PAGE.CONTACT_INFORMATION' | translate }}</h4>
+        @if (c.email) { <div class="cd-line">{{ c.email }}</div> }
+        @if (c.phone) { <div class="cd-line">{{ c.phone }}</div> }
+        @if (c.mobile) { <div class="cd-line">{{ c.mobile }}</div> }
+        @if (address(c); as a) { <div class="cd-line">{{ a }}</div> }
+      </section>
+
+      <section class="cd-card">
+        <h4>{{ 'CUSTOMERS.DASHBOARD_PAGE.ACCOUNT_DETAILS' | translate }}</h4>
+        <div class="cd-kv"><span>{{ 'CUSTOMERS.DASHBOARD_PAGE.CREDIT_LIMIT' | translate }}</span><b>{{ c.creditLimit | mycurrency }}</b></div>
+        @if (c.paymentTerm) {
+          <div class="cd-kv"><span>{{ 'CUSTOMERS.DASHBOARD_PAGE.PAYMENT_TERM' | translate }}</span><b>{{ c.paymentTerm }}</b></div>
+        }
+        @if (c.createdAt) {
+          <div class="cd-kv"><span>{{ 'CUSTOMERS.DASHBOARD_PAGE.CUSTOMER_SINCE' | translate }}</span><b>{{ c.createdAt | date: 'dd/MM/yyyy' }}</b></div>
+        }
+        @if (subCustomers().length) {
+          <div class="cd-kv"><span>{{ 'CUSTOMERS.DASHBOARD_PAGE.SUB_CUSTOMERS' | translate }}</span><b>{{ subCustomers().length }}</b></div>
+        }
+        @for (f of customFields(); track f.id) {
+          <div class="cd-kv"><span>{{ f.name }}</span><b>{{ f.value }}</b></div>
+        }
+      </section>
+
+      <section class="cd-card">
+        <h4>{{ 'CUSTOMERS.DASHBOARD_PAGE.PAYMENT_PERFORMANCE' | translate }}</h4>
+        <div class="cd-kv">
+          <span>{{ 'CUSTOMERS.DASHBOARD_PAGE.LAST_PAYMENT' | translate }}</span>
+          <b>
+            @if (lastPayment()?.id) {
+              <a [routerLink]="['/account/payments/view', lastPayment().id]">{{ (lastPayment()?.tenderAmount || 0) | mycurrency }}</a>
+            } @else { {{ 0 | mycurrency }} }
+          </b>
+        </div>
+        @if (daysSinceLastPayment() !== null) {
+          <div class="cd-kv"><span>{{ 'CUSTOMERS.DASHBOARD_PAGE.DAYS_SINCE_LAST_PAYMENT' | translate }}</span><b>{{ daysSinceLastPayment() }} {{ 'CUSTOMERS.DASHBOARD_PAGE.DAYS' | translate }}</b></div>
+        }
+        @if (utilization()) {
+          <div class="cd-kv">
+            <span>{{ 'CUSTOMERS.DASHBOARD_PAGE.CREDIT_UTILIZATION_RATIO' | translate }}</span>
+            <b class="cd-util">
+              <span class="cd-bar"><i [class.cd-bar--over]="utilization() > 100" [style.width.%]="utilization() > 100 ? 100 : utilization()"></i></span>
+              {{ utilization() | number: '1.0-2' }}%
+            </b>
+          </div>
+        }
+      </section>
+    </div>
+
+    <app-segmented-toggle class="cd-tabs" [options]="tabs" [value]="tab()" (valueChange)="selectTab($event)"/>
+
+    <!-- OVERVIEW -->
+    @if (tab() === 'overview') {
+      <section class="cd-card">
+        <h4>{{ 'CUSTOMERS.DASHBOARD_PAGE.AGING_REPORT' | translate }}</h4>
+        <div class="cd-grid cd-grid--4">
+          @for (b of agingBuckets(); track b.key) {
+            <div class="cd-aging cd-aging--{{ b.key }}">
+              <small>{{ b.label | translate }}</small>
+              <strong>{{ b.total | mycurrency }}</strong>
+            </div>
+          }
+        </div>
+        <div class="cd-table-wrap">
+          <table class="cd-table">
+            <thead>
+              <tr>
+                <th>{{ 'CUSTOMERS.DASHBOARD_PAGE.DATE' | translate }}</th>
+                <th>{{ 'CUSTOMERS.DASHBOARD_PAGE.INVOICE_NO' | translate }}</th>
+                <th>{{ 'CUSTOMERS.DASHBOARD_PAGE.STATUS' | translate }}</th>
+                <th>{{ 'CUSTOMERS.DASHBOARD_PAGE.CUSTOMER_NAME' | translate }}</th>
+                <th>{{ 'CUSTOMERS.DASHBOARD_PAGE.AGE' | translate }}</th>
+                <th class="end">{{ 'CUSTOMERS.DASHBOARD_PAGE.AMOUNT' | translate }}</th>
+                <th class="end">{{ 'CUSTOMERS.DASHBOARD_PAGE.BALANCE_DUE' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (g of aging() ?? []; track g.ageGroup) {
+                <tr class="cd-group">
+                  <td colspan="5">{{ g.ageGroup }} {{ 'CUSTOMERS.DASHBOARD_PAGE.DAYS' | translate }}</td>
+                  <td>{{ g.totalAmount | mycurrency }}</td>
+                  <td class="end">{{ g.totalBalanceDue | mycurrency }}</td>
+                </tr>
+                @for (r of g.data; track r.id) {
+                  <tr>
+                    <td>{{ r.invoiceDate | date: 'dd/MM/yyyy' }}</td>
+                    <td><a [routerLink]="['/account/invoices/view', r.id]" [queryParams]="{ pageNum: 1 }">{{ r.invoiceNumber }}</a></td>
+                    <td><span class="cd-status">{{ r.status | translate }}</span></td>
+                    <td>{{ r.customerName }}</td>
+                    <td>{{ r.age }} {{ 'CUSTOMERS.DASHBOARD_PAGE.DAYS' | translate }}<br/><b>{{ 'CUSTOMERS.DASHBOARD_PAGE.DUE_DATE' | translate }}:</b> {{ r.dueDate | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ r.amount | mycurrency }}</td>
+                    <td class="end">{{ r.balanceDue | mycurrency }}</td>
+                  </tr>
+                }
+              } @empty {
+                <tr><td colspan="7" class="cd-empty">{{ 'CUSTOMERS.DASHBOARD_PAGE.NO_OVERDUE' | translate }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    <!-- TRANSACTIONS -->
+    @if (tab() === 'transactions') {
+      <section class="cd-card">
+        <div class="cd-row">
+          <h4>{{ 'CUSTOMERS.DASHBOARD_PAGE.TRANSACTIONS' | translate }}</h4>
+          @if (newRoute(txKind()); as nr) {
+            <a class="cd-btn cd-btn--sm" [routerLink]="nr" [queryParams]="{ customerId: customerId }">+ {{ 'CUSTOMERS.ADD_NEW' | translate }}</a>
+          }
+        </div>
+        <app-segmented-toggle [options]="txTabs" [value]="txKind()" (valueChange)="selectTx($event)"/>
+
+        @let s = tx()[txKind()];
+        @if (s.loaded && !s.list.length) {
+          <div class="cd-empty">{{ 'CUSTOMERS.DASHBOARD_PAGE.NO_TRANSACTIONS' | translate }}</div>
+        }
+        @if (s.list.length) {
+          <div class="cd-table-wrap">
+            <table class="cd-table">
+              <thead>
+                <tr>
+                  @switch (txKind()) {
+                    @case ('invoices') {
+                      <th>{{ 'CUSTOMERS.DASHBOARD_PAGE.INVOICE_NUMBER' | translate }}</th>
+                      <th class="end">{{ 'CUSTOMERS.DASHBOARD_PAGE.TOTAL' | translate }}</th>
+                      <th class="end">{{ 'CUSTOMERS.DASHBOARD_PAGE.PAID_AMOUNT' | translate }}</th>
+                      <th class="end">{{ 'CUSTOMERS.DASHBOARD_PAGE.BALANCE' | translate }}</th>
+                    }
+                    @case ('estimates') {
+                      <th>{{ 'CUSTOMERS.DASHBOARD_PAGE.ESTIMATE_NUMBER' | translate }}</th>
+                      <th class="end">{{ 'CUSTOMERS.DASHBOARD_PAGE.TOTAL' | translate }}</th>
+                    }
+                    @case ('creditNotes') {
+                      <th>{{ 'CUSTOMERS.DASHBOARD_PAGE.CREDIT_NOTE_NUMBER' | translate }}</th>
+                      <th class="end">{{ 'CUSTOMERS.DASHBOARD_PAGE.TOTAL' | translate }}</th>
+                    }
+                    @case ('payments') {
+                      <th>{{ 'CUSTOMERS.DASHBOARD_PAGE.PAYMENT_NUMBER' | translate }}</th>
+                      <th>{{ 'CUSTOMERS.DASHBOARD_PAGE.DATE' | translate }}</th>
+                      <th class="end">{{ 'CUSTOMERS.DASHBOARD_PAGE.AMOUNT' | translate }}</th>
+                    }
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of s.list; track r.id) {
+                  <tr>
+                    @switch (txKind()) {
+                      @case ('invoices') {
+                        <td><a [routerLink]="['/account/invoices/view', r.id]" [queryParams]="{ pageNum: 1 }">{{ r.invoiceNumber }}</a></td>
+                        <td class="end">{{ r.total | mycurrency }}</td>
+                        <td class="end">{{ r.paidAmount | mycurrency }}</td>
+                        <td class="end">{{ r.balance | mycurrency }}</td>
+                      }
+                      @case ('estimates') {
+                        <td><a [routerLink]="['/account/estimate/view', r.id]" [queryParams]="{ pageNum: 1 }">{{ r.estimateNumber }}</a></td>
+                        <td class="end">{{ r.total | mycurrency }}</td>
+                      }
+                      @case ('creditNotes') {
+                        <td><a [routerLink]="['/account/credit-notes/view', r.id]" [queryParams]="{ pageNum: 1 }">{{ r.creditNoteNumber }}</a></td>
+                        <td class="end">{{ r.total | mycurrency }}</td>
+                      }
+                      @case ('payments') {
+                        <td><a [routerLink]="['/account/payments/view', r.id]" [queryParams]="{ pageNum: 1 }">{{ r.paymentNumber }}</a></td>
+                        <td>{{ r.paymentDate | date: 'dd/MM/yyyy' }}</td>
+                        <td class="end">{{ r.tenderAmount | mycurrency }}</td>
+                      }
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <app-pagination
+            [page]="s.page" [pageSize]="s.limit" [count]="s.count || null" [pageCount]="s.pageCount"
+            (pageChange)="setTxPage(txKind(), $event)" (pageSizeChange)="setTxLimit(txKind(), $event)"/>
+        }
+      </section>
+    }
+
+    <!-- STATEMENT -->
+    @if (tab() === 'statementHistory') {
+      <section class="cd-card">
+        <div class="cd-row cd-row--filters">
+          <app-date-picker mode="range" [value]="stateRange()" (valueChange)="onRangeChange($event)"/>
+          <app-segmented-toggle [options]="filterOptions" [value]="filterType()" (valueChange)="setFilterType($event)"/>
+        </div>
+        @if (stateLoading()) {
+          <div class="cd-empty">{{ 'COMMON.LOADING' | translate }}</div>
+        } @else if (stateRows() !== null) {
+          <app-customer-statement
+            [rows]="stateRows() ?? []" [customerName]="c.name" [from]="stateFrom" [to]="stateTo" [filterType]="filterType()"/>
+        }
+      </section>
+    }
+
+    <!-- NOTES -->
+    @if (tab() === 'notes') {
+      <section class="cd-card">
+        <h4>{{ 'CUSTOMERS.DASHBOARD_PAGE.NOTES' | translate }}</h4>
+        <textarea class="cd-textarea" rows="3" [ngModel]="newNote()" (ngModelChange)="newNote.set($event)"
+          [placeholder]="'CUSTOMERS.DASHBOARD_PAGE.ADD_NOTE_PLACEHOLDER' | translate"></textarea>
+        <div class="cd-row">
+          <span></span>
+          <button type="button" class="cd-btn cd-btn--primary" [disabled]="!newNote().trim() || noteSaving()" (click)="addNote()">
+            {{ 'CUSTOMERS.DASHBOARD_PAGE.ADD_NOTE' | translate }}
+          </button>
+        </div>
+        @for (n of c.notes ?? []; track $index) {
+          <div class="cd-note">
+            <div>
+              <p>{{ n.note }}</p>
+              <small>{{ n.employeeName }} · {{ n.createdAt | date: 'dd/MM/yyyy HH:mm' }}</small>
+            </div>
+            <button type="button" class="cd-link-danger" (click)="removeNote(n)">{{ 'COMMON.DELETE' | translate }}</button>
+          </div>
+        } @empty {
+          <div class="cd-empty">{{ 'CUSTOMERS.DASHBOARD_PAGE.NO_NOTES' | translate }}</div>
+        }
+      </section>
+    }
+  </div>
+}

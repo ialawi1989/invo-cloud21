@@ -107,7 +107,6 @@ export const SIDE_MENU: SideMenuItem[] = [
     badge: { text: 'BETA', variant: 'danger' },
     subItems: [
       { id: 181, label: 'MENU.SUB.APPOINTMENTS_CALENDAR', link: '/appointments', requiredPermission: 'appointmentsSecurity.actions.view.access' },
-      { id: 183, label: 'MENU.SUB.SERVICE_TEAM', link: '/employees/service-team', requiredPermission: 'appointmentsSecurity.actions.serviceTeam.access' },
     ],
   },
   // ── Accounts ───────────────────────────────────────────────────────
@@ -166,6 +165,17 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 93, label: 'MENU.SUB.POINTS', link: '/promotions/promotional-points', requiredPermission: 'promotionalPointsSecurity.access' },
       { id: 94, label: 'MENU.SUB.COUPONS', link: '/promotions/coupons', requiredPermission: 'couponsSecurity.access' },
     ],
+  },
+  // ── Gift Vouchers — its own entry (not under Promotions) ────────────
+  {
+    id: 19, label: 'MENU.GIFT_VOUCHERS', icon: 'ticket',
+    link: '/promotions/promotions-vouchers',
+    // Visibility isn't gated here (sub-items never were, and the group-level
+    // `access` defaults to off in the legacy privilege set, which hid the entry).
+    // The route still enforces the plan feature + privileges.
+    requiredPermission: '',
+    feature: 'PROMOTIONS.VOUCHERS',
+    badge: { text: 'BETA', variant: 'danger' },
   },
   // ── Inventory ──────────────────────────────────────────────────────
   {
@@ -960,6 +970,7 @@ export class SidebarComponent implements OnInit {
       employee: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
       account: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
       purchase: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`,
+      ticket: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>`,
       promotion: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
       bar_chart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>`,
       analytics: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>`,

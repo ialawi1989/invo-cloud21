@@ -1,0 +1,266 @@
+.sim__body {
+  padding: 16px 24px;
+  min-width: 560px;
+  max-width: 100%;
+  max-height: 62vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+// ─── Step indicator ──────────────────────────────────────────
+.sim-steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.sim-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+
+  &--active { color: #0f172a; }
+  &--done { color: #2691a4; }
+}
+.sim-step__dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 12px;
+
+  .sim-step--active & { background: #2691a4; color: #fff; }
+  .sim-step--done & { background: #d6f0f4; color: #2691a4; }
+}
+.sim-step__line {
+  width: 32px;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+// ─── Fields ──────────────────────────────────────────────────
+.sim-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+
+  &--inline {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+.sim-input {
+  padding: 9px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: #0f172a;
+
+  &:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, 0.12); }
+  &--sm { width: 120px; }
+}
+.sim-file {
+  font-size: 13px;
+  font-weight: 400;
+}
+.sim-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+
+  input { width: 16px; height: 16px; accent-color: #2691a4; }
+}
+.sim-hint {
+  margin: 0;
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.5;
+
+  &--warn { color: #b45309; }
+  &--error { color: #dc2626; }
+  &--ok { color: #16a34a; }
+}
+.sim-advanced-toggle {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2691a4;
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+}
+
+// ─── Footer buttons ──────────────────────────────────────────
+.sim-btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  color: #334155;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease;
+
+  &:hover { background: #f8fafc; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &--primary {
+    border-color: #2691a4;
+    background: #2691a4;
+    color: #fff;
+
+    &:hover:not(:disabled) { background: #227d8d; }
+  }
+}
+
+// ─── Progress ────────────────────────────────────────────────
+.sim-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 24px 12px;
+}
+.sim-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #2691a4;
+  border-radius: 50%;
+  animation: sim-spin 0.8s linear infinite;
+}
+@keyframes sim-spin { to { transform: rotate(360deg); } }
+.sim-progress-msg { margin: 0; font-size: 14px; font-weight: 600; color: #0f172a; }
+.sim-progress-page { margin: 0; font-size: 12.5px; color: #64748b; }
+.sim-progress-bar {
+  width: 100%;
+  max-width: 320px;
+  height: 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+
+  &__fill {
+    height: 100%;
+    background: #2691a4;
+    transition: width 200ms ease;
+  }
+}
+
+// ─── Banners ─────────────────────────────────────────────────
+.sim-banner-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+
+  &--warn { color: #b45309; }
+  &--error { color: #dc2626; }
+  &--ok { color: #16a34a; }
+}
+
+// ─── Summary tiles ───────────────────────────────────────────
+.sim-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.sim-summary__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #eef2f6;
+  min-width: 100px;
+
+  span:last-child { font-size: 11.5px; color: #64748b; font-weight: 500; }
+
+  &--warn { background: #fffbeb; border-color: #fde68a; }
+  &--error { background: #fef2f2; border-color: #fecaca; }
+}
+.sim-summary__num { font-size: 20px; font-weight: 700; color: #0f172a; }
+.sim-summary__tile--warn .sim-summary__num { color: #b45309; }
+.sim-summary__tile--error .sim-summary__num { color: #dc2626; }
+
+// ─── Tabs ────────────────────────────────────────────────────
+.sim-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 1px solid #eef2f6;
+  padding-bottom: 10px;
+}
+.sim-tab {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+
+  &:hover { background: #f1f5f9; }
+  &.is-on { background: #e0f2f6; color: #1e6f80; }
+}
+
+// ─── Item list ───────────────────────────────────────────────
+.sim-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sim-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #eef2f6;
+}
+.sim-item__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #0f172a;
+}
+.sim-item__meta {
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+.sim-item__error {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #dc2626;
+}
+.sim-item__warnings {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #b45309;
+}

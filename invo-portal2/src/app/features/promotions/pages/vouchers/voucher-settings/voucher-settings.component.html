@@ -1,0 +1,67 @@
+<div class="vs-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="page-header__title">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PROMOTIONS_VOUCHER_SETTINGS' | translate }}</h1>
+  </header>
+
+  @if (setting(); as s) {
+    <section class="vs-card">
+      <app-translated-string-input
+        label="PROMOTIONS.PROMOTIONS_VOUCHERS.PROMOTIONS_VOUCHERS_NAME"
+        [value]="s.vouchersName" (valueChange)="patch({ vouchersName: $event })"/>
+      @if (nameError()) {
+        <p class="vs-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.THE_NAME_IS_REQUIRED' | translate }}</p>
+      }
+    </section>
+
+    <section class="vs-card">
+      <div class="vs-field">
+        <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTIVE_PERIOD' | translate }}</label>
+        <app-day-span-control [value]="s.activePeriod" (valueChange)="patch({ activePeriod: $event })"/>
+        @if (activeNegative()) {
+          <p class="vs-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTIVE_PERIOD_CANNOT_BE_NEGATIVE' | translate }}</p>
+        }
+      </div>
+
+      <div class="vs-field">
+        <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXPIRY_PERIOD' | translate }}</label>
+        <app-day-span-control [value]="s.expiryPeriod" (valueChange)="patch({ expiryPeriod: $event })"/>
+        @if (expiryNotPositive()) {
+          <p class="vs-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXPIRY_PERIOD_MUST_BE_GREATER_THAN_0' | translate }}</p>
+        }
+      </div>
+
+      <div class="vs-field">
+        <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXPIRY_SOON_PERIOD' | translate }}</label>
+        <app-day-span-control [value]="s.expirySoonPeriod" (valueChange)="patch({ expirySoonPeriod: $event })"/>
+        @if (expirySoonNotPositive()) {
+          <p class="vs-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXPIRY_PERIOD_MUST_BE_GREATER_THAN_0' | translate }}</p>
+        }
+      </div>
+
+      @if (periodError()) {
+        <p class="vs-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXPIRY_PERIOD_MUST_BE_GREATER_THAN_ACTIVE_PERIOD' | translate }}</p>
+      }
+    </section>
+
+    <section class="vs-card">
+      <app-translated-string-input
+        label="PROMOTIONS.PROMOTIONS_VOUCHERS.REASON" [required]="true"
+        [value]="reason()" (valueChange)="reason.set($event)"/>
+      @if (!reasonValid()) {
+        <p class="vs-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.REASON_REQUIRED' | translate }}</p>
+      }
+      <div class="vs-field">
+        <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.NOTE' | translate }}</label>
+        <textarea class="vs-input" rows="2" [ngModel]="note()" (ngModelChange)="note.set($event)"></textarea>
+      </div>
+    </section>
+
+    <app-form-sticky-footer>
+      <button type="button" class="vs-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="vs-btn vs-btn--primary" [disabled]="!formValid() || saving()" (click)="save()">
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </app-form-sticky-footer>
+  }
+</div>

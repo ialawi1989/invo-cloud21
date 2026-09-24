@@ -1,0 +1,157 @@
+<div class="vd-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <div class="page-header__row">
+      <h1 class="page-header__title">
+        {{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.CUSTOMER_VOUCHER_DETAILS' | translate }}
+        @if (voucher(); as v) { <app-voucher-status-badge [status]="v.status"/> }
+      </h1>
+
+      @if (voucher() && settings()?.enabled) {
+        <div class="vd-actions">
+          @if (showCancel()) {
+            <button type="button" class="vd-btn vd-btn--danger" (click)="cancel()">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.CANCEL_TITLE' | translate }}</button>
+          }
+          @if (showRestore()) {
+            <button type="button" class="vd-btn" (click)="restore()">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.RESTORE_TITLE' | translate }}</button>
+          }
+          @if (showSpend()) {
+            <button type="button" class="vd-btn" (click)="spend()">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.SPEND_VOUCHERS' | translate }}</button>
+          }
+          @if (showRefund()) {
+            <button type="button" class="vd-btn" (click)="refund()">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.TOP_UP' | translate }}</button>
+          }
+          @if (showActivate()) {
+            <button type="button" class="vd-btn" (click)="activate()">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTIVE_TITLE' | translate }}</button>
+          }
+          @if (showExtend()) {
+            <button type="button" class="vd-btn" (click)="extend()">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXTEND_TITLE' | translate }}</button>
+          }
+          @if (showEmail()) {
+            <button type="button" class="vd-btn" (click)="sendEmail()">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.SEND_EMAIL' | translate }}</button>
+          }
+          @if (canEdit) {
+            <button type="button" class="vd-btn vd-btn--primary" (click)="edit()">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EDIT' | translate }}</button>
+          }
+        </div>
+      }
+    </div>
+  </header>
+
+  @if (settings() && !settings()!.enabled) {
+    <div class="vd-disabled">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.SORRY_THE_VOUCHERS_SETTING_IS_DISABLED' | translate }}</div>
+  }
+
+  @if (voucher(); as v) {
+    @if (settings()?.enabled) {
+      <section class="vd-tiles">
+        <div class="vd-tile">
+          <span class="vd-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PROMOTIONS_VOUCHERS_NAME' | translate }}</span>
+          <span class="vd-tile__value">{{ translate(v.vouchersName, currentLang()) }}</span>
+        </div>
+        <div class="vd-tile">
+          <span class="vd-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.CODE' | translate }}</span>
+          <span class="vd-tile__value">{{ v.code }}</span>
+        </div>
+        @if (v.phoneNumber) {
+          <div class="vd-tile">
+            <span class="vd-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PHONE_NUMBER' | translate }}</span>
+            <span class="vd-tile__value">{{ v.phoneNumber }}</span>
+          </div>
+        }
+        @if (v.customerEmail) {
+          <div class="vd-tile">
+            <span class="vd-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EMAIL' | translate }}</span>
+            <span class="vd-tile__value">{{ v.customerEmail }}</span>
+          </div>
+        }
+        @if (v.orderNumber !== undefined) {
+          <div class="vd-tile">
+            <span class="vd-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ORDER_NUMBER' | translate }}</span>
+            <span class="vd-tile__value">{{ v.orderNumber }}</span>
+          </div>
+        }
+        <div class="vd-tile">
+          <span class="vd-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.INITIAL_VOUCHERS' | translate }}</span>
+          <span class="vd-tile__value">{{ v.initialVoucher | mycurrency }}</span>
+        </div>
+        <div class="vd-tile">
+          <span class="vd-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.BALANCE' | translate }}</span>
+          <span class="vd-tile__value">
+            @if (v.status !== Status.CANCELED) { {{ v.balance | mycurrency }} } @else { 0 }
+          </span>
+        </div>
+        <div class="vd-tile">
+          <span class="vd-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.GIVEN_DATE' | translate }}</span>
+          <span class="vd-tile__value">{{ v.givenDate | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="vd-tile">
+          <span class="vd-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTIVE_DATE' | translate }}</span>
+          <span class="vd-tile__value">{{ v.activeDate | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="vd-tile">
+          <span class="vd-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.EXPIRY_DATE' | translate }}</span>
+          <span class="vd-tile__value">{{ v.expiryDate | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        @if (v.oneTimeUse) {
+          <div class="vd-tile">
+            <span class="vd-tile__label">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ONE_TIME_USE' | translate }}</span>
+          </div>
+        }
+      </section>
+
+      <!-- ═══ Actions list (collapsible) ═══ -->
+      <section class="vd-card">
+        <button type="button" class="vd-card__head" (click)="toggleHistory()">
+          <span>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTIONS_LIST' | translate }}</span>
+          <span class="vd-chevron" [class.is-open]="historyOpen()">&#9662;</span>
+        </button>
+
+        @if (historyOpen()) {
+          <div class="vd-table-wrap">
+            <table class="vd-table">
+              <thead>
+                <tr>
+                  <th>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTION_NAME' | translate }}</th>
+                  <th>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTION_DATE' | translate }}</th>
+                  <th>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.USER' | translate }}</th>
+                  <th>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.REASON' | translate }}</th>
+                  <th>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.AMOUNT' | translate }}</th>
+                  <th>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTIVE_VOUCHERS' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (a of actions(); track $index) {
+                  <tr>
+                    <td>
+                      @if (a.actionName === ActionName.EXTEND) {
+                        {{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTIONS.EXTEND' | translate }}
+                        {{ a.changes?.new?.expiryDate | date: 'dd/MM/yyyy' }}
+                      } @else {
+                        {{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTIONS.' + a.actionName | translate }}
+                      }
+                    </td>
+                    <td>{{ a.actionDate | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+                    <td>{{ a.user }}</td>
+                    <td>{{ translate(a.reason, currentLang()) }}</td>
+                    <td>
+                      @if (a.extraDetails?.spentVouchers) {
+                        <span [class.vd-pos]="+a.extraDetails.spentVouchers > 0" [class.vd-neg]="+a.extraDetails.spentVouchers < 0">
+                          {{ a.extraDetails.spentVouchers > 0 ? '+' : '' }}{{ a.extraDetails.spentVouchers | mycurrency }}
+                        </span>
+                      }
+                    </td>
+                    <td>{{ a.extraDetails?.activeVouchers | mycurrency }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <app-pagination
+            [page]="page().page" [pageSize]="page().limit" [count]="page().count ?? null"
+            (pageChange)="onPage($event)" (pageSizeChange)="onPageSize($event)"/>
+        }
+      </section>
+    }
+  }
+</div>

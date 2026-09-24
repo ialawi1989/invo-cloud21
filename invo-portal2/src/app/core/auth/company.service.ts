@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, effect } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -20,6 +20,14 @@ export class CompanyService {
   readonly companies           = this.companies$.asReadonly();
   readonly settings            = this.settings$.asReadonly();
   readonly currentCompanyName  = computed(() => this.currentCompany$()?.name ?? '');
+
+  /** Synchronous mirror of `settings()` for plain model classes (money maths, rounding) that can't inject. */
+  static companySettings: any = null;
+
+  constructor() {
+    CompanyService.companySettings = this.settings$();
+    effect(() => { CompanyService.companySettings = this.settings$(); });
+  }
 
   // ─── Storage ────────────────────────────────────────────────────────────────
 
