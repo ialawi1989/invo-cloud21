@@ -17,7 +17,7 @@ export interface CustomerMini {
 }
 
 /**
- * Async customer search (5 per page like the legacy `invo-customer-select-textbox`),
+ * Async customer search (20 per page, next page loads on scroll),
  * emitting the picked customer or `undefined` when cleared.
  */
 @Component({
@@ -26,9 +26,10 @@ export interface CustomerMini {
   imports: [TranslateModule, SearchDropdownComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <div class="cp-row">
     <app-search-dropdown
       [loadFn]="load"
-      [pageSize]="5"
+      [pageSize]="20"
       [displayWith]="display"
       [compareWith]="compare"
       [clearable]="true"
@@ -44,8 +45,18 @@ export interface CustomerMini {
         </ng-template>
       }
     </app-search-dropdown>
+    @if (allowAdvanced()) {
+      <button type="button" class="cp-adv" (click)="advancedSearch.emit()" [attr.aria-label]="'CUSTOMERS.SEARCH.TITLE' | translate">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+      </button>
+    }
+    </div>
   `,
   styles: [`
+    .cp-row { display: flex; gap: 8px; align-items: stretch; }
+    .cp-row > app-search-dropdown { flex: 1; min-width: 0; }
+    .cp-adv { flex: 0 0 auto; width: 42px; border: 1px solid #2691a4; background: #2691a4; color: #fff; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
+    .cp-adv:hover { background: #227d8d; }
     .cp-new { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: 0; background: none; color: #227d8d; font-weight: 500; cursor: pointer; text-align: start; }
     .cp-new:hover { background: #f1f5f9; }
     .cp-new__plus { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #227d8d; color: #fff; font-size: 14px; line-height: 1; }
@@ -60,6 +71,9 @@ export class CustomerPickerComponent {
   allowCreate = input<boolean>(false);
   valueChange = output<CustomerMini | undefined>();
   createNew = output<void>();
+  /** Shows a search button beside the dropdown for the advanced search dialog. */
+  allowAdvanced = input<boolean>(false);
+  advancedSearch = output<void>();
 
   load = async (params: { page: number; pageSize: number; search: string }) => {
     const res = await this.api.request(

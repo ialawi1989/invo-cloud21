@@ -167,6 +167,20 @@
       "BALANCE": "الرصيد",
       "TOTAL": "الإجمالي",
       "NO_TRANSACTIONS": "لا توجد معاملات في هذه الفترة"
+    },
+    "SEARCH": {
+      "TITLE": "بحث متقدم عن العملاء",
+      "SEARCH": "بحث",
+      "FIELD_all": "الكل",
+      "FIELD_name": "الاسم",
+      "FIELD_email": "البريد الإلكتروني",
+      "FIELD_phone": "الهاتف",
+      "FIELD_companyName": "اسم الشركة",
+      "CUSTOMER_NAME": "اسم العميل",
+      "EMAIL": "البريد الإلكتروني",
+      "COMPANY_NAME": "اسم الشركة",
+      "PHONE": "الهاتف",
+      "EMPTY": "لا يوجد عملاء"
     }
   }
 }

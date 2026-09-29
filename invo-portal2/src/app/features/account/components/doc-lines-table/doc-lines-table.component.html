@@ -15,11 +15,11 @@
       <h3>{{ title() | translate }}</h3>
       <div class="dl__tools">
         @if (config().barcodeLookup) {
-          <button type="button" class="dl__link" (click)="scanOpen.set(true)">⌗ {{ 'DOC_LINES.SCAN_ITEM' | translate }}</button>
+          <button type="button" class="dl__link" (click)="scanOpen.set(true)"><svg class="dl__ico" viewBox="0 0 512 512" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M369.4 178.9c0-30.9-25.1-56-56-56H198.6c-30.9 0-56 25.1-56 56v154.2c0 30.9 25.1 56 56 56h114.8c30.9 0 56-25.1 56-56V178.9zm-42 154.2c0 7.7-6.3 14-14 14H198.6c-7.7 0-14-6.3-14-14V178.9c0-7.7 6.3-14 14-14h114.8c7.7 0 14 6.3 14 14v154.2zM136 464.1H61.9c-7.7 0-14-6.3-14-14V376c0-11.6-9.4-21-21-21s-21 9.4-21 21v74.1c0 30.9 25.1 56 56 56H136c11.6 0 21-9.4 21-21s-9.4-21-21-21zM485.1 355c-11.6 0-21 9.4-21 21v74.1c0 7.7-6.3 14-14 14H376c-11.6 0-21 9.4-21 21s9.4 21 21 21h74.1c30.9 0 56-25.1 56-56V376c0-11.6-9.4-21-21-21zm-35-349.1H376c-11.6 0-21 9.4-21 21s9.4 21 21 21h74.1c7.7 0 14 6.3 14 14V136c0 11.6 9.4 21 21 21s21-9.4 21-21V61.9c0-30.9-25.1-56-56-56zM26.9 157c11.6 0 21-9.4 21-21V61.9c0-7.7 6.3-14 14-14H136c11.6 0 21-9.4 21-21s-9.4-21-21-21H61.9c-30.9 0-56 25.1-56 56V136c0 11.6 9.4 21 21 21z"/></svg> {{ 'DOC_LINES.SCAN_ITEM' | translate }}</button>
         }
         @if (bulkMenu().length) {
           <app-dropdown-menu-btn [items]="bulkMenu()" [appendToBody]="true" align="end" triggerClass="dl__link">
-            ✓ {{ 'DOC_LINES.BULK_ACTIONS' | translate }}
+            <svg class="dl__ico" viewBox="0 0 472.75 472.75" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M236.37 472.75c-63.14 0-122.5-24.59-167.14-69.23C24.59 358.87 0 299.51 0 236.37S24.59 113.88 69.23 69.23C113.88 24.59 173.24 0 236.37 0s122.5 24.59 167.14 69.23c44.65 44.65 69.23 104 69.23 167.14s-24.59 122.5-69.23 167.14c-44.65 44.65-104 69.23-167.14 69.23zm0-430.75C129.19 42 42 129.2 42 236.37s87.2 194.37 194.37 194.37 194.37-87.2 194.37-194.37S343.55 42 236.37 42z"/><path d="M201.53 309.29c-7.73 0-15.46-2.94-21.34-8.83l-45.52-45.52c-8.2-8.2-8.2-21.5 0-29.7s21.5-8.2 29.7 0l37.17 37.16 106.85-106.85c8.2-8.2 21.5-8.2 29.7 0s8.2 21.5 0 29.7L222.88 300.46c-5.88 5.88-13.61 8.83-21.34 8.83z"/></svg> {{ 'DOC_LINES.BULK_ACTIONS' | translate }}
           </app-dropdown-menu-btn>
         }
       </div>
@@ -28,14 +28,10 @@
     @if (bulkMode()) {
       <div class="dl__bulk">
         <div class="dl__bulk-actions">
-          <div class="dl__bulk-field">
-            <app-search-dropdown [items]="accountOptions()" [displayWith]="accountLabel" [compareWith]="byId"
-              [value]="null" (valueChange)="bulkAccount($any($event))" [clearable]="false"
-              [placeholder]="'DOC_LINES.UPDATE_ACCOUNT' | translate"/>
-          </div>
-          <div class="dl__bulk-field">
-            <app-discount-field [amount]="0" [percentage]="true" (changed)="bulkDiscount($event)"/>
-          </div>
+          @if (config().accounts) {
+            <button type="button" class="dl__bulk-btn" [disabled]="!selected().size" (click)="bulkUpdate('account')">{{ 'DOC_LINES.UPDATE_ACCOUNT' | translate }}</button>
+          }
+          <button type="button" class="dl__bulk-btn" [disabled]="!selected().size" (click)="bulkUpdate('discount')">{{ 'DOC_LINES.UPDATE_DISCOUNT' | translate }}</button>
         </div>
         <button type="button" class="dl__x" (click)="closeBulk()" aria-label="close">✕</button>
       </div>
@@ -48,31 +44,34 @@
             <th class="dl__handle-col"></th>
             @if (bulkMode()) { <th class="dl__check-col"></th> }
             @for (c of columns(); track c.key) {
-              <th [class.end]="c.type !== 'item'" [class.dl__col-item]="c.type === 'item'" [style.width]="c.type === 'item' ? null : c.width">{{ c.label | translate }}</th>
+              <th [class.end]="c.type !== 'item'" [class.dl__col-item]="c.type === 'item'" [style.width]="c.type === 'item' ? null : c.width">{{ c.label | translate }}@if (c.type === 'item' || c.type === 'qty' || c.required) { <span class="dl__req">*</span> }@if (c.type === 'money') { <svg class="dl__calc" [appTooltip]="'DOC_LINES.EXPR_HINT' | translate" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="13" x2="8.01" y2="13"/><line x1="12" y1="13" x2="12.01" y2="13"/><line x1="16" y1="13" x2="16.01" y2="13"/><line x1="8" y1="17" x2="8.01" y2="17"/><line x1="12" y1="17" x2="12.01" y2="17"/><line x1="16" y1="17" x2="16.01" y2="17"/></svg> }</th>
             }
             <th class="dl__act-col"></th>
           </tr>
         </thead>
         <tbody cdkDropList (cdkDropListDropped)="drop($event)">
-          @for (line of d.lines; track trackLine($index, line)) {
+          @for (line of visibleLines(); track trackLine($index, line)) {
             @let err = errorsFor(line);
             <tr cdkDrag [cdkDragData]="line" [class.dl__row--voided]="line.isVoided">
-              <td class="dl__handle-col"><span class="dl__handle" cdkDragHandle title="drag">⋮⋮</span></td>
+              <td class="dl__handle-col"><span class="dl__handle" cdkDragHandle title="drag"><svg viewBox="0 0 512 512" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="153.6" cy="451" r="61"/><circle cx="153.6" cy="256" r="61"/><circle cx="153.6" cy="61" r="61"/><circle cx="358.4" cy="256" r="61"/><circle cx="358.4" cy="61" r="61"/><circle cx="358.4" cy="451" r="61"/></svg></span></td>
               @if (bulkMode()) {
                 <td class="dl__check-col"><input type="checkbox" [checked]="isSelected(line)" (change)="toggleSelect(line)"/></td>
               }
 
               @for (c of columns(); track c.key) {
-                <td [class.end]="c.type !== 'item'" [class.dl__col-item]="c.type === 'item'" [class.dl__cell--err]="err[c.key]" [attr.title]="err[c.key] ? (err[c.key] | translate) : null">
+                <td [attr.data-label]="c.label | translate" [attr.data-type]="c.type" [class.end]="c.type !== 'item'" [class.dl__col-item]="c.type === 'item'" [class.dl__cell--err]="err[c.key]" [attr.title]="err[c.key] ? (err[c.key] | translate) : null">
                   @switch (c.type) {
                     @case ('item') {
                       <div class="dl__item" [class.dl__cell--err]="err['item']">
                         @if (line.selectedItem?.id) {
                           <div class="dl__picked">
                             <span class="dl__item-name">{{ line.selectedItem.name }}</span>
-                            @if (canEditProduct(line)) {
-                              <button type="button" class="dl__x" (click)="clearProduct(line)" aria-label="clear">✕</button>
-                            }
+                            <span class="dl__item-acts">
+                              <app-dropdown-menu-btn [items]="itemMenu(line)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="dl__round">⋯</app-dropdown-menu-btn>
+                              @if (canEditProduct(line)) {
+                                <button type="button" class="dl__round" (click)="clearProduct(line)" aria-label="clear">✕</button>
+                              }
+                            </span>
                           </div>
                           <textarea class="dl__note" rows="1" [disabled]="isLocked(line)" [ngModel]="line.note" (ngModelChange)="onNote(line, $event)"
                             [placeholder]="'DOC_LINES.DESCRIPTION' | translate"></textarea>
@@ -86,12 +85,18 @@
                               @for (p of results(); track p.id) {
                                 <li (mousedown)="$event.preventDefault()" (click)="pickProduct(line, p)">
                                   <span class="dl__p-name">{{ p.name }}</span>
-                                  <small>{{ 'DOC_LINES.RATE' | translate }}: {{ p.defaultPrice | mycurrency }}</small>
+                                  <small>{{ 'DOC_LINES.RATE' | translate }}: {{ p.defaultPrice | mycurrency }}@if (p.barcode) { <span class="dl__p-code"> · {{ 'DOC_LINES.BARCODE' | translate }}: {{ p.barcode }}</span> }</small>
                                 </li>
                               }
                               @if (searching() && !results().length) { <li class="dl__panel-empty">…</li> }
                             </ul>
                           }
+                        }
+                        @if (config().itemFilterTags && !line.selectedItem?.id && canEditProduct(line)) {
+                          <button type="button" class="dl__filter" (mousedown)="$event.preventDefault()" (click)="openFilter($event)" [attr.aria-label]="'DOC_LINES.FILTER_ITEMS' | translate">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+                            @if (tags().length) { <span class="dl__filter-badge">{{ tags().length }}</span> }
+                          </button>
                         }
                         @if (line.isVoided) { <span class="dl__badge">{{ 'DOC_LINES.VOIDED' | translate }}</span> }
                         @if (line.isReturned) { <span class="dl__badge">{{ 'DOC_LINES.RETURNED' | translate }}</span> }
@@ -103,8 +108,8 @@
                         [disabled]="cellDisabled(line, c)" [ngModel]="value(line, c)" (ngModelChange)="onQty(line, c, $event)"/>
                     }
                     @case ('money') {
-                      <input class="dl__num" type="number" inputmode="decimal" [disabled]="cellDisabled(line, c)"
-                        [ngModel]="value(line, c)" (ngModelChange)="onMoney(line, c, $event)"/>
+                      <input class="dl__num" [class.dl__num--err]="err[c.key]" type="text" inputmode="decimal" autocomplete="off" [disabled]="cellDisabled(line, c)"
+                        [value]="value(line, c) ?? ''" (blur)="commitMoney(line, c, $event)" (keydown.enter)="commitMoney(line, c, $event)"/>
                     }
                     @case ('discount') {
                       <app-discount-field [amount]="line.discountAmount" [percentage]="line.discountPercentage"
@@ -132,17 +137,18 @@
                 </div>
               </td>
             </tr>
-            @if (config().accounts && isInfoOpen(line)) {
+            @if (config().accounts && (isInfoOpen(line) || errorsFor(line)['account'])) {
               <tr class="dl__info">
                 <td [attr.colspan]="columns().length + (bulkMode() ? 3 : 2)">
                   <div class="dl__info-strip">
-                    <span class="dl__info-label">{{ 'DOC_LINES.ACCOUNT' | translate }}</span>
+                    <span class="dl__info-label">{{ 'DOC_LINES.ACCOUNT' | translate }} <span class="dl__req">*</span></span>
                     <div class="dl__info-field">
                       <app-search-dropdown [items]="accountOptions()" [displayWith]="accountLabel" [compareWith]="byId"
                         [value]="accountOf(line)" (valueChange)="onAccount(line, $any($event)?.id)"
                         [clearable]="false" [disabled]="!line.isNew || isLocked(line)"
                         [placeholder]="'DOC_LINES.SELECT_ACCOUNT' | translate"/>
                     </div>
+                    @if (errorsFor(line)['account']; as ae) { <span class="dl__err dl__info-err">{{ ae | translate }}</span> }
                   </div>
                 </td>
               </tr>
@@ -157,6 +163,9 @@
     <button type="button" class="dl__btn" (click)="addLine()" [disabled]="editor().lastLineIsEmpty">＋ {{ 'DOC_LINES.ADD_ROW' | translate }}</button>
     @if (config().bulkItems) {
       <button type="button" class="dl__btn" (click)="addItemsInBulk()" [disabled]="!ctx().hasScope">＋ {{ 'DOC_LINES.ADD_ITEMS_BULK' | translate }}</button>
+    }
+    @if (config().searchByBarcodes) {
+      <button type="button" class="dl__btn" (click)="importLines()" [disabled]="!ctx().hasScope">⇪ {{ 'DOC_IMPORT.IMPORT' | translate }}</button>
     }
   </div>
 

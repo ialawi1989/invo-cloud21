@@ -89,6 +89,12 @@ export class InvoicesService {
   viewInvoicePdf = (id: any) =>
     this.data(this.api.get('accounts/viewInvoicePdf/' + id, this.lang ? { lang: this.lang } : undefined));
 
+  /** Accounting entries of the invoice (`{defaultJournals, extraJournals}`, each `{accountType, debit, credit}[]`) — the view page's "Journal" tab. */
+  getInvoiceJournal = (id: string) => this.data(this.api.get('accounts/getInvoiceJournal/' + id));
+
+  /** Stock movement caused by this invoice's lines (`{productMovement, wastage}`, either possibly null) — the view page's "Product Movement" and "Voided" tabs share this one call. */
+  getInvoiceMovementDetails = (id: string) => this.data<{ productMovement: any[] | null; wastage: any[] | null }>(this.api.get('accounts/invoiceMovementDetails/' + id));
+
   async viewMergedInvoicesPdf(invoiceIds: string[]): Promise<any> {
     try {
       const url = 'accounts/viewMergedInvoicesPdf' + (this.lang ? `?lang=${encodeURIComponent(this.lang)}` : '');

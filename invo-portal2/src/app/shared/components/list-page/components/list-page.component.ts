@@ -183,6 +183,10 @@ import {
        so it doesn't read as a solid frozen column. The buttons carry their own
        white pill/shadow for legibility. */
     .list-floating-actions { background: transparent; }
+    /* While columns still scroll under the pinned Actions, fill it so their text can't collide with the buttons. */
+    .list-has-scroll-end tr.list-row .list-floating-actions { background-color: #ffffff; }
+    .list-has-scroll-end tr.list-row:hover .list-floating-actions { background-color: #f4fbfb; }
+    .list-has-scroll-end tr.list-row-expanded .list-floating-actions { background-color: #ecfafd; }
 
     /* ── End-edge shadow ────────────────────────────────────────────────
        Placed at the table's right EDGE (inside the pinned Actions cell, no
@@ -2140,6 +2144,23 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       ...(widths[col.key] != null ? { width: widths[col.key] } : {}),
     }));
     this.listPrefs.save(this.entityType, prefs);
+  }
+
+  /**
+   * "Reset Column Width" — Zoho-style: clears every column's saved drag-resized width (keeping
+   * visibility/order/displayStyle as they are) and persists that back to `EmployeeOptions`, so the
+   * table falls back to each column's default sizing on the next render. Callers (a page's own
+   * header "⋯" menu) reach this via `@ViewChild(ListPageComponent)`.
+   */
+  resetColumnWidths(): void {
+    this.columnWidths.set({});
+    if (this.entityType) {
+      const prefs: ListColumnPref[] = this.columns.map((col, i) => ({
+        key: col.key, visible: col.visible !== false, order: col.order ?? i,
+        ...(col.displayStyle ? { displayStyle: col.displayStyle } : {}),
+      }));
+      this.listPrefs.save(this.entityType, prefs);
+    }
   }
 
   // ══════════════════════════════════════════════════════════════

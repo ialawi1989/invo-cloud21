@@ -29,3 +29,5 @@
   &:disabled { opacity: 0.5; cursor: not-allowed; }
   &--primary { border-color: #2691a4; background: #2691a4; color: #fff; &:hover:not(:disabled) { background: #227d8d; } }
 }
+
+@media (max-width: 576px) { .cfp { padding-inline: 0 !important; } }

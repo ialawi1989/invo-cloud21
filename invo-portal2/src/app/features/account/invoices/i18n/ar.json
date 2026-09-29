@@ -19,7 +19,10 @@
       "CUSTOMER_ADDRESS": "عنوان العميل",
       "REF": "مرجع #",
       "PAY": "دفع",
-      "CREATE_CREDIT_NOTE": "إشعار دائن"
+      "CREATE_CREDIT_NOTE": "إشعار دائن",
+      "OVERDUE_BY": "متأخرة {{days}} يوم",
+      "CUSTOMER_PHONE": "هاتف العميل",
+      "ALL_INVOICES": "كل الفواتير"
     },
     "FILTERS": {
       "STATUS": "الحالة",
@@ -118,7 +121,13 @@
       "TOTAL_AMOUNT": "إجمالي المبلغ",
       "TOTAL_QUANTITY": "إجمالي الكمية",
       "RECURRING_SOON": "الفواتير المتكررة غير متاحة بعد",
-      "SAVE_AND_SEND": "حفظ وإرسال"
+      "SAVE_AND_SEND": "حفظ وإرسال",
+      "GATEWAY_TITLE": "تريد تحصيل مدفوعاتك أسرع؟",
+      "GATEWAY_TEXT": "أعدّ بوابات الدفع واستقبل المدفوعات عبر الإنترنت.",
+      "GATEWAY_LINK": "إعداد بوابة الدفع",
+      "CF_TITLE": "حقول إضافية:",
+      "CF_TEXT": "ابدأ بإضافة حقول مخصصة للفواتير من",
+      "CF_PATH": "الإعدادات ➜ المبيعات ➜ الفواتير"
     },
     "REQUIRED": {
       "INVOICE_NUMBER": "رقم الفاتورة",
@@ -147,7 +156,30 @@
       "SERVICE": "الخدمة",
       "TABLE": "الطاولة",
       "NO_DATA": "لا توجد بيانات",
-      "EMAIL_WHATSAPP": "بريد / واتساب"
+      "EMAIL_WHATSAPP": "بريد / واتساب",
+      "OVERDUE": "متأخرة",
+      "VIEW_JOURNAL": "عرض القيد",
+      "INVOICE_PREFERENCES": "إعدادات الفاتورة",
+      "RECORD_PAYMENT": "تسجيل دفعة",
+      "SEND_INVOICE": "إرسال الفاتورة",
+      "WHATS_NEXT": "الخطوة التالية؟",
+      "WHATS_NEXT_DRAFT": "أرسل هذه الفاتورة إلى العميل، أو افتحها لإخراجها من حالة المسودة.",
+      "WHATS_NEXT_OVERDUE": "الدفع متأخر. سجّل الدفعة عند استلامها.",
+      "BILL_TO": "إلى",
+      "VAT_NUMBER": "الرقم الضريبي",
+      "ORDER_SUMMARY": "ملخص الطلب",
+      "AUTHORIZED_SIGNATURE": "التوقيع المعتمد",
+      "DELIVERY_DATE": "تاريخ التسليم",
+      "DELIVERY_NOTE": "إذن تسليم",
+      "PRINT_DELIVERY_NOTE": "طباعة إذن تسليم",
+      "DELIVERY_NOTE_NEEDS_CUSTOMER": "يلزم وجود عميل لطباعة إذن التسليم.",
+      "SORT_BY": "فرز حسب",
+      "EXPORT_INVOICES": "تصدير الفواتير",
+      "EXPORT_CURRENT_VIEW": "تصدير العرض الحالي",
+      "IMPORT_INVOICES": "استيراد الفواتير",
+      "IMPORT_NOT_AVAILABLE": "استيراد الفواتير بالجملة غير متاح بعد.",
+      "ONLINE_PAYMENTS": "الدفع الإلكتروني",
+      "RESET_COLUMN_WIDTH": "إعادة ضبط عرض الأعمدة"
     },
     "CREDIT": {
       "APPLY_CREDITS_FOR": "تطبيق الأرصدة على",
@@ -173,6 +205,21 @@
       "BANK_CHARGE": "رسوم البنك",
       "BANK_CHARGE_INFO": "رسوم البنك لـ {{payment}} هي {{value}}",
       "REFERENCE_NUMBER": "الرقم المرجعي"
+    },
+    "PREFS": {
+      "PREFERENCES": "التفضيلات",
+      "FIELDS": "الحقول",
+      "ALL_PREFERENCES": "كل التفضيلات",
+      "ENABLE_WASTE": "تفعيل تتبع الهدر",
+      "ENABLE_VOID_REASON": "طلب سبب عند إلغاء بند",
+      "SHOW_OPTION_GROUP": "إظهار مجموعة الخيارات في الفواتير",
+      "TERMS_CONDITIONS": "الشروط والأحكام",
+      "FIELDS_TEXT": "أضف أو عدّل الحقول المخصصة التي تظهر في الفواتير.",
+      "MANAGE_FIELDS": "إدارة الحقول المخصصة",
+      "UNNAMED_FIELD": "حقل بدون اسم",
+      "SYSTEM_FIELD": "نظام",
+      "NO_FIELDS": "لا توجد حقول مخصصة بعد.",
+      "ADD_FIELD": "إضافة حقل"
     }
   }
 }

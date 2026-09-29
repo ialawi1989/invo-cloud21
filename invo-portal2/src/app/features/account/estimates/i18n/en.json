@@ -1,0 +1,70 @@
+{
+  "ESTIMATES": {
+    "DASHBOARD": "Dashboard",
+    "ADD_NEW": "Add New Estimate",
+    "SEARCH_PLACEHOLDER": "Search by number, customer or reference",
+    "EMPTY": "No estimates found",
+    "CREATED_DATE": "Created date",
+    "LIST": {
+      "ESTIMATES_LIST": "Estimates",
+      "ESTIMATE_NUMBER": "Estimate #",
+      "EMPLOYEE_NAME": "Employee",
+      "CUSTOMER_NAME": "Customer",
+      "TOTAL": "Total",
+      "INVOICE_NUMBER": "Invoice #",
+      "BRANCH_NAME": "Branch",
+      "ISSUE_DATE": "Issue date",
+      "EXPIRY_DATE": "Expiry date",
+      "REF": "Ref #",
+      "CONVERT": "Convert",
+      "CONVERTED": "Converted"
+    },
+    "FILTERS": {
+      "SOURCE": "Source",
+      "BRANCH": "Branch",
+      "EMPLOYEE": "Employee",
+      "PRODUCT": "Product",
+      "DATE": "Date"
+    },
+    "ACTIONS": {
+      "EXPORT_EXCEL": "Export to Excel",
+      "DELETE": "Delete",
+      "CONFIRM_DELETE": "Delete this estimate? This cannot be undone.",
+      "CONVERT_TO_INVOICE": "Convert to Invoice",
+      "CLONE": "Clone"
+    },
+    "FORM": {
+      "ESTIMATE": "Estimate",
+      "NEW_ESTIMATE": "New Estimate",
+      "EDIT_ESTIMATE": "Edit Estimate",
+      "ESTIMATE_DETAILS": "Estimate Details",
+      "ESTIMATE_NUMBER": "Estimate Number",
+      "ESTIMATE_DATE": "Estimate Date",
+      "EXPIRY_DATE": "Expiry Date",
+      "EXPIRY_BEFORE_DATE": "The expiry date can't be before the estimate date",
+      "REFERENCE": "Reference Number",
+      "NUMBER_HELP": "Click here to enable or disable auto-generation of Estimate numbers.",
+      "NOTES_HINT": "Will be displayed on the estimate"
+    },
+    "REQUIRED": {
+      "ESTIMATE_NUMBER": "Estimate number",
+      "BRANCH": "Branch",
+      "CUSTOMER": "Customer"
+    },
+    "VIEW": {
+      "VIEW_ESTIMATE": "View Estimate",
+      "PRINT": "Print",
+      "SHARE": "Share",
+      "EXPORT": "Export",
+      "ACTIONS": "Actions",
+      "ZOOM": "Zoom",
+      "NO_TEMPLATE": "No estimate template found",
+      "EMAIL_WHATSAPP": "Email / WhatsApp",
+      "EXPORT_CSV": "Export lines (CSV)",
+      "EXPORT_XLSX": "Export lines (XLSX)",
+      "NO_DATA": "There are no lines to export",
+      "CONFIRM_DELETE": "Delete this estimate? This cannot be undone.",
+      "CONVERTED_TO": "Converted to invoice"
+    }
+  }
+}

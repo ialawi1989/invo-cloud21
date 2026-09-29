@@ -186,15 +186,21 @@ export interface IMediaUploadResult {
   message?: string;
 }
 
+// Field names match the backend contract exactly (`MediaRepo.setAttchments`/`getAttchments`/
+// `deleteAttchments` read `data.type`/`data.id`/`data.mediaId` — NOT `reference`/`referenceId`/
+// `attachmentId`, despite what the params were previously named here).
 export interface IAttachmentParams {
-  reference: string; // e.g., 'invoice', 'product'
-  referenceId: string;
+  /** Entity type — e.g. 'invoice', 'journal' (`MediaRepo`'s table-name switch). */
+  type: string;
+  id: string;
+  /** The FULL desired attachment list — the backend does `SET "attachment"=$1` (a full column
+   *  overwrite, not a DB-level append), so this must include existing + new, not just the new item. */
   attachment: Array<{ id: string }>;
 }
 
 export interface IGetAttachmentsParams {
-  reference: string;
-  referenceId: string;
+  type: string;
+  id: string;
 }
 
 // File upload item for tracking upload progress

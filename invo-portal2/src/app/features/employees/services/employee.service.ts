@@ -231,6 +231,7 @@ export class EmployeeService {
       superAdmin:    !!e.superAdmin,
       user:          !!e.user,
       isDriver:      !!e.isDriver,
+      isSalesPerson: !!e.isSalesPerson,
       isInvitedUser: !!e.isInvitedUser,
       branchId:      e.branchId ?? '',
     };

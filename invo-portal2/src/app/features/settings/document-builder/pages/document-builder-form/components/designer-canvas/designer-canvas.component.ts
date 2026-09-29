@@ -165,6 +165,11 @@ export class DesignerCanvasComponent {
       'QR Code':    { w: 100, h: 100 },
       'Signature':  { w: 200, h: 64 },
       'Page #':     { w: 140, h: 16 },
+      'Rich Text':      { w: 260, h: 60 },
+      'Group Header':   { w: 400, h: 26 },
+      'Group Footer':   { w: 400, h: 26 },
+      'Payments':       { w: 400, h: 120 },
+      'Repeater':       { w: 400, h: 96 },
     };
     const dims = sized[type] ?? { w: 140, h: 22 };
     const el: DesignerElement = {
@@ -182,6 +187,15 @@ export class DesignerCanvasComponent {
       ...(type === 'Shape'      ? { shapeKind: 'rect' as const, stroke: '#1f2937', strokeWidth: 1, radius: 4 } : {}),
       ...(type === 'Data Field' ? { path: 'customer.name', format: '', prefix: '', suffix: '' } : {}),
       ...(type === 'Table'      ? { headers: ['Column A', 'Column B'], rows: [['Row 1 A', 'Row 1 B']], headerBg: '#1e3a8a', headerColor: '#ffffff', striped: true } : {}),
+      // Rich Text / Group Header / Group Footer / Payments defaults — mirrors legacy's own seed values.
+      ...(type === 'Rich Text'    ? { html: '<p>Rich <b>text</b></p>' } : {}),
+      ...(type === 'Group Header' ? { groupBy: 'row.category', content: '{{group.key}}', bold: true, bg: '#f1f5f9' } : {}),
+      ...(type === 'Group Footer' ? { groupBy: 'row.category', content: 'Subtotal: {{group.rows.length}} items', italic: true } : {}),
+      ...(type === 'Payments'     ? { bindTo: 'invoicePayments', paymentsColumns: ['method', 'reference', 'date', 'amount'], showHeader: true, showBorder: true, currency: 'BHD' } : {}),
+      ...(type === 'Repeater'     ? {
+        bindTo: 'lines', itemHeight: 30, itemSpacing: 2, direction: 'vertical' as const,
+        repeaterItems: [{ id: Date.now() + 1, type: 'Data Field', x: 4, y: 4, w: 180, h: 22, path: 'productName', color: '#1f2937', size: 10 }],
+      } : {}),
     };
     this.elementsChange.emit([...this.elements(), el]);
     this.selectChange.emit(el);

@@ -18,6 +18,7 @@ import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/component
 import { LogsDrawerComponent, LogsDrawerData } from '@shared/components/logs-drawer/logs-drawer.component';
 
 import { PaymentsService } from '../../services/payments.service';
+import { PaymentActions } from '../../services/payment-actions';
 
 const ymd = (v: any): string | null => {
   if (!v) return null;
@@ -49,6 +50,7 @@ export class PaymentsListComponent implements OnInit {
   private lang = inject(LanguageService);
   private modal = inject(ModalService);
   private privileges = inject(PrivilegeService);
+  readonly actions = inject(PaymentActions);
 
   @ViewChild(ListPageComponent) listPage?: ListPageComponent;
 
@@ -120,7 +122,7 @@ export class PaymentsListComponent implements OnInit {
     return Array.isArray(v) ? v.join(', ') : (v ?? '');
   }
 
-  canEdit(r: any): boolean { return this.canAdd && !r.reconciled; }
+  canEdit(r: any): boolean { return this.actions.canEdit(r); }
 
   add(): void { void this.router.navigate(['/account/payments', 'new']); }
   view(r: any): void { void this.router.navigate(['/account/payments/view', r.id]); }

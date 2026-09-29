@@ -1,3 +1,12 @@
+@if (bare()) {
+  @if (hasFields()) {
+    <div class="ecf-grid" [formGroup]="group">
+      @for (f of fields(); track f.id) {
+        <app-custom-field-renderer [field]="f" [control]="controlOf(f)" [idPrefix]="idPrefix()"/>
+      }
+    </div>
+  }
+} @else {
 <section class="ecf-card" [formGroup]="group">
   <header class="ecf-card__head">
     <div class="ecf-card__icon" aria-hidden="true">
@@ -46,3 +55,4 @@
     }
   </div>
 </section>
+}

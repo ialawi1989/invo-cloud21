@@ -14,7 +14,9 @@
 
 .dl__bulk { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: #e6f4f6; }
 .dl__bulk-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-.dl__bulk-field { min-width: 200px; }
+.dl__bulk-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #2691a4; background: #2691a4; color: #fff; font-weight: 600; font-size: 13.5px; cursor: pointer; }
+.dl__bulk-btn:hover:not(:disabled) { background: #227d8d; }
+.dl__bulk-btn:disabled { opacity: .45; cursor: not-allowed; }
 
 .dl__wrap { overflow-x: auto; }
 .dl__table { width: 100%; min-width: 1020px; table-layout: auto; border-collapse: collapse; font-size: 13.5px;
@@ -26,15 +28,18 @@
   .dl__handle-col { width: 22px; padding-inline: 4px; }
   .dl__check-col { width: 32px; }
   .dl__act-col { width: 84px; border: 0; padding-inline: 8px; } }
-.dl__handle { color: #cbd5e1; cursor: grab; letter-spacing: -2px; user-select: none; }
+.dl__handle { color: #94a3b8; cursor: grab; user-select: none; display: inline-flex; align-items: center; }
+.dl__handle:hover { color: #475569; }
 .dl__row--voided td { opacity: .55; }
 
 .dl__item { position: relative; }
+.dl__item-acts { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; }
 .dl__picked { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .dl__item-name { font-weight: 600; color: #0f172a; }
 .dl__note { width: 100%; margin-top: 6px; border: 1px solid transparent; border-radius: 6px; padding: 6px 8px; font: inherit; resize: vertical; background: transparent;
   &:hover { border-color: #e5e7eb; } &:focus { outline: none; border-color: #2691a4; background: #fff; box-shadow: 0 0 0 2px rgba(38, 145, 164, .2); }
-  &--main { margin-top: 0; min-height: 56px; } }
+  &--main { margin-top: 0; min-height: 84px; flex: 1; border: 0; border-radius: 0; padding: 12px; resize: none; background: transparent;
+    &:hover { border: 0; } &:focus { border: 0; box-shadow: inset 0 0 0 2px #2691a4; background: #fff; } } }
 .dl__num { width: 100%; min-width: 90px; border: 1px solid transparent; border-radius: 6px; padding: 8px 10px; font: inherit; text-align: end; background: transparent;
   &:hover { border-color: #e5e7eb; } &:focus { outline: none; border-color: #2691a4; background: #fff; } &:disabled { color: #94a3b8; } }
 .dl__amount { font-weight: 700; white-space: nowrap; }
@@ -43,6 +48,11 @@
 .dl__err { font-size: 11.5px; color: #dc2626; margin-top: 4px; text-align: start; }
 
 .dl__col-item { width: 46%; min-width: 380px; }
+// The item cell has no padding: the text box runs to the edges of the row like a spreadsheet cell.
+.dl__table td.dl__col-item { padding: 0; }
+.dl__table td.dl__col-item .dl__item { display: flex; flex-direction: column; height: 100%; }
+.dl__table td.dl__col-item .dl__picked { padding: 10px 12px 0; }
+.dl__table td.dl__col-item .dl__badge, .dl__table td.dl__col-item .dl__err { margin: 4px 12px 8px; }
 .dl__panel { position: fixed; z-index: 1000; margin: 0; padding: 4px; list-style: none; max-height: 280px; overflow-y: auto;
   background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 25px rgba(15, 23, 42, .15);
   li { display: flex; flex-direction: column; padding: 8px 12px; border-radius: 8px; cursor: pointer; &:hover { background: #2691a4; color: #fff; small { color: #e0e7ff; } } small { color: #64748b; } }
@@ -63,3 +73,121 @@
 
 .cdk-drag-preview { box-shadow: 0 6px 20px rgba(15, 23, 42, .18); background: #fff; }
 .cdk-drag-placeholder { opacity: .35; }
+
+.dl__table td.dl__col-item { height: 1px; }
+.dl__table td.dl__col-item .dl__note:not(.dl__note--main) { margin: 0; border-radius: 0; padding: 8px 12px; width: 100%; }
+
+input[type=checkbox], input[type=radio] { accent-color: #2691a4; }
+
+.dl__filter { position: absolute; top: 8px; inset-inline-end: 8px; border: 0; background: none; color: #64748b; cursor: pointer; padding: 2px;
+  &:hover { color: #227d8d; } }
+.dl__filter-badge { position: absolute; top: -6px; inset-inline-end: -6px; min-width: 16px; height: 16px; border-radius: 999px; background: #2691a4; color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; padding: 0 4px; }
+
+// One height for every control in a row: quantity, rate, discount, tax.
+:host ::ng-deep .dl__table td .qi { height: 38px; }
+:host ::ng-deep .dl__table td .df { height: 38px; }
+.dl__num { height: 38px; border: 1px solid #d0d5dd !important; border-radius: 8px !important; background: #fff !important; }
+
+// Row action column: never clipped by the scroll box, buttons centred and the same size.
+.dl__table .dl__act-col { width: 96px; min-width: 96px; padding-inline: 8px; overflow: visible; }
+.dl__acts { display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 6px; }
+:host ::ng-deep .dl__acts app-dropdown-menu-btn { display: inline-flex; }
+:host ::ng-deep .dl__round, .dl__round { width: 28px; height: 28px; min-width: 28px; line-height: 1; font-size: 14px; letter-spacing: 0; padding: 0; flex: 0 0 auto; }
+.dl__wrap { padding-inline-end: 4px; }
+
+.dl__head { flex-wrap: wrap; gap: 8px 16px; }
+.dl__tools { flex-wrap: wrap; gap: 8px 16px; }
+:host ::ng-deep .dl__link { white-space: nowrap; }
+
+// ── Phone / small tablet: every line becomes a card (label above each value) ──
+@media (max-width: 768px) {
+  .dl__wrap { overflow: visible; padding-inline-end: 0; }
+  .dl__table { min-width: 0; display: block; }
+  .dl__table thead { display: none; }
+  .dl__table tbody { display: block; padding: 10px; }
+  .dl__table tbody tr:not(.dl__info) {
+    display: grid; grid-template-columns: 1fr 1fr; position: relative; margin-bottom: 12px;
+    border: 1px solid #e4e7ec; border-radius: 12px; background: #fff; overflow: visible;
+  }
+  .dl__table td { display: block; border: 0 !important; padding: 8px 12px; text-align: start !important; min-width: 0; height: auto !important; }
+  .dl__table td[data-label]::before {
+    content: attr(data-label); display: block; margin-bottom: 4px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: #64748b;
+  }
+  .dl__table td.dl__handle-col, .dl__table td.dl__check-col { display: none; }
+  .dl__table td.dl__col-item, .dl__table td[data-type='amount'] { grid-column: 1 / -1; width: auto; min-width: 0; }
+  .dl__table td.dl__col-item { padding: 0; }
+  .dl__table td.dl__col-item[data-label]::before { padding: 10px 12px 0; margin-bottom: 0; }
+  .dl__table td[data-type='amount'] { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eef2f6 !important; }
+  .dl__table td[data-type='amount']::before { margin: 0; }
+  .dl__table td.dl__act-col {
+    position: absolute; top: 8px; inset-inline-end: 8px; width: auto; min-width: 0; padding: 0; z-index: 2;
+  }
+  .dl__table td.dl__col-item .dl__note--main { min-height: 64px; }
+  .dl__table td.dl__col-item .dl__picked { padding-inline-end: 84px; }
+  .dl__table tr.dl__info { display: block; margin: -6px 0 12px; }
+  .dl__table tr.dl__info td { display: block; border: 1px solid #e4e7ec !important; border-radius: 10px; }
+  .dl__info-field { width: 100%; }
+  .dl__add { flex-direction: column; }
+  .dl__btn { width: 100%; text-align: center; }
+  .dl__bulk { flex-wrap: wrap; }
+  .dl__panel { max-width: calc(100vw - 24px); }
+}
+
+// Phone cards: padded, bordered item box; the action buttons get their own row on top.
+@media (max-width: 768px) {
+  .dl__table td.dl__act-col { position: static; order: -1; grid-column: 1 / -1; padding: 8px 12px 0; }
+  .dl__acts { justify-content: flex-end; }
+  .dl__table td.dl__col-item { padding: 4px 12px 8px; }
+  .dl__table td.dl__col-item[data-label]::before { padding: 0; margin-bottom: 6px; }
+  .dl__table td.dl__col-item .dl__note--main {
+    border: 1px solid #d0d5dd; border-radius: 8px; padding: 10px 36px 10px 12px; min-height: 76px; background: #fff;
+    &:focus { border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .12); }
+  }
+  .dl__table td.dl__col-item .dl__note:not(.dl__note--main) { border: 1px solid #e4e7ec; border-radius: 8px; margin-top: 8px; padding: 8px 12px; }
+  .dl__table td.dl__col-item .dl__picked { padding: 0; }
+  .dl__table td.dl__col-item .dl__filter { top: 12px; inset-inline-end: 22px; }
+  .dl__table td.dl__col-item .dl__badge, .dl__table td.dl__col-item .dl__err { margin: 6px 0 0; }
+}
+
+:host ::ng-deep .dl__round, .dl__round { display: inline-flex; align-items: center; justify-content: center; overflow: visible; }
+:host ::ng-deep .dl__acts app-dropdown-menu-btn button { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 50%; }
+
+@media (max-width: 768px) {
+  :host ::ng-deep .dl__table td app-qty-input, :host ::ng-deep .dl__table td app-discount-field, :host ::ng-deep .dl__table td app-search-dropdown { display: block; width: 100%; }
+  :host ::ng-deep .dl__table td .qi { width: 100%; height: 40px; }
+  :host ::ng-deep .dl__table td .qi__field { flex: 1; min-width: 0; }
+  :host ::ng-deep .dl__table td .df { height: 40px; }
+  .dl__num { height: 40px; width: 100%; }
+}
+
+@media (max-width: 768px) {
+  .dl__table td.dl__col-item .dl__item { height: auto; min-height: 0; }
+  .dl__table td.dl__col-item .dl__note--main { flex: none; display: block; }
+  .dl__table td[data-label]:not(.dl__col-item) { padding-top: 12px; }
+}
+
+// Scan bar in the brand tint.
+.dl__scan { background: #e6f4f6; border: 1px solid #b6dde3; border-radius: 12px; padding: 12px 16px;
+  label { color: #1d6b7a; }
+  &-input { background: #fff; border: 1px solid #2691a4; border-radius: 8px; &:focus { outline: none; box-shadow: 0 0 0 3px rgba(38, 145, 164, .2); } } }
+.dl__scan-msg { color: #b91c1c; }
+
+.dl__scan .dl__link { margin-inline-start: auto; }
+
+// The scan bar stays pinned under the top bar while the lines scroll.
+.dl__scan { position: sticky; top: 64px; z-index: 30; box-shadow: 0 4px 12px rgba(15, 23, 42, .08); }
+
+// Contrast on the gray page canvas: buttons and blocks that sit directly on it are white with a border.
+.dl__btn { background: #fff; border: 1px solid #d0d5dd; color: #227d8d; font-weight: 600;
+  &:hover:not(:disabled) { background: #f0fafb; border-color: #2691a4; } }
+.dl__p-code { opacity: .85; }
+
+.dl__info-err { margin-inline-start: 10px; }
+.dl__req { color: #dc2626; margin-inline-start: 2px; }
+.dl__num.dl__num--err { border-color: #dc2626 !important; background: #fef2f2 !important; }
+:host ::ng-deep .dl__qty-err .qty, .dl__cell--err app-qty-input { outline: 1px solid #dc2626; border-radius: 8px; }
+:host ::ng-deep .dl__ico { display: inline-block !important; vertical-align: -3px; margin-inline-end: 4px; flex: 0 0 auto; }
+:host ::ng-deep .dl__link { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.dl__table th { white-space: nowrap; }
+:host ::ng-deep .dl__calc, .dl__calc { display: inline-block !important; vertical-align: -3px; margin-inline-start: 4px; color: #475569; cursor: help; }
+.dl__req { display: inline; }

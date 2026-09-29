@@ -68,6 +68,7 @@
                     </span>
                   </button>
 
+                  @if (!f.system) {
                   <button type="button" class="field__icon-btn" (click)="duplicate(f)" [attr.aria-label]="'SETTINGS.CUSTOM_FIELDS.DUPLICATE' | translate">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -83,6 +84,7 @@
                       <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
                     </svg>
                   </button>
+                  }
                   <button type="button" class="field__icon-btn field__icon-btn--chev" (click)="toggleOpen(f.id)" [attr.aria-label]="'COMMON.TOGGLE' | translate">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
                       @if (f.isOpened) {

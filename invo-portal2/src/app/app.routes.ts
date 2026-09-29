@@ -24,6 +24,18 @@ export const routes: Routes = [
       import('./shared/pages/feature-unavailable.component').then(m => m.FeatureUnavailableComponent),
   },
 
+  // ── Print pages (no main layout chrome, no sidebar/topbar) ──────────────
+  // Client-rendered like legacy's own print module — the browser's own
+  // print dialog does the printing (optionally `?autoPrint=true`), not a
+  // server-generated PDF (that's `viewInvoicePdf`, used by Print/PDF).
+  {
+    path: 'print/delivery-note/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/account/invoices/pages/delivery-note-print/delivery-note-print.component')
+        .then(m => m.DeliveryNotePrintComponent),
+  },
+
   // ── Full-page builders (no main layout chrome) ─────────────────────────
   // Table Management is a visual floor-plan builder — like the receipt /
   // invoice builders, it takes over the full viewport rather than living
@@ -539,6 +551,12 @@ export const routes: Routes = [
         path: 'account/invoices',
         loadChildren: () =>
           import('./features/account/invoices/invoices.routes').then(m => m.INVOICES_ROUTES)
+      },
+      {
+        // Estimates — Sales section (list, view, form).
+        path: 'account/estimate',
+        loadChildren: () =>
+          import('./features/account/estimates/estimates.routes').then(m => m.ESTIMATES_ROUTES)
       },
       {
         // Promotions — gift vouchers first (settings, give, details, history);

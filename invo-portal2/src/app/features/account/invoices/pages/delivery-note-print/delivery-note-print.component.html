@@ -1,0 +1,67 @@
+@if (invoice(); as inv) {
+  <div class="dn">
+    <header class="dn__head">
+      @if (logoUrl()) { <img class="dn__logo" [src]="logoUrl()" alt=""/> }
+      <div class="dn__company">
+        <div class="dn__company-name">{{ companyInfo()?.name }}</div>
+        @if (companyInfo()?.address) { <div>{{ companyInfo()?.address }}</div> }
+        @if (companyInfo()?.phone) { <div>{{ companyInfo()?.phone }}</div> }
+        @if (companyInfo()?.vat) { <div>{{ 'INVOICES.VIEW.VAT_NUMBER' | translate }}: {{ companyInfo()?.vat }}</div> }
+      </div>
+      <div class="dn__title">
+        <h1>{{ 'INVOICES.VIEW.DELIVERY_NOTE' | translate }}</h1>
+        <div class="dn__number"># {{ inv.invoiceNumber }}</div>
+      </div>
+    </header>
+
+    <section class="dn__details">
+      <div class="dn__col">
+        @if (inv.invoiceNumber) { <div><b>{{ 'INVOICES.LIST.INVOICE_NUMBER' | translate }}:</b> {{ inv.invoiceNumber }}</div> }
+        <div><b>{{ 'INVOICES.VIEW.BILL_TO' | translate }}:</b> {{ inv.customerName }}</div>
+        @if (inv.customerPhone) { <div><b>{{ 'INVOICES.LIST.CUSTOMER_PHONE' | translate }}:</b> {{ inv.customerPhone }}</div> }
+        @if (inv.customerVatNumber) { <div><b>{{ 'INVOICES.VIEW.VAT_NUMBER' | translate }}:</b> {{ inv.customerVatNumber }}</div> }
+        @if (inv.employeeName) { <div><b>{{ 'INVOICES.LIST.EMPLOYEE_NAME' | translate }}:</b> {{ inv.employeeName }}</div> }
+      </div>
+      <div class="dn__col dn__col--end">
+        <div><b>{{ 'INVOICES.FORM.INVOICE_DATE' | translate }}:</b> {{ inv.invoiceDate | date: 'dd/MM/yyyy' }}</div>
+        @if (inv.dueDate) { <div><b>{{ 'INVOICES.FORM.DUE_DATE' | translate }}:</b> {{ inv.dueDate | date: 'dd/MM/yyyy' }}</div> }
+        @if (inv.refrenceNumber) { <div><b>{{ 'INVOICES.FORM.ORDER_NUMBER' | translate }}:</b> {{ inv.refrenceNumber }}</div> }
+      </div>
+    </section>
+
+    <h2 class="dn__heading">{{ 'INVOICES.VIEW.ORDER_SUMMARY' | translate }}</h2>
+    <table class="dn__table">
+      <thead><tr><th>{{ 'INVOICES.FORM.DESCRIPTION' | translate }}</th><th class="end">{{ 'INVOICES.FORM.QTY' | translate }}</th></tr></thead>
+      <tbody>
+        @for (line of inv.lines; track $index) {
+          @if (line.selectedItem?.id || line.note) {
+            @for (row of rowsOf(line); track $index) {
+              <tr [class.dn__row--voided]="row.voided">
+                <td>
+                  <div>{{ row.name ? (line.selectedItem | localizedName) : row.note }}</div>
+                  @if (row.name && row.note) { <div class="dn__note">{{ row.note }}</div> }
+                  @if (row.options.length) {
+                    <div class="dn__options">@for (o of row.options; track $index) { <span class="dn__option">{{ o.name }}</span> }</div>
+                  }
+                </td>
+                <td class="end">{{ row.qty }}</td>
+              </tr>
+            }
+          }
+        }
+      </tbody>
+    </table>
+
+    @if (deliveryNote()) {
+      <div class="dn__notes">
+        <h2 class="dn__heading">{{ 'INVOICES.FORM.CUSTOMER_NOTES' | translate }}</h2>
+        <p>{{ deliveryNote() }}</p>
+      </div>
+    }
+
+    <div class="dn__sign"><span>{{ 'INVOICES.VIEW.AUTHORIZED_SIGNATURE' | translate }}</span><span class="dn__sign-line"></span></div>
+    <div class="dn__sign"><span>{{ 'INVOICES.VIEW.DELIVERY_DATE' | translate }}</span><span class="dn__sign-line"></span></div>
+  </div>
+} @else if (!loading()) {
+  <p class="dn__empty">{{ 'INVOICES.VIEW.NO_DATA' | translate }}</p>
+}

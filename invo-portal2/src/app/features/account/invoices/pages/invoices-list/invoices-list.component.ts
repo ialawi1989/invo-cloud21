@@ -26,7 +26,7 @@ import { LogsDrawerComponent, LogsDrawerData } from '@shared/components/logs-dra
 import { CustomerAddress } from '../../../customers/models/customer.model';
 import { SendDocumentData, SendDocumentModalComponent } from '../../../components/send-document-modal/send-document-modal.component';
 import { InvoicesService } from '../../services/invoices.service';
-import { TransactionLockService } from '../../../services/transaction-lock.service';
+import { InvoiceActions } from '../../services/invoice-actions';
 
 const ymd = (v: any): string | null => {
   if (!v) return null;
@@ -59,16 +59,13 @@ export class InvoicesListComponent implements OnInit {
   private lang = inject(LanguageService);
   private modal = inject(ModalService);
   private toast = inject(ToastService);
-  private lock = inject(TransactionLockService);
   private privileges = inject(PrivilegeService);
 
   @ViewChild(ListPageComponent) listPage?: ListPageComponent;
 
-  readonly canAdd = this.privileges.check('invoiceSecurity.actions.add.access');
-  readonly canPay = this.privileges.check('invoicePaymentsSecurity.actions.add.access');
-  readonly canCreditNote = this.privileges.check('creditNoteSecurity.actions.add.access');
+  readonly actions = inject(InvoiceActions);
 
-  private lockInfo: any = null;
+  private t = (k: string) => this.lang.instant(k);
   exporting = signal(false);
 
   columns: TableColumn[] = [];
@@ -83,7 +80,7 @@ export class InvoicesListComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.lang.loadFeature('account/invoices');
-    this.lockInfo = await this.lock.transactionsDate();
+    await this.actions.refresh();
     const t = (k: string) => this.lang.instant(k);
     const L = 'INVOICES.LIST.';
 
@@ -124,6 +121,7 @@ export class InvoicesListComponent implements OnInit {
     this.moreItems = [
       { label: t('COMMON.LOGS.SHOW'), click: () => this.openLogs(), disabled: false, danger: false },
       { label: t('INVOICES.ACTIONS.EXPORT_EXCEL'), click: () => void this.exportExcel(), disabled: false, danger: false },
+      { label: t('INVOICES.VIEW.RESET_COLUMN_WIDTH'), click: () => this.listPage?.resetColumnWidths(), disabled: false, danger: false },
     ];
 
     this.searchConfig.placeholder = t('INVOICES.SEARCH_PLACEHOLDER');
@@ -175,29 +173,21 @@ export class InvoicesListComponent implements OnInit {
   private loadProducts = (p: { page: number; pageSize: number; search: string }) =>
     this.paged('product/getProductsListByType', { page: p.page, limit: p.pageSize, searchTerm: p.search, sortBy: {} }, x => ({ value: x.id, label: x.name }), p.page);
 
-  // ── row rules (legacy template conditions) ─────────────────────────
-  private isFinal(r: any): boolean {
-    return !!r.isFullyRefunded || ['Void', 'writeOff', 'Closed'].includes(r.status);
-  }
-  canEdit(r: any): boolean {
-    return this.canAdd && r.invoiceDate != null && this.lock.isEditable(this.lockInfo, r.invoiceDate) && !this.isFinal(r);
-  }
-  canPayRow(r: any): boolean {
-    return this.canPay && r.status !== 'Paid' && r.status !== 'Draft' && !this.isFinal(r);
-  }
-  canCredit(r: any): boolean {
-    return this.canCreditNote && r.status !== 'Draft' && !this.isFinal(r);
-  }
-  canWriteOff(r: any): boolean {
-    return r.status === 'Open' || r.status === 'Partially Paid';
+  /** Secondary row actions live in the "⋯" menu so the Actions column stays narrow (View + Edit stay outside). */
+  rowMenu(r: any): DropdownMenuBtnItem[] {
+    const items: DropdownMenuBtnItem[] = [];
+    if (this.actions.pay(r)) items.push({ label: this.t('INVOICES.LIST.PAY'), click: () => this.pay(r), disabled: false, danger: false });
+    if (this.actions.creditNote(r)) items.push({ label: this.t('INVOICES.LIST.CREATE_CREDIT_NOTE'), click: () => this.createCreditNote(r), disabled: false, danger: false });
+    if (this.actions.writeOff(r)) items.push({ label: this.t('INVOICES.ACTIONS.WRITE_OFF'), click: () => void this.writeOff(r), disabled: false, danger: true });
+    return items;
   }
 
   // ── navigation / actions ───────────────────────────────────────────
   add(): void { void this.router.navigate(['/account/invoices', 'new']); }
   view(r: any): void { void this.router.navigate(['/account/invoices/view', r.id]); }
-  edit(r: any): void { void this.router.navigate(['/account/invoices', r.id]); }
   pay(r: any): void { void this.router.navigate(['/account/invoices/payment', r.id]); }
   createCreditNote(r: any): void { void this.router.navigate(['/account/credit-notes/new/forInvoice', r.id]); }
+  edit(r: any): void { void this.router.navigate(['/account/invoices', r.id]); }
   onRowClick(e: any): void { if (e?.row) this.view(e.row); }
 
   async writeOff(r: any): Promise<void> {

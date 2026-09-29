@@ -457,8 +457,13 @@ export class SettingsComponent {
       ],
     },
     {
-      id: 'promotion', title: 'SETTINGS.GROUPS.PROMOTION', color: '#ec4899',
-      icon: `<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>`,
+      // Discounts used to be the sole child of the Promotion card, which left
+      // that card showing a single row — and, since the tile is gated on the
+      // `promotions` plan feature, hid it outright for any company without
+      // that feature. Its own card keeps the two independent; the Promotion
+      // card comes back when coupons/points/tiers are ported.
+      id: 'discount', title: 'SETTINGS.GROUPS.DISCOUNT', color: '#f43f5e',
+      icon: `<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>`,
       items: [
         { label: 'SETTINGS.ITEMS.DISCOUNT', description: 'SETTINGS.ITEMS.DISCOUNT_DESC', link: '/settings/discounts', privilege: 'discountSecurity.actions.view.access', feature: 'promotions',
           i18nPrefix: 'DISCOUNT' },

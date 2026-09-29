@@ -783,9 +783,63 @@
 
 // ── DESIGNER LAYOUT ──────────────────────────────────────────────────
 .dbf-layout--designer {
-  // Three-column flex (left palette/layers, canvas, right inspector).
-  // No 8-tab nav + no accordion sidebar — Designer mode replaces them
-  // entirely.
+  // Page tabs on top (auto height), the three-column body (left
+  // palette/layers, canvas, right inspector) filling the rest. No 8-tab
+  // nav + no accordion sidebar — Designer mode replaces them entirely.
+  flex-direction: column;
+}
+
+.dbf-designer-body {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+  overflow: hidden;
+}
+
+// ── Page tabs — Master plus any extra standalone pages ────────────────
+.dbf-pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  padding: 6px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+.dbf-page-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 13px;
+  color: #475569;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover { background: #f8fafc; }
+  &--on { color: var(--color-brand-700); background: #f8fafc; border-color: #e5e7eb; font-weight: 600; }
+  &--add { width: 28px; min-width: 28px; padding: 0; justify-content: center; border: 1px dashed #cbd5e1; }
+
+  &__remove {
+    font-size: 13px;
+    color: #94a3b8;
+    border-radius: 999px;
+    width: 16px; height: 16px;
+    display: inline-flex; align-items: center; justify-content: center;
+    &:hover { background: rgba(0, 0, 0, 0.08); color: #475569; }
+  }
+  &__rename {
+    width: 90px;
+    height: 22px;
+    padding: 0 4px;
+    font-size: 13px;
+    border: 1px solid var(--color-brand-500);
+    border-radius: 4px;
+  }
 }
 
 .dbf-designer-left {

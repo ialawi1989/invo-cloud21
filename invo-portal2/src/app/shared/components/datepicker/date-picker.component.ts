@@ -610,8 +610,14 @@ export class DatePickerComponent implements ControlValueAccessor {
     const today = clampDate(new Date(), this.min(), this.max());
     this.cursor.set(today);
     this.view.set('days');
-    if (!this.isRangeMode()) {
-      const day = startOfDay(today);
+    const day = startOfDay(today);
+    if (this.isRangeMode()) {
+      const range: DateRange = { start: day, end: day };
+      this.value.set(range);
+      this._onChange(range);
+      this.rangeAnchor.set(null);
+      this.rangeHover.set(null);
+    } else {
       this.value.set(day);
       this._onChange(day);
       if (!this.inline()) this.close();

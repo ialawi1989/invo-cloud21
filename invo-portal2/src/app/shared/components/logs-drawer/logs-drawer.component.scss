@@ -70,12 +70,7 @@
 
 .ld-card {
   padding: 11px 13px;
-  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
-  border-inline-start: 3px solid #cbd5e1;
-
-  &[data-kind="create"] { border-inline-start-color: #22c55e; }
-  &[data-kind="edit"]   { border-inline-start-color: #f59e0b; }
-  &[data-kind="delete"] { border-inline-start-color: #ef4444; }
+  background: #fff; border: 1px solid #e4e7ec; border-radius: 12px;
 
   &__top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
   &__action { font-size: 13px; font-weight: 600; color: #0f172a; word-break: break-word; }

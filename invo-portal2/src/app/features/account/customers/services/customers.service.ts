@@ -47,7 +47,8 @@ export class CustomersService {
     return this.api.request(this.api.post('accounts/saveCustomerNotes', { customerId: id, notes }));
   }
 
-  customerAddresses = (id: string) => this.get('accounts/customerAddresses/' + id);
+  /** Addresses of a customer as a plain array (the endpoint wraps them as `{ addresses }`). */
+  customerAddresses = async (id: string): Promise<any[]> => (await this.get('accounts/customerAddresses/' + id))?.addresses ?? [];
   setCustomerAddresses(customerId: string, addresses: any[]): Promise<any> {
     return this.api.request(this.api.post('accounts/setCustomerAddresses', { customerId, addresses }));
   }

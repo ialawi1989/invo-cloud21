@@ -326,6 +326,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
     admin:           [false],
     user:            [true],
     isDriver:        [false],
+    isSalesPerson:   [false],
     superAdmin:      [false],
     // Access
     privilegeId:     [null as string | null],
@@ -883,6 +884,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
       admin:           !!data.admin,
       user:            !!data.user,
       isDriver:        !!data.isDriver,
+      isSalesPerson:   !!data.isSalesPerson,
       superAdmin:      !!data.superAdmin,
       privilegeId:     data.privilegeId ?? null,
       branchIds:       (data.branches ?? []).map((b: any) => b.id),
@@ -952,7 +954,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
 
   /** Clickable role-card toggle. Honors the disable rules (locked last role /
    *  super-admin lock) so a card can't be flipped when it shouldn't be. */
-  toggleRole(role: 'admin' | 'user' | 'isDriver'): void {
+  toggleRole(role: 'admin' | 'user' | 'isDriver' | 'isSalesPerson'): void {
     if (this.isSuperAdmin()) return;              // super-admin accounts are locked
     if (role === 'user' && this.posLocked()) return; // can't drop the last role
     const ctrl = this.form.controls[role];
@@ -1225,6 +1227,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
         admin,
         user,
         isDriver:        !!v.isDriver,
+        isSalesPerson:   !!v.isSalesPerson,
         superAdmin,
         // No login, no privilege set to resolve.
         privilegeId:     hasAccess ? (v.privilegeId || null) : null,

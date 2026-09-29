@@ -17,6 +17,7 @@ import { DatePickerComponent } from '@shared/components/datepicker/date-picker.c
 import { CustomerPickerComponent, CustomerMini } from '@shared/components/customer-picker/customer-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
+import { CustomerAdvancedSearchModalComponent } from '../../../customers/components/customer-advanced-search-modal/customer-advanced-search-modal.component';
 
 import { CustomersService } from '../../../customers/services/customers.service';
 import { CustomerQuickCreateModalComponent } from '../../../customers/components/customer-quick-create-modal/customer-quick-create-modal.component';
@@ -76,7 +77,7 @@ export class PaymentFormComponent implements OnInit, CanLeaveComponent {
   lineSearch = '';
 
   async ngOnInit(): Promise<void> {
-    await Promise.all([this.lang.loadFeature('account/payments'), this.lang.loadFeature('account/components/doc-lines-table')]);
+    await Promise.all([this.lang.loadFeature('account/payments'), this.lang.loadFeature('account/components/doc-lines-table'), this.lang.loadFeature('account/customers')]);
     const q = this.route.snapshot.queryParams;
     for (const k of ['pageNum', 'pageLimit', 'searchTerm', 'filterBySource', 'filterByBranch', 'fromDate', 'toDate']) {
       if (q[k]) this.listParams[k] = q[k];
@@ -170,6 +171,13 @@ export class PaymentFormComponent implements OnInit, CanLeaveComponent {
     this.payment.prevPaidAmount = 0;
     if (c) await this.loadOutstanding();
     this.markDirty();
+  }
+
+  async advancedCustomerSearch(): Promise<void> {
+    const c = await this.modal.open<CustomerAdvancedSearchModalComponent, void, CustomerMini | null>(
+      CustomerAdvancedSearchModalComponent, { size: 'lg' },
+    ).afterClosed();
+    if (c) await this.onCustomer(c);
   }
 
   async createCustomer(): Promise<void> {

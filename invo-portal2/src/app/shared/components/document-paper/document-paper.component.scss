@@ -1,5 +1,11 @@
 :host { display: block; }
 
+// Invisible wrapper around the page box(es) — see the template comment on `.dp-pages` for why.
+.dp-pages {
+  display: contents;
+  &--stack { display: flex; flex-direction: column; align-items: center; }
+}
+
 // Document paper — shared chrome between Classic + Designer modes.
 // All selectors share the `dp__` prefix to avoid colliding with the
 // document-builder's `dbf__` chrome.
@@ -24,6 +30,19 @@
   &--classic {
     padding: 1cm;
     overflow: hidden;     // ribbon clips to the corner
+  }
+
+  // Terms & Conditions as its own separate page (footerCustomization.termAsSeparatePage) — a
+  // second `.dp` box stacked below the main one via normal document flow (not absolutely
+  // positioned), so it's simply the next sibling on screen and the next sheet when printed.
+  &--terms-page {
+    margin-top: 20px;      // visible gap so it reads as a distinct next page, not more content
+    page-break-before: always;
+    break-before: page;
+
+    // `.dp__footer`'s top border/margin is a separator from content ABOVE it (items, totals) —
+    // there's nothing above it on this standalone page, so it would just look like an orphaned line.
+    .dp__footer { margin-top: 0; padding-top: 0; border-top: none; }
   }
 
   // Paginated mode — the `.dp` wrapper becomes a transparent

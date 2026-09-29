@@ -96,6 +96,9 @@ export class EntityCustomFieldsComponent implements OnInit, OnChanges {
   /** ID prefix for the rendered inputs — keep it short and stable. */
   idPrefix = input<string>('cf');
 
+  /** Render only the field grid (no card, header or empty banner) so the fields sit inline in a host section. */
+  bare = input<boolean>(false);
+
   group!: FormGroup;
   fields = signal<CustomField[]>([]);
   hasFields = computed<boolean>(() => this.fields().length > 0);

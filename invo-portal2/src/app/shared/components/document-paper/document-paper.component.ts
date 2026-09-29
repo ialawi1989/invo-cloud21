@@ -13,6 +13,7 @@ import {
   DesignerElement,
   DocumentTemplate,
   DocumentType,
+  MASTER_PAGE_ID,
   TextStyle,
   TableColumn,
   DOC_TYPE_TRANSACTIONAL_FIELDS,
@@ -303,12 +304,35 @@ export class DocumentPaperComponent {
   paperWidthCmValue  = computed<number>(() => paperWidthCm(this.template()));
   paperHeightCmValue = computed<number>(() => paperHeightCm(this.template()));
 
-  /** Resolved render mode — honours the `forceMode` override. */
+  /** Resolved render mode — honours the `forceMode` override. Falls back to Classic when the
+   *  template claims Designer mode but has no elements (an empty/broken Designer template would
+   *  otherwise render nothing at all — the `.dp` box sized and styled, with zero content inside). */
   renderMode = computed<'classic' | 'designer'>(() => {
     const force = this.forceMode();
     if (force) return force;
-    return this.template().renderMode === 'designer' ? 'designer' : 'classic';
+    const t = this.template();
+    return t.renderMode === 'designer' && t.designerElements.length > 0 ? 'designer' : 'classic';
   });
+
+  /** Terms & Conditions renders as a second page box (single-paper Classic only — paginated
+   *  print-preview keeps its existing per-page behaviour regardless of this setting). */
+  showTermsAsSeparatePage = computed<boolean>(() =>
+    this.renderMode() === 'classic' && !this.printPreview()
+    && this.template().footerCustomization.term.show
+    && this.template().footerCustomization.termAsSeparatePage,
+  );
+
+  /** Designer-mode master-page elements — everything with no `pageId` (or `pageId==='master'`).
+   *  Mirrors legacy's `Section.pageId ?? MASTER_PAGE_ID` convention exactly, so a template saved
+   *  before extra pages existed (no `pageId` on any element) renders unchanged. */
+  masterElements = computed<DesignerElement[]>(() =>
+    this.template().designerElements.filter((e) => (e.pageId ?? MASTER_PAGE_ID) === MASTER_PAGE_ID),
+  );
+
+  /** One extra page's own elements (see `DocumentTemplate.extraPages`). */
+  elementsForPage(pageId: string): DesignerElement[] {
+    return this.template().designerElements.filter((e) => e.pageId === pageId);
+  }
 
   // ─── Classic helpers ────────────────────────────────────────────────
   /** Resolve a string with `{{tokens}}` against the merged data (sample
@@ -350,6 +374,10 @@ export class DocumentPaperComponent {
       'text-decoration':  t.underline ? 'underline' : 'none',
       'text-align':       t.alignment || 'left',
       'background-color': t.backgroundColor || 'transparent',
+      // Preserve manual line breaks in Notes / Company Note / Terms text (and everywhere else
+      // this shared style applies) — without it, a plain `<span>`/`<div>` collapses `\n` into a
+      // single space and multi-line text reads as one run-on line.
+      'white-space':      'pre-wrap',
     };
   }
 
@@ -590,7 +618,10 @@ export class DocumentPaperComponent {
       'align-items':   'flex-start',
       'justify-content':justify,
       padding:         (isShape || isQR) ? '0' : '2px 4px',
-      overflow:        'hidden',
+      // A Repeater's real rendered height (N rows × itemHeight) is usually taller than its
+      // design-time box — there's no page-splitting in Designer mode's single-canvas render, so
+      // rows must be free to overflow downward rather than getting clipped.
+      overflow:        el.type === 'Repeater' ? 'visible' : 'hidden',
       opacity:         (el.opacity ?? 1).toString(),
       'border-radius': isShape && el.shapeKind === 'circle'
                           ? '50%'
@@ -617,6 +648,22 @@ export class DocumentPaperComponent {
     return (el.prefix || '')
          + this.r('{{' + el.path + (el.format ? '|' + el.format : '') + '}}')
          + (el.suffix || '');
+  }
+
+  /** Rows a Repeater clones one card per (legacy `RepeaterBlock.dataSource`). */
+  repeaterRows(el: DesignerElement): unknown[] {
+    return readArray(this.data(), String(el.bindTo || 'lines'));
+  }
+
+  /** A repeater child's display text, resolved against ITS ROW (not the whole document) — so
+   *  `path: 'productName'` reads `row.productName` directly, matching the flat row shape the seed
+   *  data (`lines`, etc.) already uses. */
+  repeaterChildText(child: DesignerElement, row: unknown): string {
+    const ctx = (row && typeof row === 'object') ? row as unknown as DocumentRenderData : ({} as DocumentRenderData);
+    if (child.type === 'Data Field' && child.path) {
+      return (child.prefix || '') + resolveTokens('{{' + child.path + (child.format ? '|' + child.format : '') + '}}', ctx) + (child.suffix || '');
+    }
+    return resolveTokens(child.content, ctx);
   }
 
   /** Resolve a Designer table's rows — if `bindTo` is set, project
@@ -727,6 +774,30 @@ export class DocumentPaperComponent {
   hasPayments = computed<boolean>(() =>
     this.visiblePaymentRows().length > 0 || this.paymentEntries().length > 0,
   );
+
+  /** Rows for a Designer-mode Payments block (`el.bindTo`, defaults 'invoicePayments') — the same
+   *  raw array `paymentEntries()` reads, but with every column the block can show (legacy
+   *  `PaymentsBlock`'s fixed catalog: method/reference/date/amount/status/rate). */
+  designerPaymentRows(el: DesignerElement): Array<{ method: string; reference: string; date: string; amount: number; status: string; rate: string }> {
+    const list = this.data()[String(el.bindTo || 'invoicePayments')] as unknown[] | undefined;
+    if (!Array.isArray(list)) return [];
+    return list.map((p) => {
+      const e = p as Record<string, unknown>;
+      return {
+        method:    String(e['paymentMethodName'] ?? ''),
+        reference: e['referenceNumber'] ? String(e['referenceNumber']) : '',
+        date:      e['createdAt'] ? String(e['createdAt']).slice(0, 10) : '',
+        amount:    this.asNum(e['amount']),
+        status:    String(e['status'] ?? ''),
+        rate:      e['rate'] != null ? String(e['rate']) : '',
+      };
+    });
+  }
+
+  /** Column header labels for the Payments block — matches legacy's `PAYMENT_COLUMN_CATALOG`. */
+  readonly paymentsColumnLabel: Record<string, string> = {
+    method: 'Method', reference: 'Reference', date: 'Date', amount: 'Amount', status: 'Status', rate: 'Rate',
+  };
 
   /** Voided lines for a given main line — used by the items-table to
    *  render strike-through rows under each item. */

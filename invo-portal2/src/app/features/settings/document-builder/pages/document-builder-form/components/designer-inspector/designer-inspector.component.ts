@@ -5,6 +5,7 @@ import {
   Output,
   computed,
   input,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -71,6 +72,55 @@ export class DesignerInspectorComponent {
   isQR        = computed<boolean>(() => this.selected()?.type === 'QR Code');
   isSig       = computed<boolean>(() => this.selected()?.type === 'Signature');
   isPageNum   = computed<boolean>(() => this.selected()?.type === 'Page #');
+  isRichText    = computed<boolean>(() => this.selected()?.type === 'Rich Text');
+  isGroupHeader = computed<boolean>(() => this.selected()?.type === 'Group Header');
+  isGroupFooter = computed<boolean>(() => this.selected()?.type === 'Group Footer');
+  isPayments    = computed<boolean>(() => this.selected()?.type === 'Payments');
+  isRepeater    = computed<boolean>(() => this.selected()?.type === 'Repeater');
+
+  /** Leaf types a repeater card may contain — matches legacy's `REPEATER_CHILD_KINDS` restriction
+   *  (no nested tables/repeaters/payments). */
+  readonly repeaterChildKinds = ['Text', 'Data Field', 'Image', 'Shape', 'Barcode', 'QR Code', 'Signature'] as const;
+
+  /** Which repeater child is open for inline editing (id, or null for none). */
+  selectedChildId = signal<DesignerElement['id'] | null>(null);
+  selectedChild = computed<DesignerElement | null>(() => {
+    const id = this.selectedChildId();
+    if (id == null) return null;
+    return (this.selected()?.repeaterItems ?? []).find(c => c.id === id) ?? null;
+  });
+
+  addRepeaterChild(type: string): void {
+    const cur = this.selected();
+    if (!cur) return;
+    const items = cur.repeaterItems ?? [];
+    const child: DesignerElement = {
+      id: Date.now(), type, x: 4, y: 4, w: 140, h: 20, color: '#1f2937', size: 10,
+      content: type === 'Text' ? 'Text' : '', ...(type === 'Data Field' ? { path: 'productName' } : {}),
+    };
+    this.patch({ repeaterItems: [...items, child] });
+    this.selectedChildId.set(child.id);
+  }
+  patchRepeaterChild(id: DesignerElement['id'], childPatch: Partial<DesignerElement>): void {
+    const cur = this.selected();
+    if (!cur) return;
+    this.patch({ repeaterItems: (cur.repeaterItems ?? []).map(c => c.id === id ? { ...c, ...childPatch } : c) });
+  }
+  removeRepeaterChild(id: DesignerElement['id']): void {
+    const cur = this.selected();
+    if (!cur) return;
+    this.patch({ repeaterItems: (cur.repeaterItems ?? []).filter(c => c.id !== id) });
+    if (this.selectedChildId() === id) this.selectedChildId.set(null);
+  }
+
+  readonly paymentsColumnOptions = ['method', 'reference', 'date', 'amount', 'status', 'rate'] as const;
+  togglePaymentsColumn(col: string): void {
+    const cur = this.selected();
+    if (!cur) return;
+    const list: string[] = Array.isArray(cur.paymentsColumns) ? cur.paymentsColumns as string[] : ['method', 'reference', 'date', 'amount'];
+    const next = list.includes(col) ? list.filter(c => c !== col) : [...list, col];
+    this.patch({ paymentsColumns: next as any });
+  }
 
   /** Round so transform inputs read clean integers. */
   asInt(v: number | undefined | null): number {

@@ -1,0 +1,81 @@
+@if (doc && editor) {
+  @let e = est;
+  <app-doc-form-shell
+    [title]="'ESTIMATES.FORM.ESTIMATE' | translate" [breadcrumbs]="breadcrumbs"
+    [canDraft]="false" [submitting]="submitting" [showView]="formStatus === 'edit'"
+    [saveLabel]="saveLabelKey | translate" [saveMenu]="saveMenu()"
+    [total]="e.total" [totalQty]="totalQuantity"
+    (save)="savePrimary()" (cancel)="cancel()" (view)="view()">
+
+    <app-doc-party-section
+      [customer]="customerValue" [addresses]="addresses" [address]="customerAddress"
+      [error]="fieldError('customerId')"
+      (customerChange)="onCustomer($event)" (addressChange)="setAddress($event)"
+      (createNew)="createCustomer()" (advancedSearch)="advancedCustomerSearch()"/>
+
+    <section class="df-card">
+      <h2 class="df-card__title">{{ 'ESTIMATES.FORM.ESTIMATE_DETAILS' | translate }}</h2>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label for="estimateNumber">{{ 'ESTIMATES.FORM.ESTIMATE_NUMBER' | translate }} <span class="req">*</span></label>
+          <div class="df-num" [class.is-invalid]="fieldError('estimateNumber')">
+            <input id="estimateNumber" type="text" [(ngModel)]="e.estimateNumber" (ngModelChange)="markDirty()"/>
+            <button type="button" class="df-gear" (click)="openNumberPrefs()" [attr.title]="'ESTIMATES.FORM.NUMBER_HELP' | translate" aria-label="settings">⚙</button>
+          </div>
+          @if (fieldError('estimateNumber'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label for="refrenceNumber">{{ 'ESTIMATES.FORM.REFERENCE' | translate }}</label>
+          <input id="refrenceNumber" class="df-input" type="text" [(ngModel)]="e.refrenceNumber" (ngModelChange)="markDirty()"/>
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'ESTIMATES.FORM.ESTIMATE_DATE' | translate }} <span class="req">*</span></label>
+          <app-date-picker [value]="estimateDate" [min]="minDate" (valueChange)="onEstimateDate($event)"/>
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'ESTIMATES.FORM.EXPIRY_DATE' | translate }} <span class="req">*</span></label>
+          <app-date-picker [value]="expiryDate" [min]="estimateDate" (valueChange)="onExpiryDate($event)"/>
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.BRANCH' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="branches" [displayWith]="branchLabel" [compareWith]="byId"
+            [value]="branchOf()" (valueChange)="onBranch($any($event))" [clearable]="false" [disabled]="branchLocked"
+            [placeholder]="'DOC_FORM.SELECT_BRANCH' | translate"/>
+          @if (fieldError('branchId'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.SALESPERSON' | translate }}</label>
+          <app-search-dropdown [loadFn]="loadEmployees" [pageSize]="20" [displayWith]="branchLabel" [compareWith]="byId"
+            [value]="employeeValue" (valueChange)="onEmployee($any($event))" [clearable]="true"
+            [placeholder]="'DOC_FORM.SELECT_SALESPERSON' | translate">
+            <ng-template #footer>
+              <button type="button" class="df-manage" (mousedown)="$event.preventDefault()" (click)="manageSalespersons()">
+                ⚙ {{ 'DOC_SALES.MANAGE' | translate }}
+              </button>
+            </ng-template>
+          </app-search-dropdown>
+        </div>
+      </div>
+
+      <app-entity-custom-fields entityType="estimate" [parentForm]="form" [valueSource]="e.customFields" idPrefix="cf-est" [bare]="true"/>
+    </section>
+
+    <app-doc-lines-table
+      [doc]="e" [editor]="editor!" [config]="linesConfig" [formStatus]="formStatus"
+      (changed)="markDirty()">
+      <app-doc-totals [doc]="e" [editor]="editor!" [surcharges]="surcharges" notesHintKey="ESTIMATES.FORM.NOTES_HINT" (changed)="markDirty()"/>
+    </app-doc-lines-table>
+
+    <section class="df-card">
+      <h2 class="df-card__title">{{ 'DOC_FORM.ATTACHMENTS' | translate }}</h2>
+      <app-doc-attachments [attachments]="e.attachment" (changed)="onAttachments($event)"/>
+    </section>
+  </app-doc-form-shell>
+}

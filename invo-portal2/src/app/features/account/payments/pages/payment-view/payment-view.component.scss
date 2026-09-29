@@ -8,3 +8,5 @@
   &:hover { background: #f8fafc; }
   &--danger { border-color: #fecaca; color: #dc2626; }
 }
+
+@media (max-width: 576px) { .pv { padding-inline: 0 !important; } }

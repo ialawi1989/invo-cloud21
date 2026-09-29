@@ -18,3 +18,5 @@
 .ipp-btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; cursor: pointer;
   &:hover:not(:disabled) { background: #f8fafc; } &:disabled { opacity: .5; cursor: not-allowed; }
   &--primary { border-color: #2691a4; background: #2691a4; color: #fff; &:hover:not(:disabled) { background: #227d8d; } } }
+
+@media (max-width: 576px) { .ipp { padding-inline: 0 !important; } }

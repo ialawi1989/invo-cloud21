@@ -12,7 +12,7 @@
         <div class="pf-field pf-field--grow">
           <label>{{ 'PAYMENTS.LIST.CUSTOMER_NAME' | translate }} <span class="req">*</span></label>
           @if (formStatus === 'new') {
-            <app-customer-picker [value]="customerValue" [allowCreate]="true" [placeholder]="'PAYMENTS.FORM.SELECT_CUSTOMER' | translate"
+            <app-customer-picker [value]="customerValue" [allowCreate]="true" [allowAdvanced]="true" (advancedSearch)="advancedCustomerSearch()" [placeholder]="'PAYMENTS.FORM.SELECT_CUSTOMER' | translate"
               (valueChange)="onCustomer($event)" (createNew)="createCustomer()"/>
           } @else {
             <div class="pf-static">{{ payment.customerName }}</div>

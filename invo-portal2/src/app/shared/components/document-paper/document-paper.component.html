@@ -3,7 +3,14 @@
   `template.renderMode` (or `forceMode` when overridden). Both
   branches share the same sample-data resolver so token bindings
   produce identical strings — only the layout differs.
+
+  Wrapped in `.dp-pages`: normally `display:contents` (invisible to layout — the parent sees the
+  `.dp` box directly, unchanged from before this wrapper existed). It only becomes a real
+  flex-column container when Terms & Conditions renders as a second page box, so both `.dp` boxes
+  stack vertically instead of becoming side-by-side flex items of whatever centers this component
+  (e.g. `doc-view-shell`'s `.dv-paper`, which is `display:flex` row-wise).
 -->
+<div class="dp-pages" [class.dp-pages--stack]="showTermsAsSeparatePage() || (renderMode() === 'designer' && template().extraPages.length > 0)">
 <div
   class="dp"
   [class.dp--classic]="renderMode() === 'classic' && !printPreview()"
@@ -16,67 +23,8 @@
   [style.fontSize.pt]="template().textSize"
 >
   @if (renderMode() === 'designer') {
-    <!-- ── DESIGNER mode ───────────────────────────────────────── -->
-    @for (el of template().designerElements; track trackEl($index, el)) {
-      @if (!el.hidden) {
-        <div class="dp__el" [ngStyle]="designerStyle(el)">
-          @switch (el.type) {
-            @case ('Image') {
-              @if ($any(el.src)) {
-                <img [src]="$any(el.src)" alt="" style="max-width:100%; max-height:100%; object-fit:contain"/>
-              } @else {
-                <div class="dp__placeholder">{{ el.content || 'IMAGE' }}</div>
-              }
-            }
-            @case ('QR Code') {
-              <svg viewBox="0 0 10 10" style="width:100%; height:100%; background:#fff; padding:2px">
-                @for (m of qrPattern; track $index) {
-                  <rect [attr.x]="m[0]" [attr.y]="m[1]" width="1" height="1" fill="#111"/>
-                }
-              </svg>
-            }
-            @case ('Barcode') {
-              <div class="dp__barcode">
-                <svg width="100%" height="70%" viewBox="0 0 100 30" preserveAspectRatio="none">
-                  @for (b of barcodeBars; track $index) {
-                    <rect [attr.x]="$index * 2" y="0" [attr.width]="b" height="30" fill="#111"/>
-                  }
-                </svg>
-                <small>{{ r($any(el.content)) }}</small>
-              </div>
-            }
-            @case ('Signature') {
-              <div class="dp__sig">
-                <div class="dp__sig-line"></div>
-                <div class="dp__sig-label">{{ el.content || 'Signature' }}</div>
-              </div>
-            }
-            @case ('Table') {
-              @if ($any(el.headers)) {
-                <table class="dp__table" [style.font-size.pt]="el.size || 9">
-                  <thead>
-                    <tr [style.background]="el.headerBg || '#1e3a8a'" [style.color]="el.headerColor || '#fff'">
-                      @for (h of $any(el.headers); track $index) { <th>{{ h }}</th> }
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (row of designerTableRows(el); track $index) {
-                      <tr [class.dp__table--striped]="el.striped !== false && $index % 2">
-                        @for (cell of row; track $index) { <td>{{ cell }}</td> }
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              }
-            }
-            @case ('Data Field') { <span>{{ dataFieldText(el) }}</span> }
-            @case ('Page #')     { <span>{{ pageNumberText(el) }}</span> }
-            @case ('Shape')      { <span></span> }
-            @default             { <span style="white-space:pre-line">{{ r($any(el.content)) }}</span> }
-          }
-        </div>
-      }
-    }
+    <!-- ── DESIGNER mode (master page) ─────────────────────────── -->
+    <ng-container *ngTemplateOutlet="designerElementsTpl; context: { $implicit: masterElements() }"/>
   } @else {
     <!-- ── CLASSIC mode ────────────────────────────────────────── -->
     <!--
@@ -195,6 +143,170 @@
     }
   }
 </div>
+
+<!-- Terms & Conditions as its own separate page — a second page box stacked below the main one
+     (via `.dp-pages--stack` above), visually gapped on screen and forced onto its own printed
+     sheet (`.dp--terms-page`'s `page-break-before`). -->
+@if (showTermsAsSeparatePage()) {
+  <div class="dp dp--classic dp--terms-page"
+       [style.width.px]="paperWidthPx()"
+       [style.minHeight.px]="paperHeightPx()"
+       [style.background]="template().BackgroundColor"
+       [style.color]="template().textColor"
+       [style.fontSize.pt]="template().textSize">
+    <footer class="dp__footer">
+      <ng-container *ngTemplateOutlet="termsBlockTpl"/>
+    </footer>
+  </div>
+}
+
+<!-- Designer-mode extra pages — standalone pages appended after the master's flow (e.g. a
+     company's own Terms & Conditions layout), each a second/third/… page box stacked below the
+     master, same `.dp-pages--stack` mechanism as the Terms-separate-page above. -->
+@if (renderMode() === 'designer') {
+  @for (page of template().extraPages; track page.id) {
+    <div class="dp dp--designer dp--terms-page"
+         [style.width.px]="paperWidthPx()"
+         [style.minHeight.px]="paperHeightPx()"
+         [style.background]="template().BackgroundColor"
+         [style.color]="template().textColor"
+         [style.fontSize.pt]="template().textSize">
+      <ng-container *ngTemplateOutlet="designerElementsTpl; context: { $implicit: elementsForPage(page.id) }"/>
+    </div>
+  }
+}
+</div>
+
+<!-- Designer-mode element rendering — one page's worth of `DesignerElement[]`. Reused for the
+     master page (inline, above) and once per extra page (each its own stacked `.dp` box). -->
+<ng-template #designerElementsTpl let-elements>
+  @for (el of elements; track trackEl($index, el)) {
+    @if (!el.hidden) {
+      <div class="dp__el" [ngStyle]="designerStyle(el)">
+        @switch (el.type) {
+          @case ('Image') {
+            @if ($any(el.src)) {
+              <img [src]="$any(el.src)" alt="" style="max-width:100%; max-height:100%; object-fit:contain"/>
+            } @else {
+              <div class="dp__placeholder">{{ el.content || 'IMAGE' }}</div>
+            }
+          }
+          @case ('QR Code') {
+            <svg viewBox="0 0 10 10" style="width:100%; height:100%; background:#fff; padding:2px">
+              @for (m of qrPattern; track $index) {
+                <rect [attr.x]="m[0]" [attr.y]="m[1]" width="1" height="1" fill="#111"/>
+              }
+            </svg>
+          }
+          @case ('Barcode') {
+            <div class="dp__barcode">
+              <svg width="100%" height="70%" viewBox="0 0 100 30" preserveAspectRatio="none">
+                @for (b of barcodeBars; track $index) {
+                  <rect [attr.x]="$index * 2" y="0" [attr.width]="b" height="30" fill="#111"/>
+                }
+              </svg>
+              <small>{{ r($any(el.content)) }}</small>
+            </div>
+          }
+          @case ('Signature') {
+            <div class="dp__sig">
+              <div class="dp__sig-line"></div>
+              <div class="dp__sig-label">{{ el.content || 'Signature' }}</div>
+            </div>
+          }
+          @case ('Table') {
+            @if ($any(el.headers)) {
+              <table class="dp__table" [style.font-size.pt]="el.size || 9">
+                <thead>
+                  <tr [style.background]="el.headerBg || '#1e3a8a'" [style.color]="el.headerColor || '#fff'">
+                    @for (h of $any(el.headers); track $index) { <th>{{ h }}</th> }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of designerTableRows(el); track $index) {
+                    <tr [class.dp__table--striped]="el.striped !== false && $index % 2">
+                      @for (cell of row; track $index) { <td>{{ cell }}</td> }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          }
+          @case ('Data Field') { <span>{{ dataFieldText(el) }}</span> }
+          @case ('Page #')     { <span>{{ pageNumberText(el) }}</span> }
+          @case ('Shape')      { <span></span> }
+          @case ('Rich Text')  {
+            <!-- `[innerHTML]` runs through Angular's built-in sanitizer, which already strips
+                 anything unsafe — no separate allow-list needed. -->
+            <div style="width:100%" [innerHTML]="r($any(el.html))"></div>
+          }
+          @case ('Payments') {
+            <table class="dp__table" [style.font-size.pt]="el.size || 9">
+              @if (el.showHeader !== false) {
+                <thead>
+                  <tr>
+                    @for (col of $any(el.paymentsColumns) || ['method','reference','date','amount']; track col) {
+                      <th [class.end]="col === 'amount'">{{ paymentsColumnLabel[col] }}</th>
+                    }
+                  </tr>
+                </thead>
+              }
+              <tbody>
+                @for (row of designerPaymentRows(el); track $index) {
+                  <tr [class.dp__table--striped]="el.zebra && $index % 2">
+                    @for (col of $any(el.paymentsColumns) || ['method','reference','date','amount']; track col) {
+                      <td [class.end]="col === 'amount'">
+                        @if (col === 'amount') { {{ el.currency || 'BHD' }} {{ row.amount.toFixed(3) }} }
+                        @else { {{ $any(row)[col] }} }
+                      </td>
+                    }
+                  </tr>
+                } @empty {
+                  <tr><td [attr.colspan]="($any(el.paymentsColumns) || ['method','reference','date','amount']).length">—</td></tr>
+                }
+              </tbody>
+            </table>
+          }
+          @case ('Repeater') {
+            <!-- One card per row of `bindTo` (legacy `RepeaterBlock`) — cards stack vertically or
+                 horizontally by `itemHeight`/`itemSpacing`; children resolve against their OWN
+                 row, not the whole document (see `repeaterChildText`). -->
+            @for (row of repeaterRows(el); track $index) {
+              <div [ngStyle]="{
+                position: 'absolute',
+                left:   (el.direction === 'horizontal' ? $index * ((el.itemHeight||30) + (el.itemSpacing||0)) : 0) + 'px',
+                top:    (el.direction === 'horizontal' ? 0 : $index * ((el.itemHeight||30) + (el.itemSpacing||0))) + 'px',
+                width:  (el.direction === 'horizontal' ? (el.itemHeight||30) : el.w) + 'px',
+                height: (el.direction === 'horizontal' ? el.h : (el.itemHeight||30)) + 'px',
+                'border-radius': (el.radius||0) + 'px',
+                background: (el.bg && el.bg !== 'transparent') ? el.bg : 'transparent',
+              }">
+                @for (child of $any(el.repeaterItems) || []; track $index) {
+                  <div [ngStyle]="{
+                    position: 'absolute', left: (child.x||0)+'px', top: (child.y||0)+'px',
+                    width: (child.w||100)+'px', height: (child.h||20)+'px',
+                    color: child.color||'#1f2937', 'font-weight': child.bold?'700':'400',
+                    'font-style': child.italic?'italic':'normal', 'font-size': (child.size||10)+'pt',
+                    overflow: 'hidden',
+                  }">
+                    @if (child.type === 'Image' && $any(child.src)) {
+                      <img [src]="$any(child.src)" alt="" style="max-width:100%; max-height:100%; object-fit:contain"/>
+                    } @else {
+                      <span style="white-space:pre-line">{{ repeaterChildText(child, row) }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            } @empty {
+              <div class="dp__placeholder">—</div>
+            }
+          }
+          @default             { <span style="white-space:pre-line">{{ r($any(el.content)) }}</span> }
+        }
+      </div>
+    }
+  }
+</ng-template>
 
 <!-- ─── Reusable Classic templates ──────────────────────────────────
      Defined outside the main `<div class="dp">` so both render paths
@@ -549,6 +661,20 @@
      Used by both render paths: single-paper renders it once at
      the bottom of the document; paginated render pins it to the
      bottom of EVERY page (legacy "fixed footer" semantic). -->
+<!-- Terms & Conditions — its own template so it can render either inline in the footer (default)
+     or, when `termAsSeparatePage` is on, as its own page after the main one (single-paper Classic
+     only — see the `.dp--terms-page` box below). -->
+<ng-template #termsBlockTpl>
+  <div [ngStyle]="textStyle(template().footerCustomization.term)"
+       [style.text-align]="template().footerCustomization.term.alignment || 'left'">
+    <strong [style.color]="template().footerCustomization.term.labelColor || 'inherit'">
+      {{ (template().footerCustomization.term.label || 'Terms & Conditions') }}:
+    </strong>
+    <br/>
+    <span>{{ r('{{terms}}') }}</span>
+  </div>
+</ng-template>
+
 <ng-template #classicFooterTpl>
     @if (template().footerCustomization.visibility.visible) {
       <footer class="dp__footer">
@@ -561,15 +687,10 @@
             <span>{{ r('{{notes}}') }}</span>
           </div>
         }
-        @if (template().footerCustomization.term.show) {
-          <div [ngStyle]="textStyle(template().footerCustomization.term)"
-               [style.text-align]="template().footerCustomization.term.alignment || 'left'">
-            <strong [style.color]="template().footerCustomization.term.labelColor || 'inherit'">
-              {{ (template().footerCustomization.term.label || 'Terms & Conditions') }}:
-            </strong>
-            <br/>
-            <span>{{ r('{{terms}}') }}</span>
-          </div>
+        <!-- Rendered here UNLESS it's set to show as its own separate page (single-paper Classic
+             only — paginated print-preview keeps its existing per-page behaviour either way). -->
+        @if (template().footerCustomization.term.show && !showTermsAsSeparatePage()) {
+          <ng-container *ngTemplateOutlet="termsBlockTpl"/>
         }
         @if (additionalAt('footer').length > 0) {
           <div class="dp__additional dp__additional--footer" [ngStyle]="textStyle(template().additionalDataStyle)">

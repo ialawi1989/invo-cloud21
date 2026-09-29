@@ -1,3 +1,4 @@
+import '../account-i18n';
 import { inject } from '@angular/core';
 import { CanActivateFn, Routes } from '@angular/router';
 import { LanguageService } from '@core/i18n/language.service';
@@ -35,6 +36,15 @@ export const INVOICES_ROUTES: Routes = [
     data: { permissionPath: 'invoicePaymentsSecurity.actions.add.access' },
     loadComponent: () =>
       import('./pages/invoice-payment/invoice-payment.component').then(m => m.InvoicePaymentComponent),
+  },
+  {
+    // "Convert to invoice" from an estimate — same page, pre-filled from the estimate.
+    path: 'convertFromEstimate/:estimateId',
+    canActivate: [translationsLoaded, privilegeGuard],
+    canDeactivate: [unsavedChangesGuard],
+    data: { permissionPath: 'invoiceSecurity.actions.add.access' },
+    loadComponent: () =>
+      import('./pages/invoice-form/invoice-form.component').then(m => m.InvoiceFormComponent),
   },
   {
     // New (`0`), edit and clone (`?cloned=yes`) share one page — legacy URLs.

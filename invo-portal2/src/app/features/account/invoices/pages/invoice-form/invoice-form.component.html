@@ -1,130 +1,117 @@
-@if (invoice && editor) {
-  @let inv = invoice;
-  <div class="ifp">
-    <header class="page-header">
-      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
-      <h1 class="page-header__title">{{ 'INVOICES.FORM.INVOICE' | translate }}</h1>
-    </header>
+@if (doc && editor) {
+  @let inv = doc;
+  <app-doc-form-shell
+    [title]="'INVOICES.FORM.INVOICE' | translate" [breadcrumbs]="breadcrumbs"
+    [canDraft]="canOfferDraft" [submitting]="submitting" [showView]="formStatus === 'edit'"
+    [saveLabel]="saveLabelKey | translate" [saveMenu]="saveMenu()"
+    [total]="inv.total" [totalQty]="totalQuantity"
+    (draft)="saveDraft()" (save)="savePrimary()" (cancel)="cancel()" (view)="view()">
 
     <!-- Customer -->
-    <section class="ifp-card">
-      <h2 class="ifp-card__title">{{ 'INVOICES.FORM.CUSTOMER_INFORMATION' | translate }}</h2>
-      <div class="ifp-field ifp-field--wide">
-        <label>{{ 'INVOICES.LIST.CUSTOMER_NAME' | translate }} <span class="req">*</span></label>
-        <app-customer-picker [value]="customerValue" [allowCreate]="true" [placeholder]="'INVOICES.FORM.SELECT_CUSTOMER' | translate"
-          (valueChange)="onCustomer($event)" (createNew)="createCustomer()"/>
-        @if (fieldError('customerId'); as e) { <p class="ifp-error">{{ e }}</p> }
-      </div>
-      @if (addresses.length || isDelivery) {
-        <div class="ifp-field ifp-field--wide">
-          <label>{{ 'INVOICES.LIST.CUSTOMER_ADDRESS' | translate }} @if (isDelivery) { <span class="req">*</span> }</label>
-          @if (addresses.length) {
-            <app-search-dropdown [items]="addresses" [displayWith]="addressLabel" [compareWith]="byTitle" [searchable]="false"
-              [value]="addressOf()" (valueChange)="setAddress($any($event)?.title ?? '')"
-              [clearable]="!isDelivery" [placeholder]="'INVOICES.FORM.SELECT_ADDRESS' | translate"/>
-          } @else {
-            <div class="ifp-warn">{{ 'INVOICES.FORM.NO_ADDRESSES' | translate }} {{ 'INVOICES.FORM.DELIVERY_NEEDS_ADDRESS' | translate }}</div>
-          }
-        </div>
-      }
-    </section>
+    <app-doc-party-section
+      [customer]="customerValue" [addresses]="addresses" [address]="customerAddress" [addressRequired]="isDelivery"
+      [error]="fieldError('customerId')"
+      (customerChange)="onCustomer($event)" (addressChange)="setAddress($event)"
+      (createNew)="createCustomer()" (advancedSearch)="advancedCustomerSearch()"/>
 
     <!-- Invoice details -->
-    <section class="ifp-card">
-      <h2 class="ifp-card__title">{{ 'INVOICES.FORM.INVOICE_DETAILS' | translate }}</h2>
+    <section class="df-card">
+      <h2 class="df-card__title">{{ 'INVOICES.FORM.INVOICE_DETAILS' | translate }}</h2>
 
-      <div class="ifp-row">
-        <div class="ifp-field ifp-field--grow">
+      <div class="df-row">
+        <div class="df-field df-field--grow">
           <label for="invoiceNumber">{{ 'INVOICES.LIST.INVOICE_NUMBER' | translate }} <span class="req">*</span></label>
-          <div class="ifp-num" [class.is-invalid]="fieldError('invoiceNumber')">
+          <div class="df-num" [class.is-invalid]="fieldError('invoiceNumber')">
             <input id="invoiceNumber" type="text" [(ngModel)]="inv.invoiceNumber" (ngModelChange)="markDirty()"/>
-            <button type="button" class="ifp-gear" (click)="openNumberPrefs()" [attr.title]="'INVOICES.FORM.INVOICE_NUMBER_HELP' | translate" aria-label="settings">⚙</button>
+            <button type="button" class="df-gear" (click)="openNumberPrefs()" [attr.title]="'INVOICES.FORM.INVOICE_NUMBER_HELP' | translate" aria-label="settings">⚙</button>
           </div>
-          @if (fieldError('invoiceNumber'); as e) { <p class="ifp-error">{{ e }}</p> }
+          @if (fieldError('invoiceNumber'); as e) { <p class="df-error">{{ e }}</p> }
         </div>
-        <div class="ifp-field ifp-field--grow">
+        <div class="df-field df-field--grow">
           <label for="refrenceNumber">{{ 'INVOICES.FORM.ORDER_NUMBER' | translate }}</label>
-          <input id="refrenceNumber" class="ifp-input" type="text" [(ngModel)]="inv.refrenceNumber" (ngModelChange)="markDirty()"/>
+          <input id="refrenceNumber" class="df-input" type="text" [(ngModel)]="inv.refrenceNumber" (ngModelChange)="markDirty()"/>
         </div>
       </div>
 
-      <div class="ifp-row">
-        <div class="ifp-field ifp-field--grow">
+      <div class="df-row">
+        <div class="df-field df-field--grow">
           <label>{{ 'INVOICES.FORM.INVOICE_DATE' | translate }} <span class="req">*</span></label>
           <app-date-picker [value]="invoiceDate" [min]="minDate" [disabled]="dateLocked" (valueChange)="onInvoiceDate($event)"/>
         </div>
-        <div class="ifp-field ifp-field--grow">
+        <div class="df-field df-field--grow">
           <label>{{ 'INVOICES.FORM.TERM' | translate }}</label>
           <app-search-dropdown [items]="terms" [displayWith]="termLabel" [compareWith]="byValue" [searchable]="false"
             [value]="termOf()" (valueChange)="onTermPick($any($event))" [clearable]="false"/>
         </div>
-        <div class="ifp-field ifp-field--grow">
+        <div class="df-field df-field--grow">
           <label>{{ 'INVOICES.FORM.DUE_DATE' | translate }} <span class="req">*</span></label>
           <app-date-picker [value]="dueDate" [min]="invoiceDate" (valueChange)="onDueDate($event)"/>
         </div>
       </div>
-      @if (helperKey) { <p class="ifp-hint">{{ helperKey | translate: helperParams }}</p> }
+      @if (helperKey) { <p class="df-hint">{{ helperKey | translate: helperParams }}</p> }
 
-      <div class="ifp-row">
-        <div class="ifp-field ifp-field--grow">
-          <label>{{ 'INVOICES.LIST.BRANCH_NAME' | translate }} <span class="req">*</span></label>
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.BRANCH' | translate }} <span class="req">*</span></label>
           <app-search-dropdown [items]="branches" [displayWith]="branchLabel" [compareWith]="byId"
             [value]="branchOf()" (valueChange)="onBranch($any($event))" [clearable]="false" [disabled]="branchLocked"
-            [placeholder]="'INVOICES.FORM.SELECT_BRANCH' | translate"/>
-          @if (fieldError('branchId'); as e) { <p class="ifp-error">{{ e }}</p> }
+            [placeholder]="'DOC_FORM.SELECT_BRANCH' | translate"/>
+          @if (fieldError('branchId'); as e) { <p class="df-error">{{ e }}</p> }
         </div>
-        <div class="ifp-field ifp-field--grow">
-          <label>{{ 'INVOICES.FORM.SALESPERSON' | translate }}</label>
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.SALESPERSON' | translate }}</label>
           <app-search-dropdown [loadFn]="loadEmployees" [pageSize]="20" [displayWith]="branchLabel" [compareWith]="byId"
             [value]="employeeValue" (valueChange)="onEmployee($any($event))" [clearable]="true"
-            [placeholder]="'INVOICES.FORM.SELECT_SALESPERSON' | translate"/>
+            [placeholder]="'DOC_FORM.SELECT_SALESPERSON' | translate">
+            <ng-template #footer>
+              <button type="button" class="df-manage" (mousedown)="$event.preventDefault()" (click)="manageSalespersons()">
+                ⚙ {{ 'DOC_SALES.MANAGE' | translate }}
+              </button>
+            </ng-template>
+          </app-search-dropdown>
         </div>
       </div>
 
-      <app-entity-custom-fields entityType="invoice" [parentForm]="form" [valueSource]="inv.customFields" idPrefix="cf-inv"/>
+      <app-entity-custom-fields entityType="invoice" [parentForm]="form" [valueSource]="inv.customFields" idPrefix="cf-inv" [bare]="true"/>
     </section>
 
     <!-- Items + totals -->
     <app-doc-lines-table
       [doc]="inv" [editor]="editor!" [config]="linesConfig" [formStatus]="formStatus"
       (changed)="markDirty()">
-      <app-invoice-totals [invoice]="inv" [editor]="editor!" [surcharges]="surcharges" (changed)="markDirty()"/>
+      <app-doc-totals [doc]="inv" [editor]="editor!" [surcharges]="surcharges" notesHintKey="INVOICES.FORM.NOTES_HINT" (changed)="markDirty()"/>
     </app-doc-lines-table>
 
     <!-- Attachments -->
-    <section class="ifp-card">
-      <h2 class="ifp-card__title">{{ 'INVOICES.FORM.ATTACHMENTS' | translate }}</h2>
+    <section class="df-card">
+      <h2 class="df-card__title">{{ 'DOC_FORM.ATTACHMENTS' | translate }}</h2>
       <app-doc-attachments [attachments]="inv.attachment" (changed)="onAttachments($event)"/>
     </section>
 
-    <app-form-sticky-footer>
-      <div class="ifp-bar">
-        <div class="ifp-bar__actions">
-          @if (canOfferDraft) {
-            <button type="button" class="ifp-btn" [disabled]="saveDraftDisabled" (click)="saveDraft()">{{ 'INVOICES.FORM.SAVE_AS_DRAFT' | translate }}</button>
-          }
-          <span class="ifp-split">
-            <button type="button" class="ifp-btn ifp-btn--primary ifp-split__main" [disabled]="saveDisabled" (click)="saveOpen()">{{ 'INVOICES.FORM.SAVE_AND_SEND' | translate }}</button>
-            <app-dropdown-menu-btn [items]="saveMenu()" [appendToBody]="true" [chevron]="false" align="start" triggerClass="ifp-split__caret"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg></app-dropdown-menu-btn>
-          </span>
-          <button type="button" class="ifp-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-          @if (formStatus === 'edit') {
-            <button type="button" class="ifp-btn" (click)="view()">{{ 'COMMON.VIEW' | translate }}</button>
-          }
-        </div>
-        <div class="ifp-bar__side">
-          @if (formStatus !== 'edit') {
-            <button type="button" class="ifp-recurring" (click)="makeRecurring()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-              {{ 'INVOICES.FORM.MAKE_RECURRING' | translate }}
-            </button>
-          }
-          <div class="ifp-sum">
-            <div class="ifp-sum__total">{{ 'INVOICES.FORM.TOTAL_AMOUNT' | translate }}: <b>{{ inv.total | mycurrency }}</b></div>
-            <div class="ifp-sum__qty">{{ 'INVOICES.FORM.TOTAL_QUANTITY' | translate }}: {{ totalQuantity }}</div>
-          </div>
-        </div>
-      </div>
-    </app-form-sticky-footer>
-  </div>
+    <section class="df-tips">
+      <p class="df-tips__row">
+        <b>{{ 'INVOICES.FORM.GATEWAY_TITLE' | translate }}</b>
+        <span class="df-cards" aria-hidden="true">
+          <svg width="26" height="16" viewBox="0 0 26 16"><circle cx="9" cy="8" r="7" fill="#eb001b"/><circle cx="17" cy="8" r="7" fill="#f79e1b" fill-opacity=".9"/></svg>
+          <b class="df-visa">VISA</b>
+        </span>
+      </p>
+      <p class="df-tips__row df-tips__muted">
+        {{ 'INVOICES.FORM.GATEWAY_TEXT' | translate }}
+        <a routerLink="/settings/payment-methods" target="_blank" rel="noopener">{{ 'INVOICES.FORM.GATEWAY_LINK' | translate }}</a>
+      </p>
+      <p class="df-tips__row df-tips__muted">
+        <b>{{ 'INVOICES.FORM.CF_TITLE' | translate }}</b>
+        {{ 'INVOICES.FORM.CF_TEXT' | translate }}
+        <a routerLink="/settings/custom-fields/invoice" target="_blank" rel="noopener"><i>{{ 'INVOICES.FORM.CF_PATH' | translate }}</i></a>.
+      </p>
+    </section>
+
+    @if (formStatus !== 'edit') {
+      <button footerExtra type="button" class="df-link" (click)="makeRecurring()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        {{ 'INVOICES.FORM.MAKE_RECURRING' | translate }}
+      </button>
+    }
+  </app-doc-form-shell>
 }

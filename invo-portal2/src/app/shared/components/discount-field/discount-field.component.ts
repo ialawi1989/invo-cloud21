@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { CompanyService } from '@core/auth/company.service';
 
 export interface DiscountValue {
   amount: number;
@@ -20,7 +21,7 @@ export interface DiscountValue {
         (input)="onAmount($any($event.target).value)" />
       <button type="button" class="df__toggle" [disabled]="disabled()" (click)="togglePercentage()"
         [attr.aria-label]="percentage() ? 'percentage' : 'fixed amount'">
-        {{ percentage() ? '%' : currencyLabel() }}
+        {{ percentage() ? '%' : symbol() }}
       </button>
     </div>
   `,
@@ -30,7 +31,7 @@ export interface DiscountValue {
     .df:focus-within { border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .15); }
     .df--disabled { background: #f8fafc; opacity: .7; }
     .df__input { flex: 1; min-width: 0; border: 0; outline: 0; padding: 8px 10px; font: inherit; background: transparent; }
-    .df__toggle { border: 0; border-inline-start: 1px solid #e5e7eb; background: #f8fafc; padding: 0 12px; font-weight: 600; color: #475569; cursor: pointer; min-width: 40px; }
+    .df__toggle { border: 0 !important; border-inline-start: 1px solid #e5e7eb !important; border-radius: 0 !important; background: #f8fafc !important; box-shadow: none !important; outline: none; padding: 0 12px; font-weight: 600; color: #475569; cursor: pointer; min-width: 52px; white-space: nowrap; }
     .df__toggle:hover:not(:disabled) { background: #eef2f6; }
   `],
 })
@@ -39,8 +40,10 @@ export class DiscountFieldComponent {
   percentage = input<boolean>(true);
   disabled = input<boolean>(false);
   elmId = input<string>('');
-  /** Label of the fixed-amount mode (defaults to a generic currency sign). */
-  currencyLabel = input<string>('¤');
+  private company = inject(CompanyService);
+  /** Label of the fixed-amount mode; defaults to the company's currency symbol (BHD, SAR, $ …). */
+  currencyLabel = input<string>('');
+  symbol = computed(() => this.currencyLabel() || this.company.settings()?.settings?.currencySymbol || '¤');
 
   changed = output<DiscountValue>();
 

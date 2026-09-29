@@ -2,7 +2,7 @@ import { DocumentRenderData } from '@shared/components/document-paper/token-reso
 import { Invoice, InvoiceLine } from '../../models/invoice.model';
 import { CustomerAddress } from '../../customers/models/customer.model';
 
-const fmtDate = (d: any): string => {
+export const fmtDate = (d: any): string => {
   if (!d) return '';
   const x = new Date(d);
   if (isNaN(x.getTime())) return String(d);

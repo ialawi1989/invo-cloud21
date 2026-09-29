@@ -33,6 +33,18 @@ export interface DropdownMenuBtnItem {
   /** Optional inline-SVG path `d` attribute. Leave undefined for
    *  items that don't carry an icon. */
   iconPath?:  string;
+  /** `viewBox` the icon path was authored against. Defaults to `'0 0 24 24'`. */
+  iconViewBox?: string;
+  /** Highlights the row as the active choice (e.g. the current sort field). */
+  checked?: boolean;
+  /** Trailing direction chevron on a `checked` row (e.g. the current sort direction). */
+  trailing?: 'up' | 'down';
+  /**
+   * One level of cascading submenu (Zoho-style "Sort by ▸"). When present the
+   * item becomes non-clickable itself — clicking toggles the flyout instead,
+   * and `click` on the parent is never called (pass a no-op).
+   */
+  children?: DropdownMenuBtnItem[];
 }
 
 /**
@@ -113,21 +125,48 @@ export interface DropdownMenuBtnItem {
             @if (item.header) {
               <li class="dmb__header" role="presentation">{{ item.header | translate }}</li>
             }
-            <li>
+            <li class="dmb__li" [class.dmb__li--has-sub]="!!item.children?.length"
+              (mouseenter)="item.children?.length && openSubHover($index)"
+              (mouseleave)="item.children?.length && closeSubHover()">
               <button type="button" role="menuitem"
                 [class.dmb__item--danger]="item.danger"
                 [disabled]="!!item.disabled"
-                (click)="pick(item)">
+                (click)="item.children?.length ? toggleSub($index, $event) : pick(item)">
                 @if (item.tag) {
                   <span [class]="'dmb__tag dmb__tag--' + (item.tag.variant || 'cyan')">{{ item.tag.label }}</span>
                 }
                 @if (item.iconPath) {
-                  <svg class="dmb__item-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="dmb__item-icon" width="14" height="14" [attr.viewBox]="item.iconViewBox || '0 0 24 24'"
+                    [attr.fill]="item.iconViewBox ? 'currentColor' : 'none'" [attr.stroke]="item.iconViewBox ? 'none' : 'currentColor'"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path [attr.d]="item.iconPath"/>
                   </svg>
                 }
+                @if (item.checked) {
+                  <svg class="dmb__item-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                }
                 <span class="dmb__item-label">{{ item.label | translate }}</span>
+                @if (item.children?.length) {
+                  <svg class="dmb__item-caret" width="10" height="10" viewBox="0 0 512 512" fill="currentColor"><path d="M158.747 512c13.885 0 27.778-5.45 38.345-16.335L391.6 294.999c20.898-21.591 20.898-56.406 0-77.971L197.092 16.35c-21.023-21.693-55.245-21.818-76.413-.268-21.17 21.53-21.283 56.578-.26 78.271l156.688 161.646-156.688 161.642c-21.018 21.703-20.905 56.748.26 78.301C131.207 506.64 144.979 512 158.747 512z"/></svg>
+                }
               </button>
+              @if (item.children?.length && openSub() === $index) {
+                <ul class="dmb__submenu" role="menu" (click)="$event.stopPropagation()">
+                  @for (child of item.children; track $index) {
+                    @if (child.separator) { <li class="dmb__sep" aria-hidden="true"></li> }
+                    <li>
+                      <button type="button" role="menuitem" [class.dmb__item--danger]="child.danger" [class.dmb__item--active]="child.checked" [disabled]="!!child.disabled" (click)="pick(child)">
+                        <span class="dmb__item-label">{{ child.label | translate }}</span>
+                        @if (child.checked && child.trailing) {
+                          <svg class="dmb__item-icon dmb__item-icon--trailing" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline [attr.points]="child.trailing === 'up' ? '18 15 12 9 6 15' : '6 9 12 15 18 9'"/>
+                          </svg>
+                        }
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
             </li>
           }
         </ul>
@@ -154,9 +193,14 @@ export interface DropdownMenuBtnItem {
       box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.12),
                   0 2px 4px -1px  rgba(15, 23, 42, 0.06);
       min-width: 200px;
-      overflow: hidden;
       z-index: 50;
+      /* NOT overflow:hidden — a submenu flyout (.dmb__submenu) is an absolutely
+         positioned child that must render OUTSIDE this box, to the side. Rows
+         are edge-to-edge rectangles with no rounding of their own, so skipping
+         the clip here doesn't show square corners peeking past the radius. */
     }
+    .dmb__menu li:first-child > button { border-start-start-radius: 9px; border-start-end-radius: 9px; }
+    .dmb__menu li:last-child > button  { border-end-start-radius: 9px; border-end-end-radius: 9px; }
 
     /* Inline mode: anchor to the wrapper. */
     .dmb .dmb__menu               { position: absolute; top: calc(100% + 6px); }
@@ -167,6 +211,15 @@ export interface DropdownMenuBtnItem {
     .dmb__menu--overlay { position: static; }
 
     .dmb__menu li { margin: 0; }
+    .dmb__li { position: relative; }
+    .dmb__item-caret { margin-inline-start: auto; flex-shrink: 0; opacity: .6; }
+    .dmb__submenu {
+      position: absolute; top: -7px; inset-inline-start: calc(100% + 4px);
+      margin: 0; padding: 6px 0; list-style: none;
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+      box-shadow: 0 6px 16px -4px rgba(15, 23, 42, .12), 0 2px 4px -1px rgba(15, 23, 42, .06);
+      min-width: 200px; z-index: 51;
+    }
 
     .dmb__menu button {
       width: 100%;
@@ -197,7 +250,15 @@ export interface DropdownMenuBtnItem {
     }
 
     .dmb__item-icon  { color: currentColor; flex-shrink: 0; opacity: 0.85; }
+    .dmb__item-icon--trailing { margin-inline-start: auto; opacity: 1; }
     .dmb__item-label { flex: 1; min-width: 0; }
+
+    /* The active choice in a submenu (e.g. the current sort field) — background highlight, the
+       direction chevron rendered trailing (.dmb__item-icon--trailing) carries the color. */
+    .dmb__item--active {
+      background: var(--color-brand-600, #2691a4); color: #fff;
+      &:hover:not(:disabled) { background: var(--color-brand-700, #227d8d); color: #fff; }
+    }
 
     .dmb__sep {
       height: 1px;
@@ -277,6 +338,8 @@ export class DropdownMenuBtnComponent {
   }
 
   open = signal<boolean>(false);
+  /** Index of the item whose submenu flyout is open, if any. */
+  openSub = signal<number | null>(null);
 
   private host = inject(ElementRef<HTMLElement>);
 
@@ -284,11 +347,34 @@ export class DropdownMenuBtnComponent {
     ev.stopPropagation();
     if (this.disabled) return;
     this.open.update(v => !v);
+    this.openSub.set(null);
+  }
+
+  toggleSub(index: number, ev: Event): void {
+    ev.stopPropagation();
+    this.openSub.update(v => (v === index ? null : index));
+  }
+
+  /**
+   * Hover opens the submenu, like the reference (`dropend` flyout) — click still works via
+   * `toggleSub` for touch. A short close delay survives the empty gap between the parent row and
+   * the flyout (the pointer briefly leaves every element while crossing it); moving back in before
+   * the timeout — including straight into the flyout itself — cancels the close.
+   */
+  private hoverTimer: ReturnType<typeof setTimeout> | null = null;
+  openSubHover(index: number): void {
+    if (this.hoverTimer) { clearTimeout(this.hoverTimer); this.hoverTimer = null; }
+    this.openSub.set(index);
+  }
+  closeSubHover(): void {
+    if (this.hoverTimer) clearTimeout(this.hoverTimer);
+    this.hoverTimer = setTimeout(() => { this.openSub.set(null); this.hoverTimer = null; }, 220);
   }
 
   pick(item: DropdownMenuBtnItem): void {
     if (item.disabled) return;
     this.open.set(false);
+    this.openSub.set(null);
     item.click();
   }
 
@@ -300,11 +386,12 @@ export class DropdownMenuBtnComponent {
     const target = ev.target as Node | null;
     if (target && !this.host.nativeElement.contains(target)) {
       this.open.set(false);
+      this.openSub.set(null);
     }
   }
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    if (this.open()) this.open.set(false);
+    if (this.open()) { this.open.set(false); this.openSub.set(null); }
   }
 }

@@ -124,6 +124,29 @@
                  toggles + edits round-trip cleanly. -->
   @if (template().renderMode === 'designer') {
     <div class="dbf-layout dbf-layout--designer">
+      <!-- ── Page tabs — Master plus any extra standalone pages (e.g. a company's own
+           Terms & Conditions layout) appended after the master's flow. ────────────── -->
+      <nav class="dbf-pages">
+        @for (p of pages(); track p.id) {
+          <button type="button" class="dbf-page-tab" [class.dbf-page-tab--on]="activePageId() === p.id" (click)="selectPage(p.id)">
+            @if (renamingPageId() === p.id) {
+              <input type="text" class="dbf-page-tab__rename" [(ngModel)]="renameDraft" autofocus
+                     (click)="$event.stopPropagation()"
+                     (keydown.enter)="commitRenamePage(p.id)"
+                     (keydown.escape)="cancelRenamePage()"
+                     (blur)="commitRenamePage(p.id)"/>
+            } @else {
+              <span (dblclick)="p.id !== MASTER_PAGE_ID && startRenamePage(p.id, p.name, $event)">{{ p.name }}</span>
+              @if (p.id !== MASTER_PAGE_ID) {
+                <span class="dbf-page-tab__remove" (click)="onRemovePage(p.id, p.name, $event)">×</span>
+              }
+            }
+          </button>
+        }
+        <button type="button" class="dbf-page-tab dbf-page-tab--add" [appTooltip]="'DOCUMENT_BUILDER.ADD_PAGE' | translate" (click)="addPage()">+</button>
+      </nav>
+
+      <div class="dbf-designer-body">
       <!-- ── Left rail: palette + layers ─────────────────────── -->
       <aside class="dbf-designer-left">
         <header class="dbf-designer-left__header">
@@ -142,11 +165,11 @@
 
         <header class="dbf-designer-left__header">
           <h3>{{ 'DOCUMENT_BUILDER.DESIGNER.LAYERS' | translate }}
-            <span class="dbf-count">{{ template().designerElements.length }}</span>
+            <span class="dbf-count">{{ pageElements().length }}</span>
           </h3>
         </header>
         <ul class="dbf-designer-layers">
-          @for (el of template().designerElements; track trackDesigner($index, el); let i = $index) {
+          @for (el of pageElements(); track trackDesigner($index, el); let i = $index) {
             <li
               class="dbf-designer-layers__item"
               [class.dbf-designer-layers__item--on]="selectedDesignerId() === el.id"
@@ -168,7 +191,7 @@
               </button>
             </li>
           }
-          @if (template().designerElements.length === 0) {
+          @if (pageElements().length === 0) {
             <li class="dbf-designer-layers__empty">
               {{ 'DOCUMENT_BUILDER.DESIGNER.LAYERS_EMPTY' | translate }}
             </li>
@@ -191,6 +214,9 @@
           <button type="button" class="dbf-canvas__zoom-text" (click)="zoomFit()">{{ 'DOCUMENT_BUILDER.FIT' | translate }}</button>
           <button type="button" class="dbf-canvas__zoom-text" (click)="zoom100()">100%</button>
           <div class="dbf-canvas__spacer"></div>
+          <button type="button" class="dbf-canvas__zoom-text" [disabled]="exportingPdf()" (click)="onExportPdf()">
+            {{ (exportingPdf() ? 'DOCUMENT_BUILDER.DESIGNER.EXPORTING_PDF' : 'DOCUMENT_BUILDER.DESIGNER.EXPORT_PDF') | translate }}
+          </button>
           <span class="dbf-canvas__meta">
             {{ template().selectedPaperSize }} ·
             {{ ('DOCUMENT_BUILDER.GENERAL.ORIENT_' + template().selectedPaperOrientation.toUpperCase()) | translate }} ·
@@ -200,7 +226,7 @@
         <div class="dbf-canvas__paper" [style.transform]="'scale(' + zoom() + ')'">
           <app-designer-canvas
             [template]="template()"
-            [elements]="template().designerElements"
+            [elements]="pageElements()"
             [selectedId]="selectedDesignerId()"
             [zoom]="zoom()"
             (elementsChange)="setDesignerElements($event)"
@@ -223,6 +249,7 @@
           (toggleLocked)="toggleDesignerLocked()"
         />
       </aside>
+      </div>
     </div>
   } @else {
   <!-- ════ CLASSIC layout (existing — left-nav | sidebar | canvas) ═══ -->
@@ -626,6 +653,16 @@
                         [showLabel]="true"
                         (valueChange)="patchFooterField('term', $event)"
                       />
+                      <!-- Terms & Conditions as its own printed page — like an attachment — instead
+                           of squeezed under the footer content. -->
+                      <div class="dbf-pagenum">
+                        <label class="dbf-toggle">
+                          <input type="checkbox"
+                                 [checked]="template().footerCustomization.termAsSeparatePage"
+                                 (change)="setTermAsSeparatePage($any($event.target).checked)"/>
+                          <span>{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.TERMS_AS_SEPARATE_PAGE' | translate }}</span>
+                        </label>
+                      </div>
                       <app-text-style-editor
                         [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_CUSTOMER_NOTE' | translate"
                         [value]="template().footerCustomization.customerNote"
@@ -1470,10 +1507,10 @@
           {{ (printPreviewMode() ? 'DOCUMENT_BUILDER.PREVIEW.BACK_TO_EDIT' : 'DOCUMENT_BUILDER.PREVIEW.OPEN_PREVIEW') | translate }}
         </button>
 
-        <!-- Print — opens the browser's native print dialog. Auto-
-             flips into preview mode first if needed so the printed
-             output always matches the paginated layout. -->
+        <!-- Print — builds the same pdfmake PDF "Export PDF" does (see print()) and opens the
+             browser's print dialog for it, instead of printing the live DOM. -->
         <button type="button" class="dbf-canvas__print"
+                [disabled]="printingPdf()"
                 (click)="print()"
                 [appTooltip]="'DOCUMENT_BUILDER.PRINT_HINT' | translate">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1481,7 +1518,14 @@
             <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
             <rect x="6" y="14" width="12" height="8"/>
           </svg>
-          {{ 'DOCUMENT_BUILDER.PRINT' | translate }}
+          {{ (printingPdf() ? 'DOCUMENT_BUILDER.DESIGNER.EXPORTING_PDF' : 'DOCUMENT_BUILDER.PRINT') | translate }}
+        </button>
+
+        <!-- Export PDF — client-side pdfmake render (see onExportPdf()), a more consistent
+             alternative to the browser's own print-to-PDF above. -->
+        <button type="button" class="dbf-canvas__print" [disabled]="exportingPdf()" (click)="onExportPdf()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          {{ (exportingPdf() ? 'DOCUMENT_BUILDER.DESIGNER.EXPORTING_PDF' : 'DOCUMENT_BUILDER.DESIGNER.EXPORT_PDF') | translate }}
         </button>
       </div>
 
@@ -1497,6 +1541,7 @@
           [template]="template()"
           [data]="previewData()"
           [printPreview]="printPreviewMode()"
+          [forceMode]="template().renderMode === 'designer' ? 'designer' : 'classic'"
         />
       </div>
     </div>

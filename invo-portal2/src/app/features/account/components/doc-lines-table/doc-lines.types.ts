@@ -35,12 +35,16 @@ export interface DocLinesContext {
 export interface DocLinesConfig {
   columns: DocLineColumn[];
 
-  /** Typeahead source for the item cell (page 1 only). */
-  itemSearch: (term: string) => Promise<any[]>;
+  /** Typeahead source for the item cell (page 1 only). `filter` carries the item filter (tags). */
+  itemSearch: (term: string, filter?: DocItemFilter) => Promise<any[]>;
+  /** Enables the item filter button in the item cell; loads the tags to pick from. */
+  itemFilterTags?: (p: { page: number; pageSize: number; search: string }) => Promise<{ items: { label: string; value: string }[]; hasMore: boolean }>;
   /** Barcode / scan lookup; enables the Scan Item bar when provided. */
   barcodeLookup?: (term: string) => Promise<any | null>;
   /** Enables "Add Items in Bulk" (uses `itemSearch` + `barcodeLookup`). */
   bulkItems?: boolean;
+  /** Enables "Import" (CSV / XLSX by barcode): resolves the barcodes to product records. */
+  searchByBarcodes?: (barcodes: string[]) => Promise<any[]>;
   /** Enables the per-row "Select an account" strip and bulk account update. */
   accounts?: boolean;
 
@@ -56,6 +60,10 @@ export interface DocLinesConfig {
   /** Extra line-level validation; return i18n keys of what is wrong. */
   validate?: (line: InvoiceLine) => string[];
 }
+
+export interface DocItemFilter { tags: string[]; /** 1-based page (default 1). */ page?: number; }
+/** Items per page requested by `itemSearch`; a shorter page means the end of the list. */
+export const DOC_ITEMS_PAGE = 20;
 
 /** Validation result of one line — keys are column keys (or `item`). */
 export type DocLineErrors = Record<string, string>;

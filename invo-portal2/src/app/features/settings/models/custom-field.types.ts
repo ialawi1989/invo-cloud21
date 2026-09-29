@@ -70,6 +70,9 @@ export interface CustomField {
   /** Required toggle. */
   required: boolean;
 
+  /** Built-in field (e.g. invoice Subject): always present, cannot be deleted. */
+  system?: boolean;
+
   /** Optional default value (string/number/boolean depending on `type`). */
   defaultValue?: string | number | boolean | null;
 

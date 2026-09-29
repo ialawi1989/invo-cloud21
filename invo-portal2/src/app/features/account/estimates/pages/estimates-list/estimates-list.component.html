@@ -1,0 +1,77 @@
+<app-list-page
+  [pageTitle]="'ESTIMATES.LIST.ESTIMATES_LIST' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="load"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="filters"
+  [headerActions]="[]"
+  [bulkActions]="bulkActions"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'estimate'"
+  (rowClicked)="onRowClick($event)">
+
+  <div listHeaderActions class="flex items-center gap-3">
+    @if (actions.canAdd) {
+      <button type="button" (click)="add()"
+        class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        {{ 'ESTIMATES.ADD_NEW' | translate }}
+      </button>
+    }
+    <app-dropdown-menu-btn [items]="moreItems" [appendToBody]="true" [chevron]="false" align="end"
+      triggerClass="flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+      </svg>
+    </app-dropdown-menu-btn>
+  </div>
+
+  <ng-template listCellTemplate="estimateNumber" let-row>
+    <div class="flex flex-col">
+      <span class="font-semibold text-brand-700">{{ row.estimateNumber }}</span>
+      @if (row.refrenceNumber) {
+        <span class="text-xs text-slate-500">{{ 'ESTIMATES.LIST.REF' | translate }} {{ row.refrenceNumber }}</span>
+      }
+    </div>
+  </ng-template>
+  <ng-template listCellTemplate="total" let-row>
+    <span class="tabular-nums font-semibold">{{ row.total | mycurrency }}</span>
+  </ng-template>
+  <ng-template listCellTemplate="invoiceNumber" let-row>
+    @if (row.invoiceId) {
+      <a href="javascript:void(0)" (click)="$event.stopPropagation(); openInvoice(row)" class="text-brand-700 hover:underline">{{ row.invoiceNumber }}</a>
+    }
+  </ng-template>
+  <ng-template listCellTemplate="estimateDate" let-row>{{ row.estimateDate | date: 'yyyy-MM-dd' }}</ng-template>
+  <ng-template listCellTemplate="estimateExpDate" let-row>{{ row.estimateExpDate | date: 'yyyy-MM-dd' }}</ng-template>
+  <ng-template listCellTemplate="createdAt" let-row>{{ row.createdAt | date: 'yyyy-MM-dd' }}</ng-template>
+
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+      <button type="button" (click)="view(row)"
+        class="px-3 h-9 inline-flex items-center rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">
+        {{ 'COMMON.VIEW' | translate }}
+      </button>
+      @if (actions.edit(row)) {
+        <button type="button" (click)="edit(row)"
+          class="px-4 h-9 inline-flex items-center rounded-full bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700">
+          {{ 'COMMON.EDIT' | translate }}
+        </button>
+      }
+      @if (rowMenu(row); as items) {
+        @if (!items.length) { <span class="inline-block w-9 h-9" aria-hidden="true"></span> }
+        @if (items.length) {
+          <app-dropdown-menu-btn [items]="items" [appendToBody]="true" [chevron]="false" align="end"
+            triggerClass="inline-flex items-center justify-center w-9 h-9 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+          </app-dropdown-menu-btn>
+        }
+      }
+    </div>
+  </ng-template>
+</app-list-page>

@@ -189,6 +189,123 @@
         </div>
       </div>
     }
+
+    <!-- ── RICH TEXT — a subset-of-HTML block (legacy `RichTextBlock`) ── -->
+    @if (isRichText()) {
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.RICH_TEXT' | translate }}</h3>
+      <div class="dis__field">
+        <textarea class="dis__textarea" rows="5" [ngModel]="e.html || ''" (ngModelChange)="patch({ html: $event })" placeholder="&lt;p&gt;Rich &lt;b&gt;text&lt;/b&gt;&lt;/p&gt;"></textarea>
+      </div>
+    }
+
+    <!-- ── GROUP HEADER / GROUP FOOTER — static labels (legacy's own docs: real per-group
+         dynamism lives in the Table block's `groups`, these are single-interpolation labels) ── -->
+    @if (isGroupHeader() || isGroupFooter()) {
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.GROUP' | translate }}</h3>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.GROUP_BY' | translate }}</label>
+        <input type="text" [ngModel]="e.groupBy || ''" (ngModelChange)="patch({ groupBy: $event })" placeholder="row.category"/>
+      </div>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.TEMPLATE' | translate }}</label>
+        <input type="text" [ngModel]="$any(e.content) || ''" (ngModelChange)="patch({ content: $event })"/>
+      </div>
+    }
+
+    <!-- ── PAYMENTS — fixed-schema table (legacy `PaymentsBlock`) ─────── -->
+    @if (isPayments()) {
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.PAYMENTS' | translate }}</h3>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.BIND_TO' | translate }}</label>
+        <input type="text" [ngModel]="e.bindTo || 'invoicePayments'" (ngModelChange)="patch({ bindTo: $event })"/>
+      </div>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.CURRENCY' | translate }}</label>
+        <input type="text" [ngModel]="e.currency || 'BHD'" (ngModelChange)="patch({ currency: $event })"/>
+      </div>
+      <div class="dis__row dis__row--inline">
+        <label><input type="checkbox" [ngModel]="e.showHeader !== false" (ngModelChange)="patch({ showHeader: $event })"/> {{ 'DOCUMENT_BUILDER.DESIGNER.SHOW_HEADER' | translate }}</label>
+        <label><input type="checkbox" [ngModel]="e.showBorder !== false" (ngModelChange)="patch({ showBorder: $event })"/> {{ 'DOCUMENT_BUILDER.DESIGNER.SHOW_BORDER' | translate }}</label>
+        <label><input type="checkbox" [ngModel]="!!e.zebra" (ngModelChange)="patch({ zebra: $event })"/> {{ 'DOCUMENT_BUILDER.DESIGNER.ZEBRA' | translate }}</label>
+      </div>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.COLUMNS' | translate }}</label>
+        <div class="dis__row dis__row--inline">
+          @for (col of paymentsColumnOptions; track col) {
+            <label><input type="checkbox" [ngModel]="($any(e.paymentsColumns) || ['method','reference','date','amount']).includes(col)" (ngModelChange)="togglePaymentsColumn(col)"/> {{ col }}</label>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ── REPEATER — the one container type (legacy `RepeaterBlock`, "Card List") ────────── -->
+    @if (isRepeater()) {
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.REPEATER' | translate }}</h3>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.BIND_TO' | translate }}</label>
+        <input type="text" [ngModel]="e.bindTo || 'lines'" (ngModelChange)="patch({ bindTo: $event })" placeholder="lines"/>
+      </div>
+      <div class="dis__row dis__row--gap">
+        <div class="dis__field">
+          <label>{{ 'DOCUMENT_BUILDER.DESIGNER.ITEM_HEIGHT' | translate }}</label>
+          <input type="number" min="10" [ngModel]="e.itemHeight ?? 30" (ngModelChange)="patch({ itemHeight: +$event })"/>
+        </div>
+        <div class="dis__field">
+          <label>{{ 'DOCUMENT_BUILDER.DESIGNER.ITEM_SPACING' | translate }}</label>
+          <input type="number" min="0" [ngModel]="e.itemSpacing ?? 0" (ngModelChange)="patch({ itemSpacing: +$event })"/>
+        </div>
+      </div>
+      <div class="dis__field">
+        <label>{{ 'DOCUMENT_BUILDER.DESIGNER.DIRECTION' | translate }}</label>
+        <select [ngModel]="e.direction || 'vertical'" (ngModelChange)="patch({ direction: $event })">
+          <option value="vertical">Vertical</option>
+          <option value="horizontal">Horizontal</option>
+        </select>
+      </div>
+
+      <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.CARD_CONTENT' | translate }}</h3>
+      <div class="dis__row dis__row--inline" style="flex-wrap:wrap">
+        @for (kind of repeaterChildKinds; track kind) {
+          <button type="button" class="dis__icon-btn" (click)="addRepeaterChild(kind)">+ {{ kind }}</button>
+        }
+      </div>
+      @if (e.repeaterItems?.length) {
+        <ul class="dis__child-list">
+          @for (child of $any(e.repeaterItems); track child.id) {
+            <li [class.dis__child-list-item--active]="selectedChildId() === child.id">
+              <span (click)="selectedChildId.set(selectedChildId() === child.id ? null : child.id)">{{ child.type }}: {{ child.content || child.path || '' }}</span>
+              <button type="button" class="dis__icon-btn dis__icon-btn--danger" (click)="removeRepeaterChild(child.id)">×</button>
+            </li>
+            @if (selectedChildId() === child.id) {
+              <li class="dis__child-editor">
+                <div class="dis__grid">
+                  <label>X</label><input type="number" [ngModel]="child.x" (ngModelChange)="patchRepeaterChild(child.id, { x: +$event })"/>
+                  <label>Y</label><input type="number" [ngModel]="child.y" (ngModelChange)="patchRepeaterChild(child.id, { y: +$event })"/>
+                  <label>W</label><input type="number" [ngModel]="child.w" (ngModelChange)="patchRepeaterChild(child.id, { w: +$event })"/>
+                  <label>H</label><input type="number" [ngModel]="child.h" (ngModelChange)="patchRepeaterChild(child.id, { h: +$event })"/>
+                </div>
+                @if (child.type === 'Data Field') {
+                  <div class="dis__field">
+                    <label>{{ 'DOCUMENT_BUILDER.DESIGNER.PATH' | translate }}</label>
+                    <input type="text" [ngModel]="child.path || ''" (ngModelChange)="patchRepeaterChild(child.id, { path: $event })" placeholder="productName"/>
+                  </div>
+                } @else if (child.type === 'Image') {
+                  <div class="dis__field">
+                    <label>{{ 'DOCUMENT_BUILDER.DESIGNER.IMAGE_SRC' | translate }}</label>
+                    <input type="text" [ngModel]="child.src || ''" (ngModelChange)="patchRepeaterChild(child.id, { src: $event })"/>
+                  </div>
+                } @else {
+                  <div class="dis__field">
+                    <label>{{ 'DOCUMENT_BUILDER.DESIGNER.CONTENT' | translate }}</label>
+                    <input type="text" [ngModel]="child.content || ''" (ngModelChange)="patchRepeaterChild(child.id, { content: $event })"/>
+                  </div>
+                }
+              </li>
+            }
+          }
+        </ul>
+      }
+    }
   </div>
 } @else {
   <div class="dis__empty">

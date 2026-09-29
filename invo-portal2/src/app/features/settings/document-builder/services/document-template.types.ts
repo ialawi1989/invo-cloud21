@@ -188,6 +188,9 @@ export interface FooterCustomization {
   term:         TextStyle;
   visibility:   Visibility;
   pageNumber:   PageNumberConfig;
+  /** When true, Terms & Conditions renders on its own printed page — like an
+   *  attachment — instead of sitting directly under the footer content. */
+  termAsSeparatePage: boolean;
 }
 export const DEFAULT_FOOTER = (): FooterCustomization => ({
   noteTitle:    DEFAULT_TEXT_STYLE_ALIGNED({ size: 10 }),
@@ -198,6 +201,7 @@ export const DEFAULT_FOOTER = (): FooterCustomization => ({
   // Page number: hidden by default (legacy parity — most templates
   // don't show one). User opts in via the Footer panel.
   pageNumber:   { show: false, position: 'right' },
+  termAsSeparatePage: false,
 });
 
 // ────────────────────────────────────────────────────────────────────
@@ -521,9 +525,23 @@ export interface CustomElement {
  *
  *  Coordinates / dimensions are in CSS pixels relative to the paper.
  *  `1cm = 37.8px` at 96 DPI — the canvas converts on the way out. */
+/** `'master'` — the document's original, only page before extra pages existed. Matches legacy's
+ *  `MASTER_PAGE_ID` (`report-engine/core/types/template.types.ts`). */
+export const MASTER_PAGE_ID = 'master';
+
+/** A standalone extra page appended after the master page (Designer mode) — e.g. a company's own
+ *  Terms & Conditions layout, built with the same block palette. Mirrors legacy's `ExtraPage`. */
+export interface DesignerPage {
+  id:   string;
+  name: string;
+}
+
 export interface DesignerElement {
   id:           number | string;
   type:         string;
+  /** Which page this element belongs to — an id from `DocumentTemplate.extraPages`, or omitted /
+   *  `MASTER_PAGE_ID` for the master page. See `DesignerPage`. */
+  pageId?:      string;
   x:            number;
   y:            number;
   w:            number;
@@ -563,6 +581,30 @@ export interface DesignerElement {
   // Page #
   current?:     number;
   total?:       number;
+  // Rich Text — sanitized subset (b,i,u,br,span,ul,ol,li), matches legacy's `RichTextBlock.html`.
+  html?:        string;
+  // Group Header / Group Footer — a static label interpolated once (legacy: `groupBy`+`template`).
+  // The template string reuses `content` (same field Text uses) for consistency.
+  groupBy?:     string;
+  // Payments block — a fixed-schema table over `bindTo` (defaults 'invoicePayments'), matching
+  // legacy's `PaymentsBlock`. Reuses `bindTo`/`headerBg`(unused here)/`striped`→`zebra` naming
+  // where the concept lines up with Table's existing fields.
+  paymentsColumns?:  ('method' | 'reference' | 'date' | 'amount' | 'status' | 'rate')[];
+  showHeader?:       boolean;
+  showBorder?:       boolean;
+  zebra?:            boolean;
+  zebraColor?:       string;
+  rowMinHeight?:     number;
+  currency?:         string;
+  // Repeater — the one container type (legacy `RepeaterBlock`): clones `repeaterItems` once per
+  // row of `bindTo` (default 'lines'). Children are positioned relative to the card's top-left
+  // (0,0), not the page — same shape as a top-level `DesignerElement` so the same renderer/inspector
+  // code works on them. `itemHeight`/`itemSpacing` are px, matching this app's own designer units
+  // (legacy uses mm; the field names/semantics are what's ported, not the raw unit system).
+  itemHeight?:    number;
+  itemSpacing?:   number;
+  direction?:     'vertical' | 'horizontal';
+  repeaterItems?: DesignerElement[];
   // Allow any forward-compat extras
   [key: string]: unknown;
 }
@@ -601,8 +643,15 @@ export interface DocumentTemplate {
   /** Custom inline elements added from the Classic Add Element tab. */
   customElements:                     CustomElement[];
   /** Absolute-positioned designer elements (phase 2). Empty for
-   *  Classic templates. */
+   *  Classic templates. Each carries an optional `pageId` (see
+   *  `DesignerElement.pageId`) — omitted means the master page. */
   designerElements:                   DesignerElement[];
+  /** Standalone pages appended after the master page (Designer mode only) —
+   *  e.g. a company's own Terms & Conditions layout, built with the same
+   *  block palette. Elements belong to a page via `DesignerElement.pageId`
+   *  matching an entry here; omitted/no match = master page. Empty for
+   *  every template until the user adds one via the page tabs. */
+  extraPages:                         DesignerPage[];
   /** Whether this template is the default for its `documentType`.
    *  Exactly one default per `(company, type)`; all entity view /
    *  print pages render the default unless the user explicitly picks
@@ -630,6 +679,7 @@ export const DEFAULT_TEMPLATE = (documentType: DocumentType = 'invoice'): Docume
   additionalDataStyle:               DEFAULT_TEXT_STYLE({ size: 10 }),
   customElements:                    [],
   designerElements:                  [],
+  extraPages:                        [],
   isDefault:                         false,
 });
 
@@ -732,6 +782,7 @@ export function parseTemplate(raw: AnyJson, fallbackType: DocumentType = 'invoic
                     : 'right',
       };
     }
+    if (typeof f['termAsSeparatePage'] === 'boolean') out.footerCustomization.termAsSeparatePage = f['termAsSeparatePage'];
   }
 
   // Transactional — merge each TextStyle field by name. Unknown keys
@@ -805,6 +856,7 @@ export function parseTemplate(raw: AnyJson, fallbackType: DocumentType = 'invoic
   if (isObj(raw['additionalDataStyle']))      out.additionalDataStyle = mergeText(out.additionalDataStyle, raw['additionalDataStyle']);
   if (Array.isArray(raw['customElements']))   out.customElements   = raw['customElements']   as CustomElement[];
   if (Array.isArray(raw['designerElements'])) out.designerElements = raw['designerElements'] as DesignerElement[];
+  if (Array.isArray(raw['extraPages']))       out.extraPages       = raw['extraPages']       as DesignerPage[];
   if (raw['renderMode'] === 'designer' || raw['renderMode'] === 'classic') {
     out.renderMode = raw['renderMode'];
   }
@@ -851,6 +903,7 @@ export function serializeTemplate(t: DocumentTemplate): AnyJson {
     additionalDataStyle:                t.additionalDataStyle,
     customElements:                     t.customElements,
     designerElements:                   t.designerElements,
+    extraPages:                         t.extraPages,
     isDefault:                          t.isDefault,
   };
 }

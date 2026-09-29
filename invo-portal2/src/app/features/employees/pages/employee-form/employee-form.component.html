@@ -286,6 +286,21 @@
                 @if (form.controls['isDriver'].value) { ✓ }
               </span>
             </button>
+
+            <!-- Is Salesperson -->
+            <button type="button" class="role-card"
+              [class.role-card--active]="form.controls['isSalesPerson'].value"
+              [disabled]="isSuperAdmin()"
+              (click)="toggleRole('isSalesPerson')">
+              <svg class="role-card__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19V9M10 19V5M16 19v-8M22 19H2"/><path d="M4 9l6-4 6 6 4-5"/>
+              </svg>
+              <span class="role-card__title">{{ 'EMPLOYEES.FORM.IS_SALES_PERSON' | translate }}</span>
+              <span class="role-card__hint">{{ 'EMPLOYEES.FORM.SALES_PERSON_ROLE' | translate }}</span>
+              <span class="role-card__check" [class.role-card__check--on]="form.controls['isSalesPerson'].value" aria-hidden="true">
+                @if (form.controls['isSalesPerson'].value) { ✓ }
+              </span>
+            </button>
           </div>
         </section>
 

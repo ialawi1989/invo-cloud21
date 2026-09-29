@@ -1,3 +1,4 @@
+import '../../account-i18n';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -80,6 +81,7 @@ export interface DocumentNumberResult { mode: NumberMode; prefixChanged: boolean
     .dn__input--err { border-color: #f87171; background: #fef2f2; }
     .dn__err { color: #dc2626; }
     .dn__preview { width: 100%; color: #475569; }
+    .dn input[type=radio] { accent-color: #2691a4; width: 16px; height: 16px; }
     .dn__hint { margin-inline-start: 24px; color: #64748b; }
     .dn__btn { padding: 8px 18px; border-radius: 6px; border: 1px solid #d0d5dd; background: #f3f4f6; font-weight: 500; cursor: pointer; }
     .dn__btn--primary { background: #2691a4; border-color: #2691a4; color: #fff; }

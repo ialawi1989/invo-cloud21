@@ -92,6 +92,27 @@
             <!-- Shapes are pure background/border — no inner content. -->
             <span></span>
           }
+          @case ('Rich Text') {
+            <div style="width:100%" [innerHTML]="resolveTokens($any(el.html))"></div>
+          }
+          @case ('Payments') {
+            <div class="dcv__placeholder">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>PAYMENTS ({{ el.bindTo || 'invoicePayments' }})</span>
+            </div>
+          }
+          @case ('Repeater') {
+            <div class="dcv__repeater">
+              <div class="dcv__repeater-card">
+                @for (child of $any(el.repeaterItems) || []; track $index) {
+                  <div class="dcv__repeater-child" [ngStyle]="{ position: 'absolute', left: (child.x||0)+'px', top: (child.y||0)+'px', width: (child.w||100)+'px', height: (child.h||20)+'px', color: child.color||'#1f2937', 'font-weight': child.bold?'700':'400', 'font-size': (child.size||10)+'pt' }">
+                    {{ resolveTokens($any(child.content) || (child.path ? '{{'+child.path+'}}' : child.type)) }}
+                  </div>
+                }
+              </div>
+              <div class="dcv__repeater-label">REPEATER · {{ el.bindTo || 'lines' }} ×N</div>
+            </div>
+          }
           @default {
             <!-- Text fallback: resolve {{tokens}} against sample data. -->
             <span style="white-space:pre-line">{{ resolveTokens($any(el.content)) }}</span>

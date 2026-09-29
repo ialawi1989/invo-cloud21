@@ -197,11 +197,18 @@ export class MediaService {
       };
     }
 
-    // Backend may return data as a single object or an array
-    let data: Media[] = [];
-    if (response?.data) {
-      data = Array.isArray(response.data) ? response.data.map((d: any) => new Media(d)) : [new Media(response.data)];
-    }
+    // `media/importMedia` (`MediaRepo.importMedia`) returns only `{ lastId: [newMediaId] }` — no
+    // name/size/url/type — so the caller must build the display record from the LOCAL file it just
+    // sent, exactly like legacy's `onUpload()` does (`uploadResult.originalItem`), not by trying to
+    // read those fields off the response.
+    const ids: string[] = Array.isArray(response?.data?.lastId) ? response.data.lastId : [];
+    const data: Media[] = ids.filter(Boolean).map(id => new Media({
+      id,
+      name: uploadName,
+      size: { size: file.size },
+      mediaType: { fileType: category, extension },
+      contentType: file.type,
+    }));
 
     return {
       success: true,
@@ -335,8 +342,9 @@ export class MediaService {
     return (response.data?.attachment || []).map((item: any) => new Media(item));
   }
 
-  /** Delete an attachment */
-  async deleteAttachment(params: { reference: string; referenceId: string; attachmentId: string }): Promise<boolean> {
+  /** Delete an attachment. Unlike `appendAttachment`, the backend removes just this one entry
+   *  (a real DB-level filter, not a full overwrite) — no need to resend the rest of the list. */
+  async deleteAttachment(params: { type: string; id: string; mediaId: string }): Promise<boolean> {
     const response = await firstValueFrom(
       this.http.post<any>(`${this.baseUrl}media/deleteAttachment`, params)
     );

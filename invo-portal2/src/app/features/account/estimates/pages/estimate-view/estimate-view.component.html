@@ -1,0 +1,23 @@
+@if (doc(); as e) {
+  <app-doc-view-shell
+    [docTitle]="title" railTitle="ESTIMATES.LIST.ESTIMATES_LIST" [showAdd]="actions.canAdd"
+    [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="id"
+    [printItems]="actions.canPrint ? printItems() : []" [shareItems]="shareItems()" [exportItems]="exportItems()" [actionItems]="actionItems(e)"
+    [showEdit]="actions.edit(e)"
+    [loading]="loading()" [template]="template()" [data]="renderData()"
+    [zoom]="zoom()" (zoomChange)="setZoom($event)"
+    (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railPrev)="railPrev()" (railNext)="railNext()" (add)="add()"
+    (close)="goToList()" (edit)="edit()">
+
+    @if (actions.convert(e)) {
+      <button toolbarExtra type="button" class="dv-tool" (click)="convert()">{{ 'ESTIMATES.ACTIONS.CONVERT_TO_INVOICE' | translate }}</button>
+    }
+
+    @if (e.invoiceId) {
+      <div banner class="dv-banner dv-banner--info">
+        {{ 'ESTIMATES.VIEW.CONVERTED_TO' | translate }}
+        <a href="javascript:void(0)" (click)="goToInvoice(e.invoiceId)">#{{ e.invoiceNumber }}</a>
+      </div>
+    }
+  </app-doc-view-shell>
+}

@@ -185,8 +185,16 @@ export class DocumentLineEditor {
    * Removes a line. On an edited invoice a saved line is voided (kept, flagged) rather than
    * dropped; unsaved lines are removed. Returns what happened so the UI can react.
    */
+  /** Documents without voids (estimates): saved lines are flagged `isDeleted` (the backend deletes them) instead of voided. */
+  deleteMode = false;
+
   removeLine(line: InvoiceLine, formStatus: string): 'removed' | 'voided' {
     const i = this.doc.lines.indexOf(line);
+    if (this.deleteMode && formStatus === 'edit' && line.id) {
+      (line as any).isDeleted = true;
+      this.doc.calculateTotal();
+      return 'removed';
+    }
     if (formStatus === 'edit' && line.id) {
       line.justVoided = true;
       line.isVoided = true;

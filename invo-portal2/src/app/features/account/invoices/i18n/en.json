@@ -19,7 +19,10 @@
       "CUSTOMER_ADDRESS": "Customer address",
       "REF": "Ref #",
       "PAY": "Pay",
-      "CREATE_CREDIT_NOTE": "Credit note"
+      "CREATE_CREDIT_NOTE": "Credit note",
+      "OVERDUE_BY": "Overdue by {{days}} days",
+      "CUSTOMER_PHONE": "Customer Phone",
+      "ALL_INVOICES": "All Invoices"
     },
     "FILTERS": {
       "STATUS": "Status",
@@ -118,7 +121,13 @@
       "TOTAL_AMOUNT": "Total Amount",
       "TOTAL_QUANTITY": "Total Quantity",
       "RECURRING_SOON": "Recurring invoices are not available yet",
-      "SAVE_AND_SEND": "Save and Send"
+      "SAVE_AND_SEND": "Save and Send",
+      "GATEWAY_TITLE": "Want to get paid faster?",
+      "GATEWAY_TEXT": "Configure payment gateways and receive payments online.",
+      "GATEWAY_LINK": "Set up Payment Gateway",
+      "CF_TITLE": "Additional Fields:",
+      "CF_TEXT": "Start adding custom fields for your invoices by going to",
+      "CF_PATH": "Settings ➜ Sales ➜ Invoices"
     },
     "REQUIRED": {
       "INVOICE_NUMBER": "Invoice number",
@@ -147,7 +156,30 @@
       "SERVICE": "Service",
       "TABLE": "Table",
       "NO_DATA": "No data found",
-      "EMAIL_WHATSAPP": "Email / WhatsApp"
+      "EMAIL_WHATSAPP": "Email / WhatsApp",
+      "OVERDUE": "Overdue",
+      "VIEW_JOURNAL": "View Journal",
+      "INVOICE_PREFERENCES": "Invoice Preferences",
+      "RECORD_PAYMENT": "Record Payment",
+      "SEND_INVOICE": "Send Invoice",
+      "WHATS_NEXT": "What's next?",
+      "WHATS_NEXT_DRAFT": "Send this invoice to your customer, or open it to move it out of draft.",
+      "WHATS_NEXT_OVERDUE": "Payment is overdue. Record the payment once it's received.",
+      "BILL_TO": "Bill To",
+      "VAT_NUMBER": "VAT Number",
+      "ORDER_SUMMARY": "Order Summary",
+      "AUTHORIZED_SIGNATURE": "Authorized Signature",
+      "DELIVERY_DATE": "Delivery Date",
+      "DELIVERY_NOTE": "Delivery Note",
+      "PRINT_DELIVERY_NOTE": "Print Delivery Note",
+      "DELIVERY_NOTE_NEEDS_CUSTOMER": "A customer is required to print a delivery note.",
+      "SORT_BY": "Sort by",
+      "EXPORT_INVOICES": "Export Invoices",
+      "EXPORT_CURRENT_VIEW": "Export Current View",
+      "IMPORT_INVOICES": "Import Invoices",
+      "IMPORT_NOT_AVAILABLE": "Bulk invoice import is not available yet.",
+      "ONLINE_PAYMENTS": "Online Payments",
+      "RESET_COLUMN_WIDTH": "Reset Column Width"
     },
     "CREDIT": {
       "APPLY_CREDITS_FOR": "Apply credits for",
@@ -173,6 +205,21 @@
       "BANK_CHARGE": "Bank charge",
       "BANK_CHARGE_INFO": "Bank charge of {{payment}} is {{value}}",
       "REFERENCE_NUMBER": "Reference number"
+    },
+    "PREFS": {
+      "PREFERENCES": "Preferences",
+      "FIELDS": "Fields",
+      "ALL_PREFERENCES": "All Preferences",
+      "ENABLE_WASTE": "Enable waste tracking",
+      "ENABLE_VOID_REASON": "Require a reason to void a line",
+      "SHOW_OPTION_GROUP": "Show the option group on invoices",
+      "TERMS_CONDITIONS": "Terms & Conditions",
+      "FIELDS_TEXT": "Add or edit the custom fields that appear on invoices.",
+      "MANAGE_FIELDS": "Manage custom fields",
+      "UNNAMED_FIELD": "Unnamed field",
+      "SYSTEM_FIELD": "System",
+      "NO_FIELDS": "No custom fields yet.",
+      "ADD_FIELD": "Add Field"
     }
   }
 }

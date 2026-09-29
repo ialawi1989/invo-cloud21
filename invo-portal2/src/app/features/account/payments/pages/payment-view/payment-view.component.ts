@@ -15,6 +15,7 @@ import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/conf
 
 import { InvoicePayment } from '../../../models/invoice-payment.model';
 import { PaymentsService } from '../../services/payments.service';
+import { PaymentActions } from '../../services/payment-actions';
 import { PaymentReceiptComponent } from '../../components/payment-receipt/payment-receipt.component';
 import { SendDocumentData, SendDocumentModalComponent } from '../../../components/send-document-modal/send-document-modal.component';
 
@@ -38,6 +39,7 @@ export class PaymentViewComponent implements OnInit {
   private modal = inject(ModalService);
   private privileges = inject(PrivilegeService);
   private payments = inject(PaymentsService);
+  readonly actions = inject(PaymentActions);
 
   private canGoBack = !!this.router.getCurrentNavigation()?.previousNavigation;
 
@@ -46,8 +48,6 @@ export class PaymentViewComponent implements OnInit {
 
   get id(): string { return this.route.snapshot.paramMap.get('id') ?? ''; }
   get canPrint() { return this.privileges.check('invoicePaymentsSecurity.actions.print.access'); }
-  get canAdd() { return this.privileges.check('invoicePaymentsSecurity.actions.add.access'); }
-  get canDelete() { return this.privileges.check('invoicePaymentsSecurity.actions.delete.access'); }
 
   async ngOnInit(): Promise<void> {
     await this.lang.loadFeature('account/payments');

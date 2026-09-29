@@ -1,15 +1,17 @@
+import '../../account-i18n';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { QtyInputComponent } from '@shared/components/qty-input';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { ModalRef } from '@shared/modal/modal.service';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 
 export interface BulkItemsData {
-  search: (term: string) => Promise<any[]>;
+  search: (term: string, page?: number) => Promise<any[]>;
   barcodeLookup?: (term: string) => Promise<any | null>;
   excludeTypes?: string[];
 }
@@ -22,19 +24,19 @@ export interface BulkPick { product: any; qty: number; }
 @Component({
   selector: 'app-doc-bulk-items-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, ModalHeaderComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, QtyInputComponent, ModalHeaderComponent],
   template: `
     <app-modal-header [title]="'DOC_LINES.ADD_ITEMS_BULK' | translate"/>
     <div class="bi">
       <div class="bi__left">
         <input class="bi__search" type="text" autofocus [placeholder]="'DOC_LINES.SEARCH_OR_SCAN' | translate"
           [ngModel]="term()" (ngModelChange)="onTerm($event)" (keydown.enter)="onEnter()"/>
-        <ul class="bi__list">
+        <ul class="bi__list" (scroll)="onScroll($event)">
           @for (p of results(); track p.id) {
             <li [class.on]="isPicked(p)" (click)="toggle(p)">
               <div>
                 <div class="bi__name">{{ p.name }}</div>
-                <div class="bi__rate">{{ 'DOC_LINES.RATE' | translate }}: {{ p.defaultPrice | mycurrency }}</div>
+                <div class="bi__rate">{{ 'DOC_LINES.RATE' | translate }}: {{ p.defaultPrice | mycurrency }}@if (p.barcode) { · {{ 'DOC_LINES.BARCODE' | translate }}: {{ p.barcode }} }</div>
               </div>
               <span class="bi__check">{{ isPicked(p) ? '✓' : '' }}</span>
             </li>
@@ -53,7 +55,7 @@ export interface BulkPick { product: any; qty: number; }
           @for (pk of picks(); track pk.product.id) {
             <div class="bi__row">
               <span class="bi__name">{{ pk.product.name }}</span>
-              <input class="bi__qty" type="number" min="0.001" step="1" [ngModel]="pk.qty" (ngModelChange)="setQty(pk, $event)"/>
+              <app-qty-input size="sm" [allowDecimal]="true" [min]="0.001" [step]="1" [ngModel]="pk.qty" (ngModelChange)="setQty(pk, $event)"/>
               <button type="button" class="bi__x" (click)="toggle(pk.product)" aria-label="remove">✕</button>
             </div>
           } @empty {
@@ -68,7 +70,7 @@ export interface BulkPick { product: any; qty: number; }
     </div>
   `,
   styles: [`
-    .bi { display: grid; grid-template-columns: 1fr 1fr; min-width: min(920px, 92vw); height: 62vh; }
+    .bi { display: grid; grid-template-columns: 1fr 1fr; min-width: min(920px, 92vw); height: calc(min(780px, 100vh - 48px) - 62px); }
     @media (max-width: 720px) { .bi { grid-template-columns: 1fr; height: auto; } }
     .bi__left { border-inline-end: 1px solid #e5e7eb; display: flex; flex-direction: column; min-height: 0; background: #f8fafc; }
     .bi__search { margin: 12px; border: 1px solid #2691a4; border-radius: 8px; padding: 9px 12px; font: inherit; }
@@ -83,7 +85,7 @@ export interface BulkPick { product: any; qty: number; }
     .bi__head { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid #e5e7eb; h3 { margin: 0; font-size: 20px; } }
     .bi__count { display: inline-block; margin-inline-start: 8px; border: 1px solid #cbd5e1; border-radius: 999px; padding: 0 12px; font-size: 14px; }
     .bi__picked { flex: 1; overflow-y: auto; padding: 8px 16px; }
-    .bi__row { display: grid; grid-template-columns: 1fr 90px 28px; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+    .bi__row { display: grid; grid-template-columns: 1fr 150px 28px; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
     .bi__qty { border: 1px solid #d0d5dd; border-radius: 6px; padding: 6px 8px; text-align: end; }
     .bi__x { border: 0; background: none; color: #dc2626; cursor: pointer; }
     .bi__hint { height: 100%; display: grid; place-items: center; text-align: center; color: #334155; padding: 24px; }
@@ -107,15 +109,30 @@ export class DocBulkItemsModalComponent implements OnInit {
 
   ngOnInit(): void { void this.load(''); }
 
-  private async load(term: string): Promise<void> {
+  private page = 1;
+  private hasMore = true;
+
+  /** Loads a page of results; the next one is fetched when the list is scrolled near its end. */
+  private async load(term: string, more = false): Promise<void> {
+    if (more && (this.loading() || !this.hasMore)) return;
+    if (!more) { this.page = 1; this.hasMore = true; }
     const id = ++this.seq;
     this.loading.set(true);
     try {
-      const list = await this.data.search(term);
-      if (id === this.seq) this.results.set(list.filter(p => !(this.data.excludeTypes ?? []).includes(p.type)));
+      const raw = await this.data.search(term, this.page);
+      if (id !== this.seq) return;
+      this.hasMore = raw.length >= 20;
+      this.page++;
+      const list = raw.filter(p => !(this.data.excludeTypes ?? []).includes(p.type));
+      this.results.update(cur => (more ? [...cur, ...list.filter(p => !cur.some(c => c.id === p.id))] : list));
     } finally {
       if (id === this.seq) this.loading.set(false);
     }
+  }
+
+  onScroll(ev: Event): void {
+    const el = ev.target as HTMLElement;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 60) void this.load(this.term(), true);
   }
 
   onTerm(v: string): void {

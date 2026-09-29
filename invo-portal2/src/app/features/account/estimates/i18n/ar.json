@@ -1,0 +1,70 @@
+{
+  "ESTIMATES": {
+    "DASHBOARD": "لوحة التحكم",
+    "ADD_NEW": "إضافة عرض سعر",
+    "SEARCH_PLACEHOLDER": "ابحث بالرقم أو العميل أو المرجع",
+    "EMPTY": "لا توجد عروض أسعار",
+    "CREATED_DATE": "تاريخ الإنشاء",
+    "LIST": {
+      "ESTIMATES_LIST": "عروض الأسعار",
+      "ESTIMATE_NUMBER": "رقم العرض",
+      "EMPLOYEE_NAME": "الموظف",
+      "CUSTOMER_NAME": "العميل",
+      "TOTAL": "الإجمالي",
+      "INVOICE_NUMBER": "رقم الفاتورة",
+      "BRANCH_NAME": "الفرع",
+      "ISSUE_DATE": "تاريخ الإصدار",
+      "EXPIRY_DATE": "تاريخ الانتهاء",
+      "REF": "مرجع",
+      "CONVERT": "تحويل",
+      "CONVERTED": "تم التحويل"
+    },
+    "FILTERS": {
+      "SOURCE": "المصدر",
+      "BRANCH": "الفرع",
+      "EMPLOYEE": "الموظف",
+      "PRODUCT": "المنتج",
+      "DATE": "التاريخ"
+    },
+    "ACTIONS": {
+      "EXPORT_EXCEL": "تصدير إلى Excel",
+      "DELETE": "حذف",
+      "CONFIRM_DELETE": "حذف عرض السعر هذا؟ لا يمكن التراجع.",
+      "CONVERT_TO_INVOICE": "تحويل إلى فاتورة",
+      "CLONE": "نسخ"
+    },
+    "FORM": {
+      "ESTIMATE": "عرض سعر",
+      "NEW_ESTIMATE": "عرض سعر جديد",
+      "EDIT_ESTIMATE": "تعديل عرض السعر",
+      "ESTIMATE_DETAILS": "تفاصيل عرض السعر",
+      "ESTIMATE_NUMBER": "رقم عرض السعر",
+      "ESTIMATE_DATE": "تاريخ عرض السعر",
+      "EXPIRY_DATE": "تاريخ الانتهاء",
+      "EXPIRY_BEFORE_DATE": "لا يمكن أن يسبق تاريخ الانتهاء تاريخ العرض",
+      "REFERENCE": "الرقم المرجعي",
+      "NUMBER_HELP": "انقر هنا لتفعيل أو إيقاف الترقيم التلقائي لعروض الأسعار.",
+      "NOTES_HINT": "ستظهر في عرض السعر"
+    },
+    "REQUIRED": {
+      "ESTIMATE_NUMBER": "رقم عرض السعر",
+      "BRANCH": "الفرع",
+      "CUSTOMER": "العميل"
+    },
+    "VIEW": {
+      "VIEW_ESTIMATE": "عرض السعر",
+      "PRINT": "طباعة",
+      "SHARE": "مشاركة",
+      "EXPORT": "تصدير",
+      "ACTIONS": "إجراءات",
+      "ZOOM": "تكبير",
+      "NO_TEMPLATE": "لا يوجد قالب لعرض السعر",
+      "EMAIL_WHATSAPP": "البريد / واتساب",
+      "EXPORT_CSV": "تصدير البنود (CSV)",
+      "EXPORT_XLSX": "تصدير البنود (XLSX)",
+      "NO_DATA": "لا توجد بنود للتصدير",
+      "CONFIRM_DELETE": "حذف عرض السعر هذا؟ لا يمكن التراجع.",
+      "CONVERTED_TO": "تم تحويله إلى فاتورة"
+    }
+  }
+}

@@ -44,6 +44,8 @@ import {
   CustomElement,
   CustomFieldStyle,
   DesignerElement,
+  DesignerPage,
+  MASTER_PAGE_ID,
   TransactionalDetails,
   parseTemplate,
 } from '../../services/document-template.types';
@@ -107,6 +109,33 @@ const DOC_TYPES: DocumentType[] = [
   'invoice', 'estimate', 'credit-note',
   'purchase-order', 'bill', 'expense', 'supplier-credit',
 ];
+
+/** Walks a pdfmake docDefinition and replaces any `NaN` numeric leaf with `0`, logging its path.
+ *  pdfmake throws a bare `Error: unsupported number: NaN` with no indication of WHICH field —
+ *  this turns that into an actual fix plus a console trail pointing at the real source (a
+ *  malformed template field feeding one of the two renderers a non-numeric value where a number
+ *  was assumed), instead of a dead end every time it happens. */
+function sanitizeNaN(node: unknown, path = 'docDefinition'): void {
+  if (Array.isArray(node)) {
+    node.forEach((v, i) => {
+      if (typeof v === 'number' && isNaN(v)) {
+        console.warn(`[pdfmake] NaN at ${path}[${i}] — replaced with 0`);
+        node[i] = 0;
+      } else if (v && typeof v === 'object') {
+        sanitizeNaN(v, `${path}[${i}]`);
+      }
+    });
+  } else if (node && typeof node === 'object') {
+    for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+      if (typeof v === 'number' && isNaN(v)) {
+        console.warn(`[pdfmake] NaN at ${path}.${k} — replaced with 0`);
+        (node as Record<string, unknown>)[k] = 0;
+      } else if (v && typeof v === 'object') {
+        sanitizeNaN(v, `${path}.${k}`);
+      }
+    }
+  }
+}
 
 /**
  * DocumentBuilderFormComponent
@@ -597,6 +626,13 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
     }));
   }
 
+  setTermAsSeparatePage(value: boolean): void {
+    this.template.update((t) => ({
+      ...t,
+      footerCustomization: { ...t.footerCustomization, termAsSeparatePage: value },
+    }));
+  }
+
   // ─── Header / Footer panels: Fields | Layout sub-tab ────────────────
   // Mirrors the Table panel's two-tab pattern: Fields shows the
   // per-field show toggles (and gear-collapsed editors), Layout shows
@@ -988,20 +1024,90 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
     this.printPreviewMode.update((v) => !v);
   }
 
-  /** Open the browser's native print dialog. The form's `@media
-   *  print` rules + the paginated DOM (when preview mode is on)
-   *  make the printed pages match the on-screen preview. */
-  print(): void {
-    // If the user clicks Print while in edit mode, flip into preview
-    // first so the print output shows the paginated layout. Wait a
-    // microtask for Angular to render the new view before triggering
-    // the print dialog — otherwise the browser reads the old DOM.
-    if (!this.printPreviewMode()) {
-      this.printPreviewMode.set(true);
-      queueMicrotask(() => window.print());
-      return;
+  // ─── PDF export & print — legacy's own builder feature: a client-side pdfmake render, separate
+  //     from the real invoice/estimate PDF (which stays server-generated). Covers BOTH render
+  //     modes: Designer (absolute-positioned elements) and Classic (the same flow-based layout
+  //     `document-paper.component.ts` renders). Both "Export PDF" and "Print" build the SAME
+  //     pdfmake document — Print no longer depends on the browser's own print-to-PDF of the live
+  //     DOM (`window.print()`), which is inconsistent across browsers/printers and (for Classic)
+  //     required flipping into the paginated preview DOM first just to get the right page breaks. */
+  exportingPdf = signal<boolean>(false);
+  printingPdf  = signal<boolean>(false);
+
+  /** Dynamic-imports pdfmake + its font VFS (only downloaded when actually needed) and builds this
+   *  template's docDefinition via whichever renderer matches its render mode. */
+  private async buildPdfMakeDoc(): Promise<{ pdfMake: any; docDefinition: any }> {
+    const [pdfMakeModule, pdfFontsModule, designerRenderer, classicRenderer] = await Promise.all([
+      import('pdfmake/build/pdfmake'),
+      import('pdfmake/build/vfs_fonts'),
+      import('../../services/pdfmake-renderer'),
+      import('../../services/pdfmake-classic-renderer'),
+    ]);
+    const pdfMake: any = (pdfMakeModule as any).default ?? pdfMakeModule;
+    const fonts: any = pdfFontsModule as any;
+    const vfs = fonts.pdfMake?.vfs ?? fonts.default ?? fonts;
+    // Different bundler ESM/CJS interop can wrap `vfs_fonts`'s plain `module.exports = {...font
+    // files}` differently — if none of the fallbacks above land on the real font-file map, pdfmake
+    // generates silently forever (no thrown error, no console output) instead of failing loudly, which
+    // is exactly the "Print opens a permanently blank tab, nothing in the console" symptom this guards.
+    if (!vfs || typeof vfs !== 'object' || Object.keys(vfs).length === 0) {
+      throw new Error('pdfmake font data (vfs_fonts) failed to load — got: ' + JSON.stringify(vfs).slice(0, 200));
     }
-    window.print();
+    pdfMake.vfs = vfs;
+    const template = this.template();
+    const docDefinition = template.renderMode === 'designer' && template.designerElements.length > 0
+      ? designerRenderer.buildPdfDocDefinition(template, this.previewData())
+      : await classicRenderer.buildClassicPdfDocDefinition(template, this.previewData());
+    sanitizeNaN(docDefinition);
+    return { pdfMake, docDefinition };
+  }
+
+  async onExportPdf(): Promise<void> {
+    if (this.exportingPdf()) return;
+    this.exportingPdf.set(true);
+    try {
+      const { pdfMake, docDefinition } = await this.buildPdfMakeDoc();
+      const name = (this.template().templateName || 'template').replace(/[^\w.-]+/g, '_');
+      pdfMake.createPdf(docDefinition).download(`${name}.pdf`);
+    } catch (err: any) {
+      this.toast.error('COMMON.OPS', err?.message ?? '');
+    } finally {
+      this.exportingPdf.set(false);
+    }
+  }
+
+  /** Opens the pdfmake-generated PDF in a new tab (the browser's native PDF viewer, which has its
+   *  own print button/shortcut) instead of printing the live DOM.
+   *
+   *  Opens the tab SYNCHRONOUSLY, before the `await` below, and fills it in once the PDF is ready —
+   *  `window.open()` after an `await` runs outside the click's original user-gesture window, so
+   *  most browsers silently block it (or, as seen once, let an empty `about:blank` tab through
+   *  without ever letting it navigate) instead of erroring in a way `try/catch` can see. */
+  async print(): Promise<void> {
+    if (this.printingPdf()) return;
+    const tab = window.open('', '_blank');
+    this.printingPdf.set(true);
+    try {
+      const { pdfMake, docDefinition } = await this.buildPdfMakeDoc();
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        // `getBlob`'s callback is pdfmake's own generation finishing — if it never fires (a broken
+        // vfs/font setup can hang silently instead of throwing), this timeout turns that into a
+        // real, visible error instead of a permanently blank tab with nothing in the console.
+        const timer = setTimeout(() => reject(new Error('PDF generation timed out after 20s')), 20000);
+        pdfMake.createPdf(docDefinition).getBlob((b: Blob) => {
+          clearTimeout(timer);
+          resolve(b);
+        });
+      });
+      const url = URL.createObjectURL(blob);
+      if (tab) tab.location.href = url;
+      else window.open(url, '_blank'); // popup was blocked outright — last resort, may itself be blocked
+    } catch (err: any) {
+      tab?.close();
+      this.toast.error('COMMON.OPS', err?.message ?? '');
+    } finally {
+      this.printingPdf.set(false);
+    }
   }
 
   // ─── Zoom ────────────────────────────────────────────────────────────
@@ -1581,12 +1687,110 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
   readonly designerPalette = [
     'Text', 'Data Field', 'Image', 'Table',
     'Shape', 'Barcode', 'QR Code', 'Signature', 'Page #',
+    'Rich Text', 'Group Header', 'Group Footer', 'Payments', 'Repeater',
   ] as const;
 
-  /** Replace the entire designer-elements array (used by the canvas
-   *  on drop / move / resize and the layers list on reorder). */
+  // ─── Designer pages — Master plus any standalone extra pages ─────────
+  /** Which page the canvas/toolbox/layers currently edit. */
+  activePageId = signal<string>(MASTER_PAGE_ID);
+
+  /** Master first, then every extra page in the order they were added. */
+  pages = computed<DesignerPage[]>(() => [
+    { id: MASTER_PAGE_ID, name: 'Master' },
+    ...this.template().extraPages,
+  ]);
+
+  /** The active page's own elements — what the canvas actually shows/edits.
+   *  `setDesignerElements` below merges edits back into the full array. */
+  pageElements = computed<DesignerElement[]>(() => {
+    const page = this.activePageId();
+    return this.template().designerElements.filter((e) => (e.pageId ?? MASTER_PAGE_ID) === page);
+  });
+
+  /** id of the page tab currently showing its inline rename input; `null` = none. */
+  renamingPageId = signal<string | null>(null);
+  renameDraft = '';
+
+  readonly MASTER_PAGE_ID = MASTER_PAGE_ID;
+
+  selectPage(pageId: string): void {
+    if (this.renamingPageId()) return; // don't steal focus from the rename input
+    this.activePageId.set(pageId);
+    this.selectedDesignerId.set(null);
+  }
+
+  startRenamePage(pageId: string, currentName: string, ev: Event): void {
+    ev.stopPropagation();
+    this.renameDraft = currentName;
+    this.renamingPageId.set(pageId);
+  }
+  commitRenamePage(pageId: string): void {
+    if (this.renamingPageId() !== pageId) return;
+    this.renamePage(pageId, this.renameDraft);
+    this.renamingPageId.set(null);
+  }
+  cancelRenamePage(): void {
+    this.renamingPageId.set(null);
+  }
+
+  async onRemovePage(pageId: string, name: string, ev: Event): Promise<void> {
+    ev.stopPropagation();
+    const ok = await this.confirm({
+      title: this.translate.instant('COMMON.DELETE'),
+      message: this.translate.instant('DOCUMENT_BUILDER.CONFIRM_DELETE_PAGE', { name }),
+      danger: true,
+    });
+    if (!ok) return;
+    this.removePage(pageId);
+  }
+
+  /** Appends a new standalone page (e.g. a company's own Terms & Conditions
+   *  layout) and switches to it. Starts empty — add elements via the palette
+   *  like any other page. */
+  addPage(name?: string): void {
+    const pageId = `page_${Date.now().toString(36)}`;
+    this.template.update((t) => ({
+      ...t,
+      extraPages: [...t.extraPages, { id: pageId, name: name?.trim() || `Page ${t.extraPages.length + 2}` }],
+    }));
+    this.selectPage(pageId);
+  }
+
+  renamePage(pageId: string, name: string): void {
+    const trimmed = name.trim();
+    if (!trimmed || pageId === MASTER_PAGE_ID) return;
+    this.template.update((t) => ({
+      ...t,
+      extraPages: t.extraPages.map((p) => (p.id === pageId ? { ...p, name: trimmed } : p)),
+    }));
+  }
+
+  /** Removes an extra page and every element on it. No-op for the master
+   *  page. Switches back to Master if the removed page was active. */
+  removePage(pageId: string): void {
+    if (pageId === MASTER_PAGE_ID) return;
+    this.template.update((t) => ({
+      ...t,
+      extraPages: t.extraPages.filter((p) => p.id !== pageId),
+      designerElements: t.designerElements.filter((e) => (e.pageId ?? MASTER_PAGE_ID) !== pageId),
+    }));
+    if (this.activePageId() === pageId) this.selectPage(MASTER_PAGE_ID);
+  }
+
+  /** Replace the ACTIVE PAGE's elements (used by the canvas on drop / move /
+   *  resize and the layers list on reorder) — other pages' elements are left
+   *  untouched. New/moved elements on a non-master page are tagged with its
+   *  id; master elements keep whatever `pageId` they already had (usually
+   *  omitted) so existing saved templates round-trip unchanged. */
   setDesignerElements(next: DesignerElement[]): void {
-    this.template.update((t) => ({ ...t, designerElements: next }));
+    const page = this.activePageId();
+    this.template.update((t) => ({
+      ...t,
+      designerElements: [
+        ...t.designerElements.filter((e) => (e.pageId ?? MASTER_PAGE_ID) !== page),
+        ...next.map((e) => (page === MASTER_PAGE_ID ? e : { ...e, pageId: page })),
+      ],
+    }));
   }
 
   /** Update one element by id and emit. */
@@ -1665,8 +1869,11 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
    *  a fresh seed built from the template's Classic config. Asks for
    *  confirmation when the canvas already has elements so we don't
    *  blow away the user's custom layout. */
+  /** Always seeds the MASTER page — "sync from Classic" builds the master layout from the
+   *  Classic field/table config, regardless of which page tab happens to be open when clicked. */
   async syncFromClassic(): Promise<void> {
-    if (this.template().designerElements.length > 0) {
+    const masterElementCount = this.template().designerElements.filter((e) => (e.pageId ?? MASTER_PAGE_ID) === MASTER_PAGE_ID).length;
+    if (masterElementCount > 0) {
       const ok = await this.confirm({
         title:   this.translate.instant('DOCUMENT_BUILDER.DESIGNER.SYNC_TITLE'),
         message: this.translate.instant('DOCUMENT_BUILDER.DESIGNER.SYNC_MESSAGE'),
@@ -1675,7 +1882,11 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
       if (!ok) return;
     }
     const seed = seedDesignerFromClassic(this.template());
-    this.setDesignerElements(seed);
+    this.template.update((t) => ({
+      ...t,
+      designerElements: [...t.designerElements.filter((e) => (e.pageId ?? MASTER_PAGE_ID) !== MASTER_PAGE_ID), ...seed],
+    }));
+    this.selectPage(MASTER_PAGE_ID);
     this.selectedDesignerId.set(null);
   }
 

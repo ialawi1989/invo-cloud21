@@ -1,3 +1,4 @@
+import '../account-i18n';
 import { inject } from '@angular/core';
 import { CanActivateFn, Routes } from '@angular/router';
 import { LanguageService } from '@core/i18n/language.service';

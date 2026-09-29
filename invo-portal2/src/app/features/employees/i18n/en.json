@@ -77,7 +77,9 @@
       "PERSONAL_DETAILS": "Personal details",
       "CREDENTIALS_RETIRED_HINT": "The previous pass code and swipe id are retired on restoring access — enter new ones. Access was ended by removing this employee's roles, not by deleting the credential, which is shared with any other company they work for.",
       "EMPLOYMENT_DETAILS": "Employment details",
-      "EDUCATION_CERTIFICATE_HINT": "To attach a certificate, add it under Documents with the type \"Qualification\" — documents also track expiry and verification."
+      "EDUCATION_CERTIFICATE_HINT": "To attach a certificate, add it under Documents with the type \"Qualification\" — documents also track expiry and verification.",
+      "IS_SALES_PERSON": "Salesperson",
+      "SALES_PERSON_ROLE": "Can be chosen as the salesperson on invoices"
     },
     "TOUR": {
       "START": "Take a tour",

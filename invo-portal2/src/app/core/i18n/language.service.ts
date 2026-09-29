@@ -19,6 +19,16 @@ const RTL_LANGS = new Set(['ar', 'fa', 'ur', 'ps', 'sd', 'ug', 'dv', 'ku']);
 /** Shown before the site's supported languages load (both always exist). */
 const FALLBACK_LANGS: Lang[] = ['en', 'ar'];
 
+/**
+ * Features whose translations ship inside the app bundle (lazy JSON import) instead of being
+ * fetched from `i18n/features/<feature>/i18n/<lang>.json`. Independent of the dev server's asset
+ * list and of browser caching of that URL.
+ */
+const BUNDLED_FEATURES = new Map<string, Record<string, () => Promise<unknown>>>();
+export function registerBundledFeature(feature: string, loaders: Record<string, () => Promise<unknown>>): void {
+  BUNDLED_FEATURES.set(feature, loaders);
+}
+
 @Injectable({ providedIn: 'root' })
 export class LanguageService {
   private translate = inject(TranslateService);
@@ -222,9 +232,7 @@ export class LanguageService {
     const t0 = performance.now();
     console.info(`[i18n] → loading feature "${feature}" for "${lang}" (${url})`);
     try {
-      const incoming = await firstValueFrom(
-        this.http.get<Record<string, unknown>>(url)
-      );
+      const incoming = await this.fetchFeature(feature, lang, url);
       const incomingKeys = Object.keys(incoming ?? {});
       console.info(
         `[i18n] ← fetched "${feature}" (${(performance.now() - t0).toFixed(0)}ms) — top-level keys:`,
@@ -256,6 +264,17 @@ export class LanguageService {
 
     if (!this.loaded.has(lang)) this.loaded.set(lang, new Set());
     this.loaded.get(lang)!.add(feature);
+  }
+
+  /** Feature JSON: from the bundled loader when the feature registered one, otherwise over HTTP. */
+  private async fetchFeature(feature: string, lang: Lang, url: string): Promise<Record<string, unknown>> {
+    const bundled = BUNDLED_FEATURES.get(feature);
+    if (bundled) {
+      const loader = bundled[lang.split('-')[0]] ?? bundled['en'];
+      const mod: any = loader ? await loader() : {};
+      return (mod?.default ?? mod) as Record<string, unknown>;
+    }
+    return firstValueFrom(this.http.get<Record<string, unknown>>(url));
   }
 
   private deepMerge(

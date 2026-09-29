@@ -1,6 +1,7 @@
 import {
   Injectable, inject, Injector, Type, ComponentRef, StaticProvider,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { Overlay, OverlayRef, OverlayConfig } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { ModalContainerComponent } from './modal-container.component';
@@ -150,6 +151,17 @@ export class ModalService {
    * cancel the pop — otherwise the modal-to-modal handoff (e.g. drawer →
    * edit modal) triggers a popstate that dismisses the just-opened modal.
    */
+  /** Page scroll when the first modal of a stack opened (measured before the overlay's scroll-block alters it). */
+  private scrollAtOpen: { x: number; y: number } | null = null;
+  /** Put the page back where it was when the stack opened: the scroll-block strategy and the router's scroll-to-top both move it on close. */
+  private restoreScroll(): void {
+    const at = this.scrollAtOpen;
+    if (!at) return;
+    const apply = () => { if (this.openModals.length === 0 && (window.scrollX !== at.x || window.scrollY !== at.y)) window.scrollTo(at.x, at.y); };
+    requestAnimationFrame(() => requestAnimationFrame(apply));
+    setTimeout(apply, 120);
+    setTimeout(() => { if (this.openModals.length === 0) this.scrollAtOpen = null; }, 400);
+  }
   private pendingHistoryBack: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
@@ -195,6 +207,10 @@ export class ModalService {
     const isRtl = document.documentElement.dir === 'rtl' ||
                   document.body.dir === 'rtl';
 
+    if (this.openModals.length === 0 && this.pendingHistoryBack == null) {
+      this.scrollAtOpen = { x: window.scrollX, y: window.scrollY };
+    }
+
     const overlayRef = this.overlay.create(
       drawer
         ? this.buildDrawerConfig(drawerWidth, isRtl, panelClass)
@@ -235,6 +251,7 @@ export class ModalService {
     overlayRef.detachments().subscribe(() => {
       const idx = this.openModals.indexOf(modalRef);
       if (idx >= 0) this.openModals.splice(idx, 1);
+      if (this.openModals.length === 0) this.restoreScroll();
       if (manageHistory && this.openModals.length === 0 && this.historyPushed && !this.dismissingFromPopstate) {
         this.historyPushed = false;
         // IMPORTANT: defer to a macrotask.
@@ -255,8 +272,11 @@ export class ModalService {
         // nothing else navigated and it's safe to consume it; if no, an
         // app-initiated navigation pushed a new entry and we leave history
         // alone.
-        this.pendingHistoryBack = setTimeout(() => {
+        const attempt = (tries: number) => { this.pendingHistoryBack = setTimeout(() => {
           this.pendingHistoryBack = null;
+          // A navigation started by the closing modal's caller (e.g. "save, then go to the list") may still be
+          // running its async guards, so the router hasn't pushed its entry yet — popping now would cancel it.
+          if (tries < 40 && this.injector.get(Router).getCurrentNavigation()) { attempt(tries + 1); return; }
           // Belt-and-braces: a new modal may have opened during the
           // deferral. If so, leave the sentinel in place — the new modal
           // owns it now (we already prevented the duplicate push above).
@@ -272,16 +292,11 @@ export class ModalService {
             // pop and rewind any scroll-to-top the router applies
             // afterwards. Two RAFs cover both the synchronous popstate
             // handler and the router's async scroll step.
-            const savedX = window.scrollX;
-            const savedY = window.scrollY;
             history.back();
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-              if (window.scrollX !== savedX || window.scrollY !== savedY) {
-                window.scrollTo(savedX, savedY);
-              }
-            }));
+            this.restoreScroll();
           }
-        }, 0);
+        }, tries === 0 ? 0 : 50); };
+        attempt(0);
       }
     });
 

@@ -248,16 +248,18 @@ export class ManualJournalViewComponent implements OnInit {
         mediaName: m?.name || '',
       };
       if (!mapped.id) continue;
+      if (this.journal().attachment.some(a => a.id === mapped.id)) continue;
+      // The backend does a full-column overwrite (`SET "attachment"=$1`), not a DB-level append —
+      // the request must carry the complete desired list (existing + new), not just the new item.
+      const next = [...this.journal().attachment, mapped];
       try {
         const ok = await this.mediaService.appendAttachment({
-          reference: ATTACHMENT_REFERENCE,
-          referenceId: this.journalId(),
-          attachment: [{ id: mapped.id }],
-        } as any);
+          type: ATTACHMENT_REFERENCE,
+          id: this.journalId(),
+          attachment: next.map(a => ({ id: a.id })),
+        });
         if (ok) {
-          this.journal.update(j => (j.attachment.some(a => a.id === mapped.id)
-            ? j
-            : { ...j, attachment: [...j.attachment, mapped] }));
+          this.journal.update(j => ({ ...j, attachment: next }));
         } else {
           this.toast.error('COMMON.SAVE_FAILED');
         }
@@ -270,9 +272,9 @@ export class ManualJournalViewComponent implements OnInit {
   async removeAttach(attachment: JournalAttachment): Promise<void> {
     try {
       const ok = await this.mediaService.deleteAttachment({
-        reference: ATTACHMENT_REFERENCE,
-        referenceId: this.journalId(),
-        attachmentId: attachment.id,
+        type: ATTACHMENT_REFERENCE,
+        id: this.journalId(),
+        mediaId: attachment.id,
       });
       if (ok) {
         this.journal.update(j => ({ ...j, attachment: j.attachment.filter(a => a.id !== attachment.id) }));

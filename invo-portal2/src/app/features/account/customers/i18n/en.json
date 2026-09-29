@@ -167,6 +167,20 @@
       "BALANCE": "Balance",
       "TOTAL": "Total",
       "NO_TRANSACTIONS": "No transactions in this period"
+    },
+    "SEARCH": {
+      "TITLE": "Advanced Customer Search",
+      "SEARCH": "Search",
+      "FIELD_all": "All",
+      "FIELD_name": "Display Name",
+      "FIELD_email": "Email",
+      "FIELD_phone": "Phone",
+      "FIELD_companyName": "Company Name",
+      "CUSTOMER_NAME": "Customer name",
+      "EMAIL": "Email",
+      "COMPANY_NAME": "Company name",
+      "PHONE": "Phone",
+      "EMPTY": "No customers found"
     }
   }
 }

@@ -1,3 +1,4 @@
+import '../../account-i18n';
 import { Component, HostListener, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,11 +11,18 @@ import { SearchDropdownComponent } from '@shared/components/dropdown';
 import { DiscountFieldComponent, DiscountValue } from '@shared/components/discount-field/discount-field.component';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { QtyInputComponent } from '@shared/components/qty-input';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
+import { evalArithmetic } from '@core/math/expression';
+import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 
 import { InvoiceLine } from '../../models/invoice.model';
 import { DocumentLike, DocumentLineEditor } from '../../services/document-line-editor';
+import { DocItemFilterModalComponent, ItemFilterData } from '../doc-item-filter-modal/doc-item-filter-modal.component';
+import { ProductDetailDrawerComponent, ProductDetailDrawerData } from '../../../products/components/product-detail-drawer/product-detail-drawer.component';
+import { DocImportLinesModalComponent, ImportLinesResult } from '../doc-import-lines-modal/doc-import-lines-modal.component';
+import { BulkUpdateData, BulkUpdateResult, DocBulkUpdateModalComponent } from '../doc-bulk-update-modal/doc-bulk-update-modal.component';
 import { BulkItemsData, BulkPick, DocBulkItemsModalComponent } from '../doc-bulk-items-modal/doc-bulk-items-modal.component';
 import { DocLineColumn, DocLineErrors, DocLinesConfig, DocLinesContext } from './doc-lines.types';
 
@@ -32,7 +40,7 @@ const blank = (v: any) => v == null || (typeof v === 'string' && v.trim() === ''
   standalone: true,
   imports: [
     CommonModule, FormsModule, TranslateModule, MycurrencyPipe, SearchDropdownComponent, DiscountFieldComponent,
-    QtyInputComponent, DragDropModule, DropdownMenuBtnComponent,
+    QtyInputComponent, DragDropModule, TooltipDirective, DropdownMenuBtnComponent,
   ],
   templateUrl: './doc-lines-table.component.html',
   styleUrl: './doc-lines-table.component.scss',
@@ -40,6 +48,7 @@ const blank = (v: any) => v == null || (typeof v === 'string' && v.trim() === ''
 export class DocLinesTableComponent {
   private modal = inject(ModalService);
   private lang = inject(LanguageService);
+  private toast = inject(ToastService);
 
   doc = input.required<DocumentLike>();
   editor = input.required<DocumentLineEditor>();
@@ -67,7 +76,10 @@ export class DocLinesTableComponent {
   }
 
   // ── validation ─────────────────────────────────────────────────────
-  private isBlankLine(l: InvoiceLine): boolean { return blank(l.productId) && blank(l.note); }
+  /** Blank trailing rows and rows flagged deleted take no part in validation. */
+  private isBlankLine(l: InvoiceLine): boolean { return !!(l as any).isDeleted || (blank(l.productId) && blank(l.note)); }
+  /** Lines shown in the table (deleted ones stay in the document until it is saved). */
+  visibleLines(): InvoiceLine[] { return this.doc().lines.filter(l => !(l as any).isDeleted); }
 
   /** Column-key → i18n key of what's wrong on this line (blank trailing rows are ignored). */
   errorsFor(line: InvoiceLine): DocLineErrors {
@@ -81,8 +93,18 @@ export class DocLinesTableComponent {
       else if (c.min != null && Number(v) < c.min) e[c.key] = 'DOC_LINES.ERR_MIN';
       if (c.type === 'tax' && (line.taxes ?? []).some(t => t.taxPercentage == null || blank(t.taxId))) e[c.key] = 'DOC_LINES.ERR_TAX';
     }
+    if (this.config().accounts && blank(line.accountId)) e['account'] = 'DOC_LINES.ERR_ACCOUNT';
     for (const k of this.config().validate?.(line) ?? []) e['item'] = k;
     return e;
+  }
+
+  /** First specific problem on any non-blank line (i18n key), for the save-blocked message. */
+  firstIssue(): string | null {
+    for (const l of this.doc().lines.filter(x => !this.isBlankLine(x))) {
+      const k = Object.values(this.errorsFor(l))[0];
+      if (k) return k;
+    }
+    return null;
   }
 
   isValid(): boolean {
@@ -116,6 +138,17 @@ export class DocLinesTableComponent {
     const top = below < 280 && r.top > below ? Math.max(8, r.top - 284) : r.bottom + 4;
     this.panelPos.set({ top, left: r.left, width: Math.max(r.width, 320) });
   }
+  /** Item filter (tags) applied to every item search of this table. */
+  tags = signal<string[]>([]);
+  async openFilter(ev: Event): Promise<void> {
+    ev.stopPropagation();
+    const load = this.config().itemFilterTags;
+    if (!load) return;
+    const res = await this.modal.open<DocItemFilterModalComponent, ItemFilterData, string[] | null>(DocItemFilterModalComponent, {
+      size: 'md', data: { tags: load, selected: this.tags() },
+    }).afterClosed();
+    if (res) { this.tags.set(res); this.results.set([]); }
+  }
   results = signal<any[]>([]);
   searching = signal(false);
   private timer: any;
@@ -126,7 +159,7 @@ export class DocLinesTableComponent {
     const id = ++this.seq;
     this.searching.set(true);
     try {
-      const list = await this.config().itemSearch(term);
+      const list = await this.config().itemSearch(term, { tags: this.tags() });
       const ex = this.config().excludeTypes ?? [];
       if (id === this.seq) this.results.set(list.filter(x => !ex.includes(x.type)));
     } finally {
@@ -191,6 +224,22 @@ export class DocLinesTableComponent {
     this.doc().calculateTotal();
     this.touch();
   }
+  /** Rate cell: plain numbers or a small expression like (5+6)*2 — evaluated on blur / Enter. */
+  commitMoney(line: InvoiceLine, c: DocLineColumn, ev: Event): void {
+    const el = ev.target as HTMLInputElement;
+    const text = el.value.trim();
+    const current = (line as any)[this.fieldOf(c)];
+    if (text === String(current ?? '')) return;
+    const n = text === '' ? 0 : evalArithmetic(text);
+    if (n == null || n < 0) {
+      this.toast.error('COMMON.OPS', this.t('DOC_LINES.EXPR_INVALID'));
+      el.value = String(current ?? '');
+      return;
+    }
+    const v = Math.round(n * 1e6) / 1e6;
+    el.value = String(v);
+    this.onMoney(line, c, v);
+  }
   onMoney(line: InvoiceLine, c: DocLineColumn, v: any): void {
     (line as any)[this.fieldOf(c)] = v === '' || v == null ? 0 : Number(v);
     this.editor().onChangePrice(line);
@@ -239,25 +288,36 @@ export class DocLinesTableComponent {
 
   drop(ev: CdkDragDrop<InvoiceLine[]>): void {
     if (ev.previousIndex === ev.currentIndex) return;
-    this.editor().moveLine(ev.previousIndex, ev.currentIndex);
+    const vis = this.visibleLines();
+    const all = this.doc().lines;
+    const from = all.indexOf(vis[ev.previousIndex]);
+    const to = all.indexOf(vis[ev.currentIndex]);
+    if (from < 0 || to < 0) return;
+    this.editor().moveLine(from, to);
     this.touch();
   }
 
   trackLine = (i: number, l: InvoiceLine): any => l.id || (l as any).tempId || i;
 
   // ── additional-info strip, row menu ────────────────────────────────
-  infoOpen = signal<Set<InvoiceLine>>(new Set());
-  isInfoOpen = (l: InvoiceLine) => this.infoOpen().has(l);
+  /** Additional info is shown by default; only lines the user collapsed are tracked. */
+  infoHidden = signal<Set<InvoiceLine>>(new Set());
+  isInfoOpen = (l: InvoiceLine) => !this.infoHidden().has(l);
   toggleInfo(l: InvoiceLine): void {
-    this.infoOpen.update(s => { const n = new Set(s); n.has(l) ? n.delete(l) : n.add(l); return n; });
+    this.infoHidden.update(s => { const n = new Set(s); n.has(l) ? n.delete(l) : n.add(l); return n; });
   }
-  allInfoOpen = computed(() => {
-    const lines = this.doc().lines;
-    return lines.length > 0 && lines.every(l => this.infoOpen().has(l));
-  });
-  toggleAllInfo(): void { this.infoOpen.set(this.allInfoOpen() ? new Set() : new Set(this.doc().lines)); }
+  allInfoOpen = computed(() => this.infoHidden().size === 0);
+  toggleAllInfo(): void { this.infoHidden.set(this.allInfoOpen() ? new Set(this.doc().lines) : new Set()); }
 
   private t = (k: string) => this.lang.instant(k);
+
+  itemMenu(line: InvoiceLine): DropdownMenuBtnItem[] {
+    const type = line.selectedItem?.type || 'inventory';
+    return [
+      { label: this.t('DOC_LINES.EDIT_ITEM'), click: () => { window.open(`/products/form/${type}/${line.productId}`, '_blank', 'noopener'); }, disabled: !line.productId, danger: false },
+      { label: this.t('DOC_LINES.VIEW_ITEM_DETAILS'), click: () => this.viewItemDetails(line), disabled: !line.productId, danger: false },
+    ];
+  }
 
   rowMenu(line: InvoiceLine): DropdownMenuBtnItem[] {
     const items: DropdownMenuBtnItem[] = [];
@@ -272,6 +332,13 @@ export class DocLinesTableComponent {
       items.push({ label: this.t('DOC_LINES.INSERT_BULK'), click: () => void this.addItemsInBulk(this.doc().lines.indexOf(line)), disabled: !this.ctx().hasScope, danger: false });
     }
     return items;
+  }
+
+  viewItemDetails(line: InvoiceLine): void {
+    this.modal.open<ProductDetailDrawerComponent, ProductDetailDrawerData, void>(ProductDetailDrawerComponent, {
+      drawer: true, drawerWidth: '905px', drawerResizable: true, drawerMinWidth: 905,
+      data: { productId: line.productId, row: { id: line.productId, name: line.productName, type: line.selectedItem?.type } },
+    });
   }
 
   bulkMenu(): DropdownMenuBtnItem[] {
@@ -301,12 +368,21 @@ export class DocLinesTableComponent {
     this.touch();
   }
 
+  async bulkUpdate(mode: 'account' | 'discount'): Promise<void> {
+    const res = await this.modal.open<DocBulkUpdateModalComponent, BulkUpdateData, BulkUpdateResult | null>(DocBulkUpdateModalComponent, {
+      size: 'md', data: { mode, accounts: this.accountOptions() },
+    }).afterClosed();
+    if (!res) return;
+    if ('account' in res) this.bulkAccount(res.account);
+    else this.bulkDiscount(res.discount);
+  }
+
   // ── add items in bulk ──────────────────────────────────────────────
   async addItemsInBulk(at: number | null = null): Promise<void> {
     const cfg = this.config();
     const picks = await this.modal.open<DocBulkItemsModalComponent, BulkItemsData, BulkPick[] | null>(DocBulkItemsModalComponent, {
       size: 'xl',
-      data: { search: cfg.itemSearch, barcodeLookup: cfg.barcodeLookup, excludeTypes: cfg.excludeTypes },
+      data: { search: (t: string, page = 1) => cfg.itemSearch(t, { tags: this.tags(), page }), barcodeLookup: cfg.barcodeLookup, excludeTypes: cfg.excludeTypes },
     }).afterClosed();
     if (!picks?.length) return;
 
@@ -326,6 +402,56 @@ export class DocLinesTableComponent {
     if (!this.editor().lastLineIsEmpty) this.editor().addLine();
     doc.calculateTotal();
     this.touch();
+  }
+
+  // ── import (CSV / XLSX by barcode) ─────────────────────────────────
+  async importLines(): Promise<void> {
+    const cfg = this.config();
+    if (!cfg.searchByBarcodes) return;
+    const res = await this.modal.open<DocImportLinesModalComponent, void, ImportLinesResult | null>(DocImportLinesModalComponent, { size: 'md' }).afterClosed();
+    if (!res?.lines.length) return;
+
+    const doc = this.doc();
+    const last = doc.lines[doc.lines.length - 1];
+    if (last && this.isBlankLine(last)) doc.lines.pop();
+
+    let rows = res.lines;
+    if (res.skipDuplicate) {
+      const have = new Set(doc.lines.map((l: any) => String(l.barcode || l.selectedItem?.barcode || '').trim()).filter(Boolean));
+      rows = rows.filter(r => !have.has(r.barcode));
+    }
+    if (!rows.length) {
+      this.toast.error('COMMON.OPS', this.t(res.skipDuplicate ? 'DOC_IMPORT.ALL_EXIST' : 'DOC_IMPORT.NOTHING'));
+      if (!this.editor().lastLineIsEmpty) this.editor().addLine();
+      return;
+    }
+
+    const found = (await cfg.searchByBarcodes([...new Set(rows.map(r => r.barcode))])) ?? [];
+    const byCode = new Map<string, any>(found.filter(p => p?.barcode).map(p => [String(p.barcode).trim(), p]));
+    const missing: string[] = [];
+    let added = 0;
+    for (const r of rows) {
+      const p = byCode.get(r.barcode);
+      if (!p || (cfg.excludeTypes ?? []).includes(p.type)) { missing.push(r.barcode); continue; }
+      const line = this.editor().addLine();
+      doc.lines.pop();
+      doc.lines.push(line);
+      this.editor().chooseItem(line, p);
+      (line as any).barcode = p.barcode || r.barcode;
+      line.qty = r.qty;
+      line.tempQty = r.qty;
+      if (r.price != null) line.price = r.price;
+      if (!line.accountId && this.editor().accounts.length) line.accountId = this.editor().accounts[0].id;
+      if (r.discountTotal > 0) this.editor().setLineDiscount(line, { amount: r.discountTotal, percentage: false });
+      added++;
+    }
+    doc.lines.forEach((l, i) => (l.index = i));
+    if (!this.editor().lastLineIsEmpty) this.editor().addLine();
+    doc.calculateTotal();
+    this.touch();
+
+    if (missing.length) this.toast.warning(this.t('DOC_IMPORT.NOT_FOUND').replace('{{count}}', String(missing.length)), missing.slice(0, 10).join(', ') + (missing.length > 10 ? '…' : ''));
+    else this.toast.success(this.t('DOC_IMPORT.DONE').replace('{{count}}', String(added)));
   }
 
   // ── scan item ──────────────────────────────────────────────────────

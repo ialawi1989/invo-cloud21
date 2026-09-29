@@ -65,3 +65,5 @@ a { color: #2691a4; text-decoration: none; &:hover { text-decoration: underline;
 .cd-textarea { width: 100%; border: 1px solid #d0d5dd; border-radius: 8px; padding: 10px 12px; font: inherit; resize: vertical; &:focus { outline: 2px solid rgba(38, 145, 164, .3); border-color: #2691a4; } }
 .cd-note { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid #f1f5f9; padding-top: 12px; p { margin: 0 0 4px; white-space: pre-wrap; } small { color: #64748b; } }
 .cd-link-danger { background: none; border: none; color: #dc2626; font-weight: 600; cursor: pointer; }
+
+@media (max-width: 576px) { .cd { padding-inline: 0 !important; } }

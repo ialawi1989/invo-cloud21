@@ -22,6 +22,7 @@ export interface EmployeeSummary {
   superAdmin: boolean;
   user: boolean;
   isDriver: boolean;
+  isSalesPerson?: boolean;
   isInvitedUser: boolean;
   branchId: string;
 }

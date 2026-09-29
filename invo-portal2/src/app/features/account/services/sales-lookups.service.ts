@@ -100,4 +100,15 @@ export class SalesLookupsService {
     if (paymentMethodId) body.paymentMethodId = paymentMethodId;
     return (await this.post('accounts/getMiniPaymentMethodList/', body))?.list ?? [];
   }
+
+  /** Product tags for the item filter (`product/getProductTags`). */
+  async getProductTags(p: { page: number; pageSize: number; search: string }): Promise<{ items: { label: string; value: string }[]; hasMore: boolean }> {
+    const res = await this.api.request<any>(this.api.post('product/getProductTags', { page: p.page, limit: p.pageSize, searchTerm: p.search }));
+    const data = res?.data;
+    const list: any[] = data?.list || data || [];
+    return {
+      items: list.map(t => ({ label: t.tag || t.name || t, value: t.tag || t.id || t.name || t })),
+      hasMore: list.length >= p.pageSize,
+    };
+  }
 }

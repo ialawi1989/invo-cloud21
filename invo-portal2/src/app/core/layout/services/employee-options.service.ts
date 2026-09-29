@@ -97,6 +97,8 @@ export interface EmployeeOptions {
   toursSeen?: { [tourKey: string]: boolean };
   /** Appointments calendar preferences — which staff columns the user has hidden. */
   appointments?: { hiddenEmployeeIds?: string[]; branchId?: string | null };
+  /** Starred options in a document view's rail status-filter (Zoho-style), keyed by a namespace per entity (e.g. 'invoiceStatus'). */
+  docRailFavorites?: { [namespace: string]: string[] };
 }
 
 @Injectable({ providedIn: 'root' })

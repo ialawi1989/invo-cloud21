@@ -55,6 +55,11 @@ export class CustomFieldsService {
       ? data
       : (data.customFields ?? data.value ?? []);
     const list = raw.map((r) => this.normalize(r));
+    for (const d of SYSTEM_FIELDS[type] ?? []) {
+      const at = list.findIndex((f) => f.abbr === d.abbr);
+      if (at >= 0) list[at].system = true;
+      else list.unshift({ ...d });
+    }
     this.cache.set(type, list);
     return [...list];
   }
@@ -118,6 +123,7 @@ export class CustomFieldsService {
       name:              String(raw?.name ?? ''),
       abbr:              String(raw?.abbr ?? ''),
       required:          !!raw?.required,
+      system:            !!raw?.system,
       defaultValue:      raw?.defaultValue ?? null,
       gridTemplate:      (raw?.gridTemplate ?? 'col-12') as CustomField['gridTemplate'],
       charLimit:         num(raw?.charLimit),
@@ -146,6 +152,7 @@ export class CustomFieldsService {
       name:              f.name,
       abbr:              f.abbr,
       required:          !!f.required,
+      system:            !!f.system,
       defaultValue:      f.defaultValue ?? null,
       gridTemplate:      f.gridTemplate,
       isDeleted:         !!f.isDeleted,
@@ -179,6 +186,14 @@ export class CustomFieldsService {
     return { type: entity.type, active, deleted };
   }
 }
+
+/** Built-in fields injected per entity type when not yet stored. */
+const SYSTEM_FIELDS: Record<string, CustomField[]> = {
+  invoice: [{
+    id: 'system-subject', type: 'text', name: 'Subject', abbr: 'subject', required: false, system: true,
+    defaultValue: null, gridTemplate: 'col-12', charLimit: 250, isDeleted: false,
+  }],
+};
 
 function num(v: unknown): number | undefined {
   if (v == null || v === '') return undefined;
