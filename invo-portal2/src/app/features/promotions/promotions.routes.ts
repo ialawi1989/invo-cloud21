@@ -26,9 +26,16 @@ export const PROMOTIONS_ROUTES: Routes = [
   { path: '', redirectTo: 'promotions-vouchers', pathMatch: 'full' },
   {
     path: 'promotions-vouchers',
-    // Not plan-gated on purpose for now: this company's plan lacks the
-    // `PROMOTIONS.VOUCHERS` feature and the voucher endpoints don't check it.
-    // To enforce it again add `featureGuard` + `feature: 'PROMOTIONS.VOUCHERS'` here.
+    // Not plan-gated on purpose for now: the voucher endpoints don't check the
+    // feature server-side, and gating here on `promotions.vouchers` would hide
+    // the route for the 167 companies that still carry only the legacy bare
+    // `promotions` key — see promotions-feature-flags.ts and
+    // docs/tickets/promotions-feature-key-mismatch.md.
+    //
+    // To enforce it later: import PROMOTIONS_VOUCHERS from
+    // './promotions-feature-flags' and check FeatureService in a guard. Do NOT
+    // reach for `featureGuard` — core/guards/feature.guard.ts is referenced by
+    // no route (see docs/tickets/feature-interceptor-unreachable-keys.md).
     canActivate: [translationsLoaded, privilegeGuard],
     data: { permissionPath: `${VOUCHERS}.access` },
     children: [

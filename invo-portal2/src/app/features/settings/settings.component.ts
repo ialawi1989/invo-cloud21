@@ -457,16 +457,40 @@ export class SettingsComponent {
       ],
     },
     {
-      // Discounts used to be the sole child of the Promotion card, which left
-      // that card showing a single row — and, since the tile is gated on the
-      // `promotions` plan feature, hid it outright for any company without
-      // that feature. Its own card keeps the two independent; the Promotion
-      // card comes back when coupons/points/tiers are ported.
+      // Discounts were the sole child of the Promotion card, so that card
+      // showed a single row — and because the tile was gated on the
+      // `promotions` plan feature it vanished outright for any company
+      // without it, taking Discount with it. Own card, ungated: discounting
+      // is core POS functionality, and the legacy panel treated it that way
+      // too — the Discount entry there carried no featureFlag and was
+      // reachable on every plan, gated only by `discountSecurity`. The
+      // Promotion card comes back when coupons/points/tiers are ported.
       id: 'discount', title: 'SETTINGS.GROUPS.DISCOUNT', color: '#f43f5e',
       icon: `<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>`,
       items: [
-        { label: 'SETTINGS.ITEMS.DISCOUNT', description: 'SETTINGS.ITEMS.DISCOUNT_DESC', link: '/settings/discounts', privilege: 'discountSecurity.actions.view.access', feature: 'promotions',
+        { label: 'SETTINGS.ITEMS.DISCOUNT', description: 'SETTINGS.ITEMS.DISCOUNT_DESC', link: '/settings/discounts', privilege: 'discountSecurity.actions.view.access',
           i18nPrefix: 'DISCOUNT' },
+      ],
+    },
+    {
+      // Genuine promotions tiles live here; Discount does not, because it is
+      // core POS and has its own card above. Vouchers is the first one ported —
+      // coupons, points, customer tiers and campaigns have no route and no
+      // privilege definition in this project yet, so there is nothing to link
+      // to and a tile would be a dead link.
+      //
+      // Privilege-gated, deliberately NOT feature-gated. The admin grid writes
+      // `promotions.vouchers`, but 167 of 168 companies still carry only the
+      // legacy bare `promotions` key, so feature-gating this today would hide
+      // it for almost everyone — the same silent disappearance the bare-key
+      // mismatch caused. Mirrors the deliberate choice at
+      // promotions.routes.ts:29. Add `feature: PROMOTIONS_VOUCHERS` once the
+      // backfill in docs/tickets/promotions-feature-key-mismatch.md has run.
+      id: 'promotion', title: 'SETTINGS.GROUPS.PROMOTION', color: '#ec4899',
+      icon: `<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>`,
+      items: [
+        { label: 'SETTINGS.ITEMS.GIFT_VOUCHERS', description: 'SETTINGS.ITEMS.GIFT_VOUCHERS_DESC', link: '/promotions/promotions-vouchers', privilege: 'PromotionalVoucherPrivileges.access',
+          i18nPrefix: 'PROMOTIONS_VOUCHERS' },
       ],
     },
     {

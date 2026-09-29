@@ -1,0 +1,101 @@
+<div class="max-w-4xl mx-auto">
+
+  <!-- ═══ Header ═══ -->
+  <div class="flex items-start justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-xl font-semibold text-slate-900">
+        {{ 'PRODUCTS.IMPORT_EXPORT.TITLE' | translate }}
+      </h1>
+      <p class="text-sm text-slate-500 mt-1">
+        {{ 'PRODUCTS.IMPORT_EXPORT.SUBTITLE' | translate }}
+      </p>
+    </div>
+    <button type="button" (click)="backToList()"
+      class="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium bg-white text-slate-700
+             border border-slate-300 hover:bg-slate-50 transition-colors whitespace-nowrap">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l7-7-7-7" />
+      </svg>
+      {{ 'PRODUCTS.IMPORT_EXPORT.BACK_TO_LIST' | translate }}
+    </button>
+  </div>
+
+  <!-- Carried over from the legacy modal's dismissible=false warning. -->
+  <div class="flex items-start gap-3 p-4 rounded-lg bg-amber-50 border border-amber-200 mb-6"
+    role="note">
+    <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
+      stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M12 9v2m0 4h.01M5.07 19h13.86a2 2 0 001.74-3L13.74 4a2 2 0 00-3.48 0l-7 12a2 2 0 001.74 3z" />
+    </svg>
+    <p class="text-sm text-amber-800">
+      {{ 'PRODUCTS.IMPORT_EXPORT.WARNING' | translate }}
+    </p>
+  </div>
+
+  <div class="grid gap-5 md:grid-cols-2">
+
+    <!-- ═══ Import ═══ -->
+    <section class="flex flex-col p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 16V4m0 12l-4-4m4 4l4-4M4 20h16" />
+          </svg>
+        </span>
+        <h2 class="font-semibold text-slate-900">
+          {{ 'PRODUCTS.IMPORT_EXPORT.IMPORT_CARD.TITLE' | translate }}
+        </h2>
+      </div>
+      <p class="text-sm text-slate-500 mb-5 flex-1">
+        {{ 'PRODUCTS.IMPORT_EXPORT.IMPORT_CARD.DESC' | translate }}
+      </p>
+      <button type="button" (click)="openImport()"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium
+               bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg
+               hover:from-brand-600 hover:to-brand-800 transition-all">
+        {{ 'PRODUCTS.IMPORT_EXPORT.IMPORT_CARD.BUTTON' | translate }}
+      </button>
+    </section>
+
+    <!-- ═══ Export ═══ -->
+    <section class="flex flex-col p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-100 text-slate-600 flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16" />
+          </svg>
+        </span>
+        <h2 class="font-semibold text-slate-900">
+          {{ 'PRODUCTS.IMPORT_EXPORT.EXPORT_CARD.TITLE' | translate }}
+        </h2>
+      </div>
+      <p class="text-sm text-slate-500 mb-5 flex-1">
+        {{ 'PRODUCTS.IMPORT_EXPORT.EXPORT_CARD.DESC' | translate }}
+      </p>
+      <app-dropdown-menu-btn
+        [items]="exportMenuItems()"
+        [appendToBody]="true"
+        align="start"
+        triggerClass="w-full justify-center flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium
+                      bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors">
+        {{ 'PRODUCTS.IMPORT_EXPORT.EXPORT_CARD.BUTTON' | translate }}
+      </app-dropdown-menu-btn>
+    </section>
+  </div>
+
+  <!-- ═══ Template ═══
+       The importer reads columns by position, so the template's column order
+       is the contract. The wizard offers both downloads on its own upload
+       step; this block is the discoverable entry point to them. -->
+  <section class="mt-5 p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+    <h2 class="font-semibold text-slate-900 mb-1">
+      {{ 'PRODUCTS.IMPORT_EXPORT.TEMPLATE_CARD.TITLE' | translate }}
+    </h2>
+    <p class="text-sm text-slate-500">
+      {{ 'PRODUCTS.IMPORT_EXPORT.TEMPLATE_CARD.DESC' | translate }}
+    </p>
+  </section>
+</div>

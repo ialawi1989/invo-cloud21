@@ -26,7 +26,7 @@ export function buildOptionImportConfig(args: {
   const { service, translate } = args;
 
   return {
-    title: translate.instant('PRODUCTS.OPTIONS.IMPORT.TITLE'),
+    title: 'PRODUCTS.OPTIONS.IMPORT.TITLE',
     hint: 'PRODUCTS.OPTIONS.IMPORT.HINT',
     columns: [
       { key: 'name', label: 'PRODUCTS.OPTIONS.IMPORT.COL_NAME' },

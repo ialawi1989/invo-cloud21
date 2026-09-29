@@ -72,6 +72,17 @@ export const PRODUCTS_ROUTES: Routes = [
     // Same gate as the per-row Print Label action.
     data: { permissionPath: 'productSecurity.actions.printBarcode.access' },
   },
+  {
+    // CSV / XLSX of the local catalogue, in and out. The products-list "..."
+    // menu navigated here already, but no route existed, so that menu item
+    // was a dead link. Distinct from the Shopify catalog import, which is a
+    // modal opened from the same menu and has no route of its own.
+    path: 'import-export',
+    canActivate: [translationsLoaded, privilegeGuard],
+    loadComponent: () =>
+      import('./pages/import-export/import-export.component').then(m => m.ImportExportComponent),
+    data: { permissionPath: 'productSecurity.actions.importExport.access' },
+  },
 
   // ── Classifications: Departments ──────────────────────────────────────────
   {

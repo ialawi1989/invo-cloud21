@@ -564,8 +564,8 @@ export class ProductsListComponent implements OnInit {
       },
       {
         action: {
-          id: 'import-shopify',
-          label: this.lang.instant('PRODUCTS.ACTIONS.IMPORT_FROM_SHOPIFY'),
+          id: 'catalog-import-export',
+          label: this.lang.instant('PRODUCTS.ACTIONS.CATALOG_IMPORT_EXPORT'),
           color: 'secondary',
           handler: () => this.openShopifyImport(),
         },
