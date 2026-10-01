@@ -1,0 +1,36 @@
+<app-modal-header [title]="'PRODUCTS.IMPORT_EXPORT.EXPORT.MODAL_TITLE' | translate" />
+
+<div class="epm__body">
+  @if (!exporting()) {
+    <div class="epm__opt-head">
+      <h3>{{ 'COMMON.IMPORT_WIZARD.OPTIONS_TITLE' | translate }}</h3>
+      <p>{{ 'PRODUCTS.IMPORT_EXPORT.EXPORT.MODAL_HINT' | translate }}</p>
+    </div>
+
+    <section class="epm__opt-group">
+      <h4 class="epm__section-title">{{ 'PRODUCTS.IMPORT_EXPORT.EXPORT.FORMAT' | translate }}</h4>
+      <app-segmented-toggle
+        [options]="formatOptions"
+        [value]="format()"
+        (valueChange)="format.set($any($event))"/>
+    </section>
+
+    @if (errorMsg()) {
+      <p class="epm__error">{{ errorMsg() }}</p>
+    }
+  } @else {
+    <div class="epm__loading">
+      <div class="epm__spinner" aria-hidden="true"></div>
+      <p>{{ 'PRODUCTS.IMPORT_EXPORT.EXPORT.EXPORTING' | translate }}</p>
+    </div>
+  }
+</div>
+
+<app-modal-footer>
+  <button type="button" class="epm-btn" [disabled]="exporting()" (click)="cancel()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="epm-btn epm-btn--primary" [disabled]="exporting()" (click)="startExport()">
+    {{ 'PRODUCTS.IMPORT_EXPORT.EXPORT_CARD.BUTTON' | translate }}
+  </button>
+</app-modal-footer>

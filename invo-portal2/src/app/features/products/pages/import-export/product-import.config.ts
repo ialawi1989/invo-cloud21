@@ -1,3 +1,5 @@
+import { TranslateService } from '@ngx-translate/core';
+
 import {
   ImportRow,
   ImportWizardConfig,
@@ -71,7 +73,10 @@ const PREPARATION_TYPES = new Set(['menuitem', 'menuselection', 'tailoring']);
 
 const K = 'PRODUCTS.IMPORT_EXPORT.IMPORT';
 
-export function buildProductImportConfig(service: ProductCrudService): ImportWizardConfig {
+export function buildProductImportConfig(
+  service: ProductCrudService,
+  translate: TranslateService,
+): ImportWizardConfig {
   return {
     // NOTE: a key, not `translate.instant(...)` — the wizard pipes the title
     // through `translate` itself.
@@ -131,13 +136,13 @@ export function buildProductImportConfig(service: ProductCrudService): ImportWiz
 
       const type = (cells['type'] ?? '').trim();
       if (!type) {
-        errors.push(`${K}.ERR_MISSING_TYPE`);
+        errors.push(translate.instant(`${K}.ERR_MISSING_TYPE`));
       } else if (!PRODUCT_TYPES.has(type.toLowerCase())) {
-        errors.push(`${K}.ERR_INVALID_TYPE`);
+        errors.push(translate.instant(`${K}.ERR_INVALID_TYPE`));
       }
 
       if (!(cells['name'] ?? '').trim()) {
-        errors.push(`${K}.ERR_MISSING_NAME`);
+        errors.push(translate.instant(`${K}.ERR_MISSING_NAME`));
       }
 
       // Free-text columns that must be numeric when filled.
@@ -149,7 +154,7 @@ export function buildProductImportConfig(service: ProductCrudService): ImportWiz
       ] as const) {
         const raw = (cells[key] ?? '').trim();
         if (raw !== '' && !Number.isFinite(Number(raw))) {
-          errors.push(err);
+          errors.push(translate.instant(err));
         }
       }
 
@@ -245,7 +250,7 @@ export function buildProductImportConfig(service: ProductCrudService): ImportWiz
       const res = await service.importProducts(payload);
 
       if (!res?.success) {
-        return { ok: false, msg: res?.msg || `${K}.ERR_IMPORT_FAILED` };
+        return { ok: false, msg: res?.msg || translate.instant(`${K}.ERR_IMPORT_FAILED`) };
       }
 
       // Per-row errors come back inside a successful response — surface them

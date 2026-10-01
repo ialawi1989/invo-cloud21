@@ -2,10 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ModalService } from '@shared/modal/modal.service';import {
-  DropdownMenuBtnComponent,
-  DropdownMenuBtnItem,
-} from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import { ModalService } from '@shared/modal/modal.service';
 import { ImportWizardComponent } from '@shared/components/import-wizard/import-wizard.component';
 import {
   ImportSummaryCounts,
@@ -14,6 +11,7 @@ import {
 
 import { ProductCrudService } from '../../services/product-crud.service';
 import { buildProductImportConfig } from './product-import.config';
+import { ExportProductsModalComponent } from './export-products-modal/export-products-modal.component';
 
 /**
  * Import / Export for the **local** product catalogue — a CSV / XLSX of your
@@ -33,7 +31,7 @@ import { buildProductImportConfig } from './product-import.config';
 @Component({
   selector: 'app-import-export',
   standalone: true,
-  imports: [TranslateModule, DropdownMenuBtnComponent],
+  imports: [TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './import-export.component.html',
 })
@@ -43,28 +41,8 @@ export class ImportExportComponent {
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
 
-  exporting = false;
-
-  /** Export dropdown — the backend serves the whole catalogue as one file. */
-  exportMenuItems(): DropdownMenuBtnItem[] {
-    return [
-      {
-        label: this.translate.instant('PRODUCTS.IMPORT_EXPORT.EXPORT.CSV'),
-        click: () => this.exportAs('csv'),
-        disabled: this.exporting,
-        danger: false,
-      },
-      {
-        label: this.translate.instant('PRODUCTS.IMPORT_EXPORT.EXPORT.XLSX'),
-        click: () => this.exportAs('xlsx'),
-        disabled: this.exporting,
-        danger: false,
-      },
-    ];
-  }
-
   async openImport(): Promise<void> {
-    const config: ImportWizardConfig = buildProductImportConfig(this.crud);
+    const config: ImportWizardConfig = buildProductImportConfig(this.crud, this.translate);
     const ref = this.modal.open<ImportWizardComponent, ImportWizardConfig, ImportSummaryCounts | undefined>(
       ImportWizardComponent,
       { size: 'lg', data: config, closeOnBackdrop: false },
@@ -72,18 +50,14 @@ export class ImportExportComponent {
     await ref.afterClosed();
   }
 
-  /**
-   * `exportProducts` is fire-and-forget: it subscribes internally and triggers
-   * the download, so there is nothing to await or catch here — the flag only
-   * exists to stop a double-click stacking two downloads.
-   */
-  exportAs(type: 'csv' | 'xlsx'): void {
-    if (this.exporting) return;
-    this.exporting = true;
-    this.crud.exportProducts(type);
-    // The request is fire-and-forget; clear on the next tick so the menu is
-    // usable again without pretending to know when the file lands.
-    setTimeout(() => { this.exporting = false; }, 1500);
+  /** Export — same "Options" modal pattern as Import (pick, then run), instead
+   *  of a fire-and-forget dropdown with no loading state or error handling. */
+  async openExport(): Promise<void> {
+    const ref = this.modal.open<ExportProductsModalComponent, never, void>(
+      ExportProductsModalComponent,
+      { size: 'sm', closeOnBackdrop: false },
+    );
+    await ref.afterClosed();
   }
 
   backToList(): void {

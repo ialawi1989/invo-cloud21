@@ -20,8 +20,19 @@ export interface CsvColumn {
 
 /** Parse `text` into an array of records keyed by `columns[i].key`.
  *  Missing trailing cells become empty strings, so callers can rely
- *  on `row[col.key]` being defined for every configured column. */
-export function parseCsv(text: string, columns: CsvColumn[]): Record<string, string>[] {
+ *  on `row[col.key]` being defined for every configured column.
+ *
+ *  `templateHeaderRow` is the config's own `templateRows[0]` — the literal
+ *  text a user sees in the downloaded template and gets back verbatim on
+ *  re-upload. It's checked in addition to `columns[i].key/label` because
+ *  every real config sets `label` to an i18n *key* (translated only by the
+ *  preview table's own `| translate` pipe), so the key/label match can
+ *  otherwise never recognize a re-uploaded template's header row. */
+export function parseCsv(
+  text: string,
+  columns: CsvColumn[],
+  templateHeaderRow?: (string | number)[],
+): Record<string, string>[] {
   if (!text || !columns.length) return [];
 
   const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
@@ -35,7 +46,7 @@ export function parseCsv(text: string, columns: CsvColumn[]): Record<string, str
   const out: Record<string, string>[] = [];
   for (let i = 0; i < lines.length; i++) {
     const cells = splitLine(lines[i], delim);
-    if (i === 0 && isHeaderRow(cells, columns)) continue;
+    if (i === 0 && isHeaderRow(cells, columns, templateHeaderRow)) continue;
 
     const row: Record<string, string> = {};
     for (let c = 0; c < columns.length; c++) {
@@ -82,15 +93,21 @@ function splitLine(line: string, delim: ',' | '\t'): string[] {
   return out;
 }
 
-/** A row is treated as a header when every configured column has a
- *  cell whose value matches its `key` or `label` (case-insensitive). */
-function isHeaderRow(cells: string[], columns: CsvColumn[]): boolean {
+/** A row is treated as a header when every configured column has a cell
+ *  whose value matches its `key`, its `label`, or (positionally) the
+ *  config's own `templateHeaderRow` cell — case-insensitive. */
+function isHeaderRow(
+  cells: string[],
+  columns: CsvColumn[],
+  templateHeaderRow?: (string | number)[],
+): boolean {
   if (cells.length < columns.length) return false;
   for (let i = 0; i < columns.length; i++) {
     const v = (cells[i] ?? '').trim().toLowerCase();
     const k = columns[i].key.toLowerCase();
     const l = columns[i].label.toLowerCase();
-    if (v !== k && v !== l) return false;
+    const t = String(templateHeaderRow?.[i] ?? '').trim().toLowerCase();
+    if (v !== k && v !== l && !(t && v === t)) return false;
   }
   return true;
 }

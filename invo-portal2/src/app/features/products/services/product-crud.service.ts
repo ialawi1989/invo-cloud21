@@ -135,19 +135,21 @@ export class ProductCrudService {
     return this.api.request(this.api.post('product/importProducts', products));
   }
 
-  exportProducts(type: string): void {
-    // Blob download — subscribe directly since it's a fire-and-forget download.
-    this.api.get(`product/exportProducts/${type}`).subscribe((res: any) => {
-      // If the API returns a blob, handle it; otherwise this is a no-op.
-      if (res instanceof Blob) {
-        const url = window.URL.createObjectURL(res);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `products.${type}`;
-        link.click();
-        URL.revokeObjectURL(url);
-      }
-    });
+  /**
+   * `GET product/exportProducts/:type` streams the file directly
+   * (`res.download()` server-side, no JSON envelope) — must be fetched as a
+   * blob, not through the JSON-typed `api.get()`. Only `'csv'` is
+   * special-cased server-side; anything else (including a typo) silently
+   * becomes an `.xlsx` file, so only ever pass `'csv'` or `'xlsx'`.
+   */
+  async exportProducts(type: 'csv' | 'xlsx'): Promise<void> {
+    const blob = await this.api.raw(this.api.getBlob(`product/exportProducts/${type}`));
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `products.${type}`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   async getBulkImportProgress(): Promise<any> {

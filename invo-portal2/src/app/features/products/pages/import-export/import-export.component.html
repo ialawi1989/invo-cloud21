@@ -75,14 +75,11 @@
       <p class="text-sm text-slate-500 mb-5 flex-1">
         {{ 'PRODUCTS.IMPORT_EXPORT.EXPORT_CARD.DESC' | translate }}
       </p>
-      <app-dropdown-menu-btn
-        [items]="exportMenuItems()"
-        [appendToBody]="true"
-        align="start"
-        triggerClass="w-full justify-center flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium
-                      bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors">
+      <button type="button" (click)="openExport()"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium
+               bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors">
         {{ 'PRODUCTS.IMPORT_EXPORT.EXPORT_CARD.BUTTON' | translate }}
-      </app-dropdown-menu-btn>
+      </button>
     </section>
   </div>
 

@@ -585,7 +585,13 @@
       },
       "EXPORT": {
         "CSV": "Export as CSV",
-        "XLSX": "Export as Excel"
+        "XLSX": "Export as Excel",
+        "MODAL_TITLE": "Export Products",
+        "MODAL_HINT": "Choose a file format for the full product catalogue.",
+        "FORMAT": "Format",
+        "EXPORTING": "Preparing your export…",
+        "DONE": "Products exported",
+        "FAILED": "Export failed. Please try again."
       },
       "TEMPLATE_CARD": {
         "TITLE": "Template",

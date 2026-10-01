@@ -85,6 +85,25 @@ export class ApiService {
     );
   }
 
+  /**
+   * GET a raw binary payload (file download) — a plain `get()` would ask
+   * HttpClient for `responseType: 'json'` and fail trying to parse the bytes,
+   * so any endpoint that streams a file (`res.download()` on the backend)
+   * must go through this instead.
+   */
+  getBlob(
+    endpoint: string,
+    params?: Record<string, any>,
+  ): Observable<Blob> {
+    const httpParams = params
+      ? new HttpParams({ fromObject: this.cleanParams(params) })
+      : undefined;
+    return this.http.get(`${this.baseUrl}${endpoint}`, {
+      params: httpParams,
+      responseType: 'blob',
+    });
+  }
+
   /** POST request. */
   post<T = any>(
     endpoint: string,

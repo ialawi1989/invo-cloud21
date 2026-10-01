@@ -140,7 +140,7 @@ export class ImportWizardComponent {
    *  and store on `rows`. Called whenever the textarea changes or a
    *  file is loaded. */
   private reparse(): void {
-    const records = parseCsv(this.pasted(), this.data.columns);
+    const records = parseCsv(this.pasted(), this.data.columns, this.data.templateRows[0]);
     const seeded: AnnotatedRow[] = records.map((cells, i) => ({
       cells, line: i + 1, status: 'valid', errors: [],
     }));
