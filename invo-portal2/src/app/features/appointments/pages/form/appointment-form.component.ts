@@ -397,7 +397,7 @@ export class AppointmentFormComponent implements OnInit {
   async addProducts(): Promise<void> {
     const existing = this.visibleProducts().map(p => p.productId);
     const result = await this.modal.open<PickProductModalComponent, unknown, PickProductResult>(PickProductModalComponent, {
-      size: 'lg',
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       data: { multiple: true, excludedIds: existing },
     }).afterClosed();
 
@@ -430,7 +430,7 @@ export class AppointmentFormComponent implements OnInit {
 
   async pickService(row: ServiceRow): Promise<void> {
     const result = await this.modal.open<PickProductModalComponent, unknown, PickProductResult>(PickProductModalComponent, {
-      size: 'lg',
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       data: { types: ['service'], multiple: false },
     }).afterClosed();
 

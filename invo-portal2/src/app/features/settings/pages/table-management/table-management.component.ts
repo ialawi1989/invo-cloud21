@@ -1111,7 +1111,7 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
       PickUnassignedModalData,
       RestaurantTable[]
     >(PickUnassignedTablesModalComponent, {
-      size: 'md',
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       data: { branchId },
       closeOnBackdrop: false,
     });

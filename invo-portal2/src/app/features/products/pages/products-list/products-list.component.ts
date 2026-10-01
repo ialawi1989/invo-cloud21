@@ -891,7 +891,7 @@ export class ProductsListComponent implements OnInit {
     const productIds = rows.map(r => r.id);
     const ref = this.modalService.open<PickTaxModalComponent, void, string>(
       PickTaxModalComponent,
-      { size: 'sm', closeable: true, closeOnBackdrop: true }
+      { drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650, closeable: true, closeOnBackdrop: true }
     );
     const taxId = await ref.afterClosed();
     if (!taxId) return;

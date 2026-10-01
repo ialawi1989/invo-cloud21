@@ -135,7 +135,7 @@ export class RecipeBuilderComponent implements OnInit {
           multiple: true,
           title: 'Add recipe ingredients',
         },
-        size: 'md',
+        drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       },
     );
     const result = await ref.afterClosed();

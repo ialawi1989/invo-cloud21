@@ -98,7 +98,7 @@ export class BulkTagsModalComponent {
     const ref = this.modal.open<PickProductModalComponent, PickProductModalData, PickProductResult>(
       PickProductModalComponent,
       {
-        size: 'md',
+        drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
         data: {
           excludedIds: this.pickedProducts().map(p => p.id),
           multiple: true,

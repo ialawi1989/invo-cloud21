@@ -1,4 +1,4 @@
-<app-modal-header [title]="data.title ?? ('PRODUCTS.FORM.PICK_PRODUCTS' | translate)"/>
+<app-modal-header [title]="data.title ?? ('PRODUCTS.FORM.PICK_PRODUCTS' | translate)" [subtitle]="(total() | number) + ' ' + ('PRODUCTS.TITLE' | translate)"/>
 
 <div class="ppm-body">
   <label class="ppm-search">
@@ -12,6 +12,34 @@
       [placeholder]="'COMMON.SEARCH' | translate"
     />
   </label>
+
+  @if (multiple()) {
+    <div class="ppm-selectbar">
+      <span class="ppm-selectbar__count">
+        {{ 'COMMON.RESULTS_LOADED' | translate: { total: total(), loaded: rows().length } }}
+      </span>
+      @if (!selectingAll()) {
+        <div class="ppm-selectbar__links">
+          <button type="button" class="ppm-link" [disabled]="rows().length === 0" (click)="toggleLoaded()">
+            {{ (allLoadedPicked() ? 'COMMON.DESELECT_LOADED' : 'COMMON.SELECT_LOADED') | translate: { count: rows().length } }}
+          </button>
+          @if (total() > rows().length) {
+            <button type="button" class="ppm-link" (click)="selectAllMatching()">
+              {{ 'COMMON.SELECT_ALL_MATCHING' | translate: { count: total() } }}
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="ppm-selectbar__links">
+          <span class="ppm-selectbar__busy">{{ 'COMMON.SELECTING_ALL' | translate }}</span>
+          <button type="button" class="ppm-link" (click)="cancelSelectAll()">{{ 'COMMON.CANCEL' | translate }}</button>
+        </div>
+      }
+    </div>
+    @if (selectAllError()) {
+      <p class="ppm-error">{{ selectAllError() }}</p>
+    }
+  }
 
   <div class="ppm-list">
     @if (visible().length === 0 && !loading()) {
@@ -68,11 +96,41 @@
       }
     </div>
   </div>
+
+  <!-- Review strip — expands the footer's "N selected" into the actual
+       picked rows, each removable on its own. Only reachable when there IS
+       a concrete selection, since "select all matching" can hand back
+       thousands of ids this strip has no business rendering all at once;
+       it only lists what's actually in the page-load/select-all cache. -->
+  @if (reviewOpen() && selectedCount() > 0) {
+    <div class="ppm-review">
+      @for (row of reviewRows(); track row.id) {
+        <div class="ppm-review__row">
+          <span class="ppm-review__name">{{ row.name }}</span>
+          <button type="button" class="ppm-review__remove" [attr.aria-label]="'COMMON.REMOVE' | translate" (click)="unpick(row.id)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      }
+    </div>
+  }
 </div>
 
 <footer class="ppm-footer">
   <div class="ppm-footer__count">
-    {{ 'COMMON.SELECTED_COUNT' | translate: { count: selectedCount() } }}
+    @if (selectedCount() > 0) {
+      <button type="button" class="ppm-footer__toggle" (click)="reviewOpen.set(!reviewOpen())">
+        {{ 'COMMON.SELECTED_COUNT' | translate: { count: selectedCount() } }}
+        <svg class="ppm-footer__chevron" [class.ppm-footer__chevron--open]="reviewOpen()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <button type="button" class="ppm-footer__clear" (click)="clearSelection()">{{ 'COMMON.CLEAR' | translate }}</button>
+    } @else {
+      <span class="ppm-footer__none">{{ 'COMMON.SELECTED_COUNT' | translate: { count: 0 } }}</span>
+    }
   </div>
   <div class="ppm-footer__actions">
     <button type="button" class="ppm-btn ppm-btn--ghost" (click)="cancel()">
@@ -83,9 +141,9 @@
         type="button"
         class="ppm-btn ppm-btn--primary"
         (click)="confirm()"
-        [disabled]="selectedCount() === 0"
+        [disabled]="selectedCount() === 0 || selectingAll()"
       >
-        {{ 'COMMON.SUBMIT' | translate }}
+        {{ 'COMMON.PICK' | translate }}
       </button>
     }
   </div>

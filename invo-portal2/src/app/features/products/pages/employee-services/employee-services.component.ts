@@ -119,7 +119,7 @@ export class EmployeeServicesComponent implements OnInit {
   async addServices(emp: EmployeeVm): Promise<void> {
     const rows = this.state(emp.id)?.rows ?? [];
     const result = await this.modal.open<PickProductModalComponent, unknown, PickProductResult>(PickProductModalComponent, {
-      size: 'lg',
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       data: { types: ['service'], multiple: true, excludedIds: rows.map(r => r.productId) },
     }).afterClosed();
     if (!result?.added?.length) return;

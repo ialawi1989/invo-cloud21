@@ -151,7 +151,7 @@ export class KitBuilderComponent implements OnInit {
           multiple: true,
           title: 'Add kit components',
         },
-        size: 'md',
+        drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       },
     );
     const result = await ref.afterClosed();

@@ -422,7 +422,7 @@ export class PriceLabelFormComponent implements OnInit, CanLeaveComponent {
       PickOptionModalData,
       PickOptionResult
     >(PickOptionModalComponent, {
-      size: 'md',
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       data: {
         excludedIds: this.label().optionsPrices.map(o => o.optionId),
         title:       this.translate.instant('PRICE_LABEL.FORM.PICK_OPTIONS'),

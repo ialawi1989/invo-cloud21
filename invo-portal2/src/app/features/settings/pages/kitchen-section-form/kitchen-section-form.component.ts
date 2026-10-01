@@ -181,7 +181,7 @@ export class KitchenSectionFormComponent implements OnInit, CanLeaveComponent {
       PickProductModalData,
       PickProductResult
     >(PickProductModalComponent, {
-      size: 'lg',
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       data: {
         excludedIds: this.products().map((p) => p.id).filter(Boolean) as string[],
         multiple:    true,

@@ -245,7 +245,7 @@ export class CategoryFormComponent implements OnInit, CanLeaveComponent {
     const ref = this.modal.open<PickAssignedProductsModalComponent, PickAssignedProductsData, PickAssignedProductsResult>(
       PickAssignedProductsModalComponent,
       {
-        size: 'lg',
+        drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
         data: {
           load: ({ page, limit, searchTerm }) =>
             this.service.getUncategorizedProducts({ page, limit, searchTerm }),

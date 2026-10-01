@@ -156,7 +156,10 @@ export class SupplierListProductComponent implements OnInit {
       PickSupplierModalComponent,
       PickSupplierModalData,
       PickSupplierResult
-    >(PickSupplierModalComponent, { data: { excludedIds }, size: 'md' });
+    >(PickSupplierModalComponent, {
+      data: { excludedIds },
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
+    });
 
     const result = await ref.afterClosed();
     if (!result) return;

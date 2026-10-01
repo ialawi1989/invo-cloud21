@@ -139,7 +139,7 @@ export class QuickCreatePopoverComponent {
 
   async pickService(): Promise<void> {
     const result = await this.modal.open<PickProductModalComponent, unknown, PickProductResult>(PickProductModalComponent, {
-      size: 'lg',
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       data: { types: ['service'], multiple: false },
     }).afterClosed();
 

@@ -172,7 +172,7 @@ export class BrandFormComponent implements OnInit, CanLeaveComponent {
     const ref = this.modal.open<PickAssignedProductsModalComponent, PickAssignedProductsData, PickAssignedProductsResult>(
       PickAssignedProductsModalComponent,
       {
-        size: 'lg',
+        drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
         data: {
           load: ({ page, limit, searchTerm }) =>
             this.service.getUnbrandedProducts({ page, limit, searchTerm, brandId: this.brandId() }),

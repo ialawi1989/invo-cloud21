@@ -206,7 +206,7 @@ export class CommentsComponent implements OnInit {
   async openPostPicker(): Promise<void> {
     const ref = this.modal.open<PickPostModalComponent, PickPostModalData, PickedPost>(
       PickPostModalComponent,
-      { data: { selectedId: this.postId() }, size: 'md' },
+      { data: { selectedId: this.postId() }, drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650 },
     );
     const picked = await ref.afterClosed();
     if (!picked) return;

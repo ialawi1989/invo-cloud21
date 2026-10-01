@@ -91,7 +91,7 @@ export type CountryPickerModalResult = string[] | undefined;
     </app-modal-footer>
   `,
   styles: [`
-    :host { display: flex; flex-direction: column; max-height: 80vh; }
+    :host { display: flex; flex-direction: column; height: 100%; min-height: 0; }
 
     .cpm__body {
       padding: 14px 18px;

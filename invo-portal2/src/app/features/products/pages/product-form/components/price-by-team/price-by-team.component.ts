@@ -127,7 +127,7 @@ export class PriceByTeamComponent implements OnInit {
       PickEmployeeModalComponent,
       {
         data: { excludedIds: existingIds },
-        size: 'md',
+        drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       },
     );
     const result = await ref.afterClosed();

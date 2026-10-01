@@ -197,7 +197,7 @@ export class OptionFormComponent implements OnInit, CanLeaveComponent {
     const ref = this.modal.open<PickProductModalComponent, PickProductModalData, PickProductResult>(
       PickProductModalComponent,
       {
-        size: 'lg',
+        drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
         data: {
           excludedIds: this.items().map((i) => i.inventoryId).filter(Boolean),
           multiple: true,

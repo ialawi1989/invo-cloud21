@@ -524,7 +524,7 @@ export class DiscountFormComponent implements OnInit, CanLeaveComponent {
       PickListModalData,
       PickListModalResult
     >(PickListModalComponent, {
-      size: 'md',
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       data: {
         load:        categoryLoader(this.api, this.translate),
         selectedIds: this.discount().items,

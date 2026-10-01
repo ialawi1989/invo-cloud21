@@ -392,7 +392,7 @@ export class ProductsCollectionsFormComponent implements OnInit, CanLeaveCompone
     const ref = this.modal.open<PickProductModalComponent, PickProductModalData, PickProductResult>(
       PickProductModalComponent,
       {
-        size: 'md',
+        drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
         data: {
           excludedIds: data.ids,
           multiple: true,

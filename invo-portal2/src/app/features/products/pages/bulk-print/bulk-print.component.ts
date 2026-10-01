@@ -241,7 +241,7 @@ export class BulkPrintComponent {
       PickProductModalData,
       PickProductResult
     >(PickProductModalComponent, {
-      size: 'md',
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       data: {
         excludedIds: this.rows().map(r => r.id),
         multiple:    true,

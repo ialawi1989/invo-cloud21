@@ -17,6 +17,7 @@ import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import type { ModalRef } from '@shared/modal/modal.service';
 import { resolveLocalizedName } from '@shared/utils/localized-name';
+import { PickerSelection } from '@shared/utils/picker-selection';
 
 import { ProductsService } from '../../../../services/products.service';
 
@@ -90,9 +91,24 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
   search   = signal<string>('');
   loading  = signal<boolean>(false);
   page     = signal<number>(1);
+  total    = signal<number>(0);
   hasMore  = signal<boolean>(false);
   rows     = signal<PickedProduct[]>([]);
-  selected = signal<Set<string>>(new Set());
+  reviewOpen = signal<boolean>(false);
+  selectAllError = signal<string>('');
+
+  /** Every row this session has ever fetched, by id — populated by both
+   *  normal paging and a "select all matching" run. Lookups only; a
+   *  select-all run never appends its (possibly thousands of) rows into
+   *  `rows`, which stays whatever the user has actually scrolled through. */
+  private productCache = new Map<string, PickedProduct>();
+
+  readonly picker = new PickerSelection<PickedProduct>({
+    idOf: (r) => r.id,
+    fetchPage: (page, limit) => this.fetchProductPage(page, limit),
+    onItemsFetched: (items) => this.cacheItems(items),
+  });
+
   /** Snapshot of `excludedIds` at open — used to compute `removed` on confirm. */
   private initialSelected: Set<string> = new Set();
   private debounce?: ReturnType<typeof setTimeout>;
@@ -103,12 +119,17 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
 
   multiple = computed(() => this.data.multiple !== false);
   visible  = computed<PickedProduct[]>(() => this.rows());
-  selectedCount = computed(() => this.selected().size);
+  selectedCount = computed(() => this.picker.selectedCount());
+  selectingAll  = computed(() => this.picker.selectingAll());
+  allLoadedPicked = computed(() => this.picker.allLoadedPicked(this.rows()));
+  reviewRows = computed<PickedProduct[]>(() =>
+    this.picker.pickedIds.map((id) => this.productCache.get(id)).filter((r): r is PickedProduct => !!r),
+  );
 
   ngOnInit(): void {
     const ids = this.data.excludedIds ?? [];
     this.initialSelected = new Set(ids);
-    this.selected.set(new Set(ids));
+    this.picker.seed(ids);
     this.loadPage(1);
   }
 
@@ -129,46 +150,68 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
   onSearchInput(value: string): void {
     this.search.set(value);
     clearTimeout(this.debounce);
-    this.debounce = setTimeout(() => this.loadPage(1), 300);
+    this.debounce = setTimeout(() => {
+      // A new filter invalidates any in-flight "select all matching" run —
+      // it was fetching ids for the OLD search term.
+      this.picker.reset();
+      this.loadPage(1);
+    }, 300);
+  }
+
+  /** Maps one raw backend row into a `PickedProduct`. Shared by the normal
+   *  page loader and the chunked "select all matching" fetch below so both
+   *  paths cache an identically-shaped row. */
+  private mapRow(r: any): PickedProduct {
+    return {
+      id:       r.id ?? r._id,
+      name:     resolveLocalizedName(r, this.translate.currentLang),
+      barcode:  r.barcode,
+      sku:      r.sku,
+      UOM:      r.UOM,
+      categoryName: r.categoryName ?? r.category?.name ?? undefined,
+      unitCost: r.unitCost ?? 0,
+      price:    r.defaultPrice ?? 0,
+      type:     r.type,
+      // `r.image` is the canonical thumbnail the products-list page renders;
+      // keep the mediaUrl/thumbnailUrl fallbacks for older response shapes.
+      thumbnailUrl: r.mediaUrl?.thumbnailUrl ?? r.mediaUrl?.defaultUrl ?? r.thumbnailUrl ?? r.image ?? undefined,
+      categoryId: r.categoryId ?? null,
+      tags:       Array.isArray(r.tags) ? r.tags : [],
+      rawTranslation: r.translation ?? null,
+    };
+  }
+
+  private async fetchProductPage(page: number, limit: number): Promise<{ list: PickedProduct[]; count: number }> {
+    const res = await this.products.getProductList({
+      page,
+      limit,
+      searchTerm: this.search().trim(),
+      sortBy: { sortValue: 'name', sortDirection: 'asc' },
+      filter: { types: this.data.types ?? [] },
+      // Without an explicit columns set the backend returns a reduced row
+      // shape (no image/price). Request only the fields this picker maps
+      // (PickedProduct) so thumbnails + prices come back without over-fetching.
+      // `translation` is included so the row name can be localized —
+      // omitting it from an explicit columns list makes the backend drop
+      // the field entirely (it's not part of the reduced default set).
+      columns: ['name', 'translation', 'image', 'barcode', 'SKU', 'UOM', 'unitCost', 'defaultPrice', 'type', 'category', 'categoryId', 'tags'],
+    });
+    return { list: (res.list ?? []).map((r: any) => this.mapRow(r)), count: res.count ?? 0 };
+  }
+
+  private cacheItems(items: PickedProduct[]): void {
+    items.forEach((item) => this.productCache.set(item.id, item));
   }
 
   async loadPage(page: number): Promise<void> {
     this.loading.set(true);
     try {
-      const res = await this.products.getProductList({
-        page,
-        limit: 20,
-        searchTerm: this.search().trim(),
-        sortBy: { sortValue: 'name', sortDirection: 'asc' },
-        filter: { types: this.data.types ?? [] },
-        // Without an explicit columns set the backend returns a reduced row
-        // shape (no image/price). Request only the fields this picker maps
-        // (PickedProduct) so thumbnails + prices come back without over-fetching.
-        // `translation` is included so the row name can be localized —
-        // omitting it from an explicit columns list makes the backend drop
-        // the field entirely (it's not part of the reduced default set).
-        columns: ['name', 'translation', 'image', 'barcode', 'SKU', 'UOM', 'unitCost', 'defaultPrice', 'type', 'category', 'categoryId', 'tags'],
-      });
-      const rows: PickedProduct[] = (res.list ?? []).map((r: any) => ({
-        id:       r.id ?? r._id,
-        name:     resolveLocalizedName(r, this.translate.currentLang),
-        barcode:  r.barcode,
-        sku:      r.sku,
-        UOM:      r.UOM,
-        categoryName: r.categoryName ?? r.category?.name ?? undefined,
-        unitCost: r.unitCost ?? 0,
-        price:    r.defaultPrice ?? 0,
-        type:     r.type,
-        // `r.image` is the canonical thumbnail the products-list page renders;
-        // keep the mediaUrl/thumbnailUrl fallbacks for older response shapes.
-        thumbnailUrl: r.mediaUrl?.thumbnailUrl ?? r.mediaUrl?.defaultUrl ?? r.thumbnailUrl ?? r.image ?? undefined,
-        categoryId: r.categoryId ?? null,
-        tags:       Array.isArray(r.tags) ? r.tags : [],
-        rawTranslation: r.translation ?? null,
-      }));
-      if (page === 1) this.rows.set(rows);
-      else this.rows.update((prev) => [...prev, ...rows]);
-      this.hasMore.set(page < (res.pageCount ?? 1));
+      const { list, count } = await this.fetchProductPage(page, 20);
+      this.cacheItems(list);
+      if (page === 1) this.rows.set(list);
+      else this.rows.update((prev) => [...prev, ...list]);
+      this.total.set(count);
+      this.hasMore.set(this.rows().length < count);
       this.page.set(page);
     } finally {
       this.loading.set(false);
@@ -181,29 +224,50 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   toggle(id: string): void {
-    this.selected.update((prev) => {
-      const next = new Set(prev);
-      if (this.multiple()) {
-        if (next.has(id)) next.delete(id);
-        else next.add(id);
-      } else {
-        // Single-select → replace any existing pick
-        next.clear();
-        next.add(id);
-      }
-      return next;
-    });
-    if (!this.multiple()) this.confirm();
+    if (this.multiple()) {
+      this.picker.toggleId(id);
+      return;
+    }
+    // Single-select → replace any existing pick.
+    this.picker.clearSelection();
+    this.picker.toggleId(id);
+    this.confirm();
   }
 
   isSelected(id: string): boolean {
-    return this.selected().has(id);
+    return this.picker.isPickedId(id);
+  }
+
+  toggleLoaded(): void {
+    this.picker.toggleLoaded(this.rows());
+  }
+
+  async selectAllMatching(): Promise<void> {
+    this.selectAllError.set('');
+    await this.picker.selectAllMatching(this.total(), () =>
+      this.selectAllError.set(this.translate.instant('COMMON.LOAD_FAILED')),
+    );
+  }
+
+  cancelSelectAll(): void {
+    this.picker.cancelSelectAll();
+  }
+
+  unpick(id: string): void {
+    this.picker.unpick(id);
+  }
+
+  clearSelection(): void {
+    this.picker.clearSelection();
   }
 
   confirm(): void {
-    const current = this.selected();
-    const added = this.rows().filter((r) => current.has(r.id) && !this.initialSelected.has(r.id));
-    const removed = [...this.initialSelected].filter((id) => !current.has(id));
+    const pickedIds = this.picker.pickedIds;
+    const added = pickedIds
+      .filter((id) => !this.initialSelected.has(id))
+      .map((id) => this.productCache.get(id))
+      .filter((r): r is PickedProduct => !!r);
+    const removed = [...this.initialSelected].filter((id) => !this.picker.isPickedId(id));
     this.modalRef.close({ added, removed });
   }
 

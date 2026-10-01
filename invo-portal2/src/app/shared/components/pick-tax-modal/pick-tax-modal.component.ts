@@ -111,10 +111,13 @@ import { ApiService } from '@core/http/api.service';
     </app-modal-footer>
   `,
   styles: [`
+    :host { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+
     .body {
       display: flex;
       flex-direction: column;
-      height: 420px;
+      flex: 1;
+      min-height: 0;
       overflow: hidden;
     }
 

@@ -180,7 +180,7 @@ export class OptionGroupFormComponent implements OnInit, CanLeaveComponent {
     const ref = this.modal.open<OptionPickerModalComponent, OptionPickerModalData, OptionPickerResult>(
       OptionPickerModalComponent,
       {
-        size: 'md',
+        drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
         data: {
           excludedIds: this.options().map((o) => o.optionId).filter(Boolean),
           title: this.translate.instant('PRODUCTS.OPTION_GROUPS.ADD_OPTIONS'),

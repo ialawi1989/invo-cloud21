@@ -1029,7 +1029,7 @@ export class PostComposerComponent implements OnInit, OnDestroy, CanLeaveCompone
   async onPickProduct(): Promise<void> {
     const ref = this.modal.open<PickProductModalComponent, PickProductModalData, PickProductResult | undefined>(
       PickProductModalComponent,
-      { data: { multiple: false, title: this.translate.instant('BLOG.COMPOSER.ADD_PRODUCT') }, size: 'md' },
+      { data: { multiple: false, title: this.translate.instant('BLOG.COMPOSER.ADD_PRODUCT') }, drawer: true },
     );
     const result = await ref.afterClosed();
     const p = result?.added?.[0];

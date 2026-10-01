@@ -203,7 +203,7 @@ export class PrepRecipePanelComponent {
     const ref = this.modal.open<PickProductModalComponent, PickProductModalData, PickProductResult>(
       PickProductModalComponent,
       {
-        size: 'lg',
+        drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
         data: {
           excludedIds: existing,
           multiple: true,

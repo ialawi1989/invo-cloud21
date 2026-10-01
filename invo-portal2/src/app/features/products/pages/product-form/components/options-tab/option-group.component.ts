@@ -111,7 +111,7 @@ export class OptionGroupComponent {
       PickOptionGroupResult
     >(PickOptionGroupModalComponent, {
       data: { excludedIds: existingIds, title: 'PRODUCTS.FORM.PICK_OPTION_GROUPS' },
-      size: 'md',
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
     });
     const result = await ref.afterClosed();
     if (!result) return;

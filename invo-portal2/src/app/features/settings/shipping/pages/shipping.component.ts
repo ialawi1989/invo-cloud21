@@ -552,7 +552,7 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
       CountryPickerModalData,
       CountryPickerModalResult
     >(CountryPickerModalComponent, {
-      size: 'md',
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       data: { ...data, countries: this.countries() },
       closeOnBackdrop: false,
     });

@@ -153,7 +153,10 @@ export class ManageDimensionsComponent {
     if (this.disabled()) return;
     const ref = this.modal.open<PickDimensionModalComponent, PickDimensionModalData, Dimension[] | null>(
       PickDimensionModalComponent,
-      { size: 'md', data: { selectedIds: this.dimensions().map((d) => d.id) } },
+      {
+        drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
+        data: { selectedIds: this.dimensions().map((d) => d.id) },
+      },
     );
     const picked = await ref.afterClosed();
     if (!picked?.length) return;

@@ -282,7 +282,7 @@ export class MenuSelectionComponent implements OnInit {
           multiple: true,
           title: 'Add selection items',
         },
-        size: 'md',
+        drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
       },
     );
     const result = await ref.afterClosed();
