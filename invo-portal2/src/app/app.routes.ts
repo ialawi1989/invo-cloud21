@@ -324,6 +324,13 @@ export const routes: Routes = [
           import('./features/products/products.routes').then(m => m.PRODUCTS_ROUTES)
       },
       {
+        // Inventory locations + inventory requests (sidebar → Inventory group).
+        // Other `/inventory/*` screens (physical-counts, transfer) are not migrated yet.
+        path: 'inventory',
+        loadChildren: () =>
+          import('./features/products/inventory.routes').then(m => m.INVENTORY_ROUTES)
+      },
+      {
         // Matrix Items — product-variant builder (dimensions → generated
         // child products). Sidebar links `/matrix-item` (menu id 112).
         path: 'matrix-item',

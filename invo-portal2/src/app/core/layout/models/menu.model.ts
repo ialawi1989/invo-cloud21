@@ -49,9 +49,9 @@ export const MENU_ITEMS: MenuItem[] = [
     subItems: [
       { id: 121, label: 'Physical Counts',    link: '/inventory/physical-counts',    privilege: 'inventoryPhysicalCountsSecurity.actions.view' },
       { id: 122, label: 'Transfers',          link: '/inventory/transfer',           privilege: 'inventoryTransferSecurity.actions.view' },
-      { id: 123, label: 'Locations',          link: '/products/inventory-locations', privilege: 'inventoryLocationsSecurity.actions.view' },
+      { id: 123, label: 'Locations',          link: '/inventory/locations', privilege: 'inventoryLocationsSecurity.actions.view' },
       { id: 124, label: 'Manual Adjustment',  link: '/manual-adjustment',            privilege: 'manualAdjustmentSecurity.actions.view' },
-      { id: 125, label: 'Inventory Request',  link: '/products/inventory-request',   privilege: 'productSecurity.actions.view' },
+      { id: 125, label: 'Inventory Request',  link: '/inventory/request',   privilege: 'productSecurity.actions.view' },
     ],
   },
 

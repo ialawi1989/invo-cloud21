@@ -1,0 +1,53 @@
+<div class="irp" [style.zoom]="zoom() / 100">
+  <div class="irp__head">
+    <div class="irp__company">
+      @if (logo()) { <img [src]="logo()" class="irp__logo" alt="logo" /> }
+      <h4>{{ companyName() }}</h4>
+    </div>
+    <div class="irp__title">
+      <h3>{{ 'PRODUCTS.INVENTORY_REQUEST.TITLE' | translate }}</h3>
+      @if (data().status) {
+        <span class="irp__status" [class.irp__status--converted]="data().status === 'Converted'">{{ data().status }}</span>
+      }
+    </div>
+  </div>
+  <hr />
+  <div class="irp__meta">
+    <div>
+      <div><strong>{{ 'PRODUCTS.INVENTORY_REQUEST.BRANCH' | translate }}:</strong> {{ data().branchName }}</div>
+      <div><strong>{{ 'PRODUCTS.INVENTORY_REQUEST.EMPLOYEE' | translate }}:</strong> {{ data().employeeName }}</div>
+    </div>
+    <div class="irp__meta-end">
+      <div><strong>{{ 'PRODUCTS.INVENTORY_REQUEST.DATE' | translate }}:</strong> {{ data().createdAt | date: 'dd/MM/yyyy' }}</div>
+    </div>
+  </div>
+
+  <table class="irp__table">
+    <thead>
+      <tr>
+        <th>{{ 'PRODUCTS.INVENTORY_REQUEST.PRODUCT' | translate }}</th>
+        <th>{{ 'PRODUCTS.INVENTORY_REQUEST.QTY' | translate }}</th>
+        <th>{{ 'PRODUCTS.INVENTORY_REQUEST.UNIT_COST' | translate }}</th>
+        <th class="irp__end">{{ 'PRODUCTS.INVENTORY_REQUEST.TOTAL' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (l of lines(); track $index) {
+        <tr>
+          <td>
+            {{ l | localizedName }}
+            @if (l.barcode) { <br /><small>[{{ l.barcode }}]</small> }
+          </td>
+          <td>{{ l.qty }}</td>
+          <td>{{ l.unitCost | mynumber }}</td>
+          <td class="irp__end">{{ lineTotal(l) | mynumber }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <div class="irp__total">
+    <span>{{ 'PRODUCTS.INVENTORY_REQUEST.TOTAL' | translate }}</span>
+    <strong>{{ total() | mycurrency }}</strong>
+  </div>
+</div>

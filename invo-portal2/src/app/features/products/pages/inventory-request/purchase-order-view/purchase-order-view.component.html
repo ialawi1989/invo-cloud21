@@ -1,0 +1,53 @@
+<div class="pov">
+  <header class="pov__header">
+    <div>
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="pov__title">{{ 'PRODUCTS.INVENTORY_REQUEST.PURCHASE_ORDER' | translate }}</h1>
+    </div>
+    <div class="pov__actions">
+      <button type="button" class="btn btn-ghost" (click)="back()">{{ 'COMMON.BACK' | translate }}</button>
+      <button type="button" class="btn btn-ghost" (click)="print()" [disabled]="!selected()">{{ 'COMMON.PRINT' | translate }}</button>
+      @if (canSave) {
+        <button type="button" class="btn btn-primary" (click)="saveAll()"
+                [disabled]="saving() || loading() || alreadyConverted() || hasUnassigned() || !groups().length">
+          {{ 'PRODUCTS.INVENTORY_REQUEST.SAVE_ALL_POS' | translate }}
+        </button>
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner"></span></div>
+  } @else {
+    @if (alreadyConverted()) {
+      <p class="notice notice--info">{{ 'PRODUCTS.INVENTORY_REQUEST.ALREADY_CONVERTED' | translate }}</p>
+    }
+    @if (hasUnassigned()) {
+      <p class="notice notice--warn">{{ 'PRODUCTS.INVENTORY_REQUEST.SUPPLIER_REQUIRED' | translate }}</p>
+    }
+    <div class="pov__body">
+      <aside class="pov__suppliers">
+        <div class="pov__suppliers-head">{{ 'PRODUCTS.INVENTORY_REQUEST.CHOOSE_SUPPLIER' | translate }}</div>
+        @for (g of groups(); track g.supplierId) {
+          <button type="button" class="pov__sup" [class.is-active]="isActive(g)" (click)="pick(g)">
+            {{ g.supplierName || ('PRODUCTS.INVENTORY_REQUEST.NO_SUPPLIER' | translate) }}
+          </button>
+        } @empty {
+          <div class="pov__empty">{{ 'PRODUCTS.INVENTORY_REQUEST.EMPTY' | translate }}</div>
+        }
+      </aside>
+      <section class="pov__preview">
+        <div class="pov__zoom">
+          <label for="pov-zoom">{{ 'PRODUCTS.INVENTORY_REQUEST.ZOOM' | translate }}</label>
+          <input id="pov-zoom" type="range" min="40" max="150" step="5" [ngModel]="zoom()" (ngModelChange)="setZoom($event)" />
+          <span>{{ zoom() }}%</span>
+        </div>
+        @if (selected(); as g) {
+          <app-po-preview-paper [group]="g" [branchName]="branchName()" [employeeName]="request()?.employeeName ?? ''" [zoom]="zoom()" />
+        }
+      </section>
+    </div>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="'COMMON.SAVING' | translate"/>
+</div>

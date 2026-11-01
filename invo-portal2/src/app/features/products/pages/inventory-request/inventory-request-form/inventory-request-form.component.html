@@ -1,0 +1,164 @@
+<app-doc-form-shell
+  [title]="pageTitle()" [breadcrumbs]="breadcrumbs()"
+  [canDraft]="false" [submitting]="saving() || loading()" [showView]="!isNew()"
+  [saveLabel]="'COMMON.SAVE' | translate" [saveMenu]="saveMenu()"
+  [total]="total()" [totalQty]="totalQty()"
+  (save)="save()" (cancel)="cancel()" (view)="view()">
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner"></span></div>
+  } @else {
+    @if (linkedPos().length) {
+      <section class="df-card">
+        <div class="linked">
+          <strong>{{ 'PRODUCTS.INVENTORY_REQUEST.CONVERTED_POS' | translate }}:</strong>
+          @for (po of linkedPos(); track po.id) {
+            <a class="chip" [routerLink]="['/account/purchase-order/view', po.id]">{{ po.number }}</a>
+          }
+        </div>
+      </section>
+    }
+
+    <section class="df-card">
+      <h2 class="df-card__title">{{ 'PRODUCTS.INVENTORY_REQUEST.DETAILS' | translate }}</h2>
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'PRODUCTS.INVENTORY_REQUEST.BRANCH' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown
+            [items]="branches()"
+            [displayWith]="branchLabel"
+            [compareWith]="byId"
+            [value]="branch()"
+            (valueChange)="setBranch($event)"
+            [clearable]="false"
+            [placeholder]="'PRODUCTS.INVENTORY_REQUEST.SELECT_BRANCH' | translate"
+            [searchPlaceholder]="'COMMON.SEARCH' | translate" />
+          @if (submitted() && branchInvalid()) {
+            <p class="df-error">{{ 'PRODUCTS.INVENTORY_REQUEST.BRANCH_REQUIRED' | translate }}</p>
+          }
+        </div>
+        @if (!isNew()) {
+          <div class="df-field df-field--grow">
+            <label>{{ 'PRODUCTS.INVENTORY_REQUEST.EMPLOYEE' | translate }}</label>
+            <div class="readonly">{{ employeeName() || '—' }}</div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="il">
+      <header class="il__head">
+        <h3>{{ 'PRODUCTS.INVENTORY_REQUEST.LINES' | translate }}</h3>
+        <div class="all-supplier">
+          <label>{{ 'PRODUCTS.INVENTORY_REQUEST.ASSIGN_SUPPLIER_ALL' | translate }}</label>
+          <app-search-dropdown
+            class="all-supplier__dd"
+            [loadFn]="loadSuppliers"
+            [displayWith]="supplierLabel"
+            [compareWith]="byId"
+            [value]="supplierForAll()"
+            (valueChange)="setSupplierForAll($event)"
+            [placeholder]="'PRODUCTS.INVENTORY_REQUEST.SELECT_SUPPLIER' | translate"
+            [searchPlaceholder]="'COMMON.SEARCH' | translate" />
+        </div>
+      </header>
+      <div class="il__body">
+        <div class="table-wrap">
+          <table class="lines">
+            <thead>
+              <tr>
+                <th class="w-num">#</th>
+                <th>{{ 'PRODUCTS.INVENTORY_REQUEST.PRODUCT' | translate }}<span class="req">*</span></th>
+                <th class="w-qty">{{ 'PRODUCTS.INVENTORY_REQUEST.QTY' | translate }}<span class="req">*</span></th>
+                <th class="w-cost">{{ 'PRODUCTS.INVENTORY_REQUEST.COST' | translate }}</th>
+                <th class="w-sup">{{ 'PRODUCTS.INVENTORY_REQUEST.SUPPLIER' | translate }}</th>
+                <th class="w-pri">{{ 'PRODUCTS.INVENTORY_REQUEST.PRIORITY' | translate }}</th>
+                <th class="w-total end">{{ 'PRODUCTS.INVENTORY_REQUEST.TOTAL' | translate }}</th>
+                <th class="w-act"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of lines(); track line.uid; let i = $index) {
+                <tr>
+                  <td class="w-num">{{ i + 1 }}</td>
+                  @if (!line.productId) {
+                    <td colspan="7">
+                      <app-search-dropdown
+                        [loadFn]="loadProducts"
+                        [displayWith]="productLabel"
+                        [compareWith]="byId"
+                        [value]="null"
+                        (valueChange)="pickProduct(line, $event)"
+                        [clearable]="false"
+                        [placeholder]="'PRODUCTS.INVENTORY_REQUEST.PLEASE_SELECT_PRODUCT' | translate"
+                        [searchPlaceholder]="'COMMON.SEARCH' | translate" />
+                    </td>
+                  } @else {
+                    <td>
+                      <div class="pname">{{ lineName(line) }}</div>
+                      <div class="pbadges">
+                        @if (line.barcode) { <span class="app-product-badge app-product-badge--barcode">{{ line.barcode }}</span> }
+                        @if (line.uom) { <span class="app-product-badge app-product-badge--uom">{{ line.uom }}</span> }
+                      </div>
+                    </td>
+                    <td class="w-qty">
+                      <app-qty-input [ngModel]="line.qty" (valueChange)="setQty(line, $event)" [min]="0.001" [step]="1" [allowDecimal]="true" size="sm" />
+                      @if (submitted() && badQty(line)) {
+                        <p class="df-error">{{ 'PRODUCTS.INVENTORY_REQUEST.QTY_INVALID' | translate }}</p>
+                      }
+                    </td>
+                    <td class="w-cost">{{ line.unitCost | mycurrency }}</td>
+                    <td class="w-sup">
+                      <app-search-dropdown
+                        [loadFn]="loadSuppliers"
+                        [displayWith]="supplierLabel"
+                        [compareWith]="byId"
+                        [value]="line.supplier"
+                        (valueChange)="setSupplier(line, $event)"
+                        [placeholder]="'PRODUCTS.INVENTORY_REQUEST.SELECT_SUPPLIER' | translate"
+                        [searchPlaceholder]="'COMMON.SEARCH' | translate" />
+                    </td>
+                    <td class="w-pri">
+                      <app-search-dropdown
+                        [items]="priorities"
+                        [displayWith]="priorityLabel"
+                        [compareWith]="byValue"
+                        [value]="priorityOf(line.priority)"
+                        (valueChange)="setPriority(line, $event)"
+                        [clearable]="false"
+                        [searchable]="false" />
+                    </td>
+                    <td class="w-total end">{{ line.unitCost * line.qty | mycurrency }}</td>
+                    <td class="w-act">
+                      <button type="button" class="rm" (click)="removeLine(line)" [attr.aria-label]="'COMMON.REMOVE' | translate">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (submitted() && noLines()) {
+          <p class="df-error pad">{{ 'PRODUCTS.INVENTORY_REQUEST.NEED_LINE' | translate }}</p>
+        }
+
+        <div class="lines-foot">
+          <button type="button" class="il__add" [disabled]="lastIsPicker()" (click)="addLine()">
+            + {{ 'PRODUCTS.INVENTORY_REQUEST.ADD_LINE' | translate }}
+          </button>
+          <div class="grand">
+            <span>{{ 'PRODUCTS.INVENTORY_REQUEST.TOTAL' | translate }}</span>
+            <strong>{{ total() | mycurrency }}</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
+  <app-inventory-request-paper class="irp-print-only" [data]="paperData()" />
+
+  <app-loading-overlay [show]="saving()" [message]="'COMMON.SAVING' | translate"/>
+</app-doc-form-shell>

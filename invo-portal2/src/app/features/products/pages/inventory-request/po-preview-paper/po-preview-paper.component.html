@@ -1,0 +1,58 @@
+<div class="pop" [style.zoom]="zoom() / 100">
+  <div class="pop__head">
+    <div class="pop__company">
+      @if (logo()) { <img [src]="logo()" class="pop__logo" alt="logo" /> }
+      <h4>{{ companyName() }}</h4>
+    </div>
+    <div class="pop__title">
+      <h3>{{ 'PRODUCTS.INVENTORY_REQUEST.PURCHASE_ORDER' | translate }}</h3>
+    </div>
+  </div>
+  <hr />
+  <div class="pop__meta">
+    <div>
+      <div><strong>{{ 'PRODUCTS.INVENTORY_REQUEST.SUPPLIER' | translate }}:</strong> {{ group().supplierName || '—' }}</div>
+      @if (branchName()) {
+        <div><strong>{{ 'PRODUCTS.INVENTORY_REQUEST.BRANCH' | translate }}:</strong> {{ branchName() }}</div>
+      }
+      @if (employeeName()) {
+        <div><strong>{{ 'PRODUCTS.INVENTORY_REQUEST.EMPLOYEE' | translate }}:</strong> {{ employeeName() }}</div>
+      }
+    </div>
+    <div class="pop__meta-end">
+      <div><strong>{{ 'PRODUCTS.INVENTORY_REQUEST.DATE' | translate }}:</strong> {{ today | date: 'dd/MM/yyyy' }}</div>
+    </div>
+  </div>
+
+  <table class="pop__table">
+    <thead>
+      <tr>
+        <th>{{ 'PRODUCTS.INVENTORY_REQUEST.PRODUCT' | translate }}</th>
+        <th>{{ 'PRODUCTS.INVENTORY_REQUEST.QTY' | translate }}</th>
+        <th>{{ 'PRODUCTS.INVENTORY_REQUEST.UNIT_COST' | translate }}</th>
+        <th>{{ 'PRODUCTS.INVENTORY_REQUEST.TAX' | translate }}</th>
+        <th class="pop__end">{{ 'PRODUCTS.INVENTORY_REQUEST.TOTAL' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of rows(); track $index) {
+        <tr>
+          <td>
+            {{ r.line | localizedName }}
+            @if (r.line.barcode) { <br /><small>[{{ r.line.barcode }}]</small> }
+          </td>
+          <td>{{ r.line.qty }}</td>
+          <td>{{ r.line.unitCost | mycurrency }}</td>
+          <td>{{ r.taxTotal | mycurrency }}</td>
+          <td class="pop__end">{{ r.total | mycurrency }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <div class="pop__totals">
+    <div><span>{{ 'PRODUCTS.INVENTORY_REQUEST.SUBTOTAL' | translate }}</span><span>{{ subTotal() | mycurrency }}</span></div>
+    <div><span>{{ 'PRODUCTS.INVENTORY_REQUEST.TAX' | translate }}</span><span>{{ taxTotal() | mycurrency }}</span></div>
+    <div class="pop__grand"><span>{{ 'PRODUCTS.INVENTORY_REQUEST.TOTAL' | translate }}</span><strong>{{ total() | mycurrency }}</strong></div>
+  </div>
+</div>

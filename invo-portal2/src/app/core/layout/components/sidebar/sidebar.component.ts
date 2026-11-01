@@ -143,7 +143,7 @@ export const SIDE_MENU: SideMenuItem[] = [
     requiredPermission: '',
     subItems: [
       { id: 81, label: 'MENU.SUB.SUPPLIERS', link: '/account/suppliers', requiredPermission: 'supplierSecurity.actions.view.access' },
-      { id: 82, label: 'MENU.SUB.INVENTORY_REQUEST', link: '/products/inventory-request', requiredPermission: 'productSecurity.actions.requestInventory.access' },
+      { id: 82, label: 'MENU.SUB.INVENTORY_REQUEST', link: '/inventory/request', requiredPermission: 'productSecurity.actions.requestInventory.access' },
       { id: 83, label: 'MENU.SUB.PURCHASE_ORDERS', link: '/account/purchase-order', requiredPermission: 'purchaseOrderSecurity.actions.view.access' },
       { id: 84, label: 'MENU.SUB.BILLS', link: '/account/bills', requiredPermission: 'billingSecurity.actions.view.access' },
       { id: 85, label: 'MENU.SUB.BILL_OF_ENTRY', link: '/account/bill-of-entry', requiredPermission: 'billOfEntrySecurity.actions.view.access' },
@@ -183,7 +183,7 @@ export const SIDE_MENU: SideMenuItem[] = [
     requiredPermission: '',
     subItems: [
       { id: 51, label: 'MENU.SUB.PHYSICAL_COUNTS', link: '/inventory/physical-counts', requiredPermission: 'inventoryPhysicalCountsSecurity.actions.view.access' },
-      { id: 52, label: 'MENU.SUB.LOCATIONS', link: '/products/inventory-locations', requiredPermission: 'inventoryLocationsSecurity.action.view.access' },
+      { id: 52, label: 'MENU.SUB.LOCATIONS', link: '/inventory/locations', requiredPermission: 'inventoryLocationsSecurity.actions.view.access' },
       { id: 53, label: 'MENU.SUB.TRANSFERS', link: '/inventory/transfer', requiredPermission: 'inventoryTransferSecurity.actions.view.access' },
       { id: 54, label: 'MENU.SUB.MANUAL_ADJUSTMENT', link: '/manual-adjustment', requiredPermission: 'manualAdjustmentSecurity.actions.view.access' },
     ],

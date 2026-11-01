@@ -1,0 +1,61 @@
+<div class="cpo">
+  <header class="cpo__header">
+    <div>
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="cpo__title">{{ 'PRODUCTS.INVENTORY_REQUEST.CONVERT_PAGE_TITLE' | translate }}</h1>
+    </div>
+    <button type="button" class="btn btn-ghost" (click)="print()" [disabled]="!selected()">{{ 'COMMON.PRINT' | translate }}</button>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner"></span></div>
+  } @else {
+    @if (alreadyConverted()) {
+      <p class="notice notice--info">{{ 'PRODUCTS.INVENTORY_REQUEST.ALREADY_CONVERTED' | translate }}</p>
+    }
+    @if (hasUnassigned()) {
+      <p class="notice notice--warn">{{ 'PRODUCTS.INVENTORY_REQUEST.SUPPLIER_REQUIRED' | translate }}</p>
+    }
+
+    <div class="cpo__body" [class.is-collapsed]="collapsed()">
+      <aside class="cpo__suppliers">
+        <div class="cpo__suppliers-head">
+          <span>{{ 'PRODUCTS.INVENTORY_REQUEST.CHOOSE_SUPPLIER' | translate }}</span>
+          <button type="button" class="cpo__collapse" (click)="collapsed.set(!collapsed())">
+            {{ collapsed() ? '›' : '‹' }}
+          </button>
+        </div>
+        @if (!collapsed()) {
+          @for (g of groups(); track g.supplierId) {
+            <button type="button" class="cpo__sup" [class.is-active]="isActive(g)" (click)="pick(g)">
+              {{ g.supplierName || ('PRODUCTS.INVENTORY_REQUEST.NO_SUPPLIER' | translate) }}
+            </button>
+          }
+        }
+      </aside>
+
+      <section class="cpo__preview">
+        <div class="cpo__zoom">
+          <label for="cpo-zoom">{{ 'PRODUCTS.INVENTORY_REQUEST.ZOOM' | translate }}</label>
+          <input id="cpo-zoom" type="range" min="40" max="150" step="5" [ngModel]="zoom()" (ngModelChange)="setZoom($event)" />
+          <span>{{ zoom() }}%</span>
+        </div>
+        @if (selected(); as g) {
+          <app-po-preview-paper [group]="g" [branchName]="branchName()" [employeeName]="request()?.employeeName ?? ''" [zoom]="zoom()" />
+        }
+      </section>
+    </div>
+  }
+
+  <app-loading-overlay [show]="converting()" [message]="'COMMON.SAVING' | translate"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="converting()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="convert()"
+            [disabled]="converting() || loading() || hasUnassigned() || alreadyConverted() || !groups().length">
+      {{ 'PRODUCTS.INVENTORY_REQUEST.CONVERT_ALL' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

@@ -1,0 +1,51 @@
+// Page chrome (header, cards, fields, save bar) comes from <app-doc-form-shell> (`df-*`), the same
+// shell the invoice form uses. Only the item table and the few request-specific bits live here.
+:host { display: block; }
+
+.loading { display: flex; align-items: center; justify-content: center; padding: 60px 0; }
+.spinner {
+  width: 32px; height: 32px; border-radius: 50%; border: 3px solid #e2e8f0; border-top-color: var(--color-brand-600);
+  animation: clf-spin .8s linear infinite; display: inline-block;
+}
+@keyframes clf-spin { to { transform: rotate(360deg); } }
+
+.linked { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.chip { padding: 2px 10px; border-radius: 6px; background: #e0f2fe; color: #0369a1; font-size: 12px; font-weight: 600; text-decoration: none; &:hover { background: #bae6fd; } }
+.readonly { padding: 9px 12px; border: 1px solid #e4e7ec; border-radius: 8px; background: #f8f9fc; font-size: 13.5px; color: #475569; }
+
+// ── Item table (same look as the invoice form's lines table) ─────────────────
+.il { border: 1px solid #e4e7ec; border-radius: 12px; background: #fff; overflow: hidden;
+  &__head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; padding: 14px 16px; background: #f8f9fc; border-bottom: 1px solid #e5e7eb;
+    h3 { margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; } }
+  &__body { padding: 0; }
+  &__add { padding: 8px 14px; border: 0; border-radius: 6px; background: #eef1f6; color: #227d8d; font-weight: 500; font-size: 13.5px; cursor: pointer;
+    &:hover:not(:disabled) { background: #e2e8f0; } &:disabled { opacity: .5; cursor: not-allowed; } }
+}
+.all-supplier { display: flex; align-items: center; gap: 10px;
+  label { font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; }
+  &__dd { width: 260px; max-width: 100%; display: block; } }
+
+.table-wrap { overflow-x: auto; }
+.lines { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 900px;
+  th { text-align: start; background: #fff; color: #64748b; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; padding: 10px 12px;
+    border-bottom: 1px solid #e5e7eb; border-inline-start: 1px solid #eef2f6; white-space: nowrap; .req { color: #dc2626; margin-inline-start: 2px; } }
+  th:first-child { border-inline-start: 0; }
+  td { padding: 10px 12px; border-bottom: 1px solid #eef2f6; border-inline-start: 1px solid #eef2f6; vertical-align: middle; }
+  td:first-child, td.w-act { border-inline-start: 0; }
+  .end { text-align: end; }
+  .w-num { width: 44px; color: #94a3b8; }
+  .w-qty { width: 150px; }
+  .w-cost { width: 110px; white-space: nowrap; }
+  .w-sup { width: 240px; }
+  .w-pri { width: 140px; }
+  .w-total { width: 120px; white-space: nowrap; font-weight: 600; }
+  .w-act { width: 44px; }
+}
+.pname { font-weight: 600; color: #0f172a; }
+.pbadges { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.rm { width: 28px; height: 28px; border: 1px solid #d0d5dd; border-radius: 50%; background: #fff; color: #dc2626; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; &:hover { background: #fef2f2; border-color: #fecaca; } }
+
+.lines-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; flex-wrap: wrap; }
+.grand { margin-inline-start: auto; display: flex; gap: 24px; min-width: 240px; justify-content: space-between; padding: 10px 14px; border: 1px solid #e4e7ec; border-radius: 8px; font-size: 14px; }
+.df-error.pad { padding: 8px 16px 0; }

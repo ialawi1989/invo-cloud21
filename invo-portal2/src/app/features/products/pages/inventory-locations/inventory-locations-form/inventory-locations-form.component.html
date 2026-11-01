@@ -1,0 +1,145 @@
+<div class="ilf-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="spinner spinner--lg"></span></div>
+  } @else {
+    <!-- Identity -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'PRODUCTS.INVENTORY_LOCATIONS.IDENTITY' | translate }}</h2>
+        <p class="card__sub">{{ 'PRODUCTS.INVENTORY_LOCATIONS.IDENTITY_DESC' | translate }}</p>
+      </header>
+      <div class="card__body">
+        <div class="field">
+          <label class="field-label field-label--with-action" for="il-name">
+            <span>
+              {{ 'PRODUCTS.INVENTORY_LOCATIONS.NAME' | translate }}
+              <span class="required">*</span>
+            </span>
+            <app-translate-link (clicked)="openNameTranslationModal()"/>
+          </label>
+          <input
+            id="il-name"
+            type="text"
+            class="input"
+            formControlName="name"
+            [placeholder]="'PRODUCTS.INVENTORY_LOCATIONS.NAME_PLACEHOLDER' | translate"
+            [class.input--invalid]="nameCtrl.touched && nameCtrl.invalid"
+          />
+          @if (nameCtrl.touched && nameCtrl.errors?.['required']) {
+            <p class="field-error">{{ 'PRODUCTS.INVENTORY_LOCATIONS.NAME_REQUIRED' | translate }}</p>
+          }
+          @if (nameCtrl.errors?.['exist']) {
+            <p class="field-error">{{ 'PRODUCTS.INVENTORY_LOCATIONS.NAME_EXISTS' | translate }}</p>
+          }
+        </div>
+
+        <div class="field" style="margin-top: 16px">
+          <label class="field-label">
+            <span>
+              {{ 'PRODUCTS.INVENTORY_LOCATIONS.BRANCH' | translate }}
+              <span class="required">*</span>
+            </span>
+          </label>
+          <app-search-dropdown
+            [items]="branches()"
+            [displayWith]="branchLabel"
+            [compareWith]="branchCompare"
+            [clearable]="false"
+            [placeholder]="'PRODUCTS.INVENTORY_LOCATIONS.BRANCH_PLACEHOLDER' | translate"
+            [value]="selectedBranch()"
+            (valueChange)="onBranchPicked($any($event))"/>
+          @if (branchCtrl.touched && branchCtrl.errors?.['required']) {
+            <p class="field-error">{{ 'PRODUCTS.INVENTORY_LOCATIONS.BRANCH_REQUIRED' | translate }}</p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Products -->
+    <section class="card">
+      <header class="card__head card__head--with-action">
+        <div>
+          <h2 class="card__title">{{ 'PRODUCTS.INVENTORY_LOCATIONS.PRODUCTS' | translate }}</h2>
+          <p class="card__sub">
+            {{ 'PRODUCTS.INVENTORY_LOCATIONS.PRODUCTS_DESC' | translate }}
+            @if (products().length > 0) {
+              <span class="card__count">· {{ products().length }}</span>
+            }
+          </p>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" (click)="openPickProducts()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          {{ 'PRODUCTS.INVENTORY_LOCATIONS.SELECT_PRODUCTS' | translate }}
+        </button>
+      </header>
+
+      <div class="card__body card__body--list">
+        @if (products().length === 0) {
+          <div class="empty">
+            <p>{{ 'PRODUCTS.INVENTORY_LOCATIONS.PRODUCTS_EMPTY' | translate }}</p>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="openPickProducts()">
+              {{ 'PRODUCTS.INVENTORY_LOCATIONS.SELECT_PRODUCTS' | translate }}
+            </button>
+          </div>
+        } @else {
+          <label class="search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              type="text"
+              [value]="productSearch()"
+              (input)="productSearch.set($any($event.target).value)"
+              [placeholder]="'PRODUCTS.INVENTORY_LOCATIONS.SEARCH_ASSIGNED' | translate"
+            />
+          </label>
+
+          <ul class="prod-list">
+            @for (p of filteredProducts(); track p.id) {
+              <li class="prod">
+                <div class="prod__body">
+                  <span class="prod__name">{{ p.name || '—' }}</span>
+                  <span class="prod__meta">
+                    @if (p.type) { <span class="app-product-badge">{{ p.type }}</span> }
+                    @if (p.barcode) { <span class="app-product-badge app-product-badge--barcode">{{ p.barcode }}</span> }
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="prod__remove"
+                  (click)="removeProduct(p.id)"
+                  [attr.aria-label]="'COMMON.DELETE' | translate"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || loading() || form.invalid">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

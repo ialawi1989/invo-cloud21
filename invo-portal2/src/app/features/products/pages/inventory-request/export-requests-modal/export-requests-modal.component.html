@@ -1,0 +1,28 @@
+<app-modal-header [title]="'PRODUCTS.INVENTORY_REQUEST.EXPORT_MODAL.TITLE' | translate" />
+
+<div class="erm__body">
+  @if (!exporting()) {
+    <p class="erm__hint">{{ 'PRODUCTS.INVENTORY_REQUEST.EXPORT_MODAL.HINT' | translate }}</p>
+    <app-segmented-toggle
+      [options]="formatOptions"
+      [value]="format()"
+      (valueChange)="format.set($any($event))"/>
+    @if (errorMsg()) {
+      <p class="erm__error">{{ errorMsg() }}</p>
+    }
+  } @else {
+    <div class="erm__loading">
+      <div class="erm__spinner" aria-hidden="true"></div>
+      <p>{{ 'PRODUCTS.INVENTORY_REQUEST.EXPORT_MODAL.EXPORTING' | translate }}</p>
+    </div>
+  }
+</div>
+
+<app-modal-footer>
+  <button type="button" class="erm-btn" [disabled]="exporting()" (click)="cancel()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="erm-btn erm-btn--primary" [disabled]="exporting()" (click)="startExport()">
+    {{ 'PRODUCTS.INVENTORY_REQUEST.EXPORT' | translate }}
+  </button>
+</app-modal-footer>

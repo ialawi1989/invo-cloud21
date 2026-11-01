@@ -1,0 +1,42 @@
+@if (doc(); as d) {
+  <app-doc-view-shell
+    [docTitle]="title()" railTitle="PRODUCTS.INVENTORY_REQUEST.TITLE" [showAdd]="canAdd"
+    [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()"
+    [railPageCount]="railPageCount()" [selectedId]="id"
+    [printItems]="printItems()" [showEdit]="canEdit()" [showPaper]="false" [loading]="loading()"
+    (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railPrev)="railPrev()" (railNext)="railNext()"
+    (add)="add()" (close)="goToList()" (edit)="edit()">
+
+    @if (canConvert()) {
+      <button toolbarExtra type="button" class="dv-tool" (click)="convertToPo()">
+        {{ 'PRODUCTS.INVENTORY_REQUEST.CONVERT_TO_PO' | translate }}
+      </button>
+    }
+
+    @if (d.purchaseOrders.length) {
+      <div banner class="dv-banner dv-banner--info">
+        {{ 'PRODUCTS.INVENTORY_REQUEST.CONVERTED_POS' | translate }}:
+        @for (po of d.purchaseOrders; track po.id) {
+          <a [routerLink]="['/account/purchase-order/view', po.id]">#{{ po.number }}</a>
+        }
+      </div>
+    }
+    @if (d.transferOrders.length) {
+      <div banner class="dv-banner dv-banner--info">
+        {{ 'PRODUCTS.INVENTORY_REQUEST.CONVERTED_TOS' | translate }}:
+        @for (to of d.transferOrders; track to.id) {
+          <a [routerLink]="['/inventory/transfer', to.id]">#{{ to.number }}</a>
+        }
+      </div>
+    }
+
+    <div alt class="ir-paper-area">
+      <div class="ir-zoom">
+        <label for="ir-zoom">{{ 'PRODUCTS.INVENTORY_REQUEST.ZOOM' | translate }}</label>
+        <input id="ir-zoom" type="range" min="40" max="150" step="5" [ngModel]="zoom()" (ngModelChange)="setZoom($event)" />
+        <span>{{ zoom() }}%</span>
+      </div>
+      <app-inventory-request-paper [data]="paperData()!" [zoom]="zoom()" />
+    </div>
+  </app-doc-view-shell>
+}
