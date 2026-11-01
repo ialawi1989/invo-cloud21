@@ -34,7 +34,6 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { getProductTypeBadgeStyle } from '../../utils/product-type-badge';
 import { ProductDetailDrawerComponent, ProductDetailDrawerData } from '../../components/product-detail-drawer/product-detail-drawer.component';
 import { ProductStockModalComponent, ProductStockModalData } from '../../components/product-stock-modal/product-stock-modal.component';
-import { ImportShopifyModalComponent } from '../../components/import-shopify-modal/import-shopify-modal.component';
 import { BulkTagsModalComponent } from '../../components/bulk-tags-modal/bulk-tags-modal.component';
 import {
   DropdownMenuBtnComponent,
@@ -169,6 +168,33 @@ export class ProductsListComponent implements OnInit {
     return out;
   }
 
+  /** Toolbar "Sort" menu — makes sorting discoverable (header-click sorting
+   *  stays, but nothing on the page hinted at it, and the grid / mobile card
+   *  views have no headers at all). Selecting a field uses the list's own
+   *  asc → desc → off cycle so URL sync (`sortValue`/`sortDirection`) and the
+   *  header arrows stay the single source of truth. */
+  sortMenuItems(): DropdownMenuBtnItem[] {
+    const current = this.listPage?.sortBy();
+    return this.columns.filter(c => c.sortable).map(c => ({
+      label:    c.headerLabel || c.label,
+      click:    () => this.listPage?.onColumnSort(c),
+      disabled: false,
+      danger:   false,
+      checked:  current?.sortValue === c.key,
+      trailing: current?.sortValue === c.key
+        ? (current.sortDirection === 'asc' ? 'up' as const : 'down' as const)
+        : undefined,
+    }));
+  }
+
+  /** Label of the active sort for the toolbar button (empty when unsorted). */
+  currentSortLabel(): string {
+    const current = this.listPage?.sortBy();
+    if (!current) return '';
+    const col = this.columns.find(c => c.key === current.sortValue);
+    return `${col?.headerLabel || col?.label || current.sortValue} ${current.sortDirection === 'asc' ? '↑' : '↓'}`;
+  }
+
   private clickCloseListener = () => this.closeRowMenu();
 
   loadCustomFieldsFn = async (columns: TableColumn[]): Promise<TableColumn[]> => {
@@ -287,7 +313,8 @@ export class ProductsListComponent implements OnInit {
         sortable: false,
         customTemplate: true,
         displayStyle: 'newLine',
-        visible: false,
+        // Legacy default is visible (unit badge beside the name); keep parity.
+        visible: true,
         order: 3,
       },
       {
@@ -460,6 +487,12 @@ export class ProductsListComponent implements OnInit {
       },
       {
         type: 'dropdown',
+        key: 'brandId',
+        label: this.lang.instant('PRODUCTS.FILTERS.BRAND'),
+        loadFn: (params: any) => this.productsService.getBrands(params)
+      },
+      {
+        type: 'dropdown',
         key: 'tags',
         label: this.lang.instant('PRODUCTS.FILTERS.TAGS'),
         multiple: true,
@@ -559,15 +592,6 @@ export class ProductsListComponent implements OnInit {
           label: this.lang.instant('PRODUCTS.ACTIONS.IMPORT_EXPORT'),
           color: 'secondary',
           handler: () => this.openImportExport(),
-        },
-        permission: 'productSecurity.actions.importExport.access',
-      },
-      {
-        action: {
-          id: 'catalog-import-export',
-          label: this.lang.instant('PRODUCTS.ACTIONS.CATALOG_IMPORT_EXPORT'),
-          color: 'secondary',
-          handler: () => this.openShopifyImport(),
         },
         permission: 'productSecurity.actions.importExport.access',
       },
@@ -710,6 +734,9 @@ export class ProductsListComponent implements OnInit {
       type:        this.toArray(filters.types),
       departments: filters.departmentId ? [filters.departmentId] : [],
       categories:  filters.categoryId   ? [filters.categoryId]   : [],
+      // Backend (ProductRepo.listProductFilter) reads `filter.brands` as a
+      // string[] of brand ids → `brandid IN (...)`.
+      brands:      filters.brandId      ? [filters.brandId]      : [],
       tags:        this.toArray(filters.tags),
     };
   }
@@ -939,23 +966,12 @@ export class ProductsListComponent implements OnInit {
     });
   }
 
-  openShopifyImport(): void {
-    // Same closeable-only-via-buttons pattern as the Logs drawer — the
-    // import can run long, so an accidental backdrop click shouldn't
-    // dismiss it. The runner service keeps the import going even if
-    // the modal IS closed mid-run; reopening it re-attaches.
-    this.modalService.open<ImportShopifyModalComponent, void, void>(ImportShopifyModalComponent, {
-      size: 'lg',
-      closeOnBackdrop: false,
-    });
-  }
-
   openImportExport(): void {
     this.router.navigate(['/products/import-export']);
   }
 
   showBulkPrint(): void {
-    this.router.navigate(['/products/label-print'], { queryParams: this.bulkHandoffParams() });
+    this.router.navigate(['/products/bulk-print'], { queryParams: this.bulkHandoffParams() });
   }
 
   showBulkImage(): void {
@@ -963,7 +979,7 @@ export class ProductsListComponent implements OnInit {
   }
 
   openPriceChange(): void {
-    this.router.navigate(['/products/priceChange'], { queryParams: this.bulkHandoffParams() });
+    this.router.navigate(['/products/price-change'], { queryParams: this.bulkHandoffParams() });
   }
 
   openTranslation(): void {

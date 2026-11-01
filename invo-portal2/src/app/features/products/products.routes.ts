@@ -73,6 +73,26 @@ export const PRODUCTS_ROUTES: Routes = [
     data: { permissionPath: 'productSecurity.actions.printBarcode.access' },
   },
   {
+    // Assign up to 5 images to many products at once. Opened from the products
+    // list "..." menu with `?ids=` (selection) or `search` + `filter_*` params.
+    path: 'bulk-image',
+    canActivate: [translationsLoaded, privilegeGuard],
+    canDeactivate: [unsavedChangesGuard],
+    loadComponent: () =>
+      import('./pages/bulk-image/bulk-image.component').then(m => m.BulkImageComponent),
+    data: { permissionPath: 'productSecurity.actions.bulkImage.access' },
+  },
+  {
+    // Tabbed bulk translation editor (products, matrixes, departments,
+    // categories, option groups, options, brands). Same handoff params as above.
+    path: 'translation',
+    canActivate: [translationsLoaded, privilegeGuard],
+    canDeactivate: [unsavedChangesGuard],
+    loadComponent: () =>
+      import('./pages/products-translations/products-translations.component').then(m => m.ProductsTranslationsComponent),
+    data: { permissionPath: 'productSecurity.actions.translation.access' },
+  },
+  {
     // CSV / XLSX of the local catalogue, in and out. The products-list "..."
     // menu navigated here already, but no route existed, so that menu item
     // was a dead link. Distinct from the Shopify catalog import, which is a
@@ -82,6 +102,23 @@ export const PRODUCTS_ROUTES: Routes = [
     loadComponent: () =>
       import('./pages/import-export/import-export.component').then(m => m.ImportExportComponent),
     data: { permissionPath: 'productSecurity.actions.importExport.access' },
+  },
+  {
+    // Bulk price editor. The list's "..." menu hands over `ids` or
+    // `search` + `filter_*` query params to pre-scope the working set.
+    path: 'price-change',
+    canActivate: [translationsLoaded, privilegeGuard],
+    loadComponent: () =>
+      import('./pages/price-change/price-change.component').then(m => m.PriceChangeComponent),
+    data: { permissionPath: 'priceChangeSecurity.actions.view.access' },
+  },
+  {
+    // Per-branch product + option availability (same query-param handoff).
+    path: 'products-availability',
+    canActivate: [translationsLoaded, privilegeGuard],
+    loadComponent: () =>
+      import('./pages/products-availability/products-availability.component').then(m => m.ProductsAvailabilityComponent),
+    data: { permissionPath: 'productsAvailabilitySecurity.actions.view.access' },
   },
 
   // ── Classifications: Departments ──────────────────────────────────────────

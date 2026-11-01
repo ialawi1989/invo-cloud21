@@ -37,6 +37,7 @@ export class ProductsService {
   // LIST (delegated to ProductListService)
   // ================================================================
   getProductList                     = (...a: Parameters<ProductListService['getProductList']>)                     => this.list.getProductList(...a);
+  getProductListByBranch             = (...a: Parameters<ProductListService['getProductListByBranch']>)             => this.list.getProductListByBranch(...a);
   getProductsListByType              = (...a: Parameters<ProductListService['getProductsListByType']>)              => this.list.getProductsListByType(...a);
   getBarcodesProducts                = (...a: Parameters<ProductListService['getBarcodesProducts']>)                => this.list.getBarcodesProducts(...a);
   productChildsList                  = (...a: Parameters<ProductListService['productChildsList']>)                  => this.list.productChildsList(...a);

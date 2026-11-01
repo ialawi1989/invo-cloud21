@@ -339,6 +339,9 @@
                 }
                 @if (column.sortable && getSortIcon(column)) {
                 <span class="text-brand-600">{{ getSortIcon(column) }}</span>
+                } @else if (column.sortable && sorting.enabled) {
+                <!-- Idle affordance: tells the user this header is clickable. -->
+                <span class="text-slate-300 text-xs leading-none" aria-hidden="true">⇅</span>
                 }
               </div>
               <!-- Column resize handle (desktop): drag to resize, double-click to

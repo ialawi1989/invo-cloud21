@@ -33,6 +33,22 @@
     </p>
   </div>
 
+
+  <!-- ═══ FILE ═══ -->
+  <div class="mt-4 rounded-xl bg-white border border-slate-200 shadow-sm">
+    <button type="button" (click)="toggle('FILE')" [attr.aria-expanded]="isOpen('FILE')"
+      class="w-full flex items-center justify-between gap-4 px-5 py-4 text-start">
+      <span class="min-w-0">
+        <span class="block font-semibold text-slate-900">{{ 'PRODUCTS.IMPORT_EXPORT.GROUP.FILE.TITLE' | translate }}</span>
+        <span class="block text-sm text-slate-500 mt-0.5">{{ 'PRODUCTS.IMPORT_EXPORT.GROUP.FILE.DESC' | translate }}</span>
+      </span>
+      <svg class="w-5 h-5 text-slate-400 flex-shrink-0 transition-transform" [class.rotate-180]="isOpen('FILE')"
+        fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </button>
+    @if (isOpen('FILE')) {
+      <div class="px-5 pb-5">
   <div class="grid gap-5 md:grid-cols-2">
 
     <!-- ═══ Import ═══ -->
@@ -82,7 +98,6 @@
       </button>
     </section>
   </div>
-
   <!-- ═══ Template ═══
        The importer reads columns by position, so the template's column order
        is the contract. The wizard offers both downloads on its own upload
@@ -95,4 +110,81 @@
       {{ 'PRODUCTS.IMPORT_EXPORT.TEMPLATE_CARD.DESC' | translate }}
     </p>
   </section>
+      </div>
+    }
+  </div>
+
+  <!-- ═══ SHEET ═══ -->
+  <div class="mt-4 rounded-xl bg-white border border-slate-200 shadow-sm">
+    <button type="button" (click)="toggle('SHEET')" [attr.aria-expanded]="isOpen('SHEET')"
+      class="w-full flex items-center justify-between gap-4 px-5 py-4 text-start">
+      <span class="min-w-0">
+        <span class="block font-semibold text-slate-900">{{ 'PRODUCTS.IMPORT_EXPORT.GROUP.SHEET.TITLE' | translate }}</span>
+        <span class="block text-sm text-slate-500 mt-0.5">{{ 'PRODUCTS.IMPORT_EXPORT.GROUP.SHEET.DESC' | translate }}</span>
+      </span>
+      <svg class="w-5 h-5 text-slate-400 flex-shrink-0 transition-transform" [class.rotate-180]="isOpen('SHEET')"
+        fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </button>
+    @if (isOpen('SHEET')) {
+      <div class="px-5 pb-5">
+  <div class="grid gap-5 md:grid-cols-2">
+    <section class="flex flex-col p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+      <h3 class="font-semibold text-slate-900 mb-2">{{ 'PRODUCTS.IMPORT_EXPORT.SHEET_IMPORT.TITLE' | translate }}</h3>
+      <p class="text-sm text-slate-500 mb-5 flex-1">{{ 'PRODUCTS.IMPORT_EXPORT.SHEET_IMPORT.DESC' | translate }}</p>
+      <button type="button" (click)="openSheet('import')"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:from-brand-600 hover:to-brand-800 transition-all">
+        {{ 'PRODUCTS.IMPORT_EXPORT.SHEET_IMPORT.BUTTON' | translate }}
+      </button>
+    </section>
+    <section class="flex flex-col p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+      <h3 class="font-semibold text-slate-900 mb-2">{{ 'PRODUCTS.IMPORT_EXPORT.SHEET_EXPORT.TITLE' | translate }}</h3>
+      <p class="text-sm text-slate-500 mb-5 flex-1">{{ 'PRODUCTS.IMPORT_EXPORT.SHEET_EXPORT.DESC' | translate }}</p>
+      <button type="button" (click)="openSheet('export')"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors">
+        {{ 'PRODUCTS.IMPORT_EXPORT.SHEET_EXPORT.BUTTON' | translate }}
+      </button>
+    </section>
+  </div>
+      </div>
+    }
+  </div>
+
+  <!-- ═══ CATALOG ═══ -->
+  <div class="mt-4 rounded-xl bg-white border border-slate-200 shadow-sm">
+    <button type="button" (click)="toggle('CATALOG')" [attr.aria-expanded]="isOpen('CATALOG')"
+      class="w-full flex items-center justify-between gap-4 px-5 py-4 text-start">
+      <span class="min-w-0">
+        <span class="block font-semibold text-slate-900">{{ 'PRODUCTS.IMPORT_EXPORT.GROUP.CATALOG.TITLE' | translate }}</span>
+        <span class="block text-sm text-slate-500 mt-0.5">{{ 'PRODUCTS.IMPORT_EXPORT.GROUP.CATALOG.DESC' | translate }}</span>
+      </span>
+      <svg class="w-5 h-5 text-slate-400 flex-shrink-0 transition-transform" [class.rotate-180]="isOpen('CATALOG')"
+        fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </button>
+    @if (isOpen('CATALOG')) {
+      <div class="px-5 pb-5">
+  <div class="grid gap-5 md:grid-cols-2">
+    <section class="flex flex-col p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+      <h3 class="font-semibold text-slate-900 mb-2">{{ 'PRODUCTS.IMPORT_EXPORT.CATALOG_IMPORT.TITLE' | translate }}</h3>
+      <p class="text-sm text-slate-500 mb-5 flex-1">{{ 'PRODUCTS.IMPORT_EXPORT.CATALOG_IMPORT.DESC' | translate }}</p>
+      <button type="button" (click)="openCatalogImport()"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:from-brand-600 hover:to-brand-800 transition-all">
+        {{ 'PRODUCTS.IMPORT_EXPORT.CATALOG_IMPORT.BUTTON' | translate }}
+      </button>
+    </section>
+    <section class="flex flex-col p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+      <h3 class="font-semibold text-slate-900 mb-2">{{ 'PRODUCTS.IMPORT_EXPORT.CATALOG_EXPORT.TITLE' | translate }}</h3>
+      <p class="text-sm text-slate-500 mb-5 flex-1">{{ 'PRODUCTS.IMPORT_EXPORT.CATALOG_EXPORT.DESC' | translate }}</p>
+      <button type="button" (click)="openCatalogExport()"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors">
+        {{ 'PRODUCTS.IMPORT_EXPORT.CATALOG_EXPORT.BUTTON' | translate }}
+      </button>
+    </section>
+  </div>
+      </div>
+    }
+  </div>
 </div>

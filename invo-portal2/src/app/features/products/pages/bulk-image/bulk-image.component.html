@@ -1,0 +1,60 @@
+<app-list-page
+  [pageTitle]="'PRODUCTS.BULK_IMAGE_PAGE.TITLE' | translate"
+  [pageSubtitle]="'PRODUCTS.BULK_IMAGE_PAGE.HINT' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="loadRows"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="filters"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'bulk-image'"
+  [mobileCardConfig]="mobileCardConfig">
+
+  <div listHeaderActions class="flex items-center gap-3">
+    @if (editedCount() > 0) {
+      <span class="bi-ready">{{ 'PRODUCTS.BULK_IMAGE_PAGE.READY' | translate: { count: editedCount() } }}</span>
+    }
+    <button type="button" (click)="save()" [disabled]="editedCount() === 0 || saving()"
+      class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium whitespace-nowrap bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+      {{ 'PRODUCTS.BULK_IMAGE_PAGE.SAVE' | translate }}
+    </button>
+  </div>
+
+  @if (scopedIds().length > 0) {
+    <div listSubHeader class="bi-scope">
+      <span>{{ 'PRODUCTS.BULK_IMAGE_PAGE.SCOPE_IDS' | translate: { count: scopedIds().length } }}</span>
+      <button type="button" (click)="showAll()">{{ 'PRODUCTS.BULK_IMAGE_PAGE.SCOPE_SHOW_ALL' | translate }}</button>
+    </div>
+  }
+
+  <ng-template listCellTemplate="images" let-row>
+    <div class="bi-slots" [class.bi-slots--edited]="isEdited(row)">
+      @for (img of images(row); track img.id; let i = $index) {
+        <button type="button" class="bi-slot bi-slot--filled"
+          [title]="'PRODUCTS.BULK_IMAGE_PAGE.REMOVE' | translate"
+          [attr.aria-label]="'PRODUCTS.BULK_IMAGE_PAGE.REMOVE' | translate"
+          (click)="removeImage(row, i)">
+          <img [src]="img.thumbnailUrl || img.defaultUrl" alt="" (error)="hideBroken($event)" />
+          <span class="bi-slot__x" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </span>
+        </button>
+      }
+      @if (images(row).length < maxImages) {
+        <button type="button" class="bi-slot bi-slot--add"
+          [title]="'PRODUCTS.BULK_IMAGE_PAGE.ADD' | translate"
+          [attr.aria-label]="'PRODUCTS.BULK_IMAGE_PAGE.ADD' | translate"
+          (click)="addImages(row)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      } @else {
+        <span class="bi-max">{{ 'PRODUCTS.BULK_IMAGE_PAGE.MAX_REACHED' | translate }}</span>
+      }
+    </div>
+  </ng-template>
+</app-list-page>

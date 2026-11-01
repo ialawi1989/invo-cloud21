@@ -1,0 +1,93 @@
+<app-modal-header [title]="'PRODUCTS.CATALOG_EXPORT.TITLE' | translate" />
+
+<div class="ecm__body">
+  <p class="ecm__sub">{{ 'PRODUCTS.CATALOG_EXPORT.SUBTITLE' | translate }}</p>
+
+  <section class="ecm__group">
+    <h4 class="ecm__title">{{ 'PRODUCTS.CATALOG_EXPORT.FORMAT' | translate }}</h4>
+    <app-segmented-toggle [options]="formatOptions" [value]="format()" (valueChange)="format.set($any($event))"/>
+    <p class="ecm__hint">
+      {{ (format() === 'json' ? 'PRODUCTS.CATALOG_EXPORT.JSON_HINT' : 'PRODUCTS.CATALOG_EXPORT.SHEET_HINT') | translate }}
+    </p>
+  </section>
+
+  <section class="ecm__group">
+    <h4 class="ecm__title">{{ 'PRODUCTS.CATALOG_EXPORT.FILTERS' | translate }}</h4>
+    <p class="ecm__hint">{{ 'PRODUCTS.CATALOG_EXPORT.FILTERS_HINT' | translate }}</p>
+
+    <input class="ecm__input" type="text" [disabled]="busy()" [ngModel]="q()" (ngModelChange)="q.set($event)"
+      [placeholder]="'PRODUCTS.CATALOG_EXPORT.SEARCH' | translate"/>
+
+    <div class="ecm__grid">
+      <label class="ecm__field"><span>{{ 'PRODUCTS.CATALOG_EXPORT.VENDOR' | translate }}</span>
+        <input class="ecm__input" type="text" [disabled]="busy()" [ngModel]="vendor()" (ngModelChange)="vendor.set($event)"/></label>
+      <label class="ecm__field"><span>{{ 'PRODUCTS.CATALOG_EXPORT.PRODUCT_TYPE' | translate }}</span>
+        <input class="ecm__input" type="text" [disabled]="busy()" [ngModel]="type()" (ngModelChange)="type.set($event)"/></label>
+      <label class="ecm__field"><span>{{ 'PRODUCTS.CATALOG_EXPORT.TAG' | translate }}</span>
+        <input class="ecm__input" type="text" [disabled]="busy()" [ngModel]="tag()" (ngModelChange)="tag.set($event)"/></label>
+      <label class="ecm__field"><span>{{ 'PRODUCTS.CATALOG_EXPORT.SKU' | translate }}</span>
+        <input class="ecm__input" type="text" [disabled]="busy()" [ngModel]="sku()" (ngModelChange)="sku.set($event)"/></label>
+    </div>
+
+    <div class="ecm__field">
+      <span>{{ 'PRODUCTS.CATALOG_EXPORT.BRANCH' | translate }}</span>
+      <app-search-dropdown
+        [items]="branchItems()"
+        [displayWith]="display"
+        [compareWith]="compare"
+        [toValue]="toValue"
+        [clearable]="true"
+        [searchable]="true"
+        [disabled]="busy()"
+        [placeholder]="'PRODUCTS.CATALOG_EXPORT.ALL_BRANCHES' | translate"
+        [value]="selectedBranchItem()"
+        (valueChange)="onBranchChange($any($event))"/>
+      <small class="ecm__hint">{{ 'PRODUCTS.CATALOG_EXPORT.BRANCH_HINT' | translate }}</small>
+    </div>
+
+    <div class="ecm__field">
+      <span>{{ 'PRODUCTS.CATALOG_EXPORT.TYPES' | translate }}</span>
+      <div class="ecm__types">
+        @for (t of standaloneTypes; track t) {
+          <label class="ecm__check">
+            <input type="checkbox" [disabled]="busy()" [checked]="selectedTypes().has(t)"
+              (change)="toggleType(t, $any($event.target).checked)"/>
+            {{ t }}
+          </label>
+        }
+      </div>
+      <small class="ecm__hint">{{ 'PRODUCTS.CATALOG_EXPORT.TYPES_HINT' | translate }}</small>
+    </div>
+  </section>
+
+  @if (busy() && format() === 'json') {
+    <div class="ecm__progress">
+      <div class="ecm__bar"><div class="ecm__bar-fill" [style.width.%]="percent()"></div></div>
+      @if (pages()) {
+        <small class="ecm__hint">{{ 'PRODUCTS.CATALOG_EXPORT.PAGE_PROGRESS' | translate: { page: page(), pages: pages() } }}</small>
+      }
+    </div>
+  }
+
+  @if (error()) { <p class="ecm__error">{{ error() }}</p> }
+
+  <section class="ecm__group ecm__note">
+    <h4 class="ecm__title">{{ 'PRODUCTS.CATALOG_EXPORT.ROUND_TRIP_HEADING' | translate }}</h4>
+    <ul>
+      <li>{{ 'PRODUCTS.CATALOG_EXPORT.ROUND_TRIP_UPDATE' | translate }}</li>
+      <li>{{ 'PRODUCTS.CATALOG_EXPORT.ROUND_TRIP_LOCKED' | translate }}</li>
+      @if (format() !== 'json') { <li>{{ 'PRODUCTS.CATALOG_EXPORT.ROUND_TRIP_IMAGES' | translate }}</li> }
+    </ul>
+  </section>
+</div>
+
+<app-modal-footer>
+  @if (busy() && format() === 'json') {
+    <button type="button" class="ecm-btn ecm-btn--danger" (click)="cancelRun()">{{ 'COMMON.CANCEL' | translate }}</button>
+  } @else {
+    <button type="button" class="ecm-btn" [disabled]="busy()" (click)="close()">{{ 'COMMON.CANCEL' | translate }}</button>
+  }
+  <button type="button" class="ecm-btn ecm-btn--primary" [disabled]="busy() || noTypesSelected()" (click)="startExport()">
+    {{ 'PRODUCTS.CATALOG_EXPORT.EXPORT' | translate }}
+  </button>
+</app-modal-footer>

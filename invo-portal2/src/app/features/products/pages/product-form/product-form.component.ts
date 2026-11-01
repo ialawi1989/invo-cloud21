@@ -35,6 +35,7 @@ import {
   LogsDrawerData,
 } from '@shared/components/logs-drawer/logs-drawer.component';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { ErrorService } from '@core/http/error.service';
 
 import { ProductsService } from '../../services/products.service';
 import { Product } from '../../models/product-form.model';
@@ -141,6 +142,7 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
   private translate = inject(TranslateService);
   private modalService = inject(ModalService);
   private toast = inject(ToastService);
+  private errorService = inject(ErrorService);
   private el = inject(ElementRef<HTMLElement>);
   readonly privileges = inject(PrivilegeService);
 
@@ -581,6 +583,10 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
     try {
       // Mirrors old cleanup: flatten pricing type + attributes/tags
       info.tags = info.getTags;
+      // The alias-barcodes editor works on the UI-side `barcodesArr: [{value}]`
+      // but the backend (Product model / saveProduct) only reads
+      // `barcodes: [{barcode}]` — without this flatten, aliases are never saved.
+      info.barcodes = info.getBarcodes;
       info.productAttributes = info.productAttributes.filter((a) => a.checked);
       info.branchProduct.forEach((bp: any) => {
         if (bp.selectedPricingType === 'priceBoundary') {
@@ -609,6 +615,13 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
         this.router.navigate(['products'], { queryParams: this.listQueryParams });
       } else {
         this.productForm.enable();
+        // `api.request` hands back the envelope without throwing, so a
+        // business failure (e.g. "Product Name Already used") must be shown here.
+        const msg = res?.msg || res?.message || (typeof res?.data === 'string' ? res.data : '');
+        void this.errorService.showError(
+          msg || 'Failed to save product',
+          msg ? [{ type: 'general', message: msg }] : [],
+        );
       }
     } catch (err) {
       console.error('[product-form] saveProduct failed', err);

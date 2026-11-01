@@ -1,0 +1,142 @@
+<div class="pc">
+  <header class="pc__header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1>{{ 'PRODUCTS.PRICE_CHANGE.TITLE' | translate }}</h1>
+    <p>{{ 'PRODUCTS.PRICE_CHANGE.HINT' | translate }}</p>
+  </header>
+
+  @if (idsMode()) {
+    <div class="pc__scope">
+      <span>{{ 'PRODUCTS.BULK_OPS.SCOPE_IDS' | translate: { count: scope().ids.length } }}</span>
+      <button type="button" class="pc__link" (click)="showAll()">{{ 'PRODUCTS.BULK_OPS.SCOPE_SHOW_ALL' | translate }}</button>
+    </div>
+  } @else {
+    <div class="pc__toolbar">
+      <div class="pc__search">
+        <input type="text" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"
+          (keydown.enter)="onSearch()" [placeholder]="'PRODUCTS.BULK_OPS.SEARCH' | translate"/>
+        @if (searchText()) {
+          <button type="button" class="pc__x" (click)="clearSearch()" aria-label="clear">&times;</button>
+        }
+      </div>
+      <div class="pc__filter">
+        <app-search-dropdown [items]="typeItems()" [multiple]="true" [displayWith]="display" [compareWith]="compare"
+          [searchable]="false" [placeholder]="'PRODUCTS.BULK_OPS.FILTER_TYPE' | translate"
+          [value]="selectedTypes()" (valueChange)="onTypes($any($event))"/>
+      </div>
+      <div class="pc__filter">
+        <app-search-dropdown [loadFn]="loadDepartments" [displayWith]="display" [compareWith]="compare"
+          [placeholder]="'PRODUCTS.BULK_OPS.FILTER_DEPARTMENT' | translate"
+          [value]="departmentItem()" (valueChange)="onDepartment($any($event))"/>
+      </div>
+      <div class="pc__filter">
+        <app-search-dropdown [loadFn]="loadCategories" [displayWith]="display" [compareWith]="compare"
+          [placeholder]="'PRODUCTS.BULK_OPS.FILTER_CATEGORY' | translate"
+          [value]="categoryItem()" (valueChange)="onCategory($any($event))"/>
+      </div>
+      @if (hasFilters()) {
+        <button type="button" class="pc__link" (click)="clearFilters()">{{ 'PRODUCTS.BULK_OPS.CLEAR_FILTERS' | translate }}</button>
+      }
+    </div>
+  }
+
+  <div class="pc__bar">
+    <div class="pc__bar-left">
+      <button type="button" class="pc__btn pc__btn--primary" [disabled]="selected().size === 0" (click)="togglePanel()">
+        {{ 'PRODUCTS.PRICE_CHANGE.PERFORM_CHANGE' | translate }}
+        @if (selected().size) { <span class="pc__pill">{{ selected().size }}</span> }
+      </button>
+      @if (editedCount()) {
+        <span class="pc__muted">{{ 'PRODUCTS.PRICE_CHANGE.EDITED' | translate: { count: editedCount() } }}</span>
+        <button type="button" class="pc__link" (click)="discardAll()">{{ 'PRODUCTS.PRICE_CHANGE.RESET' | translate }}</button>
+      }
+    </div>
+    @if (!idsMode()) {
+      <div class="pc__pager">
+        <span>{{ 'PRODUCTS.BULK_OPS.PAGE_OF' | translate: { page: scope().page, pages: pageCount(), count: count() } }}</span>
+        <div class="pc__limit">
+          <app-search-dropdown [items]="limitItems" [displayWith]="display" [compareWith]="compare" [clearable]="false"
+            [searchable]="false" [value]="selectedLimit()" (valueChange)="onLimit($any($event))"/>
+        </div>
+        <button type="button" (click)="goTo(-1)" [disabled]="scope().page <= 1" [attr.aria-label]="'PRODUCTS.BULK_OPS.PREV' | translate">&lsaquo;</button>
+        <button type="button" (click)="goTo(1)" [disabled]="scope().page >= pageCount()" [attr.aria-label]="'PRODUCTS.BULK_OPS.NEXT' | translate">&rsaquo;</button>
+      </div>
+    }
+  </div>
+
+  @if (panelOpen()) {
+    <div class="pc__panel">
+      <div class="pc__field">
+        <label>{{ 'PRODUCTS.PRICE_CHANGE.ON_BRANCH' | translate }}</label>
+        <app-search-dropdown [items]="branchItems()" [displayWith]="display" [compareWith]="compare" [clearable]="false"
+          [value]="selectedBranchItem()" (valueChange)="onFormulaBranch($any($event))"/>
+      </div>
+      <div class="pc__field pc__field--formula">
+        <label>{{ 'PRODUCTS.PRICE_CHANGE.FORMULA' | translate }}</label>
+        <div class="pc__formula">
+          <div class="pc__op">
+            <app-search-dropdown [items]="operandItems" [displayWith]="display" [compareWith]="compare" [clearable]="false"
+              [searchable]="false" [value]="selectedOperand()" (valueChange)="onOperand($any($event))"/>
+          </div>
+          <input type="number" min="0" step="any" [ngModel]="amount()" (ngModelChange)="amount.set($event)"
+            [placeholder]="'PRODUCTS.PRICE_CHANGE.VALUE' | translate"/>
+        </div>
+      </div>
+      <div class="pc__panel-actions">
+        <button type="button" class="pc__btn" (click)="panelOpen.set(false)">{{ 'PRODUCTS.PRICE_CHANGE.CANCEL' | translate }}</button>
+        <button type="button" class="pc__btn pc__btn--primary" [disabled]="amount() === null" (click)="applyFormula()">
+          {{ 'PRODUCTS.PRICE_CHANGE.APPLY' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="pc__card" [class.is-loading]="loading()">
+    @if (!loading() && rows().length === 0) {
+      <div class="pc__state">{{ 'PRODUCTS.BULK_OPS.EMPTY' | translate }}</div>
+    } @else {
+      <div class="pc__scroll">
+        <table class="pc__table">
+          <thead>
+            <tr>
+              <th class="pc__chk">
+                <input type="checkbox" [checked]="allSelected()" (change)="onSelectAll($any($event.target).checked)"/>
+              </th>
+              <th class="pc__name">{{ 'PRODUCTS.PRICE_CHANGE.NAME' | translate }}</th>
+              @for (b of branches(); track b.id) { <th class="pc__num">{{ b.name }}</th> }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.productId) {
+              <tr [class.is-selected]="selected().has(row.productId)">
+                <td class="pc__chk">
+                  <input type="checkbox" [checked]="selected().has(row.productId)"
+                    (change)="onSelect(row, $any($event.target).checked)"/>
+                </td>
+                <td class="pc__name">{{ row.name }}</td>
+                @for (b of branches(); track b.id) {
+                  <td class="pc__num">
+                    @if (stocked(row, b.id)) {
+                      <input type="number" step="any" min="0" class="pc__price"
+                        [class.is-modified]="isModified(row, b.id)"
+                        [value]="priceOf(row, b.id) ?? ''" [placeholder]="row.defaultPrice ?? ''"
+                        (input)="onPriceInput(row, b.id, $any($event.target).value)"/>
+                    } @else {
+                      <span class="pc__na" [title]="'PRODUCTS.PRICE_CHANGE.NOT_STOCKED' | translate">&mdash;</span>
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <div class="pc__footer">
+    <button type="button" class="pc__btn pc__btn--primary" [disabled]="editedCount() === 0 || saving()" (click)="save()">
+      {{ 'PRODUCTS.PRICE_CHANGE.SAVE' | translate }}
+    </button>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -11,6 +11,9 @@ import {
 
 import { ProductCrudService } from '../../services/product-crud.service';
 import { buildProductImportConfig } from './product-import.config';
+import { ImportShopifyModalComponent } from '../../components/import-shopify-modal/import-shopify-modal.component';
+import { ExportCatalogModalComponent } from '../../components/export-catalog-modal/export-catalog-modal.component';
+import { ProductSheetComponent } from '../product-sheet/product-sheet.component';
 import { ExportProductsModalComponent } from './export-products-modal/export-products-modal.component';
 
 /**
@@ -41,6 +44,15 @@ export class ImportExportComponent {
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
 
+  /** Sections start collapsed; opening one doesn't close the others. */
+  private readonly open = signal<ReadonlySet<string>>(new Set());
+  isOpen = (key: string): boolean => this.open().has(key);
+  toggle(key: string): void {
+    const next = new Set(this.open());
+    if (!next.delete(key)) next.add(key);
+    this.open.set(next);
+  }
+
   async openImport(): Promise<void> {
     const config: ImportWizardConfig = buildProductImportConfig(this.crud, this.translate);
     const ref = this.modal.open<ImportWizardComponent, ImportWizardConfig, ImportSummaryCounts | undefined>(
@@ -58,6 +70,31 @@ export class ImportExportComponent {
       { size: 'sm', closeOnBackdrop: false },
     );
     await ref.afterClosed();
+  }
+
+  /** Catalog (Shopify) import — can run long, so only the buttons close it;
+   *  the runner service keeps going if it IS closed mid-run. */
+  openCatalogImport(): void {
+    this.modal.open<ImportShopifyModalComponent, void, void>(ImportShopifyModalComponent, {
+      size: 'lg',
+      closeOnBackdrop: false,
+    });
+  }
+
+  openCatalogExport(): void {
+    this.modal.open<ExportCatalogModalComponent, void, void>(ExportCatalogModalComponent, {
+      size: 'lg',
+      closeOnBackdrop: false,
+    });
+  }
+
+  /** Product spreadsheet — stepped import (Upload → Preview → Import → Done) / column-picker export. */
+  openSheet(tab: 'import' | 'export'): void {
+    this.modal.open<ProductSheetComponent, { tab: 'import' | 'export' }, void>(ProductSheetComponent, {
+      size: 'lg',
+      data: { tab },
+      closeOnBackdrop: false,
+    });
   }
 
   backToList(): void {

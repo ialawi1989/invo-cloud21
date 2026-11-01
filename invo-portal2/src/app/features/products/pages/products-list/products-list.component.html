@@ -49,6 +49,24 @@
     }
   </div>
 
+  <!-- ═══ Sort control (toolbar) — discoverable alternative to header clicks ═══ -->
+  <div listToolbarEnd>
+    <app-dropdown-menu-btn
+      [items]="sortMenuItems()"
+      [appendToBody]="true"
+      [chevron]="false"
+      align="end"
+      triggerClass="flex items-center gap-2 h-10 px-3 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors text-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h13M3 12h9M3 17h5M17 8v10m0 0l-3-3m3 3l3-3"/>
+      </svg>
+      <span>{{ 'PRODUCTS.SORT.LABEL' | translate }}</span>
+      @if (currentSortLabel()) {
+        <span class="text-brand-600 font-medium">{{ currentSortLabel() }}</span>
+      }
+    </app-dropdown-menu-btn>
+  </div>
+
   <!-- Custom Name Template (with matrix expand). Image thumbnail is rendered
        INSIDE this cell (toggled via the `image` column's visibility), matching
        the old InvoCloudFront2 product-list behavior where the image is a

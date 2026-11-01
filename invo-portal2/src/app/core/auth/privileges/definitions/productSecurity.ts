@@ -38,6 +38,10 @@ export function productSecurity() {
         name: "Bulk Print Barcodes",
         securityType: "cloud",
       }),
+      "bulkImage": new PrivilegeSetting({
+        name: "Bulk Image",
+        securityType: "cloud",
+      }),
       "clone": new PrivilegeSetting({
         name: "Clone Product",
         securityType: "cloud",

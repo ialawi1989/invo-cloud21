@@ -1,0 +1,281 @@
+<div [class]="inModal ? 'px-5 pb-4 max-h-[calc(100vh-260px)] overflow-y-auto' : 'max-w-5xl mx-auto pb-24'">
+
+  @if (inModal) {
+    <app-modal-header [title]="(tab() === 'import' ? 'PRODUCTS.PRODUCT_SHEET.IMPORT_TITLE' : 'PRODUCTS.PRODUCT_SHEET.EXPORT_TITLE') | translate"
+      [subtitle]="(tab() === 'import' ? 'PRODUCTS.PRODUCT_SHEET.IMPORT_SUBTITLE' : 'PRODUCTS.PRODUCT_SHEET.EXPORT_SUBTITLE') | translate" />
+    @if (tab() === 'import') {
+      <app-wizard-steps [steps]="wizardSteps" [current]="step()" />
+    }
+    <div class="h-3"></div>
+  } @else {
+  <!-- ═══ Header ═══ -->
+  <div class="flex items-start justify-between gap-4 mb-5">
+    <div>
+      <h1 class="text-xl font-semibold text-slate-900">{{ 'PRODUCTS.PRODUCT_SHEET.TITLE' | translate }}</h1>
+      <p class="text-sm text-slate-500 mt-1">
+        {{ (tab() === 'import' ? 'PRODUCTS.PRODUCT_SHEET.IMPORT_SUBTITLE' : 'PRODUCTS.PRODUCT_SHEET.EXPORT_SUBTITLE') | translate }}
+      </p>
+    </div>
+    <button type="button" (click)="backToList()"
+      class="px-4 py-2.5 rounded-lg font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors whitespace-nowrap">
+      {{ 'PRODUCTS.IMPORT_EXPORT.BACK_TO_LIST' | translate }}
+    </button>
+  </div>
+  }
+
+  @if (registryError()) {
+    <p class="rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2" role="alert">{{ registryError() }}</p>
+  } @else if (!registry()) {
+    <div class="flex justify-center py-16">
+      <span class="w-8 h-8 border-4 border-slate-200 border-t-brand-600 rounded-full animate-spin" aria-hidden="true"></span>
+    </div>
+  } @else {
+
+    <div class="mb-5" [hidden]="inModal">
+      <!-- Locked while writing: the result only reaches this page. -->
+      <app-segmented-toggle [options]="tabOptions" [value]="tab()"
+        (valueChange)="step() === 'importing' ? null : tab.set($any($event))"/>
+    </div>
+
+    <!-- Hidden rather than removed, so the export choices survive switching tabs. -->
+    <div [hidden]="tab() !== 'export'">
+      <app-product-sheet-export [registry]="registry()!" [branches]="branches()"/>
+    </div>
+
+    <div [hidden]="tab() !== 'import'" class="flex flex-col gap-5">
+
+      <!-- ═══ Step 1: file and options ═══ -->
+      @if (step() === 'file') {
+
+        @if (importBusy()) {
+          <p class="rounded-lg border border-amber-300 bg-amber-50 text-amber-900 text-sm px-3 py-2" role="alert">
+            {{ importBusy() }} {{ 'PRODUCTS.PRODUCT_SHEET.IMPORT_BUSY_HINT' | translate }}
+          </p>
+        }
+
+        <section class="rounded-xl border border-slate-200 bg-white p-4">
+          <label class="block text-sm font-semibold text-slate-800 mb-1">{{ 'PRODUCTS.PRODUCT_SHEET.FILE' | translate }}</label>
+          @for (k of [fileKey()]; track k) {
+            <input type="file" accept=".xlsx,.xls,.csv" (change)="onFile($event)"
+              class="block w-full text-sm text-slate-600 file:me-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-brand-50 file:text-brand-700 file:font-medium"/>
+          }
+          <p class="text-xs text-slate-500 mt-1">{{ 'PRODUCTS.PRODUCT_SHEET.FILE_HINT' | translate }}</p>
+          @if (parsing()) { <p class="text-sm text-slate-500 mt-2">{{ 'PRODUCTS.PRODUCT_SHEET.READING' | translate }}</p> }
+          @if (sheet() && !parsing() && !fileError()) {
+            <p class="text-sm text-slate-700 mt-2">
+              {{ fileName() }} — {{ 'PRODUCTS.PRODUCT_SHEET.FILE_SUMMARY' | translate: { rows: sheet()!.rows.length, columns: sheet()!.headers.length } }}
+            </p>
+          }
+          @if (fileError()) {
+            <p class="text-sm text-red-600 mt-2">{{ fileError()! | translate: { max: maxRows } }}</p>
+          }
+        </section>
+
+        @if (sheet() && !fileError()) {
+
+          <!-- Branch columns go to every ticked branch; the others are not touched. -->
+          @if (hasBranchColumns() && branches().length > 1) {
+            <section class="rounded-xl border border-slate-200 bg-white p-4">
+              <label class="block text-sm font-semibold text-slate-800 mb-1">{{ 'PRODUCTS.PRODUCT_SHEET.BRANCHES' | translate }}</label>
+              <p class="text-xs text-slate-500 mb-2">{{ 'PRODUCTS.PRODUCT_SHEET.BRANCHES_HINT' | translate }}</p>
+              <label class="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1 cursor-pointer">
+                <input type="checkbox" [checked]="allBranchesSelected()" (change)="toggleAllBranches($any($event.target).checked)"/>
+                {{ 'PRODUCTS.PRODUCT_SHEET.ALL_BRANCHES' | translate }}
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-1 ps-6">
+                @for (b of branches(); track b.id) {
+                  <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                    <input type="checkbox" [checked]="branchIds().has(b.id)" (change)="toggleBranch(b.id, $any($event.target).checked)"/>
+                    {{ b.name }}
+                  </label>
+                }
+              </div>
+              @if (branchIds().size === 0) {
+                <p class="text-sm text-red-600 mt-1">{{ 'PRODUCTS.PRODUCT_SHEET.BRANCHES_REQUIRED' | translate }}</p>
+              }
+            </section>
+          }
+
+          @if (needsStockBranch()) {
+            <section class="rounded-xl border border-slate-200 bg-white p-4">
+              <label class="block text-sm font-semibold text-slate-800 mb-1">
+                {{ 'PRODUCTS.PRODUCT_SHEET.STOCK_BRANCH' | translate }} <span class="text-red-500">*</span>
+              </label>
+              <app-search-dropdown
+                [items]="branchItems()"
+                [displayWith]="display"
+                [compareWith]="compare"
+                [toValue]="toValue"
+                [clearable]="false"
+                [searchable]="true"
+                [placeholder]="'PRODUCTS.PRODUCT_SHEET.CHOOSE_BRANCH' | translate"
+                [value]="selectedStockBranchItem()"
+                (valueChange)="onStockBranchChange($any($event))"/>
+              <p class="text-xs text-slate-500 mt-1">{{ 'PRODUCTS.PRODUCT_SHEET.STOCK_BRANCH_HINT' | translate }}</p>
+            </section>
+          }
+
+          <section class="rounded-xl border border-slate-200 bg-white p-4">
+            <label class="block text-sm font-semibold text-slate-800 mb-2">{{ 'PRODUCTS.PRODUCT_SHEET.EXISTING' | translate }}</label>
+            <app-segmented-toggle [options]="onExistingOptions" [value]="onExisting()" (valueChange)="onExisting.set($any($event))"/>
+          </section>
+
+          <section class="rounded-xl border border-slate-200 bg-white p-4">
+            <label class="block text-sm font-semibold text-slate-800 mb-2">{{ 'PRODUCTS.PRODUCT_SHEET.EMPTY_CELLS' | translate }}</label>
+            <app-segmented-toggle [options]="emptyCellsOptions" [value]="emptyCells()" (valueChange)="emptyCells.set($any($event))"/>
+            <p class="text-xs text-slate-500 mt-2">
+              {{ (emptyCells() === 'clear' ? 'PRODUCTS.PRODUCT_SHEET.EMPTY_CLEAR_HINT' : 'PRODUCTS.PRODUCT_SHEET.EMPTY_KEEP_HINT')
+                  | translate: { token: registry()!.clearToken } }}
+            </p>
+          </section>
+        }
+
+        @if (requestError()) {
+          <p class="rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2" role="alert">{{ requestError() }}</p>
+        }
+
+        <div class="flex justify-end" [hidden]="inModal">
+          <button type="button" [disabled]="!optionsValid() || previewing()" (click)="preview()"
+            class="px-5 py-2.5 rounded-lg font-medium text-white bg-gradient-to-r from-brand-500 to-brand-700 shadow hover:from-brand-600 hover:to-brand-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+            {{ 'PRODUCTS.PRODUCT_SHEET.RUN_PREVIEW' | translate }}
+          </button>
+        </div>
+      }
+
+      <!-- ═══ Step 2: preview ═══ -->
+      @if (step() === 'preview' && report()) {
+        <p class="rounded-lg border border-sky-200 bg-sky-50 text-sky-800 text-sm px-3 py-2">{{ 'PRODUCTS.PRODUCT_SHEET.PREVIEW_NOTE' | translate }}</p>
+
+        <!-- The whole request was refused (e.g. two columns for one field). The report below is from the last preview that went through. -->
+        @if (requestError()) {
+          <p class="rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2" role="alert">{{ requestError() }}</p>
+        }
+
+        <!-- A tick or mapping made a branch choice necessary that step 1 did not ask for. -->
+        @if (!optionsValid()) {
+          <p class="rounded-lg border border-amber-300 bg-amber-50 text-amber-900 text-sm px-3 py-2" role="alert">
+            {{ 'PRODUCTS.PRODUCT_SHEET.OPTIONS_NOW_INVALID' | translate }}
+          </p>
+        }
+
+        <section class="rounded-xl border border-slate-200 bg-white p-4">
+          <div class="flex items-center gap-2 mb-1">
+            <label class="text-sm font-semibold text-slate-800">{{ 'PRODUCTS.PRODUCT_SHEET.DETECTED_COLUMNS' | translate }}</label>
+            @if (previewing()) { <span class="w-4 h-4 border-2 border-slate-200 border-t-brand-600 rounded-full animate-spin" aria-hidden="true"></span> }
+          </div>
+          <p class="text-xs text-slate-500 mb-2">{{ 'PRODUCTS.PRODUCT_SHEET.DETECTED_COLUMNS_HINT' | translate }}</p>
+          <div class="flex flex-wrap gap-2">
+            @for (entry of detectedColumns(); track entry.header) {
+              <label class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg border text-sm cursor-pointer"
+                [class]="entry.included ? 'border-slate-200 bg-white text-slate-700' : 'border-slate-200 bg-slate-50 text-slate-400 line-through'">
+                <input type="checkbox" [checked]="entry.included" [disabled]="previewing()"
+                  (change)="toggleColumn(entry.header, $any($event.target).checked)"/>
+                {{ entry.header }}
+                @if (entry.column && entry.column.header !== entry.header) {
+                  <span class="text-slate-400">→ {{ entry.column.header }}</span>
+                }
+              </label>
+            }
+          </div>
+        </section>
+
+        @if (mappableHeaders().length) {
+          <section class="rounded-xl border border-amber-300 bg-amber-50/50 p-4">
+            <label class="block text-sm font-semibold text-slate-800 mb-1">{{ 'PRODUCTS.PRODUCT_SHEET.UNKNOWN_COLUMNS' | translate }}</label>
+            <p class="text-xs text-slate-500 mb-3">{{ 'PRODUCTS.PRODUCT_SHEET.UNKNOWN_COLUMNS_HINT' | translate }}</p>
+            <div class="flex flex-col gap-2">
+              @for (header of mappableHeaders(); track header) {
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 items-center">
+                  <div class="sm:col-span-2 text-sm font-medium text-slate-700 truncate" [title]="header">{{ header }}</div>
+                  <div class="sm:col-span-3">
+                    <app-search-dropdown
+                      [items]="mappingItems()"
+                      [displayWith]="display"
+                      [compareWith]="compare"
+                      [toValue]="toValue"
+                      [groupBy]="groupBy"
+                      [clearable]="true"
+                      [searchable]="true"
+                      [disabled]="previewing()"
+                      [placeholder]="'PRODUCTS.PRODUCT_SHEET.IGNORE_COLUMN' | translate"
+                      [value]="mappingItemFor(header)"
+                      (valueChange)="mapColumn(header, $any($event))"/>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <div [class.opacity-60]="previewing()">
+          <app-product-sheet-report [report]="report()!" mode="preview"/>
+        </div>
+
+        <div class="flex items-center justify-between gap-3" [hidden]="inModal">
+          <button type="button" (click)="backToFile()"
+            class="px-4 py-2.5 rounded-lg font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors">
+            {{ 'PRODUCTS.PRODUCT_SHEET.BACK' | translate }}
+          </button>
+          <button type="button" [disabled]="!canCommit()" (click)="commit()"
+            class="px-5 py-2.5 rounded-lg font-medium text-white bg-gradient-to-r from-brand-500 to-brand-700 shadow hover:from-brand-600 hover:to-brand-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+            {{ 'PRODUCTS.PRODUCT_SHEET.COMMIT' | translate: { count: commitCount() } }}
+          </button>
+        </div>
+      }
+
+      <!-- ═══ Step 3: writing ═══ -->
+      @if (step() === 'importing') {
+        <section class="rounded-xl border border-slate-200 bg-white p-6">
+          <h2 class="font-semibold text-slate-900 mb-3">{{ 'PRODUCTS.PRODUCT_SHEET.IMPORTING' | translate }}</h2>
+          <div class="h-2 rounded-full bg-slate-200 overflow-hidden">
+            <div class="h-full bg-brand-600 transition-all" [style.width.%]="progress() ? progressPercent() : 100"
+              [class.animate-pulse]="!progress()"></div>
+          </div>
+          <p class="text-sm text-slate-500 mt-2">
+            @if (progress()) { <span class="font-medium text-slate-700">{{ progress() }}</span> }
+            {{ 'PRODUCTS.PRODUCT_SHEET.IMPORTING_HINT' | translate }}
+          </p>
+        </section>
+      }
+
+      <!-- ═══ Step 4: result ═══ -->
+      @if (step() === 'done' && result()) {
+        <h2 class="font-semibold text-slate-900">{{ 'PRODUCTS.PRODUCT_SHEET.DONE' | translate }}</h2>
+        <app-product-sheet-report [report]="result()!" mode="result"/>
+        <div class="flex items-center justify-between gap-3" [hidden]="inModal">
+          <button type="button" (click)="importAnother()"
+            class="px-4 py-2.5 rounded-lg font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors">
+            {{ 'PRODUCTS.PRODUCT_SHEET.IMPORT_ANOTHER' | translate }}
+          </button>
+          <button type="button" (click)="backToList()"
+            class="px-5 py-2.5 rounded-lg font-medium text-white bg-gradient-to-r from-brand-500 to-brand-700 shadow hover:from-brand-600 hover:to-brand-800 transition-all">
+            {{ 'PRODUCTS.PRODUCT_SHEET.CLOSE' | translate }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (inModal && tab() === 'import') {
+  <app-modal-footer>
+    @switch (step()) {
+      @case ('file') {
+        <button type="button" class="ps-btn ps-btn--ghost" (click)="backToList()">{{ 'COMMON.CANCEL' | translate }}</button>
+        <button type="button" class="ps-btn ps-btn--primary" [disabled]="!optionsValid() || previewing()" (click)="preview()">
+          {{ 'COMMON.NEXT' | translate }}
+        </button>
+      }
+      @case ('preview') {
+        <button type="button" class="ps-btn ps-btn--ghost" (click)="backToFile()">{{ 'PRODUCTS.PRODUCT_SHEET.BACK' | translate }}</button>
+        <button type="button" class="ps-btn ps-btn--primary" [disabled]="!canCommit()" (click)="commit()">
+          {{ 'PRODUCTS.PRODUCT_SHEET.COMMIT' | translate: { count: commitCount() } }}
+        </button>
+      }
+      @case ('done') {
+        <button type="button" class="ps-btn ps-btn--ghost" (click)="importAnother()">{{ 'PRODUCTS.PRODUCT_SHEET.IMPORT_ANOTHER' | translate }}</button>
+        <button type="button" class="ps-btn ps-btn--primary" (click)="backToList()">{{ 'COMMON.DONE' | translate }}</button>
+      }
+    }
+  </app-modal-footer>
+}

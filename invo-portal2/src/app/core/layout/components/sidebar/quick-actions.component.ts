@@ -170,7 +170,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.PRICE_CHANGE',
         description: 'Apply bulk price changes to products.',
         icon: 'price',
-        link: '/products/priceChange',
+        link: '/products/price-change',
         queryParams: { action: 'create' },
         permission: 'priceChangeSecurity.actions.add.access',
       },

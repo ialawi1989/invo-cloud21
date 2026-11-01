@@ -1,0 +1,173 @@
+<div class="pa">
+  <header class="pa__header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1>{{ 'PRODUCTS.AVAILABILITY_PAGE.TITLE' | translate }}</h1>
+    <p>{{ 'PRODUCTS.AVAILABILITY_PAGE.HINT' | translate }}</p>
+  </header>
+
+  @if (idsMode()) {
+    <div class="pa__scope">
+      <span>{{ 'PRODUCTS.BULK_OPS.SCOPE_IDS' | translate: { count: scope().ids.length } }}</span>
+      <button type="button" class="pa__link" (click)="showAll()">{{ 'PRODUCTS.BULK_OPS.SCOPE_SHOW_ALL' | translate }}</button>
+    </div>
+  }
+
+  <div class="pa__toolbar">
+    @if (!idsMode()) {
+      <div class="pa__search">
+        <input type="text" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"
+          (keydown.enter)="onSearch()" [placeholder]="'PRODUCTS.BULK_OPS.SEARCH' | translate"/>
+        @if (searchText()) {
+          <button type="button" class="pa__x" (click)="clearSearch()" aria-label="clear">&times;</button>
+        }
+      </div>
+    }
+    @if (branchItems().length > 1) {
+      <div class="pa__filter">
+        <app-search-dropdown [items]="branchItems()" [displayWith]="display" [compareWith]="compare" [clearable]="false"
+          [value]="selectedBranch()" (valueChange)="onBranch($any($event))"/>
+      </div>
+    }
+    @if (!idsMode()) {
+      <div class="pa__filter">
+        <app-search-dropdown [items]="typeItems()" [multiple]="true" [displayWith]="display" [compareWith]="compare"
+          [searchable]="false" [placeholder]="'PRODUCTS.BULK_OPS.FILTER_TYPE' | translate"
+          [value]="selectedTypes()" (valueChange)="onTypes($any($event))"/>
+      </div>
+      <div class="pa__filter">
+        <app-search-dropdown [loadFn]="loadDepartments" [displayWith]="display" [compareWith]="compare"
+          [placeholder]="'PRODUCTS.BULK_OPS.FILTER_DEPARTMENT' | translate"
+          [value]="departmentItem()" (valueChange)="onDepartment($any($event))"/>
+      </div>
+      <div class="pa__filter">
+        <app-search-dropdown [loadFn]="loadCategories" [displayWith]="display" [compareWith]="compare"
+          [placeholder]="'PRODUCTS.BULK_OPS.FILTER_CATEGORY' | translate"
+          [value]="categoryItem()" (valueChange)="onCategory($any($event))"/>
+      </div>
+      @if (hasFilters()) {
+        <button type="button" class="pa__link" (click)="clearFilters()">{{ 'PRODUCTS.BULK_OPS.CLEAR_FILTERS' | translate }}</button>
+      }
+      <div class="pa__pager">
+        <span>{{ 'PRODUCTS.BULK_OPS.PAGE_OF' | translate: { page: scope().page, pages: pageCount(), count: count() } }}</span>
+        <div class="pa__limit">
+          <app-search-dropdown [items]="limitItems" [displayWith]="display" [compareWith]="compare" [clearable]="false"
+            [searchable]="false" [value]="selectedLimit()" (valueChange)="onLimit($any($event))"/>
+        </div>
+        <button type="button" (click)="goTo(-1)" [disabled]="scope().page <= 1" [attr.aria-label]="'PRODUCTS.BULK_OPS.PREV' | translate">&lsaquo;</button>
+        <button type="button" (click)="goTo(1)" [disabled]="scope().page >= pageCount()" [attr.aria-label]="'PRODUCTS.BULK_OPS.NEXT' | translate">&rsaquo;</button>
+      </div>
+    }
+  </div>
+
+  <div class="pa__card" [class.is-loading]="loading()">
+    @if (!loading() && rows().length === 0) {
+      <div class="pa__state">{{ 'PRODUCTS.BULK_OPS.EMPTY' | translate }}</div>
+    } @else {
+      <div class="pa__scroll">
+        <table class="pa__table">
+          <thead>
+            <tr>
+              <th>{{ 'PRODUCTS.AVAILABILITY_PAGE.PRODUCT' | translate }}</th>
+              <th>{{ 'PRODUCTS.AVAILABILITY_PAGE.TYPE' | translate }}</th>
+              <th>{{ 'PRODUCTS.AVAILABILITY_PAGE.DEPARTMENT' | translate }}</th>
+              <th>{{ 'PRODUCTS.AVAILABILITY_PAGE.CATEGORY' | translate }}</th>
+              <th class="pa__chan">{{ 'PRODUCTS.AVAILABILITY_PAGE.AVAILABLE' | translate }}</th>
+              <th class="pa__chan">{{ 'PRODUCTS.AVAILABILITY_PAGE.AVAILABLE_ONLINE' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.branchProdId) {
+              <tr [class.pa__row--options]="row.hasOptions">
+                <td class="pa__name">
+                  @if (row.hasOptions) {
+                    <button type="button" class="pa__expand" (click)="toggleOptions(row)" [attr.aria-expanded]="isExpanded(row)">
+                      <span class="pa__chev" [class.is-open]="isExpanded(row)">&#9662;</span>{{ row.name }}
+                    </button>
+                  } @else {
+                    {{ row.name }}
+                  }
+                </td>
+                <td>{{ typeLabel(row.type) }}</td>
+                <td>{{ row.departmentName || '—' }}</td>
+                <td>{{ row.categoryName || '—' }}</td>
+                <td class="pa__chan">
+                  <div class="pa__ctl">
+                    <app-toggle size="sm" [checked]="row.available" (checkedChange)="setAvailable(row, 'store', $event)"/>
+                    @if (row.available) {
+                      <button type="button" class="pa__pause" [class.is-on]="row.notAvailableUntil" (click)="togglePause(row, 'store')">
+                        {{ 'PRODUCTS.AVAILABILITY_PAGE.PAUSE' | translate }}
+                      </button>
+                    }
+                  </div>
+                  @if (row.notAvailableUntil && row.available) {
+                    <small class="pa__warn">{{ 'PRODUCTS.AVAILABILITY_PAGE.NOT_AVAILABLE_UNTIL' | translate: { date: (row.notAvailableUntil | date: 'dd/MM/yyyy HH:mm') } }}</small>
+                  }
+                </td>
+                <td class="pa__chan">
+                  <div class="pa__ctl">
+                    <app-toggle size="sm" [checked]="row.availableOnline" (checkedChange)="setAvailable(row, 'online', $event)"/>
+                    @if (row.availableOnline) {
+                      <button type="button" class="pa__pause" [class.is-on]="row.notAvailableOnlineUntil" (click)="togglePause(row, 'online')">
+                        {{ 'PRODUCTS.AVAILABILITY_PAGE.PAUSE' | translate }}
+                      </button>
+                    }
+                  </div>
+                  @if (row.notAvailableOnlineUntil && row.availableOnline) {
+                    <small class="pa__warn">{{ 'PRODUCTS.AVAILABILITY_PAGE.NOT_AVAILABLE_UNTIL' | translate: { date: (row.notAvailableOnlineUntil | date: 'dd/MM/yyyy HH:mm') } }}</small>
+                  }
+                </td>
+              </tr>
+
+              @if (row.hasOptions && isExpanded(row)) {
+                @if (optionsLoading().has(row.branchProdId) && !optionGroups()[row.branchProdId]) {
+                  <tr class="pa__opt"><td colspan="6" class="pa__muted">...</td></tr>
+                }
+                @for (group of optionGroups()[row.branchProdId]; track group.groupName) {
+                  <tr class="pa__opt pa__opt--group"><td colspan="6">{{ group.groupName }}</td></tr>
+                  @for (opt of group.options; track opt.optionId) {
+                    <tr class="pa__opt">
+                      <td colspan="4" class="pa__opt-name">
+                        {{ opt.optionName }}
+                        @if (opt.isDisabled) { <span class="pa__badge">{{ 'PRODUCTS.AVAILABILITY_PAGE.DISABLED' | translate }}</span> }
+                      </td>
+                      <td class="pa__chan">
+                        @if (!opt.isDisabled) {
+                          <div class="pa__ctl">
+                            <app-toggle size="sm" [checked]="opt.available" (checkedChange)="setOptionAvailable(row, opt, 'store', $event)"/>
+                            @if (opt.available) {
+                              <button type="button" class="pa__pause" [class.is-on]="opt.pauseUntil" (click)="toggleOptionPause(row, opt, 'store')">
+                                {{ 'PRODUCTS.AVAILABILITY_PAGE.PAUSE' | translate }}
+                              </button>
+                            }
+                          </div>
+                          @if (opt.pauseUntil && opt.available) {
+                            <small class="pa__warn">{{ 'PRODUCTS.AVAILABILITY_PAGE.NOT_AVAILABLE_UNTIL' | translate: { date: (opt.pauseUntil | date: 'dd/MM/yyyy HH:mm') } }}</small>
+                          }
+                        }
+                      </td>
+                      <td class="pa__chan">
+                        @if (!opt.isDisabled) {
+                          <div class="pa__ctl">
+                            <app-toggle size="sm" [checked]="opt.availableOnline" (checkedChange)="setOptionAvailable(row, opt, 'online', $event)"/>
+                            @if (opt.availableOnline) {
+                              <button type="button" class="pa__pause" [class.is-on]="opt.OnlinePauseUntil" (click)="toggleOptionPause(row, opt, 'online')">
+                                {{ 'PRODUCTS.AVAILABILITY_PAGE.PAUSE' | translate }}
+                              </button>
+                            }
+                          </div>
+                          @if (opt.OnlinePauseUntil && opt.availableOnline) {
+                            <small class="pa__warn">{{ 'PRODUCTS.AVAILABILITY_PAGE.NOT_AVAILABLE_UNTIL' | translate: { date: (opt.OnlinePauseUntil | date: 'dd/MM/yyyy HH:mm') } }}</small>
+                          }
+                        }
+                      </td>
+                    </tr>
+                  }
+                }
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

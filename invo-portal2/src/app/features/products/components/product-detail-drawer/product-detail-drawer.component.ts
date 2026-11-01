@@ -809,7 +809,11 @@ export class ProductDetailDrawerComponent implements OnInit {
     if (!p) return;
     // Close the drawer first so the user lands on the edit route cleanly.
     this.ref.dismiss();
-    this.router.navigate(['/products/form', p.id], { queryParams: { type: p.type } });
+    if (p.type === 'matrix' && !(p as any).parentId && !(p as any).parent_id) {
+      this.router.navigate(['/matrix-item', p.id]);
+      return;
+    }
+    this.router.navigate(['/products/form', p.type || 'inventory', p.id]);
   }
 }
 

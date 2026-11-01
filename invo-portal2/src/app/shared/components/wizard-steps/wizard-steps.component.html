@@ -1,0 +1,21 @@
+<div class="ws">
+  @for (s of steps(); let idx = $index; track s.key) {
+    <div class="ws__step"
+      [class.ws__step--active]="idx === currentIndex()"
+      [class.ws__step--done]="idx < currentIndex()">
+      <span class="ws__dot">
+        @if (idx < currentIndex()) {
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        } @else {
+          {{ idx + 1 }}
+        }
+      </span>
+      <span class="ws__label">{{ s.label | translate }}</span>
+      @if (idx < steps().length - 1) {
+        <span class="ws__line"></span>
+      }
+    </div>
+  }
+</div>

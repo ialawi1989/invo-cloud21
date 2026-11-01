@@ -1,0 +1,64 @@
+@for (current of [entity()]; track current) {
+  <app-list-page
+    [pageTitle]="'PRODUCTS.TRANSLATION_PAGE.TITLE' | translate"
+    [breadcrumbs]="breadcrumbs()"
+    [columns]="columns()"
+    [dataSource]="loadRows"
+    [pagination]="paginationConfig"
+    [search]="searchConfig()"
+    [sorting]="sortingConfig"
+    [filters]="filters()"
+    [headerActions]="[]"
+    [selectable]="false"
+    [fitContent]="true"
+    [emptyState]="emptyState()"
+    [entityType]="'translation-' + current"
+    [mobileCardConfig]="mobileCardConfig">
+
+    <div listHeaderActions class="flex items-center gap-3">
+      @if (editedCount() > 0) {
+        <span class="tr-edited">{{ 'PRODUCTS.TRANSLATION_PAGE.EDITED' | translate: { count: editedCount() } }}</span>
+      }
+      <button type="button" (click)="save()" [disabled]="editedCount() === 0 || saving()"
+        class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium whitespace-nowrap bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+        {{ 'PRODUCTS.TRANSLATION_PAGE.SAVE' | translate }}
+      </button>
+    </div>
+
+    <div listSubHeader class="tr-subheader">
+      <app-segmented-toggle [options]="tabs()" [value]="entity()" (valueChange)="setTab($event)" />
+      @if (scopedIds().length > 0) {
+        <div class="tr-scope">
+          <span>{{ 'PRODUCTS.TRANSLATION_PAGE.SCOPE_IDS' | translate: { count: scopedIds().length } }}</span>
+          <button type="button" (click)="showAll()">{{ 'PRODUCTS.TRANSLATION_PAGE.SCOPE_SHOW_ALL' | translate }}</button>
+        </div>
+      }
+    </div>
+
+    <ng-template listCellTemplate="tr_name" let-row>
+      <ng-container *ngTemplateOutlet="cell; context: { $implicit: row, field: fieldByKey('name') }" />
+    </ng-template>
+    <ng-template listCellTemplate="tr_description" let-row>
+      <ng-container *ngTemplateOutlet="cell; context: { $implicit: row, field: fieldByKey('description') }" />
+    </ng-template>
+    <ng-template listCellTemplate="tr_displayName" let-row>
+      <ng-container *ngTemplateOutlet="cell; context: { $implicit: row, field: fieldByKey('displayName') }" />
+    </ng-template>
+  </app-list-page>
+}
+
+<!-- One translatable cell: per-language chips + the shared "Translation" link. -->
+<ng-template #cell let-row let-field="field">
+  <div class="tr-cell" [class.tr-cell--edited]="isEdited(row)">
+    <div class="tr-chips">
+      @for (e of entries(row, field); track e.code) {
+        <span class="tr-chip" [title]="e.value">
+          <b>{{ e.code }}</b><span class="tr-chip__text">{{ e.value }}</span>
+        </span>
+      } @empty {
+        <span class="tr-none">{{ 'PRODUCTS.TRANSLATION_PAGE.NOT_TRANSLATED' | translate }}</span>
+      }
+    </div>
+    <app-translate-link (clicked)="edit(row, field)" />
+  </div>
+</ng-template>

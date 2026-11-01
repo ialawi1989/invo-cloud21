@@ -1,8 +1,19 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import { TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/http';
 import { resolveLocalizedName } from '@shared/utils/localized-name';
 import { ProductListParams, ProductListResponse, DropdownPage } from './product.types';
+import {
+  CatalogExportEnvelope,
+  CatalogExportQuery,
+  ProductSheetExportRequest,
+  ProductSheetImportRequest,
+  ProductSheetImportResponse,
+  ProductSheetRegistry,
+} from '../models/product-sheet/product-sheet.types';
 
 /**
  * Product List Service
@@ -12,6 +23,8 @@ import { ProductListParams, ProductListResponse, DropdownPage } from './product.
 export class ProductListService {
   private api = inject(ApiService);
   private translate = inject(TranslateService);
+  private http = inject(HttpClient);
+  private baseUrl = environment.backendUrl;
 
   async getProductList(params: ProductListParams): Promise<ProductListResponse> {
     const res = await this.api.request(this.api.post('product/getProductList', params));
@@ -19,6 +32,26 @@ export class ProductListService {
       list: res?.data?.list || [],
       count: res?.data?.count || 0,
       pageCount: res?.data?.pageCount || 0,
+    };
+  }
+
+  /**
+   * Price-change grid source (legacy `getProductListByBranch`). One row per
+   * product with its per-branch prices. The backend honours page / limit /
+   * searchTerm / filter{type,departments,categories} but has no id filter.
+   */
+  async getProductListByBranch(params: {
+    page: number;
+    limit: number;
+    searchTerm?: string;
+    filter?: { type?: string[]; departments?: string[]; categories?: string[] };
+  }): Promise<{ list: any[]; count: number; pageCount: number }> {
+    const res = await this.api.request<any>(this.api.post('product/getBranchsProducts', params));
+    const data = res?.data ?? {};
+    return {
+      list: Array.isArray(data.list) ? data.list : [],
+      count: Number(data.count ?? 0) || 0,
+      pageCount: Number(data.pageCount ?? 0) || 0,
     };
   }
 
@@ -246,6 +279,93 @@ export class ProductListService {
       console.error('Failed to load custom fields', e);
       return [];
     }
+  }
+
+  // ─── Product spreadsheet (v2) + catalog export ─────────────
+  // Routes verified against InvoCloudBack src/routes/v1/app/product.ts:
+  //   GET  product/import/columns   → getProductImportColumns
+  //   POST product/import           → importProductsV2 (dryRun in options)
+  //   POST product/export           → exportProductsV2 (file stream)
+  //   GET|POST product/exportCatalogProducts → json page OR csv/xlsx file
+
+  /** Column registry of the spreadsheet import: columns, groups, presets. */
+  async getProductSheetColumns(): Promise<ProductSheetRegistry> {
+    const res: any = await this.api.raw(this.api.get('product/import/columns'));
+    // Tolerates the registry arriving bare or wrapped in the usual envelope.
+    return (res?.data?.columns ? res.data : res) as ProductSheetRegistry;
+  }
+
+  /** Preview (`options.dryRun`) or run a spreadsheet import. Raw envelope —
+   *  callers check `.success` (a held import lock comes back as success:false). */
+  async importProductSheet(body: ProductSheetImportRequest): Promise<ProductSheetImportResponse> {
+    return this.api.raw(this.api.post('product/import', body)) as Promise<ProductSheetImportResponse>;
+  }
+
+  async exportProductSheet(body: ProductSheetExportRequest): Promise<{ blob: Blob; fileName: string }> {
+    return this.fetchFile(
+      this.http.post(`${this.baseUrl}product/export`, body, { observe: 'response', responseType: 'blob' }),
+      `products-${new Date().toISOString().slice(0, 10)}.${body.format}`,
+    );
+  }
+
+  /** One page of the JSON catalog export. */
+  async exportCatalogProductsPage(
+    query: CatalogExportQuery,
+  ): Promise<{ success: boolean; msg: string; data: CatalogExportEnvelope }> {
+    return this.api.raw(this.api.get('product/exportCatalogProducts', { ...this.cleanQuery(query), format: 'json' })) as any;
+  }
+
+  /** CSV / XLSX catalog export — one file, one row per variant. */
+  async exportCatalogProductsFile(query: CatalogExportQuery): Promise<{ blob: Blob; fileName: string }> {
+    return this.fetchFile(
+      this.http.get(`${this.baseUrl}product/exportCatalogProducts`, {
+        params: this.cleanQuery(query), observe: 'response', responseType: 'blob',
+      }),
+      `catalog-products-${new Date().toISOString().slice(0, 10)}.${query.format ?? 'csv'}`,
+    );
+  }
+
+  /** Empty values are left out of the request. */
+  private cleanQuery(query: CatalogExportQuery): Record<string, string> {
+    const out: Record<string, string> = {};
+    Object.entries(query).forEach(([k, v]) => {
+      if (v != null && String(v).trim() !== '') out[k] = String(v).trim();
+    });
+    return out;
+  }
+
+  /**
+   * Resolve a blob download. A failure still arrives as a blob (the response
+   * type is fixed before the server chooses to answer JSON), so both the 200
+   * JSON-error case and the HTTP-error case are unwrapped into the message.
+   */
+  private async fetchFile(
+    req: import('rxjs').Observable<HttpResponse<Blob>>,
+    fallbackName: string,
+  ): Promise<{ blob: Blob; fileName: string }> {
+    let response: HttpResponse<Blob>;
+    try {
+      response = await firstValueFrom(req);
+    } catch (e: any) {
+      const body = e?.error;
+      if (body instanceof Blob) {
+        try { throw new Error(JSON.parse(await body.text())?.msg || 'Export failed.'); }
+        catch (inner: any) { throw inner instanceof SyntaxError ? new Error('Export failed.') : inner; }
+      }
+      throw e;
+    }
+    const blob = response.body as Blob;
+    if (blob?.type?.includes('application/json')) {
+      throw new Error(JSON.parse(await blob.text())?.msg || 'Export failed.');
+    }
+    const disposition = response.headers.get('Content-Disposition') ?? '';
+    const match = disposition.match(/filename*?=(?:UTF-8'')?"?([^";]+)"?/i);
+    return { blob, fileName: match ? decodeURIComponent(match[1]) : fallbackName };
+  }
+
+  /** Lock check shared by the legacy windows: `success:false` + msg while another import runs. */
+  async getBulkImportProgress(): Promise<any> {
+    return this.api.request(this.api.get('product/getBulkImportProgress'));
   }
 
   // ─── Media ─────────────────────────────────────────────────

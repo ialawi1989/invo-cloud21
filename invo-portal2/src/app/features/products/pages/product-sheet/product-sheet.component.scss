@@ -1,0 +1,23 @@
+.ps-btn {
+  appearance: none;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 120ms ease;
+
+  &--ghost {
+    background: #f3f4f6;
+    border-color: #e5e7eb;
+    color: #334155;
+    &:hover:not(:disabled) { background: #e5e7eb; }
+  }
+  &--primary {
+    background: var(--color-brand-600, #0891b2);
+    color: #fff;
+    &:hover:not(:disabled) { background: var(--color-brand-700, #0e7490); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}
