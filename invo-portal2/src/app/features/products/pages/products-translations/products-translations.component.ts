@@ -129,6 +129,10 @@ export class ProductsTranslationsComponent implements CanLeaveComponent {
         primary: true,
         locked: true,
         visible: true,
+        // Fixed width + wrapping template (below) so long names wrap inside
+        // their column instead of running under the translations.
+        customTemplate: true,
+        width: '280px',
         order: 0,
       } as TableColumn,
       ...def.fields.map((f, i) => ({

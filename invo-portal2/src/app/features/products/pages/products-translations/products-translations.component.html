@@ -1,5 +1,6 @@
 @for (current of [entity()]; track current) {
   <app-list-page
+    style="--lp-sticky-col-w: 280px"
     [pageTitle]="'PRODUCTS.TRANSLATION_PAGE.TITLE' | translate"
     [breadcrumbs]="breadcrumbs()"
     [columns]="columns()"
@@ -35,6 +36,12 @@
       }
     </div>
 
+    <ng-template listCellTemplate="name" let-row>
+      <span class="block min-w-0 whitespace-normal break-words">{{ row.name }}</span>
+    </ng-template>
+    <ng-template listCellTemplate="title" let-row>
+      <span class="block min-w-0 whitespace-normal break-words">{{ row.title }}</span>
+    </ng-template>
     <ng-template listCellTemplate="tr_name" let-row>
       <ng-container *ngTemplateOutlet="cell; context: { $implicit: row, field: fieldByKey('name') }" />
     </ng-template>
