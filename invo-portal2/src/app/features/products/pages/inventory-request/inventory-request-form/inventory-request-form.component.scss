@@ -57,7 +57,7 @@
   .w-act { width: 44px; }
 }
 // One control height for the row, same as the invoice form's lines table.
-:host ::ng-deep .lines td .qi { height: 38px; }
+:host ::ng-deep .lines td .qi { --qi-h: 38px; }
 :host ::ng-deep .lines td app-search-dropdown { display: block; }
 .pname { font-weight: 600; color: #0f172a; }
 .pbadges { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }

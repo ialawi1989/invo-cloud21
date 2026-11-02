@@ -58,7 +58,11 @@ import { ScrollTopButtonComponent } from '@shared/components/scroll-top/scroll-t
       height: calc(100vh - 56px);
       height: calc(100dvh - 56px);
       min-height: unset;
+      /* clip, not hidden: hidden still lets focus()/scrollIntoView() scroll
+         the box programmatically, which pushed the page header behind the
+         fixed top bar after navigating in. clip forbids any scroll offset. */
       overflow: hidden;
+      overflow: clip;
       display: flex;
       flex-direction: column;
     }

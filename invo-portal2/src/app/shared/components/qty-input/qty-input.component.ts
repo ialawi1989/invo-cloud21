@@ -68,6 +68,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
         inputmode="decimal"
         class="qi__field"
         [value]="display()"
+        [style.width.ch]="display().length + 1"
         [disabled]="disabled()"
         (input)="onInput($any($event.target).value)"
         (blur)="onBlur()"
@@ -98,8 +99,12 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
     .qi {
       display: flex;
-      width: 100%;
-      height: 36px;
+      // Grows with the typed number (the field below is sized in ch) but
+      // never shrinks under the cell it sits in.
+      width: max-content;
+      min-width: 100%;
+      --qi-h: 36px;
+      height: var(--qi-h);
       align-items: stretch;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
@@ -123,8 +128,9 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 34px;
-      min-width: 34px;   // hold against flex shrink in tight cells
+      // Square: as wide as the control is tall.
+      width: var(--qi-h);
+      min-width: var(--qi-h);   // hold against flex shrink in tight cells
       background: transparent;
       border: 0;
       color: #475569;
@@ -148,8 +154,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
     .qi__field {
       flex: 1 1 auto;
-      min-width: 0;       // let the text clip inside a tight cell, not overflow the row
-      width: 100%;
+      min-width: 3ch;
       padding: 0 6px;
       border: 0;
       outline: none;
@@ -176,8 +181,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
     // Compact variant — useful inside tight table cells.
     .qi--sm {
-      height: 30px;
-      .qi__btn  { width: 28px; min-width: 28px; }
+      --qi-h: 30px;
       .qi__field { font-size: 13px; }
     }
   `],
