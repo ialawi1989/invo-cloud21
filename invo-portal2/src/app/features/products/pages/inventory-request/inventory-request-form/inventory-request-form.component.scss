@@ -21,6 +21,20 @@
   &__add { padding: 8px 14px; border: 0; border-radius: 6px; background: #eef1f6; color: #227d8d; font-weight: 500; font-size: 13.5px; cursor: pointer;
     &:hover:not(:disabled) { background: #e2e8f0; } &:disabled { opacity: .5; cursor: not-allowed; } }
 }
+.il__tools { display: flex; align-items: center; gap: 18px; margin-inline-start: auto; }
+:host ::ng-deep .il__link, .il__link { background: none; border: 0; color: #227d8d; font-size: 13.5px; cursor: pointer; padding: 0; display: inline-flex; align-items: center; gap: 6px;
+  &:hover { text-decoration: underline; } &--danger { color: #dc2626; } }
+.il__scan { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #f1f5f9; border-bottom: 1px solid #e5e7eb;
+  label { font-weight: 600; color: #334155; white-space: nowrap; }
+  &-input { flex: 1; max-width: 520px; border: 1px solid #2691a4; border-radius: 8px; padding: 9px 12px; font: inherit; }
+  &-msg { color: #dc2626; font-size: 13px; padding: 6px 16px 0; } }
+.il__bulk { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; background: #e6f4f6; border-bottom: 1px solid #cfe8ec;
+  &-count { font-weight: 600; color: #155e75; font-size: 13px; }
+  &-dd { width: 240px; max-width: 100%; display: block; &--sm { width: 170px; } }
+  &-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #2691a4; background: #2691a4; color: #fff; font-weight: 600; font-size: 13.5px; cursor: pointer;
+    &:disabled { opacity: .45; cursor: not-allowed; } &--danger { background: #fff; color: #dc2626; border-color: #fecaca; } } }
+.il__x { margin-inline-start: auto; border: 0; background: none; color: #dc2626; cursor: pointer; }
+.w-check { width: 32px; }
 .all-supplier { display: flex; align-items: center; gap: 10px;
   label { font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; }
   &__dd { width: 260px; max-width: 100%; display: block; } }
@@ -31,21 +45,34 @@
     border-bottom: 1px solid #e5e7eb; border-inline-start: 1px solid #eef2f6; white-space: nowrap; .req { color: #dc2626; margin-inline-start: 2px; } }
   th:first-child { border-inline-start: 0; }
   td { padding: 10px 12px; border-bottom: 1px solid #eef2f6; border-inline-start: 1px solid #eef2f6; vertical-align: middle; }
-  td:first-child, td.w-act { border-inline-start: 0; }
+  td:first-child, td.w-handle, td.w-num, td.w-act { border-inline-start: 0; }
   .end { text-align: end; }
+  .w-handle { width: 22px; padding-inline: 4px; }
   .w-num { width: 44px; color: #94a3b8; }
-  .w-qty { width: 150px; }
-  .w-cost { width: 110px; white-space: nowrap; }
+  .w-qty { width: 130px; text-align: end; }
+  .w-cost { width: 110px; white-space: nowrap; text-align: end; }
   .w-sup { width: 240px; }
   .w-pri { width: 140px; }
   .w-total { width: 120px; white-space: nowrap; font-weight: 600; }
   .w-act { width: 44px; }
 }
+// One control height for the row, same as the invoice form's lines table.
+:host ::ng-deep .lines td .qi { height: 38px; }
+:host ::ng-deep .lines td app-search-dropdown { display: block; }
 .pname { font-weight: 600; color: #0f172a; }
 .pbadges { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
 .rm { width: 28px; height: 28px; border: 1px solid #d0d5dd; border-radius: 50%; background: #fff; color: #dc2626; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center; &:hover { background: #fef2f2; border-color: #fecaca; } }
 
+.handle { display: inline-flex; color: #94a3b8; cursor: grab; &:hover { color: #475569; } }
+.cdk-drag-preview { box-shadow: 0 6px 20px rgba(15, 23, 42, .18); background: #fff; display: table; }
+.cdk-drag-placeholder { opacity: .35; }
+
+// Totals card (same look as the invoice form's totals panel), end-aligned.
+.totals { margin-inline-start: auto; width: 100%; max-width: 440px; padding: 16px 20px; background: #fff; border: 1px solid #e4e7ec; border-radius: 12px;
+  display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; color: #475569;
+  &__row { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    &--sub { color: #0f172a; font-weight: 700; padding-top: 6px; border-top: 1px solid #eef2f6; }
+    &--total { color: #0f172a; font-size: 17px; font-weight: 700; padding-top: 10px; border-top: 1px solid #e5e7eb; strong { font-size: 18px; } } } }
 .lines-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; flex-wrap: wrap; }
-.grand { margin-inline-start: auto; display: flex; gap: 24px; min-width: 240px; justify-content: space-between; padding: 10px 14px; border: 1px solid #e4e7ec; border-radius: 8px; font-size: 14px; }
 .df-error.pad { padding: 8px 16px 0; }

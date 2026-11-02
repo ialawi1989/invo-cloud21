@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
@@ -9,7 +10,7 @@ import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { resolveLocalizedName } from '@shared/utils/localized-name';
-import { DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { DocFormShellComponent } from '../../../../account/components/doc-form-shell/doc-form-shell.component';
@@ -66,7 +67,7 @@ const blankLine = (supplier: SupplierMini | null): FormLine => ({
   standalone: true,
   imports: [
     CommonModule, RouterLink, FormsModule, TranslateModule, DocFormShellComponent, LoadingOverlayComponent,
-    SearchDropdownComponent, QtyInputComponent, MycurrencyPipe,
+    CdkDropList, CdkDrag, CdkDragHandle, DropdownMenuBtnComponent, SearchDropdownComponent, QtyInputComponent, MycurrencyPipe,
     InventoryRequestPaperComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -268,6 +269,103 @@ export class InventoryRequestFormComponent implements OnInit, CanLeaveComponent 
   addLine(): void {
     if (this.lastIsPicker()) return;
     this.lines.update((ls) => [...ls, blankLine(this.supplierForAll())]);
+  }
+
+  /** Reorder product rows; the trailing "pick a product" row always stays last. */
+  drop(event: CdkDragDrop<unknown>): void {
+    const ls = [...this.lines()];
+    const productCount = ls.filter((l) => !!l.productId).length;
+    const from = event.previousIndex;
+    const to = Math.min(event.currentIndex, productCount - 1);
+    if (from === to || from >= productCount) return;
+    const [moved] = ls.splice(from, 1);
+    ls.splice(to, 0, moved);
+    this.lines.set(ls);
+    this.touch();
+  }
+
+  // -- scan item --------------------------------------------------------------
+  scanOpen = signal(false);
+  scanMessage = signal('');
+
+  /** Look the code up by barcode / SKU / name and add it (or bump the qty if it is already a line). */
+  async onScan(input: HTMLInputElement): Promise<void> {
+    const code = input.value.trim();
+    if (!code) return;
+    this.scanMessage.set('');
+    try {
+      const { items } = await this.service.getProductsPage({ page: 1, limit: 20, searchTerm: code });
+      const lc = code.toLowerCase();
+      const hit = items.find((p) => (p.barcode ?? '').toLowerCase() === lc) ?? (items.length === 1 ? items[0] : null);
+      if (!hit) {
+        this.scanMessage.set(this.translate.instant('PRODUCTS.INVENTORY_REQUEST.SCAN_NOT_FOUND', { code }));
+        return;
+      }
+      const existing = this.lines().find((l) => l.productId === hit.id);
+      if (existing) {
+        this.patch(existing, { qty: existing.qty + 1 });
+      } else {
+        if (!this.lastIsPicker()) this.addLine();
+        const picker = this.lines()[this.lines().length - 1];
+        this.pickProduct(picker, hit);
+      }
+      input.value = '';
+    } catch {
+      this.scanMessage.set(this.translate.instant('PRODUCTS.INVENTORY_REQUEST.SCAN_NOT_FOUND', { code }));
+    }
+  }
+
+  // -- bulk actions -----------------------------------------------------------
+  bulkMode = signal(false);
+  selected = signal<ReadonlySet<number>>(new Set());
+  bulkSupplier = signal<SupplierMini | null>(null);
+
+  bulkMenu = computed<DropdownMenuBtnItem[]>(() => {
+    this.i18nTick();
+    return [{
+      label: this.translate.instant('PRODUCTS.INVENTORY_REQUEST.BULK_SELECT'),
+      click: () => this.bulkMode.set(true), disabled: false, danger: false,
+    }];
+  });
+
+  isSelected(l: FormLine): boolean { return this.selected().has(l.uid); }
+  toggleSelect(l: FormLine): void {
+    const next = new Set(this.selected());
+    if (!next.delete(l.uid)) next.add(l.uid);
+    this.selected.set(next);
+  }
+  allSelected = computed(() => this.productLines().length > 0 && this.productLines().every((l) => this.selected().has(l.uid)));
+  toggleSelectAll(): void {
+    this.selected.set(this.allSelected() ? new Set() : new Set(this.productLines().map((l) => l.uid)));
+  }
+  closeBulk(): void { this.bulkMode.set(false); this.selected.set(new Set()); this.bulkSupplier.set(null); }
+
+  bulkAssignSupplier(s: any): void {
+    const sup = (s as SupplierMini) ?? null;
+    this.bulkSupplier.set(sup);
+    if (!sup || !this.selected().size) return;
+    this.lines.update((ls) => ls.map((l) => (this.selected().has(l.uid) ? { ...l, supplier: sup } : l)));
+    this.touch();
+  }
+  bulkSetPriority(p: any): void {
+    const value = (p as Priority | null)?.value;
+    if (!value || !this.selected().size) return;
+    this.lines.update((ls) => ls.map((l) => (this.selected().has(l.uid) ? { ...l, priority: value } : l)));
+    this.touch();
+  }
+  async bulkRemove(): Promise<void> {
+    if (!this.selected().size) return;
+    const ok = await this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(ConfirmModalComponent, {
+      size: 'sm',
+      data: { title: this.translate.instant('COMMON.REMOVE'), message: this.translate.instant('PRODUCTS.INVENTORY_REQUEST.CONFIRM_REMOVE_SELECTED', { count: this.selected().size }), danger: true },
+    }).afterClosed();
+    if (!ok) return;
+    this.lines.update((ls) => {
+      const next = ls.filter((l) => !this.selected().has(l.uid));
+      return next.length && !next[next.length - 1].productId ? next : [...next, blankLine(this.supplierForAll())];
+    });
+    this.closeBulk();
+    this.touch();
   }
 
   async removeLine(line: FormLine): Promise<void> {

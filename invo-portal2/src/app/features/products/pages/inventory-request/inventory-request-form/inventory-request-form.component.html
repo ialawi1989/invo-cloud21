@@ -49,6 +49,16 @@
     <section class="il">
       <header class="il__head">
         <h3>{{ 'PRODUCTS.INVENTORY_REQUEST.LINES' | translate }}</h3>
+        <div class="il__tools">
+          <button type="button" class="il__link" (click)="scanOpen.set(true)">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>
+            {{ 'PRODUCTS.INVENTORY_REQUEST.SCAN_ITEM' | translate }}
+          </button>
+          <app-dropdown-menu-btn [items]="bulkMenu()" [appendToBody]="true" align="end" triggerClass="il__link">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
+            {{ 'PRODUCTS.INVENTORY_REQUEST.BULK_ACTIONS' | translate }}
+          </app-dropdown-menu-btn>
+        </div>
         <div class="all-supplier">
           <label>{{ 'PRODUCTS.INVENTORY_REQUEST.ASSIGN_SUPPLIER_ALL' | translate }}</label>
           <app-search-dropdown
@@ -62,11 +72,50 @@
             [searchPlaceholder]="'COMMON.SEARCH' | translate" />
         </div>
       </header>
+      @if (scanOpen()) {
+        <div class="il__scan">
+          <label>{{ 'PRODUCTS.INVENTORY_REQUEST.PRODUCT' | translate }}</label>
+          <input #scan class="il__scan-input" type="text" autofocus
+            [placeholder]="'PRODUCTS.INVENTORY_REQUEST.SCAN_PLACEHOLDER' | translate" (keydown.enter)="onScan(scan)"/>
+          <button type="button" class="il__link il__link--danger" (click)="scanOpen.set(false); scanMessage.set('')">
+            {{ 'PRODUCTS.INVENTORY_REQUEST.CLOSE_SCAN' | translate }} &#10005;
+          </button>
+        </div>
+        @if (scanMessage()) { <div class="il__scan-msg">{{ scanMessage() }}</div> }
+      }
+      @if (bulkMode()) {
+        <div class="il__bulk">
+          <span class="il__bulk-count">{{ 'PRODUCTS.INVENTORY_REQUEST.SELECTED_COUNT' | translate: { count: selected().size } }}</span>
+          <div class="il__bulk-dd">
+            <app-search-dropdown
+              [loadFn]="loadSuppliers" [displayWith]="supplierLabel" [compareWith]="byId"
+              [value]="bulkSupplier()" (valueChange)="bulkAssignSupplier($event)"
+              [disabled]="!selected().size"
+              [placeholder]="'PRODUCTS.INVENTORY_REQUEST.BULK_ASSIGN_SUPPLIER' | translate"
+              [searchPlaceholder]="'COMMON.SEARCH' | translate" />
+          </div>
+          <div class="il__bulk-dd il__bulk-dd--sm">
+            <app-search-dropdown
+              [items]="priorities" [displayWith]="priorityLabel" [compareWith]="byValue"
+              [value]="null" (valueChange)="bulkSetPriority($event)"
+              [disabled]="!selected().size" [clearable]="false" [searchable]="false"
+              [placeholder]="'PRODUCTS.INVENTORY_REQUEST.BULK_SET_PRIORITY' | translate" />
+          </div>
+          <button type="button" class="il__bulk-btn il__bulk-btn--danger" [disabled]="!selected().size" (click)="bulkRemove()">
+            {{ 'PRODUCTS.INVENTORY_REQUEST.BULK_REMOVE' | translate }}
+          </button>
+          <button type="button" class="il__x" (click)="closeBulk()" aria-label="close">&#10005;</button>
+        </div>
+      }
       <div class="il__body">
         <div class="table-wrap">
           <table class="lines">
             <thead>
               <tr>
+                <th class="w-handle"></th>
+                @if (bulkMode()) {
+                  <th class="w-check"><input type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll()"/></th>
+                }
                 <th class="w-num">#</th>
                 <th>{{ 'PRODUCTS.INVENTORY_REQUEST.PRODUCT' | translate }}<span class="req">*</span></th>
                 <th class="w-qty">{{ 'PRODUCTS.INVENTORY_REQUEST.QTY' | translate }}<span class="req">*</span></th>
@@ -77,9 +126,19 @@
                 <th class="w-act"></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody cdkDropList (cdkDropListDropped)="drop($event)">
               @for (line of lines(); track line.uid; let i = $index) {
-                <tr>
+                <tr cdkDrag [cdkDragDisabled]="!line.productId">
+                  <td class="w-handle">
+                    @if (line.productId) {
+                      <span class="handle" cdkDragHandle [attr.aria-label]="'PRODUCTS.INVENTORY_REQUEST.DRAG' | translate"><svg viewBox="0 0 512 512" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="153.6" cy="451" r="61"/><circle cx="153.6" cy="256" r="61"/><circle cx="153.6" cy="61" r="61"/><circle cx="358.4" cy="256" r="61"/><circle cx="358.4" cy="61" r="61"/><circle cx="358.4" cy="451" r="61"/></svg></span>
+                    }
+                  </td>
+                  @if (bulkMode()) {
+                    <td class="w-check">
+                      @if (line.productId) { <input type="checkbox" [checked]="isSelected(line)" (change)="toggleSelect(line)"/> }
+                    </td>
+                  }
                   <td class="w-num">{{ i + 1 }}</td>
                   @if (!line.productId) {
                     <td colspan="7">
@@ -149,11 +208,28 @@
           <button type="button" class="il__add" [disabled]="lastIsPicker()" (click)="addLine()">
             + {{ 'PRODUCTS.INVENTORY_REQUEST.ADD_LINE' | translate }}
           </button>
-          <div class="grand">
-            <span>{{ 'PRODUCTS.INVENTORY_REQUEST.TOTAL' | translate }}</span>
-            <strong>{{ total() | mycurrency }}</strong>
-          </div>
         </div>
+      </div>
+    </section>
+  }
+
+  @if (!loading()) {
+    <section class="totals">
+      <div class="totals__row">
+        <span>{{ 'PRODUCTS.INVENTORY_REQUEST.ITEMS_COUNT' | translate }}</span>
+        <span>{{ productLines().length }}</span>
+      </div>
+      <div class="totals__row">
+        <span>{{ 'PRODUCTS.INVENTORY_REQUEST.TOTAL_QTY' | translate }}</span>
+        <span>{{ totalQty() }}</span>
+      </div>
+      <div class="totals__row totals__row--sub">
+        <span>{{ 'PRODUCTS.INVENTORY_REQUEST.SUB_TOTAL' | translate }}</span>
+        <strong>{{ total() | mycurrency }}</strong>
+      </div>
+      <div class="totals__row totals__row--total">
+        <span>{{ 'PRODUCTS.INVENTORY_REQUEST.TOTAL' | translate }}</span>
+        <strong>{{ total() | mycurrency }}</strong>
       </div>
     </section>
   }
