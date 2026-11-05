@@ -13,6 +13,7 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown';
+import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { CustomerPickerComponent, CustomerMini } from '@shared/components/customer-picker/customer-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -20,11 +21,15 @@ import { ModalService } from '@shared/modal/modal.service';
 import { CustomerAdvancedSearchModalComponent } from '../../../customers/components/customer-advanced-search-modal/customer-advanced-search-modal.component';
 
 import { CustomersService } from '../../../customers/services/customers.service';
+import { CustomerAddressFieldComponent } from '../../../components/customer-address-field/customer-address-field.component';
+import { CustomerAddress } from '../../../customers/models/customer.model';
 import { CustomerQuickCreateModalComponent } from '../../../customers/components/customer-quick-create-modal/customer-quick-create-modal.component';
 import { InvoicePayment, InvoicePaymentLine } from '../../../models/invoice-payment.model';
 import { SalesLookupsService } from '../../../services/sales-lookups.service';
-import { DocAttachment, DocAttachmentsComponent } from '../../../components/doc-attachments/doc-attachments.component';
+import { DocAttachment } from '../../../components/doc-attachments/doc-attachments.component';
+import { DocAttachmentsCardComponent } from '../../../components/doc-attachments-card/doc-attachments-card.component';
 import { PaymentsService } from '../../services/payments.service';
+import { PaymentActions } from '../../services/payment-actions';
 import { RemainingAmountModalComponent, RemainingChoice } from '../../components/remaining-amount-modal/remaining-amount-modal.component';
 
 /**
@@ -38,7 +43,7 @@ import { RemainingAmountModalComponent, RemainingChoice } from '../../components
   standalone: true,
   imports: [
     CommonModule, FormsModule, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, FormStickyFooterComponent,
-    SearchDropdownComponent, DatePickerComponent, CustomerPickerComponent, DocAttachmentsComponent,
+    SearchDropdownComponent, DatePickerComponent, CustomerPickerComponent, DocAttachmentsCardComponent, DropdownMenuBtnComponent, CustomerAddressFieldComponent,
   ],
   templateUrl: './payment-form.component.html',
   styleUrl: './payment-form.component.scss',
@@ -55,6 +60,7 @@ export class PaymentFormComponent implements OnInit, CanLeaveComponent {
   private payments = inject(PaymentsService);
   private customersService = inject(CustomersService);
   private lookups = inject(SalesLookupsService);
+  private actions = inject(PaymentActions);
 
   private canGoBack = !!this.router.getCurrentNavigation()?.previousNavigation;
   private listParams: Record<string, any> = {};
@@ -97,6 +103,8 @@ export class PaymentFormComponent implements OnInit, CanLeaveComponent {
     } else {
       this.payment = new InvoicePayment();
       if (this.branches.length) this.payment.branchId = this.branches[0].id;
+      // New payments list the payment branch's invoices first ("This branch"), like legacy; "All branches" widens it.
+      this.branchFilter = this.payment.branchId || 'all';
       const customerId = q['customerId'];
       if (customerId) await this.selectCustomerById(customerId);
     }
@@ -113,6 +121,17 @@ export class PaymentFormComponent implements OnInit, CanLeaveComponent {
     ];
     this.loaded = true;
     this.cdr.detectChanges();
+  }
+
+  /** "Actions" dropdown of a saved payment — items and rules come from the shared {@link PaymentActions}. */
+  actionsMenu(): DropdownMenuBtnItem[] {
+    if (this.formStatus !== 'edit' || !this.payment.id) return [];
+    return this.actions.menu(this.payment, this.payment.id, () => { this.dirty = false; void this.router.navigate(['/account/payments'], { queryParams: this.listParams }); });
+  }
+
+  onAddress(a: CustomerAddress): void {
+    this.payment.customerAddress = a;
+    this.markDirty();
   }
 
   hasUnsavedChanges(): boolean { return !this.submitting && this.dirty; }
@@ -282,8 +301,7 @@ export class PaymentFormComponent implements OnInit, CanLeaveComponent {
     const p = this.payment;
     p.isReflected = true;
     let remaining = p.equivalentAmount;
-    for (const line of this.lines) {
-      if (line.showInFilter === false) continue;
+    for (const line of this.visibleLines) {
       if (line.calculateAmountDue > 0) {
         line.amount = remaining > 0 ? +Math.min(line.calculateAmountDue, remaining).toFixed(MathUtils.afterDecimal) : 0;
         remaining -= line.amount;
@@ -306,13 +324,15 @@ export class PaymentFormComponent implements OnInit, CanLeaveComponent {
   fillAmounts(): void {
     const p = this.payment;
     p.paidAmount = 0;
-    for (const line of this.lines) {
-      if (line.showInFilter === false) continue;
+    // The invoices currently shown (branch filter + search) — `showInFilter` is not reliable here ('all' vs 'All').
+    for (const line of this.visibleLines) {
       line.amount = MathUtils.sub(line.total, line.paidAmount);
       p.paidAmount = MathUtils.add(p.paidAmount, line.amount);
     }
-    if (p.tenderAmount * p.rate < p.paidAmount) {
-      p.tenderAmount = +this.totalPayments.toFixed(MathUtils.afterDecimal) / p.rate;
+    // The tender has to cover the lines plus the POS tip (legacy rule).
+    const covered = MathUtils.add(p.paidAmount, p.tipsAmount);
+    if (p.tenderAmount * p.rate < covered) {
+      p.tenderAmount = +MathUtils.add(this.totalPayments, p.tipsAmount).toFixed(MathUtils.afterDecimal) / p.rate;
       p.prevPaidAmount = p.tenderAmount;
     }
     p.calculateChangeAmount();

@@ -10,6 +10,7 @@
 .dl__head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #f8f9fc; border-bottom: 1px solid #e5e7eb;
   h3 { margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; } }
 .dl__tools { display: flex; align-items: center; gap: 18px; }
+.dl__taxtype { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; }
 :host ::ng-deep .dl__link, .dl__link { background: none; border: 0; color: #227d8d; font-size: 13.5px; cursor: pointer; padding: 0; &:hover { text-decoration: underline; } &--danger { color: #dc2626; } }
 
 .dl__bulk { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: #e6f4f6; }
@@ -31,6 +32,10 @@
 .dl__handle { color: #94a3b8; cursor: grab; user-select: none; display: inline-flex; align-items: center; }
 .dl__handle:hover { color: #475569; }
 .dl__row--voided td { opacity: .55; }
+// A removed saved line: shown struck through until the document is saved, with an undo in its action cell.
+.dl__row--removed td:not(.dl__act-col):not(.dl__handle-col) { opacity: .5; text-decoration: line-through; }
+.dl__undo { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 999px; border: 1px solid #b6dde3; background: #e6f4f6; color: #1d6b7a; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  &:hover { background: #d3ecf0; } }
 
 .dl__item { position: relative; }
 .dl__item-acts { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; }
@@ -191,3 +196,60 @@ input[type=checkbox], input[type=radio] { accent-color: #2691a4; }
 .dl__table th { white-space: nowrap; }
 :host ::ng-deep .dl__calc, .dl__calc { display: inline-block !important; vertical-align: -3px; margin-inline-start: 4px; color: #475569; cursor: help; }
 .dl__req { display: inline; }
+
+/* serial / batch line: chosen value + "Select serials…" link */
+.dl__sb { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 4px 12px; font-size: 13px; font-weight: 600; }
+.dl__sb a { color: #2691a4; text-decoration: none; }
+.dl__sb a:hover { text-decoration: underline; }
+.dl__tag { font-size: 11px; font-weight: 600; color: #0e7490; background: #cffafe; border-radius: 999px; padding: 2px 10px; }
+
+/* typeahead row: name + product-type chip */
+.dl__p-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.dl__p-row .dl__p-name { min-width: 0; }
+.dl__p-row .app-product-badge { flex-shrink: 0; }
+.dl__panel li { padding-inline-end: 24px; }
+.dl__p-row { gap: 20px; }
+
+.dl__txt { width: 100%; box-sizing: border-box; background: #fff; border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 10px; font: inherit; height: 38px; }
+.dl__hint { display: block; margin-top: 2px; font-size: 11px; color: #64748b; text-align: end; }
+
+// Icon badge on the card title, as on the other form cards.
+.dl__title { display: flex; align-items: center; gap: 12px; }
+.dl__title-ico { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--color-brand-50); color: var(--color-brand-700); }
+
+// ── Contrast ────────────────────────────────────────────────────────────────
+// Column headers: darker and a touch heavier than the old light slate.
+.dl__table th { color: #475569; font-size: 12px; font-weight: 600; }
+// The account picker's placeholder ("Sales") was light slate on a grey band.
+:host ::ng-deep .dl__info-field .text-slate-400 { color: #64748b; }
+.dl__info td { background: #f8fafc; }
+// Row action buttons: the red delete was barely visible.
+:host ::ng-deep .dl__round, .dl__round { color: #334155; border-color: #d0d5dd; }
+:host ::ng-deep .dl__round--danger, .dl__round--danger { color: #dc2626; border-color: #fecaca; }
+
+// ── Surfaces ────────────────────────────────────────────────────────────────
+// The head and the account strips used pale greys that read as holes against the
+// light page canvas. The card is white all the way through; only the column
+// header row is tinted, so it still reads as a header.
+.dl__card, .dl__table { background: #fff; }
+.dl__head { background: #fff; }
+.dl__table th { background: #f8fafc; }
+.dl__table td, .dl__table td.dl__act-col { background: #fff; }
+.dl__info td { background: #fff; }
+.dl__info-strip { border-top: 1px solid #eef2f6; }
+
+// ── Header tools: give the tax toggle and the two actions room to breathe ──
+.dl__head { padding: 14px 20px; }
+.dl__tools { gap: 12px 28px; }
+.dl__taxtype { gap: 12px; padding-inline-end: 28px; border-inline-end: 1px solid #e5e7eb; }
+:host ::ng-deep .dl__tools .dl__link { padding: 8px 10px; border-radius: 8px; font-weight: 600; white-space: nowrap; }
+:host ::ng-deep .dl__tools .dl__link:hover { background: #f1f5f9; text-decoration: none; }
+@media (max-width: 760px) { .dl__taxtype { border-inline-end: 0; padding-inline-end: 0; } }
+
+// ── Action column: same lines as every other column ────────────────────────
+// `.dl__act-col { border: 0 }` removed the row separators under the buttons, so the
+// lines stopped short of the right edge and the header looked cut off.
+.dl__table th.dl__act-col { border-bottom: 1px solid #e5e7eb; border-inline-start: 1px solid #eef2f6; }
+.dl__table td.dl__act-col { border-bottom: 1px solid #eef2f6; border-inline-start: 1px solid #eef2f6; }

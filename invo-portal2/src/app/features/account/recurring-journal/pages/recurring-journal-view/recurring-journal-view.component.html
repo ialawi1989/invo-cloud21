@@ -1,89 +1,111 @@
-@if (journal(); as j) {
-  <div class="rjv-page">
-    <header class="page-header">
-      <div class="page-header__titles">
-        <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-        <h1 class="page-title">
-          {{ j.name }}
-          <div class="rjv-actions">
-            @if (canEdit) {
-              <button type="button" class="btn btn-outline" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
-            }
-            @if (canDeleteRecord()) {
-              <button type="button" class="btn btn-outline-danger" (click)="delete()">{{ 'COMMON.DELETE' | translate }}</button>
-            }
-          </div>
-        </h1>
-      </div>
-    </header>
+<app-doc-view-shell
+  [docTitle]="journal()?.name ?? ''" railTitle="RECURRING_JOURNAL.VIEW.ALL_PROFILES" [showAdd]="canEdit"
+  [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="journalId"
+  [showToolbar]="false" [showPaper]="false" [loading]="!journal()"
+  (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railPrev)="railPrev()" (railNext)="railNext()"
+  (add)="add()" (close)="back()">
 
-    <section class="card">
-      <div class="card__body">
-        <dl class="rjv-dl">
-          <div class="rjv-dl__row">
-            <dt>{{ 'COMMON.BRANCH' | translate }}</dt>
-            <dd>{{ j.branchName || '—' }}</dd>
-          </div>
-          <div class="rjv-dl__row">
-            <dt>{{ 'RECURRING_JOURNAL.LIST.START_DATE' | translate }}</dt>
-            <dd>{{ j.startDate | date: 'dd/MM/yyyy' }}</dd>
-          </div>
-          @if (j.endTerm === 'by') {
-            <div class="rjv-dl__row">
-              <dt>{{ 'RECURRING_JOURNAL.LIST.END_DATE' | translate }}</dt>
-              <dd>{{ j.endDate | date: 'dd/MM/yyyy' }}</dd>
-            </div>
-          }
-          <div class="rjv-dl__row">
-            <dt>{{ 'RECURRING_JOURNAL.LIST.CREATED_AT' | translate }}</dt>
-            <dd>{{ j.createdAt | date: 'dd/MM/yyyy' }}</dd>
-          </div>
-        </dl>
-      </div>
-      <div class="card__body card__body--bordered">
-        <p class="rjv-label">{{ 'RECURRING_JOURNAL.LIST.FREQUENCY' | translate }}</p>
-        <h3 class="rjv-value">{{ frequencyLabel() }}</h3>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="card__body">
-        <p class="rjv-label">{{ 'RECURRING_JOURNAL.LIST.NEXT_JOURNAL_DATE' | translate }}</p>
-        <h3 class="rjv-value">{{ j.nextJournalDate ? (j.nextJournalDate | date: 'dd/MM/yyyy') : '—' }}</h3>
-      </div>
-    </section>
-
-    @if (j.childJournals && j.childJournals.length > 0) {
-      <section class="card">
-        <header class="card__head">
-          <h2 class="card__title">{{ 'RECURRING_JOURNAL.VIEW.ALL_CHILD_JOURNALS' | translate }}</h2>
-        </header>
-        <div class="card__body rjv-table-wrap">
-          <table class="rjv-table">
-            <thead>
-              <tr>
-                <th>{{ 'RECURRING_JOURNAL.VIEW.DATE' | translate }}</th>
-                <th>{{ 'RECURRING_JOURNAL.VIEW.REFERENCE_NUMBER' | translate }}</th>
-                <th>{{ 'RECURRING_JOURNAL.VIEW.STATUS' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (child of j.childJournals; track child.id) {
-                <tr>
-                  <td>
-                    {{ child.journalDate | date: 'dd/MM/yyyy' }}
-                    <br/><span class="rjv-muted">{{ child.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
-                  </td>
-                  <td>{{ child.reference || '—' }}</td>
-                  <td><span class="rjv-status-dot">{{ child.status }}</span></td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </section>
+  <div titleExtra class="cdv-acts">
+    @if (journal()) {
+      @if (canEdit) {
+        <button type="button" class="cdv-btn" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
+      }
+      @if (canDeleteRecord()) {
+        <button type="button" class="cdv-btn cdv-btn--danger" (click)="delete()">{{ 'COMMON.DELETE' | translate }}</button>
+      }
     }
   </div>
-}
 
-<app-loading-overlay [show]="loading()"/>
+  <div alt class="cdv">
+    @if (journal(); as j) {
+      <nav class="cdv-tabs" role="tablist">
+        @for (t of tabs; track t.value) {
+          <button type="button" role="tab" class="cdv-tab" [class.is-active]="tab() === t.value" [attr.aria-selected]="tab() === t.value" (click)="selectTab(t.value)">
+            @if (t.value === 'next') { {{ t.label | translate: { kind: 'journal' } }} } @else { {{ t.label | translate }} }
+          </button>
+        }
+      </nav>
+
+      @if (tab() === 'overview') {
+        <div class="cdv-overview">
+          <div class="cdv-col cdv-col--side">
+            <section class="cd-card">
+              <h4>{{ 'RECURRING_JOURNAL.VIEW.DETAILS' | translate }}</h4>
+              <div class="cd-kv">
+                <span>{{ 'RECURRING_JOURNAL.VIEW.PROFILE_STATUS' | translate }}</span>
+                <span class="cd-pill" [class.cd-pill--off]="!isActive()">{{ (isActive() ? 'RECURRING_JOURNAL.VIEW.STATUS_ACTIVE' : 'RECURRING_JOURNAL.VIEW.STATUS_EXPIRED') | translate }}</span>
+              </div>
+              <div class="cd-kv"><span>{{ 'RECURRING_JOURNAL.LIST.START_DATE' | translate }}</span><b>{{ j.startDate | date: 'dd/MM/yyyy' }}</b></div>
+              <div class="cd-kv"><span>{{ 'RECURRING_JOURNAL.LIST.END_DATE' | translate }}</span><b>{{ j.endTerm === 'by' && j.endDate ? (j.endDate | date: 'dd/MM/yyyy') : ('RECURRING_JOURNAL.VIEW.NEVER_EXPIRES' | translate) }}</b></div>
+              <div class="cd-kv"><span>{{ 'RECURRING_JOURNAL.VIEW.BRANCH_LABEL' | translate }}</span><b>{{ j.branchName || '—' }}</b></div>
+              <div class="cd-kv"><span>{{ 'RECURRING_JOURNAL.VIEW.GENERATED' | translate }}</span><b>{{ j.childJournals?.length ?? 0 }}</b></div>
+              <div class="cd-kv"><span>{{ 'RECURRING_JOURNAL.LIST.CREATED_AT' | translate }}</span><b>{{ j.createdAt | date: 'dd/MM/yyyy' }}</b></div>
+              <div class="cd-kv"><span>{{ 'RECURRING_JOURNAL.VIEW.UPDATED_AT' | translate }}</span><b>{{ j.updatedDate | date: 'dd/MM/yyyy HH:mm' }}</b></div>
+            </section>
+          </div>
+
+          <div class="cdv-col">
+            <div class="cd-stats">
+              <div><span>{{ 'RECURRING_JOURNAL.VIEW.AMOUNT' | translate }}</span><b>{{ templateDebits() | mycurrency }}</b></div>
+              <div><span>{{ 'RECURRING_JOURNAL.VIEW.NEXT_DATE' | translate }}</span><b class="cd-link">{{ j.nextJournalDate ? (j.nextJournalDate | date: 'dd/MM/yyyy') : '—' }}</b></div>
+              <div><span>{{ 'RECURRING_JOURNAL.VIEW.RECURRING_PERIOD' | translate }}</span><b>{{ frequency() }}</b></div>
+            </div>
+
+            <section class="cd-card">
+              <header class="cd-head">
+                <h4>{{ 'RECURRING_JOURNAL.VIEW.CHILDREN_TITLE' | translate }}</h4>
+              </header>
+              @for (c of children(); track c.id) {
+                <div class="cd-row cd-row--link" [routerLink]="['/account/manual-journals/view', c.id]" role="link" tabindex="0">
+                  <div class="cd-row__main">
+                    <b>{{ c.journalDate | date: 'dd/MM/yyyy' }}</b>
+                    @if (c.reference) { <span class="cd-sep"></span><span>{{ c.reference }}</span> }
+                    <div class="cd-row__sub">{{ c.createdAt | date: 'dd/MM/yyyy HH:mm' }}@if (c.notes) { · {{ c.notes }} }</div>
+                  </div>
+                  <div class="cd-row__side"><span class="cd-status">{{ c.status }}</span></div>
+                </div>
+              } @empty {
+                <p class="cd-muted">{{ 'RECURRING_JOURNAL.VIEW.NO_CHILDREN' | translate }}</p>
+              }
+            </section>
+          </div>
+        </div>
+      }
+
+      @if (tab() === 'next') {
+        <div class="cd-viewer">
+          @if (nextJournal(); as nj) {
+            <div class="cd-sheetwrap">
+              <div class="cd-sheet" [style.zoom]="zoom() / 100"><app-manual-journal-paper [journal]="nj"/></div>
+            </div>
+            <app-doc-viewer-bar [(zoom)]="zoom"/>
+          } @else if (templateLoading()) {
+            <p class="cd-muted">…</p>
+          }
+        </div>
+      }
+
+      @if (tab() === 'activity') {
+        <section class="cd-card">
+          @if (activity(); as logs) {
+            <ul class="cd-timeline">
+              @for (l of logs; track $index) {
+                <li>
+                  <time>{{ l.createdAt | date: 'dd/MM/yyyy' }}<br/>{{ l.createdAt | date: 'HH:mm' }}</time>
+                  <div class="cd-timeline__card">
+                    <div>{{ l.comment }}</div>
+                    <small>{{ 'RECURRING_JOURNAL.VIEW.BY' | translate }} {{ l.employeeName }}</small>
+                  </div>
+                </li>
+              } @empty {
+                <li class="cd-muted">{{ 'RECURRING_JOURNAL.VIEW.NO_ACTIVITY' | translate }}</li>
+              }
+            </ul>
+          } @else if (activityLoading()) {
+            <p class="cd-muted">…</p>
+          }
+        </section>
+      }
+    }
+  </div>
+</app-doc-view-shell>

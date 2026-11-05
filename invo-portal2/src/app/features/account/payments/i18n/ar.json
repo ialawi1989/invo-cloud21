@@ -6,6 +6,10 @@
     "EMPTY": "لا توجد مدفوعات",
     "LIST": {
       "PAYMENTS_LIST": "المدفوعات",
+      "ALL_PAYMENTS": "جميع الدفعات",
+      "STATUS_SUCCESS": "ناجحة",
+      "STATUS_PENDING": "قيد الانتظار",
+      "STATUS_FAILED": "فاشلة",
       "PAYMENT_NUMBER": "رقم الدفعة",
       "PAYMENT_DATE": "تاريخ الدفع",
       "CUSTOMER_NAME": "العميل",
@@ -15,7 +19,10 @@
       "AMOUNT": "المبلغ",
       "BRANCH_NAME": "الفرع",
       "EMPLOYEE_NAME": "الموظف",
-      "CREATED_DATE": "تاريخ الإنشاء"
+      "CREATED_DATE": "تاريخ الإنشاء",
+      "SUCCESSFUL_PAYMENTS": "المدفوعات الناجحة",
+      "FAILED_PAYMENTS": "المدفوعات الفاشلة",
+      "CHECK_WITH_GATEWAY": "التحقق من البوابة"
     },
     "FILTERS": {
       "SOURCE": "المصدر",
@@ -38,9 +45,11 @@
       "INVOICE_NUMBER": "رقم الفاتورة",
       "PAID_ON": "تاريخ الدفع",
       "INVOICE_AMOUNT": "مبلغ الفاتورة",
-      "PAYMENT_AMOUNT": "مبلغ الدفعة"
+      "PAYMENT_AMOUNT": "مبلغ الدفعة",
+      "NO_CUSTOMER": "عميل عابر"
     },
     "FORM": {
+      "TIP_COLLECTED_ON_POS": "الإكرامية المحصلة في نقطة البيع",
       "NEW_PAYMENT": "دفعة جديدة",
       "EDIT_PAYMENT": "تعديل الدفعة",
       "PAYMENT": "دفعة",
@@ -67,6 +76,7 @@
       "BALANCE": "الرصيد",
       "NO_INVOICES": "لا توجد فواتير مفتوحة",
       "TOTAL": "الإجمالي",
+      "TOTAL_PAID_AMOUNT": "إجمالي المبلغ المدفوع",
       "TENDER_RECEIVED": "المبلغ المستلم",
       "CHANGE_AMOUNT": "مبلغ الباقي",
       "CANCEL_CHANGE": "إلغاء الباقي",
@@ -85,6 +95,28 @@
       "MESSAGE": "الدفعة أكبر من الفواتير المحددة بمبلغ {{amount}}. أين تريد إضافته؟",
       "WALLET": "إضافة إلى المحفظة",
       "CHANGE": "إعادته كباقي"
+    },
+    "GATEWAY": {
+      "TITLE": "رد بوابة الدفع",
+      "CHECKING": "جارٍ سؤال بوابة الدفع…",
+      "STATUS": "حالة البوابة",
+      "MESSAGE": "الرسالة",
+      "GATEWAY_DATA": "بيانات البوابة",
+      "SAVED_DATA": "بيانات الدفع المحفوظة",
+      "VIEW_INVOICE": "عرض الفاتورة",
+      "NO_INVOICE": "لا توجد فاتورة مرتبطة بهذه الدفعة"
+    },
+    "COLUMNS": {
+      "DATE": "التاريخ",
+      "ISSUE_DATE": "تاريخ الإصدار",
+      "CREATED_DATE": "تاريخ الإنشاء",
+      "PAYMENT_METHOD": "طريقة الدفع",
+      "EMPLOYEE_NAME": "اسم الموظف",
+      "AMOUNT": "المبلغ",
+      "BRANCH_NAME": "اسم الفرع",
+      "CUSTOMER_NAME": "اسم العميل",
+      "REFERENCE_NUMBER": "الرقم المرجعي",
+      "INVOICE_NUMBER": "رقم الفاتورة"
     }
   }
 }

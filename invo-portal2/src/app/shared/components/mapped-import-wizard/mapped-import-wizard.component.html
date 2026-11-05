@@ -1,0 +1,185 @@
+<app-modal-header [title]="config.title | translate" />
+<app-wizard-steps [steps]="steps" [current]="done() ? 'preview' : step()" [center]="true" />
+
+<div class="mi__body">
+  <div class="mi__col">
+    @if (error()) { <div class="mi__error">{{ error() }}</div> }
+
+    @switch (step()) {
+
+      <!-- ─── 1 · Configure ─────────────────────────────────────── -->
+      @case ('configure') {
+        <div class="mi__drop" [class.mi__drop--filled]="file()">
+          @if (file(); as f) {
+            <svg class="mi__file-ico" width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6" fill="#fff" fill-opacity=".45"/></svg>
+            <div class="mi__file-name">{{ f.name }}</div>
+            <button type="button" class="mi__remove" (click)="removeFile()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+              {{ 'COMMON.MAPPED_IMPORT.REMOVE' | translate }}
+            </button>
+          } @else {
+            <svg class="mi__file-ico mi__file-ico--muted" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="mi__drop-hint">{{ 'COMMON.MAPPED_IMPORT.DROP_HINT' | translate }}</div>
+          }
+          <div class="mi__drop-foot">
+            <label class="mi__btn mi__btn--primary">
+              {{ (file() ? 'COMMON.MAPPED_IMPORT.REPLACE_FILE' : 'COMMON.MAPPED_IMPORT.CHOOSE_FILE') | translate }}
+              <input type="file" hidden accept=".csv,.tsv,.xls,.xlsx" (change)="onFile($event)" />
+            </label>
+            <p class="mi__meta">{{ 'COMMON.MAPPED_IMPORT.FILE_META' | translate }}</p>
+          </div>
+        </div>
+
+
+        <div class="mi__row">
+          <span class="mi__lbl">{{ 'COMMON.MAPPED_IMPORT.ENCODING' | translate }}</span>
+          <app-search-dropdown class="mi__ctl" [items]="encodings" [value]="encoding()" [displayWith]="displayEncoding" [compareWith]="encodingEq"
+            [searchable]="false" [clearable]="false" (valueChange)="setEncoding($any($event))" />
+        </div>
+
+        @for (o of config.options ?? []; track o.key) {
+          <label class="mi__opt">
+            <input type="checkbox" [ngModel]="optionValues()[o.key]" (ngModelChange)="setOption(o.key, $event)" />
+            <span>
+              <strong>{{ o.label | translate }}</strong>
+              @if (o.description) { <small>{{ o.description | translate }}</small> }
+            </span>
+          </label>
+        }
+
+        @if (config.tips?.length) {
+          <div class="mi__tips">
+            <h4>💡 {{ 'COMMON.MAPPED_IMPORT.TIPS' | translate }}</h4>
+            <ul>
+              @for (t of config.tips; track t) { <li>{{ t | translate }}</li> }
+            </ul>
+            <h5>{{ 'COMMON.MAPPED_IMPORT.SAMPLE' | translate }}</h5>
+            <div class="mi__sample-dl">
+              <button type="button" class="mi__btn" (click)="downloadTemplate('csv')">⬇ CSV</button>
+              <button type="button" class="mi__btn" (click)="downloadTemplate('xlsx')">⬇ XLSX</button>
+            </div>
+          </div>
+        }
+      }
+
+      <!-- ─── 2 · Map fields ────────────────────────────────────── -->
+      @case ('map') {
+        <p class="mi__selected">{{ 'COMMON.MAPPED_IMPORT.SELECTED_FILE' | translate }} : <strong>{{ file()?.name }}</strong></p>
+        <div class="mi__info">{{ 'COMMON.MAPPED_IMPORT.AUTO_MATCHED' | translate }}</div>
+
+        @for (g of groups(); track g.label) {
+          <h3 class="mi__group">{{ g.label | translate }}</h3>
+          <div class="mi__map-head"><span>{{ 'COMMON.MAPPED_IMPORT.COL_FIELD' | translate }}</span><span>{{ 'COMMON.MAPPED_IMPORT.COL_HEADER' | translate }}</span></div>
+          @for (f of g.fields; track f.key) {
+            <div class="mi__map-row">
+              <span class="mi__field" [class.mi__field--req]="f.required">{{ f.label | translate }}@if (f.required) { * }</span>
+              <div class="mi__map-ctl">
+                <app-search-dropdown class="mi__ctl" [items]="headers()" [value]="mapping()[f.key]" [displayWith]="displayHeader"
+                  [placeholder]="'COMMON.MAPPED_IMPORT.SELECT' | translate" (valueChange)="setMapping(f.key, $any($event))" />
+                @if (f.type === 'date') {
+                  <app-search-dropdown class="mi__fmt" [items]="dateFormats" [value]="formats()[f.key]" [searchable]="false" [clearable]="false"
+                    (valueChange)="setFormat(f.key, $any($event))" />
+                }
+              </div>
+            </div>
+          }
+        }
+      }
+
+      <!-- ─── 3 · Preview ───────────────────────────────────────── -->
+      @case ('preview') {
+        @if (preview(); as p) {
+          <div class="mi__info">
+            @if (done()) {
+              {{ 'COMMON.MAPPED_IMPORT.DONE_SUMMARY' | translate: { done: p.imported ?? 0, total: p.total, records: (config.recordsLabel | translate) } }}
+            } @else {
+              {{ 'COMMON.MAPPED_IMPORT.READY_SUMMARY' | translate: { ready: p.ready, total: p.total, records: (config.recordsLabel | translate) } }}
+            }
+          </div>
+
+          <div class="mi__sec">
+            <div class="mi__sec-head">
+              <span class="mi__sec-title mi__sec-title--ok">{{ 'COMMON.MAPPED_IMPORT.READY' | translate: { records: (config.recordsLabel | translate) } }} <b>- {{ done() ? (p.imported ?? 0) : p.ready }}</b></span>
+            </div>
+          </div>
+
+          @for (sec of [{ k: 'skipped', list: p.skipped, count: p.skipped.length, label: 'COMMON.MAPPED_IMPORT.SKIPPED' }, { k: 'failed', list: failedList(), count: p.failed.length, label: 'COMMON.MAPPED_IMPORT.FAILED' }]; track sec.k) {
+            @if (sec.list.length) {
+              <div class="mi__sec">
+                <div class="mi__sec-head">
+                  <span class="mi__sec-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="#f08a4b"><path d="M12 2 1 21h22z"/><path d="M12 9v5M12 17.5v.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+                    {{ sec.label | translate }} <b>- {{ sec.count }}</b></span>
+                  <span class="mi__sec-actions">
+                    <button type="button" class="mi__link" (click)="downloadIssues(sec.list, sec.k)">{{ 'COMMON.MAPPED_IMPORT.DOWNLOAD_ROWS' | translate }}</button>
+                    <span class="mi__bar"></span>
+                    <button type="button" class="mi__link" (click)="toggle(sec.k)">{{ (open()[sec.k] ? 'COMMON.MAPPED_IMPORT.HIDE' : 'COMMON.MAPPED_IMPORT.VIEW') | translate }}</button>
+                  </span>
+                </div>
+                @if (open()[sec.k]) {
+                  @if (bulkFix(sec.list); as bulk) {
+                    <div class="mi__bulk">
+                      <span>{{ 'COMMON.MAPPED_IMPORT.CHANGE_ALL' | translate }}</span>
+                      <app-search-dropdown class="mi__bulk-ctl" [items]="bulk.options" [value]="null" [displayWith]="fixLabel" [compareWith]="fixEq"
+                        [searchable]="false" [clearable]="false" [placeholder]="'COMMON.MAPPED_IMPORT.CHANGE' | translate"
+                        (valueChange)="applyFixAll(sec.list, $any($event))" />
+                    </div>
+                  }
+                  <table class="mi__issues">
+                    @for (i of sec.list; track $index) {
+                      <tr>
+                        <td>{{ i.row }}</td><td>{{ i.ref }}</td><td [class.mi__ok]="i.fixedTo">
+                          @if (i.fixedTo) { ✓ {{ 'COMMON.MAPPED_IMPORT.FIXED' | translate }} } @else { {{ i.reason }} }
+                        </td>
+                        <td class="mi__fix">
+                          @if (i.fix; as fix) {
+                            <app-search-dropdown [items]="fix.options" [value]="fixedOption(i)" [displayWith]="fixLabel" [compareWith]="fixEq"
+                              [searchable]="false" [clearable]="false" [placeholder]="'COMMON.MAPPED_IMPORT.CHANGE' | translate"
+                              (valueChange)="applyFix(i, $any($event))" />
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </table>
+                }
+              </div>
+            }
+          }
+
+          @if (unmappedHeaders().length) {
+            <div class="mi__sec">
+              <div class="mi__sec-head">
+                <span class="mi__sec-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="#f08a4b"><path d="M12 2 1 21h22z"/><path d="M12 9v5M12 17.5v.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+                  {{ 'COMMON.MAPPED_IMPORT.UNMAPPED' | translate }} <b>- {{ unmappedHeaders().length }}</b></span>
+                <button type="button" class="mi__link" (click)="toggle('unmapped')">{{ (open()['unmapped'] ? 'COMMON.MAPPED_IMPORT.HIDE' : 'COMMON.MAPPED_IMPORT.VIEW') | translate }}</button>
+              </div>
+              @if (open()['unmapped']) {
+                <p class="mi__muted">{{ 'COMMON.MAPPED_IMPORT.UNMAPPED_HINT' | translate }}</p>
+                <ul class="mi__list">@for (h of unmappedHeaders(); track h) { <li>{{ h }}</li> }</ul>
+              }
+            </div>
+          }
+        }
+      }
+    }
+  </div>
+</div>
+
+<div class="mi__foot">
+  <div class="mi__foot-left">
+    @if (done()) {
+      <button type="button" class="mi__btn mi__btn--primary" (click)="finish()">{{ 'COMMON.MAPPED_IMPORT.CLOSE' | translate }}</button>
+    } @else {
+      @if (step() !== 'configure') {
+        <button type="button" class="mi__btn" [disabled]="busy()" (click)="previous()">‹ {{ 'COMMON.MAPPED_IMPORT.PREVIOUS' | translate }}</button>
+      }
+      @if (step() === 'preview') {
+        <button type="button" class="mi__btn mi__btn--primary" [disabled]="busy() || !(preview()?.ready) || !!preview()?.failed?.length" (click)="runImport()">{{ 'COMMON.MAPPED_IMPORT.IMPORT' | translate }}</button>
+      } @else {
+        <button type="button" class="mi__btn mi__btn--primary" [disabled]="busy() || (step() === 'configure' && !file())" (click)="next()">{{ 'COMMON.MAPPED_IMPORT.NEXT' | translate }} ›</button>
+      }
+    }
+  </div>
+  @if (!done()) {
+    <button type="button" class="mi__btn" (click)="cancel()">{{ 'COMMON.MAPPED_IMPORT.CANCEL' | translate }}</button>
+  }
+</div>

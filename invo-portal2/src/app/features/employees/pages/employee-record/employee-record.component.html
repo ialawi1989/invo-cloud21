@@ -1,26 +1,87 @@
 <div class="employee-record">
-  @if (showTabs()) {
-    <!-- Tabs are absent, not disabled, when the flag is off or the grant is
-         missing — see the component for why. `routerLinkActive` with
-         `exact: true` on the profile tab stops it staying highlighted while a
-         child tab is open, since its URL is a prefix of every other tab's. -->
-    <nav class="record-tabs" role="tablist"
-         [attr.aria-label]="'EMPLOYEES.TABS.ARIA_LABEL' | translate">
-      @for (tab of tabs(); track tab.path) {
-        <!-- Active state is computed from the URL, not `routerLinkActive`:
-             the profile tab's URL is a prefix of every other tab's, so it
-             needs `exact`, and `exact` does not match the form at `.../edit`.
-             See `isActiveTab`. -->
-        <a class="record-tabs__tab"
-           role="tab"
-           [routerLink]="linkFor(tab)"
-           [class.record-tabs__tab--active]="isActiveTab(tab)"
-           [attr.aria-selected]="isActiveTab(tab)">
-          {{ tab.labelKey | translate }}
-        </a>
-      }
-    </nav>
+  @if (!isNew()) {
+    <app-breadcrumbs class="employee-record__crumbs" [items]="breadcrumbs()" separator="chevron"/>
   }
+
+  <!-- One card: identity row on top, the record tabs attached at the bottom. -->
+  <section class="emp-card">
+    @if (!isNew()) {
+      <div class="emp-head" data-tour="emp-header">
+        <div class="emp-head__avatar" aria-hidden="true">
+          @if (employee()?.avatar) {
+            <img [src]="employee()!.avatar" alt=""/>
+          } @else {
+            <span>{{ initials() }}</span>
+          }
+        </div>
+
+        <div class="emp-head__who">
+          <h1 class="emp-head__name">
+            {{ recordName() }}
+            @if (employee()) {
+              <span [class]="'chip chip--' + status()">
+                {{ ('EMPLOYEES.STATUS.' + status().toUpperCase()) | translate }}
+              </span>
+            }
+          </h1>
+          <p class="emp-head__meta">{{ metaLine() }}</p>
+        </div>
+
+        <div class="emp-head__actions">
+          @if (tourAvailable()) {
+            <button type="button" class="emp-head__tour" (click)="startTour()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              {{ 'EMPLOYEES.TOUR.START' | translate }}
+            </button>
+          }
+          @if (moreActions().length) {
+            <app-dropdown-menu-btn
+              [items]="moreActions()" [appendToBody]="true" align="end" [chevron]="false"
+              triggerClass="emp-head__more"
+              [attr.aria-label]="'EMPLOYEES.MORE_ACTIONS' | translate">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/>
+              </svg>
+              <span class="sr-only">{{ 'EMPLOYEES.MORE_ACTIONS' | translate }}</span>
+            </app-dropdown-menu-btn>
+          }
+        </div>
+      </div>
+    }
+
+    @if (showTabs()) {
+      <!-- Tabs are absent, not disabled, when the flag is off or the grant is
+           missing — see the component for why. Active state comes from the URL
+           (`isActiveTab`), because the profile tab's URL is a prefix of every
+           other tab's. -->
+      <nav class="record-tabs" role="tablist" data-tour="emp-record-tabs"
+           [attr.aria-label]="'EMPLOYEES.TABS.ARIA_LABEL' | translate"
+           (keydown)="onTabKey($event)">
+        @for (tab of tabs(); track tab.path) {
+          <a class="record-tabs__tab"
+             role="tab"
+             [routerLink]="linkFor(tab)"
+             [class.record-tabs__tab--active]="isActiveTab(tab)"
+             [attr.aria-selected]="isActiveTab(tab)"
+             [attr.aria-current]="isActiveTab(tab) ? 'page' : null"
+             [attr.tabindex]="isActiveTab(tab) ? 0 : -1">
+            {{ tab.labelKey | translate }}
+            @if (badgeFor(tab.path); as n) {
+              <span class="record-tabs__count" aria-hidden="true">{{ n }}</span>
+              <span class="sr-only">{{ n }}</span>
+            }
+            @if (needsSetup(tab.path)) {
+              <span class="record-tabs__dot" role="img"
+                    [attr.aria-label]="'EMPLOYEES.TABS.SETUP_NEEDED' | translate"></span>
+            }
+          </a>
+        }
+      </nav>
+    }
+  </section>
 
   <div class="employee-record__body">
     <router-outlet />

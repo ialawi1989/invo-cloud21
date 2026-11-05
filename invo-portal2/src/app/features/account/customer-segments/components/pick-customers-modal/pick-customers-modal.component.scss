@@ -1,0 +1,76 @@
+// Same chrome as the price-label "Pick products" modal.
+.pcm {
+  &__body { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; width: 100%; min-width: 0; }
+  &__row { display: flex; align-items: center; gap: 8px; }
+
+  &__search {
+    flex: 1 1 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 12px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #94a3b8;
+
+    > input {
+      flex: 1 1 auto; min-width: 0; border: 0; outline: 0; background: transparent;
+      color: #0f172a; font-size: 13px;
+      &::placeholder { color: #94a3b8; }
+    }
+    &:focus-within {
+      border-color: var(--color-brand-300, #bae6fd);
+      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    }
+  }
+
+  &__count {
+    text-align: center; padding: 8px 12px; background: #f1f5f9; color: #475569;
+    font-size: 12px; font-weight: 600; border-radius: 8px;
+  }
+
+  &__list {
+    list-style: none; margin: 0; padding: 6px;
+    display: flex; flex-direction: column; gap: 4px;
+    max-height: 360px; overflow-y: auto;
+    border: 1px solid #e2e8f0; border-radius: 10px;
+  }
+
+  &__item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 8px; cursor: pointer; color: #0f172a;
+    transition: background 120ms ease;
+    &:hover { background: #f8fafc; }
+    &--on { background: var(--color-brand-50, #ecfeff); }
+  }
+  &__check { margin: 0; flex-shrink: 0; }
+  &__main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  &__name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__phone { font-size: 12px; color: #64748b; }
+
+  &__state {
+    color: #64748b; text-align: center; padding: 24px 12px; font-size: 13px;
+    &--empty { color: #94a3b8; }
+  }
+  &__sentinel { height: 1px; }
+
+  &__footer {
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    padding: 12px 16px; border-top: 1px solid #e5e7eb;
+  }
+
+  &__btn {
+    appearance: none; height: 38px; padding: 0 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: 1px solid #e2e8f0; background: #fff; color: #334155;
+    display: inline-flex; align-items: center; justify-content: center;
+    &:hover { background: #f8fafc; }
+    &--ghost { background: #f3f4f6; }
+    &--primary {
+      background: var(--color-brand-600, #0891b2); color: #fff; border-color: transparent;
+      &:hover { background: var(--color-brand-700, #0e7490); }
+    }
+  }
+}

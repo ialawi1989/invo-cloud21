@@ -204,7 +204,7 @@
       <div class="px-4 pb-4 flex flex-wrap gap-2 items-center">
         <span class="text-sm text-slate-600">{{ 'COMMON.ACTIVE_FILTERS' | translate }}:</span>
         @for (key of Object.keys(activeFilters()); track key) {
-        @if (activeFilters()[key]) {
+        @if (activeFilters()[key] && !isRangeEndKey(key)) {
         <button (click)="removeFilter(key)"
           class="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-50 text-brand-700 rounded-full text-sm hover:bg-brand-100 transition-colors">
           {{ getFilterDisplayValue(key) }}

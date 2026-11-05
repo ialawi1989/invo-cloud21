@@ -84,7 +84,7 @@
                 </span>
                 <label class="aom__check">
                   <input type="checkbox"
-                    [checked]="sec.visible"
+                    [checked]="sec.visible || sec.required"
                     [disabled]="sec.required"
                     (change)="toggleVisibility(row.index, 'left', sec.id)"/>
                   <span>{{ sec.i18nKey | translate }}</span>
@@ -116,7 +116,7 @@
                   </span>
                   <label class="aom__check">
                     <input type="checkbox"
-                      [checked]="sec.visible"
+                      [checked]="sec.visible || sec.required"
                       [disabled]="sec.required"
                       (change)="toggleVisibility(row.index, 'right', sec.id)"/>
                     <span>{{ sec.i18nKey | translate }}</span>

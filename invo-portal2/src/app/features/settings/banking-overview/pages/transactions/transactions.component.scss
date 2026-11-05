@@ -1,5 +1,7 @@
+// The main layout already pads the content; padding here too pushed the toolbar button past the
+// list card's edge and left the card inset from the title.
 .txn-page {
-  padding: 16px 24px 40px;
+  padding: 0 0 40px;
 }
 
 .txn-title {

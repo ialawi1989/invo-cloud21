@@ -83,6 +83,42 @@ export class AuthService {
     );
   }
 
+  /** When the privilege tree was last loaded (login or server refresh). */
+  private privilegesLoadedAt = Date.now();
+
+  /**
+   * True when the loaded privileges are older than `maxAgeMs`. Time-limited
+   * access grants expire server-side; this is how the portal notices.
+   */
+  privilegesStale(maxAgeMs = 60_000): boolean {
+    return Date.now() - this.privilegesLoadedAt > maxAgeMs;
+  }
+
+  /**
+   * Re-load the signed-in employee's privilege tree from the server, so a role
+   * change or an approved access request applies without signing in again.
+   * Returns true when a tree was applied. Failures are swallowed: the caller
+   * keeps whatever privileges it already had.
+   */
+  async refreshPrivileges(): Promise<boolean> {
+    try {
+      const res = await firstValueFrom(this.http.get<any>(`${this.baseUrl}employee/getMyPrivileges`));
+      const privileges = res?.data?.privileges;
+      this.privilegesLoadedAt = Date.now(); // answered: do not re-ask every navigation
+      if (!privileges) return false;
+      this.privilegeService.setPrivileges(privileges);
+      const stored = this.currentEmployee$.value;
+      if (stored) {
+        const next = { ...stored, privileges } as Employee;
+        setItemSync('employee', JSON.stringify(next), true);
+        this.currentEmployee$.next(next);
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   /** Stores token + employee and hydrates permission/feature services */
   storeSession(response: AuthResponse): void {
     const data     = response.data;
@@ -100,6 +136,7 @@ export class AuthService {
     // Hydrate privilege tree from employee.privileges
     if (employee?.['privileges']) {
       this.privilegeService.setPrivileges(employee['privileges']);
+      this.privilegesLoadedAt = Date.now();
     }
 
     // Set company identity from login response (quick, before loadSettings resolves)

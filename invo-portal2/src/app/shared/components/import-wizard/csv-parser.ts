@@ -111,3 +111,12 @@ function isHeaderRow(
   }
   return true;
 }
+
+/** Raw table: every non-empty line split into cells, no header detection and no column schema.
+ *  For wizards that map the file's own headers to fields themselves (`<app-mapped-import-wizard>`). */
+export function parseCsvTable(text: string): string[][] {
+  const lines = (text ?? '').replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim().length > 0);
+  if (!lines.length) return [];
+  const delim = pickDelimiter(lines);
+  return lines.map(l => splitLine(l, delim).map(c => c.trim()));
+}

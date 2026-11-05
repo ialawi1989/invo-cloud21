@@ -3,10 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
 
 import { AuthService } from '@core/auth/auth.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { AlertComponent } from '@shared/components/alert/alert.component';
+import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
+import { ModalService } from '@shared/modal/modal.service';
 
 import { BranchSettingsService } from '../../../settings/services/branch-settings.service';
 
@@ -83,7 +88,7 @@ import {
 @Component({
   selector: 'app-employee-leave',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, AlertComponent, EmptyStateComponent, DateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-leave.component.html',
   styleUrls: ['./employee-leave.component.scss'],
@@ -96,6 +101,7 @@ export class EmployeeLeaveComponent {
   private readonly fb = inject(FormBuilder);
   private readonly branchSvc = inject(BranchSettingsService);
   private readonly translate = inject(TranslateService);
+  private readonly modal = inject(ModalService);
 
   readonly employeeId =
     this.route.parent?.snapshot.paramMap.get('id')
@@ -443,7 +449,41 @@ export class EmployeeLeaveComponent {
     if (s !== null) this.form.controls.days.setValue(s);
   }
 
-  startAdd(): void {
+  /** No entitlement on file: the balance below reads zero and means nothing. */
+  readonly noEntitlement = computed<boolean>(() => {
+    const p = this.profile();
+    return !p || p.annualEntitlementDays == null;
+  });
+
+  /** Day-month-year, like the rest of the app. Bare ISO dates never go through `new Date`. */
+  fmtDate(iso: string | null | undefined): string {
+    if (!iso) return '';
+    const [y, m, d] = String(iso).slice(0, 10).split('-');
+    return y && m && d ? `${d}/${m}/${y}` : String(iso);
+  }
+
+  /** Colour for Remaining only when it is low or negative; null otherwise. */
+  readonly remainingTone = computed<'danger' | 'warn' | null>(() => {
+    const b = this.balance();
+    const rem = b?.remainingDays;
+    if (rem == null) return null;
+    if (rem < 0) return 'danger';
+    const total = (b?.entitlementDays ?? 0) + (b?.openingBalance ?? 0) + (b?.carryOverDays ?? 0);
+    return total > 0 && rem <= total * 0.2 ? 'warn' : null;
+  });
+
+  async startAdd(): Promise<void> {
+    // Requesting against no entitlement books days the balance cannot cover.
+    if (this.noEntitlement()) {
+      const ok = await this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(ConfirmModalComponent, {
+        size: 'sm',
+        data: {
+          title: this.translate.instant('EMPLOYEES.LEAVE.NO_ENTITLEMENT_CONFIRM_TITLE'),
+          message: this.translate.instant('EMPLOYEES.LEAVE.NO_ENTITLEMENT_CONFIRM'),
+        },
+      }).afterClosed();
+      if (!ok) return;
+    }
     this.form.reset({
       leaveType: null, startDate: null, endDate: null, halfDay: 'none',
       days: null, reason: null, branchId: null, status: 'Draft',

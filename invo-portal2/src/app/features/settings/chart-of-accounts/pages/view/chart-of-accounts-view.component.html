@@ -1,0 +1,160 @@
+<app-doc-view-shell
+  [docTitle]="displayName(account())" railTitle="CHART_OF_ACCOUNTS.VIEW.ALL_ACCOUNTS" [showAdd]="canAdd"
+  [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="accountId"
+  [showToolbar]="false" [showPaper]="false" [loading]="!account()"
+  (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railPrev)="railPrev()" (railNext)="railNext()"
+  (add)="add()" (close)="goToList()">
+
+  <div titleExtra class="cav-acts">
+    @if (account() && canAdd) {
+      <button type="button" class="cav-btn" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
+    }
+  </div>
+
+  <div alt class="cav">
+    @if (account(); as a) {
+      <nav class="cav-tabs" role="tablist">
+        @for (t of tabs; track t.value) {
+          <button type="button" role="tab" class="cav-tab" [class.is-active]="tab() === t.value" [attr.aria-selected]="tab() === t.value" (click)="selectTab(t.value)">
+            {{ t.label | translate }}
+          </button>
+        }
+      </nav>
+
+      <!-- OVERVIEW -->
+      @if (tab() === 'overview') {
+        <div class="cav-overview">
+          <div class="cav-col cav-col--side">
+            <section class="ca-card">
+              <h4>{{ 'CHART_OF_ACCOUNTS.VIEW.ACCOUNT' | translate }}</h4>
+              <div class="ca-kv"><span>{{ 'CHART_OF_ACCOUNTS.VIEW.TYPE' | translate }}</span><b>{{ typeLabel(a.type) }}</b></div>
+              <div class="ca-kv"><span>{{ 'CHART_OF_ACCOUNTS.VIEW.PARENT_TYPE' | translate }}</span><b>{{ typeLabel(a.parentType) }}</b></div>
+              @if (a.code) {
+                <div class="ca-kv"><span>{{ 'CHART_OF_ACCOUNTS.VIEW.CODE' | translate }}</span><b>{{ a.code }}</b></div>
+              }
+              @if (nature()) {
+                <div class="ca-kv">
+                  <span>{{ 'CHART_OF_ACCOUNTS.VIEW.NATURE' | translate }}</span>
+                  <b>{{ (nature() === 'Dr' ? 'CHART_OF_ACCOUNTS.VIEW.NATURE_DR' : 'CHART_OF_ACCOUNTS.VIEW.NATURE_CR') | translate }}</b>
+                </div>
+              }
+            </section>
+
+            <section class="ca-card">
+              <h4>{{ 'CHART_OF_ACCOUNTS.VIEW.DESCRIPTION' | translate }}</h4>
+              @if (displayDescription(a); as d) { <p class="ca-text">{{ d }}</p> } @else { <p class="ca-muted">—</p> }
+            </section>
+          </div>
+
+          <div class="cav-col">
+            @if (journals(); as j) {
+              <div class="ca-grid ca-grid--4">
+                <div class="ca-kpi ca-kpi--blue">
+                  <span>{{ 'CHART_OF_ACCOUNTS.VIEW.OPENING_BALANCE' | translate }}</span>
+                  <strong>{{ j.openingBalance | mycurrency }}</strong>
+                </div>
+                <div class="ca-kpi ca-kpi--green">
+                  <span>{{ 'CHART_OF_ACCOUNTS.VIEW.CLOSING_BALANCE' | translate }}</span>
+                  <strong>{{ closingBalance() | mycurrency }}</strong>
+                </div>
+                <div class="ca-kpi ca-kpi--amber">
+                  <span>{{ 'CHART_OF_ACCOUNTS.VIEW.DEBIT' | translate }}</span>
+                  <strong>{{ j.total.debit | mycurrency }}</strong>
+                </div>
+                <div class="ca-kpi ca-kpi--purple">
+                  <span>{{ 'CHART_OF_ACCOUNTS.VIEW.CREDIT' | translate }}</span>
+                  <strong>{{ j.total.credit | mycurrency }}</strong>
+                </div>
+              </div>
+            } @else {
+              <section class="ca-card"><div class="ca-empty">{{ 'COMMON.LOADING' | translate }}</div></section>
+            }
+            <p class="ca-muted ca-period">
+              {{ range().start | date: 'dd/MM/yyyy' }} – {{ range().end | date: 'dd/MM/yyyy' }}
+              · <a href="javascript:void(0)" (click)="selectTab('journals')">{{ 'CHART_OF_ACCOUNTS.VIEW.JOURNALS' | translate }}</a>
+            </p>
+          </div>
+        </div>
+      }
+
+      <!-- JOURNALS -->
+      @if (tab() === 'journals') {
+        <section class="ca-card">
+          <div class="ca-row">
+            <app-date-picker mode="range" [value]="range()" (valueChange)="onRange($event)"/>
+            @if (branches().length > 1) {
+              <div class="cav-branch">
+                <app-search-dropdown [items]="branchItems()" [displayWith]="branchLabel" [compareWith]="byId"
+                  [value]="branchOf()" (valueChange)="onBranch($any($event))" [clearable]="false" [searchable]="false"/>
+              </div>
+            }
+            <span class="cav-spacer"></span>
+            @if (canExport) {
+              <app-dropdown-menu-btn [items]="exportMenu()" [appendToBody]="true" align="end" triggerClass="ca-btn ca-btn--sm">{{ 'CHART_OF_ACCOUNTS.VIEW.EXPORT' | translate }}</app-dropdown-menu-btn>
+            }
+          </div>
+
+          @if (journals(); as j) {
+            <div class="ca-table-wrap">
+              <table class="ca-table">
+                <thead>
+                  <tr>
+                    <th>{{ 'CHART_OF_ACCOUNTS.VIEW.DATE' | translate }}</th>
+                    <th>{{ 'CHART_OF_ACCOUNTS.VIEW.TYPE' | translate }}</th>
+                    <th>{{ 'CHART_OF_ACCOUNTS.VIEW.REFERENCE' | translate }}</th>
+                    <th class="end">{{ 'CHART_OF_ACCOUNTS.VIEW.DEBIT' | translate }}</th>
+                    <th class="end">{{ 'CHART_OF_ACCOUNTS.VIEW.CREDIT' | translate }}</th>
+                  </tr>
+                  <tr class="ca-sum">
+                    <td colspan="3" class="end">{{ 'CHART_OF_ACCOUNTS.VIEW.OPENING_BALANCE' | translate }}</td>
+                    <td class="end">@if (nature() === 'Dr') { {{ j.openingBalance | mycurrency }} }</td>
+                    <td class="end">@if (nature() === 'Cr') { {{ (j.openingBalance < 0 ? -j.openingBalance : j.openingBalance) | mycurrency }} }</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (r of j.list; track $index) {
+                    <tr>
+                      <td>{{ r.createdAt | date: 'dd/MM/yyyy' }}</td>
+                      <td>
+                        {{ r.type }}
+                        @if (r.userName) { <div class="ca-muted">{{ r.userName }}</div> }
+                      </td>
+                      <td>
+                        @if (link(r.type, r.referenceId); as l) {
+                          <a [routerLink]="l" [queryParams]="{ pageNum: 1 }">{{ r.code || ('CHART_OF_ACCOUNTS.VIEW.VIEW_DETAILS' | translate) }}</a>
+                        } @else {
+                          {{ r.code || ('CHART_OF_ACCOUNTS.VIEW.VIEW_DETAILS' | translate) }}
+                        }
+                      </td>
+                      <td class="end">@if (r.debit != null) { {{ r.debit | mycurrency }} }</td>
+                      <td class="end">@if (r.credit != null) { {{ r.credit | mycurrency }} }</td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="5" class="ca-empty">{{ 'CHART_OF_ACCOUNTS.VIEW.NO_JOURNALS' | translate }}</td></tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr class="ca-sum">
+                    <td colspan="3" class="end">{{ 'CHART_OF_ACCOUNTS.VIEW.TOTAL' | translate }}</td>
+                    <td class="end">{{ j.total.debit | mycurrency }}</td>
+                    <td class="end">{{ j.total.credit | mycurrency }}</td>
+                  </tr>
+                  <tr class="ca-sum">
+                    <td colspan="3" class="end">{{ 'CHART_OF_ACCOUNTS.VIEW.CLOSING_BALANCE' | translate }}</td>
+                    <td class="end">@if (nature() === 'Dr') { {{ closingBalance() | mycurrency }} }</td>
+                    <td class="end">@if (nature() === 'Cr') { {{ (closingBalance() < 0 ? -closingBalance() : closingBalance()) | mycurrency }} }</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <app-pagination
+              [page]="page()" [pageSize]="limit()" [count]="j.count || null" [pageCount]="j.pageCount"
+              (pageChange)="setPage($event)" (pageSizeChange)="setLimit($event)"/>
+          } @else if (journalsLoading()) {
+            <div class="ca-empty">{{ 'COMMON.LOADING' | translate }}</div>
+          }
+        </section>
+      }
+    }
+  </div>
+</app-doc-view-shell>

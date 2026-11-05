@@ -1,0 +1,102 @@
+{
+  "SUPPLIER_CREDITS": {
+    "DASHBOARD": "لوحة التحكم",
+    "ADD_NEW": "إضافة إشعار دائن للمورد",
+    "SEARCH_PLACEHOLDER": "ابحث بالرقم أو المورد أو الفرع",
+    "EMPTY": "لا توجد إشعارات دائنة للموردين",
+    "CREATED_DATE": "تاريخ الإنشاء",
+    "LIST": {
+      "CREDITS_LIST": "إشعارات المورد الدائنة",
+      "CREDIT_NUMBER": "رقم الإشعار",
+      "SUPPLIER_NAME": "المورد",
+      "BILL_NUMBER": "رقم الفاتورة",
+      "TOTAL": "الإجمالي",
+      "BRANCH_NAME": "الفرع",
+      "CREDIT_DATE": "تاريخ الإشعار",
+      "EMPLOYEE_NAME": "الموظف",
+      "REF": "المرجع"
+    },
+    "FILTERS": {
+      "BRANCH": "الفرع",
+      "DATE": "التاريخ"
+    },
+    "ACTIONS": {
+      "EXPORT_EXCEL": "تصدير إلى Excel",
+      "REFUND": "استرداد",
+      "APPLY_CREDITS": "تطبيق الأرصدة"
+    },
+    "FORM": {
+      "SUPPLIER_CREDIT": "إشعار دائن للمورد",
+      "NEW_SUPPLIER_CREDIT": "إشعار دائن جديد للمورد",
+      "EDIT_SUPPLIER_CREDIT": "تعديل الإشعار الدائن",
+      "DETAILS": "تفاصيل الإشعار الدائن",
+      "CREDIT_NUMBER": "رقم الإشعار",
+      "CREDIT_DATE": "تاريخ الإشعار",
+      "REFERENCE": "رقم المرجع",
+      "BILL": "الفاتورة",
+      "SELECT_BILL": "اختر فاتورة",
+      "ALL_BILLS": "كل الفواتير",
+      "NUMBER_HELP": "اضغط هنا لتفعيل أو تعطيل الترقيم التلقائي للإشعارات الدائنة.",
+      "LINES_LARGER_THAN_BILL": "لا يمكن أن تتجاوز بنود الرصيد إجمالي الفاتورة:",
+      "ALREADY_ADDED": "بند الفاتورة هذا موجود بالفعل في الإشعار",
+      "NO_QTY": "أدخل كمية للإشعار في بند واحد على الأقل",
+      "MAX_QTY": "الحد الأقصى",
+      "NO_BILL_LINES": "لا توجد أصناف في الفاتورة يمكن إرجاعها.",
+      "IMPORT": "استيراد",
+      "IMPORT_FROM_BILL": "استيراد من الفاتورة"
+    },
+    "VIEW": {
+      "VIEW_SUPPLIER_CREDIT": "عرض الإشعار الدائن",
+      "CONFIRM_DELETE": "حذف هذا الإشعار الدائن؟ لا يمكن التراجع."
+    },
+    "APPLY": {
+      "TITLE": "تطبيق الرصيد على الفواتير",
+      "CREDIT_BALANCE": "رصيد الإشعار",
+      "BILL_NUMBER": "رقم الفاتورة",
+      "BILL_BALANCE": "رصيد الفاتورة",
+      "AMOUNT_TO_CREDIT": "المبلغ المطبق",
+      "BALANCE_DUE": "الرصيد المستحق",
+      "NO_BILLS": "لا توجد فواتير مفتوحة للمورد",
+      "APPLY": "تطبيق",
+      "EXCEEDS": "لا يمكن أن يتجاوز الإجمالي رصيد الإشعار"
+    },
+    "REFUND": {
+      "TITLE": "استرداد",
+      "NEW": "استرداد جديد",
+      "FORM": "الاسترداد",
+      "CREDIT": "إشعار المورد الدائن",
+      "BALANCE": "الرصيد",
+      "DATE": "تاريخ الاسترداد",
+      "REFERENCE": "رقم المرجع",
+      "AMOUNT": "المبلغ",
+      "AMOUNT_HINT": "حتى الرصيد غير المستخدم من الإشعار",
+      "PAYMENT_MODE": "طريقة الدفع",
+      "SELECT_MODE": "اختر الطريقة",
+      "PAYMENT_METHOD": "إيداع في",
+      "NO_METHODS": "لا توجد طرق دفع متاحة في هذا الفرع",
+      "DESCRIPTION": "الوصف",
+      "REQUIRED_CREDIT": "الإشعار الدائن",
+      "REQUIRED_METHOD": "طريقة الدفع",
+      "REQUIRED_AMOUNT": "المبلغ"
+    },
+    "RETURN": {
+      "SERIALS_TITLE": "الأرقام التسلسلية المرتجعة",
+      "BATCHES_TITLE": "الدفعات المرتجعة",
+      "SERIAL": "الرقم التسلسلي",
+      "BATCH": "الدفعة",
+      "AVAILABLE": "المتاح",
+      "RETURN_QTY": "الكمية المرتجعة",
+      "EMPTY": "لا شيء للإرجاع",
+      "DONE": "تم",
+      "N_SERIALS": "{{count}} أرقام تسلسلية",
+      "N_BATCHES": "{{count}} دفعات"
+    },
+    "REQUIRED": {
+      "CREDIT_NUMBER": "رقم الإشعار",
+      "SUPPLIER": "المورد",
+      "BRANCH": "الفرع",
+      "BILL": "الفاتورة",
+      "CREDIT_DATE": "تاريخ الإشعار"
+    }
+  }
+}

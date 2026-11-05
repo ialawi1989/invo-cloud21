@@ -1,11 +1,21 @@
 :host {
-  display: block;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.mjv-viewer { border: 1px solid #e5e7eb; border-radius: 12px; background: #f1f5f9; padding: 16px; overflow-x: auto; margin-bottom: 16px; flex: 0 0 auto; }
+.mjv-sheet {
+  box-sizing: border-box; width: 210mm; max-width: 100%; min-height: 297mm; margin: 0 auto; padding: 14mm 12mm;
+  background: #fff; box-shadow: 0 1px 3px rgba(15, 23, 42, .12), 0 1px 2px rgba(15, 23, 42, .24);
 }
 
 .mjv-page {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 16px 24px;
+  // Never shrink inside the shell's scrolling `.dv-body` (a flex column) — let it overflow so the body scrolls.
+  flex: 0 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -64,8 +74,8 @@
   background: #f1f5f9;
   color: #475569;
 
-  &--draft { background: #fef3c7; color: #92400e; }
-  &--open  { background: #dcfce7; color: #166534; }
+  &--draft { background: #fffbeb; color: #b45309; }
+  &--open { background: #ecfdf5; color: #047857; }
 }
 
 .mjv-lines-table {
@@ -104,7 +114,7 @@
 }
 
 .mjv-comment {
-  border-inline-start: 3px solid #00a8b8;
+  border-inline-start: 3px solid #2691a4;
   padding-inline-start: 12px;
 }
 
@@ -186,11 +196,12 @@
   &:hover { background: #f8fafc; color: #0f172a; }
 
   &--primary {
-    background: #00a8b8;
-    border-color: #00a8b8;
+    background: #2691a4;
+    border-color: #2691a4;
     color: #fff;
 
-    &:hover { background: #0097a5; }
+    &:hover:not(:disabled) { background: #227d8d; }
+    &:disabled { opacity: .5; cursor: not-allowed; }
   }
 
   &--danger {
@@ -214,5 +225,20 @@
 }
 
 @media print {
+  .mjv-viewer { border: 0; padding: 0; background: none; }
   .d-print-none { display: none !important; }
 }
+
+@media print {
+  :host ::ng-deep .dv-rail,
+  :host ::ng-deep .dv-titlebar,
+  :host ::ng-deep .dv-toolbar { display: none !important; }
+}
+
+.mjv-textarea { width: 100%; box-sizing: border-box; border: 1px solid #d0d5dd; border-radius: 8px; padding: 10px 12px; font: inherit; resize: vertical;
+  &:focus { outline: 2px solid rgba(38, 145, 164, .3); border-color: #2691a4; } }
+.mjv-row { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+.mjv-note { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid #f1f5f9; padding-top: 12px;
+  p { margin: 0 0 4px; white-space: pre-wrap; } small { color: #64748b; } }
+.mjv-link-danger { background: none; border: none; color: #dc2626; font-weight: 600; cursor: pointer; }
+.mjv-empty { text-align: center; color: #94a3b8; padding: 24px; }

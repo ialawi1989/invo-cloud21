@@ -1,0 +1,49 @@
+<app-modal-header [title]="'DOC_EXPORT.TITLE' | translate: params" />
+
+<div class="ex">
+  <div class="ex__info">{{ 'DOC_EXPORT.INFO' | translate: params }}</div>
+  @if (error()) { <div class="ex__error">{{ error() }}</div> }
+
+  <section class="ex__sec">
+    <label class="ex__lbl ex__lbl--req">{{ 'DOC_EXPORT.MODULE' | translate }}*</label>
+    <div class="ex__ctl ex__static">{{ data.moduleLabel }}</div>
+  </section>
+
+  <section class="ex__sec">
+    @if (hasStatus) {
+      <label class="ex__lbl ex__lbl--req">{{ 'DOC_EXPORT.STATUS' | translate }}*</label>
+      <app-search-dropdown class="ex__ctl" [items]="statusOptions" [value]="status()" [displayWith]="display" [compareWith]="same"
+        [searchable]="false" [clearable]="false" (valueChange)="pickStatus($any($event))" />
+    }
+
+    <label class="ex__lbl" [class.ex__lbl--gap]="hasStatus">{{ 'DOC_EXPORT.DATE_RANGE' | translate }}</label>
+    <app-date-picker class="ex__ctl" mode="range" [value]="range()" (valueChange)="range.set($any($event))"
+      displayFormat="dd MMM yyyy" [placeholder]="'DOC_EXPORT.DATE_RANGE_PH' | translate" />
+  </section>
+
+  <section class="ex__sec">
+    <label class="ex__lbl ex__lbl--req">{{ 'DOC_EXPORT.DECIMAL' | translate }}*</label>
+    <app-search-dropdown class="ex__ctl" [items]="decimalOptions" [value]="decimal()" [displayWith]="display" [compareWith]="same"
+      [searchable]="false" [clearable]="false" (valueChange)="pickDecimal($any($event))" />
+
+    <label class="ex__lbl ex__lbl--req ex__lbl--gap">{{ 'DOC_EXPORT.FORMAT' | translate }}*</label>
+    @for (f of formats; track f.value) {
+      <label class="ex__radio">
+        <input type="radio" name="exportFormat" [checked]="format() === f.value" (change)="format.set(f.value)" />
+        {{ f.label | translate }}
+      </label>
+    }
+
+    <label class="ex__check">
+      <input type="checkbox" [ngModel]="pii()" (ngModelChange)="pii.set($event)" />
+      {{ 'DOC_EXPORT.PII' | translate }}
+    </label>
+  </section>
+
+  <p class="ex__note"><strong>{{ 'DOC_EXPORT.NOTE' | translate }}</strong> {{ 'DOC_EXPORT.NOTE_TEXT' | translate: params }}</p>
+</div>
+
+<app-modal-footer>
+  <button type="button" class="ex__btn ex__btn--primary" [disabled]="!canExport()" (click)="export()">{{ 'DOC_EXPORT.EXPORT' | translate }}</button>
+  <button type="button" class="ex__btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+</app-modal-footer>

@@ -14,7 +14,7 @@ import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
  */
 const translationsLoaded: CanActivateFn = async () => {
   const lang = inject(LanguageService);
-  await lang.loadFeature('price-label');
+  await lang.loadFeature('settings/price-label');
   return true;
 };
 

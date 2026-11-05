@@ -250,7 +250,7 @@
                   <td class="ns-nowrap">{{ channelLabel(log.channel) }}</td>
                   <td>{{ log.recipient }}</td>
                   <td class="ns-muted ns-nowrap">{{ logProviderLabel(log.provider) }}</td>
-                  <td class="ns-nowrap"><span class="ns-badge" [class.ns-badge--success]="log.status === 'success'" [class.ns-badge--danger]="log.status === 'failure'">{{ log.status }}</span></td>
+                  <td class="ns-nowrap"><app-status-badge [status]="log.status"/></td>
                   <td class="ns-truncate" [title]="log.status === 'success' ? (log.messageId ?? '') : (log.error ?? '')">
                     {{ log.status === 'success' ? (log.messageId || '—') : (log.error || 'unknown error') }}
                   </td>

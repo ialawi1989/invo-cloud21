@@ -1,0 +1,61 @@
+{
+  "EXPENSES": {
+    "DASHBOARD": "لوحة التحكم",
+    "ADD_NEW": "إضافة مصروف",
+    "SEARCH_PLACEHOLDER": "ابحث بالرقم أو الفرع أو الموظف أو المرجع",
+    "EMPTY": "لا توجد مصروفات",
+    "CREATED_DATE": "تاريخ الإنشاء",
+    "LIST": {
+      "EXPENSE_LIST": "المصروفات",
+      "EXPENSE_NUMBER": "رقم المصروف",
+      "EXPENSE_DATE": "تاريخ المصروف",
+      "SUPPLIER_NAME": "المورد",
+      "CUSTOMER_NAME": "العميل",
+      "TOTAL": "الإجمالي",
+      "BRANCH_NAME": "الفرع",
+      "EMPLOYEE_NAME": "الموظف",
+      "REF": "المرجع"
+    },
+    "FILTERS": {
+      "BRANCH": "الفرع",
+      "DATE": "التاريخ"
+    },
+    "ACTIONS": {
+      "EXPORT_EXCEL": "تصدير إلى Excel",
+      "CLONE": "نسخ"
+    },
+    "FORM": {
+      "EXPENSE": "مصروف",
+      "NEW_EXPENSE": "مصروف جديد",
+      "EDIT_EXPENSE": "تعديل المصروف",
+      "DETAILS": "تفاصيل المصروف",
+      "CUSTOMER_INFORMATION": "العميل",
+      "BILLABLE_CUSTOMER": "العميل (قابل للفوترة)",
+      "EXPENSE_NUMBER": "رقم المصروف",
+      "NUMBER_HELP": "اضغط هنا لتفعيل أو تعطيل الترقيم التلقائي للمصروفات.",
+      "REFERENCE": "رقم المرجع",
+      "EXPENSE_DATE": "تاريخ المصروف",
+      "PAYMENT_METHOD": "مدفوع من",
+      "SELECT_METHOD": "اختر طريقة الدفع",
+      "LINES": "بنود المصروف",
+      "EXPENSE_ACCOUNT": "حساب المصروف",
+      "SELECT_ACCOUNT": "اختر حساباً",
+      "AMOUNT": "المبلغ",
+      "LINE_TOTAL": "الإجمالي",
+      "NOTE_PLACEHOLDER": "ملاحظات",
+      "ADD_LINE": "إضافة بند",
+      "NOTES": "ملاحظات",
+      "TOTAL_ABOVE_ZERO": "يجب أن يكون الإجمالي أكبر من صفر"
+    },
+    "REQUIRED": {
+      "NUMBER": "رقم المصروف",
+      "DATE": "تاريخ المصروف",
+      "BRANCH": "الفرع",
+      "PAYMENT_METHOD": "طريقة الدفع"
+    },
+    "VIEW": {
+      "VIEW_EXPENSE": "عرض المصروف",
+      "CONFIRM_DELETE": "حذف هذا المصروف؟ لا يمكن التراجع."
+    }
+  }
+}

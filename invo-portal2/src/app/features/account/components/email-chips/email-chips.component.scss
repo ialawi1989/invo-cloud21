@@ -1,0 +1,11 @@
+:host { display: block; }
+.ec { display: flex; flex-wrap: wrap; gap: 6px; border: 1px solid #d0d5dd; border-radius: 8px; padding: 6px 8px; background: #fff; min-height: 42px; align-items: center;
+  &:focus-within { border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .12); }
+  &--err { border-color: #dc2626; } }
+.ec__chip { display: inline-flex; align-items: center; gap: 6px; background: #e6f4f6; color: #227d8d; border-radius: 999px; padding: 3px 10px; font-size: 13px; cursor: default; user-select: none;
+  button { border: 0; background: none; color: #227d8d; cursor: pointer; padding: 0; } }
+.ec__input { flex: 1; min-width: 160px; border: 0; outline: none; font: inherit; font-size: 13.5px; background: transparent;
+  &--edit { flex: 0 1 auto; min-width: 200px; background: #fff; border: 1px solid #2691a4; border-radius: 999px; padding: 2px 10px; } }
+.ec__err { display: block; margin-top: 4px; color: #dc2626; }
+.ec__menu { min-width: 190px; padding: 6px 0; background: #fff; border-radius: 8px; box-shadow: 0 4px 18px rgba(15, 23, 42, .22); border: 1px solid #e4e7ec; display: flex; flex-direction: column;
+  button { text-align: start; border: 0; background: none; padding: 8px 16px; font: inherit; font-size: 13.5px; color: #0f172a; cursor: pointer; &:hover { background: #f1f5f9; } } }

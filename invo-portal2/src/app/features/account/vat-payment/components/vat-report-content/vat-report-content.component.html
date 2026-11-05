@@ -1,0 +1,42 @@
+@if (loading()) { <p class="vr-loading">{{ 'VAT_PAYMENT.REPORT.LOADING' | translate }}</p> }
+@for (s of [
+  { title: 'VAT_PAYMENT.REPORT.ON_SALES', totalLabel: 'VAT_PAYMENT.REPORT.TOTAL_SALES', totalBox: '7', data: sales() },
+  { title: 'VAT_PAYMENT.REPORT.ON_PURCHASES', totalLabel: 'VAT_PAYMENT.REPORT.TOTAL_PURCHASES', totalBox: '14', data: purchases() }
+]; track s.title) {
+  <section class="vr-card">
+    <h2 class="vr-card__title">{{ s.title | translate }}</h2>
+    <div class="vr-wrap">
+      <table class="vr-table">
+        <thead>
+          <tr>
+            <th class="vr-box">#</th>
+            <th>{{ 'VAT_PAYMENT.REPORT.DESCRIPTION' | translate }}</th>
+            <th class="end">{{ 'VAT_PAYMENT.REPORT.AMOUNT' | translate }}</th>
+            <th class="end">{{ 'VAT_PAYMENT.REPORT.ADJUSTMENT' | translate }}</th>
+            <th class="end">{{ 'VAT_PAYMENT.REPORT.VAT_AMOUNT' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of s.data.records; track r.boxNo) {
+            <tr>
+              <td class="vr-box">{{ r.boxNo }}</td>
+              <td>{{ r.description }}</td>
+              <td class="end">{{ r.amount | mycurrency }}</td>
+              <td class="end">{{ r.adjustment | mycurrency }}</td>
+              <td class="end">{{ r.vatAmount | mycurrency }}</td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <td class="vr-box">{{ s.totalBox }}</td>
+            <td>{{ s.totalLabel | translate }}</td>
+            <td class="end">{{ s.data.totalAmount | mycurrency }}</td>
+            <td class="end">{{ s.data.totalAdjustment | mycurrency }}</td>
+            <td class="end">{{ s.data.totalVatAmount | mycurrency }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>
+}

@@ -1,0 +1,131 @@
+<app-modal-header [title]="'SALES_TARGET.MODAL.TITLE' | translate"/>
+
+<div class="stm">
+  <div class="stm__summary">
+    <div><span>{{ 'SALES_TARGET.MODAL.PERIOD' | translate }}</span><b>{{ periodText() }}</b></div>
+    <div><span>{{ 'SALES_TARGET.MODAL.DAYS' | translate }}</span><b>{{ range().workingDays }}</b></div>
+    <div><span>{{ 'SALES_TARGET.MODAL.COMPANY_TARGET' | translate }}</span><b>{{ total() ? (total() | mycurrency:{ symbol: currency() }) : '—' }}</b></div>
+    <div><span>{{ 'SALES_TARGET.MODAL.BRANCH_SUM' | translate }}</span><b>{{ branchSum() ? (branchSum() | mycurrency:{ symbol: currency() }) : '—' }}</b></div>
+  </div>
+
+  <ol class="stm__steps">
+    @for (s of [1, 2, 3]; track s) {
+      <li [class.is-done]="step() > s" [class.is-active]="step() === s">
+        <span class="stm__dot">{{ s }}</span>
+        {{ ('SALES_TARGET.MODAL.STEP_' + s) | translate }}
+      </li>
+    }
+  </ol>
+
+  @if (step() === 1) {
+    <div class="stm__body">
+      <div class="stm__field">
+        <label>{{ 'SALES_TARGET.MODAL.PERIOD_TYPE' | translate }} / {{ 'SALES_TARGET.MODAL.ANCHOR' | translate }}</label>
+        <app-st-period-anchor [(value)]="anchor"/>
+        <p class="stm__hint">{{ 'SALES_TARGET.MODAL.ANCHOR_HINT' | translate }}</p>
+      </div>
+      <div class="stm__field stm__field--narrow">
+        <label for="st-currency">{{ 'SALES_TARGET.MODAL.CURRENCY' | translate }}</label>
+        <input id="st-currency" class="stm__input" [ngModel]="currency()" (ngModelChange)="currency.set($event)"/>
+        <p class="stm__hint">{{ 'SALES_TARGET.MODAL.CURRENCY_HINT' | translate }}</p>
+      </div>
+    </div>
+  }
+
+  @if (step() === 2) {
+    <div class="stm__body">
+      <div class="stm__grid">
+        <div class="stm__field">
+          <label for="st-total">{{ 'SALES_TARGET.MODAL.TOTAL_TARGET' | translate }} <span class="req">*</span></label>
+          <input id="st-total" type="number" min="0" step="any" class="stm__input" [ngModel]="totalTarget()" (ngModelChange)="onTotal($event)"/>
+          <p class="stm__hint">{{ 'SALES_TARGET.MODAL.TOTAL_HINT' | translate }}</p>
+        </div>
+        <div class="stm__field">
+          <label for="st-net">{{ 'SALES_TARGET.MODAL.NET_TARGET' | translate }}</label>
+          <input id="st-net" type="number" min="0" step="any" class="stm__input" [ngModel]="netTarget()" (ngModelChange)="netTarget.set($event)"/>
+          <p class="stm__hint">{{ 'SALES_TARGET.MODAL.NET_HINT' | translate }}</p>
+        </div>
+      </div>
+
+      <div class="stm__copy">
+        <label class="stm__check">
+          <input type="checkbox" [ngModel]="copyOn()" (ngModelChange)="copyOn.set($event)"/>
+          <span><b>{{ 'SALES_TARGET.MODAL.COPY_FORWARD' | translate }}</b><br/><small>{{ 'SALES_TARGET.MODAL.COPY_HINT' | translate }}</small></span>
+        </label>
+        @if (copyOn()) {
+          <div class="stm__grid">
+            <div class="stm__field">
+              <label for="st-count">{{ 'SALES_TARGET.MODAL.COPY_COUNT' | translate }}</label>
+              <input id="st-count" type="number" min="1" max="24" class="stm__input" [ngModel]="copyCount()" (ngModelChange)="copyCount.set($event)"/>
+            </div>
+            <div class="stm__field">
+              <label>{{ 'SALES_TARGET.MODAL.COPY_MODE' | translate }}</label>
+              <app-search-dropdown
+                [items]="copyModes" [value]="selectedMode()" (valueChange)="onMode($event)"
+                [displayWith]="modeLabel" [compareWith]="modeSame" [toValue]="modeValue" [searchable]="false" [clearable]="false"/>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (step() === 3) {
+    <div class="stm__body">
+      <div class="stm__split-head">
+        <div>
+          <b>{{ 'SALES_TARGET.MODAL.BRANCH_SPLIT' | translate }}</b>
+          <p class="stm__hint">{{ 'SALES_TARGET.MODAL.SPLIT_HINT' | translate }}</p>
+        </div>
+        <app-segmented-toggle [options]="splitOptions" [value]="splitMode()" (valueChange)="setSplit($event)"/>
+      </div>
+
+      @if (mismatch()) {
+        <div class="stm__warn">
+          {{ 'SALES_TARGET.MODAL.MISMATCH' | translate }}
+          <button type="button" class="stm__link" (click)="fixSum()">{{ 'SALES_TARGET.MODAL.FIX' | translate }}</button>
+        </div>
+      }
+
+      <div class="stm__branches">
+        @for (b of branches(); track b.id) {
+          <div class="stm__branch">
+            <div class="stm__branch-head">
+              <span>{{ b.name }}</span>
+              <small>{{ (amounts()[b.id] || 0) | mycurrency:{ symbol: currency() } }}</small>
+            </div>
+            @if (splitMode() === 'pct') {
+              <div class="stm__pct">
+                <input type="number" min="0" step="any" class="stm__input" [value]="pctOf(b.id)" (input)="setPct(b.id, $any($event.target).value)"/>
+                <span>%</span>
+              </div>
+            } @else if (splitMode() === 'auto') {
+              <div class="stm__input">{{ (amounts()[b.id] || 0) | mycurrency:{ symbol: currency() } }}</div>
+            } @else {
+              <input type="number" min="0" step="any" class="stm__input" [value]="amounts()[b.id] || 0" (input)="setAmount(b.id, $any($event.target).value)"/>
+            }
+            <div class="stm__bar"><span [style.width.%]="barPct(b.id)"></span></div>
+          </div>
+        } @empty {
+          <p class="stm__hint">{{ 'SALES_TARGET.MODAL.NO_BRANCHES' | translate }}</p>
+        }
+      </div>
+    </div>
+  }
+
+  @if (error(); as e) { <p class="stm__error">{{ e }}</p> }
+</div>
+
+<app-modal-footer>
+  @if (step() > 1) {
+    <button type="button" class="stm__btn" (click)="goto(step() - 1)">{{ 'SALES_TARGET.MODAL.BACK' | translate }}</button>
+  }
+  <button type="button" class="stm__btn" (click)="close()">{{ 'COMMON.CANCEL' | translate }}</button>
+  @if (step() < 3) {
+    <button type="button" class="stm__btn stm__btn--primary" [disabled]="(step() === 2 && !(total() > 0)) || (step() === 2 && branchesLoading())" (click)="goto(step() + 1)">
+      {{ 'SALES_TARGET.MODAL.NEXT' | translate }}
+    </button>
+  } @else {
+    <button type="button" class="stm__btn stm__btn--primary" [disabled]="!canSave" (click)="save()">{{ 'SALES_TARGET.MODAL.SAVE' | translate }}</button>
+  }
+</app-modal-footer>

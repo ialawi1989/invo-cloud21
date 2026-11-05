@@ -1,0 +1,125 @@
+{
+  "BILLS": {
+    "DASHBOARD": "لوحة التحكم",
+    "ADD_NEW": "إضافة فاتورة مشتريات",
+    "SEARCH_PLACEHOLDER": "ابحث بالرقم أو المورد أو الفرع أو المرجع",
+    "EMPTY": "لا توجد فواتير",
+    "CREATED_DATE": "تاريخ الإنشاء",
+    "LIST": {
+      "BILLS_LIST": "فواتير المشتريات",
+      "ALL_BILLS": "جميع الفواتير",
+      "BILL_NUMBER": "رقم الفاتورة",
+      "SUPPLIER_NAME": "المورد",
+      "PURCHASE_NUMBER": "رقم أمر الشراء",
+      "TOTAL": "الإجمالي",
+      "STATUS": "الحالة",
+      "BRANCH_NAME": "الفرع",
+      "BILL_DATE": "تاريخ الفاتورة",
+      "DUE_DATE": "تاريخ الاستحقاق",
+      "EMPLOYEE_NAME": "الموظف",
+      "REF": "المرجع",
+      "PAY": "دفع"
+    },
+    "FILTERS": {
+      "STATUS": "الحالة",
+      "BRANCH": "الفرع",
+      "DATE": "التاريخ"
+    },
+    "STATUS": {
+      "Draft": "مسودة",
+      "Open": "مفتوحة",
+      "Partially Paid": "مدفوعة جزئياً",
+      "Paid": "مدفوعة",
+      "Overdue": "متأخرة",
+      "Closed": "مغلقة"
+    },
+    "ACTIONS": {
+      "EXPORT_EXCEL": "تصدير إلى Excel",
+      "SHOW_PURCHASE_ORDER": "عرض أمر الشراء",
+      "CLONE": "نسخ",
+      "OPEN_BILL": "فتح الفاتورة",
+      "CREATE_SUPPLIER_CREDIT": "إنشاء إشعار دائن للمورد",
+      "CREATE_BILL_OF_ENTRY": "إنشاء بيان جمركي"
+    },
+    "TERMS": {
+      "net7": "صافي 7",
+      "net10": "صافي 10",
+      "net15": "صافي 15",
+      "net30": "صافي 30",
+      "net45": "صافي 45",
+      "net60": "صافي 60",
+      "net90": "صافي 90",
+      "endOfTheMonth": "نهاية الشهر",
+      "onReceiptDue": "مستحقة عند الاستلام",
+      "custom": "مخصص"
+    },
+    "FORM": {
+      "BILL": "فاتورة مشتريات",
+      "NEW_BILL": "فاتورة مشتريات جديدة",
+      "EDIT_BILL": "تعديل الفاتورة",
+      "BILL_DETAILS": "تفاصيل الفاتورة",
+      "BILL_NUMBER": "رقم الفاتورة",
+      "REFERENCE": "رقم المرجع",
+      "BILL_DATE": "تاريخ الفاتورة",
+      "DUE_DATE": "تاريخ الاستحقاق",
+      "PAYMENT_TERM": "شروط الدفع",
+      "PAYABLE_ACCOUNT": "حساب الدائنين",
+      "ACCOUNTS_PAYABLE": "حسابات الدائنين",
+      "NUMBER_HELP": "اضغط هنا لتفعيل أو تعطيل الترقيم التلقائي للفواتير.",
+      "CONVERTED_FROM": "من أمر الشراء",
+      "FULL_QTY": "الكمية كاملة",
+      "REMAINING_QTY": "الكمية المتبقية",
+      "NOTES": "ملاحظات",
+      "NOTES_PLACEHOLDER": "ملاحظات تظهر على الفاتورة",
+      "BEFORE_TAX": "الخصم قبل الضريبة",
+      "AFTER_TAX": "الخصم بعد الضريبة",
+      "DISCOUNT_INCLUDES_TAX": "الخصم شامل الضريبة"
+    },
+    "REQUIRED": {
+      "BILL_NUMBER": "رقم الفاتورة",
+      "SUPPLIER": "المورد",
+      "BRANCH": "الفرع",
+      "BILL_DATE": "تاريخ الفاتورة",
+      "DUE_DATE": "تاريخ الاستحقاق"
+    },
+    "VIEW": {
+      "SUPPLIER_INACTIVE": "هذا المورد غير نشط.",
+      "LABEL_PRINT": "طباعة الملصقات",
+      "CONFIRM_DELETE_APPLIED_CREDIT": "إلغاء تطبيق رصيد المورد هذا؟",
+      "VIEW_BILL": "عرض الفاتورة",
+      "CONFIRM_DELETE": "حذف هذه الفاتورة؟ لا يمكن التراجع.",
+      "CONFIRM_OPEN": "فتح هذه الفاتورة؟ لن تعود مسودة.",
+      "RECORD_PAYMENT": "تسجيل دفعة",
+      "CREDITS_AVAILABLE": "رصيد متاح: {{value}}.",
+      "APPLY_NOW": "طبّق الآن"
+    },
+    "APPLY": {
+      "TITLE": "تطبيق الأرصدة",
+      "BILL_BALANCE": "رصيد الفاتورة",
+      "CREDIT": "الرصيد",
+      "AVAILABLE": "المتاح",
+      "AMOUNT_TO_CREDIT": "المبلغ المطبق",
+      "BALANCE_DUE": "الرصيد المستحق",
+      "NO_CREDITS": "لا يوجد رصيد متاح للمورد",
+      "APPLY": "تطبيق"
+    },
+    "SPLIT": {
+      "SERIALS_TITLE": "الأرقام التسلسلية",
+      "BATCHES_TITLE": "الدفعات",
+      "SERIAL_PLACEHOLDER": "اكتب الرقم التسلسلي ثم اضغط Enter",
+      "BATCH_PLACEHOLDER": "اكتب اسم الدفعة ثم اضغط Enter",
+      "ADD": "إضافة",
+      "DUPLICATE": "هذا الاسم موجود بالفعل",
+      "SERIAL": "الرقم التسلسلي",
+      "BATCH": "الدفعة",
+      "PROD_DATE": "تاريخ الإنتاج",
+      "EXPIRE_DATE": "تاريخ الانتهاء",
+      "UNDO": "تراجع",
+      "EMPTY": "لم تتم إضافة شيء بعد",
+      "DONE": "تم",
+      "BELOW_SOLD": "تم بيع {{sold}} منها",
+      "N_SERIALS": "{{count}} أرقام تسلسلية",
+      "N_BATCHES": "{{count}} دفعات"
+    }
+  }
+}

@@ -2,12 +2,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  OnDestroy,
   OnInit,
   computed,
   inject,
   signal,
 } from '@angular/core';
+import { formatJournalDate } from '../../../services/journal-date';
 import { CommonModule } from '@angular/common';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -15,21 +18,24 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { AuthService } from '@core/auth/auth.service';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
-import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
+import { railKind } from '@shared/utils/status-tone';
+import { LanguageService } from '@core/i18n/language.service';
+import { PrivilegeService } from '@core/auth/privileges/privilege.service';
+import { LayoutService } from '@core/layout/services/layout.service';
+import type { DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
-import type { MediaPickerModalComponent as MediaPickerType } from 'src/app/features/settings/media/components/media-picker/media-picker-modal.component';
-import { MediaService } from 'src/app/features/settings/media/services/media.service';
 
+import { ManualJournalPaperComponent } from '../../components/manual-journal-paper/manual-journal-paper.component';
+import { DocViewAttachmentsComponent } from '../../../components/doc-view-attachments/doc-view-attachments.component';
+import { DocAdditionalDetailsComponent } from '../../../components/doc-additional-details/doc-additional-details.component';
+import type { DocAdditionalDetailsConfig } from '../../../components/doc-additional-details/doc-additional-details.types';
+import { DocViewShellComponent } from '../../../components/doc-view-shell/doc-view-shell.component';
+import type { DocRailItem } from '../../../services/document-view-base';
 import { ManualJournalsService } from '../../services/manual-journals.service';
-import { Journal, JournalAttachment, JournalComment, calculateJournalTotals, emptyJournal } from '../../services/manual-journals.types';
-
-/** Backend `reference` key this feature's attachments are linked under
- *  (matches legacy `type: 'journal'` passed to `<app-attachment>`). */
-const ATTACHMENT_REFERENCE = 'journal';
+import { Journal, JournalComment, calculateJournalTotals, emptyJournal } from '../../services/manual-journals.types';
 
 /**
  * Manual Journal detail/view page — read-only ledger display, comments
@@ -49,22 +55,24 @@ const ATTACHMENT_REFERENCE = 'journal';
 @Component({
   selector: 'app-manual-journal-view',
   standalone: true,
+  providers: [MycurrencyPipe],
   imports: [
     CommonModule,
     FormsModule,
     RouterModule,
     TranslateModule,
-    MycurrencyPipe,
-    BreadcrumbsComponent,
+    DocViewShellComponent,
+    ManualJournalPaperComponent,
+    DocAdditionalDetailsComponent,
+    DocViewAttachmentsComponent,
     LoadingOverlayComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './manual-journal-view.component.html',
   styleUrl: './manual-journal-view.component.scss',
 })
-export class ManualJournalViewComponent implements OnInit {
+export class ManualJournalViewComponent implements OnInit, OnDestroy {
   private service = inject(ManualJournalsService);
-  private mediaService = inject(MediaService);
   private auth = inject(AuthService);
   private translate = inject(TranslateService);
   private router = inject(Router);
@@ -72,6 +80,14 @@ export class ManualJournalViewComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private modal = inject(ModalService);
   private toast = inject(ToastService);
+  private privileges = inject(PrivilegeService);
+  private layout = inject(LayoutService);
+  private lang = inject(LanguageService);
+  private currency = inject(MycurrencyPipe);
+
+  /** Add also gates Edit/Clone (legacy), Delete has its own privilege. */
+  readonly canAdd = this.privileges.check('manualJournalSecurity.actions.add.access');
+  readonly canDelete = this.privileges.check('manualJournalSecurity.actions.delete.access');
 
   loading = signal<boolean>(false);
   journalId = signal<string>('');
@@ -84,16 +100,26 @@ export class ManualJournalViewComponent implements OnInit {
   newComment = signal<string>('');
   commentsSaving = signal<boolean>(false);
 
-  private i18nTick = signal(0);
+  // ─── Side list of the other journals (record rail) ──────────────────────
+  private readonly railPageSize = 15;
+  railItems = signal<DocRailItem[]>([]);
+  railLoading = signal<boolean>(false);
+  railTerm = signal<string>('');
+  railPage = signal<number>(1);
+  railPageCount = signal<number>(1);
+  /** Created dates of the journals the rail has listed (the detail endpoint has none), by id. */
+  private createdById = signal<Record<string, string>>({});
+  /** The open journal with its created date, for the paper. */
+  paperJournal = computed(() => ({ ...this.journal(), createdAt: this.createdById()[this.journalId()] ?? this.journal().createdAt }));
+  private railSearch$ = new Subject<string>();
+  private railSeq = 0;
 
-  breadcrumbs = computed<BreadcrumbItem[]>(() => {
+  docTitle = computed(() => {
     this.i18nTick();
-    return [
-      { label: this.translate.instant('MENU.DASHBOARD'), routerLink: '/dashboard' },
-      { label: this.translate.instant('MANUAL_JOURNALS.LIST.TITLE'), routerLink: '/account/manual-journals' },
-      { label: this.translate.instant('MANUAL_JOURNALS.FORM.VIEW_TITLE') },
-    ];
+    return `${this.translate.instant('MANUAL_JOURNALS.FORM.VIEW_TITLE')} ${this.journal().reference || ''}`.trim();
   });
+
+  private i18nTick = signal(0);
 
   constructor() {
     this.translate.onLangChange.pipe(takeUntilDestroyed(this.destroyRef))
@@ -101,16 +127,75 @@ export class ManualJournalViewComponent implements OnInit {
     this.translate.onTranslationChange.pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.i18nTick.update(n => n + 1));
 
+    this.railSearch$.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(term => { this.railTerm.set(term); void this.loadRail(1); });
+
     this.auth.employee$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(e => {
       this.currentEmployeeName.set(e?.name || e?.employeeName || e?.fullName || '');
     });
   }
 
   async ngOnInit(): Promise<void> {
-    const id = this.route.snapshot.paramMap.get('id') || '';
-    this.journalId.set(id);
-    await this.load();
+    // Edge-to-edge like the other document views (rail + toolbar span the full width).
+    this.layout.setNoPadding(true);
+    // The shared view shell's `DOC_VIEW.*` labels live in this feature's translations.
+    await Promise.all([
+      this.lang.loadFeature('account/manual-journals'),
+      this.lang.loadFeature('account/components/doc-lines-table'),
+    ]);
+    void this.loadRail(1);
+    // The route is reused when picking another journal from the rail, so follow the param.
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(m => {
+      this.journalId.set(m.get('id') || '');
+      void this.load();
+    });
   }
+
+  ngOnDestroy(): void { this.layout.setNoPadding(false); }
+
+  // ─── Rail ───────────────────────────────────────────────────────────────
+  async loadRail(page: number): Promise<void> {
+    const seq = ++this.railSeq;
+    this.railLoading.set(true);
+    try {
+      const res = await this.service.getList({ page, limit: this.railPageSize, searchTerm: this.railTerm(), sortBy: { sortValue: 'createdAt', sortDirection: 'desc' } });
+      if (seq !== this.railSeq) return;
+      this.createdById.update(m => ({ ...m, ...Object.fromEntries(res.list.filter(r => r.createdAt).map(r => [r.id, String(r.createdAt)])) }));
+      this.railItems.set(res.list.map(r => ({
+        id: r.id,
+        primary: r.reference || '—',
+        amountLabel: this.currency.transform(r.amount),
+        sub: [formatJournalDate(r.journalDate), r.branchName].filter(Boolean).join(' · '),
+        statusText: r.status ? this.translate.instant('MANUAL_JOURNALS.STATUS.' + r.status.toUpperCase()) : '',
+        statusKind: railKind(r.status),
+      } as DocRailItem)));
+      this.railPage.set(page);
+      this.railPageCount.set(Math.max(1, res.pageCount || 1));
+    } finally {
+      if (seq === this.railSeq) this.railLoading.set(false);
+    }
+  }
+  onRailSearch(term: string): void { this.railSearch$.next(term); }
+  railPrev(): void { if (this.railPage() > 1) void this.loadRail(this.railPage() - 1); }
+  railNext(): void { if (this.railPage() < this.railPageCount()) void this.loadRail(this.railPage() + 1); }
+  railGoTo(item: DocRailItem): void { void this.router.navigate(['/account/manual-journals/view', item.id]); }
+  add(): void { void this.router.navigate(['/account/manual-journals', 'new']); }
+
+  /** Toolbar "more" menu — same visibility rules as legacy's button row. */
+  actionItems = computed<DropdownMenuBtnItem[]>(() => {
+    this.i18nTick();
+    const j = this.journal();
+    const items: DropdownMenuBtnItem[] = [];
+    if (!j.reconciled && this.canAdd) items.push({ label: this.translate.instant('COMMON.CLONE'), click: () => this.cloneJournal() });
+    if (!j.reconciled && this.canDelete) items.push({ label: this.translate.instant('COMMON.DELETE'), danger: true, click: () => void this.deleteJournal() });
+    return items;
+  });
+  /** "Additional Details" under the paper — the journal's Logs. */
+  additionalDetails = computed<DocAdditionalDetailsConfig>(() => ({ tabs: ['logs'], logsSourceTable: 'Journals', logsSourceId: this.journalId() }));
+  printItems = computed<DropdownMenuBtnItem[]>(() => {
+    this.i18nTick();
+    return [{ label: this.translate.instant('COMMON.PRINT'), click: () => this.print() }];
+  });
 
   private async load(): Promise<void> {
     this.loading.set(true);
@@ -211,78 +296,6 @@ export class ManualJournalViewComponent implements OnInit {
       this.toast.error('COMMON.SAVE_FAILED', e?.message);
     } finally {
       this.commentsSaving.set(false);
-    }
-  }
-
-  // ─── Attachments ────────────────────────────────────────────────────────
-  /** Persists immediately (the journal already exists) via the shared
-   *  media-link API, matching legacy's immediate-append-on-view-page flow —
-   *  but, unlike legacy, never wipes existing attachments on failure: only
-   *  the newly-picked files are rolled back locally. */
-  async addAttachment(): Promise<void> {
-    const { MediaPickerModalComponent } =
-      await import('src/app/features/settings/media/components/media-picker/media-picker-modal.component');
-    const ref = this.modal.open<MediaPickerType, any, any>(
-      MediaPickerModalComponent,
-      {
-        size: 'xl',
-        data: {
-          contentTypes: ['image', 'document'],
-          title: this.translate.instant('MANUAL_JOURNALS.FORM.ATTACH_FILE'),
-          multiple: true,
-        },
-        closeOnBackdrop: true,
-      },
-    );
-    const picked = await ref.afterClosed();
-    if (!picked) return;
-    const items: any[] = Array.isArray(picked) ? picked : [picked];
-    if (!items.length) return;
-
-    for (const m of items) {
-      const mapped: JournalAttachment = {
-        id: String(m?.id ?? m?._id ?? ''),
-        size: typeof m?.getSize === 'number' ? m.getSize : Number(m?.size?.size ?? m?.mediaSize ?? 0) || 0,
-        mediaUrl: m?.imageUrl || m?.url?.defaultUrl || m?.url?.original || m?.url?.thumbnail || '',
-        mediaType: m?.mediaType?.fileType || m?.contentType || '',
-        mediaName: m?.name || '',
-      };
-      if (!mapped.id) continue;
-      if (this.journal().attachment.some(a => a.id === mapped.id)) continue;
-      // The backend does a full-column overwrite (`SET "attachment"=$1`), not a DB-level append —
-      // the request must carry the complete desired list (existing + new), not just the new item.
-      const next = [...this.journal().attachment, mapped];
-      try {
-        const ok = await this.mediaService.appendAttachment({
-          type: ATTACHMENT_REFERENCE,
-          id: this.journalId(),
-          attachment: next.map(a => ({ id: a.id })),
-        });
-        if (ok) {
-          this.journal.update(j => ({ ...j, attachment: next }));
-        } else {
-          this.toast.error('COMMON.SAVE_FAILED');
-        }
-      } catch (e: any) {
-        this.toast.error('COMMON.SAVE_FAILED', e?.message);
-      }
-    }
-  }
-
-  async removeAttach(attachment: JournalAttachment): Promise<void> {
-    try {
-      const ok = await this.mediaService.deleteAttachment({
-        type: ATTACHMENT_REFERENCE,
-        id: this.journalId(),
-        mediaId: attachment.id,
-      });
-      if (ok) {
-        this.journal.update(j => ({ ...j, attachment: j.attachment.filter(a => a.id !== attachment.id) }));
-      } else {
-        this.toast.error('COMMON.DELETE_FAILED');
-      }
-    } catch (e: any) {
-      this.toast.error('COMMON.DELETE_FAILED', e?.message);
     }
   }
 }

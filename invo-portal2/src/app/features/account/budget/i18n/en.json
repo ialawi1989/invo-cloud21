@@ -1,0 +1,79 @@
+{
+  "BUDGET": {
+    "DASHBOARD": "Dashboard",
+    "LIST": {
+      "TITLE": "Budgets",
+      "ADD_NEW": "Add Budget",
+      "SEARCH_PLACEHOLDER": "Search by name, branch, year or periodicity…",
+      "EMPTY": "No budgets to show.",
+      "NAME": "Name",
+      "BRANCH": "Branch",
+      "YEAR": "Year",
+      "PERIODICITY": "Periodicity",
+      "CREATED": "Created",
+      "REPORT": "Budget vs Actual",
+      "REPORT_SHORT": "Report",
+      "CONFIRM_DELETE": "Delete this budget and everything planned in it?",
+      "DELETED": "Budget deleted"
+    },
+    "PERIODICITY": {
+      "yearly": "Yearly",
+      "half": "Half yearly",
+      "quarterly": "Quarterly",
+      "monthly": "Monthly"
+    },
+    "FORM": {
+      "NEW": "New Budget",
+      "EDIT": "Edit Budget",
+      "DETAILS": "Budget details",
+      "NAME": "Title",
+      "BRANCH": "Branch",
+      "SELECT_BRANCH": "Select a branch",
+      "YEAR": "Year",
+      "PERIODICITY": "Periodicity",
+      "SELECT_PERIODICITY": "Select a periodicity",
+      "PLAN": "Planned amounts",
+      "REQUIRED": "This value is required",
+      "INVALID_YEAR": "Enter a year between 1900 and 2099",
+      "DISCOUNT_MINUS": "A discount can only be a minus value.",
+      "RESET_TITLE": "Change periodicity?",
+      "RESET_MESSAGE": "The amounts you entered will be cleared.",
+      "EXPORT": "Export",
+      "PRINT": "Print",
+      "REPORT": "Budget vs Actual"
+    },
+    "REPORT": {
+      "TITLE": "Budget vs Actual"
+    },
+    "MONTHS": {
+      "January": "January", "February": "February", "March": "March", "April": "April", "May": "May", "June": "June",
+      "July": "July", "August": "August", "September": "September", "October": "October", "November": "November", "December": "December"
+    },
+    "QUARTERS": { "q1": "Quarter 1", "q2": "Quarter 2", "q3": "Quarter 3", "q4": "Quarter 4" },
+    "HALVES": { "1H": "1st Half", "2H": "2nd Half" },
+    "SECTIONS": {
+      "OPERATING_INCOME": "Operating Income",
+      "COSTS_OF_GOODS_SOLD": "Costs Of Goods Sold",
+      "OPERATING_EXPENSE": "Operating Expense",
+      "CURRENT_ASSETS": "Current Assets",
+      "OTHER_CURRENT_ASSETS": "Other Current Assets",
+      "CURRENT_LIABILITIES": "Current Liabilities",
+      "EQUITY": "Equity"
+    },
+    "SHEET": {
+      "PROFIT_LOSS": "Profit and Loss Sheet",
+      "BALANCE_SHEET": "Balance Sheet",
+      "ACCOUNT": "Account",
+      "TOTAL": "Total",
+      "BUDGET": "Budget",
+      "ACTUAL": "Actual",
+      "MINUS_ONLY": "Minus values only",
+      "TOTAL_FOR": "Total for {{name}}",
+      "GROSS_PROFIT": "Gross Profit",
+      "OPERATING_PROFIT": "Operating Profit",
+      "NET_PROFIT": "Net Profit / Loss",
+      "TOTAL_ASSETS": "Total for Assets",
+      "TOTAL_LIABILITIES_EQUITY": "Total for Liabilities & Equity"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+<app-list-page
+  [pageTitle]="'INVENTORY_TRANSFER.TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="load"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="filters"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'inventory-transfer'"
+  [mobileCardConfig]="mobileCardConfig"
+  (rowClicked)="onRowClick($event)">
+
+  <div listHeaderActions class="flex items-center gap-3">
+    @if (canAdd) {
+      <app-dropdown-menu-btn [items]="newItems" [appendToBody]="true" align="end"
+        triggerClass="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg font-medium whitespace-nowrap bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl transition-all">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span>{{ 'INVENTORY_TRANSFER.NEW' | translate }}</span>
+      </app-dropdown-menu-btn>
+    }
+  </div>
+
+  <ng-template listCellTemplate="type" let-row>{{ typeLabel(row) }}</ng-template>
+  <ng-template listCellTemplate="status" let-row>
+    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium" [class]="statusClass(row.status)">{{ statusLabel(row) }}</span>
+  </ng-template>
+  <ng-template listCellTemplate="transferNumber" let-row>
+    <span class="font-medium text-slate-900 list-interactive-cell">{{ row.transferNumber }}</span>
+  </ng-template>
+  <ng-template listCellTemplate="branchName" let-row>
+    {{ row.branchName }}
+    @if (row.type === 'Transfer Out' && row.destinationBranchName) { <span class="text-slate-400"> → </span>{{ row.destinationBranchName }} }
+  </ng-template>
+  <ng-template listCellTemplate="createdDate" let-row>{{ row.createdDate | date: 'dd/MM/yyyy' }}</ng-template>
+
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+      <button type="button" (click)="view(row)"
+        class="px-3 h-9 inline-flex items-center rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">
+        {{ 'COMMON.VIEW' | translate }}
+      </button>
+      @if (canEdit(row)) {
+        <button type="button" (click)="edit(row)"
+          class="px-4 h-9 inline-flex items-center rounded-full bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700">
+          {{ 'COMMON.EDIT' | translate }}
+        </button>
+      }
+    </div>
+  </ng-template>
+</app-list-page>

@@ -1,3 +1,4 @@
+import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -38,7 +39,7 @@ const TAB_PARAM: ParamDef<Tab> = { key: 'tab', codec: enumCodec(['events', 'temp
 @Component({
   selector: 'app-notification-settings',
   standalone: true,
-  imports: [FormsModule, TranslateModule, DatePipe, SearchDropdownComponent, DatePickerComponent],
+  imports: [StatusBadgeComponent, FormsModule, TranslateModule, DatePipe, SearchDropdownComponent, DatePickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './notification-settings.component.html',
   styleUrl: './notification-settings.component.scss',

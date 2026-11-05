@@ -1,0 +1,90 @@
+{
+  "CREDIT_NOTES": {
+    "DASHBOARD": "لوحة التحكم",
+    "ADD_NEW": "إضافة إشعار دائن",
+    "SEARCH_PLACEHOLDER": "ابحث بالرقم أو الفاتورة أو العميل",
+    "EMPTY": "لا توجد إشعارات دائنة",
+    "CREATED_DATE": "تاريخ الإنشاء",
+    "LIST": {
+      "CREDIT_NOTES_LIST": "الإشعارات الدائنة",
+      "ALL_CREDIT_NOTES": "جميع الإشعارات الدائنة",
+      "STATUS_OPEN": "مفتوحة",
+      "STATUS_CLOSED": "مغلقة",
+      "CREDIT_NOTE_NUMBER": "رقم الإشعار",
+      "INVOICE_NUMBER": "رقم الفاتورة",
+      "EMPLOYEE_NAME": "الموظف",
+      "CUSTOMER_NAME": "العميل",
+      "TOTAL": "الإجمالي",
+      "BRANCH_NAME": "الفرع",
+      "ISSUE_DATE": "تاريخ الإصدار",
+      "REFUNDED": "تم الاسترداد",
+      "REFUNDED_PARTIALLY": "استرداد جزئي"
+    },
+    "FILTERS": {
+      "SOURCE": "المصدر",
+      "BRANCH": "الفرع",
+      "DATE": "التاريخ"
+    },
+    "ACTIONS": {
+      "EXPORT_EXCEL": "تصدير إلى Excel",
+      "APPLY_CREDITS": "تطبيق الرصيد",
+      "REFUND": "استرداد"
+    },
+    "FORM": {
+      "CREDIT_NOTE": "إشعار دائن",
+      "NEW_CREDIT_NOTE": "إشعار دائن جديد",
+      "EDIT_CREDIT_NOTE": "تعديل الإشعار الدائن",
+      "CREDIT_NOTE_FOR": "إشعار دائن للفاتورة",
+      "CREDIT_NOTE_DETAILS": "تفاصيل الإشعار الدائن",
+      "CREDIT_NOTE_NUMBER": "رقم الإشعار الدائن",
+      "CREDIT_NOTE_DATE": "تاريخ الإشعار الدائن",
+      "REFERENCE": "الرقم المرجعي",
+      "INVOICE": "الفاتورة",
+      "SELECT_INVOICE": "اختر فاتورة",
+      "NO_INVOICES": "لا توجد فواتير يمكن عمل إشعار دائن لها لهذا العميل",
+      "LINES_LARGER_THAN_INVOICE": "إجمالي الإشعار الدائن أكبر من إجمالي الفاتورة",
+      "NUMBER_HELP": "اضغط هنا لتفعيل أو تعطيل الترقيم التلقائي للإشعارات الدائنة.",
+      "NOTES_HINT": "سيظهر في الإشعار الدائن",
+      "DATE_BEFORE_INVOICE": "لا يمكن أن يسبق تاريخ الإشعار تاريخ الفاتورة",
+      "NEEDS_QTY": "أدخل كمية لسطر واحد على الأقل"
+    },
+    "REQUIRED": {
+      "CREDIT_NOTE_NUMBER": "رقم الإشعار الدائن",
+      "INVOICE": "الفاتورة",
+      "CUSTOMER": "العميل",
+      "BRANCH": "الفرع"
+    },
+    "VIEW": {
+      "VIEW_CREDIT_NOTE": "عرض الإشعار الدائن",
+      "CONFIRM_DELETE": "حذف هذا الإشعار الدائن؟ لا يمكن التراجع."
+    },
+    "APPLY": {
+      "TITLE": "تطبيق الرصيد على",
+      "CREDIT_NOTE_BALANCE": "رصيد الإشعار الدائن",
+      "INVOICE_NUMBER": "رقم الفاتورة",
+      "INVOICE_BALANCE": "رصيد الفاتورة",
+      "AMOUNT_TO_CREDIT": "المبلغ المراد تطبيقه",
+      "BALANCE_DUE": "المتبقي من الإشعار الدائن",
+      "NO_INVOICES": "لا توجد فواتير مفتوحة لهذا العميل",
+      "APPLY": "تطبيق الرصيد"
+    },
+    "REFUND": {
+      "TITLE": "استرداد",
+      "NEW": "استرداد جديد",
+      "EDIT": "تعديل الاسترداد",
+      "FORM": "نموذج الاسترداد",
+      "DATE": "تاريخ الاسترداد",
+      "REFERENCE": "الرقم المرجعي",
+      "AMOUNT": "المبلغ",
+      "AMOUNT_HINT": "حتى رصيد الإشعار الدائن",
+      "PAYMENT_METHOD": "طريقة الدفع",
+      "DESCRIPTION": "الوصف",
+      "NO_METHODS": "لا توجد طرق دفع متاحة للاسترداد",
+      "REQUIRED_CREDIT_NOTE": "الإشعار الدائن",
+      "REQUIRED_METHOD": "طريقة الدفع",
+      "REQUIRED_AMOUNT": "المبلغ",
+      "CREDIT_NOTE": "الإشعار الدائن",
+      "BALANCE": "رصيد الإشعار الدائن"
+    }
+  }
+}

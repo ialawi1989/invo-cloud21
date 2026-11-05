@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
 
 import { AuthService } from '@core/auth/auth.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 
 import { hrGrantFor } from '../../hr-privilege';
 import {
@@ -40,7 +42,7 @@ import { portalKey } from '../../hr-labels';
 @Component({
   selector: 'app-employee-documents',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, EmptyStateComponent, DateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-documents.component.html',
   styleUrls: ['./employee-documents.component.scss'],

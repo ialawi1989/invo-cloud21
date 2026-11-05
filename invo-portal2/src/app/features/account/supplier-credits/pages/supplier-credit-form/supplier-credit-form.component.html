@@ -1,0 +1,89 @@
+@if (doc && editor) {
+  @let e = credit;
+  <app-doc-form-shell
+    [title]="'SUPPLIER_CREDITS.FORM.SUPPLIER_CREDIT' | translate" [breadcrumbs]="breadcrumbs"
+    [canDraft]="false" [submitting]="submitting" [saveDisabled]="missing.length > 0" [showView]="formStatus === 'edit'"
+    [saveLabel]="saveLabelKey | translate" [saveMenu]="saveMenu()" [actionsMenu]="actionsMenu()"
+    [total]="e.total" [totalQty]="totalQuantity"
+    (save)="savePrimary()" (cancel)="cancel()" (view)="view()">
+
+    <div class="df-top">
+    <app-doc-supplier-section
+      [supplier]="supplierValue" [error]="fieldError('supplierId')" [international]="e.allowBillOfEntry" [locked]="billLocked()"
+      (supplierChange)="onSupplier($event)" (createNew)="createSupplier()"/>
+    <app-doc-attachments-card [attachments]="e.attachment" (changed)="onAttachments($event)"/>
+    </div>
+
+    <section class="df-card">
+      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>{{ 'SUPPLIER_CREDITS.FORM.DETAILS' | translate }}</h2>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label for="creditNumber">{{ 'SUPPLIER_CREDITS.FORM.CREDIT_NUMBER' | translate }} <span class="req">*</span></label>
+          <div class="df-num" [class.is-invalid]="fieldError('supplierCreditNumber')">
+            <input id="creditNumber" type="text" [(ngModel)]="e.supplierCreditNumber" (ngModelChange)="markDirty()"/>
+            <button type="button" class="df-gear" (click)="openNumberPrefs()" [attr.title]="'SUPPLIER_CREDITS.FORM.NUMBER_HELP' | translate" aria-label="settings">⚙</button>
+          </div>
+          @if (fieldError('supplierCreditNumber'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label for="reference">{{ 'SUPPLIER_CREDITS.FORM.REFERENCE' | translate }}</label>
+          <input id="reference" class="df-input" type="text" [(ngModel)]="e.reference" (ngModelChange)="markDirty()"/>
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'SUPPLIER_CREDITS.FORM.CREDIT_DATE' | translate }} <span class="req">*</span></label>
+          <app-date-picker [value]="docDate" [min]="minDate" (valueChange)="onCreditDate($event)"/>
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.BRANCH' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="branches" [displayWith]="branchLabel" [compareWith]="byId"
+            [value]="branchOf()" (valueChange)="onBranch($any($event))" [clearable]="false" [disabled]="branchLocked"
+            [placeholder]="'DOC_FORM.SELECT_BRANCH' | translate"/>
+          @if (fieldError('branchId'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'SUPPLIER_CREDITS.FORM.BILL' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="billOptions" [displayWith]="billLabel" [compareWith]="byId"
+            [value]="billOf()" (valueChange)="onBill($any($event))" [clearable]="false" [disabled]="billLocked() || !e.supplierId || !e.branchId"
+            [placeholder]="'SUPPLIER_CREDITS.FORM.SELECT_BILL' | translate"/>
+          @if (fieldError('billingId'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.TAX_TYPE' | translate }}</label>
+          <app-segmented-toggle [options]="taxTypes" [value]="e.isInclusiveTax ? 'inclusive' : 'exclusive'" [locked]="true"/>
+        </div>
+      </div>
+
+      <app-entity-custom-fields entityType="supplierCredit" [parentForm]="form" [valueSource]="e.customFields" idPrefix="cf-sc" [bare]="true"/>
+    </section>
+
+    @if (billTotal > 0 && e.total > billTotal) {
+      <div class="df-warn">{{ 'SUPPLIER_CREDITS.FORM.LINES_LARGER_THAN_BILL' | translate }} <b>{{ billTotal | mycurrency }}</b></div>
+    }
+
+    @if (canImportFromBill) {
+      <div class="sf-import"><button type="button" class="df-btn" (click)="importFromBill()">{{ 'SUPPLIER_CREDITS.FORM.IMPORT_FROM_BILL' | translate }}</button></div>
+    }
+
+    <app-doc-lines-table
+      [doc]="e" [editor]="editor!" [config]="linesConfig" [formStatus]="formStatus"
+      (changed)="markDirty()">
+      <div class="sf-totals">
+        <div class="sf-sum">
+          <div class="sf-row"><b>{{ 'DOC_FORM.SUB_TOTAL' | translate }}</b><b>{{ e.itemTotalWithoutTax | mycurrency }}</b></div>
+          @if (e.creditDiscount) { <div class="sf-row"><span>{{ 'DOC_FORM.DISCOUNT' | translate }}</span><span>({{ e.creditDiscount | mycurrency }})</span></div> }
+          <div class="sf-row"><span>{{ 'DOC_FORM.TAX_TOTAL' | translate }}</span><span>{{ e.invoiceTaxTotal | mycurrency }}</span></div>
+          @if (e.roundingTotal) { <div class="sf-row"><span>{{ 'DOC_FORM.ROUNDING' | translate }}</span><span>{{ e.roundingTotal | mycurrency }}</span></div> }
+          <div class="sf-row sf-row--total"><b>{{ 'DOC_FORM.TOTAL' | translate }}</b><b>{{ e.total | mycurrency }}</b></div>
+        </div>
+      </div>
+    </app-doc-lines-table>
+
+  </app-doc-form-shell>
+}

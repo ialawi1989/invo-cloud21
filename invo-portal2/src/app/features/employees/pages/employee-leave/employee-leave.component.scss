@@ -427,3 +427,44 @@
 }
 
 .form-control.is-invalid { border-color: var(--danger-color, #dc2626); }
+
+// ── Setup alert + balance tooltip + metric tiles ───────────────────────────
+.leave-alert { margin-bottom: 16px; }
+
+.leave-balance__title { display: inline-flex; align-items: center; gap: 6px; }
+
+.info-tip {
+  position: relative;
+  display: inline-flex;
+  color: #64748b;
+  cursor: help;
+  &:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; border-radius: 50%; }
+
+  &__bubble {
+    display: none;
+    position: absolute;
+    inset-inline-start: 0;
+    top: calc(100% + 8px);
+    z-index: 30;
+    width: 340px;
+    max-width: 80vw;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #0f172a;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: start;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+
+    span { display: block; }
+    span + span { margin-top: 6px; }
+  }
+  &:hover &__bubble, &:focus &__bubble, &:focus-within &__bubble { display: block; }
+}
+
+// All five tiles share one text colour; Remaining is tinted only when low/negative.
+.leave-figures dd { color: #0f172a; }
+.leave-figures__remaining[data-tone='warn'] dd { color: #b45309; }
+.leave-figures__remaining[data-tone='danger'] dd { color: #b91c1c; }

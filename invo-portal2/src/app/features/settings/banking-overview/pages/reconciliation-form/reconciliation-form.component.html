@@ -160,6 +160,11 @@
         {{ 'BANKING_OVERVIEW.FORM.START_RECONCILIATION' | translate }}
       </button>
     }
+    @if (status() === 'reconciled' && canUndo) {
+      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="undoReconciliation()">
+        {{ 'BANKING_OVERVIEW.FORM.UNDO_RECONCILIATION' | translate }}
+      </button>
+    }
     @if (status() === 'in-progress') {
       <button type="button" class="btn btn-secondary" [disabled]="saving()" (click)="saveDraft()">
         {{ 'BANKING_OVERVIEW.FORM.SAVE_DRAFT' | translate }}

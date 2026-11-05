@@ -17,21 +17,32 @@
       "EXPIRY_DATE": "Expiry date",
       "REF": "Ref #",
       "CONVERT": "Convert",
-      "CONVERTED": "Converted"
+      "CONVERTED": "Converted",
+      "CUSTOMER_PHONE": "Customer phone",
+      "ALL_ESTIMATES": "All Estimates",
+      "STATUS": "Status"
     },
     "FILTERS": {
       "SOURCE": "Source",
       "BRANCH": "Branch",
       "EMPLOYEE": "Employee",
       "PRODUCT": "Product",
-      "DATE": "Date"
+      "DATE": "Date",
+      "STATUS": "Status"
     },
     "ACTIONS": {
       "EXPORT_EXCEL": "Export to Excel",
       "DELETE": "Delete",
       "CONFIRM_DELETE": "Delete this estimate? This cannot be undone.",
       "CONVERT_TO_INVOICE": "Convert to Invoice",
-      "CLONE": "Clone"
+      "CLONE": "Clone",
+      "EXPORT_MERGED_PDF": "Export merged PDF",
+      "SEND_EMAIL": "Send email",
+      "BULK_DELETE_CONFIRM": "Delete {{count}} selected estimate(s)? This cannot be undone.",
+      "BULK_DELETE_SKIPPED": "{{count}} more cannot be deleted (already converted or created from POS / online) and will be left as they are.",
+      "BULK_DELETE_NONE": "None of the selected estimates can be deleted.",
+      "BULK_DELETED": "{{count}} estimate(s) deleted",
+      "BULK_DELETE_FAILED": "{{count}} estimate(s) could not be deleted"
     },
     "FORM": {
       "ESTIMATE": "Estimate",
@@ -42,6 +53,7 @@
       "ESTIMATE_DATE": "Estimate Date",
       "EXPIRY_DATE": "Expiry Date",
       "EXPIRY_BEFORE_DATE": "The expiry date can't be before the estimate date",
+      "TOTAL_IS_MINUS": "Please check the total - an estimate can't have a negative total.",
       "REFERENCE": "Reference Number",
       "NUMBER_HELP": "Click here to enable or disable auto-generation of Estimate numbers.",
       "NOTES_HINT": "Will be displayed on the estimate"
@@ -64,7 +76,49 @@
       "EXPORT_XLSX": "Export lines (XLSX)",
       "NO_DATA": "There are no lines to export",
       "CONFIRM_DELETE": "Delete this estimate? This cannot be undone.",
-      "CONVERTED_TO": "Converted to invoice"
+      "CONVERTED_TO": "Converted to invoice",
+      "SORT_BY": "Sort by",
+      "IMPORT_ESTIMATES": "Import Estimates",
+      "EXPORT_ESTIMATES": "Export Estimates",
+      "EXPORT_CURRENT_VIEW": "Export Current View"
+    },
+    "RECORDS": "Estimates",
+    "IMPORT": {
+      "TITLE": "Import Estimates",
+      "RECORDS": "Estimates",
+      "SKIP_DUPLICATES": "Skip duplicate estimates",
+      "SKIP_DUPLICATES_DESC": "Estimates whose number already exists are skipped. Turn this off to report them as errors instead.",
+      "SKIP_DUPLICATE_LINES": "Skip duplicate lines",
+      "SKIP_DUPLICATE_LINES_DESC": "Within an estimate, a line identical to an earlier one (same item, quantity, price, discount and description) is skipped.",
+      "AUTO_NUMBER": "Auto-generate Estimate Numbers",
+      "AUTO_NUMBER_DESC": "Estimate numbers are generated from your numbering settings. Any estimate numbers in the file are ignored.",
+      "TIP_ROWS": "Each row of the file is one estimate line. Rows with the same estimate number are imported as one estimate.",
+      "TIP_MATCH": "Customers and items must already exist. Customers are matched by name; items by barcode first, then SKU, then name, and must be available in this branch. An estimate with an unknown customer or unavailable item is reported as an error.",
+      "TIP_EXPIRY": "The expiry date defaults to the estimate date when left empty. Estimate numbers that already exist are skipped, or reported as errors when Skip duplicate estimates is off.",
+      "GROUPS": {
+        "ESTIMATE": "Estimate Details",
+        "CONTACT": "Contact Details",
+        "ITEM": "Item Details"
+      },
+      "FIELDS": {
+        "ESTIMATE_NUMBER": "Estimate Number",
+        "ESTIMATE_DATE": "Estimate Date",
+        "EXPIRY_DATE": "Expiry Date",
+        "REFERENCE": "Reference Number",
+        "NOTES": "Notes",
+        "CUSTOMER_NAME": "Customer Name",
+        "ITEM_NAME": "Item Name",
+        "BARCODE": "Barcode",
+        "SKU": "SKU",
+        "QUANTITY": "Quantity",
+        "PRICE": "Item Price",
+        "DISCOUNT": "Discount (%)",
+        "ITEM_DESC": "Item Description"
+      }
+    },
+    "STATUS": {
+      "Open": "Open",
+      "Converted": "Converted"
     }
   }
 }

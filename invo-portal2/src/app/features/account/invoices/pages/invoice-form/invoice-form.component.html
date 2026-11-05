@@ -2,21 +2,25 @@
   @let inv = doc;
   <app-doc-form-shell
     [title]="'INVOICES.FORM.INVOICE' | translate" [breadcrumbs]="breadcrumbs"
-    [canDraft]="canOfferDraft" [submitting]="submitting" [showView]="formStatus === 'edit'"
-    [saveLabel]="saveLabelKey | translate" [saveMenu]="saveMenu()"
+    [canDraft]="canOfferDraft" [submitting]="submitting" [saveDisabled]="missing.length > 0" [draftDisabled]="missingDraft.length > 0" [showView]="formStatus === 'edit'"
+    [saveLabel]="saveLabelKey | translate" [saveMenu]="saveMenu()" [actionsMenu]="actionsMenu()"
     [total]="inv.total" [totalQty]="totalQuantity"
     (draft)="saveDraft()" (save)="savePrimary()" (cancel)="cancel()" (view)="view()">
 
+    <div class="df-top">
     <!-- Customer -->
     <app-doc-party-section
       [customer]="customerValue" [addresses]="addresses" [address]="customerAddress" [addressRequired]="isDelivery"
       [error]="fieldError('customerId')"
-      (customerChange)="onCustomer($event)" (addressChange)="setAddress($event)"
+      (customerChange)="onCustomer($event)" (addressChange)="setAddress($event)" (addAddress)="addAddress()"
       (createNew)="createCustomer()" (advancedSearch)="advancedCustomerSearch()"/>
+    <!-- Attachments -->
+    <app-doc-attachments-card [attachments]="inv.attachment" (changed)="onAttachments($event)"/>
+    </div>
 
     <!-- Invoice details -->
     <section class="df-card">
-      <h2 class="df-card__title">{{ 'INVOICES.FORM.INVOICE_DETAILS' | translate }}</h2>
+      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>{{ 'INVOICES.FORM.INVOICE_DETAILS' | translate }}</h2>
 
       <div class="df-row">
         <div class="df-field df-field--grow">
@@ -82,32 +86,7 @@
       <app-doc-totals [doc]="inv" [editor]="editor!" [surcharges]="surcharges" notesHintKey="INVOICES.FORM.NOTES_HINT" (changed)="markDirty()"/>
     </app-doc-lines-table>
 
-    <!-- Attachments -->
-    <section class="df-card">
-      <h2 class="df-card__title">{{ 'DOC_FORM.ATTACHMENTS' | translate }}</h2>
-      <app-doc-attachments [attachments]="inv.attachment" (changed)="onAttachments($event)"/>
-    </section>
-
-    <section class="df-tips">
-      <p class="df-tips__row">
-        <b>{{ 'INVOICES.FORM.GATEWAY_TITLE' | translate }}</b>
-        <span class="df-cards" aria-hidden="true">
-          <svg width="26" height="16" viewBox="0 0 26 16"><circle cx="9" cy="8" r="7" fill="#eb001b"/><circle cx="17" cy="8" r="7" fill="#f79e1b" fill-opacity=".9"/></svg>
-          <b class="df-visa">VISA</b>
-        </span>
-      </p>
-      <p class="df-tips__row df-tips__muted">
-        {{ 'INVOICES.FORM.GATEWAY_TEXT' | translate }}
-        <a routerLink="/settings/payment-methods" target="_blank" rel="noopener">{{ 'INVOICES.FORM.GATEWAY_LINK' | translate }}</a>
-      </p>
-      <p class="df-tips__row df-tips__muted">
-        <b>{{ 'INVOICES.FORM.CF_TITLE' | translate }}</b>
-        {{ 'INVOICES.FORM.CF_TEXT' | translate }}
-        <a routerLink="/settings/custom-fields/invoice" target="_blank" rel="noopener"><i>{{ 'INVOICES.FORM.CF_PATH' | translate }}</i></a>.
-      </p>
-    </section>
-
-    @if (formStatus !== 'edit') {
+    @if (formStatus === 'edit') {
       <button footerExtra type="button" class="df-link" (click)="makeRecurring()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         {{ 'INVOICES.FORM.MAKE_RECURRING' | translate }}

@@ -1,0 +1,50 @@
+@let j = journal();
+<header class="mp-head">
+  @if (logo()) { <img class="mp-logo" [src]="logo()" alt=""/> }
+  <div><h2>{{ companyName() }}</h2>@if (j.branchName) { <div class="mp-muted">{{ j.branchName }}</div> }</div>
+  <div class="mp-title">{{ 'MANUAL_JOURNALS.FORM.JOURNAL' | translate }}</div>
+</header>
+
+<dl class="mp-facts">
+  <div><dt>{{ 'MANUAL_JOURNALS.LIST.REFERENCE' | translate }}</dt><dd>{{ j.reference || '—' }}</dd></div>
+  <div><dt>{{ 'MANUAL_JOURNALS.LIST.DATE' | translate }}</dt><dd>{{ j.journalDate | date: 'dd/MM/yyyy' }}</dd></div>
+  @if (j.createdAt) { <div><dt>{{ 'MANUAL_JOURNALS.LIST.CREATED_DATE' | translate }}</dt><dd>{{ j.createdAt | date: 'dd/MM/yyyy' }}</dd></div> }
+  <div><dt>{{ 'MANUAL_JOURNALS.LIST.BRANCH' | translate }}</dt><dd>{{ j.branchName || '—' }}</dd></div>
+  <div>
+    <dt>{{ 'MANUAL_JOURNALS.LIST.STATUS' | translate }}</dt>
+    <dd><span class="mp-status" [class.mp-status--draft]="j.status === 'Draft'" [class.mp-status--open]="j.status === 'Open'">
+      {{ (j.status ? ('MANUAL_JOURNALS.STATUS.' + j.status.toUpperCase()) : '—') | translate }}</span></dd>
+  </div>
+</dl>
+
+@if (j.notes) {
+  <div class="mp-notes"><span class="mp-muted">{{ 'MANUAL_JOURNALS.FORM.NOTES' | translate }}</span><p>{{ j.notes }}</p></div>
+}
+
+<table class="mp-table">
+  <thead>
+    <tr>
+      <th>{{ 'MANUAL_JOURNALS.FORM.ACCOUNT' | translate }}</th>
+      <th>{{ 'MANUAL_JOURNALS.FORM.REFERENCE_CODE' | translate }}</th>
+      <th>{{ 'MANUAL_JOURNALS.FORM.DESCRIPTION' | translate }}</th>
+      <th class="end">{{ 'MANUAL_JOURNALS.FORM.DEBIT' | translate }}</th>
+      <th class="end">{{ 'MANUAL_JOURNALS.FORM.CREDIT' | translate }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (l of lines(); track l.id || $index) {
+      <tr>
+        <td><b>{{ l.accountName || '—' }}</b></td>
+        <td>{{ l.code || '—' }}</td>
+        <td>{{ l.description || '—' }}</td>
+        <td class="end">{{ l.debit | mycurrency }}</td>
+        <td class="end">{{ l.credit | mycurrency }}</td>
+      </tr>
+    }
+  </tbody>
+</table>
+
+<div class="mp-sum">
+  <div><span>{{ 'MANUAL_JOURNALS.FORM.DEBIT' | translate }}</span><b>{{ totals().debitsTotal | mycurrency }}</b></div>
+  <div class="mp-sum__total"><span>{{ 'MANUAL_JOURNALS.FORM.CREDIT' | translate }}</span><b>{{ totals().creditsTotal | mycurrency }}</b></div>
+</div>

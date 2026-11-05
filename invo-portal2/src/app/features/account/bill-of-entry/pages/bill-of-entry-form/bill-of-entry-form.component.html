@@ -1,0 +1,79 @@
+@if (doc && editor) {
+  @let e = boe;
+  <app-doc-form-shell
+    [title]="'BILL_OF_ENTRY.FORM.BILL_OF_ENTRY' | translate" [breadcrumbs]="breadcrumbs"
+    [canDraft]="canOfferDraft" [submitting]="submitting" [saveDisabled]="missing.length > 0" [draftDisabled]="missingDraft.length > 0" [showView]="formStatus === 'edit'"
+    [saveLabel]="saveLabelKey | translate" [saveMenu]="saveMenu()" [actionsMenu]="actionsMenu()"
+    [total]="e.total" [totalQty]="totalQuantity"
+    (draft)="saveDraft()" (save)="savePrimary()" (cancel)="cancel()" (view)="view()">
+
+    <div class="df-top">
+    <app-doc-supplier-section [supplier]="supplierValue" [allowCreate]="false" [locked]="true" [international]="false"/>
+    <app-doc-attachments-card [attachments]="e.attachment" (changed)="onAttachments($event)"/>
+    </div>
+
+    <section class="df-card">
+      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>{{ 'BILL_OF_ENTRY.FORM.DETAILS' | translate }}</h2>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label for="boeNumber">{{ 'BILL_OF_ENTRY.FORM.NUMBER' | translate }} <span class="req">*</span></label>
+          <div class="df-num" [class.is-invalid]="fieldError('billingOfEnrtyNumber')">
+            <input id="boeNumber" type="text" [(ngModel)]="e.billingOfEnrtyNumber" (ngModelChange)="markDirty()"/>
+            <button type="button" class="df-gear" (click)="openNumberPrefs()" [attr.title]="'BILL_OF_ENTRY.FORM.NUMBER_HELP' | translate" aria-label="settings">⚙</button>
+          </div>
+          @if (fieldError('billingOfEnrtyNumber'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'BILL_OF_ENTRY.FORM.BILL' | translate }}</label>
+          <div class="df-input">{{ e.billingNumber }}</div>
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'BILL_OF_ENTRY.FORM.DATE' | translate }} <span class="req">*</span></label>
+          <app-date-picker [value]="entryDate" [min]="minDate" (valueChange)="onBillOfEntryDate($event)"/>
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'BILL_OF_ENTRY.FORM.PAYMENT_METHOD' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="paymentMethods" [displayWith]="methodLabel" [compareWith]="byId" [searchable]="false"
+            [value]="methodOf()" (valueChange)="onMethod($any($event))" [clearable]="false"
+            [placeholder]="'BILL_OF_ENTRY.FORM.SELECT_METHOD' | translate"/>
+          @if (fieldError('paymentMethodId'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label for="boeRef">{{ 'BILL_OF_ENTRY.FORM.REFERENCE' | translate }}</label>
+          <input id="boeRef" class="df-input" type="text" [(ngModel)]="e.reference" (ngModelChange)="markDirty()"/>
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.BRANCH' | translate }}</label>
+          <div class="df-input">{{ e.branchName }}</div>
+        </div>
+      </div>
+
+      <app-entity-custom-fields entityType="billOfEntry" [parentForm]="form" [valueSource]="e.customFields" idPrefix="cf-boe" [bare]="true"/>
+    </section>
+
+    <app-doc-lines-table
+      [doc]="e" [editor]="editor!" [config]="linesConfig" [formStatus]="formStatus"
+      (changed)="markDirty()">
+      <div class="boe-foot">
+        <div class="boe-notes">
+          <label for="boeNote">{{ 'BILL_OF_ENTRY.FORM.NOTE' | translate }}</label>
+          <textarea id="boeNote" rows="3" [(ngModel)]="e.note" (ngModelChange)="markDirty()"></textarea>
+        </div>
+        <div class="boe-sum">
+          <div class="boe-row"><span>{{ 'BILL_OF_ENTRY.FORM.TOTAL_CUSTOM_DUTY' | translate }}</span><span>{{ e.customDutyTotal | mycurrency }}</span></div>
+          <div class="boe-row"><span>{{ 'BILL_OF_ENTRY.FORM.TOTAL_TAX' | translate }}</span><span>{{ e.taxTotal | mycurrency }}</span></div>
+          @if (e.roundingTotal) { <div class="boe-row"><span>{{ 'DOC_FORM.ROUNDING' | translate }}</span><span>{{ e.roundingTotal | mycurrency }}</span></div> }
+          <div class="boe-row boe-row--total"><b>{{ 'BILL_OF_ENTRY.FORM.TOTAL_PAID' | translate }}</b><b>{{ e.total | mycurrency }}</b></div>
+        </div>
+      </div>
+    </app-doc-lines-table>
+
+  </app-doc-form-shell>
+}

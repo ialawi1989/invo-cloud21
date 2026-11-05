@@ -1,0 +1,26 @@
+<app-doc-view-shell
+  [docTitle]="name()" railTitle="EMPLOYEES.TITLE" [showAdd]="canAdd"
+  [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()"
+  [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="employeeId()"
+  [showToolbar]="false" [showPaper]="false" [loading]="!name()"
+  (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railPrev)="railPrev()" (railNext)="railNext()"
+  (add)="add()" (close)="goToList()">
+
+  <div titleExtra class="ev-acts">
+    @if (name()) {
+      <button type="button" class="ev-btn ev-btn--primary" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
+      <button type="button" class="ev-btn" [disabled]="terminated()" (click)="terminate()">
+        {{ 'EMPLOYEES.OVERVIEW.TERMINATE' | translate }}
+      </button>
+    }
+  </div>
+
+  <div alt class="ev">
+    @if (employeeId(); as id) {
+      <!-- Re-created per id so switching employees in the rail reloads it. -->
+      @for (key of [id]; track key) {
+        <app-employee-overview [forcedId]="key" [embedded]="true"/>
+      }
+    }
+  </div>
+</app-doc-view-shell>

@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
 
 import { AuthService } from '@core/auth/auth.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 
 import { HrError, describeError } from '../../hr-error';
 import { portalKey } from '../../hr-labels';
@@ -58,7 +60,7 @@ import {
 @Component({
   selector: 'app-employee-disciplinary',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, EmptyStateComponent, DateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-disciplinary.component.html',
   styleUrls: ['./employee-disciplinary.component.scss'],
@@ -467,6 +469,23 @@ export class EmployeeDisciplinaryComponent {
     if (r.isSpent === false) return 'EMPLOYEES.DISCIPLINARY.LIVE';
     return 'EMPLOYEES.DISCIPLINARY.SPENT_UNKNOWN';
   }
+
+  /**
+   * The four-step ladder: verbal, written, final written, dismissal. A step is
+   * "current" when it is the highest live rank, "done" below it. Ranks come from
+   * the catalogue; a step the catalogue does not name falls back to its position.
+   */
+  readonly ladder = computed<{ key: string; labelKey: string; state: 'todo' | 'current' | 'done' }[]>(() => {
+    const level = this.escalation()?.level ?? 0;
+    const norm = (k: string) => String(k).replace(/[^a-z]/gi, '').toLowerCase();
+    const steps = ['VERBAL', 'WRITTEN', 'FINAL_WRITTEN', 'DISMISSAL'];
+    const types = this.catalog().warningTypes;
+    return steps.map((key, i) => {
+      const rank = types.find((w) => norm(w.key) === norm(key))?.rank ?? i + 1;
+      const state = level > 0 && rank === level ? 'current' : level > 0 && rank < level ? 'done' : 'todo';
+      return { key, labelKey: 'EMPLOYEES.DISCIPLINARY.TYPE.' + key, state };
+    });
+  });
 
   /** The escalation level as a warning-type name, when the catalogue can say. */
   escalationLabel(): string {

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiService } from '@core/http/api.service';
+import { LanguageService } from '@core/i18n/language.service';
 import {
   RawReportResponse,
   ReportApiFilter,
@@ -27,6 +28,7 @@ import {
 export class ReportsService {
   private api = inject(ApiService);
   private http = inject(HttpClient);
+  private lang = inject(LanguageService);
 
   /** Fetch + normalize a report. Uses the meta's custom `normalize` or the default. */
   async getReport(meta: ReportMeta, filter: ReportApiFilter): Promise<ReportResult> {
@@ -58,7 +60,19 @@ export class ReportsService {
     type: 'pdf' | 'xlsx' | 'csv',
     filter: ReportApiFilter,
   ): Promise<void> {
-    const path = meta.export?.path ?? meta.route;
+    await this.exportPath(meta.export?.path ?? meta.route, type, filter, meta.slug);
+  }
+
+  /**
+   * Same server-side export for a report that has no `ReportMeta` (e.g. the supplier statement on its
+   * dashboard): `accounts/reports/export[Pdf]/{path}` with `{ filter }`, saved as `{fileBase}.{type}`.
+   */
+  async exportPath(
+    path: string,
+    type: 'pdf' | 'xlsx' | 'csv',
+    filter: Record<string, any>,
+    fileBase = path,
+  ): Promise<void> {
     const endpoint = type === 'pdf' ? `accounts/reports/exportPdf/${path}` : `accounts/reports/export/${path}`;
     const body = { filter: clean({ ...filter, exportType: type }) };
 
@@ -73,8 +87,50 @@ export class ReportsService {
     if (!blob) return;
     const filename =
       parseFilename(response.headers.get('content-disposition')) ??
-      `${meta.slug}.${type === 'xlsx' ? 'xlsx' : type}`;
+      `${fileBase}.${type === 'xlsx' ? 'xlsx' : type}`;
     downloadBlob(blob, filename);
+  }
+
+  /**
+   * Server-side export for endpoints that read their params from the TOP LEVEL of the body (legacy
+   * `exportXLSX` / `exportPDF`, e.g. `customerstatment`) — unlike {@link exportPath}, which wraps them in
+   * `{ filter }`. PDFs also send the UI language so the server can render right-to-left.
+   */
+  async exportFlat(path: string, type: 'pdf' | 'xlsx', params: Record<string, any>, fileBase = path): Promise<void> {
+    const { blob, filename } = await this.requestFlat(path, type, params, fileBase);
+    if (blob) downloadBlob(blob, filename);
+  }
+
+  /** Same request as {@link exportFlat} for a PDF, but opens the print dialog instead of downloading. */
+  async printFlat(path: string, params: Record<string, any>): Promise<void> {
+    // Open synchronously (inside the click) so the popup isn't blocked while the PDF is generated.
+    const w = window.open('', '_blank');
+    try {
+      const { blob } = await this.requestFlat(path, 'pdf', params, path);
+      if (!blob || !w) { w?.close(); return; }
+      const url = URL.createObjectURL(blob);
+      // Full-size frame: a hidden / 0x0 frame makes the PDF viewer print only the first page.
+      w.document.write(
+        `<html><body style="margin:0"><iframe id="pdf" src="${url}" style="width:100%;height:100vh;border:none"></iframe>` +
+        `<script>document.getElementById('pdf').onload=function(){this.contentWindow.focus();this.contentWindow.print();}<\/script></body></html>`,
+      );
+      w.document.close();
+    } catch (e) {
+      w?.close();
+      throw e;
+    }
+  }
+
+  private async requestFlat(path: string, type: 'pdf' | 'xlsx', params: Record<string, any>, fileBase: string) {
+    const endpoint = type === 'pdf' ? `accounts/reports/exportPdf/${path}` : `accounts/reports/export/${path}`;
+    const body = type === 'pdf' ? { ...clean(params), lang: this.lang.current() } : clean(params);
+    const response = await firstValueFrom(
+      this.http.post(`${environment.backendUrl}${endpoint}`, body, { responseType: 'blob', observe: 'response' }),
+    );
+    return {
+      blob: response.body,
+      filename: parseFilename(response.headers.get('content-disposition')) ?? `${fileBase}.${type}`,
+    };
   }
 }
 

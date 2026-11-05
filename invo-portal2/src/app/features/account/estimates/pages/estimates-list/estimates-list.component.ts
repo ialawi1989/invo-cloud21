@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { downloadPdf } from '@core/utils/pdf-download';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import { ListCellTemplateDirective, ListRowActionsDirective } from '@shared/components/list-page/directives/list-template.directives';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 
+import { SendDocumentData, SendDocumentModalComponent } from '../../../components/send-document-modal/send-document-modal.component';
 import { DocumentListBase, DocListMeta } from '../../../services/document-list-base';
 import { EstimatesService } from '../../services/estimates.service';
 import { EstimateActions } from '../../services/estimate-actions';
@@ -15,7 +17,7 @@ import { EstimateActions } from '../../services/estimate-actions';
 /**
  * Estimates → list. Legacy `EstimateComponent`: same columns, server-side search / sort / paging
  * and the same filter payload (`sources`, `branches`, dates, sales employee, product). Row actions
- * follow the shared {@link EstimateActions} rules: View + Edit outside, Convert / Delete in the "⋯" menu.
+ * follow the shared {@link EstimateActions} rules: View + Edit outside, the rest in the "⋯" menu.
  */
 @Component({
   selector: 'app-estimates-list',
@@ -33,7 +35,7 @@ export class EstimatesListComponent extends DocumentListBase implements OnInit {
     sheet: 'Estimates',
     filePrefix: 'estimates',
     dateKeys: ['estimateDate', 'estimateExpDate', 'createdAt'],
-    hasStatus: false,
+    hasStatus: true,
     listTitleKey: 'ESTIMATES.LIST.ESTIMATES_LIST',
     dashboardCrumbKey: 'ESTIMATES.DASHBOARD',
   };
@@ -58,6 +60,7 @@ export class EstimatesListComponent extends DocumentListBase implements OnInit {
     ];
 
     this.filters = [
+      { type: 'checkbox-group', key: 'status', label: t('ESTIMATES.FILTERS.STATUS'), options: ['Open', 'Converted'].map(v => ({ value: v, label: t('ESTIMATES.STATUS.' + v) })) },
       { type: 'checkbox-group', key: 'sources', label: t('ESTIMATES.FILTERS.SOURCE'), options: ['POS', 'Cloud'].map(v => ({ value: v, label: v })) },
       { type: 'dropdown', key: 'branches', label: t('ESTIMATES.FILTERS.BRANCH'), multiple: true, loadFn: p => this.loadBranches(p) },
       { type: 'dropdown', key: 'salesEmployeeId', label: t('ESTIMATES.FILTERS.EMPLOYEE'), loadFn: p => this.loadEmployees(p) },
@@ -65,12 +68,18 @@ export class EstimatesListComponent extends DocumentListBase implements OnInit {
       { type: 'date-range', keyFrom: 'fromDate', keyTo: 'toDate', label: t('ESTIMATES.FILTERS.DATE') },
     ];
 
+    this.bulkActions = [
+      { id: 'merged-pdf', label: t('ESTIMATES.ACTIONS.EXPORT_MERGED_PDF'), requiresSelection: true, handler: (rows: any[]) => this.exportMergedPdf(rows) },
+      { id: 'send-email', label: t('ESTIMATES.ACTIONS.SEND_EMAIL'), requiresSelection: true, handler: (rows: any[]) => void this.sendBulkEmail(rows) },
+    ];
     this.moreItems = [
       { label: t('COMMON.LOGS.SHOW'), click: () => this.openLogs(), disabled: false, danger: false },
       { label: t('ESTIMATES.ACTIONS.EXPORT_EXCEL'), click: () => void this.exportExcel(), disabled: false, danger: false },
     ];
 
     this.searchConfig.placeholder = t('ESTIMATES.SEARCH_PLACEHOLDER');
+    // Legacy: a search with no date filter looks at the last 3 months only (shown as a removable filter).
+    this.searchConfig.defaultDateRange = { keyFrom: 'fromDate', keyTo: 'toDate' };
     this.emptyState = { title: t('ESTIMATES.EMPTY'), message: '' };
     this.breadcrumbs = [
       { label: t(this.meta.dashboardCrumbKey), routerLink: '/dashboard' },
@@ -79,34 +88,30 @@ export class EstimatesListComponent extends DocumentListBase implements OnInit {
   }
 
   /** Secondary row actions live in the "⋯" menu (View + Edit stay outside). */
-  rowMenu(r: any): DropdownMenuBtnItem[] {
-    const items: DropdownMenuBtnItem[] = [];
-    if (this.actions.convert(r)) items.push({ label: this.t('ESTIMATES.ACTIONS.CONVERT_TO_INVOICE'), click: () => this.convert(r), disabled: false, danger: false });
-    if (this.actions.delete(r)) items.push({ label: this.t('ESTIMATES.ACTIONS.DELETE'), click: () => void this.remove(r), disabled: false, danger: true });
-    return items;
-  }
+  rowMenu(r: any): DropdownMenuBtnItem[] { return this.actions.menu(r, r.id, () => this.listPage?.refresh?.()); }
 
   add(): void { void this.router.navigate(['/account/estimate', 'new']); }
   view(r: any): void { void this.router.navigate(['/account/estimate/view', r.id]); }
   edit(r: any): void { void this.router.navigate(['/account/estimate', r.id]); }
-  convert(r: any): void { void this.router.navigate(['/account/invoices/convertFromEstimate', r.id]); }
   openInvoice(r: any): void {
     if (r.invoiceId) void this.router.navigate(['/account/invoices/view', r.invoiceId]);
   }
   onRowClick(e: any): void { if (e?.row) this.view(e.row); }
 
-  async remove(r: any): Promise<void> {
-    const ok = await this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(ConfirmModalComponent, {
-      size: 'sm',
-      data: { title: this.t('ESTIMATES.ACTIONS.DELETE'), message: this.t('ESTIMATES.ACTIONS.CONFIRM_DELETE'), danger: true },
+  // ── bulk ───────────────────────────────────────────────────────────
+  async exportMergedPdf(rows: any[]): Promise<void> {
+    if (!rows.length) return;
+    const res = await this.service.viewMergedEstimatesPdf(rows.map(r => r.id));
+    if (res) downloadPdf(res, 'estimates.pdf');
+    else this.toast.error('COMMON.OPS', '');
+  }
+
+  /** One email request for the selected estimates (recipient typed manually — they may span customers). */
+  async sendBulkEmail(rows: any[]): Promise<void> {
+    if (!rows.length) return;
+    await this.modal.open<SendDocumentModalComponent, SendDocumentData, boolean>(SendDocumentModalComponent, {
+      size: 'md',
+      data: { emails: [], sendEmail: payload => this.service.sendEstimateEmail({ ...payload, estimateIds: rows.map(r => r.id) }) },
     }).afterClosed();
-    if (!ok) return;
-    try {
-      await this.service.deleteEstimate(r.id);
-      this.toast.success('COMMON.SAVED_OK');
-      this.listPage?.refresh?.();
-    } catch (e: any) {
-      this.toast.error('COMMON.OPS', e?.error?.msg ?? e?.message ?? '');
-    }
   }
 }

@@ -135,3 +135,59 @@
   .eos__split { grid-template-columns: minmax(0, 1fr); }
   .eos__aside { position: static; }
 }
+
+// ── Layout: one column; the persistent header identifies the employee ──────
+.eos__grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px 16px;
+  align-items: start;
+  &--tail { margin-top: 14px; }
+  @media (max-width: 900px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.eos-field--span2 { grid-column: span 2; }
+.eos-field--block { margin-top: 14px; }
+.eos-field .required { color: #ef4444; margin-inline-start: 2px; }
+.field-error { margin: 4px 0 0; font-size: 12px; color: #b91c1c; }
+
+// ── Clearance progress ─────────────────────────────────────────────────────
+.eos-progress {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  &__bar {
+    flex: 1; height: 8px; border-radius: 999px; background: #f1f5f9; overflow: hidden;
+    span { display: block; height: 100%; background: var(--color-brand-600); transition: width 0.2s ease; }
+  }
+  &__label { font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; }
+}
+.eos-table__sub { margin: 4px 0 0; font-size: 12px; color: #475569; }
+
+// ── Footer ─────────────────────────────────────────────────────────────────
+.eos__actions {
+  display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap;
+  margin-top: 4px;
+}
+.eos__lock {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #475569;
+}
+
+.eos-table td { vertical-align: middle; }
+
+// Counter on the left of the sticky footer, like Add Inventory.
+.eos-errors {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-inline-end: auto;
+  padding: 4px 8px; margin-inline-start: -8px;
+  border: 0; border-radius: 6px; background: transparent; cursor: pointer;
+  font: inherit; font-size: 12px; font-weight: 600; color: #b91c1c;
+  svg { color: #dc2626; }
+  &:hover { background: #fef2f2; text-decoration: underline; }
+}
+
+// Finalize stays pale until every gate passes.
+.eos-finalize:disabled {
+  background: var(--color-brand-300);
+  border-color: transparent;
+  color: #fff;
+  opacity: 0.7;
+}

@@ -1,3 +1,4 @@
+import { formatJournalDate } from '../../services/journal-date';
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from '@core/http/api.service';
 
@@ -200,8 +201,9 @@ export class RecurringJournalService {
       createdAt: raw?.createdAt,
       updatedDate: raw?.updatedDate,
       type: raw?.type ?? 'sechedule',
-      startDate: raw?.startDate ?? '',
-      endDate: raw?.endDate ?? null,
+      // The form's date inputs take `yyyy-MM-dd`; the API sends a timestamp (the stored day shifted by the UTC offset).
+      startDate: raw?.startDate ? formatJournalDate(raw.startDate) : '',
+      endDate: raw?.endDate ? formatJournalDate(raw.endDate) : null,
       endTerm: raw?.endTerm === 'by' ? 'by' : 'none',
       repeatData: {
         periodicity: raw?.repeatData?.periodicity ?? 'Monthly',

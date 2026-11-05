@@ -1,12 +1,8 @@
-.pv { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
-.page-header { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;
-  &__title { margin: 0; font-size: 24px; font-weight: 700; color: #0f172a; } }
-.pv-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 16px; border: 1px solid #e4e7ec; border-radius: 12px; background: #fff; }
-.pv-spacer { flex: 1; }
-:host ::ng-deep .pv-btn, .pv-btn {
-  padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; cursor: pointer;
-  &:hover { background: #f8fafc; }
-  &--danger { border-color: #fecaca; color: #dc2626; }
+// The receipt is drawn like the invoice paper: an A4 sheet centred in the viewer's grey frame, above the tabs.
+.pvw-viewer { border: 1px solid #e5e7eb; border-radius: 12px; background: #f1f5f9; padding: 16px; overflow-x: auto; margin-bottom: 16px;
+  // never shrink to the body's height: the page (receipt + Logs) is the one vertical scroll, not the frame — same as the invoice paper
+  flex: 0 0 auto; }
+.pvw-sheet {
+  box-sizing: border-box; width: 210mm; max-width: 100%; min-height: 297mm; margin: 0 auto; padding: 14mm 12mm;
+  background: #fff; box-shadow: 0 1px 3px rgba(15, 23, 42, .12), 0 1px 2px rgba(15, 23, 42, .24);
 }
-
-@media (max-width: 576px) { .pv { padding-inline: 0 !important; } }

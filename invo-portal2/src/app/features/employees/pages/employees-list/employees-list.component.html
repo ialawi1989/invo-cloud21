@@ -15,6 +15,10 @@
   (rowClicked)="onRowClick($event)">
 
   <div listHeaderActions class="flex items-center gap-2">
+    <button type="button" (click)="openLogs()"
+      class="px-4 py-2.5 rounded-lg font-medium whitespace-nowrap border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors">
+      {{ 'COMMON.LOGS.SHOW' | translate }}
+    </button>
     @if (canInvite) {
       <button type="button" (click)="invite()"
         class="px-4 py-2.5 rounded-lg font-medium whitespace-nowrap border border-slate-200 text-brand-600 hover:bg-brand-50 transition-colors">
@@ -61,7 +65,15 @@
   </ng-template>
 
   <ng-template listRowActions let-row>
-    <div class="inline-flex items-center justify-end" (click)="$event.stopPropagation()">
+    <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+      @if (!row.isInvitedUser) {
+        <button type="button" (click)="view(row)"
+          class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity
+                 px-4 h-9 inline-flex items-center rounded-full
+                 border border-slate-200 bg-white text-slate-700 text-sm font-medium shadow-sm hover:bg-slate-50">
+          {{ 'COMMON.VIEW' | translate }}
+        </button>
+      }
       <button type="button" (click)="edit(row)"
         class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity
                px-4 h-9 inline-flex items-center rounded-full

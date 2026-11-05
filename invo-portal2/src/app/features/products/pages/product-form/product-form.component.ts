@@ -21,6 +21,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
+import { FormErrorSummaryComponent } from '@shared/components/form-error-summary/form-error-summary.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { withTranslations } from '@core/i18n/with-translations';
@@ -128,6 +129,7 @@ type FormStatus = 'new' | 'edit';
     ProductFormSkeletonComponent,
     SeoSettingsComponent,
     CollapsibleCardsDirective,
+    FormErrorSummaryComponent,
   ],
   templateUrl: './product-form.component.html',
   styleUrl: './product-form.component.scss',
@@ -144,6 +146,8 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
   private toast = inject(ToastService);
   private errorService = inject(ErrorService);
   private el = inject(ElementRef<HTMLElement>);
+  /** Root element searched by the footer's error summary. */
+  readonly host: HTMLElement = this.el.nativeElement;
   readonly privileges = inject(PrivilegeService);
 
   // ── Types accepted by the form ──────────────────────────────────────────────

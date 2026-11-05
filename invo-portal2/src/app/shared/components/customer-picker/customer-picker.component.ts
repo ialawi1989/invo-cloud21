@@ -36,6 +36,7 @@ export interface CustomerMini {
       [searchable]="true"
       [placeholder]="placeholder()"
       [value]="value()"
+      [disabled]="disabled()"
       (valueChange)="onChange($any($event))">
       @if (allowCreate()) {
         <ng-template #footer>
@@ -67,6 +68,8 @@ export class CustomerPickerComponent {
 
   value = input<CustomerMini | null>(null);
   placeholder = input<string>('');
+  /** Read-only (e.g. the customer of a recurring invoice that already generated invoices). */
+  disabled = input<boolean>(false);
   /** Shows a sticky "New Customer" action at the bottom of the list. */
   allowCreate = input<boolean>(false);
   valueChange = output<CustomerMini | undefined>();

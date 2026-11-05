@@ -56,34 +56,12 @@
         </div>
       </section>
 
-      <!-- Per-branch settings — one tab per branch, with the
-           sub-component picked by `service.type`. Tab strip mirrors
-           the product-form branch chips (icon header + chip tabs
-           with status dots on a light track). -->
+      <!-- Per-branch settings: product-form style master/detail (branch rail + active-branch panel); the
+           panel body is the settings component for the service type. -->
       @if (service$().type && service$().branches.length > 0) {
-        <section class="card card--with-icon">
-          <header class="card__head card__head--icon">
-            <span class="card__icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            </span>
-            <div class="card__head-text">
-              <h2 class="card__title">{{ 'SERVICE_MANAGEMENT.FORM.BRANCH_SETTINGS' | translate }}</h2>
-              <p class="card__sub">{{ 'SERVICE_MANAGEMENT.FORM.BRANCH_SETTINGS_HINT' | translate }}</p>
-            </div>
-          </header>
-          <div class="card__body">
-            <!-- Branch picker — shared component from the product form.
-                 Renders up to 5 pinned tabs with green status dots and
-                 a "Find branch +N" overflow popover for the rest. -->
-            <app-pf-branch-tabs
-              class="sm-branch-tabs"
-              [branches]="branchDirectory()"
-              (activeChange)="onBranchTabChange($event)"/>
-
-            @if (activeBranch(); as b) {
+        <app-service-branch-section [branches]="service$().branches" [activeIndex]="activeBranchIndex()"
+          (activeChange)="setActiveBranch($event)">
+          @if (activeBranch(); as b) {
               <div class="branch-panel">
                 @switch (service$().type) {
                   @case ('DineIn') {
@@ -135,8 +113,7 @@
                 }
               </div>
             }
-          </div>
-        </section>
+        </app-service-branch-section>
       }
     </div>
 
@@ -210,6 +187,14 @@
             (checkedChange)="setLockChangeService($event)"
             [label]="'SERVICE_MANAGEMENT.FORM.LOCK_CHANGE_SERVICE' | translate"
             [hint]="'SERVICE_MANAGEMENT.FORM.LOCK_CHANGE_SERVICE_HINT' | translate"/>
+
+          @if (service$().type === 'CarHop') {
+            <app-toggle
+              [checked]="service$().options.askForCarNumber"
+              (checkedChange)="setAskForCarNumber($event)"
+              [label]="'SERVICE_MANAGEMENT.FORM.ASK_FOR_CAR_NUMBER' | translate"
+              [hint]="'SERVICE_MANAGEMENT.FORM.ASK_FOR_CAR_NUMBER_HINT' | translate"/>
+          }
         </div>
       </section>
     </aside>

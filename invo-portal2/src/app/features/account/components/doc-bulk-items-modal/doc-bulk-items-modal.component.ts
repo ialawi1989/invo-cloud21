@@ -11,7 +11,7 @@ import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 
 export interface BulkItemsData {
-  search: (term: string, page?: number) => Promise<any[]>;
+  search: (term: string, page?: number) => Promise<{ list: any[]; hasNext: boolean }>;
   barcodeLookup?: (term: string) => Promise<any | null>;
   excludeTypes?: string[];
 }
@@ -119,11 +119,11 @@ export class DocBulkItemsModalComponent implements OnInit {
     const id = ++this.seq;
     this.loading.set(true);
     try {
-      const raw = await this.data.search(term, this.page);
+      const res = await this.data.search(term, this.page);
       if (id !== this.seq) return;
-      this.hasMore = raw.length >= 20;
+      this.hasMore = res.hasNext;
       this.page++;
-      const list = raw.filter(p => !(this.data.excludeTypes ?? []).includes(p.type));
+      const list = res.list.filter(p => !(this.data.excludeTypes ?? []).includes(p.type));
       this.results.update(cur => (more ? [...cur, ...list.filter(p => !cur.some(c => c.id === p.id))] : list));
     } finally {
       if (id === this.seq) this.loading.set(false);

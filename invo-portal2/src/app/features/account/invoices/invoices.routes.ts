@@ -4,6 +4,7 @@ import { CanActivateFn, Routes } from '@angular/router';
 import { LanguageService } from '@core/i18n/language.service';
 import { privilegeGuard } from '@core/guards/privilege.guard';
 import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
+import { invoiceEditableGuard } from './guards/invoice-editable.guard';
 
 // /account/invoices             → list
 // /account/invoices/new | :id    → form            (next step)
@@ -49,7 +50,7 @@ export const INVOICES_ROUTES: Routes = [
   {
     // New (`0`), edit and clone (`?cloned=yes`) share one page — legacy URLs.
     path: ':id',
-    canActivate: [translationsLoaded, privilegeGuard],
+    canActivate: [translationsLoaded, privilegeGuard, invoiceEditableGuard],
     canDeactivate: [unsavedChangesGuard],
     data: { permissionPath: 'invoiceSecurity.actions.add.access' },
     loadComponent: () =>

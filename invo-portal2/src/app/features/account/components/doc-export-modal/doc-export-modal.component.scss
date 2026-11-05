@@ -1,0 +1,15 @@
+$brand: #2691a4; $line: #e4e7ec;
+
+.ex { padding: 18px 24px 8px; display: flex; flex-direction: column; font-size: 13px; color: #0f172a; }
+.ex__info { padding: 11px 14px; background: #e6f4f6; color: #1d6b7a; border-radius: 8px; margin-bottom: 14px; }
+.ex__error { padding: 10px 12px; border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; border-radius: 8px; margin-bottom: 14px; }
+.ex__sec { padding: 14px 0; border-top: 1px solid $line; display: flex; flex-direction: column; gap: 8px; &:first-of-type { border-top: 0; padding-top: 4px; } }
+.ex__lbl { font-weight: 500; &--req { color: #dc2626; } &--gap { margin-top: 10px; } }
+.ex__ctl { display: block; max-width: 340px; }
+.ex__static { padding: 8px 10px; border: 1px solid #d0d5dd; border-radius: 8px; background: #f8fafc; }
+.ex__radio, .ex__check { display: flex; align-items: center; gap: 8px; cursor: pointer; input { accent-color: $brand; } }
+.ex__check { margin-top: 12px; }
+.ex__note { margin: 8px 0 0; color: #475569; line-height: 1.5; }
+.ex__btn { height: 32px; padding: 0 18px; border: 1px solid #d0d5dd; border-radius: 6px; background: #f8fafc; color: #0f172a; font: inherit; font-size: 13px; cursor: pointer;
+  &:disabled { opacity: .55; cursor: not-allowed; }
+  &--primary { background: $brand; border-color: $brand; color: #fff; &:hover:not(:disabled) { background: #227d8d; } } }

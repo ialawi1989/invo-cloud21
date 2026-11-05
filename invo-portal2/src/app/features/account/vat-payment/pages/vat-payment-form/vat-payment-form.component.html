@@ -1,0 +1,64 @@
+@if (loaded) {
+  <div class="pf">
+    <header class="page-header">
+      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+      <h1 class="page-header__title">{{ 'VAT_PAYMENT.FORM.VAT_PAYMENT' | translate }}</h1>
+    </header>
+
+    <section class="pf-card">
+      <h2 class="pf-card__title">{{ 'VAT_PAYMENT.FORM.PERIOD' | translate }}</h2>
+      <div class="pf-row">
+        <div class="pf-field pf-field--grow">
+          <label>{{ 'VAT_PAYMENT.FORM.START_DATE' | translate }}</label>
+          <div class="pf-static">{{ fromValue }}</div>
+        </div>
+        <div class="pf-field pf-field--grow">
+          <label>{{ 'VAT_PAYMENT.FORM.END_DATE' | translate }} <span class="req">*</span></label>
+          @if (formStatus === 'new') {
+            <app-date-picker [value]="toDateValue" [min]="minTo" [max]="maxTo" (valueChange)="onTo($event)"/>
+          } @else {
+            <div class="pf-static">{{ toValue }}</div>
+          }
+          @if (toError; as e) { <p class="pf-error">{{ e }}</p> }
+        </div>
+      </div>
+      <p class="pf-info">
+        {{ 'VAT_PAYMENT.FORM.MAIN_BRANCH_NOTE' | translate }}
+        @if (vatPayment.branchName) { ({{ vatPayment.branchName }}) }
+      </p>
+    </section>
+
+    @if (toValue) {
+      <app-vat-report-content [fromDate]="fromValue" [toDate]="toValue" (changed)="onReport($event)"/>
+
+      <section class="pf-card">
+        <h2 class="pf-card__title">{{ 'VAT_PAYMENT.FORM.SUMMARY' | translate }}</h2>
+        <div class="pf-totals">
+          <div class="pf-t"><span>{{ 'VAT_PAYMENT.LIST.TAX_PAYABLE' | translate }}</span><b>{{ vatPayment.outputVat | mycurrency }}</b></div>
+          <div class="pf-t"><span>{{ 'VAT_PAYMENT.LIST.TAX_RECLAIMABLE' | translate }}</span><b>{{ vatPayment.inputVat | mycurrency }}</b></div>
+          <div class="pf-t"><span>{{ 'VAT_PAYMENT.FORM.NET_VAT' | translate }}</span><b>{{ vatPayment.netVat | mycurrency }}</b></div>
+          @if (vatPayment.totalPaidAmount > 0) {
+            <div class="pf-t"><span>{{ 'VAT_PAYMENT.FORM.PAID' | translate }}</span><b>{{ vatPayment.totalPaidAmount | mycurrency }}</b></div>
+            <div class="pf-t"><span>{{ 'VAT_PAYMENT.LIST.AMOUNT_DUE' | translate }}</span><b>{{ vatPayment.amountDue | mycurrency }}</b></div>
+          }
+        </div>
+      </section>
+    }
+
+    <app-form-sticky-footer>
+      <button type="button" class="pf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (formStatus === 'edit') {
+        <button type="button" class="pf-btn" (click)="view()">{{ 'COMMON.VIEW' | translate }}</button>
+      }
+      @if (actionsMenu(); as items) {
+        @if (items.length) {
+          <app-dropdown-menu-btn [items]="items" [appendToBody]="true" align="start" triggerClass="pf-btn">{{ 'DOC_VIEW.ACTIONS' | translate }}</app-dropdown-menu-btn>
+        }
+      }
+      @if (toValue && vatPayment.netVat > 0 || canPay) {
+        <button type="button" class="pf-btn" [disabled]="submitting || !toValue" (click)="pay()">{{ 'VAT_PAYMENT.FORM.PAY' | translate }}</button>
+      }
+      <button type="button" class="pf-btn pf-btn--primary" [disabled]="submitting" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+    </app-form-sticky-footer>
+  </div>
+}

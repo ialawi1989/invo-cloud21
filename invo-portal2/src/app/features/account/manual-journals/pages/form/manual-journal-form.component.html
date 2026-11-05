@@ -48,18 +48,7 @@
       </label>
 
       <div class="mjf-field mjf-field--wide">
-        <span>{{ 'COMMON.ATTACHMENT' | translate }}</span>
-        <div class="mjf-attachments">
-          @for (a of attachments(); track a.id) {
-            <span class="mjf-attachment-chip">
-              {{ a.mediaName }}
-              <button type="button" (click)="removeAttachment(a.id)" aria-label="remove">×</button>
-            </span>
-          }
-          <button type="button" class="mjf-btn mjf-btn--ghost" (click)="addAttachment()">
-            {{ 'MANUAL_JOURNALS.FORM.ATTACH_FILE' | translate }}
-          </button>
-        </div>
+        <app-doc-attachments [attachments]="attachments()" (changed)="onAttachments($event)"/>
       </div>
     </div>
   </div>
@@ -79,7 +68,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (line of activeLines(); track trackLine($index, line)) {
+          @for (line of activeLines(); track $index) {
             <tr>
               <td class="mjf-col-account">
                 <app-search-dropdown

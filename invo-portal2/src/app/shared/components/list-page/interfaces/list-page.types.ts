@@ -256,6 +256,12 @@ export interface SearchConfig {
   debounceMs?: number;
   placeholder?: string;
   minLength?: number;
+  /**
+   * Searching a long history is slow: when set, a search with no date filter in place also applies a date-range
+   * filter for the last `months` (default 3) - visible as a normal filter chip the user can remove. Clearing the
+   * search takes the range off again if it is still the one that was added. Names the `date-range` filter's keys.
+   */
+  defaultDateRange?: { keyFrom: string; keyTo: string; months?: number };
 }
 
 /**

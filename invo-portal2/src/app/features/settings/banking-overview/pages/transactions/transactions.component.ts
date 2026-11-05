@@ -13,6 +13,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
+import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { withTranslations } from '@core/i18n/with-translations';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { resolveLocalizedName } from '@shared/utils/localized-name';
@@ -70,6 +71,10 @@ type ReconcileFilter = 'all' | 'reconciled' | 'unreconciled';
 })
 export class TransactionsComponent implements OnInit {
   private service    = inject(BankingOverviewService);
+  private privilege  = inject(PrivilegeService);
+
+  /** Legacy gate: `reconciliationSecurity.actions.view` shows the button. */
+  get canReconcile(): boolean { return this.privilege.check('reconciliationSecurity.actions.view.access'); }
   private branchSvc  = inject(BranchSettingsService);
   private translate  = inject(TranslateService);
   private router     = inject(Router);
@@ -127,11 +132,12 @@ export class TransactionsComponent implements OnInit {
   private initColumns(): void {
     const t = (key: string) => this.translate.instant(key);
     this.columns = [
-      { key: 'date',               label: t('BANKING_OVERVIEW.TRANSACTIONS.DATE'),    sortable: true,  width: '120px' },
+      { key: 'date',               label: t('BANKING_OVERVIEW.TRANSACTIONS.DATE'),    sortable: true,  width: '120px', customTemplate: true },
       { key: 'reference',          label: t('BANKING_OVERVIEW.TRANSACTIONS.TYPE'),     customTemplate: true },
+      { key: 'referenceNumber',    label: t('BANKING_OVERVIEW.TRANSACTIONS.REFERENCE'), customTemplate: true },
       { key: 'transactionDetails', label: t('BANKING_OVERVIEW.TRANSACTIONS.DETAILS') },
-      { key: 'Debit',              label: t('BANKING_OVERVIEW.TRANSACTIONS.DEBIT'),    customTemplate: true, align: 'right' },
-      { key: 'Credit',             label: t('BANKING_OVERVIEW.TRANSACTIONS.CREDIT'),   customTemplate: true, align: 'right' },
+      { key: 'Debit',              label: t('BANKING_OVERVIEW.TRANSACTIONS.DEBIT'),    customTemplate: true, align: 'end' },
+      { key: 'Credit',             label: t('BANKING_OVERVIEW.TRANSACTIONS.CREDIT'),   customTemplate: true, align: 'end' },
       { key: 'reconcile',          label: t('BANKING_OVERVIEW.TRANSACTIONS.STATUS'),   customTemplate: true },
     ];
   }

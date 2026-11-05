@@ -8,6 +8,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { SearchDropdownComponent } from '@shared/components/dropdown';
+import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { DiscountFieldComponent, DiscountValue } from '@shared/components/discount-field/discount-field.component';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { QtyInputComponent } from '@shared/components/qty-input';
@@ -24,7 +25,8 @@ import { ProductDetailDrawerComponent, ProductDetailDrawerData } from '../../../
 import { DocImportLinesModalComponent, ImportLinesResult } from '../doc-import-lines-modal/doc-import-lines-modal.component';
 import { BulkUpdateData, BulkUpdateResult, DocBulkUpdateModalComponent } from '../doc-bulk-update-modal/doc-bulk-update-modal.component';
 import { BulkItemsData, BulkPick, DocBulkItemsModalComponent } from '../doc-bulk-items-modal/doc-bulk-items-modal.component';
-import { DocLineColumn, DocLineErrors, DocLinesConfig, DocLinesContext } from './doc-lines.types';
+import { DocSerialBatchModalComponent, SerialBatchData } from '../doc-serial-batch-modal/doc-serial-batch-modal.component';
+import { DocBulkAction, DocLineColumn, DocLineErrors, DocLinesConfig, DocLinesContext } from './doc-lines.types';
 
 const blank = (v: any) => v == null || (typeof v === 'string' && v.trim() === '');
 
@@ -40,7 +42,7 @@ const blank = (v: any) => v == null || (typeof v === 'string' && v.trim() === ''
   standalone: true,
   imports: [
     CommonModule, FormsModule, TranslateModule, MycurrencyPipe, SearchDropdownComponent, DiscountFieldComponent,
-    QtyInputComponent, DragDropModule, TooltipDirective, DropdownMenuBtnComponent,
+    QtyInputComponent, DragDropModule, TooltipDirective, DropdownMenuBtnComponent, SegmentedToggleComponent,
   ],
   templateUrl: './doc-lines-table.component.html',
   styleUrl: './doc-lines-table.component.scss',
@@ -77,9 +79,38 @@ export class DocLinesTableComponent {
 
   // ── validation ─────────────────────────────────────────────────────
   /** Blank trailing rows and rows flagged deleted take no part in validation. */
-  private isBlankLine(l: InvoiceLine): boolean { return !!(l as any).isDeleted || (blank(l.productId) && blank(l.note)); }
-  /** Lines shown in the table (deleted ones stay in the document until it is saved). */
-  visibleLines(): InvoiceLine[] { return this.doc().lines.filter(l => !(l as any).isDeleted); }
+  private isBlankLine(l: InvoiceLine): boolean { return !!(l as any).isDeleted || (this.config().isBlank ? this.config().isBlank!(l) : blank(l.productId) && blank(l.note)); }
+  /**
+   * Lines shown in the table. A saved line removed on a document that deletes (estimates, bills, ...) stays in
+   * the document until it is saved, so it stays visible - struck through, with an undo - like legacy.
+   */
+  visibleLines(): InvoiceLine[] {
+    const keepDeleted = this.editor().deleteMode;
+    return this.doc().lines.filter(l => !(l as any).isDeleted || (keepDeleted && !!l.id));
+  }
+  isRemoved(line: InvoiceLine): boolean { return !!(line as any).isDeleted; }
+
+  // ── tax type (inclusive / exclusive) ───────────────────────────────
+  readonly taxTypeOptions: SegmentedToggleOption[] = [
+    { value: 'inclusive', label: 'DOC_FORM.INCLUSIVE_TAX' },
+    { value: 'exclusive', label: 'DOC_FORM.EXCLUSIVE_TAX' },
+  ];
+  taxTypeValue(): string { return this.doc().isInclusiveTax ? 'inclusive' : 'exclusive'; }
+  taxTypeLocked(): boolean { return this.config().taxType === 'locked' || this.doc().lines.some(l => l.isReturned); }
+  onTaxType(v: unknown): void {
+    const inclusive = v === 'inclusive';
+    if (this.taxTypeLocked() || inclusive === !!this.doc().isInclusiveTax) return;
+    this.doc().isInclusiveTax = inclusive;
+    this.doc().calculateTotal();
+    this.touch();
+  }
+
+  /** Brings a removed saved line back. */
+  undoRemove(line: InvoiceLine): void {
+    (line as any).isDeleted = false;
+    this.doc().calculateTotal();
+    this.touch();
+  }
 
   /** Column-key → i18n key of what's wrong on this line (blank trailing rows are ignored). */
   errorsFor(line: InvoiceLine): DocLineErrors {
@@ -88,12 +119,14 @@ export class DocLinesTableComponent {
     for (const c of this.columns()) {
       if (c.type === 'amount' || c.type === 'item') continue;
       const v = (line as any)[this.fieldOf(c)];
+      if (c.type === 'account') { if (c.required && blank(v)) e[c.key] = 'DOC_LINES.ERR_ACCOUNT'; continue; }
       if (c.type === 'qty' && (v == null || isNaN(Number(v)))) e[c.key] = 'DOC_LINES.ERR_REQUIRED';
       else if (c.required && (v == null || v === '' || isNaN(Number(v)))) e[c.key] = 'DOC_LINES.ERR_REQUIRED';
       else if (c.min != null && Number(v) < c.min) e[c.key] = 'DOC_LINES.ERR_MIN';
       if (c.type === 'tax' && (line.taxes ?? []).some(t => t.taxPercentage == null || blank(t.taxId))) e[c.key] = 'DOC_LINES.ERR_TAX';
     }
     if (this.config().accounts && blank(line.accountId)) e['account'] = 'DOC_LINES.ERR_ACCOUNT';
+    if (this.canPick(line) && blank(this.pickedValue(line))) e['item'] = line.selectedItem!.type === 'serialized' ? 'DOC_LINES.ERR_SERIAL' : 'DOC_LINES.ERR_BATCH';
     for (const k of this.config().validate?.(line) ?? []) e['item'] = k;
     return e;
   }
@@ -118,9 +151,11 @@ export class DocLinesTableComponent {
   }
   value(line: InvoiceLine, c: DocLineColumn): any { return (line as any)[this.fieldOf(c)]; }
   isLocked(line: InvoiceLine): boolean {
-    return line.isVoided || line.isReturned || (line.voidedItems?.length ?? 0) > 0 || (this.config().isLocked?.(line) ?? false);
+    return line.isVoided || this.isRemoved(line) || line.isReturned || (line.voidedItems?.length ?? 0) > 0 || (this.config().isLocked?.(line) ?? false);
   }
   cellDisabled(line: InvoiceLine, c: DocLineColumn): boolean {
+    // A serialized line is always exactly one unit (legacy: qty locked on serial lines).
+    if (c.type === 'qty' && !c.freeQty && line.selectedItem?.type === 'serialized') return true;
     return this.isLocked(line) || (c.disabled?.(line, this.ctx()) ?? false);
   }
   canEditProduct(line: InvoiceLine): boolean {
@@ -154,17 +189,33 @@ export class DocLinesTableComponent {
   private timer: any;
   private seq = 0;
 
-  private async search(term: string): Promise<void> {
+  private page = 1;
+  private hasNext = false;
+  private lastTerm = '';
+
+  /** `more` appends the next page (panel scrolled near its end); otherwise a fresh search. */
+  private async search(term: string, more = false): Promise<void> {
     if (this.config().itemsDisabled?.()) return;
+    if (more && (this.searching() || !this.hasNext)) return;
+    if (!more) { this.page = 1; this.hasNext = false; this.lastTerm = term; }
     const id = ++this.seq;
     this.searching.set(true);
     try {
-      const list = await this.config().itemSearch(term, { tags: this.tags() });
+      const res = await this.config().itemSearch(this.lastTerm, { tags: this.tags(), page: this.page });
+      if (id !== this.seq) return;
       const ex = this.config().excludeTypes ?? [];
-      if (id === this.seq) this.results.set(list.filter(x => !ex.includes(x.type)));
+      const list = res.list.filter(x => !ex.includes(x.type));
+      this.hasNext = res.hasNext;
+      this.page++;
+      this.results.update(cur => more ? [...cur, ...list.filter(p => !cur.some(c => c.id === p.id))] : list);
     } finally {
       if (id === this.seq) this.searching.set(false);
     }
+  }
+
+  onPanelScroll(ev: Event): void {
+    const el = ev.target as HTMLElement;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 40) void this.search(this.lastTerm, true);
   }
 
   onItemFocus(line: InvoiceLine, ev?: Event): void {
@@ -201,6 +252,53 @@ export class DocLinesTableComponent {
     if (!this.editor().lastLineIsEmpty) this.editor().addLine();
     this.touch();
   }
+  // ── serialized / batch lines ───────────────────────────────────────
+  /** Serial / batch lines need a value, picked from a modal and never typed. */
+  isSerialBatch(line: InvoiceLine): boolean {
+    const t = line.selectedItem?.type;
+    return (t === 'serialized' && !!this.config().serialsLookup) || (t === 'batch' && !!this.config().batchesLookup);
+  }
+  pickedValue(line: InvoiceLine): string { return line.selectedItem?.type === 'serialized' ? line.serial : line.batch; }
+  /** Pickable while the line is new / cloned; a saved batch line without a batch may still be completed. */
+  canPick(line: InvoiceLine): boolean {
+    if (!this.isSerialBatch(line) || this.isLocked(line)) return false;
+    return this.canEditProduct(line) || (line.selectedItem?.type === 'batch' && blank(line.batch));
+  }
+
+  async pickSerialBatch(line: InvoiceLine): Promise<void> {
+    const cfg = this.config();
+    const serial = line.selectedItem?.type === 'serialized';
+    const productId = line.selectedItem?.id;
+    if (!productId) return;
+    const rows = await (serial ? cfg.serialsLookup! : cfg.batchesLookup!)(productId);
+    const key = serial ? 'serial' : 'batch';
+    // Values already used by other lines of this document can't be picked again.
+    const taken = new Set(this.doc().lines.filter(l => l !== line && !(l as any).isDeleted && (l as any)[key]).map(l => (l as any)[key]));
+    const options = rows.map(r => ({
+      value: String(r[key] ?? ''),
+      hint: serial || r.onHand == null ? undefined : `${this.lang.instant('DOC_LINES.ON_HAND')}: ${r.onHand}`,
+      disabled: taken.has(r[key]),
+    })).filter(o => o.value);
+    const value = await this.modal.open<DocSerialBatchModalComponent, SerialBatchData, string | null>(DocSerialBatchModalComponent, {
+      data: { kind: serial ? 'serial' : 'batch', options, selected: (line as any)[key] },
+    }).afterClosed();
+    if (!value) return;
+    (line as any)[key] = value;
+    if (serial) line.qty = 1;
+    this.doc().calculateTotal();
+    this.touch();
+  }
+
+  hasSplit(line: InvoiceLine): boolean {
+    const t = line.selectedItem?.type;
+    return !!this.config().splitEditor && (t === 'serialized' || t === 'batch');
+  }
+  async editSplit(line: InvoiceLine): Promise<void> {
+    await this.config().splitEditor?.(line);
+    this.doc().calculateTotal();
+    this.touch();
+  }
+
   clearProduct(line: InvoiceLine): void { this.editor().clearItem(line); this.touch(); }
   onNote(line: InvoiceLine, v: string): void {
     line.note = v;
@@ -218,7 +316,9 @@ export class DocLinesTableComponent {
   }
 
   // ── other cells ────────────────────────────────────────────────────
+  maxOf(line: InvoiceLine, c: DocLineColumn): number { return c.max?.(line) ?? Number.POSITIVE_INFINITY; }
   onQty(line: InvoiceLine, c: DocLineColumn, qty: number): void {
+    qty = Math.min(qty, this.maxOf(line, c));
     (line as any)[this.fieldOf(c)] = Math.max(qty, line.minQty || 0);
     if (this.fieldOf(c) === 'qty') this.editor().onChangeQty(line, qty);
     this.doc().calculateTotal();
@@ -245,6 +345,7 @@ export class DocLinesTableComponent {
     this.editor().onChangePrice(line);
     this.touch();
   }
+  onText(line: InvoiceLine, c: DocLineColumn, v: string): void { (line as any)[this.fieldOf(c)] = v; this.touch(); }
   onDiscount(line: InvoiceLine, d: DiscountValue): void { this.editor().setLineDiscount(line, d); this.touch(); }
   onTax(line: InvoiceLine, taxId: string | null): void {
     line.taxId = taxId || null;
@@ -269,6 +370,7 @@ export class DocLinesTableComponent {
   }
 
   canRemove(line: InvoiceLine): boolean {
+    if (this.isRemoved(line)) return false;
     const custom = this.config().canRemove;
     if (custom) return custom(line, this.ctx());
     if (line.isVoided) return false;
@@ -282,8 +384,9 @@ export class DocLinesTableComponent {
       data: { title: this.lang.instant('DOC_LINES.REMOVE_LINE'), message: this.lang.instant('DOC_LINES.CONFIRM_REMOVE_LINE'), danger: true },
     }).afterClosed();
     if (!ok) return;
-    this.editor().removeLine(line, this.formStatus());
+    const outcome = this.editor().removeLine(line, this.formStatus());
     this.touch();
+    if (this.config().afterRemove) { await this.config().afterRemove!(line, outcome); this.touch(); }
   }
 
   drop(ev: CdkDragDrop<InvoiceLine[]>): void {
@@ -343,8 +446,10 @@ export class DocLinesTableComponent {
 
   bulkMenu(): DropdownMenuBtnItem[] {
     const items: DropdownMenuBtnItem[] = [];
-    if (this.config().accounts) {
+    if (this.config().accounts || this.config().bulkActions?.length) {
       items.push({ label: this.t('DOC_LINES.BULK_UPDATE'), click: () => this.bulkMode.set(true), disabled: false, danger: false });
+    }
+    if (this.config().accounts) {
       items.push({ label: this.t(this.allInfoOpen() ? 'DOC_LINES.HIDE_ALL_INFO' : 'DOC_LINES.SHOW_ALL_INFO'), click: () => this.toggleAllInfo(), disabled: false, danger: false });
     }
     return items;
@@ -358,6 +463,12 @@ export class DocLinesTableComponent {
     this.selected.update(s => { const n = new Set(s); n.has(l) ? n.delete(l) : n.add(l); return n; });
   }
   closeBulk(): void { this.bulkMode.set(false); this.selected.set(new Set()); }
+  hasDiscountColumn = computed(() => this.columns().some(c => c.type === 'discount'));
+  async runBulkAction(a: DocBulkAction): Promise<void> {
+    await a.run([...this.selected()]);
+    this.doc().calculateTotal();
+    this.touch();
+  }
   bulkAccount(a: any): void {
     if (!a) return;
     this.selected().forEach(l => { if (l.isNew) l.accountId = a.id; });
@@ -382,7 +493,7 @@ export class DocLinesTableComponent {
     const cfg = this.config();
     const picks = await this.modal.open<DocBulkItemsModalComponent, BulkItemsData, BulkPick[] | null>(DocBulkItemsModalComponent, {
       size: 'xl',
-      data: { search: (t: string, page = 1) => cfg.itemSearch(t, { tags: this.tags(), page }), barcodeLookup: cfg.barcodeLookup, excludeTypes: cfg.excludeTypes },
+      data: { search: (t: string, page = 1) => cfg.itemSearch(t, { tags: this.tags(), page }), barcodeLookup: cfg.barcodeLookup, excludeTypes: cfg.bulkExcludeTypes },
     }).afterClosed();
     if (!picks?.length) return;
 
@@ -407,6 +518,11 @@ export class DocLinesTableComponent {
   // ── import (CSV / XLSX by barcode) ─────────────────────────────────
   async importLines(): Promise<void> {
     const cfg = this.config();
+    if (cfg.customImport) {
+      await cfg.customImport();
+      this.touch();
+      return;
+    }
     if (!cfg.searchByBarcodes) return;
     const res = await this.modal.open<DocImportLinesModalComponent, void, ImportLinesResult | null>(DocImportLinesModalComponent, { size: 'md' }).afterClosed();
     if (!res?.lines.length) return;
@@ -432,7 +548,7 @@ export class DocLinesTableComponent {
     let added = 0;
     for (const r of rows) {
       const p = byCode.get(r.barcode);
-      if (!p || (cfg.excludeTypes ?? []).includes(p.type)) { missing.push(r.barcode); continue; }
+      if (!p || (cfg.bulkExcludeTypes ?? []).includes(p.type)) { missing.push(r.barcode); continue; }
       const line = this.editor().addLine();
       doc.lines.pop();
       doc.lines.push(line);

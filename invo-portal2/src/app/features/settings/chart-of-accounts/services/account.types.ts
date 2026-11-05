@@ -27,7 +27,7 @@ export interface Account {
   hasChild?:    boolean;
   /** Localised copies. Round-tripped verbatim; the primary `name`
    *  always mirrors `translation.name.en`. */
-  translation?: { name?: { en?: string; ar?: string }; description?: { en?: string; ar?: string } };
+  translation?: { name?: Record<string, string>; description?: Record<string, string> };
 }
 
 export interface AccountListParams {
@@ -59,4 +59,23 @@ export function emptyAccount(): Account {
     description: '',
     parentId:    null,
   };
+}
+
+export interface AccountJournal {
+  id?:          string;
+  createdAt:    string;
+  type:         string;
+  code?:        string | null;
+  userName?:    string | null;
+  referenceId?: string | null;
+  debit?:       number | null;
+  credit?:      number | null;
+}
+
+export interface AccountJournalsResult {
+  list:           AccountJournal[];
+  count:          number;
+  pageCount:      number;
+  openingBalance: number;
+  total:          { debit: number; credit: number };
 }

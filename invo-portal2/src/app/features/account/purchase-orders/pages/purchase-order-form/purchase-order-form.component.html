@@ -1,0 +1,66 @@
+@if (doc && editor) {
+  @let e = po;
+  <app-doc-form-shell
+    [title]="'PURCHASE_ORDERS.FORM.PURCHASE_ORDER' | translate" [breadcrumbs]="breadcrumbs"
+    [canDraft]="false" [submitting]="submitting" [saveDisabled]="missing.length > 0" [showView]="formStatus === 'edit'"
+    [saveLabel]="saveLabelKey | translate" [saveMenu]="saveMenu()" [actionsMenu]="actionsMenu()"
+    [total]="e.total" [totalQty]="totalQuantity"
+    (save)="savePrimary()" (cancel)="cancel()" (view)="view()">
+
+    <app-doc-supplier-section
+      [supplier]="supplierValue" [error]="fieldError('supplierId')" [international]="e.internationalSupplier"
+      (supplierChange)="onSupplier($event)" (createNew)="createSupplier()"/>
+
+    <section class="df-card">
+      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>{{ 'PURCHASE_ORDERS.FORM.PURCHASE_ORDER_DETAILS' | translate }}</h2>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label for="purchaseNumber">{{ 'PURCHASE_ORDERS.FORM.PURCHASE_NUMBER' | translate }} <span class="req">*</span></label>
+          <div class="df-num" [class.is-invalid]="fieldError('purchaseNumber')">
+            <input id="purchaseNumber" type="text" [(ngModel)]="e.purchaseNumber" (ngModelChange)="markDirty()"/>
+            <button type="button" class="df-gear" (click)="openNumberPrefs()" [attr.title]="'PURCHASE_ORDERS.FORM.NUMBER_HELP' | translate" aria-label="settings">⚙</button>
+          </div>
+          @if (fieldError('purchaseNumber'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label for="reference">{{ 'PURCHASE_ORDERS.FORM.REFERENCE' | translate }}</label>
+          <input id="reference" class="df-input" type="text" [(ngModel)]="e.reference" (ngModelChange)="markDirty()"/>
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'PURCHASE_ORDERS.FORM.ISSUE_DATE' | translate }} <span class="req">*</span></label>
+          <app-date-picker [value]="purchaseDate" (valueChange)="onPurchaseDate($event)"/>
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'PURCHASE_ORDERS.FORM.EXPIRY_DATE' | translate }} <span class="req">*</span></label>
+          <app-date-picker [value]="expiryDate" (valueChange)="onExpiryDate($event)"/>
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.BRANCH' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="branches" [displayWith]="branchLabel" [compareWith]="byId"
+            [value]="branchOf()" (valueChange)="onBranch($any($event))" [clearable]="false"
+            [placeholder]="'DOC_FORM.SELECT_BRANCH' | translate"/>
+          @if (fieldError('branchId'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.TAX_TYPE' | translate }}</label>
+          <app-segmented-toggle [options]="taxTypes" [value]="taxType" (valueChange)="onTaxType($event)"/>
+        </div>
+      </div>
+
+      <app-entity-custom-fields entityType="purchaseOrder" [parentForm]="form" [valueSource]="e.customFields" idPrefix="cf-po" [bare]="true"/>
+    </section>
+
+    <app-doc-lines-table
+      [doc]="e" [editor]="editor!" [config]="linesConfig" [formStatus]="formStatus"
+      (changed)="markDirty()">
+      <app-doc-totals [doc]="e" [editor]="editor!" [simple]="true" (changed)="markDirty()"/>
+    </app-doc-lines-table>
+  </app-doc-form-shell>
+}

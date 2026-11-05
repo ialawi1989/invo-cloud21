@@ -39,6 +39,11 @@ export class SalesLookupsService {
   }
 
   /** Accounts a sale line can be posted to. */
+  /** Purchase-side accounts (cost centre of a supplier, expense / bill lines) — `accounts/getPurchaseAccounts`. */
+  async getPurchaseAccounts(): Promise<SalesAccount[]> {
+    return (await this.api.request(this.api.get('accounts/getPurchaseAccounts')))?.data ?? [];
+  }
+
   async getSalesAccounts(): Promise<SalesAccount[]> {
     return (await this.api.request(this.api.get('accounts/getSalesAccounts')))?.data ?? [];
   }
@@ -53,7 +58,7 @@ export class SalesLookupsService {
   async getBranchProducts(params: {
     page: number; limit: number; searchTerm: string; sortBy?: any; branchId: string;
     customerId?: string | null; tags?: string[]; exclude?: any[];
-  }): Promise<any[]> {
+  }): Promise<{ list: any[]; hasNext: boolean }> {
     const body: any = {
       page: params.page,
       limit: params.limit,
@@ -64,7 +69,8 @@ export class SalesLookupsService {
       filter: { tags: params.tags ?? [] },
     };
     if (params.exclude?.length) body.exclude = params.exclude;
-    return (await this.post('accounts/getBranchProducts/', body))?.list ?? [];
+    const d = await this.post('accounts/getBranchProducts/', body);
+    return { list: d?.list ?? [], hasNext: !!d?.hasNext };
   }
 
   /** Barcode scan on a line: returns the product record or null. */
@@ -95,9 +101,10 @@ export class SalesLookupsService {
   }
 
   /** Payment methods usable at a branch (`accounts/getMiniPaymentMethodList/`). */
-  async getMiniPaymentMethods(branchId: string | null, paymentMethodId?: string | null): Promise<any[]> {
+  async getMiniPaymentMethods(branchId: string | null, paymentMethodId?: string | null, type?: string): Promise<any[]> {
     const body: any = { branchId };
     if (paymentMethodId) body.paymentMethodId = paymentMethodId;
+    if (type) body.type = type;
     return (await this.post('accounts/getMiniPaymentMethodList/', body))?.list ?? [];
   }
 

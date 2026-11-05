@@ -1,0 +1,125 @@
+{
+  "BILLS": {
+    "DASHBOARD": "Dashboard",
+    "ADD_NEW": "Add New Bill",
+    "SEARCH_PLACEHOLDER": "Search by number, supplier, branch or reference",
+    "EMPTY": "No bills found",
+    "CREATED_DATE": "Created date",
+    "LIST": {
+      "BILLS_LIST": "Bills",
+      "ALL_BILLS": "All Bills",
+      "BILL_NUMBER": "Bill #",
+      "SUPPLIER_NAME": "Supplier",
+      "PURCHASE_NUMBER": "Purchase Order #",
+      "TOTAL": "Total",
+      "STATUS": "Status",
+      "BRANCH_NAME": "Branch",
+      "BILL_DATE": "Bill date",
+      "DUE_DATE": "Due date",
+      "EMPLOYEE_NAME": "Employee",
+      "REF": "Ref #",
+      "PAY": "Pay"
+    },
+    "FILTERS": {
+      "STATUS": "Status",
+      "BRANCH": "Branch",
+      "DATE": "Date"
+    },
+    "STATUS": {
+      "Draft": "Draft",
+      "Open": "Open",
+      "Partially Paid": "Partially Paid",
+      "Paid": "Paid",
+      "Overdue": "Overdue",
+      "Closed": "Closed"
+    },
+    "ACTIONS": {
+      "EXPORT_EXCEL": "Export to Excel",
+      "SHOW_PURCHASE_ORDER": "Show Purchase Order",
+      "CLONE": "Clone",
+      "OPEN_BILL": "Open Bill",
+      "CREATE_SUPPLIER_CREDIT": "Create Supplier Credit",
+      "CREATE_BILL_OF_ENTRY": "Create Bill of Entry"
+    },
+    "TERMS": {
+      "net7": "Net 7",
+      "net10": "Net 10",
+      "net15": "Net 15",
+      "net30": "Net 30",
+      "net45": "Net 45",
+      "net60": "Net 60",
+      "net90": "Net 90",
+      "endOfTheMonth": "End of the month",
+      "onReceiptDue": "Due on receipt",
+      "custom": "Custom"
+    },
+    "FORM": {
+      "BILL": "Bill",
+      "NEW_BILL": "New Bill",
+      "EDIT_BILL": "Edit Bill",
+      "BILL_DETAILS": "Bill Details",
+      "BILL_NUMBER": "Bill Number",
+      "REFERENCE": "Reference Number",
+      "BILL_DATE": "Bill Date",
+      "DUE_DATE": "Due Date",
+      "PAYMENT_TERM": "Payment Term",
+      "PAYABLE_ACCOUNT": "Payable Account",
+      "ACCOUNTS_PAYABLE": "Accounts Payable",
+      "NUMBER_HELP": "Click here to enable or disable auto-generation of Bill numbers.",
+      "CONVERTED_FROM": "Made from purchase order",
+      "FULL_QTY": "Full quantity",
+      "REMAINING_QTY": "Remaining quantity",
+      "NOTES": "Notes",
+      "NOTES_PLACEHOLDER": "Notes shown on the bill",
+      "BEFORE_TAX": "Discount before tax",
+      "AFTER_TAX": "Discount after tax",
+      "DISCOUNT_INCLUDES_TAX": "Discount includes tax"
+    },
+    "REQUIRED": {
+      "BILL_NUMBER": "Bill number",
+      "SUPPLIER": "Supplier",
+      "BRANCH": "Branch",
+      "BILL_DATE": "Bill date",
+      "DUE_DATE": "Due date"
+    },
+    "VIEW": {
+      "SUPPLIER_INACTIVE": "This supplier is inactive.",
+      "LABEL_PRINT": "Label print",
+      "CONFIRM_DELETE_APPLIED_CREDIT": "Take this applied supplier credit back?",
+      "VIEW_BILL": "View Bill",
+      "CONFIRM_DELETE": "Delete this bill? This cannot be undone.",
+      "CONFIRM_OPEN": "Open this bill? It can no longer be a draft.",
+      "RECORD_PAYMENT": "Record Payment",
+      "CREDITS_AVAILABLE": "Credits available: {{value}}.",
+      "APPLY_NOW": "Apply now"
+    },
+    "APPLY": {
+      "TITLE": "Apply Credits",
+      "BILL_BALANCE": "Bill balance",
+      "CREDIT": "Credit",
+      "AVAILABLE": "Available",
+      "AMOUNT_TO_CREDIT": "Amount to credit",
+      "BALANCE_DUE": "Balance due",
+      "NO_CREDITS": "The supplier has no credit available",
+      "APPLY": "Apply"
+    },
+    "SPLIT": {
+      "SERIALS_TITLE": "Serial numbers",
+      "BATCHES_TITLE": "Batches",
+      "SERIAL_PLACEHOLDER": "Type a serial number and press Enter",
+      "BATCH_PLACEHOLDER": "Type a batch name and press Enter",
+      "ADD": "Add",
+      "DUPLICATE": "This name already exists",
+      "SERIAL": "Serial",
+      "BATCH": "Batch",
+      "PROD_DATE": "Production date",
+      "EXPIRE_DATE": "Expiry date",
+      "UNDO": "Undo",
+      "EMPTY": "Nothing added yet",
+      "DONE": "Done",
+      "BELOW_SOLD": "{{sold}} already sold",
+      "N_SERIALS": "{{count}} serials",
+      "N_BATCHES": "{{count}} batches"
+    }
+  }
+}

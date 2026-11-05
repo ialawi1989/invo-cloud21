@@ -13,6 +13,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
+import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { withTranslations } from '@core/i18n/with-translations';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
@@ -71,6 +72,10 @@ const PAGE_SIZE = 15;
 })
 export class ReconciliationFormComponent implements OnInit, CanLeaveComponent {
   private service    = inject(BankingOverviewService);
+  private privilege  = inject(PrivilegeService);
+
+  /** Undo re-opens a closed period, so it sits behind the reconcile gate. */
+  get canUndo(): boolean { return this.privilege.check('reconciliationSecurity.actions.view.access'); }
   private translate  = inject(TranslateService);
   private router     = inject(Router);
   private route      = inject(ActivatedRoute);
@@ -365,6 +370,41 @@ export class ReconciliationFormComponent implements OnInit, CanLeaveComponent {
     if ((await ref.afterClosed()) !== true) return;
 
     await this.doSave('reconciled');
+  }
+
+  /** Re-opens a closed period (legacy "Undo Reconcilation" footer button).
+   *  Confirms, calls the same endpoint as the list's Undo, then reloads so
+   *  the sheet comes back editable as `in-progress`. */
+  async undoReconciliation(): Promise<void> {
+    if (this.status() !== 'reconciled' || this.saving()) return;
+
+    const ref = this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(
+      ConfirmModalComponent,
+      {
+        size: 'sm',
+        data: {
+          title:   this.translate.instant('MESSAGE.CONFIRM_WARNING'),
+          message: '',
+          confirm: this.translate.instant('MESSAGE.YES'),
+        },
+      },
+    );
+    if ((await ref.afterClosed()) !== true) return;
+
+    this.saving.set(true);
+    try {
+      const ok = await this.service.undo(this.reconciliationId());
+      if (ok) {
+        this.toast.success('MESSAGE.SUCCESSFULLY_UNDO');
+        await this.load();
+      } else {
+        this.toast.error('COMMON.SAVE_FAILED');
+      }
+    } catch (e: any) {
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   /** Shared save path for both the draft and the final reconcile — same

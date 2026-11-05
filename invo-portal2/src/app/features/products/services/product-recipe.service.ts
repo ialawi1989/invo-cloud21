@@ -115,9 +115,12 @@ export class ProductRecipeService {
     ownerId: string,
     item: MenuRecipeItem,
   ): Promise<{ success: boolean; data?: any }> {
+    // A recipe's own items are stored (and read by the recipe page and the backend's cost SQL) as `usage`;
+    // menu-item and option lines use `usages`. Sending the wrong key saved a line the recipe page then showed blank.
+    const amount = Number(item.usages) || 0;
     const body: Record<string, unknown> = {
       name: item.name,
-      usages: Number(item.usages) || 0,
+      ...(ownerType === 'recipe' ? { usage: amount } : { usages: amount }),
     };
     if (item.recipeId) body['recipeId'] = item.recipeId;
     else body['inventoryId'] = item.inventoryId;

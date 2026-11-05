@@ -32,6 +32,10 @@
 .dn__empty { text-align: center; color: #94a3b8; padding: 60px 0; }
 
 @media print {
-  :host { background: #fff; padding: 0; }
-  .dn { box-shadow: none; padding: 12mm 14mm; }
+  // The global print sheet hides everything but the document paper (`body * { visibility: hidden }`); this page is its own
+  // print target, so it re-shows itself with a selector that out-ranks that rule on its own.
+  :host, :host * { visibility: visible; }
+  :host { background: #fff; padding: 0; min-height: 0; }
+  // Keep the dark table header (and its white text) in the printout — browsers drop background colours by default.
+  .dn { box-shadow: none; padding: 12mm 14mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }

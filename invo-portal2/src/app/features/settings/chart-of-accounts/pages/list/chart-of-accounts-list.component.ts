@@ -37,6 +37,11 @@ import {
   ConfirmModalData,
 } from '@shared/modal/demo/confirm-modal.component';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { PrivilegeService } from '@core/auth/privileges/privilege.service';
+import { LogsDrawerComponent, LogsDrawerData } from '@shared/components/logs-drawer/logs-drawer.component';
+import { MappedImportWizardComponent } from '@shared/components/mapped-import-wizard/mapped-import-wizard.component';
+import { MappedImportConfig, MappedImportPreview } from '@shared/components/mapped-import-wizard/mapped-import.types';
+import { buildAccountImportConfig } from '../../services/account-import.config';
 
 import { AccountService } from '../../services/account.service';
 import { Account } from '../../services/account.types';
@@ -97,6 +102,14 @@ export class ChartOfAccountsListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private modal      = inject(ModalService);
   private toast      = inject(ToastService);
+  private privileges = inject(PrivilegeService);
+
+  readonly canAdd          = this.privileges.check('accountSecurity.actions.add.access');
+  readonly canDelete       = this.privileges.check('accountSecurity.actions.delete.access');
+  readonly canImportExport = this.privileges.check('accountSecurity.actions.importExport.access');
+
+  /** Header "…" menu: activity log (always) + import / export (privileged). */
+  moreItems: DropdownMenuBtnItem[] = [];
 
   /** Direct handle to the embedded list-page so we can flip its
    *  page size on tree-mode entry (and restore it on exit). */
@@ -187,7 +200,7 @@ export class ChartOfAccountsListComponent implements OnInit {
    *  reserved for less-frequent / destructive operations. */
   rowMenuItems(row: Account): DropdownMenuBtnItem[] {
     const items: DropdownMenuBtnItem[] = [];
-    if (!row.default) {
+    if (!row.default && this.canDelete) {
       items.push({
         label:  'COMMON.DELETE',
         danger: true,
@@ -210,7 +223,7 @@ export class ChartOfAccountsListComponent implements OnInit {
   };
 
   constructor() {
-    withTranslations('settings/chart-of-accounts');
+    withTranslations('settings/chart-of-accounts', 'account/components/doc-lines-table');
     this.translate.onLangChange.pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.initializeTranslations());
     this.translate.onTranslationChange.pipe(takeUntilDestroyed(this.destroyRef))
@@ -288,7 +301,7 @@ export class ChartOfAccountsListComponent implements OnInit {
       },
     ];
 
-    this.bulkActions = [
+    this.bulkActions = !this.canAdd ? [] : [
       {
         id:      'bulk-edit',
         label:   t('CHART_OF_ACCOUNTS.BULK.ACTION'),
@@ -296,6 +309,17 @@ export class ChartOfAccountsListComponent implements OnInit {
         color:   'primary',
         handler: (rows) => this.bulkEdit(rows as Account[]),
       },
+    ];
+
+    this.moreItems = [
+      { label: t('COMMON.LOGS.SHOW'), click: () => this.openLogs(), disabled: false, danger: false },
+      ...(this.canImportExport
+        ? [
+            { label: t('CHART_OF_ACCOUNTS.IMPORT.MENU_IMPORT'), click: () => void this.openImport(), disabled: false, danger: false },
+            { label: t('CHART_OF_ACCOUNTS.IMPORT.MENU_EXPORT_CSV'), click: () => void this.exportAs('csv'), disabled: false, danger: false },
+            { label: t('CHART_OF_ACCOUNTS.IMPORT.MENU_EXPORT_XLSX'), click: () => void this.exportAs('xlsx'), disabled: false, danger: false },
+          ]
+        : []),
     ];
 
     this.searchConfig = {
@@ -398,8 +422,41 @@ export class ChartOfAccountsListComponent implements OnInit {
     void this.router.navigate(['/account/chart-of-accounts', row.id || 'new']);
   }
 
+  view(row: Account): void {
+    void this.router.navigate(['/account/chart-of-accounts/view', row.id]);
+  }
+
   add(): void {
     void this.router.navigate(['/account/chart-of-accounts', 'new']);
+  }
+
+  /** Import through the shared mapped wizard (Configure → Map Fields → Preview). */
+  async openImport(): Promise<void> {
+    // Existing accounts are needed up front: the backend overwrites by name, so skipping is decided here.
+    const existing = (await this.service.getList({ page: 1, limit: 10000 })).list;
+    const config = buildAccountImportConfig({ service: this.service, translate: this.translate, existing });
+    const res = await this.modal.open<MappedImportWizardComponent, MappedImportConfig, MappedImportPreview | undefined>(
+      MappedImportWizardComponent,
+      { size: 'lg', data: config, closeOnBackdrop: false },
+    ).afterClosed();
+    if (res?.imported) this.listPage?.refresh();
+  }
+
+  async exportAs(type: 'csv' | 'xlsx'): Promise<void> {
+    try {
+      await this.service.exportAccounts(type);
+    } catch (e: any) {
+      this.toast.error('COMMON.EXPORT_FAILED', e?.message);
+    }
+  }
+
+  openLogs(): void {
+    this.modal.open<LogsDrawerComponent, LogsDrawerData, void>(LogsDrawerComponent, {
+      drawer: true,
+      drawerWidth: '480px',
+      drawerResizable: true,
+      data: { sourceTable: 'Accounts', title: this.translate.instant('CHART_OF_ACCOUNTS.LIST.TITLE') },
+    });
   }
 
   /** Bulk edit shared fields (Type + Parent type, Parent account) across the
@@ -437,7 +494,7 @@ export class ChartOfAccountsListComponent implements OnInit {
   }
 
   onRowClick(event: { row: Account }): void {
-    this.edit(event.row);
+    this.view(event.row);
   }
 
   private async confirmDelete(row: Account): Promise<void> {
@@ -459,14 +516,11 @@ export class ChartOfAccountsListComponent implements OnInit {
       const ok = await this.service.delete(row.id);
       if (ok) {
         this.toast.success('COMMON.DELETED_OK');
-        // Optimistic refresh — drop the row from the cached
-        // dataset so the tree (which reuses the same cache)
-        // updates immediately. The table will refetch on next
-        // load. The user can manually hit Refresh to pull fresh
-        // server state.
+        // Drop the row from the tree's cache right away, and reload the table so the list view drops it too.
         const next = this.cachedRows().filter(r => r.id !== row.id);
         this.cachedRows.set(next);
         this.treeRoots.set(this.buildTree(next));
+        this.listPage?.refresh();
       } else {
         this.toast.error('COMMON.DELETE_FAILED');
       }

@@ -1,0 +1,45 @@
+@let b = entry();
+<header class="bp-head">
+  @if (logo()) { <img class="bp-logo" [src]="logo()" alt=""/> }
+  <div><h2>{{ companyName() }}</h2>@if (b.branchName) { <div class="bp-muted">{{ b.branchName }}</div> }</div>
+  <div class="bp-title">{{ 'BILL_OF_ENTRY.FORM.BILL_OF_ENTRY' | translate }}</div>
+</header>
+
+<dl class="bp-facts">
+  <div><dt>{{ 'BILL_OF_ENTRY.FORM.NUMBER' | translate }}</dt><dd>{{ b.billingOfEnrtyNumber }}</dd></div>
+  <div><dt>{{ 'BILL_OF_ENTRY.VIEW.DATE' | translate }}</dt><dd>{{ b.billingOfEntryDate | date: 'dd/MM/yyyy' }}</dd></div>
+  <div><dt>{{ 'BILL_OF_ENTRY.VIEW.SUPPLIER' | translate }}</dt><dd>{{ b.supplierName }}</dd></div>
+  <div><dt>{{ 'BILL_OF_ENTRY.VIEW.BILL' | translate }}</dt><dd>{{ b.billingNumber }}</dd></div>
+  @if (b.paymentMethodName) { <div><dt>{{ 'BILL_OF_ENTRY.VIEW.PAYMENT_METHOD' | translate }}</dt><dd>{{ b.paymentMethodName }}</dd></div> }
+  @if (b.reference) { <div><dt>{{ 'BILL_OF_ENTRY.VIEW.REFERENCE' | translate }}</dt><dd>{{ b.reference }}</dd></div> }
+</dl>
+
+<table class="bp-table">
+  <thead>
+    <tr>
+      <th>{{ 'BILL_OF_ENTRY.FORM.PRODUCT' | translate }}</th>
+      <th class="end">{{ 'BILL_OF_ENTRY.FORM.ASSESSABLE_VALUE' | translate }}</th>
+      <th class="end">{{ 'BILL_OF_ENTRY.FORM.CUSTOM_DUTY' | translate }}</th>
+      <th class="end">{{ 'BILL_OF_ENTRY.FORM.TAXABLE_AMOUNT' | translate }}</th>
+      <th class="end">{{ 'BILL_OF_ENTRY.FORM.TAX_AMOUNT' | translate }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (l of lines(); track $index) {
+      <tr>
+        <td><b>{{ l.selectedItem?.name || l.productName || l.note }}</b>@if (l.productId && l.note) { <div class="bp-muted">{{ l.note }}</div> }</td>
+        <td class="end">{{ l.assessableValue | mycurrency }}</td>
+        <td class="end">{{ l.customDuty | mycurrency }}</td>
+        <td class="end">{{ l.total | mycurrency }}</td>
+        <td class="end">{{ l.taxTotal | mycurrency }}</td>
+      </tr>
+    }
+  </tbody>
+</table>
+
+<div class="bp-sum">
+  <div><span>{{ 'BILL_OF_ENTRY.FORM.TOTAL_CUSTOM_DUTY' | translate }}</span><b>{{ b.customDutyTotal | mycurrency }}</b></div>
+  <div><span>{{ 'BILL_OF_ENTRY.FORM.TOTAL_TAX' | translate }}</span><b>{{ b.taxTotal | mycurrency }}</b></div>
+  @if (b.roundingTotal) { <div><span>{{ 'DOC_FORM.ROUNDING' | translate }}</span><b>{{ b.roundingTotal | mycurrency }}</b></div> }
+  <div class="bp-sum__total"><span>{{ 'BILL_OF_ENTRY.FORM.TOTAL_PAID' | translate }}</span><b>{{ b.total | mycurrency }}</b></div>
+</div>

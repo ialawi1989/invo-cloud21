@@ -59,6 +59,20 @@ export class EstimatesService {
 
   deleteEstimate = (id: string) => this.api.request(this.api.delete('accounts/deleteEstimate/' + id));
 
+  /** Bulk import: one row per estimate line. `dryRun` validates and reports only. */
+  importEstimates = (rows: Record<string, string>[], options: { dryRun: boolean; autoNumber: boolean; skipDuplicates: boolean; skipDuplicateLines: boolean; branchId: string }) =>
+    this.envelope(this.api.post('accounts/importEstimates', { rows, options }));
+
+  /** The selected estimates as ONE pdf (base64), like the invoices' merged pdf. */
+  async viewMergedEstimatesPdf(estimateIds: string[]): Promise<any> {
+    try {
+      const url = 'accounts/viewMergedEstimatesPdf' + (this.lang ? `?lang=${encodeURIComponent(this.lang)}` : '');
+      return await this.data(this.api.post(url, { estimateIds }));
+    } catch {
+      return null;
+    }
+  }
+
   sendEstimateEmail = (param: any = null) => this.api.request(this.api.post('accounts/sendEstimateEmail/', param));
 
   viewEstimatePdf = (id: string) =>

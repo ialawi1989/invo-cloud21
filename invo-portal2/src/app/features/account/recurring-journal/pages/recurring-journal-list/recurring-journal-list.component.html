@@ -1,5 +1,5 @@
 <app-list-page
-  style="--lp-actions-w: 110px"
+  style="--lp-actions-w: 230px"
   [pageTitle]="'RECURRING_JOURNAL.LIST.TITLE' | translate"
   [columns]="columns"
   [dataSource]="loadRecurringJournals"
@@ -30,6 +30,8 @@
   <ng-template listCellTemplate="frequency" let-row>
     {{ frequencyLabel(row) }}
   </ng-template>
+
+  <ng-template listCellTemplate="startDate" let-row>{{ row.startDate | date: 'dd/MM/yyyy' }}</ng-template>
 
   <!-- End date — only meaningful when endTerm == 'by'. -->
   <ng-template listCellTemplate="endDate" let-row>

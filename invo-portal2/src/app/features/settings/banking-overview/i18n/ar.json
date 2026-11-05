@@ -32,7 +32,8 @@
       "STATUS": "الحالة",
       "SEARCH_PLACEHOLDER": "بحث في الحركات…",
       "EMPTY": "لا توجد حركات لهذا الحساب.",
-      "RECONCILE_ACCOUNT": "تسوية الحساب"
+      "RECONCILE_ACCOUNT": "تسوية الحساب",
+      "REFERENCE": "المرجع"
     },
     "RECONCILIATIONS": {
       "RECONCILED_DATE": "تاريخ التسوية",
@@ -68,6 +69,7 @@
       "CONFIRM_SAVE_MESSAGE": "سيتم وضع علامة \"تمت التسوية\" على الحركات المحددة لهذه الفترة.",
       "START_RECONCILIATION": "بدء التسوية",
       "SAVE_DRAFT": "حفظ ومتابعة التسوية لاحقًا",
+      "UNDO_RECONCILIATION": "التراجع عن التسوية",
       "RECONCILE_COUNT": "تسوية ({{count}})",
       "ATTACHMENTS": "المرفقات",
       "ATTACH_FILE": "إرفاق ملف",

@@ -1,0 +1,90 @@
+{
+  "CREDIT_NOTES": {
+    "DASHBOARD": "Dashboard",
+    "ADD_NEW": "Add New Credit Note",
+    "SEARCH_PLACEHOLDER": "Search by number, invoice or customer",
+    "EMPTY": "No credit notes found",
+    "CREATED_DATE": "Created date",
+    "LIST": {
+      "CREDIT_NOTES_LIST": "Credit Notes",
+      "ALL_CREDIT_NOTES": "All Credit Notes",
+      "STATUS_OPEN": "Open",
+      "STATUS_CLOSED": "Closed",
+      "CREDIT_NOTE_NUMBER": "Credit Note #",
+      "INVOICE_NUMBER": "Invoice #",
+      "EMPLOYEE_NAME": "Employee",
+      "CUSTOMER_NAME": "Customer",
+      "TOTAL": "Total",
+      "BRANCH_NAME": "Branch",
+      "ISSUE_DATE": "Issue date",
+      "REFUNDED": "Refunded",
+      "REFUNDED_PARTIALLY": "Partially refunded"
+    },
+    "FILTERS": {
+      "SOURCE": "Source",
+      "BRANCH": "Branch",
+      "DATE": "Date"
+    },
+    "ACTIONS": {
+      "EXPORT_EXCEL": "Export to Excel",
+      "APPLY_CREDITS": "Apply Credits",
+      "REFUND": "Refund"
+    },
+    "FORM": {
+      "CREDIT_NOTE": "Credit Note",
+      "NEW_CREDIT_NOTE": "New Credit Note",
+      "EDIT_CREDIT_NOTE": "Edit Credit Note",
+      "CREDIT_NOTE_FOR": "Credit Note for",
+      "CREDIT_NOTE_DETAILS": "Credit Note Details",
+      "CREDIT_NOTE_NUMBER": "Credit Note Number",
+      "CREDIT_NOTE_DATE": "Credit Note Date",
+      "REFERENCE": "Reference Number",
+      "INVOICE": "Invoice",
+      "SELECT_INVOICE": "Select an invoice",
+      "NO_INVOICES": "No invoices can be credited for this customer",
+      "LINES_LARGER_THAN_INVOICE": "The credit note total is larger than the invoice total",
+      "NUMBER_HELP": "Click here to enable or disable auto-generation of Credit Note numbers.",
+      "NOTES_HINT": "Will be displayed on the credit note",
+      "DATE_BEFORE_INVOICE": "The credit note date can't be before the invoice date",
+      "NEEDS_QTY": "Enter a quantity for at least one line"
+    },
+    "REQUIRED": {
+      "CREDIT_NOTE_NUMBER": "Credit note number",
+      "INVOICE": "Invoice",
+      "CUSTOMER": "Customer",
+      "BRANCH": "Branch"
+    },
+    "VIEW": {
+      "VIEW_CREDIT_NOTE": "View Credit Note",
+      "CONFIRM_DELETE": "Delete this credit note? This cannot be undone."
+    },
+    "APPLY": {
+      "TITLE": "Apply credits for",
+      "CREDIT_NOTE_BALANCE": "Credit note balance",
+      "INVOICE_NUMBER": "Invoice #",
+      "INVOICE_BALANCE": "Invoice balance",
+      "AMOUNT_TO_CREDIT": "Amount to credit",
+      "BALANCE_DUE": "Credit note balance due",
+      "NO_INVOICES": "No open invoices for this customer",
+      "APPLY": "Apply credits"
+    },
+    "REFUND": {
+      "TITLE": "Refund",
+      "NEW": "New Refund",
+      "EDIT": "Edit Refund",
+      "FORM": "Refund Form",
+      "DATE": "Refund Date",
+      "REFERENCE": "Reference Number",
+      "AMOUNT": "Amount",
+      "AMOUNT_HINT": "Up to the credit note balance",
+      "PAYMENT_METHOD": "Payment Method",
+      "DESCRIPTION": "Description",
+      "NO_METHODS": "No refund payment methods available",
+      "REQUIRED_CREDIT_NOTE": "Credit note",
+      "REQUIRED_METHOD": "Payment method",
+      "REQUIRED_AMOUNT": "Amount",
+      "CREDIT_NOTE": "Credit note",
+      "BALANCE": "Credit note balance"
+    }
+  }
+}

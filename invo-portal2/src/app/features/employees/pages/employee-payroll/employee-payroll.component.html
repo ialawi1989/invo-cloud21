@@ -22,7 +22,7 @@
     <section class="pay-panel">
       <header class="pay-panel__head">
         <h2 class="pay-panel__title">{{ 'EMPLOYEES.PAYROLL.CURRENT_PAY' | translate }}</h2>
-        @if (canEditPay() && !recording()) {
+        @if (canEditPay() && !recording() && current()) {
           <!-- "Record a pay change", never "Edit salary": that is what the
                server does, and calling it editing invites someone to expect
                the old figure to disappear. -->
@@ -34,8 +34,15 @@
 
       @if (loading()) {
         <div class="pay-loading">{{ 'COMMON.LOADING' | translate }}</div>
-      } @else if (!current()) {
-        <div class="pay-empty">{{ 'EMPLOYEES.PAYROLL.NO_PAY' | translate }}</div>
+      } @else if (!current() && !recording()) {
+        <app-alert variant="warning">
+          {{ 'EMPLOYEES.PAYROLL.NO_PAY_ALERT' | translate }}
+          @if (canEditPay()) {
+            <button alertAction type="button" class="btn btn-primary btn-sm" (click)="startRecordChange()">
+              {{ 'EMPLOYEES.PAYROLL.SET_UP_PAY' | translate }}
+            </button>
+          }
+        </app-alert>
       } @else if (current(); as c) {
         <div class="pay-figures">
           <div class="pay-figure">
@@ -116,7 +123,7 @@
           <div class="pay-form__grid">
             <label class="pay-field">
               <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_FROM' | translate }} <em>*</em></span>
-              <input class="form-control" type="date" formControlName="effectiveFrom" />
+              <app-date-field formControlName="effectiveFrom"/>
               <span class="pay-field__hint">{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_HINT' | translate }}</span>
             </label>
 
@@ -254,44 +261,60 @@
       @if (history().length) {
         <section class="pay-sub">
           <h3 class="pay-sub__title">{{ 'EMPLOYEES.PAYROLL.HISTORY' | translate }}</h3>
-          <div class="pay-history">
-            @for (row of history(); track trackRow($index, row)) {
-              <div class="pay-history__row"
-                   [class.pay-history__row--current]="row.isCurrent === true"
-                   [class.pay-history__row--future]="row.isFuture === true">
-                <span class="pay-history__date">{{ row.effectiveFrom }}</span>
-                <span class="pay-history__amount">{{ money(row.basicSalary, row.currency) }}</span>
-                <span class="pay-history__reason">{{ reasonLabel(row.changeReason) | translate }}</span>
-                <!--
-                  Which row is in force and which is scheduled comes from the
-                  SERVER — it flags isCurrent and isFuture so the portal does
-                  not re-derive them and disagree with the as-of query.
-                -->
-                @if (row.isCurrent === true) {
-                  <span class="pay-chip pay-chip--current">{{ 'EMPLOYEES.PAYROLL.IN_FORCE' | translate }}</span>
-                } @else if (row.isFuture === true) {
-                  <span class="pay-chip pay-chip--future">{{ 'EMPLOYEES.PAYROLL.SCHEDULED' | translate }}</span>
+          <div class="pay-table-wrap">
+            <table class="pay-table">
+              <thead>
+                <tr>
+                  <th scope="col">{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_FROM' | translate }}</th>
+                  <th scope="col" class="pay-table__num">{{ 'EMPLOYEES.PAYROLL.BASIC' | translate }}</th>
+                  <th scope="col">{{ 'EMPLOYEES.PAYROLL.LAST_CHANGE' | translate }}</th>
+                  <th scope="col">{{ 'EMPLOYEES.PAYROLL.STATUS' | translate }}</th>
+                  <th scope="col">{{ 'EMPLOYEES.PAYROLL.NOTES' | translate }}</th>
+                  @if (canEditPay()) { <th scope="col"><span class="sr-only">{{ 'COMMON.ACTIONS' | translate }}</span></th> }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of history(); track trackRow($index, row)) {
+                  <tr [class.pay-table__row--current]="row.isCurrent === true"
+                      [class.pay-table__row--future]="row.isFuture === true">
+                    <td>{{ row.effectiveFrom }}</td>
+                    <td class="pay-table__num">{{ money(row.basicSalary, row.currency) }}</td>
+                    <td>{{ reasonLabel(row.changeReason) | translate }}</td>
+                    <td>
+                      <!-- Which row is in force and which is scheduled comes from the
+                           SERVER, so the portal never disagrees with the as-of query. -->
+                      @if (row.isCurrent === true) {
+                        <span class="pay-chip pay-chip--current">{{ 'EMPLOYEES.PAYROLL.IN_FORCE' | translate }}</span>
+                      } @else if (row.isFuture === true) {
+                        <span class="pay-chip pay-chip--future">{{ 'EMPLOYEES.PAYROLL.SCHEDULED' | translate }}</span>
+                      }
+                    </td>
+                    <td>{{ row.changeNote }}</td>
+                    @if (canEditPay()) {
+                      <td class="pay-table__act">
+                        <button type="button" class="btn btn-link btn-link--danger"
+                                [disabled]="busy() === row.id" (click)="removeRow(row)">
+                          {{ 'COMMON.DELETE' | translate }}
+                        </button>
+                      </td>
+                    }
+                  </tr>
                 }
-                @if (row.changeNote) { <span class="pay-history__note">{{ row.changeNote }}</span> }
-                @if (canEditPay()) {
-                  <button type="button" class="btn btn-link btn-link--danger"
-                          [disabled]="busy() === row.id" (click)="removeRow(row)">
-                    {{ 'COMMON.DELETE' | translate }}
-                  </button>
-                }
-              </div>
-            }
+              </tbody>
+            </table>
           </div>
           <p class="pay-sub__note">{{ 'EMPLOYEES.PAYROLL.HISTORY_NOTE' | translate }}</p>
         </section>
       }
 
-      <!-- ── LOANS ── -->
-      <section class="pay-sub">
-        <header class="pay-sub__head">
-          <h3 class="pay-sub__title">{{ 'EMPLOYEES.PAYROLL.LOANS' | translate }}</h3>
+    </section>
+
+    <!-- ── LOANS: a card of its own ── -->
+    <section class="pay-panel pay-panel--loans">
+        <header class="pay-panel__head">
+          <h2 class="pay-panel__title">{{ 'EMPLOYEES.PAYROLL.LOANS' | translate }}</h2>
           @if (canEditLoans() && !editingLoan()) {
-            <button type="button" class="btn btn-link" (click)="startAddLoan()">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="startAddLoan()">
               {{ 'EMPLOYEES.PAYROLL.ADD_LOAN' | translate }}
             </button>
           }
@@ -314,7 +337,7 @@
               </label>
               <label class="pay-field">
                 <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.START_DATE' | translate }}</span>
-                <input class="form-control" type="date" formControlName="startDate" />
+                <app-date-field formControlName="startDate"/>
               </label>
               <label class="pay-field">
                 <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.REPAID' | translate }}</span>
@@ -363,7 +386,6 @@
             }
           </div>
         }
-      </section>
     </section>
   }
 
@@ -375,8 +397,8 @@
       <header class="pay-panel__head">
         <h2 class="pay-panel__title">{{ 'EMPLOYEES.PAYROLL.BANK' | translate }}</h2>
         @if (canEditBank() && !editingBank()) {
-          <button type="button" class="btn btn-primary" (click)="startEditBank()">
-            {{ 'EMPLOYEES.PAYROLL.CHANGE_BANK' | translate }}
+          <button type="button" class="btn btn-secondary" (click)="startEditBank()">
+            {{ (bank() ? 'EMPLOYEES.PAYROLL.CHANGE_BANK' : 'EMPLOYEES.PAYROLL.ADD_BANK') | translate }}
           </button>
         }
       </header>
@@ -386,7 +408,19 @@
       } @else if (bank(); as b) {
         <dl class="pay-facts">
           @if (b.bankName) { <div><dt>{{ 'EMPLOYEES.PAYROLL.BANK_NAME' | translate }}</dt><dd>{{ b.bankName }}</dd></div> }
-          @if (b.iban) { <div><dt>{{ 'EMPLOYEES.PAYROLL.IBAN' | translate }}</dt><dd class="pay-iban">{{ b.iban }}</dd></div> }
+          @if (b.iban) {
+            <div>
+              <dt>{{ 'EMPLOYEES.PAYROLL.IBAN' | translate }}</dt>
+              <dd class="pay-iban">
+                {{ ibanRevealed() ? b.iban : maskIban(b.iban) }}
+                <button type="button" class="btn btn-link btn-sm pay-reveal"
+                        [attr.aria-pressed]="ibanRevealed()"
+                        (click)="ibanRevealed.set(!ibanRevealed())">
+                  {{ (ibanRevealed() ? 'EMPLOYEES.PAYROLL.HIDE' : 'EMPLOYEES.PAYROLL.REVEAL') | translate }}
+                </button>
+              </dd>
+            </div>
+          }
           @if (b.swift) { <div><dt>{{ 'EMPLOYEES.PAYROLL.SWIFT' | translate }}</dt><dd>{{ b.swift }}</dd></div> }
           @if (b.accountHolderName) { <div><dt>{{ 'EMPLOYEES.PAYROLL.ACCOUNT_HOLDER' | translate }}</dt><dd>{{ b.accountHolderName }}</dd></div> }
         </dl>
@@ -396,7 +430,7 @@
             @for (s of b.splitAccounts; track trackIndex($index)) {
               <li>
                 <span>{{ s.bankName }}</span>
-                <span class="pay-iban">{{ s.iban }}</span>
+                <span class="pay-iban">{{ ibanRevealed() ? s.iban : maskIban(s.iban) }}</span>
                 <span class="pay-splits__pct">{{ s.percentage ?? '—' }}%</span>
               </li>
             }

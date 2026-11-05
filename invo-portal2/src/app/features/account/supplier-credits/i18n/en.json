@@ -1,0 +1,102 @@
+{
+  "SUPPLIER_CREDITS": {
+    "DASHBOARD": "Dashboard",
+    "ADD_NEW": "Add New Supplier Credit",
+    "SEARCH_PLACEHOLDER": "Search by number, supplier or branch",
+    "EMPTY": "No supplier credits found",
+    "CREATED_DATE": "Created date",
+    "LIST": {
+      "CREDITS_LIST": "Supplier Credits",
+      "CREDIT_NUMBER": "Credit #",
+      "SUPPLIER_NAME": "Supplier",
+      "BILL_NUMBER": "Bill #",
+      "TOTAL": "Total",
+      "BRANCH_NAME": "Branch",
+      "CREDIT_DATE": "Credit date",
+      "EMPLOYEE_NAME": "Employee",
+      "REF": "Ref #"
+    },
+    "FILTERS": {
+      "BRANCH": "Branch",
+      "DATE": "Date"
+    },
+    "ACTIONS": {
+      "EXPORT_EXCEL": "Export to Excel",
+      "REFUND": "Refund",
+      "APPLY_CREDITS": "Apply Credits"
+    },
+    "FORM": {
+      "SUPPLIER_CREDIT": "Supplier Credit",
+      "NEW_SUPPLIER_CREDIT": "New Supplier Credit",
+      "EDIT_SUPPLIER_CREDIT": "Edit Supplier Credit",
+      "DETAILS": "Supplier Credit Details",
+      "CREDIT_NUMBER": "Credit Number",
+      "CREDIT_DATE": "Credit Date",
+      "REFERENCE": "Reference Number",
+      "BILL": "Bill",
+      "SELECT_BILL": "Select a bill",
+      "ALL_BILLS": "All bills",
+      "NUMBER_HELP": "Click here to enable or disable auto-generation of Supplier Credit numbers.",
+      "LINES_LARGER_THAN_BILL": "The credit lines can't be larger than the bill total:",
+      "ALREADY_ADDED": "This bill line is already on the credit",
+      "NO_QTY": "Enter a quantity to credit on at least one line",
+      "MAX_QTY": "Max qty",
+      "NO_BILL_LINES": "The bill has no lines to credit.",
+      "IMPORT": "Import",
+      "IMPORT_FROM_BILL": "Import from bill"
+    },
+    "VIEW": {
+      "VIEW_SUPPLIER_CREDIT": "View Supplier Credit",
+      "CONFIRM_DELETE": "Delete this supplier credit? This cannot be undone."
+    },
+    "APPLY": {
+      "TITLE": "Apply Credit to Bills",
+      "CREDIT_BALANCE": "Credit balance",
+      "BILL_NUMBER": "Bill #",
+      "BILL_BALANCE": "Bill balance",
+      "AMOUNT_TO_CREDIT": "Amount to credit",
+      "BALANCE_DUE": "Balance due",
+      "NO_BILLS": "The supplier has no open bills",
+      "APPLY": "Apply",
+      "EXCEEDS": "The total can't exceed the supplier credit balance"
+    },
+    "REFUND": {
+      "TITLE": "Refund",
+      "NEW": "New Refund",
+      "FORM": "Refund",
+      "CREDIT": "Supplier credit",
+      "BALANCE": "Balance",
+      "DATE": "Refund date",
+      "REFERENCE": "Reference number",
+      "AMOUNT": "Amount",
+      "AMOUNT_HINT": "Up to the unused balance of the credit",
+      "PAYMENT_MODE": "Payment mode",
+      "SELECT_MODE": "Select a mode",
+      "PAYMENT_METHOD": "Deposit to",
+      "NO_METHODS": "No payment methods are available at this branch",
+      "DESCRIPTION": "Description",
+      "REQUIRED_CREDIT": "Supplier credit",
+      "REQUIRED_METHOD": "Payment method",
+      "REQUIRED_AMOUNT": "Amount"
+    },
+    "RETURN": {
+      "SERIALS_TITLE": "Serial numbers to return",
+      "BATCHES_TITLE": "Batches to return",
+      "SERIAL": "Serial",
+      "BATCH": "Batch",
+      "AVAILABLE": "Available",
+      "RETURN_QTY": "Quantity to return",
+      "EMPTY": "Nothing to return",
+      "DONE": "Done",
+      "N_SERIALS": "{{count}} serials",
+      "N_BATCHES": "{{count}} batches"
+    },
+    "REQUIRED": {
+      "CREDIT_NUMBER": "Credit number",
+      "SUPPLIER": "Supplier",
+      "BRANCH": "Branch",
+      "BILL": "Bill",
+      "CREDIT_DATE": "Credit date"
+    }
+  }
+}

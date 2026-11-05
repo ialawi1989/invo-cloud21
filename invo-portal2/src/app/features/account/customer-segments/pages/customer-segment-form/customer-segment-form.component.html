@@ -1,0 +1,143 @@
+<div class="df-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="page-title">{{ pageTitle() }}</h1>
+  </header>
+
+  <div class="df-body">
+    <!-- ── Details ─────────────────────────────────────────────── -->
+    <section class="card">
+      <div class="card__body">
+        <div class="field">
+          <span class="field__label">{{ 'CUSTOMER_SEGMENTS.FORM.TITLE' | translate }}</span>
+          <input class="field__input" type="text"
+            [value]="segment().title"
+            (input)="setTitle($any($event.target).value)"
+            [placeholder]="'CUSTOMER_SEGMENTS.FORM.TITLE_PLACEHOLDER' | translate"
+            [class.field__input--err]="!!titleError() && isDirty()"/>
+          @if (titleError() && isDirty()) {
+            <span class="field__err">{{ titleError() | translate }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <span class="field__label">{{ 'CUSTOMER_SEGMENTS.FORM.DESCRIPTION' | translate }}</span>
+          <textarea class="field__input" rows="3"
+            [value]="segment().description"
+            (input)="setDescription($any($event.target).value)"
+            [placeholder]="'CUSTOMER_SEGMENTS.FORM.DESCRIPTION_PLACEHOLDER' | translate"></textarea>
+        </div>
+
+        <div class="field">
+          <span class="field__label">{{ 'CUSTOMER_SEGMENTS.FORM.TYPE' | translate }}</span>
+          <app-segmented-toggle [options]="typeOptions" [value]="segment().type" (valueChange)="setType($event)"/>
+          <p class="hint">
+            {{ (isManual() ? 'CUSTOMER_SEGMENTS.FORM.TYPE_MANUAL_HINT' : 'CUSTOMER_SEGMENTS.FORM.TYPE_AUTO_HINT') | translate }}
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Manual: customers ───────────────────────────────────── -->
+    @if (isManual()) {
+      <section class="card">
+        <div class="card__body">
+          <div class="prod-head">
+            <span class="field__label">{{ 'CUSTOMER_SEGMENTS.FORM.CUSTOMERS' | translate }}</span>
+            <button type="button" class="btn btn-default btn-sm" (click)="pickCustomers()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              {{ (segment().customers.length ? 'CUSTOMER_SEGMENTS.FORM.PICK_MORE_CUSTOMERS' : 'CUSTOMER_SEGMENTS.FORM.PICK_CUSTOMERS') | translate }}
+            </button>
+          </div>
+
+          @if (segment().customers.length > 0) {
+            <span class="pick-count">{{ 'CUSTOMER_SEGMENTS.FORM.CUSTOMERS_SELECTED' | translate: { count: segment().customers.length } }}</span>
+            <div class="pick-list">
+              @for (c of segment().customers; track c.id; let i = $index) {
+                <div class="pick-item">
+                  <span class="pick-item__idx">{{ i + 1 }}</span>
+                  <span class="pick-item__name">
+                    {{ c.saluation }} {{ c.name }}
+                    @if (c.phone) { <span class="pick-item__sub">- {{ c.phone }}</span> }
+                  </span>
+                  <button type="button" class="pick-item__x" (click)="removeCustomer(i)"
+                    [attr.aria-label]="'CUSTOMER_SEGMENTS.FORM.REMOVE' | translate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="alert-warn">{{ 'CUSTOMER_SEGMENTS.FORM.CUSTOMERS_REQUIRED' | translate }}</p>
+          }
+        </div>
+      </section>
+    } @else {
+      <!-- ── Automated: conditions ─────────────────────────────── -->
+      <section class="card">
+        <div class="card__body">
+          <div class="field">
+            <span class="field__label">{{ 'CUSTOMER_SEGMENTS.FORM.MATCH_LABEL' | translate }}</span>
+            <app-segmented-toggle [options]="matchOptions" [value]="segment().match" (valueChange)="setMatch($event)"/>
+          </div>
+
+          <div class="field">
+            <span class="field__label">{{ 'CUSTOMER_SEGMENTS.FORM.CONDITIONS' | translate }}</span>
+
+            @for (cond of segment().conditions; track $index; let i = $index) {
+              <div class="cond-row">
+                <app-search-dropdown class="cond-col"
+                  [items]="fieldOpts()"
+                  [value]="fieldOpt(cond.type)"
+                  (valueChange)="setConditionType(i, $event)"
+                  [displayWith]="displayOpt" [compareWith]="compareOpt"
+                  [clearable]="false" [searchable]="false"/>
+
+                <app-search-dropdown class="cond-col"
+                  [items]="comparatorOpts(cond.type)"
+                  [value]="comparatorOpt(cond.type, cond.condition)"
+                  (valueChange)="setConditionComparator(i, $event)"
+                  [displayWith]="displayOpt" [compareWith]="compareOpt"
+                  [clearable]="false" [searchable]="false"/>
+
+                <input class="field__input cond-col"
+                  [value]="cond.value"
+                  (input)="setConditionValue(i, $any($event.target).value)"
+                  [class.field__input--err]="!cond.value"
+                  [placeholder]="'CUSTOMER_SEGMENTS.FORM.VALUE' | translate"/>
+
+                <button type="button" class="cond-x" (click)="removeCondition(i)"
+                  [attr.aria-label]="'CUSTOMER_SEGMENTS.FORM.REMOVE' | translate">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            }
+
+            @if (segment().conditions.length === 0) {
+              <p class="alert-warn">{{ 'CUSTOMER_SEGMENTS.FORM.CONDITIONS_REQUIRED' | translate }}</p>
+            }
+
+            <div>
+              <button type="button" class="btn btn-default btn-sm" (click)="addCondition()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                {{ 'CUSTOMER_SEGMENTS.FORM.ADD_CONDITION' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+  </div>
+
+  <footer class="save-bar">
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+      {{ 'CUSTOMER_SEGMENTS.FORM.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
+      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+      {{ 'CUSTOMER_SEGMENTS.FORM.SAVE' | translate }}
+    </button>
+  </footer>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

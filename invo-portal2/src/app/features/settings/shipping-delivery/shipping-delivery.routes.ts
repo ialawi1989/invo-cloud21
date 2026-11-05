@@ -11,7 +11,7 @@ import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
 const translationsLoaded: CanActivateFn = async () => {
   const lang = inject(LanguageService);
   await Promise.all([
-    lang.loadFeature('shipping'),
+    lang.loadFeature('settings/shipping'),
     lang.loadFeature('covered-address'),
     lang.loadFeature('covered-zone'),
     lang.loadFeature('settings'),

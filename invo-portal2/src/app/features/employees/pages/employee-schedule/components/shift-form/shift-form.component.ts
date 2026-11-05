@@ -18,6 +18,7 @@ import { ToastService } from '@shared/components/toast/toast.service';
 import {
   ScheduleShift,
   buildTimeOptions,
+  buildEndTimeOptions,
   noOverlaps,
   validTimeOrder,
 } from '../../employee-schedule.types';
@@ -72,6 +73,8 @@ export class ShiftFormComponent {
   private toast = inject(ToastService);
 
   readonly times = buildTimeOptions();
+  /** End-of-shift choices: the same list plus 23:59. */
+  readonly endTimes = buildEndTimeOptions();
 
   employee = this.data.employee;
   date     = this.data.day?.date ?? '';

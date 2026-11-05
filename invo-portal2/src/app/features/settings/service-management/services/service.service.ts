@@ -165,6 +165,7 @@ export class ServiceManagementService {
             lockMenu:          !!raw.options.lockMenu,
             // Typo preserved verbatim — the backend reads this exact key.
             locKChangeService: !!raw.options.locKChangeService,
+            askForCarNumber:   !!raw.options.askForCarNumber,
           }
         : emptyOptions(),
       branches: Array.isArray(raw?.branches)

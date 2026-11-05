@@ -1,0 +1,11 @@
+:host { display: flex; flex-direction: column; gap: 14px; }
+.vr-loading { margin: 0; font-size: 13px; color: #2691a4; }
+.vr-card { background: #fff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px;
+  &__title { margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; } }
+.vr-wrap { overflow-x: auto; border: 1px solid #e4e7ec; border-radius: 10px; }
+.vr-table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 13.5px;
+  th { text-align: start; background: #f8f9fc; color: #64748b; font-size: 12px; text-transform: uppercase; padding: 10px 12px; }
+  td { padding: 9px 12px; border-top: 1px solid #f1f5f9; }
+  tfoot td { background: #f8f9fc; font-weight: 700; color: #0f172a; }
+  .end { text-align: end; font-variant-numeric: tabular-nums; }
+  .vr-box { width: 70px; white-space: nowrap; } }

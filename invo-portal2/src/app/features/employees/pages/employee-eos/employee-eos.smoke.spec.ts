@@ -169,7 +169,7 @@ async function render(opts: {
   // property, not in the text. The first version of these tests asserted
   // `text).toContain('Moving abroad')` and failed for that reason alone —
   // an assertion looking in a place the observable can never appear.
-  const values = [...el.querySelectorAll('input, select')]
+  const values = [...el.querySelectorAll('input, select, textarea')]
     .map((i) => String((i as HTMLInputElement).value ?? ''))
     .join(' | ');
 
@@ -181,7 +181,7 @@ describe('employee EOS tab — EMPTY', () => {
     const { fixture, errors, text } = await render({});
 
     expect(errors).toEqual([]);
-    expect(text).toContain('End of service details');
+    expect(text).toContain('End of Service Details');
 
     // The seeded clearance rows are the point of the blank shape. Read from
     // the FIRST CELL of each row, not from the page text: a page-wide
@@ -206,7 +206,7 @@ describe('employee EOS tab — EMPTY', () => {
   it('shows the not-calculated banner when the server does not calculate', async () => {
     const { text } = await render({ statutory: false });
 
-    expect(text).toContain('No settlement figure is calculated');
+    expect(text).toContain("Settlement isn't calculated");
   });
 
   it('drops the banner when the server says it DOES calculate', async () => {
@@ -216,7 +216,7 @@ describe('employee EOS tab — EMPTY', () => {
     // being true.
     const { text } = await render({ statutory: true });
 
-    expect(text).not.toContain('No settlement figure is calculated');
+    expect(text).not.toContain("Settlement isn't calculated");
   });
 });
 
@@ -260,7 +260,7 @@ describe('employee EOS tab — POPULATED', () => {
 
   it('lists why completion is blocked', async () => {
     const { fixture, text } = await render({ record: POPULATED, openAssets: 2 });
-    expect(text).toContain('This cannot be completed yet');
+    expect(text).toContain('This Cannot Be Completed Yet');
 
     // ── SCOPED TO THE BLOCKERS PANEL, DELIBERATELY ─────────────────────────
     // Asserting on the whole page passed for the wrong reason: the clearance
@@ -376,17 +376,13 @@ describe('employee EOS tab — the SERVER refuses', () => {
  * asserting rather than assuming.
  */
 describe('employee EOS tab — the identity rail', () => {
-  it('names the employee and the facts that tell two people apart', async () => {
+  it('no longer renders its own identity rail', async () => {
+    // The persistent record header (employee-record shell) names the employee on
+    // every tab, so this tab does not repeat it in a side rail.
     const { text } = await render({ record: POPULATED });
 
-    expect(text).toContain('Fatima Al-Sayed');
-    // The number, the position and the hire date — a name alone does not
-    // distinguish two employees who share one.
-    expect(text).toContain('E-633648');
-    expect(text).toContain('Senior Accountant');
-    // dd/mm/yyyy, and the 14th — not the 13th, which is what `new Date()` on a
-    // bare ISO day yields west of Greenwich.
-    expect(text).toContain('14/07/2025');
+    expect(text).not.toContain('E-633648');
+    expect(text).not.toContain('Senior Accountant');
   });
 
   it('still renders the form when the employee lookup fails', async () => {
@@ -398,7 +394,7 @@ describe('employee EOS tab — the identity rail', () => {
       employeeRejects: true,
     });
 
-    expect(text).toContain('End of service details');
+    expect(text).toContain('End of Service Details');
     expect(text).not.toContain('E-633648');
     expect(errors).toEqual([]);
   });
@@ -412,7 +408,7 @@ describe('employee EOS tab — DEGRADED', () => {
     const { fixture, errors, text } = await render({ rejects: true });
 
     expect(errors).toEqual([]);
-    expect(text).toContain('End of service details');
+    expect(text).toContain('End of Service Details');
     expectNoUnresolvedKeys(fixture, 'degraded');
   });
 });

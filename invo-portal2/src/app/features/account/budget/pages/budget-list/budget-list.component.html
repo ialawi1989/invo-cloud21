@@ -1,0 +1,49 @@
+<app-list-page
+  [pageTitle]="'BUDGET.LIST.TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="loadBudgets"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'budget'"
+  (rowClicked)="onRowClick($event)">
+
+  <div listHeaderActions class="flex items-center gap-3">
+    @if (actions.canAdd) {
+      <button type="button" (click)="add()"
+        class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        {{ 'BUDGET.LIST.ADD_NEW' | translate }}
+      </button>
+    }
+  </div>
+
+  <ng-template listCellTemplate="periodicity" let-row>{{ periodicityLabel(row.periodicity) }}</ng-template>
+  <ng-template listCellTemplate="createdAt" let-row>{{ row.createdAt | date: 'dd/MM/yyyy' }}</ng-template>
+
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+      <button type="button" (click)="report(row)" [title]="'BUDGET.LIST.REPORT' | translate"
+        class="px-3 h-9 inline-flex items-center rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">
+        {{ 'BUDGET.LIST.REPORT_SHORT' | translate }}
+      </button>
+      @if (actions.canEdit) {
+        <button type="button" (click)="edit(row)"
+          class="px-4 h-9 inline-flex items-center rounded-full bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700">
+          {{ 'COMMON.EDIT' | translate }}
+        </button>
+      }
+      @if (actions.canDelete) {
+        <button type="button" (click)="remove(row)" [attr.aria-label]="'COMMON.DELETE' | translate"
+          class="inline-flex items-center justify-center w-9 h-9 rounded-full border border-red-200 bg-white text-red-600 hover:bg-red-50">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      }
+    </div>
+  </ng-template>
+</app-list-page>

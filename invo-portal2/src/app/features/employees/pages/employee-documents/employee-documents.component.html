@@ -38,6 +38,7 @@
     </div>
   }
 
+  <section class="hr-card">
   <div class="doc-header">
     <h2 class="doc-header__title">{{ 'EMPLOYEES.DOCUMENTS.TITLE' | translate }}</h2>
     @if (canEdit() && !editing()) {
@@ -77,7 +78,7 @@
 
         <label class="doc-field">
           <span class="doc-field__label">{{ 'EMPLOYEES.DOCUMENTS.FIELD.ISSUE_DATE' | translate }}</span>
-          <input class="form-control" type="date" formControlName="issueDate" />
+          <app-date-field formControlName="issueDate"/>
         </label>
 
         <label class="doc-field">
@@ -86,7 +87,7 @@
             <!-- The server's own descriptor decides this, not a list held here. -->
             @if (selectedType()?.expiryRequired) { <em>*</em> }
           </span>
-          <input class="form-control" type="date" formControlName="expiryDate" />
+          <app-date-field formControlName="expiryDate"/>
         </label>
 
         <label class="doc-field">
@@ -114,7 +115,10 @@
   @if (loading()) {
     <div class="doc-loading">{{ 'COMMON.LOADING' | translate }}</div>
   } @else if (!documents().length) {
-    <div class="doc-empty">{{ 'EMPLOYEES.DOCUMENTS.EMPTY' | translate }}</div>
+    <app-empty-state icon="document"
+      [title]="'EMPLOYEES.DOCUMENTS.EMPTY_TITLE' | translate"
+      [body]="'EMPLOYEES.DOCUMENTS.EMPTY_BODY' | translate">
+    </app-empty-state>
   } @else {
     <div class="doc-list">
       @for (doc of documents(); track trackDocument($index, doc)) {
@@ -226,4 +230,5 @@
       }
     </div>
   }
+  </section>
 </div>

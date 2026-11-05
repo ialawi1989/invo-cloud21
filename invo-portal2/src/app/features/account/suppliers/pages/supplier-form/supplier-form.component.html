@@ -1,0 +1,17 @@
+<div class="sfp">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+    <h1 class="page-header__title">{{ 'SUPPLIERS.TEXT' | translate }}</h1>
+  </header>
+
+  @if (supplierForm) {
+    <form [formGroup]="supplierForm" (ngSubmit)="save()" (keydown.enter)="$event.preventDefault()">
+      <app-supplier-form-details [supplierData]="supplierData" [supplierForm]="supplierForm" [formStatus]="formStatus"/>
+
+      <app-form-sticky-footer>
+        <button type="button" class="sfp-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+        <button type="submit" class="sfp-btn sfp-btn--primary" [disabled]="!canSave || saving">{{ 'COMMON.SAVE' | translate }}</button>
+      </app-form-sticky-footer>
+    </form>
+  }
+</div>

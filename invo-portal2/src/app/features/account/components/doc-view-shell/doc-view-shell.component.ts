@@ -1,12 +1,14 @@
 import '../../account-i18n';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, input, model, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation, computed, effect, input, model, output, signal, viewChild } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { DocumentPaperComponent } from '@shared/components/document-paper/document-paper.component';
+import { DesignerPaperComponent } from '@shared/components/designer-paper/designer-paper.component';
+import type { ReportTemplate } from '../../../settings/document-builder/report-engine/core/types/template.types';
 import { DocumentRenderData } from '@shared/components/document-paper/token-resolve';
 import type { DocumentTemplate } from '../../../settings/document-builder/services/document-template.types';
-import { DocRailItem } from '../../services/document-view-base';
+import { DocRailBulkAction, DocRailItem } from '../../services/document-view-base';
 import { DocRailFilterComponent, DocRailFilterOption } from '../doc-rail-filter/doc-rail-filter.component';
 
 /**
@@ -22,7 +24,7 @@ import { DocRailFilterComponent, DocRailFilterOption } from '../doc-rail-filter/
 @Component({
   selector: 'app-doc-view-shell',
   standalone: true,
-  imports: [TranslateModule, DropdownMenuBtnComponent, DocumentPaperComponent, DocRailFilterComponent],
+  imports: [TranslateModule, DropdownMenuBtnComponent, DocumentPaperComponent, DesignerPaperComponent, DocRailFilterComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styleUrl: './doc-view-shell.component.scss',
@@ -68,8 +70,20 @@ import { DocRailFilterComponent, DocRailFilterOption } from '../doc-rail-filter/
             }
           </div>
         </div>
+        @if (checked().size) {
+          <div class="dv-rail__bulk">
+            <input type="checkbox" class="dv-rail__check dv-rail__check--bar" [checked]="allChecked()" [indeterminate]="!allChecked()" (change)="toggleAll()" [attr.aria-label]="'DOC_VIEW.SELECT_ALL' | translate"/>
+            <span class="dv-rail__bulk-count">{{ 'DOC_VIEW.SELECTED_COUNT' | translate: { count: checked().size } }}</span>
+            <app-dropdown-menu-btn [items]="bulkMenu()" [appendToBody]="true" [chevron]="true" align="start" triggerClass="dv-rail__bulk-btn">
+              {{ 'DOC_VIEW.BULK_ACTIONS' | translate }}
+            </app-dropdown-menu-btn>
+            <button type="button" class="dv-rail__bulk-clear" [attr.aria-label]="'COMMON.CLEAR' | translate" (click)="clearChecked()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        }
         <div class="dv-rail__list">
-          @if (railLoading() && !railItems().length) {
+          @if (railLoading()) {
             @for (n of skeletonRows; track n) {
               <div class="dv-rail__item dv-skel" aria-hidden="true">
                 <div class="dv-rail__row"><span class="dv-skel__bar" style="width: 55%"></span><span class="dv-skel__bar" style="width: 20%"></span></div>
@@ -78,7 +92,11 @@ import { DocRailFilterComponent, DocRailFilterOption } from '../doc-rail-filter/
             }
           } @else {
             @for (item of railItems(); track item.id) {
-              <button type="button" class="dv-rail__item" [class.is-active]="item.id === selectedId()" (click)="railPick.emit(item)">
+              <div class="dv-rail__entry" [class.is-checked]="isChecked(item.id)">
+              @if (railBulkActions().length) {
+                <input type="checkbox" class="dv-rail__check" [checked]="isChecked(item.id)" (change)="toggleCheck(item)" [attr.aria-label]="'DOC_VIEW.SELECT_ROW' | translate"/>
+              }
+              <button type="button" class="dv-rail__item" [class.has-check]="railBulkActions().length" [class.is-active]="item.id === selectedId()" (click)="railPick.emit(item)">
                 <div class="dv-rail__row">
                   <span class="dv-rail__primary">{{ item.primary }}</span>
                   <span class="dv-rail__amount">{{ item.amountLabel }}</span>
@@ -93,6 +111,7 @@ import { DocRailFilterComponent, DocRailFilterOption } from '../doc-rail-filter/
                   <div class="dv-rail__badge" [class.dv-rail__badge--warn]="item.badgeKind === 'warn'">{{ item.badgeText }}</div>
                 }
               </button>
+              </div>
             } @empty {
               @if (!railLoading()) { <div class="dv-rail__empty">{{ 'DOC_VIEW.NO_RECORDS' | translate }}</div> }
             }
@@ -120,7 +139,7 @@ import { DocRailFilterComponent, DocRailFilterOption } from '../doc-rail-filter/
         </header>
 
         @if (showToolbar()) {
-          <div class="dv-toolbar">
+          <div class="dv-toolbar" [class.is-loading]="loading()">
             @if (showEdit()) {
               <button type="button" class="dv-tool" (click)="edit.emit()">
                 <svg width="14" height="14" viewBox="0 0 510 512" fill="currentColor"><path d="M50.3 512c-13.04 0-25.74-5.08-35.2-14.35C3.47 486.27-1.93 469.88.64 453.82l16.9-105.61c3.01-18.79 11.71-35.82 25.17-49.27l272.83-272.7c35.01-34.99 91.99-34.98 127.01.02l41.14 41.12c16.96 16.96 26.31 39.5 26.32 63.47 0 23.98-9.33 46.52-26.29 63.47L210.3 467.59c-12.98 12.98-29.4 21.57-47.47 24.84L59.23 511.2c-2.97.54-5.96.8-8.93.8zM379.02 39.99c-12.74 0-25.48 4.85-35.18 14.54L71 327.23c-7.46 7.45-12.28 16.9-13.95 27.31l-16.9 105.61c-.73 4.55 1.54 7.55 2.95 8.93 1.41 1.38 4.46 3.58 8.99 2.76l103.6-18.77A49.498 49.498 0 00182 439.3l273.4-273.27c9.4-9.39 14.57-21.89 14.57-35.18s-5.19-25.79-14.59-35.19l-41.14-41.12c-9.71-9.71-22.47-14.56-35.22-14.56z"/><path transform="rotate(-45.01 331.896 178.02)" d="M311.84 79.14h40.01v197.75h-40.01z"/></svg>
@@ -154,12 +173,39 @@ import { DocRailFilterComponent, DocRailFilterOption } from '../doc-rail-filter/
           </div>
         }
 
-        <div class="dv-body">
+        <div class="dv-body" #body [class.is-loading]="loading()" (scroll)="updatePage()">
+          @if (loading()) {
+            <div class="dv-skel-page" aria-hidden="true">
+              <span class="dv-skel__bar" style="width:100%;height:56px;border-radius:10px"></span>
+              <div class="dv-skel-paper">
+                <div class="dv-skel-paper__top"><span class="dv-skel__bar" style="width:90px;height:90px;border-radius:8px"></span><span class="dv-skel__bar" style="width:150px;height:30px"></span></div>
+                <span class="dv-skel__bar" style="width:100%;height:2px"></span>
+                @for (w of skelLines; track $index) { <span class="dv-skel__bar" [style.width.%]="w"></span> }
+                <span class="dv-skel__bar" style="width:100%;height:30px;margin-top:10px;border-radius:4px"></span>
+                @for (n of [1, 2, 3]; track n) { <span class="dv-skel__bar" style="width:100%;height:26px"></span> }
+              </div>
+            </div>
+          }
           <ng-content select="[banner]"/>
           <ng-content select="[beforePaper]"/>
 
           @if (showPaper()) {
-            <div class="dv-paper">
+            <div class="dv-viewer">
+            @if (viewerTools() && template() && data()) {
+              <!-- Select / pan tools, pinned to the viewer's top corner while scrolling. -->
+              <div class="dv-viewer__anchor dv-viewer__anchor--top">
+                <div class="dv-vbar dv-vbar--tools">
+                  <button type="button" class="dv-vbar__btn" [class.is-on]="tool() === 'select'" [attr.aria-pressed]="tool() === 'select'" [title]="'DOC_VIEW.SELECT_TOOL' | translate" (click)="tool.set('select')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 8-6.2 1.8L10.5 19z"/></svg>
+                  </button>
+                  <button type="button" class="dv-vbar__btn" [class.is-on]="tool() === 'hand'" [attr.aria-pressed]="tool() === 'hand'" [title]="'DOC_VIEW.HAND_TOOL' | translate" (click)="tool.set('hand')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-5.9-2.4L3.4 16a2 2 0 0 1 3-2.6L8 15"/></svg>
+                  </button>
+                </div>
+              </div>
+            }
+            <div class="dv-paper" #paper [class.dv-paper--hand]="viewerTools() && tool() === 'hand'" [class.is-panning]="panning"
+                 (pointerdown)="panStart($event)" (pointermove)="panMove($event)" (pointerup)="panEnd($event)" (pointercancel)="panEnd($event)">
               @if (template() && data(); as d) {
                 <div class="dv-paper__frame">
                   @if (ribbonText()) {
@@ -168,12 +214,39 @@ import { DocRailFilterComponent, DocRailFilterOption } from '../doc-rail-filter/
                     </div>
                   }
                   <div class="dv-paper__scale" [style.zoom]="zoom() / 100">
-                    <app-document-paper [template]="template()!" [data]="d"/>
+                    @if (reportDesign() && reportData()) {
+                      <app-designer-paper [template]="reportDesign()!" [data]="reportData()!"/>
+                    } @else {
+                      <app-document-paper [template]="template()!" [data]="d"/>
+                    }
                   </div>
                 </div>
               } @else if (!loading()) {
                 <div class="dv-empty">{{ 'DOC_VIEW.NO_TEMPLATE' | translate }}</div>
               }
+            </div>
+            @if (viewerTools() && template() && data()) {
+              <!-- Page navigation + zoom, floating at the bottom of the visible viewer. -->
+              <div class="dv-viewer__anchor dv-viewer__anchor--bottom">
+                <div class="dv-vbar dv-vbar--nav">
+                  <button type="button" class="dv-vbar__btn" [disabled]="page() <= 1" [attr.aria-label]="'DOC_VIEW.PREV_PAGE' | translate" (click)="goToPage(page() - 1)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  </button>
+                  <span class="dv-vbar__pages" dir="ltr"><span>{{ page() }}</span><span class="dv-vbar__sep">/</span><span>{{ pageCount() }}</span></span>
+                  <button type="button" class="dv-vbar__btn" [disabled]="page() >= pageCount()" [attr.aria-label]="'DOC_VIEW.NEXT_PAGE' | translate" (click)="goToPage(page() + 1)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                  <span class="dv-vbar__div"></span>
+                  <button type="button" class="dv-vbar__btn" [disabled]="zoom() <= zoomSteps[0]" [attr.aria-label]="'DOC_VIEW.ZOOM_OUT' | translate" (click)="stepZoom(-1)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                  </button>
+                  <span class="dv-vbar__zoom" dir="ltr">{{ zoom() }}%</span>
+                  <button type="button" class="dv-vbar__btn" [disabled]="zoom() >= zoomSteps[zoomSteps.length - 1]" [attr.aria-label]="'DOC_VIEW.ZOOM_IN' | translate" (click)="stepZoom(1)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="11" y1="8" x2="11" y2="14"/></svg>
+                  </button>
+                </div>
+              </div>
+            }
             </div>
           } @else {
             <ng-content select="[alt]"/>
@@ -188,10 +261,38 @@ import { DocRailFilterComponent, DocRailFilterOption } from '../doc-rail-filter/
 export class DocViewShellComponent {
   /** Placeholder rows shown while the rail's first page is loading. */
   readonly skeletonRows = Array.from({ length: 7 }, (_, i) => i);
+  /** Widths (%) of the placeholder text lines in the page skeleton shown while a document loads. */
+  readonly skelLines = [40, 55, 35, 60, 45];
 
   docTitle = input<string>('');
   railTitle = input<string>('DOC_VIEW.ALL_RECORDS');
   railItems = input<DocRailItem[]>([]);
+  /** A report-engine (free designer) design to draw instead of the classic paper, with the record it binds against. */
+  reportDesign = input<ReportTemplate | null>(null);
+  reportData = input<Record<string, unknown> | null>(null);
+  /** Adds a checkbox to every rail row; ticked rows get a bar with these actions (they keep their ticks across pages). */
+  railBulkActions = input<DocRailBulkAction[]>([]);
+  /** Ticked rail rows by id (kept as items so an action still has them after the user pages away). */
+  readonly checked = signal<ReadonlyMap<string, DocRailItem>>(new Map());
+  readonly allChecked = computed(() => this.railItems().length > 0 && this.railItems().every((i) => this.checked().has(i.id)));
+  readonly bulkMenu = computed<DropdownMenuBtnItem[]>(() => this.railBulkActions().map((a) => ({
+    label: a.label, danger: !!a.danger, separator: !!a.separator, disabled: false, click: () => void this.runBulk(a),
+  })));
+  isChecked = (id: string) => this.checked().has(id);
+  toggleCheck(item: DocRailItem): void {
+    this.checked.update((m) => { const n = new Map(m); if (!n.delete(item.id)) n.set(item.id, item); return n; });
+  }
+  /** Ticks every row of the current page, or unticks them when they all are already. */
+  toggleAll(): void {
+    const all = this.allChecked();
+    this.checked.update((m) => { const n = new Map(m); for (const i of this.railItems()) { if (all) n.delete(i.id); else n.set(i.id, i); } return n; });
+  }
+  clearChecked(): void { this.checked.set(new Map()); }
+  private async runBulk(action: DocRailBulkAction): Promise<void> {
+    const items = [...this.checked().values()];
+    if (!items.length) return;
+    try { await action.run(items); } finally { this.clearChecked(); }
+  }
   railLoading = input<boolean>(false);
   railTerm = input<string>('');
   railPage = input<number>(1);
@@ -222,6 +323,109 @@ export class DocViewShellComponent {
   /** Diagonal corner ribbon (e.g. "Overdue"); omit for none. */
   ribbonText = input<string>('');
   ribbonKind = input<'warn' | 'danger'>('warn');
+
+  /** Shows the floating page / zoom bar and the select / pan tools over the paper (PDF-viewer style). */
+  viewerTools = input<boolean>(false);
+
+  /** Zoom levels the +/- buttons step through (percent). */
+  readonly zoomSteps = [25, 50, 75, 90, 100, 110, 125, 150, 175, 200, 250, 300];
+  tool = signal<'select' | 'hand'>('select');
+  page = signal(1);
+  pageCount = signal(1);
+  panning = false;
+
+  private body = viewChild<ElementRef<HTMLElement>>('body');
+  private paper = viewChild<ElementRef<HTMLElement>>('paper');
+  private pan: { x: number; y: number; left: number; top: number } | null = null;
+
+  /** Fit the page to the viewer's width the first time it renders (legacy `calculateResponsiveZoom`); off once the user has a saved zoom. */
+  autoFit = input<boolean>(false);
+  autoFitZoom = output<number>();
+  private fitted = false;
+
+  /** Legacy rule: width-to-page ratio, capped by screen size (phones 80 … large screens 150), never below 50. */
+  private fitZoom(): number | null {
+    const paper = this.paper()?.nativeElement, page = this.pages()[0];
+    if (!paper || !page) return null;
+    const natural = page.getBoundingClientRect().width / (this.zoom() / 100);
+    if (!natural) return null;
+    const avail = paper.clientWidth - 32; // `.dv-paper` side padding
+    const w = window.innerWidth;
+    const cap = w <= 480 ? 80 : w <= 768 ? 90 : w <= 1024 ? 100 : w <= 1440 ? 120 : 150;
+    return Math.round(Math.max(50, Math.min(avail / natural * 100, cap)));
+  }
+
+  constructor() {
+    effect(() => {
+      if (!this.autoFit() || !this.template() || !this.data()) return;
+      if (this.fitted) return;
+      // The paper renders a frame after its inputs arrive — retry briefly until it can be measured.
+      const attempt = (left: number) => requestAnimationFrame(() => {
+        const z = this.fitZoom();
+        if (z == null) { if (left > 0) attempt(left - 1); return; }
+        this.fitted = true;
+        this.autoFitZoom.emit(z);
+      });
+      attempt(10);
+    });
+    // Re-count the paper boxes (`.dp` — main page + separate Terms / extra pages) whenever what's
+    // drawn can change shape; wait a frame so the child has rendered first.
+    effect(() => {
+      this.template(); this.data(); this.zoom(); this.showPaper();
+      requestAnimationFrame(() => this.updatePage());
+    });
+  }
+
+  private pages(): HTMLElement[] {
+    return Array.from(this.paper()?.nativeElement.querySelectorAll<HTMLElement>('.dp, .dsp .page') ?? []);
+  }
+
+  /** Recomputes the page count and the page currently under the top of the scroll area. */
+  updatePage(): void {
+    const pages = this.pages();
+    this.pageCount.set(Math.max(1, pages.length));
+    const body = this.body()?.nativeElement;
+    if (!body || !pages.length) { this.page.set(1); return; }
+    // The current page is the last one whose top has scrolled to within a third of the viewport.
+    const line = body.getBoundingClientRect().top + body.clientHeight / 3;
+    let cur = 0;
+    pages.forEach((p, i) => { if (p.getBoundingClientRect().top <= line) cur = i; });
+    this.page.set(cur + 1);
+  }
+
+  goToPage(n: number): void {
+    const pages = this.pages();
+    const target = pages[Math.min(Math.max(n, 1), pages.length) - 1];
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  stepZoom(dir: 1 | -1): void {
+    const z = this.zoom();
+    const next = dir > 0 ? this.zoomSteps.find(s => s > z) : [...this.zoomSteps].reverse().find(s => s < z);
+    if (next != null) this.zoom.set(next);
+  }
+
+  // ── hand tool: drag the page to pan it (both axes) ─────────────────────
+  panStart(e: PointerEvent): void {
+    if (!this.viewerTools() || this.tool() !== 'hand' || e.button !== 0) return;
+    const paper = this.paper()?.nativeElement, body = this.body()?.nativeElement;
+    if (!paper || !body) return;
+    this.pan = { x: e.clientX, y: e.clientY, left: paper.scrollLeft, top: body.scrollTop };
+    this.panning = true;
+    paper.setPointerCapture(e.pointerId);
+  }
+  panMove(e: PointerEvent): void {
+    const paper = this.paper()?.nativeElement, body = this.body()?.nativeElement;
+    if (!this.pan || !paper || !body) return;
+    paper.scrollLeft = this.pan.left - (e.clientX - this.pan.x);
+    body.scrollTop = this.pan.top - (e.clientY - this.pan.y);
+  }
+  panEnd(e: PointerEvent): void {
+    if (!this.pan) return;
+    this.pan = null;
+    this.panning = false;
+    this.paper()?.nativeElement.releasePointerCapture?.(e.pointerId);
+  }
 
   railSearch = output<string>();
   railPick = output<DocRailItem>();

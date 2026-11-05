@@ -17,7 +17,7 @@ import { EmployeeFieldManifestService } from '../../services/employee-field-mani
 import { EMPLOYEE_FIELD_MANIFEST } from '../../models/employee-field-manifest';
 import { EMPLOYEE_HR_FIELDS } from '../../employee-feature-flags';
 import { EmployeeFormComponent } from './employee-form.component';
-import { EMPLOYEE_FORM_TOUR, EMPLOYEE_TOUR_ANCHORS, EMPLOYEE_TOUR_KEY } from './employee-form.tour';
+import { visibleTourSteps, EMPLOYEE_FORM_TOUR, EMPLOYEE_TOUR_ANCHORS, EMPLOYEE_TOUR_KEY } from './employee-form.tour';
 
 /**
  * The tour points at `data-tour` anchors in the template. Nothing in the type
@@ -143,6 +143,10 @@ describe('employee-form tour anchors — HR flag OFF (what production sees)', ()
       // Bank details need `employeePayrollSecurity.editBank`, which this
       // fixture's privilege stub does not grant.
       EMPLOYEE_TOUR_ANCHORS.payment,
+      // The header card and the record tabs belong to the employee record page,
+      // which hosts the form; the form alone does not render them.
+      EMPLOYEE_TOUR_ANCHORS.header,
+      EMPLOYEE_TOUR_ANCHORS.recordTabs,
     ]);
     const missing = EMPLOYEE_FORM_TOUR
       .map((s) => s.anchor)
@@ -151,8 +155,12 @@ describe('employee-form tour anchors — HR flag OFF (what production sees)', ()
     expect(missing).toEqual([]);
   });
 
-  it('exposes the tour trigger in the page header', () => {
-    expect(ctx.fixture.nativeElement.querySelector('.tour-btn')).toBeTruthy();
+  it('exposes the tour trigger in the page header when creating', async () => {
+    // On an existing record the trigger lives in the record header (shell), so
+    // the form's own header only carries it when it is the whole page.
+    const created = setup({ id: '0', hrFields: false });
+    await load(created.fixture);
+    expect(created.fixture.nativeElement.querySelector('.tour-btn')).toBeTruthy();
   });
 });
 
@@ -191,6 +199,9 @@ describe('employee-form tour anchors — HR flag ON', () => {
     // legitimately absent here.
     const conditional = new Set<string>([
       EMPLOYEE_TOUR_ANCHORS.payment,
+      // Rendered by the employee record page that hosts the form.
+      EMPLOYEE_TOUR_ANCHORS.header,
+      EMPLOYEE_TOUR_ANCHORS.recordTabs,
     ]);
     const missing = EMPLOYEE_FORM_TOUR
       .map((s) => s.anchor)
@@ -274,6 +285,10 @@ describe('employee-form tour catalog', () => {
   it('walks the form in the order the cards appear', () => {
     const order = EMPLOYEE_FORM_TOUR.map((s) => s.anchor).filter(Boolean);
     expect(order).toEqual([
+      // The record header and its tabs come first, then the section row.
+      EMPLOYEE_TOUR_ANCHORS.header,
+      EMPLOYEE_TOUR_ANCHORS.recordTabs,
+      EMPLOYEE_TOUR_ANCHORS.sections,
       EMPLOYEE_TOUR_ANCHORS.systemAccess,
       EMPLOYEE_TOUR_ANCHORS.basic,
       EMPLOYEE_TOUR_ANCHORS.email,
@@ -394,5 +409,18 @@ describe('guided tour placement in RTL', () => {
       expect(toPhysicalSide(side as any, false)).toBeDefined();
       expect(toPhysicalSide(side as any, true)).toBeDefined();
     }
+  });
+});
+
+describe('visibleTourSteps', () => {
+  afterEach(() => { document.body.innerHTML = ''; });
+
+  it('drops a step whose anchor sits in a hidden section and keeps the visible ones', () => {
+    document.body.innerHTML =
+      '<div data-tour="emp-basic"></div>' +
+      '<div class="tab-hidden"><div data-tour="emp-roles"></div></div>';
+    const anchors = visibleTourSteps().map((st) => st.anchor).filter(Boolean);
+    expect(anchors).toContain('emp-basic');
+    expect(anchors).not.toContain('emp-roles');
   });
 });

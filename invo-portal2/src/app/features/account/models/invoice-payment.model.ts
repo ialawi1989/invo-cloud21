@@ -33,6 +33,8 @@ export class InvoicePayment {
   invoicesNumber: any = null;
   rate = 1;
   attachment: any[] = [];
+  /** Tip collected on POS (set by the POS; shown on the form, never edited here). */
+  tipsAmount = 0;
   bankCharge = 0;
   bankChargePercentage = 0;
   reconciled = false;

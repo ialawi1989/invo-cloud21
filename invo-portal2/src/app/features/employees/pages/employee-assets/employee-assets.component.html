@@ -16,6 +16,7 @@
     </div>
   }
 
+  <section class="hr-card">
   <div class="asset-header">
     <h2 class="asset-header__title">{{ 'EMPLOYEES.ASSETS.TITLE' | translate }}</h2>
     @if (canEdit() && !editing()) {
@@ -86,7 +87,7 @@
 
         <label class="asset-field">
           <span class="asset-field__label">{{ 'EMPLOYEES.ASSETS.FIELD.ASSIGNED_DATE' | translate }} <em>*</em></span>
-          <input class="form-control" type="date" formControlName="assignedDate" />
+          <app-date-field formControlName="assignedDate"/>
         </label>
 
         <label class="asset-field">
@@ -103,7 +104,7 @@
 
         <label class="asset-field">
           <span class="asset-field__label">{{ 'EMPLOYEES.ASSETS.FIELD.EXPECTED_RETURN' | translate }}</span>
-          <input class="form-control" type="date" formControlName="expectedReturnDate" />
+          <app-date-field formControlName="expectedReturnDate"/>
         </label>
 
         <label class="asset-field">
@@ -136,7 +137,7 @@
               {{ 'EMPLOYEES.ASSETS.FIELD.RETURN_DATE' | translate }}
               @if (returnMode() === 'required') { <em>*</em> }
             </span>
-            <input class="form-control" type="date" formControlName="returnDate" />
+            <app-date-field formControlName="returnDate"/>
           </label>
 
           <label class="asset-field">
@@ -175,7 +176,10 @@
   @if (loading()) {
     <div class="asset-loading">{{ 'COMMON.LOADING' | translate }}</div>
   } @else if (!assignments().length) {
-    <div class="asset-empty">{{ 'EMPLOYEES.ASSETS.EMPTY' | translate }}</div>
+    <app-empty-state icon="box"
+      [title]="'EMPLOYEES.ASSETS.EMPTY_TITLE' | translate"
+      [body]="'EMPLOYEES.ASSETS.EMPTY_BODY' | translate">
+    </app-empty-state>
   } @else {
     <div class="asset-list">
       @for (a of assignments(); track trackAssignment($index, a)) {
@@ -292,4 +296,5 @@
       }
     </div>
   }
+  </section>
 </div>

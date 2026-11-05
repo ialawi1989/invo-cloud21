@@ -1,0 +1,82 @@
+<app-doc-view-shell
+  [docTitle]="period()" railTitle="VAT_PAYMENT.LIST.VAT_PAYMENTS" [showAdd]="actions.canAdd"
+  [railFilterOptions]="railFilterOptions()" [railFilterValue]="railStatus()" railFilterStorageKey="vatPaymentStatus" (railFilterPick)="onRailFilterPick($event)"
+  [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="id"
+  [showToolbar]="false" [showPaper]="false" [loading]="loading()"
+  (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railPrev)="railPrev()" (railNext)="railNext()"
+  (add)="add()" (close)="goToList()">
+
+  <div titleExtra class="vv-acts">
+    @if (doc(); as v) {
+      @if (canEdit(v)) {
+        <button type="button" class="vv-btn" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
+      }
+      @if (actionItems(v); as items) {
+        @if (items.length) {
+          <app-dropdown-menu-btn [items]="items" [appendToBody]="true" align="end" triggerClass="vv-btn">{{ 'DOC_VIEW.ACTIONS' | translate }}</app-dropdown-menu-btn>
+        }
+      }
+      @if (canPay(v)) {
+        <button type="button" class="vv-btn vv-btn--primary" (click)="openPay(v)">{{ 'VAT_PAYMENT.FORM.PAY' | translate }}</button>
+      }
+    }
+  </div>
+
+  <div alt class="vv">
+    @if (doc(); as v) {
+      <section class="vv-card">
+        <h4>{{ 'VAT_PAYMENT.VIEW.DETAILS' | translate }}
+          <span class="vv-status" [ngClass]="statusClass(v.status)">{{ statusLabel(v.status) }}</span>
+        </h4>
+        <dl class="vv-grid">
+          <div><dt>{{ 'VAT_PAYMENT.FORM.START_DATE' | translate }}</dt><dd>{{ v.from | date: 'dd/MM/yyyy' }}</dd></div>
+          <div><dt>{{ 'VAT_PAYMENT.FORM.END_DATE' | translate }}</dt><dd>{{ v.to | date: 'dd/MM/yyyy' }}</dd></div>
+          <div><dt>{{ 'VAT_PAYMENT.LIST.BRANCH' | translate }}</dt><dd>{{ v.branchName }}</dd></div>
+          <div><dt>{{ 'VAT_PAYMENT.LIST.TAX_PAYABLE' | translate }}</dt><dd>{{ v.outputVat | mycurrency }}</dd></div>
+          <div><dt>{{ 'VAT_PAYMENT.LIST.TAX_RECLAIMABLE' | translate }}</dt><dd>{{ v.inputVat | mycurrency }}</dd></div>
+          <div><dt>{{ 'VAT_PAYMENT.FORM.NET_VAT' | translate }}</dt><dd>{{ v.netVat | mycurrency }}</dd></div>
+          <div><dt>{{ 'VAT_PAYMENT.FORM.PAID' | translate }}</dt><dd>{{ v.totalPaidAmount | mycurrency }}</dd></div>
+          <div><dt>{{ 'VAT_PAYMENT.LIST.AMOUNT_DUE' | translate }}</dt><dd><b>{{ v.amountDue | mycurrency }}</b></dd></div>
+        </dl>
+      </section>
+
+      <section class="vv-card">
+        <h4>{{ 'VAT_PAYMENT.VIEW.PAYMENT_HISTORY' | translate }}</h4>
+        <div class="vv-wrap">
+          <table class="vv-table">
+            <thead>
+              <tr>
+                <th>{{ 'VAT_PAYMENT.PAY.PAYMENT_DATE' | translate }}</th>
+                <th>{{ 'VAT_PAYMENT.LIST.EMPLOYEE' | translate }}</th>
+                <th class="end">{{ 'VAT_PAYMENT.PAY.AMOUNT' | translate }}</th>
+                <th>{{ 'VAT_PAYMENT.PAY.PAYMENT_METHOD' | translate }}</th>
+                <th class="end"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of payments(); track p.id) {
+                <tr>
+                  <td>{{ p.paymentDate | date: 'dd/MM/yyyy' }}</td>
+                  <td>{{ p.employeeName }}</td>
+                  <td class="end">{{ p.amount | mycurrency }}</td>
+                  <td>{{ p.paymentMethodName }}</td>
+                  <td class="end">
+                    @if (canEditPayment(p)) {
+                      <button type="button" class="vv-link" (click)="openPay(v, p.id)">{{ 'COMMON.EDIT' | translate }}</button>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="vv-empty">{{ 'VAT_PAYMENT.VIEW.NO_PAYMENTS' | translate }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="vv-card">
+        <app-doc-additional-details [config]="details"/>
+      </section>
+    }
+  </div>
+</app-doc-view-shell>

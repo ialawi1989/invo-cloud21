@@ -17,17 +17,22 @@ import { DocumentLineEditor } from '../../services/document-line-editor';
   imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, SearchDropdownComponent, DiscountFieldComponent],
   template: `
     @let inv = doc();
-    <div class="it">
+    <div class="it" [class.it--simple]="simple()">
+      @if (!simple()) {
       <div class="it__notes">
         <label>{{ 'DOC_FORM.CUSTOMER_NOTES' | translate }}</label>
         <textarea rows="3" [ngModel]="inv.note" (ngModelChange)="onNote($event)" [placeholder]="'DOC_FORM.NOTES_PLACEHOLDER' | translate"></textarea>
         <small>{{ notesHintKey() | translate }}</small>
       </div>
+      }
 
       <div class="it__totals">
         <div class="it__row"><b>{{ 'DOC_FORM.SUB_TOTAL' | translate }}</b><b>{{ inv.itemTotalWithoutTax | mycurrency }}</b></div>
 
-        @if (inv.discountType !== 'itemDiscount') {
+        @if (simple()) {
+        } @else if (readonlyTotals()) {
+          @if (inv.discountTotal) { <div class="it__row"><span>{{ 'DOC_FORM.DISCOUNT' | translate }}</span><span>({{ inv.discountTotal | mycurrency }})</span></div> }
+        } @else if (inv.discountType !== 'itemDiscount') {
           <div class="it__row it__row--field">
             <span>{{ 'DOC_FORM.DISCOUNT' | translate }}</span>
             <app-discount-field [amount]="inv.discountAmount" [percentage]="inv.discountPercentage" (changed)="onDiscount($event)"/>
@@ -37,7 +42,10 @@ import { DocumentLineEditor } from '../../services/document-line-editor';
 
         <div class="it__row"><span>{{ 'DOC_FORM.TAX_TOTAL' | translate }}</span><span>{{ inv.invoiceTaxTotal | mycurrency }}</span></div>
 
-        @if (surcharges().length) {
+        @if (simple()) {
+        } @else if (readonlyTotals()) {
+          @if (inv.chargeTotal) { <div class="it__row"><span>{{ 'DOC_FORM.CHARGE' | translate }}</span><span>{{ inv.chargeTotal | mycurrency }}</span></div> }
+        } @else if (surcharges().length) {
           <div class="it__row it__row--field">
             <span>{{ 'DOC_FORM.CHARGE' | translate }}</span>
             <app-search-dropdown [items]="surcharges()" [displayWith]="chargeLabel" [compareWith]="byId"
@@ -47,11 +55,16 @@ import { DocumentLineEditor } from '../../services/document-line-editor';
           </div>
         }
 
-        <div class="it__row it__row--field">
-          <span>{{ 'DOC_FORM.DELIVERY_CHARGE' | translate }}</span>
-          <input class="it__num" type="number" inputmode="decimal" min="0" [ngModel]="inv.deliveryCharge" (ngModelChange)="onDelivery($event)"/>
-          <span></span>
-        </div>
+        @if (simple()) {
+        } @else if (readonlyTotals()) {
+          @if (inv.deliveryCharge) { <div class="it__row"><span>{{ 'DOC_FORM.DELIVERY_CHARGE' | translate }}</span><span>{{ inv.deliveryCharge | mycurrency }}</span></div> }
+        } @else {
+          <div class="it__row it__row--field">
+            <span>{{ 'DOC_FORM.DELIVERY_CHARGE' | translate }}</span>
+            <input class="it__num" type="number" inputmode="decimal" min="0" [ngModel]="inv.deliveryCharge" (ngModelChange)="onDelivery($event)"/>
+            <span></span>
+          </div>
+        }
 
         @if (inv.roundingTotal) {
           <div class="it__row"><span>{{ 'DOC_FORM.ROUNDING' | translate }}</span><span>{{ inv.roundingTotal | mycurrency }}</span></div>
@@ -63,7 +76,7 @@ import { DocumentLineEditor } from '../../services/document-line-editor';
   `,
   styles: [`
     .it { display: grid; gap: 24px; grid-template-columns: 1fr; margin-top: 8px; }
-    @media (min-width: 900px) { .it { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 900px) { .it { grid-template-columns: 1fr 1fr; } .it--simple { grid-template-columns: 1fr minmax(320px, 420px); } .it--simple .it__totals { grid-column: 2; } }
     .it__notes { display: flex; flex-direction: column; gap: 6px; }
     .it__notes label { font-size: 13.5px; color: #0f172a; }
     .it__notes textarea { background: #fff; border: 1px solid #d0d5dd; border-radius: 6px; padding: 9px 12px; font: inherit; resize: vertical; }
@@ -86,6 +99,10 @@ export class DocTotalsComponent {
   notesHintKey = input<string>('DOC_FORM.NOTES_HINT');
   editor = input.required<DocumentLineEditor>();
   surcharges = input<any[]>([]);
+  /** Discount / charge / delivery are shown, not edited (credit notes take them from the invoice). */
+  readonlyTotals = input<boolean>(false);
+  /** Purchase orders: no notes box, discount, charge or delivery - just sub total, tax, rounding and total. */
+  simple = input<boolean>(false);
   changed = output<void>();
 
   byId = (a: any, b: any) => a?.id === b?.id;

@@ -1,16 +1,89 @@
-import { BindingContext, FilterMap } from '../types';
+import { BindingContext, Filter, FilterMap } from '../types';
+import { resolveLocalizedName } from '@shared/utils/localized-name';
 
 /**
  * Default filters. All filters are pure and never throw on bad input —
  * they coerce or return empty string. This matters in production where
  * a single bad row should not break a whole invoice render.
  */
+/**
+ * Decimal places for money when the expression doesn't name one.
+ *
+ * Reads the company's `afterDecimal` setting, which the host injects as
+ * `companyDecimals` (see toReportData). A flat default of 2 was wrong for
+ * every 3-decimal currency the product sells into — BHD, KWD, OMR — and
+ * templates written before this can't be expected to carry the digit count
+ * in every `currency:` pipe.
+ */
+function defaultMoneyDigits(ctx: BindingContext): number {
+  const configured = Number(ctx.data?.['companyDecimals']);
+  return Number.isFinite(configured) && configured >= 0 && configured <= 10 ? configured : 2;
+}
+
+/** Group the integer part in threes, leaving the decimals alone. */
+function groupThousands(fixed: string): string {
+  const [whole, fraction] = fixed.split('.');
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return fraction ? `${grouped}.${fraction}` : grouped;
+}
+
+/**
+ * The tenant's own money format — the engine's counterpart to the app-wide
+ * `mycurrency` pipe, and what templates use by default. Registered below as
+ * `Currency`, the name users read and write in expressions.
+ *
+ * Lowercase `currency` runs through Intl and needs a real ISO code; this one
+ * takes the company's configured symbol and decimal count verbatim, so a
+ * printed document matches every other screen in the product. Both values ride
+ * in on the data context (see toReportData), keeping the engine free of Angular
+ * DI so the HTML and PDF renderers work the same way.
+ *
+ * Optional args override, in the pipe's own order: `Currency:BD:2`.
+ */
+const tenantCurrency: Filter = (value, args, ctx) => {
+  const parsed = Number(value);
+  const amount = Number.isFinite(parsed) ? parsed : 0;
+  const digits = args[1] !== undefined ? Number(args[1]) : defaultMoneyDigits(ctx);
+  const symbol = args[0] ?? String(ctx.data?.['companyCurrency'] ?? '');
+  const text = groupThousands(amount.toFixed(digits));
+  return symbol ? `${symbol} ${text}` : text;
+};
+
+/**
+ * The tenant's own plain-number format — counterpart to the app-wide
+ * `mynumber` pipe, registered below as `Number`. Rounds to the company's
+ * decimal count, except that a value carrying MORE precision than that keeps
+ * it (the pipe's rule: a stored 1.2345 shouldn't silently become 1.235 on a
+ * printed document).
+ *
+ * An explicit `Number:2` means exactly two, no carry-over.
+ */
+const tenantNumber: Filter = (value, args, ctx) => {
+  const parsed = Number(value);
+  const amount = Number.isFinite(parsed) ? parsed : 0;
+  if (args[0] !== undefined) return groupThousands(amount.toFixed(Number(args[0])));
+
+  const digits = defaultMoneyDigits(ctx);
+  const carried = (String(amount).split('.')[1] ?? '').length;
+  const text = carried > digits && carried <= 10 ? String(amount) : amount.toFixed(digits);
+  return groupThousands(text);
+};
+
 export const builtInFilters: FilterMap = {
+  // Filter names are matched case-sensitively, so the capitalised tenant
+  // formats sit alongside the lowercase Intl ones without colliding. These are
+  // expression syntax a user types, not code identifiers — hence the casing.
+  Currency: tenantCurrency,
+  Number: tenantNumber,
+  // Kept so expressions written before the rename keep working.
+  mycurrency: tenantCurrency,
+  mynumber: tenantNumber,
+
   currency: (value, args, ctx) => {
     const num = Number(value);
     if (!Number.isFinite(num)) return '';
     const code = args[0] ?? 'USD';
-    const minDigits = args[1] !== undefined ? Number(args[1]) : 2;
+    const minDigits = args[1] !== undefined ? Number(args[1]) : defaultMoneyDigits(ctx);
     try {
       return new Intl.NumberFormat(ctx.locale, {
         style: 'currency',
@@ -163,5 +236,22 @@ export const builtInFilters: FilterMap = {
     if (!ctx.locale.startsWith('ar')) return s;
     const map = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
     return s.replace(/[0-9]/g, (d) => map[Number(d)]);
+  },
+
+  /**
+   * The engine's counterpart to the app-wide `localizedName` pipe, sharing its
+   * resolver so a printed design and the classic paper can never disagree:
+   * the UI language's translation, then English, then the original name.
+   *   `(row.selectedItem | localizedName) || row.productName`
+   * The language rides in on the data as `language` (see toReportData);
+   * without it the template locale is used. Optional args match the pipe's
+   * `field` / `fallbackField`.
+   */
+  localizedName: (v, args, ctx) => {
+    if (!v || typeof v !== 'object') return '';
+    const lang = String(ctx.data?.['language'] || ctx.locale || '').split('-')[0].toLowerCase();
+    const field = args[0] || 'name';
+    const row = v as Record<string, unknown>;
+    return resolveLocalizedName(row, lang, field) || String(row[args[1] || field] ?? '');
   },
 };

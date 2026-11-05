@@ -1,0 +1,94 @@
+{
+  "PURCHASE_ORDERS": {
+    "DASHBOARD": "Dashboard",
+    "ADD_NEW": "Add New Purchase Order",
+    "SEARCH_PLACEHOLDER": "Search by number, supplier, branch or reference",
+    "EMPTY": "No purchase orders found",
+    "CREATED_DATE": "Created date",
+    "LIST": {
+      "PURCHASE_ORDER_LIST": "Purchase Orders",
+      "ALL_PURCHASE_ORDERS": "All Purchase Orders",
+      "STATUS_NOT_CONVERTED": "Not Converted",
+      "STATUS_PARTIALLY_CONVERTED": "Partially Converted",
+      "STATUS_FULLY_CONVERTED": "Fully Converted",
+      "PURCHASE_NUMBER": "Purchase Order #",
+      "SUPPLIER_NAME": "Supplier",
+      "EMPLOYEE_NAME": "Employee",
+      "TOTAL": "Total",
+      "STATUS": "Status",
+      "BILL_NUMBER": "Bill #",
+      "BRANCH_NAME": "Branch",
+      "ISSUE_DATE": "Issue date",
+      "EXPIRY_DATE": "Expiry date",
+      "REF": "Ref #"
+    },
+    "FILTERS": {
+      "BRANCH": "Branch",
+      "DATE": "Date"
+    },
+    "ACTIONS": {
+      "CONVERT_TO_BILL": "Convert to Bill",
+      "AUTO_PURCHASE_ORDER": "Auto Purchase Order",
+      "EXPORT_EXCEL": "Export to Excel"
+    },
+    "CONVERT": {
+      "TITLE": "Convert to Bill",
+      "TEXT": "This purchase order is partly converted. Which quantities should the bill take?",
+      "FULL_QUANTITY": "Full quantity",
+      "REMAINING_QUANTITY": "Remaining quantity only",
+      "CONFIRM": "Confirm",
+      "ALREADY_FULL_TITLE": "Already fully converted",
+      "ALREADY_FULL_TEXT": "A bill was already made for the full quantities of this purchase order. Convert it again?"
+    },
+    "FORM": {
+      "PURCHASE_ORDER": "Purchase Order",
+      "NEW_PURCHASE_ORDER": "New Purchase Order",
+      "EDIT_PURCHASE_ORDER": "Edit Purchase Order",
+      "PURCHASE_ORDER_DETAILS": "Purchase Order Details",
+      "PURCHASE_NUMBER": "Purchase Order Number",
+      "REFERENCE": "Reference Number",
+      "ISSUE_DATE": "Issue Date",
+      "EXPIRY_DATE": "Expiry Date",
+      "NUMBER_HELP": "Click here to enable or disable auto-generation of Purchase Order numbers.",
+      "SIC": "Supplier Item Code",
+      "UNIT_COST": "Unit Cost",
+      "SUPPLIER_COST": "Supplier cost",
+      "PRODUCT_COST": "Product cost",
+      "ALREADY_ADDED": "This product is already on the purchase order"
+    },
+    "REQUIRED": {
+      "PURCHASE_NUMBER": "Purchase order number",
+      "SUPPLIER": "Supplier",
+      "BRANCH": "Branch",
+      "ISSUE_DATE": "Issue date",
+      "EXPIRY_DATE": "Expiry date"
+    },
+    "VIEW": {
+      "VIEW_PURCHASE_ORDER": "View Purchase Order",
+      "CONFIRM_DELETE": "Delete this purchase order? This cannot be undone.",
+      "CONVERTED_TO_BILL": "A bill was made from this purchase order"
+    },
+    "IMPORT": {
+      "TITLE": "Import Purchase Order Lines",
+      "ERR_IDENTIFIER": "Row {{row}}: a barcode or a product name is required",
+      "ERR_QTY": "Row {{row}} ({{name}}): quantity must be a positive number",
+      "ERR_COST": "Row {{row}} ({{name}}): unit cost must be a positive number",
+      "ALL_EXIST": "All items already exist in the purchase order",
+      "NOTHING": "No items to import",
+      "NOT_FOUND": "{{count}} barcode(s) not found - added as notes",
+      "DONE": "{{count}} line(s) imported"
+    },
+    "AUTO": {
+      "TITLE": "Auto Purchase Order",
+      "DETAILS": "Details",
+      "CREATE": "Create Purchase Order",
+      "RECOMMENDED_LINES": "Recommended lines",
+      "PICK_BRANCH": "Choose a branch to see the products that need re-ordering.",
+      "NOTHING_TO_ORDER": "No product is below its re-order point at this branch.",
+      "PRODUCT": "Product",
+      "SUPPLIER": "Supplier",
+      "SELECT_SUPPLIER": "Select a supplier",
+      "FILL_OR_DELETE": "Choose a supplier for every line or delete the line"
+    }
+  }
+}

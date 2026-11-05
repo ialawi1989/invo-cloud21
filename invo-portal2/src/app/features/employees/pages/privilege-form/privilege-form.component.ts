@@ -41,6 +41,12 @@ interface SecurityTypeOption {
   value: 'all' | 'cloud' | 'POS';
 }
 
+/** Permission-state filter option: every permission, only the enabled / disabled ones, or those changed since the form opened. */
+interface StateOption {
+  labelKey: string;
+  value: 'all' | 'enabled' | 'disabled' | 'modified';
+}
+
 /** A single leaf action rendered as one `<app-toggle>`. */
 interface ActionVm {
   key: string;
@@ -166,6 +172,37 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
   ];
   securityType = signal<SecurityTypeOption>(this.securityTypeOptions[0]);
 
+  stateOptions: StateOption[] = [
+    { labelKey: 'EMPLOYEES.PRIVILEGES.FILTER_STATE_ALL',      value: 'all' },
+    { labelKey: 'EMPLOYEES.PRIVILEGES.FILTER_STATE_ENABLED',  value: 'enabled' },
+    { labelKey: 'EMPLOYEES.PRIVILEGES.FILTER_STATE_DISABLED', value: 'disabled' },
+    { labelKey: 'EMPLOYEES.PRIVILEGES.FILTER_STATE_MODIFIED', value: 'modified' },
+  ];
+  permissionState = signal<StateOption>(this.stateOptions[0]);
+  displayState = (o: StateOption): string => this.translate.instant(o.labelKey);
+
+  /** What every action's access was when the form opened (`group.action` -> on/off), the reference for "Modified". */
+  private baseline = new Map<string, boolean>();
+  private captureBaseline(): void {
+    this.baseline.clear();
+    const ep = this.record();
+    if (!ep) return;
+    for (const key in ep.privileges) {
+      const section = ep.privileges[key] as PrivilegeSetting;
+      if (!section?.actions) continue;
+      for (const ak in section.actions) this.baseline.set(`${key}.${ak}`, section.actions[ak].access === true);
+    }
+  }
+
+  /**
+   * Super Admin / Owner profiles are all-access by definition and cannot be
+   * edited: a stray toggle here would lock the account owner out of a
+   * feature. Decided from the name the record LOADED with (not the editable
+   * name field), so renaming can't be used to unlock it.
+   */
+  private static readonly ALL_ACCESS_ROLES = ['Super Admin', 'Owner'];
+  readonly lockedRole = signal(false);
+
   /** Which groups are expanded (by key). */
   private expanded = signal<Set<string>>(new Set<string>());
 
@@ -218,6 +255,7 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
 
     const term    = this.search().trim().toLowerCase();
     const secType = this.securityType().value;
+    const state   = this.permissionState().value;
     const openSet = this.expanded();
 
     const secOk = (t: string | undefined): boolean =>
@@ -246,7 +284,10 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
           if (!secOk(a.securityType)) continue;
           secActions.push(a);
           const aLabel = a.name || ak;
-          if (groupMatches || aLabel.toLowerCase().includes(term)) {
+          const on = a.access === true;
+          const stateOk = state === 'all' || (state === 'enabled' && on) || (state === 'disabled' && !on)
+            || (state === 'modified' && on !== (this.baseline.get(`${key}.${ak}`) ?? false));
+          if (stateOk && (groupMatches || aLabel.toLowerCase().includes(term))) {
             visible.push({ key: ak, label: aLabel, setting: a, checked: a.access === true });
           }
         }
@@ -254,7 +295,7 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
 
       const hasActions   = secActions.length > 0;
       const sectionSecOk = secOk(section.securityType) || hasActions;
-      const searchOk     = groupMatches || visible.length > 0;
+      const searchOk     = (groupMatches || visible.length > 0) && (state === 'all' || visible.length > 0);
       if (!sectionSecOk || !searchOk) continue;
 
       const enabled = secActions.reduce((n, a) => (a.access === true ? n + 1 : n), 0);
@@ -326,9 +367,18 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
             // New record — a fresh EmployeePrivilege carries the full catalog
             // with every action defaulting to "off".
             this.record.set(new EmployeePrivilege());
+            this.captureBaseline();
           } else {
             const ep = await this.service.getPrivilege(id);
+            // All-access roles: force every group + action on, including ones
+            // added to the catalog after the profile was first saved. Done by
+            // walking the whole tree, not a hand-kept list of group keys.
+            if (PrivilegeFormComponent.ALL_ACCESS_ROLES.includes((ep.name ?? '').trim())) {
+              this.lockedRole.set(true);
+              this.forceAllOn(ep);
+            }
             this.record.set(ep);
+            this.captureBaseline();
             this.name.set(ep.name ?? '');
             this.description.set(ep.description ?? '');
           }
@@ -368,6 +418,7 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
 
   /** Open the role picker popup; clone the chosen role into the current tree. */
   async openRolePicker(): Promise<void> {
+    if (this.lockedRole()) return; // all-access roles are not editable
     const ref = this.modal.open<PickListModalComponent, PickListModalData, PickListModalResult>(
       PickListModalComponent,
       {
@@ -404,8 +455,23 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
     }
   }
 
+  private forceAllOn(ep: EmployeePrivilege): void {
+    for (const key in ep.privileges) {
+      const section = ep.privileges[key] as PrivilegeSetting;
+      if (!section || typeof section.ToJson !== 'function') continue;
+      section.access = true;
+      if (section.actions) {
+        for (const ak in section.actions) section.actions[ak].access = true;
+      }
+    }
+  }
+
   onSearchInput(value: string): void {
     this.search.set(value);
+  }
+
+  onStateChange(option: StateOption | null): void {
+    if (option) this.permissionState.set(option);
   }
 
   onSecurityTypeChange(option: SecurityTypeOption | null): void {
@@ -424,6 +490,7 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
   // ── Access mutations ───────────────────────────────────────────────────────
   /** Toggle a single leaf action, then reconcile the parent's access. */
   onActionChange(section: PrivilegeSetting, action: PrivilegeSetting, value: boolean): void {
+    if (this.lockedRole()) return;
     action.access = value;
     this.syncSectionAccess(section);
     this.markChanged();
@@ -431,6 +498,7 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
 
   /** Per-group "select all" — flips every action in the group. */
   onSelectAll(section: PrivilegeSetting, value: boolean): void {
+    if (this.lockedRole()) return;
     if (section.actions) {
       for (const ak in section.actions) section.actions[ak].access = value;
     }
@@ -440,12 +508,14 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
 
   /** Header toggle for an action-less group binds straight to its access. */
   onSectionToggle(section: PrivilegeSetting, value: boolean): void {
+    if (this.lockedRole()) return;
     section.access = value;
     this.markChanged();
   }
 
   /** Master select-all — cascade to EVERY group and action in the tree. */
   onSelectAllGroups(value: boolean): void {
+    if (this.lockedRole()) return;
     const ep = this.record();
     if (!ep) return;
     for (const key in ep.privileges) {

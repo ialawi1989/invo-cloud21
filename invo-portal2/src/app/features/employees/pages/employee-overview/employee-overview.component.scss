@@ -197,3 +197,71 @@
   color: var(--text-muted, #6b7280);
   font-size: 0.875rem;
 }
+
+// ── Embedded (view page): customer-view look ───────────────────────────────
+// Identity strip, then a narrow side card (basic info) beside the stacked
+// detail cards — the same arrangement and card style as the customer page.
+.emp-id {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+
+  &__avatar { width: 48px; height: 48px; }
+  &__meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  &__role { font-size: 14px; font-weight: 600; color: #334155; }
+  &__loc { font-size: 13px; color: #64748b; }
+  &__pill {
+    font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 10px;
+    background: #e0f2fe; color: #0369a1;
+    &--off { background: #fee2e2; color: #b91c1c; }
+  }
+}
+
+.emp-overview--embedded {
+  gap: 0;
+
+  .emp-cards {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: 1fr;
+    align-items: start;
+
+    @media (min-width: 1100px) {
+      grid-template-columns: minmax(260px, 340px) 1fr;
+      // Basic information spans the left column beside the three detail cards.
+      > .card:first-child { grid-row: 1 / span 3; }
+    }
+  }
+
+  .card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #fff;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    box-shadow: none;
+  }
+
+  .card__head { padding: 0; border: 0; justify-content: space-between; }
+  .card__title { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+  .card__body { padding: 0; }
+
+  // Label left, value right — one line per fact, like the customer cards.
+  .kv {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 10px;
+
+    &__row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+    }
+    &__key { font-size: 14px; }
+    &__val { text-align: end; }
+  }
+}

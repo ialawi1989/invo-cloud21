@@ -40,7 +40,9 @@
   border-radius: 0 8px 8px 0 !important; font-size: 14px; line-height: 1; cursor: pointer; box-shadow: none !important;
 }
 .df-split app-dropdown-menu-btn button * { background: transparent !important; color: inherit !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
-.df-split app-dropdown-menu-btn button:hover { background: #227d8d !important; }
+.df-split app-dropdown-menu-btn button:hover:not(:disabled) { background: #227d8d !important; }
+// Disabled: same dimmed look as the main button (.df-btn:disabled → opacity .5).
+.df-split app-dropdown-menu-btn button:disabled { opacity: .5; cursor: not-allowed; }
 [dir='rtl'] .df-split app-dropdown-menu-btn button { border-radius: 8px 0 0 8px !important; }
 
 .df-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; flex-wrap: wrap; }
@@ -75,3 +77,16 @@
 // The footer content spans exactly the page content: same start edge, same end edge (shell 24 + page 24 each side).
 app-doc-form-shell .ffs__inner { width: calc(100% - 96px) !important; max-width: 1452px !important; margin: 0 0 0 48px !important; padding: 12px 0 !important; }
 @media (max-width: 576px) { app-doc-form-shell .ffs__inner { width: calc(100% - 32px) !important; margin-inline-start: 16px !important; } }
+
+// Customer / supplier on the left, attachments on the right: the legacy layout, so
+// the details card starts higher. Stacks on narrow screens (party first).
+.df-top { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; align-items: start;
+  @media (max-width: 900px) { grid-template-columns: minmax(0, 1fr); } }
+
+// Card titles with a coloured icon badge, as in the legacy forms.
+.df-card__title { display: flex; align-items: center; gap: 12px; }
+.df-ico { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  &--blue { background: #e0f2fe; color: #0369a1; }
+  &--amber { background: #fef3c7; color: #b45309; }
+  &--green { background: #dcfce7; color: #15803d; } }

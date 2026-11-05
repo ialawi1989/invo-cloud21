@@ -6,6 +6,10 @@
     "EMPTY": "There are no payments",
     "LIST": {
       "PAYMENTS_LIST": "Payments",
+      "ALL_PAYMENTS": "All Payments",
+      "STATUS_SUCCESS": "Success",
+      "STATUS_PENDING": "Pending",
+      "STATUS_FAILED": "Failed",
       "PAYMENT_NUMBER": "Payment #",
       "PAYMENT_DATE": "Payment date",
       "CUSTOMER_NAME": "Customer",
@@ -15,7 +19,10 @@
       "AMOUNT": "Amount",
       "BRANCH_NAME": "Branch",
       "EMPLOYEE_NAME": "Employee",
-      "CREATED_DATE": "Created date"
+      "CREATED_DATE": "Created date",
+      "SUCCESSFUL_PAYMENTS": "Successful Payments",
+      "FAILED_PAYMENTS": "Failed Payments",
+      "CHECK_WITH_GATEWAY": "Check with gateway"
     },
     "FILTERS": {
       "SOURCE": "Source",
@@ -38,9 +45,11 @@
       "INVOICE_NUMBER": "Invoice #",
       "PAID_ON": "Paid on",
       "INVOICE_AMOUNT": "Invoice amount",
-      "PAYMENT_AMOUNT": "Payment amount"
+      "PAYMENT_AMOUNT": "Payment amount",
+      "NO_CUSTOMER": "Walk-in customer"
     },
     "FORM": {
+      "TIP_COLLECTED_ON_POS": "Tip collected on POS",
       "NEW_PAYMENT": "New Payment",
       "EDIT_PAYMENT": "Edit Payment",
       "PAYMENT": "Payment",
@@ -67,6 +76,7 @@
       "BALANCE": "Balance",
       "NO_INVOICES": "No open invoices",
       "TOTAL": "Total",
+      "TOTAL_PAID_AMOUNT": "Total paid amount",
       "TENDER_RECEIVED": "Tender amount received",
       "CHANGE_AMOUNT": "Change amount",
       "CANCEL_CHANGE": "Cancel change",
@@ -85,6 +95,28 @@
       "MESSAGE": "The payment is {{amount}} more than the selected invoices. Where should it go?",
       "WALLET": "Credit to wallet",
       "CHANGE": "Give as change"
+    },
+    "GATEWAY": {
+      "TITLE": "Payment gateway response",
+      "CHECKING": "Asking the payment gateway…",
+      "STATUS": "Gateway status",
+      "MESSAGE": "Message",
+      "GATEWAY_DATA": "Gateway data",
+      "SAVED_DATA": "Saved online data",
+      "VIEW_INVOICE": "View invoice",
+      "NO_INVOICE": "No invoice linked to this payment"
+    },
+    "COLUMNS": {
+      "DATE": "Date",
+      "ISSUE_DATE": "Issue Date",
+      "CREATED_DATE": "Created Date",
+      "PAYMENT_METHOD": "Payment Method",
+      "EMPLOYEE_NAME": "Employee Name",
+      "AMOUNT": "Amount",
+      "BRANCH_NAME": "Branch Name",
+      "CUSTOMER_NAME": "Customer Name",
+      "REFERENCE_NUMBER": "Reference Number",
+      "INVOICE_NUMBER": "Invoice Number"
     }
   }
 }

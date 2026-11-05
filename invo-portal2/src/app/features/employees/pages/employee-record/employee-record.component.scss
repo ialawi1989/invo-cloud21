@@ -11,46 +11,319 @@
   min-width: 0;
 }
 
-.record-tabs {
-  display: flex;
-  gap: 0.25rem;
-  // Horizontally scrollable rather than wrapping: seven tabs on a narrow
-  // screen would otherwise push the page content below the fold.
-  overflow-x: auto;
-  scrollbar-width: thin;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
-  padding: 0 0.25rem;
-
-  &__tab {
-    flex: 0 0 auto;
-    padding: 0.625rem 0.875rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-muted, #6b7280);
-    text-decoration: none;
-    white-space: nowrap;
-    // Transparent rather than absent, so the active state does not shift the
-    // row by 2px when it appears.
-    border-bottom: 2px solid transparent;
-    transition: color 0.15s ease, border-color 0.15s ease;
-
-    &:hover {
-      color: var(--text-color, #111827);
-    }
-
-    &--active {
-      color: var(--primary-color, #2563eb);
-      border-bottom-color: var(--primary-color, #2563eb);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--primary-color, #2563eb);
-      outline-offset: -2px;
-      border-radius: 2px;
-    }
-  }
-}
 
 .employee-record__body {
   min-width: 0;
+}
+
+// Page header: same as Customers / Invoice.
+
+// ── Slim persistent employee header ─────────────────────────────────────────
+
+
+// ── Tab indicators ──────────────────────────────────────────────────────────
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// One panel look across every record tab.
+//
+// The Profile form is the reference: white cards with a hairline border, soft
+// shadow and 12px corners, a 15px/600 title over a hairline divider. The HR tab
+// pages each ship their own panel classes, so the shared look is applied here,
+// once, rather than being copied into seven stylesheets.
+// ─────────────────────────────────────────────────────────────────────────────
+.employee-record__body ::ng-deep {
+
+  // Panels (the large, section-level blocks).
+  .leave-profile, .leave-balance, .pay-panel, .disc-escalation, .eos__card,
+  .doc-form, .asset-form, .perf-form, .disc-form, .perf-sub, .pay-sub {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    padding: 16px 18px;
+  }
+
+  // Item cards (one record in a list).
+  .leave-card, .doc-card, .asset-card, .perf-card, .disc-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+  }
+
+  // Panel titles: the same size and weight as the Profile cards.
+  .leave-profile__title, .leave-balance__title, .pay-panel__title, .pay-sub__title,
+  .disc-escalation__title, .eos__title, .perf-sub__title,
+  .doc-header__title, .asset-header__title, .leave-header__title,
+  .perf-header__title, .disc-header__title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  // Panel heads get the Profile cards' hairline under the title.
+  .leave-profile__head, .leave-balance__head, .pay-panel__head, .pay-sub__head, .perf-sub__head {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  // Panels stack with the same rhythm as the Profile cards.
+  .leave-profile, .leave-balance, .pay-panel, .disc-escalation, .eos__card {
+    margin-bottom: 16px;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Theme controls for the HR tab pages.
+//
+// These pages were written against `.form-control`, `.btn-secondary`,
+// `.btn-link` and `.btn-danger` — class names the app's theme never defined, so
+// the inputs and secondary buttons rendered as unstyled browser defaults beside
+// the Profile form. They are mapped here onto the same look as the theme's
+// `.btn` / `.btn-default` / `.btn-ghost` and the Profile form's `.input`.
+// ─────────────────────────────────────────────────────────────────────────────
+.employee-record__body ::ng-deep {
+
+  // Inputs, selects, textareas — same as the Profile form's `.input`.
+  .form-control {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #0f172a;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+
+    &:focus {
+      outline: none;
+      border-color: #32acc1;
+      box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+    }
+    &::placeholder { color: #94a3b8; }
+    &.is-invalid { border-color: #dc2626; }
+  }
+  textarea.form-control { resize: vertical; }
+  .form-control--sm { padding: 6px 10px; font-size: 13px; }
+
+  // Secondary button = the theme's default (white, outlined) button.
+  .btn-secondary {
+    background: #fff;
+    border-color: #e2e8f0;
+    color: #334155;
+    &:hover:not(:disabled) { background: #f8fafc; }
+  }
+
+  // Link-style button: brand-coloured text, no chrome.
+  .btn-link {
+    background: transparent;
+    border-color: transparent;
+    padding-inline: 8px;
+    color: var(--color-brand-600, #0891b2);
+    &:hover:not(:disabled) { background: var(--color-brand-50, #ecfeff); }
+
+    &--danger { color: #b91c1c; &:hover:not(:disabled) { background: #fef2f2; } }
+  }
+
+  // Solid destructive button.
+  .btn-danger {
+    background: #dc2626;
+    color: #fff;
+    &:hover:not(:disabled) { background: #b91c1c; }
+  }
+  .btn-ghost.btn-danger {
+    background: transparent;
+    color: #b91c1c;
+    border-color: #fecaca;
+    &:hover:not(:disabled) { background: #fef2f2; }
+  }
+}
+
+// Visually hidden text for children (table action headers, count badges).
+.employee-record__body ::ng-deep .sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+// Same content width as Customers, left aligned; room for the sticky footer.
+.employee-record {
+  max-width: 960px;
+  padding-bottom: 96px;
+}
+
+// Focus ring only for keyboard users — never on a mouse click.
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cards and labels shared by every tab (matches Customers / Invoice).
+// ─────────────────────────────────────────────────────────────────────────────
+.employee-record__body ::ng-deep {
+
+  // Every section is a white card: header row (title left, action right) + body.
+  .hr-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    padding: 16px 18px;
+    margin-bottom: 16px;
+
+    > .doc-header, > .asset-header, > .perf-header, > .disc-header, > .leave-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+  }
+
+  // Field labels: 13px, semibold, dark: the app's standard.
+  .eos-field__label, .leave-field__label, .pay-field__label,
+  .doc-field__label, .asset-field__label, .perf-field__label, .disc-field__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+
+    em, .required { color: #dc2626; font-style: normal; margin-inline-start: 2px; }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Header card: identity row on top, record tabs attached underneath.
+// ─────────────────────────────────────────────────────────────────────────────
+.employee-record__crumbs { display: block; margin-bottom: 12px; font-size: 13px; }
+
+.emp-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  margin-bottom: 16px;
+}
+
+.emp-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+
+  &__avatar {
+    width: 44px; height: 44px; flex-shrink: 0;
+    border-radius: 50%; overflow: hidden;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--color-brand-50); color: var(--color-brand-700);
+    font-size: 16px; font-weight: 600;
+    img { width: 100%; height: 100%; object-fit: cover; }
+  }
+
+  &__who { flex: 1; min-width: 0; }
+  &__name {
+    margin: 0; font-size: 18px; font-weight: 500; color: #0f172a;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  &__meta { margin: 2px 0 0; font-size: 13px; color: #475569; overflow-wrap: anywhere; }
+
+  &__actions { flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
+
+  // Outlined, icon + label: the same look as "Advanced Options".
+  &__tour {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    border: 1px solid #d0d5dd; border-radius: 8px;
+    background: #fff; color: #334155;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    &:hover { background: #f8fafc; }
+    &:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; }
+  }
+}
+
+// Icon-only "more actions" trigger (rendered by <app-dropdown-menu-btn>).
+:host ::ng-deep .emp-head__more {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0;
+  border: 1px solid #d0d5dd; border-radius: 8px;
+  background: #fff; color: #334155; cursor: pointer;
+  &:hover { background: #f8fafc; }
+  &:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; }
+}
+
+// The only pill in the header.
+.chip {
+  display: inline-flex; align-items: center;
+  padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; line-height: 1.5;
+  &--active { background: #dcfce7; color: #166534; }
+  &--notice { background: #fef3c7; color: #92400e; }
+  &--terminated { background: #fee2e2; color: #991b1b; }
+}
+
+// ── Tabs ────────────────────────────────────────────────────────────────────
+.record-tabs {
+  display: flex;
+  gap: 20px;
+  padding: 0 20px;
+  border-top: 1px solid #e5e7eb;
+  overflow-x: auto;          // scrolls on narrow screens, never wraps
+  overflow-y: hidden;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+
+  &__tab {
+    flex: 0 0 auto;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 12px 0;
+    margin-bottom: -1px;
+    font-size: 14px; font-weight: 400;
+    white-space: nowrap;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+
+    // Every link state pinned to the same colour: a visited or clicked tab
+    // never turns black or purple.
+    &, &:link, &:visited, &:active { color: #475569; }
+    &:hover { color: #0f172a; text-decoration: none; }
+
+    &--active, &--active:link, &--active:visited, &--active:hover {
+      color: #0f172a; font-weight: 500;
+      border-bottom-color: var(--color-brand-600);
+    }
+
+    // Keyboard focus only: no ring on mouse click.
+    &:focus { outline: none; }
+    &:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: -2px; border-radius: 4px; }
+  }
+
+  &__count {
+    min-width: 20px; padding: 0 6px; border-radius: 999px;
+    background: #f1f5f9; color: #64748b;
+    font-size: 11px; font-weight: 600; line-height: 18px; text-align: center;
+  }
+  &__dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; flex-shrink: 0; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// One left/right edge: every tab's content lines up with the header card.
+// The tab pages each carry their own inset (and the form its own max-width),
+// which pushed their cards narrower than, and off the edge of, the header.
+// ─────────────────────────────────────────────────────────────────────────────
+.employee-record__body ::ng-deep {
+  .employee-leave, .employee-documents, .employee-assets, .employee-performance,
+  .employee-disciplinary, .employee-payroll, .eos {
+    padding: 0;
+    width: 100%;
+    max-width: none;
+  }
+  .employee-form-page {
+    max-width: none;
+    padding-bottom: 0;
+  }
 }

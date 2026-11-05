@@ -1,52 +1,58 @@
+<!-- Step 1 — pick a provider -->
 <div class="pf-field">
-  <label class="pf-label">{{ 'PLUGINS.AI.PROVIDER' | translate }}</label>
-  <app-search-dropdown
-    [items]="options()" [displayWith]="optionLabel" [compareWith]="optionEquals"
-    [placeholder]="'PLUGINS.AI.PROVIDER_PLACEHOLDER' | translate"
-    [value]="selectedOption()"
-    (valueChange)="onProviderChange($any($event))"/>
+  <label class="pf-label">1. {{ 'PLUGINS.AI.STEP_PROVIDER' | translate }}</label>
+  <div class="ai-cards">
+    @for (c of cards(); track c.key) {
+      <button type="button" class="ai-card" [class.is-selected]="isSelected(c)" (click)="selectCard(c)">
+        <span class="ai-card__name">{{ c.label }}</span>
+        @if (c.tag) {
+          <span class="ai-card__tag" [class.is-free]="c.tag === 'free'">
+            {{ (c.tag === 'free' ? 'PLUGINS.AI.TAG_FREE' : 'PLUGINS.AI.TAG_PAID') | translate }}
+          </span>
+        }
+        @if (c.note) { <span class="ai-card__note">{{ c.note }}</span> }
+      </button>
+    }
+  </div>
   @if (submitted() && errProvider()) {
     <span class="pf-error">{{ 'PLUGINS.AI.PROVIDER_REQUIRED' | translate }}</span>
   }
-  @if (providerHelp(); as h) {
-    <div class="ai-help">
-      <a class="ai-help__link" [href]="h.keys" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="3.5"/><path d="m10 13 9-9 2 2-2 2 2 2-3 3-2-2-2 2"/></svg>
-        {{ 'PLUGINS.AI.GET_KEY' | translate }}
-        <svg class="ai-help__ext" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      </a>
-      <span class="ai-help__sep"></span>
-      <a class="ai-help__link" [href]="h.models" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        {{ 'PLUGINS.AI.BROWSE_MODELS' | translate }}
-        <svg class="ai-help__ext" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      </a>
-    </div>
-  } @else if (isCustom) {
+  @if (isCustom && !selectedPreset()) {
     <span class="pf-hint">{{ 'PLUGINS.AI.CUSTOM_HELP' | translate }}</span>
   }
 </div>
 
-<div class="pf-row">
+<!-- Step 2 — get a key -->
+@if (provider()) {
   <div class="pf-field">
-    <label class="pf-label">{{ 'PLUGINS.AI.BASE_URL' | translate }}</label>
-    <input class="pf-input" type="text" name="aiBaseUrl"
-           [class.is-invalid]="submitted() && errCustom() && !baseUrl().trim()"
-           [ngModel]="baseUrl()" (ngModelChange)="baseUrl.set($event); touch()"/>
+    <label class="pf-label">2. {{ 'PLUGINS.AI.STEP_GET_KEY' | translate }}</label>
+    @if (keysLink(); as link) {
+      <div class="ai-help">
+        <a class="ai-help__link" [href]="link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="3.5"/><path d="m10 13 9-9 2 2-2 2 2 2-3 3-2-2-2 2"/></svg>
+          {{ 'PLUGINS.AI.GET_KEY' | translate }}
+          <svg class="ai-help__ext" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    }
+    @if (selectedTag() === 'paid') {
+      <span class="pf-hint">{{ 'PLUGINS.AI.PAID_REMINDER' | translate }}</span>
+    }
+    @if (selectedPreset()?.needsAccountId) {
+      <input class="pf-input" type="text" name="aiAccountId" style="margin-top:8px"
+             [class.is-invalid]="submitted() && errAccount()"
+             [placeholder]="'PLUGINS.AI.ACCOUNT_ID' | translate"
+             [ngModel]="accountId()" (ngModelChange)="onAccountId($event)"/>
+      @if (submitted() && errAccount()) {
+        <span class="pf-error">{{ 'PLUGINS.AI.ACCOUNT_ID_REQUIRED' | translate }}</span>
+      }
+    }
   </div>
-  <div class="pf-field">
-    <label class="pf-label">{{ 'PLUGINS.AI.MODEL' | translate }}</label>
-    <input class="pf-input" type="text" name="aiModel"
-           [class.is-invalid]="submitted() && errCustom() && !model().trim()"
-           [ngModel]="model()" (ngModelChange)="model.set($event); touch()"/>
-  </div>
-</div>
-@if (submitted() && errCustom()) {
-  <span class="pf-error">{{ 'PLUGINS.AI.CUSTOM_REQUIRED' | translate }}</span>
 }
 
+<!-- Step 3 — paste the key -->
 <div class="pf-field">
-  <label class="pf-label">{{ 'PLUGINS.AI.API_KEY' | translate }}</label>
+  <label class="pf-label">3. {{ 'PLUGINS.AI.API_KEY' | translate }}</label>
 
   @if (keyStored && !replacingKey()) {
     <div style="display:flex; align-items:center; gap:10px;">
@@ -76,3 +82,66 @@
     <span class="pf-switch__track"><span class="pf-switch__thumb"></span></span>
   </label>
 </div>
+
+<!-- Everything else is optional: the chosen provider already filled these in. -->
+<details class="ai-limits" [open]="submitted() && errCustom()">
+  <summary>{{ 'PLUGINS.AI.ADVANCED' | translate }}</summary>
+
+  <div class="pf-row" style="margin-top:10px">
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PLUGINS.AI.BASE_URL' | translate }}</label>
+      <input class="pf-input" type="text" name="aiBaseUrl"
+             [class.is-invalid]="submitted() && errCustom() && !baseUrl().trim()"
+             [ngModel]="baseUrl()" (ngModelChange)="baseUrl.set($event); touch()"/>
+    </div>
+    <div class="pf-field">
+      <label class="pf-label">{{ 'PLUGINS.AI.MODEL' | translate }}</label>
+      @if (modelOptions(); as opts) {
+        <app-search-dropdown
+          [items]="opts" [displayWith]="modelLabel" [clearable]="false"
+          [value]="selectedModelOption()"
+          (valueChange)="onModelPick($any($event))"/>
+      }
+      @if (showModelText()) {
+        <input class="pf-input" type="text" name="aiModel" [style.margin-top]="modelOptions() ? '8px' : null"
+               [placeholder]="'PLUGINS.AI.MODEL_CUSTOM_PLACEHOLDER' | translate"
+               [class.is-invalid]="submitted() && errCustom() && !model().trim()"
+               [ngModel]="model()" (ngModelChange)="model.set($event); touch()"/>
+      }
+    </div>
+  </div>
+  @if (submitted() && errCustom()) {
+    <span class="pf-error">{{ 'PLUGINS.AI.CUSTOM_REQUIRED' | translate }}</span>
+  }
+  @if (providerHelp(); as h) {
+    <div class="ai-help" style="margin-top:6px">
+      <a class="ai-help__link" [href]="h.models" target="_blank" rel="noopener">{{ 'PLUGINS.AI.BROWSE_MODELS' | translate }}</a>
+    </div>
+  }
+
+  @if (provider() === 'groq') {
+    <h5 class="ai-sub">{{ 'PLUGINS.AI.LIMITS_TITLE' | translate }}</h5>
+    <div class="ai-limits__scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ 'PLUGINS.AI.LIMITS_MODEL' | translate }}</th>
+            <th>{{ 'PLUGINS.AI.LIMITS_RPM' | translate }}</th>
+            <th>{{ 'PLUGINS.AI.LIMITS_RPD' | translate }}</th>
+            <th>{{ 'PLUGINS.AI.LIMITS_TPM' | translate }}</th>
+            <th>{{ 'PLUGINS.AI.LIMITS_TPD' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of groqLimits; track r.model) {
+            <tr>
+              <td><code>{{ r.model }}</code></td>
+              <td>{{ r.rpm }}</td><td>{{ r.rpd }}</td><td>{{ r.tpm }}</td><td>{{ r.tpd }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <span class="pf-hint">{{ 'PLUGINS.AI.LIMITS_NOTE' | translate }}</span>
+  }
+</details>

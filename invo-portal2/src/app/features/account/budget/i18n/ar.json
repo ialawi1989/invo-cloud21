@@ -1,0 +1,79 @@
+{
+  "BUDGET": {
+    "DASHBOARD": "لوحة التحكم",
+    "LIST": {
+      "TITLE": "الميزانيات التقديرية",
+      "ADD_NEW": "إضافة ميزانية",
+      "SEARCH_PLACEHOLDER": "ابحث بالاسم أو الفرع أو السنة أو الدورية…",
+      "EMPTY": "لا توجد ميزانيات لعرضها.",
+      "NAME": "الاسم",
+      "BRANCH": "الفرع",
+      "YEAR": "السنة",
+      "PERIODICITY": "الدورية",
+      "CREATED": "تاريخ الإنشاء",
+      "REPORT": "الميزانية مقابل الفعلي",
+      "REPORT_SHORT": "التقرير",
+      "CONFIRM_DELETE": "هل تريد حذف هذه الميزانية وكل ما خُطط فيها؟",
+      "DELETED": "تم حذف الميزانية"
+    },
+    "PERIODICITY": {
+      "yearly": "سنوي",
+      "half": "نصف سنوي",
+      "quarterly": "ربع سنوي",
+      "monthly": "شهري"
+    },
+    "FORM": {
+      "NEW": "ميزانية جديدة",
+      "EDIT": "تعديل الميزانية",
+      "DETAILS": "تفاصيل الميزانية",
+      "NAME": "العنوان",
+      "BRANCH": "الفرع",
+      "SELECT_BRANCH": "اختر فرعاً",
+      "YEAR": "السنة",
+      "PERIODICITY": "الدورية",
+      "SELECT_PERIODICITY": "اختر الدورية",
+      "PLAN": "المبالغ المخططة",
+      "REQUIRED": "هذه القيمة مطلوبة",
+      "INVALID_YEAR": "أدخل سنة بين 1900 و 2099",
+      "DISCOUNT_MINUS": "الخصم يجب أن يكون بقيمة سالبة فقط.",
+      "RESET_TITLE": "تغيير الدورية؟",
+      "RESET_MESSAGE": "سيتم مسح المبالغ التي أدخلتها.",
+      "EXPORT": "تصدير",
+      "PRINT": "طباعة",
+      "REPORT": "الميزانية مقابل الفعلي"
+    },
+    "REPORT": {
+      "TITLE": "الميزانية مقابل الفعلي"
+    },
+    "MONTHS": {
+      "January": "يناير", "February": "فبراير", "March": "مارس", "April": "أبريل", "May": "مايو", "June": "يونيو",
+      "July": "يوليو", "August": "أغسطس", "September": "سبتمبر", "October": "أكتوبر", "November": "نوفمبر", "December": "ديسمبر"
+    },
+    "QUARTERS": { "q1": "الربع الأول", "q2": "الربع الثاني", "q3": "الربع الثالث", "q4": "الربع الرابع" },
+    "HALVES": { "1H": "النصف الأول", "2H": "النصف الثاني" },
+    "SECTIONS": {
+      "OPERATING_INCOME": "الإيرادات التشغيلية",
+      "COSTS_OF_GOODS_SOLD": "تكلفة البضاعة المباعة",
+      "OPERATING_EXPENSE": "المصروفات التشغيلية",
+      "CURRENT_ASSETS": "الأصول المتداولة",
+      "OTHER_CURRENT_ASSETS": "أصول متداولة أخرى",
+      "CURRENT_LIABILITIES": "الخصوم المتداولة",
+      "EQUITY": "حقوق الملكية"
+    },
+    "SHEET": {
+      "PROFIT_LOSS": "قائمة الأرباح والخسائر",
+      "BALANCE_SHEET": "الميزانية العمومية",
+      "ACCOUNT": "الحساب",
+      "TOTAL": "الإجمالي",
+      "BUDGET": "المخطط",
+      "ACTUAL": "الفعلي",
+      "MINUS_ONLY": "قيم سالبة فقط",
+      "TOTAL_FOR": "إجمالي {{name}}",
+      "GROSS_PROFIT": "إجمالي الربح",
+      "OPERATING_PROFIT": "الربح التشغيلي",
+      "NET_PROFIT": "صافي الربح / الخسارة",
+      "TOTAL_ASSETS": "إجمالي الأصول",
+      "TOTAL_LIABILITIES_EQUITY": "إجمالي الخصوم وحقوق الملكية"
+    }
+  }
+}

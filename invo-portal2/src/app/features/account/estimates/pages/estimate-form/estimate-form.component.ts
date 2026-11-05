@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
+import type { DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { EntityCustomFieldsComponent } from '../../../../settings/components/entity-custom-fields/entity-custom-fields.component';
@@ -17,7 +18,7 @@ import { DocFormConfig, DocFormService, DocumentFormBase, ymd } from '../../../s
 import { salesLinesConfig } from '../../../services/sales-lines.config';
 import { DocLinesConfig } from '../../../components/doc-lines-table/doc-lines.types';
 import { DocLinesTableComponent } from '../../../components/doc-lines-table/doc-lines-table.component';
-import { DocAttachmentsComponent } from '../../../components/doc-attachments/doc-attachments.component';
+import { DocAttachmentsCardComponent } from '../../../components/doc-attachments-card/doc-attachments-card.component';
 import { DocFormShellComponent } from '../../../components/doc-form-shell/doc-form-shell.component';
 import { DocPartySectionComponent } from '../../../components/doc-party-section/doc-party-section.component';
 import { DocTotalsComponent } from '../../../components/doc-totals/doc-totals.component';
@@ -33,7 +34,7 @@ import { DocTotalsComponent } from '../../../components/doc-totals/doc-totals.co
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule, RouterLink, TranslateModule,
     DocFormShellComponent, DocPartySectionComponent, SearchDropdownComponent, DatePickerComponent,
-    DocLinesTableComponent, DocAttachmentsComponent, DocTotalsComponent, EntityCustomFieldsComponent,
+    DocLinesTableComponent, DocAttachmentsCardComponent, DocTotalsComponent, EntityCustomFieldsComponent,
   ],
   templateUrl: './estimate-form.component.html',
 })
@@ -71,15 +72,27 @@ export class EstimateFormComponent extends DocumentFormBase {
     sendEmail: (payload, id) => this.estimates.sendEstimateEmail({ ...payload, estimateId: id }),
   };
 
-  private actions = inject(EstimateActions);
+  protected actions = inject(EstimateActions);
+
+  convertToInvoice(): void { this.actions.goConvert(this.est.id!); }
+
+  /** "Actions" dropdown of a saved estimate — items and behaviour come from the shared {@link EstimateActions}. */
+  actionsMenu(): DropdownMenuBtnItem[] {
+    const d = this.est;
+    if (this.formStatus !== 'edit' || !d?.id) return [];
+    return this.actions.menu(d, d.id, () => { this.dirty = false; this.form.markAsPristine(); this.afterSaveRoute(); });
+  }
 
   protected newDoc(): Estimate { return new Estimate(); }
   protected makeLinesConfig(): DocLinesConfig {
-    return salesLinesConfig(() => this.doc!, this.lookups, {
-      canAdjustPrice: () => this.actions.canAdjustPrice,
-      barcodeType: 'estimate',
-      canRemove: line => (line as any).source !== 'POS' && this.doc?.source !== 'POS',
-    });
+    return {
+      taxType: 'editable',
+      ...salesLinesConfig(() => this.doc!, this.lookups, {
+        canAdjustPrice: () => this.actions.canAdjustPrice,
+        barcodeType: 'estimate',
+        canRemove: line => (line as any).source !== 'POS' && this.doc?.source !== 'POS',
+      }),
+    };
   }
 
   get est(): Estimate { return this.doc as Estimate; }
@@ -117,6 +130,8 @@ export class EstimateFormComponent extends DocumentFormBase {
   }
 
   protected override blockSave(): string | null {
+    // Legacy: a negative total (a discount larger than the lines) can't be saved.
+    if (this.est.total < 0) return this.lang.instant('ESTIMATES.FORM.TOTAL_IS_MINUS');
     return this.expiryBeforeDate ? this.lang.instant('ESTIMATES.FORM.EXPIRY_BEFORE_DATE') : null;
   }
 }

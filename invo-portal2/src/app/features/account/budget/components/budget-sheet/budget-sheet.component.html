@@ -1,0 +1,65 @@
+<div class="bs">
+  <div class="bs__tabs">
+    <app-segmented-toggle [options]="tabs" [value]="sheet()" (valueChange)="sheet.set($event)"/>
+  </div>
+
+  <div class="bs__scroll">
+    <table class="bs__table" [class.bs__table--report]="report()">
+      <thead>
+        <tr>
+          <th class="bs__name" [attr.rowspan]="report() ? 2 : 1">{{ 'BUDGET.SHEET.ACCOUNT' | translate }}</th>
+          @for (p of periods(); track p.key) {
+            <th [attr.colspan]="report() ? 2 : 1">{{ p.label }}</th>
+          }
+          <th [attr.colspan]="report() ? 2 : 1">{{ 'BUDGET.SHEET.TOTAL' | translate }}</th>
+        </tr>
+        @if (report()) {
+          <tr class="bs__sub">
+            @for (p of periods(); track p.key) {
+              <th>{{ 'BUDGET.SHEET.BUDGET' | translate }}</th>
+              <th>{{ 'BUDGET.SHEET.ACTUAL' | translate }}</th>
+            }
+            <th>{{ 'BUDGET.SHEET.BUDGET' | translate }}</th>
+            <th>{{ 'BUDGET.SHEET.ACTUAL' | translate }}</th>
+          </tr>
+        }
+      </thead>
+      <tbody>
+        @for (r of rows(); track r.key) {
+          @if (r.kind === 'title') {
+            <tr class="bs__title"><td [attr.colspan]="colCount()">{{ r.label }}</td></tr>
+          } @else if (r.kind === 'group') {
+            <tr class="bs__group"><td [attr.colspan]="colCount()">{{ r.label }}</td></tr>
+          } @else if (r.kind === 'account') {
+            <tr>
+              <td class="bs__name bs__account">{{ r.account.name }}</td>
+              @if (report()) {
+                @for (v of accountCells(r.account.accountId); track $index) {
+                  <td class="bs__num">{{ v | mycurrency }}</td>
+                }
+              } @else {
+                @for (p of periods(); track p.key) {
+                  <td class="bs__in">
+                    <input type="number" step="any" class="bs__input" [class.bs__input--bad]="invalid(r.account, p.key)"
+                      [attr.max]="isDiscount(r.account) ? 0 : null"
+                      [placeholder]="isDiscount(r.account) ? ('BUDGET.SHEET.MINUS_ONLY' | translate) : ''"
+                      [value]="cell(r.account.accountId, p.key)"
+                      (input)="setCell(r.account.accountId, p.key, $any($event.target).value)"/>
+                  </td>
+                }
+                <td class="bs__num">{{ accountTotal(r.account.accountId) | mycurrency }}</td>
+              }
+            </tr>
+          } @else {
+            <tr class="bs__total">
+              <td class="bs__name">{{ r.label }}</td>
+              @for (v of specCells(r.spec); track $index) {
+                <td class="bs__num">{{ v | mycurrency }}</td>
+              }
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

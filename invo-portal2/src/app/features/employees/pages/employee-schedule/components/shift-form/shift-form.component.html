@@ -46,7 +46,7 @@
           <span class="sep">–</span>
           <div class="col">
             <app-search-dropdown
-              [items]="times" [value]="shift.to" [disabled]="true"
+              [items]="endTimes" [value]="shift.to" [disabled]="true"
               [clearable]="false" [searchable]="false" />
           </div>
           <button type="button" class="icon-btn danger" (click)="removeExisting($index)"
@@ -67,7 +67,7 @@
           <span class="sep">–</span>
           <div class="col">
             <app-search-dropdown
-              [items]="times" [value]="shift.to" [clearable]="false"
+              [items]="endTimes" [value]="shift.to" [clearable]="false"
               (valueChange)="setTo(shift, $event)" />
           </div>
           <button type="button" class="icon-btn danger" (click)="removeNew($index)"

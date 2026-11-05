@@ -38,11 +38,7 @@ import {
   BranchSettingsService,
   BranchSummary,
 } from '../../../services/branch-settings.service';
-import { BranchTabsComponent } from '../../../../products/pages/product-form/components/branch-product-section/branch-tabs/branch-tabs.component';
-import {
-  BranchTabRef,
-  provideBranchTabs,
-} from '../../../../products/pages/product-form/components/branch-product-section/branch-tabs/branch-tabs.service';
+import { ServiceBranchSectionComponent } from '../../components/service-branch-section/service-branch-section.component';
 
 import { ServiceManagementService } from '../../services/service.service';
 import {
@@ -104,7 +100,7 @@ const ALL_TYPES:    TypeOption[] = [...SERVICE_TYPES];
     LoadingOverlayComponent,
     SearchDropdownComponent,
     ToggleComponent,
-    BranchTabsComponent,
+    ServiceBranchSectionComponent,
     DineinSettingsComponent,
     DeliverySettingsComponent,
     PickupSettingsComponent,
@@ -112,12 +108,6 @@ const ALL_TYPES:    TypeOption[] = [...SERVICE_TYPES];
     SalonSettingsComponent,
     CateringSettingsComponent,
     RetailSettingsComponent,
-  ],
-  // Each instance of the BranchTabsComponent needs its own state slice;
-  // namespacing the persisted prefs under `serviceManagement.branches`
-  // keeps it isolated from the product-form usage.
-  providers: [
-    provideBranchTabs('serviceManagement.branches'),
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './service-management-form.component.html',
@@ -182,27 +172,6 @@ export class ServiceManagementFormComponent implements OnInit, CanLeaveComponent
     const idx = this.activeBranchIndex();
     return this.service$().branches[idx] ?? null;
   });
-
-  /** Branch directory in the `BranchTabRef` shape the shared
-   *  `<app-pf-branch-tabs>` expects. The `isOnline` flag drives the
-   *  green status dot — we re-purpose it to reflect the per-branch
-   *  `setting.enabled` state, so a glance at the tab strip shows
-   *  which branches have the service turned on. */
-  branchDirectory = computed<BranchTabRef[]>(() =>
-    this.service$().branches.map(b => ({
-      id:       b.branchId,
-      name:     b.branchName,
-      isOnline: !!b.setting?.enabled,
-    })),
-  );
-
-  /** Sync the tab strip's active branch id back into our index-based
-   *  `activeBranchIndex`. The sub-components address the active row
-   *  by index because `service.branches` is the source of truth. */
-  onBranchTabChange(id: string): void {
-    const idx = this.service$().branches.findIndex(b => b.branchId === id);
-    if (idx >= 0) this.activeBranchIndex.set(idx);
-  }
 
   // ─── Type dropdown adapters ─────────────────────────────────────
   typeDisplay   = (t: typeof TYPE_OPTIONS[number] | null) => t ? this.translate.instant(t.labelKey) : '';
@@ -309,6 +278,9 @@ export class ServiceManagementFormComponent implements OnInit, CanLeaveComponent
   }
   setLockChangeService(on: boolean): void {
     this.service$.update(s => ({ ...s, options: { ...s.options, locKChangeService: on } }));
+  }
+  setAskForCarNumber(on: boolean): void {
+    this.service$.update(s => ({ ...s, options: { ...s.options, askForCarNumber: on } }));
   }
   setActiveBranch(i: number): void {
     this.activeBranchIndex.set(i);

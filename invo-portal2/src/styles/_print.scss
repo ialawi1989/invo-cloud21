@@ -42,6 +42,15 @@
     visibility: hidden;
   }
 
+  // The delivery-note print page is the other full-page print target (not a document-builder paper).
+  app-delivery-note-print,
+  app-delivery-note-print *,
+  app-budget-sheet,
+  app-budget-sheet *,
+  app-transfer-paper,
+  app-transfer-paper *,
+  app-manual-journal-paper,
+  app-manual-journal-paper *,
   app-document-paper,
   app-document-paper * {
     visibility: visible;
@@ -49,6 +58,10 @@
 
   // Pull the paper to the document origin and size to the printable
   // area. The browser's `@page` margin still applies on top.
+  app-delivery-note-print,
+  app-budget-sheet,
+  app-transfer-paper,
+  app-manual-journal-paper,
   app-document-paper {
     position: absolute;
     inset: 0;
@@ -198,6 +211,7 @@
     height: auto !important;
   }
 
+  app-delivery-note-print,
   app-document-paper {
     position: static !important;
     inset: auto !important;

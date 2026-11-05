@@ -1,5 +1,5 @@
 import '../../../account-i18n';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -56,14 +56,16 @@ export class CustomerQuickCreateModalComponent implements OnInit {
   private service = inject(CustomersService);
   private lang = inject(LanguageService);
   private toast = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
 
   customerData = new Customer();
   customerForm: FormGroup | null = null;
   saving = false;
 
-  async ngOnInit(): Promise<void> {
-    await this.lang.loadFeature('account/customers');
+  ngOnInit(): void {
+    // Built synchronously so the body renders with the first pass; the feature strings arrive right after.
     this.customerForm = buildCustomerForm(this.customerData, this.service, () => null);
+    void this.lang.loadFeature('account/customers').then(() => this.cdr.markForCheck());
   }
 
   get canSave(): boolean {

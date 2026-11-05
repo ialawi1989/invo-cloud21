@@ -1,0 +1,15 @@
+:host { display: flex; flex-direction: column; gap: 18px; }
+.bp-head { display: flex; align-items: center; gap: 14px; h2 { margin: 0; font-size: 18px; } }
+.bp-logo { height: 48px; object-fit: contain; }
+.bp-muted { color: #64748b; font-size: 13px; }
+.bp-title { margin-inline-start: auto; font-size: 20px; font-weight: 700; color: #227d8d; text-transform: uppercase; }
+.bp-facts { margin: 0; display: grid; gap: 8px 24px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  div { display: flex; justify-content: space-between; gap: 12px; }
+  dt { color: #64748b; } dd { margin: 0; font-weight: 600; text-align: end; } }
+.bp-table { width: 100%; border-collapse: collapse; font-size: 13.5px;
+  th { background: #0f172a; color: #fff; text-align: start; padding: 10px 12px; }
+  td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; } }
+.end { text-align: end !important; }
+.bp-sum { margin-inline-start: auto; min-width: 320px; display: flex; flex-direction: column; gap: 8px;
+  div { display: flex; justify-content: space-between; gap: 16px; }
+  &__total { border-top: 1px solid #e2e8f0; padding-top: 8px; font-size: 18px; } }

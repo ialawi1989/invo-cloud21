@@ -1,0 +1,29 @@
+// Same identity as the other account forms.
+.bf { padding: 24px; padding-bottom: 96px; display: flex; flex-direction: column; gap: 14px; }
+.page-header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb;
+  &__title { margin: 0; font-size: 24px; font-weight: 700; color: #0f172a; } }
+
+.bf-card { background: #fff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0;
+  &__title { margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; }
+  &__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; } }
+.bf-tools { display: flex; gap: 8px; }
+.bf-row { display: flex; gap: 14px; flex-wrap: wrap; max-width: 1100px; }
+.bf-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1 1 220px;
+  > label { font-size: 13px; font-weight: 600; color: #334155; }
+  &--wide { flex: 1 1 100%; } }
+.req { color: #dc2626; }
+.bf-input { width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid #d0d5dd; border-radius: 8px; background: #fff; font: inherit; font-size: 13.5px;
+  &:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .15); }
+  &--bad { border-color: #dc2626; } }
+.bf-static { padding: 9px 12px; background: #f8fafc; border: 1px solid #e4e7ec; border-radius: 8px; font-size: 13.5px; }
+.bf-error { margin: 0; font-size: 12px; color: #dc2626; }
+
+.bf-btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  &:hover:not(:disabled) { background: #f8fafc; } &:disabled { opacity: .5; cursor: not-allowed; }
+  &--primary { border-color: #2691a4; background: #2691a4; color: #fff; &:hover:not(:disabled) { background: #227d8d; } } }
+
+@media (max-width: 576px) { .bf { padding-inline: 0 !important; } }
+
+// The footer content spans exactly the page content: same start edge, same end edge (shell 24 + page 24 each side).
+:host ::ng-deep .ffs__inner { width: calc(100% - 96px) !important; max-width: none !important; margin: 0 0 0 48px !important; padding: 12px 0 !important; }
+@media (max-width: 576px) { :host ::ng-deep .ffs__inner { width: calc(100% - 32px) !important; margin-inline-start: 16px !important; } }

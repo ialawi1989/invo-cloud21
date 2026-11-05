@@ -26,6 +26,16 @@
         [placeholder]="'COMMON.PERIOD_ALL' | translate"
         (valueChange)="onDateRange($any($event))"/>
     </div>
+    <div class="ld__dates">
+      <span class="ld__dates-label">{{ 'COMMON.LOGS.BRANCH' | translate }}</span>
+      <app-search-dropdown [multiple]="true" [loadFn]="loadBranches" [displayWith]="optionLabel" [compareWith]="optionCompare"
+        [value]="branches()" (valueChange)="onBranches($event)" [placeholder]="'COMMON.LOGS.ALL_BRANCHES' | translate"/>
+    </div>
+    <div class="ld__dates">
+      <span class="ld__dates-label">{{ 'COMMON.LOGS.EMPLOYEE' | translate }}</span>
+      <app-search-dropdown [multiple]="true" [loadFn]="loadEmployees" [displayWith]="optionLabel" [compareWith]="optionCompare"
+        [value]="employees()" (valueChange)="onEmployees($event)" [placeholder]="'COMMON.LOGS.ALL_EMPLOYEES' | translate"/>
+    </div>
     @if (activeFilterCount() > 0) {
       <button type="button" class="ld__clear" (click)="clearFilters()">{{ 'COMMON.CLEAR_ALL' | translate }}</button>
     }

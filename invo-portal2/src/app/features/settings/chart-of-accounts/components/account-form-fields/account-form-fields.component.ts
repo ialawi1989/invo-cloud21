@@ -12,9 +12,16 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { ModalService } from '@shared/modal/modal.service';
+import { TranslateLinkComponent } from '@shared/components/translate-link/translate-link.component';
+import {
+  TranslationModalComponent,
+  TranslationModalData,
+  TranslationLang,
+} from '@shared/components/translation-modal/translation-modal.component';
 
 import { AccountService } from '../../services/account.service';
 import { Account } from '../../services/account.types';
@@ -54,6 +61,7 @@ import {
     FormsModule,
     TranslateModule,
     SearchDropdownComponent,
+    TranslateLinkComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './account-form-fields.component.html',
@@ -61,6 +69,8 @@ import {
 })
 export class AccountFormFieldsComponent implements OnChanges {
   private service = inject(AccountService);
+  private modal   = inject(ModalService);
+  private translate = inject(TranslateService);
 
   /** The current value to render. Pass the same object back via
    *  `valueChange` after each mutation. */
@@ -142,6 +152,30 @@ export class AccountFormFieldsComponent implements OnChanges {
     });
     this.typeChange.emit(id);
     void this.loadParents(id);
+  }
+  /** Opens the shared translation modal for the name or description and
+   *  mirrors the English value into the primary field (legacy rule). */
+  async openTranslation(field: 'name' | 'description'): Promise<void> {
+    const current = String(this.value?.[field] ?? '').trim();
+    const ref = this.modal.open<TranslationModalComponent, TranslationModalData, TranslationLang | null>(
+      TranslationModalComponent,
+      {
+        size: 'sm',
+        closeOnBackdrop: false,
+        data: {
+          initial: { ...(this.value?.translation?.[field] ?? {}), en: current },
+          label: this.translate.instant(field === 'name' ? 'CHART_OF_ACCOUNTS.FIELDS.NAME' : 'CHART_OF_ACCOUNTS.FIELDS.DESCRIPTION'),
+          multiline: field === 'description',
+        },
+      },
+    );
+    const result = await ref.afterClosed();
+    if (!result) return;
+    this.valueChange.emit({
+      ...this.value,
+      [field]: result.en,
+      translation: { ...(this.value.translation ?? {}), [field]: { ...result } },
+    });
   }
   setCode(code: string): void {
     this.valueChange.emit({ ...this.value, code });

@@ -1,0 +1,168 @@
+@if (loaded) {
+  <div class="pf">
+    <header class="page-header">
+      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+      <h1 class="page-header__title">{{ 'BILLS_PAYMENT.FORM.PAYMENT' | translate }}</h1>
+    </header>
+
+    <div class="pf-top">
+    <!-- General information -->
+    <section class="pf-card">
+      <h2 class="pf-card__title">{{ 'BILLS_PAYMENT.FORM.GENERAL_INFORMATION' | translate }}</h2>
+      <div class="pf-row">
+        <div class="pf-field pf-field--grow">
+          <label>{{ 'BILLS_PAYMENT.LIST.SUPPLIER_NAME' | translate }} <span class="req">*</span></label>
+          @if (formStatus === 'new') {
+            <app-search-dropdown [loadFn]="loadSuppliers" [pageSize]="20" [displayWith]="supplierLabel" [compareWith]="byId"
+              [value]="supplierValue" (valueChange)="onSupplier($any($event))" [clearable]="true" [searchable]="true" [disabled]="locked"
+              [placeholder]="'BILLS_PAYMENT.FORM.SELECT_SUPPLIER' | translate"/>
+            @if (!locked) { <button type="button" class="pf-link pf-link--new" (click)="createSupplier()">+ {{ 'BILLS_PAYMENT.FORM.NEW_SUPPLIER' | translate }}</button> }
+          } @else {
+            <div class="pf-static">{{ payment.supplierName }}</div>
+          }
+          @if (fieldError('SUPPLIER'); as e) { <p class="pf-error">{{ e }}</p> }
+          @if (payment.supplierId) {
+            <p class="pf-hint">{{ 'BILLS_PAYMENT.FORM.OUTSTANDING_PAYABLE' | translate }}: <b>{{ outstandingPayable | mycurrency }}</b></p>
+          }
+        </div>
+        @if (branches.length > 1) {
+          <div class="pf-field pf-field--grow">
+            <label>{{ 'BILLS_PAYMENT.LIST.BRANCH_NAME' | translate }}</label>
+            <app-search-dropdown [items]="branches" [displayWith]="branchLabel" [compareWith]="byId"
+              [value]="branchOf()" (valueChange)="onBranch($any($event))" [clearable]="false" [disabled]="formStatus === 'edit' || locked"/>
+          </div>
+        }
+      </div>
+    </section>
+
+    <app-doc-attachments-card [attachments]="payment.attachment" (changed)="onAttachments($event)"/>
+    </div>
+
+    <!-- Payment -->
+    <section class="pf-card">
+      <h2 class="pf-card__title">{{ 'BILLS_PAYMENT.FORM.PAYMENT_FORM' | translate }}</h2>
+
+      <div class="pf-row">
+        <div class="pf-field pf-field--grow">
+          <label>{{ 'BILLS_PAYMENT.LIST.PAYMENT_DATE' | translate }} <span class="req">*</span></label>
+          <app-date-picker [value]="paymentDateValue" (valueChange)="onPaymentDate($event)"/>
+          @if (fieldError('DATE'); as e) { <p class="pf-error">{{ e }}</p> }
+        </div>
+        <div class="pf-field pf-field--grow">
+          <label for="tender">{{ 'BILLS_PAYMENT.FORM.PAYMENT_MADE' | translate }} <span class="req">*</span></label>
+          <input id="tender" class="pf-input" [class.is-invalid]="fieldError('AMOUNT')" type="number" min="0" inputmode="decimal"
+            [ngModel]="payment.tenderAmount" (ngModelChange)="onTender($event)"/>
+          @if (hasRate) { <span class="pf-tag">≈ {{ payment.equivalentAmount | mycurrency }} ({{ 'BILLS_PAYMENT.FORM.EQUIVALENT_AMOUNT' | translate }})</span> }
+          @if (fieldError('AMOUNT'); as e) { <p class="pf-error">{{ e }}</p> }
+        </div>
+      </div>
+
+      <div class="pf-row">
+        <div class="pf-field pf-field--grow">
+          <label>{{ 'BILLS_PAYMENT.LIST.PAYMENT_METHOD' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="paymentMethods" [displayWith]="methodLabel" [compareWith]="byId"
+            [value]="selectedMethod" (valueChange)="onMethod($any($event))" [clearable]="false" [disabled]="methodLocked"
+            [placeholder]="'BILLS_PAYMENT.FORM.SELECT_METHOD' | translate"/>
+          @if (selectedMethod) {
+            <div class="pf-tags">
+              @if (selectedMethod.accountName) { <span class="pf-tag">{{ 'BILLS_PAYMENT.FORM.ACCOUNT' | translate }}: {{ selectedMethod.accountName }}</span> }
+              @if (hasRate) { <span class="pf-tag">{{ 'BILLS_PAYMENT.FORM.RATE' | translate }}: {{ payment.rate }}</span> }
+            </div>
+          }
+          @if (fieldError('METHOD'); as e) { <p class="pf-error">{{ e }}</p> }
+        </div>
+      </div>
+
+      <div class="pf-field">
+        <label for="ref">{{ 'BILLS_PAYMENT.LIST.REFERENCE_NUMBER' | translate }}</label>
+        <input id="ref" class="pf-input" type="text" [(ngModel)]="payment.referenceNumber" (ngModelChange)="markDirty()"/>
+      </div>
+
+      @if (showApplyPrompt) {
+        <div class="pf-prompt">
+          <span>{{ 'BILLS_PAYMENT.FORM.APPLY_PROMPT' | translate }}</span>
+          <span class="pf-prompt__actions">
+            <button type="button" class="pf-btn" (click)="doNotApply()">{{ 'COMMON.CANCEL' | translate }}</button>
+            <button type="button" class="pf-btn pf-btn--primary" (click)="applyAmount()">{{ 'BILLS_PAYMENT.FORM.APPLY' | translate }}</button>
+          </span>
+        </div>
+      }
+    </section>
+
+    <!-- Invoices being paid -->
+    @if (lines.length || formStatus === 'new') {
+      <section class="pf-card">
+        <div class="pf-lines-head">
+          <h2 class="pf-card__title">{{ 'BILLS_PAYMENT.FORM.PAYMENT_LINES' | translate }}</h2>
+          @if (formStatus === 'new') {
+            <div class="pf-tools">
+              @if (branches.length > 1) {
+                <span class="pf-seg">
+                  <button type="button" [class.on]="branchFilter === 'all'" (click)="onBranchFilter('all')">{{ 'BILLS_PAYMENT.FORM.ALL_BRANCHES' | translate }}</button>
+                  <button type="button" [class.on]="branchFilter === payment.branchId" (click)="onBranchFilter(payment.branchId)">{{ 'BILLS_PAYMENT.FORM.THIS_BRANCH' | translate }}</button>
+                </span>
+              }
+              <input class="pf-input pf-input--search" type="text" [placeholder]="'COMMON.SEARCH' | translate" [(ngModel)]="lineSearch"/>
+              <button type="button" class="pf-btn" [disabled]="!lines.length" (click)="fillAmounts()">{{ 'BILLS_PAYMENT.FORM.PAY_IN_FULL' | translate }}</button>
+              <button type="button" class="pf-btn" [disabled]="!lines.length" (click)="resetAmounts()">{{ 'BILLS_PAYMENT.FORM.RESET' | translate }}</button>
+            </div>
+          }
+        </div>
+
+        <div class="pf-wrap">
+          <table class="pf-table">
+            <thead>
+              <tr>
+                <th>{{ 'BILLS_PAYMENT.FORM.DATE' | translate }}</th>
+                <th>{{ 'BILLS_PAYMENT.VIEW.BILL_NUMBER' | translate }}</th>
+                <th>{{ 'BILLS_PAYMENT.LIST.BRANCH_NAME' | translate }}</th>
+                <th class="end">{{ 'BILLS_PAYMENT.LIST.AMOUNT' | translate }}</th>
+                <th class="end">{{ 'BILLS_PAYMENT.FORM.BALANCE_DUE' | translate }}</th>
+                <th class="end">{{ 'BILLS_PAYMENT.VIEW.PAYMENT_AMOUNT' | translate }}</th>
+                <th class="end">{{ 'BILLS_PAYMENT.FORM.BALANCE' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of visibleLines; track l.billingId || $index) {
+                <tr>
+                  <td>{{ l.billingDate | date: 'yyyy-MM-dd' }}</td>
+                  <td><a [href]="'/account/bills/view/' + l.billingId" target="_blank" rel="noopener">{{ l.billingNumber }}</a></td>
+                  <td>{{ l.branchName }}</td>
+                  <td class="end">{{ l.total | mycurrency }}</td>
+                  <td class="end">{{ l.calculateAmountDue | mycurrency }}</td>
+                  <td class="end"><input class="pf-num" type="number" min="0" [max]="l.calculateAmountDue" [ngModel]="l.amount" (ngModelChange)="onLineAmount(l, $event)"/></td>
+                  <td class="end">{{ l.calculateAmountDue - l.amount | mycurrency }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7" class="pf-empty">{{ 'BILLS_PAYMENT.FORM.NO_BILLS' | translate }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pf-totals">
+          <div class="pf-t"><span>{{ 'BILLS_PAYMENT.FORM.TOTAL' | translate }}</span><b>{{ totalPayments | mycurrency }}</b></div>
+          @if (payment.tenderAmount > 0) {
+            <div class="pf-t"><span>{{ 'BILLS_PAYMENT.FORM.TENDER_PAID' | translate }}</span><b>{{ payment.equivalentAmount | mycurrency }}</b></div>
+            @if (payment.calculateAmountInExcess > 0) {
+              <div class="pf-t"><span>{{ 'BILLS_PAYMENT.FORM.PREPAID_CREDIT' | translate }}</span><b>{{ payment.calculateAmountInExcess | mycurrency }}</b></div>
+            }
+          }
+        </div>
+      </section>
+    }
+
+    <app-form-sticky-footer>
+      <button type="button" class="pf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (formStatus === 'edit') {
+        <button type="button" class="pf-btn" (click)="view()">{{ 'COMMON.VIEW' | translate }}</button>
+      }
+      @if (actionsMenu(); as items) {
+        @if (items.length) {
+          <app-dropdown-menu-btn [items]="items" [appendToBody]="true" align="start" triggerClass="pf-btn">{{ 'DOC_VIEW.ACTIONS' | translate }}</app-dropdown-menu-btn>
+        }
+      }
+      <button type="button" class="pf-btn pf-btn--primary" [disabled]="submitting" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+    </app-form-sticky-footer>
+  </div>
+}

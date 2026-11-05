@@ -22,6 +22,7 @@ import {
   WeekDayName,
   WEEK_DAYS,
   buildTimeOptions,
+  buildEndTimeOptions,
   noOverlaps,
   shiftsHours,
   validTimeOrder,
@@ -104,6 +105,8 @@ export class RegularShiftFormComponent {
   /** 12-hour-labelled time options (value stays 24h `"HH:mm"`). */
   /** 24-hour `"HH:mm"` time options (displayed verbatim, e.g. "09:00"). */
   readonly times          = buildTimeOptions();
+  /** End-of-shift choices: the same list plus 23:59. */
+  readonly endTimes = buildEndTimeOptions();
   readonly weekDays       = WEEK_DAYS;
   readonly repeatOptions = REPEAT_OPTIONS;
   readonly endOptions    = END_OPTIONS;

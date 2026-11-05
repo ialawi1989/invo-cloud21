@@ -55,7 +55,7 @@
                 <span class="tp-row__name">{{ t.name }}</span>
                 <span class="tp-row__meta">{{ t.category }} · {{ t.language }}</span>
               </div>
-              <span [class]="statusBadgeClass(t.status)">{{ t.status }}</span>
+              <app-status-badge [status]="t.status"/>
               <button type="button" class="btn btn-ghost btn-sm"
                       [disabled]="!pluginEnabled || !canResync(t) || resyncing()[t.name]"
                       (click)="resync(t)">

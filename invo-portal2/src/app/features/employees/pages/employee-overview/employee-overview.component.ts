@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -56,6 +56,11 @@ export class EmployeeOverviewComponent implements OnInit {
   private translate = inject(TranslateService);
   private toast     = inject(ToastService);
 
+  /** Set when hosted by the view page, which supplies the record id itself. */
+  readonly forcedId = input<string | null>(null);
+  /** Hide the identity header + actions — the host already shows them. */
+  readonly embedded = input<boolean>(false);
+
   readonly loading = signal<boolean>(true);
   readonly record  = signal<EmployeeDetails | null>(null);
   readonly bank    = signal<BankDetails | null>(null);
@@ -74,11 +79,31 @@ export class EmployeeOverviewComponent implements OnInit {
   readonly position   = computed<string>(() => this.record()?.employment?.position ?? '');
   readonly avatar     = computed<string>(() => this.record()?.avatar ?? '');
 
+  /** Role names for the identity strip's pills. */
+  readonly rolePills = computed<string[]>(() => {
+    const r = this.record();
+    if (!r) return [];
+    const keys: string[] = [];
+    if (r.superAdmin) keys.push('EMPLOYEES.FORM.SUPER_ADMIN');
+    if (r.admin)      keys.push('EMPLOYEES.FORM.CLOUD_ADMIN');
+    if (r.user)       keys.push('EMPLOYEES.FORM.POS_USER');
+    if (r.isDriver)   keys.push('EMPLOYEES.FORM.IS_DRIVER');
+    if (r.isSalesPerson) keys.push('EMPLOYEES.FORM.IS_SALES_PERSON');
+    return keys.map((k) => this.translate.instant(k));
+  });
+
+  /** Primary branch, shown beside the name block. */
+  readonly workLocation = computed<string>(() => {
+    const r = this.record();
+    return r ? this.primaryBranchName(r) : '';
+  });
+
   /** Already ended, so Terminate has nothing left to do. */
   readonly isTerminated = computed<boolean>(() => !!this.record()?.terminationDate);
 
   async ngOnInit(): Promise<void> {
-    const id = this.route.snapshot.paramMap.get('id')
+    const id = this.forcedId()
+      ?? this.route.snapshot.paramMap.get('id')
       ?? this.route.parent?.snapshot.paramMap.get('id')
       ?? null;
     if (!id || id === '0') { this.router.navigate(['/employees']); return; }

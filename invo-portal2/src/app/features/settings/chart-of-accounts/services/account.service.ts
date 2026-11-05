@@ -1,8 +1,12 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../../../environments/environment';
 import { ApiService } from '@core/http';
 
 import {
   Account,
+  AccountJournalsResult,
   AccountListParams,
   AccountListResponse,
   emptyAccount,
@@ -24,6 +28,41 @@ import { findAccountType } from '../utils/account-types';
 @Injectable({ providedIn: 'root' })
 export class AccountService {
   private api = inject(ApiService);
+  private http = inject(HttpClient);
+
+  // ─── Account view: journals ─────────────────────────────────────
+  /** POST accounts/reports/accountJournal — paged journal lines of one account plus
+   *  opening balance and debit/credit totals for the period. */
+  async getAccountJournals(filter: Record<string, unknown>): Promise<AccountJournalsResult> {
+    const res = await this.api.request<any>(this.api.post('accounts/reports/accountJournal', { filter }));
+    const d = res?.data ?? {};
+    return {
+      list:           Array.isArray(d.journals) ? d.journals : [],
+      count:          Number(d.count ?? 0) || 0,
+      pageCount:      Number(d.pageCount ?? 1) || 1,
+      openingBalance: Number.isFinite(+d.openingBalance) ? +d.openingBalance : 0,
+      total:          { debit: Number(d.total?.debit ?? 0) || 0, credit: Number(d.total?.credit ?? 0) || 0 },
+    };
+  }
+
+  // ─── Import / export ────────────────────────────────────────────
+  getBulkImportProgress(): Promise<any> {
+    return this.api.request(this.api.get('accounts/getAccountsBulkImportProgress'));
+  }
+  importAccounts(accounts: unknown[]): Promise<any> {
+    return this.api.request(this.api.post('accounts/importAccounts', accounts));
+  }
+  async exportAccounts(type: 'csv' | 'xlsx'): Promise<void> {
+    const blob = await firstValueFrom(
+      this.http.get(`${environment.backendUrl}accounts/exportAccounts/${type}`, { responseType: 'blob' }),
+    );
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'accounts.' + type;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
 
   // ─── List ───────────────────────────────────────────────────────
   async getList(params: AccountListParams = {}): Promise<AccountListResponse> {
@@ -95,6 +134,10 @@ export class AccountService {
       ...a,
       parentType: a.parentType || findAccountType(a.type)?.parentType || a.type,
     };
+    // The primary fields always mirror the English translation (a typed edit after the
+    // translation modal must not leave a stale `en`).
+    if (payload.translation?.name)        payload.translation = { ...payload.translation, name: { ...payload.translation.name, en: (a.name ?? '').trim() } };
+    if (payload.translation?.description) payload.translation = { ...payload.translation, description: { ...payload.translation.description, en: a.description ?? '' } };
     const res = await this.api.request<any>(
       this.api.post('accounts/saveAccount', payload),
     );

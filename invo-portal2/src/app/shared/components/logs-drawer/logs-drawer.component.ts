@@ -14,7 +14,9 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { ApiService } from '@core/http/api.service';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
+import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import type { DateRange } from '@shared/components/datepicker/date-picker.types';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import { ModalRef } from '@shared/modal/modal.service';
@@ -35,6 +37,9 @@ export interface LogsDrawerData {
    */
   onRestore?: (field: string, value: string) => void;
 }
+
+/** One pickable branch / employee in the filter bar. */
+export interface LogFilterOption { value: string; label: string; }
 
 /** Coarse action classes, used only for the badge colour + icon. */
 type ActionKind = 'create' | 'edit' | 'delete' | 'other';
@@ -58,20 +63,20 @@ const PAGE_SIZE = 15;
  * `LogsDrawerData` payload — every list page that wants a "Show logs" action
  * uses this one component; only the `sourceTable` key differs.
  *
- * Scope note: search + date range are supported. The legacy panel also had
- * branch and employee multi-selects; those aren't ported yet, and the service
- * already accepts `branchId` / `employeeId` for when they are.
+ * Filters (like the legacy panel): search, date range, and branch + employee multi-selects
+ * (`getLogReport` takes `branch_id[]` / `employee_id[]`).
  */
 @Component({
   selector: 'app-logs-drawer',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, DatePipe, DatePickerComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, DatePipe, DatePickerComponent, SearchDropdownComponent],
   templateUrl: './logs-drawer.component.html',
   styleUrl: './logs-drawer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogsDrawerComponent implements OnInit, AfterViewInit, OnDestroy {
   private service = inject(LogsService);
+  private api = inject(ApiService);
   private modalRef = inject<ModalRef<void>>(MODAL_REF);
   data = inject<LogsDrawerData>(MODAL_DATA);
 
@@ -87,11 +92,15 @@ export class LogsDrawerComponent implements OnInit, AfterViewInit, OnDestroy {
   dateFrom = signal('');
   dateTo = signal('');
 
+  /** Picked branches / employees (multi-select); empty means no restriction. */
+  branches = signal<LogFilterOption[]>([]);
+  employees = signal<LogFilterOption[]>([]);
+
   private page = signal(1);
   private debounce?: ReturnType<typeof setTimeout>;
 
   readonly activeFilterCount = computed(
-    () => [this.search(), this.dateFrom(), this.dateTo()].filter(Boolean).length,
+    () => [this.search(), this.dateFrom(), this.dateTo(), this.branches().length, this.employees().length].filter(Boolean).length,
   );
 
   private readonly sourceTable =
@@ -137,7 +146,26 @@ export class LogsDrawerComponent implements OnInit, AfterViewInit, OnDestroy {
     void this.load(1);
   }
 
+  // Branch / employee pickers: paged server-side lists, same endpoints the list filters use.
+  optionLabel = (o: LogFilterOption) => o?.label ?? '';
+  optionCompare = (a: LogFilterOption, b: LogFilterOption) => a?.value === b?.value;
+  loadBranches = (p: { page: number; pageSize: number; search: string }) =>
+    this.pagedOptions('branch/getBranches/', p, b => ({ value: b.id, label: b.name }));
+  loadEmployees = (p: { page: number; pageSize: number; search: string }) =>
+    this.pagedOptions('employee/getEmployeeList', p, e => ({ value: e.id, label: e.name }));
+
+  private async pagedOptions(url: string, p: { page: number; pageSize: number; search: string }, map: (r: any) => LogFilterOption) {
+    const res = await this.api.request<any>(this.api.post(url, { page: p.page, limit: p.pageSize, searchTerm: p.search, sortBy: {} }));
+    const list: any[] = res?.data?.list ?? [];
+    return { items: list.map(map), hasMore: p.page < (res?.data?.pageCount ?? 1) };
+  }
+
+  onBranches(v: unknown): void { this.branches.set(Array.isArray(v) ? (v as LogFilterOption[]) : v ? [v as LogFilterOption] : []); void this.load(1); }
+  onEmployees(v: unknown): void { this.employees.set(Array.isArray(v) ? (v as LogFilterOption[]) : v ? [v as LogFilterOption] : []); void this.load(1); }
+
   clearFilters(): void {
+    this.branches.set([]);
+    this.employees.set([]);
     this.search.set('');
     this.dateRange.set(null);
     this.dateFrom.set('');
@@ -159,6 +187,8 @@ export class LogsDrawerComponent implements OnInit, AfterViewInit, OnDestroy {
         searchTerm: this.search(),
         dateFrom: this.dateFrom(),
         dateTo: this.dateTo(),
+        branchId: this.branches().map(b => b.value),
+        employeeId: this.employees().map(e => e.value),
       });
       this.logs.set(first ? res.list : [...this.logs(), ...res.list]);
       this.hasNext.set(res.hasNext);

@@ -339,3 +339,20 @@
   &__balance { font-variant-numeric: tabular-nums; }
   &__instalment { color: var(--text-muted, #6b7280); font-size: 0.8125rem; }
 }
+
+// ── Pay history table ──────────────────────────────────────────────────────
+.pay-table-wrap { overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px; }
+.pay-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th, td { padding: 10px 12px; text-align: start; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  th { background: #f8fafc; color: #475569; font-weight: 600; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: 0; }
+  &__num { text-align: end; font-variant-numeric: tabular-nums; }
+  &__row--current td { background: var(--color-brand-50); }
+  &__act { text-align: end; }
+}
+.pay-reveal { margin-inline-start: 8px; padding-block: 0; }
+.pay-panel--loans { margin-top: 16px; }

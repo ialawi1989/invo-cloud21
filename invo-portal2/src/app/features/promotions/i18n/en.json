@@ -141,7 +141,13 @@
     },
     "PROMOTIONS_POINTS": {
       "ACTIVE_PERIOD": "Active Period",
-      "EXPIRY_PERIOD": "Expiry Period"
+      "EXPIRY_PERIOD": "Expiry Period",
+      "POINTS": "Points",
+      "INVOICE_BALANCE": "Invoice balance",
+      "CURRENCY_VALUE": "Currency value",
+      "POINT_AMOUNT_MUST_BE_AT_LEAST_1": "Point amount must be at least 1",
+      "POINT_AMOUNT_MORE_THAN_POINT_BALANCE": "Point amount more than point balance",
+      "POINT_VALUE_MORE_THAN_INVOICE_BALANCE": "Point value more than invoice balance"
     }
   }
 }

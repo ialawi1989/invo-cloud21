@@ -22,7 +22,9 @@
         }
       </div>
 
-      @if (isVoucher) {
+      @if (isPoints) {
+        <app-points-payment [balance]="balance" [phoneNumber]="invoice.customerPhone"/>
+      } @else if (isVoucher) {
         <app-voucher-payment [balance]="balance" [phoneNumber]="invoice.customerPhone"/>
       } @else {
         <div class="ipp-row">
@@ -59,17 +61,18 @@
         </div>
       }
 
-      @if (addresses.length) {
-        <details class="ipp-adv">
-          <summary>{{ 'INVOICES.FORM.ADVANCED_OPTIONS' | translate }}</summary>
-          <label class="ipp-label">{{ 'INVOICES.LIST.CUSTOMER_ADDRESS' | translate }}</label>
-          <app-search-dropdown
-            [items]="addresses" [displayWith]="addressLabel" [searchable]="false"
-            [value]="addressValue" (valueChange)="onAddress($any($event))" [clearable]="true"
-            [placeholder]="'INVOICES.FORM.SELECT_ADDRESS' | translate"/>
-        </details>
+      @if (invoice.branchName) {
+        <div class="ipp-field">
+          <label class="ipp-label">{{ 'INVOICES.PAYMENT.BRANCH' | translate }}</label>
+          <div class="ipp-static">{{ invoice.branchName }}</div>
+        </div>
+      }
+      @if (invoice.customerId) {
+        <app-customer-address-field [customerId]="invoice.customerId" (addressChange)="onAddress($event)"/>
       }
     </section>
+
+    <app-doc-attachments-card [attachments]="payment.attachment" (changed)="onAttachments($event)"/>
 
     <app-form-sticky-footer>
       <button type="button" class="ipp-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>

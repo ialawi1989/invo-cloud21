@@ -42,9 +42,13 @@ export class ManualJournalsService {
       searchTerm: params.searchTerm ?? '',
       sortBy: params.sortBy ?? {},
     };
-    if (params.branches?.length) {
-      body['filter'] = { branches: params.branches };
-    }
+    body['filter'] = {
+      branches: params.branches ?? [],
+      status: params.status ?? [],
+      employeeId: params.employeeId || null,
+      fromDate: params.fromDate || null,
+      toDate: params.toDate || null,
+    };
 
     const res = await this.api.request<any>(this.api.post('accounts/getJournals', body));
     const data = res?.data ?? {};

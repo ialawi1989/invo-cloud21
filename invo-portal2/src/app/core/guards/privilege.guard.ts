@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { PrivilegeService } from '../auth/privileges/privilege.service';
+import { AuthService } from '../auth/auth.service';
 
 /**
  * Route guard that mirrors the v16 PermissionGuard.
@@ -10,10 +11,14 @@ import { PrivilegeService } from '../auth/privileges/privilege.service';
  *                     or "invoiceSecurity.access"
  *   redirectTo      — where to go on deny (default: 'dashboard')
  *   silentRedirect  — if true, redirect without an error message
+ *
+ * A denied check first re-loads the privileges from the server, so changes
+ * made after sign-in (approved access requests) apply without a new login.
  */
-export const privilegeGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+export const privilegeGuard: CanActivateFn = async (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   const privilegeService = inject(PrivilegeService);
   const router           = inject(Router);
+  const auth             = inject(AuthService);
 
   const permissionPath: string | undefined = route.data['permissionPath'];
   const redirectTo:     string             = route.data['redirectTo'] ?? '/dashboard';
@@ -24,9 +29,21 @@ export const privilegeGuard: CanActivateFn = (route: ActivatedRouteSnapshot, sta
     return false;
   }
 
+  // Time-limited access grants expire server-side, so a tree loaded a while ago
+  // may still contain one. Refresh it (at most once a minute) before deciding.
+  let refreshed = false;
+  if (auth.privilegesStale()) {
+    refreshed = true;
+    await auth.refreshPrivileges();
+  }
+
   const allowed = privilegeService.check(permissionPath);
 
   if (allowed) return true;
+
+  // The stored privilege tree can be stale (role edited, access request
+  // approved since sign-in). Re-check against the server once before denying.
+  if (!refreshed && await auth.refreshPrivileges() && privilegeService.check(permissionPath)) return true;
 
   if (silentRedirect) {
     router.navigate([redirectTo]);

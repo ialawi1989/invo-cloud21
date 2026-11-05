@@ -293,6 +293,12 @@ import {
       padding: 14px 4px 0;
       margin-bottom: 10px;
     }
+    /* Card edge: the same border and shadow as the form cards (employee form,
+       Customers), so lists and forms match. Full-bleed mode below removes it. */
+    .list-card { border-radius: 12px; box-shadow: none; }
+    /* !important so no utility class (or the full-bleed reset below) can win:
+       every list card, full-width or not, carries the form-card border. */
+    .list-page-container .list-card { border: 1px solid #e4e7ec !important; }
     /* Card fills the rest, stripped of its rounded/border/shadow chrome. */
     .lp-fullbleed .list-card {
       flex: 1 1 auto;
@@ -1584,6 +1590,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     }
     if (this.searchTerm() === value) return;
     this.searchTerm.set(value);
+    this.syncAutoDateRange(value);
     this.currentPage.set(1);
     this.loadData();
     this.syncStateToUrl();
@@ -1595,9 +1602,37 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     this.searchDraft.set(this.searchTerm());
   }
 
+  /** The range `search.defaultDateRange` added to the filters (so it can be taken off again with the search). */
+  private autoDateRange: { keyFrom: string; keyTo: string; from: string; to: string } | null = null;
+
+  private syncAutoDateRange(term: string): void {
+    const cfg = this.search.defaultDateRange;
+    if (!cfg) return;
+    const f = this.activeFilters();
+    if (term.trim()) {
+      if (f[cfg.keyFrom] || f[cfg.keyTo]) return;
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const ymd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      const to = new Date(), from = new Date();
+      from.setMonth(from.getMonth() - (cfg.months ?? 3));
+      this.autoDateRange = { keyFrom: cfg.keyFrom, keyTo: cfg.keyTo, from: ymd(from), to: ymd(to) };
+      this.activeFilters.set({ ...f, [cfg.keyFrom]: this.autoDateRange.from, [cfg.keyTo]: this.autoDateRange.to });
+    } else if (this.autoDateRange) {
+      const a = this.autoDateRange;
+      this.autoDateRange = null;
+      if (f[a.keyFrom] === a.from && f[a.keyTo] === a.to) {
+        const next = { ...f };
+        delete next[a.keyFrom];
+        delete next[a.keyTo];
+        this.activeFilters.set(next);
+      }
+    }
+  }
+
   clearSearch(): void {
     this.searchDraft.set('');
     this.searchTerm.set('');
+    this.syncAutoDateRange('');
     this.currentPage.set(1);
     this.loadData();
     this.syncStateToUrl();
@@ -1697,8 +1732,16 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     });
   }
 
+  /** The `to` key of a date-range filter: its chip is shown once, on the `from` key. */
+  isRangeEndKey(key: string): boolean {
+    return this.filters.some(f => f.type === 'date-range' && (f as any).keyTo === key && !!this.activeFilters()[(f as any).keyFrom]);
+  }
+
   removeFilter(key: string): void {
-    const newFilters = FilterHelper.removeFilter(this.activeFilters(), key);
+    // A date range is one filter in two keys: removing its chip takes off both ends.
+    const range = this.filters.find(f => f.type === 'date-range' && ((f as any).keyFrom === key || (f as any).keyTo === key)) as any;
+    let newFilters = FilterHelper.removeFilter(this.activeFilters(), key);
+    if (range) newFilters = FilterHelper.removeFilter(newFilters, key === range.keyFrom ? range.keyTo : range.keyFrom);
     this.filterLabels.update(labels => {
       const updated = { ...labels };
       delete updated[key];

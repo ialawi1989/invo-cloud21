@@ -85,6 +85,14 @@ export function buildTimeOptions(stepMinutes = 30): string[] {
   return out;
 }
 
+/**
+ * The choices for a shift's END time: the same half-hour list plus 23:59, so a shift can run to the very end of the
+ * day (the list stops at 23:30 and 24:00 is not a valid time). Start times keep using {@link buildTimeOptions}.
+ */
+export function buildEndTimeOptions(stepMinutes = 30): string[] {
+  return [...buildTimeOptions(stepMinutes), '23:59'];
+}
+
 /** `"HH:mm"` (24h) → a Fresha-style 12-hour label: `"10 AM"`, `"7 PM"`,
  *  `"10:30 AM"`. Whole hours drop the `":00"`. Returns the input unchanged
  *  when it can't be parsed. */

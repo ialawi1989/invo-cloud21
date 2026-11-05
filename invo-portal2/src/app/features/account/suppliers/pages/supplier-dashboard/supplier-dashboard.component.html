@@ -1,0 +1,327 @@
+<app-doc-view-shell
+  [docTitle]="supplier()?.name ?? ''" railTitle="SUPPLIERS.DASHBOARD_PAGE.ALL_SUPPLIERS" [showAdd]="actions.canAdd"
+  [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="supplierId"
+  [showToolbar]="false" [showPaper]="false" [loading]="!supplier()"
+  [railMoreItems]="railMoreItems()"
+  (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railPrev)="railPrev()" (railNext)="railNext()"
+  (add)="add()" (close)="goToList()">
+
+  <div titleExtra class="cdv-acts">
+    @if (supplier()) {
+      @if (actions.canEdit) {
+        <button type="button" class="cdv-btn" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
+      }
+      @if (newMenu().length) {
+        <app-dropdown-menu-btn [items]="newMenu()" [appendToBody]="true" align="end" triggerClass="cdv-btn cdv-btn--primary">
+          {{ 'SUPPLIERS.DASHBOARD_PAGE.NEW_TRANSACTION' | translate }}
+        </app-dropdown-menu-btn>
+      }
+    }
+  </div>
+
+  <div alt class="cdv">
+    @if (supplier(); as s) {
+      <nav class="cdv-tabs" role="tablist">
+        @for (t of tabs; track t.value) {
+          <button type="button" role="tab" class="cdv-tab" [class.is-active]="tab() === t.value" [attr.aria-selected]="tab() === t.value" (click)="selectTab(t.value)">
+            {{ t.label | translate }}
+          </button>
+        }
+      </nav>
+
+      <!-- OVERVIEW -->
+      @if (tab() === 'overview') {
+        <div class="cdv-overview">
+          <!-- Left column: who the supplier is -->
+          <div class="cdv-col cdv-col--side">
+            <section class="cd-card">
+              <h4>{{ 'SUPPLIERS.DASHBOARD_PAGE.CONTACT_INFORMATION' | translate }}</h4>
+              @if (s.email) { <div class="cd-line">{{ s.email }}</div> }
+              @if (s.phone) { <div class="cd-line">{{ s.phone }}</div> }
+              @if (s.mobile) { <div class="cd-line">{{ s.mobile }}</div> }
+              @if (s.website) { <div class="cd-line">{{ s.website }}</div> }
+              @if (s.address) { <div class="cd-line">{{ s.address }}{{ s.country ? ', ' + s.country : '' }}</div> }
+              @for (c of s.contacts; track $index) {
+                <div class="cd-line"><b>{{ c.contact }}</b> · {{ c.phone }}{{ c.email ? ' · ' + c.email : '' }}</div>
+              }
+            </section>
+            <section class="cd-card">
+              <h4>{{ 'SUPPLIERS.DASHBOARD_PAGE.ACCOUNT_DETAILS' | translate }}</h4>
+              @if (s.code) { <div class="cd-kv"><span>{{ 'SUPPLIERS.LIST.CODE' | translate }}</span><b>{{ s.code }}</b></div> }
+              @if (s.vatNumber) { <div class="cd-kv"><span>{{ 'SUPPLIERS.FORM.VAT_NUMBER' | translate }}</span><b>{{ s.vatNumber }}</b></div> }
+              @if (s.paymentTerm) { <div class="cd-kv"><span>{{ 'SUPPLIERS.FORM.PAYMENT_TERM' | translate }}</span><b>{{ termLabel(s.paymentTerm) }}</b></div> }
+              <div class="cd-kv"><span>{{ 'SUPPLIERS.FORM.ACTIVE' | translate }}</span><b>{{ (s.active ? 'COMMON.YES' : 'COMMON.NO') | translate }}</b></div>
+              @if (s.note) { <div class="cd-kv"><span>{{ 'SUPPLIERS.LIST.NOTE' | translate }}</span><b>{{ s.note }}</b></div> }
+            </section>
+          </div>
+
+          <!-- Right column: money -->
+          <div class="cdv-col">
+            @if (overview(); as o) {
+              <section class="cd-card">
+                <div class="cd-grid cd-grid--3">
+                  <div class="cd-kpi cd-kpi--red">
+                    <span>{{ 'SUPPLIERS.DASHBOARD_PAGE.OUTSTANDING_PAYABLE' | translate }}</span>
+                    <strong>{{ (o.outStandingPayable || 0) | mycurrency }}</strong>
+                  </div>
+                  <div class="cd-kpi cd-kpi--blue">
+                    <span>{{ 'SUPPLIERS.DASHBOARD_PAGE.UNUSED_CREDIT' | translate }}</span>
+                    <strong>{{ (o.unusedCredit || 0) | mycurrency }}</strong>
+                  </div>
+                  <div class="cd-kpi cd-kpi--green">
+                    <span>{{ 'SUPPLIERS.DASHBOARD_PAGE.LAST_PAYMENT' | translate }}</span>
+                    <strong>
+                      @if (lastPayment()?.id) {
+                        <a [routerLink]="['/account/bills-payment/view', lastPayment().id]">{{ (lastPayment()?.tenderAmount ?? lastPayment()?.total ?? 0) | mycurrency }}</a>
+                      } @else { {{ 0 | mycurrency }} }
+                    </strong>
+                    @if (daysSinceLastPayment() !== null) { <small>{{ daysSinceLastPayment() }} {{ 'SUPPLIERS.DASHBOARD_PAGE.DAYS' | translate }}</small> }
+                  </div>
+                </div>
+              </section>
+            }
+
+            <section class="cd-card">
+              <div class="cd-row">
+                <h4>{{ 'SUPPLIERS.DASHBOARD_PAGE.INCOME' | translate }}</h4>
+                <div class="cdv-branch">
+                  <app-search-dropdown [items]="incomeRanges" [displayWith]="incomeLabel" [compareWith]="sameRange" [clearable]="false" [searchable]="false"
+                    [value]="incomeRange()" (valueChange)="onIncomeRange($any($event))"/>
+                </div>
+              </div>
+              <p class="cd-line">{{ 'SUPPLIERS.DASHBOARD_PAGE.INCOME_NOTE' | translate }}</p>
+              @if (incomeMonths().length) {
+                <apx-chart [series]="incomeSeries()" [chart]="incomeChart" [xaxis]="incomeXaxis()" [stroke]="incomeStroke"
+                  [fill]="incomeFill" [dataLabels]="incomeLabels" [colors]="incomeColors"/>
+              } @else {
+                <div class="cd-line">{{ 'SUPPLIERS.DASHBOARD_PAGE.INCOME_EMPTY' | translate }}</div>
+              }
+            </section>
+
+            <section class="cd-card">
+              <div class="cd-row">
+                <h4>{{ 'SUPPLIERS.DASHBOARD_PAGE.AGING_REPORT' | translate }}</h4>
+                @if (branches().length > 2) {
+                  <div class="cdv-branch">
+                    <app-search-dropdown [items]="branches()" [displayWith]="branchLabel" [compareWith]="sameOpt" [clearable]="false" [searchable]="false"
+                      [value]="branchOpt()" (valueChange)="onBranch($any($event))"/>
+                  </div>
+                }
+              </div>
+              <div class="cd-grid cd-grid--4">
+                @for (b of agingBuckets(); track b.key) {
+                  <div class="cd-aging cd-aging--{{ b.key }}">
+                    <small>{{ b.label | translate }}</small>
+                    <strong>{{ b.total | mycurrency }}</strong>
+                  </div>
+                }
+              </div>
+              <div class="cd-table-wrap">
+                <table class="cd-table">
+                  <thead>
+                    <tr>
+                      <th>{{ 'SUPPLIERS.DASHBOARD_PAGE.DATE' | translate }}</th>
+                      <th>{{ 'SUPPLIERS.DASHBOARD_PAGE.BILL_NO' | translate }}</th>
+                      <th>{{ 'SUPPLIERS.DASHBOARD_PAGE.STATUS' | translate }}</th>
+                      <th>{{ 'SUPPLIERS.DASHBOARD_PAGE.AGE' | translate }}</th>
+                      <th class="end">{{ 'SUPPLIERS.DASHBOARD_PAGE.AMOUNT' | translate }}</th>
+                      <th class="end">{{ 'SUPPLIERS.DASHBOARD_PAGE.BALANCE_DUE' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (g of aging() ?? []; track g.ageGroup) {
+                      <tr class="cd-group">
+                        <td colspan="4">{{ g.ageGroup }} {{ 'SUPPLIERS.DASHBOARD_PAGE.DAYS' | translate }}</td>
+                        <td class="end">{{ g.totalAmount | mycurrency }}</td>
+                        <td class="end">{{ g.totalBalanceDue | mycurrency }}</td>
+                      </tr>
+                      @for (r of g.data; track r.id) {
+                        <tr>
+                          <td>{{ r.billingDate | date: 'dd/MM/yyyy' }}</td>
+                          <td><a [routerLink]="['/account/bills/view', r.id]" [queryParams]="{ pageNum: 1 }">{{ r.billingNumber }}</a></td>
+                          <td><app-status-badge [status]="r.status" [label]="r.status | translate"/></td>
+                          <td>{{ r.age }} {{ 'SUPPLIERS.DASHBOARD_PAGE.DAYS' | translate }}<br/><b>{{ 'SUPPLIERS.DASHBOARD_PAGE.DUE_DATE' | translate }}:</b> {{ r.dueDate | date: 'dd/MM/yyyy' }}</td>
+                          <td class="end">{{ r.amount | mycurrency }}</td>
+                          <td class="end">{{ r.balanceDue | mycurrency }}</td>
+                        </tr>
+                      }
+                    } @empty {
+                      <tr><td colspan="6" class="cd-empty">{{ 'SUPPLIERS.DASHBOARD_PAGE.NO_OVERDUE' | translate }}</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </div>
+      }
+
+      <!-- TRANSACTIONS: stacked collapsible sections, like Zoho -->
+      @if (tab() === 'transactions') {
+        @for (k of txTabs; track k.value) {
+          @let t = tx()[k.value];
+          @let open = txOpen().has(k.value);
+          <section class="cd-card cdv-acc">
+            <div class="cdv-acc__head">
+              <button type="button" class="cdv-acc__toggle" [attr.aria-expanded]="open" (click)="toggleTx(k.value)">
+                <svg class="cdv-acc__chev" [class.is-open]="open" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                <h4>{{ k.label | translate }}</h4>
+              </button>
+              @switch (k.value) {
+                @case ('bills') { @if (canNewBill) { <a class="cdv-acc__new" [routerLink]="['/account/bills', 'new']" [queryParams]="{ supplierId: supplierId }">+ {{ 'SUPPLIERS.ADD_NEW' | translate }}</a> } }
+                @case ('purchases') { @if (canNewPurchase) { <a class="cdv-acc__new" [routerLink]="['/account/purchase-order', 'new']" [queryParams]="{ supplierId: supplierId }">+ {{ 'SUPPLIERS.ADD_NEW' | translate }}</a> } }
+                @case ('credits') { @if (canNewCredit) { <a class="cdv-acc__new" [routerLink]="['/account/supplier-credit', 'new']" [queryParams]="{ supplierId: supplierId }">+ {{ 'SUPPLIERS.ADD_NEW' | translate }}</a> } }
+                @case ('payments') { @if (canNewPayment) { <a class="cdv-acc__new" [routerLink]="['/account/bills-payment', 'new']" [queryParams]="{ supplierId: supplierId }">+ {{ 'SUPPLIERS.ADD_NEW' | translate }}</a> } }
+              }
+            </div>
+
+            @if (open) {
+              @if (t.loaded && !t.list.length) {
+                <div class="cd-empty">{{ 'SUPPLIERS.DASHBOARD_PAGE.NO_TRANSACTIONS' | translate }}</div>
+              }
+              @if (t.list.length) {
+                <div class="cd-table-wrap">
+                  <table class="cd-table">
+                    <thead>
+                      <tr>
+                        @switch (k.value) {
+                          @case ('bills') {
+                            <th>{{ 'SUPPLIERS.DASHBOARD_PAGE.BILL_NUMBER' | translate }}</th>
+                            <th class="end">{{ 'SUPPLIERS.DASHBOARD_PAGE.TOTAL' | translate }}</th>
+                            <th class="end">{{ 'SUPPLIERS.DASHBOARD_PAGE.PAID_AMOUNT' | translate }}</th>
+                            <th class="end">{{ 'SUPPLIERS.DASHBOARD_PAGE.BALANCE' | translate }}</th>
+                          }
+                          @case ('purchases') {
+                            <th>{{ 'SUPPLIERS.DASHBOARD_PAGE.PURCHASE_NUMBER' | translate }}</th>
+                            <th class="end">{{ 'SUPPLIERS.DASHBOARD_PAGE.TOTAL' | translate }}</th>
+                          }
+                          @case ('credits') {
+                            <th>{{ 'SUPPLIERS.DASHBOARD_PAGE.CREDIT_NUMBER' | translate }}</th>
+                            <th class="end">{{ 'SUPPLIERS.DASHBOARD_PAGE.TOTAL' | translate }}</th>
+                          }
+                          @case ('payments') {
+                            <th>{{ 'SUPPLIERS.DASHBOARD_PAGE.PAYMENT_CODE' | translate }}</th>
+                            <th class="end">{{ 'SUPPLIERS.DASHBOARD_PAGE.TOTAL' | translate }}</th>
+                            <th class="end">{{ 'SUPPLIERS.DASHBOARD_PAGE.PAID_AMOUNT' | translate }}</th>
+                          }
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (r of t.list; track r.id) {
+                        <tr>
+                          @switch (k.value) {
+                            @case ('bills') {
+                              <td><a [routerLink]="['/account/bills/view', r.id]" [queryParams]="{ pageNum: 1 }">{{ r.billingNumber }}</a></td>
+                              <td class="end">{{ r.total | mycurrency }}</td>
+                              <td class="end">{{ r.paidAmount | mycurrency }}</td>
+                              <td class="end">{{ r.balance | mycurrency }}</td>
+                            }
+                            @case ('purchases') {
+                              <td><a [routerLink]="['/account/purchase-order/view', r.id]" [queryParams]="{ pageNum: 1 }">{{ r.purchaseNumber }}</a></td>
+                              <td class="end">{{ r.total | mycurrency }}</td>
+                            }
+                            @case ('credits') {
+                              <td><a [routerLink]="['/account/supplier-credit/view', r.id]" [queryParams]="{ pageNum: 1 }">{{ r.supplierCreditNumber }}</a></td>
+                              <td class="end">{{ r.total | mycurrency }}</td>
+                            }
+                            @case ('payments') {
+                              <td><a [routerLink]="['/account/bills-payment/view', r.id]" [queryParams]="{ pageNum: 1 }">{{ r.code }}</a></td>
+                              <td class="end">{{ r.total | mycurrency }}</td>
+                              <td class="end">{{ r.paidAmount | mycurrency }}</td>
+                            }
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+                <app-pagination
+                  [page]="t.page" [pageSize]="t.limit" [count]="t.count || null" [pageCount]="t.pageCount"
+                  (pageChange)="setTxPage(k.value, $event)" (pageSizeChange)="setTxLimit(k.value, $event)"/>
+              }
+            }
+          </section>
+        }
+      }
+
+      <!-- SUPPLIER ITEMS -->
+      @if (tab() === 'supplierItem') {
+        <section class="cd-card">
+          <div class="cd-row">
+            <h4>{{ 'SUPPLIERS.LIST.SUPPLIER_ITEMS' | translate }}</h4>
+            <app-dropdown-menu-btn [items]="itemsExportMenu()" [appendToBody]="true" align="end" triggerClass="cd-btn cd-btn--sm">{{ 'SUPPLIERS.DASHBOARD_PAGE.EXPORT' | translate }}</app-dropdown-menu-btn>
+          </div>
+          <div class="cd-row cd-row--filters">
+            <div class="cdv-search">
+              <input type="text" class="cdv-search__input" [value]="itemTerm()" [placeholder]="'SUPPLIERS.DASHBOARD_PAGE.SEARCH_ITEMS' | translate"
+                (input)="onItemSearch($any($event.target).value)"/>
+            </div>
+            <div class="cdv-branch">
+              <app-search-dropdown [items]="itemTypeOptions" [displayWith]="itemTypeLabel" [compareWith]="sameValue" [clearable]="false" [searchable]="false"
+                [value]="itemTypeOf()" (valueChange)="onItemType($any($event))"/>
+            </div>
+          </div>
+          @let it = items();
+          @if (it.loaded && !it.list.length) { <div class="cd-empty">{{ 'SUPPLIERS.ITEMS.NO_ITEMS' | translate }}</div> }
+          @if (it.list.length) {
+            <div class="cd-table-wrap">
+              <table class="cd-table">
+                <thead>
+                  <tr>
+                    <th class="cd-sort" (click)="sortItems('productName')">{{ 'SUPPLIERS.ITEMS.PRODUCT' | translate }}{{ arrow('productName') }}</th>
+                    <th>{{ 'SUPPLIERS.DASHBOARD_PAGE.UOM' | translate }}</th>
+                    <th>{{ 'SUPPLIERS.DASHBOARD_PAGE.ITEM_TYPE' | translate }}</th>
+                    <th class="cd-sort" (click)="sortItems('supplierCode')">{{ 'SUPPLIERS.ITEMS.SUPPLIER_CODE' | translate }}{{ arrow('supplierCode') }}</th>
+                    <th class="end">{{ 'SUPPLIERS.DASHBOARD_PAGE.ON_HAND' | translate }}</th>
+                    <th class="end cd-sort" (click)="sortItems('minimumOrder')">{{ 'SUPPLIERS.ITEMS.MINIMUM_ORDER' | translate }}{{ arrow('minimumOrder') }}</th>
+                    <th class="end cd-sort" (click)="sortItems('cost')">{{ 'SUPPLIERS.ITEMS.UNIT_COST' | translate }}{{ arrow('cost') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (i of it.list; track i.productId ?? $index) {
+                    <tr>
+                      <td>{{ i.productName }}</td>
+                      <td>{{ i.UOM }}</td>
+                      <td>{{ itemTypeName(i.type) }}</td>
+                      <td>{{ i.supplierCode }}</td>
+                      <td class="end">{{ i.onHand }}</td>
+                      <td class="end">{{ i.minimumOrder || 0 }}</td>
+                      <td class="end">{{ i.cost || 0 | mycurrency }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <app-pagination [page]="it.page" [pageSize]="it.limit" [count]="it.count || null" [pageCount]="it.pageCount"
+              (pageChange)="setItemsPage($event)" (pageSizeChange)="setItemsLimit($event)"/>
+          }
+        </section>
+      }
+
+      <!-- STATEMENT -->
+      @if (tab() === 'statementHistory') {
+        <section class="cd-card">
+          <div class="cd-row cd-row--filters">
+            <app-date-picker mode="range" [value]="stateRange()" (valueChange)="onRangeChange($event)"/>
+            @if (branches().length > 1) {
+              <div class="cdv-branch">
+                <app-search-dropdown [items]="branches()" [displayWith]="branchLabel" [compareWith]="sameOpt" [clearable]="false" [searchable]="false"
+                  [value]="branchOpt()" (valueChange)="onBranch($any($event))"/>
+              </div>
+            }
+            <app-segmented-toggle [options]="filterOptions" [value]="filterType()" (valueChange)="setFilterType($event)"/>
+            <span class="cdv-spacer"></span>
+            <button type="button" class="cd-btn cd-btn--sm" (click)="printStatement()">{{ 'SUPPLIERS.DASHBOARD_PAGE.PRINT' | translate }}</button>
+            <app-dropdown-menu-btn [items]="statementExportMenu()" [appendToBody]="true" align="end" triggerClass="cd-btn cd-btn--sm">{{ 'SUPPLIERS.DASHBOARD_PAGE.EXPORT' | translate }}</app-dropdown-menu-btn>
+          </div>
+          @if (stateLoading()) {
+            <div class="cd-empty">{{ 'COMMON.LOADING' | translate }}</div>
+          } @else if (stateRows() !== null) {
+            <app-supplier-statement [rows]="stateRows() ?? []" [supplierName]="s.name" [from]="stateFrom" [to]="stateTo" [filterType]="filterType()"/>
+          }
+        </section>
+      }
+    }
+  </div>
+</app-doc-view-shell>

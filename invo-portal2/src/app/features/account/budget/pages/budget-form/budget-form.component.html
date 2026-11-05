@@ -1,0 +1,91 @@
+@if (loaded()) {
+  <div class="bf">
+    <header class="page-header">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-header__title">{{ (formStatus() === 'new' ? 'BUDGET.FORM.NEW' : 'BUDGET.FORM.EDIT') | translate }}</h1>
+    </header>
+
+    <section class="bf-card">
+      <h2 class="bf-card__title">{{ 'BUDGET.FORM.DETAILS' | translate }}</h2>
+      <div class="bf-row">
+        <div class="bf-field bf-field--wide">
+          <label for="budget-name">{{ 'BUDGET.FORM.NAME' | translate }} <span class="req">*</span></label>
+          <input id="budget-name" type="text" class="bf-input" [class.bf-input--bad]="nameError()"
+            [ngModel]="name()" (ngModelChange)="onName($event)"/>
+          @if (nameError(); as e) { <p class="bf-error">{{ e }}</p> }
+        </div>
+      </div>
+
+      <div class="bf-row">
+        <div class="bf-field">
+          <label>{{ 'BUDGET.FORM.BRANCH' | translate }} @if (formStatus() === 'new') { <span class="req">*</span> }</label>
+          @if (formStatus() === 'new') {
+            <app-search-dropdown
+              [items]="branches()"
+              [value]="selectedBranch()"
+              (valueChange)="onBranch($event)"
+              [displayWith]="branchDisplay"
+              [compareWith]="branchCompare"
+              [toValue]="branchToValue"
+              [clearable]="false"
+              [placeholder]="'BUDGET.FORM.SELECT_BRANCH' | translate"/>
+          } @else {
+            <div class="bf-static">{{ branchName() || '—' }}</div>
+          }
+          @if (branchError(); as e) { <p class="bf-error">{{ e }}</p> }
+        </div>
+
+        <div class="bf-field">
+          <label for="budget-year">{{ 'BUDGET.FORM.YEAR' | translate }} @if (formStatus() === 'new') { <span class="req">*</span> }</label>
+          @if (formStatus() === 'new') {
+            <input id="budget-year" type="number" min="1900" max="2099" step="1" class="bf-input" [class.bf-input--bad]="yearError()"
+              [ngModel]="year()" (ngModelChange)="onYear($event)"/>
+          } @else {
+            <div class="bf-static">{{ year() }}</div>
+          }
+          @if (yearError(); as e) { <p class="bf-error">{{ e }}</p> }
+        </div>
+
+        <div class="bf-field">
+          <label>{{ 'BUDGET.FORM.PERIODICITY' | translate }} @if (formStatus() === 'new') { <span class="req">*</span> }</label>
+          @if (formStatus() === 'new') {
+            <app-search-dropdown
+              [items]="periodicities"
+              [value]="selectedPeriodicity()"
+              (valueChange)="onPeriodicity($event)"
+              [displayWith]="periodicityDisplay"
+              [compareWith]="periodicityCompare"
+              [toValue]="periodicityToValue"
+              [searchable]="false"
+              [clearable]="false"
+              [placeholder]="'BUDGET.FORM.SELECT_PERIODICITY' | translate"/>
+          } @else {
+            <div class="bf-static">{{ periodicityLabel() }}</div>
+          }
+          @if (periodicityError(); as e) { <p class="bf-error">{{ e }}</p> }
+        </div>
+      </div>
+    </section>
+
+    @if (periodicity() && accounts().length) {
+      <section class="bf-card">
+        <header class="bf-card__head">
+          <h2 class="bf-card__title">{{ 'BUDGET.FORM.PLAN' | translate }}</h2>
+          <div class="bf-tools">
+            <button type="button" class="bf-btn" (click)="print()">{{ 'BUDGET.FORM.PRINT' | translate }}</button>
+            <button type="button" class="bf-btn" (click)="exportSheets()">{{ 'BUDGET.FORM.EXPORT' | translate }}</button>
+          </div>
+        </header>
+        <app-budget-sheet [accounts]="accounts()" [periods]="periods()" [(values)]="values" (changed)="markDirty()"/>
+      </section>
+    }
+
+    <app-form-sticky-footer>
+      <button type="button" class="bf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (formStatus() === 'edit') {
+        <button type="button" class="bf-btn" (click)="openReport()">{{ 'BUDGET.FORM.REPORT' | translate }}</button>
+      }
+      <button type="button" class="bf-btn bf-btn--primary" [disabled]="submitting()" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+    </app-form-sticky-footer>
+  </div>
+}

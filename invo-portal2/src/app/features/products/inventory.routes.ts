@@ -73,12 +73,20 @@ export const INVENTORY_ROUTES: Routes = [
     data: { permissionPath: 'productSecurity.actions.requestInventory.access' },
   },
   {
-    // `new` creates; any other id edits.
-    path: 'request/:id',
+    // Creating needs the Add privilege; editing (below) only needs request access, as in legacy.
+    path: 'request/new',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
       import('./pages/inventory-request/inventory-request-form/inventory-request-form.component').then(m => m.InventoryRequestFormComponent),
     data: { permissionPath: 'productSecurity.actions.requestInventoryAdd.access' },
+  },
+  {
+    path: 'request/:id',
+    canActivate: [translationsLoaded, privilegeGuard],
+    canDeactivate: [unsavedChangesGuard],
+    loadComponent: () =>
+      import('./pages/inventory-request/inventory-request-form/inventory-request-form.component').then(m => m.InventoryRequestFormComponent),
+    data: { permissionPath: 'productSecurity.actions.requestInventory.access' },
   },
 ];

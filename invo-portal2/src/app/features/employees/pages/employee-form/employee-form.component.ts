@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   OnDestroy,
   OnInit,
   computed,
@@ -11,6 +12,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
+  AbstractControl,
+  FormArray,
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
@@ -25,6 +28,8 @@ import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
+import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
+import { FormErrorSummaryComponent } from '@shared/components/form-error-summary/form-error-summary.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
@@ -58,7 +63,6 @@ import {
   RequiredMode,
 } from '../../models/field-manifest.types';
 import { countryOptions, languageOptions } from '../../models/employee-catalogs';
-import { CollapsibleCardComponent } from '@shared/components/collapsible-card/collapsible-card.component';
 import {
   HR_PAYROLL,
   hrFieldsEnabled,
@@ -76,12 +80,15 @@ import {
 import { EmployeeDocument, EmployeeDocumentService } from '../../services/employee-document.service';
 import { EmployeeFileService, FILE_ENTITY } from '../../services/employee-file.service';
 import { GuidedTourService } from '@shared/services/guided-tour.service';
-import { EMPLOYEE_FORM_TOUR, EMPLOYEE_TOUR_KEY } from './employee-form.tour';
+import { EMPLOYEE_TOUR_KEY, visibleTourSteps } from './employee-form.tour';
 import { FieldRendererComponent } from './components/field-renderer/field-renderer.component';
 // Branch list source — the settings service already wraps `branch/getBranches`
 // and normalises the wire shape. CompanyService carries no branch collection,
 // so we reuse the (root-provided) BranchSettingsService here.
 import { BranchSettingsService } from '../../../settings/services/branch-settings.service';
+
+/** Tabs of the full employee form. */
+export type EmployeeFormTab = 'basic' | 'personal' | 'employment' | 'payment';
 
 /** Minimal option shape used by both the privilege and branch dropdowns. */
 interface Option {
@@ -115,11 +122,12 @@ interface Option {
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     FormStickyFooterComponent,
+    FormErrorSummaryComponent,
+    SegmentedToggleComponent,
     ToggleComponent,
     SearchDropdownComponent,
     DatePickerComponent,
     FieldRendererComponent,
-    CollapsibleCardComponent,
     HrFileAttachmentsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -138,6 +146,9 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
   private payrollSvc  = inject(EmployeePayrollService);
   private translate   = inject(TranslateService);
   private destroyRef  = inject(DestroyRef);
+  private el          = inject(ElementRef<HTMLElement>);
+  /** Search root for the footer's error summary. */
+  readonly host: HTMLElement = this.el.nativeElement;
   private route       = inject(ActivatedRoute);
   private router      = inject(Router);
   private toast       = inject(ToastService);
@@ -405,28 +416,113 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
    * getting them OUT of the way once filled, on a record you opened to change
    * one thing.
    */
-  personalOpen = signal(true);
-  employmentOpen = signal(true);
+  // ── Tabs ────────────────────────────────────────────────────────────────
+  // The full form (create, or a direct link to edit) splits its sections into
+  // tabs. All panes stay in the DOM — hidden, not removed — so validation,
+  // autofill and browser find keep working across tabs, and a focused
+  // `?section=` edit ignores tabs entirely.
+  readonly activeTab = signal<EmployeeFormTab>('basic');
+
+  /** Tabs on offer. Personal and Payment only exist where their cards do. */
+  readonly tabs = computed<{ key: EmployeeFormTab; labelKey: string; errors: number }[]>(() => {
+    this.manifest(); // the manifest groups join the form late
+    this.formStatusTick();
+    const out: { key: EmployeeFormTab; labelKey: string; errors: number }[] = [
+      { key: 'basic', labelKey: 'EMPLOYEES.WIZARD.BASIC', errors: this.tabErrors('basic') },
+    ];
+    if (this.profileGroup() || this.attachAccess().visible) {
+      out.push({ key: 'personal', labelKey: 'EMPLOYEES.WIZARD.PERSONAL', errors: this.tabErrors('personal') });
+    }
+    out.push({ key: 'employment', labelKey: 'EMPLOYEES.WIZARD.EMPLOYMENT', errors: this.tabErrors('employment') });
+    if (this.canEditBank()) {
+      out.push({ key: 'payment', labelKey: 'EMPLOYEES.WIZARD.PAYMENT', errors: 0 });
+    }
+    return out;
+  });
+
+  /** Segmented-toggle options; a red-count badge marks tabs with errors. */
+  readonly tabOptions = computed<SegmentedToggleOption<EmployeeFormTab>[]>(() =>
+    this.tabs().map((t) => ({
+      value: t.key,
+      label: t.labelKey,
+      count: t.errors > 0 ? t.errors : null,
+    })));
+
+  /** Bumped on every form status change so `tabs()` can re-flag invalid tabs. */
+  private formStatusTick = signal(0);
+
+  /** Is this tab's pane hidden right now? A focused section edit never hides. */
+  tabHidden(key: EmployeeFormTab): boolean {
+    return !this.editSection() && this.activeTab() !== key;
+  }
+
+  /** Invalid leaf controls across the whole form, including hidden tabs. */
+  readonly errorCount = computed<number>(() => {
+    this.formStatusTick();
+    const count = (c: AbstractControl): number => {
+      const kids = c instanceof FormGroup ? Object.values(c.controls)
+        : c instanceof FormArray ? c.controls : null;
+      if (kids) return kids.reduce((n, k) => n + count(k), 0);
+      return c.invalid ? 1 : 0;
+    };
+    return count(this.form);
+  });
+
+  /** Footer error list → show the tab holding the field before scrolling to it. */
+  revealPaneOf(el: HTMLElement): void {
+    const pane = el.closest('[data-pane]')?.getAttribute('data-pane') as EmployeeFormTab | null;
+    if (pane) this.activeTab.set(pane);
+  }
+
+  selectTab(key: EmployeeFormTab): void {
+    this.activeTab.set(key);
+  }
+
+  /** Touched, invalid leaf controls on this tab. */
+  private tabErrors(key: EmployeeFormTab): number {
+    const leaves = (c: AbstractControl | null): number => {
+      if (!c) return 0;
+      const kids = c instanceof FormGroup ? Object.values(c.controls)
+        : c instanceof FormArray ? c.controls : null;
+      if (kids) return kids.reduce((n, k) => n + leaves(k), 0);
+      return c.invalid && c.touched ? 1 : 0;
+    };
+    const named = (names: string[]) => names.reduce((n, x) => n + leaves(this.form.get(x)), 0);
+    switch (key) {
+      case 'basic':
+        return named(['name', 'email', 'password', 'passcode', 'msr', 'privilegeId', 'branchIds']);
+      case 'personal':
+        return leaves(this.profileGroup());
+      case 'employment':
+        return named(['hireDate', 'terminationDate']) + leaves(this.employmentGroup());
+      default:
+        return 0;
+    }
+  }
+
+  /** The tab that holds the first invalid control, in tab order. */
+  private firstInvalidTab(): EmployeeFormTab | null {
+    const dirty = (key: EmployeeFormTab, names: string[], group?: FormGroup | null) =>
+      names.some((n) => this.form.get(n)?.invalid) || group?.invalid === true;
+    if (dirty('basic', ['name', 'email', 'password', 'passcode', 'msr', 'privilegeId', 'branchIds'])) return 'basic';
+    if (this.profileGroup()?.invalid) return 'personal';
+    if (dirty('employment', ['hireDate', 'terminationDate'], this.employmentGroup())) return 'employment';
+    return null;
+  }
 
   /**
-   * Open whichever collapsible section holds an invalid control, then scroll to
-   * the first one.
+   * Switch to the tab holding the first invalid control, then scroll to it.
    *
-   * This is the piece that makes collapsing safe. `save()` returns early on an
-   * invalid form; without this, a control inside a closed card would fail
-   * validation with nothing on screen changing — the same silent dead-end that
-   * tabbed panes would have produced, which is the reason this form is not
-   * tabbed.
+   * This is what makes tabbing safe: `save()` returns early on an invalid
+   * form, and without a jump a control on a hidden tab would fail validation
+   * with nothing on screen changing.
    */
   private revealInvalidSections(): void {
-    const profileInvalid = this.profileGroup()?.invalid === true;
-    const employmentInvalid = this.employmentGroup()?.invalid === true;
-    if (profileInvalid) this.personalOpen.set(true);
-    if (employmentInvalid) this.employmentOpen.set(true);
+    const tab = this.firstInvalidTab();
+    if (tab) this.activeTab.set(tab);
 
-    // After the sections have opened, put the first offending control on
-    // screen — an opened card three screens down is still invisible.
-    queueMicrotask(() => {
+    // After the pane has shown, put the first offending control on screen.
+    setTimeout(() => {
       const el = document.querySelector<HTMLElement>(
         '.ng-invalid[formControlName], .ng-invalid input, .ng-invalid select, .ng-invalid textarea',
       );
@@ -723,6 +819,11 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
       ?? null;
     this.editSection.set(this.isCreate() ? null : section);
 
+    // Keeps the per-tab "has an error" dots in step with the form.
+    this.form.statusChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.formStatusTick.update((n) => n + 1));
+
     this.loading.set(true);
     try {
       // Fire the reference-data loads and (on edit) the record load together.
@@ -982,6 +1083,39 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
   }
 
   // ── Branch assignment ──────────────────────────────────────────────────
+  /** Whether the "add branch" picker is showing in place of the button. */
+  readonly addBranchOpen = signal(false);
+
+  /** Branches not yet assigned: what the picker offers. */
+  readonly availableBranches = computed<Option[]>(() => {
+    this.formTick();
+    const ids: string[] = this.form.controls['branchIds'].value ?? [];
+    return this.branches().filter((b) => !ids.includes(b.id));
+  });
+
+  addBranch(opt: Option | null): void {
+    if (!opt || this.isSuperAdmin()) return;
+    const ctrl = this.form.controls['branchIds'];
+    const ids: string[] = ctrl.value ?? [];
+    if (ids.includes(opt.id)) return;
+    ctrl.setValue([...ids, opt.id]);
+    ctrl.markAsDirty();
+    // The first branch becomes the primary one, as on save before.
+    if (!this.form.controls['branchId'].value) this.form.controls['branchId'].setValue(opt.id);
+    this.addBranchOpen.set(false);
+  }
+
+  removeBranch(id: string): void {
+    if (this.isSuperAdmin()) return;
+    const ctrl = this.form.controls['branchIds'];
+    const ids: string[] = (ctrl.value ?? []).filter((x: string) => x !== id);
+    ctrl.setValue(ids);
+    ctrl.markAsDirty();
+    if (this.form.controls['branchId'].value === id) {
+      this.form.controls['branchId'].setValue(ids[0] ?? '');
+    }
+  }
+
   setPrimaryBranch(id: string): void {
     if (this.isSuperAdmin()) return;
     this.form.controls['branchId'].setValue(id);
@@ -1183,6 +1317,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
     // the bank card earlier in this same submit.
     const bankFormWasDirty = this.bankForm.dirty;
     this.form.markAllAsTouched();
+    this.formStatusTick.update((n) => n + 1); // touched state drives the tab dots
     // The email / pass-code probes are async — let any in-flight check settle
     // before deciding, otherwise a fast save would slip past them.
     if (this.form.pending) await this.whenSettled();
@@ -1366,7 +1501,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
    * is picked — are dropped by the service rather than pointing at nothing.
    */
   async startTour(): Promise<void> {
-    const shown = await this.tour.run(EMPLOYEE_FORM_TOUR, { tourKey: EMPLOYEE_TOUR_KEY });
+    const shown = await this.tour.run(visibleTourSteps(), { tourKey: EMPLOYEE_TOUR_KEY });
     if (shown === 0) this.toast.error('EMPLOYEES.TOUR.NOTHING_TO_SHOW');
   }
 

@@ -29,7 +29,7 @@ import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { BranchSettingsService } from 'src/app/features/settings/services/branch-settings.service';
 import { AccountService } from 'src/app/features/settings/chart-of-accounts/services/account.service';
 import { Account } from 'src/app/features/settings/chart-of-accounts/services/account.types';
-import type { MediaPickerModalComponent as MediaPickerType } from 'src/app/features/settings/media/components/media-picker/media-picker-modal.component';
+import { DocAttachment, DocAttachmentsComponent } from '../../../components/doc-attachments/doc-attachments.component';
 
 import { ManualJournalsService } from '../../services/manual-journals.service';
 import {
@@ -81,6 +81,7 @@ interface BranchOption {
     FormStickyFooterComponent,
     DatePickerComponent,
     SearchDropdownComponent,
+    DocAttachmentsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './manual-journal-form.component.html',
@@ -355,45 +356,8 @@ export class ManualJournalFormComponent implements OnInit, CanLeaveComponent {
   }
 
   // ─── Attachments ────────────────────────────────────────────────────────
-  async addAttachment(): Promise<void> {
-    const { MediaPickerModalComponent } =
-      await import('src/app/features/settings/media/components/media-picker/media-picker-modal.component');
-    const ref = this.modal.open<MediaPickerType, any, any>(
-      MediaPickerModalComponent,
-      {
-        size: 'xl',
-        data: {
-          contentTypes: ['image', 'document'],
-          title: this.translate.instant('MANUAL_JOURNALS.FORM.ATTACH_FILE'),
-          multiple: true,
-        },
-        closeOnBackdrop: true,
-      },
-    );
-    const picked = await ref.afterClosed();
-    if (!picked) return;
-    const items: any[] = Array.isArray(picked) ? picked : [picked];
-    if (!items.length) return;
-
-    const mapped: JournalAttachment[] = items
-      .map((m: any): JournalAttachment => ({
-        id: String(m?.id ?? m?._id ?? ''),
-        size: typeof m?.getSize === 'number' ? m.getSize : Number(m?.size?.size ?? m?.mediaSize ?? 0) || 0,
-        mediaUrl: m?.imageUrl || m?.url?.defaultUrl || m?.url?.original || m?.url?.thumbnail || '',
-        mediaType: m?.mediaType?.fileType || m?.contentType || '',
-        mediaName: m?.name || '',
-      }))
-      .filter(a => !!a.id);
-
-    this.attachments.update(existing => {
-      const seen = new Set(existing.map(a => a.id));
-      return [...existing, ...mapped.filter(a => !seen.has(a.id))];
-    });
-    this.dirty.set(true);
-  }
-
-  removeAttachment(id: string): void {
-    this.attachments.update(list => list.filter(a => a.id !== id));
+  onAttachments(list: DocAttachment[]): void {
+    this.attachments.set(list as JournalAttachment[]);
     this.dirty.set(true);
   }
 
@@ -449,5 +413,4 @@ export class ManualJournalFormComponent implements OnInit, CanLeaveComponent {
     void this.router.navigate(['/account/manual-journals/view', this.journalId()]);
   }
 
-  trackLine = (_: number, l: JournalLine) => l;
 }

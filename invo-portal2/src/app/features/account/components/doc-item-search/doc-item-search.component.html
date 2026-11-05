@@ -1,0 +1,14 @@
+<textarea #box class="dis__box" [rows]="rows()" [disabled]="disabled()"
+  [placeholder]="placeholder() || ('DOC_LINES.ITEM_PLACEHOLDER' | translate)"
+  (focus)="onFocus($event)" (input)="onInput($event)" (keydown.enter)="onEnter($event)"></textarea>
+@if (open() && (results().length || searching())) {
+  <ul class="dis__panel" (scroll)="onScroll($event)" [style.top.px]="pos().top" [style.left.px]="pos().left" [style.width.px]="pos().width">
+    @for (p of results(); track p.id) {
+      <li (mousedown)="$event.preventDefault()" (click)="pick(p, box)">
+        <span class="dis__row"><span class="dis__name">{{ p.name }}</span>@if (p.type) { <span class="app-product-badge">{{ p.type }}</span> }</span>
+        <small>{{ 'DOC_LINES.RATE' | translate }}: {{ (p.unitCost ?? p.defaultPrice) | mycurrency }}@if (p.barcode) { <span> · {{ 'DOC_LINES.BARCODE' | translate }}: {{ p.barcode }}</span> }</small>
+      </li>
+    }
+    @if (searching()) { <li class="dis__empty">…</li> }
+  </ul>
+}

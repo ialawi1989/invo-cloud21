@@ -5,6 +5,8 @@
   overflow-x: auto;
   flex-wrap: nowrap;
 
+  &--center { justify-content: center; }
+
   &__step {
     display: flex;
     align-items: center;

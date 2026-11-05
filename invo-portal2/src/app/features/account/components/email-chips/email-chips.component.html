@@ -1,0 +1,23 @@
+<div class="ec" [class.ec--err]="error()">
+  @for (e of emails(); track e) {
+    @if (editing()?.old === e) {
+      <input class="ec__input ec__input--edit" type="text" [ngModel]="editing()!.value" (ngModelChange)="editValue($event)"
+        (keydown)="onEditKey($event)" (blur)="commitEdit(true)"/>
+    } @else {
+      <span class="ec__chip" (contextmenu)="openMenu($event, e)" (dblclick)="startEdit(e)" [title]="'DOC_SEND.CHIP_HINT' | translate">{{ e }}
+        <button type="button" [disabled]="disabled()" (click)="remove(e)" aria-label="remove">✕</button></span>
+    }
+  }
+  <input class="ec__input" type="text" [placeholder]="'DOC_SEND.ADD_EMAIL' | translate" [disabled]="disabled()"
+    [ngModel]="draft()" (ngModelChange)="draft.set($event)"
+    (keydown)="onKey($event)" (blur)="commit()" (paste)="onPaste($event)"/>
+</div>
+@if (error()) { <small class="ec__err">{{ error() | translate }}</small> }
+
+<ng-template #menuTpl>
+  <div class="ec__menu" role="menu" (contextmenu)="$event.preventDefault()">
+    <button type="button" role="menuitem" (click)="copy(menuEmail)">{{ 'DOC_SEND.COPY' | translate }}</button>
+    <button type="button" role="menuitem" (click)="cut(menuEmail)">{{ 'DOC_SEND.CUT' | translate }}</button>
+    <button type="button" role="menuitem" (click)="startEdit(menuEmail)">{{ 'DOC_SEND.CHANGE_EMAIL' | translate }}</button>
+  </div>
+</ng-template>

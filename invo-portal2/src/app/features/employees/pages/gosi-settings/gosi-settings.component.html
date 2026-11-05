@@ -109,8 +109,7 @@
                 <label class="field-label" for="gosi-effective-from">
                   {{ 'EMPLOYEES.GOSI.RATES.EFFECTIVE_FROM' | translate }} <em>*</em>
                 </label>
-                <input id="gosi-effective-from" type="date" class="input input--narrow"
-                       formControlName="effectiveFrom" />
+                <app-date-field id="gosi-effective-from" triggerClass="input input--narrow" formControlName="effectiveFrom"/>
               </div>
 
               <div class="gosi-form__tiers">
@@ -282,8 +281,7 @@
           <label class="field-label" for="gosi-tier3-effective">
             {{ 'EMPLOYEES.GOSI.TIER3.EFFECTIVE_FROM' | translate }}
           </label>
-          <input id="gosi-tier3-effective" type="date" class="input input--narrow"
-                 formControlName="effectiveFrom" />
+          <app-date-field id="gosi-tier3-effective" triggerClass="input input--narrow" formControlName="effectiveFrom"/>
         </div>
 
         <div class="field-row">

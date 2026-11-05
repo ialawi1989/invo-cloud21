@@ -32,7 +32,8 @@
       "STATUS": "Status",
       "SEARCH_PLACEHOLDER": "Search transactions…",
       "EMPTY": "No transactions to show for this account.",
-      "RECONCILE_ACCOUNT": "Reconcile Account"
+      "RECONCILE_ACCOUNT": "Reconcile Account",
+      "REFERENCE": "Reference"
     },
     "RECONCILIATIONS": {
       "RECONCILED_DATE": "Reconciled on",
@@ -68,6 +69,7 @@
       "CONFIRM_SAVE_MESSAGE": "The selected transactions will be marked as reconciled for this period.",
       "START_RECONCILIATION": "Start Reconciliation",
       "SAVE_DRAFT": "Save and Reconcile Later",
+      "UNDO_RECONCILIATION": "Undo Reconciliation",
       "RECONCILE_COUNT": "Reconcile ({{count}})",
       "ATTACHMENTS": "Attachment",
       "ATTACH_FILE": "Attach file",

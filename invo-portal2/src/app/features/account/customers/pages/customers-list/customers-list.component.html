@@ -32,7 +32,7 @@
   </div>
 
   <ng-template listCellTemplate="name" let-row>
-    <span class="font-semibold text-brand-700">{{ displayName(row) }}</span>
+    <button type="button" class="font-semibold text-brand-700 hover:underline text-start" (click)="$event.stopPropagation(); peek(row)">{{ displayName(row) }}</button>
   </ng-template>
   <ng-template listCellTemplate="outStandingRecivable" let-row>
     <span class="tabular-nums">{{ row.outStandingRecivable | mycurrency }}</span>

@@ -1,6 +1,8 @@
+import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import '../../account-i18n';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
@@ -10,7 +12,7 @@ import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/component
 
 import { DocJournalRow, DocJournalTabComponent } from '../doc-journal-tab/doc-journal-tab.component';
 import {
-  DocAdditionalDetailsConfig, DocAdditionalDetailsTabKey, DocMovementRow, DocPaymentRow, DocWastageRow,
+  DocAdditionalDetailsConfig, DocAdditionalDetailsTabKey, DocBillOfEntryRow, DocExtraJournal, DocLineRow, DocMovementRow, DocPaymentRow, DocWastageRow,
 } from './doc-additional-details.types';
 
 const TAB_LABEL_KEY: Record<DocAdditionalDetailsTabKey, string> = {
@@ -19,6 +21,8 @@ const TAB_LABEL_KEY: Record<DocAdditionalDetailsTabKey, string> = {
   logs: 'DOC_VIEW.LOGS',
   productMovement: 'DOC_VIEW.PRODUCT_MOVEMENT',
   voided: 'DOC_VIEW.VOIDED',
+  lines: 'DOC_VIEW.LINES',
+  billOfEntry: 'DOC_VIEW.BILL_OF_ENTRY',
 };
 
 /**
@@ -32,7 +36,7 @@ const TAB_LABEL_KEY: Record<DocAdditionalDetailsTabKey, string> = {
 @Component({
   selector: 'app-doc-additional-details',
   standalone: true,
-  imports: [CommonModule, TranslateModule, MycurrencyPipe, DocJournalTabComponent, SpinnerComponent, DropdownMenuBtnComponent],
+  imports: [StatusBadgeComponent, CommonModule, RouterLink, TranslateModule, MycurrencyPipe, DocJournalTabComponent, SpinnerComponent, DropdownMenuBtnComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './doc-additional-details.component.scss',
   template: `
@@ -47,21 +51,30 @@ const TAB_LABEL_KEY: Record<DocAdditionalDetailsTabKey, string> = {
         @switch (active()) {
           @case ('journal') {
             @if (loading()) { <div class="add__loading"><app-spinner size="sm" class="text-brand-600"/></div> }
-            @else { <app-doc-journal-tab [rows]="journalRows()" [heading]="config().journalHeading ?? ''"/> }
+            @else {
+              <app-doc-journal-tab [rows]="journalRows()" [heading]="config().journalHeading ?? ''"/>
+              @for (x of extraJournals(); track $index) {
+                <div class="add__extra">
+                  <b>{{ x.heading }}@if (x.link) { <a [routerLink]="x.link.url">{{ x.link.label }}</a> }{{ x.suffix }}</b>
+                  @if (x.onDelete) { <button type="button" class="add__extra-del" (click)="x.onDelete()">{{ 'COMMON.DELETE' | translate }}</button> }
+                </div>
+                <app-doc-journal-tab [rows]="x.rows" [showNote]="false"/>
+              }
+            }
           }
           @case ('payments') {
             <table class="add__table">
-              <thead><tr><th>{{ 'DOC_VIEW.DATE' | translate }}</th><th>{{ 'DOC_VIEW.PAYMENT_METHOD' | translate }}</th><th>{{ 'DOC_VIEW.STATUS' | translate }}</th><th class="end">{{ 'DOC_VIEW.AMOUNT' | translate }}</th><th></th><th></th></tr></thead>
+              <thead><tr><th>{{ 'DOC_VIEW.DATE' | translate }}</th><th>{{ 'DOC_VIEW.PAYMENT_METHOD' | translate }}</th><th>{{ 'DOC_VIEW.STATUS' | translate }}</th><th class="end">{{ 'DOC_VIEW.AMOUNT' | translate }}</th><th class="end">{{ 'DOC_VIEW.ATTACHMENTS' | translate }}</th><th></th></tr></thead>
               <tbody>
                 @for (p of paymentRows(); track $index) {
                   <tr>
                     <td><a href="javascript:void(0)" (click)="config().onPaymentClick?.(p)">{{ p.date | date: 'yyyy-MM-dd' }}</a></td>
                     <td>{{ p.methodName }}</td>
-                    <td><span class="add__badge" [class.add__badge--danger]="p.status === 'FAILED'">{{ p.status || 'SUCCESS' }}</span></td>
+                    <td><app-status-badge [status]="p.status || 'SUCCESS'"/></td>
                     <td class="end">{{ p.amount | mycurrency }}</td>
                     <td class="end">
-                      @if (p.attachment) {
-                        <button type="button" class="add__link" (click)="config().onPaymentAttachment?.(p)">{{ 'DOC_VIEW.PREVIEW' | translate }}</button>
+                      @for (a of attachmentsOf(p); track $index) {
+                        <button type="button" class="add__btn" [attr.title]="a.mediaName || ''" (click)="config().onPaymentAttachment?.(p, a)">{{ 'DOC_VIEW.PREVIEW' | translate }}</button>
                       }
                     </td>
                     <td class="end">
@@ -118,6 +131,39 @@ const TAB_LABEL_KEY: Record<DocAdditionalDetailsTabKey, string> = {
               </table>
             }
           }
+          @case ('billOfEntry') {
+            <table class="add__table">
+              <thead><tr><th>{{ 'DOC_VIEW.DATE' | translate }}</th><th>{{ 'DOC_VIEW.BILL_OF_ENTRY_NUMBER' | translate }}</th><th class="end">{{ 'DOC_VIEW.TOTAL' | translate }}</th></tr></thead>
+              <tbody>
+                @if (boe(); as b) {
+                  <tr>
+                    <td><a class="add__link" [routerLink]="['/account/bill-of-entry/view', b.id]">{{ b.date | date: 'mediumDate' }}</a></td>
+                    <td>{{ b.number }}</td>
+                    <td class="end">{{ b.total | mycurrency }}</td>
+                  </tr>
+                } @else {
+                  <tr><td colspan="3" class="add__empty">{{ 'DOC_VIEW.NO_RECORDS' | translate }}</td></tr>
+                }
+              </tbody>
+            </table>
+          }
+          @case ('lines') {
+            <table class="add__table">
+              <thead><tr><th>{{ 'DOC_VIEW.DATE_TIME' | translate }}</th><th>{{ 'DOC_VIEW.EMPLOYEE' | translate }}</th><th class="end">{{ 'DOC_LINES.QTY' | translate }}</th><th>{{ 'DOC_VIEW.ITEM' | translate }}</th></tr></thead>
+              <tbody>
+                @for (l of lineRows(); track $index) {
+                  <tr>
+                    <td>{{ l.date | date: 'MMM d, y (h:mm a)' }}</td>
+                    <td>{{ l.employeeName || '-' }}</td>
+                    <td class="end">{{ l.qty }}</td>
+                    <td>{{ l.itemName }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="4" class="add__empty">{{ 'DOC_VIEW.NO_RECORDS' | translate }}</td></tr>
+                }
+              </tbody>
+            </table>
+          }
           @case ('voided') {
             @if (loading()) { <div class="add__loading"><app-spinner size="sm" class="text-brand-600"/></div> }
             @else {
@@ -157,7 +203,15 @@ export class DocAdditionalDetailsComponent implements AfterViewInit, OnDestroy {
   loading = signal(false);
 
   journalRows = signal<DocJournalRow[]>([]);
+  extraJournals = signal<DocExtraJournal[]>([]);
   paymentRows = signal<DocPaymentRow[]>([]);
+  /** A payment's attachments as a list (the backend sends an array of media, or null). */
+  attachmentsOf(p: DocPaymentRow): any[] {
+    const a: any = p.attachment;
+    return Array.isArray(a) ? a.filter(x => x) : a ? [a] : [];
+  }
+  lineRows = signal<DocLineRow[]>([]);
+  boe = signal<DocBillOfEntryRow | null>(null);
   logs = signal<LogEntry[]>([]);
   movementRows = signal<DocMovementRow[]>([]);
   wastageRows = signal<DocWastageRow[]>([]);
@@ -226,9 +280,17 @@ export class DocAdditionalDetailsComponent implements AfterViewInit, OnDestroy {
 
     if (tab === 'journal' && cfg.loadJournal) {
       this.loading.set(true);
-      try { this.journalRows.set(await cfg.loadJournal()); } finally { this.loading.set(false); }
+      try {
+        const res = await cfg.loadJournal();
+        if (Array.isArray(res)) this.journalRows.set(res);
+        else { this.journalRows.set(res.rows); this.extraJournals.set(res.extras); }
+      } finally { this.loading.set(false); }
     } else if (tab === 'payments' && cfg.payments) {
       this.paymentRows.set(cfg.payments());
+    } else if (tab === 'billOfEntry' && cfg.billOfEntry) {
+      this.boe.set(cfg.billOfEntry());
+    } else if (tab === 'lines' && cfg.lines) {
+      this.lineRows.set(cfg.lines());
     } else if (tab === 'logs' && cfg.logsSourceTable) {
       this.loading.set(true);
       try {

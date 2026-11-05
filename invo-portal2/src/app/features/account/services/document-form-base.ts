@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Directive, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Directive, OnInit, ViewChild, inject } from '@angular/core';
 import { Location } from '@angular/common';
 import { FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -21,6 +21,7 @@ import { Invoice } from '../models/invoice.model';
 import { CustomerAddress } from '../customers/models/customer.model';
 import { CustomersService } from '../customers/services/customers.service';
 import { CustomerAdvancedSearchModalComponent } from '../customers/components/customer-advanced-search-modal/customer-advanced-search-modal.component';
+import { AddAddressModalComponent } from '../customers/components/add-address-modal/add-address-modal.component';
 import { CustomerQuickCreateModalComponent } from '../customers/components/customer-quick-create-modal/customer-quick-create-modal.component';
 import { DocLinesConfig } from '../components/doc-lines-table/doc-lines.types';
 import { DocLinesTableComponent } from '../components/doc-lines-table/doc-lines-table.component';
@@ -98,7 +99,7 @@ export const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDat
  * `<app-doc-totals>`, so the pages of every document look and behave the same.
  */
 @Directive()
-export abstract class DocumentFormBase implements OnInit, CanLeaveComponent {
+export abstract class DocumentFormBase implements OnInit, AfterViewChecked, CanLeaveComponent {
   protected route = inject(ActivatedRoute);
   protected router = inject(Router);
   protected location = inject(Location);
@@ -158,6 +159,27 @@ export abstract class DocumentFormBase implements OnInit, CanLeaveComponent {
   protected afterInit(_isNew: boolean): Promise<void> | void {}
   /** Extra save-blocking check; return the toast text to block the save. */
   protected blockSave(_doc: Invoice, _status: 'Open' | 'Draft'): string | null { return null; }
+  /** The lines that go to the server (default: drop the blank trailing rows). */
+  protected linesForSave(lines: Invoice['lines']): Invoice['lines'] { return lines.filter(l => l.note != '' || l.productId != ''); }
+  protected restoreTrailingLine(): void { if (!this.linesConfig.fixedLines) this.editor?.addLine(); }
+  /** Chart of accounts offered on the lines (sales documents: income accounts). */
+  protected loadAccounts(): Promise<any[]> { return this.lookups.getSalesAccounts(); }
+  /** The line editor — purchase documents supply one that builds their own line type. */
+  protected makeEditor(d: Invoice, taxes: any[], accounts: any[]): DocumentLineEditor { return new DocumentLineEditor(d, taxes, accounts); }
+  /** Who the "Save and Send" dialog offers (default: the customer of the document). */
+  protected async sendRecipient(): Promise<{ emails: string[]; phone: string }> {
+    const d = this.doc!;
+    let email = d.customerEmail || '';
+    let phone = d.customerPhone || d.customerContact || '';
+    if (d.customerId && (!email || !phone)) {
+      try {
+        const c: any = await this.customersService.getCustomer(d.customerId);
+        email = email || c?.email || '';
+        phone = phone || c?.phone || c?.mobile || '';
+      } catch { /* the modal lets the user type the address */ }
+    }
+    return { emails: email ? [email] : [], phone };
+  }
   /** Route the form returns to after a successful save. */
   protected afterSaveRoute(): void { void this.router.navigate([this.cfg.routeBase], { queryParams: this.listParams }); }
 
@@ -180,7 +202,7 @@ export abstract class DocumentFormBase implements OnInit, CanLeaveComponent {
 
     const [taxes, accounts, surcharges, branches] = await Promise.all([
       this.lookups.getTaxes(),
-      this.lookups.getSalesAccounts(),
+      this.loadAccounts(),
       this.lookups.getSurcharges({ page: 1, limit: 100 }),
       this.lookups.getBranches(),
     ]);
@@ -204,7 +226,7 @@ export abstract class DocumentFormBase implements OnInit, CanLeaveComponent {
     }
 
     const d = this.doc!;
-    this.editor = new DocumentLineEditor(d, taxes, accounts);
+    this.editor = this.makeEditor(d, taxes, accounts);
     this.linesConfig = this.makeLinesConfig();
 
     if (isNew && !this.prefilled) {
@@ -219,7 +241,7 @@ export abstract class DocumentFormBase implements OnInit, CanLeaveComponent {
       }
     } else {
       d.lines.forEach((l, i) => { l.index = i; if (!l.accountId) l.accountId = accounts[0]?.id ?? ''; });
-      if (!d.lines.length || d.lines[d.lines.length - 1].itemDetailsTemp) this.editor.addLine();
+      if (!this.linesConfig.fixedLines && (!d.lines.length || d.lines[d.lines.length - 1].itemDetailsTemp)) this.editor.addLine();
     }
 
     d.calculateTotal();
@@ -234,6 +256,18 @@ export abstract class DocumentFormBase implements OnInit, CanLeaveComponent {
       { label: t(this.formStatus === 'new' ? this.cfg.newCrumbKey : this.cfg.editCrumbKey) },
     ];
     this.cdr.detectChanges();
+  }
+
+  /**
+   * Whether the lines are valid as the template last saw it. The lines table only exists after the first render, so
+   * reading it live made Save flip from disabled to enabled inside one change-detection run (NG0100); the flag is
+   * instead refreshed right after each render and `save()` re-reads the table itself.
+   */
+  private linesOk = true;
+  ngAfterViewChecked(): void {
+    if (!this.doc) return;
+    const now = this.linesAreValid();
+    if (now !== this.linesOk) queueMicrotask(() => { this.linesOk = now; this.cdr.markForCheck(); });
   }
 
   protected lockDate(): Date | null {
@@ -277,7 +311,9 @@ export abstract class DocumentFormBase implements OnInit, CanLeaveComponent {
   markDirty(): void { this.dirty = true; this.cdr.markForCheck(); }
 
   get mode(): SaveMode { return this.formStatus === 'edit' ? 'edit' : 'create'; }
-  private linesValid(): boolean { return this.table?.isValid() ?? false; }
+  /** Whether the lines are acceptable (default: the shared lines table says so; a form with its own lines overrides). */
+  protected linesAreValid(): boolean { return this.table?.isValid() ?? false; }
+  private linesValid(): boolean { return this.linesOk; }
   private issues(mode: SaveMode): string[] {
     return this.doc ? documentIssues(this.doc, this.cfg.rules, mode, this.linesValid(), this.table?.firstIssue() ?? undefined) : [];
   }
@@ -362,6 +398,27 @@ export abstract class DocumentFormBase implements OnInit, CanLeaveComponent {
     this.addresses = this.parseAddresses(await this.customersService.customerAddresses(customerId));
     const def = this.addresses.find(a => a.isDefault) ?? this.addresses[0];
     this.setAddress(def?.title ?? '');
+  }
+
+  /** "Add new address" (legacy openAddAddressForm): dialog, then persist the full list via accounts/setCustomerAddresses and select it. */
+  async addAddress(): Promise<void> {
+    const d = this.doc!;
+    if (!d.customerId) { this.toast.error('COMMON.OPS', this.lang.instant('DOC_FORM.SELECT_CUSTOMER')); return; }
+    const customer: any = await this.customersService.getCustomer(d.customerId).catch(() => null);
+    const created = await this.modal.open<AddAddressModalComponent, { customerType: 'Business' | 'Individual'; existingTitles: string[] }, CustomerAddress | null>(
+      AddAddressModalComponent,
+      { size: 'lg', data: { customerType: customer?.type === 'Business' ? 'Business' : 'Individual', existingTitles: this.addresses.map(a => a.title) } },
+    ).afterClosed();
+    if (!created) return;
+    if (this.addresses.length === 0) created.isDefault = true;
+    const res: any = await this.customersService.setCustomerAddresses(d.customerId, [...this.addresses, created]);
+    if (res?.success) {
+      this.addresses = this.parseAddresses(await this.customersService.customerAddresses(d.customerId));
+      this.setAddress(created.title);
+      this.cdr.markForCheck();
+    } else {
+      this.toast.error('COMMON.OPS', typeof res === 'string' ? res : (res?.msg ?? ''));
+    }
   }
 
   setAddress(title: string): void {
@@ -469,20 +526,11 @@ export abstract class DocumentFormBase implements OnInit, CanLeaveComponent {
 
   /** Send dialog after "Save and Send": customer email pre-filled, WhatsApp when the customer has a phone. */
   private async openSend(id: string): Promise<void> {
-    const d = this.doc!;
-    let email = d.customerEmail || '';
-    let phone = d.customerPhone || d.customerContact || '';
-    if (d.customerId && (!email || !phone)) {
-      try {
-        const c: any = await this.customersService.getCustomer(d.customerId);
-        email = email || c?.email || '';
-        phone = phone || c?.phone || c?.mobile || '';
-      } catch { /* the modal lets the user type the address */ }
-    }
+    const { emails, phone } = await this.sendRecipient();
     await this.modal.open<SendDocumentModalComponent, SendDocumentData, boolean>(SendDocumentModalComponent, {
       size: 'md',
       data: {
-        emails: email ? [email] : [],
+        emails,
         sendEmail: payload => this.svc.sendEmail(payload, id),
         whatsapp: { type: this.cfg.whatsappType, id, phone },
       },
@@ -514,7 +562,8 @@ export abstract class DocumentFormBase implements OnInit, CanLeaveComponent {
     const d = this.doc!;
     if (this.submitting) return;
 
-    d.lines = d.lines.filter(l => l.note != '' || l.productId != '');
+    this.linesOk = this.linesAreValid();
+    d.lines = this.linesForSave(d.lines);
 
     const blocked = this.blockSave(d, status);
     if (blocked) { this.toast.error('COMMON.OPS', blocked); return; }
@@ -523,7 +572,7 @@ export abstract class DocumentFormBase implements OnInit, CanLeaveComponent {
     if (issues.length) {
       this.showErrors = true;
       this.toast.error('COMMON.OPS', issues.map(k => this.lang.instant(k)).join(', '));
-      this.editor?.addLine();
+      this.restoreTrailingLine();
       return;
     }
 
@@ -541,7 +590,7 @@ export abstract class DocumentFormBase implements OnInit, CanLeaveComponent {
       } else {
         this.toast.error('COMMON.OPS', typeof res === 'string' ? res : (res?.msg ?? ''));
         // Lines were filtered for the request; restore the trailing empty row.
-        this.editor?.addLine();
+        this.restoreTrailingLine();
       }
     } finally {
       this.submitting = false;

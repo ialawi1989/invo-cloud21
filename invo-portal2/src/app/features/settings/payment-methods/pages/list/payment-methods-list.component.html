@@ -12,7 +12,7 @@
   (searchChange)="onSearch($event)"
   (searchClear)="clearSearch()">
 
-  @if (tab() !== 'online') {
+  @if (tab() !== 'online' && canManage) {
     <button shellActions type="button" class="btn btn-primary" (click)="add()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <line x1="12" y1="5" x2="12" y2="19"/>
@@ -38,7 +38,7 @@
 
   <div shellEmpty>
     <p>{{ (search() ? 'PAYMENT_METHODS.LIST.NO_MATCH' : 'PAYMENT_METHODS.LIST.EMPTY') | translate }}</p>
-    @if (!search() && tab() !== 'online') {
+    @if (!search() && tab() !== 'online' && canManage) {
       <button type="button" class="btn btn-ghost btn-sm" (click)="add()">
         {{ 'PAYMENT_METHODS.LIST.ADD_NEW' | translate }}
       </button>
@@ -77,9 +77,10 @@
       cdkDropList
       cdkDropListAutoScrollDisabled
       [cdkDropListData]="rows()"
+      [cdkDropListDisabled]="!canManage"
       (cdkDropListDropped)="dropRow($event)">
       @for (row of rows(); track trackRow($index, row)) {
-        <li class="row" cdkDrag (click)="edit(row)">
+        <li class="row" cdkDrag [cdkDragDisabled]="!canManage" (click)="edit(row)">
           <button type="button" class="row__handle" cdkDragHandle
             [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"
             [title]="'COMMON.DRAG_TO_REORDER' | translate"
@@ -155,7 +156,7 @@
     </div>
   }
 
-  @if (tab() === 'online') {
+  @if (tab() === 'online' && canManage) {
     <button type="button" class="btn btn-default btn-sm" (click)="connect(row, $event)">
       {{ (row.id ? 'PAYMENT_METHODS.LIST.CONFIGURE' : 'PAYMENT_METHODS.LIST.CONNECT') | translate }}
     </button>
@@ -164,13 +165,14 @@
   <label class="row__toggle" (click)="$event.stopPropagation()">
     <input type="checkbox"
       [checked]="row.isEnabled"
+      [disabled]="!canManage"
       (change)="toggleEnabled(row, $event)"/>
     <span class="row__toggle-track" aria-hidden="true">
       <span class="row__toggle-thumb"></span>
     </span>
   </label>
 
-  @if (tab() !== 'online' && !row.isDefaultCash) {
+  @if (tab() !== 'online' && !row.isDefaultCash && canManage) {
     <!-- Edit pencil — opens the regular form. Mirrors the legacy
          per-row edit affordance. Hidden for the locked Default Cash
          row (legacy disallows edits on it). -->
@@ -210,14 +212,17 @@
     <label class="connect-card__toggle" (click)="$event.stopPropagation()">
       <input type="checkbox"
         [checked]="row.isEnabled"
+        [disabled]="!canManage"
         (change)="toggleEnabled(row, $event)"/>
       <span class="connect-card__toggle-track" aria-hidden="true">
         <span class="connect-card__toggle-thumb"></span>
       </span>
     </label>
+    @if (canManage) {
     <button type="button" class="connect-card__btn" (click)="connect(row, $event)">
       {{ (row.id ? 'PAYMENT_METHODS.LIST.CONFIGURE' : 'PAYMENT_METHODS.LIST.CONNECT') | translate }}
     </button>
+    }
   </div>
 </ng-template>
 

@@ -116,9 +116,9 @@ export class CustomersService {
   }
 
   // ── custom fields (list columns) ───────────────────────────────────
-  async getCustomFields(): Promise<{ key: string; label: string; type?: string }[]> {
+  async getCustomFields(entity = 'customer'): Promise<{ key: string; label: string; type?: string }[]> {
     try {
-      const res = await this.api.request(this.api.get('company/getCustomizationByKey/customer/customFields'));
+      const res = await this.api.request(this.api.get(`company/getCustomizationByKey/${entity}/customFields`));
       const data: any = res?.data;
       const fields: any[] = data?.customFields || data?.value || (Array.isArray(data) ? data : []);
       if (!Array.isArray(fields)) return [];

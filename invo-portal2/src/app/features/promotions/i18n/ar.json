@@ -142,7 +142,13 @@
     },
     "PROMOTIONS_POINTS": {
       "ACTIVE_PERIOD": "فترة التفعيل",
-      "EXPIRY_PERIOD": "فترة الانتهاء"
+      "EXPIRY_PERIOD": "فترة الانتهاء",
+      "POINTS": "النقاط",
+      "INVOICE_BALANCE": "رصيد الفاتورة",
+      "CURRENCY_VALUE": "القيمة المالية",
+      "POINT_AMOUNT_MUST_BE_AT_LEAST_1": "يجب أن تكون النقاط 1 على الأقل",
+      "POINT_AMOUNT_MORE_THAN_POINT_BALANCE": "النقاط أكبر من رصيد النقاط",
+      "POINT_VALUE_MORE_THAN_INVOICE_BALANCE": "قيمة النقاط أكبر من رصيد الفاتورة"
     }
   }
 }

@@ -7,10 +7,10 @@ import * as XLSX from 'xlsx';
 import { LanguageService } from '@core/i18n/language.service';
 import { ApiService } from '@core/http/api.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
+import { statusClass } from '@shared/utils/status-tone';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { downloadPdf } from '@core/utils/pdf-download';
 import { ModalService } from '@shared/modal/modal.service';
-import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import {
@@ -19,6 +19,7 @@ import {
 } from '@shared/components/list-page/directives/list-template.directives';
 import {
   BulkActionConfig, FilterConfig, ListQueryParams, TableColumn,
+  SearchConfig,
 } from '@shared/components/list-page/interfaces/list-page.types';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { LogsDrawerComponent, LogsDrawerData } from '@shared/components/logs-drawer/logs-drawer.component';
@@ -61,6 +62,8 @@ export class InvoicesListComponent implements OnInit {
   private toast = inject(ToastService);
   private privileges = inject(PrivilegeService);
 
+  readonly statusClass = statusClass;
+
   @ViewChild(ListPageComponent) listPage?: ListPageComponent;
 
   readonly actions = inject(InvoiceActions);
@@ -73,7 +76,7 @@ export class InvoicesListComponent implements OnInit {
   bulkActions: BulkActionConfig[] = [];
   moreItems: DropdownMenuBtnItem[] = [];
   paginationConfig = { enabled: true, pageLimits: [15, 25, 50, 100], default: 15 };
-  searchConfig = { enabled: true, placeholder: '', debounceMs: 400 };
+  searchConfig: SearchConfig = { enabled: true, placeholder: '', debounceMs: 400, defaultDateRange: { keyFrom: 'fromDate', keyTo: 'toDate' } };
   sortingConfig = { enabled: true };
   emptyState = { title: '', message: '' };
   breadcrumbs: { label: string; routerLink?: string }[] = [];
@@ -175,35 +178,18 @@ export class InvoicesListComponent implements OnInit {
 
   /** Secondary row actions live in the "⋯" menu so the Actions column stays narrow (View + Edit stay outside). */
   rowMenu(r: any): DropdownMenuBtnItem[] {
-    const items: DropdownMenuBtnItem[] = [];
-    if (this.actions.pay(r)) items.push({ label: this.t('INVOICES.LIST.PAY'), click: () => this.pay(r), disabled: false, danger: false });
-    if (this.actions.creditNote(r)) items.push({ label: this.t('INVOICES.LIST.CREATE_CREDIT_NOTE'), click: () => this.createCreditNote(r), disabled: false, danger: false });
-    if (this.actions.writeOff(r)) items.push({ label: this.t('INVOICES.ACTIONS.WRITE_OFF'), click: () => void this.writeOff(r), disabled: false, danger: true });
-    return items;
+    // Pay lives here too, first in the list, so only View and Edit sit outside.
+    const pay: DropdownMenuBtnItem[] = this.actions.pay(r)
+      ? [{ label: this.lang.instant('INVOICES.LIST.PAY'), click: () => this.actions.goPay(r.id) }]
+      : [];
+    return [...pay, ...this.actions.menu(r, r.id, () => this.listPage?.refresh?.())];
   }
 
   // ── navigation / actions ───────────────────────────────────────────
   add(): void { void this.router.navigate(['/account/invoices', 'new']); }
   view(r: any): void { void this.router.navigate(['/account/invoices/view', r.id]); }
-  pay(r: any): void { void this.router.navigate(['/account/invoices/payment', r.id]); }
-  createCreditNote(r: any): void { void this.router.navigate(['/account/credit-notes/new/forInvoice', r.id]); }
   edit(r: any): void { void this.router.navigate(['/account/invoices', r.id]); }
   onRowClick(e: any): void { if (e?.row) this.view(e.row); }
-
-  async writeOff(r: any): Promise<void> {
-    const ok = await this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(ConfirmModalComponent, {
-      size: 'sm',
-      data: { title: this.lang.instant('INVOICES.ACTIONS.WRITE_OFF'), message: this.lang.instant('INVOICES.ACTIONS.CONFIRM_WRITE_OFF') },
-    }).afterClosed();
-    if (!ok) return;
-    try {
-      await this.service.WriteOffInvoice(r.id);
-      this.toast.success('COMMON.SAVED_OK');
-      this.listPage?.refresh?.();
-    } catch (e: any) {
-      this.toast.error('COMMON.OPS', e?.error?.msg ?? e?.message ?? '');
-    }
-  }
 
   // ── bulk / export ──────────────────────────────────────────────────
   async exportMergedPdf(rows: any[]): Promise<void> {

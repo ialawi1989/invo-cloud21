@@ -1,0 +1,65 @@
+<div class="pqp">
+  @if (loading()) {
+    <div class="pqp__state">
+      <div class="pqp__spinner" aria-hidden="true"></div>
+    </div>
+  } @else if (failed() || !party()?.id) {
+    <div class="pqp__state">
+      <p class="pqp__muted">{{ 'COMMON.PARTY_PEEK.NOT_FOUND' | translate }}</p>
+    </div>
+  } @else {
+    @let p = party();
+    <header class="pqp__head">
+      <span class="pqp__avatar" aria-hidden="true">{{ (p.name || '?').charAt(0).toUpperCase() }}</span>
+      <div class="pqp__who">
+        <h2 class="pqp__name">{{ p.name }}</h2>
+        @if (p.code) { <p class="pqp__sub">{{ 'COMMON.PARTY_PEEK.CODE' | translate }}: {{ p.code }}</p> }
+        @if (p.email) { <p class="pqp__sub">{{ p.email }}</p> }
+      </div>
+    </header>
+
+    <div class="pqp__actions">
+      <button type="button" class="pqp__btn" (click)="view()">{{ 'COMMON.VIEW' | translate }}</button>
+      <button type="button" class="pqp__btn pqp__btn--primary" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
+    </div>
+
+    <div class="pqp__cards">
+      <div class="pqp__card pqp__card--danger">
+        <span>{{ 'COMMON.PARTY_PEEK.OUTSTANDING' | translate }}</span>
+        <b>{{ outstanding() | mycurrency }}</b>
+      </div>
+      <div class="pqp__card">
+        <span>{{ 'COMMON.PARTY_PEEK.UNUSED_CREDIT' | translate }}</span>
+        <b>{{ (overview()?.unusedCredit || 0) | mycurrency }}</b>
+      </div>
+      <div class="pqp__card">
+        <span>{{ 'COMMON.PARTY_PEEK.LAST_PAYMENT' | translate }}</span>
+        <b>{{ (lastPayment()?.tenderAmount ?? lastPayment()?.paidAmount ?? lastPayment()?.total ?? 0) | mycurrency }}</b>
+      </div>
+    </div>
+
+    <section class="pqp__section">
+      <h3>{{ 'COMMON.PARTY_PEEK.CONTACT' | translate }}</h3>
+      @if (p.phone) { <div class="pqp__kv"><span>{{ 'COMMON.PARTY_PEEK.PHONE' | translate }}</span><b>{{ p.phone }}</b></div> }
+      @if (p.mobile) { <div class="pqp__kv"><span>{{ 'COMMON.PARTY_PEEK.MOBILE' | translate }}</span><b>{{ p.mobile }}</b></div> }
+      @if (p.email) { <div class="pqp__kv"><span>{{ 'COMMON.PARTY_PEEK.EMAIL' | translate }}</span><b>{{ p.email }}</b></div> }
+      @if (p.website) { <div class="pqp__kv"><span>{{ 'COMMON.PARTY_PEEK.WEBSITE' | translate }}</span><b>{{ p.website }}</b></div> }
+      @if (isSupplier && p.address) { <div class="pqp__kv"><span>{{ 'COMMON.PARTY_PEEK.ADDRESS' | translate }}</span><b>{{ p.address }}{{ p.country ? ', ' + p.country : '' }}</b></div> }
+    </section>
+
+    <section class="pqp__section">
+      <h3>{{ (isSupplier ? 'COMMON.PARTY_PEEK.RECENT_BILLS' : 'COMMON.PARTY_PEEK.RECENT_INVOICES') | translate }}</h3>
+      @for (r of recent(); track r.id) {
+        <button type="button" class="pqp__row" (click)="go(docLink(r))">
+          <span class="pqp__row-main">
+            <b>{{ docNumber(r) }}</b>
+            <small>{{ (r.billingDate || r.invoiceDate || r.createdAt) | date: 'dd/MM/yyyy' }}</small>
+          </span>
+          <span class="pqp__row-amt">{{ r.total | mycurrency }}</span>
+        </button>
+      } @empty {
+        <p class="pqp__muted">{{ 'COMMON.PARTY_PEEK.NO_TRANSACTIONS' | translate }}</p>
+      }
+    </section>
+  }
+</div>

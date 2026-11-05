@@ -1,3 +1,4 @@
+import { statusClass as baseStatusClass } from '@shared/utils/status-tone';
 import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -15,8 +16,10 @@ import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/component
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { LogsDrawerComponent, LogsDrawerData } from '@shared/components/logs-drawer/logs-drawer.component';
 
 import { SalesLookupsService } from '../../../../account/services/sales-lookups.service';
+import { InventoryRequestActions } from '../../../services/inventory-request-actions';
 import { InventoryRequest, InventoryRequestService } from '../../../services/inventory-request.service';
 import { ExportRequestsModalComponent, ExportRequestsData } from '../export-requests-modal/export-requests-modal.component';
 
@@ -45,15 +48,16 @@ export class InventoryRequestListComponent implements OnInit {
   private modal = inject(ModalService);
   private toast = inject(ToastService);
   private lookups = inject(SalesLookupsService);
+  private actions = inject(InventoryRequestActions);
 
   @ViewChild(ListPageComponent) listPage?: ListPageComponent;
 
   readonly canAdd = this.privileges.check('productSecurity.actions.requestInventoryAdd.access');
-  readonly canConvertPo = this.privileges.check('purchaseOrderSecurity.actions.convert.access');
 
   /** Convert-to-Transfer-Out is only offered when the company has more than one branch (legacy). */
   private branchCount = signal(0);
 
+  moreItems: DropdownMenuBtnItem[] = [];
   columns: TableColumn[] = [];
   breadcrumbs = [
     { label: 'Home', routerLink: '/', icon: 'home' as const, iconOnly: true },
@@ -80,6 +84,7 @@ export class InventoryRequestListComponent implements OnInit {
       { label: 'Home', routerLink: '/', icon: 'home' as const, iconOnly: true },
       { label: t('TITLE'), routerLink: '/inventory/request' },
     ];
+    this.moreItems = [{ label: this.lang.instant('COMMON.LOGS.SHOW'), click: () => this.openLogs(), disabled: false, danger: false }];
     this.searchConfig.placeholder = t('SEARCH_PLACEHOLDER');
     this.emptyState = { title: t('EMPTY'), message: '' };
     void this.lookups.getBranches().then((b) => this.branchCount.set(b.length)).catch(() => undefined);
@@ -99,33 +104,27 @@ export class InventoryRequestListComponent implements OnInit {
 
   isConverted = (r: InventoryRequest) => r.status === 'Converted';
 
-  statusClass(status: string): string {
-    switch (status) {
-      case 'Converted': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'Open': return 'bg-sky-50 text-sky-700 border-sky-200';
-      default: return 'bg-slate-50 text-slate-600 border-slate-200';
-    }
-  }
+  statusClass = baseStatusClass;
 
+  /** The row's ⋯ menu: Edit / Export / Delete first, then the central convert actions — keeps every row's action cell the same width. */
   rowMenu(r: InventoryRequest): DropdownMenuBtnItem[] {
+    const t = (k: string) => this.lang.instant(k);
     const items: DropdownMenuBtnItem[] = [];
-    if (this.isConverted(r)) return items;
-    const t = (k: string) => this.lang.instant('PRODUCTS.INVENTORY_REQUEST.' + k);
-    if (r.hasSupplier && this.canConvertPo) {
-      items.push({ label: t('CONVERT_TO_PO'), click: () => this.convertToPo(r), disabled: false, danger: false });
-    }
-    if (r.branchName !== '' && this.branchCount() > 1) {
-      items.push({ label: t('CONVERT_TO_ITO'), click: () => this.convertToIto(r), disabled: false, danger: false });
-    }
+    if (!this.isConverted(r)) items.push({ label: t('COMMON.EDIT'), click: () => this.edit(r), disabled: false, danger: false });
+    items.push({ label: t('PRODUCTS.INVENTORY_REQUEST.EXPORT'), click: () => this.export(r), disabled: false, danger: false });
+    items.push(...this.actions.menu(r, this.branchCount()));
+    if (!this.isConverted(r)) items.push({ label: t('COMMON.DELETE'), click: () => void this.remove(r), disabled: false, danger: true, separator: true });
     return items;
   }
 
   add(): void { void this.router.navigate(['/inventory/request', 'new']); }
   view(r: InventoryRequest): void { void this.router.navigate(['/inventory/request', r.id, 'view']); }
   edit(r: InventoryRequest): void { void this.router.navigate(['/inventory/request', r.id]); }
-  convertToPo(r: InventoryRequest): void { void this.router.navigate(['/inventory/request/convert-to-purchase-order', r.id]); }
-  convertToIto(r: InventoryRequest): void {
-    void this.router.navigate(['/inventory/transfer/Transfer Out/convert-from-inventory-request', r.id]);
+  openLogs(): void {
+    this.modal.open<LogsDrawerComponent, LogsDrawerData, void>(LogsDrawerComponent, {
+      drawer: true, drawerWidth: '480px', drawerResizable: true,
+      data: { sourceTable: 'Inventory', title: this.lang.instant('PRODUCTS.INVENTORY_REQUEST.TITLE') },
+    });
   }
   onRowClick(e: any): void { if (e?.row) this.view(e.row); }
 

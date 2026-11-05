@@ -1,8 +1,9 @@
-<div class="emp-overview">
+<div class="emp-overview" [class.emp-overview--embedded]="embedded()">
   @if (loading()) {
     <div class="loading"><span class="spinner spinner--lg"></span></div>
   } @else if (record(); as r) {
 
+    @if (!embedded()) {
     <!-- ── Identity header ── -->
     <header class="emp-hero">
       <div class="emp-hero__who">
@@ -59,6 +60,31 @@
         <a class="btn btn-ghost btn-sm" routerLink="/employees">{{ 'COMMON.CLOSE' | translate }}</a>
       </div>
     </header>
+    }
+
+    @if (embedded()) {
+      <!-- Compact identity strip for the view page (the title bar already has the name). -->
+      <div class="emp-id">
+        <div class="emp-hero__avatar emp-id__avatar">
+          @if (avatar()) {
+            <img [src]="avatar()" [alt]="name()"/>
+          } @else {
+            <span class="emp-hero__initial" aria-hidden="true">{{ name().charAt(0) }}</span>
+          }
+        </div>
+        <div class="emp-id__meta">
+          @if (position()) { <span class="emp-id__role">{{ position() }}</span> }
+          @if (employeeNumber()) { <span class="emp-hero__badge">{{ employeeNumber() }}</span> }
+          @if (workLocation()) { <span class="emp-id__loc">{{ workLocation() }}</span> }
+          @for (role of rolePills(); track role) {
+            <span class="emp-id__pill">{{ role }}</span>
+          }
+          @if (isTerminated()) {
+            <span class="emp-id__pill emp-id__pill--off">{{ 'EMPLOYEES.OVERVIEW.TERMINATED' | translate }}</span>
+          }
+        </div>
+      </div>
+    }
 
     <!-- ── Sections ──
          A card is absent when it has nothing to show, rather than present and

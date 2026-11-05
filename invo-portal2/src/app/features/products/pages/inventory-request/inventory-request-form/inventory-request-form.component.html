@@ -1,6 +1,6 @@
 <app-doc-form-shell
   [title]="pageTitle()" [breadcrumbs]="breadcrumbs()"
-  [canDraft]="false" [submitting]="saving() || loading()" [showView]="!isNew()"
+  [canDraft]="false" [submitting]="saving() || loading()" [saveDisabled]="hasErrors()" [showView]="!isNew()"
   [saveLabel]="'COMMON.SAVE' | translate" [saveMenu]="saveMenu()"
   [total]="total()" [totalQty]="totalQty()"
   (save)="save()" (cancel)="cancel()" (view)="view()">
@@ -141,16 +141,8 @@
                   }
                   <td class="w-num">{{ i + 1 }}</td>
                   @if (!line.productId) {
-                    <td colspan="7">
-                      <app-search-dropdown
-                        [loadFn]="loadProducts"
-                        [displayWith]="productLabel"
-                        [compareWith]="byId"
-                        [value]="null"
-                        (valueChange)="pickProduct(line, $event)"
-                        [clearable]="false"
-                        [placeholder]="'PRODUCTS.INVENTORY_REQUEST.PLEASE_SELECT_PRODUCT' | translate"
-                        [searchPlaceholder]="'COMMON.SEARCH' | translate" />
+                    <td colspan="7" class="item-cell">
+                      <app-doc-item-search [search]="searchProducts" [lookup]="lookupProduct" (picked)="pickProduct(line, $event)"/>
                     </td>
                   } @else {
                     <td>

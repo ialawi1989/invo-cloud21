@@ -18,23 +18,195 @@
     </div>
   }
 
+  @if (!loading() && noEntitlement()) {
+    <app-alert variant="warning" class="leave-alert">
+      {{ 'EMPLOYEES.LEAVE.NO_ENTITLEMENT_ALERT' | translate }}
+      @if (canEditProfile() && !editingProfile()) {
+        <button alertAction type="button" class="btn btn-default btn-sm" (click)="startEditProfile()">
+          {{ 'EMPLOYEES.LEAVE.SET_ENTITLEMENT' | translate }}
+        </button>
+      }
+    </app-alert>
+  }
+
   <!-- ═══ THE LEAVE PROFILE — what makes the balance mean anything ═══════ -->
-  @if (canEditProfile() || profile()) {
+  @if (editingProfile()) {
     <section class="leave-profile">
       <header class="leave-profile__head">
         <h2 class="leave-profile__title">{{ 'EMPLOYEES.LEAVE.PROFILE' | translate }}</h2>
-        @if (canEditProfile() && !editingProfile()) {
+      </header>
+
+      @if (editingProfile()) {
+        <form class="leave-form" [formGroup]="profileForm" (ngSubmit)="submitProfile()">
+          <div class="leave-form__grid">
+            <label class="leave-field">
+              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.ENTITLEMENT' | translate }} <em>*</em></span>
+              <input class="form-control" type="number" min="0" step="0.5"
+                     formControlName="annualEntitlementDays" (input)="onProfileInput()" />
+              <span class="leave-field__hint">{{ 'EMPLOYEES.LEAVE.ENTITLEMENT_HINT' | translate }}</span>
+            </label>
+
+            <label class="leave-field">
+              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.YEAR_START' | translate }} <em>*</em></span>
+              <app-search-dropdown
+                formControlName="leaveYearStart"
+                [items]="yearStartOptions()"
+                [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+                [searchable]="false" [clearable]="false">
+              </app-search-dropdown>
+              <span class="leave-field__hint">{{ 'EMPLOYEES.LEAVE.YEAR_START_HINT' | translate }}</span>
+            </label>
+
+            <label class="leave-field">
+              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.POLICY' | translate }}</span>
+              <input class="form-control" type="text" formControlName="policyName" />
+            </label>
+
+            <label class="leave-field">
+              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.OPENING' | translate }}</span>
+              <input class="form-control" type="number" step="0.5" formControlName="openingBalance" />
+              <!-- Frozen after the first year-close: the server keeps its own
+                   value and ignores what is sent, so an editable box here would
+                   take a number and silently drop it. -->
+              @if (openingBalanceLocked()) {
+                <span class="leave-field__hint">{{ 'EMPLOYEES.LEAVE.OPENING_LOCKED' | translate }}</span>
+              } @else {
+                <span class="leave-field__hint">{{ 'EMPLOYEES.LEAVE.OPENING_HINT' | translate }}</span>
+              }
+            </label>
+
+            <label class="leave-field">
+              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.CARRY_OVER' | translate }}</span>
+              <input class="form-control" type="number" step="0.5" formControlName="carryOverDays" />
+            </label>
+
+            <label class="leave-field">
+              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.CARRY_OVER_EXPIRY' | translate }}</span>
+              <app-date-field formControlName="carryOverExpiry"/>
+            </label>
+
+            <label class="leave-field">
+              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.ACCRUAL_RATE' | translate }}</span>
+              <input class="form-control" type="number" step="0.01"
+                     formControlName="accrualRateDays" (input)="onProfileInput()" />
+            </label>
+
+            <label class="leave-field">
+              <!-- The server refuses an accrual override with no reason. -->
+              <span class="leave-field__label">
+                {{ 'EMPLOYEES.LEAVE.FIELD.ACCRUAL_REASON' | translate }}
+                @if (accrualNeedsReason()) { <em>*</em> }
+              </span>
+              <input class="form-control" type="text"
+                     formControlName="accrualOverrideReason" (input)="onProfileInput()"
+                     [class.is-invalid]="accrualNeedsReason()" />
+              @if (accrualNeedsReason()) {
+                <span class="leave-field__error">{{ 'EMPLOYEES.LEAVE.ACCRUAL_REASON_REQUIRED' | translate }}</span>
+              }
+            </label>
+
+            <label class="leave-check">
+              <input type="checkbox" formControlName="encashmentEligible" />
+              {{ 'EMPLOYEES.LEAVE.FIELD.ENCASHMENT' | translate }}
+            </label>
+          </div>
+
+          <p class="leave-profile__caveat">{{ 'EMPLOYEES.LEAVE.ENTITLEMENT_NOT_CALCULATED' | translate }}</p>
+
+          <div class="leave-form__actions">
+            <button type="button" class="btn btn-secondary" (click)="cancelProfile()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
+            <button type="submit" class="btn btn-primary"
+                    [disabled]="busy() !== null || accrualNeedsReason()">
+              {{ 'COMMON.SAVE' | translate }}
+            </button>
+          </div>
+        </form>
+      }
+    </section>
+  }
+
+  <!--
+    ── THE BALANCE, ALWAYS WITH THE PERIOD IT COVERS ──────────────────────────
+    Never a bare number. Every figure here is qualified by the window the SERVER
+    resolved and by how it chose it. A remaining figure without its period is a
+    number people plan around and the server disagrees with.
+  -->
+  @if (balance(); as b) {
+    <section class="leave-balance" [class.leave-balance--fallback]="balanceIsFallback()">
+      <header class="leave-balance__head">
+        <h2 class="leave-balance__title">
+          {{ 'EMPLOYEES.LEAVE.BALANCE' | translate }}
+          <span class="info-tip" tabindex="0" role="img" aria-describedby="leave-balance-tip"
+                [attr.aria-label]="'EMPLOYEES.LEAVE.BALANCE_INFO' | translate">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <span class="info-tip__bubble" id="leave-balance-tip" role="tooltip">
+              <span>{{ 'EMPLOYEES.LEAVE.PENDING_COUNTS' | translate }}</span>
+              <span>{{ 'EMPLOYEES.LEAVE.DAY_COUNT_RULES' | translate }}</span>
+              @if (catalog().suggestionExcludesPublicHolidays) {
+                <span>{{ 'EMPLOYEES.LEAVE.EXCLUDES_HOLIDAYS_BALANCE' | translate }}</span>
+              }
+            </span>
+          </span>
+        </h2>
+        <div class="leave-balance__period">
+          @if (b.yearStart && b.yearEnd) {
+            {{ fmtDate(b.yearStart) }} – {{ fmtDate(b.yearEnd) }}
+          } @else {
+            <!-- No window means no figure can be read. Said, not hidden. -->
+            <span class="leave-balance__nowindow">{{ 'EMPLOYEES.LEAVE.NO_PERIOD' | translate }}</span>
+          }
+          <span class="leave-basis" [class.leave-basis--fallback]="balanceIsFallback()">
+            {{ basisKey() | translate }}
+          </span>
+        </div>
+        @if (canEditProfile() && !editingProfile() && profile()) {
           <button type="button" class="btn btn-secondary btn-sm" (click)="startEditProfile()">
-            {{ (profile() ? 'EMPLOYEES.LEAVE.EDIT_PROFILE' : 'EMPLOYEES.LEAVE.SET_PROFILE') | translate }}
+            {{ 'EMPLOYEES.LEAVE.EDIT_PROFILE' | translate }}
           </button>
         }
       </header>
 
-      @if (!profile() && !editingProfile()) {
-        <!-- Said outright. Without a profile the balance below is 0 of 0 and
-             means nothing; a panel of silent zeros is what this replaces. -->
-        <p class="leave-profile__empty">{{ 'EMPLOYEES.LEAVE.NO_PROFILE' | translate }}</p>
-      } @else if (!editingProfile() && profile(); as p) {
+      <!--
+        The loud one. The profile asked for a hire-anniversary year, the record
+        has no hire date, and the figures below quietly cover the calendar year
+        instead. That is a fallback, and it must not read as an answer.
+      -->
+      @if (balanceIsFallback()) {
+        <p class="leave-balance__warning">{{ 'EMPLOYEES.LEAVE.FALLBACK_WARNING' | translate }}</p>
+      }
+      @if (!basisKnown()) {
+        <p class="leave-balance__warning">{{ 'EMPLOYEES.LEAVE.BASIS_UNKNOWN_WARNING' | translate }}</p>
+      }
+
+      <dl class="leave-figures">
+        <div>
+          <dt>{{ 'EMPLOYEES.LEAVE.ENTITLEMENT' | translate }}</dt>
+          <dd>{{ b.entitlementDays ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'EMPLOYEES.LEAVE.OPENING' | translate }}</dt>
+          <dd>{{ b.openingBalance ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'EMPLOYEES.LEAVE.CARRY_OVER' | translate }}</dt>
+          <dd>{{ b.carryOverDays ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'EMPLOYEES.LEAVE.USED' | translate }}</dt>
+          <dd>{{ b.usedDays ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
+        </div>
+        <div class="leave-figures__remaining" [attr.data-tone]="remainingTone()">
+          <dt>{{ 'EMPLOYEES.LEAVE.REMAINING' | translate }}</dt>
+          <dd>{{ b.remainingDays ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
+        </div>
+      </dl>
+
+      @if (!editingProfile() && profile(); as p) {
         <dl class="leave-profile__facts">
           <div>
             <dt>{{ 'EMPLOYEES.LEAVE.ENTITLEMENT' | translate }}</dt>
@@ -89,175 +261,6 @@
         }
       }
 
-      @if (editingProfile()) {
-        <form class="leave-form" [formGroup]="profileForm" (ngSubmit)="submitProfile()">
-          <div class="leave-form__grid">
-            <label class="leave-field">
-              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.ENTITLEMENT' | translate }} <em>*</em></span>
-              <input class="form-control" type="number" min="0" step="0.5"
-                     formControlName="annualEntitlementDays" (input)="onProfileInput()" />
-              <span class="leave-field__hint">{{ 'EMPLOYEES.LEAVE.ENTITLEMENT_HINT' | translate }}</span>
-            </label>
-
-            <label class="leave-field">
-              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.YEAR_START' | translate }} <em>*</em></span>
-              <app-search-dropdown
-                formControlName="leaveYearStart"
-                [items]="yearStartOptions()"
-                [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
-                [searchable]="false" [clearable]="false">
-              </app-search-dropdown>
-              <span class="leave-field__hint">{{ 'EMPLOYEES.LEAVE.YEAR_START_HINT' | translate }}</span>
-            </label>
-
-            <label class="leave-field">
-              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.POLICY' | translate }}</span>
-              <input class="form-control" type="text" formControlName="policyName" />
-            </label>
-
-            <label class="leave-field">
-              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.OPENING' | translate }}</span>
-              <input class="form-control" type="number" step="0.5" formControlName="openingBalance" />
-              <!-- Frozen after the first year-close: the server keeps its own
-                   value and ignores what is sent, so an editable box here would
-                   take a number and silently drop it. -->
-              @if (openingBalanceLocked()) {
-                <span class="leave-field__hint">{{ 'EMPLOYEES.LEAVE.OPENING_LOCKED' | translate }}</span>
-              } @else {
-                <span class="leave-field__hint">{{ 'EMPLOYEES.LEAVE.OPENING_HINT' | translate }}</span>
-              }
-            </label>
-
-            <label class="leave-field">
-              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.CARRY_OVER' | translate }}</span>
-              <input class="form-control" type="number" step="0.5" formControlName="carryOverDays" />
-            </label>
-
-            <label class="leave-field">
-              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.CARRY_OVER_EXPIRY' | translate }}</span>
-              <input class="form-control" type="date" formControlName="carryOverExpiry" />
-            </label>
-
-            <label class="leave-field">
-              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.ACCRUAL_RATE' | translate }}</span>
-              <input class="form-control" type="number" step="0.01"
-                     formControlName="accrualRateDays" (input)="onProfileInput()" />
-            </label>
-
-            <label class="leave-field">
-              <!-- The server refuses an accrual override with no reason. -->
-              <span class="leave-field__label">
-                {{ 'EMPLOYEES.LEAVE.FIELD.ACCRUAL_REASON' | translate }}
-                @if (accrualNeedsReason()) { <em>*</em> }
-              </span>
-              <input class="form-control" type="text"
-                     formControlName="accrualOverrideReason" (input)="onProfileInput()"
-                     [class.is-invalid]="accrualNeedsReason()" />
-              @if (accrualNeedsReason()) {
-                <span class="leave-field__error">{{ 'EMPLOYEES.LEAVE.ACCRUAL_REASON_REQUIRED' | translate }}</span>
-              }
-            </label>
-
-            <label class="leave-check">
-              <input type="checkbox" formControlName="encashmentEligible" />
-              {{ 'EMPLOYEES.LEAVE.FIELD.ENCASHMENT' | translate }}
-            </label>
-          </div>
-
-          <p class="leave-profile__caveat">{{ 'EMPLOYEES.LEAVE.ENTITLEMENT_NOT_CALCULATED' | translate }}</p>
-
-          <div class="leave-form__actions">
-            <button type="button" class="btn btn-secondary" (click)="cancelProfile()">
-              {{ 'COMMON.CANCEL' | translate }}
-            </button>
-            <button type="submit" class="btn btn-primary"
-                    [disabled]="busy() !== null || accrualNeedsReason()">
-              {{ 'COMMON.SAVE' | translate }}
-            </button>
-          </div>
-        </form>
-      }
-    </section>
-  }
-
-  <!--
-    ── THE BALANCE, ALWAYS WITH THE PERIOD IT COVERS ──────────────────────────
-    Never a bare number. Every figure here is qualified by the window the SERVER
-    resolved and by how it chose it. A remaining figure without its period is a
-    number people plan around and the server disagrees with.
-  -->
-  @if (balance(); as b) {
-    <section class="leave-balance" [class.leave-balance--fallback]="balanceIsFallback()">
-      <header class="leave-balance__head">
-        <h2 class="leave-balance__title">{{ 'EMPLOYEES.LEAVE.BALANCE' | translate }}</h2>
-        <div class="leave-balance__period">
-          @if (b.yearStart && b.yearEnd) {
-            {{ 'EMPLOYEES.LEAVE.PERIOD' | translate }} {{ b.yearStart }} → {{ b.yearEnd }}
-          } @else {
-            <!-- No window means no figure can be read. Said, not hidden. -->
-            <span class="leave-balance__nowindow">{{ 'EMPLOYEES.LEAVE.NO_PERIOD' | translate }}</span>
-          }
-          <span class="leave-basis" [class.leave-basis--fallback]="balanceIsFallback()">
-            {{ basisKey() | translate }}
-          </span>
-        </div>
-      </header>
-
-      <!--
-        The loud one. The profile asked for a hire-anniversary year, the record
-        has no hire date, and the figures below quietly cover the calendar year
-        instead. That is a fallback, and it must not read as an answer.
-      -->
-      @if (balanceIsFallback()) {
-        <p class="leave-balance__warning">{{ 'EMPLOYEES.LEAVE.FALLBACK_WARNING' | translate }}</p>
-      }
-      @if (!basisKnown()) {
-        <p class="leave-balance__warning">{{ 'EMPLOYEES.LEAVE.BASIS_UNKNOWN_WARNING' | translate }}</p>
-      }
-
-      <dl class="leave-figures">
-        <div>
-          <dt>{{ 'EMPLOYEES.LEAVE.ENTITLEMENT' | translate }}</dt>
-          <dd>{{ b.entitlementDays ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
-        </div>
-        <div>
-          <dt>{{ 'EMPLOYEES.LEAVE.OPENING' | translate }}</dt>
-          <dd>{{ b.openingBalance ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
-        </div>
-        <div>
-          <dt>{{ 'EMPLOYEES.LEAVE.CARRY_OVER' | translate }}</dt>
-          <dd>{{ b.carryOverDays ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
-        </div>
-        <div>
-          <dt>{{ 'EMPLOYEES.LEAVE.USED' | translate }}</dt>
-          <dd>{{ b.usedDays ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
-        </div>
-        <div class="leave-figures__remaining">
-          <dt>{{ 'EMPLOYEES.LEAVE.REMAINING' | translate }}</dt>
-          <dd>{{ b.remainingDays ?? ('EMPLOYEES.LEAVE.UNKNOWN' | translate) }}</dd>
-        </div>
-      </dl>
-
-      <!--
-        Stated next to the figure it qualifies. Pending requests are already
-        deducted; without this line someone reads "remaining" as approved-only
-        and books against days the server has spoken for.
-      -->
-      <p class="leave-balance__note">{{ 'EMPLOYEES.LEAVE.PENDING_COUNTS' | translate }}</p>
-
-      <!--
-        ── WHAT THIS FIGURE EXCLUDES, SAID ON THE PANEL ──────────────────────
-        While entitlement could not be set, this panel read 0 of 0 — obviously
-        unconfigured, and nobody would plan around it. Now that someone can
-        enter 30 days it produces numbers people WILL act on, and the day count
-        behind them still excludes public holidays because no holiday calendar
-        exists. A remaining figure that is quietly three days optimistic is
-        worse than the 0 of 0 it replaced, so this belongs on the panel and not
-        only in the API response.
-      -->
-      @if (catalog().suggestionExcludesPublicHolidays) {
-        <p class="leave-balance__caveat">{{ 'EMPLOYEES.LEAVE.EXCLUDES_HOLIDAYS_BALANCE' | translate }}</p>
-      }
 
       @if (b.byType.length) {
         <ul class="leave-bytype">
@@ -279,6 +282,7 @@
     <div class="leave-note">{{ 'EMPLOYEES.LEAVE.NO_BALANCE' | translate }}</div>
   }
 
+  <section class="hr-card">
   <div class="leave-header">
     <h2 class="leave-header__title">{{ 'EMPLOYEES.LEAVE.REQUESTS' | translate }}</h2>
     <!--
@@ -309,14 +313,12 @@
 
         <label class="leave-field">
           <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.START' | translate }} <em>*</em></span>
-          <input class="form-control" type="date" formControlName="startDate"
-                 (change)="refreshSuggestion()" />
+          <app-date-field formControlName="startDate" (changed)="refreshSuggestion()"/>
         </label>
 
         <label class="leave-field">
           <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.END' | translate }} <em>*</em></span>
-          <input class="form-control" type="date" formControlName="endDate"
-                 (change)="refreshSuggestion()" />
+          <app-date-field formControlName="endDate" (changed)="refreshSuggestion()"/>
         </label>
 
         <label class="leave-field">
@@ -425,7 +427,9 @@
   @if (loading()) {
     <div class="leave-loading">{{ 'COMMON.LOADING' | translate }}</div>
   } @else if (!requests().length) {
-    <div class="leave-empty">{{ 'EMPLOYEES.LEAVE.EMPTY' | translate }}</div>
+    <app-empty-state icon="calendar"
+      [title]="'EMPLOYEES.LEAVE.EMPTY_TITLE' | translate"
+      [body]="'EMPLOYEES.LEAVE.EMPTY_BODY' | translate"/>
   } @else {
     <div class="leave-list">
       @for (r of requests(); track trackRequest($index, r)) {
@@ -534,4 +538,5 @@
       }
     </div>
   }
+  </section>
 </div>

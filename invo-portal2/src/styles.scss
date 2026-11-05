@@ -298,6 +298,11 @@ body:has(.wc) .wc__editor .re__surface {
   overflow: visible !important;
 }
 
+// Opt-in: size the dialog to its content instead of the fixed `xl` height (legacy dialogs fit their content).
+.invo-modal-panel.invo-modal-panel--fit {
+  height: auto !important;
+}
+
 // On small screens, modals go full-screen — no margins, no rounding.
 // Uses !important to override CDK's inline styles on the overlay pane.
 // iOS Safari: 100vh includes the area BEHIND the URL bar and bottom toolbar,
@@ -593,6 +598,13 @@ select[readonly] {
   cursor: not-allowed;
   // Faded placeholder so it doesn't look like a hint the user can act on.
   &::placeholder { color: #cbd5e1; }
+}
+// A disabled-but-checked checkbox (e.g. "required" sections) must still read as
+// checked: keep the brand fill (muted) so the tick stays visible against it.
+input[type="checkbox"]:not(.no-custom):disabled:checked {
+  background-color: var(--color-brand-600) !important;
+  border-color: var(--color-brand-600) !important;
+  opacity: .6;
 }
 // Tailwind v4 / Angular CDK both honour `aria-disabled` on non-form widgets
 // (segmented toggles, dropdown triggers). Treat it the same so disabled

@@ -30,6 +30,8 @@ import {
   LinkedDoc,
   RequestProduct,
 } from '../../../services/inventory-request.service';
+import { DocItemSearchComponent } from '../../../../account/components/doc-item-search/doc-item-search.component';
+import { LanguageService } from '@core/i18n/language.service';
 import { InventoryRequestPaperComponent } from '../inventory-request-paper/inventory-request-paper.component';
 
 interface Option { id: string; name: string; translation?: any }
@@ -68,7 +70,7 @@ const blankLine = (supplier: SupplierMini | null): FormLine => ({
   imports: [
     CommonModule, RouterLink, FormsModule, TranslateModule, DocFormShellComponent, LoadingOverlayComponent,
     CdkDropList, CdkDrag, CdkDragHandle, DropdownMenuBtnComponent, SearchDropdownComponent, QtyInputComponent, MycurrencyPipe,
-    InventoryRequestPaperComponent,
+    InventoryRequestPaperComponent, DocItemSearchComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './inventory-request-form.component.html',
@@ -85,6 +87,7 @@ export class InventoryRequestFormComponent implements OnInit, CanLeaveComponent 
   private toast = inject(ToastService);
   private modal = inject(ModalService);
   private privileges = inject(PrivilegeService);
+  private langs = inject(LanguageService);
 
   readonly canConvertPo = this.privileges.check('purchaseOrderSecurity.actions.convert.access');
 
@@ -178,6 +181,7 @@ export class InventoryRequestFormComponent implements OnInit, CanLeaveComponent 
     try {
       const [branches] = await Promise.all([
         this.lookups.getBranches().catch(() => []),
+        this.langs.loadFeature('account/components/doc-lines-table'),
       ]);
       this.branches.set(branches.map((b: any) => ({ id: String(b.id), name: String(b.name ?? ''), translation: b.translation })));
 
@@ -219,8 +223,17 @@ export class InventoryRequestFormComponent implements OnInit, CanLeaveComponent 
   priorityOf = (value: string) => this.priorities.find((p) => p.value === value) ?? this.priorities[1];
   byValue = (a: Priority, b: Priority) => a?.value === b?.value;
 
-  loadProducts = (p: DropdownLoadParams) =>
-    this.service.getProductsPage({ page: p.page, limit: p.pageSize, searchTerm: p.search });
+  /** Invoice-style item search: the picker panel pages through the products as the user types / scrolls. */
+  searchProducts = async (term: string, page: number) => {
+    const r = await this.service.getProductsPage({ page, limit: 20, searchTerm: term });
+    return { list: r.items, hasNext: r.hasMore };
+  };
+  /** Enter in the item box: an exact barcode, or the only match. */
+  lookupProduct = async (code: string): Promise<RequestProduct | null> => {
+    const { items } = await this.service.getProductsPage({ page: 1, limit: 20, searchTerm: code });
+    const lc = code.toLowerCase();
+    return items.find(p => (p.barcode ?? '').toLowerCase() === lc) ?? (items.length === 1 ? items[0] : null);
+  };
   loadSuppliers = (p: DropdownLoadParams) =>
     this.suppliers.getMiniListPage({ page: p.page, limit: p.pageSize, search: p.search });
 

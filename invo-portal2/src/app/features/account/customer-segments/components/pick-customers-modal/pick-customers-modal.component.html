@@ -1,0 +1,45 @@
+<app-modal-header [title]="data.title || ('CUSTOMER_SEGMENTS.PICKER.TITLE' | translate)" />
+
+<div class="pcm__body">
+  <div class="pcm__row">
+    <label class="pcm__search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" [ngModel]="search()" (ngModelChange)="onSearchInput($event)"
+        [placeholder]="'CUSTOMER_SEGMENTS.PICKER.SEARCH' | translate"/>
+    </label>
+    <button type="button" class="pcm__btn" (click)="toggleSelectAll()">
+      {{ 'CUSTOMER_SEGMENTS.PICKER.SELECT_ALL' | translate }}
+    </button>
+  </div>
+
+  <div class="pcm__count">{{ 'CUSTOMER_SEGMENTS.PICKER.SELECTED_COUNT' | translate: { count: selectedCount() } }}</div>
+
+  <ul class="pcm__list">
+    @for (row of rows(); track row.id) {
+      <li class="pcm__item" [class.pcm__item--on]="row.picked" (click)="toggle(row)">
+        <input type="checkbox" class="pcm__check" [checked]="row.picked"
+          (click)="$event.stopPropagation()" (change)="toggle(row)"/>
+        <div class="pcm__main">
+          <strong class="pcm__name">{{ row.saluation }} {{ row.name || '—' }}</strong>
+          @if (row.phone) { <span class="pcm__phone">{{ row.phone }}</span> }
+        </div>
+      </li>
+    }
+    @if (loading() && rows().length === 0) {
+      <li class="pcm__state">{{ 'COMMON.LOADING' | translate }}</li>
+    } @else if (!loading() && rows().length === 0) {
+      <li class="pcm__state pcm__state--empty">{{ 'CUSTOMER_SEGMENTS.PICKER.NO_RESULTS' | translate }}</li>
+    }
+    @if (loading() && rows().length > 0) {
+      <li class="pcm__state" role="status">{{ 'COMMON.LOADING' | translate }}</li>
+    }
+    <li #scrollSentinel class="pcm__sentinel" aria-hidden="true"></li>
+  </ul>
+</div>
+
+<footer class="pcm__footer">
+  <button type="button" class="pcm__btn pcm__btn--ghost" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+  <button type="button" class="pcm__btn pcm__btn--primary" (click)="apply()">{{ 'COMMON.APPLY' | translate }}</button>
+</footer>

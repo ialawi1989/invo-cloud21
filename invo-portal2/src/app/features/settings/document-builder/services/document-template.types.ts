@@ -1,3 +1,4 @@
+import type { ReportTemplate } from '../report-engine/core/types/template.types';
 /**
  * Document-builder data model
  * ───────────────────────────
@@ -646,6 +647,9 @@ export interface DocumentTemplate {
    *  Classic templates. Each carries an optional `pageId` (see
    *  `DesignerElement.pageId`) — omitted means the master page. */
   designerElements:                   DesignerElement[];
+  /** The free design saved by the report-engine designer (legacy `designerTemplate`: sections + blocks). Drawn instead of the
+   *  classic paper when `renderMode` is `designer`. Kept verbatim on save so the other builder never loses it. */
+  reportDesign?:                      ReportTemplate | null;
   /** Standalone pages appended after the master page (Designer mode only) —
    *  e.g. a company's own Terms & Conditions layout, built with the same
    *  block palette. Elements belong to a page via `DesignerElement.pageId`
@@ -856,6 +860,9 @@ export function parseTemplate(raw: AnyJson, fallbackType: DocumentType = 'invoic
   if (isObj(raw['additionalDataStyle']))      out.additionalDataStyle = mergeText(out.additionalDataStyle, raw['additionalDataStyle']);
   if (Array.isArray(raw['customElements']))   out.customElements   = raw['customElements']   as CustomElement[];
   if (Array.isArray(raw['designerElements'])) out.designerElements = raw['designerElements'] as DesignerElement[];
+  // Legacy writes the report-engine design under `designerTemplate` (older rows: an object under `designerElements`).
+  const reportDesign = raw['designerTemplate'] ?? (isObj(raw['designerElements']) ? raw['designerElements'] : null);
+  if (isObj(reportDesign) && Array.isArray((reportDesign as AnyJson)['sections'])) out.reportDesign = reportDesign as unknown as ReportTemplate;
   if (Array.isArray(raw['extraPages']))       out.extraPages       = raw['extraPages']       as DesignerPage[];
   if (raw['renderMode'] === 'designer' || raw['renderMode'] === 'classic') {
     out.renderMode = raw['renderMode'];
@@ -903,6 +910,7 @@ export function serializeTemplate(t: DocumentTemplate): AnyJson {
     additionalDataStyle:                t.additionalDataStyle,
     customElements:                     t.customElements,
     designerElements:                   t.designerElements,
+    ...(t.reportDesign ? { designerTemplate: t.reportDesign } : {}),
     extraPages:                         t.extraPages,
     isDefault:                          t.isDefault,
   };

@@ -13,6 +13,7 @@ import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { withTranslations } from '@core/i18n/with-translations';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
@@ -106,6 +107,7 @@ const RECORD_LIMIT = 5;
 })
 export class OpeningBalancesComponent implements OnInit, CanLeaveComponent {
   private service    = inject(OpeningBalancesService);
+  private privilege  = inject(PrivilegeService);
   private branchSvc  = inject(BranchSettingsService);
   private modal      = inject(ModalService);
   private toast      = inject(ToastService);
@@ -339,10 +341,12 @@ export class OpeningBalancesComponent implements OnInit, CanLeaveComponent {
 
   // ─── Header menu ─────────────────────────────────────────────────────────
   optionsMenu(): DropdownMenuBtnItem[] {
-    return [
-      { label: this.translate.instant('OPENING_BALANCES.IMPORT_EXPORT'), click: () => void this.openImportExport() },
-      { label: this.translate.instant('OPENING_BALANCES.SHOW_LOGS'),     click: () => this.openLogs() },
-    ];
+    const items: DropdownMenuBtnItem[] = [];
+    if (this.privilege.check('openingBalances.actions.importExport.access')) {
+      items.push({ label: this.translate.instant('OPENING_BALANCES.IMPORT_EXPORT'), click: () => void this.openImportExport() });
+    }
+    items.push({ label: this.translate.instant('OPENING_BALANCES.SHOW_LOGS'), click: () => this.openLogs() });
+    return items;
   }
 
   async openImportExport(): Promise<void> {

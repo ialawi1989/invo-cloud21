@@ -1,0 +1,8 @@
+@if (!allPages() && pageCount() > 1) {
+  <div class="dsp-pager">
+    <button type="button" (click)="prevPage()" [disabled]="currentPage() <= 1">{{ 'DOC_VIEW.PREV_PAGE' | translate }}</button>
+    <span>{{ currentPage() }} / {{ pageCount() }}</span>
+    <button type="button" (click)="nextPage()" [disabled]="currentPage() >= pageCount()">{{ 'DOC_VIEW.NEXT_PAGE' | translate }}</button>
+  </div>
+}
+<div class="dsp" [innerHTML]="view()"></div>

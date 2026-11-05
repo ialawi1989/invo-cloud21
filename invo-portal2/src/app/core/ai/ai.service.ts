@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { ApiService } from '@core/http';
 import { AuthService } from '@core/auth/auth.service';
 import { environment } from '../../../environments/environment';
+import type { AssistantToolDef, WireMessage, WireToolCall } from './assistant/assistant.types';
 import {
   AiError,
   AiErrorCode,
@@ -9,6 +10,7 @@ import {
   AiProvidersResponse,
   AiSettings,
   AiSettingsPayload,
+  AiUsageSummary,
 } from './ai.types';
 
 /**
@@ -86,6 +88,39 @@ export class AiService {
       model:     d.model ?? payload.model ?? '',
       apiKeySet: !!d.apiKeySet,
     };
+  }
+
+  /** Recorded AI usage of the company: today, this month and per model. */
+  async getUsage(): Promise<AiUsageSummary> {
+    const res = await this.api.request<AiUsageSummary>(this.api.get('ai/usage'));
+    const d: Partial<AiUsageSummary> = res?.data ?? {};
+    const zero = { requests: 0, tokens: 0 };
+    return { day: d.day ?? '', today: d.today ?? zero, month: d.month ?? zero, byModel: d.byModel ?? [] };
+  }
+
+  // ─── Assistant chat (one non-streaming model turn) ──────────────────
+  /**
+   * One assistant turn: the backend relays the conversation and the tool definitions to the configured provider and
+   * returns the next assistant message (text and/or tool calls). It runs no tool itself. Throws an `AiError`.
+   */
+  async chat(messages: WireMessage[], tools: AssistantToolDef[], signal?: AbortSignal): Promise<{ content: string; toolCalls: WireToolCall[] }> {
+    const token = this.auth.getAccessToken();
+    let res: Response;
+    try {
+      res = await fetch(`${environment.backendUrl}ai/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { 'api-auth': token } : {}) },
+        credentials: 'include',
+        body: JSON.stringify({ messages, tools }),
+        signal,
+      });
+    } catch (err: any) {
+      throw new AiError(err?.name === 'AbortError' ? 'UNKNOWN' : 'AI_UNAVAILABLE', err?.message);
+    }
+    if (!res.ok) throw await this.errorFromResponse(res);
+    const body = await res.json();
+    const m = body?.data?.message;
+    return { content: typeof m?.content === 'string' ? m.content : '', toolCalls: Array.isArray(m?.tool_calls) ? m.tool_calls : [] };
   }
 
   // ─── Streaming generate (raw fetch + SSE) ───────────────────────────

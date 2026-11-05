@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -12,8 +11,12 @@ import type { DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/d
 
 import { DocRailItem } from '../../../../account/services/document-view-base';
 import { DocViewShellComponent } from '../../../../account/components/doc-view-shell/doc-view-shell.component';
+import { SalesLookupsService } from '../../../../account/services/sales-lookups.service';
+import { InventoryRequestActions } from '../../../services/inventory-request-actions';
 import { InventoryRequest, InventoryRequestService } from '../../../services/inventory-request.service';
-import { InventoryRequestPaperComponent } from '../inventory-request-paper/inventory-request-paper.component';
+import { DocumentBuilderService } from '../../../../settings/document-builder/services/document-builder.service';
+import type { DocumentTemplate } from '../../../../settings/document-builder/services/document-template.types';
+import { inventoryRequestToRenderData } from '../../../services/inventory-request-render-data';
 
 const ZOOM_KEY = 'inventoryRequestZoomLevel';
 
@@ -26,7 +29,7 @@ const ZOOM_KEY = 'inventoryRequestZoomLevel';
 @Component({
   selector: 'app-inventory-request-view',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, DocViewShellComponent, InventoryRequestPaperComponent],
+  imports: [CommonModule, RouterLink, TranslateModule, DocViewShellComponent],
   templateUrl: './inventory-request-view.component.html',
   styleUrl: './inventory-request-view.component.scss',
   // Keeps the fixed-height chain from `.main-content.no-padding` down to the shell intact.
@@ -39,13 +42,19 @@ export class InventoryRequestViewComponent implements OnInit, OnDestroy {
   private layout = inject(LayoutService);
   private lang = inject(LanguageService);
   private privileges = inject(PrivilegeService);
+  private actions = inject(InventoryRequestActions);
+  private lookups = inject(SalesLookupsService);
+  private builder = inject(DocumentBuilderService);
+  private branchCount = signal(0);
 
   readonly canAdd = this.privileges.check('productSecurity.actions.requestInventoryAdd.access');
-  readonly canConvertPo = this.privileges.check('purchaseOrderSecurity.actions.convert.access');
 
   doc = signal<InventoryRequest | null>(null);
   loading = signal(true);
   zoom = signal(this.savedZoom());
+  /** The shared document paper, rendered from the purchase-order template (a request has no template type of its own). */
+  template = signal<DocumentTemplate | null>(null);
+  renderData = computed(() => { const d = this.doc(); return d ? inventoryRequestToRenderData(d) : null; });
 
   // ── rail ──────────────────────────────────────────────────────────────────
   readonly railPageSize = 15;
@@ -59,10 +68,6 @@ export class InventoryRequestViewComponent implements OnInit, OnDestroy {
 
   get id(): string { return this.route.snapshot.paramMap.get('id') ?? ''; }
   title = computed(() => this.lang.instant('PRODUCTS.INVENTORY_REQUEST.TITLE'));
-  paperData = computed(() => {
-    const d = this.doc();
-    return d && { ...d };
-  });
 
   printItems = computed<DropdownMenuBtnItem[]>(() => [
     { label: this.lang.instant('COMMON.PRINT'), click: () => window.print(), disabled: false, danger: false },
@@ -76,7 +81,9 @@ export class InventoryRequestViewComponent implements OnInit, OnDestroy {
       this.railTerm.set(t);
       void this.loadRail(1);
     });
+    void this.builder.getDefault('purchase-order').then(t => this.template.set(t)).catch(() => undefined);
     void this.loadRail(1);
+    void this.lookups.getBranches().then((b) => this.branchCount.set(b.length)).catch(() => undefined);
     this.route.paramMap.subscribe(() => void this.load());
   }
 
@@ -122,19 +129,16 @@ export class InventoryRequestViewComponent implements OnInit, OnDestroy {
   add(): void { void this.router.navigate(['/inventory/request', 'new']); }
   edit(): void { void this.router.navigate(['/inventory/request', this.id]); }
   goToList(): void { void this.router.navigate(['/inventory/request']); }
-  convertToPo(): void { void this.router.navigate(['/inventory/request/convert-to-purchase-order', this.id]); }
 
-  canEdit = computed(() => this.canAdd && !!this.doc() && this.doc()!.status !== 'Converted');
-  canConvert = computed(() => {
-    const d = this.doc();
-    return !!d && this.canConvertPo && d.status !== 'Converted' && d.lines.length > 0 && d.lines.every((l) => !!l.supplierId);
-  });
+  canEdit = computed(() => !!this.doc() && this.doc()!.status !== 'Converted');
+  shareItems = computed<DropdownMenuBtnItem[]>(() => { const d = this.doc(); return d ? this.actions.shareItems(d) : []; });
+  actionItems = computed<DropdownMenuBtnItem[]>(() => { const d = this.doc(); return d ? this.actions.menu(d, this.branchCount()) : []; });
 
   // ── zoom (persisted like legacy) ──────────────────────────────────────────
   private savedZoom(): number {
     try {
       const v = Number(localStorage.getItem(ZOOM_KEY));
-      return v >= 40 && v <= 150 ? v : 100;
+      return v >= 25 && v <= 300 ? v : 100;
     } catch { return 100; }
   }
   setZoom(v: number): void {

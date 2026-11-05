@@ -1,0 +1,21 @@
+@if (doc(); as c) {
+  <app-doc-view-shell
+    [docTitle]="title" railTitle="CREDIT_NOTES.LIST.CREDIT_NOTES_LIST" [showAdd]="actions.canAdd"
+    [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="id"
+    [railFilterOptions]="railFilterOptions()" [railFilterValue]="railStatus()" railFilterStorageKey="creditNoteStatus"
+    [printItems]="actions.canPrint ? printItems() : []" [shareItems]="shareItems()" [exportItems]="exportItems()" [actionItems]="actionItems(c)"
+    [loading]="loading()" [template]="template()" [data]="renderData()" [reportDesign]="reportDesign()" [reportData]="reportData()"
+    [zoom]="zoom()" (zoomChange)="setZoom($event)"
+    (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railFilterPick)="onRailFilterPick($event)" (railPrev)="railPrev()" (railNext)="railNext()" (add)="add()"
+    (close)="goToList()">
+
+    <app-party-peek-chips beforePaper [customerId]="c.customerId" [customerName]="c.customerName"/>
+    <app-doc-view-attachments beforePaper type="creditNote" [docId]="id" [attachments]="c.attachment"/>
+
+    <div tabs id="credit-note-additional-details">
+      <app-doc-additional-details [config]="additionalDetails()"/>
+    </div>
+  </app-doc-view-shell>
+} @else {
+  <app-doc-view-skeleton/>
+}

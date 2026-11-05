@@ -14,6 +14,10 @@
   [entityType]="'invoicePayment'"
   (rowClicked)="onRowClick($event)">
 
+  <div listSubHeader class="mb-3">
+    <app-segmented-toggle [options]="tabs" [value]="tab()" (valueChange)="selectTab($event)"/>
+  </div>
+
   <div listHeaderActions class="flex items-center gap-3">
     @if (canAdd) {
       <button type="button" (click)="add()"
@@ -30,21 +34,26 @@
     </app-dropdown-menu-btn>
   </div>
 
-  <ng-template listCellTemplate="paymentName" let-row>
-    <span class="font-semibold text-brand-700">{{ row.paymentName }}</span>
+  <ng-template listCellTemplate="paymentDate" let-row>
+    <div class="leading-snug">
+      <div><b>{{ 'PAYMENTS.COLUMNS.ISSUE_DATE' | translate }}:</b> {{ row.paymentDate | date: 'dd/MM/yyyy' }}</div>
+      <div><b>{{ 'PAYMENTS.COLUMNS.CREATED_DATE' | translate }}:</b> {{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</div>
+    </div>
   </ng-template>
-  <ng-template listCellTemplate="paymentDate" let-row>{{ row.paymentDate | date: 'yyyy-MM-dd' }}</ng-template>
-  <ng-template listCellTemplate="createdAt" let-row>{{ row.createdAt | date: 'yyyy-MM-dd' }}</ng-template>
   <ng-template listCellTemplate="invoicesNumber" let-row>{{ invoices(row) }}</ng-template>
   <ng-template listCellTemplate="paidAmount" let-row>
-    <span class="tabular-nums font-semibold">{{ row.paidAmount | mycurrency }}</span>
-    @if (row.tenderAmount != null && row.tenderAmount !== row.paidAmount) {
-      <span class="block text-xs text-slate-500">{{ row.tenderAmount | mycurrency }}</span>
-    }
+    <span class="tabular-nums font-semibold">{{ (row.tenderAmount > row.paidAmount ? row.tenderAmount : row.paidAmount) | mycurrency }}</span>
   </ng-template>
 
   <ng-template listRowActions let-row>
     <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+      @if (tab() === 'failed') {
+        <button type="button" (click)="checkWithGateway(row)" [title]="'PAYMENTS.LIST.CHECK_WITH_GATEWAY' | translate"
+          class="px-3 h-9 inline-flex items-center gap-2 rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+          {{ 'PAYMENTS.LIST.CHECK_WITH_GATEWAY' | translate }}
+        </button>
+      } @else {
       <button type="button" (click)="view(row)"
         class="px-3 h-9 inline-flex items-center rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">
         {{ 'COMMON.VIEW' | translate }}
@@ -54,6 +63,16 @@
           class="px-4 h-9 inline-flex items-center rounded-full bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700">
           {{ 'COMMON.EDIT' | translate }}
         </button>
+      }
+      @if (rowMenu(row); as items) {
+        @if (!items.length) { <span class="inline-block w-9 h-9" aria-hidden="true"></span> }
+        @if (items.length) {
+          <app-dropdown-menu-btn [items]="items" [appendToBody]="true" [chevron]="false" align="end"
+            triggerClass="inline-flex items-center justify-center w-9 h-9 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+          </app-dropdown-menu-btn>
+        }
+      }
       }
     </div>
   </ng-template>

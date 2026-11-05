@@ -1,4 +1,5 @@
 <app-list-page
+  style="--lp-actions-w: 200px"
   [pageTitle]="'INVOICES.LIST.INVOICES_LIST' | translate"
   [breadcrumbs]="breadcrumbs"
   [columns]="columns"
@@ -52,7 +53,7 @@
   <ng-template listCellTemplate="createdAt" let-row>{{ row.createdAt | date: 'yyyy-MM-dd' }}</ng-template>
   <ng-template listCellTemplate="status" let-row>
     @if (row.status) {
-      <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">{{ 'INVOICES.STATUS.' + row.status | translate }}</span>
+      <span class="text-xs font-medium px-2.5 py-1 rounded-full" [ngClass]="statusClass(row.status)">{{ 'INVOICES.STATUS.' + row.status | translate }}</span>
     }
   </ng-template>
   <ng-template listCellTemplate="onlineData" let-row>
@@ -71,6 +72,16 @@
       @if (actions.edit(row)) {
         <button type="button" (click)="edit(row)"
           class="px-4 h-9 inline-flex items-center rounded-full bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700">
+          {{ 'COMMON.EDIT' | translate }}
+        </button>
+      } @else if (actions.editBlockedReason(row); as why) {
+        <!-- Edit isn't available: show it greyed with a lock and say why.
+             aria-disabled (not disabled) so the hover title still works. -->
+        <button type="button" aria-disabled="true"
+          [attr.title]="why | translate" [attr.aria-label]="('COMMON.EDIT' | translate) + ': ' + (why | translate)"
+          (click)="$event.preventDefault()"
+          class="px-3 h-9 inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-400 text-sm font-medium cursor-not-allowed">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
           {{ 'COMMON.EDIT' | translate }}
         </button>
       }

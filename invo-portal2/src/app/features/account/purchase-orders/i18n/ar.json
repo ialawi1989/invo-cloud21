@@ -1,0 +1,94 @@
+{
+  "PURCHASE_ORDERS": {
+    "DASHBOARD": "لوحة التحكم",
+    "ADD_NEW": "إضافة أمر شراء",
+    "SEARCH_PLACEHOLDER": "ابحث بالرقم أو المورد أو الفرع أو المرجع",
+    "EMPTY": "لا توجد أوامر شراء",
+    "CREATED_DATE": "تاريخ الإنشاء",
+    "LIST": {
+      "PURCHASE_ORDER_LIST": "أوامر الشراء",
+      "ALL_PURCHASE_ORDERS": "جميع أوامر الشراء",
+      "STATUS_NOT_CONVERTED": "غير محوّل",
+      "STATUS_PARTIALLY_CONVERTED": "محوّل جزئياً",
+      "STATUS_FULLY_CONVERTED": "محوّل بالكامل",
+      "PURCHASE_NUMBER": "رقم أمر الشراء",
+      "SUPPLIER_NAME": "المورد",
+      "EMPLOYEE_NAME": "الموظف",
+      "TOTAL": "الإجمالي",
+      "STATUS": "الحالة",
+      "BILL_NUMBER": "رقم الفاتورة",
+      "BRANCH_NAME": "الفرع",
+      "ISSUE_DATE": "تاريخ الإصدار",
+      "EXPIRY_DATE": "تاريخ الانتهاء",
+      "REF": "المرجع"
+    },
+    "FILTERS": {
+      "BRANCH": "الفرع",
+      "DATE": "التاريخ"
+    },
+    "ACTIONS": {
+      "CONVERT_TO_BILL": "تحويل إلى فاتورة",
+      "AUTO_PURCHASE_ORDER": "أمر شراء تلقائي",
+      "EXPORT_EXCEL": "تصدير إلى Excel"
+    },
+    "CONVERT": {
+      "TITLE": "تحويل إلى فاتورة",
+      "TEXT": "تم تحويل جزء من أمر الشراء هذا. ما الكميات التي ستأخذها الفاتورة؟",
+      "FULL_QUANTITY": "الكمية كاملة",
+      "REMAINING_QUANTITY": "الكمية المتبقية فقط",
+      "CONFIRM": "تأكيد",
+      "ALREADY_FULL_TITLE": "تم تحويله بالكامل",
+      "ALREADY_FULL_TEXT": "تم إنشاء فاتورة بالكميات الكاملة لأمر الشراء هذا. هل تريد تحويله مرة أخرى؟"
+    },
+    "FORM": {
+      "PURCHASE_ORDER": "أمر شراء",
+      "NEW_PURCHASE_ORDER": "أمر شراء جديد",
+      "EDIT_PURCHASE_ORDER": "تعديل أمر الشراء",
+      "PURCHASE_ORDER_DETAILS": "تفاصيل أمر الشراء",
+      "PURCHASE_NUMBER": "رقم أمر الشراء",
+      "REFERENCE": "رقم المرجع",
+      "ISSUE_DATE": "تاريخ الإصدار",
+      "EXPIRY_DATE": "تاريخ الانتهاء",
+      "NUMBER_HELP": "اضغط هنا لتفعيل أو تعطيل الترقيم التلقائي لأوامر الشراء.",
+      "SIC": "كود صنف المورد",
+      "UNIT_COST": "تكلفة الوحدة",
+      "SUPPLIER_COST": "تكلفة المورد",
+      "PRODUCT_COST": "تكلفة المنتج",
+      "ALREADY_ADDED": "هذا المنتج موجود بالفعل في أمر الشراء"
+    },
+    "REQUIRED": {
+      "PURCHASE_NUMBER": "رقم أمر الشراء",
+      "SUPPLIER": "المورد",
+      "BRANCH": "الفرع",
+      "ISSUE_DATE": "تاريخ الإصدار",
+      "EXPIRY_DATE": "تاريخ الانتهاء"
+    },
+    "VIEW": {
+      "VIEW_PURCHASE_ORDER": "عرض أمر الشراء",
+      "CONFIRM_DELETE": "حذف أمر الشراء هذا؟ لا يمكن التراجع.",
+      "CONVERTED_TO_BILL": "تم إنشاء فاتورة من أمر الشراء هذا"
+    },
+    "IMPORT": {
+      "TITLE": "استيراد بنود أمر الشراء",
+      "ERR_IDENTIFIER": "الصف {{row}}: الباركود أو اسم المنتج مطلوب",
+      "ERR_QTY": "الصف {{row}} ({{name}}): يجب أن تكون الكمية رقماً موجباً",
+      "ERR_COST": "الصف {{row}} ({{name}}): يجب أن تكون تكلفة الوحدة رقماً موجباً",
+      "ALL_EXIST": "كل الأصناف موجودة بالفعل في أمر الشراء",
+      "NOTHING": "لا توجد أصناف للاستيراد",
+      "NOT_FOUND": "{{count}} باركود غير موجود - أضيفت كملاحظات",
+      "DONE": "تم استيراد {{count}} بند"
+    },
+    "AUTO": {
+      "TITLE": "أمر شراء تلقائي",
+      "DETAILS": "التفاصيل",
+      "CREATE": "إنشاء أمر شراء",
+      "RECOMMENDED_LINES": "البنود المقترحة",
+      "PICK_BRANCH": "اختر فرعاً لعرض المنتجات التي تحتاج إلى إعادة طلب.",
+      "NOTHING_TO_ORDER": "لا يوجد منتج تحت حد إعادة الطلب في هذا الفرع.",
+      "PRODUCT": "المنتج",
+      "SUPPLIER": "المورد",
+      "SELECT_SUPPLIER": "اختر مورداً",
+      "FILL_OR_DELETE": "اختر مورداً لكل بند أو احذف البند"
+    }
+  }
+}

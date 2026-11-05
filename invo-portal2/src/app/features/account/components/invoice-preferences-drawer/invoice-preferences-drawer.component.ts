@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { CompanyService } from '@core/auth/company.service';
+import { withTranslations } from '@core/i18n/with-translations';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { ModalRef, ModalService } from '@shared/modal/modal.service';
@@ -167,6 +168,12 @@ export class InvoicePreferencesDrawerComponent implements OnInit {
   private toast = inject(ToastService);
   private customFields = inject(CustomFieldsService);
   private modal = inject(ModalService);
+
+  constructor() {
+    // Field-type labels (SETTINGS.CUSTOM_FIELDS.TYPES.*) live in the settings namespace, which is
+    // otherwise only loaded on the /settings pages.
+    withTranslations('settings');
+  }
 
   tab = signal<'preferences' | 'fields'>('preferences');
   loading = signal(true);

@@ -7,7 +7,7 @@
     <div class="irp__title">
       <h3>{{ 'PRODUCTS.INVENTORY_REQUEST.TITLE' | translate }}</h3>
       @if (data().status) {
-        <span class="irp__status" [class.irp__status--converted]="data().status === 'Converted'">{{ data().status }}</span>
+        <app-status-badge [status]="data().status"/>
       }
     </div>
   </div>

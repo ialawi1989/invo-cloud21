@@ -105,7 +105,8 @@ export class RecipeService {
   private mapItem(i: any): RecipeItem {
     return {
       inventoryId: String(i?.inventoryId ?? i?.id ?? ''),
-      usage: Number(i?.usage) || 0,
+      // Lines saved from the quick-edit list before it used `usage` carry `usages`.
+      usage: Number(i?.usage ?? i?.usages) || 0,
       name: i?.name,
       unitCost: typeof i?.unitCost === 'number' ? i.unitCost : Number(i?.unitCost) || 0,
       UOM: i?.UOM,

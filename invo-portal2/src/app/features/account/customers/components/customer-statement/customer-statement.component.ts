@@ -135,7 +135,8 @@ export class CustomerStatementComponent {
   summary = computed(() => {
     let openingBalance = 0, invoicedAmount = 0, amountReceived = 0;
     for (const r of this.rows()) {
-      if (this.isOpening(r)) openingBalance += num(r.Balance);
+      // Each opening row carries the running balance, so the last one is the opening balance (summing double-counts).
+      if (this.isOpening(r)) openingBalance = num(r.Balance);
       else { invoicedAmount += num(r.amount); amountReceived += num(r.payment); }
     }
     return { openingBalance, invoicedAmount, amountReceived, balanceDue: openingBalance + invoicedAmount + amountReceived };

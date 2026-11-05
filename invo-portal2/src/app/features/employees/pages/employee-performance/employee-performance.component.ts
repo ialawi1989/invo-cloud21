@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
 
 import { AuthService } from '@core/auth/auth.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 
 import { HrError, describeError } from '../../hr-error';
 import { portalKey } from '../../hr-labels';
@@ -57,7 +59,7 @@ import {
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, TranslateModule,
-    SearchDropdownComponent, MycurrencyPipe,
+    SearchDropdownComponent, MycurrencyPipe, EmptyStateComponent, DateFieldComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-performance.component.html',

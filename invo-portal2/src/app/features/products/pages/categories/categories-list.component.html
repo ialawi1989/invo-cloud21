@@ -15,6 +15,12 @@
   (rowClicked)="onRowClick($event)">
 
   <div listHeaderActions class="flex items-center gap-3">
+    @if (canEdit) {
+      <button type="button" (click)="reorder()"
+        class="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium whitespace-nowrap border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors">
+        {{ 'PRODUCTS.CATEGORIES.REORDER' | translate }}
+      </button>
+    }
     @if (canAdd) {
       <button type="button" (click)="add()"
         class="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg font-medium whitespace-nowrap bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">

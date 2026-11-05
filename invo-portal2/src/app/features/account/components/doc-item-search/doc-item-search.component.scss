@@ -1,0 +1,21 @@
+:host { display: block; position: relative; }
+
+.dis__box {
+  display: block; width: 100%; box-sizing: border-box; min-height: 64px; resize: none; font: inherit;
+  border: 0; border-radius: 0; padding: 12px; background: transparent;
+  &:focus { outline: none; box-shadow: inset 0 0 0 2px #2691a4; background: #fff; }
+  &:disabled { color: #94a3b8; }
+}
+
+.dis__panel {
+  position: fixed; z-index: 1000; margin: 0; padding: 4px; list-style: none; max-height: 280px; overflow-y: auto;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 25px rgba(15, 23, 42, .15);
+  max-width: calc(100vw - 24px);
+  li { display: flex; flex-direction: column; padding: 8px 24px 8px 12px; border-radius: 8px; cursor: pointer;
+    small { color: #64748b; }
+    &:hover { background: #2691a4; color: #fff; small { color: #e0e7ff; } } }
+  .dis__empty { color: #94a3b8; cursor: default; }
+}
+.dis__row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.dis__name { min-width: 0; }
+.dis__row .app-product-badge { flex-shrink: 0; }

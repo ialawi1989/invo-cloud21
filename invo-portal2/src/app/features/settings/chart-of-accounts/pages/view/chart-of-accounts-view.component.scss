@@ -1,0 +1,50 @@
+// Mirrors the customer view (Zoho-style): content sits in the shared doc-view shell's body.
+.cav { display: flex; flex-direction: column; gap: 14px; }
+.cav-acts { display: flex; align-items: center; gap: 6px; }
+:host ::ng-deep .cav-btn {
+  display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; border-radius: 6px; border: 1px solid #d0d5dd;
+  background: #f8fafc; color: #334155; font-size: 13px; font-weight: 600; cursor: pointer; line-height: 1.4;
+  &:hover { background: #f1f5f9; }
+}
+
+.cav-tabs { display: flex; gap: 22px; box-shadow: inset 0 -1px 0 #e4e7ec; margin: -4px 0 0; overflow-x: auto; overflow-y: hidden; flex: 0 0 auto; }
+.cav-tab {
+  padding: 10px 2px; border: 0; border-bottom: 2px solid transparent; background: none;
+  font-size: 13.5px; font-weight: 500; color: #475569; cursor: pointer; white-space: nowrap;
+  &:hover { color: #0f172a; }
+  &.is-active { color: #0f172a; font-weight: 700; border-bottom-color: #2691a4; }
+}
+
+.cav-overview { display: grid; gap: 14px; grid-template-columns: 1fr; align-items: start;
+  @media (min-width: 1100px) { grid-template-columns: minmax(260px, 340px) 1fr; } }
+.cav-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.cav-branch { min-width: 200px; }
+.cav-spacer { flex: 1; }
+
+.ca-card { border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+  h4 { margin: 0; font-size: 16px; font-weight: 700; color: #0f172a; } }
+
+.ca-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr);
+  @media (min-width: 900px) { &--4 { grid-template-columns: repeat(4, 1fr); } } }
+.ca-kpi { border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 6px; border: 1px solid;
+  span { font-size: 13px; font-weight: 600; } strong { font-size: 22px; }
+  &--blue { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
+  &--green { background: #f0fdf4; border-color: #bbf7d0; color: #16a34a; }
+  &--amber { background: #fffbeb; border-color: #fde68a; color: #d97706; }
+  &--purple { background: #faf5ff; border-color: #e9d5ff; color: #9333ea; } }
+
+.ca-kv { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; color: #64748b; b { color: #0f172a; font-weight: 600; } }
+.ca-text { margin: 0; font-size: 14px; color: #334155; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ca-muted { color: #64748b; font-size: 13px; margin: 0; }
+.ca-period { padding-inline: 2px; }
+.ca-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.ca-table-wrap { overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 10px; }
+.ca-table { width: 100%; border-collapse: collapse; font-size: 13.5px;
+  th { text-align: start; background: #f8fafc; color: #64748b; font-size: 12px; text-transform: uppercase; padding: 10px 14px; }
+  td { padding: 10px 14px; border-top: 1px solid #f1f5f9; color: #334155; }
+  .end { text-align: end; }
+  .ca-sum td { background: #f8fafc; font-weight: 700; color: #0f172a; } }
+.ca-empty { text-align: center; color: #94a3b8; padding: 24px; }
+a { color: #2691a4; text-decoration: none; &:hover { text-decoration: underline; } }
+:host ::ng-deep app-dropdown-menu-btn .ca-btn { padding: 6px 12px; font-size: 12.5px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; cursor: pointer; &:hover { background: #f8fafc; } }

@@ -12,6 +12,7 @@ import { LanguageService } from '@core/i18n/language.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
+import { ReorderModalComponent, ReorderModalData } from '@shared/components/reorder-modal/reorder-modal.component';
 import {
   ConfirmModalComponent,
   ConfirmModalData,
@@ -132,6 +133,26 @@ export class CategoriesListComponent implements OnInit {
 
   edit(row: CategoryListRow): void {
     void this.router.navigate(['/products/category', row.id]);
+  }
+
+  /** Reorder the categories (the order shown in the POS / storefront): one dialog over every category. */
+  async reorder(): Promise<void> {
+    const all = await this.service.getList({ page: 1, limit: 999 });
+    const ids = await this.modal.open<ReorderModalComponent, ReorderModalData, string[] | null>(ReorderModalComponent, {
+      size: 'md',
+      data: {
+        title: this.lang.instant('PRODUCTS.CATEGORIES.REORDER_TITLE'),
+        items: [...all.list].sort((a, b) => a.index - b.index).map(c => ({ id: c.id, label: c.name, image: c.thumbnailUrl })),
+      },
+    }).afterClosed();
+    if (!ids) return;
+    const res = await this.service.rearrange(ids.map((id, index) => ({ id, index })));
+    if (res.success) {
+      this.toast.success('PRODUCTS.CATEGORIES.REORDERED');
+      this.listPage?.refresh();
+    } else {
+      this.toast.error('COMMON.SAVE_FAILED');
+    }
   }
 
   add(): void {

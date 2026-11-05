@@ -1,0 +1,58 @@
+@if (loaded) {
+  <div class="pf">
+    <header class="page-header">
+      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+      <h1 class="page-header__title">{{ 'CREDIT_NOTES.REFUND.TITLE' | translate }}</h1>
+    </header>
+
+    <section class="pf-card">
+      <h2 class="pf-card__title">{{ 'CREDIT_NOTES.REFUND.FORM' | translate }}</h2>
+
+      <p class="pf-hint">
+        {{ 'CREDIT_NOTES.REFUND.CREDIT_NOTE' | translate }} <b>{{ creditNote.creditNoteNumber }}</b> ·
+        {{ 'CREDIT_NOTES.REFUND.BALANCE' | translate }}: <b>{{ maxAmount | mycurrency }}</b>
+      </p>
+
+      <div class="pf-row">
+        <div class="pf-field pf-field--grow">
+          <label>{{ 'CREDIT_NOTES.REFUND.DATE' | translate }}</label>
+          <app-date-picker [value]="refundDate" (valueChange)="onDate($event)"/>
+        </div>
+        <div class="pf-field pf-field--grow">
+          <label for="refundRef">{{ 'CREDIT_NOTES.REFUND.REFERENCE' | translate }}</label>
+          <input id="refundRef" class="pf-input" type="text" [(ngModel)]="refund.refrenceNumber" (ngModelChange)="markDirty()"/>
+        </div>
+      </div>
+
+      <div class="pf-field">
+        <label for="refundAmount">{{ 'CREDIT_NOTES.REFUND.AMOUNT' | translate }} <span class="req">*</span></label>
+        <input id="refundAmount" class="pf-input" [class.is-invalid]="showErrors && !(amount > 0)" type="number" min="0" [max]="maxAmount" inputmode="decimal"
+          [ngModel]="amount" (ngModelChange)="onAmount($event)"/>
+        <small class="pf-hint">{{ 'CREDIT_NOTES.REFUND.AMOUNT_HINT' | translate }}</small>
+      </div>
+
+      <div class="pf-field">
+        <label>{{ 'CREDIT_NOTES.REFUND.PAYMENT_METHOD' | translate }} <span class="req">*</span></label>
+        <div class="rf-methods" role="radiogroup">
+          @for (m of paymentMethods; track m.id) {
+            <button type="button" role="radio" class="rf-method" [class.on]="line.paymentMethodId === m.id" [attr.aria-checked]="line.paymentMethodId === m.id"
+              [disabled]="methodLocked" (click)="pickMethod(m)">{{ m.name }}</button>
+          } @empty {
+            <span class="pf-empty">{{ 'CREDIT_NOTES.REFUND.NO_METHODS' | translate }}</span>
+          }
+        </div>
+        @if (showErrors && !line.paymentMethodId) { <p class="pf-error">{{ 'DOC_LINES.ERR_REQUIRED' | translate }}</p> }
+      </div>
+
+      <div class="pf-field">
+        <label for="refundDesc">{{ 'CREDIT_NOTES.REFUND.DESCRIPTION' | translate }}</label>
+        <textarea id="refundDesc" class="pf-input" rows="3" [(ngModel)]="refund.description" (ngModelChange)="markDirty()"></textarea>
+      </div>
+    </section>
+
+    <app-form-sticky-footer>
+      <button type="button" class="pf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="pf-btn pf-btn--primary" [disabled]="submitting" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+    </app-form-sticky-footer>
+  </div>
+}

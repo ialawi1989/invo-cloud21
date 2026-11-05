@@ -1,133 +1,147 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { LanguageService } from '@core/i18n/language.service';
-import { PrivilegeService } from '@core/auth/privileges/privilege.service';
-import { downloadPdf } from '@core/utils/pdf-download';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
-import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
-import { ToastService } from '@shared/components/toast/toast.service';
-import { ModalService } from '@shared/modal/modal.service';
-import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
+import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { MynumberPipe } from '@core/pipes/mynumber.pipe';
+import { ParamDef, QueryParamsService } from '@shared/services/query-params.service';
+import type { DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import { DocumentRenderData } from '@shared/components/document-paper/token-resolve';
 
 import { InvoicePayment } from '../../../models/invoice-payment.model';
+import { DocRailItem, DocViewConfig, DocViewService, DocumentViewBase } from '../../../services/document-view-base';
+import { DocViewSkeletonComponent } from '../../../components/doc-view-skeleton/doc-view-skeleton.component';
+import { DocViewAttachmentsComponent } from '../../../components/doc-view-attachments/doc-view-attachments.component';
+import { DocViewShellComponent } from '../../../components/doc-view-shell/doc-view-shell.component';
+import type { DocRailFilterOption } from '../../../components/doc-rail-filter/doc-rail-filter.component';
+import { DocAdditionalDetailsComponent } from '../../../components/doc-additional-details/doc-additional-details.component';
+import { DocJournalRow } from '../../../components/doc-journal-tab/doc-journal-tab.component';
+import { buildExtraJournals } from '../../../services/doc-journal-extras';
+import { DocAdditionalDetailsConfig, DocJournalResult } from '../../../components/doc-additional-details/doc-additional-details.types';
+import { PaymentReceiptComponent } from '../../components/payment-receipt/payment-receipt.component';
 import { PaymentsService } from '../../services/payments.service';
 import { PaymentActions } from '../../services/payment-actions';
-import { PaymentReceiptComponent } from '../../components/payment-receipt/payment-receipt.component';
-import { SendDocumentData, SendDocumentModalComponent } from '../../../components/send-document-modal/send-document-modal.component';
+import { PartyPeekChipsComponent } from '../../../components/party-peek-chips/party-peek-chips.component';
+
+/** `rstatus` — the rail's status filter, persisted like `rpage`/`rq` are in {@link DocumentViewBase}. */
+const RAIL_STATUS_PARAM: ParamDef<string | null> = {
+  key: 'rstatus',
+  codec: { encode: v => v || null, decode: r => r || null },
+};
 
 /**
- * Payments → view (`/account/payments/view/:id`). Legacy `PaymentsViewComponent`: the receipt,
- * print / PDF, email / WhatsApp, edit and delete (both hidden for reconciled payments).
+ * Payments → view (`/account/payments/view/:id`). Legacy `PaymentsViewComponent`: the receipt, print / PDF,
+ * email / WhatsApp, edit and delete (both hidden for reconciled payments) — laid out like the invoice view
+ * (record rail, toolbar, the document below, Logs). The document is the receipt itself: payments have no
+ * document template, so the paper is replaced by `<app-payment-receipt>`.
  */
 @Component({
   selector: 'app-payment-view',
   standalone: true,
-  imports: [CommonModule, TranslateModule, BreadcrumbsComponent, DropdownMenuBtnComponent, PaymentReceiptComponent],
+  imports: [PartyPeekChipsComponent, CommonModule, TranslateModule, DocViewShellComponent, DocViewSkeletonComponent, DocAdditionalDetailsComponent, DocViewAttachmentsComponent, PaymentReceiptComponent],
+  providers: [MycurrencyPipe, MynumberPipe, DatePipe],
   templateUrl: './payment-view.component.html',
   styleUrl: './payment-view.component.scss',
+  // See invoice-view.component.ts — `display: contents` keeps the fixed-height chain intact.
+  host: { style: 'display: contents' },
 })
-export class PaymentViewComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private location = inject(Location);
-  private lang = inject(LanguageService);
-  private toast = inject(ToastService);
-  private modal = inject(ModalService);
-  private privileges = inject(PrivilegeService);
+export class PaymentViewComponent extends DocumentViewBase {
   private payments = inject(PaymentsService);
+  private currency = inject(MycurrencyPipe);
+  private number = inject(MynumberPipe);
+  private datePipe = inject(DatePipe);
+  private queryParams = inject(QueryParamsService);
   readonly actions = inject(PaymentActions);
 
-  private canGoBack = !!this.router.getCurrentNavigation()?.previousNavigation;
+  readonly cfg: DocViewConfig = {
+    features: ['account/payments'],
+    routeBase: '/account/payments',
+    zoomKey: 'paymentZoomLevel',
+    numberField: 'paymentName',
+    whatsappType: 'invoicePayment',
+    filePrefix: 'payment',
+    titleKey: 'PAYMENTS.VIEW.PAYMENT',
+    dashboardCrumbKey: 'PAYMENTS.DASHBOARD',
+    listCrumbKey: 'PAYMENTS.LIST.PAYMENTS_LIST',
+    viewCrumbKey: 'PAYMENTS.VIEW.VIEW_PAYMENT',
+  };
 
-  payment = signal<InvoicePayment | null>(null);
-  breadcrumbs: BreadcrumbItem[] = [];
+  protected svc: DocViewService = {
+    get: id => this.payments.getInvoicePayment(id),
+    pdf: id => this.payments.viewInvoicePaymentPdf(id),
+    sendEmail: (payload, id) => this.payments.sendInvoicePaymentEmail({ ...payload, invoicePaymentId: id }),
+  };
 
-  get id(): string { return this.route.snapshot.paramMap.get('id') ?? ''; }
-  get canPrint() { return this.privileges.check('invoicePaymentsSecurity.actions.print.access'); }
+  /** Never drawn — the receipt component is the document. */
+  protected toRenderData(_p: InvoicePayment): DocumentRenderData { return {} as DocumentRenderData; }
 
-  async ngOnInit(): Promise<void> {
-    await this.lang.loadFeature('account/payments');
-    const t = (k: string) => this.lang.instant(k);
-    this.breadcrumbs = [
-      { label: t('PAYMENTS.DASHBOARD'), routerLink: '/dashboard' },
-      { label: t('PAYMENTS.LIST.PAYMENTS_LIST'), routerLink: '/account/payments' },
-      { label: t('PAYMENTS.VIEW.VIEW_PAYMENT') },
-    ];
-    this.route.paramMap.subscribe(() => void this.load());
-  }
-
-  async load(): Promise<void> {
-    const p = await this.payments.getInvoicePayment(this.id);
-    if (!p?.id) {
-      void this.router.navigate(['/account/payments']);
-      return;
-    }
-    this.payment.set(p);
-  }
-
-  printItems(): DropdownMenuBtnItem[] {
-    const t = (k: string) => this.lang.instant(k);
+  railStatus = signal<string | null>(null);
+  /** Backend payment statuses (`FAILD` is the stored spelling). With none picked, failed / pending / void stay hidden. */
+  readonly railStatusOptions: { value: string; key: string }[] = [
+    { value: 'SUCCESS', key: 'STATUS_SUCCESS' },
+    { value: 'PENDING', key: 'STATUS_PENDING' },
+    { value: 'FAILD', key: 'STATUS_FAILED' },
+  ];
+  railFilterOptions(): DocRailFilterOption[] {
     return [
-      { label: t('PAYMENTS.VIEW.PRINT'), click: () => void this.printPdf(), disabled: false, danger: false },
-      { label: 'PDF', click: () => void this.savePdf(), disabled: false, danger: false },
+      { value: null, label: this.t('PAYMENTS.LIST.ALL_PAYMENTS') },
+      ...this.railStatusOptions.map(o => ({ value: o.value, label: this.t('PAYMENTS.LIST.' + o.key) })),
     ];
   }
-
-  back(): void {
-    if (this.canGoBack) this.location.back();
-    else void this.router.navigate(['/account/payments']);
-  }
-  edit(): void { void this.router.navigate(['/account/payments', this.id]); }
-
-  async remove(): Promise<void> {
-    const ok = await this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(ConfirmModalComponent, {
-      size: 'sm',
-      data: { title: this.lang.instant('COMMON.DELETE'), message: this.lang.instant('PAYMENTS.VIEW.CONFIRM_DELETE'), danger: true },
-    }).afterClosed();
-    if (!ok) return;
-    try {
-      await this.payments.DeleteInvPay(this.id);
-      this.toast.success('PAYMENTS.VIEW.DELETED');
-      void this.router.navigate(['/account/payments']);
-    } catch (e: any) {
-      this.toast.error('COMMON.OPS', e?.error?.msg ?? e?.message ?? '');
-    }
+  onRailFilterPick(status: string | null): void {
+    this.railStatus.set(status);
+    this.queryParams.writeOne(RAIL_STATUS_PARAM, status);
+    void this.loadRail(1);
   }
 
-  async send(): Promise<void> {
-    const p = this.payment()!;
-    await this.modal.open<SendDocumentModalComponent, SendDocumentData, boolean>(SendDocumentModalComponent, {
-      size: 'md',
-      data: {
-        emails: p.customerEmail ? [p.customerEmail] : [],
-        sendEmail: payload => this.payments.sendInvoicePaymentEmail({ ...payload, invoicePaymentId: p.id }),
-        whatsapp: { type: 'invoicePayment', id: p.id!, phone: p.customerContact },
-      },
-    }).afterClosed();
-  }
-
-  async savePdf(): Promise<void> {
-    const res = await this.payments.viewInvoicePaymentPdf(this.id);
-    if (res) downloadPdf(res, 'payment.pdf');
-  }
-
-  async printPdf(): Promise<void> {
-    const base64 = await this.payments.viewInvoicePaymentPdf(this.id);
-    if (!base64) return;
-    const bytes = atob(String(base64).replace('data:application/pdf;base64,', ''));
-    const arr = new Uint8Array(bytes.length);
-    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-    const url = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' }));
-    const w = window.open('', '_blank');
-    if (!w) return;
-    w.document.write(
-      `<html><body style="margin:0"><iframe id="pdf" src="${url}" style="width:100%;height:100vh;border:none"></iframe>` +
-      `<script>document.getElementById('pdf').onload=function(){this.contentWindow.focus();this.contentWindow.print();}<\/script></body></html>`,
+  protected override async onInit(): Promise<void> {
+    this.railStatus.set(this.queryParams.read({ status: RAIL_STATUS_PARAM }).status);
+    this.initRail(
+      (term, page) => this.payments.getInvoicePaymentsList({ page, limit: this.railPageSize, searchTerm: term, sortBy: {}, filter: { status: this.railStatus() ? [this.railStatus()] : [] } })
+        .then(d => ({ list: d?.list ?? [], pageCount: d?.pageCount ?? 1 })),
+      (r: any) => this.mapRailItem(r),
     );
-    w.document.close();
+  }
+
+  private mapRailItem(r: any): DocRailItem {
+    const first = Array.isArray(r.invoicesNumber) ? r.invoicesNumber.find((n: string) => !!n) : null;
+    // legacy: the tender amount (with "Eq." in the company currency when the rate isn't 1) unless more was paid than tendered
+    const foreign = r.paidAmount <= r.tenderAmount && r.rate != 1;
+    return {
+      id: r.id,
+      primary: (r.customerName || this.t('PAYMENTS.VIEW.NO_CUSTOMER')) + (first ? ` (${first})` : ''),
+      amountLabel: r.paidAmount > r.tenderAmount ? this.currency.transform(r.paidAmount)
+        : foreign ? `${this.number.transform(r.tenderAmount)} · Eq. ${this.currency.transform(r.equivalentAmount)}`
+        : this.currency.transform(r.tenderAmount),
+      sub: `${r.paymentMethodName ?? ''} | ${this.datePipe.transform(r.paymentDate, 'dd/MM/yyyy')}${r.branchName ? ' · ' + r.branchName : ''}`,
+      data: r,
+    };
+  }
+
+  /** The receipt has no lines to export. */
+  override exportItems(): DropdownMenuBtnItem[] { return []; }
+
+  /** Delete — rule and runner come from the shared {@link PaymentActions} (also used by the list). */
+  actionItems(p: InvoicePayment): DropdownMenuBtnItem[] {
+    return this.actions.menu(p, this.id, () => this.goToList());
+  }
+
+  /** "Additional Details" under the receipt - the payment's Journal and Logs. */
+  additionalDetails(): DocAdditionalDetailsConfig {
+    return {
+      tabs: ['journal', 'logs'],
+      journalHeading: this.t('PAYMENTS.VIEW.PAYMENT'),
+      loadJournal: () => this.loadJournal(),
+      logsSourceTable: 'InvoicePayments',
+      logsSourceId: this.id,
+    };
+  }
+
+  /** The payment's journal (`accounts/getInvoicePaymentJournals/:id`): its own rows, then one block per invoice line it settled. */
+  private async loadJournal(): Promise<DocJournalResult> {
+    const j: any = await this.payments.getInvoicePaymentJournals(this.id);
+    const rows: DocJournalRow[] = j?.defaultJournals ?? [];
+    rows.sort((a, b) => ((a.debit ?? 0) < (b.debit ?? 0) ? 1 : -1));
+    return { rows, extras: buildExtraJournals('payment', j?.extraJournals, (k, p) => this.lang.instant(k, p)) };
   }
 }

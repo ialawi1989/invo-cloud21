@@ -1,5 +1,6 @@
 {
   "INVOICES": {
+    "WASTE": { "TITLE": "Waste", "VOID_REASON": "Void reason", "REQUIRED": "This value is required", "YES": "Yes", "NO": "No" },
     "DASHBOARD": "Dashboard",
     "ADD_NEW": "New Invoice",
     "SEARCH_PLACEHOLDER": "Search invoices",
@@ -19,6 +20,14 @@
       "CUSTOMER_ADDRESS": "Customer address",
       "REF": "Ref #",
       "PAY": "Pay",
+      "EDIT_BLOCKED": {
+        "NO_PERMISSION": "You don't have permission to edit invoices",
+        "REFUNDED": "Can't edit: this invoice has been fully refunded",
+        "VOID": "Can't edit: this invoice is void",
+        "WRITTEN_OFF": "Can't edit: this invoice has been written off",
+        "CLOSED": "Can't edit: this invoice is closed",
+        "PERIOD_LOCKED": "Can't edit: the accounting period for this invoice date is locked"
+      },
       "CREATE_CREDIT_NOTE": "Credit note",
       "OVERDUE_BY": "Overdue by {{days}} days",
       "CUSTOMER_PHONE": "Customer Phone",
@@ -43,6 +52,11 @@
       "merged": "Merged"
     },
     "ACTIONS": {
+      "BULK_DELETE_CONFIRM": "Delete {{count}} selected invoice(s)? This cannot be undone.",
+      "BULK_DELETE_SKIPPED": "{{count}} more cannot be deleted (paid, closed or locked) and will be left as they are.",
+      "BULK_DELETE_NONE": "None of the selected invoices can be deleted.",
+      "BULK_DELETED": "{{count}} invoice(s) deleted",
+      "BULK_DELETE_FAILED": "{{count}} invoice(s) could not be deleted",
       "EXPORT_MERGED_PDF": "Export merged PDF",
       "EXPORT_EXCEL": "Export to Excel",
       "WRITE_OFF": "Write off",
@@ -118,6 +132,8 @@
       "NOTES_HINT": "Will be displayed on the invoice",
       "ATTACH_TITLE": "Attach File(s) to Invoice",
       "MAKE_RECURRING": "Make Recurring",
+      "NEW_RECURRING_INVOICE": "New Recurring Invoice",
+      "NEW_CREDIT_NOTE": "New Credit Note",
       "TOTAL_AMOUNT": "Total Amount",
       "TOTAL_QUANTITY": "Total Quantity",
       "RECURRING_SOON": "Recurring invoices are not available yet",
@@ -136,6 +152,62 @@
       "LINES": "At least one line",
       "QTY": "Line quantity",
       "TAXES": "Line tax details"
+    },
+    "EXPORT": {
+      "TITLE": "Export Invoices",
+      "INFO": "You can export your invoices in CSV, XLS or XLSX format.",
+      "MODULE": "Module",
+      "INVOICES": "Invoices",
+      "STATUS": "Select Status",
+      "ALL": "All",
+      "DATE_RANGE": "Date Range",
+      "DATE_RANGE_PH": "dd MMM yyyy - dd MMM yyyy",
+      "DECIMAL": "Decimal Format",
+      "FORMAT": "Export File Format",
+      "FMT_CSV": "CSV (Comma Separated Value)",
+      "FMT_XLS": "XLS (Microsoft Excel 1997-2004 Compatible)",
+      "FMT_XLSX": "XLSX (Microsoft Excel)",
+      "PII": "Include sensitive personally identifiable information (customer name and phone) while exporting.",
+      "NOTE": "Note:",
+      "NOTE_TEXT": "You can export only the first 25,000 invoices that match. Narrow the status or date range to export fewer.",
+      "EXPORT": "Export",
+      "NOTHING": "No invoices match the selected status and date range.",
+      "DONE": "{{count}} invoices exported",
+      "FAILED": "The export failed."
+    },
+    "IMPORT": {
+      "TITLE": "Import Invoices",
+      "RECORDS": "Invoices",
+      "SKIP_DUPLICATES": "Skip duplicate invoices",
+      "SKIP_DUPLICATES_DESC": "Invoices whose number already exists are skipped. Turn this off to report them as errors instead.",
+      "SKIP_DUPLICATE_LINES": "Skip duplicate lines",
+      "SKIP_DUPLICATE_LINES_DESC": "Within an invoice, a line identical to an earlier one (same item, quantity, price, discount and description) is skipped.",
+      "AUTO_NUMBER": "Auto-generate Invoice Numbers",
+      "AUTO_NUMBER_DESC": "Invoice numbers are generated from your numbering settings. Any invoice numbers in the file are ignored.",
+      "TIP_ROWS": "Each row of the file is one invoice line. Rows with the same invoice number are imported as one invoice.",
+      "TIP_MATCH": "Customers and items must already exist. Customers are matched by name; items by barcode first, then SKU, then name, and must be available in this branch. An invoice with an unknown customer or unavailable item is reported as an error.",
+      "TIP_STATUS": "Supported statuses are Draft and Open; an invoice with another status can be fixed in the Preview step. Invoice numbers that already exist are skipped, or reported as errors when Skip duplicate invoices is off.",
+      "GROUPS": {
+        "INVOICE": "Invoice Details",
+        "CONTACT": "Contact Details",
+        "ITEM": "Item Details"
+      },
+      "FIELDS": {
+        "INVOICE_NUMBER": "Invoice Number",
+        "INVOICE_DATE": "Invoice Date",
+        "DUE_DATE": "Due Date",
+        "STATUS": "Invoice Status",
+        "REFERENCE": "Reference Number",
+        "NOTES": "Notes",
+        "CUSTOMER_NAME": "Customer Name",
+        "ITEM_NAME": "Item Name",
+        "BARCODE": "Barcode",
+        "SKU": "SKU",
+        "QUANTITY": "Quantity",
+        "PRICE": "Item Price",
+        "DISCOUNT": "Discount (%)",
+        "ITEM_DESC": "Item Description"
+      }
     },
     "VIEW": {
       "VIEW_INVOICE": "View Invoice",
@@ -172,6 +244,12 @@
       "DELIVERY_DATE": "Delivery Date",
       "DELIVERY_NOTE": "Delivery Note",
       "PRINT_DELIVERY_NOTE": "Print Delivery Note",
+      "SEND_FOR_SIGNATURE": "Send for Signature",
+      "CREATE_LINK": "Create Invoice Link",
+      "LINK_HINT": "Copy this link and share it with the customer, e.g. on WhatsApp or SMS.",
+      "SIGNATURE_HINT": "Share the signing link, or email it to the customer for their signature.",
+      "COPY": "Copy",
+      "COPIED": "Copied",
       "DELIVERY_NOTE_NEEDS_CUSTOMER": "A customer is required to print a delivery note.",
       "SORT_BY": "Sort by",
       "EXPORT_INVOICES": "Export Invoices",
@@ -179,7 +257,8 @@
       "IMPORT_INVOICES": "Import Invoices",
       "IMPORT_NOT_AVAILABLE": "Bulk invoice import is not available yet.",
       "ONLINE_PAYMENTS": "Online Payments",
-      "RESET_COLUMN_WIDTH": "Reset Column Width"
+      "RESET_COLUMN_WIDTH": "Reset Column Width",
+      "CONFIRM_DELETE_APPLIED_CREDIT": "Take this applied credit back?"
     },
     "CREDIT": {
       "APPLY_CREDITS_FOR": "Apply credits for",
@@ -197,6 +276,7 @@
       "AMOUNT": "Amount",
       "BALANCE": "Balance",
       "PAYMENT_DATE": "Payment date",
+      "BRANCH": "Branch",
       "PAYMENT_METHOD": "Payment method",
       "SELECT_METHOD": "Select a payment method",
       "ACCOUNT": "Account",
@@ -220,6 +300,7 @@
       "SYSTEM_FIELD": "System",
       "NO_FIELDS": "No custom fields yet.",
       "ADD_FIELD": "Add Field"
-    }
+    },
+    "RECORDS": "Invoices"
   }
 }

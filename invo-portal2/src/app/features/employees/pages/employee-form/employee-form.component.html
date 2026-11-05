@@ -1,4 +1,5 @@
 <div class="employee-form-page" [formGroup]="form">
+  @if (isCreate() || editSection()) {
   <header class="page-header">
     <div class="page-header__titles">
       <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
@@ -17,22 +18,34 @@
       <span class="tour-btn__label">{{ 'EMPLOYEES.TOUR.START' | translate }}</span>
     </button>
   </header>
+  }
 
   @if (loading()) {
     <div class="loading"><span class="spinner spinner--lg"></span></div>
   } @else {
-    <div class="form-grid" [class.form-grid--single]="!!editSection()">
-      <!-- ═══ Main column ═══ -->
-      <div class="form-grid__main">
+    @if (!editSection()) {
+      <div class="form-tabs" data-tour="emp-tabs">
+        <app-segmented-toggle
+          [options]="tabOptions()"
+          [value]="activeTab()"
+          (valueChange)="selectTab($event)"/>
+      </div>
+    }
 
-        <!-- ── System access ──
-             Off = a person on the record with no login: no credentials, no
-             roles, no privilege set. Attendance and HR data still attach to
-             them normally. -->
+    <div class="form-grid"
+         [class.form-grid--single]="!!editSection()"
+         [class.form-grid--wide]="!editSection() && activeTab() !== 'basic'">
+      <!-- ═══ Main column ═══ -->
         @if (showsSection('basic')) {
-        <section class="card" data-tour="emp-system-access">
+
+        <!-- ── Basic Information ── -->
+        <section class="card form-grid__full" data-tour="emp-basic" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
+          <header class="card__head">
+            <h2 class="card__title">{{ 'EMPLOYEES.FORM.BASIC_INFORMATION' | translate }}</h2>
+          </header>
           <div class="card__body">
-            <div class="access-toggle">
+            <div class="access-row" data-tour="emp-system-access">
+              <div class="access-toggle">
               <app-toggle
                 [checked]="hasSystemAccess()"
                 (checkedChange)="toggleSystemAccess($event)"
@@ -41,15 +54,7 @@
                   ? 'EMPLOYEES.FORM.SYSTEM_ACCESS_HINT'
                   : 'EMPLOYEES.FORM.SYSTEM_ACCESS_OFF_HINT') | translate"/>
             </div>
-          </div>
-        </section>
-
-        <!-- ── Basic Information ── -->
-        <section class="card" data-tour="emp-basic">
-          <header class="card__head">
-            <h2 class="card__title">{{ 'EMPLOYEES.FORM.BASIC_INFORMATION' | translate }}</h2>
-          </header>
-          <div class="card__body">
+            </div>
             @if (accessBeingRestored()) {
               <!-- Revocation leaves the stored credential alone (it's shared
                    with this person's other companies) — so restoring access
@@ -61,7 +66,7 @@
             <!-- Credential fields pack into one flowing grid; which appear
                  depends on the selected role(s) — Cloud → Email + Password,
                  POS → Pass Code + MSR (mirrors the legacy role blocks). -->
-            <div class="grid grid--2">
+            <div class="grid grid--3">
               <div class="field">
                 <label class="field-label" for="emp-name">
                   {{ 'EMPLOYEES.FORM.NAME' | translate }}<span class="required">*</span>
@@ -137,11 +142,11 @@
                   <!-- Restoring access retires the dormant credential, so
                        "keep the current one" isn't offered. -->
                   @if (!credentialsRequired()) {
-                    <app-toggle
-                      size="sm"
-                      [checked]="changePassword()"
-                      (checkedChange)="toggleChangePassword($event)"
-                      [label]="'EMPLOYEES.FORM.CHANGE_PASSWORD' | translate"/>
+                    <button type="button" class="btn btn-default btn-sm change-btn"
+                            [attr.aria-expanded]="changePassword()"
+                            (click)="toggleChangePassword(!changePassword())">
+                      {{ (changePassword() ? 'COMMON.CANCEL' : 'EMPLOYEES.FORM.CHANGE_PASSWORD') | translate }}
+                    </button>
                   }
                 </div>
               }
@@ -177,11 +182,11 @@
                     }
                   }
                   @if (!credentialsRequired()) {
-                    <app-toggle
-                      size="sm"
-                      [checked]="changePassCode()"
-                      (checkedChange)="toggleChangePassCode($event)"
-                      [label]="'EMPLOYEES.FORM.CHANGE_PASSCODE' | translate"/>
+                    <button type="button" class="btn btn-default btn-sm change-btn"
+                            [attr.aria-expanded]="changePassCode()"
+                            (click)="toggleChangePassCode(!changePassCode())">
+                      {{ (changePassCode() ? 'COMMON.CANCEL' : 'EMPLOYEES.FORM.CHANGE_PASSCODE') | translate }}
+                    </button>
                   }
                 </div>
 
@@ -191,6 +196,13 @@
         </section>
         }
 
+      <div class="form-grid__main">
+
+        <!-- ── System access ──
+             Off = a person on the record with no login: no credentials, no
+             roles, no privilege set. Attendance and HR data still attach to
+             them normally. -->
+
         <!-- ── Documents ──────────────────────────────────────────────────
              Attachments reachable from the form itself, so adding a passport
              does not mean finding the Documents tab first. Same upload path as
@@ -198,7 +210,7 @@
              Hidden entirely without the hr.documents key AND the
              employeeDocumentSecurity.view grant — see attachmentAccess(). -->
         @if (showsSection('personal') && attachAccess().visible) {
-        <section class="card" data-tour="emp-documents">
+        <section class="card" data-tour="emp-documents" [class.tab-hidden]="tabHidden('personal')" data-pane="personal">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FILES.DOCUMENTS' | translate }}</h2>
           </header>
@@ -236,14 +248,15 @@
         <!-- Roles and access only exist for employees who sign in. -->
         @if (showsSection('basic') && hasSystemAccess()) {
         <!-- ── Employee Roles ── -->
-        <section class="card" data-tour="emp-roles">
+        <section class="card" data-tour="emp-roles" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYEE_ROLES' | translate }}</h2>
           </header>
           <div class="card__body role-cards">
             <!-- Cloud Admin -->
-            <button type="button" class="role-card"
+            <button type="button" class="role-card" role="checkbox"
               [class.role-card--active]="isAdmin()"
+              [attr.aria-checked]="isAdmin()"
               [disabled]="isSuperAdmin()"
               (click)="toggleRole('admin')">
               <svg class="role-card__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -257,8 +270,9 @@
             </button>
 
             <!-- POS User (can't be turned off when it's the only active role) -->
-            <button type="button" class="role-card"
+            <button type="button" class="role-card" role="checkbox"
               [class.role-card--active]="isUser()"
+              [attr.aria-checked]="isUser()"
               [class.role-card--locked]="posLocked()"
               [disabled]="isSuperAdmin() || posLocked()"
               (click)="toggleRole('user')">
@@ -273,8 +287,9 @@
             </button>
 
             <!-- Is Driver -->
-            <button type="button" class="role-card"
+            <button type="button" class="role-card" role="checkbox"
               [class.role-card--active]="form.controls['isDriver'].value"
+              [attr.aria-checked]="form.controls['isDriver'].value"
               [disabled]="isSuperAdmin()"
               (click)="toggleRole('isDriver')">
               <svg class="role-card__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -288,8 +303,9 @@
             </button>
 
             <!-- Is Salesperson -->
-            <button type="button" class="role-card"
+            <button type="button" class="role-card" role="checkbox"
               [class.role-card--active]="form.controls['isSalesPerson'].value"
+              [attr.aria-checked]="form.controls['isSalesPerson'].value"
               [disabled]="isSuperAdmin()"
               (click)="toggleRole('isSalesPerson')">
               <svg class="role-card__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -305,7 +321,7 @@
         </section>
 
         <!-- ── Access & Permissions ── -->
-        <section class="card" data-tour="emp-access">
+        <section class="card" data-tour="emp-access" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.ACCESS_PERMISSIONS' | translate }}</h2>
           </header>
@@ -351,22 +367,12 @@
         }
 
         <!-- ── Personal details (manifest-driven) ──
-             Both HR cards hang off the manifest groups, which only exist when
-             the EMPLOYEE_HR_FIELDS flag is on. The flag stays off until the
-             backend can store what they collect — see employee-feature-flags.ts.
-
-             COLLAPSIBLE, not tabbed. These two cards carry ~15 required fields
-             between them and the form has a single Save; with tabbed panes an
-             invalid submit would do nothing visible whenever the offending
-             field sat on a hidden tab. Collapsed content is still in the DOM,
-             so validation, browser find and autofill all keep working — and
-             `revealInvalidSections()` opens whichever card holds the first
-             error before scrolling to it. -->
+             Only exists when the EMPLOYEE_HR_FIELDS flag is on. -->
         @if (showsSection('personal') && profileGroup(); as group) {
-          <app-collapsible-card
-            [title]="'EMPLOYEES.FORM.PERSONAL_DETAILS' | translate"
-            [(open)]="personalOpen"
-            data-tour="emp-hr-profile">
+          <section class="card" data-tour="emp-hr-profile" [class.tab-hidden]="tabHidden('personal')" data-pane="personal">
+            <header class="card__head">
+              <h2 class="card__title">{{ 'EMPLOYEES.FORM.PERSONAL_DETAILS' | translate }}</h2>
+            </header>
             <div class="card__body">
               <app-field-renderer
                 [descriptors]="profileFields()"
@@ -376,7 +382,7 @@
                 [optionSources]="optionSources()"
                 [requiredMode]="requiredMode()"/>
             </div>
-          </app-collapsible-card>
+          </section>
         }
 
         <!-- ── Employment details (manifest-driven) ──
@@ -384,10 +390,10 @@
              column: they're top-level fields and stay authoritative. -->
         @if (showsSection('employment')) {
         @if (employmentGroup(); as group) {
-          <app-collapsible-card
-            [title]="'EMPLOYEES.FORM.EMPLOYMENT_DETAILS' | translate"
-            [(open)]="employmentOpen"
-            data-tour="emp-hr-employment">
+          <section class="card" data-tour="emp-hr-employment" [class.tab-hidden]="tabHidden('employment')" data-pane="employment">
+            <header class="card__head">
+              <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT_DETAILS' | translate }}</h2>
+            </header>
             <div class="card__body">
             <!-- Hire and termination live WITH the rest of employment, not in
                  the side column. They are top-level employee fields rather than
@@ -418,13 +424,13 @@
                 [computedValues]="computedValues()"
                 [requiredMode]="requiredMode()"/>
             </div>
-          </app-collapsible-card>
+          </section>
         } @else {
           <!-- The HR employment group is absent (flag off, or this caller is
                not the HR data owner). The two dates are still the employee's
                own top-level fields, so they get a plain card rather than
                vanishing along with the manifest. -->
-          <section class="card">
+          <section class="card" [class.tab-hidden]="tabHidden('employment')" data-pane="employment">
             <header class="card__head">
               <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT' | translate }}</h2>
             </header>
@@ -458,7 +464,7 @@
              Cash and cheque need no account, so the fields collapse rather
              than sitting there asking for an IBAN nobody will use. -->
         @if (showsSection('payment') && canEditBank()) {
-        <section class="card" data-tour="emp-payment" [formGroup]="bankForm">
+        <section class="card" data-tour="emp-payment" [formGroup]="bankForm" [class.tab-hidden]="tabHidden('payment')" data-pane="payment">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.WIZARD.PAYMENT_QUESTION' | translate }}</h2>
           </header>
@@ -518,11 +524,11 @@
       </div>
 
       <!-- ═══ Side column ═══ -->
-      <div class="form-grid__side">
+      <div class="form-grid__side" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
 
         @if (showsSection('basic')) {
         <!-- ── Image ── -->
-        <section class="card" data-tour="emp-image">
+        <section class="card" data-tour="emp-image" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.IMAGE' | translate }}</h2>
           </header>
@@ -556,24 +562,12 @@
         </section>
 
         <!-- ── Branch Assignment ── -->
-        <section class="card" data-tour="emp-branches">
+        <section class="card" data-tour="emp-branches" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.BRANCH_ASSIGNMENT' | translate }}</h2>
           </header>
           <div class="card__body">
             <p class="branch-hint">{{ 'EMPLOYEES.FORM.PRIMARY_HINT' | translate }}</p>
-
-            <div class="field">
-              <app-search-dropdown
-                formControlName="branchIds"
-                [items]="branches()"
-                [multiple]="true"
-                [displayWith]="optionDisplay"
-                [toValue]="optionToValue"
-                [compareWith]="optionCompare"
-                [placeholder]="'EMPLOYEES.FORM.SELECT_BRANCHES' | translate"
-                [searchPlaceholder]="'EMPLOYEES.FORM.SEARCH_BRANCHES' | translate"/>
-            </div>
 
             @if (selectedBranches().length) {
               <ul class="branch-list">
@@ -591,13 +585,37 @@
                     </button>
                     <span class="branch-list__name">{{ b.name }}</span>
                     @if (b.id === primaryBranchId()) {
-                      <span class="branch-list__badge">{{ 'EMPLOYEES.FORM.PRIMARY_BRANCH' | translate }}</span>
+                      <span class="branch-list__badge">{{ 'EMPLOYEES.FORM.PRIMARY_BADGE' | translate }}</span>
                     }
+                    <button type="button" class="branch-list__remove"
+                            [disabled]="isSuperAdmin()"
+                            [attr.aria-label]="('EMPLOYEES.FORM.REMOVE_BRANCH' | translate) + ' ' + b.name"
+                            (click)="removeBranch(b.id)">&times;</button>
                   </li>
                 }
               </ul>
             } @else {
               <p class="branch-empty">{{ 'EMPLOYEES.FORM.NO_BRANCHES' | translate }}</p>
+            }
+
+            @if (availableBranches().length && !isSuperAdmin()) {
+              @if (addBranchOpen()) {
+                <div class="field branch-add">
+                  <app-search-dropdown
+                    [items]="availableBranches()"
+                    [displayWith]="optionDisplay"
+                    [toValue]="optionToValue"
+                    [compareWith]="optionCompare"
+                    [placeholder]="'EMPLOYEES.FORM.SELECT_BRANCHES' | translate"
+                    [searchPlaceholder]="'EMPLOYEES.FORM.SEARCH_BRANCHES' | translate"
+                    (valueChange)="addBranch($any($event))"/>
+                </div>
+              } @else {
+                <button type="button" class="btn btn-default btn-sm branch-add-btn"
+                        (click)="addBranchOpen.set(true)">
+                  + {{ 'EMPLOYEES.FORM.ADD_BRANCH' | translate }}
+                </button>
+              }
             }
           </div>
         </section>
@@ -609,17 +627,25 @@
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
 
   <app-form-sticky-footer>
+    @if (errorCount() > 0) {
+      <app-form-error-summary [count]="errorCount()" [form]="form" [container]="host"
+                              (jumping)="revealPaneOf($event)"/>
+    }
+    <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
     <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
       {{ 'COMMON.CANCEL' | translate }}
     </button>
     <button
       type="button"
-      class="btn btn-primary"
+      class="btn btn-primary save-btn"
+      [class.save-btn--invalid]="errorCount() > 0"
       (click)="save()"
-      [disabled]="saving() || loading() || form.invalid"
+      [disabled]="saving() || loading()"
     >
       {{ 'COMMON.SAVE' | translate }}
+      @if (errorCount() > 0) {
+        <span class="save-btn__badge" aria-hidden="true">{{ errorCount() }}</span>
+      }
     </button>
-    <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
   </app-form-sticky-footer>
 </div>

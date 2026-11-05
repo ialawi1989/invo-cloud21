@@ -93,8 +93,8 @@
 
 .field-label {
   font-size: 13px;
-  font-weight: 500;
-  color: #0f172a;
+  font-weight: 600;
+  color: #334155;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -496,7 +496,7 @@
 
 // Pushed to the far end of the sticky footer, opposite the buttons.
 .mandatory-legend {
-  margin-inline-start: auto;
+  margin-inline-end: auto;
   font-size: 12px;
   color: #e11d48;                       // rose-600
   align-self: center;
@@ -573,3 +573,84 @@
   font-weight: 700;
   color: #0f172a;
 }
+
+// ── Tabs ──────────────────────────────────────────────────────────────────
+// Panes are hidden, never removed, so validation and autofill span all tabs.
+.tab-hidden { display: none !important; }
+
+.form-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+// System-access switch sits at the top of Basic Information, divided from
+// the credential fields below it.
+.access-row {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+// Image + branches live on the Basic tab only; the other tabs take the width.
+.form-grid--wide {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 900px;
+}
+
+// ── Save button error badge (same treatment as the product form) ─────────
+.save-btn {
+  position: relative;
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
+    margin-inline-start: 4px;
+    background: #dc2626;
+    color: #fff;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &--invalid {
+    background: linear-gradient(180deg,
+      var(--color-brand-300, #7dd3fc) 0%,
+      var(--color-brand-400, #38bdf8) 100%);
+    border-color: transparent;
+    color: #fff;
+    opacity: 0.85;
+
+    &:hover:not(:disabled) { opacity: 1; }
+  }
+}
+
+
+
+// ── Basic card spans both columns; the 3-up credential grid ─────────────────
+.form-grid__full { grid-column: 1 / -1; }
+.grid--3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 16px;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+.change-btn { align-self: flex-start; }
+.branch-list__remove {
+  margin-inline-start: auto;
+  width: 24px; height: 24px; border: 0; border-radius: 6px;
+  background: transparent; color: #64748b; font-size: 18px; line-height: 1; cursor: pointer;
+  &:hover:not(:disabled) { background: #fef2f2; color: #b91c1c; }
+  &:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 1px; }
+}
+.branch-add-btn { margin-top: 10px; }
+.branch-add { margin-top: 10px; }

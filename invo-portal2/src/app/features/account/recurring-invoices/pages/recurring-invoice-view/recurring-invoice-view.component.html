@@ -1,0 +1,122 @@
+<app-doc-view-shell
+  [docTitle]="profile()?.name ?? ''" railTitle="RECURRING_INVOICES.VIEW.ALL_PROFILES" [showAdd]="actions.canAdd"
+  [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="profileId"
+  [showToolbar]="false" [showPaper]="tab() === 'next'" [loading]="!profile()"
+  [template]="paperTemplate()" [data]="renderData()" [reportDesign]="reportDesign()" [reportData]="reportData()"
+  [ribbonText]="expiredText()" ribbonKind="danger" [zoom]="zoom()" (zoomChange)="setZoom($event)" [viewerTools]="true"
+  (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railPrev)="railPrev()" (railNext)="railNext()"
+  (add)="add()" (close)="goToList()">
+
+  <div titleExtra class="cdv-acts">
+    @if (profile()) {
+      @if (actions.canAdd) {
+        <button type="button" class="cdv-btn" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
+      }
+      @if (canDelete()) {
+        <button type="button" class="cdv-btn cdv-btn--danger" (click)="remove()">{{ 'RECURRING_INVOICES.ACTIONS.DELETE' | translate }}</button>
+      }
+    }
+  </div>
+
+  <div banner class="cdv cdv--tabs">
+    @if (profile()) {
+      <nav class="cdv-tabs" role="tablist">
+        @for (t of tabs; track t.value) {
+          <button type="button" role="tab" class="cdv-tab" [class.is-active]="tab() === t.value" [attr.aria-selected]="tab() === t.value" (click)="selectTab(t.value)">
+            @if (t.value === 'next') { {{ t.label | translate: { kind: 'invoice' } }} } @else { {{ t.label | translate }} }
+          </button>
+        }
+      </nav>
+    }
+  </div>
+
+  <div alt class="cdv">
+    @if (profile(); as p) {
+      @if (tab() === 'overview') {
+        <div class="cdv-overview">
+          <div class="cdv-col cdv-col--side">
+            @if (party(); as pt) {
+              <section class="cd-card cd-party">
+                <span class="cd-avatar" aria-hidden="true">{{ (pt.name || '?').charAt(0).toUpperCase() }}</span>
+                @if (pt.id) {
+                  <a class="cd-party__name" [routerLink]="[pt.route, pt.id]">{{ pt.name }}</a>
+                } @else {
+                  <span class="cd-party__name">{{ pt.name }}</span>
+                }
+              </section>
+            }
+            <section class="cd-card">
+              <h4>{{ 'RECURRING_INVOICES.VIEW.DETAILS' | translate }}</h4>
+              <div class="cd-kv">
+                <span>{{ 'RECURRING_INVOICES.VIEW.PROFILE_STATUS' | translate }}</span>
+                <span class="cd-pill" [class.cd-pill--off]="!isActive()">{{ (isActive() ? 'RECURRING_INVOICES.VIEW.STATUS_ACTIVE' : 'RECURRING_INVOICES.VIEW.STATUS_EXPIRED') | translate }}</span>
+              </div>
+              <div class="cd-kv"><span>{{ 'RECURRING_INVOICES.LIST.START_DATE' | translate }}</span><b>{{ p.startDate | date: 'dd/MM/yyyy' }}</b></div>
+              <div class="cd-kv"><span>{{ 'RECURRING_INVOICES.LIST.END_DATE' | translate }}</span><b>{{ p.endTerm === 'by' && p.endDate ? (p.endDate | date: 'dd/MM/yyyy') : ('RECURRING_INVOICES.VIEW.NEVER_EXPIRES' | translate) }}</b></div>
+              <div class="cd-kv"><span>{{ 'RECURRING_INVOICES.VIEW.BRANCH_LABEL' | translate }}</span><b>{{ p.branchName || '—' }}</b></div>
+              <div class="cd-kv"><span>{{ 'RECURRING_INVOICES.VIEW.GENERATED' | translate }}</span><b>{{ p.childInvoices?.length ?? 0 }}</b></div>
+              <div class="cd-kv"><span>{{ 'RECURRING_INVOICES.LIST.CREATED_AT' | translate }}</span><b>{{ p.createdAt | date: 'dd/MM/yyyy' }}</b></div>
+              <div class="cd-kv"><span>{{ 'RECURRING_INVOICES.VIEW.UPDATED_AT' | translate }}</span><b>{{ p.updatedDate | date: 'dd/MM/yyyy HH:mm' }}</b></div>
+            </section>
+          </div>
+
+          <div class="cdv-col">
+            <div class="cd-stats">
+              <div><span>{{ 'RECURRING_INVOICES.VIEW.AMOUNT' | translate }}</span><b>{{ (template()?.total || 0) | mycurrency }}</b></div>
+              <div><span>{{ 'RECURRING_INVOICES.VIEW.NEXT_DATE' | translate }}</span><b class="cd-link">{{ p.nextInvoiceDate ? (p.nextInvoiceDate | date: 'dd/MM/yyyy') : '—' }}</b></div>
+              <div><span>{{ 'RECURRING_INVOICES.VIEW.RECURRING_PERIOD' | translate }}</span><b>{{ frequency() }}</b></div>
+            </div>
+
+            <section class="cd-card">
+              <header class="cd-head">
+                <h4>{{ 'RECURRING_INVOICES.VIEW.CHILDREN_TITLE' | translate }}</h4>
+            <span class="cd-unpaid">{{ 'RECURRING_INVOICES.VIEW.UNPAID_TOTAL' | translate }}: <b>{{ unpaidTotal() | mycurrency }}</b></span>
+              </header>
+            <app-segmented-toggle [options]="childFilterOptions" [value]="childFilter()" (valueChange)="childFilter.set($any($event))"/>
+              @for (c of children(); track c.id) {
+                <div class="cd-row">
+                  <div class="cd-row__main">
+                    <a [routerLink]="['/account/invoices/view', c.id]">{{ c.invoiceNumber }}</a>
+                    <span class="cd-sep"></span><span>{{ c.invoiceDate | date: 'dd/MM/yyyy' }}</span>
+                    @if (c.note) { <div class="cd-row__sub cd-wrap">{{ c.note }}</div> }
+                    <div class="cd-row__sub">{{ c.createdAt | date: 'dd/MM/yyyy HH:mm' }}</div>
+                  </div>
+                  <div class="cd-row__side">
+                    <b>{{ c.total | mycurrency }}</b>
+                    <span class="cd-status">{{ c.status }}</span>
+                    @if (c.paidAmount) { <div class="cd-row__sub">{{ 'RECURRING_INVOICES.VIEW.PAID' | translate }}: {{ c.paidAmount | mycurrency }}</div> }
+                  </div>
+                </div>
+              } @empty {
+                <p class="cd-muted">{{ 'RECURRING_INVOICES.VIEW.NO_CHILDREN' | translate }}</p>
+              }
+            </section>
+          </div>
+        </div>
+      }
+
+
+      @if (tab() === 'activity') {
+        <section class="cd-card">
+          @if (activity(); as logs) {
+            <ul class="cd-timeline">
+              @for (l of logs; track $index) {
+                <li>
+                  <time>{{ l.createdAt | date: 'dd/MM/yyyy' }}<br/>{{ l.createdAt | date: 'HH:mm' }}</time>
+                  <div class="cd-timeline__card">
+                    <div>{{ l.comment }}</div>
+                    <small>{{ 'RECURRING_INVOICES.VIEW.BY' | translate }} {{ l.employeeName }}</small>
+                  </div>
+                </li>
+              } @empty {
+                <li class="cd-muted">{{ 'RECURRING_INVOICES.VIEW.NO_ACTIVITY' | translate }}</li>
+              }
+            </ul>
+          } @else if (activityLoading()) {
+            <p class="cd-muted">…</p>
+          }
+        </section>
+      }
+    }
+  </div>
+</app-doc-view-shell>

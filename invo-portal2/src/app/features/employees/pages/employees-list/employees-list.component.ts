@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { LanguageService } from '@core/i18n/language.service';
+import { ModalService } from '@shared/modal/modal.service';
+import { LogsDrawerComponent, LogsDrawerData } from '@shared/components/logs-drawer/logs-drawer.component';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import {
@@ -42,6 +44,7 @@ export class EmployeesListComponent implements OnInit {
   private router     = inject(Router);
   private lang       = inject(LanguageService);
   private privileges = inject(PrivilegeService);
+  private modal      = inject(ModalService);
 
   readonly canAdd    = this.privileges.check('employeeSecurity.actions.add.access');
   readonly canInvite = this.privileges.check('employeeInvitationSecurity.actions.add.access');
@@ -87,6 +90,14 @@ export class EmployeesListComponent implements OnInit {
     return (name || '?').charAt(0).toUpperCase();
   }
 
+  /** Activity log of the employee records (`Employees` source table). */
+  openLogs(): void {
+    this.modal.open<LogsDrawerComponent, LogsDrawerData, void>(LogsDrawerComponent, {
+      drawer: true, drawerWidth: '480px', drawerResizable: true,
+      data: { sourceTable: 'Employees', title: this.lang.instant('EMPLOYEES.TITLE') },
+    });
+  }
+
   onRowClick(event: any): void {
     if (event?.row) this.edit(event.row);
   }
@@ -95,6 +106,10 @@ export class EmployeesListComponent implements OnInit {
     void this.router.navigate(
       row.isInvitedUser ? ['/employees/invitation', row.id] : ['/employees', row.id],
     );
+  }
+
+  view(row: EmployeeSummary): void {
+    void this.router.navigate(['/employees/view', row.id]);
   }
 
   add(): void {

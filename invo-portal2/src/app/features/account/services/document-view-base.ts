@@ -18,6 +18,12 @@ import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/conf
 
 import { DocumentBuilderService } from '../../settings/document-builder/services/document-builder.service';
 import type { DocumentTemplate, DocumentType } from '../../settings/document-builder/services/document-template.types';
+import type { ReportTemplate } from '../../settings/document-builder/report-engine/core/types/template.types';
+import { BindingEngine } from '../../settings/document-builder/report-engine/core/binding/binding-engine';
+import { PaginationEngine } from '../../settings/document-builder/report-engine/core/layout/pagination';
+import { HtmlRenderer } from '../../settings/document-builder/report-engine/renderers/html/html-renderer';
+import { toReportData, CompanyLike } from '../../settings/document-builder/report-engine/utils/report-data';
+import { CompanyService } from '@core/auth/company.service';
 import { SendDocumentData, SendDocumentModalComponent } from '../components/send-document-modal/send-document-modal.component';
 
 /** URL query-param keys for the record rail's own state (page + search) — shared by every document
@@ -39,6 +45,18 @@ export interface DocRailItem {
   /** The document's status as a small colored pill, inline with `sub` (e.g. "Open", "Paid", "Draft"). */
   statusText?: string;
   statusKind?: 'draft' | 'open' | 'paid' | 'partial' | 'void' | 'neutral';
+  /** The raw record, so bulk actions can apply their own rules (e.g. which statuses may be deleted). */
+  data?: any;
+}
+
+/** An action on the rail's ticked records ("Export merged PDF", "Delete"…). The shell clears the ticks once `run` settles. */
+export interface DocRailBulkAction {
+  id: string;
+  /** Already translated. */
+  label: string;
+  danger?: boolean;
+  separator?: boolean;
+  run: (items: DocRailItem[]) => void | Promise<void>;
 }
 
 /** What a sales-document view needs from its API service. */
@@ -53,7 +71,8 @@ export interface DocViewConfig {
   features: string[];
   /** List route (`/account/estimate`); the form lives at `<routeBase>/:id`. */
   routeBase: string;
-  templateType: DocumentType;
+  /** The document's default template; leave out for a document drawn by its own component (a payment's receipt). */
+  templateType?: DocumentType;
   zoomKey: string;
   /** Property holding the document number, used in the title and file names. */
   numberField: string;
@@ -83,6 +102,7 @@ export abstract class DocumentViewBase implements OnInit, OnDestroy {
   protected modal = inject(ModalService);
   protected builder = inject(DocumentBuilderService);
   private layout = inject(LayoutService);
+  private company = inject(CompanyService);
   private qp = inject(QueryParamsService);
 
   abstract readonly cfg: DocViewConfig;
@@ -153,6 +173,17 @@ export abstract class DocumentViewBase implements OnInit, OnDestroy {
   onRailSearch(term: string): void { this.railSearch$.next(term); }
   isRailSelected = (item: DocRailItem) => item.id === this.id;
 
+  /** The free-designer (report-engine) design to draw, when the default template is in `designer` mode and has one; else null (classic paper). */
+  reportDesign = computed<ReportTemplate | null>(() => {
+    const t = this.template();
+    return t?.renderMode === 'designer' && t.reportDesign?.sections?.length ? t.reportDesign : null;
+  });
+  /** The raw record adapted for the report engine's bindings (company identity, flattened addresses, …). */
+  reportData = computed<Record<string, unknown> | null>(() => {
+    const d = this.doc();
+    return d ? toReportData(d, this.company.currentCompany() as CompanyLike | null, this.lang.current()) : null;
+  });
+
   renderData = computed<DocumentRenderData | null>(() => {
     const d = this.doc();
     return d ? this.toRenderData(d) : null;
@@ -168,8 +199,10 @@ export abstract class DocumentViewBase implements OnInit, OnDestroy {
     this.layout.setNoPadding(true);
     await Promise.all([...this.cfg.features, 'account/components/doc-lines-table'].map(f => this.lang.loadFeature(f)));
     await this.onInit();
-    this.zoom.set(this.savedZoom());
-    this.template.set(await this.builder.getDefault(this.cfg.templateType));
+    const saved = this.savedZoom();
+    this.zoomChosen.set(saved != null);
+    this.zoom.set(saved ?? 100);
+    if (this.cfg.templateType) this.template.set(await this.builder.getDefault(this.cfg.templateType));
     this.breadcrumbs = [
       { label: this.t(this.cfg.dashboardCrumbKey), routerLink: '/dashboard' },
       { label: this.t(this.cfg.listCrumbKey), routerLink: this.cfg.routeBase },
@@ -236,14 +269,30 @@ export abstract class DocumentViewBase implements OnInit, OnDestroy {
   }
 
   // ── send / PDF / print / export ────────────────────────────────────
+  /** Who the send dialog offers by default - the customer (purchase documents override with the supplier). */
+  protected recipient(d: any): { emails: string[]; phone: string } {
+    return { emails: d.customerEmail ? [d.customerEmail] : [], phone: d.customerPhone || d.customerContact };
+  }
+  /** Rows of "Export lines" (CSV / XLSX). */
+  protected exportRows(d: any): Record<string, any>[] {
+    return d.lines.map((l: any) => ({
+      ProductName: l.selectedItem?.name || l.note || '',
+      Barcode: l.barcode || l.selectedItem?.barcode || '',
+      Quantity: l.qty || 0,
+      Price: l.price || 0,
+      DiscountTotal: l.discountAmount || 0,
+    }));
+  }
+
   async send(): Promise<void> {
     const d = this.doc()!;
+    const to = this.recipient(d);
     await this.modal.open<SendDocumentModalComponent, SendDocumentData, boolean>(SendDocumentModalComponent, {
       size: 'md',
       data: {
-        emails: d.customerEmail ? [d.customerEmail] : [],
+        emails: to.emails,
         sendEmail: payload => this.svc.sendEmail(payload, d.id),
-        whatsapp: { type: this.cfg.whatsappType, id: d.id, phone: d.customerPhone || d.customerContact },
+        whatsapp: { type: this.cfg.whatsappType, id: d.id, phone: to.phone },
       },
     }).afterClosed();
   }
@@ -255,6 +304,8 @@ export abstract class DocumentViewBase implements OnInit, OnDestroy {
 
   /** Legacy "print": the PDF opened in a new tab that prints itself once loaded. */
   async printPdf(): Promise<void> {
+    const design = this.reportDesign();
+    if (design) { await this.printDesigner(design); return; }
     const base64 = await this.svc.pdf(this.id);
     if (!base64) return;
     const bytes = atob(String(base64).replace('data:application/pdf;base64,', ''));
@@ -268,6 +319,24 @@ export abstract class DocumentViewBase implements OnInit, OnDestroy {
       `<script>document.getElementById('pdf').onload=function(){this.contentWindow.focus();this.contentWindow.print();}<\/script></body></html>`,
     );
     w.document.close();
+  }
+
+  /** Designer-mode print (legacy prints the designer when `renderMode` is `designer`): the design is rendered client-side to a standalone
+   *  HTML document and printed from a new tab, once its images (logo) have loaded. */
+  private async printDesigner(design: ReportTemplate): Promise<void> {
+    const w = window.open('', '_blank'); // opened before any await so the click's user gesture still counts
+    if (!w) return;
+    const engine = new BindingEngine();
+    const html = new HtmlRenderer(engine, new PaginationEngine(engine)).render({ template: design, data: this.reportData() ?? {}, locale: design.locale });
+    w.document.write(html);
+    w.document.close();
+    const imgs = Array.from(w.document.images).filter(i => !i.complete);
+    await Promise.race([
+      Promise.all(imgs.map(i => new Promise<void>(r => { i.addEventListener('load', () => r()); i.addEventListener('error', () => r()); }))),
+      new Promise<void>(r => setTimeout(r, 5000)),
+    ]);
+    w.focus();
+    w.print();
   }
 
   async sharePdf(): Promise<void> {
@@ -287,26 +356,28 @@ export abstract class DocumentViewBase implements OnInit, OnDestroy {
       this.toast.error('COMMON.OPS', this.t('DOC_VIEW.NO_DATA'));
       return;
     }
-    const rows = d.lines.map((l: any) => ({
-      ProductName: l.selectedItem?.name || l.note || '',
-      Barcode: l.barcode || l.selectedItem?.barcode || '',
-      Quantity: l.qty || 0,
-      Price: l.price || 0,
-      DiscountTotal: l.discountAmount || 0,
-    }));
+    const rows = this.exportRows(d);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Lines');
     XLSX.writeFile(wb, `${this.cfg.filePrefix}-lines-${d[this.cfg.numberField] || 'export'}.${type}`, { bookType: type });
   }
 
   // ── zoom (persisted like legacy) ───────────────────────────────────
-  private savedZoom(): number {
+  /** The user's saved zoom (25–300, the viewer bar's range), or null when they never picked one — then the paper auto-fits (legacy `onAutoZoomCalculated`). */
+  private savedZoom(): number | null {
     try {
-      const v = Number(localStorage.getItem(this.cfg.zoomKey));
-      return v >= 40 && v <= 150 ? v : 100;
-    } catch { return 100; }
+      const raw = localStorage.getItem(this.cfg.zoomKey);
+      if (raw == null) return null;
+      const v = Number(raw);
+      return v >= 25 && v <= 300 ? v : null;
+    } catch { return null; }
   }
+  /** True once the user has chosen a zoom (now or in an earlier session) — auto-fit then stays out of the way. */
+  zoomChosen = signal(false);
+  /** Auto-fit result from the shell: applied for this view only, never persisted as a preference. */
+  onAutoZoom(v: number): void { if (!this.zoomChosen()) this.zoom.set(v); }
   setZoom(v: number): void {
+    this.zoomChosen.set(true);
     this.zoom.set(v);
     try { localStorage.setItem(this.cfg.zoomKey, String(v)); } catch { /* storage unavailable */ }
   }

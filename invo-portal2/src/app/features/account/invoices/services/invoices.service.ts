@@ -73,6 +73,10 @@ export class InvoicesService {
     return this.envelope(this.api.post('accounts/saveInvoice', invoiceInfo));
   }
 
+  /** Bulk import: one row per invoice line. `dryRun` validates and reports only (the wizard's Preview step). */
+  importInvoices = (rows: Record<string, string>[], options: { dryRun: boolean; autoNumber: boolean; skipDuplicates: boolean; skipDuplicateLines: boolean; branchId: string }) =>
+    this.envelope(this.api.post('accounts/importInvoices', { rows, options }));
+
   convertToInvoice(estimateId: string, invoiceInfo: any): Promise<any> {
     invoiceInfo.lines.forEach((l: any) => (l.isNew = false));
     return this.envelope(this.api.post('accounts/convertToInvoice', { estimateId, invoice: invoiceInfo }));

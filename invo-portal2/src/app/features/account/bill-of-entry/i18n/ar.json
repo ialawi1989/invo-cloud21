@@ -1,0 +1,74 @@
+{
+  "BILL_OF_ENTRY": {
+    "DASHBOARD": "لوحة التحكم",
+    "ADD_NEW": "بيان جمركي جديد",
+    "SEARCH_PLACEHOLDER": "ابحث بالمورد أو الفرع أو الفاتورة أو المرجع",
+    "EMPTY": "لا توجد بيانات جمركية",
+    "CREATED_DATE": "تاريخ الإنشاء",
+    "LIST": {
+      "BILL_OF_ENTRY_LIST": "البيانات الجمركية",
+      "NUMBER": "رقم البيان",
+      "BILL_NUMBER": "رقم الفاتورة",
+      "SUPPLIER_NAME": "المورد",
+      "TOTAL": "الإجمالي",
+      "BRANCH_NAME": "الفرع",
+      "DATE": "التاريخ",
+      "EMPLOYEE_NAME": "الموظف",
+      "REF": "المرجع"
+    },
+    "FILTERS": {
+      "BRANCH": "الفرع",
+      "DATE": "تاريخ الفاتورة"
+    },
+    "ACTIONS": {
+      "EXPORT_EXCEL": "تصدير إلى Excel"
+    },
+    "FORM": {
+      "BILL_OF_ENTRY": "بيان جمركي",
+      "NEW_BILL_OF_ENTRY": "بيان جمركي جديد",
+      "EDIT_BILL_OF_ENTRY": "تعديل البيان الجمركي",
+      "DETAILS": "تفاصيل البيان الجمركي",
+      "NUMBER": "رقم البيان الجمركي",
+      "NUMBER_HELP": "اضغط هنا لتفعيل أو تعطيل الترقيم التلقائي للبيانات الجمركية.",
+      "BILL": "الفاتورة",
+      "DATE": "التاريخ",
+      "PAYMENT_METHOD": "طريقة الدفع",
+      "SELECT_METHOD": "اختر طريقة الدفع",
+      "REFERENCE": "رقم المرجع",
+      "NOTE": "ملاحظة",
+      "NOTE_PLACEHOLDER": "ملاحظات",
+      "LINES": "بنود البيان الجمركي",
+      "SELECTED_COUNT": "{{count}} محدد",
+      "CUSTOM_DUTY": "الرسوم الجمركية",
+      "BULK_DUTY": "تحديث الرسوم الجمركية",
+      "BULK_DUTY_HINT": "أدخل الرسوم الجمركية لتطبيقها على السطور المحددة.",
+      "APPLY": "تطبيق",
+      "PRODUCT": "المنتج",
+      "ASSESSABLE_VALUE": "القيمة الخاضعة للتقييم",
+      "TAXABLE_AMOUNT": "المبلغ الخاضع للضريبة",
+      "TAX": "الضريبة",
+      "TAX_AMOUNT": "مبلغ الضريبة",
+      "TOTAL_CUSTOM_DUTY": "إجمالي الرسوم الجمركية",
+      "TOTAL_TAX": "إجمالي الضريبة",
+      "TOTAL_PAID": "إجمالي المبلغ المدفوع"
+    },
+    "REQUIRED": {
+      "NUMBER": "رقم البيان الجمركي",
+      "DATE": "التاريخ",
+      "PAYMENT_METHOD": "طريقة الدفع",
+      "BILL": "الفاتورة",
+      "BRANCH": "الفرع"
+    },
+    "VIEW": {
+      "VIEW_BILL_OF_ENTRY": "عرض البيان الجمركي",
+      "PRINT": "طباعة",
+      "SEND": "إرسال",
+      "CONFIRM_DELETE": "حذف هذا البيان الجمركي؟ لا يمكن التراجع.",
+      "SUPPLIER": "المورد",
+      "BILL": "الفاتورة",
+      "PAYMENT_METHOD": "طريقة الدفع",
+      "DATE": "التاريخ",
+      "REFERENCE": "المرجع"
+    }
+  }
+}

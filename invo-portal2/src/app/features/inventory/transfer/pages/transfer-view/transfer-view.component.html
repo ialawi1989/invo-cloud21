@@ -1,0 +1,28 @@
+@if (doc(); as t) {
+  <app-doc-view-shell
+    [docTitle]="title" railTitle="INVENTORY_TRANSFER.TITLE" [showAdd]="canAdd"
+    [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="id"
+    [printItems]="[]" [shareItems]="[]" [exportItems]="[]" [actionItems]="[]"
+    [showEdit]="canEdit" [showPaper]="false"
+    [loading]="loading()" [template]="template()" [data]="renderData()"
+    [zoom]="zoom()" (zoomChange)="setZoom($event)"
+    (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railPrev)="railPrev()" (railNext)="railNext()" (add)="add()"
+    (close)="goToList()" (edit)="edit()">
+
+    <div alt class="p-4">
+      <div class="flex justify-end mb-3 d-print-none">
+        <button type="button" (click)="print()"
+          class="px-4 h-9 inline-flex items-center rounded-full border border-slate-200 bg-white text-slate-700 text-sm font-medium hover:bg-slate-50">
+          {{ 'DOC_VIEW.PRINT' | translate }}
+        </button>
+      </div>
+      <app-transfer-paper [transfer]="t"/>
+    </div>
+
+    <div tabs id="transfer-additional-details">
+      <app-doc-additional-details [config]="additionalDetails()"/>
+    </div>
+  </app-doc-view-shell>
+} @else {
+  <app-doc-view-skeleton/>
+}

@@ -5,6 +5,7 @@
       <h1 class="page-header__title">{{ 'PAYMENTS.FORM.PAYMENT' | translate }}</h1>
     </header>
 
+    <div class="pf-top">
     <!-- General information -->
     <section class="pf-card">
       <h2 class="pf-card__title">{{ 'PAYMENTS.FORM.GENERAL_INFORMATION' | translate }}</h2>
@@ -30,7 +31,14 @@
           </div>
         }
       </div>
+      @if (payment.customerId && payment.customerId !== 'WalkIn Customer') {
+        <app-customer-address-field [customerId]="payment.customerId" [initialTitle]="payment.customerAddress?.title || ''"
+          (addressChange)="onAddress($event)"/>
+      }
     </section>
+
+    <app-doc-attachments-card [attachments]="payment.attachment" (changed)="onAttachments($event)"/>
+    </div>
 
     <!-- Payment -->
     <section class="pf-card">
@@ -141,40 +149,46 @@
           </table>
         </div>
 
-        <div class="pf-totals">
-          <div class="pf-t"><span>{{ 'PAYMENTS.FORM.TOTAL' | translate }}</span><b>{{ totalPayments | mycurrency }}</b></div>
+        <div class="pf-totals-wrap">
+          <div class="pf-totals">
+            <div class="pf-t"><b>{{ 'PAYMENTS.FORM.TOTAL' | translate }}</b><b>{{ totalPayments | mycurrency }}</b></div>
+          </div>
           @if (payment.tenderAmount > 0) {
-            <div class="pf-t"><span>{{ 'PAYMENTS.FORM.TENDER_RECEIVED' | translate }}</span><b>{{ payment.equivalentAmount | mycurrency }}</b></div>
-            @if (payment.changeEquivalentAmount > 0) {
+            <div class="pf-totals pf-totals--tender">
+              <div class="pf-t"><b>{{ 'PAYMENTS.FORM.TENDER_RECEIVED' | translate }}</b><b>{{ payment.equivalentAmount | mycurrency }}</b></div>
+              <div class="pf-t"><b>{{ 'PAYMENTS.FORM.TOTAL_PAID_AMOUNT' | translate }}</b><b>{{ payment.calculateTotal | mycurrency }}</b></div>
+              @if (payment.tipsAmount > 0) {
+                <div class="pf-t"><b>{{ 'PAYMENTS.FORM.TIP_COLLECTED_ON_POS' | translate }}</b><b>{{ payment.tipsAmount | mycurrency }}</b></div>
+              }
               <div class="pf-t">
-                <span>{{ 'PAYMENTS.FORM.CHANGE_AMOUNT' | translate }}</span>
-                <span><b>{{ payment.changeEquivalentAmount | mycurrency }}</b>
-                  @if (isCash) { <button type="button" class="pf-link pf-link--danger" (click)="cancelChange()">{{ 'PAYMENTS.FORM.CANCEL_CHANGE' | translate }}</button> }
+                <b>{{ 'PAYMENTS.FORM.CHANGE_AMOUNT' | translate }}</b>
+                <span class="pf-t__val"><b>{{ payment.changeEquivalentAmount | mycurrency }}</b>
+                  @if (isCash && payment.changeEquivalentAmount > 0) { <button type="button" class="pf-link pf-link--danger" (click)="cancelChange()">{{ 'PAYMENTS.FORM.CANCEL_CHANGE' | translate }}</button> }
                 </span>
               </div>
-            }
-            @if (payment.calculateAmountInExcess > 0) {
               <div class="pf-t">
-                <span>{{ 'PAYMENTS.FORM.CREDIT_TO_WALLET' | translate }}</span>
-                <span><b>{{ payment.calculateAmountInExcess | mycurrency }}</b>
+                <b>{{ 'PAYMENTS.FORM.CREDIT_TO_WALLET' | translate }}</b>
+                <span class="pf-t__val">
+                  <svg class="pf-warn-ico" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/></svg>
+                  <b>{{ payment.calculateAmountInExcess | mycurrency }}</b>
                   @if (canRestoreChange) { <button type="button" class="pf-link" (click)="restoreChange()">{{ 'PAYMENTS.FORM.UNDO' | translate }}</button> }
                 </span>
               </div>
-            }
+            </div>
           }
         </div>
       </section>
     }
 
-    <section class="pf-card">
-      <h2 class="pf-card__title">{{ 'PAYMENTS.FORM.ATTACHMENTS' | translate }}</h2>
-      <app-doc-attachments [attachments]="payment.attachment" (changed)="onAttachments($event)"/>
-    </section>
-
     <app-form-sticky-footer>
       <button type="button" class="pf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
       @if (formStatus === 'edit') {
         <button type="button" class="pf-btn" (click)="view()">{{ 'COMMON.VIEW' | translate }}</button>
+      }
+      @if (actionsMenu(); as items) {
+        @if (items.length) {
+          <app-dropdown-menu-btn [items]="items" [appendToBody]="true" align="start" triggerClass="pf-btn">{{ 'DOC_VIEW.ACTIONS' | translate }}</app-dropdown-menu-btn>
+        }
       }
       <button type="button" class="pf-btn pf-btn--primary" [disabled]="submitting" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
     </app-form-sticky-footer>

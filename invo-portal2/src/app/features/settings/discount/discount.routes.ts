@@ -18,8 +18,8 @@ const translationsLoaded: CanActivateFn = async () => {
   // load its namespace too so the picker labels render text
   // instead of raw `PRICE_LABEL.PICKER.*` keys.
   await Promise.all([
-    lang.loadFeature('discount'),
-    lang.loadFeature('price-label'),
+    lang.loadFeature('settings/discount'),
+    lang.loadFeature('settings/price-label'),
   ]);
   return true;
 };

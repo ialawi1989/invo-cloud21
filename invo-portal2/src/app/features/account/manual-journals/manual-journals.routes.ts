@@ -19,6 +19,8 @@ import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
 const translationsLoaded: CanActivateFn = async () => {
   const lang = inject(LanguageService);
   await lang.loadFeature('account/manual-journals');
+  // `DOC_ATTACH.*` / `DOC_FORM.*` labels of the shared attachments card.
+  await lang.loadFeature('account/components/doc-lines-table');
   return true;
 };
 

@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -7,17 +8,27 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { AuthService } from '@core/auth/auth.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
-import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { SegmentedToggleComponent } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import type { DateRange } from '@shared/components/datepicker/date-picker.types';
+import { PrivilegeService } from '@core/auth/privileges/privilege.service';
+import { LayoutService } from '@core/layout/services/layout.service';
+import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { ModalService } from '@shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 
 import { Customer, CustomerNotes } from '../../models/customer.model';
+import { PriceLabelService } from '@features/settings/price-label/services/price-label.service';
+import { PaymentMethodService } from '@features/settings/payment-methods/services/payment-method.service';
+import { SearchDropdownComponent } from '@shared/components/dropdown';
+import { ReportsService } from '../../../../reports/services/reports.service';
+import { SalesLookupsService } from '../../../services/sales-lookups.service';
 import { CustomersService } from '../../services/customers.service';
+import { DocViewShellComponent } from '../../../components/doc-view-shell/doc-view-shell.component';
+import type { DocRailItem } from '../../../services/document-view-base';
+import { DOC_RAIL_ICONS, docSortMenu } from '../../../services/doc-rail-menu';
+import type { DocRailFilterOption } from '../../../components/doc-rail-filter/doc-rail-filter.component';
 import { CustomerStatementComponent } from '../../components/customer-statement/customer-statement.component';
 
 type Tab = 'overview' | 'transactions' | 'statementHistory' | 'notes';
@@ -25,6 +36,12 @@ type TxKind = 'invoices' | 'estimates' | 'creditNotes' | 'payments';
 
 interface TxState { list: any[]; pageCount: number; count: number; page: number; limit: number; loaded: boolean }
 const emptyTx = (): TxState => ({ list: [], pageCount: 0, count: 0, page: 1, limit: 15, loaded: false });
+
+/** Same value → label list the customer form offers for the payment term. */
+const PAYMENT_TERM_LABELS: Record<string, string> = {
+  net7: 'Net 7', net10: 'Net 10', net15: 'Net 15', net30: 'Net 30', net60: 'Net 60', net90: 'Net 90',
+  endOfTheMonth: 'End of the month', onReceiptDue: 'On Receipt Due',
+};
 
 const ymd = (d: Date | null | undefined): string | null => {
   if (!d) return null;
@@ -47,20 +64,32 @@ const BUCKET_ORDER = ['1 - 15', '16 - 30', '31 - 45', '> 45', '< 0'];
 @Component({
   selector: 'app-customer-dashboard',
   standalone: true,
-  imports: [
-    CommonModule, FormsModule, RouterLink, TranslateModule, MycurrencyPipe, BreadcrumbsComponent,
+  imports: [StatusBadgeComponent, 
+    CommonModule, FormsModule, RouterLink, TranslateModule, MycurrencyPipe,
     PaginationComponent, SegmentedToggleComponent, DatePickerComponent, CustomerStatementComponent,
+    DocViewShellComponent, DropdownMenuBtnComponent, SearchDropdownComponent,
   ],
+  providers: [MycurrencyPipe],
   templateUrl: './customer-dashboard.component.html',
   styleUrl: './customer-dashboard.component.scss',
+  // The shell must be the effective flex child of the no-padding main area (same as the document views).
+  host: { style: 'display: contents' },
 })
-export class CustomerDashboardComponent implements OnInit {
+export class CustomerDashboardComponent implements OnInit, OnDestroy {
   private service = inject(CustomersService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private lang = inject(LanguageService);
   private auth = inject(AuthService);
   private modal = inject(ModalService);
+  private layout = inject(LayoutService);
+  private privileges = inject(PrivilegeService);
+  private priceLabels = inject(PriceLabelService);
+  private lookups = inject(SalesLookupsService);
+  private reports = inject(ReportsService);
+  private paymentMethods = inject(PaymentMethodService);
+  readonly canAdd = this.privileges.check('customerSecurity.actions.add.access');
+  private currency = inject(MycurrencyPipe);
 
   customerId = '';
   customer = signal<Customer | null>(null);
@@ -68,19 +97,47 @@ export class CustomerDashboardComponent implements OnInit {
   subCustomers = signal<any[]>([]);
   lastPayment = signal<any>(null);
   aging = signal<{ ageGroup: string; data: any[]; totalAmount: number; totalBalanceDue: number }[] | null>(null);
+  /** Names behind the customer's saved price-label / currency ids (resolved like the form does). */
+  priceLabelName = signal('');
+  currencyName = signal('');
   customFields = signal<{ id: string; name: string; value: any }[]>([]);
-  breadcrumbs: BreadcrumbItem[] = [];
+
+  // ── record rail (Zoho-style customer list beside the open customer) ──
+  readonly railPageSize = 15;
+  railItems = signal<DocRailItem[]>([]);
+  railLoading = signal(false);
+  railPage = signal(1);
+  railPageCount = signal(1);
+  railTerm = signal('');
+  /** Rail's customer-type filter (`null` = all); sent as `filter.type`, which the backend validates. */
+  railType = signal<string | null>(null);
+  /** Sort of the rail list (`column:DIRECTION`), chosen from the rail ⋯ menu's "Sort by" like the invoice rail. */
+  railSort = signal('name:ASC');
+  private railSeq = 0;
+  private railTimer: ReturnType<typeof setTimeout> | null = null;
 
   tab = signal<Tab>('overview');
   includeSub = signal(false);
-  txKind = signal<TxKind>('invoices');
   tx = signal<Record<TxKind, TxState>>({ invoices: emptyTx(), estimates: emptyTx(), creditNotes: emptyTx(), payments: emptyTx() });
+  /** Transaction sections currently expanded (Zoho shows them as stacked collapsible cards). */
+  txOpen = signal<ReadonlySet<TxKind>>(new Set<TxKind>(['invoices']));
 
   // statement
   filterType = signal<'all' | 'outstanding'>('all');
   stateRange = signal<DateRange>(this.defaultRange());
   stateRows = signal<any[] | null>(null);
   stateLoading = signal(false);
+  /** Statement branch filter: `null` = all branches (what the endpoint treats a missing `branchId` as). */
+  branches = signal<any[]>([]);
+  stateBranchId = signal<string | null>(null);
+  branchItems = computed(() => [{ id: null, name: this.lang.instant('CUSTOMERS.DASHBOARD_PAGE.ALL_BRANCHES') }, ...this.branches()]);
+  branchOf = () => this.branchItems().find(b => b.id === this.stateBranchId()) ?? this.branchItems()[0];
+  branchLabel = (b: any) => b?.name ?? '';
+  byId = (a: any, b: any) => a?.id === b?.id;
+  onStateBranch(b: any): void {
+    this.stateBranchId.set(b?.id ?? null);
+    void this.loadStatement();
+  }
 
   // notes
   newNote = signal('');
@@ -91,6 +148,10 @@ export class CustomerDashboardComponent implements OnInit {
     { value: 'transactions' as Tab, label: 'CUSTOMERS.DASHBOARD_PAGE.TRANSACTIONS' },
     { value: 'statementHistory' as Tab, label: 'CUSTOMERS.DASHBOARD_PAGE.STATEMENT_HISTORY' },
     { value: 'notes' as Tab, label: 'CUSTOMERS.DASHBOARD_PAGE.NOTES' },
+  ];
+  readonly newMenu = (): DropdownMenuBtnItem[] => [
+    { label: this.lang.instant('CUSTOMERS.DASHBOARD_PAGE.NEW_INVOICE'), click: () => this.newDoc('/account/invoices/new'), disabled: false, danger: false },
+    { label: this.lang.instant('CUSTOMERS.DASHBOARD_PAGE.NEW_ESTIMATE'), click: () => this.newDoc('/account/estimate/new'), disabled: false, danger: false },
   ];
   readonly txTabs = [
     { value: 'invoices' as TxKind, label: 'CUSTOMERS.DASHBOARD_PAGE.INVOICES' },
@@ -127,41 +188,138 @@ export class CustomerDashboardComponent implements OnInit {
   });
 
   async ngOnInit(): Promise<void> {
-    await this.lang.loadFeature('account/customers');
-    this.customerId = this.route.snapshot.paramMap.get('id') ?? '';
+    this.layout.setNoPadding(true);
+    void this.lookups.getBranches().then(b => this.branches.set(b ?? []));
+    // `account/components/doc-lines-table` carries the shared DOC_VIEW strings the rail/shell use (empty state, bulk bar…).
+    await Promise.all([this.lang.loadFeature('account/customers'), this.lang.loadFeature('account/components/doc-lines-table')]);
     this.includeSub.set(this.route.snapshot.queryParamMap.get('isIncludeSubCustomers') === 'true');
+    void this.loadRail(1);
+    this.route.paramMap.subscribe(() => void this.load());
+  }
 
+  ngOnDestroy(): void {
+    this.layout.setNoPadding(false);
+    if (this.railTimer) clearTimeout(this.railTimer);
+  }
+
+  private async load(): Promise<void> {
+    this.customerId = this.route.snapshot.paramMap.get('id') ?? '';
     const c = await this.service.getCustomer(this.customerId);
     if (!c?.id) {
       void this.router.navigate(['/account/customers']);
       return;
     }
+    // Reset everything tied to the previously opened customer.
     this.customer.set(c);
-    const t = (k: string) => this.lang.instant(k);
-    this.breadcrumbs = [
-      { label: t('CUSTOMERS.DASHBOARD'), routerLink: '/dashboard' },
-      { label: t('CUSTOMERS.TEXT'), routerLink: '/account/customers' },
-      { label: t('CUSTOMERS.DASHBOARD_PAGE.VIEW_CUSTOMER') },
-    ];
+    this.overview.set(null);
+    this.lastPayment.set(null);
+    this.aging.set(null);
+    this.subCustomers.set([]);
+    this.tx.set({ invoices: emptyTx(), estimates: emptyTx(), creditNotes: emptyTx(), payments: emptyTx() });
+    this.stateRows.set(null);
+    this.priceLabelName.set('');
+    this.currencyName.set('');
+    void this.loadFinancialNames(c);
 
     if (c.hasChild) void this.loadSubCustomers();
     void this.loadOverviewData();
 
     const fragment = this.route.snapshot.fragment as Tab | null;
-    this.selectTab(fragment && this.tabs.some(x => x.value === fragment) ? fragment : 'overview', false);
+    this.selectTab(fragment && this.tabs.some(x => x.value === fragment) ? fragment : this.tab(), false);
   }
+
+  private async loadFinancialNames(c: Customer): Promise<void> {
+    const [pl, cur] = await Promise.all([
+      c.priceLabelId ? this.priceLabels.getById(c.priceLabelId).catch(() => null) : null,
+      c.currencyId ? this.paymentMethods.getById(c.currencyId).catch(() => null) : null,
+    ]);
+    // Ignore a late answer for a customer the user has already navigated away from.
+    if (this.customer()?.id !== c.id) return;
+    this.priceLabelName.set((pl as any)?.name ?? '');
+    this.currencyName.set((cur as any)?.name ?? '');
+  }
+
+  termLabel(v: string | null | undefined): string { return v ? (PAYMENT_TERM_LABELS[v] ?? v) : ''; }
+
+  // ── rail ───────────────────────────────────────────────────────────
+  async loadRail(page: number): Promise<void> {
+    const seq = ++this.railSeq;
+    this.railLoading.set(true);
+    try {
+      const data = await this.service.getCustomerList({
+        page, limit: this.railPageSize, searchTerm: this.railTerm(), filter: this.railType() ? { type: this.railType() } : {}, sortBy: { sortValue: this.railSort().split(':')[0], sortDirection: this.railSort().split(':')[1] },
+      });
+      if (seq !== this.railSeq) return;
+      this.railItems.set((data?.list ?? []).map((r: any): DocRailItem => ({
+        id: r.id,
+        primary: r.saluation ? `${r.saluation} ${r.name}` : r.name,
+        amountLabel: this.currency.transform(r.outStandingRecivable ?? 0),
+        sub: r.email || r.phone || '',
+        data: r,
+      })));
+      this.railPage.set(page);
+      this.railPageCount.set(Math.max(1, data?.pageCount || 1));
+    } finally {
+      if (seq === this.railSeq) this.railLoading.set(false);
+    }
+  }
+
+  railMoreItems(): DropdownMenuBtnItem[] {
+    const t = (k: string) => this.lang.instant('CUSTOMERS.DASHBOARD_PAGE.' + k);
+    const [value, direction] = this.railSort().split(':');
+    return [
+      docSortMenu({
+        label: t('SORT_BY'),
+        fields: [
+          { value: 'name', label: t('SORT_FIELD_NAME') },
+          { value: 'outStandingRecivable', label: t('SORT_FIELD_RECEIVABLE') },
+          { value: 'phone', label: t('SORT_FIELD_PHONE') },
+        ],
+        current: { value, direction: direction === 'DESC' ? 'DESC' : 'ASC' },
+        pick: sort => { this.railSort.set(`${sort.value}:${sort.direction}`); void this.loadRail(1); },
+      }),
+      { label: this.lang.instant('COMMON.REFRESH'), click: () => void this.loadRail(this.railPage()), disabled: false, danger: false, separator: true, iconPath: DOC_RAIL_ICONS.refresh, iconViewBox: DOC_RAIL_ICONS.viewBox16 },
+    ];
+  }
+
+  railFilterOptions(): DocRailFilterOption[] {
+    const t = (k: string) => this.lang.instant('CUSTOMERS.DASHBOARD_PAGE.' + k);
+    return [
+      { value: null, label: t('ALL_CUSTOMERS') },
+      { value: 'Individual', label: t('INDIVIDUAL_CUSTOMERS') },
+      { value: 'Business', label: t('BUSINESS_CUSTOMERS') },
+    ];
+  }
+  onRailFilterPick(type: string | null): void {
+    this.railType.set(type);
+    void this.loadRail(1);
+  }
+
+  onRailSearch(term: string): void {
+    if (this.railTimer) clearTimeout(this.railTimer);
+    this.railTimer = setTimeout(() => { this.railTerm.set(term); void this.loadRail(1); }, 300);
+  }
+  railPrev(): void { if (this.railPage() > 1) void this.loadRail(this.railPage() - 1); }
+  railNext(): void { if (this.railPage() < this.railPageCount()) void this.loadRail(this.railPage() + 1); }
+  railGoTo(item: DocRailItem): void {
+    void this.router.navigate(['/account/customers/view', item.id], { queryParamsHandling: 'preserve', fragment: this.tab() });
+  }
+  goToList(): void { void this.router.navigate(['/account/customers']); }
+  add(): void { void this.router.navigate(['/account/customers', 'new']); }
+  edit(): void { void this.router.navigate(['/account/customers', this.customerId]); }
+  newDoc(path: string): void { void this.router.navigate([path], { queryParams: { customerId: this.customerId } }); }
 
   // ── tabs ───────────────────────────────────────────────────────────
   selectTab(t: Tab, updateUrl = true): void {
     this.tab.set(t);
     if (updateUrl) void this.router.navigate([], { fragment: t, queryParamsHandling: 'preserve', replaceUrl: true });
-    if (t === 'transactions') void this.ensureTx(this.txKind());
+    if (t === 'transactions') this.txOpen().forEach(k => void this.ensureTx(k));
     if (t === 'statementHistory' && this.stateRows() === null) void this.loadStatement();
   }
 
-  selectTx(k: TxKind): void {
-    this.txKind.set(k);
-    void this.ensureTx(k);
+  toggleTx(k: TxKind): void {
+    this.txOpen.update(s => { const n = new Set(s); if (!n.delete(k)) n.add(k); return n; });
+    if (this.txOpen().has(k)) void this.ensureTx(k);
   }
 
   // ── overview ───────────────────────────────────────────────────────
@@ -211,7 +369,7 @@ export class CustomerDashboardComponent implements OnInit {
     this.tx.set({ invoices: emptyTx(), estimates: emptyTx(), creditNotes: emptyTx(), payments: emptyTx() });
     this.stateRows.set(null);
     void this.loadOverviewData();
-    if (this.tab() === 'transactions') void this.ensureTx(this.txKind());
+    if (this.tab() === 'transactions') this.txOpen().forEach(k => void this.ensureTx(k));
     if (this.tab() === 'statementHistory') void this.loadStatement();
   }
 
@@ -272,13 +430,20 @@ export class CustomerDashboardComponent implements OnInit {
     void this.loadStatement();
   }
 
+  /** Print / PDF / Excel of the statement currently on screen — same params (and flat body) as legacy. */
+  printStatement(): void { void this.reports.printFlat('customerstatment', this.statementParams()); }
+  statementExportMenu = (): DropdownMenuBtnItem[] => [
+    { label: 'PDF', click: () => void this.reports.exportFlat('customerstatment', 'pdf', this.statementParams(), 'customer-statement'), disabled: false, danger: false },
+    { label: 'Excel', click: () => void this.reports.exportFlat('customerstatment', 'xlsx', this.statementParams(), 'customer-statement'), disabled: false, danger: false },
+  ];
+
   private statementParams() {
     const r = this.stateRange();
     return this.subParam({
       customerId: this.customerId,
       from: ymd(r.start),
       to: ymd(r.end),
-      branchId: null,
+      branchId: this.stateBranchId(),
       filterType: this.filterType(),
     });
   }

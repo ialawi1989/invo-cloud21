@@ -1,5 +1,8 @@
 {
   "CUSTOMERS": {
+    "IMPORT_CUSTOMERS": "Import customers",
+    "IMPORT_REQ_NAME": "Name — required.",
+    "IMPORT_REQ_ADDR": "Addresses — a JSON list; a customer with the same phone is updated.",
     "DASHBOARD": "Dashboard",
     "ADD_NEW": "Add New",
     "SEARCH_PLACEHOLDER": "Search customers",
@@ -18,6 +21,7 @@
       "NEW_CUSTOMER": "New Customer",
       "EDIT_CUSTOMER": "Edit Customer",
       "INDIVIDUAL": "Individual",
+      "CUSTOMER_TYPE": "Customer type",
       "BUSINESS": "Business",
       "BASIC_INFORMATION": "Basic Information",
       "SALUATION": "Salutation",
@@ -91,6 +95,10 @@
       "CONFIRM_GO_BACK": "Are you sure you want to delete this note?"
     },
     "DASHBOARD_PAGE": {
+      "SORT_BY": "Sort by",
+      "SORT_FIELD_NAME": "Name",
+      "SORT_FIELD_RECEIVABLE": "Receivable",
+      "SORT_FIELD_PHONE": "Phone",
       "VIEW_CUSTOMER": "View Customer",
       "OVERVIEW": "Overview",
       "TRANSACTIONS": "Transactions",
@@ -104,6 +112,14 @@
       "SUB_CUSTOMERS_LOWERCASE": "sub-customers",
       "PARENT": "Parent",
       "NEW_INVOICE": "New Invoice",
+      "NEW_TRANSACTION": "New Transaction",
+      "NEW_ESTIMATE": "New Estimate",
+      "ALL_CUSTOMERS": "All Customers",
+      "ALL_BRANCHES": "All Branches",
+      "PRINT": "Print",
+      "EXPORT": "Export",
+      "INDIVIDUAL_CUSTOMERS": "Individual Customers",
+      "BUSINESS_CUSTOMERS": "Business Customers",
       "INCLUDE_SUB_CUSTOMERS_DATA": "Include sub-customers data",
       "CONSOLIDATED_VIEW_ACTIVE": "Consolidated view active",
       "SUB_CUSTOMERS_INCLUDED": "Sub-customers included",

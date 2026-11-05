@@ -15,29 +15,32 @@ import { DatePickerComponent } from '@shared/components/datepicker/date-picker.c
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import { VoucherPaymentComponent } from '../../../../promotions/components/voucher-payment/voucher-payment.component';
+import { PointsPaymentComponent } from '../../../../promotions/components/points-payment/points-payment.component';
+import { PointsService } from '../../../../promotions/services/points.service';
 import { VouchersService } from '../../../../promotions/services/vouchers.service';
 import { VouchersSettings } from '../../../../promotions/models/vouchers.model';
+import { CustomerAddressFieldComponent } from '../../../components/customer-address-field/customer-address-field.component';
 import { CustomerAddress } from '../../../customers/models/customer.model';
-import { CustomersService } from '../../../customers/services/customers.service';
 import { Invoice } from '../../../models/invoice.model';
 import { InvoicePayment, InvoicePaymentLine } from '../../../models/invoice-payment.model';
 import { PaymentsService } from '../../../payments/services/payments.service';
 import { SalesLookupsService } from '../../../services/sales-lookups.service';
+import { DocAttachment } from '../../../components/doc-attachments/doc-attachments.component';
+import { DocAttachmentsCardComponent } from '../../../components/doc-attachments-card/doc-attachments-card.component';
 import { InvoicesService } from '../../services/invoices.service';
 
 /**
  * Invoices → pay (`/account/invoices/payment/:id`). Legacy `PaymentsInvoiceComponent`:
  * amount (defaults to the balance), payment method with rate / bank charge, reference,
- * date and address, saved through `accounts/saveInvoicePayment`. Paying with the Vouchers
- * method redeems a gift voucher against the new payment line afterwards.
- * (The Points method is hidden until the points module is migrated.)
+ * date, attachments and address, saved through `accounts/saveInvoicePayment`. Paying with the
+ * Vouchers / Points method redeems the voucher / points against the new payment line afterwards.
  */
 @Component({
   selector: 'app-invoice-payment',
   standalone: true,
   imports: [
     CommonModule, FormsModule, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, FormStickyFooterComponent,
-    SearchDropdownComponent, DatePickerComponent, VoucherPaymentComponent,
+    SearchDropdownComponent, DatePickerComponent, VoucherPaymentComponent, PointsPaymentComponent, DocAttachmentsCardComponent, CustomerAddressFieldComponent,
   ],
   templateUrl: './invoice-payment.component.html',
   styleUrl: './invoice-payment.component.scss',
@@ -52,9 +55,10 @@ export class InvoicePaymentComponent implements OnInit {
   private payments = inject(PaymentsService);
   private lookups = inject(SalesLookupsService);
   private vouchers = inject(VouchersService);
-  private customers = inject(CustomersService);
+  private points = inject(PointsService);
 
   @ViewChild(VoucherPaymentComponent) voucherPayment?: VoucherPaymentComponent;
+  @ViewChild(PointsPaymentComponent) pointsPayment?: PointsPaymentComponent;
 
   private canGoBack = !!this.router.getCurrentNavigation()?.previousNavigation;
 
@@ -63,27 +67,28 @@ export class InvoicePaymentComponent implements OnInit {
   paymentMethods: any[] = [];
   vouchersSettings: VouchersSettings | null = null;
   vouchersMethodId = '';
+  pointsMethodId = '';
   balance = 0;
   bankChargeRate = 0;
   submitting = false;
   breadcrumbs: BreadcrumbItem[] = [];
-  addresses: CustomerAddress[] = [];
-  addressValue: CustomerAddress | null = null;
   private invoiceId = '';
   private invoiceNumber = '';
 
   async ngOnInit(): Promise<void> {
-    await Promise.all([this.lang.loadFeature('account/invoices'), this.lang.loadFeature('promotions')]);
+    await Promise.all([this.lang.loadFeature('account/invoices'), this.lang.loadFeature('promotions'), this.lang.loadFeature('account/components/doc-lines-table')]);
     this.invoiceId = this.route.snapshot.paramMap.get('id') ?? '';
 
-    const [due, invoice, settings] = await Promise.all([
+    const [due, invoice, settings, pointsSettings] = await Promise.all([
       this.invoices.getInvoiceBalance(this.invoiceId),
       this.invoices.getInvoice(this.invoiceId),
       this.vouchers.getVouchersSettings().catch(() => null),
+      this.points.getPointsSettings().catch(() => null),
     ]);
     this.invoice = invoice;
     this.vouchersSettings = settings;
     this.vouchersMethodId = settings?.paymentMethodId ?? '';
+    this.pointsMethodId = pointsSettings?.enabled ? (pointsSettings.paymentMethodId ?? '') : '';
 
     const line = new InvoicePaymentLine();
     line.invoiceNumber = due.invoiceNumber;
@@ -93,12 +98,8 @@ export class InvoicePaymentComponent implements OnInit {
     this.payment.lines.push(line);
 
     const methods = await this.lookups.getMiniPaymentMethods(due.branchId);
-    this.paymentMethods = methods.filter(m => m.name !== 'Points' && (settings?.enabled || m.name !== 'Vouchers'));
+    this.paymentMethods = methods.filter(m => (pointsSettings?.enabled || (m.name !== 'Points' && m.type !== 'point')) && (settings?.enabled || m.name !== 'Vouchers'));
 
-    if (invoice.customerId) {
-      const raw = await this.customers.customerAddresses(invoice.customerId);
-      this.addresses = (raw ?? []).map((r: any) => { const a = new CustomerAddress(); a.ParseJson(r); return a; });
-    }
 
     const t = (k: string) => this.lang.instant(k);
     this.breadcrumbs = [
@@ -111,16 +112,17 @@ export class InvoicePaymentComponent implements OnInit {
   get line(): InvoicePaymentLine { return this.payment.lines[0]; }
   get selectedMethod(): any { return this.paymentMethods.find(m => m.id == this.payment.paymentMethodId) ?? null; }
   get isVoucher(): boolean { return !!this.payment.paymentMethodId && this.payment.paymentMethodId === this.vouchersMethodId; }
+  get isPoints(): boolean { return !!this.payment.paymentMethodId && this.payment.paymentMethodId === this.pointsMethodId; }
   get hasRate(): boolean { const r = this.selectedMethod?.rate; return r != null && r != 1; }
   get showBankCharge(): boolean { return (this.line.amount != null && this.payment.paymentMethodType == 'Card') || this.payment.bankCharge > 0; }
   get canSave(): boolean {
     if (this.submitting || !this.payment.paymentMethodId) return false;
+    if (this.isPoints) return this.pointsPayment?.isValid() ?? false;
     return this.isVoucher ? (this.voucherPayment?.isValid() ?? false) : true;
   }
 
   methodLabel = (m: any) => m?.name ?? '';
   byId = (a: any, b: any) => a?.id === b?.id;
-  addressLabel = (a: CustomerAddress) => a?.title ?? '';
 
   // Memoised so the date-picker input keeps one Date instance between change-detection passes.
   onPaymentDate(v: any): void { if (v instanceof Date) this.payment.paymentDate = v; }
@@ -155,17 +157,16 @@ export class InvoicePaymentComponent implements OnInit {
     this.payment.bankCharge = c > this.line.amount ? this.line.amount : c;
   }
 
-  onAddress(a: CustomerAddress | null): void {
-    this.addressValue = a;
-    this.payment.customerAddress = a ?? new CustomerAddress();
-  }
+  onAttachments(list: DocAttachment[]): void { this.payment.attachment = list; }
+
+  onAddress(a: CustomerAddress): void { this.payment.customerAddress = a; }
 
   // ── save ───────────────────────────────────────────────────────────
   async save(): Promise<void> {
     if (!this.canSave) return;
     this.submitting = true;
     try {
-      const res = this.isVoucher ? await this.saveWithVoucher() : await this.saveCash();
+      const res = this.isPoints ? await this.saveWithPoints() : this.isVoucher ? await this.saveWithVoucher() : await this.saveCash();
       if (res?.success) {
         this.toast.success('COMMON.SAVED_OK');
         void this.router.navigate(['/account/invoices']);
@@ -212,6 +213,7 @@ export class InvoicePaymentComponent implements OnInit {
     req.paymentMethodId = this.payment.paymentMethodId;
     req.rate = 1;
     req.customerAddress = this.payment.customerAddress;
+    req.attachment = this.payment.attachment;
     line.amount = equivalent;
     line.total = amount;
     line.invoiceId = this.invoiceId;
@@ -223,6 +225,34 @@ export class InvoicePaymentComponent implements OnInit {
     const res = await this.payments.saveInvoicePayment(req);
     if (res?.success) {
       await vp.spend(this.invoiceNumber, this.invoiceId, res.data.id);
+    }
+    return res;
+  }
+
+  /** Saves a payment for the points' currency value, then redeems the points against that payment line. */
+  private async saveWithPoints(): Promise<any> {
+    const pp = this.pointsPayment!;
+    const amount = pp.pointsValue();
+    const equivalent = +(amount * 1).toFixed(MathUtils.afterDecimal);
+
+    const req = new InvoicePayment();
+    const line = new InvoicePaymentLine();
+    req.mediaId = this.payment.mediaId;
+    req.paymentMethodId = this.payment.paymentMethodId;
+    req.rate = 1;
+    req.customerAddress = this.payment.customerAddress;
+    req.attachment = this.payment.attachment;
+    line.amount = equivalent;
+    line.total = amount;
+    line.invoiceId = this.invoiceId;
+    req.paymentDate = pp.paymentDate;
+    req.tenderAmount = +this.line.amount;
+    req.paidAmount = equivalent;
+    req.lines[0] = line;
+
+    const res = await this.payments.saveInvoicePayment(req);
+    if (res?.success) {
+      await pp.spend(this.invoiceNumber, this.invoiceId, res.data.id, this.invoice!.customerPhone);
     }
     return res;
   }

@@ -1,0 +1,185 @@
+<ng-container [formGroup]="supplierForm">
+
+  <!-- ═══ General information ═══ -->
+  <section class="cf-card">
+    <h2 class="cf-card__title">{{ 'SUPPLIERS.FORM.SUPPLIER_FORM' | translate }}</h2>
+    <div class="cf-row">
+      <div class="cf-field cf-field--grow">
+        <label for="supplier_name">{{ 'SUPPLIERS.LIST.NAME' | translate }} <span class="req">*</span></label>
+        <input id="supplier_name" type="text" class="cf-input" formControlName="supplierNameInput"
+          [class.is-invalid]="controls['supplierNameInput'].touched && controls['supplierNameInput'].errors"/>
+        @if (controls['supplierNameInput'].touched && controls['supplierNameInput'].errors?.['required']) {
+          <p class="cf-error">{{ 'SUPPLIERS.FORM.THIS_VALUE_IS_REQUIRED' | translate }}</p>
+        }
+      </div>
+      <div class="cf-field cf-field--grow">
+        <label for="supplier_code">{{ 'SUPPLIERS.LIST.CODE' | translate }}</label>
+        <input id="supplier_code" type="text" class="cf-input" [ngModel]="supplierData.code"
+          (ngModelChange)="edit('code', $event)" [ngModelOptions]="{ standalone: true }"/>
+      </div>
+    </div>
+    <div class="cf-row">
+      <div class="cf-field cf-field--grow">
+        <label for="supplier_address">{{ 'SUPPLIERS.LIST.ADDRESS' | translate }}</label>
+        <input id="supplier_address" type="text" class="cf-input" [ngModel]="supplierData.address"
+          (ngModelChange)="edit('address', $event)" [ngModelOptions]="{ standalone: true }"/>
+      </div>
+      <div class="cf-field cf-field--grow">
+        <label>{{ 'SUPPLIERS.FORM.COUNTRY' | translate }}</label>
+        <app-search-dropdown [items]="countries" [displayWith]="displayPlain" [compareWith]="compare" [clearable]="true"
+          [placeholder]="'SUPPLIERS.FORM.COUNTRY' | translate" [value]="countryOf()" (valueChange)="onCountry($any($event))"/>
+      </div>
+    </div>
+    <div class="cf-row">
+      <div class="cf-field cf-field--grow">
+        <label for="supplier_website">{{ 'SUPPLIERS.LIST.WEBSITE' | translate }}</label>
+        <input id="supplier_website" type="text" class="cf-input" [ngModel]="supplierData.website"
+          (ngModelChange)="edit('website', $event)" [ngModelOptions]="{ standalone: true }"/>
+      </div>
+      <div class="cf-field cf-field--grow">
+        <label for="supplier_vat">{{ 'SUPPLIERS.FORM.VAT_NUMBER' | translate }}</label>
+        <input id="supplier_vat" type="text" class="cf-input" [ngModel]="supplierData.vatNumber"
+          (ngModelChange)="edit('vatNumber', $event)" [ngModelOptions]="{ standalone: true }"/>
+      </div>
+    </div>
+    <label class="cf-check">
+      <input type="checkbox" [ngModel]="supplierData.active" (ngModelChange)="edit('active', $event)" [ngModelOptions]="{ standalone: true }"/>
+      {{ 'SUPPLIERS.FORM.ACTIVE' | translate }}
+    </label>
+  </section>
+
+  <!-- ═══ Contact information ═══ -->
+  <section class="cf-card">
+    <h2 class="cf-card__title">{{ 'SUPPLIERS.FORM.CONTACT_INFORMATION' | translate }}</h2>
+    <div class="cf-row">
+      <div class="cf-field cf-field--grow">
+        <label for="supplier_phone">{{ 'SUPPLIERS.LIST.PHONE' | translate }} <span class="req">*</span></label>
+        <input id="supplier_phone" type="text" class="cf-input" formControlName="supplierPhoneInput"
+          [class.is-invalid]="controls['supplierPhoneInput'].touched && controls['supplierPhoneInput'].errors"/>
+        @if (controls['supplierPhoneInput'].touched || controls['supplierPhoneInput'].dirty) {
+          @let pe = controls['supplierPhoneInput'].errors;
+          @if (pe?.['required']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.THIS_VALUE_IS_REQUIRED' | translate }}</p> }
+          @if (pe?.['pattern']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.THIS_VALUE_MUST_BE_DIGITS' | translate }}</p> }
+          @if (pe?.['minlength']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.THIS_VALUE_MUST_BE_MINIMUM' | translate }} {{ pe?.['minlength'].requiredLength }}</p> }
+          @if (pe?.['exist']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.PHONE_EXISTS' | translate }}</p> }
+        }
+      </div>
+      <div class="cf-field cf-field--grow">
+        <label for="supplier_email">{{ 'SUPPLIERS.LIST.EMAIL' | translate }}</label>
+        <input id="supplier_email" type="email" class="cf-input" formControlName="supplierEmailInput"
+          [class.is-invalid]="controls['supplierEmailInput'].errors"/>
+        @if (controls['supplierEmailInput'].errors?.['email']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.ENTER_A_VALID_EMAIL' | translate }}</p> }
+        @if (controls['supplierEmailInput'].errors?.['emailExists']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.EMAIL_EXISTS' | translate }}</p> }
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Financial information ═══ -->
+  <section class="cf-card">
+    <h2 class="cf-card__title">{{ 'SUPPLIERS.FORM.FINANCIAL_INFORMATION' | translate }}</h2>
+    <div class="cf-row">
+      <div class="cf-field cf-field--grow">
+        <label>{{ 'SUPPLIERS.FORM.CURRENCY' | translate }}</label>
+        <app-search-dropdown [loadFn]="loadCurrencies" [displayWith]="displayPlain" [compareWith]="compare" [clearable]="true" [searchable]="true"
+          [placeholder]="'SUPPLIERS.FORM.SELECT_A_CURRENCY' | translate" [value]="currentCurrency()" (valueChange)="onCurrency($any($event))"/>
+      </div>
+      <div class="cf-field cf-field--grow">
+        <label>{{ 'SUPPLIERS.FORM.COST_CENTER' | translate }}</label>
+        <app-search-dropdown [items]="accounts" [displayWith]="displayPlain" [compareWith]="compare" [clearable]="false" [searchable]="true"
+          [placeholder]="'SUPPLIERS.FORM.SELECT_AN_ACCOUNT' | translate" [value]="pick(accounts, supplierData.costCenter)" (valueChange)="set('costCenter', $any($event))"/>
+      </div>
+      <div class="cf-field cf-field--grow">
+        <label>{{ 'SUPPLIERS.FORM.PAYMENT_TERM' | translate }}</label>
+        <app-search-dropdown [items]="terms" [displayWith]="displayPlain" [compareWith]="compare" [clearable]="false" [searchable]="false"
+          [value]="pick(terms, supplierData.paymentTerm)" (valueChange)="set('paymentTerm', $any($event))"/>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Custom fields ═══ -->
+  <app-entity-custom-fields entityType="supplier" [parentForm]="supplierForm" [valueSource]="supplierData.customFields" idPrefix="cf-supp"/>
+
+  <!-- ═══ Opening balance (new suppliers only) ═══ -->
+  @if (formStatus === 'new') {
+    <section class="cf-card">
+      <h2 class="cf-card__title">{{ 'SUPPLIERS.FORM.OPENING_BALANCE' | translate }}</h2>
+      <div class="cf-row">
+        <div class="cf-field cf-field--grow">
+          <label>{{ 'SUPPLIERS.FORM.BRANCH' | translate }}</label>
+          <app-search-dropdown [items]="branchOptions()" [displayWith]="displayPlain" [compareWith]="compare" [clearable]="false" [searchable]="true"
+            [value]="currentBranch()" (valueChange)="onBranchChange($any($event))"/>
+        </div>
+        <div class="cf-field cf-field--grow">
+          <label for="supplier_OBalance">{{ 'SUPPLIERS.FORM.OPENING_BALANCE' | translate }}</label>
+          <input id="supplier_OBalance" type="number" class="cf-input" [ngModel]="oBalanceData.openingBalance"
+            (ngModelChange)="onOBalanceChange($event)" [ngModelOptions]="{ standalone: true }"/>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ═══ Notes ═══ -->
+  <section class="cf-card">
+    <h2 class="cf-card__title">{{ 'SUPPLIERS.LIST.NOTE' | translate }}</h2>
+    <textarea id="notes" class="cf-input" rows="3" [ngModel]="supplierData.note" (ngModelChange)="edit('note', $event)" [ngModelOptions]="{ standalone: true }"></textarea>
+  </section>
+
+  <!-- ═══ Contacts ═══ -->
+  <section class="cf-card">
+    <div class="cf-head">
+      <h2 class="cf-card__title">{{ 'SUPPLIERS.LIST.CONTACTS' | translate }}</h2>
+      <button type="button" class="cf-btn" (click)="addContact()">＋ {{ 'SUPPLIERS.FORM.ADD_CONTACT' | translate }}</button>
+    </div>
+
+    <div formArrayName="contacts" class="cf-contacts">
+      @for (contact of supplierData.contacts; track $index; let i = $index) {
+        <div class="cf-contact" [formGroupName]="i">
+          <div class="cf-head">
+            <h3 class="cf-sub">{{ 'SUPPLIERS.FORM.CONTACT' | translate }} {{ i + 1 }}</h3>
+            <button type="button" class="cf-link cf-link--danger" (click)="removeContact(i)">{{ 'COMMON.DELETE' | translate }}</button>
+          </div>
+          <div class="cf-row">
+            <div class="cf-field cf-field--grow">
+              <label>{{ 'SUPPLIERS.LIST.CONTACT_NAME' | translate }} <span class="req">*</span></label>
+              <input type="text" class="cf-input" formControlName="contContactInput" [value]="contact.contact"
+                (input)="setContact(i, 'contact', $any($event.target).value)"
+                [class.is-invalid]="contactsFormGroup.at(i).get('contContactInput')?.errors"/>
+              @if (contactsFormGroup.at(i).get('contContactInput')?.errors?.['required']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.THIS_VALUE_IS_REQUIRED' | translate }}</p> }
+              @if (contactsFormGroup.at(i).get('contContactInput')?.errors?.['contactExists']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.NAME_EXISTS' | translate }}</p> }
+            </div>
+            <div class="cf-field cf-field--grow">
+              <label>{{ 'SUPPLIERS.LIST.PHONE' | translate }} <span class="req">*</span></label>
+              <input type="text" class="cf-input" formControlName="contPhoneInput" [value]="contact.phone"
+                (input)="setContact(i, 'phone', $any($event.target).value)"
+                [class.is-invalid]="contactsFormGroup.at(i).get('contPhoneInput')?.errors"/>
+              @let ce = contactsFormGroup.at(i).get('contPhoneInput')?.errors;
+              @if (ce?.['required']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.THIS_VALUE_IS_REQUIRED' | translate }}</p> }
+              @if (ce?.['pattern']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.THIS_VALUE_MUST_BE_DIGITS' | translate }}</p> }
+              @if (ce?.['minlength']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.THIS_VALUE_MUST_BE_MINIMUM' | translate }} {{ ce?.['minlength'].requiredLength }}</p> }
+              @if (ce?.['phoneExists']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.PHONE_EXISTS' | translate }}</p> }
+            </div>
+          </div>
+          <div class="cf-row">
+            <div class="cf-field cf-field--grow">
+              <label>{{ 'SUPPLIERS.LIST.EMAIL' | translate }}</label>
+              <input type="text" class="cf-input" formControlName="contEmailInput" [value]="contact.email"
+                (input)="setContact(i, 'email', $any($event.target).value)"
+                [class.is-invalid]="contactsFormGroup.at(i).get('contEmailInput')?.errors"/>
+              @if (contactsFormGroup.at(i).get('contEmailInput')?.errors?.['email']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.ENTER_A_VALID_EMAIL' | translate }}</p> }
+              @if (contactsFormGroup.at(i).get('contEmailInput')?.errors?.['emailExists']) { <p class="cf-error">{{ 'SUPPLIERS.FORM.EMAIL_EXISTS' | translate }}</p> }
+            </div>
+            <div class="cf-field cf-field--grow">
+              <label>{{ 'SUPPLIERS.LIST.NOTE' | translate }}</label>
+              <input type="text" class="cf-input" [ngModelOptions]="{ standalone: true }" [ngModel]="contact.note" (ngModelChange)="setContact(i, 'note', $event); supplierForm.markAsDirty()"/>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ═══ Supplier items (saved suppliers only) ═══ -->
+  @if (formStatus === 'edit' && supplierData.id) {
+    <app-supplier-items-card [supplier]="supplierData" [form]="supplierForm"/>
+  }
+</ng-container>

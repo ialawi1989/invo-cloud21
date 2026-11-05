@@ -49,6 +49,7 @@ export const SIDE_MENU: SideMenuItem[] = [
   {
     id: 2, label: 'MENU.DASHBOARD', icon: 'home',
     link: '/dashboard',
+    requiredPermission: 'dashboardSecurity.access',
   },
   // ── Products ───────────────────────────────────────────────────────
   // Sub-items grouped by concern. Bulk-operation pages (price change,
@@ -96,6 +97,7 @@ export const SIDE_MENU: SideMenuItem[] = [
     subItems: [
       { id: 41, label: 'MENU.SUB.EMPLOYEE_LIST', link: '/employees', matchLinks: ['/employees/invitation', '/employees/my-account'], requiredPermission: 'employeeSecurity.actions.view.access' },
       { id: 42, label: 'MENU.SUB.PRIVILEGES', link: '/employees/privileges', requiredPermission: 'privilegeSecurity.actions.view.access' },
+      { id: 45, label: 'MENU.SUB.ACCESS_REQUESTS', link: '/employees/access-requests', requiredPermission: 'privilegeSecurity.actions.view.access' },
       { id: 43, label: 'MENU.SUB.SCHEDULE', link: '/employees/schedule', requiredPermission: 'employeeScheduleSecurity.actions.view.access' },
       { id: 44, label: 'MENU.SUB.ATTENDANCE', link: '/employees/attendance', requiredPermission: 'employeeAttendenceSecurity.actions.view.access' },
     ],
@@ -135,6 +137,7 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 75, label: 'MENU.SUB.RECURRING_INVOICES', link: '/account/recurring-invoice', requiredPermission: 'recurringInvoiceSecurity.actions.view.access' },
       { id: 76, label: 'MENU.SUB.PAYMENTS', link: '/account/payments', requiredPermission: 'invoicePaymentsSecurity.actions.view.access' },
       { id: 77, label: 'MENU.SUB.CREDIT_NOTES', link: '/account/credit-notes', requiredPermission: 'creditNoteSecurity.actions.view.access' },
+      { id: 78, label: 'MENU.SUB.SALES_TARGET', link: '/account/sales-target-dashboard', requiredPermission: 'salesTargetSecurity.actions.view.access', badge: { text: 'BETA', variant: 'danger' } },
     ],
   },
   // ── Purchase ───────────────────────────────────────────────────────

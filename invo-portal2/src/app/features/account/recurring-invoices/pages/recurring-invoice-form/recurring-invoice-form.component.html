@@ -1,0 +1,67 @@
+@if (doc && editor) {
+  @let d = doc;
+  <app-doc-form-shell
+    [title]="'RECURRING_INVOICES.FORM.RECURRING_INVOICE' | translate" [breadcrumbs]="breadcrumbs"
+    [canDraft]="false" [submitting]="submitting" [saveDisabled]="missing.length > 0" [showView]="formStatus === 'edit'"
+    [saveLabel]="saveLabelKey | translate" [actionsMenu]="actionsMenu()"
+    [total]="d.total" [totalQty]="totalQuantity"
+    (save)="savePrimary()" (cancel)="cancel()" (view)="view()">
+
+    <!-- Schedule -->
+    <app-recurring-schedule-card [rec]="rec" root="RECURRING_INVOICES" [isNew]="formStatus !== 'edit'" [showErrors]="showErrors" (changed)="markDirty()">
+      <div class="df-field rf-send">
+        <label>{{ 'RECURRING_INVOICES.FORM.SEND_INVOICE' | translate }}</label>
+        <app-toggle [checked]="rec.sendInvoice" (checkedChange)="rec.sendInvoice = $event; markDirty()"/>
+      </div>
+    </app-recurring-schedule-card>
+
+    <!-- Customer -->
+    <app-doc-party-section
+      [customer]="customerValue" [addresses]="addresses" [address]="customerAddress" [locked]="frozen"
+      [error]="fieldError('customerId')"
+      (customerChange)="onCustomer($event)" (addressChange)="setAddress($event)" (addAddress)="addAddress()"
+      (createNew)="createCustomer()" (advancedSearch)="advancedCustomerSearch()"/>
+
+    <!-- Invoice template -->
+    <section class="df-card">
+      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>{{ 'RECURRING_INVOICES.FORM.INVOICE_DETAILS' | translate }}</h2>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.BRANCH' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="branches" [displayWith]="branchLabel" [compareWith]="byId"
+            [value]="branchOf()" (valueChange)="onBranch($any($event))" [clearable]="false" [disabled]="branchLocked"
+            [placeholder]="'DOC_FORM.SELECT_BRANCH' | translate"/>
+          @if (fieldError('branchId'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'RECURRING_INVOICES.FORM.TERM' | translate }}</label>
+          <app-search-dropdown [items]="terms" [displayWith]="choiceLabel" [compareWith]="sameChoice" [searchable]="false"
+            [value]="termOf()" (valueChange)="onTermPick($any($event))" [clearable]="false"/>
+        </div>
+      </div>
+      @if (frozen) { <p class="df-hint">{{ 'RECURRING_INVOICES.FORM.LOCKED_HINT' | translate }}</p> }
+
+      <button type="button" class="df-link rf-advanced" (click)="advancedOpen = !advancedOpen">
+        {{ 'RECURRING_INVOICES.FORM.ADVANCED' | translate }} {{ advancedOpen ? '▴' : '▾' }}
+      </button>
+      @if (advancedOpen) {
+        <div class="df-row">
+          <div class="df-field df-field--grow">
+            <label>{{ 'RECURRING_INVOICES.FORM.RECEIVABLE_ACCOUNT' | translate }}</label>
+            <app-search-dropdown [items]="receivableAccounts" [displayWith]="receivableLabel" [compareWith]="byId"
+              [value]="receivableOf()" (valueChange)="onReceivable($any($event))" [clearable]="true"
+              [placeholder]="'RECURRING_INVOICES.FORM.SELECT_ACCOUNT' | translate"/>
+          </div>
+        </div>
+      }
+    </section>
+
+    <!-- Items + totals -->
+    <app-doc-lines-table
+      [doc]="d" [editor]="editor!" [config]="linesConfig" [formStatus]="formStatus"
+      (changed)="markDirty()">
+      <app-doc-totals [doc]="d" [editor]="editor!" [surcharges]="surcharges" notesHintKey="RECURRING_INVOICES.FORM.NOTES_HINT" (changed)="markDirty()"/>
+    </app-doc-lines-table>
+  </app-doc-form-shell>
+}

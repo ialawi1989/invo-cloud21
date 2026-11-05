@@ -1,4 +1,4 @@
-<div class="ws">
+<div class="ws" [class.ws--center]="center()">
   @for (s of steps(); let idx = $index; track s.key) {
     <div class="ws__step"
       [class.ws__step--active]="idx === currentIndex()"

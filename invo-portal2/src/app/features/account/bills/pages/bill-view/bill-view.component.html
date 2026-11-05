@@ -1,0 +1,47 @@
+@if (doc(); as b) {
+  <app-doc-view-shell
+    [docTitle]="title" railTitle="BILLS.LIST.BILLS_LIST" [showAdd]="actions.canAdd"
+    [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="id"
+    [railFilterOptions]="railFilterOptions()" [railFilterValue]="railStatus()" railFilterStorageKey="billStatus"
+    [printItems]="actions.canPrint ? printItems() : []" [shareItems]="shareItems()" [exportItems]="exportItems()" [actionItems]="actionItems(b)"
+    [showEdit]="actions.edit(b)"
+    [loading]="loading()" [template]="template()" [data]="renderData()" [reportDesign]="reportDesign()" [reportData]="reportData()"
+    [ribbonText]="b.status === 'Overdue' ? ('BILLS.STATUS.Overdue' | translate) : ''" ribbonKind="danger"
+    [zoom]="zoom()" (zoomChange)="setZoom($event)" [viewerTools]="true"
+    (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railFilterPick)="onRailFilterPick($event)" (railPrev)="railPrev()" (railNext)="railNext()" (add)="add()"
+    (close)="goToList()" (edit)="edit()">
+    <app-party-peek-chips beforePaper [supplierId]="b.supplierId" [supplierName]="b.supplierName"/>
+
+    @if (actions.pay(b)) {
+      <button toolbarExtra type="button" class="dv-tool" (click)="pay()">{{ 'BILLS.VIEW.RECORD_PAYMENT' | translate }}</button>
+    }
+
+    @if (actions.createBillOfEntry(b)) {
+      <button toolbarExtra type="button" class="dv-tool" (click)="actions.goBillOfEntry(id)">{{ 'BILLS.ACTIONS.CREATE_BILL_OF_ENTRY' | translate }}</button>
+    }
+
+    @if (showApplyCredit(b)) {
+      <div banner class="dv-banner dv-banner--info">
+        {{ 'BILLS.VIEW.CREDITS_AVAILABLE' | translate: { value: (supplierCredit() | mycurrency) } }}
+        <a href="javascript:void(0)" (click)="applyCredit()">{{ 'BILLS.VIEW.APPLY_NOW' | translate }}</a>
+      </div>
+    }
+
+    @if (b.purchaseOrderId && actions.showPurchaseOrder(b)) {
+      <div banner class="dv-banner dv-banner--info">
+        {{ 'BILLS.LIST.PURCHASE_NUMBER' | translate }}:
+        <a href="javascript:void(0)" (click)="actions.goPurchaseOrder(b)">{{ b.purchaseNumber || ('BILLS.ACTIONS.SHOW_PURCHASE_ORDER' | translate) }}</a>
+      </div>
+    }
+
+    @if (!b.isActiveSupplier) {
+      <div banner class="dv-banner dv-banner--danger">{{ 'BILLS.VIEW.SUPPLIER_INACTIVE' | translate }}</div>
+    }
+
+    <app-doc-view-attachments beforePaper type="bill" [docId]="id" [attachments]="b.attachment"/>
+
+    <div tabs id="bill-additional-details">
+      <app-doc-additional-details [config]="additionalDetails()"/>
+    </div>
+  </app-doc-view-shell>
+}

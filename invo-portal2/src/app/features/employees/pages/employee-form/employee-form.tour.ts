@@ -23,10 +23,16 @@ import { GuidedTourStep } from '@shared/services/guided-tour.service';
 // v3: the add-employee flow went back to a single page (it had briefly been a
 // four-step wizard in v2). The step-strip anchor is gone; everyone who saw v2
 // gets the tour again on the page shape they now actually have.
-export const EMPLOYEE_TOUR_KEY = 'employee_form_v3';
+// v4: the record got a header card with attached tabs, the form split into
+// section tabs (the tour now describes the section on screen), and branches
+// became a list with "Add branch".
+export const EMPLOYEE_TOUR_KEY = 'employee_form_v4';
 
 /** Anchor names, exported so the template and its test agree on the spelling. */
 export const EMPLOYEE_TOUR_ANCHORS = {
+  header: 'emp-header',
+  recordTabs: 'emp-record-tabs',
+  sections: 'emp-tabs',
   systemAccess: 'emp-system-access',
   basic: 'emp-basic',
   email: 'emp-email',
@@ -49,6 +55,26 @@ export const EMPLOYEE_FORM_TOUR: GuidedTourStep[] = [
     titleKey: 'EMPLOYEES.TOUR.INTRO.TITLE',
     bodyKey: 'EMPLOYEES.TOUR.INTRO.BODY',
     align: 'center',
+  },
+  // The record header and its tabs live in the employee record page, so these
+  // two steps exist only where the form is shown inside it (not when creating).
+  {
+    anchor: A.header,
+    titleKey: 'EMPLOYEES.TOUR.HEADER.TITLE',
+    bodyKey: 'EMPLOYEES.TOUR.HEADER.BODY',
+    side: 'block-end',
+  },
+  {
+    anchor: A.recordTabs,
+    titleKey: 'EMPLOYEES.TOUR.RECORD_TABS.TITLE',
+    bodyKey: 'EMPLOYEES.TOUR.RECORD_TABS.BODY',
+    side: 'block-end',
+  },
+  {
+    anchor: A.sections,
+    titleKey: 'EMPLOYEES.TOUR.SECTIONS.TITLE',
+    bodyKey: 'EMPLOYEES.TOUR.SECTIONS.BODY',
+    side: 'block-end',
   },
   {
     anchor: A.systemAccess,
@@ -134,3 +160,19 @@ export const EMPLOYEE_FORM_TOUR: GuidedTourStep[] = [
     side: 'block-end',
   },
 ];
+
+/**
+ * The steps that can actually be shown right now.
+ *
+ * The form keeps every section in the DOM and hides the inactive ones, so an
+ * anchor can exist and still be invisible. Highlighting a hidden element points
+ * at nothing; those steps are dropped, which is what makes the tour describe
+ * the section on screen (switch section, run it again for the next one).
+ */
+export function visibleTourSteps(steps: GuidedTourStep[] = EMPLOYEE_FORM_TOUR): GuidedTourStep[] {
+  return steps.filter((s) => {
+    if (!s.anchor) return true;
+    const el = document.querySelector(`[data-tour="${s.anchor}"]`);
+    return !!el && !el.closest('.tab-hidden');
+  });
+}

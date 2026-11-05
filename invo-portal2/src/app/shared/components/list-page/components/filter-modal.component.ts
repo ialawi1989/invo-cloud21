@@ -6,6 +6,7 @@ import { FilterConfig, FilterState, FilterOption } from '../interfaces/list-page
 import { MODAL_DATA, MODAL_REF } from '../../../modal/modal.tokens';
 import { ModalRef } from '../../../modal/modal.service';
 import { SearchDropdownComponent } from '../../dropdown';
+import { DatePickerComponent } from '../../datepicker/date-picker.component';
 
 export interface FilterModalData {
   filters: FilterConfig[];
@@ -21,7 +22,7 @@ export interface FilterModalResult {
 @Component({
   selector: 'app-filter-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchDropdownComponent, TranslateModule],
+  imports: [CommonModule, FormsModule, SearchDropdownComponent, DatePickerComponent, TranslateModule],
   styles: [`
     /* Make the modal a flex column that fills its parent so the body can
        grow and push the footer to the bottom edge. Works for both the
@@ -87,15 +88,11 @@ export interface FilterModalResult {
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-slate-500 mb-1">From</label>
-                <input type="date" [ngModel]="localFilters()[filter.keyFrom]"
-                  (ngModelChange)="setRawFilter(filter.keyFrom, $event)"
-                  class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                <app-date-picker [value]="toDate(localFilters()[filter.keyFrom])" (valueChange)="setRawFilter(filter.keyFrom, fromDate($event))" placeholder="dd/mm/yyyy" displayFormat="dd/MM/yyyy" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-slate-500 mb-1">To</label>
-                <input type="date" [ngModel]="localFilters()[filter.keyTo]"
-                  (ngModelChange)="setRawFilter(filter.keyTo, $event)"
-                  class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                <app-date-picker [value]="toDate(localFilters()[filter.keyTo])" (valueChange)="setRawFilter(filter.keyTo, fromDate($event))" placeholder="dd/mm/yyyy" displayFormat="dd/MM/yyyy" />
               </div>
             </div>
           }
@@ -118,13 +115,11 @@ export interface FilterModalResult {
                 <div class="grid grid-cols-2 gap-3 pt-2 ps-7">
                   <div>
                     <label class="block text-xs font-medium text-slate-500 mb-1">{{ 'COMMON.FROM' | translate }}</label>
-                    <input type="date" [ngModel]="customFrom(filter.key)" (ngModelChange)="setCustom(filter.key, $event, customTo(filter.key))"
-                      class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                    <app-date-picker [value]="toDate(customFrom(filter.key))" (valueChange)="setCustom(filter.key, fromDate($event), customTo(filter.key))" placeholder="dd/mm/yyyy" displayFormat="dd/MM/yyyy" />
                   </div>
                   <div>
                     <label class="block text-xs font-medium text-slate-500 mb-1">{{ 'COMMON.TO' | translate }}</label>
-                    <input type="date" [ngModel]="customTo(filter.key)" (ngModelChange)="setCustom(filter.key, customFrom(filter.key), $event)"
-                      class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                    <app-date-picker [value]="toDate(customTo(filter.key))" (valueChange)="setCustom(filter.key, customFrom(filter.key), fromDate($event))" placeholder="dd/mm/yyyy" displayFormat="dd/MM/yyyy" />
                   </div>
                 </div>
               }
@@ -216,6 +211,19 @@ export class FilterModalComponent {
 
       return { ...filters, [key]: newValue.length > 0 ? newValue : undefined };
     });
+  }
+
+  /** `yyyy-MM-dd` string -> local Date for the date picker (null when empty/invalid). */
+  toDate(v: unknown): Date | null {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(v ?? ''));
+    return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null;
+  }
+
+  /** Date picker value -> `yyyy-MM-dd` string ('' when cleared). */
+  fromDate(v: unknown): string {
+    if (!(v instanceof Date) || isNaN(v.getTime())) return '';
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${v.getFullYear()}-${p(v.getMonth() + 1)}-${p(v.getDate())}`;
   }
 
   setRawFilter(key: string, value: any): void {

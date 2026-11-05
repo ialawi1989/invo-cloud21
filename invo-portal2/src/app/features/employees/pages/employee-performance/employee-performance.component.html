@@ -16,6 +16,7 @@
   }
 
   <!-- ═══ REVIEWS ═══════════════════════════════════════════════════════ -->
+  <section class="hr-card">
   <div class="perf-header">
     <h2 class="perf-header__title">{{ 'EMPLOYEES.PERFORMANCE.REVIEWS' | translate }}</h2>
     @if (canEditAnything() && !editing()) {
@@ -55,12 +56,12 @@
 
         <label class="perf-field">
           <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.FIELD.PERIOD_START' | translate }} <em>*</em></span>
-          <input class="form-control" type="date" formControlName="periodStart" />
+          <app-date-field formControlName="periodStart"/>
         </label>
 
         <label class="perf-field">
           <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.FIELD.PERIOD_END' | translate }} <em>*</em></span>
-          <input class="form-control" type="date" formControlName="periodEnd" />
+          <app-date-field formControlName="periodEnd"/>
         </label>
 
         <label class="perf-field">
@@ -168,7 +169,10 @@
   @if (loading()) {
     <div class="perf-loading">{{ 'COMMON.LOADING' | translate }}</div>
   } @else if (!reviews().length) {
-    <div class="perf-empty">{{ 'EMPLOYEES.PERFORMANCE.NO_REVIEWS' | translate }}</div>
+    <app-empty-state icon="star"
+      [title]="'EMPLOYEES.PERFORMANCE.EMPTY_REVIEWS_TITLE' | translate"
+      [body]="'EMPLOYEES.PERFORMANCE.EMPTY_REVIEWS_BODY' | translate">
+    </app-empty-state>
   } @else {
     <div class="perf-list">
       @for (r of reviews(); track trackReview($index, r)) {
@@ -405,12 +409,14 @@
       }
     </div>
   }
+  </section>
 
   <!-- ═══ TRAININGS ═════════════════════════════════════════════════════ -->
+  <section class="hr-card">
   <div class="perf-header perf-header--section">
     <h2 class="perf-header__title">{{ 'EMPLOYEES.PERFORMANCE.TRAININGS' | translate }}</h2>
     @if (canEditAnything() && !editingTraining()) {
-      <button type="button" class="btn btn-primary" (click)="startAddTraining()">
+      <button type="button" class="btn btn-secondary" (click)="startAddTraining()">
         {{ 'EMPLOYEES.PERFORMANCE.ADD_TRAINING' | translate }}
       </button>
     }
@@ -429,11 +435,11 @@
         </label>
         <label class="perf-field">
           <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.TRAINING.COMPLETED' | translate }}</span>
-          <input class="form-control" type="date" formControlName="completionDate" />
+          <app-date-field formControlName="completionDate"/>
         </label>
         <label class="perf-field">
           <span class="perf-field__label">{{ 'EMPLOYEES.PERFORMANCE.TRAINING.EXPIRY' | translate }}</span>
-          <input class="form-control" type="date" formControlName="expiryDate" />
+          <app-date-field formControlName="expiryDate"/>
           <span class="perf-field__hint">{{ 'EMPLOYEES.PERFORMANCE.TRAINING.EXPIRY_HINT' | translate }}</span>
         </label>
         <label class="perf-field">
@@ -457,7 +463,10 @@
   }
 
   @if (!loading() && !trainings().length) {
-    <div class="perf-empty">{{ 'EMPLOYEES.PERFORMANCE.NO_TRAININGS' | translate }}</div>
+    <app-empty-state icon="book"
+      [title]="'EMPLOYEES.PERFORMANCE.EMPTY_TRAININGS_TITLE' | translate"
+      [body]="'EMPLOYEES.PERFORMANCE.EMPTY_TRAININGS_BODY' | translate">
+    </app-empty-state>
   } @else {
     <div class="perf-list">
       @for (t of trainings(); track trackTraining($index, t)) {
@@ -539,4 +548,5 @@
       }
     </div>
   }
+  </section>
 </div>

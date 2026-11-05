@@ -10,6 +10,7 @@ import { hrPrivilegeGuard } from './hr-privilege';
  * Top-level feature (sidebar "Employees" group), living at `/employees/*`.
  *
  *   /employees                 → list
+ *   /employees/access-requests         → requests sent from the 403 page
  *   /employees/privileges              → privilege-set list
  *   /employees/privileges/:id/dashboard → role default-dashboard editor
  *   /employees/privileges/:id          → privilege-set form (0 = new)
@@ -20,8 +21,7 @@ import { hrPrivilegeGuard } from './hr-privilege';
  *   /employees/my-account      → the signed-in employee's own account
  *   /employees/invitation/:id  → invite / edit invited employee (0 = new)
  *   /employees/0               → add-employee form (single page)
- *   /employees/:id             → employee record shell; default child is the
- *                                read-only overview
+ *   /employees/:id             → employee record shell; redirects to the form
  *   /employees/:id/edit        → the form; `?section=` narrows it to one card
  *   /employees/:id/documents   → documents tab
  *   /employees/:id/assets      → assets tab
@@ -52,6 +52,13 @@ export const EMPLOYEES_ROUTES: Routes = [
     data: { permissionPath: 'employeeSecurity.actions.view' },
     loadComponent: () =>
       import('./pages/employees-list/employees-list.component').then(m => m.EmployeesListComponent),
+  },
+  {
+    path: 'access-requests',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'privilegeSecurity.actions.view' },
+    loadComponent: () =>
+      import('./pages/access-requests/access-requests.component').then(m => m.AccessRequestsComponent),
   },
   {
     path: 'privileges',
@@ -153,6 +160,18 @@ export const EMPLOYEES_ROUTES: Routes = [
   },
   {
     /**
+     * View employee: read-only record page in the customer-view layout (rail,
+     * header, cards). Additional to the form; the list still opens the form.
+     * Two segments, so it cannot be mistaken for `:id`.
+     */
+    path: 'view/:id',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'employeeSecurity.actions.view' },
+    loadComponent: () =>
+      import('./pages/employee-view/employee-view.component').then(m => m.EmployeeViewComponent),
+  },
+  {
+    /**
      * Creating an employee, declared BEFORE `:id` so the literal wins the
      * match. It bypasses the record shell entirely: there is no record yet, so
      * a tab strip would point at tabs that cannot load. The single-page form
@@ -189,11 +208,11 @@ export const EMPLOYEES_ROUTES: Routes = [
       import('./pages/employee-record/employee-record.component').then(m => m.EmployeeRecordComponent),
     children: [
       {
-        // What the record shows when you open it: the overview, read-only.
+        // Opening a person goes straight to the (tabbed) form — no read-only
+        // overview page in between. The overview component is kept but unrouted.
         path: '',
-        loadComponent: () =>
-          import('./pages/employee-overview/employee-overview.component')
-            .then(m => m.EmployeeOverviewComponent),
+        pathMatch: 'full',
+        redirectTo: 'edit',
       },
       {
         // The form, reached from an overview pencil. `?section=` narrows it to

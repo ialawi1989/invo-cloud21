@@ -58,6 +58,8 @@ const PARAMS = {
   limit: { key: 'limit', codec: intCodec(15) } as ParamDef<number>,
   search: { key: 'q', codec: StringCodec } as ParamDef<string>,
   category: { key: 'category', codec: StringCodec } as ParamDef<string>,
+  /** Selected tags, joined with `|` (a tag can contain a comma, which the URL codec would split). */
+  tags: { key: 'tags', codec: StringCodec } as ParamDef<string>,
 };
 
 /**
@@ -104,6 +106,8 @@ export class ProductRecipeComponent implements OnInit {
   search = signal<string>('');
   categoryId = signal<string>('');
   category = signal<PickedListItem | null>(null);
+  /** Tags the menu items must carry (any of them). */
+  tags = signal<string[]>([]);
 
   private i18nTick = signal(0);
   private searchDebounce = new Subject<void>();
@@ -147,6 +151,29 @@ export class ProductRecipeComponent implements OnInit {
   }
 
   clearCategory(): void { this.applyCategory(null); }
+
+  /** Tag filter - multi-select picker over the company's product tags. */
+  async openTagPicker(): Promise<void> {
+    const result = await this.openPicker({
+      load: ({ page, limit, searchTerm }) => this.loadTags(page, limit, searchTerm),
+      multiple: true,
+      selectedIds: this.tags(),
+      title: this.translate.instant('PRODUCTS.PRODUCT_RECIPE.PICK_TAGS'),
+    });
+    if (!result) return;
+    this.tags.set(result.selected.map((s) => s.id));
+    this.refilter();
+  }
+
+  clearTags(): void { this.tags.set([]); this.refilter(); }
+
+  private async loadTags(page: number, limit: number, searchTerm: string) {
+    const res = await this.api.request<any>(this.api.post('product/getProductTags', { page, limit, searchTerm }));
+    const raw: any[] = res?.data?.list ?? res?.data ?? [];
+    const list = raw.map((t) => String(t?.tag ?? t?.name ?? t)).filter(Boolean).map((tag) => ({ id: tag, name: tag }));
+    // The endpoint's `count` is a per-tag usage count, so "more pages" is a full page.
+    return { list, count: list.length >= limit ? page * limit + 1 : (page - 1) * limit + list.length };
+  }
 
   private openPicker(data: PickListModalData): Promise<PickListModalResult | undefined> {
     // Dismissed (Cancel / backdrop) resolves undefined and leaves the filter
@@ -192,6 +219,7 @@ export class ProductRecipeComponent implements OnInit {
     this.limit.set(initial.limit);
     this.search.set(initial.search);
     this.categoryId.set(initial.category);
+    this.tags.set(initial.tags ? initial.tags.split('|').filter(Boolean) : []);
     if (initial.category) {
       // Hydrate the category label from the id if possible (best-effort).
       const res = await this.categoryService.getList({ page: 1, limit: 50 });
@@ -207,23 +235,39 @@ export class ProductRecipeComponent implements OnInit {
       limit: this.limit(),
       search: this.search(),
       category: this.categoryId(),
+      tags: this.tags().join('|'),
     });
   }
 
   async load(): Promise<void> {
     this.loading.set(true);
     try {
-      const res = await this.service.getMenuItemList({
-        page: this.page(),
-        limit: this.limit(),
-        searchTerm: this.search(),
-        categoryId: this.categoryId() || undefined,
-      });
-      this.products.set(res.list);
-      this.count.set(res.count);
+      const base = { searchTerm: this.search(), categoryId: this.categoryId() || undefined };
+      if (!this.tags().length) {
+        const res = await this.service.getMenuItemList({ page: this.page(), limit: this.limit(), ...base });
+        this.products.set(res.list);
+        this.count.set(res.count);
+        return;
+      }
+      // The menu-item list can't filter by tag, so ask the product list which menu items carry the tags, take every
+      // menu item for the search / category, keep the matching ones and page the result here.
+      const [tagged, all] = await Promise.all([this.taggedMenuItemIds(), this.service.getMenuItemList({ page: 1, limit: 1000, ...base })]);
+      const matching = all.list.filter((p) => tagged.has(p.id));
+      const start = (this.page() - 1) * this.limit();
+      this.products.set(matching.slice(start, start + this.limit()));
+      this.count.set(matching.length);
     } finally {
       this.loading.set(false);
     }
+  }
+
+  /** Ids of the menu items that have at least one of the selected tags (`product/getProductList`, type + tags filter). */
+  private async taggedMenuItemIds(): Promise<Set<string>> {
+    const res = await this.api.request<any>(this.api.post('product/getProductList', {
+      page: 1, limit: 1000, searchTerm: this.search(), sortBy: {},
+      filter: { type: ['menuItem'], tags: this.tags(), categories: this.categoryId() ? [this.categoryId()] : [] },
+    }));
+    return new Set<string>((res?.data?.list ?? []).map((p: any) => String(p.id)));
   }
 
   // ── Filters / paging ───────────────────────────────────────────────────────

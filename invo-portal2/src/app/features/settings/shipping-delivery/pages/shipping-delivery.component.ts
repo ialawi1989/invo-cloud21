@@ -167,7 +167,7 @@ export class ShippingDeliveryComponent implements OnInit, CanLeaveComponent {
     // Pre-warm translations for whichever child we'll mount first so
     // the embedded view doesn't flash raw i18n keys.
     await Promise.all([
-      this.language.loadFeature('shipping'),
+      this.language.loadFeature('settings/shipping'),
       this.language.loadFeature('covered-address'),
       this.language.loadFeature('covered-zone'),
     ]);

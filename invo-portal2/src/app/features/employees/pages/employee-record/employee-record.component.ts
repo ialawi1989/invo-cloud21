@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ActivatedRoute,
@@ -10,7 +10,22 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
+import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
+import { EmployeeService } from '../../services/employee.service';
+import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import { EmployeeDocumentService } from '../../services/employee-document.service';
+import { EmployeeAssetService } from '../../services/employee-asset.service';
+import { EmployeeDisciplinaryService } from '../../services/employee-disciplinary.service';
+import { EmployeeLeaveService } from '../../services/employee-leave.service';
+import { EmployeePayrollService } from '../../services/employee-payroll.service';
+import { EmployeeEosService } from '../../services/employee-eos.service';
+import type { EmployeeDetails } from '../../models/employee.types';
+import type { EosRecord } from '../../services/employee-eos.types';
+import { GuidedTourService } from '@shared/services/guided-tour.service';
+import { ToastService } from '@shared/components/toast/toast.service';
+import { EMPLOYEE_TOUR_KEY, visibleTourSteps } from '../employee-form/employee-form.tour';
 import { AuthService } from '@core/auth/auth.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 
@@ -140,7 +155,7 @@ export function visibleTabs(
 @Component({
   selector: 'app-employee-record',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, TranslateModule],
+  imports: [CommonModule, RouterOutlet, RouterLink, TranslateModule, BreadcrumbsComponent, DropdownMenuBtnComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-record.component.html',
   styleUrls: ['./employee-record.component.scss'],
@@ -150,17 +165,179 @@ export class EmployeeRecordComponent {
   private readonly router = inject(Router);
   private readonly privileges = inject(PrivilegeService);
   private readonly auth = inject(AuthService);
+  private readonly employees = inject(EmployeeService);
+  private readonly translate = inject(TranslateService);
+
+  private readonly documents = inject(EmployeeDocumentService);
+  private readonly assets = inject(EmployeeAssetService);
+  private readonly disciplinary = inject(EmployeeDisciplinaryService);
+  private readonly leave = inject(EmployeeLeaveService);
+  private readonly payroll = inject(EmployeePayrollService);
+  private readonly eosSvc = inject(EmployeeEosService);
+  private readonly tour = inject(GuidedTourService);
+  private readonly toast = inject(ToastService);
+
+  /** The employee shown in the persistent header. */
+  readonly employee = signal<EmployeeDetails | null>(null);
+  readonly recordName = computed(() => this.employee()?.name ?? '');
 
   /**
-   * One flag per module.
-   *
-   * Every tab now gates on its OWN key. They rode on `hr.profile` while the
-   * later modules had no key of their own; that placeholder is gone, and the
-   * keys were added in invoAdminProtal before any company was switched on, so
-   * nothing needed migrating.
-   *
-   * `profileFlag` still gates the profile cards on the employee form — it is
-   * not a stand-in for anything else any more.
+   * Per-tab indicators. `null` = still loading (the badge is hidden, never
+   * shown as 0 while it might be wrong).
+   */
+  readonly docCount = signal<number | null>(null);
+  readonly assetCount = signal<number | null>(null);
+  readonly disciplinaryCount = signal<number | null>(null);
+  /** True when the tab's module has nothing set up yet. */
+  readonly leaveNeedsSetup = signal<boolean>(false);
+  readonly payrollNeedsSetup = signal<boolean>(false);
+  private readonly eos = signal<EosRecord | null>(null);
+
+  /**
+   * Employment status chip, derived from data: Terminated once the exit is
+   * finalised (or a termination date is on the record), Serving notice once
+   * notice is given but the exit is not finalised, Active otherwise.
+   */
+  readonly status = computed<'active' | 'notice' | 'terminated'>(() => {
+    const eos = this.eos();
+    if (eos?.completedAt || this.employee()?.terminationDate) return 'terminated';
+    if (eos?.noticeGivenDate) return 'notice';
+    return 'active';
+  });
+
+  readonly primaryBranch = computed<string>(() => {
+    const e = this.employee();
+    if (!e) return '';
+    const list = Array.isArray(e.branches) ? e.branches : [];
+    return list.find((b: any) => b?.id === e.branchId)?.name ?? list[0]?.name ?? '';
+  });
+
+  readonly roleChips = computed<string[]>(() => {
+    const e = this.employee();
+    if (!e) return [];
+    const keys: string[] = [];
+    if (e.superAdmin) keys.push('EMPLOYEES.FORM.SUPER_ADMIN');
+    if (e.admin) keys.push('EMPLOYEES.FORM.CLOUD_ADMIN');
+    if (e.user) keys.push('EMPLOYEES.FORM.POS_USER');
+    if (e.isDriver) keys.push('EMPLOYEES.FORM.IS_DRIVER');
+    if (e.isSalesPerson) keys.push('EMPLOYEES.FORM.IS_SALES_PERSON');
+    return keys;
+  });
+
+  /** Is the profile form (and so its tour anchors) the page on screen? */
+  readonly tourAvailable = computed(() => {
+    this.childSegment();
+    const url = this.router.url;
+    const seg = this.childSegment();
+    return (seg === '' || seg === 'edit') && !/[?&]section=/.test(url);
+  });
+
+  async startTour(): Promise<void> {
+    const shown = await this.tour.run(visibleTourSteps(), { tourKey: EMPLOYEE_TOUR_KEY });
+    if (shown === 0) this.toast.error('EMPLOYEES.TOUR.NOTHING_TO_SHOW');
+  }
+
+  /** "email · branch · roles" under the name. */
+  readonly metaLine = computed<string>(() => {
+    const e = this.employee();
+    if (!e) return '';
+    const roles = this.roleChips().map((k) => this.translate.instant(k)).join(', ');
+    return [e.email, this.primaryBranch(), roles].filter(Boolean).join(' · ');
+  });
+
+  /** Items behind the "more actions" button. Offboarding only if the tab exists. */
+  readonly moreActions = computed<DropdownMenuBtnItem[]>(() => {
+    const id = this.employeeId();
+    if (!this.tabs().some((t) => t.path === 'end-of-service')) return [];
+    return [{
+      label: this.translate.instant('EMPLOYEES.START_OFFBOARDING'),
+      click: () => void this.router.navigate(['/employees', id, 'end-of-service']),
+    }];
+  });
+
+  /** Arrow keys / Home / End move between tabs; Enter follows the link. */
+  onTabKey(event: KeyboardEvent): void {
+    const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+    if (!keys.includes(event.key)) return;
+    const nav = event.currentTarget as HTMLElement;
+    const tabs = Array.from(nav.querySelectorAll<HTMLElement>('[role="tab"]'));
+    if (!tabs.length) return;
+    const rtl = getComputedStyle(nav).direction === 'rtl';
+    const current = tabs.indexOf(document.activeElement as HTMLElement);
+    let next = current < 0 ? 0 : current;
+    if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = tabs.length - 1;
+    else {
+      const step = (event.key === 'ArrowRight') !== rtl ? 1 : -1;
+      next = (next + step + tabs.length) % tabs.length;
+    }
+    event.preventDefault();
+    tabs[next].focus();
+  }
+
+  readonly initials = computed<string>(() => {
+    const parts = this.recordName().trim().split(/\s+/).filter(Boolean);
+    return ((parts[0]?.[0] ?? '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+  });
+
+  /** Tab indicator for a path, or null when it has none. */
+  badgeFor(path: string): number | null {
+    switch (path) {
+      case 'documents': return this.docCount();
+      case 'assets': return this.assetCount();
+      case 'disciplinary': return this.disciplinaryCount();
+      default: return null;
+    }
+  }
+
+  needsSetup(path: string): boolean {
+    return (path === 'leave' && this.leaveNeedsSetup())
+        || (path === 'payroll' && this.payrollNeedsSetup());
+  }
+
+  readonly breadcrumbs = computed<BreadcrumbItem[]>(() => [
+    { label: this.translate.instant('EMPLOYEES.DASHBOARD'), routerLink: '/dashboard' },
+    { label: this.translate.instant('EMPLOYEES.TITLE'), routerLink: '/employees' },
+    { label: this.recordName() || this.translate.instant('EMPLOYEES.FORM.EDIT_TITLE') },
+  ]);
+
+  constructor() {
+    // Header + tab indicators. Re-run on every tab change so a count bumped on
+    // one tab (a document added, a warning issued) is fresh when you return.
+    effect(() => {
+      const id = this.employeeId();
+      this.childSegment();
+      if (!id || id === '0') { this.employee.set(null); return; }
+      untracked(() => void this.loadMeta(id));
+    });
+  }
+
+  private async loadMeta(id: string): Promise<void> {
+    const has = (path: string) => this.tabs().some((t) => t.path === path);
+    const ok = <T>(p: Promise<T>) => p.catch(() => null as T | null);
+    const [emp, docs, assets, disc, leave, pay, eos] = await Promise.all([
+      ok(this.employees.getOne(id)),
+      has('documents') ? ok(this.documents.list(id)) : Promise.resolve(null),
+      has('assets') ? ok(this.assets.list(id)) : Promise.resolve(null),
+      has('disciplinary') ? ok(this.disciplinary.records(id)) : Promise.resolve(null),
+      has('leave') ? ok(this.leave.profile(id)) : Promise.resolve(undefined),
+      has('payroll') ? ok(this.payroll.current(id)) : Promise.resolve(undefined),
+      has('end-of-service') ? ok(this.eosSvc.get(id)) : Promise.resolve(null),
+    ]);
+    if (id !== this.employeeId()) return; // the user already moved on
+    this.employee.set(emp ?? null);
+    this.docCount.set(docs ? docs.length : null);
+    this.assetCount.set(assets ? assets.length : null);
+    this.disciplinaryCount.set(disc ? disc.length : null);
+    // `undefined` = tab not offered; `null` = loaded and empty / not set up.
+    this.leaveNeedsSetup.set(leave !== undefined && (leave === null || leave.annualEntitlementDays == null));
+    this.payrollNeedsSetup.set(pay !== undefined && pay === null);
+    this.eos.set(eos);
+  }
+
+  /**
+   * One flag per module. Every tab gates on its OWN key.
+   * `profileFlag` gates the profile cards on the employee form.
    */
   private readonly profileFlag = hrFieldsEnabled();
   private readonly documentsFlag = hrDocumentsEnabled();

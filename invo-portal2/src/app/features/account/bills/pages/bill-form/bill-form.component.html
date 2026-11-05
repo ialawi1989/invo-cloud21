@@ -1,0 +1,91 @@
+@if (doc && editor) {
+  @let e = bill;
+  <app-doc-form-shell
+    [title]="'BILLS.FORM.BILL' | translate" [breadcrumbs]="breadcrumbs"
+    [canDraft]="canOfferDraft" [submitting]="submitting" [saveDisabled]="missing.length > 0" [draftDisabled]="missingDraft.length > 0" [showView]="formStatus === 'edit'"
+    [saveLabel]="saveLabelKey | translate" [saveMenu]="saveMenu()" [actionsMenu]="actionsMenu()"
+    [total]="e.total" [totalQty]="totalQuantity"
+    (draft)="saveDraft()" (save)="savePrimary()" (cancel)="cancel()" (view)="view()">
+
+    <div class="df-top">
+    <app-doc-supplier-section
+      [supplier]="supplierValue" [error]="fieldError('supplierId')" [international]="e.allowBillOfEntry" [locked]="isConversion"
+      (supplierChange)="onSupplier($event)" (createNew)="createSupplier()"/>
+    <app-doc-attachments-card [attachments]="e.attachment" (changed)="onAttachments($event)"/>
+    </div>
+    @if (!e.isActiveSupplier) { <div class="df-warn">{{ 'BILLS.VIEW.SUPPLIER_INACTIVE' | translate }}</div> }
+
+    <section class="df-card">
+      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>{{ 'BILLS.FORM.BILL_DETAILS' | translate }}</h2>
+
+      @if (isConversion) {
+        <div class="df-row">
+          <div class="df-field df-field--grow">
+            <label>{{ 'BILLS.FORM.CONVERTED_FROM' | translate }}: <b>{{ e.purchaseNumber }}</b></label>
+            <app-segmented-toggle [options]="qtyModes" [value]="qtyMode" (valueChange)="onQtyMode($event)"/>
+          </div>
+        </div>
+      }
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label for="billingNumber">{{ 'BILLS.FORM.BILL_NUMBER' | translate }} <span class="req">*</span></label>
+          <div class="df-num" [class.is-invalid]="fieldError('billingNumber')">
+            <input id="billingNumber" type="text" [(ngModel)]="e.billingNumber" (ngModelChange)="markDirty()"/>
+            <button type="button" class="df-gear" (click)="openNumberPrefs()" [attr.title]="'BILLS.FORM.NUMBER_HELP' | translate" aria-label="settings">⚙</button>
+          </div>
+          @if (fieldError('billingNumber'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label for="reference">{{ 'BILLS.FORM.REFERENCE' | translate }}</label>
+          <input id="reference" class="df-input" type="text" [(ngModel)]="e.reference" (ngModelChange)="markDirty()"/>
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'BILLS.FORM.BILL_DATE' | translate }} <span class="req">*</span></label>
+          <app-date-picker [value]="billingDate" [min]="minDate" (valueChange)="onBillingDate($event)"/>
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'BILLS.FORM.PAYMENT_TERM' | translate }}</label>
+          <app-search-dropdown [items]="terms" [displayWith]="termLabel" [compareWith]="sameValue" [searchable]="false"
+            [value]="termOf()" (valueChange)="onTerm($any($event)?.value)" [clearable]="false"/>
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'BILLS.FORM.DUE_DATE' | translate }} <span class="req">*</span></label>
+          <app-date-picker [value]="dueDate" [min]="billingDate" (valueChange)="onDueDate($event)"/>
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.BRANCH' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="branches" [displayWith]="branchLabel" [compareWith]="byId"
+            [value]="branchOf()" (valueChange)="onBranch($any($event))" [clearable]="false" [disabled]="branchLocked"
+            [placeholder]="'DOC_FORM.SELECT_BRANCH' | translate"/>
+          @if (fieldError('branchId'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'BILLS.FORM.PAYABLE_ACCOUNT' | translate }}</label>
+          <app-search-dropdown [items]="payableAccounts" [displayWith]="accountLabel" [compareWith]="byId"
+            [value]="payableOf()" (valueChange)="onPayable($any($event))" [clearable]="true"
+            [placeholder]="'BILLS.FORM.ACCOUNTS_PAYABLE' | translate"/>
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.TAX_TYPE' | translate }}</label>
+          <app-segmented-toggle [options]="taxTypes" [value]="taxType" (valueChange)="onTaxType($event)"/>
+        </div>
+      </div>
+
+      <app-entity-custom-fields entityType="bill" [parentForm]="form" [valueSource]="e.customFields" idPrefix="cf-bill" [bare]="true"/>
+    </section>
+
+    <app-doc-lines-table
+      [doc]="e" [editor]="editor!" [config]="linesConfig" [formStatus]="formStatus"
+      (changed)="markDirty()">
+      <app-bill-totals [bill]="e" (changed)="markDirty()"/>
+    </app-doc-lines-table>
+
+  </app-doc-form-shell>
+}

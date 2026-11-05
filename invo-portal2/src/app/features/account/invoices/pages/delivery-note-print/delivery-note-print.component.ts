@@ -1,5 +1,5 @@
 import '../../../account-i18n';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ElementRef, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -35,6 +35,7 @@ export class DeliveryNotePrintComponent implements OnInit {
   private invoices = inject(InvoicesService);
   private company = inject(CompanyService);
   private lang = inject(LanguageService);
+  private host = inject(ElementRef);
 
   invoice = signal<Invoice | null>(null);
   loading = signal(true);
@@ -53,8 +54,18 @@ export class DeliveryNotePrintComponent implements OnInit {
     this.invoice.set(inv);
     this.loading.set(false);
     if (this.route.snapshot.queryParamMap.get('autoPrint') === 'true') {
-      setTimeout(() => window.print(), 300);
+      await this.imagesReady();
+      window.print();
     }
+  }
+
+  /** Waits for the page's images (the company logo) to finish loading — printing earlier prints an empty logo box. Gives up after 5 s so a broken URL can't block printing. */
+  private async imagesReady(): Promise<void> {
+    await new Promise<void>(r => setTimeout(r)); // let the just-set invoice render its <img>
+    const imgs = Array.from((this.host.nativeElement as HTMLElement).querySelectorAll('img')).filter(i => !i.complete);
+    if (!imgs.length) return;
+    const loaded = Promise.all(imgs.map(i => new Promise<void>(r => { i.addEventListener('load', () => r(), { once: true }); i.addEventListener('error', () => r(), { once: true }); })));
+    await Promise.race([loaded, new Promise<void>(r => setTimeout(r, 5000))]);
   }
 
   rowsOf(line: InvoiceLine): DeliveryRow[] {

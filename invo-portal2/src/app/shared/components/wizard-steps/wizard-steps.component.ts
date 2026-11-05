@@ -20,6 +20,8 @@ export class WizardStepsComponent {
   readonly steps = input.required<WizardStepItem[]>();
   /** Key of the active step. */
   readonly current = input.required<string>();
+  /** Centre the steps in the row instead of starting at the left edge. */
+  readonly center = input(false);
 
   currentIndex(): number {
     const i = this.steps().findIndex(s => s.key === this.current());

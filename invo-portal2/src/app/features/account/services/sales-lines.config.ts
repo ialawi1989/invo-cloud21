@@ -33,9 +33,11 @@ export function salesLinesConfig(doc: () => Invoice, lookups: SalesLookupsServic
     ],
     accounts: true,
     bulkItems: true,
-    excludeTypes: ['serialized', 'batch'],
+    bulkExcludeTypes: ['serialized', 'batch'],
+    serialsLookup: id => lookups.getProductSerials(id, scope()),
+    batchesLookup: id => lookups.getProductBatches(id, scope()),
     itemsDisabled: () => !scope(),
-    itemSearch: async (term, filter) =>
+    itemSearch: (term, filter) =>
       lookups.getBranchProducts({ page: filter?.page ?? 1, limit: 20, searchTerm: term, branchId: scope(), customerId: doc().customerId, tags: filter?.tags }),
     itemFilterTags: p => lookups.getProductTags(p),
     searchByBarcodes: barcodes => lookups.searchByBarcodes(barcodes, opts.barcodeType),

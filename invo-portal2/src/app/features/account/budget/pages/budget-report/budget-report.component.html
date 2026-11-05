@@ -1,0 +1,33 @@
+@if (loaded()) {
+  <div class="br">
+    <header class="page-header">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <div class="page-header__row">
+        <h1 class="page-header__title">{{ 'BUDGET.REPORT.TITLE' | translate }}</h1>
+        <div class="br-tools">
+          <button type="button" class="br-btn" (click)="back()">{{ 'COMMON.CANCEL' | translate }}</button>
+          @if (budget() && actions.canEdit) {
+            <button type="button" class="br-btn" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
+          }
+          <button type="button" class="br-btn" (click)="print()">{{ 'BUDGET.FORM.PRINT' | translate }}</button>
+          <button type="button" class="br-btn br-btn--primary" (click)="exportSheets()">{{ 'BUDGET.FORM.EXPORT' | translate }}</button>
+        </div>
+      </div>
+    </header>
+
+    @if (budget(); as b) {
+      <section class="br-card">
+        <div class="br-facts">
+          <div><span>{{ 'BUDGET.FORM.NAME' | translate }}</span><b>{{ b.name }}</b></div>
+          <div><span>{{ 'BUDGET.FORM.BRANCH' | translate }}</span><b>{{ branchName() || '—' }}</b></div>
+          <div><span>{{ 'BUDGET.FORM.YEAR' | translate }}</span><b>{{ b.year }}</b></div>
+          <div><span>{{ 'BUDGET.FORM.PERIODICITY' | translate }}</span><b>{{ periodicityLabel() }}</b></div>
+        </div>
+      </section>
+
+      <section class="br-card">
+        <app-budget-sheet [accounts]="accounts()" [periods]="periods()" [report]="true" [values]="values()" [actual]="actual()"/>
+      </section>
+    }
+  </div>
+}

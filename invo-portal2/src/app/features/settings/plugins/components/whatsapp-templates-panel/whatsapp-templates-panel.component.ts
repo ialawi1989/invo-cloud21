@@ -1,3 +1,4 @@
+import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -44,7 +45,7 @@ interface SyncedTemplate {
 @Component({
   selector: 'app-whatsapp-templates-panel',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [StatusBadgeComponent, CommonModule, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './whatsapp-templates-panel.component.html',
   styleUrl: './whatsapp-templates-panel.component.scss',

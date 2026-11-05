@@ -1,0 +1,33 @@
+:host { display: block; }
+.bs { display: flex; flex-direction: column; gap: 12px; }
+.bs__tabs { display: flex; }
+
+.bs__scroll { overflow: auto; border: 1px solid #e4e7ec; border-radius: 12px; background: #fff; max-height: calc(100vh - 340px); }
+.bs__table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; color: #0f172a;
+  th, td { padding: 7px 10px; border-bottom: 1px solid #eef0f4; white-space: nowrap; }
+  thead th { position: sticky; top: 0; z-index: 2; background: #f8fafc; font-weight: 700; text-align: end; color: #334155; border-bottom: 1px solid #e4e7ec; }
+  thead tr.bs__sub th { top: 33px; font-weight: 600; font-size: 12px; color: #64748b; }
+  thead th.bs__name { text-align: start; z-index: 3; }
+  &--report thead th { text-align: center; } }
+
+// The account column stays put while the periods scroll sideways.
+.bs__name { position: sticky; inset-inline-start: 0; z-index: 1; background: #fff; min-width: 240px; text-align: start; }
+.bs__account { padding-inline-start: 34px !important; font-weight: 400; }
+.bs__num { text-align: end; font-variant-numeric: tabular-nums; min-width: 110px; }
+.bs__in { padding: 4px 6px !important; min-width: 120px; }
+.bs__input { width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; font: inherit; text-align: end;
+  &:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .15); }
+  &--bad { border-color: #dc2626; background: #fef2f2; } }
+
+.bs__title td { background: #f1f5f9; font-weight: 700; }
+.bs__title .bs__name, .bs__title td:first-child { position: static; }
+.bs__group td { font-weight: 600; padding-inline-start: 20px; color: #334155; background: #fff; }
+.bs__total td { background: #f8fafc; font-weight: 700; border-top: 1px solid #e4e7ec; }
+.bs__total .bs__name { background: #f8fafc; }
+
+@media print {
+  .bs__tabs { display: none; }
+  .bs__scroll { max-height: none; overflow: visible; border: 0; }
+  .bs__name { position: static; }
+  thead th { position: static; }
+}

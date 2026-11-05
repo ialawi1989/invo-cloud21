@@ -21,23 +21,31 @@
   @if (canSeeEscalation() && escalation(); as esc) {
     <section class="disc-escalation">
       <h2 class="disc-escalation__title">{{ 'EMPLOYEES.DISCIPLINARY.ESCALATION' | translate }}</h2>
+      <ol class="ladder" [attr.aria-label]="'EMPLOYEES.DISCIPLINARY.ESCALATION' | translate">
+        @for (step of ladder(); track step.key) {
+          <li class="ladder__step" [class.ladder__step--current]="step.state === 'current'"
+              [class.ladder__step--done]="step.state === 'done'"
+              [attr.aria-current]="step.state === 'current' ? 'step' : null">
+            <span class="ladder__dot" aria-hidden="true">{{ $index + 1 }}</span>
+            <span class="ladder__label">{{ step.labelKey | translate }}</span>
+          </li>
+        }
+      </ol>
       <div class="disc-escalation__body">
         @if (esc.level === null) {
           <span class="disc-escalation__unknown">{{ 'EMPLOYEES.DISCIPLINARY.LEVEL_UNKNOWN' | translate }}</span>
         } @else if (esc.level === 0) {
-          <span>{{ 'EMPLOYEES.DISCIPLINARY.NO_LIVE_WARNINGS' | translate }}</span>
+          <span>{{ 'EMPLOYEES.DISCIPLINARY.NO_LIVE_WARNINGS_NOTE' | translate }}</span>
         } @else {
-          <span class="disc-escalation__level">{{ escalationLabel() | translate }}</span>
           <span class="disc-escalation__count">
             {{ esc.liveCount ?? '—' }} {{ 'EMPLOYEES.DISCIPLINARY.LIVE_COUNT' | translate }}
           </span>
         }
       </div>
-      <!-- Spent warnings are excluded from the level but still on the record. -->
-      <p class="disc-escalation__note">{{ 'EMPLOYEES.DISCIPLINARY.ESCALATION_NOTE' | translate }}</p>
     </section>
   }
 
+  <section class="hr-card">
   <div class="disc-header">
     <h2 class="disc-header__title">{{ 'EMPLOYEES.DISCIPLINARY.TITLE' | translate }}</h2>
     @if (canEdit() && !editing()) {
@@ -90,23 +98,23 @@
           <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.INCIDENT_DATE' | translate }} <em>*</em></span>
           <!-- The server refuses a future incident date: a warning for
                something that has not happened is a typo or a fabrication. -->
-          <input class="form-control" type="date" formControlName="incidentDate" [max]="today" />
+          <app-date-field formControlName="incidentDate" [max]="today"/>
         </label>
 
         <label class="disc-field">
           <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.REPORTED_DATE' | translate }} <em>*</em></span>
-          <input class="form-control" type="date" formControlName="reportedDate" />
+          <app-date-field formControlName="reportedDate"/>
         </label>
 
         <label class="disc-field">
           <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.EXPIRY' | translate }}</span>
-          <input class="form-control" type="date" formControlName="expiryDate" />
+          <app-date-field formControlName="expiryDate"/>
           <span class="disc-field__hint">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.EXPIRY_HINT' | translate }}</span>
         </label>
 
         <label class="disc-field">
           <span class="disc-field__label">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.STATEMENT_DEADLINE' | translate }}</span>
-          <input class="form-control" type="date" formControlName="statementDeadline" />
+          <app-date-field formControlName="statementDeadline"/>
           <!-- Setting this is what gives the employee a window to answer in. -->
           <span class="disc-field__hint">{{ 'EMPLOYEES.DISCIPLINARY.FIELD.DEADLINE_HINT' | translate }}</span>
         </label>
@@ -152,7 +160,10 @@
   @if (loading()) {
     <div class="disc-loading">{{ 'COMMON.LOADING' | translate }}</div>
   } @else if (!records().length) {
-    <div class="disc-empty">{{ 'EMPLOYEES.DISCIPLINARY.EMPTY' | translate }}</div>
+    <app-empty-state icon="shield"
+      [title]="'EMPLOYEES.DISCIPLINARY.EMPTY_TITLE' | translate"
+      [body]="'EMPLOYEES.DISCIPLINARY.EMPTY_BODY' | translate">
+    </app-empty-state>
   } @else {
     <div class="disc-list">
       @for (r of records(); track trackRecord($index, r)) {
@@ -417,4 +428,5 @@
       }
     </div>
   }
+  </section>
 </div>

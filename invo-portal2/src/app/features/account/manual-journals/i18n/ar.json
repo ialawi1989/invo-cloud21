@@ -13,7 +13,14 @@
       "STATUS": "الحالة",
       "EMPTY": "لا توجد قيود لعرضها.",
       "DELETE_TITLE": "حذف القيد؟",
-      "DELETE_MESSAGE": "سيتم حذف القيد \"{{reference}}\" نهائيًا. لا يمكن التراجع عن هذا الإجراء."
+      "DELETE_MESSAGE": "سيتم حذف القيد \"{{reference}}\" نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
+      "FILTERS": {
+        "STATUS": "الحالة",
+        "BRANCH": "الفرع",
+        "EMPLOYEE": "الموظف",
+        "DATE": "التاريخ"
+      },
+      "CREATED_DATE": "تاريخ الإنشاء"
     },
     "STATUS": {
       "DRAFT": "مسودة",
@@ -48,7 +55,15 @@
       "CONFIRM_REMOVE_LINE_MESSAGE": "سيتم إزالة هذا البند من القيد.",
       "COMMENTS": "التعليقات",
       "ADD_COMMENT": "إضافة تعليق",
-      "OPEN_JOURNAL": "فتح القيد"
+      "OPEN_JOURNAL": "فتح القيد",
+      "TOTAL": "الإجمالي",
+      "JOURNAL": "قيد يومية",
+      "COMMENT_PLACEHOLDER": "اكتب تعليقاً...",
+      "ADD_COMMENT_BTN": "إضافة تعليق",
+      "NO_COMMENTS": "لا توجد تعليقات بعد",
+      "PUBLISH": "نشر",
+      "WHATS_NEXT": "ما التالي؟",
+      "WHATS_NEXT_DRAFT": "هذا القيد في حالة مسودة. راجعه ثم تابع للنشر."
     }
   }
 }

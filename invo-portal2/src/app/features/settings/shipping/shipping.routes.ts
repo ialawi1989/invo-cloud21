@@ -5,7 +5,7 @@ import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
 
 const translationsLoaded: CanActivateFn = async () => {
   const lang = inject(LanguageService);
-  await lang.loadFeature('shipping');
+  await lang.loadFeature('settings/shipping');
   return true;
 };
 

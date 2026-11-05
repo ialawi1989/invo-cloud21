@@ -1,5 +1,5 @@
 import { DocLinesConfig } from '../../components/doc-lines-table/doc-lines.types';
-import { Invoice } from '../../models/invoice.model';
+import { Invoice, InvoiceLine } from '../../models/invoice.model';
 import { SalesLookupsService } from '../../services/sales-lookups.service';
 import { salesLinesConfig } from '../../services/sales-lines.config';
 
@@ -7,9 +7,12 @@ import { salesLinesConfig } from '../../services/sales-lines.config';
 export function invoiceLinesConfig(
   invoice: () => Invoice,
   lookups: SalesLookupsService,
-  opts: { canAdjustPrice: () => boolean; canVoid: () => boolean },
+  opts: { canAdjustPrice: () => boolean; canVoid: () => boolean; afterVoid?: (line: InvoiceLine) => Promise<void> },
 ): DocLinesConfig {
-  return salesLinesConfig(invoice, lookups, {
+  return {
+    taxType: 'editable',
+    afterRemove: async (line, outcome) => { if (outcome === 'voided') await opts.afterVoid?.(line); },
+    ...salesLinesConfig(invoice, lookups, {
     canAdjustPrice: opts.canAdjustPrice,
     barcodeType: 'invoice',
     canRemove: (line, ctx) => {
@@ -20,5 +23,6 @@ export function invoiceLinesConfig(
       const singleDraft = ctx.status === 'Draft' && draftMain.length <= 1;
       return active.length > 1 && !singleDraft && !line.isReturned && !(line.voidedItems?.length);
     },
-  });
+  }),
+  };
 }

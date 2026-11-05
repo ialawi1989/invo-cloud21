@@ -1,0 +1,61 @@
+{
+  "EXPENSES": {
+    "DASHBOARD": "Dashboard",
+    "ADD_NEW": "Add New Expense",
+    "SEARCH_PLACEHOLDER": "Search by number, branch, employee or reference",
+    "EMPTY": "No expenses found",
+    "CREATED_DATE": "Created date",
+    "LIST": {
+      "EXPENSE_LIST": "Expenses",
+      "EXPENSE_NUMBER": "Expense #",
+      "EXPENSE_DATE": "Expense date",
+      "SUPPLIER_NAME": "Supplier",
+      "CUSTOMER_NAME": "Customer",
+      "TOTAL": "Total",
+      "BRANCH_NAME": "Branch",
+      "EMPLOYEE_NAME": "Employee",
+      "REF": "Ref #"
+    },
+    "FILTERS": {
+      "BRANCH": "Branch",
+      "DATE": "Date"
+    },
+    "ACTIONS": {
+      "EXPORT_EXCEL": "Export to Excel",
+      "CLONE": "Clone"
+    },
+    "FORM": {
+      "EXPENSE": "Expense",
+      "NEW_EXPENSE": "New Expense",
+      "EDIT_EXPENSE": "Edit Expense",
+      "DETAILS": "Expense Details",
+      "CUSTOMER_INFORMATION": "Customer",
+      "BILLABLE_CUSTOMER": "Customer (billable)",
+      "EXPENSE_NUMBER": "Expense Number",
+      "NUMBER_HELP": "Click here to enable or disable auto-generation of Expense numbers.",
+      "REFERENCE": "Reference Number",
+      "EXPENSE_DATE": "Expense Date",
+      "PAYMENT_METHOD": "Paid Through",
+      "SELECT_METHOD": "Select a payment method",
+      "LINES": "Expense Lines",
+      "EXPENSE_ACCOUNT": "Expense Account",
+      "SELECT_ACCOUNT": "Select an account",
+      "AMOUNT": "Amount",
+      "LINE_TOTAL": "Total",
+      "NOTE_PLACEHOLDER": "Notes",
+      "ADD_LINE": "Add line",
+      "NOTES": "Notes",
+      "TOTAL_ABOVE_ZERO": "The total must be greater than zero"
+    },
+    "REQUIRED": {
+      "NUMBER": "Expense number",
+      "DATE": "Expense date",
+      "BRANCH": "Branch",
+      "PAYMENT_METHOD": "Payment method"
+    },
+    "VIEW": {
+      "VIEW_EXPENSE": "View Expense",
+      "CONFIRM_DELETE": "Delete this expense? This cannot be undone."
+    }
+  }
+}

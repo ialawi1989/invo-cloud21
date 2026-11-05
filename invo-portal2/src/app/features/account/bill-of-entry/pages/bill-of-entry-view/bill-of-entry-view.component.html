@@ -1,0 +1,27 @@
+@if (doc(); as b) {
+  <app-doc-view-shell
+    [docTitle]="title" railTitle="BILL_OF_ENTRY.LIST.BILL_OF_ENTRY_LIST" [showAdd]="actions.canAdd"
+    [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="id"
+    [printItems]="actions.canPrint ? printItems() : []" [shareItems]="shareItems()" [exportItems]="exportItems()" [actionItems]="actionItems(b)"
+    [showEdit]="actions.edit(b)" [showPaper]="false"
+    [loading]="loading()" [template]="template()" [data]="renderData()"
+    [zoom]="zoom()" (zoomChange)="setZoom($event)"
+    (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railPrev)="railPrev()" (railNext)="railNext()" (add)="add()"
+    (close)="goToList()" (edit)="edit()">
+    <app-party-peek-chips beforePaper [supplierId]="b.supplierId" [supplierName]="b.supplierName"/>
+
+    <app-doc-view-attachments beforePaper type="billOfEntry" [docId]="id" [attachments]="b.attachment"/>
+
+    <div alt class="bev-viewer">
+      <div class="bev-sheet">
+        <app-bill-of-entry-paper [entry]="b"/>
+      </div>
+    </div>
+
+    <div tabs id="bill-of-entry-additional-details">
+      <app-doc-additional-details [config]="additionalDetails()"/>
+    </div>
+  </app-doc-view-shell>
+} @else {
+  <app-doc-view-skeleton/>
+}

@@ -1,0 +1,18 @@
+@if (hasSupplier() || hasCustomer()) {
+  <div class="flex flex-wrap items-center gap-2 mb-2">
+    @if (hasSupplier()) {
+      <button type="button" (click)="peek('supplier')"
+        class="inline-flex items-center gap-2 px-3 h-8 rounded-full border border-slate-200 bg-white text-sm text-slate-700 hover:bg-slate-50">
+        <span class="text-slate-400">{{ 'COMMON.PARTY_PEEK.SUPPLIER' | translate }}</span>
+        <span class="font-semibold text-brand-700">{{ supplierName() }}</span>
+      </button>
+    }
+    @if (hasCustomer()) {
+      <button type="button" (click)="peek('customer')"
+        class="inline-flex items-center gap-2 px-3 h-8 rounded-full border border-slate-200 bg-white text-sm text-slate-700 hover:bg-slate-50">
+        <span class="text-slate-400">{{ 'COMMON.PARTY_PEEK.CUSTOMER' | translate }}</span>
+        <span class="font-semibold text-brand-700">{{ customerName() }}</span>
+      </button>
+    }
+  </div>
+}

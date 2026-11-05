@@ -1,25 +1,28 @@
-@if (payment(); as p) {
-  <div class="pv">
-    <header class="page-header">
-      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
-      <h1 class="page-header__title">{{ 'PAYMENTS.VIEW.PAYMENT' | translate }} {{ p.paymentName }}</h1>
-    </header>
+@if (doc(); as p) {
+  <app-doc-view-shell
+    [docTitle]="title" railTitle="PAYMENTS.LIST.PAYMENTS_LIST" [showAdd]="actions.canAddPrivilege"
+    [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="id"
+    [railFilterOptions]="railFilterOptions()" [railFilterValue]="railStatus()" railFilterStorageKey="paymentStatus"
+    [printItems]="actions.canPrint ? printItems() : []" [shareItems]="shareItems()" [exportItems]="exportItems()" [actionItems]="actionItems(p)"
+    [showEdit]="actions.canEdit(p)" [showPaper]="false"
+    [loading]="loading()" [template]="template()" [data]="renderData()"
+    [zoom]="zoom()" (zoomChange)="setZoom($event)"
+    (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railFilterPick)="onRailFilterPick($event)" (railPrev)="railPrev()" (railNext)="railNext()" (add)="add()"
+    (close)="goToList()" (edit)="edit()">
+    <app-party-peek-chips beforePaper [customerId]="p.customerId" [customerName]="p.customerName"/>
 
-    <div class="pv-bar">
-      <button type="button" class="pv-btn pv-btn--danger" (click)="back()">{{ 'COMMON.BACK' | translate }}</button>
-      <span class="pv-spacer"></span>
-      @if (canPrint) {
-        <app-dropdown-menu-btn [items]="printItems()" [appendToBody]="true" align="end" triggerClass="pv-btn">{{ 'PAYMENTS.VIEW.PRINT' | translate }}</app-dropdown-menu-btn>
-      }
-      <button type="button" class="pv-btn" (click)="send()">{{ 'PAYMENTS.VIEW.SEND' | translate }}</button>
-      @if (actions.canEdit(p)) {
-        <button type="button" class="pv-btn" (click)="edit()">{{ 'COMMON.EDIT' | translate }}</button>
-      }
-      @if (actions.canRemove(p)) {
-        <button type="button" class="pv-btn pv-btn--danger" (click)="remove()">{{ 'COMMON.DELETE' | translate }}</button>
-      }
+    <app-doc-view-attachments beforePaper type="invoicePayment" [docId]="id" [attachments]="p.attachment"/>
+
+    <div alt class="pvw-viewer">
+      <div class="pvw-sheet">
+        <app-payment-receipt class="pr-flat" [payment]="p"/>
+      </div>
     </div>
 
-    <app-payment-receipt [payment]="p"/>
-  </div>
+    <div tabs id="payment-additional-details">
+      <app-doc-additional-details [config]="additionalDetails()"/>
+    </div>
+  </app-doc-view-shell>
+} @else {
+  <app-doc-view-skeleton/>
 }

@@ -25,11 +25,13 @@ export interface DocJournalRow {
   styleUrl: './doc-journal-tab.component.scss',
   template: `
     <div class="jt">
-      <p class="jt__note">
-        {{ 'DOC_VIEW.JOURNAL_CURRENCY_NOTE' | translate }}
-        <span class="jt__currency">{{ currencyCode() }}</span>
-      </p>
-      <h3 class="jt__heading">{{ heading() }}</h3>
+      @if (showNote()) {
+        <p class="jt__note">
+          {{ 'DOC_VIEW.JOURNAL_CURRENCY_NOTE' | translate }}
+          <span class="jt__currency">{{ currencyCode() }}</span>
+        </p>
+      }
+      @if (heading()) { <h3 class="jt__heading">{{ heading() }}</h3> }
       <table class="jt__table">
         <thead>
           <tr><th>{{ 'DOC_VIEW.ACCOUNT' | translate }}</th><th class="end">{{ 'DOC_VIEW.DEBIT' | translate }}</th><th class="end">{{ 'DOC_VIEW.CREDIT' | translate }}</th></tr>
@@ -56,6 +58,8 @@ export class DocJournalTabComponent {
   rows = input<DocJournalRow[]>([]);
   /** Document-type heading above the table (e.g. "Invoice", "Estimate"). */
   heading = input<string>('');
+  /** The base-currency note (shown once, above the first table). */
+  showNote = input<boolean>(true);
 
   currencyCode = computed(() => this.company.settings()?.settings?.currencySymbol ?? '');
   totalDebit = computed(() => this.rows().reduce((s, r) => s + (Number(r.debit) || 0), 0));

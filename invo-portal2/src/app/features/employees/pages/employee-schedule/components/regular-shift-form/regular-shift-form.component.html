@@ -102,7 +102,7 @@
                     (valueChange)="setFrom(shift, $event)" />
                   <span class="to">{{ 'EMPLOYEES.SCHEDULE.TO_SEP' | translate }}</span>
                   <app-search-dropdown
-                    [items]="times" [value]="shift.to" [clearable]="false"
+                    [items]="endTimes" [value]="shift.to" [clearable]="false"
                     (valueChange)="setTo(shift, $event)" />
                   <button type="button" class="circle-btn" (click)="addShift(weekI, day)"
                           [attr.aria-label]="'EMPLOYEES.SCHEDULE.ADD_SHIFT' | translate">

@@ -13,7 +13,14 @@
       "STATUS": "Status",
       "EMPTY": "No journals to show.",
       "DELETE_TITLE": "Delete journal?",
-      "DELETE_MESSAGE": "This will permanently delete journal \"{{reference}}\". This cannot be undone."
+      "DELETE_MESSAGE": "This will permanently delete journal \"{{reference}}\". This cannot be undone.",
+      "FILTERS": {
+        "STATUS": "Status",
+        "BRANCH": "Branch",
+        "EMPLOYEE": "Employee",
+        "DATE": "Date"
+      },
+      "CREATED_DATE": "Created date"
     },
     "STATUS": {
       "DRAFT": "Draft",
@@ -48,7 +55,15 @@
       "CONFIRM_REMOVE_LINE_MESSAGE": "This line will be removed from the journal.",
       "COMMENTS": "Comments",
       "ADD_COMMENT": "Add Comment",
-      "OPEN_JOURNAL": "Open Journal"
+      "OPEN_JOURNAL": "Open Journal",
+      "TOTAL": "Total",
+      "JOURNAL": "Journal",
+      "COMMENT_PLACEHOLDER": "Write a comment...",
+      "ADD_COMMENT_BTN": "Add comment",
+      "NO_COMMENTS": "No comments yet",
+      "PUBLISH": "Publish",
+      "WHATS_NEXT": "What's next?",
+      "WHATS_NEXT_DRAFT": "This journal is in draft status. Review and proceed to publish."
     }
   }
 }

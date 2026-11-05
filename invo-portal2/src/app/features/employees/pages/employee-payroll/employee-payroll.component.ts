@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
 
 import { AuthService } from '@core/auth/auth.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { AlertComponent } from '@shared/components/alert/alert.component';
 
 import { HrError, describeError } from '../../hr-error';
 import { portalKey } from '../../hr-labels';
@@ -56,7 +58,7 @@ import {
 @Component({
   selector: 'app-employee-payroll',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, AlertComponent, DateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-payroll.component.html',
   styleUrls: ['./employee-payroll.component.scss'],
@@ -80,6 +82,8 @@ export class EmployeePayrollComponent {
 
   readonly current = signal<PayrollRow | null>(null);
   readonly history = signal<PayrollRow[]>([]);
+  /** Bank numbers show their last four digits until someone asks. */
+  readonly ibanRevealed = signal(false);
   readonly bank = signal<BankDetails | null>(null);
   readonly loans = signal<EmployeeLoan[]>([]);
   readonly catalog = signal<PayrollCatalog>({

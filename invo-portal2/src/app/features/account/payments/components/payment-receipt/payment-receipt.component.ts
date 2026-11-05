@@ -95,6 +95,7 @@ import { InvoicePayment } from '../../../models/invoice-payment.model';
     .pr__table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
     .pr__table th { background: #0f172a; color: #fff; text-align: start; padding: 10px 12px; }
     .pr__table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+    :host(.pr-flat) .pr { border: 0; border-radius: 0; padding: 0; max-width: none; }
     .end { text-align: end !important; }
     a { color: #227d8d; }
   `],

@@ -1,0 +1,77 @@
+@if (doc && editor) {
+  @let c = cn;
+  <app-doc-form-shell
+    [title]="'CREDIT_NOTES.FORM.CREDIT_NOTE' | translate" [breadcrumbs]="breadcrumbs"
+    [canDraft]="false" [submitting]="submitting" [saveDisabled]="missing.length > 0" [showView]="false"
+    [saveLabel]="saveLabelKey | translate" [saveMenu]="saveMenu()"
+    [total]="c.total" [totalQty]="totalQuantity"
+    (save)="savePrimary()" (cancel)="cancel()">
+
+    <div class="df-top">
+    <app-doc-party-section
+      [customer]="customerValue" [addresses]="addresses" [address]="customerAddress"
+      [locked]="fromInvoiceRoute" [error]="fieldError('customerId')"
+      (customerChange)="onCustomer($event)" (addressChange)="setAddress($event)" (addAddress)="addAddress()"
+      (createNew)="createCustomer()" (advancedSearch)="advancedCustomerSearch()"/>
+    <app-doc-attachments-card [attachments]="c.attachment" (changed)="onAttachments($event)"/>
+    </div>
+
+    <section class="df-card">
+      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>{{ 'CREDIT_NOTES.FORM.CREDIT_NOTE_DETAILS' | translate }}</h2>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.BRANCH' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="branches" [displayWith]="branchLabel" [compareWith]="byId"
+            [value]="branchOf()" (valueChange)="onBranch($any($event))" [clearable]="false" [disabled]="fromInvoiceRoute"
+            [placeholder]="'DOC_FORM.SELECT_BRANCH' | translate"/>
+          @if (fieldError('branchId'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'CREDIT_NOTES.FORM.INVOICE' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="invoices" [displayWith]="invoiceLabel" [compareWith]="byId"
+            [value]="invoiceOf()" (valueChange)="onInvoice($any($event))" [clearable]="false" [disabled]="fromInvoiceRoute"
+            [placeholder]="'CREDIT_NOTES.FORM.SELECT_INVOICE' | translate"/>
+          @if (fieldError('invoiceId'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label for="creditNoteNumber">{{ 'CREDIT_NOTES.FORM.CREDIT_NOTE_NUMBER' | translate }} <span class="req">*</span></label>
+          <div class="df-num" [class.is-invalid]="fieldError('creditNoteNumber')">
+            <input id="creditNoteNumber" type="text" [(ngModel)]="c.creditNoteNumber" (ngModelChange)="markDirty()"/>
+            <button type="button" class="df-gear" (click)="openNumberPrefs()" [attr.title]="'CREDIT_NOTES.FORM.NUMBER_HELP' | translate" aria-label="settings">⚙</button>
+          </div>
+          @if (fieldError('creditNoteNumber'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'CREDIT_NOTES.FORM.CREDIT_NOTE_DATE' | translate }} <span class="req">*</span></label>
+          <app-date-picker [value]="docDate" [min]="minDate" (valueChange)="onCreditNoteDate($event)"/>
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label for="refrenceNumber">{{ 'CREDIT_NOTES.FORM.REFERENCE' | translate }}</label>
+          <input id="refrenceNumber" class="df-input" type="text" [(ngModel)]="c.refrenceNumber" (ngModelChange)="markDirty()"/>
+        </div>
+        <div class="df-field df-field--grow"></div>
+      </div>
+
+      <app-entity-custom-fields entityType="creditNote" [parentForm]="form" [valueSource]="c.customFields" idPrefix="cf-cn" [bare]="true"/>
+    </section>
+
+    @if (c.creditLines.length) {
+      @if (exceedsInvoice) {
+        <p class="df-error">{{ 'CREDIT_NOTES.FORM.LINES_LARGER_THAN_INVOICE' | translate }}</p>
+      }
+      <app-doc-lines-table
+        [doc]="c" [editor]="editor!" [config]="linesConfig" [formStatus]="formStatus"
+        (changed)="markDirty()">
+        <app-doc-totals [doc]="c" [editor]="editor!" [readonlyTotals]="true" notesHintKey="CREDIT_NOTES.FORM.NOTES_HINT" (changed)="markDirty()"/>
+      </app-doc-lines-table>
+    }
+
+  </app-doc-form-shell>
+}

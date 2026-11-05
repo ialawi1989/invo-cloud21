@@ -1,0 +1,55 @@
+<div class="std">
+  <header class="std__head">
+    <h2>{{ 'SALES_TARGET.DRAWER.TITLE' | translate }}</h2>
+    <button type="button" class="std__x" (click)="close()" [attr.aria-label]="'COMMON.CANCEL' | translate">×</button>
+  </header>
+
+  <div class="std__filters">
+    <input class="std__search" type="search" [ngModel]="search()" (ngModelChange)="onSearch($event)"
+      [placeholder]="'SALES_TARGET.DRAWER.SEARCH' | translate"/>
+    <app-segmented-toggle [options]="filterOptions" [value]="filter()" (valueChange)="setFilter($event)"/>
+    <div class="std__row">
+      <app-segmented-toggle [options]="sortOptions" [value]="sort()" (valueChange)="setSort($event)"/>
+      <div class="std__year">
+        <app-search-dropdown
+          [items]="years" [value]="selectedYear()" (valueChange)="onYear($event)"
+          [displayWith]="yearLabel" [compareWith]="yearSame" [toValue]="yearValue" [searchable]="false" [clearable]="false"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="std__list" (scroll)="onScroll($event)">
+    @if (loading()) {
+      <p class="std__note">{{ 'SALES_TARGET.DRAWER.LOADING' | translate }}</p>
+    } @else if (failed()) {
+      <p class="std__note std__note--bad">{{ 'SALES_TARGET.DRAWER.FAILED' | translate }}</p>
+    } @else if (!rows().length) {
+      <div class="std__empty">
+        <b>{{ 'SALES_TARGET.DRAWER.EMPTY' | translate }}</b>
+        <span>{{ 'SALES_TARGET.DRAWER.EMPTY_HINT' | translate }}</span>
+      </div>
+    }
+
+    @for (r of rows(); track r.target.id) {
+      <article class="std__card">
+        <div class="std__card-main">
+          <div class="std__title-row">
+            <b>{{ r.label }}</b>
+            <span class="std__tag">{{ ('SALES_TARGET.PERIOD.' + r.target.period) | translate }}</span>
+            <span class="std__chip" [class]="'std__chip std__chip--' + r.status.toLowerCase()">{{ ('SALES_TARGET.STATUS.' + r.status) | translate }}</span>
+          </div>
+          <div class="std__meta">
+            {{ 'SALES_TARGET.DRAWER.COMPANY_TARGET' | translate }}:
+            <b>{{ r.total | mycurrency:{ symbol: r.target.currency } }}</b>
+          </div>
+        </div>
+        <div class="std__actions">
+          <button type="button" class="std__btn" (click)="pick('open', r)">{{ 'SALES_TARGET.DRAWER.OPEN' | translate }}</button>
+          <button type="button" class="std__btn std__btn--primary" (click)="pick('edit', r)">{{ 'COMMON.EDIT' | translate }}</button>
+        </div>
+      </article>
+    }
+
+    @if (loadingMore()) { <p class="std__note">{{ 'SALES_TARGET.DRAWER.LOADING' | translate }}</p> }
+  </div>
+</div>

@@ -48,6 +48,21 @@
           </span>
         }
       </button>
+      <!-- Tag filter — a multi-select picker. -->
+      <button type="button" class="cat-filter" [class.cat-filter--active]="tags().length > 0" (click)="openTagPicker()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/>
+        </svg>
+        <span class="cat-filter__label">
+          {{ tags().length === 1 ? tags()[0] : (tags().length > 1 ? ('PRODUCTS.PRODUCT_RECIPE.TAGS_N' | translate: { count: tags().length }) : ('PRODUCTS.PRODUCT_RECIPE.ALL_TAGS' | translate)) }}
+        </span>
+        @if (tags().length) {
+          <span class="cat-filter__clear" role="button" [attr.aria-label]="'COMMON.CLEAR' | translate"
+                (click)="clearTags(); $event.stopPropagation()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </span>
+        }
+      </button>
     </div>
   </div>
 

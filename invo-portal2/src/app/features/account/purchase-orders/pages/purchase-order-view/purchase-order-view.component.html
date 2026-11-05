@@ -1,0 +1,22 @@
+@if (doc(); as e) {
+  <app-doc-view-shell
+    [docTitle]="title" railTitle="PURCHASE_ORDERS.LIST.PURCHASE_ORDER_LIST" [showAdd]="actions.canAdd"
+    [railItems]="railItems()" [railLoading]="railLoading()" [railTerm]="railTerm()" [railPage]="railPage()" [railPageCount]="railPageCount()" [selectedId]="id"
+    [railFilterOptions]="railFilterOptions()" [railFilterValue]="railStatus()" railFilterStorageKey="purchaseOrderStatus"
+    [printItems]="actions.canPrint ? printItems() : []" [shareItems]="shareItems()" [exportItems]="exportItems()" [actionItems]="actionItems(e)"
+    [showEdit]="actions.edit(e)"
+    [loading]="loading()" [template]="template()" [data]="renderData()" [reportDesign]="reportDesign()" [reportData]="reportData()"
+    [zoom]="zoom()" (zoomChange)="setZoom($event)"
+    (railSearch)="onRailSearch($event)" (railPick)="railGoTo($event)" (railFilterPick)="onRailFilterPick($event)" (railPrev)="railPrev()" (railNext)="railNext()" (add)="add()"
+    (close)="goToList()" (edit)="edit()">
+    <app-party-peek-chips beforePaper [supplierId]="e.supplierId" [supplierName]="e.supplierName"/>
+
+    @if (actions.convert(e)) {
+      <button toolbarExtra type="button" class="dv-tool" (click)="actions.goConvert(id, e)">{{ 'PURCHASE_ORDERS.ACTIONS.CONVERT_TO_BILL' | translate }}</button>
+    }
+
+    @if (e.isBill) {
+      <div banner class="dv-banner dv-banner--info">{{ 'PURCHASE_ORDERS.VIEW.CONVERTED_TO_BILL' | translate }}</div>
+    }
+  </app-doc-view-shell>
+}

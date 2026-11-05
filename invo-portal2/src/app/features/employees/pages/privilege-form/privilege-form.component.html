@@ -21,7 +21,7 @@
 
             <!-- "Copy from a role" is a one-time seed action, not a stored
                  field — a button that opens a role picker popup. -->
-            @if (savedRoles().length) {
+            @if (savedRoles().length && !lockedRole()) {
               <button type="button" class="clone-from-btn" (click)="openRolePicker()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -35,6 +35,7 @@
             type="text"
             class="input"
             [value]="name()"
+            [readOnly]="lockedRole()"
             (input)="onNameInput($any($event.target).value)"
             [placeholder]="'EMPLOYEES.PRIVILEGES.NAME' | translate"
           />
@@ -61,7 +62,7 @@
       <header class="card__head card__head--tools">
         <div>
           <h2 class="card__title">{{ 'EMPLOYEES.PRIVILEGES.ACCESS' | translate }}</h2>
-          <p class="card__sub">{{ 'EMPLOYEES.PRIVILEGES.ACCESS_HINT' | translate }}</p>
+          <p class="card__sub">{{ (lockedRole() ? 'EMPLOYEES.PRIVILEGES.LOCKED_HINT' : 'EMPLOYEES.PRIVILEGES.ACCESS_HINT') | translate }}</p>
         </div>
 
         <div class="tools">
@@ -70,6 +71,7 @@
             <app-toggle
               size="sm"
               [checked]="allGroupsOn()"
+              [disabled]="lockedRole()"
               [ariaLabel]="'EMPLOYEES.PRIVILEGES.SELECT_ALL' | translate"
               (checkedChange)="onSelectAllGroups($event)"
             />
@@ -82,6 +84,16 @@
             [displayWith]="displaySecurityType"
             [searchable]="false"
             [placeholder]="'EMPLOYEES.PRIVILEGES.FILTER_ALL' | translate"
+          />
+          <app-search-dropdown
+            class="tools__type"
+            [items]="stateOptions"
+            [value]="permissionState()"
+            (valueChange)="onStateChange($any($event))"
+            [displayWith]="displayState"
+            [searchable]="false"
+            [clearable]="false"
+            [placeholder]="'EMPLOYEES.PRIVILEGES.FILTER_STATE_ALL' | translate"
           />
           <div class="search">
             <input
@@ -133,6 +145,7 @@
                     <app-toggle
                       size="sm"
                       [checked]="g.allOn"
+                      [disabled]="lockedRole()"
                       [ariaLabel]="'EMPLOYEES.PRIVILEGES.SELECT_ALL' | translate"
                       (checkedChange)="onSelectAll(g.section, $event)"
                     />
@@ -141,6 +154,7 @@
                   <app-toggle
                     size="sm"
                     [checked]="g.sectionChecked"
+                    [disabled]="lockedRole()"
                     [ariaLabel]="g.label"
                     (checkedChange)="onSectionToggle(g.section, $event)"
                   />
@@ -155,6 +169,7 @@
                       <app-toggle
                         size="sm"
                         [checked]="a.checked"
+                        [disabled]="lockedRole()"
                         [ariaLabel]="a.label"
                         (checkedChange)="onActionChange(g.section, a.setting, $event)"
                       />

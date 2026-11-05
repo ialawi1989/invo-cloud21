@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { AuthService } from '@core/auth/auth.service';
@@ -104,7 +105,7 @@ const TIER3_DECISION_OPTIONS: readonly Tier3DecisionOption[] = [
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     FormStickyFooterComponent,
-    SearchDropdownComponent,
+    SearchDropdownComponent, DateFieldComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './gosi-settings.component.html',

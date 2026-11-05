@@ -79,3 +79,27 @@ export function findAccountType(id: string): AccountType | undefined {
 export function accountTypeKey(value: string | null | undefined): string {
   return value ? `CHART_OF_ACCOUNTS.ACCOUNT_TYPE.${value}` : '';
 }
+
+/** Which side increases the account — drives the opening/closing balance columns of the account view
+ *  (legacy `Account.setAccountNature`; "Non Current Assets" is an asset, so Dr). */
+export function accountNature(parentType: string | null | undefined): 'Dr' | 'Cr' | '' {
+  switch (parentType) {
+    case 'Current Assets':
+    case 'Other Current Assets':
+    case 'Fixed Assets':
+    case 'Non Current Assets':
+    case 'Operating Expense':
+    case 'Costs Of Goods Sold':
+      return 'Dr';
+    case 'Income':
+    case 'Operating Income':
+    case 'Liabilities':
+    case 'Current Liabilities':
+    case 'Other Current Liabilities':
+    case 'Long Term Liabilities':
+    case 'Equity':
+      return 'Cr';
+    default:
+      return '';
+  }
+}

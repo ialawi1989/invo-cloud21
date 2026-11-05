@@ -41,6 +41,9 @@ import { OptionGroupService, OptionGroupListRow } from '../../services/option-gr
  * Ported from the legacy `departments.component` in InvoCloudFront2 (a
  * single-column Name table). URLs kept under `/products/option-group`.
  */
+/** List column key -> the column `getOptionGroupList` can sort by. */
+const SORT_COLUMNS: Record<string, string> = { name: 'title' };
+
 @Component({
   selector: 'app-option-groups-list',
   standalone: true,
@@ -118,8 +121,10 @@ export class OptionGroupsListComponent implements OnInit {
       page: params.page,
       limit: params.limit,
       searchTerm: params.searchTerm || '',
+      // The backend sorts on its own column names: an option group's name is the `title` column, and an unknown
+      // one (`name`) makes the whole query fail, which showed up as an empty list.
       sortBy: params.sortBy
-        ? { sortValue: params.sortBy.sortValue, sortDirection: params.sortBy.sortDirection }
+        ? { sortValue: SORT_COLUMNS[params.sortBy.sortValue] ?? params.sortBy.sortValue, sortDirection: params.sortBy.sortDirection }
         : {},
     });
     return { list: data.list, count: data.count, pageCount: data.pageCount };

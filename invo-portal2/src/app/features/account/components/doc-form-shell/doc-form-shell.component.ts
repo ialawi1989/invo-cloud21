@@ -36,17 +36,20 @@ import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer
         <div class="df-bar">
           <div class="df-bar__actions">
             @if (canDraft()) {
-              <button type="button" class="df-btn" [disabled]="submitting()" (click)="draft.emit()">{{ draftLabel() || ('DOC_FORM.SAVE_AS_DRAFT' | translate) }}</button>
+              <button type="button" class="df-btn" [disabled]="submitting() || draftDisabled()" (click)="draft.emit()">{{ draftLabel() || ('DOC_FORM.SAVE_AS_DRAFT' | translate) }}</button>
             }
             <span class="df-split">
-              <button type="button" class="df-btn df-btn--primary df-split__main" [disabled]="submitting()" (click)="save.emit()">{{ saveLabel() || ('DOC_FORM.SAVE_AND_SEND' | translate) }}</button>
+              <button type="button" class="df-btn df-btn--primary df-split__main" [disabled]="submitting() || saveDisabled()" (click)="save.emit()">{{ saveLabel() || ('DOC_FORM.SAVE_AND_SEND' | translate) }}</button>
               @if (saveMenu().length) {
-                <app-dropdown-menu-btn [items]="saveMenu()" [appendToBody]="true" [chevron]="false" align="start" triggerClass="df-split__caret"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg></app-dropdown-menu-btn>
+                <app-dropdown-menu-btn [items]="saveMenu()" [disabled]="submitting() || saveDisabled()" [appendToBody]="true" [chevron]="false" align="start" triggerClass="df-split__caret"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg></app-dropdown-menu-btn>
               }
             </span>
             <button type="button" class="df-btn" (click)="cancel.emit()">{{ 'COMMON.CANCEL' | translate }}</button>
             @if (showView()) {
               <button type="button" class="df-btn" (click)="view.emit()">{{ 'COMMON.VIEW' | translate }}</button>
+            }
+            @if (actionsMenu().length) {
+              <app-dropdown-menu-btn [items]="actionsMenu()" [disabled]="submitting()" [appendToBody]="true" align="start" triggerClass="df-btn">{{ 'DOC_VIEW.ACTIONS' | translate }}</app-dropdown-menu-btn>
             }
           </div>
           <div class="df-bar__side">
@@ -66,10 +69,15 @@ export class DocFormShellComponent {
   breadcrumbs = input<BreadcrumbItem[]>([]);
   canDraft = input<boolean>(true);
   submitting = input<boolean>(false);
+  /** Form incomplete: Save / Save as draft stay disabled until it is. */
+  saveDisabled = input<boolean>(false);
+  draftDisabled = input<boolean>(false);
   showView = input<boolean>(false);
   draftLabel = input<string>('');
   saveLabel = input<string>('');
   saveMenu = input<DropdownMenuBtnItem[]>([]);
+  /** Document-level "Actions" dropdown (clone, credit note, delete…) beside Cancel / View; hidden when empty. */
+  actionsMenu = input<DropdownMenuBtnItem[]>([]);
   total = input<number>(0);
   totalQty = input<number>(0);
 

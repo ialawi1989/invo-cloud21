@@ -324,8 +324,14 @@ export const routes: Routes = [
           import('./features/products/products.routes').then(m => m.PRODUCTS_ROUTES)
       },
       {
+        // Inventory transfers (sidebar → Inventory → Transfers). Declared before the generic `inventory` routes.
+        path: 'inventory/transfer',
+        loadChildren: () =>
+          import('./features/inventory/transfer/transfer.routes').then(m => m.TRANSFER_ROUTES)
+      },
+      {
         // Inventory locations + inventory requests (sidebar → Inventory group).
-        // Other `/inventory/*` screens (physical-counts, transfer) are not migrated yet.
+        // Other `/inventory/*` screens (physical-counts) are not migrated yet.
         path: 'inventory',
         loadChildren: () =>
           import('./features/products/inventory.routes').then(m => m.INVENTORY_ROUTES)
@@ -548,6 +554,12 @@ export const routes: Routes = [
           import('./features/account/customers/customers.routes').then(m => m.CUSTOMERS_ROUTES)
       },
       {
+        // Customer Segments — Manual / Automated customer groupings (list + form).
+        path: 'account/customer-segments',
+        loadChildren: () =>
+          import('./features/account/customer-segments/customer-segments.routes').then(m => m.CUSTOMER_SEGMENTS_ROUTES)
+      },
+      {
         // Payments — Sales section. List first; view and form follow.
         path: 'account/payments',
         loadChildren: () =>
@@ -564,6 +576,93 @@ export const routes: Routes = [
         path: 'account/estimate',
         loadChildren: () =>
           import('./features/account/estimates/estimates.routes').then(m => m.ESTIMATES_ROUTES)
+      },
+      {
+        // Suppliers — Purchase section (list, form).
+        path: 'account/suppliers',
+        loadChildren: () =>
+          import('./features/account/suppliers/suppliers.routes').then(m => m.SUPPLIERS_ROUTES)
+      },
+      {
+        // Bills — Purchase section (list, view, form, purchase order conversion).
+        path: 'account/bills',
+        loadChildren: () =>
+          import('./features/account/bills/bills.routes').then(m => m.BILLS_ROUTES)
+      },
+      {
+        // Bill Payments — Purchase section (list, view, form).
+        path: 'account/bills-payment',
+        loadChildren: () =>
+          import('./features/account/bills-payment/bills-payment.routes').then(m => m.BILLS_PAYMENT_ROUTES)
+      },
+      {
+        // Sales Target dashboard — Sales section (KPIs vs saved targets, set-target wizard, saved targets drawer).
+        path: 'account/sales-target-dashboard',
+        loadChildren: () =>
+          import('./features/account/sales-target/sales-target.routes').then(m => m.SALES_TARGET_ROUTES)
+      },
+      {
+        // Budget — Accounting section (list, form with the planning grid, Budget vs Actual report).
+        path: 'account/budget',
+        loadChildren: () =>
+          import('./features/account/budget/budget.routes').then(m => m.BUDGET_ROUTES)
+      },
+      {
+        // VAT Payments — Accounting section (list, view, form + pay).
+        path: 'account/vat-payment',
+        loadChildren: () =>
+          import('./features/account/vat-payment/vat-payment.routes').then(m => m.VAT_PAYMENT_ROUTES)
+      },
+      {
+        // Supplier Credits — Purchase section (list, view; form + refund follow).
+        path: 'account/supplier-credit',
+        loadChildren: () =>
+          import('./features/account/supplier-credits/supplier-credits.routes').then(m => m.SUPPLIER_CREDITS_ROUTES)
+      },
+      {
+        // Bill of Entry — Purchase section (list, view, form). Made from a bill of a supplier abroad.
+        path: 'account/bill-of-entry',
+        loadChildren: () =>
+          import('./features/account/bill-of-entry/bill-of-entry.routes').then(m => m.BILL_OF_ENTRY_ROUTES)
+      },
+      {
+        // Recurring Bills — Purchase section (list, view, form).
+        path: 'account/recurring-bill',
+        loadChildren: () =>
+          import('./features/account/recurring-bills/recurring-bills.routes').then(m => m.RECURRING_BILLS_ROUTES)
+      },
+      {
+        // Expenses — Purchase section (list, view, form).
+        path: 'account/expense',
+        loadChildren: () =>
+          import('./features/account/expenses/expenses.routes').then(m => m.EXPENSES_ROUTES)
+      },
+      {
+        // Recurring Expenses — Purchase section (list, view, form).
+        path: 'account/recurring-expense',
+        loadChildren: () =>
+          import('./features/account/recurring-expenses/recurring-expenses.routes').then(m => m.RECURRING_EXPENSES_ROUTES)
+      },
+      {
+        // Purchase Orders — Purchase section (list, view, form, auto purchase order). `Convert to Bill`
+        // hands the order over to `/account/bills/convert-from-purchase/:id`.
+        path: 'account/purchase-order',
+        loadChildren: () =>
+          import('./features/account/purchase-orders/purchase-orders.routes').then(m => m.PURCHASE_ORDERS_ROUTES)
+      },
+      {
+        // Credit Notes — Sales section (list, view, form). `Create Credit Note` on an invoice opens
+        // `/account/credit-notes/new/forInvoice/:invoiceId`.
+        path: 'account/credit-notes',
+        loadChildren: () =>
+          import('./features/account/credit-notes/credit-notes.routes').then(m => m.CREDIT_NOTES_ROUTES)
+      },
+      {
+        // Recurring Invoices — Sales section (list, view, form). `Make Recurring` on an invoice hands
+        // the invoice over to `/account/recurring-invoice/new?fromInvoice=yes`.
+        path: 'account/recurring-invoice',
+        loadChildren: () =>
+          import('./features/account/recurring-invoices/recurring-invoices.routes').then(m => m.RECURRING_INVOICES_ROUTES)
       },
       {
         // Promotions — gift vouchers first (settings, give, details, history);

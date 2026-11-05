@@ -1,0 +1,168 @@
+@if (t; as d) {
+  <app-doc-form-shell
+    [title]="title" [breadcrumbs]="breadcrumbs"
+    [canDraft]="canDraft" [draftLabel]="draftLabel" [saveLabel]="primaryLabel"
+    [submitting]="submitting" [saveDisabled]="showErrors && missing.length > 0" [draftDisabled]="showErrors && missing.length > 0"
+    [showView]="!isNew" [total]="totalCost" [totalQty]="totalQty"
+    (draft)="onDraft()" (save)="onPrimary()" (cancel)="cancel()" (view)="view()">
+
+    <!-- Details -->
+    <section class="df-card">
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'INVENTORY_TRANSFER.TRANSFER_NO' | translate }}</label>
+          <input class="df-input" type="text" [value]="d.transferNumber" disabled/>
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'INVENTORY_TRANSFER.TRANSFER_DATE' | translate }}</label>
+          <input class="df-input" type="text" [value]="d.createdDate | date: 'dd/MM/yyyy'" disabled/>
+        </div>
+        <div class="df-field df-field--grow">
+          <label for="tf-ref">{{ 'INVENTORY_TRANSFER.REFERENCE' | translate }}</label>
+          <input id="tf-ref" class="df-input" type="text" [(ngModel)]="d.reference" (ngModelChange)="mark()" [disabled]="locked"/>
+        </div>
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'INVENTORY_TRANSFER.BRANCH' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="branchChoices(toAnotherBranch ? d.destinationBranch : null)" [displayWith]="label" [compareWith]="byId" [clearable]="false"
+            [value]="choiceOf(branches, d.branchId)" (valueChange)="onBranch($any($event))" [disabled]="locked || fromRequest"
+            [placeholder]="'INVENTORY_TRANSFER.SELECT_BRANCH' | translate"/>
+          @if (showErrors && !d.branchId) { <p class="df-error">{{ 'INVENTORY_TRANSFER.MISSING.BRANCH' | translate }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'INVENTORY_TRANSFER.REASON' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="reasons" [displayWith]="reasonLabel" [compareWith]="sameReason" [searchable]="false" [clearable]="false"
+            [value]="d.reason || null" (valueChange)="onReason($any($event))" [disabled]="locked || fromRequest || wastage"
+            [placeholder]="'INVENTORY_TRANSFER.SELECT_REASON' | translate"/>
+          @if (showErrors && !d.reason) { <p class="df-error">{{ 'INVENTORY_TRANSFER.MISSING.REASON' | translate }}</p> }
+        </div>
+        @if (toAnotherBranch) {
+          <div class="df-field df-field--grow">
+            <label>{{ 'INVENTORY_TRANSFER.DESTINATION' | translate }} <span class="req">*</span></label>
+            <app-search-dropdown [items]="branchChoices(d.branchId)" [displayWith]="label" [compareWith]="byId" [clearable]="false"
+              [value]="choiceOf(branches, d.destinationBranch)" (valueChange)="onDestination($any($event))" [disabled]="locked || fromRequest"
+              [placeholder]="'INVENTORY_TRANSFER.SELECT_DESTINATION' | translate"/>
+            @if (showErrors && !d.destinationBranch) { <p class="df-error">{{ 'INVENTORY_TRANSFER.MISSING.DESTINATION' | translate }}</p> }
+          </div>
+        }
+      </div>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label for="tf-note">{{ 'INVENTORY_TRANSFER.NOTE' | translate }}</label>
+          <input id="tf-note" class="df-input" type="text" [(ngModel)]="d.note" (ngModelChange)="mark()" [disabled]="locked"/>
+        </div>
+      </div>
+
+      @if (canSelectAccount) {
+        <button type="button" class="tf-adv" (click)="advancedOpen = !advancedOpen">
+          {{ 'INVENTORY_TRANSFER.ADVANCED' | translate }} {{ advancedOpen ? '▲' : '▼' }}
+        </button>
+        @if (advancedOpen) {
+          <div class="df-row">
+            <div class="df-field df-field--grow">
+              <label>{{ (isOut ? 'INVENTORY_TRANSFER.IMPACT_OUT' : 'INVENTORY_TRANSFER.IMPACT_IN') | translate }}</label>
+              <app-search-dropdown [items]="accounts" [displayWith]="label" [compareWith]="byId"
+                [value]="choiceOf(accounts, d.inventoryBalancingAccountId)" (valueChange)="onAccount($any($event))" [disabled]="accountDisabled"
+                [placeholder]="'INVENTORY_TRANSFER.DEFAULT_ACCOUNT' | translate"/>
+              @if (isOut && toAnotherBranch) { <p class="tf-hint">{{ 'INVENTORY_TRANSFER.COGS_NOTE' | translate }}</p> }
+            </div>
+          </div>
+        }
+      }
+    </section>
+
+    <!-- Items -->
+    <section class="df-card">
+      <div class="tf-head">
+        <h2 class="df-card__title">{{ 'INVENTORY_TRANSFER.ITEMS' | translate }}</h2>
+        @if (!locked) {
+          <div class="tf-tools">
+            @if (allLive.length) {
+              <input class="df-input tf-filter" type="text" [(ngModel)]="filterTerm" [placeholder]="'INVENTORY_TRANSFER.FILTER_LINES' | translate"/>
+            }
+            <button type="button" class="df-btn" [disabled]="!d.branchId" (click)="addProducts()">{{ 'INVENTORY_TRANSFER.ADD_PRODUCTS' | translate }}</button>
+            <button type="button" class="df-btn" [disabled]="!d.branchId" (click)="importLines()">{{ 'INVENTORY_TRANSFER.IMPORT' | translate }}</button>
+          </div>
+        }
+      </div>
+
+      @if (!d.branchId) {
+        <p class="tf-empty">{{ 'INVENTORY_TRANSFER.SELECT_BRANCH_FIRST' | translate }}</p>
+      } @else if (!allLive.length) {
+        <p class="tf-empty">{{ 'INVENTORY_TRANSFER.NO_LINES' | translate }}</p>
+        @if (showErrors) { <p class="df-error">{{ 'INVENTORY_TRANSFER.MISSING.LINES' | translate }}</p> }
+      } @else {
+        <div class="tf-wrap">
+          <table class="tf-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>{{ 'INVENTORY_TRANSFER.BARCODE' | translate }}</th>
+                <th>{{ 'INVENTORY_TRANSFER.PRODUCT' | translate }}</th>
+                <th class="end">{{ 'INVENTORY_TRANSFER.ON_HAND' | translate }}</th>
+                <th class="end">{{ 'INVENTORY_TRANSFER.QTY' | translate }}</th>
+                @if (showCost) {
+                  <th class="end">{{ 'INVENTORY_TRANSFER.UNIT_COST' | translate }}</th>
+                  <th class="end">{{ 'INVENTORY_TRANSFER.TOTAL' | translate }}</th>
+                }
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of liveLines; track l.productId) {
+                <tr>
+                  <td>
+                    @if (isUnitLine(l) && (l.batches.length || l.serials.length)) {
+                      <button type="button" class="tf-toggle" (click)="toggleExpand(l)">{{ expanded.has(l.productId) ? '▾' : '▸' }}</button>
+                    }
+                  </td>
+                  <td>{{ l.barcode }}</td>
+                  <td><strong>{{ l.productName }}</strong>@if (l.UOM) { <span class="tf-chip">{{ l.UOM }}</span> }</td>
+                  <td class="end">{{ l.onHand }}</td>
+                  <td class="end">
+                    @if (isUnitLine(l)) {
+                      <button type="button" class="df-btn" [disabled]="locked" (click)="openUnits(l)">{{ 'INVENTORY_TRANSFER.SELECT_UNITS' | translate }}</button>
+                      <span class="tf-count">{{ qtyOf(l) }}</span>
+                    } @else {
+                      <app-qty-input [min]="1" [max]="isOut ? (l.onHand > 0 ? l.onHand : 1) : 1000000" [allowDecimal]="true" size="sm"
+                        [ngModel]="l.qty" (valueChange)="setQty(l, $event)" [disabled]="locked || (isOut && l.onHand <= 0)"/>
+                    }
+                  </td>
+                  @if (showCost) {
+                    <td class="end">
+                      <input class="tf-cost" type="number" min="0" [ngModel]="unitCostOf(l)" (ngModelChange)="setCost(l, $event)"
+                        [disabled]="costLocked || isUnitLine(l)"/>
+                    </td>
+                    <td class="end">{{ totalOf(l) | number: '1.3-3' }}</td>
+                  }
+                  <td class="end">
+                    @if (!locked) { <button type="button" class="tf-del" (click)="removeLine(l)">{{ 'COMMON.DELETE' | translate }}</button> }
+                  </td>
+                </tr>
+                @if (expanded.has(l.productId) && l.batches.length) {
+                  <tr class="tf-sub"><td></td><td colspan="7">
+                    @for (b of l.batches; track $index) {
+                      @if (b.isSelected && !b.isDeleted) { <span class="tf-tag">{{ 'INVENTORY_TRANSFER.BATCH' | translate }}: {{ b.batch }} × {{ b.qty }}</span> }
+                    }
+                  </td></tr>
+                }
+                @if (expanded.has(l.productId) && l.serials.length) {
+                  <tr class="tf-sub"><td></td><td colspan="7">
+                    @for (s of l.serials; track $index) {
+                      @if (s.isSelected && !s.isDeleted) { <span class="tf-tag">{{ s.serial }}</span> }
+                    }
+                  </td></tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (showErrors && missing.includes('UNITS')) { <p class="df-error">{{ 'INVENTORY_TRANSFER.MISSING.UNITS' | translate }}</p> }
+        @if (showErrors && missing.includes('QTY')) { <p class="df-error">{{ 'INVENTORY_TRANSFER.MISSING.QTY' | translate }}</p> }
+      }
+    </section>
+  </app-doc-form-shell>
+}

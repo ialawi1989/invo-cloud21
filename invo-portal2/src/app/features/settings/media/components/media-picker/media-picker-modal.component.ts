@@ -786,6 +786,8 @@ export class MediaPickerModalComponent implements OnInit {
     this.editing.set(true);
     try {
       const result = await this.mediaService.uploadFile(file, this.uploadConfig);
+      // A server-side rejection comes back as `{ success: false }`, not an exception.
+      if (result.success === false) throw new Error(result.error || result.message || 'Upload failed');
       const newMedia = result?.data?.[0];
       await this.loadMedia(true);
       if (newMedia?.id) {

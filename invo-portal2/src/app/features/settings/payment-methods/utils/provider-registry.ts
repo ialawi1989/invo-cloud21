@@ -194,6 +194,19 @@ export const PROVIDERS: ProviderSpec[] = [
     notes: { configKey: 'PAYMENT_METHODS.CONNECT.NOTES.AFS_CONFIG' },
   },
   {
+    slug: 'afs-softpos',
+    displayName: 'AFS SoftPOS',
+    backendName: 'AFS SoftPOS',
+    logo: LOGO('afs-softpos.png'),
+    // Legacy `AFSSoftPOSPayment`: no credential fields - the acquirer and merchant ids are fixed values the POS app reads,
+    // so the connect page only asks for the account and the enable / POS switches.
+    fields: [],
+    seedSettings: () => ({ type: 'ecr', apiPassword: '', icon: '', acquirerId: 200001, merchantId: '260520103719697' }),
+    countries: BAHRAIN_ONLY,
+    descriptionKey: 'PAYMENT_METHODS.PROVIDERS.AFS_SOFTPOS_DESC',
+    posToggle: true,
+  },
+  {
     slug: 'benefit',
     displayName: 'Benefit',
     backendName: 'Benefit',

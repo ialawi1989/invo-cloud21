@@ -1,3 +1,4 @@
+import { formatJournalDate } from '../../../services/journal-date';
 import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -34,6 +35,13 @@ import { BranchSettingsService } from 'src/app/features/settings/services/branch
  * legacy view page gates it) since `<app-dropdown-menu-btn>` makes it cheap
  * to surface safely (the backend still hard-blocks it either way).
  */
+/** `yyyy-MM-dd` of a Date / date string from the date-range filter, or '' when empty. */
+const toYmd = (v: unknown): string => {
+  if (!v) return '';
+  const d = v instanceof Date ? v : new Date(v as string);
+  return isNaN(d.getTime()) ? '' : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 @Component({
   selector: 'app-recurring-journal-list',
   standalone: true,
@@ -83,7 +91,7 @@ export class RecurringJournalListComponent implements OnInit {
         key: 'name',
         label: this.lang.instant('RECURRING_JOURNAL.LIST.PROFILE_NAME'),
         sortable: true,
-        width: '220px',
+        width: '180px',
         primary: true,
         interactive: true,
         visible: true,
@@ -93,7 +101,7 @@ export class RecurringJournalListComponent implements OnInit {
         key: 'branchName',
         label: this.lang.instant('RECURRING_JOURNAL.LIST.BRANCH_NAME'),
         sortable: true,
-        width: '160px',
+        width: '130px',
         visible: true,
         order: 1,
       },
@@ -102,7 +110,7 @@ export class RecurringJournalListComponent implements OnInit {
         label: this.lang.instant('RECURRING_JOURNAL.LIST.FREQUENCY'),
         sortable: false,
         customTemplate: true,
-        width: '180px',
+        width: '160px',
         visible: true,
         order: 2,
       },
@@ -110,8 +118,8 @@ export class RecurringJournalListComponent implements OnInit {
         key: 'startDate',
         label: this.lang.instant('RECURRING_JOURNAL.LIST.START_DATE'),
         sortable: false,
-        pipe: 'date',
-        width: '130px',
+        customTemplate: true,
+        width: '110px',
         visible: true,
         order: 3,
       },
@@ -120,7 +128,7 @@ export class RecurringJournalListComponent implements OnInit {
         label: this.lang.instant('RECURRING_JOURNAL.LIST.END_DATE'),
         sortable: false,
         customTemplate: true,
-        width: '130px',
+        width: '110px',
         visible: true,
         order: 4,
       },
@@ -143,6 +151,8 @@ export class RecurringJournalListComponent implements OnInit {
         multiple: true,
         loadFn: (params: any) => this.loadBranchFilterOptions(params),
       },
+      // The server only filters by branch and search, so the start-date range is applied here (see the loader).
+      { type: 'date-range', keyFrom: 'fromDate', keyTo: 'toDate', label: this.lang.instant('RECURRING_JOURNAL.LIST.START_DATE') },
     ];
 
     this.headerActions = [];
@@ -164,18 +174,27 @@ export class RecurringJournalListComponent implements OnInit {
   loadRecurringJournals = async (params: ListQueryParams) => {
     const branchId = params.filter?.['branchId'];
     const branches: string[] = Array.isArray(branchId) ? branchId : (branchId ? [branchId] : []);
+    const from = toYmd(params.filter?.['fromDate']);
+    const to = toYmd(params.filter?.['toDate']);
+    const sortBy = params.sortBy
+      ? { sortValue: params.sortBy.sortValue, sortDirection: params.sortBy.sortDirection }
+      : {};
 
-    const response = await this.service.getList({
-      page: params.page,
-      limit: params.limit,
-      searchTerm: params.searchTerm || '',
-      sortBy: params.sortBy
-        ? { sortValue: params.sortBy.sortValue, sortDirection: params.sortBy.sortDirection }
-        : {},
-      branches,
+    // No date range: plain server paging.
+    if (!from && !to) {
+      const response = await this.service.getList({ page: params.page, limit: params.limit, searchTerm: params.searchTerm || '', sortBy, branches });
+      return { list: response.list, count: response.count, pageCount: response.pageCount };
+    }
+
+    // The backend has no date filter for recurring journals, so take every profile (they are few) and
+    // keep those that start inside the range, then page the result here.
+    const all = await this.service.getList({ page: 1, limit: 1000, searchTerm: params.searchTerm || '', sortBy, branches });
+    const inRange = all.list.filter(r => {
+      const d = formatJournalDate(r.startDate);
+      return !!d && (!from || d >= from) && (!to || d <= to);
     });
-
-    return { list: response.list, count: response.count, pageCount: response.pageCount };
+    const start = (params.page - 1) * params.limit;
+    return { list: inRange.slice(start, start + params.limit), count: inRange.length, pageCount: Math.max(1, Math.ceil(inRange.length / params.limit)) };
   };
 
   frequencyLabel(row: RecurringJournalListRow): string {

@@ -2,19 +2,22 @@
   @let e = est;
   <app-doc-form-shell
     [title]="'ESTIMATES.FORM.ESTIMATE' | translate" [breadcrumbs]="breadcrumbs"
-    [canDraft]="false" [submitting]="submitting" [showView]="formStatus === 'edit'"
-    [saveLabel]="saveLabelKey | translate" [saveMenu]="saveMenu()"
+    [canDraft]="false" [submitting]="submitting" [saveDisabled]="missing.length > 0" [showView]="formStatus === 'edit'"
+    [saveLabel]="saveLabelKey | translate" [saveMenu]="saveMenu()" [actionsMenu]="actionsMenu()"
     [total]="e.total" [totalQty]="totalQuantity"
     (save)="savePrimary()" (cancel)="cancel()" (view)="view()">
 
+    <div class="df-top">
     <app-doc-party-section
       [customer]="customerValue" [addresses]="addresses" [address]="customerAddress"
       [error]="fieldError('customerId')"
-      (customerChange)="onCustomer($event)" (addressChange)="setAddress($event)"
+      (customerChange)="onCustomer($event)" (addressChange)="setAddress($event)" (addAddress)="addAddress()"
       (createNew)="createCustomer()" (advancedSearch)="advancedCustomerSearch()"/>
+    <app-doc-attachments-card [attachments]="e.attachment" (changed)="onAttachments($event)"/>
+    </div>
 
     <section class="df-card">
-      <h2 class="df-card__title">{{ 'ESTIMATES.FORM.ESTIMATE_DETAILS' | translate }}</h2>
+      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>{{ 'ESTIMATES.FORM.ESTIMATE_DETAILS' | translate }}</h2>
 
       <div class="df-row">
         <div class="df-field df-field--grow">
@@ -73,9 +76,13 @@
       <app-doc-totals [doc]="e" [editor]="editor!" [surcharges]="surcharges" notesHintKey="ESTIMATES.FORM.NOTES_HINT" (changed)="markDirty()"/>
     </app-doc-lines-table>
 
-    <section class="df-card">
-      <h2 class="df-card__title">{{ 'DOC_FORM.ATTACHMENTS' | translate }}</h2>
-      <app-doc-attachments [attachments]="e.attachment" (changed)="onAttachments($event)"/>
-    </section>
+    @if (e.total < 0) { <div class="df-warn">{{ 'ESTIMATES.FORM.TOTAL_IS_MINUS' | translate }}</div> }
+
+    @if (formStatus === 'edit' && actions.convert(e)) {
+      <button footerExtra type="button" class="df-link" (click)="convertToInvoice()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 12 18 15 15"/><line x1="12" y1="12" x2="12" y2="18"/></svg>
+        {{ 'ESTIMATES.ACTIONS.CONVERT_TO_INVOICE' | translate }}
+      </button>
+    }
   </app-doc-form-shell>
 }

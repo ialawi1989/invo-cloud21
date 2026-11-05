@@ -18,6 +18,7 @@ import {
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
 
+import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { withTranslations } from '@core/i18n/with-translations';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
@@ -85,6 +86,11 @@ export class PaymentMethodsListComponent implements OnInit {
   private toast      = inject(ToastService);
   private destroyRef = inject(DestroyRef);
   private store      = inject(PaymentMethodsStore);
+  private privilege  = inject(PrivilegeService);
+
+  /** Legacy gates add, edit, enable/disable and reorder behind the one
+   *  `paymentMethodSecurity.actions.add` grant. */
+  get canManage(): boolean { return this.privilege.check('paymentMethodSecurity.actions.add.access'); }
   private qp         = inject(QueryParamsService);
 
   /** URL <-> state codecs. `tab=currency` is the default and is
@@ -179,11 +185,13 @@ export class PaymentMethodsListComponent implements OnInit {
   edit(row: PaymentMethod): void {
     // Online providers don't have a regular form yet — skip the
     // navigation; the connect-form is a deferred milestone.
+    if (!this.canManage) return;
     if (this.tab() === 'online') return;
     if (row.isDefaultCash) return; // legacy: default cash is locked
     void this.router.navigate(['/settings/payment-methods', row.id || 'new']);
   }
   add(): void {
+    if (!this.canManage) return;
     void this.router.navigate(['/settings/payment-methods', 'new'], {
       queryParams: { type: this.tab() === 'card' ? 'Card' : 'Cash' },
     });
@@ -198,6 +206,7 @@ export class PaymentMethodsListComponent implements OnInit {
    *  (id === '') route without the id and seed a fresh record. */
   connect(row: PaymentMethod, ev: Event): void {
     ev.stopPropagation();
+    if (!this.canManage) return;
     const slug = (row.name ?? '').trim().toLowerCase().replace(/\s+/g, '-');
     if (!slug) return;
     const path = row.id
@@ -210,12 +219,13 @@ export class PaymentMethodsListComponent implements OnInit {
    *  store owns the optimistic flip + rollback. */
   async toggleEnabled(row: PaymentMethod, ev: Event): Promise<void> {
     ev.stopPropagation();
+    if (!this.canManage) return;
     await this.store.setRowEnabled(row.id, !row.isEnabled);
   }
 
   // ─── Drag-reorder ───────────────────────────────────────────────
   async dropRow(ev: CdkDragDrop<PaymentMethod[]>): Promise<void> {
-    if (ev.previousIndex === ev.currentIndex) return;
+    if (!this.canManage || ev.previousIndex === ev.currentIndex) return;
     const next = [...this.rows()];
     moveItemInArray(next, ev.previousIndex, ev.currentIndex);
     await this.store.reorder(next);

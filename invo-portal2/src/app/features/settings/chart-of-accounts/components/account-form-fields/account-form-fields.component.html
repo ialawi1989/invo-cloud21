@@ -1,7 +1,10 @@
 <!-- Name — required. Locked entirely when `locked='all'`
      (system-default accounts can't be renamed in the legacy). -->
 <label class="aff-field">
-  <span class="aff-field__label">{{ 'CHART_OF_ACCOUNTS.FIELDS.NAME' | translate }}</span>
+  <span class="aff-field__label aff-field__label--action">
+    {{ 'CHART_OF_ACCOUNTS.FIELDS.NAME' | translate }}
+    @if (!nameDisabled()) { <app-translate-link (clicked)="openTranslation('name')"/> }
+  </span>
   <input class="aff-field__input"
     type="text"
     [value]="value?.name ?? ''"
@@ -69,7 +72,10 @@
 
   <!-- Description — optional. -->
   <label class="aff-field">
-    <span class="aff-field__label">{{ 'CHART_OF_ACCOUNTS.FIELDS.DESCRIPTION' | translate }}</span>
+    <span class="aff-field__label aff-field__label--action">
+      {{ 'CHART_OF_ACCOUNTS.FIELDS.DESCRIPTION' | translate }}
+      <app-translate-link (clicked)="openTranslation('description')"/>
+    </span>
     <textarea class="aff-field__input aff-field__input--textarea"
       rows="2"
       [value]="value?.description ?? ''"

@@ -2,6 +2,7 @@ import { CanActivateFn, Routes } from '@angular/router';
 import { inject } from '@angular/core';
 
 import { LanguageService } from '@core/i18n/language.service';
+import { privilegeGuard } from '@core/guards/privilege.guard';
 
 const translationsLoaded: CanActivateFn = async () => {
   const lang = inject(LanguageService);
@@ -12,7 +13,8 @@ const translationsLoaded: CanActivateFn = async () => {
 export const DASHBOARD_ROUTES: Routes = [
   {
     path: '',
-    canActivate: [translationsLoaded],
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'dashboardSecurity.access' },
     loadComponent: () =>
       import('./pages/dashboard.component').then(m => m.DashboardComponent),
   },

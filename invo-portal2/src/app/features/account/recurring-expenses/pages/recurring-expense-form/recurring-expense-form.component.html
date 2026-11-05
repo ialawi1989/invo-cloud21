@@ -1,0 +1,51 @@
+@if (doc && editor) {
+  @let d = exp;
+  <app-doc-form-shell
+    [title]="'RECURRING_EXPENSES.FORM.RECURRING_EXPENSE' | translate" [breadcrumbs]="breadcrumbs"
+    [canDraft]="false" [submitting]="submitting" [saveDisabled]="missing.length > 0" [showView]="formStatus === 'edit'"
+    [saveLabel]="saveLabelKey | translate" [actionsMenu]="actionsMenu()"
+    [total]="d.total" [totalQty]="liveLines.length"
+    (save)="savePrimary()" (cancel)="cancel()" (view)="view()">
+
+    <app-recurring-schedule-card [rec]="rec" root="RECURRING_EXPENSES" [isNew]="formStatus !== 'edit'" [showErrors]="showErrors" (changed)="markDirty()"/>
+
+    <app-doc-supplier-section [supplier]="supplierValue" [required]="false" (supplierChange)="onSupplier($event)" (createNew)="createSupplier()"/>
+
+    <section class="df-card">
+      <h2 class="df-card__title"><span class="df-ico df-ico--blue" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span>{{ 'EXPENSES.FORM.CUSTOMER_INFORMATION' | translate }}</h2>
+      <div class="df-field df-field--wide">
+        <label>{{ 'EXPENSES.FORM.BILLABLE_CUSTOMER' | translate }}</label>
+        <app-customer-picker [value]="customerValue" [allowCreate]="true" [allowAdvanced]="true" [placeholder]="'DOC_FORM.SELECT_CUSTOMER' | translate"
+          (valueChange)="onCustomer($event)" (createNew)="createCustomer()" (advancedSearch)="advancedCustomerSearch()"/>
+      </div>
+    </section>
+
+    <section class="df-card">
+      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>{{ 'RECURRING_EXPENSES.FORM.EXPENSE_DETAILS' | translate }}</h2>
+
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.BRANCH' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="branches" [displayWith]="branchLabel" [compareWith]="byId"
+            [value]="branchOf()" (valueChange)="onBranch($any($event))" [clearable]="false" [disabled]="branchLocked"
+            [placeholder]="'DOC_FORM.SELECT_BRANCH' | translate"/>
+          @if (fieldError('branchId'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'EXPENSES.FORM.PAYMENT_METHOD' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="paymentMethods" [displayWith]="methodLabel" [compareWith]="byId" [searchable]="false"
+            [value]="methodOf()" (valueChange)="onMethod($any($event))" [clearable]="false" [disabled]="methodLocked"
+            [placeholder]="'EXPENSES.FORM.SELECT_METHOD' | translate"/>
+          @if (fieldError('paymentMethodId'); as err) { <p class="df-error">{{ err }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'DOC_FORM.TAX_TYPE' | translate }}</label>
+          <app-segmented-toggle [options]="taxTypes" [value]="taxType" (valueChange)="onTaxType($event)"/>
+        </div>
+      </div>
+      @if (frozen) { <p class="df-hint">{{ 'RECURRING_EXPENSES.FORM.LOCKED_HINT' | translate }}</p> }
+    </section>
+
+    <app-expense-lines [expense]="d" [editor]="editor!" [formStatus]="formStatus" (changed)="markDirty()"/>
+  </app-doc-form-shell>
+}

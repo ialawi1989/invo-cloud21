@@ -12,8 +12,19 @@
 
   <div class="dl__card">
     <header class="dl__head">
-      <h3>{{ title() | translate }}</h3>
+      <h3 class="dl__title">
+        <span class="dl__title-ico" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg>
+        </span>
+        {{ title() | translate }}
+      </h3>
       <div class="dl__tools">
+        @if (config().taxType) {
+          <div class="dl__taxtype">
+            <span>{{ 'DOC_FORM.TAX_TYPE' | translate }}</span>
+            <app-segmented-toggle [options]="taxTypeOptions" [value]="taxTypeValue()" [locked]="taxTypeLocked()" size="sm" (valueChange)="onTaxType($event)"/>
+          </div>
+        }
         @if (config().barcodeLookup) {
           <button type="button" class="dl__link" (click)="scanOpen.set(true)"><svg class="dl__ico" viewBox="0 0 512 512" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M369.4 178.9c0-30.9-25.1-56-56-56H198.6c-30.9 0-56 25.1-56 56v154.2c0 30.9 25.1 56 56 56h114.8c30.9 0 56-25.1 56-56V178.9zm-42 154.2c0 7.7-6.3 14-14 14H198.6c-7.7 0-14-6.3-14-14V178.9c0-7.7 6.3-14 14-14h114.8c7.7 0 14 6.3 14 14v154.2zM136 464.1H61.9c-7.7 0-14-6.3-14-14V376c0-11.6-9.4-21-21-21s-21 9.4-21 21v74.1c0 30.9 25.1 56 56 56H136c11.6 0 21-9.4 21-21s-9.4-21-21-21zM485.1 355c-11.6 0-21 9.4-21 21v74.1c0 7.7-6.3 14-14 14H376c-11.6 0-21 9.4-21 21s9.4 21 21 21h74.1c30.9 0 56-25.1 56-56V376c0-11.6-9.4-21-21-21zm-35-349.1H376c-11.6 0-21 9.4-21 21s9.4 21 21 21h74.1c7.7 0 14 6.3 14 14V136c0 11.6 9.4 21 21 21s21-9.4 21-21V61.9c0-30.9-25.1-56-56-56zM26.9 157c11.6 0 21-9.4 21-21V61.9c0-7.7 6.3-14 14-14H136c11.6 0 21-9.4 21-21s-9.4-21-21-21H61.9c-30.9 0-56 25.1-56 56V136c0 11.6 9.4 21 21 21z"/></svg> {{ 'DOC_LINES.SCAN_ITEM' | translate }}</button>
         }
@@ -31,7 +42,12 @@
           @if (config().accounts) {
             <button type="button" class="dl__bulk-btn" [disabled]="!selected().size" (click)="bulkUpdate('account')">{{ 'DOC_LINES.UPDATE_ACCOUNT' | translate }}</button>
           }
-          <button type="button" class="dl__bulk-btn" [disabled]="!selected().size" (click)="bulkUpdate('discount')">{{ 'DOC_LINES.UPDATE_DISCOUNT' | translate }}</button>
+          @if (hasDiscountColumn()) {
+            <button type="button" class="dl__bulk-btn" [disabled]="!selected().size" (click)="bulkUpdate('discount')">{{ 'DOC_LINES.UPDATE_DISCOUNT' | translate }}</button>
+          }
+          @for (a of config().bulkActions ?? []; track a.label) {
+            <button type="button" class="dl__bulk-btn" [disabled]="!selected().size" (click)="runBulkAction(a)">{{ a.label | translate }}</button>
+          }
         </div>
         <button type="button" class="dl__x" (click)="closeBulk()" aria-label="close">✕</button>
       </div>
@@ -52,7 +68,7 @@
         <tbody cdkDropList (cdkDropListDropped)="drop($event)">
           @for (line of visibleLines(); track trackLine($index, line)) {
             @let err = errorsFor(line);
-            <tr cdkDrag [cdkDragData]="line" [class.dl__row--voided]="line.isVoided">
+            <tr cdkDrag [cdkDragData]="line" [class.dl__row--voided]="line.isVoided" [class.dl__row--removed]="isRemoved(line)">
               <td class="dl__handle-col"><span class="dl__handle" cdkDragHandle title="drag"><svg viewBox="0 0 512 512" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="153.6" cy="451" r="61"/><circle cx="153.6" cy="256" r="61"/><circle cx="153.6" cy="61" r="61"/><circle cx="358.4" cy="256" r="61"/><circle cx="358.4" cy="61" r="61"/><circle cx="358.4" cy="451" r="61"/></svg></span></td>
               @if (bulkMode()) {
                 <td class="dl__check-col"><input type="checkbox" [checked]="isSelected(line)" (change)="toggleSelect(line)"/></td>
@@ -73,6 +89,20 @@
                               }
                             </span>
                           </div>
+                          @if (isSerialBatch(line)) {
+                            <div class="dl__sb">
+                              @if (pickedValue(line)) { <span class="dl__tag">{{ pickedValue(line) }}</span> }
+                              @if (canPick(line)) {
+                                <a href="javascript:void(0)" (click)="pickSerialBatch(line)">{{ (line.selectedItem.type === 'serialized' ? (line.serial ? 'DOC_LINES.CHANGE_SERIAL' : 'DOC_LINES.SELECT_SERIALS') : (line.batch ? 'DOC_LINES.CHANGE_BATCH' : 'DOC_LINES.SELECT_BATCHS')) | translate }}</a>
+                              }
+                            </div>
+                          }
+                          @if (hasSplit(line)) {
+                            <div class="dl__sb">
+                              @if (config().splitSummary?.(line); as s) { <span class="dl__tag">{{ s }}</span> }
+                              <a href="javascript:void(0)" (click)="editSplit(line)">{{ (line.selectedItem.type === 'serialized' ? 'DOC_LINES.ENTER_SERIALS' : 'DOC_LINES.ENTER_BATCHES') | translate }}</a>
+                            </div>
+                          }
                           <textarea class="dl__note" rows="1" [disabled]="isLocked(line)" [ngModel]="line.note" (ngModelChange)="onNote(line, $event)"
                             [placeholder]="'DOC_LINES.DESCRIPTION' | translate"></textarea>
                         } @else {
@@ -81,14 +111,14 @@
                             (focus)="onItemFocus(line, $event)" (keydown.enter)="onItemEnter(line, $any($event.target).value, $event)"
                             [placeholder]="'DOC_LINES.ITEM_PLACEHOLDER' | translate"></textarea>
                           @if (activeLine() === line && (results().length || searching())) {
-                            <ul class="dl__panel" [style.top.px]="panelPos().top" [style.left.px]="panelPos().left" [style.width.px]="panelPos().width">
+                            <ul class="dl__panel" (scroll)="onPanelScroll($event)" [style.top.px]="panelPos().top" [style.left.px]="panelPos().left" [style.width.px]="panelPos().width">
                               @for (p of results(); track p.id) {
                                 <li (mousedown)="$event.preventDefault()" (click)="pickProduct(line, p)">
-                                  <span class="dl__p-name">{{ p.name }}</span>
+                                  <span class="dl__p-row"><span class="dl__p-name">{{ p.name }}</span>@if (p.type) { <span class="app-product-badge">{{ p.type }}</span> }</span>
                                   <small>{{ 'DOC_LINES.RATE' | translate }}: {{ p.defaultPrice | mycurrency }}@if (p.barcode) { <span class="dl__p-code"> · {{ 'DOC_LINES.BARCODE' | translate }}: {{ p.barcode }}</span> }</small>
                                 </li>
                               }
-                              @if (searching() && !results().length) { <li class="dl__panel-empty">…</li> }
+                              @if (searching()) { <li class="dl__panel-empty">…</li> }
                             </ul>
                           }
                         }
@@ -104,12 +134,21 @@
                       </div>
                     }
                     @case ('qty') {
-                      <app-qty-input size="sm" [allowDecimal]="c.decimal ?? true" [min]="line.minQty || 0" [step]="1"
+                      <app-qty-input size="sm" [allowDecimal]="c.decimal ?? true" [min]="line.minQty || 0" [max]="maxOf(line, c)" [step]="1"
                         [disabled]="cellDisabled(line, c)" [ngModel]="value(line, c)" (ngModelChange)="onQty(line, c, $event)"/>
                     }
                     @case ('money') {
                       <input class="dl__num" [class.dl__num--err]="err[c.key]" type="text" inputmode="decimal" autocomplete="off" [disabled]="cellDisabled(line, c)"
                         [value]="value(line, c) ?? ''" (blur)="commitMoney(line, c, $event)" (keydown.enter)="commitMoney(line, c, $event)"/>
+                      @if (c.hint?.(line); as h) { <small class="dl__hint">{{ h | translate }}</small> }
+                    }
+                    @case ('text') {
+                      <input class="dl__txt" type="text" autocomplete="off" [disabled]="cellDisabled(line, c)" [ngModel]="value(line, c) ?? ''" (ngModelChange)="onText(line, c, $event)"/>
+                    }
+                    @case ('account') {
+                      <app-search-dropdown [items]="accountOptions()" [displayWith]="accountLabel" [compareWith]="byId"
+                        [value]="accountOf(line)" (valueChange)="onAccount(line, $any($event)?.id)"
+                        [clearable]="false" [disabled]="cellDisabled(line, c)" [placeholder]="'DOC_LINES.SELECT_ACCOUNT' | translate"/>
                     }
                     @case ('discount') {
                       <app-discount-field [amount]="line.discountAmount" [percentage]="line.discountPercentage"
@@ -130,7 +169,14 @@
 
               <td class="dl__act-col">
                 <div class="dl__acts">
-                  <app-dropdown-menu-btn [items]="rowMenu(line)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="dl__round">⋯</app-dropdown-menu-btn>
+                  @if (isRemoved(line)) {
+                    <button type="button" class="dl__undo" (click)="undoRemove(line)" [title]="'DOC_LINES.UNDO_REMOVE' | translate">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg>
+                      {{ 'DOC_LINES.UNDO' | translate }}
+                    </button>
+                  } @else {
+                    <app-dropdown-menu-btn [items]="rowMenu(line)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="dl__round">⋯</app-dropdown-menu-btn>
+                  }
                   @if (canRemove(line)) {
                     <button type="button" class="dl__round dl__round--danger" (click)="removeLine(line)" aria-label="remove">✕</button>
                   }
@@ -159,15 +205,17 @@
     </div>
   </div>
 
+  @if (!config().fixedLines) {
   <div class="dl__add">
     <button type="button" class="dl__btn" (click)="addLine()" [disabled]="editor().lastLineIsEmpty">＋ {{ 'DOC_LINES.ADD_ROW' | translate }}</button>
     @if (config().bulkItems) {
       <button type="button" class="dl__btn" (click)="addItemsInBulk()" [disabled]="!ctx().hasScope">＋ {{ 'DOC_LINES.ADD_ITEMS_BULK' | translate }}</button>
     }
-    @if (config().searchByBarcodes) {
+    @if (config().searchByBarcodes || config().customImport) {
       <button type="button" class="dl__btn" (click)="importLines()" [disabled]="!ctx().hasScope">⇪ {{ 'DOC_IMPORT.IMPORT' | translate }}</button>
     }
   </div>
+  }
 
   <ng-content/>
 </section>

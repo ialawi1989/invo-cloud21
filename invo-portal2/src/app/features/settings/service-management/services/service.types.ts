@@ -48,6 +48,8 @@ export interface ServiceImage {
 export interface ServiceOptions {
   lockMenu:          boolean;
   locKChangeService: boolean;
+  /** CarHop only: the POS asks the cashier for the car number when an order starts with this service. */
+  askForCarNumber:   boolean;
 }
 
 /** Per-branch setting block. `setting` is a free-form bag where
@@ -145,7 +147,7 @@ export function emptyImage(): ServiceImage {
 }
 
 export function emptyOptions(): ServiceOptions {
-  return { lockMenu: false, locKChangeService: false };
+  return { lockMenu: false, locKChangeService: false, askForCarNumber: false };
 }
 
 /** Build a per-branch row from a branch summary. Defaults match the

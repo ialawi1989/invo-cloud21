@@ -1,15 +1,17 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { AiDraftService } from '@core/ai/assistant/ai-draft.service';
+import { appendDraftLines } from '../../services/ai-draft-apply';
+import type { DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import type { CustomerMini } from '@shared/components/customer-picker/customer-picker.component';
 import { EntityCustomFieldsComponent } from '../../../../settings/components/entity-custom-fields/entity-custom-fields.component';
 
-import { Invoice } from '../../../models/invoice.model';
+import { Invoice, InvoiceLine } from '../../../models/invoice.model';
 import { InvoicesService } from '../../services/invoices.service';
 import { EstimatesService } from '../../../estimates/services/estimates.service';
 import { CustomFieldsService } from '../../../../settings/services/custom-fields.service';
@@ -19,10 +21,11 @@ import { INVOICE_RULES } from '../../services/invoice-validation';
 import { invoiceLinesConfig } from '../../services/invoice-lines.config';
 import { DocLinesConfig } from '../../../components/doc-lines-table/doc-lines.types';
 import { DocLinesTableComponent } from '../../../components/doc-lines-table/doc-lines-table.component';
-import { DocAttachmentsComponent } from '../../../components/doc-attachments/doc-attachments.component';
+import { DocAttachmentsCardComponent } from '../../../components/doc-attachments-card/doc-attachments-card.component';
 import { DocFormShellComponent } from '../../../components/doc-form-shell/doc-form-shell.component';
 import { DocPartySectionComponent } from '../../../components/doc-party-section/doc-party-section.component';
 import { DocTotalsComponent } from '../../../components/doc-totals/doc-totals.component';
+import { WastePopupComponent, WastePopupData, WastePopupResult } from '../../components/waste-popup/waste-popup.component';
 
 interface Term { value: string; label: string; days?: number; }
 
@@ -49,14 +52,15 @@ const dayDiff = (a: Date, b: Date) => Math.abs(Math.round((new Date(ymd(b)).getT
   selector: 'app-invoice-form',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, ReactiveFormsModule, RouterLink, TranslateModule,
+    CommonModule, FormsModule, ReactiveFormsModule, TranslateModule,
     DocFormShellComponent, DocPartySectionComponent, SearchDropdownComponent, DatePickerComponent,
-    DocLinesTableComponent, DocAttachmentsComponent, DocTotalsComponent, EntityCustomFieldsComponent,
+    DocLinesTableComponent, DocAttachmentsCardComponent, DocTotalsComponent, EntityCustomFieldsComponent,
   ],
   templateUrl: './invoice-form.component.html',
 })
 export class InvoiceFormComponent extends DocumentFormBase {
   private invoices = inject(InvoicesService);
+  private aiDrafts = inject(AiDraftService);
 
   private estimatesApi = inject(EstimatesService);
   private customFieldDefs = inject(CustomFieldsService);
@@ -107,7 +111,25 @@ export class InvoiceFormComponent extends DocumentFormBase {
 
   protected newDoc(): Invoice { return new Invoice(); }
   protected makeLinesConfig(): DocLinesConfig {
-    return invoiceLinesConfig(() => this.doc!, this.lookups, { canAdjustPrice: () => this.actions.canAdjustPrice, canVoid: () => this.actions.canVoidItem });
+    return invoiceLinesConfig(() => this.doc!, this.lookups, {
+      canAdjustPrice: () => this.actions.canAdjustPrice,
+      canVoid: () => this.actions.canVoidItem,
+      afterVoid: line => this.askWaste(line),
+    });
+  }
+
+  /** Company option "waste": after a saved line is removed, ask whether it was wasted (and why, when a reason is required). */
+  private async askWaste(line: InvoiceLine): Promise<void> {
+    const opts = (this.company.settings()?.invoiceOptions ?? {}) as { enableWaste?: boolean; enableVoidReason?: boolean };
+    if (!opts.enableWaste) return;
+    const res = await this.modal.open<WastePopupComponent, WastePopupData, WastePopupResult | null>(WastePopupComponent, {
+      size: 'md',
+      data: { enableVoidReason: !!opts.enableVoidReason, voidReason: line.voidReason },
+    }).afterClosed();
+    if (!res) return;
+    line.waste = res.isWaste;
+    line.voidReason = res.wasteReason;
+    this.markDirty();
   }
 
   get inv(): Invoice { return this.doc!; }
@@ -152,6 +174,13 @@ export class InvoiceFormComponent extends DocumentFormBase {
     return out;
   }
 
+  /** "Actions" dropdown of a saved invoice — items and behaviour come from the shared {@link InvoiceActions}. */
+  actionsMenu(): DropdownMenuBtnItem[] {
+    const d = this.doc;
+    if (this.formStatus !== 'edit' || !d?.id) return [];
+    return this.actions.menu(d, d.id, () => { this.dirty = false; this.form.markAsPristine(); this.afterSaveRoute(); });
+  }
+
   protected override afterSaveRoute(): void {
     if (this.isConvert) void this.router.navigate(['/account/estimate']);
     else super.afterSaveRoute();
@@ -160,10 +189,37 @@ export class InvoiceFormComponent extends DocumentFormBase {
     return this.actions.openForEdit(d, cloned);
   }
   protected override prepareLoaded(d: Invoice): void { d.dueDate = d.dueDate == null ? d.invoiceDate : d.dueDate; }
-  protected override afterInit(): void {
+  protected override async afterInit(): Promise<void> {
+    await this.actions.refresh(this.inv.branchId || null); // the period lock decides whether Delete shows, as on the view / list
     const d = this.inv;
     if (this.formStatus === 'new') { d.paymentTerm = 'net7'; this.onTerm('net7'); }
     else { this.selectedTerm = d.paymentTerm ?? 'custome'; this.onTerm(this.selectedTerm, true); }
+    if (this.formStatus === 'new' && this.route.snapshot.queryParamMap.get('aiDraft')) await this.applyAssistantDraft();
+  }
+
+  /**
+   * Opened from the dashboard assistant: fills the new invoice with the products it prepared. Products are looked up
+   * again here, with this invoice's branch and customer, so prices follow the normal pricing rules; the lines are added
+   * through the same editor as "Add items in bulk". Nothing is saved: the user reviews the form and saves as usual.
+   */
+  private async applyAssistantDraft(): Promise<void> {
+    const draft = this.aiDrafts.takeInvoice();
+    if (!draft || !this.editor) return;
+    const picks: { product: any; qty: number }[] = [];
+    const missing: string[] = [];
+    for (const l of draft.lines) {
+      const cached = this.aiDrafts.products.get(l.productId);
+      const fresh = cached?.name
+        ? (await this.linesConfig.itemSearch(cached.name, { tags: [], page: 1 }))?.list?.find((p: any) => p.id === l.productId)
+        : null;
+      const product = fresh ?? cached;
+      if (product) picks.push({ product, qty: l.qty });
+      else missing.push(l.productId);
+    }
+    appendDraftLines(this.inv, this.editor, picks);
+    if (draft.note) this.inv.note = draft.note;
+    if (missing.length) this.toast.warning(this.lang.instant('ASSISTANT.DRAFT_MISSING'), missing.join(', '));
+    this.markDirty();
   }
   protected override blockSave(): string | null {
     if (this.isDelivery && !this.customerAddress) {
@@ -247,17 +303,12 @@ export class InvoiceFormComponent extends DocumentFormBase {
   }
 
   /**
-   * "Make Recurring": hands the current form to the recurring-invoice form, which reads it from
-   * session storage. Only navigates once that screen exists in the router.
+   * "Make Recurring": hands the current form to the recurring-invoice form
+   * (`/account/recurring-invoice/new?fromInvoice=yes`), which reads it from session storage.
    */
   makeRecurring(): void {
-    const exists = this.router.config.some(r => (r.path ?? '').startsWith('account/recurring-invoice'));
-    if (!exists) {
-      this.toast.info?.('INVOICES.FORM.RECURRING_SOON');
-      return;
-    }
     try { sessionStorage.setItem('recurringFromInvoice', JSON.stringify(this.doc)); } catch { /* storage unavailable */ }
     this.dirty = false;
-    void this.router.navigate(['/account/recurring-invoice', 'new'], { queryParams: { fromInvoice: 'yes' } });
+    void this.router.navigate(['/account/recurring-invoice', 'new'], { queryParams: { fromInvoice: 'yes', invoiceId: (this.doc as any)?.id || null } });
   }
 }

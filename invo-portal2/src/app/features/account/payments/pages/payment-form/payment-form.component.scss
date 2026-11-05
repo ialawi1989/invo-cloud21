@@ -48,3 +48,17 @@
 // The footer content spans exactly the page content: same start edge, same end edge (shell 24 + page 24 each side).
 :host ::ng-deep .ffs__inner { width: calc(100% - 96px) !important; max-width: 1052px !important; margin: 0 0 0 48px !important; padding: 12px 0 !important; }
 @media (max-width: 576px) { :host ::ng-deep .ffs__inner { width: calc(100% - 32px) !important; margin-inline-start: 16px !important; } }
+
+// Table look shared with the item table: darker header labels, light header tint, white body.
+.pf-table { background: #fff; }
+.pf-table th { background: #f8fafc; color: #475569; font-weight: 600; border-bottom: 1px solid #e5e7eb; }
+.pf-table td { border-top: 1px solid #eef2f6; background: #fff; }
+
+.pf-top { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 900px) { .pf-top { grid-template-columns: minmax(0, 1fr); } }
+
+.pf-totals-wrap { align-self: flex-end; display: flex; flex-direction: column; gap: 10px; min-width: 340px; }
+.pf-totals-wrap .pf-totals { align-self: stretch; min-width: 0; }
+.pf-totals--tender { background: #fff; border: 1px solid #e4e7ec; }
+.pf-t__val { display: inline-flex; align-items: center; gap: 8px; }
+.pf-warn-ico { color: #475569; }

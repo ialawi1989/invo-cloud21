@@ -1,0 +1,74 @@
+{
+  "BILL_OF_ENTRY": {
+    "DASHBOARD": "Dashboard",
+    "ADD_NEW": "New Bill of Entry",
+    "SEARCH_PLACEHOLDER": "Search by supplier, branch, bill or reference",
+    "EMPTY": "No bills of entry found",
+    "CREATED_DATE": "Created date",
+    "LIST": {
+      "BILL_OF_ENTRY_LIST": "Bill of Entry",
+      "NUMBER": "Bill of entry #",
+      "BILL_NUMBER": "Bill #",
+      "SUPPLIER_NAME": "Supplier",
+      "TOTAL": "Total",
+      "BRANCH_NAME": "Branch",
+      "DATE": "Date",
+      "EMPLOYEE_NAME": "Employee",
+      "REF": "Ref #"
+    },
+    "FILTERS": {
+      "BRANCH": "Branch",
+      "DATE": "Bill date"
+    },
+    "ACTIONS": {
+      "EXPORT_EXCEL": "Export to Excel"
+    },
+    "FORM": {
+      "BILL_OF_ENTRY": "Bill of Entry",
+      "NEW_BILL_OF_ENTRY": "New Bill of Entry",
+      "EDIT_BILL_OF_ENTRY": "Edit Bill of Entry",
+      "DETAILS": "Bill of Entry Details",
+      "NUMBER": "Bill of Entry Number",
+      "NUMBER_HELP": "Click here to enable or disable auto-generation of Bill of Entry numbers.",
+      "BILL": "Bill",
+      "DATE": "Date",
+      "PAYMENT_METHOD": "Payment Method",
+      "SELECT_METHOD": "Select a payment method",
+      "REFERENCE": "Reference Number",
+      "NOTE": "Note",
+      "NOTE_PLACEHOLDER": "Notes",
+      "LINES": "Bill of Entry Lines",
+      "SELECTED_COUNT": "{{count}} selected",
+      "CUSTOM_DUTY": "Custom Duty",
+      "BULK_DUTY": "Update Custom Duty",
+      "BULK_DUTY_HINT": "Enter the custom duty to set on the selected lines.",
+      "APPLY": "Apply",
+      "PRODUCT": "Product",
+      "ASSESSABLE_VALUE": "Assessable Value",
+      "TAXABLE_AMOUNT": "Taxable Amount",
+      "TAX": "Tax",
+      "TAX_AMOUNT": "Tax amount",
+      "TOTAL_CUSTOM_DUTY": "Total custom duty",
+      "TOTAL_TAX": "Total tax",
+      "TOTAL_PAID": "Total amount paid"
+    },
+    "REQUIRED": {
+      "NUMBER": "Bill of entry number",
+      "DATE": "Date",
+      "PAYMENT_METHOD": "Payment method",
+      "BILL": "Bill",
+      "BRANCH": "Branch"
+    },
+    "VIEW": {
+      "VIEW_BILL_OF_ENTRY": "View Bill of Entry",
+      "PRINT": "Print",
+      "SEND": "Send",
+      "CONFIRM_DELETE": "Delete this bill of entry? This cannot be undone.",
+      "SUPPLIER": "Supplier",
+      "BILL": "Bill",
+      "PAYMENT_METHOD": "Payment method",
+      "DATE": "Date",
+      "REFERENCE": "Reference"
+    }
+  }
+}

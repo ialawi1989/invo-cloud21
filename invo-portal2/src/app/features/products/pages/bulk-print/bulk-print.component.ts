@@ -1,3 +1,4 @@
+import { ActivatedRoute } from '@angular/router';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,6 +20,7 @@ import { ModalService } from '@shared/modal/modal.service';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { BranchConnectionService } from '@core/layout/services/branch.service';
 
+import { BillsService } from '../../../account/bills/services/bills.service';
 import { ProductsService } from '../../services/products.service';
 import {
   PickProductModalComponent,
@@ -94,6 +96,8 @@ export class BulkPrintComponent {
   private builder   = inject(LabelBuilderService);
   private products  = inject(ProductsService);
   private modal     = inject(ModalService);
+  private bills     = inject(BillsService);
+  private route     = inject(ActivatedRoute);
 
   constructor() {
     withTranslations('products');
@@ -182,6 +186,9 @@ export class BulkPrintComponent {
       const firstBranch   = this.branches.branches()[0]?.id;
       if (firstBranch) this.selectedBranchId.set(firstBranch);
       if (list.length)  await this.pickTemplate(list[0].id);
+      // Opened from a bill's "Label print": start with that bill's items and quantities.
+      const billId = this.route.snapshot.queryParamMap.get('billId');
+      if (billId) await this.applyBill(billId);
     } finally {
       this.loading.set(false);
     }
@@ -397,6 +404,36 @@ export class BulkPrintComponent {
       });
     } finally {
       this.importing.set(false);
+    }
+  }
+
+  /**
+   * Fills the list from a bill (legacy `loadBilling` + `getDataFromTempLabelPrintData`): the bill's branch, and one row
+   * per product with the quantity billed as the number of labels and the bill's unit cost. Lines without a product
+   * (notes) are skipped; a product on several lines gets their quantities added up.
+   */
+  private async applyBill(billId: string): Promise<void> {
+    try {
+      const bill: any = await this.bills.getBill(billId);
+      if (bill.branchId) this.selectedBranchId.set(bill.branchId);
+      const lines: any[] = (bill.lines ?? []).filter((l: any) => !l.isDeleted && (l.productId || l.selectedItem?.id));
+      const barcodes = [...new Set(lines.map(l => l.barcode || l.selectedItem?.barcode).filter(Boolean))] as string[];
+      if (!barcodes.length || !this.selectedBranchId()) return;
+      const found = await this.products.getBarcodesProducts(barcodes, this.selectedBranchId());
+      const rows: BulkRow[] = [];
+      for (const p of found) {
+        const mine = lines.filter(l => (l.productId || l.selectedItem?.id) === p.id);
+        const qty = mine.reduce((s, l) => s + (Number(l.qty) || 0), 0);
+        rows.push({
+          id: p.id, name: p.name ?? '—', barcode: p.barcode, sku: p.sku, UOM: p.UOM,
+          unitCost: mine[0]?.unitCost ?? p.unitCost, price: p.price, type: p.type, full: p,
+          printQty: Math.max(1, Math.round(qty)),
+        });
+      }
+      this.rows.set(rows);
+      if (rows.length) this.activeRowId.set(rows[0].id);
+    } catch (err) {
+      console.error('[bulk-print] could not load the bill', err);
     }
   }
 

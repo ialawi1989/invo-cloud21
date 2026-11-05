@@ -11,6 +11,7 @@ import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { AiService } from '@core/ai/ai.service';
 import { AiSettings } from '@core/ai/ai.types';
 import { AiSettingsFormComponent } from '@core/ai/ai-settings-form/ai-settings-form.component';
+import { AiUsageCardComponent } from '@core/ai/ai-usage-card/ai-usage-card.component';
 
 import { PluginFormShellComponent } from '../../components/plugin-form-shell/plugin-form-shell.component';
 
@@ -25,7 +26,7 @@ import { PluginFormShellComponent } from '../../components/plugin-form-shell/plu
   standalone: true,
   imports: [
     CommonModule, TranslateModule,
-    PluginFormShellComponent, AiSettingsFormComponent,
+    PluginFormShellComponent, AiSettingsFormComponent, AiUsageCardComponent,
   ],
   template: `
     <app-plugin-form-shell
@@ -68,6 +69,11 @@ import { PluginFormShellComponent } from '../../components/plugin-form-shell/plu
             </div>
           }
         </div>
+
+        <!-- Recorded usage of this company's AI calls -->
+        <div class="pf-card">
+          <app-ai-usage-card [model]="s.model"/>
+        </div>
       }
     </app-plugin-form-shell>
   `,
@@ -80,6 +86,7 @@ export class ContentAiComponent implements OnInit, CanLeaveComponent {
   private translate = inject(TranslateService);
 
   @ViewChild('form') form?: AiSettingsFormComponent;
+  @ViewChild(AiUsageCardComponent) usageCard?: AiUsageCardComponent;
 
   loading    = signal(false);
   saving     = signal(false);
@@ -140,6 +147,7 @@ export class ContentAiComponent implements OnInit, CanLeaveComponent {
       this.testResult.set({ ok: false, message: e?.message });
     } finally {
       this.testing.set(false);
+      void this.usageCard?.refresh(); // the test is a recorded call
     }
   }
 

@@ -1,0 +1,12 @@
+.ev { display: flex; flex-direction: column; gap: 14px; }
+.ev-acts { display: flex; align-items: center; gap: 6px; }
+
+:host ::ng-deep .ev-btn {
+  display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; border-radius: 6px;
+  border: 1px solid #d0d5dd; background: #f8fafc; color: #334155;
+  font-size: 13px; font-weight: 600; cursor: pointer; line-height: 1.4;
+  &:hover:not(:disabled) { background: #f1f5f9; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &--primary { border-color: #2691a4; background: #2691a4; color: #fff;
+    &:hover:not(:disabled) { background: #227d8d; } }
+}

@@ -30,6 +30,7 @@ export const resolveProductMediaUrl = (product: any): string | null => {
 export interface DocumentLike {
   lines: InvoiceLine[];
   status: string;
+  isInclusiveTax?: boolean;
   discountAmount: number;
   discountPercentage: boolean;
   discountType: string;
@@ -77,9 +78,12 @@ export class DocumentLineEditor {
     this.doc.calculateTotal();
   }
 
+  /** Factory of a blank line — purchase documents return their own line type. */
+  protected newLine(): InvoiceLine { return new InvoiceLine(); }
+
   /** The trailing empty row. */
   addLine(): InvoiceLine {
-    const line = new InvoiceLine();
+    const line = this.newLine();
     line.isNew = true;
     (line as any).tempId = newTempId();
     line.price = 0;
@@ -103,7 +107,7 @@ export class DocumentLineEditor {
 
   /** Copies product, price, discount, tax and account into a new unsaved row right below `source`. */
   cloneLine(source: InvoiceLine): InvoiceLine {
-    const line: any = new InvoiceLine();
+    const line: any = this.newLine();
     line.isNew = true;
     line.tempId = newTempId();
     for (const k of ['productId', 'itemDetailsTemp', 'mediaUrl', 'qty', 'tempQty', 'price', 'note', 'UOM', 'discountAmount',
@@ -271,7 +275,7 @@ export class DocumentLineEditor {
     const price = parseNumberField(row?.price, null) ?? (parseNumberField(product.defaultPrice, 0) as number);
     const discount = parseNumberField(row?.discountTotal, 0) as number;
 
-    const line: any = new InvoiceLine();
+    const line: any = this.newLine();
     line.isNew = true;
     line.tempId = newTempId();
     line.itemDetailsTemp = product.id;

@@ -1,0 +1,84 @@
+<section class="sbs">
+  <header class="sbs__head">
+    <span class="sbs__icon" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </span>
+    <div class="sbs__titles">
+      <h2 class="sbs__title">{{ 'SERVICE_MANAGEMENT.FORM.BRANCH_SETTINGS' | translate }}</h2>
+      <p class="sbs__sub">{{ 'SERVICE_MANAGEMENT.FORM.BRANCH_SETTINGS_HINT' | translate }}</p>
+    </div>
+    <span class="sbs__summary">{{ 'SERVICE_MANAGEMENT.FORM.BRANCH_SUMMARY' | translate: { total: totalCount(), enabled: enabledCount() } }}</span>
+    <button type="button" class="sbs__chev" [class.sbs__chev--up]="!sectionOpen()" [attr.aria-expanded]="sectionOpen()" (click)="sectionOpen.set(!sectionOpen())">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+  </header>
+
+  @if (sectionOpen()) {
+    <div class="sbs__grid" [class.sbs__grid--rail]="!paneOpen()">
+      <aside class="sbs__master">
+        @if (!paneOpen()) {
+          <div class="sbs__rail">
+            <button type="button" class="sbs__icon-btn" [attr.aria-label]="'SERVICE_MANAGEMENT.FORM.SHOW_BRANCH_LIST' | translate" (click)="paneOpen.set(true)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <span class="sbs__rail-count">{{ visibleRows().length }}</span>
+          </div>
+        } @else {
+          <div class="sbs__search">
+            <input type="search" class="sbs__input" [value]="search()"
+              [placeholder]="'SERVICE_MANAGEMENT.FORM.SEARCH_BRANCHES' | translate"
+              [attr.aria-label]="'SERVICE_MANAGEMENT.FORM.SEARCH_BRANCHES' | translate"
+              (input)="search.set($any($event.target).value)"/>
+            <button type="button" class="sbs__icon-btn" [attr.aria-label]="'SERVICE_MANAGEMENT.FORM.HIDE_BRANCH_LIST' | translate" (click)="paneOpen.set(false)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+          </div>
+
+          <div class="sbs__chips">
+            <button type="button" class="sbs__chip" [class.sbs__chip--on]="filter() === 'all'" (click)="setFilter('all')">
+              {{ 'SERVICE_MANAGEMENT.FORM.FILTER_ALL' | translate }} <span>{{ totalCount() }}</span>
+            </button>
+            <button type="button" class="sbs__chip" [class.sbs__chip--on]="filter() === 'enabled'" (click)="setFilter('enabled')">
+              {{ 'SERVICE_MANAGEMENT.FORM.FILTER_ENABLED' | translate }} <span>{{ enabledCount() }}</span>
+            </button>
+            <button type="button" class="sbs__chip" [class.sbs__chip--on]="filter() === 'disabled'" (click)="setFilter('disabled')">
+              {{ 'SERVICE_MANAGEMENT.FORM.FILTER_DISABLED' | translate }} <span>{{ disabledCount() }}</span>
+            </button>
+          </div>
+
+          <div class="sbs__list">
+            @for (row of visibleRows(); track row.id) {
+              <div class="sbs__row" [class.sbs__row--active]="row.index === activeIndex()" role="button" tabindex="0"
+                (click)="open(row.index)" (keydown.enter)="open(row.index)" (keydown.space)="open(row.index); $event.preventDefault()">
+                <span class="sbs__row-name">{{ row.name }}</span>
+                <span class="sbs__dot" [class.sbs__dot--on]="row.enabled"
+                  [attr.title]="(row.enabled ? 'SERVICE_MANAGEMENT.FORM.ENABLED' : 'SERVICE_MANAGEMENT.FORM.DISABLED') | translate"></span>
+              </div>
+            } @empty {
+              <div class="sbs__empty">
+                <p>{{ 'SERVICE_MANAGEMENT.FORM.NO_BRANCHES_MATCH' | translate }}</p>
+                <button type="button" class="sbs__link" (click)="clearFilters()">{{ 'SERVICE_MANAGEMENT.FORM.CLEAR_FILTERS' | translate }}</button>
+              </div>
+            }
+          </div>
+          <div class="sbs__foot">{{ 'SERVICE_MANAGEMENT.FORM.BRANCHES_SHOWN' | translate: { shown: visibleRows().length, total: totalCount() } }}</div>
+        }
+      </aside>
+
+      <div class="sbs__detail">
+        @if (active(); as a) {
+          <div class="sbs__detail-head">
+            <h3 class="sbs__detail-name">{{ a.name }}</h3>
+            <span class="sbs__badge" [class.sbs__badge--on]="a.enabled">
+              {{ (a.enabled ? 'SERVICE_MANAGEMENT.FORM.ENABLED' : 'SERVICE_MANAGEMENT.FORM.DISABLED') | translate }}
+            </span>
+          </div>
+          <div class="sbs__detail-body"><ng-content/></div>
+        }
+      </div>
+    </div>
+  }
+</section>

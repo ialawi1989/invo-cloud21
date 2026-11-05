@@ -76,7 +76,7 @@ export const MENU_ITEMS: MenuItem[] = [
     ],
   },
   {
-    id: 23, label: 'Sales Target', icon: 'target', link: '/sales-target',
+    id: 23, label: 'Sales Target', icon: 'target', link: '/account/sales-target-dashboard',
     privilege: 'salesTargetSecurity.actions.view',
   },
 

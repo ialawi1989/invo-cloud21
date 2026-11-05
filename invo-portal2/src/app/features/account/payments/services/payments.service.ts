@@ -27,6 +27,19 @@ export class PaymentsService {
     return { list: d?.list ?? [], count: d?.count, pageCount: d?.pageCount, startIndex: d?.startIndex, lastIndex: d?.lastIndex };
   }
 
+  /** Failed E-Invoice / online payments — same paging and filter payload as the successful list. */
+  async getFailedInvoicePaymentsList(param: any): Promise<any> {
+    const d = await this.data<any>(this.api.post('accounts/getFailedInvoicePaymentsList', param));
+    return { list: d?.list ?? [], count: d?.count, pageCount: d?.pageCount, startIndex: d?.startIndex, lastIndex: d?.lastIndex };
+  }
+
+  /** Asks the payment gateway (through the backend) what it says about a failed payment; rejects with the server's message. */
+  async checkFailedPaymentWithGateway(referenceNumber: string): Promise<any> {
+    const res = await this.envelope(this.api.post('accounts/checkFailedPaymentWithGateway', { referenceNumber }));
+    if (!res?.success) throw new Error(res?.msg || 'Could not check the payment');
+    return res.data;
+  }
+
   /** Full payment record parsed into the model (lines, address, …). */
   async getInvoicePayment(id: string): Promise<InvoicePayment> {
     const payment = new InvoicePayment();
@@ -37,6 +50,8 @@ export class PaymentsService {
   saveInvoicePayment(payment: any): Promise<any> {
     return this.envelope(this.api.post('accounts/saveInvoicePayment', payment));
   }
+
+  getInvoicePaymentJournals = (id: string) => this.data(this.api.get('accounts/getInvoicePaymentJournals/' + id));
 
   DeleteInvPay = (id: any) => this.api.request(this.api.delete('accounts/deleteInvoicePayment/' + id));
 

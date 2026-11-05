@@ -6,14 +6,20 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { AuthService } from '@core/auth/auth.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { AlertComponent } from '@shared/components/alert/alert.component';
+import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { ModalService } from '@shared/modal/modal.service';
+import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import { hrGrantFor } from '../../hr-privilege';
@@ -53,7 +59,7 @@ import { describeError, HrError } from '../../hr-error';
 @Component({
   selector: 'app-employee-eos',
   standalone: true,
-  imports: [TranslateModule, LoadingOverlayComponent, MycurrencyPipe],
+  imports: [TranslateModule, LoadingOverlayComponent, MycurrencyPipe, AlertComponent, SearchDropdownComponent, FormStickyFooterComponent, DateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-eos.component.html',
   styleUrl: './employee-eos.component.scss',
@@ -62,6 +68,9 @@ export class EmployeeEosComponent implements OnInit {
   private service = inject(EmployeeEosService);
   private employees = inject(EmployeeService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private modal = inject(ModalService);
+  private translate = inject(TranslateService);
   private toast = inject(ToastService);
   private privileges = inject(PrivilegeService);
   private auth = inject(AuthService);
@@ -168,6 +177,8 @@ export class EmployeeEosComponent implements OnInit {
       const record = await this.service.get(this.employeeId());
       const caps = this.service.lastCapabilities();
       this.record.set(record);
+      // A brand-new record starts undecided; a saved one carries its answer.
+      this.rehireChoice.set(record.id ? (record.rehireEligible ? 'yes' : 'no') : 'undecided');
       this.statutoryAvailable.set(caps.statutoryCalculationsAvailable);
       this.openAssetCount.set(this.service.lastOpenAssetCount());
       this.serverBlockers.set([]);
@@ -183,6 +194,129 @@ export class EmployeeEosComponent implements OnInit {
       this.loading.set(false);
     }
   }
+
+  // ── Presentation state ───────────────────────────────────────────────────
+  /** Inline "required" messages stay quiet until someone tries to save or finalize. */
+  readonly showErrors = signal(false);
+
+  /**
+   * "Eligible for rehire" is three-state in the UI.
+   * TODO(backend): the contract stores a boolean, so "Not decided" is sent as
+   * `true` exactly as the old pre-ticked checkbox did. A nullable column is
+   * needed before "not decided" can be stored as such.
+   */
+  readonly rehireChoice = signal<'undecided' | 'yes' | 'no'>('undecided');
+
+  readonly optLabel = (o: { label: string }) => o?.label ?? '';
+  readonly optSame = (a: any, b: any) => (a?.key ?? a) === (b?.key ?? b);
+
+  private tr(key: string): string { return this.translate.instant(key); }
+
+  readonly typeOptions = computed(() => [
+    { key: 'Resignation', label: this.tr('EMPLOYEES.EOS.TYPE_RESIGNATION') },
+    { key: 'Termination', label: this.tr('EMPLOYEES.EOS.TYPE_TERMINATION') },
+    { key: 'EndOfContract', label: this.tr('EMPLOYEES.EOS.TYPE_END_OF_CONTRACT') },
+    { key: 'Retirement', label: this.tr('EMPLOYEES.EOS.TYPE_RETIREMENT') },
+    { key: 'DeathInService', label: this.tr('EMPLOYEES.EOS.TYPE_DEATH') },
+  ]);
+  readonly selectedType = computed(() => this.typeOptions().find(o => o.key === this.record()?.type) ?? null);
+
+  readonly rehireOptions = computed(() => [
+    { key: 'undecided', label: this.tr('EMPLOYEES.EOS.REHIRE_UNDECIDED') },
+    { key: 'yes', label: this.tr('EMPLOYEES.EOS.REHIRE_YES') },
+    { key: 'no', label: this.tr('EMPLOYEES.EOS.REHIRE_NO') },
+  ]);
+  readonly selectedRehire = computed(() => this.rehireOptions().find(o => o.key === this.rehireChoice()) ?? null);
+
+  readonly statusOptions = computed(() => [
+    { key: 'Pending', label: this.tr('EMPLOYEES.EOS.PENDING') },
+    { key: 'Cleared', label: this.tr('EMPLOYEES.EOS.CLEARED') },
+    { key: 'Blocked', label: this.tr('EMPLOYEES.EOS.BLOCKED') },
+  ]);
+  statusOption(status: string) { return this.statusOptions().find(o => o.key === status) ?? null; }
+
+  onDate(field: keyof EosRecord, iso: string | null): void {
+    this.patch({ [field]: iso } as any);
+  }
+
+  onType(opt: { key: string } | null): void {
+    this.patch({ type: (opt?.key ?? null) as any });
+  }
+
+  onRehireChoice(opt: { key: string } | null): void {
+    const choice = (opt?.key ?? 'undecided') as 'undecided' | 'yes' | 'no';
+    this.rehireChoice.set(choice);
+    this.patch({ rehireEligible: choice !== 'no' });
+  }
+
+  onClearanceStatusPick(index: number, opt: { key: string } | null): void {
+    if (opt) this.onClearance(index, { status: opt.key as any });
+  }
+
+  /** The seeded departments carry code names; show them as people say them. */
+  deptLabel(department: string): string {
+    const key = 'EMPLOYEES.EOS.DEPT_' + String(department).toUpperCase();
+    const out = this.translate.instant(key);
+    return out === key ? department : out;
+  }
+
+  /** dd/mm/yyyy, split rather than parsed (a bare ISO day is UTC midnight). */
+  fmtDate(iso: string | null | undefined): string {
+    if (!iso) return '';
+    const [y, m, d] = String(iso).slice(0, 10).split('-');
+    return y && m && d ? `${d}/${m}/${y}` : String(iso);
+  }
+
+  /** Last working day may not precede the day notice was given. */
+  readonly dateError = computed<string | null>(() => {
+    const r = this.record();
+    if (r?.noticeGivenDate && r.lastWorkingDay && r.lastWorkingDay < r.noticeGivenDate) {
+      return 'EMPLOYEES.EOS.DATE_ORDER_ERROR';
+    }
+    return null;
+  });
+
+  /** The "Blocking Reason" column only exists once a department is Blocked. */
+  readonly hasBlocked = computed(() => (this.record()?.clearance ?? []).some(c => c.status === 'Blocked'));
+
+  /** Problems currently in the way, counted for the footer. */
+  readonly errorCount = computed(() => {
+    const r = this.record();
+    if (!r) return 0;
+    let n = 0;
+    if (!r.type) n++;
+    if (!r.reason?.trim()) n++;
+    if (this.dateError()) n++;
+    n += r.clearance.filter(c => c.status === 'Blocked' && !c.blockingReason?.trim()).length;
+    return n;
+  });
+
+  /** Bring the first problem into view. */
+  jumpToError(): void {
+    this.showErrors.set(true);
+    setTimeout(() => {
+      document.querySelector<HTMLElement>('.eos .is-invalid, .eos .field-error')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  readonly clearedCount = computed(() => (this.record()?.clearance ?? []).filter(c => c.status === 'Cleared').length);
+  readonly clearedPercent = computed(() => {
+    const total = this.record()?.clearance.length ?? 0;
+    return total ? Math.round((this.clearedCount() / total) * 100) : 0;
+  });
+
+  /**
+   * Finalize is available only when every department has cleared, type and
+   * reason are filled, the dates are in order and nothing else (open assets,
+   * overrides without reasons) stands in the way. The server re-checks all of it.
+   */
+  readonly finalizeReady = computed(() => {
+    const r = this.record();
+    return !!r && !!r.type && !!r.reason?.trim() && !this.dateError()
+      && r.clearance.length > 0 && this.blockers().length === 0
+      && r.clearance.every(c => c.status === 'Cleared');
+  });
 
   // ── Field handlers ────────────────────────────────────────────────────────
   patch(patch: Partial<EosRecord>): void {
@@ -269,6 +403,32 @@ export class EmployeeEosComponent implements OnInit {
     } finally {
       this.saving.set(false);
     }
+  }
+
+  /** Save without finalizing. Required-field messages show, but a draft may be incomplete. */
+  async saveDraft(): Promise<void> {
+    this.showErrors.set(true);
+    await this.save();
+  }
+
+  cancel(): void {
+    void this.router.navigate(['/employees', this.employeeId()]);
+  }
+
+  /** Finalize is the irreversible step, so it asks first. */
+  async finalize(): Promise<void> {
+    this.showErrors.set(true);
+    if (!this.finalizeReady()) return;
+    const ok = await this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(ConfirmModalComponent, {
+      size: 'sm',
+      data: {
+        title: this.tr('EMPLOYEES.EOS.FINALIZE_CONFIRM_TITLE'),
+        message: this.tr('EMPLOYEES.EOS.FINALIZE_CONFIRM'),
+        confirm: this.tr('EMPLOYEES.EOS.FINALIZE'),
+        danger: true,
+      },
+    }).afterClosed();
+    if (ok) await this.complete();
   }
 
   async complete(): Promise<void> {

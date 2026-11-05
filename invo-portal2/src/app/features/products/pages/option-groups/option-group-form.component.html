@@ -77,6 +77,9 @@
               </button>
             }
           </div>
+          @if (options().length > 1) {
+            <button type="button" class="btn btn-select" (click)="sortOptions()">{{ 'PRODUCTS.OPTION_GROUPS.SORT' | translate }}</button>
+          }
           <button type="button" class="btn btn-select" (click)="openOptionPicker()">
             {{ 'COMMON.SELECT' | translate }}
           </button>

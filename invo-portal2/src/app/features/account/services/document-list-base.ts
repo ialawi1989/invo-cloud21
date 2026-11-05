@@ -8,7 +8,7 @@ import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
-import { BulkActionConfig, FilterConfig, ListQueryParams, TableColumn } from '@shared/components/list-page/interfaces/list-page.types';
+import { BulkActionConfig, FilterConfig, ListQueryParams, SearchConfig, TableColumn } from '@shared/components/list-page/interfaces/list-page.types';
 import type { DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { LogsDrawerComponent, LogsDrawerData } from '@shared/components/logs-drawer/logs-drawer.component';
 
@@ -72,7 +72,7 @@ export abstract class DocumentListBase {
   bulkActions: BulkActionConfig[] = [];
   moreItems: DropdownMenuBtnItem[] = [];
   paginationConfig = { enabled: true, pageLimits: [15, 25, 50, 100], default: 15 };
-  searchConfig = { enabled: true, placeholder: '', debounceMs: 400 };
+  searchConfig: SearchConfig = { enabled: true, placeholder: '', debounceMs: 400 };
   sortingConfig = { enabled: true };
   emptyState = { title: '', message: '' };
   breadcrumbs: { label: string; routerLink?: string }[] = [];

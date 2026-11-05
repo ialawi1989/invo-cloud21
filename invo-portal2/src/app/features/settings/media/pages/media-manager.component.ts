@@ -16,6 +16,7 @@ import { DatePickerComponent, formatDate } from '../../../../shared/components/d
 import { PaginationComponent } from '../../../../shared/components/pagination';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs';
 import { SpinnerComponent, LoadingOverlayComponent } from '../../../../shared/components/spinner';
+import { UploadToastService } from '../../../../shared/components/upload-toast';
 import { RangeSliderComponent, RangeSliderValue } from '../../../../shared/components/range-slider';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '../../../../shared/components/segmented-toggle/segmented-toggle.component';
 import {
@@ -110,6 +111,7 @@ export class MediaManagerComponent implements OnInit, OnDestroy {
   private mediaService = inject(MediaService);
   private modalService = inject(ModalService);
   private qp           = inject(QueryParamsService);
+  private uploadToast  = inject(UploadToastService);
 
   @ViewChild(MediaGalleryComponent) gallery!: MediaGalleryComponent;
 
@@ -552,10 +554,20 @@ export class MediaManagerComponent implements OnInit, OnDestroy {
 
     this.savingEdit.set(true);
     try {
-      await this.mediaService.uploadFile(editedFile);
+      // `uploadFile` reports a server-side rejection as `{ success: false }` rather than throwing, so check it.
+      const result = await this.mediaService.uploadFile(editedFile);
+      if (result.success === false) throw new Error(result.error || result.message || 'Upload failed');
       await this.loadMedia({ refreshCounts: true });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to upload edited image:', err);
+      this.uploadToast.add({
+        id: `error-${Date.now()}`,
+        name: 'Edit failed',
+        size: '',
+        status: 'failed',
+        progress: 0,
+        error: err?.message ?? 'Upload failed',
+      });
     } finally {
       this.savingEdit.set(false);
     }

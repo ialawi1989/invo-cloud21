@@ -1,0 +1,160 @@
+<div class="st">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+    <div class="page-header__row">
+      <div>
+        <h1 class="page-header__title">{{ 'SALES_TARGET.TITLE' | translate }}</h1>
+        <p class="page-header__sub">{{ subtitle() }}</p>
+      </div>
+      <div class="st__tools">
+        <button type="button" class="st-btn" (click)="openSaved()">{{ 'SALES_TARGET.SAVED_TARGETS' | translate }}</button>
+        <app-st-period-anchor [value]="anchor()" (valueChange)="onAnchor($event)"/>
+        <button type="button" class="st-btn st-btn--primary" (click)="openTargetModal()">{{ 'SALES_TARGET.SET_TARGET' | translate }}</button>
+        <button type="button" class="st-btn" [class.is-on]="compare()" [attr.aria-pressed]="compare()" (click)="toggleCompare()">
+          {{ 'SALES_TARGET.COMPARE' | translate }}: {{ (compare() ? 'SALES_TARGET.ON' : 'SALES_TARGET.OFF') | translate }}
+        </button>
+      </div>
+    </div>
+  </header>
+
+  @if (failed() && !data()) {
+    <div class="st-card st-empty">
+      <p>{{ 'SALES_TARGET.LOAD_FAILED' | translate }}</p>
+      <button type="button" class="st-btn" (click)="load()">{{ 'SALES_TARGET.RETRY' | translate }}</button>
+    </div>
+  } @else if (kpi(); as k) {
+    <div class="st__body" [class.is-loading]="loading()">
+      <section class="st-kpis">
+        <div class="st-card">
+          <div class="st-card__head">
+            <span>{{ 'SALES_TARGET.TOTAL_ORDERS' | translate }}</span>
+            <span class="st-chip" [class]="'st-chip st-chip--' + chipClass(k.ordersDelta)">{{ chipText(k.ordersDelta) }}</span>
+          </div>
+          <div class="st-card__row">
+            <div>
+              <div class="st-card__value">{{ num(k.orders) }}</div>
+              <div class="st-card__sub">{{ 'SALES_TARGET.PREV' | translate }}: {{ compare() ? num(k.ordersPrev) : '—' }}</div>
+            </div>
+            <div class="st-card__end">
+              <div class="st-card__sub">{{ 'SALES_TARGET.NET_PER_ORDER' | translate }}</div>
+              <b>{{ money(k.netPerOrder) }}</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="st-card">
+          <div class="st-card__head">
+            <span>{{ 'SALES_TARGET.TOTAL_SALES' | translate }}</span>
+            <span class="st-chip" [class]="'st-chip st-chip--' + chipClass(k.totalDelta)">{{ chipText(k.totalDelta) }}</span>
+          </div>
+          <div class="st-card__row">
+            <div>
+              <div class="st-card__value">{{ money(k.totalSales) }}</div>
+              <div class="st-card__sub">
+                {{ 'SALES_TARGET.TARGET_LABEL' | translate }}: {{ k.totalTarget > 0 ? money(k.totalTarget) : ('SALES_TARGET.NOT_SET' | translate) }}
+                · {{ 'SALES_TARGET.PREV' | translate }}: {{ compare() ? money(k.totalPrev) : '—' }}
+              </div>
+            </div>
+            <div class="st-card__end">
+              <div class="st-card__sub">{{ 'SALES_TARGET.ACHIEVEMENT' | translate }}</div>
+              <b>{{ pct(k.totalPct) }}</b>
+            </div>
+          </div>
+          <div class="st-progress"><span [style.width.%]="clamp(k.totalPct)"></span></div>
+          <div class="st-card__foot">
+            <span>{{ 'SALES_TARGET.FORECAST' | translate }}: <b>{{ money(k.totalForecast) }}</b></span>
+            <span>{{ 'SALES_TARGET.STATUS_LABEL' | translate }}: <b>{{ statusKey(k.totalStatus) | translate }}</b></span>
+          </div>
+        </div>
+
+        <div class="st-card">
+          <div class="st-card__head">
+            <span>{{ 'SALES_TARGET.NET_SALES' | translate }}</span>
+            <span class="st-chip" [class]="'st-chip st-chip--' + chipClass(k.netDelta)">{{ chipText(k.netDelta) }}</span>
+          </div>
+          <div class="st-card__row">
+            <div>
+              <div class="st-card__value">{{ money(k.netSales) }}</div>
+              <div class="st-card__sub">
+                {{ 'SALES_TARGET.TARGET_LABEL' | translate }}: {{ k.netTarget > 0 ? money(k.netTarget) : ('SALES_TARGET.NOT_SET' | translate) }}
+                · {{ 'SALES_TARGET.PREV' | translate }}: {{ compare() ? money(k.netPrev) : '—' }}
+              </div>
+            </div>
+            <div class="st-card__end">
+              <div class="st-card__sub">{{ 'SALES_TARGET.ACHIEVEMENT' | translate }}</div>
+              <b>{{ pct(k.netPct) }}</b>
+            </div>
+          </div>
+          <div class="st-progress st-progress--green"><span [style.width.%]="clamp(k.netPct)"></span></div>
+          <div class="st-card__foot">
+            <span>{{ 'SALES_TARGET.AVG_DAY' | translate }}: <b>{{ money(k.netRunRate) }}</b></span>
+            <span>{{ 'SALES_TARGET.REQ_DAY' | translate }}: <b>{{ money(k.netReqRate) }}</b></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="st-charts">
+        <div class="st-card">
+          <h2 class="st-card__title">{{ 'SALES_TARGET.PROGRESS_VS_TARGET' | translate }}</h2>
+          <p class="st-card__sub">{{ 'SALES_TARGET.PROGRESS_HINT' | translate }}</p>
+          <apx-chart [series]="barSeries()" [chart]="barChart()" [xaxis]="barX()" [yaxis]="yAxis" [plotOptions]="barPlot"
+            [dataLabels]="noLabels" [colors]="barColors" [legend]="legend" [tooltip]="tip" [grid]="grid"/>
+        </div>
+        <div class="st-card">
+          <h2 class="st-card__title">{{ 'SALES_TARGET.DAILY_PERFORMANCE' | translate }}</h2>
+          <p class="st-card__sub">{{ 'SALES_TARGET.DAILY_HINT' | translate }}</p>
+          @if (lineSeries().length) {
+            <apx-chart [series]="lineSeries()" [chart]="lineChart()" [xaxis]="lineX()" [yaxis]="yAxis" [stroke]="stroke"
+              [dataLabels]="noLabels" [colors]="lineColors" [legend]="legend" [tooltip]="tip" [grid]="grid"/>
+          } @else {
+            <p class="st-empty-note">{{ 'SALES_TARGET.NO_DAILY' | translate }}</p>
+          }
+        </div>
+      </section>
+
+      <section class="st-card">
+        <div class="st-card__row">
+          <div>
+            <h2 class="st-card__title">{{ 'SALES_TARGET.BRANCH_PERFORMANCE' | translate }}</h2>
+            <p class="st-card__sub">{{ 'SALES_TARGET.BRANCH_HINT' | translate }}</p>
+          </div>
+          @if (data(); as d) {
+            <span class="st-day">{{ 'SALES_TARGET.DAY_OF' | translate:{ day: d.dayIndex, days: d.periodDays } }}</span>
+          }
+        </div>
+        <div class="st-table-wrap">
+          <table class="st-table">
+            <thead>
+              <tr>
+                <th>{{ 'SALES_TARGET.BRANCH' | translate }}</th>
+                <th class="end">{{ 'SALES_TARGET.ORDERS' | translate }}</th>
+                <th class="end">{{ 'SALES_TARGET.CURRENT_SALES' | translate }}</th>
+                <th class="end">{{ 'SALES_TARGET.TARGET_LABEL' | translate }}</th>
+                <th class="end">{{ 'SALES_TARGET.FORECAST' | translate }}</th>
+                <th class="end">{{ 'SALES_TARGET.ACH' | translate }}</th>
+                <th>{{ 'SALES_TARGET.STATUS_LABEL' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (b of data()!.branches; track b.branchId) {
+                <tr>
+                  <td class="st-table__name">{{ b.branchName }}</td>
+                  <td class="end">{{ num(b.orderCount) }}</td>
+                  <td class="end"><b>{{ money(b.currentSales) }}</b></td>
+                  <td class="end">{{ money(b.target) }}</td>
+                  <td class="end"><b>{{ money(b.forecast) }}</b></td>
+                  <td class="end">{{ pct(b.ach) }}</td>
+                  <td><span class="st-status" [class]="'st-status ' + statusClass(b.status)">{{ statusKey(b.status) | translate }}</span></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7" class="st-table__empty">{{ 'SALES_TARGET.NO_BRANCHES' | translate }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  } @else {
+    <div class="st-card st-empty"><p>{{ 'SALES_TARGET.LOADING' | translate }}</p></div>
+  }
+</div>

@@ -25,6 +25,7 @@ import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer
 import { TranslateLinkComponent } from '@shared/components/translate-link/translate-link.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
+import { ReorderModalComponent, ReorderModalData } from '@shared/components/reorder-modal/reorder-modal.component';
 import {
   TranslationModalComponent,
   TranslationModalData,
@@ -226,6 +227,22 @@ export class OptionGroupFormComponent implements OnInit, CanLeaveComponent {
 
   removeOption(optionId: string): void {
     this.options.update((list) => list.filter((o) => o.optionId !== optionId));
+    this.dirty.set(true);
+  }
+
+  /** "Sort": one dialog over the group's options to drag, nudge or type each one's position. */
+  async sortOptions(): Promise<void> {
+    const current = this.options();
+    const ids = await this.modal.open<ReorderModalComponent, ReorderModalData, string[] | null>(ReorderModalComponent, {
+      size: 'md',
+      data: {
+        title: this.translate.instant('PRODUCTS.OPTION_GROUPS.SORT_TITLE'),
+        items: current.map(o => ({ id: o.optionId, label: o.name, image: o.thumbnailUrl })),
+      },
+    }).afterClosed();
+    if (!ids) return;
+    const byId = new Map(current.map(o => [o.optionId, o]));
+    this.options.set(ids.map((id, i) => ({ ...byId.get(id)!, index: i })));
     this.dirty.set(true);
   }
 

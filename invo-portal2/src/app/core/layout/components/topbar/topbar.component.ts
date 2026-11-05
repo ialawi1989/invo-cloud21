@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { AssistantService } from '../../../ai/assistant/assistant.service';
 import { AuthService } from '../../../auth/auth.service';
 import { CompanyService } from '../../../auth/company.service';
 import { resolveEmployeeName, resolveInitials } from '../../../auth/auth.models';
@@ -117,6 +118,15 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
               <line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/>
             </svg>
           }
+        </button>
+
+        <!-- Assistant: opens the chat panel (mounted once in the main layout, so it works on every page) -->
+        <button class="icon-action" [class.icon-action--active]="assistant.open()" (click)="assistant.toggle()"
+                [appTooltip]="'ASSISTANT.TITLE' | translate" [attr.aria-pressed]="assistant.open()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            <path d="M9 9h.01M12 9h.01M15 9h.01"/>
+          </svg>
         </button>
 
         <!-- Notifications -->
@@ -612,6 +622,7 @@ export class TopbarComponent {
   private translateSvc = inject(TranslateService);
   private elRef        = inject(ElementRef);
   auth                 = inject(AuthService);
+  assistant            = inject(AssistantService);
   companyService       = inject(CompanyService);
   langService          = inject(LanguageService);
   branchSvc            = inject(BranchConnectionService) as BranchConnectionService;

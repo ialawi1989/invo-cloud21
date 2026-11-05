@@ -1,5 +1,8 @@
 {
   "CUSTOMERS": {
+    "IMPORT_CUSTOMERS": "استيراد العملاء",
+    "IMPORT_REQ_NAME": "الاسم — مطلوب.",
+    "IMPORT_REQ_ADDR": "العناوين — قائمة JSON؛ يتم تحديث العميل إذا كان الهاتف مطابقاً.",
     "DASHBOARD": "لوحة التحكم",
     "ADD_NEW": "إضافة جديد",
     "SEARCH_PLACEHOLDER": "ابحث في العملاء",
@@ -18,6 +21,7 @@
       "NEW_CUSTOMER": "عميل جديد",
       "EDIT_CUSTOMER": "تعديل العميل",
       "INDIVIDUAL": "فرد",
+      "CUSTOMER_TYPE": "نوع العميل",
       "BUSINESS": "شركة",
       "BASIC_INFORMATION": "المعلومات الأساسية",
       "SALUATION": "اللقب",
@@ -91,6 +95,10 @@
       "CONFIRM_GO_BACK": "هل أنت متأكد من حذف هذه الملاحظة؟"
     },
     "DASHBOARD_PAGE": {
+      "SORT_BY": "ترتيب حسب",
+      "SORT_FIELD_NAME": "الاسم",
+      "SORT_FIELD_RECEIVABLE": "المستحق",
+      "SORT_FIELD_PHONE": "الهاتف",
       "VIEW_CUSTOMER": "عرض العميل",
       "OVERVIEW": "نظرة عامة",
       "TRANSACTIONS": "المعاملات",
@@ -104,6 +112,14 @@
       "SUB_CUSTOMERS_LOWERCASE": "عملاء فرعيين",
       "PARENT": "العميل الرئيسي",
       "NEW_INVOICE": "فاتورة جديدة",
+      "NEW_TRANSACTION": "معاملة جديدة",
+      "NEW_ESTIMATE": "عرض سعر جديد",
+      "ALL_CUSTOMERS": "جميع العملاء",
+      "ALL_BRANCHES": "جميع الفروع",
+      "PRINT": "طباعة",
+      "EXPORT": "تصدير",
+      "INDIVIDUAL_CUSTOMERS": "العملاء الأفراد",
+      "BUSINESS_CUSTOMERS": "عملاء الشركات",
       "INCLUDE_SUB_CUSTOMERS_DATA": "تضمين بيانات العملاء الفرعيين",
       "CONSOLIDATED_VIEW_ACTIVE": "العرض الموحد مفعّل",
       "SUB_CUSTOMERS_INCLUDED": "العملاء الفرعيون المضمّنون",

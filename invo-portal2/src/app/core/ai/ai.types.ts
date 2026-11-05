@@ -79,5 +79,16 @@ export function aiErrorI18nKey(code: AiErrorCode): string {
   }
 }
 
+/** Requests and tokens used. */
+export interface AiUsageTotals { requests: number; tokens: number }
+
+/** Company AI usage from GET /ai/usage (UTC days). */
+export interface AiUsageSummary {
+  day: string;
+  today: AiUsageTotals;
+  month: AiUsageTotals;
+  byModel: (AiUsageTotals & { model: string; promptTokens: number; completionTokens: number; today: AiUsageTotals })[];
+}
+
 /** Total characters the backend accepts in one generate request. */
 export const AI_MAX_INPUT = 8000;

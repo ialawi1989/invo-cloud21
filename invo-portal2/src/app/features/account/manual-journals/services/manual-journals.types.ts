@@ -70,6 +70,8 @@ export interface Journal {
   attachment: JournalAttachment[];
   /** ISO 'yyyy-MM-dd'. */
   journalDate: string;
+  /** When the journal was created. The single-journal endpoint does not return it; the view fills it from the list row. */
+  createdAt?: string;
   comments: JournalComment[];
   branchId: string;
   branchName: string;
@@ -158,6 +160,12 @@ export interface JournalListParams {
   /** Branch uuids to scope the list to. Omit to use the employee's full
    *  allowed-branches set (server default). */
   branches?: string[];
+  /** 'Draft' | 'Open' — omit for both (server default). */
+  status?: string[];
+  employeeId?: string | null;
+  /** ISO 'yyyy-MM-dd'. */
+  fromDate?: string | null;
+  toDate?: string | null;
 }
 
 export interface JournalListResponse {

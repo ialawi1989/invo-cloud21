@@ -1,5 +1,5 @@
 import '../../account-i18n';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,6 +13,7 @@ import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { Country, CountriesService } from '@shared/services/countries.service';
+import { EmailChipsComponent } from '../email-chips/email-chips.component';
 
 export interface SendDocumentData {
   /** Emails pre-filled as chips (customer / supplier email). */
@@ -23,8 +24,6 @@ export interface SendDocumentData {
   whatsapp?: { type: string; id: string; phone: string };
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 /**
  * "Send" dialog shared by every sales / purchase document: email recipients as chips and,
  * when a WhatsApp plugin is active, the customer's phone with a country code. The caller decides
@@ -33,20 +32,12 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 @Component({
   selector: 'app-send-document-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, ModalHeaderComponent, SearchDropdownComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, ModalHeaderComponent, SearchDropdownComponent, EmailChipsComponent],
   template: `
     <app-modal-header [title]="'DOC_SEND.TITLE' | translate"/>
     <div class="sd">
       <label class="sd__label">{{ 'DOC_SEND.EMAILS' | translate }} <small>({{ 'DOC_SEND.EMAIL_HINT' | translate }})</small></label>
-      <div class="sd__chips" [class.sd__chips--err]="emailError()">
-        @for (e of emails(); track e) {
-          <span class="sd__chip">{{ e }} <button type="button" (click)="removeEmail(e)" aria-label="remove">✕</button></span>
-        }
-        <input class="sd__chip-input" type="text" [placeholder]="'DOC_SEND.ADD_EMAIL' | translate" [disabled]="sending()"
-          [ngModel]="draft()" (ngModelChange)="draft.set($event)"
-          (keydown)="onKey($event)" (blur)="commit()" (paste)="onPaste($event)"/>
-      </div>
-      @if (emailError()) { <small class="sd__err">{{ emailError() | translate }}</small> }
+      <app-email-chips #chips [(emails)]="emails" [disabled]="sending()"/>
       <div class="sd__end">
         <button type="button" class="sd__btn sd__btn--primary" [disabled]="sending() || !emails().length" (click)="sendEmail()">
           ✉ {{ 'DOC_SEND.SEND_EMAIL' | translate }}
@@ -82,20 +73,16 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   styles: [`
     .sd { padding: 16px 20px; min-width: min(520px, 92vw); display: flex; flex-direction: column; gap: 10px; }
     .sd__label { font-size: 13px; font-weight: 600; color: #334155; small { font-weight: 400; color: #227d8d; } }
-    .sd__chips { display: flex; flex-wrap: wrap; gap: 6px; border: 1px solid #d0d5dd; border-radius: 8px; padding: 6px 8px; background: #fff; min-height: 42px; align-items: center; }
-    .sd__chips:focus-within { border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .12); }
-    .sd__chips--err { border-color: #dc2626; }
-    .sd__chip { display: inline-flex; align-items: center; gap: 6px; background: #e6f4f6; color: #227d8d; border-radius: 999px; padding: 3px 10px; font-size: 13px; }
-    .sd__chip button { border: 0; background: none; color: #227d8d; cursor: pointer; padding: 0; }
-    .sd__chip-input { flex: 1; min-width: 160px; border: 0; outline: none; font: inherit; font-size: 13.5px; }
-    .sd__err { color: #dc2626; }
     .sd__end { display: flex; justify-content: flex-end; }
     .sd__hr { border: 0; border-top: 1px solid #eef2f6; margin: 6px 0; width: 100%; }
     .sd__wa-head { display: flex; align-items: center; gap: 10px; a { font-size: 12.5px; color: #227d8d; } }
     .sd__badge { font-size: 11.5px; font-weight: 600; color: #b91c1c; background: #fee2e2; border-radius: 999px; padding: 2px 8px; }
-    .sd__phone { display: flex; gap: 8px; align-items: flex-start; }
-    .sd__code { width: 130px; flex: 0 0 auto; }
-    .sd__input { flex: 1; border: 1px solid #d0d5dd; border-radius: 8px; padding: 9px 12px; font: inherit; font-size: 13.5px; }
+    /* Country code + number read as ONE field: a single bordered box, the code picker and the input sit inside it with a divider between. */
+    .sd__phone { display: flex; align-items: stretch; border: 1px solid #d0d5dd; border-radius: 8px; background: #fff; }
+    .sd__phone:focus-within { border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .12); }
+    .sd__code { width: 120px; flex: 0 0 auto; border-inline-end: 1px solid #e4e7ec; }
+    .sd__code ::ng-deep button { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: transparent !important; height: 100%; }
+    .sd__input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; border-radius: 0; padding: 9px 12px; font: inherit; font-size: 13.5px; }
     .sd__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; font-weight: 600; font-size: 13.5px; cursor: pointer; }
     .sd__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
     .sd__btn--wa { border-color: #16a34a; background: #16a34a; color: #fff; }
@@ -111,8 +98,7 @@ export class SendDocumentModalComponent implements OnInit {
   private countriesService = inject(CountriesService);
 
   emails = signal<string[]>([...(this.data.emails ?? []).filter(Boolean)]);
-  draft = signal('');
-  emailError = signal('');
+  private chips = viewChild(EmailChipsComponent);
   sending = signal(false);
 
   countries = signal<Country[]>([]);
@@ -147,31 +133,9 @@ export class SendDocumentModalComponent implements OnInit {
   byCode = (a: Country, b: Country) => a?.dial_code === b?.dial_code;
   onCountry(c: Country | null): void { this.selectedCountry.set(c); }
 
-  // ── email chips ────────────────────────────────────────────────────
-  commit(ev?: Event): void {
-    const raw = this.draft().trim().replace(/[,;]$/, '');
-    if (!raw) return;
-    ev?.preventDefault();
-    if (!EMAIL_RE.test(raw)) { this.emailError.set('DOC_SEND.ERR_EMAIL'); return; }
-    this.emailError.set('');
-    if (!this.emails().includes(raw)) this.emails.update(l => [...l, raw]);
-    this.draft.set('');
-  }
-  onKey(ev: KeyboardEvent): void {
-    if (ev.key === 'Enter' || ev.key === ',' || ev.key === ';') this.commit(ev);
-  }
-  onPaste(ev: ClipboardEvent): void {
-    const text = ev.clipboardData?.getData('text') ?? '';
-    if (!/[,;\s]/.test(text.trim())) return;
-    ev.preventDefault();
-    const valid = text.split(/[,;\s]+/).filter(t => EMAIL_RE.test(t));
-    this.emails.update(l => [...l, ...valid.filter(v => !l.includes(v))]);
-  }
-  removeEmail(e: string): void { this.emails.update(l => l.filter(x => x !== e)); }
-
   // ── send ───────────────────────────────────────────────────────────
   async sendEmail(): Promise<void> {
-    this.commit();
+    if (this.chips() && !this.chips()!.flush()) return;
     if (!this.emails().length || this.sending()) return;
     this.sending.set(true);
     try {

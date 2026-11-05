@@ -1,3 +1,4 @@
+import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
@@ -26,7 +27,7 @@ export interface InventoryRequestPaperData {
 @Component({
   selector: 'app-inventory-request-paper',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LocalizedNamePipe, MycurrencyPipe, MynumberPipe],
+  imports: [StatusBadgeComponent, CommonModule, TranslateModule, LocalizedNamePipe, MycurrencyPipe, MynumberPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   templateUrl: './inventory-request-paper.component.html',

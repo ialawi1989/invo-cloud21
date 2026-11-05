@@ -26,9 +26,11 @@
       (valueChange)="onBranchChange($event)"
       [placeholder]="'BANKING_OVERVIEW.FILTERS.ALL_BRANCHES' | translate"/>
 
-    <button type="button" class="btn btn-primary txn-reconcile-btn" (click)="reconcileAccount()">
-      {{ 'BANKING_OVERVIEW.TRANSACTIONS.RECONCILE_ACCOUNT' | translate }}
-    </button>
+    @if (canReconcile) {
+      <button type="button" class="btn btn-primary txn-reconcile-btn" (click)="reconcileAccount()">
+        {{ 'BANKING_OVERVIEW.TRANSACTIONS.RECONCILE_ACCOUNT' | translate }}
+      </button>
+    }
   </div>
 
   <app-list-page
@@ -39,6 +41,10 @@
     [sorting]="{ enabled: true, defaultSort: { key: 'date', direction: 'desc' } }"
     [emptyState]="{ title: ('BANKING_OVERVIEW.TRANSACTIONS.EMPTY' | translate) }">
 
+    <ng-template listCellTemplate="date" let-row>
+      {{ row.date | date: 'dd/MM/yyyy' }}
+    </ng-template>
+
     <ng-template listCellTemplate="reference" let-row>
       @if (row.referenceId && row.reference) {
         <span class="txn-ref">{{ row.reference }}</span>
@@ -48,6 +54,10 @@
       @if (row.user?.userName; as userName) {
         <div class="txn-user">{{ userName }}</div>
       }
+    </ng-template>
+
+    <ng-template listCellTemplate="referenceNumber" let-row>
+      <span class="tabular-nums">{{ row.referenceNumber || '—' }}</span>
     </ng-template>
 
     <ng-template listCellTemplate="Debit" let-row>
