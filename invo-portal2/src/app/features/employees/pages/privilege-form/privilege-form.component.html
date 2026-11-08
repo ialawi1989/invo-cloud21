@@ -57,6 +57,21 @@
       </div>
     </section>
 
+    <!-- ═══ Default dashboard (existing records only) ═══ -->
+    @if (!isCreate()) {
+      <section class="card">
+        <div class="card__body dash-card">
+          <div>
+            <h2 class="card__title">{{ 'EMPLOYEES.PRIVILEGES.DASHBOARD_TITLE' | translate }}</h2>
+            <p class="card__sub">{{ 'EMPLOYEES.PRIVILEGES.DASHBOARD_HINT' | translate }}</p>
+          </div>
+          <button type="button" class="btn btn-ghost" (click)="customizeDashboard()" [disabled]="saving()">
+            {{ 'EMPLOYEES.PRIVILEGES.CUSTOMIZE_DASHBOARD' | translate }}
+          </button>
+        </div>
+      </section>
+    }
+
     <!-- ═══ Access tree ═══ -->
     <section class="card">
       <header class="card__head card__head--tools">
@@ -187,11 +202,6 @@
   <app-loading-overlay [show]="saving()" [message]="savingLabel()"/>
 
   <app-form-sticky-footer>
-    @if (!isCreate()) {
-      <button type="button" class="btn btn-ghost" (click)="customizeDashboard()" [disabled]="saving() || loading()">
-        {{ 'EMPLOYEES.PRIVILEGES.CUSTOMIZE_DASHBOARD' | translate }}
-      </button>
-    }
     <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
       {{ 'COMMON.CANCEL' | translate }}
     </button>
@@ -199,7 +209,7 @@
       type="button"
       class="btn btn-primary"
       (click)="save()"
-      [disabled]="saving() || loading()"
+      [disabled]="saving() || loading() || lockedRole()"
     >
       {{ 'COMMON.SAVE' | translate }}
     </button>

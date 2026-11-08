@@ -327,3 +327,18 @@
   .tools { width: 100%; }
   .search { flex: 1; }
 }
+
+.card__body.dash-card {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  > div { flex: 1 1 0; min-width: 0; text-align: start; }
+  > button { flex: 0 0 auto; white-space: nowrap; }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

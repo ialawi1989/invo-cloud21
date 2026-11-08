@@ -195,12 +195,12 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
   }
 
   /**
-   * Super Admin / Owner profiles are all-access by definition and cannot be
-   * edited: a stray toggle here would lock the account owner out of a
-   * feature. Decided from the name the record LOADED with (not the editable
-   * name field), so renaming can't be used to unlock it.
+   * System roles (Super Admin / Owner) are all-access by definition and cannot
+   * be edited: a stray toggle here would lock the account owner out of a
+   * feature. Decided ONLY from the server-set `systemKey` the record loaded
+   * with — never from a name, which anyone can edit. This is UX; the server
+   * rejects the save with a 403 regardless.
    */
-  private static readonly ALL_ACCESS_ROLES = ['Super Admin', 'Owner'];
   readonly lockedRole = signal(false);
 
   /** Which groups are expanded (by key). */
@@ -373,7 +373,7 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
             // All-access roles: force every group + action on, including ones
             // added to the catalog after the profile was first saved. Done by
             // walking the whole tree, not a hand-kept list of group keys.
-            if (PrivilegeFormComponent.ALL_ACCESS_ROLES.includes((ep.name ?? '').trim())) {
+            if (ep.systemKey) {
               this.lockedRole.set(true);
               this.forceAllOn(ep);
             }
@@ -547,7 +547,7 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
   // ── Save / cancel ───────────────────────────────────────────────────────────
   async save(): Promise<void> {
     const ep = this.record();
-    if (!ep) return;
+    if (!ep || this.lockedRole()) return;
 
     const trimmed = this.name().trim();
     if (!trimmed) {
@@ -571,7 +571,11 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
       this.router.navigate(['/employees/privileges']);
     } catch (e: any) {
       console.error('[privilege-form] save failed', e);
-      this.toast.error('COMMON.SAVE_FAILED', e?.message);
+      if (e?.status === 403) {
+        this.toast.error('EMPLOYEES.PRIVILEGES.SYSTEM_ROLE_LOCKED');
+      } else {
+        this.toast.error('COMMON.SAVE_FAILED', e?.message);
+      }
     } finally {
       this.saving.set(false);
     }

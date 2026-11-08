@@ -61,6 +61,10 @@ export class EmployeePrivilege {
    *  templates ship one; custom sets can set their own). Round-tripped to
    *  the backend, which simply stores the extra field. */
   description       = '';
+  /** Server-set marker for protected system roles (`'SUPER_ADMIN'` / `'OWNER'`);
+   *  `null` for normal roles. Read-only on the client: it is never sent back
+   *  (see ToJson) and the server ignores it if it were. */
+  systemKey: string | null = null;
   /** Id of the saved role this set was cloned from, if any (the "start from a
    *  role" dropdown). Empty for hand-built sets. */
   presetKey         = '';
