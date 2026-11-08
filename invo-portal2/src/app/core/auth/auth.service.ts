@@ -38,6 +38,7 @@ export class AuthService {
     // and every permission check on a refreshed page returns false.
     const stored = this.currentEmployee$.value;
     if (stored) {
+      this.privilegeService.setSuperAdmin(stored['superAdmin'] === true);
       this.permissionService.setPermissions((stored.permissions as Permission[]) ?? []);
       if ((stored as any)['privileges']) {
         this.privilegeService.setPrivileges((stored as any)['privileges']);
@@ -132,6 +133,9 @@ export class AuthService {
     this.currentToken$.next(token);
 
     this.permissionService.setPermissions((employee?.permissions as Permission[]) ?? []);
+
+    // A super admin is never subject to privilege checks, whatever tree came back.
+    this.privilegeService.setSuperAdmin(employee?.['superAdmin'] === true);
 
     // Hydrate privilege tree from employee.privileges
     if (employee?.['privileges']) {

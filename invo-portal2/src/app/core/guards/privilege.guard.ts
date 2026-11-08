@@ -24,6 +24,9 @@ export const privilegeGuard: CanActivateFn = async (route: ActivatedRouteSnapsho
   const redirectTo:     string             = route.data['redirectTo'] ?? '/dashboard';
   const silentRedirect: boolean            = route.data['silentRedirect'] ?? false;
 
+  // Super admins are exempt from privilege checks on every route.
+  if (privilegeService.isSuperAdmin) return true;
+
   if (!permissionPath) {
     router.navigate([redirectTo]);
     return false;

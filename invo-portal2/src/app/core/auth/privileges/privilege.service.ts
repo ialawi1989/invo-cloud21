@@ -34,7 +34,16 @@ export class PrivilegeService {
 
   private _privileges: Privilege | null = null;
 
-  get privileges(): Privilege | null { return this._privileges; }
+  /** Signed-in user is a super admin: exempt from every privilege check. */
+  private _superAdmin = false;
+
+  /** `null` for a super admin, so code that reads the tree directly (and treats
+   *  "no tree" as unrestricted) also bypasses. */
+  get privileges(): Privilege | null { return this._superAdmin ? null : this._privileges; }
+
+  get isSuperAdmin(): boolean { return this._superAdmin; }
+
+  setSuperAdmin(value: boolean): void { this._superAdmin = value === true; }
 
   // ─── Load from backend ───────────────────────────────────────────────────
   async loadPrivileges(): Promise<Privilege | null> {
@@ -64,6 +73,7 @@ export class PrivilegeService {
 
   clearPrivileges(): void {
     this._privileges = null;
+    this._superAdmin = false;
   }
 
   // ─── Permission check (mirrors PermissionGuard.checkPermission) ──────────
@@ -77,6 +87,9 @@ export class PrivilegeService {
    */
   check(permissionPath: string | undefined): boolean {
     if (!permissionPath) return true;
+
+    // Super admins bypass the privilege system entirely — no tree is consulted.
+    if (this._superAdmin) return true;
 
     // Semantics: only an explicit `access === false` denies. Anything else
     // (null, undefined, missing section/action entry, or no privileges
