@@ -1,0 +1,21 @@
+@if (allowed() && !loading() && active().length) {
+  <section class="card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'EMPLOYEES.LOANS_SUMMARY.TITLE' | translate }}</h2>
+      <a class="card__link" [routerLink]="['/employees', employeeId(), 'payroll']">{{ 'EMPLOYEES.LEAVE_SUMMARY.OPEN' | translate }}</a>
+    </header>
+    <div class="card__body">
+      <div>
+        <div class="big">{{ balance() | mycurrency }}</div>
+        <div class="lbl">{{ 'EMPLOYEES.LOANS_SUMMARY.OUTSTANDING' | translate }} · {{ active().length }} {{ 'EMPLOYEES.LOANS_SUMMARY.ACTIVE' | translate }}</div>
+      </div>
+      <div class="bar" role="img" [attr.aria-label]="repaidPct() + '%'"><i [style.width.%]="repaidPct()"></i></div>
+      <div class="rows">
+        <div class="row"><span>{{ 'EMPLOYEES.LOANS_SUMMARY.REPAID' | translate }}</span><b>{{ repaidPct() }}%</b></div>
+        @if (instalment()) {
+          <div class="row"><span>{{ 'EMPLOYEES.LOANS_SUMMARY.INSTALMENT' | translate }}</span><b>{{ instalment() | mycurrency }}</b></div>
+        }
+      </div>
+    </div>
+  </section>
+}

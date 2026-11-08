@@ -1,0 +1,29 @@
+@if (allowed() && !loading() && (balance() || upcoming())) {
+  <section class="card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'EMPLOYEES.LEAVE_SUMMARY.TITLE' | translate }}</h2>
+      <a class="card__link" [routerLink]="['/employees', employeeId(), 'leave']">{{ 'EMPLOYEES.LEAVE_SUMMARY.OPEN' | translate }}</a>
+    </header>
+    <div class="card__body">
+      @if (balance(); as b) {
+        <div>
+          <div class="big">{{ b.remainingDays ?? 0 }}<small>{{ 'EMPLOYEES.LEAVE_SUMMARY.DAYS_LEFT' | translate }}</small></div>
+          <div class="lbl">{{ 'EMPLOYEES.LEAVE_SUMMARY.OF' | translate }} {{ total() }} · {{ 'EMPLOYEES.LEAVE_SUMMARY.USED' | translate }} {{ b.usedDays ?? 0 }}</div>
+        </div>
+        <div class="bar" role="img" [attr.aria-label]="usedPct() + '%'"><i [style.width.%]="usedPct()"></i></div>
+      }
+      @if (upcoming(); as u) {
+        <div class="rows">
+          <div class="row">
+            <span>{{ 'EMPLOYEES.LEAVE_SUMMARY.NEXT' | translate }}</span>
+            <span class="chip" [class.chip--ok]="u.status === 'Approved'" [class.chip--wait]="u.status === 'Pending'">{{ u.status }}</span>
+          </div>
+          <div class="row"><b>{{ u.leaveType }}</b><span>{{ u.startDate }} → {{ u.endDate }}</span></div>
+          @if (u.days) { <div class="row"><span>{{ 'EMPLOYEES.LEAVE_SUMMARY.DURATION' | translate }}</span><b>{{ u.days }}</b></div> }
+        </div>
+      } @else {
+        <p class="empty">{{ 'EMPLOYEES.LEAVE_SUMMARY.NONE_UPCOMING' | translate }}</p>
+      }
+    </div>
+  </section>
+}

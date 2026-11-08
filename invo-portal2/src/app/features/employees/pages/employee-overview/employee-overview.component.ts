@@ -7,6 +7,10 @@ import { AuthService } from '@core/auth/auth.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 
+import { EmployeeLeaveSummaryComponent } from '../../components/employee-leave-summary/employee-leave-summary.component';
+import { EmployeeLoansSummaryComponent } from '../../components/employee-loans-summary/employee-loans-summary.component';
+import { EmployeeSalesSummaryComponent } from '../../components/employee-sales-summary/employee-sales-summary.component';
+import { EmployeeAttendanceSummaryComponent } from '../../components/employee-attendance-summary/employee-attendance-summary.component';
 import { EmployeeDetails } from '../../models/employee.types';
 import { EmployeeService } from '../../services/employee.service';
 import {
@@ -14,7 +18,7 @@ import {
   EmployeePayrollService,
   PayrollRow,
 } from '../../services/employee-payroll.service';
-import { HR_PAYROLL, hrModuleEnabled } from '../../employee-feature-flags';
+import { HR_PAYROLL, hrFieldsEnabled, hrModuleEnabled } from '../../employee-feature-flags';
 import { hrGrantFor } from '../../hr-privilege';
 import { countryOptions } from '../../models/employee-catalogs';
 
@@ -41,7 +45,8 @@ interface OverviewRow {
 @Component({
   selector: 'app-employee-overview',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [CommonModule, RouterModule, TranslateModule, EmployeeAttendanceSummaryComponent,
+    EmployeeLeaveSummaryComponent, EmployeeLoansSummaryComponent, EmployeeSalesSummaryComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-overview.component.html',
   styleUrl: './employee-overview.component.scss',
@@ -73,11 +78,18 @@ export class EmployeeOverviewComponent implements OnInit {
   readonly canViewBank = computed<boolean>(() =>
     this.payrollFlag() && hrGrantFor(this.privilegeSvc, this.auth, 'employeePayrollSecurity', 'viewBank'));
 
+  private hrFields = hrFieldsEnabled();
+  /** The form only renders the Personal card when the HR-fields group exists (and this caller owns the HR data). */
+  readonly canEditPersonal = computed<boolean>(() => this.hrFields() && this.record()?.isHrDataOwner !== false);
+  /** Payment is editable only with the payroll module AND the `editBank` grant. */
+  readonly canEditPayment = computed<boolean>(() =>
+    this.payrollFlag() && hrGrantFor(this.privilegeSvc, this.auth, 'employeePayrollSecurity', 'editBank'));
+
   readonly employeeId = computed<string>(() => this.record()?.id ?? '');
   readonly name       = computed<string>(() => this.record()?.name ?? '');
   readonly employeeNumber = computed<string>(() => this.record()?.profile?.employeeNumber ?? '');
   readonly position   = computed<string>(() => this.record()?.employment?.position ?? '');
-  readonly avatar     = computed<string>(() => this.record()?.avatar ?? '');
+  readonly avatar     = computed<string>(() => this.record()?.mediaUrl?.defaultUrl || this.record()?.avatar || '');
 
   /** Role names for the identity strip's pills. */
   readonly rolePills = computed<string[]>(() => {

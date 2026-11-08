@@ -111,13 +111,15 @@
         </div>
       </section>
 
-      @if (record()) {
+      @if (record() && (canEditPersonal() || personalRows().length)) {
         <section class="card">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.FORM.PERSONAL_DETAILS' | translate }}</h2>
-            <button type="button" class="icon-btn"
-                    [attr.aria-label]="'COMMON.EDIT' | translate"
-                    (click)="edit('personal')">&#9998;</button>
+            @if (canEditPersonal()) {
+  <button type="button" class="icon-btn"
+                      [attr.aria-label]="'COMMON.EDIT' | translate"
+                      (click)="edit('personal')">&#9998;</button>
+            }
           </header>
           <div class="card__body">
             <dl class="kv">
@@ -159,13 +161,15 @@
         </section>
       }
 
-      @if (record()) {
+      @if (record() && (canEditPayment() || paymentRows().length)) {
         <section class="card">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.WIZARD.PAYMENT' | translate }}</h2>
-            <button type="button" class="icon-btn"
-                    [attr.aria-label]="'COMMON.EDIT' | translate"
-                    (click)="edit('payment')">&#9998;</button>
+            @if (canEditPayment()) {
+  <button type="button" class="icon-btn"
+                      [attr.aria-label]="'COMMON.EDIT' | translate"
+                      (click)="edit('payment')">&#9998;</button>
+            }
           </header>
           <div class="card__body">
             <dl class="kv">
@@ -182,6 +186,16 @@
           </div>
         </section>
       }
+    </div>
+
+    <app-employee-attendance-summary [employeeId]="employeeId()"/>
+
+    <!-- Each tile renders nothing when it does not apply (module off, no grant,
+         no data), so this grid collapses on its own. -->
+    <div class="emp-extras">
+      <app-employee-leave-summary [employeeId]="employeeId()"/>
+      <app-employee-loans-summary [employeeId]="employeeId()"/>
+      <app-employee-sales-summary [employeeId]="employeeId()" [employeeName]="name()" [isSalesPerson]="!!record()?.isSalesPerson"/>
     </div>
   }
 </div>

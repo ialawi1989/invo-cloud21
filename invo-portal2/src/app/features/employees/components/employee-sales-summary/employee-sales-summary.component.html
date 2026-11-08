@@ -1,0 +1,31 @@
+@if (allowed()) {
+  <section class="card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'EMPLOYEES.SALES_SUMMARY.TITLE' | translate }}</h2>
+      <app-segmented-toggle size="sm" [options]="periodOptions" [value]="period()" (valueChange)="setPeriod($event)"/>
+    </header>
+    <div class="card__body" [style.opacity]="loading() ? .55 : 1">
+      @if (!loading() && !row()) {
+        <p class="empty">{{ 'EMPLOYEES.SALES_SUMMARY.EMPTY' | translate }}</p>
+      } @else {
+      <div>
+        <div class="big">{{ sales() | mycurrency }}</div>
+        <div class="lbl">{{ 'EMPLOYEES.SALES_SUMMARY.NET_SALES' | translate }}</div>
+      </div>
+      @if (grand() > 0) {
+        <div class="bar" role="img" [attr.aria-label]="share() + '%'"><i [style.width.%]="share()"></i></div>
+      }
+      <div class="rows">
+        @if (grand() > 0) {
+          <div class="row"><span>{{ 'EMPLOYEES.SALES_SUMMARY.SHARE' | translate }}</span><b>{{ share() }}%</b></div>
+        }
+        <div class="row"><span>{{ 'EMPLOYEES.SALES_SUMMARY.QTY' | translate }}</span><b>{{ qty() }}</b></div>
+        @if (returns() > 0) {
+          <div class="row"><span>{{ 'EMPLOYEES.SALES_SUMMARY.RETURNS' | translate }}</span><b>{{ returns() | mycurrency }}</b></div>
+        }
+      </div>
+      }
+      <a class="card__link" routerLink="/reports/sales-by-employee">{{ 'EMPLOYEES.SALES_SUMMARY.FULL' | translate }}</a>
+    </div>
+  </section>
+}

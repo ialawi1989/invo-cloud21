@@ -265,3 +265,14 @@
     &__val { text-align: end; }
   }
 }
+
+.emp-extras {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-items: stretch;
+
+  // An empty slot (component rendered nothing) must not leave a gap.
+  > :empty, > *:not(:has(*)) { display: none; }
+}

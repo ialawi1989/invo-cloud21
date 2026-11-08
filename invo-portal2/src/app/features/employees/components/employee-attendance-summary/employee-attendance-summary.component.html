@@ -1,0 +1,157 @@
+@if (allowed()) {
+  <section class="att card">
+    <header class="card__head">
+      <h2 class="card__title">{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.TITLE' | translate }}</h2>
+      <div class="att__actions">
+        <app-segmented-toggle size="sm" [options]="periodOptions" [value]="period()" (valueChange)="setPeriod($event)"/>
+        <a class="att__link" routerLink="/reports/attendance">{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.FULL_REPORT' | translate }}</a>
+      </div>
+    </header>
+
+    <div class="card__body att__body" [class.att__body--loading]="loading()">
+      @if (!hasData()) {
+        @if (!loading()) { <p class="att__empty">{{ emptyKey() | translate }}</p> }
+      } @else {
+        <div class="att__tiles">
+          <div class="att__tile">
+            <span class="att__val">{{ present() }}<small> / {{ scheduled() }}</small></span>
+            <span class="att__lbl">{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.DAYS_PRESENT' | translate }}</span>
+          </div>
+          <div class="att__tile">
+            <span class="att__val">{{ hours() }}</span>
+            <span class="att__lbl">{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.HOURS' | translate }}</span>
+          </div>
+          <div class="att__tile" [class.att__tile--warn]="late() > 0">
+            <span class="att__val">{{ late() }}</span>
+            <span class="att__lbl">{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.LATE' | translate }}</span>
+          </div>
+          <div class="att__tile">
+            <span class="att__val">{{ overtimeHours() }}</span>
+            <span class="att__lbl">{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.OVERTIME' | translate }}</span>
+          </div>
+          <div class="att__tile" [class.att__tile--warn]="lateMinutes() > 0">
+            <span class="att__val">{{ lateMinutes() }}</span>
+            <span class="att__lbl">{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.LATE_MIN' | translate }}</span>
+          </div>
+          <div class="att__tile" [class.att__tile--warn]="missingOut() > 0">
+            <span class="att__val">{{ missingOut() }}</span>
+            <span class="att__lbl">{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.MISSING_OUT' | translate }}</span>
+          </div>
+          <div class="att__tile" [class.att__tile--warn]="absences() > 0">
+            <span class="att__val">{{ absences() }}</span>
+            <span class="att__lbl">{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.ABSENCES' | translate }}</span>
+          </div>
+          @if (score(); as s) {
+            <div class="att__tile att__tile--score" [attr.data-rating]="s.rating">
+              <span class="att__val">{{ s.value }}<small>%</small></span>
+              <span class="att__lbl">{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.PUNCTUALITY' | translate }}</span>
+            </div>
+          }
+        </div>
+
+        @if (breakdown(); as b) {
+          <p class="att__why">
+            <span>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.ON_TIME_PCT' | translate }} <b>{{ b.onTimePct }}%</b></span>
+            <span>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.NO_ABSENCE_PCT' | translate }} <b>{{ b.noAbsencePct }}%</b></span>
+            @if (lateMinutes() > 0) {
+              <span>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.AVG_LATE' | translate }} <b>{{ avgLate() }}</b></span>
+              <span>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.WORST_LATE' | translate }} <b>{{ worstLate() }}</b></span>
+            }
+            @if (earlyCount() > 0) {
+              <span>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.EARLY' | translate }} <b>{{ earlyCount() }}</b></span>
+            }
+            <span>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.MISSED_PUNCHES' | translate }} <b>{{ b.missedPunches }}</b></span>
+            <span>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.ADJUSTMENTS' | translate }} <b>{{ adjustments() }}</b></span>
+            <span class="att__rating" [attr.data-rating]="card()?.rating">{{ b.ratingKey | translate }}</span>
+          </p>
+        }
+
+        <div class="att__strip" role="img" [style.grid-template-columns]="'repeat(' + days().length + ', 1fr)'"
+             [attr.aria-label]="'EMPLOYEES.ATTENDANCE_SUMMARY.STRIP' | translate">
+          @for (c of days(); track c.date) {
+            <button type="button" class="att__day" [attr.data-status]="c.status" [title]="c.tip"
+                    [class.att__day--sel]="selectedDate() === c.date" (click)="toggleDay(c.date)"></button>
+          }
+        </div>
+        @if (selected(); as sel) {
+          <div class="att__panel">
+            <div class="att__panel-head">
+              <b>{{ sel.date }}</b>
+              @if (sel.hit?.weekday) { <span>{{ sel.hit.weekday }}</span> }
+              @if (sel.hit?.expectedStartLocal || sel.gap?.expectedStartLocal) {
+                <span>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.SCHEDULED_CAP' | translate }}:
+                  {{ sel.hit?.expectedStartLocal || sel.gap?.expectedStartLocal }}–{{ sel.hit?.expectedEndLocal || sel.gap?.expectedEndLocal }}</span>
+              }
+              <button type="button" class="att__x" (click)="selectedDate.set(null)" aria-label="close">&times;</button>
+            </div>
+            @if (sel.hit) {
+              @for (sh of sel.hit.shifts; track sh.id) {
+                <div class="att__shift" [attr.data-status]="sh.status">
+                  <span class="att__times">
+                    {{ time(sh.clockedInEff) }}<ng-container> – </ng-container>{{ sh.clockedOutEff ? time(sh.clockedOutEff) : ('EMPLOYEES.ATTENDANCE_SUMMARY.NO_CLOCK_OUT' | translate) }}
+                    <small>{{ (sh.workedMinutes / 60).toFixed(1) }}h</small>
+                  </span>
+                  @if (sh.wasAdjusted) {
+                    <span class="att__note">
+                      {{ 'EMPLOYEES.ATTENDANCE_SUMMARY.ORIGINAL' | translate }}:
+                      {{ time(sh.clockedInRaw) }} – {{ sh.clockedOutRaw ? time(sh.clockedOutRaw) : '—' }}
+                      @if (sh.adjClockedInByName || sh.adjClockedOutByName) {
+                        · {{ 'EMPLOYEES.ATTENDANCE_SUMMARY.BY' | translate }} {{ sh.adjClockedInByName || sh.adjClockedOutByName }}
+                      }
+                    </span>
+                  }
+                  @if (sh.clockOutReason) { <span class="att__note">{{ sh.clockOutReason }}</span> }
+                  @if (photo(sh.clockedInMediaUrl); as p) { <img class="att__photo" [src]="p" alt=""/> }
+                  @if (photo(sh.clockedOutMediaUrl); as p) { <img class="att__photo" [src]="p" alt=""/> }
+                </div>
+              }
+            } @else if (sel.gap) {
+              <div class="att__shift" [attr.data-status]="sel.gap.absenceType === 'authorized' ? 'leave' : 'absent'">
+                <span class="att__times">
+                  {{ (sel.gap.absenceType === 'authorized' ? 'EMPLOYEES.ATTENDANCE_SUMMARY.LEAVE' : 'EMPLOYEES.ATTENDANCE_SUMMARY.ABSENT') | translate }}
+                  @if (sel.gap.leaveTypeRaw) { <small>{{ sel.gap.leaveTypeRaw }}</small> }
+                </span>
+                @if (sel.gap.leaveDescription) { <span class="att__note">{{ sel.gap.leaveDescription }}</span> }
+                @if (sel.gap.days > 1) { <span class="att__note">{{ sel.gap.startDate }} → {{ sel.gap.endDate }} · {{ sel.gap.days }} {{ 'EMPLOYEES.ATTENDANCE_SUMMARY.DAYS' | translate }}</span> }
+              </div>
+            } @else {
+              <p class="att__empty">{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.NO_RECORD' | translate }}</p>
+            }
+          </div>
+        }
+
+        <div class="att__legend">
+          <span><i data-status="on_time"></i>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.ON_TIME' | translate }}</span>
+          <span><i data-status="late"></i>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.LATE' | translate }}</span>
+          <span><i data-status="missing_out"></i>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.MISSING_OUT' | translate }}</span>
+          <span><i data-status="adjusted"></i>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.ADJUSTED' | translate }}</span>
+          <span><i data-status="absent"></i>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.ABSENT' | translate }}</span>
+          <span><i data-status="leave"></i>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.LEAVE' | translate }}</span>
+          <span><i data-status="none"></i>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.NO_RECORD' | translate }}</span>
+        </div>
+
+        @if (adjustmentList().length) {
+          <div class="att__adj">
+            <button type="button" class="att__adj-toggle" (click)="showAdjustments.set(!showAdjustments())">
+              {{ 'EMPLOYEES.ATTENDANCE_SUMMARY.ADJUSTMENTS' | translate }} ({{ adjustmentList().length }})
+              <span>{{ showAdjustments() ? '▲' : '▼' }}</span>
+            </button>
+            @if (showAdjustments()) {
+              <ul class="att__adj-list">
+                @for (a of adjustmentList(); track $index) {
+                  <li>
+                    <b>{{ a.date }}</b>
+                    <span>{{ (a.field === 'clockedIn' ? 'EMPLOYEES.ATTENDANCE_SUMMARY.CLOCK_IN' : 'EMPLOYEES.ATTENDANCE_SUMMARY.CLOCK_OUT') | translate }}:
+                      {{ time(a.rawValue) || '—' }} → {{ time(a.adjustedValue) || '—' }}</span>
+                    @if (a.actorName) { <span>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.BY' | translate }} {{ a.actorName }}</span> }
+                    @if (a.reason) { <span class="att__note">{{ a.reason }}</span> }
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      }
+    </div>
+  </section>
+}

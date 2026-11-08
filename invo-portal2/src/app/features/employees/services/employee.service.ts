@@ -226,7 +226,7 @@ export class EmployeeService {
       id:            e.id ?? e._id ?? '',
       name:          e.name ?? '',
       email:         e.email ?? '',
-      avatar:        e.avatar ?? '',
+      avatar:        e.avatar || e.mediaUrl?.defaultUrl || '',
       admin:         !!e.admin,
       superAdmin:    !!e.superAdmin,
       user:          !!e.user,
