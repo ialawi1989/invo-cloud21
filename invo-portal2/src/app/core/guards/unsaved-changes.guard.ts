@@ -19,6 +19,8 @@ import {
 export interface CanLeaveComponent {
   /** Return `true` when the form/state is dirty and the user should be prompted. */
   hasUnsavedChanges(): boolean;
+  /** Optional i18n key for a more specific prompt than the generic one. */
+  unsavedMessageKey?: string;
 }
 
 /**
@@ -61,7 +63,7 @@ export const unsavedChangesGuard: CanDeactivateFn<CanLeaveComponent> = (componen
       manageHistory: false,
       data: {
         title:   translate.instant('COMMON.UNSAVED_TITLE'),
-        message: translate.instant('COMMON.UNSAVED_HINT'),
+        message: translate.instant(component.unsavedMessageKey ?? 'COMMON.UNSAVED_HINT'),
         confirm: translate.instant('COMMON.LEAVE'),
         danger:  true,
       },

@@ -188,6 +188,49 @@
     font-weight: 600;
     color: #475569;
   }
+
+  &--collapsed { padding-bottom: 12px; }
+  &__head--collapsed { margin-bottom: 0; }
+
+  &__toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 2px 0;
+    font: inherit;
+    cursor: pointer;
+    text-align: start;
+  }
+
+  &__chev { flex: none; color: #64748b; transition: transform 120ms ease; }
+  &--collapsed &__chev { transform: rotate(-90deg); }
+  [dir='rtl'] &--collapsed &__chev { transform: rotate(90deg); }
+
+  &__summary {
+    font-size: 13px;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__flag {
+    flex: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #dc2626;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+  }
+
+  &__done { display: flex; justify-content: flex-end; margin-top: 12px; }
 }
 
 // ── Computed (read-only) value ────────────────────────────────────────────

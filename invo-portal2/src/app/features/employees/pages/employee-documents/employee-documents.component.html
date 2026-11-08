@@ -92,21 +92,56 @@
 
         <label class="doc-field">
           <span class="doc-field__label">{{ 'EMPLOYEES.DOCUMENTS.FIELD.ISSUING_COUNTRY' | translate }}</span>
-          <input class="form-control" type="text" formControlName="issuingCountry" />
+          <app-search-dropdown
+            formControlName="issuingCountry"
+            [items]="countries()"
+            [displayWith]="countryLabel"
+            [toValue]="countryValue"
+            [compareWith]="countryMatches"
+            [placeholder]="'EMPLOYEES.DOCUMENTS.FIELD.ISSUING_COUNTRY' | translate"
+            [searchPlaceholder]="'COMMON.SEARCH' | translate">
+          </app-search-dropdown>
         </label>
 
         <label class="doc-field doc-field--wide">
           <span class="doc-field__label">{{ 'EMPLOYEES.DOCUMENTS.FIELD.NOTES' | translate }}</span>
           <textarea class="form-control" rows="2" formControlName="notes"></textarea>
         </label>
+
+        <!-- Attach the scan now; it uploads as soon as the document is saved.
+             Disabled with the reason shown when no storage bucket exists. -->
+        <div class="doc-field doc-field--wide">
+          <span class="doc-field__label">{{ 'EMPLOYEES.DOCUMENTS.ATTACHMENT' | translate }}</span>
+          @if (canUpload()) {
+            <div class="doc-attach">
+              <label class="doc-upload">
+                <input type="file" hidden (change)="onFormFilePicked($event)" />
+                <span class="btn btn-secondary btn-sm">
+                  {{ (pendingFile() ? 'EMPLOYEES.DOCUMENTS.CHANGE_FILE' : 'EMPLOYEES.DOCUMENTS.CHOOSE_FILE') | translate }}
+                </span>
+              </label>
+              @if (pendingFile(); as f) {
+                <span class="doc-attach__name">{{ f.name }}</span>
+                <button type="button" class="btn btn-link btn-link--danger" (click)="pendingFile.set(null)">
+                  {{ 'COMMON.DELETE' | translate }}
+                </button>
+              } @else {
+                <span class="doc-attach__hint">{{ 'EMPLOYEES.DOCUMENTS.ATTACHMENT_HINT' | translate }}</span>
+              }
+            </div>
+          } @else {
+            <span class="doc-attach__hint">{{ 'EMPLOYEES.HR.ERR.NO_STORAGE' | translate }}</span>
+          }
+        </div>
       </div>
 
       <div class="doc-form__actions">
         <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
           {{ 'COMMON.CANCEL' | translate }}
         </button>
-        <button type="submit" class="btn btn-primary" [disabled]="busy() !== null">
-          {{ 'COMMON.SAVE' | translate }}
+        <button type="submit" class="btn btn-primary doc-btn-busy" [disabled]="busy() !== null">
+          @if (busy() !== null) { <span class="doc-spinner doc-spinner--light" aria-hidden="true"></span> }
+          {{ (pendingFile() && busy() !== null ? 'EMPLOYEES.DOCUMENTS.UPLOADING' : 'COMMON.SAVE') | translate }}
         </button>
       </div>
     </form>
@@ -190,7 +225,8 @@
                   hidden
                   [disabled]="busy() === doc.id"
                   (change)="onFilePicked(doc, $event)" />
-                <span class="btn btn-secondary btn-sm">
+                <span class="btn btn-secondary btn-sm doc-btn-busy" [class.is-busy]="busy() === doc.id">
+                  @if (busy() === doc.id) { <span class="doc-spinner" aria-hidden="true"></span> }
                   {{ (busy() === doc.id
                       ? 'EMPLOYEES.DOCUMENTS.UPLOADING'
                       : 'EMPLOYEES.DOCUMENTS.UPLOAD') | translate }}

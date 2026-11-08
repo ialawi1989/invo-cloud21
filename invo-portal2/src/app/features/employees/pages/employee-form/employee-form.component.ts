@@ -6,6 +6,7 @@ import {
   OnDestroy,
   OnInit,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -37,6 +38,11 @@ import { DropdownLoadFn } from '@shared/components/dropdown/search-dropdown.type
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
+import {
+  TranslationModalComponent,
+  TranslationModalData,
+  TranslationLang,
+} from '@shared/components/translation-modal/translation-modal.component';
 import {
   MediaPickerModalComponent,
   MediaPickerConfig,
@@ -434,9 +440,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
       out.push({ key: 'personal', labelKey: 'EMPLOYEES.WIZARD.PERSONAL', errors: this.tabErrors('personal') });
     }
     out.push({ key: 'employment', labelKey: 'EMPLOYEES.WIZARD.EMPLOYMENT', errors: this.tabErrors('employment') });
-    if (this.canEditBank()) {
-      out.push({ key: 'payment', labelKey: 'EMPLOYEES.WIZARD.PAYMENT', errors: 0 });
-    }
+    // Payment details live inside the Employment (payroll) tab — no tab of their own.
     return out;
   });
 
@@ -471,11 +475,25 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
   /** Footer error list → show the tab holding the field before scrolling to it. */
   revealPaneOf(el: HTMLElement): void {
     const pane = el.closest('[data-pane]')?.getAttribute('data-pane') as EmployeeFormTab | null;
-    if (pane) this.activeTab.set(pane);
+    if (pane) this.selectTab(pane);
   }
 
   selectTab(key: EmployeeFormTab): void {
     this.activeTab.set(key);
+    this.writeTabToUrl(key);
+  }
+
+  /** Keep the current form tab in `?formTab=` so a refresh or shared link
+   *  reopens on the same tab. Replaces the history entry — switching tabs is
+   *  not navigation worth a Back press. */
+  private writeTabToUrl(key: EmployeeFormTab): void {
+    if (this.editSection()) return;
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { formTab: key === 'basic' ? null : key },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   /** Touched, invalid leaf controls on this tab. */
@@ -572,7 +590,36 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
     return (this.form.get('employment') as FormGroup) ?? null;
   });
 
-  profileFields = computed(() => this.manifest()?.groups.find((g) => g.key === 'profile')?.fields ?? []);
+  // `nameAr` is not rendered as its own field: the Arabic name is edited through
+  // the Name field's Translation modal. Its control stays in the group so the
+  // value still loads and saves.
+  profileFields = computed(() =>
+    (this.manifest()?.groups.find((g) => g.key === 'profile')?.fields ?? [])
+      .filter((f) => f.key !== 'nameAr'));
+
+  /** Name translations (en/ar) via the shared translation modal. */
+  async openNameTranslationModal(): Promise<void> {
+    const arCtrl = this.form.get('profile.nameAr');
+    const ref = this.modal.open<TranslationModalComponent, TranslationModalData, TranslationLang | null>(
+      TranslationModalComponent,
+      {
+        size: 'sm',
+        data: {
+          initial: {
+            en: String(this.form.controls['name'].value ?? '').trim(),
+            ar: String(arCtrl?.value ?? '').trim(),
+          },
+          languages: ['en', 'ar'],
+          label: this.translate.instant('EMPLOYEES.FORM.NAME'),
+        },
+        closeOnBackdrop: false,
+      });
+    const result = await ref.afterClosed();
+    if (!result) return;
+    this.form.controls['name'].setValue(result.en);
+    this.form.controls['name'].markAsDirty();
+    if (arCtrl) { arCtrl.setValue(result.ar ?? ''); arCtrl.markAsDirty(); }
+  }
   employmentFields = computed(() => this.manifest()?.groups.find((g) => g.key === 'employment')?.fields ?? []);
 
   /** Dynamic option lists the renderer resolves by name. Country and language
@@ -777,6 +824,13 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
   constructor() {
     withTranslations('employees');
 
+    // A restored tab that this form doesn't offer (e.g. no personal section)
+    // would hide every pane — fall back to Basic once the manifest has settled.
+    effect(() => {
+      if (this.loading() || !this.manifest()) return;
+      if (!this.tabs().some((t) => t.key === this.activeTab())) this.activeTab.set('basic');
+    });
+
     this.translate.onTranslationChange
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.i18nTick.update((n) => n + 1));
@@ -818,6 +872,14 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
       ?? this.route.parent?.snapshot.queryParamMap?.get('section')
       ?? null;
     this.editSection.set(this.isCreate() ? null : section);
+
+    // `?formTab=personal` — reopen on the tab the user was on. Validated
+    // against the tabs actually on offer once the manifest has loaded (below).
+    const wanted = this.route.snapshot.queryParamMap?.get('formTab')
+      ?? this.route.parent?.snapshot.queryParamMap?.get('formTab');
+    if (!this.editSection() && (wanted === 'personal' || wanted === 'employment')) {
+      this.activeTab.set(wanted);
+    }
 
     // Keeps the per-tab "has an error" dots in step with the form.
     this.form.statusChanges
@@ -1517,6 +1579,9 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
       });
     });
   }
+
+  /** Names what leaving actually means here: the tabs above are other pages. */
+  readonly unsavedMessageKey = 'EMPLOYEES.FORM.UNSAVED_LEAVE_HINT';
 
   hasUnsavedChanges(): boolean {
     return this.dirty() && !this.saving();

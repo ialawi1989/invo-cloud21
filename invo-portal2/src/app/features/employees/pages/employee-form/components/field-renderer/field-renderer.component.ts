@@ -185,6 +185,38 @@ export class FieldRendererComponent {
     array.push(buildRowGroup(this.fb, d.fields ?? []));
   }
 
+  // ── Collapsible rows ─────────────────────────────────────────────────────
+  // Keyed by the row's FormGroup instance, so state follows the row when
+  // others are removed. New rows are open; collapsing never touches the form.
+  private collapsedRows = signal<ReadonlySet<object>>(new Set());
+
+  isCollapsed(row: object): boolean { return this.collapsedRows().has(row); }
+
+  toggleRow(row: object): void {
+    const next = new Set(this.collapsedRows());
+    if (!next.delete(row)) next.add(row);
+    this.collapsedRows.set(next);
+  }
+
+  setAllCollapsed(rows: object[], collapsed: boolean): void {
+    const next = new Set(this.collapsedRows());
+    for (const r of rows) collapsed ? next.add(r) : next.delete(r);
+    this.collapsedRows.set(next);
+  }
+
+  /** Short text for a collapsed row: its first filled-in text value. */
+  rowSummary(row: FormGroup, d: FieldDescriptor): string {
+    for (const f of d.fields ?? []) {
+      if (f.type !== 'text' && f.type !== 'email' && f.type !== 'phone') continue;
+      const v = row.get(f.key)?.value;
+      if (typeof v === 'string' && v.trim()) return v.trim();
+    }
+    return '';
+  }
+
+  /** Does a (possibly collapsed) row hold a validation error? */
+  rowInvalid(row: FormGroup): boolean { return row.invalid; }
+
   removeRow(group: FormGroup, d: FieldDescriptor, index: number): void {
     const array = group.get(d.key) as FormArray;
     array.removeAt(index);

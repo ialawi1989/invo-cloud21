@@ -11,6 +11,8 @@ import { SearchDropdownComponent } from '@shared/components/dropdown/search-drop
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 
 import { hrGrantFor } from '../../hr-privilege';
+import { countryOptions } from '../../models/employee-catalogs';
+import type { FieldOption } from '../../models/field-manifest.types';
 import {
   DocumentFile,
   DocumentTypeDescriptor,
@@ -150,6 +152,7 @@ export class EmployeeDocumentsComponent {
     this.form.reset({ type: null, number: '', issueDate: null, expiryDate: null, issuingCountry: null, notes: null });
     this.warnings.set([]);
     this.error.set(null);
+    this.pendingFile.set(null);
     this.editing.set('new');
   }
 
@@ -164,10 +167,22 @@ export class EmployeeDocumentsComponent {
     });
     this.warnings.set([]);
     this.error.set(null);
+    this.pendingFile.set(null);
     this.editing.set(document.id);
   }
 
+  /** Issuing country is stored as a 2-letter ISO code (varchar(2)), so it is
+   *  picked from a list rather than typed — free text overflowed the column. */
+  readonly countries = computed(() => {
+    const lang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    return countryOptions(lang);
+  });
+  countryLabel = (o: FieldOption) => o?.label ?? String(o ?? '');
+  countryValue = (o: FieldOption) => o?.value ?? o;
+  countryMatches = (a: any, b: any) => (a?.value ?? a) === (b?.value ?? b);
+
   cancelEdit(): void {
+    this.pendingFile.set(null);
     this.editing.set(null);
     this.warnings.set([]);
   }
@@ -183,7 +198,7 @@ export class EmployeeDocumentsComponent {
     this.busy.set(editing);
     this.error.set(null);
     try {
-      const { warnings } = await this.service.save({
+      const { id, warnings } = await this.service.save({
         // Omitted entirely when adding, rather than sent as 0 or '' — the
         // server decides insert vs update on the presence of an id.
         ...(editing === 'new' ? {} : { id: editing }),
@@ -193,6 +208,22 @@ export class EmployeeDocumentsComponent {
       // Shown, not enforced. These are the required-file rules, which the
       // server still returns as advice rather than a refusal.
       this.warnings.set(warnings);
+
+      // The attachment chosen in the form goes up now that the document has an
+      // id. The form stays open (spinner on Save) until the upload settles —
+      // closing it first left nothing on screen for the whole transfer. The
+      // document is already saved, so a failed upload is reported without
+      // losing it; the card's own Upload button retries.
+      const file = this.pendingFile();
+      const docId = editing === 'new' ? id : editing;
+      if (file && docId) {
+        try {
+          await this.service.upload(docId, file);
+        } catch (e) {
+          this.error.set(describeError(e));
+        }
+      }
+      this.pendingFile.set(null);
       this.editing.set(null);
       await this.load();
     } catch (e) {
@@ -211,32 +242,49 @@ export class EmployeeDocumentsComponent {
    * round trip — type and size — using the server's own catalogue rather than a
    * second list. Everything else is the server's decision.
    */
+  /** Type and size checks against the server's own catalogue. Sets `error` and
+   *  returns false when the file is refused. */
+  private fileAllowed(file: File): boolean {
+    const catalog = this.catalog();
+    if (!catalog) return true;
+    if (catalog.accepted.length && !catalog.accepted.includes(file.type)) {
+      this.error.set({
+        titleKey: 'EMPLOYEES.HR.ERR.TYPE_REJECTED',
+        detail: file.type || file.name,
+        hintKey: null,
+      });
+      return false;
+    }
+    if (file.size > catalog.maxBytes) {
+      this.error.set({
+        titleKey: 'EMPLOYEES.HR.ERR.TOO_LARGE',
+        detail: `${Math.round(file.size / 1024 / 1024)}MB`,
+        hintKey: null,
+      });
+      return false;
+    }
+    return true;
+  }
+
+  /** A file chosen in the add/edit form — uploaded right after the document saves. */
+  readonly pendingFile = signal<File | null>(null);
+
+  onFormFilePicked(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this.error.set(null);
+    if (this.fileAllowed(file)) this.pendingFile.set(file);
+  }
+
   async onFilePicked(document: EmployeeDocument, event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     // Reset immediately so picking the same file twice still fires a change.
     input.value = '';
     if (!file) return;
-
-    const catalog = this.catalog();
-    if (catalog) {
-      if (catalog.accepted.length && !catalog.accepted.includes(file.type)) {
-        this.error.set({
-          titleKey: 'EMPLOYEES.HR.ERR.TYPE_REJECTED',
-          detail: file.type || file.name,
-          hintKey: null,
-        });
-        return;
-      }
-      if (file.size > catalog.maxBytes) {
-        this.error.set({
-          titleKey: 'EMPLOYEES.HR.ERR.TOO_LARGE',
-          detail: `${Math.round(file.size / 1024 / 1024)}MB`,
-          hintKey: null,
-        });
-        return;
-      }
-    }
+    if (!this.fileAllowed(file)) return;
 
     this.busy.set(document.id);
     this.error.set(null);

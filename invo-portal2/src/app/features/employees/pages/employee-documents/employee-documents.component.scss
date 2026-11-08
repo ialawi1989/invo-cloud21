@@ -99,6 +99,7 @@
   border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 8px;
   padding: 1rem;
+  margin-bottom: 1.25rem;
 
   &__grid {
     display: grid;
@@ -244,3 +245,29 @@
   cursor: pointer;
   margin-top: 0.25rem;
 }
+
+.doc-attach {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  &__name { font-size: 13px; font-weight: 500; }
+  &__hint { font-size: 12px; color: #64748b; }
+}
+
+.doc-btn-busy { display: inline-flex; align-items: center; gap: 8px; }
+.is-busy { opacity: .85; cursor: progress; }
+
+.doc-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  border-top-color: var(--color-brand-600, #0e7490);
+  animation: doc-spin 0.7s linear infinite;
+  flex: none;
+
+  &--light { border-color: rgba(255, 255, 255, .45); border-top-color: #fff; }
+}
+@keyframes doc-spin { to { transform: rotate(360deg); } }

@@ -47,9 +47,20 @@
               }
 
               @for (row of rows(g, d.key); track $index) {
-                <div class="fr-row">
-                  <div class="fr-row__head">
-                    <span class="fr-row__title">{{ rowLabel(d, $index) }}</span>
+                <div class="fr-row" [class.fr-row--collapsed]="isCollapsed(row)">
+                  <div class="fr-row__head" [class.fr-row__head--collapsed]="isCollapsed(row)">
+                    <button type="button" class="fr-row__toggle"
+                      [attr.aria-expanded]="!isCollapsed(row)"
+                      (click)="toggleRow(row)">
+                      <svg class="fr-row__chev" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                           stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                      <span class="fr-row__title">{{ rowLabel(d, $index) }}</span>
+                      @if (isCollapsed(row)) {
+                        @if (rowSummary(row, d); as s) { <span class="fr-row__summary">{{ s }}</span> }
+                        @if (rowInvalid(row)) { <span class="fr-row__flag" aria-hidden="true">!</span> }
+                      }
+                    </button>
                     <button
                       type="button"
                       class="btn btn-ghost btn-sm btn-danger"
@@ -57,14 +68,22 @@
                       {{ 'EMPLOYEES.FIELDS.RENDERER.REMOVE_ROW' | translate }}
                     </button>
                   </div>
-                  <ng-container
-                    *ngTemplateOutlet="fieldList; context: {
-                      $implicit: d.fields ?? [],
-                      g: row,
-                      p: fullPath(p, d),
-                      inRow: true
-                    }"
-                  />
+                  <!-- Hidden, not removed: validation and values stay intact. -->
+                  <div class="fr-row__body" [hidden]="isCollapsed(row)">
+                    <ng-container
+                      *ngTemplateOutlet="fieldList; context: {
+                        $implicit: d.fields ?? [],
+                        g: row,
+                        p: fullPath(p, d),
+                        inRow: true
+                      }"
+                    />
+                    <div class="fr-row__done">
+                      <button type="button" class="btn btn-default btn-sm" (click)="toggleRow(row)">
+                        {{ 'EMPLOYEES.FIELDS.RENDERER.DONE' | translate }}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               } @empty {
                 <p class="fr-repeat__empty">{{ 'EMPLOYEES.FIELDS.RENDERER.NO_ROWS' | translate }}</p>

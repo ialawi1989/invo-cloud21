@@ -174,6 +174,7 @@ export class EmployeeOverviewComponent implements OnInit {
       ['EMPLOYEES.FIELDS.PROFILE.DATE_OF_BIRTH',   this.date(p.dateOfBirth)],
       ['EMPLOYEES.FIELDS.PROFILE.NATIONALITY',     this.country(p.nationality)],
       ['EMPLOYEES.FIELDS.PROFILE.ADDRESS',         this.address(p)],
+      ['EMPLOYEES.FIELDS.PROFILE.HOME_ADDRESS',    this.address(p, 'homeAddress')],
     ]);
   });
 
@@ -276,10 +277,11 @@ export class EmployeeOverviewComponent implements OnInit {
     return countryOptions(lang).find((o) => o.value === code)?.label ?? code;
   }
 
-  private address(p: Record<string, any>): string {
-    const a = p['address'];
+  private address(p: Record<string, any>, key: 'address' | 'homeAddress' = 'address'): string {
+    const a = p[key];
     if (!a) return '';
-    return [a.building, a.road, a.block, a.city, this.country(a.country)]
+    // building/road/block are the legacy Bahrain-style fields on older records.
+    return [a.line1, a.line2, a.building, a.road, a.block, a.city, this.country(a.country)]
       .filter((part) => part !== null && part !== undefined && String(part).trim() !== '')
       .join(', ');
   }

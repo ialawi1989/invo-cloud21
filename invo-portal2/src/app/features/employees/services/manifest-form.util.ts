@@ -62,7 +62,12 @@ export function evalCondition(expr: string | undefined, values: any): boolean {
   const cmp = /^\s*([\w.[\]]+)\s*(==|!=)\s*(.+?)\s*$/.exec(expr);
   if (cmp) {
     const actual = getPath(values, cmp[1]);
-    const expected = parseLiteral(cmp[3]);
+    // A dotted, unquoted right-hand side is another field's path
+    // (`profile.nationality != profile.address.country`), not a literal.
+    const rhs = cmp[3];
+    const expected = /^[A-Za-z_]\w*(\.[\w[\]]+)+$/.test(rhs)
+      ? getPath(values, rhs)
+      : parseLiteral(rhs);
     const equal = looseEquals(actual, expected);
     return cmp[2] === '==' ? equal : !equal;
   }

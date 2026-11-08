@@ -29,6 +29,13 @@
           [options]="tabOptions()"
           [value]="activeTab()"
           (valueChange)="selectTab($event)"/>
+        <!-- The strip above this form (Documents, Payroll…) opens other pages,
+             unlike these tabs, which are sections of THIS form. -->
+        @if (hasUnsavedChanges()) {
+          <span class="form-tabs__note" role="status">
+            {{ 'EMPLOYEES.FORM.UNSAVED_TABS_NOTE' | translate }}
+          </span>
+        }
       </div>
     }
 
@@ -68,8 +75,11 @@
                  POS → Pass Code + MSR (mirrors the legacy role blocks). -->
             <div class="grid grid--3">
               <div class="field">
-                <label class="field-label" for="emp-name">
-                  {{ 'EMPLOYEES.FORM.NAME' | translate }}<span class="required">*</span>
+                <label class="field-label field-label--with-action" for="emp-name">
+                  <span>{{ 'EMPLOYEES.FORM.NAME' | translate }}<span class="required">*</span></span>
+                  <button type="button" class="translation-link" (click)="openNameTranslationModal()">
+                    {{ 'COMMON.TRANSLATION' | translate }}
+                  </button>
                 </label>
                 <input
                   id="emp-name"
@@ -464,7 +474,7 @@
              Cash and cheque need no account, so the fields collapse rather
              than sitting there asking for an IBAN nobody will use. -->
         @if (showsSection('payment') && canEditBank()) {
-        <section class="card" data-tour="emp-payment" [formGroup]="bankForm" [class.tab-hidden]="tabHidden('payment')" data-pane="payment">
+        <section class="card" data-tour="emp-payment" [formGroup]="bankForm" [class.tab-hidden]="tabHidden('employment')" data-pane="employment">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.WIZARD.PAYMENT_QUESTION' | translate }}</h2>
           </header>
