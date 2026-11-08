@@ -1,0 +1,205 @@
+<div class="lt-page">
+  <header class="lt-head">
+    <div>
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="lt-title">{{ 'EMPLOYEES.LEAVE.ENT.SETTINGS_TITLE' | translate }}</h1>
+      <p class="lt-intro">{{ 'EMPLOYEES.LEAVE.ENT.SETTINGS_INTRO' | translate }}</p>
+    </div>
+    <div class="lt-actions">
+      <button type="button" class="btn btn-default" [disabled]="saving() || loading()" (click)="reset()">
+        {{ 'EMPLOYEES.LEAVE.ENT.RESET' | translate }}
+      </button>
+      <button type="button" class="btn btn-default" [disabled]="saving() || loading()" (click)="addType()">
+        {{ 'EMPLOYEES.LEAVE.ENT.ADD' | translate }}
+      </button>
+      <button type="button" class="btn btn-primary" [disabled]="saving() || loading()" (click)="save()">
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (!loading() && accrual(); as ac) {
+    <section class="lt-rates">
+      <div class="lt-rates__head">
+        <div>
+          <h2 class="lt-rates__title">{{ 'EMPLOYEES.LEAVE.ENT.ACCRUAL_RULES_TITLE' | translate }}</h2>
+          <p class="lt-intro">{{ 'EMPLOYEES.LEAVE.ENT.ACCRUAL_RULES_INTRO' | translate }}</p>
+        </div>
+        <div class="lt-actions">
+          <button type="button" class="btn btn-default" [disabled]="accrualSaving()" (click)="resetAccrual()">
+            {{ 'EMPLOYEES.LEAVE.ENT.RESET' | translate }}
+          </button>
+          <button type="button" class="btn btn-primary" [disabled]="accrualSaving()" (click)="saveAccrual()">
+            {{ 'COMMON.SAVE' | translate }}
+          </button>
+        </div>
+      </div>
+      <div class="lt-rates__grid">
+        <label class="lt-field">
+          <span>{{ 'EMPLOYEES.LEAVE.ENT.UNPAID_THRESHOLD' | translate }}</span>
+          <input class="input" type="number" min="0" max="31" step="1"
+                 [(ngModel)]="ac.unpaidAccrualThresholdDays" name="unpaidThreshold"/>
+          <small class="lt-rate__hint">{{ 'EMPLOYEES.LEAVE.ENT.UNPAID_THRESHOLD_HINT' | translate }}</small>
+        </label>
+        <label class="lt-field">
+          <span>{{ 'EMPLOYEES.LEAVE.ENT.COMP_EXPIRY' | translate }}</span>
+          <input class="input" type="number" min="0" max="730" step="1"
+                 [(ngModel)]="ac.compensatoryExpiryDays" name="compExpiry"/>
+          <small class="lt-rate__hint">{{ 'EMPLOYEES.LEAVE.ENT.COMP_EXPIRY_HINT' | translate }}</small>
+        </label>
+      </div>
+    </section>
+  }
+
+  @if (!loading() && rates(); as rt) {
+    <section class="lt-rates">
+      <div class="lt-rates__head">
+        <div>
+          <h2 class="lt-rates__title">{{ 'EMPLOYEES.LEAVE.ENT.RATES_TITLE' | translate }}</h2>
+          <p class="lt-intro">{{ 'EMPLOYEES.LEAVE.ENT.RATES_INTRO' | translate }}</p>
+        </div>
+        <div class="lt-actions">
+          <button type="button" class="btn btn-default" [disabled]="ratesSaving()" (click)="resetRates()">
+            {{ 'EMPLOYEES.LEAVE.ENT.RESET' | translate }}
+          </button>
+          <button type="button" class="btn btn-primary" [disabled]="ratesSaving()" (click)="saveRates()">
+            {{ 'COMMON.SAVE' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="lt-rates__grid">
+        @for (k of rateKeys; track k) {
+          <div class="lt-rate">
+            <label class="lt-field">
+              <span>
+                {{ rateLabel(k) }}
+                @if (rt[k].verify) { <span class="lt-chip lt-chip--warn">{{ 'EMPLOYEES.LEAVE.ENT.VERIFY' | translate }}</span> }
+              </span>
+              <div class="lt-rate__input">
+                <input class="input" type="number" min="1" max="10" step="0.05"
+                       [(ngModel)]="rt[k].multiplier" [name]="'r' + k"
+                       [placeholder]="'EMPLOYEES.LEAVE.ENT.RATE_NOT_SET' | translate"/>
+                <span class="lt-rate__x">×</span>
+              </div>
+              <small class="lt-rate__hint">{{ rateHint(k) }}</small>
+            </label>
+            @if (k === 'weeklyRestDayWorked' || k === 'publicHolidayWorked') {
+              <app-toggle size="sm" [(checked)]="rt[k].compensatoryDayAllowed"
+                          [label]="'EMPLOYEES.LEAVE.ENT.RATE_COMP_DAY' | translate"/>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  @if (loading()) {
+    <div class="lt-loading">{{ 'COMMON.LOADING' | translate }}</div>
+  } @else {
+    <div class="lt-list">
+      @for (r of rows(); track $index) {
+        <section class="lt-row" [class.lt-row--off]="!r.enabled">
+          <div class="lt-row__head">
+            <button type="button" class="lt-row__toggle" [attr.aria-expanded]="r.open" (click)="toggleOpen(r)">
+              <svg class="lt-row__chev" [class.lt-row__chev--open]="r.open" width="14" height="14" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              <span class="lt-row__name">{{ displayName(r) || ('EMPLOYEES.LEAVE.ENT.NEW_TYPE' | translate) }}</span>
+              @if (r.isCustom) { <span class="lt-chip">{{ 'EMPLOYEES.LEAVE.ENT.CUSTOM' | translate }}</span> }
+              @if (r.verify) { <span class="lt-chip lt-chip--warn">{{ 'EMPLOYEES.LEAVE.ENT.VERIFY' | translate }}</span> }
+              <span class="lt-row__summary">{{ summary(r) }}</span>
+            </button>
+            <app-toggle size="sm" [(checked)]="r.enabled"
+                        [label]="'EMPLOYEES.LEAVE.ENT.ENABLED' | translate"/>
+            @if (r.isCustom) {
+              <button type="button" class="btn btn-ghost btn-sm btn-danger" (click)="removeType(r)">
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            }
+          </div>
+
+          @if (r.open) {
+            <div class="lt-grid">
+              @if (r.isCustom) {
+                <label class="lt-field lt-field--wide">
+                  <span>{{ 'EMPLOYEES.LEAVE.ENT.NAME' | translate }}</span>
+                  <input class="input" type="text" maxlength="40" [(ngModel)]="r.label" name="n{{$index}}"/>
+                </label>
+              }
+
+              <div class="lt-field lt-field--wide">
+                <app-toggle size="sm" [(checked)]="r.hasEntitlement"
+                            [label]="'EMPLOYEES.LEAVE.ENT.DAYS' | translate"/>
+              </div>
+
+              @if (r.hasEntitlement) {
+                <label class="lt-field">
+                  <span>{{ 'EMPLOYEES.LEAVE.ENT.DAYS' | translate }}</span>
+                  <input class="input" type="number" min="0" [(ngModel)]="r.days" name="d{{$index}}"/>
+                </label>
+
+                <div class="lt-field">
+                  <span>{{ 'EMPLOYEES.LEAVE.ENT.PER' | translate }}</span>
+                  <app-search-dropdown [ngModel]="r.per" (ngModelChange)="setPer(r, $event)" [ngModelOptions]="{standalone: true}"
+                    [items]="perOptions()" [displayWith]="optLabel" [toValue]="optValue" [compareWith]="optMatch"
+                    [searchable]="false"/>
+                </div>
+
+                <div class="lt-field">
+                  <span>{{ 'EMPLOYEES.LEAVE.ENT.PAY' | translate }}</span>
+                  <app-search-dropdown [(ngModel)]="r.pay" [ngModelOptions]="{standalone: true}"
+                    [items]="payOptions()" [displayWith]="optLabel" [toValue]="optValue" [compareWith]="optMatch"
+                    [searchable]="false"/>
+                </div>
+
+                <div class="lt-field">
+                  <span>{{ 'EMPLOYEES.LEAVE.ENT.BASIS' | translate }}</span>
+                  <app-search-dropdown [(ngModel)]="r.dayBasis" [ngModelOptions]="{standalone: true}"
+                    [items]="basisOptions()" [displayWith]="optLabel" [toValue]="optValue" [compareWith]="optMatch"
+                    [searchable]="false"/>
+                </div>
+
+                @if (r.per === 'year') {
+                  <div class="lt-field">
+                    <span>{{ 'EMPLOYEES.LEAVE.ENT.ACCRUAL' | translate }}</span>
+                    <app-search-dropdown [(ngModel)]="r.accrualMethod" [ngModelOptions]="{standalone: true}"
+                      [items]="accrualOptions()" [displayWith]="optLabel" [toValue]="optValue" [compareWith]="optMatch"
+                      [searchable]="false"/>
+                  </div>
+                }
+
+                <label class="lt-field">
+                  <span>{{ 'EMPLOYEES.LEAVE.ENT.MAX_REQUEST' | translate }}</span>
+                  <input class="input" type="number" min="0" [(ngModel)]="r.maxPerRequest" name="m{{$index}}"/>
+                </label>
+
+                <label class="lt-field">
+                  <span>{{ 'EMPLOYEES.LEAVE.ENT.MAX_TIMES_LABEL' | translate }}</span>
+                  <input class="input" type="number" min="0" [(ngModel)]="r.maxTimes" name="t{{$index}}"/>
+                </label>
+
+                <label class="lt-field">
+                  <span>{{ 'EMPLOYEES.LEAVE.ENT.MIN_SERVICE_LABEL' | translate }}</span>
+                  <input class="input" type="number" min="0" [(ngModel)]="r.minServiceMonths" name="s{{$index}}"/>
+                </label>
+
+                <div class="lt-field">
+                  <span>{{ 'EMPLOYEES.LEAVE.ENT.AUDIENCE' | translate }}</span>
+                  <app-search-dropdown [(ngModel)]="r.audience" [ngModelOptions]="{standalone: true}"
+                    [items]="audienceOptions()" [displayWith]="optLabel" [toValue]="optValue" [compareWith]="optMatch"
+                    [searchable]="false"/>
+                </div>
+              }
+
+              <div class="lt-field lt-field--wide">
+                <app-toggle size="sm" [(checked)]="r.deductsBalance"
+                            [label]="'EMPLOYEES.LEAVE.ENT.DEDUCTS' | translate"/>
+              </div>
+            </div>
+          }
+        </section>
+      }
+    </div>
+  }
+</div>

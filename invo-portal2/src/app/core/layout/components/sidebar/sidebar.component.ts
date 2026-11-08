@@ -18,6 +18,7 @@ import { CompanySwitcherComponent } from '../topbar/company-switcher.component';
 import { AuthService } from '../../../auth/auth.service';
 import { resolveEmployeeName } from '../../../auth/auth.models';
 import { FeatureService } from '../../../auth/feature.service';
+import { hrGrantFor } from '../../../../features/employees/hr-privilege';
 import { CompanyService } from '../../../auth/company.service';
 import { EmployeeOptionsService } from '../../services/employee-options.service';
 import { FavoritesService } from '../../services/favorites.service';
@@ -38,6 +39,15 @@ interface SideMenuItem {
   expanded?: boolean;
   requiredPermission?: string;
   feature?: string;
+  /**
+   * HR modules are DEFAULT-DENY: `privilegeService.check()` (above) is
+   * default-allow and would show them to everyone while every request inside was
+   * refused. This asks for the explicit grant instead, the same rule the HR
+   * pages' route guards use.
+   */
+  requiredHrGrant?: { group: string; action: string };
+  /** An HR module's feature key (e.g. `hr.payroll`): hidden when the company has not got it. */
+  requiredHrFeature?: string;
   /** Optional translation key rendered as a subtle heading *above* this
    *  sub-item. Used to visually group a run of related sub-items (e.g. all
    *  bulk-operation pages under Products). Only honoured inside a submenu. */
@@ -100,6 +110,8 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 45, label: 'MENU.SUB.ACCESS_REQUESTS', link: '/employees/access-requests', requiredPermission: 'privilegeSecurity.actions.view.access' },
       { id: 43, label: 'MENU.SUB.SCHEDULE', link: '/employees/schedule', requiredPermission: 'employeeScheduleSecurity.actions.view.access' },
       { id: 44, label: 'MENU.SUB.ATTENDANCE', link: '/employees/attendance', requiredPermission: 'employeeAttendenceSecurity.actions.view.access' },
+      { id: 46, label: 'MENU.SUB.PAYROLL', link: '/employees/payroll-run',
+        requiredHrFeature: 'hr.payroll', requiredHrGrant: { group: 'employeePayrollSecurity', action: 'viewPay' } },
     ],
   },
   // ── Appointments ───────────────────────────────────────────────────
@@ -347,15 +359,17 @@ interface FavoritePage { label: string; link: string; }
                 @if (!collapsed && item.expanded) {
                   <ul class="submenu">
                     @for (sub of item.subItems!; track sub.id) {
-                      @if (sub.section) {
-                        <li class="sub-section">{{ sub.section | translate }}</li>
+                      @if (subVisible(sub)) {
+                        @if (sub.section) {
+                          <li class="sub-section">{{ sub.section | translate }}</li>
+                        }
+                        <li>
+                          <a [routerLink]="sub.link"
+                             [class.active]="isSubActive(sub)"
+                             class="sub-row"
+                             (click)="onSubLinkClick()">{{ sub.label | translate }}</a>
+                        </li>
                       }
-                      <li>
-                        <a [routerLink]="sub.link"
-                           [class.active]="isSubActive(sub)"
-                           class="sub-row"
-                           (click)="onSubLinkClick()">{{ sub.label | translate }}</a>
-                      </li>
                     }
                   </ul>
                 }
@@ -770,7 +784,27 @@ export class SidebarComponent implements OnInit {
     });
   }
 
+  /** The HR gate: module feature on AND explicit grant held. Absent fields pass. */
+  private hrGateOk(item: SideMenuItem): boolean {
+    if (item.requiredHrFeature && !this.featureService.isEnabled(item.requiredHrFeature)) return false;
+    if (item.requiredHrGrant
+        && !hrGrantFor(this.privilegeService, this.authService, item.requiredHrGrant.group, item.requiredHrGrant.action)) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Is this SUB-item shown? Sub-items have never been filtered by
+   * `requiredPermission` in this sidebar, and that is left as it was: only the
+   * HR gate applies here, so adding it hides nothing that was showing before.
+   */
+  subVisible(sub: SideMenuItem): boolean {
+    return this.hrGateOk(sub);
+  }
+
   private canShow(item: SideMenuItem): boolean {
+    if (!this.hrGateOk(item)) return false;
     if (!item.requiredPermission) return true;
     return this.privilegeService.check(item.requiredPermission);
   }

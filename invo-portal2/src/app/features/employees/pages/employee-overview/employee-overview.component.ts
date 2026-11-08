@@ -236,6 +236,12 @@ export class EmployeeOverviewComponent implements OnInit {
   // ── Actions ──────────────────────────────────────────────────────────────
 
   edit(section: string): void {
+    // Payment details are managed on the Payroll tab (bank panel, payment method
+    // on the pay revision) — not through a second editor on the profile form.
+    if (section === 'payment') {
+      void this.router.navigate(['/employees', this.employeeId(), 'payroll']);
+      return;
+    }
     this.router.navigate(['/employees', this.employeeId(), 'edit'], {
       queryParams: { section },
     });

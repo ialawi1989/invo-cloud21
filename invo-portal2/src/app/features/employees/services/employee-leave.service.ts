@@ -76,6 +76,47 @@ export interface LeaveBalance {
    */
   remainingDays: number | null;
   byType: LeaveBalanceByType[];
+  /** How Annual leave is made available: all upfront, or accrued monthly. */
+  accrualMethod: 'upfront' | 'monthly' | null;
+  /** The part of the annual entitlement accrued so far (all of it when upfront). */
+  accruedToDate: number | null;
+  /** Accrued + opening + carry-over − used: what can be booked today. */
+  availableNow: number | null;
+  byEntitlement: LeaveEntitlementRow[];
+  /** Net manual adjustments made in this leave year (already inside the figures above). */
+  adjustments: number;
+  /** Months that earned no annual leave, and why. */
+  accrualSkipped: { month: string; reason: 'beforeFirstFullMonth' | 'unpaidLeave'; unpaidDays: number }[];
+  unpaidThresholdDays: number | null;
+  /** Time off in lieu — its own bucket, expiring, never part of annual leave. */
+  compensatory: {
+    earned: number;
+    used: number;
+    remaining: number;
+    nextExpiry: string | null;
+    expiryDays: number;
+  } | null;
+}
+
+export type LedgerReason =
+  'CORRECTION' | 'LEGAL_SETTLEMENT' | 'OPENING_BALANCE_FIX' | 'MANUAL_GRANT' | 'COMPENSATORY_EARNED' | 'OTHER';
+export type LedgerBucket = 'annual' | 'compensatory';
+
+export interface LedgerEntry {
+  id: string;
+  bucket: LedgerBucket;
+  delta: number;
+  reason: LedgerReason;
+  comment: string;
+  earnedOn: string | null;
+  expiresOn: string | null;
+  createdAt: string;
+  createdByName: string | null;
+}
+
+export interface LeaveSettings {
+  unpaidAccrualThresholdDays: number;
+  compensatoryExpiryDays: number;
 }
 
 export interface LeaveRequest {
@@ -138,11 +179,64 @@ export interface LeaveProfile {
   hireDate: string | null;
 }
 
+/** What a leave type gives. Descriptive: the server only ever WARNS against it. */
+export interface LeaveEntitlement {
+  /** null = as long as the supporting document says (exams). */
+  days: number | null;
+  /** year = refreshes each leave year; event = per occasion; lifetime = per career. */
+  per: 'year' | 'event' | 'lifetime';
+  dayBasis: 'calendar' | 'working';
+  maxPerRequest?: number;
+  maxTimes?: number;
+  pay: 'full' | 'half' | 'unpaid' | 'mixed';
+  minServiceMonths?: number;
+  audience?: 'female' | 'male' | 'muslim' | 'muslimFemale';
+  /** upfront = whole figure from day one; monthly = one twelfth per completed month. */
+  accrualMethod?: 'upfront' | 'monthly';
+  source?: string;
+  /** From a secondary summary — confirm against the law before relying on it. */
+  verify?: boolean;
+}
+
 export interface LeaveTypeDescriptor {
   key: string;
+  /** i18n key for a built-in type; empty for one the company added. */
   labelKey: string;
+  /** Name of a company-added type (no i18n key). */
+  label?: string;
   deductsBalance: boolean;
   paid: boolean;
+  /** False = switched off for this company: hidden from new requests. */
+  enabled?: boolean;
+  entitlement?: LeaveEntitlement;
+}
+
+/**
+ * A multiplier on the BASE rate, as a TOTAL: 1.25 = one and a quarter times the
+ * normal rate. null = not configured for this country (not "zero" or "one").
+ */
+export interface RateMultiplier {
+  multiplier: number | null;
+  compensatoryDayAllowed?: boolean;
+  /** Default not yet confirmed against the law. */
+  verify?: boolean;
+  source?: string;
+}
+
+export type RateMultiplierKey =
+  'overtimeDaytime' | 'overtimeNighttime' | 'weeklyRestDayWorked' | 'publicHolidayWorked';
+export type RateMultipliers = Record<RateMultiplierKey, RateMultiplier>;
+
+/** One yearly-refreshing entitlement with its running balance. */
+export interface LeaveEntitlementRow {
+  leaveType: string;
+  /** Sick leave only: full / half / unpaid. */
+  tier: string | null;
+  pay: string;
+  allowance: number;
+  used: number;
+  remaining: number;
+  accrualMethod?: 'upfront' | 'monthly';
 }
 
 export interface LeaveStatusDescriptor {
@@ -274,7 +368,109 @@ export class EmployeeLeaveService {
             deductsBalance: b?.deductsBalance === true,
           }))
         : [],
+      accrualMethod: r?.accrualMethod === 'monthly' ? 'monthly' : r?.accrualMethod === 'upfront' ? 'upfront' : null,
+      accruedToDate: num(r?.accruedToDate),
+      availableNow: num(r?.availableNow),
+      byEntitlement: Array.isArray(r?.byEntitlement)
+        ? r.byEntitlement.map((e: any) => ({
+            leaveType: e?.leaveType ?? '',
+            tier: e?.tier ?? null,
+            pay: e?.pay ?? 'full',
+            allowance: Number(e?.allowance ?? 0),
+            used: Number(e?.used ?? 0),
+            remaining: Number(e?.remaining ?? 0),
+            accrualMethod: e?.accrualMethod === 'monthly' ? 'monthly' : e?.accrualMethod === 'upfront' ? 'upfront' : undefined,
+          }))
+        : [],
+      adjustments: Number(r?.adjustments ?? 0),
+      accrualSkipped: Array.isArray(r?.accrualSkipped) ? r.accrualSkipped : [],
+      unpaidThresholdDays: num(r?.unpaidThresholdDays),
+      compensatory: r?.compensatory
+        ? {
+            earned: Number(r.compensatory.earned ?? 0),
+            used: Number(r.compensatory.used ?? 0),
+            remaining: Number(r.compensatory.remaining ?? 0),
+            nextExpiry: r.compensatory.nextExpiry ?? null,
+            expiryDays: Number(r.compensatory.expiryDays ?? 90),
+          }
+        : null,
     };
+  }
+
+  /** The balance ledger, newest first. HR only. */
+  async ledger(employeeId: string): Promise<LedgerEntry[]> {
+    const res = await this.api.request<any>(this.api.get(`employee/getLeaveLedger/${employeeId}`));
+    return Array.isArray(res?.data) ? res.data : [];
+  }
+
+  /**
+   * Add or remove days by hand. Append-only on the server: a mistake is fixed
+   * with an opposite entry, never an edit. The comment is mandatory.
+   */
+  async adjustBalance(payload: {
+    employeeId: string; bucket: LedgerBucket; delta: number;
+    reason: LedgerReason; comment: string; earnedOn?: string | null;
+  }): Promise<void> {
+    const res = await this.api.request<any>(this.api.post('employee/adjustLeaveBalance', payload));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not record the adjustment');
+  }
+
+  async leaveSettings(): Promise<LeaveSettings> {
+    const res = await this.api.request<any>(this.api.get('employee/leaveSettings'));
+    return {
+      unpaidAccrualThresholdDays: Number(res?.data?.unpaidAccrualThresholdDays ?? 15),
+      compensatoryExpiryDays: Number(res?.data?.compensatoryExpiryDays ?? 90),
+    };
+  }
+
+  async saveLeaveSettings(s: LeaveSettings): Promise<void> {
+    const res = await this.api.request<any>(this.api.post('employee/saveLeaveSettings', s));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not save the accrual rules');
+  }
+
+  async resetLeaveSettings(): Promise<void> {
+    const res = await this.api.request<any>(this.api.post('employee/saveLeaveSettings', { reset: true }));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not reset the accrual rules');
+  }
+
+  /** Replace the company's whole leave-type list (HR only). */
+  async saveEntitlementTypes(types: LeaveTypeDescriptor[]): Promise<void> {
+    const res = await this.api.request<any>(this.api.post('employee/saveLeaveEntitlementTypes', { types }));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not save the leave types');
+  }
+
+  /** Pay multipliers for overtime, rest days and public holidays. */
+  async rateMultipliers(): Promise<RateMultipliers> {
+    const res = await this.api.request<any>(this.api.get('employee/rateMultipliers'));
+    const d = res?.data ?? {};
+    const one = (k: string): RateMultiplier => ({
+      multiplier: typeof d?.[k]?.multiplier === 'number' ? d[k].multiplier : null,
+      compensatoryDayAllowed: d?.[k]?.compensatoryDayAllowed === true,
+      verify: d?.[k]?.verify === true,
+      source: d?.[k]?.source ?? undefined,
+    });
+    return {
+      overtimeDaytime: one('overtimeDaytime'),
+      overtimeNighttime: one('overtimeNighttime'),
+      weeklyRestDayWorked: one('weeklyRestDayWorked'),
+      publicHolidayWorked: one('publicHolidayWorked'),
+    };
+  }
+
+  async saveRateMultipliers(multipliers: RateMultipliers): Promise<void> {
+    const res = await this.api.request<any>(this.api.post('employee/saveRateMultipliers', { multipliers }));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not save the rates');
+  }
+
+  async resetRateMultipliers(): Promise<void> {
+    const res = await this.api.request<any>(this.api.post('employee/saveRateMultipliers', { reset: true }));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not reset the rates');
+  }
+
+  /** Back to the country's defaults. */
+  async resetEntitlementTypes(): Promise<void> {
+    const res = await this.api.request<any>(this.api.get('employee/resetLeaveEntitlementTypes'));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not reset the leave types');
   }
 
   /**

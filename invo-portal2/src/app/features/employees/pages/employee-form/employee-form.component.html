@@ -418,6 +418,7 @@
                 <label class="field-label">{{ 'EMPLOYEES.FORM.TERMINATION_DATE' | translate }}</label>
                 <app-date-picker
                   formControlName="terminationDate"
+                  [disabled]="true"
                   [min]="$any(form.controls['hireDate'].value) || null"
                   triggerClass="input"/>
                 <p class="field-hint">{{ 'EMPLOYEES.FORM.TERMINATION_HINT' | translate }}</p>
@@ -458,6 +459,7 @@
                 <label class="field-label">{{ 'EMPLOYEES.FORM.TERMINATION_DATE' | translate }}</label>
                 <app-date-picker
                   formControlName="terminationDate"
+                  [disabled]="true"
                   [min]="$any(form.controls['hireDate'].value) || null"
                   triggerClass="input"/>
                 <p class="field-hint">{{ 'EMPLOYEES.FORM.TERMINATION_HINT' | translate }}</p>
@@ -473,7 +475,10 @@
              employee column — the card only appears where `editBank` is held.
              Cash and cheque need no account, so the fields collapse rather
              than sitting there asking for an IBAN nobody will use. -->
-        @if (showsSection('payment') && canEditBank()) {
+        <!-- On an existing employee this lives on the Payroll tab (bank panel and
+             payment method). It stays here for a NEW employee only, because
+             there is no Payroll tab until the record exists. -->
+        @if (isCreate() && showsSection('payment') && canEditBank()) {
         <section class="card" data-tour="emp-payment" [formGroup]="bankForm" [class.tab-hidden]="tabHidden('employment')" data-pane="employment">
           <header class="card__head">
             <h2 class="card__title">{{ 'EMPLOYEES.WIZARD.PAYMENT_QUESTION' | translate }}</h2>

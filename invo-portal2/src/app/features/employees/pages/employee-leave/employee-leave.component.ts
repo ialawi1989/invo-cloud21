@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
 
@@ -51,6 +51,9 @@ import {
   LeaveRequest,
   LeaveStatusDescriptor,
   LeaveTypeDescriptor,
+  LedgerBucket,
+  LedgerEntry,
+  LedgerReason,
 } from '../../services/employee-leave.service';
 import {
   LeaveActor,
@@ -88,7 +91,7 @@ import {
 @Component({
   selector: 'app-employee-leave',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, AlertComponent, EmptyStateComponent, DateFieldComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, SearchDropdownComponent, AlertComponent, EmptyStateComponent, DateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-leave.component.html',
   styleUrls: ['./employee-leave.component.scss'],
@@ -190,10 +193,79 @@ export class EmployeeLeaveComponent {
       this.profile.set(profile);
       this.catalog.set(catalog);
       this.fileCatalog.set(fileCatalog);
+      // The ledger is HR's: the server refuses it without the view grant, so
+      // don't ask on behalf of an employee looking at their own leave.
+      if (this.actor().canView) {
+        this.ledger.set(await this.service.ledger(this.employeeId).catch(() => []));
+      }
     } catch (e) {
       this.error.set(describeError(e));
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  // ─── Manual balance adjustments (the ledger) ───────────────────────────
+
+  readonly ledger = signal<LedgerEntry[]>([]);
+  readonly adjusting = signal(false);
+
+  readonly adjustForm = this.fb.group({
+    bucket: this.fb.control<string>('annual'),
+    delta: this.fb.control<number | null>(null, Validators.required),
+    reason: this.fb.control<string>('CORRECTION'),
+    comment: this.fb.control<string>('', Validators.required),
+    earnedOn: this.fb.control<string | null>(null),
+  });
+
+  readonly bucketOptions = computed(() => [
+    { key: 'annual', label: this.translate.instant('EMPLOYEES.LEAVE.ENT.BUCKET_ANNUAL') },
+    { key: 'compensatory', label: this.translate.instant('EMPLOYEES.LEAVE.ENT.BUCKET_COMPENSATORY') },
+  ]);
+  readonly reasonOptions = computed(() =>
+    ['CORRECTION', 'LEGAL_SETTLEMENT', 'OPENING_BALANCE_FIX', 'MANUAL_GRANT', 'COMPENSATORY_EARNED', 'OTHER']
+      .map(k => ({ key: k, label: this.translate.instant('EMPLOYEES.LEAVE.ENT.REASON_' + k) })));
+  simpleLabel = (o: { key: string; label: string }) => o?.label ?? '';
+  simpleKey = (o: { key: string; label: string }) => o.key;
+
+  /** Earned-on only matters for compensatory days that are being ADDED. */
+  // A method, not a computed: reactive-form values are not signals, so a
+  // computed would read them once and never update.
+  adjustingCompensatoryGrant(): boolean {
+    return this.adjustForm.controls.bucket.value === 'compensatory'
+      && Number(this.adjustForm.controls.delta.value) > 0;
+  }
+
+  reasonLabel(r: string): string { return this.translate.instant('EMPLOYEES.LEAVE.ENT.REASON_' + r); }
+  bucketLabel(b: string): string { return this.translate.instant('EMPLOYEES.LEAVE.ENT.BUCKET_' + b.toUpperCase()); }
+  skipReasonLabel(r: string): string { return this.translate.instant('EMPLOYEES.LEAVE.ENT.SKIP_' + r.toUpperCase()); }
+
+  startAdjust(): void {
+    this.adjustForm.reset({ bucket: 'annual', delta: null, reason: 'CORRECTION', comment: '', earnedOn: null });
+    this.error.set(null);
+    this.adjusting.set(true);
+  }
+
+  async submitAdjust(): Promise<void> {
+    if (this.adjustForm.invalid) { this.adjustForm.markAllAsTouched(); return; }
+    const v = this.adjustForm.getRawValue();
+    this.busy.set('adjust');
+    this.error.set(null);
+    try {
+      await this.service.adjustBalance({
+        employeeId: this.employeeId,
+        bucket: v.bucket as LedgerBucket,
+        delta: Number(v.delta),
+        reason: v.reason as LedgerReason,
+        comment: String(v.comment ?? '').trim(),
+        earnedOn: v.earnedOn || null,
+      });
+      this.adjusting.set(false);
+      await this.load();
+    } catch (e) {
+      this.error.set(describeError(e));
+    } finally {
+      this.busy.set(null);
     }
   }
 
@@ -656,7 +728,39 @@ export class EmployeeLeaveComponent {
 
   typeLabel(r: LeaveRequest): string {
     const found = this.catalog().types.find(t => t.key === r.leaveType);
-    return found?.labelKey ? portalKey(found.labelKey) : r.leaveType;
+    return found?.labelKey ? portalKey(found.labelKey) : (found?.label ?? r.leaveType);
+  }
+
+  /** Types offered on a NEW request — the ones the company has switched on. */
+  readonly activeTypes = computed(() => this.catalog().types.filter(t => t.enabled !== false));
+
+  /** Display name of a type key (built-in via i18n, custom via its own label). */
+  typeName(key: string): string {
+    const found = this.catalog().types.find(t => t.key === key);
+    if (!found) return key;
+    return found.labelKey ? this.translate.instant(portalKey(found.labelKey)) : (found.label ?? key);
+  }
+
+  /**
+   * One line describing what the law/company gives for a type, shown under the
+   * type picker. Built from the catalogue's entitlement, so it follows the
+   * company's edits. Empty when the type has no entitlement set.
+   */
+  entitlementHint(key: string | null): string {
+    const e = this.catalog().types.find(t => t.key === key)?.entitlement;
+    if (!e) return '';
+    const t = (k: string, p?: object) => this.translate.instant('EMPLOYEES.LEAVE.ENT.' + k, p);
+    const parts: string[] = [];
+    parts.push(e.days === null ? t('DAYS_BY_DOCUMENT')
+      : t('UP_TO_' + e.per.toUpperCase(), { days: e.days }));
+    if (e.maxPerRequest != null) parts.push(t('MAX_PER_REQUEST', { days: e.maxPerRequest }));
+    parts.push(t('PAY_' + e.pay.toUpperCase()));
+    parts.push(t('BASIS_' + e.dayBasis.toUpperCase()));
+    if (e.minServiceMonths) parts.push(t('MIN_SERVICE', { months: e.minServiceMonths }));
+    if (e.maxTimes != null) parts.push(t('MAX_TIMES', { times: e.maxTimes }));
+    if (e.audience) parts.push(t('AUDIENCE_' + e.audience.toUpperCase()));
+    if (e.verify) parts.push(t('VERIFY'));
+    return parts.join(' · ');
   }
 
   statusLabel(r: LeaveRequest): string {
@@ -736,7 +840,8 @@ export class EmployeeLeaveComponent {
 
   optionKey = (o: { key: string }) => o.key;
   optionName = (o: LeaveTypeDescriptor | LeaveStatusDescriptor | { key: string; labelKey: string }) =>
-    o?.labelKey ? this.translate.instant(portalKey(o.labelKey)) : String(o ?? '');
+    o?.labelKey ? this.translate.instant(portalKey(o.labelKey))
+      : ((o as LeaveTypeDescriptor)?.label ?? String(o ?? ''));
   optionMatches = (a: any, b: any) => (a?.key ?? a) === (b?.key ?? b);
 
   fileSize(file: HrFile): string {

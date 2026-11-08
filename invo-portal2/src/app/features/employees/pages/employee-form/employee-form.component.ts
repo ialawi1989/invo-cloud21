@@ -873,6 +873,14 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
       ?? null;
     this.editSection.set(this.isCreate() ? null : section);
 
+    // An old `?section=payment` link (bookmark, earlier overview pencil): payment
+    // details now live on the Payroll tab, so send people there rather than to an
+    // empty page.
+    if (!this.isCreate() && section === 'payment' && id) {
+      void this.router.navigate(['/employees', id, 'payroll'], { replaceUrl: true });
+      return;
+    }
+
     // `?formTab=personal` — reopen on the tab the user was on. Validated
     // against the tabs actually on offer once the manifest has loaded (below).
     const wanted = this.route.snapshot.queryParamMap?.get('formTab')

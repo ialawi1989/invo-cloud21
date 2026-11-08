@@ -128,8 +128,7 @@ export const MENU_ITEMS: MenuItem[] = [
       { id: 511, label: 'Employee List',   link: '/employees',            privilege: 'employeeSecurity.actions.view' },
       { id: 512, label: 'Privileges',      link: '/employee-privileges',  privilege: 'privilegeSecurity.actions.view' },
       { id: 513, label: 'Schedule',        link: '/employeeSchedule',     privilege: 'employeeScheduleSecurity.actions.view' },
-      { id: 514, label: 'Attendance',      link: '/employeeAttendence',   privilege: 'employeeAttendenceSecurity.actions.view' },
-    ],
+      { id: 514, label: 'Attendance',      link: '/employeeAttendence',   privilege: 'employeeAttendenceSecurity.actions.view' },    ],
   },
 
   // ── Online ────────────────────────────────────────────────────────────────

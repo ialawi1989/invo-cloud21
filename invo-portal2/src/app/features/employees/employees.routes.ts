@@ -118,6 +118,24 @@ export const EMPLOYEES_ROUTES: Routes = [
         .then(m => m.HolidayCalendarsComponent),
   },
   {
+    // The company's own list of leave types and entitlements. Country rules
+    // supply the starting values; HR with the leave EDIT grant changes them.
+    // Default-deny (`hrPrivilegeGuard`), like GOSI: this edits what every
+    // employee is entitled to.
+    path: 'payroll-run',
+    canActivate: [translationsLoaded, hrPrivilegeGuard],
+    data: { hrGroup: 'employeePayrollSecurity', hrAction: 'viewPay' },
+    loadComponent: () =>
+      import('./pages/payroll-run/payroll-run.component').then(m => m.PayrollRunComponent),
+  },
+  {
+    path: 'leave-types',
+    canActivate: [translationsLoaded, hrPrivilegeGuard],
+    data: { hrGroup: 'employeeLeaveSecurity', hrAction: 'edit' },
+    loadComponent: () =>
+      import('./pages/leave-types/leave-types.component').then(m => m.LeaveTypesComponent),
+  },
+  {
     // GOSI (Bahrain social insurance) contribution-rate & tier-3 gratuity
     // policy storage. Company-wide statutory configuration, not personal
     // employee data, so it lives as a standalone employees page rather than

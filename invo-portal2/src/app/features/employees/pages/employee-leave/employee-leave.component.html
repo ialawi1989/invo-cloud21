@@ -262,6 +262,54 @@
       }
 
 
+      <!-- Monthly accrual: the whole-year figure is not all bookable yet. -->
+      @if (b.accrualMethod === 'monthly' && b.availableNow !== null) {
+        <p class="leave-accrual">
+          {{ 'EMPLOYEES.LEAVE.ENT.ACCRUED_NOTE' | translate: { accrued: b.accruedToDate, available: b.availableNow } }}
+        </p>
+        <!-- Why a month earned nothing — the answer to "why is my balance low". -->
+        @for (s of b.accrualSkipped; track s.month) {
+          <p class="leave-accrual leave-accrual--skip">
+            {{ s.month }} — {{ skipReasonLabel(s.reason) }}
+            @if (s.reason === 'unpaidLeave') { ({{ s.unpaidDays }} / {{ b.unpaidThresholdDays }}) }
+          </p>
+        }
+      }
+
+      @if (b.adjustments !== 0) {
+        <p class="leave-accrual">
+          {{ 'EMPLOYEES.LEAVE.ENT.ADJUSTMENTS_NOTE' | translate: { days: b.adjustments } }}
+        </p>
+      }
+
+      <!-- Time off in lieu: separate from annual leave, and it expires. -->
+      @if (b.compensatory && (b.compensatory.earned > 0 || b.compensatory.used > 0)) {
+        <p class="leave-comp">
+          <strong>{{ 'EMPLOYEES.LEAVE.ENT.COMP_TITLE' | translate }}:</strong>
+          {{ 'EMPLOYEES.LEAVE.ENT.COMP_LINE' | translate: { remaining: b.compensatory.remaining, earned: b.compensatory.earned, used: b.compensatory.used } }}
+          @if (b.compensatory.nextExpiry) {
+            · {{ 'EMPLOYEES.LEAVE.ENT.COMP_NEXT_EXPIRY' | translate: { date: b.compensatory.nextExpiry } }}
+          }
+        </p>
+      }
+
+      @if (b.byEntitlement.length) {
+        <ul class="leave-bytype leave-ent">
+          @for (r of b.byEntitlement; track r.leaveType + (r.tier ?? '')) {
+            <li>
+              <span class="leave-bytype__name">
+                {{ typeName(r.leaveType) }}
+                @if (r.tier) { <small>({{ 'EMPLOYEES.LEAVE.ENT.TIER_' + r.tier.toUpperCase() | translate }})</small> }
+              </span>
+              <span class="leave-bytype__days">{{ r.used }} / {{ r.allowance }}</span>
+              <span class="leave-bytype__flag">
+                {{ 'EMPLOYEES.LEAVE.ENT.REMAINING' | translate: { days: r.remaining } }}
+              </span>
+            </li>
+          }
+        </ul>
+      }
+
       @if (b.byType.length) {
         <ul class="leave-bytype">
           @for (t of b.byType; track t.leaveType) {
@@ -282,6 +330,82 @@
     <div class="leave-note">{{ 'EMPLOYEES.LEAVE.NO_BALANCE' | translate }}</div>
   }
 
+  <!-- ── Balance adjustments (HR) — an append-only ledger ── -->
+  @if (actor().canEdit) {
+    <section class="hr-card leave-ledger">
+      <div class="leave-header">
+        <h2 class="leave-header__title">{{ 'EMPLOYEES.LEAVE.ENT.LEDGER_TITLE' | translate }}</h2>
+        @if (!adjusting()) {
+          <button type="button" class="btn btn-default" (click)="startAdjust()">
+            {{ 'EMPLOYEES.LEAVE.ENT.ADJUST' | translate }}
+          </button>
+        }
+      </div>
+      <p class="leave-field__hint">{{ 'EMPLOYEES.LEAVE.ENT.LEDGER_HINT' | translate }}</p>
+
+      @if (adjusting()) {
+        <form class="leave-form" [formGroup]="adjustForm" (ngSubmit)="submitAdjust()">
+          <div class="leave-form__grid">
+            <label class="leave-field">
+              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.ENT.BUCKET' | translate }}</span>
+              <app-search-dropdown formControlName="bucket" [items]="bucketOptions()"
+                [displayWith]="simpleLabel" [toValue]="simpleKey" [compareWith]="optionMatches" [searchable]="false"/>
+            </label>
+            <label class="leave-field">
+              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.ENT.DELTA' | translate }} <em>*</em></span>
+              <input class="form-control" type="number" step="0.5" formControlName="delta"/>
+              <span class="leave-field__hint">{{ 'EMPLOYEES.LEAVE.ENT.DELTA_HINT' | translate }}</span>
+            </label>
+            <label class="leave-field">
+              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.ENT.REASON' | translate }}</span>
+              <app-search-dropdown formControlName="reason" [items]="reasonOptions()"
+                [displayWith]="simpleLabel" [toValue]="simpleKey" [compareWith]="optionMatches" [searchable]="false"/>
+            </label>
+            @if (adjustingCompensatoryGrant()) {
+              <label class="leave-field">
+                <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.ENT.EARNED_ON' | translate }}</span>
+                <app-date-field formControlName="earnedOn"/>
+                <span class="leave-field__hint">{{ 'EMPLOYEES.LEAVE.ENT.EARNED_ON_HINT' | translate }}</span>
+              </label>
+            }
+            <label class="leave-field leave-field--wide">
+              <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.ENT.COMMENT' | translate }} <em>*</em></span>
+              <textarea class="form-control" rows="2" formControlName="comment"></textarea>
+            </label>
+          </div>
+          <div class="leave-form__actions">
+            <button type="button" class="btn btn-secondary" (click)="adjusting.set(false)">
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="busy() === 'adjust'">
+              {{ 'COMMON.SAVE' | translate }}
+            </button>
+          </div>
+        </form>
+      }
+
+      @if (ledger().length) {
+        <ul class="leave-bytype leave-ledger__list">
+          @for (e of ledger(); track e.id) {
+            <li>
+              <span class="leave-bytype__name">
+                {{ reasonLabel(e.reason) }} · {{ bucketLabel(e.bucket) }}
+                <small>{{ e.createdAt | date: 'yyyy-MM-dd' }}{{ e.createdByName ? ' · ' + e.createdByName : '' }}</small>
+                <small class="leave-ledger__comment">{{ e.comment }}</small>
+              </span>
+              <span class="leave-bytype__days" [class.leave-ledger__neg]="e.delta < 0">
+                {{ e.delta > 0 ? '+' : '' }}{{ e.delta }}
+              </span>
+              <span class="leave-bytype__flag">
+                @if (e.expiresOn) { {{ 'EMPLOYEES.LEAVE.ENT.EXPIRES' | translate: { date: e.expiresOn } }} }
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+
   <section class="hr-card">
   <div class="leave-header">
     <h2 class="leave-header__title">{{ 'EMPLOYEES.LEAVE.REQUESTS' | translate }}</h2>
@@ -289,11 +413,18 @@
       Gated on `mayCreateRequest`, which is self OR the edit grant. Gating on the
       grant alone would hide the button from every employee the module is for.
     -->
-    @if (canCreate() && !editing()) {
-      <button type="button" class="btn btn-primary" (click)="startAdd()">
-        {{ 'EMPLOYEES.LEAVE.ADD' | translate }}
-      </button>
-    }
+    <div class="leave-header__actions">
+      @if (actor().canEdit) {
+        <a class="btn btn-default" routerLink="/employees/leave-types">
+          {{ 'EMPLOYEES.LEAVE.ENT.MANAGE' | translate }}
+        </a>
+      }
+      @if (canCreate() && !editing()) {
+        <button type="button" class="btn btn-primary" (click)="startAdd()">
+          {{ 'EMPLOYEES.LEAVE.ADD' | translate }}
+        </button>
+      }
+    </div>
   </div>
 
   @if (editing()) {
@@ -303,12 +434,15 @@
           <span class="leave-field__label">{{ 'EMPLOYEES.LEAVE.FIELD.TYPE' | translate }} <em>*</em></span>
           <app-search-dropdown
             formControlName="leaveType"
-            [items]="catalog().types"
+            [items]="activeTypes()"
             [displayWith]="optionName"
             [toValue]="optionKey"
             [compareWith]="optionMatches"
             [placeholder]="'EMPLOYEES.LEAVE.FIELD.TYPE' | translate">
           </app-search-dropdown>
+          @if (entitlementHint(form.controls.leaveType.value); as hint) {
+            <span class="leave-field__hint">{{ hint }}</span>
+          }
         </label>
 
         <label class="leave-field">
