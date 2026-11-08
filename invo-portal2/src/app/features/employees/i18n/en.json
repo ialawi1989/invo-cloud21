@@ -489,6 +489,16 @@
       "COL_LOAN": "Loan",
       "COL_OTHER": "Other deductions",
       "COL_ABSENCE_DED": "Absence deduction",
+      "COL_OVERRIDE": "Override",
+      "COL_GOSI": "GOSI (employee share)",
+      "COL_GOSI_ER": "GOSI (employer cost)",
+      "FLAG_GOSIINCOMPLETE": "GOSI settings incomplete",
+      "GOSI_REASON_NOTENROLLED": "not enrolled in social insurance",
+      "GOSI_REASON_NONATIONALITY": "no nationality on file",
+      "GOSI_REASON_TIER3": "outside GOSI (non-GCC)",
+      "GOSI_REASON_NOSETTINGS": "no GOSI rates entered",
+      "GOSI_REASON_NORATE": "GOSI rate missing for this tier",
+      "GOSI_REASON_NOBASIS": "GOSI wage basis not set",
       "COL_NET": "Net pay",
       "COL_NOTES": "Notes",
       "OF_WORKING": "of {{n}} working days",
@@ -502,7 +512,7 @@
       "RULE_ABSENT": "A working day with no punch and no approved leave is an absent day, and the daily rate is deducted for it. Rest days and public holidays are paid. Unpaid leave is deducted in calendar days.",
       "RULE_UNTRACKED": "Someone with no punches at all in the month is not treated as absent — they are paid in full and flagged. Type their attendance days to change that.",
       "RULE_OVERRIDE": "Typing a value replaces the calculated one and everything is recalculated from it. Clear the box (or press ×) to go back to the calculated value.",
-      "RULE_STATUTORY": "Social insurance and tax are not calculated here — enter them under Other deductions."
+      "RULE_STATUTORY": "GOSI is calculated from your GOSI settings and the employee's nationality (employee share is deducted; the employer share is a company cost). It uses the contractual wage and is not reduced for absence. If the GOSI settings are incomplete it deducts nothing and says what is missing. Tax and end-of-service are not calculated — enter them under Other deductions."
     },
     "ACCESS_REQUESTS": {
       "TITLE": "Access requests",
@@ -1156,6 +1166,17 @@
       "NO_LIVE_WARNINGS_NOTE": "No live warnings. Expired or overturned warnings stay on record but don't count here."
     },
     "PAYROLL": {
+      "GOSI_EMPLOYEE": "GOSI — employee share",
+      "GOSI_EMPLOYER": "GOSI — employer share",
+      "GOSI_BASIS": "{{rate}}% of {{wage}}",
+      "GOSI_EMPLOYER_NOTE": "{{rate}}% — a company cost, not deducted from pay",
+      "NET_AFTER_GOSI": "Net after GOSI",
+      "GOSI_REASON_NOTENROLLED": "Not enrolled in social insurance on this pay record",
+      "GOSI_REASON_NONATIONALITY": "Not calculated — no nationality on the employee's profile",
+      "GOSI_REASON_TIER3": "Outside GOSI (non-GCC national)",
+      "GOSI_REASON_NOSETTINGS": "Not calculated — no GOSI rates entered yet (Employees → GOSI settings)",
+      "GOSI_REASON_NORATE": "Not calculated — the GOSI rate for this tier is missing",
+      "GOSI_REASON_NOBASIS": "Not calculated — the GOSI wage basis is not set",
       "SUBJECT_NOTE": "This is your own pay record. You can see it but not change it — pay and bank changes are made by payroll.",
       "NOTHING_VISIBLE": "You do not have permission to see pay or bank details for this employee.",
       "CURRENT_PAY": "Current Pay",

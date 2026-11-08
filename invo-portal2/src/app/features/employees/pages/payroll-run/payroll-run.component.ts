@@ -23,7 +23,7 @@ import {
 
 type EditableKey =
   | 'basicSalary' | 'allowances' | 'attendanceDays' | 'overtimeHours'
-  | 'bonus' | 'recurringDeductions' | 'loanDeduction' | 'otherDeductions';
+  | 'bonus' | 'recurringDeductions' | 'loanDeduction' | 'gosiEmployee' | 'otherDeductions';
 
 interface Col {
   key: EditableKey;
@@ -33,6 +33,11 @@ interface Col {
   /** The effective value (override ?? computed). */
   value: (l: PayrollLine) => number;
   step: string;
+  /**
+   * Comes from punches, so it is SHOWN as plain text and overridden in its own
+   * column beside it — the calculated figure never gets typed over in place.
+   */
+  auto?: boolean;
 }
 
 /**
@@ -78,9 +83,9 @@ export class PayrollRunComponent {
       computed: l => l.inputs.basicSalary, value: l => l.result.basicSalary },
     { key: 'allowances', labelKey: 'COL_ALLOW', step: '0.001',
       computed: l => l.inputs.allowances, value: l => l.result.allowances },
-    { key: 'attendanceDays', labelKey: 'COL_ATTEND', step: '1',
+    { key: 'attendanceDays', labelKey: 'COL_ATTEND', step: '1', auto: true,
       computed: l => l.inputs.attendanceDays, value: l => l.result.attendanceDays },
-    { key: 'overtimeHours', labelKey: 'COL_OT', step: '0.25',
+    { key: 'overtimeHours', labelKey: 'COL_OT', step: '0.25', auto: true,
       computed: l => l.inputs.overtimeHours, value: l => l.result.overtimeHours },
     { key: 'bonus', labelKey: 'COL_BONUS', step: '0.001',
       computed: () => 0, value: l => l.result.bonus },
@@ -88,6 +93,8 @@ export class PayrollRunComponent {
       computed: l => l.inputs.recurringDeductions, value: l => l.result.recurringDeductions },
     { key: 'loanDeduction', labelKey: 'COL_LOAN', step: '0.001',
       computed: l => l.inputs.loanInstalment, value: l => l.result.loanDeduction },
+    { key: 'gosiEmployee', labelKey: 'COL_GOSI', step: '0.001',
+      computed: l => l.result.gosiEmployeeCalculated, value: l => l.result.gosiEmployee },
     { key: 'otherDeductions', labelKey: 'COL_OTHER', step: '0.001',
       computed: () => 0, value: l => l.result.otherDeductions },
   ];
@@ -283,6 +290,12 @@ export class PayrollRunComponent {
 
   flagLabel(f: string): string { return this.t('FLAG_' + f.toUpperCase()); }
 
+  /** Why GOSI was not calculated for this person, or '' when it was. */
+  gosiNote(l: PayrollLine): string {
+    const r = l.result.gosiReason;
+    return r ? this.t('GOSI_REASON_' + r.toUpperCase()) : '';
+  }
+
   statusLabel(s: string): string { return this.t(s === 'Finalized' ? 'FINALIZED' : 'DRAFT'); }
 
   // ── Export ───────────────────────────────────────────────────────────────
@@ -292,7 +305,7 @@ export class PayrollRunComponent {
     if (!r) return;
     const head = ['Employee', 'Currency', 'Basic', 'Allowances', 'Attendance days', 'Working days', 'Absent days',
       'Unpaid leave days', 'Not employed days', 'Absence deduction', 'Proration deduction', 'Overtime hours',
-      'Overtime pay', 'Bonus', 'Recurring deductions', 'Loan', 'Other deductions', 'Gross', 'Total deductions',
+      'Overtime pay', 'Bonus', 'Recurring deductions', 'Loan', 'GOSI (employee)', 'GOSI (employer)', 'Other deductions', 'Gross', 'Total deductions',
       'Net', 'Notes'];
     const esc = (v: unknown) => {
       const s = String(v ?? '');
@@ -302,7 +315,7 @@ export class PayrollRunComponent {
       const x = l.result;
       return [l.employeeName, l.currency ?? '', x.basicSalary, x.allowances, x.attendanceDays, x.workingDays,
         x.absentDays, x.unpaidLeaveDays, x.notEmployedDays, x.absenceDeduction, x.prorationDeduction,
-        x.overtimeHours, x.overtimePay, x.bonus, x.recurringDeductions, x.loanDeduction, x.otherDeductions,
+        x.overtimeHours, x.overtimePay, x.bonus, x.recurringDeductions, x.loanDeduction, x.gosiEmployee, x.gosiEmployer, x.otherDeductions,
         x.gross, x.totalDeductions, x.net, l.overrides.notes ?? ''].map(esc).join(',');
     });
     const blob = new Blob(['﻿' + [head.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });

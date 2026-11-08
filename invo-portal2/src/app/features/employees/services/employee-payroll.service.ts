@@ -47,6 +47,20 @@ export interface PayComponent {
   effectiveTo: string | null;
 }
 
+export interface PayrollGosi {
+  /** True only when a contribution could actually be worked out. */
+  applicable: boolean;
+  tier: string | null;
+  /** Why it was not calculated (notEnrolled, tier3, noSettings, noRate, noBasis, noNationality). */
+  reason: string | null;
+  employeeRatePercent: number | null;
+  employerRatePercent: number | null;
+  wageBasis: string | null;
+  subjectWage: number;
+  employee: number;
+  employer: number;
+}
+
 export interface PayrollRow {
   id: string;
   employeeId: string;
@@ -79,6 +93,10 @@ export interface PayrollRow {
    */
   netBeforeStatutory: number | null;
   statutoryDeductionsIncluded: boolean | null;
+  /** GOSI on the CURRENT pay only (null on history rows). */
+  gosi: PayrollGosi | null;
+  /** Net after the employee's GOSI share. Still not take-home: tax, gratuity and WPS are not in it. */
+  netAfterGosi: number | null;
 
   /** Sent on history rows only. Which row is in force, and which is scheduled. */
   isCurrent: boolean | null;
@@ -283,6 +301,20 @@ export class EmployeePayrollService {
       // stays up. Every other nullable field on this screen defaults to unknown;
       // this one does not, because unknown would render as no disclaimer.
       statutoryDeductionsIncluded: r?.statutoryDeductionsIncluded === true,
+      gosi: r?.gosi
+        ? {
+            applicable: r.gosi.applicable === true,
+            tier: r.gosi.tier ?? null,
+            reason: r.gosi.reason ?? null,
+            employeeRatePercent: num(r.gosi.employeeRatePercent),
+            employerRatePercent: num(r.gosi.employerRatePercent),
+            wageBasis: r.gosi.wageBasis ?? null,
+            subjectWage: num(r.gosi.subjectWage) ?? 0,
+            employee: num(r.gosi.employee) ?? 0,
+            employer: num(r.gosi.employer) ?? 0,
+          }
+        : null,
+      netAfterGosi: num(r?.netAfterGosi),
 
       isCurrent: typeof r?.isCurrent === 'boolean' ? r.isCurrent : null,
       isFuture: typeof r?.isFuture === 'boolean' ? r.isFuture : null,

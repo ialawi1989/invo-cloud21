@@ -73,6 +73,34 @@
               <span class="pay-figure__caveat">{{ 'EMPLOYEES.PAYROLL.NOT_TAKE_HOME' | translate }}</span>
             }
           </div>
+
+          <!-- GOSI, from the company's GOSI settings and this person's nationality.
+               When it cannot be worked out the reason is shown instead of a number:
+               an empty figure would read as "no contribution". -->
+          @if (c.gosi; as g) {
+            @if (g.applicable) {
+              <div class="pay-figure">
+                <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.GOSI_EMPLOYEE' | translate }}</span>
+                <span class="pay-figure__value">{{ money(g.employee, c.currency) }}</span>
+                <span class="pay-figure__caveat">{{ 'EMPLOYEES.PAYROLL.GOSI_BASIS' | translate: { rate: g.employeeRatePercent, wage: money(g.subjectWage, c.currency) } }}</span>
+              </div>
+              <div class="pay-figure">
+                <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.GOSI_EMPLOYER' | translate }}</span>
+                <span class="pay-figure__value">{{ money(g.employer, c.currency) }}</span>
+                <span class="pay-figure__caveat">{{ 'EMPLOYEES.PAYROLL.GOSI_EMPLOYER_NOTE' | translate: { rate: g.employerRatePercent } }}</span>
+              </div>
+              <div class="pay-figure pay-figure--net">
+                <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.NET_AFTER_GOSI' | translate }}</span>
+                <span class="pay-figure__value">{{ money(c.netAfterGosi, c.currency) }}</span>
+                <span class="pay-figure__caveat">{{ 'EMPLOYEES.PAYROLL.NOT_TAKE_HOME' | translate }}</span>
+              </div>
+            } @else if (g.reason) {
+              <div class="pay-figure">
+                <span class="pay-figure__label">GOSI</span>
+                <span class="pay-figure__caveat">{{ 'EMPLOYEES.PAYROLL.GOSI_REASON_' + g.reason.toUpperCase() | translate }}</span>
+              </div>
+            }
+          }
         </div>
 
         <dl class="pay-facts">

@@ -58,10 +58,11 @@ export interface PayrollOverrides {
   recurringDeductions?: number | null;
   loanDeduction?: number | null;
   otherDeductions?: number | null;
+  gosiEmployee?: number | null;
   notes?: string | null;
 }
 
-export type PayrollFlag = 'noAttendance' | 'negativeNet' | 'noSalary';
+export type PayrollFlag = 'noAttendance' | 'negativeNet' | 'noSalary' | 'gosiIncomplete';
 
 /** The effective figures: override ?? computed. */
 export interface PayrollLineResult {
@@ -83,6 +84,16 @@ export interface PayrollLineResult {
   recurringDeductions: number;
   loanDeduction: number;
   otherDeductions: number;
+  /** Employee's GOSI share — deducted from pay. */
+  gosiEmployee: number;
+  /** What GOSI calculated, before any override. */
+  gosiEmployeeCalculated: number;
+  /** Employer's share — a company cost, NOT deducted from pay. */
+  gosiEmployer: number;
+  gosiSubjectWage: number;
+  gosiTier: string | null;
+  /** Why GOSI was not calculated; null when it was. */
+  gosiReason: string | null;
   gross: number;
   totalDeductions: number;
   net: number;

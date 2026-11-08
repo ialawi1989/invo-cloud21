@@ -57,12 +57,16 @@
           <tr>
             <th class="pr-sticky">{{ 'EMPLOYEES.PAYROLL_RUN.COL_EMPLOYEE' | translate }}</th>
             @for (c of cols; track c.key) {
-              <th>{{ 'EMPLOYEES.PAYROLL_RUN.' + c.labelKey | translate }}</th>
+              <th [class.pr-ro]="c.auto">{{ 'EMPLOYEES.PAYROLL_RUN.' + c.labelKey | translate }}</th>
+              @if (c.auto) {
+                <th>{{ 'EMPLOYEES.PAYROLL_RUN.COL_OVERRIDE' | translate }}</th>
+              }
               @if (c.key === 'attendanceDays') {
                 <th class="pr-ro">{{ 'EMPLOYEES.PAYROLL_RUN.COL_ABSENT' | translate }}</th>
                 <th class="pr-ro">{{ 'EMPLOYEES.PAYROLL_RUN.COL_UNPAID' | translate }}</th>
               }
             }
+            <th class="pr-ro">{{ 'EMPLOYEES.PAYROLL_RUN.COL_GOSI_ER' | translate }}</th>
             <th class="pr-ro">{{ 'EMPLOYEES.PAYROLL_RUN.COL_ABSENCE_DED' | translate }}</th>
             <th class="pr-ro pr-net">{{ 'EMPLOYEES.PAYROLL_RUN.COL_NET' | translate }}</th>
             <th>{{ 'EMPLOYEES.PAYROLL_RUN.COL_NOTES' | translate }}</th>
@@ -82,6 +86,29 @@
               </td>
 
               @for (c of cols; track c.key) {
+                @if (c.auto) {
+                  <!-- Calculated from punches: text only. -->
+                  <td class="pr-ro">
+                    <span class="pr-auto">{{ c.computed(l) }}</span>
+                    @if (c.key === 'attendanceDays') {
+                      <small class="pr-hint">{{ 'EMPLOYEES.PAYROLL_RUN.OF_WORKING' | translate: { n: l.result.workingDays } }}</small>
+                    }
+                  </td>
+                  <!-- Its override, in its own column beside it. Empty = use the calculated figure. -->
+                  <td>
+                    <div class="pr-cell" [class.pr-cell--edited]="isOverridden(l, c)">
+                      <input class="pr-input pr-input--narrow" type="number" min="0" [step]="c.step"
+                             [value]="isOverridden(l, c) ? c.value(l) : ''"
+                             placeholder="—"
+                             [disabled]="!isDraft()"
+                             (change)="onCell(l, c, $any($event.target).value)"/>
+                      @if (isOverridden(l, c) && isDraft()) {
+                        <button type="button" class="pr-reset" [title]="'EMPLOYEES.PAYROLL_RUN.RESET' | translate"
+                                (click)="onCell(l, c, '')">×</button>
+                      }
+                    </div>
+                  </td>
+                } @else {
                 <td>
                   <div class="pr-cell" [class.pr-cell--edited]="isOverridden(l, c)">
                     <input class="pr-input" type="number" min="0" [step]="c.step"
@@ -94,16 +121,18 @@
                               (click)="onCell(l, c, '')">×</button>
                     }
                   </div>
-                  @if (c.key === 'attendanceDays') {
-                    <small class="pr-hint">{{ 'EMPLOYEES.PAYROLL_RUN.OF_WORKING' | translate: { n: l.result.workingDays } }}</small>
-                  }
                 </td>
+                }
                 @if (c.key === 'attendanceDays') {
                   <td class="pr-ro" [class.pr-warn]="l.result.absentDays > 0">{{ l.result.absentDays }}</td>
                   <td class="pr-ro">{{ l.result.unpaidLeaveDays }}</td>
                 }
               }
 
+              <td class="pr-ro">
+                {{ l.result.gosiEmployer | mycurrency }}
+                @if (gosiNote(l); as note) { <small class="pr-hint">{{ note }}</small> }
+              </td>
               <td class="pr-ro">{{ (l.result.absenceDeduction + l.result.prorationDeduction) | mycurrency }}</td>
               <td class="pr-ro pr-net" [class.pr-warn]="l.result.net < 0">{{ l.result.net | mycurrency }}</td>
               <td>
