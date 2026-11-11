@@ -40,6 +40,7 @@ const SCHEDULER_SLUG: Record<string, string> = {
   'inventory-transfer': 'inventory-transfer-report',
   'voided-sales': 'voided-sales-report',
   'customer-aging': 'customer-aging-report',
+  'vat-transaction-details': 'vat-transaction-details-report',
   'product-wise-vat': 'product-wise-vat-report',
   'sales-by-tables': 'sales-by-tables',
   'supplier-aging': 'supplier-aging-report',

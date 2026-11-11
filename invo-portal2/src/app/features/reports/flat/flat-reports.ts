@@ -451,6 +451,70 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
       { key: 'compositeScore', tone: 'teal', type: 'score', end: true, hint: 'REPORTS.FLAT.HINT_SCORE' }, { key: 'rating', type: 'tag' },
     ],
   },
+  'vat-transaction-details': {
+    route: 'taxTransactionDetailsReport', paged: true,
+    columns: [
+      { key: 'tax' }, { key: 'documentType' }, { key: 'documentNumber' }, { key: 'date', type: 'date' }, { key: 'clientOrSupplier' }, { key: 'productOrDescription' },
+      { key: 'totalExclusive', type: 'currency', end: true, total: true }, { key: 'taxAmount', type: 'currency', end: true, total: true }, { key: 'totalInclusive', type: 'currency', end: true, total: true },
+    ],
+  },
+  'bill-of-entry-details-vat': {
+    route: 'billOfEntryDetailsVatReport', paged: true,
+    columns: [
+      { key: 'date', type: 'date' }, { key: 'type' }, { key: 'referenceNumber' }, { key: 'name' },
+      { key: 'taxableAmount', type: 'currency', end: true, total: true }, { key: 'vat', type: 'currency', end: true, total: true },
+      { key: 'none_taxableAmount', type: 'currency', end: true, total: true }, { key: 'totalAmount', type: 'currency', end: true, total: true },
+    ],
+  },
+  'daily-sales': {
+    route: 'salesByPeriodReport', paged: false,
+    columns: [
+      { key: 'date', type: 'date' }, { key: 'productQty', type: 'number', end: true, total: true }, { key: 'grossSales', type: 'currency', end: true, total: true },
+      { key: 'netSales', type: 'currency', end: true, total: true }, { key: 'salesInclTax', type: 'currency', end: true, total: true },
+    ],
+  },
+  'hourly-sales': {
+    route: 'salesByPeriodReport', paged: false,
+    columns: [
+      { key: 'hour' }, { key: 'productQty', type: 'number', end: true, total: true }, { key: 'grossSales', type: 'currency', end: true, total: true },
+      { key: 'netSales', type: 'currency', end: true, total: true }, { key: 'salesInclTax', type: 'currency', end: true, total: true },
+    ],
+  },
+  'weekday-sales': {
+    route: 'salesByPeriodReport', paged: false,
+    columns: [
+      { key: 'day' }, { key: 'productQty', type: 'number', end: true, total: true }, { key: 'grossSales', type: 'currency', end: true, total: true },
+      { key: 'netSales', type: 'currency', end: true, total: true }, { key: 'salesInclTax', type: 'currency', end: true, total: true },
+    ],
+  },
+  'weekly-sales': {
+    route: 'salesByPeriodReport', paged: false,
+    columns: [
+      { key: 'week' }, { key: 'productQty', type: 'number', end: true, total: true }, { key: 'grossSales', type: 'currency', end: true, total: true },
+      { key: 'netSales', type: 'currency', end: true, total: true }, { key: 'salesInclTax', type: 'currency', end: true, total: true },
+    ],
+  },
+  'monthly-sales': {
+    route: 'salesByPeriodReport', paged: false,
+    columns: [
+      { key: 'month' }, { key: 'productQty', type: 'number', end: true, total: true }, { key: 'grossSales', type: 'currency', end: true, total: true },
+      { key: 'netSales', type: 'currency', end: true, total: true }, { key: 'salesInclTax', type: 'currency', end: true, total: true },
+    ],
+  },
+  'quarterly-sales': {
+    route: 'salesByPeriodReport', paged: false,
+    columns: [
+      { key: 'quarter' }, { key: 'productQty', type: 'number', end: true, total: true }, { key: 'grossSales', type: 'currency', end: true, total: true },
+      { key: 'netSales', type: 'currency', end: true, total: true }, { key: 'salesInclTax', type: 'currency', end: true, total: true },
+    ],
+  },
+  'yearly-sales': {
+    route: 'salesByPeriodReport', paged: false,
+    columns: [
+      { key: 'year' }, { key: 'productQty', type: 'number', end: true, total: true }, { key: 'grossSales', type: 'currency', end: true, total: true },
+      { key: 'netSales', type: 'currency', end: true, total: true }, { key: 'salesInclTax', type: 'currency', end: true, total: true },
+    ],
+  },
   'open-pending-po': {
     route: 'openPendingPOReport', paged: true,
     // the amounts come nested: summary[0]['Total'] = { 'Number Of Bills', 'PO Amount', 'Converted Bill Amount', 'Remaining To Convert' }

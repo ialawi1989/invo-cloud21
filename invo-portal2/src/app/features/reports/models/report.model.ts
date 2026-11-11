@@ -83,6 +83,10 @@ export interface ReportFilterFlags {
   requireEmployee?: boolean;
   /** i18n key of that picker's heading (default `REPORTS.FILTER.EMPLOYEE`). */
   singleEmployeeLabel?: string;
+  /** One discount (Sales by Discount), sent as `discountId`; `others` = documents with no discount. */
+  discount?: boolean;
+  /** The discount must be chosen before the report runs. */
+  requireDiscount?: boolean;
   /** Supplier filter (multi-select), sent as `supplierIds`. */
   suppliers?: boolean;
   /** Customer filter (multi-select), sent as `customerIds`. */
@@ -239,6 +243,8 @@ export interface ReportFilterState {
   customerIds?: string[];
   /** Sales are attributed to the sales employee (not the line's employee). */
   salesEmployee?: boolean;
+  /** The chosen discount (one id, or `others`). */
+  discountIds?: string[];
   /** Selected suppliers. */
   supplierIds?: string[];
   /** Only customers with a balance. */

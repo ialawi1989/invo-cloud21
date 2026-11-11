@@ -355,6 +355,14 @@ export function reportsSecurity() {
         name: "Vat Report",
         securityType: "cloud",
       }),
+      "VatTransactionDetailsReport": new PrivilegeSetting({
+        name: "VAT Transaction Details Report",
+        securityType: "cloud",
+      }),
+      "BillOfEntryDetailsVatReport": new PrivilegeSetting({
+        name: "Bill Of Entry Details VAT Report",
+        securityType: "cloud",
+      }),
       "MonthlyBLDBreakdown": new PrivilegeSetting({
         name: "Monthly BLD Breakdown",
         securityType: "cloud",
