@@ -258,6 +258,17 @@ export class FlatReportComponent {
     const h = Math.floor(n / 3600), m = Math.floor((n % 3600) / 60), sec = Math.floor(n % 60);
     return h ? `${h}h ${m}m` : `${m}m ${sec}s`;
   }
+  /** The photo being previewed (hover / focus on a photo icon). */
+  photo = signal<{ url: string; label: string; x: number; y: number; below: boolean } | null>(null);
+  showPhoto(ev: Event, url: string | null | undefined, label: string): void {
+    if (!url) return;
+    const r = (ev.currentTarget as HTMLElement).getBoundingClientRect();
+    const below = r.top < 230;
+    this.photo.set({ url, label, x: r.left + r.width / 2, y: below ? r.bottom + 8 : r.top - 8, below });
+  }
+  hidePhoto(): void { this.photo.set(null); }
+  /** A row's shifts (the Daily Attendance Sheet carries them as `shifts`). */
+  shiftsOf(rec: FlatRecord): { clockedInMediaUrl?: string | null; clockedOutMediaUrl?: string | null }[] { return Array.isArray(rec['shifts']) ? rec['shifts'] : []; }
   /** An age in seconds: "47h 12m" under two days, "10d 7h" from two days on. */
   ageText(v: any): string {
     const n = Number(v);

@@ -47,6 +47,26 @@
                         }
                         @case ('pct') { {{ num(row.rec[c.key]) | number: '1.1-1' }}% }
                         @case ('score') { <strong>{{ num(row.rec[c.key]) | number: '1.1-1' }}</strong> }
+                        @case ('shots') {
+                          @if (shiftsOf(row.rec).length === 0) { - } @else {
+                            @for (sh of shiftsOf(row.rec); track $index; let si = $index) {
+                              <div class="fl-shot" [class.divided]="si > 0">
+                                @for (side of ['in', 'out']; track side) {
+                                  @let url = side === 'in' ? sh.clockedInMediaUrl : sh.clockedOutMediaUrl;
+                                  @let lbl = (side === 'in' ? 'REPORTS.ATTENDANCE.CLOCKED_IN' : 'REPORTS.ATTENDANCE.CLOCKED_OUT') | translate;
+                                  @if (url) {
+                                    <a class="fl-shot-btn" [href]="url" target="_blank" rel="noopener" [attr.aria-label]="lbl"
+                                       (mouseenter)="showPhoto($event, url, lbl)" (mouseleave)="hidePhoto()" (focus)="showPhoto($event, url, lbl)" (blur)="hidePhoto()">
+                                      <svg class="fl-shot-ico on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                    </a>
+                                  } @else {
+                                    <svg class="fl-shot-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.title]="lbl" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                  }
+                                }
+                              </div>
+                            }
+                          }
+                        }
                         @case ('rank') { <span [class]="'fl-rank fl-rank-' + (num(row.rec[c.key]) === 1 ? 'first' : num(row.rec[c.key]) <= 3 ? 'top' : 'rest')">#{{ num(row.rec[c.key]) }}</span> }
                         @case ('tag') { <span [class]="'fl-badge ' + tagClass(row.rec[c.key])">{{ tagText(row.rec[c.key]) }}</span> }
                         @case ('age') {
@@ -124,6 +144,12 @@
           </tbody>
         </table>
       </app-bo-table-shell>
+      @if (photo(); as p) {
+        <div class="fl-pop" [class.below]="p.below" [style.left.px]="p.x" [style.top.px]="p.y" role="tooltip">
+          <img [src]="p.url" [alt]="p.label" />
+          <small>{{ p.label }}</small>
+        </div>
+      }
       @if (config().paged) {
         <app-pagination
           [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"

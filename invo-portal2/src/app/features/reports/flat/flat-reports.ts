@@ -27,6 +27,8 @@ export type FlatCellType =
   | 'tag'
   /** a rank (1, 2, 3 …) as a pill: #1 green, #2 and #3 teal, the rest grey */
   | 'rank'
+  /** the in / out photos of a row's shifts: icons that show the picture when hovered */
+  | 'shots'
   /** a percentage with one decimal ("92.5%") */
   | 'pct'
   /** a score, bold */
@@ -426,7 +428,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     },
     columns: [
       { key: 'employeeName', drill: { slug: 'attendance-detail', idKey: 'employeeId', param: 'employee' } }, { key: 'shift' },
-      { key: 'clockedIn', type: 'time' }, { key: 'clockedOut', type: 'time' }, { key: 'photos', type: 'number', end: true, dashZero: true },
+      { key: 'clockedIn', type: 'time' }, { key: 'clockedOut', type: 'time' }, { key: 'photos', type: 'shots' },
       { key: 'leaveTypeRaw', label: 'REPORTS.FLAT.COLUMNS.leaveType' }, { key: 'status', type: 'tag' }, { key: 'adjusted', type: 'yesno' },
     ],
   },
